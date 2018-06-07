@@ -337,7 +337,12 @@ public class ModelChecker extends AbstractChecker
 		// allocating memory for StateVec (which depending on the number of init
 		// states can grow to be GBs) and the subsequent loop over StateVec.
 		final DoInitFunctor functor = new DoInitFunctor();
-		this.tool.getInitStates(functor);
+		try {
+			this.tool.getInitStates(functor);
+		} catch (DoInitFunctor.InvariantViolatedException ive) {
+			this.errState = functor.errState;
+			return functor.returnValue;
+		}
 		
 		// Iff one of the init states' checks violates any properties, the
 		// functor will record it.
@@ -996,6 +1001,10 @@ public class ModelChecker extends AbstractChecker
 	 */
 	private class DoInitFunctor implements IStateFunctor {
 
+		@SuppressWarnings("serial")
+		public class InvariantViolatedException extends RuntimeException {
+		}
+		
 		/**
 		 * Non-Null iff a violation occurred.
 		 */
@@ -1029,7 +1038,9 @@ public class ModelChecker extends AbstractChecker
 				// Check if the state is a legal state
 				if (!tool.isGoodState(curState)) {
 					MP.printError(EC.TLC_INITIAL_STATE, new String[]{ "current state is not a legal state", curState.toString() });
-					return returnValue;
+					this.errState = curState;
+					returnValue = false;
+					throw new InvariantViolatedException();
 				}
 				boolean inModel = tool.isInModel(curState);
 				boolean seen = false;
@@ -1057,7 +1068,7 @@ public class ModelChecker extends AbstractChecker
 							if (!TLCGlobals.continuation) {
 								this.errState = curState;
 								returnValue = false;
-								return returnValue;
+								throw new InvariantViolatedException();
 							}
 						}
 					}
@@ -1068,7 +1079,7 @@ public class ModelChecker extends AbstractChecker
 									new String[] { tool.getImpliedInitNames()[j], curState.toString() });
 							this.errState = curState;
 							returnValue = false;
-							return returnValue;
+							throw new InvariantViolatedException();
 						}
 					}
 				}
@@ -1078,6 +1089,8 @@ public class ModelChecker extends AbstractChecker
 					MP.printError(EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT);
 					returnValue = false;
 					return returnValue;
+				} else if (e instanceof InvariantViolatedException) {
+					throw (InvariantViolatedException) e;
 				}
 				this.errState = curState;
 				this.e = e;
