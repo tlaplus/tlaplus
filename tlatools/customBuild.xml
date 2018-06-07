@@ -318,8 +318,8 @@
 						<exclude name="**/MacroRealQuicksortTest.java" />
 						<exclude name="**/PcalPaxosTest.java" />
 						<exclude name="**/DetlefsTest.java" />
-						<exclude name="**/StarkMutexTest" />
-						<exclude name="**/SimpleMultiProcTest" />
+						<exclude name="**/StarkMutexTest.java" />
+						<exclude name="**/SimpleMultiProcTest.java" />
 					</fileset>
 				</batchtest>
 			</junit>
@@ -378,8 +378,8 @@
 					<exclude name="**/MacroRealQuicksortTest.java" />
 					<exclude name="**/PcalPaxosTest.java" />
 					<exclude name="**/DetlefsTest.java" />
-					<exclude name="**/StarkMutexTest" />
-					<exclude name="**/SimpleMultiProcTest" />
+					<exclude name="**/StarkMutexTest.java" />
+					<exclude name="**/SimpleMultiProcTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
