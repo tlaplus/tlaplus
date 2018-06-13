@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.handlers;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,18 +15,17 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
-import org.lamport.tla.toolbox.util.ToolboxJob;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 public class DeleteModelHandler extends AbstractHandler implements IHandler
@@ -105,24 +105,28 @@ public class DeleteModelHandler extends AbstractHandler implements IHandler
 			// 4.) UI is in ready state
 			// Defer deletion to ResourceFramework outside the UI thread (makes
 			// it cancel-able too, keeps track of conflicting resource
-			// modifications, ...)
-			final Job job = new ToolboxJob("Deleting models...") {
+			// modifications, ...).
+			// Warp model delete operation in a WorkspaceModifyOperation to notify listeners
+			// after the model delete operation has finished. In other words, for the
+			// listeners a wrapped delete operation is atomic. If not done atomic, the
+			// UI might read the model while it's being deleted. This can result in a NPE
+			// inside the UI thread.
+			final WorkspaceModifyOperation operation = new WorkspaceModifyOperation() {
 				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					try {
-						for (Model model : models) {
-							model.delete(monitor);
-						}
-					} catch (CoreException e) {
-						return new Status(Status.ERROR,
-								"org.lamport.tla.toolbox.tool.tlc.ui",
-								e.getMessage(), e);
+				protected void execute(IProgressMonitor monitor)
+						throws CoreException, InvocationTargetException, InterruptedException {
+					for (Model model : models) {
+						model.delete(monitor);
 					}
-					return Status.OK_STATUS;
 				}
 			};
-			job.schedule();
-        }
+			final IRunnableContext ctxt = new ProgressMonitorDialog(UIHelper.getShell());
+			try {
+				ctxt.run(true, false, operation);
+			} catch (InvocationTargetException | InterruptedException e) {
+				throw new ExecutionException(e.getMessage(), e);
+			}
+		}
         return null;
     }
 
