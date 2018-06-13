@@ -255,7 +255,21 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
-  }
+  }  
+  
+	public EnumerableValue getRandomSubsetSet(final int numOfPicks, final double probability) {
+		final CoinTossingSubsetEnumerator enumerator = new CoinTossingSubsetEnumerator(numOfPicks, probability);
+		
+		final ValueVec vec = new ValueVec(numOfPicks);
+		Value val;
+		while ((val = enumerator.nextElement()) != null) {
+			vec.addElement(val);
+		}
+		// Remove duplicates right away which also normalizes vec.
+		vec.sort(true);
+		
+    	return new SetEnumValue(vec, true);
+	}
 
   public final ValueEnumeration elements() {
     try {
@@ -325,7 +339,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		final int k = calculateK(fraction, sz);
 		
 		// Use probabilistic CTSE if size of input set or k are too large. CoinTossing
-		// can yield duplicates though.
+		// can yield duplicates though, thus k means number of picks.
 		if (sz >= 31 || k > (1 << 16)) {
 			return new CoinTossingSubsetEnumerator(k);
 		}
@@ -411,16 +425,26 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	class CoinTossingSubsetEnumerator implements ValueEnumeration {
 
 		private final ValueVec elems;
-		private final int k;
+		private final double probability;
+		private final int numOfPicks;
 		private int i;
 
-		public CoinTossingSubsetEnumerator(final int k) {
+		public CoinTossingSubsetEnumerator(final int numOfPicks) {
+			this(numOfPicks, COIN_TOSS_BIAS);
+		}
+
+		public CoinTossingSubsetEnumerator(final double probability) {
+			this(Integer.MAX_VALUE, probability);
+		}
+
+		public CoinTossingSubsetEnumerator(final int numOfPicks, final double probability) {
 			this.i = 0;
-			this.k = k;
+			this.numOfPicks = numOfPicks;
+			this.probability = probability;
 
 			final SetEnumValue convert = SetEnumValue.convert(set);
-      		convert.normalize();
-      		this.elems = convert.elems;
+			convert.normalize();
+			this.elems = convert.elems;
 		}
 
 		// Repeated invocation can yield duplicate elements due to the probabilistic
@@ -431,17 +455,16 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 			final ValueVec vals = new ValueVec(elems.size());
 			for (int i = 0; i < elems.size(); i++) {
-				if (EnumerableValue.RANDOM.nextDouble() < COIN_TOSS_BIAS) {
+				if (EnumerableValue.RANDOM.nextDouble() < probability) {
 					vals.addElement(elems.elementAt(i));
 				}
 			}
 			this.i++;
-			vals.sort(true);
 			return new SetEnumValue(vals, false);
 		}
 
 		private boolean hasNext() {
-			return this.i < this.k;
+			return this.i < this.numOfPicks;
 		}
 
 		@Override
@@ -449,8 +472,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			this.i = 0;
 		}
 
-		int getK() {
-			return k;
+		int getNumOfPicks() {
+			return numOfPicks;
 		}
 	}
 }

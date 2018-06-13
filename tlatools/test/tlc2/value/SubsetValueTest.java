@@ -22,7 +22,6 @@
  *
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
- *   Ian Morris Nieves - added support for fingerprint stack trace
  ******************************************************************************/
 package tlc2.value;
 
@@ -223,7 +222,7 @@ public class SubsetValueTest {
 		}
 
 		CoinTossingSubsetEnumerator tossingEnumerator = (CoinTossingSubsetEnumerator) elements;
-		assertTrue(tossingEnumerator.getK() - 100 <= s.size() && s.size() <= tossingEnumerator.getK());
+		assertTrue(tossingEnumerator.getNumOfPicks() - 100 <= s.size() && s.size() <= tossingEnumerator.getNumOfPicks());
 	}
 
 	@Test
