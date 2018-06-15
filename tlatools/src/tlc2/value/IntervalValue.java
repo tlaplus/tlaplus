@@ -307,17 +307,4 @@ implements Enumerable, Reducible {
 			}
 		};
 	}
-	
-	@Override
-	public ValueEnumeration elements(final double fraction) {
-		return new EnumerableValue.SubsetEnumerator(fraction) {
-			@Override
-			public Value nextElement() {
-				if (!hasNext()) {
-					return null;
-				}
-				return IntValue.gen(low + nextIndex());
-			}
-		};
-	}
 }

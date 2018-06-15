@@ -9,7 +9,6 @@ package tlc2.value;
 import java.util.BitSet;
 
 import tlc2.output.EC;
-import tlc2.output.MP;
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
@@ -261,23 +260,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	public EnumerableValue getRandomSubsetSet(final int numOfPicks, final double probability) {
 		final CoinTossingSubsetEnumerator enumerator = new CoinTossingSubsetEnumerator(numOfPicks, probability);
 		
-		int sum = 0;
 		final ValueVec vec = new ValueVec(numOfPicks);
 		Value val;
 		while ((val = enumerator.nextElement()) != null) {
-			sum += val.size();
 			vec.addElement(val);
 		}
 		// Remove duplicates right away which also normalizes vec.
 		vec.sort(true);
-		
-		// Tell user how many elements she actually gets. 		
-		final int size = vec.size();
-		if(numOfPicks > size) {
-			final double average = (1d / vec.size()) * sum;
-			MP.printWarning(EC.GENERAL, String.format("Requested RandomSubsetSet of size %s but only generated subset with %s unique elements (average element length is %02.0f).",
-							numOfPicks, vec.size(), average));
-		}
 		
     	return new SetEnumValue(vec, true);
 	}
@@ -344,44 +333,15 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
 	@Override
-	public ValueEnumeration elements(final double fraction) {
+	public ValueEnumeration elements(final int k) {
 		final int sz = this.set.size();
 
-		final int k = calculateK(fraction, sz);
-		
 		// Use probabilistic CTSE if size of input set or k are too large. CoinTossing
 		// can yield duplicates though, thus k means number of picks.
 		if (sz >= 31 || k > (1 << 16)) {
 			return new CoinTossingSubsetEnumerator(k);
 		}
-		return new SubsetEnumerator(fraction);
-	}
-
-	static int calculateK(final double fraction, final int n) {
-		// Handle extreme/bogus input:
-		if (n <= 0) {
-			return 0;
-		} else if (fraction >= 1.0 && n >= 31) {
-			return Integer.MAX_VALUE;
-		} else if (fraction >= 1.0) {
-			return 1 << n; // 2^n
-		} else if (fraction < 0 || fraction <= -0.0) {
-			return 0;
-		}
-		
-		// Calculate k without raising 2^sz which can get very large.
-		int k;
-		try {
-			k = Math.toIntExact((long) Math.ceil(Math.pow(10, (n * Math.log10(2)) + Math.log10(fraction))));
-			//assert k == Math.toIntExact(Math.round(Math.pow(2, n) * fraction));
-		} catch (ArithmeticException e) {
-			k = Integer.MAX_VALUE;
-		}
-		return k;
-		
-		// More readable but slower.
-//		final BigDecimal subsetN = BigDecimal.valueOf(2).pow(n);
-//		return subsetN.multiply(BigDecimal.valueOf(fraction)).intValue();
+		return new SubsetEnumerator(k);
 	}
 	
 	class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
@@ -390,13 +350,6 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
 		SubsetEnumerator(final int k) {
 			super(k, 1 << set.size());
-			final SetEnumValue convert = SetEnumValue.convert(set);
-      		convert.normalize();
-      		this.elems = convert.elems;
-		}
-		
-		SubsetEnumerator(final double fraction) {
-			super(fraction);
 			final SetEnumValue convert = SetEnumValue.convert(set);
       		convert.normalize();
       		this.elems = convert.elems;
@@ -421,9 +374,6 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			return new SetEnumValue(vals, false);
 		}
 	}
-	
-  	private static final double COIN_TOSS_BIAS = Double
-			.valueOf(System.getProperty(SubsetValue.class.getName() + ".cointossbias", ".5d"));
 
 	/*
 	 * LL: I realized that efficiently choosing a random set of k elements in "SUBSET S"
@@ -441,11 +391,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		private int i;
 
 		public CoinTossingSubsetEnumerator(final int numOfPicks) {
-			this(numOfPicks, COIN_TOSS_BIAS);
-		}
-
-		public CoinTossingSubsetEnumerator(final double probability) {
-			this(Integer.MAX_VALUE, probability);
+			this(numOfPicks, .5d);
 		}
 
 		public CoinTossingSubsetEnumerator(final int numOfPicks, final double probability) {

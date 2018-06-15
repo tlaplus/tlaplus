@@ -61,73 +61,12 @@ public class SubsetValueTest {
 		// detect duplicates.
 		FP64.Init();
 	}
-	
-	@Test
-	public void testCalcK() {
-		assertEquals(0, SubsetValue.calculateK(-1.0, 0));
-		assertEquals(0, SubsetValue.calculateK(-0.5, 0));
-		assertEquals(0, SubsetValue.calculateK(-0.0, 0));
-		assertEquals(0, SubsetValue.calculateK(-0, 0));
-		assertEquals(0, SubsetValue.calculateK(0, 0));
-		assertEquals(0, SubsetValue.calculateK(0.0, 0));
-		assertEquals(0, SubsetValue.calculateK(1, 0));
-		assertEquals(0, SubsetValue.calculateK(1.0, 0));
-		assertEquals(0, SubsetValue.calculateK(1E-65, 0));
-		
-		assertEquals(0, SubsetValue.calculateK(-1.0, 1));
-		assertEquals(0, SubsetValue.calculateK(-0.5, 1));
-		assertEquals(0, SubsetValue.calculateK(-0.0, 1));
-		assertEquals(0, SubsetValue.calculateK(-0, 1));
-		assertEquals(0, SubsetValue.calculateK(0, 1));
-		assertEquals(0, SubsetValue.calculateK(0.0, 1));
-		assertEquals(1 << 1, SubsetValue.calculateK(1, 1));
-		assertEquals(1 << 1, SubsetValue.calculateK(1.0, 1));
-		assertEquals(1, SubsetValue.calculateK(1E-65, 1));
-
-		assertEquals(0, SubsetValue.calculateK(-1.0, 30));
-		assertEquals(0, SubsetValue.calculateK(-0.5, 30));
-		assertEquals(0, SubsetValue.calculateK(-0.0, 30));
-		assertEquals(0, SubsetValue.calculateK(-0, 30));
-		assertEquals(0, SubsetValue.calculateK(0, 30));
-		assertEquals(0, SubsetValue.calculateK(0.0, 30));
-		assertEquals(1 << 30, SubsetValue.calculateK(1, 30));
-		assertEquals(1 << 30, SubsetValue.calculateK(1.0, 30));
-		assertEquals(1074, SubsetValue.calculateK(0.000001, 30));
-		assertEquals(1, SubsetValue.calculateK(1E-65, 30));
-
-		assertEquals(0, SubsetValue.calculateK(-1.0, 64));
-		assertEquals(0, SubsetValue.calculateK(-0.5, 64));
-		assertEquals(0, SubsetValue.calculateK(-0.0, 64));
-		assertEquals(0, SubsetValue.calculateK(-0, 64));
-		assertEquals(0, SubsetValue.calculateK(0, 64));
-		assertEquals(0, SubsetValue.calculateK(0.0, 64));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(1, 64));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(1.0, 64));
-		assertEquals(1, SubsetValue.calculateK(1E-19, 63));
-		assertEquals(10, SubsetValue.calculateK(1E-18, 63));
-		assertEquals(93, SubsetValue.calculateK(1E-17, 63));
-		assertEquals(923, SubsetValue.calculateK(1E-16, 63));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(0.5, 64));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(0.25, 64));
-
-		assertEquals(0, SubsetValue.calculateK(-1.0, Integer.MAX_VALUE));
-		assertEquals(0, SubsetValue.calculateK(-0.5, Integer.MAX_VALUE));
-		assertEquals(0, SubsetValue.calculateK(-0.0, Integer.MAX_VALUE));
-		assertEquals(0, SubsetValue.calculateK(-0, Integer.MAX_VALUE));
-		assertEquals(0, SubsetValue.calculateK(0, Integer.MAX_VALUE));
-		assertEquals(0, SubsetValue.calculateK(0.0, Integer.MAX_VALUE));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(1, Integer.MAX_VALUE));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(1.0, Integer.MAX_VALUE));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(1E-65, Integer.MAX_VALUE));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(0.5, Integer.MAX_VALUE));
-		assertEquals(Integer.MAX_VALUE, SubsetValue.calculateK(0.25, Integer.MAX_VALUE));
-	}
 
 	private void doTest(final int expectedSize, final EnumerableValue innerSet) {
-		doTest(expectedSize, innerSet, 1d, expectedSize);
+		doTest(expectedSize, innerSet, expectedSize);
 	}
 
-	private void doTest(final int expectedSize, final EnumerableValue innerSet, final double fraction,
+	private void doTest(final int expectedSize, final EnumerableValue innerSet,
 			int expectedElements) {
 		final SubsetValue subsetValue = new SubsetValue(innerSet);
 		assertEquals(expectedSize, subsetValue.size());
@@ -145,7 +84,7 @@ public class SubsetValueTest {
 			}
 		});
 		
-		final ValueEnumeration elements = subsetValue.elements(fraction);
+		final ValueEnumeration elements = subsetValue.elements(expectedElements);
 		assertTrue(elements instanceof SubsetEnumerator);
 		
 		SetEnumValue next = null;
@@ -166,7 +105,7 @@ public class SubsetValueTest {
 	@Test
 	public void testRandomSubsetE7F05() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e", "f", "g"), true);
-		doTest(1 << innerSet.size(), innerSet, 0.5d, 64);
+		doTest(1 << innerSet.size(), innerSet, 64);
 	}
 
 	@Test
@@ -178,25 +117,25 @@ public class SubsetValueTest {
 	@Test
 	public void testRandomSubsetE5F01() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
-		doTest(1 << innerSet.size(), innerSet, .1d, 4);
+		doTest(1 << innerSet.size(), innerSet, 4);
 	}
 
 	@Test
 	public void testRandomSubsetE5F025() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
-		doTest(1 << innerSet.size(), innerSet, .25d, 8);
+		doTest(1 << innerSet.size(), innerSet, 8);
 	}
 
 	@Test
 	public void testRandomSubsetE5F05() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
-		doTest(1 << innerSet.size(), innerSet, .5d, 16);
+		doTest(1 << innerSet.size(), innerSet, 16);
 	}
 
 	@Test
 	public void testRandomSubsetE5F075() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
-		doTest(1 << innerSet.size(), innerSet, .75d, 24);
+		doTest(1 << innerSet.size(), innerSet, 24);
 	}
 
 	@Test
@@ -210,7 +149,7 @@ public class SubsetValueTest {
 		final IntervalValue innerSet = new IntervalValue(1, 32);
 		final SubsetValue subsetValue = new SubsetValue(innerSet);
 
-		ValueEnumeration elements = subsetValue.elements(1E-6);
+		ValueEnumeration elements = subsetValue.elements(2342);
 		assertTrue(elements instanceof CoinTossingSubsetEnumerator);
 
 		final Set<Value> s = new HashSet<>();
@@ -230,7 +169,7 @@ public class SubsetValueTest {
 		final IntervalValue innerSet = new IntervalValue(1, 17);
 		final SubsetValue subsetValue = new SubsetValue(innerSet);
 
-		final ValueEnumeration elements = subsetValue.elements(1E-3);
+		final ValueEnumeration elements = subsetValue.elements(4223);
 		assertTrue(elements instanceof SubsetEnumerator);
 
 		final Set<Value> s = new HashSet<>();
@@ -256,7 +195,7 @@ public class SubsetValueTest {
 
 		// No duplicates
 		final Set<Value> s = new HashSet<>(expectedSize);
-		final ValueEnumeration elements = subsetValue.elements(1d);
+		final ValueEnumeration elements = subsetValue.elements(expectedSize);
 		Value next = null;
 		while ((next = elements.nextElement()) != null) {
 			s.add(next);
@@ -275,7 +214,7 @@ public class SubsetValueTest {
 
 		// No duplicates
 		final Set<Value> s = new HashSet<>(expectedSize);
-		final ValueEnumeration elements = subsetValue.elements(1d);
+		final ValueEnumeration elements = subsetValue.elements(expectedSize);
 		Value next = null;
 		while ((next = elements.nextElement()) != null) {
 			s.add(next);
@@ -294,7 +233,7 @@ public class SubsetValueTest {
 
 		// No duplicates
 		final Set<Value> s = new HashSet<>(expectedSize);
-		final ValueEnumeration elements = subsetValue.elements(1d);
+		final ValueEnumeration elements = subsetValue.elements(expectedSize);
 		Value next = null;
 		while ((next = elements.nextElement()) != null) {
 			s.add(next);
@@ -313,7 +252,7 @@ public class SubsetValueTest {
 		} catch (Assert.TLCRuntimeException e) {
 			final Set<Value> s = new HashSet<>();
 
-			final ValueEnumeration elements = subsetValue.elements(0.0000005d);
+			final ValueEnumeration elements = subsetValue.elements(2148);
 			assertTrue(elements instanceof CoinTossingSubsetEnumerator);
 			Value next = null;
 			while ((next = elements.nextElement()) != null) {

@@ -398,12 +398,6 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 			return new SubsetEnumerator(k, size());
 		}
 	}
-
-	@Override
-	public ValueEnumeration elements(final double fraction) {
-		//TODO Use BigIntegerSubsetEnumerator if size too large.
-		return new SubsetEnumerator(fraction);
-	}
 	
 	class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
 		private final SetEnumValue domSet;
@@ -412,16 +406,6 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 		
 		SubsetEnumerator(final int k, final int n) {
 			super(k, n);
-			domSet = SetEnumValue.convert(domain);
-			domSet.normalize();
-
-			rangeSet = SetEnumValue.convert(range);
-
-			mod = range.size();
-		}
-
-		SubsetEnumerator(final double fraction) {
-			super(fraction);
 			domSet = SetEnumValue.convert(domain);
 			domSet.normalize();
 

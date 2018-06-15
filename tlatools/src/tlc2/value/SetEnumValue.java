@@ -515,18 +515,4 @@ implements Enumerable, Reducible {
 			}
 		};
 	}
-	
-	@Override
-	public ValueEnumeration elements(final double fraction) {
-		normalize();
-		return new EnumerableValue.SubsetEnumerator(fraction) {
-			@Override
-			public Value nextElement() {
-				if (!hasNext()) {
-					return null;
-				}
-				return elems.elementAt(nextIndex());
-			}
-		};
-	}
 }

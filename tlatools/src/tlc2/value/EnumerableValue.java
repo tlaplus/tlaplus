@@ -80,10 +80,6 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 		};
   	}
 
-	public ValueEnumeration elements(final double fraction) {
-		return elements((int) Math.min(Math.ceil(fraction * size()), size()));
-	}
-
 	static {
 		enumFractionSeed = System.currentTimeMillis();
 	}
@@ -109,10 +105,6 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 
 		public SubsetEnumerator(final int k) {
 			this(k, size());	
-		}
-		
-		public SubsetEnumerator(final double fraction) {
-			this((int) Math.min(Math.ceil(fraction * size()), size()), size());
 		}
 		
 		public SubsetEnumerator(final int k, final int n) {

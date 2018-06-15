@@ -115,31 +115,7 @@ public class SubsetEnumeratorTest {
 	public SubsetEnumeratorTest(final Enumerable enumerable) {
 		this.enumerable = enumerable;
 	}
-	
-	@Test
-	public void testElementsDouble() {
-		// for various fractions...
-		DoubleStream.of(0, .1, .2, .3, .4, .55, .625, .775, .8, .9, 1, 1.1).forEach(new DoubleConsumer() {
-			@Override
-			public void accept(double fraction) {
-				final List<Value> values = enumerable.elements(fraction).all();
-				
-				// Expected size.
-				final int expected = (int) Math.min(enumerable.size(), Math.ceil(enumerable.size() * fraction));
-				Assert.assertEquals(String.format("Failed for fraction: %s", fraction), expected, values.size());
 
-				// Unique values.
-				Assert.assertEquals(String.format("Failed for fraction: %s", fraction), values.size(),
-						new HashSet<Value>(values).size());
-
-				// Each value is actually a member of enumerable.
-				for (Value v : values) {
-					Assert.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
-				}
-			}
-		});
-	}
-	
 	@Test
 	public void testElementsInt() {
 		// for various fractions...

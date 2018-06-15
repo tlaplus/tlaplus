@@ -46,7 +46,7 @@ public class EnumerableValueTest {
 		final Set<Integer> indices = new HashSet<>();
 		// For the first n \in Nat+ up to 10657 show that:
 		for (int n = 1; n < 10657; n++) {
-			final SubsetEnumerator enumerator = (SubsetEnumerator) new DummyValue(n).elements(1d);
+			final SubsetEnumerator enumerator = (SubsetEnumerator) new DummyValue(n).elements(n);
 
 			while (enumerator.hasNext()) {
 				final int index = enumerator.nextIndex();
@@ -65,16 +65,6 @@ public class EnumerableValueTest {
 
 		public DummyValue(int size) {
 			this.size = size;
-		}
-
-		@Override
-		public ValueEnumeration elements(final double fraction) {
-			return new EnumerableValue.SubsetEnumerator(fraction) {
-				@Override
-				public Value nextElement() {
-					throw new UnsupportedOperationException();
-				}
-			};
 		}
 
 		@Override
