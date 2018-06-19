@@ -462,6 +462,12 @@ implements Enumerable, Reducible {
     }
   }
 
+  public Value randomElement() {
+     int sz = size();
+     int index = (int) Math.floor(RANDOM.nextDouble() * sz);
+     return this.elems.elementAt(index);
+  }
+
   public final ValueEnumeration elements() {
     try {
       return new Enumerator();

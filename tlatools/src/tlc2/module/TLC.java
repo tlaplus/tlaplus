@@ -15,7 +15,6 @@ import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
 import tlc2.util.IdThread;
-import tlc2.util.RandomGenerator;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
 import tlc2.value.Enumerable;
@@ -41,14 +40,12 @@ public class TLC implements ValueConstants
 {
 	public static final long serialVersionUID = 20160822L;
 
-    private static RandomGenerator rng;
 	public static BufferedWriter OUTPUT;
 
     static
     {
         Assert.check(TLARegistry.put("MakeFcn", ":>") == null, EC.TLC_REGISTRY_INIT_ERROR, "MakeFcn");
         Assert.check(TLARegistry.put("CombineFcn", "@@") == null, EC.TLC_REGISTRY_INIT_ERROR, "CombineFcn");
-        rng = new RandomGenerator();
     }
 
     /**
@@ -466,9 +463,7 @@ public class TLC implements ValueConstants
                 throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "RandomElement",
                         "a finite set", Value.ppr(val.toString()) });
             }
-            int sz = enumVal.size();
-            int index = (int) Math.floor(rng.nextDouble() * sz);
-            return enumVal.elems.elementAt(index);
+            return enumVal.randomElement();
         }
         }
     }
