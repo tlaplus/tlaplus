@@ -42,7 +42,7 @@ import tlc2.value.SetEnumValue;
 import tlc2.value.StringValue;
 import tlc2.value.Value;
 
-public class TLCModuleRandomSubsetSetTest {
+public class RandomizationTest {
 	
 	@BeforeClass
 	public static void setup() {
@@ -50,20 +50,22 @@ public class TLCModuleRandomSubsetSetTest {
 		EnumerableValue.setRandom(15041980L);
 	}
 
+	/* RandomSubsetSetProbability */
+
 	@Test
 	public void testV1Valid() {
-		final Enumerable randomSubsetSet = (Enumerable) TLC.RandomSubsetSet(IntValue.gen(42), new StringValue("0.1"),
+		final Enumerable randomSubset = (Enumerable) Randomization.RandomSubsetSetProbability(IntValue.gen(42), new StringValue("0.1"),
 				new IntervalValue(1, 42));
 
-		assertNotNull(randomSubsetSet);
-		assertEquals(42, randomSubsetSet.size());
+		assertNotNull(randomSubset);
+		assertEquals(42, randomSubset.size());
 	}
 
 	@Test
 	public void testV1Negative() {
 		final Value v1 = IntValue.gen(-42);
 		try {
-			TLC.RandomSubsetSet(v1, new StringValue("0.1"), new IntervalValue(1, 42));
+			Randomization.RandomSubsetSetProbability(v1, new StringValue("0.1"), new IntervalValue(1, 42));
 		} catch (final EvalException ee) {
 			assertTrue(ee.getMessage().contains("-42"));
 			return;
@@ -74,18 +76,18 @@ public class TLCModuleRandomSubsetSetTest {
 	@Test
 	public void testV1Zero() {
 		final Value v1 = IntValue.gen(0);
-		final Enumerable randomSubsetSet = (Enumerable) TLC.RandomSubsetSet(v1, new StringValue("0.1"),
+		final Enumerable randomSubset = (Enumerable) Randomization.RandomSubsetSetProbability(v1, new StringValue("0.1"),
 				new IntervalValue(1, 42));
 
-		assertNotNull(randomSubsetSet);
-		assertEquals(0, randomSubsetSet.size());
+		assertNotNull(randomSubset);
+		assertEquals(0, randomSubset.size());
 	}
 	
 	@Test
 	public void testV1NoIntValue() {
 		final Value v1 = new StringValue("52");
 		try {
-			TLC.RandomSubsetSet(v1, new StringValue("0.1"), new IntervalValue(1, 42));
+			Randomization.RandomSubsetSetProbability(v1, new StringValue("0.1"), new IntervalValue(1, 42));
 		} catch (final EvalException ee) {
 			assertTrue(ee.getMessage().contains("\"52\""));
 			return;
@@ -95,17 +97,17 @@ public class TLCModuleRandomSubsetSetTest {
 
 	@Test
 	public void testV2Zero() {
-		final Enumerable randomSubsetSet = (Enumerable) TLC.RandomSubsetSet(IntValue.gen(23), new StringValue("0"),
+		final Enumerable randomSubset = (Enumerable) Randomization.RandomSubsetSetProbability(IntValue.gen(23), new StringValue("0"),
 				new IntervalValue(1, 42));
-		assertEquals(1, randomSubsetSet.size());
+		assertEquals(1, randomSubset.size());
 		// empty set is only member
-		assertTrue(randomSubsetSet.member(new SetEnumValue()));
+		assertTrue(randomSubset.member(new SetEnumValue()));
 	}
 
 	@Test
 	public void testV2Negative() {
 		try {
-			TLC.RandomSubsetSet(IntValue.gen(23), new StringValue("-1"), new IntervalValue(1, 42));
+			Randomization.RandomSubsetSetProbability(IntValue.gen(23), new StringValue("-1"), new IntervalValue(1, 42));
 		} catch (final EvalException ee) {
 			assertTrue(ee.getMessage().contains("-1"));
 			return;
@@ -116,7 +118,7 @@ public class TLCModuleRandomSubsetSetTest {
 	@Test
 	public void testV2Larger1() {
 		try {
-			TLC.RandomSubsetSet(IntValue.gen(23), new StringValue("1.1"), new IntervalValue(1, 42));
+			Randomization.RandomSubsetSetProbability(IntValue.gen(23), new StringValue("1.1"), new IntervalValue(1, 42));
 		} catch (final EvalException ee) {
 			assertTrue(ee.getMessage().contains("1.1"));
 			return;
@@ -127,7 +129,7 @@ public class TLCModuleRandomSubsetSetTest {
 	@Test
 	public void testV3Empty() {
 		try {
-			TLC.RandomSubsetSet(IntValue.gen(42), new StringValue("1E-1"), new SetEnumValue());
+			Randomization.RandomSubsetSetProbability(IntValue.gen(42), new StringValue("1E-1"), new SetEnumValue());
 		} catch (final EvalException ee) {
 			assertTrue(ee.getMessage().contains("2^0"));
 			return;
@@ -137,20 +139,65 @@ public class TLCModuleRandomSubsetSetTest {
 	
 	@Test
 	public void testV3AstronomicallyLarge() {
-		final Enumerable randomSubsetSet = (Enumerable) TLC.RandomSubsetSet(IntValue.gen(42), new StringValue("1E-1"),
+		final Enumerable randomSubset = (Enumerable) Randomization.RandomSubsetSetProbability(IntValue.gen(42), new StringValue("1E-1"),
 				new IntervalValue(1, 256));
 
-		assertNotNull(randomSubsetSet);
-		assertEquals(42, randomSubsetSet.size());
+		assertNotNull(randomSubset);
+		assertEquals(42, randomSubset.size());
 	}
 	
 	@Test
 	public void testV3isInfinite() {
 		try {
-			TLC.RandomSubsetSet(IntValue.gen(42), new StringValue("1E-1"), Naturals.Nat());
+			Randomization.RandomSubsetSetProbability(IntValue.gen(42), new StringValue("1E-1"), Naturals.Nat());
 		} catch (final EvalException ee) {
 			assertTrue(ee.getMessage().contains(
-					"The third argument of RandomSubsetSet should be a finite set, but instead it is:\nNat"));
+					"The third argument of RandomSubsetSetProbability should be a finite set, but instead it is:\nNat"));
+			return;
+		}
+		fail();
+	}
+	
+	/* RandomSubsetSet */
+
+	@Test
+	public void testRSSV2Zero() {
+		final Enumerable randomSubset = (Enumerable) Randomization.RandomSubsetSet(IntValue.gen(23), IntValue.gen(0),
+				new IntervalValue(1, 42));
+		assertEquals(1, randomSubset.size());
+		// empty set is only member
+		assertTrue(randomSubset.member(new SetEnumValue()));
+	}
+
+	@Test
+	public void testRSSV2Negative() {
+		try {
+			Randomization.RandomSubsetSetProbability(IntValue.gen(23), IntValue.gen(-1), new IntervalValue(1, 42));
+		} catch (final EvalException ee) {
+			assertTrue(ee.getMessage().contains("-1"));
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	public void testRSSV2Cardinality() {
+		final Enumerable randomSubset = (Enumerable) Randomization.RandomSubsetSet(IntValue.gen(32), IntValue.gen(5),
+				new IntervalValue(1, 5));
+		assertEquals(1, randomSubset.size());
+		// With probability 1 (n = 5), the operator - due to collisions - only generates
+		// a single subset which is the input set.
+		assertTrue(randomSubset.member(new IntervalValue(1, 5)));
+	}
+	
+	@Test
+	public void testRSSV2TwiceCardinality() {
+		try {
+			Randomization.RandomSubsetSet(IntValue.gen(23), IntValue.gen(10), new IntervalValue(1, 5));
+		} catch (final EvalException ee) {
+			assertTrue(ee.getMessage().contains(
+					"The second argument of RandomSubsetSetProbability should be a string literal does not represent a parsable probability, but instead it is:\n"
+							+ "\"2.0\""));
 			return;
 		}
 		fail();

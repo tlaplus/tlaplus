@@ -1,5 +1,5 @@
 --------------------------- MODULE RandomSubsetSetOfFcns ---------------------------
-EXTENDS Integers, TLC
+EXTENDS Integers, Randomization
 
 VARIABLE x
 

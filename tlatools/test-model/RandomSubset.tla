@@ -1,5 +1,5 @@
 --------------------------- MODULE RandomSubset ---------------------------
-EXTENDS Integers, TLC
+EXTENDS Integers, Randomization
 
 VARIABLE x, y, z
 

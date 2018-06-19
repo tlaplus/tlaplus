@@ -17,8 +17,6 @@ import tlc2.tool.TLARegistry;
 import tlc2.util.IdThread;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
-import tlc2.value.Enumerable;
-import tlc2.value.EnumerableValue;
 import tlc2.value.FcnRcdValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
@@ -28,7 +26,6 @@ import tlc2.value.SetOfFcnsValue;
 import tlc2.value.SetOfRcdsValue;
 import tlc2.value.SetOfTuplesValue;
 import tlc2.value.StringValue;
-import tlc2.value.SubsetValue;
 import tlc2.value.TupleValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
@@ -466,61 +463,6 @@ public class TLC implements ValueConstants
             return enumVal.randomElement();
         }
         }
-    }
-    
-    public static Value RandomSubset(final Value v1, final Value v2) {
-		if (!(v1 instanceof IntValue)) {
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubset", "nonnegative integer", Value.ppr(v1.toString()) });
-		}
-        if (!(v2 instanceof Enumerable)) {
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSubset", "a finite set", Value.ppr(v2.toString()) });
-        }
-        return ((Enumerable) v2).getRandomSubset(((IntValue) v1).val);
-    }
-    
-    public static Value RandomSubsetSet(final Value v1, final Value v2, final Value v3) {
-		if (!(v1 instanceof IntValue)) {
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSet", "nonnegative integer", Value.ppr(v1.toString()) });
-		}
-		final int numberOfPicks = ((IntValue) v1).val;
-		if (numberOfPicks < 0) {
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSet", "nonnegative integer", Value.ppr(v1.toString()) });
-		}
-		if (!(v2 instanceof StringValue)) {
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSubsetSet", "string literal representing a probability", Value.ppr(v2.toString()) });
-			
-		}
-		double probability;
-		try {
-			probability = Double.valueOf(((StringValue) v2).getVal().toString());			
-		} catch (NumberFormatException nfe) {
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSubsetSet", "string literal does not represent a parsable probability", Value.ppr(v2.toString()) });
-		}
-		if (probability < 0d || 1d < probability) {
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSubsetSet", "string literal does not represent a parsable probability", Value.ppr(v2.toString()) });
-		}
-        if (!(v3 instanceof Enumerable)) {
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "third", "RandomSubsetSet", "finite set", Value.ppr(v3.toString()) });
-        }
-        final EnumerableValue ev = (EnumerableValue) v3;
-		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {
-			// First compare exponents before explicit calculating size of subset. The
-			// calculated value which is the subset's size then won't overflow.
-			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSet",
-							"nonnegative integer that is smaller than the subset's size of 2^" + ev.size(),
-							Value.ppr(v1.toString()) });
-		}
-
-		return new SubsetValue(ev).getRandomSubsetSet(numberOfPicks, probability);
     }
 
     public static Value Any()
