@@ -19,7 +19,6 @@ package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.w3c.dom.Document;
@@ -1243,8 +1242,20 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 	public String toString(final Value aValue) {
 		if (aValue instanceof TupleValue && allParams.size() == ((TupleValue) aValue).size()) {
 			final StringBuffer result = new StringBuffer();
+			
+			// The values in aValue are ordered by the varloc of the variable names (see
+			// tlc2.tool.TLCStateMut.bind(UniqueString, Value, SemanticNode). Thus, sort
+			// allParams - which are unordered - under same varloc order.
+			final TreeSet<SymbolNode> s = new TreeSet<SymbolNode>(new java.util.Comparator<SymbolNode>() {
+				@Override
+				public int compare(SymbolNode o1, SymbolNode o2) {
+					return Integer.compare(o1.getName().getVarLoc(), o2.getName().getVarLoc());
+				}
+			});
+			s.addAll(allParams);
+			
 			int idx = 0;
-			for (final SymbolNode sn : allParams) {
+			for (final SymbolNode sn : s) {
 				result.append("/\\ ");
 				result.append(sn.getName().toString());
 
