@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
-import tlc2.value.EnumerableValue;
 
 public abstract class RandomSubset extends ModelCheckerTestCase {
 
@@ -43,15 +42,12 @@ public abstract class RandomSubset extends ModelCheckerTestCase {
 	private final int y;
 
 	public RandomSubset(final long seed, final int x, final int y) {
-		super("RandomSubset");
-		this.x = x;
-		this.y = y;
-		
 		// Initial seed with a randomly chosen but fixed value for x and y to be
 		// predictable. The two subclasses chose different values to test that different
 		// seeds result in different values.
-		EnumerableValue.enumFractionSeed = seed;
-		EnumerableValue.resetRandom();
+		super("RandomSubset", new String[] {"-seed", Long.toString(seed)});
+		this.x = x;
+		this.y = y;
 	}
 
 	@Test

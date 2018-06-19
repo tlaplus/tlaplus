@@ -37,6 +37,7 @@ import tlc2.util.IStateWriter;
 import tlc2.util.NoopStateWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.StateWriter;
+import tlc2.value.EnumerableValue;
 import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
@@ -52,7 +53,6 @@ import util.UniqueString;
  * @author Yuan Yu
  * @author Leslie Lamport
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class TLC
 {
@@ -876,6 +876,10 @@ public class TLC
                 simulator.simulate();
             } else
             {
+				if (!noSeed) {
+					EnumerableValue.setRandom(seed);
+				}
+            	
             	final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
             			TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
             					version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) };

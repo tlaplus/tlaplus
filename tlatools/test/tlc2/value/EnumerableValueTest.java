@@ -40,8 +40,7 @@ public class EnumerableValueTest {
 
 	@Test
 	public void test() {
-		EnumerableValue.enumFractionSeed = 15041980;
-		EnumerableValue.resetRandom();
+		EnumerableValue.setRandom(15041980);
 		
 		final Set<Integer> indices = new HashSet<>();
 		// For the first n \in Nat+ up to 10657 show that:
