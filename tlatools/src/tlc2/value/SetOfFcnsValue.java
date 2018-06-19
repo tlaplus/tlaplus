@@ -463,7 +463,7 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 
 			this.sz = bMod.pow(domSet.size());
 
-			this.a = BigInteger.valueOf(Math.abs(RANDOM.nextLong()));
+			this.a = BigInteger.valueOf(Math.abs(getRandom().nextLong()));
 			
 			// http://primes.utm.edu/lists/2small/0bit.html
 			// (2^63 - 25)

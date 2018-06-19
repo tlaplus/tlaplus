@@ -412,7 +412,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 			final ValueVec vals = new ValueVec(elems.size());
 			for (int i = 0; i < elems.size(); i++) {
-				if (EnumerableValue.RANDOM.nextDouble() < probability) {
+				if (EnumerableValue.getRandom().nextDouble() < probability) {
 					vals.addElement(elems.elementAt(i));
 				}
 			}

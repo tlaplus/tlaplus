@@ -59,12 +59,15 @@ public class Worker extends IdThread implements IWorker {
 					this.squeue.finishAll();
 					return;
 				}
-				if (this.tlc.doNext(curState, this.astCounts, this))
+				setCurrentState(curState);
+				if (this.tlc.doNext(curState, this.astCounts, this)) {
 					return;
+				}
 			}
 		} catch (Throwable e) {
 			// Something bad happened. Quit ...
 			// Assert.printStack(e);
+			resetCurrentState();
 			synchronized (this.tlc) {
 				if (this.tlc.setErrState(curState, null, true)) {
 					MP.printError(EC.GENERAL, e); // LL changed call 7 April

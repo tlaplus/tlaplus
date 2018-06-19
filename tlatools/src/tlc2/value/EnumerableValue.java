@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Random;
 
 import tlc2.tool.FingerprintException;
+import tlc2.tool.TLCState;
+import tlc2.util.IdThread;
 
 public abstract class EnumerableValue extends Value implements Enumerable, ValueConstants {
 
@@ -84,16 +86,20 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 	
 	static {
 		// see java.util.Random.seedUniquifier()
-		enumFractionSeed = (8682522807148012L * 181783497276652981L) ^ System.nanoTime();
+		randomSeed = (8682522807148012L * 181783497276652981L) ^ System.nanoTime();
 	}
 		
-	public static long enumFractionSeed; 
+	private static long randomSeed; 
+	
+	public static long getRandomSeed() {
+		return randomSeed;
+	}
 	
 	/**
 	 * Initialize Random with the given seed value.
 	 **/
 	public static void setRandom(final long seed) {
-		enumFractionSeed = seed;
+		randomSeed = seed;
 		resetRandom();
 	}
 	
@@ -101,10 +107,37 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 	 * Re-Initialize Random with the recorded seed value.
 	 **/
 	public static void resetRandom() {
-		RANDOM.setSeed(enumFractionSeed);
+		RANDOMS.remove();
+	}
+
+	public static Random getRandom() {
+		return RANDOMS.get();
 	}
 	
-	protected static final Random RANDOM = new Random(enumFractionSeed);
+	// In order to recreate the error trace - which essentially corresponds to
+	// rerunning state exploration following a given path - we have to recreate the
+	// same random values too. Otherwise, TLC will fail to recreate the trace
+	// because the recreated TLCState does not match the fingerprint in the error
+	// trace/path. Therefore, we maintain one RNG per IdThread (IWorker) which - for
+	// the initial states - is seeded with enumFractionSeed and - in the scope of
+	// next-state - gets seeded with the fingerprint of the predecessor state.
+	private static final ThreadLocal<Random> RANDOMS = new ThreadLocal<Random>() {
+		@Override
+		protected Random initialValue() {
+			return new Random(randomSeed);
+		}
+		@Override
+		public Random get() {
+			final Random random = super.get();
+			
+			final TLCState tlcState = IdThread.getCurrentState();
+			if (tlcState != null) {
+				random.setSeed(tlcState.fingerPrint());
+			}
+			
+			return random;
+		}
+	};
 
 	abstract class SubsetEnumerator implements ValueEnumeration {
 
@@ -137,7 +170,7 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 			// k out of n elements in the range 0 <= k <= n.
 			if (n > 0) {
 				this.k = k;
-				this.a = RANDOM.nextInt(n);
+				this.a = getRandom().nextInt(n);
 			} else {
 				this.k = 0;
 				this.a = 0; // RANDOM.nextInt(0) causes IllegalArgumentException.

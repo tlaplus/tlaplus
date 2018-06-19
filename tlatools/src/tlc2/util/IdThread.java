@@ -2,12 +2,24 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
+import tlc2.tool.TLCState;
 import tlc2.value.Value;
 
 /** An <code>IdThread</code> is a <code>Thread</code> with an
     integer identifier. */
 
 public class IdThread extends Thread {
+	private static final ThreadLocal<TLCState> currentState = new ThreadLocal<>();
+	public static final TLCState getCurrentState() {
+		return currentState.get();
+	}
+	public static final void setCurrentState(final TLCState state) {
+		currentState.set(state);
+	}
+	public static final void resetCurrentState() {
+		currentState.remove();
+	}
+	
     private final int id;
 	private Value[] localValues = new Value[4];
    

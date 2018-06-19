@@ -47,8 +47,7 @@ public class TLCModuleRandomSubsetSetTest {
 	@BeforeClass
 	public static void setup() {
 		// Make test repeatable by setting random seed always to same value. 
-		EnumerableValue.enumFractionSeed = 15041980L;
-		EnumerableValue.resetRandom();
+		EnumerableValue.setRandom(15041980L);
 	}
 
 	@Test

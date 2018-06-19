@@ -29,6 +29,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.util.Context;
+import tlc2.util.IdThread;
 import tlc2.util.Vect;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
@@ -3029,6 +3030,7 @@ public class Tool
 
   /* Reconstruct the next state of state s whose fingerprint is fp. */
   public final TLCStateInfo getState(long fp, TLCState s) {
+	  IdThread.setCurrentState(s);
     for (int i = 0; i < this.actions.length; i++) {
       Action curAction = this.actions[i];
       StateVec nextStates = this.getNextStates(curAction, s);
@@ -3045,6 +3047,7 @@ public class Tool
 
   /* Reconstruct the info for s1.   */
   public final TLCStateInfo getState(TLCState s1, TLCState s) {
+	  IdThread.setCurrentState(s);
     for (int i = 0; i < this.actions.length; i++) {
       Action curAction = this.actions[i];
       StateVec nextStates = this.getNextStates(curAction, s);

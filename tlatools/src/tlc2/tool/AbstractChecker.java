@@ -14,6 +14,7 @@ import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.Liveness;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.IStateWriter;
+import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
@@ -144,6 +145,7 @@ public abstract class AbstractChecker implements Cancelable
        assert Thread.holdsLock(this) : "Caller thread has to hold monitor!";
        if (!TLCGlobals.continuation && this.done)
             return false;
+        IdThread.resetCurrentState();
         this.predErrState = curState;
         this.errState = (succState == null) ? curState : succState;
         this.done = true;
