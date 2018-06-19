@@ -6,21 +6,33 @@
 
 package tlc2.value;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import tlc2.output.EC;
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
+import tlc2.output.MP;
 import tlc2.tool.EvalException;
+import tlc2.tool.FingerprintException;
 import util.Assert;
+import util.Assert.TLCRuntimeException;
 import util.WrongInvocationException;
 
 public class MethodValue extends OpValue implements Applicable {
-  public Method md;
+  private final MethodHandle mh;
+  private final Method md;
 
   /* Constructor */
-  public MethodValue(Method md) { this.md = md; }
+	public MethodValue(final Method md) {
+		this.md = md;
+		try {
+			this.mh = MethodHandles.publicLookup().unreflect(md);
+		} catch (IllegalAccessException e) {
+			throw new TLCRuntimeException(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, MP.getMessage(
+					EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[] { md.toString(), e.getMessage() }));
+		}
+	}
 
   public final byte getKind() { return METHODVALUE; }
 
@@ -87,13 +99,15 @@ public class MethodValue extends OpValue implements Applicable {
       Value res = null;
       try
       {
-          res = (Value)this.md.invoke(null, (Object[]) args);
-      } catch (Exception e)
+    	  res = (Value) this.mh.invokeWithArguments((Object[]) args);
+      } catch (Throwable e)
       {
           if (e instanceof InvocationTargetException)
           {
               Throwable targetException = ((InvocationTargetException)e).getTargetException();
               throw new EvalException(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), targetException.getMessage()});
+          } else if (e instanceof NullPointerException) {
+              throw new EvalException(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), e.getMessage()});
           } else
           {
               Assert.fail(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), e.getMessage()});
