@@ -80,11 +80,22 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 		};
   	}
 
+	/* Randomization for sets */
+	
 	static {
-		enumFractionSeed = System.currentTimeMillis();
+		// see java.util.Random.seedUniquifier()
+		enumFractionSeed = (8682522807148012L * 181783497276652981L) ^ System.nanoTime();
 	}
 		
 	public static long enumFractionSeed; 
+	
+	/**
+	 * Initialize Random with the given seed value.
+	 **/
+	public static void setRandom(final long seed) {
+		enumFractionSeed = seed;
+		resetRandom();
+	}
 	
 	/**
 	 * Re-Initialize Random with the recorded seed value.
