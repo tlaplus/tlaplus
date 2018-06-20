@@ -362,7 +362,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 			int bits = nextIndex();
 			final ValueVec vals = new ValueVec(Integer.bitCount(bits));
-			for (int i = 0; i < this.elems.size(); i++) {
+			for (int i = 0; bits > 0 && i < this.elems.size(); i++) {
 				// Treat bits as a bitset and add the element of this.elem at current
 				// position i if the LSB of bits happens to be set.
 				if ((bits & 0x1) > 0) {
