@@ -16,10 +16,10 @@ TestRandomSetOfSubsets(k, n, S) ==
 \* picks is the number of draws/picks with replacement.
 \* p is a literal (e.g. "0.057") representing a probability
 \* of an element of S being in a subset.
-RandomSubsetSetProbability(k, p, S) == CHOOSE T \in SUBSET SUBSET S :
+RandomSubsetSet(k, p, S) == CHOOSE T \in SUBSET SUBSET S :
                                                        Cardinality(T) \leq k
 
-RandomSubsetSetProbabilitySize(k, p, S) == 
-      [i \in 1..5 |-> Cardinality(RandomSubsetSetProbability(k, p, S))]
+RandomSubsetSetSize(k, p, S) == 
+      [i \in 1..5 |-> Cardinality(RandomSubsetSet(k, p, S))]
 
 =============================================================================

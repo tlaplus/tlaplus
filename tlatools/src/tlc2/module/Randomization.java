@@ -75,7 +75,7 @@ public class Randomization implements ValueConstants {
 		// third parameter	
         if (!(v3 instanceof Enumerable)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "third", "RandomSetOfSubsetsFract", "finite set", Value.ppr(v3.toString()) });
+					new String[] { "third", "RandomSetOfSubsets", "finite set", Value.ppr(v3.toString()) });
         }
         final EnumerableValue ev = (EnumerableValue) v3;
 		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {
@@ -86,12 +86,20 @@ public class Randomization implements ValueConstants {
 							"nonnegative integer that is smaller than the subset's size of 2^" + ev.size(),
 							Integer.toString(numberOfPicks) });
 		}
-		
+		// second parameter (now that we know third is enumerable)
+		if (ev.size() < n) {
+			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
+					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer in range 0..Cardinality(S)", Value.ppr(v2.toString()) });
+		}
 		final double probability = (1d * n) / ev.size();
-    	return RandomSubsetSetProbability(v1, new StringValue(Double.toString(probability)), v3);
+		if (probability < 0d || 1d < probability) {
+			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
+					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer in range 0..Cardinality(S)", Value.ppr(v2.toString()) });
+		}
+		return new SubsetValue(ev).getRandomSetOfSubsets(numberOfPicks, probability);
     }
     
-    public static Value RandomSubsetSetProbability(final Value v1, final Value v2, final Value v3) {
+    public static Value RandomSubsetSet(final Value v1, final Value v2, final Value v3) {
 		// first parameter	
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
