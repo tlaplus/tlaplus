@@ -38,29 +38,29 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public class RandomElementTest extends ModelCheckerTestCase {
 
 	public RandomElementTest() {
-		super("RandomElement", new String[] {"-seed", Long.toString(15041980L)});
+		super("RandomElement", new String[] {"-seed", Long.toString(8006803340504660123L)});
 	}
 
 	@Test
 	public void test() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.TLC_BUG));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "879", "786", "346"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "933", "855", "388"));
 
 		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
 		
 		final List<String> expectedTrace = new ArrayList<String>(11);
-		expectedTrace.add("/\\ x = 64\n/\\ y = 0");
-		expectedTrace.add("/\\ x = 660\n/\\ y = 1");
-		expectedTrace.add("/\\ x = 442\n/\\ y = 2");
-		expectedTrace.add("/\\ x = 410\n/\\ y = 3");
-		expectedTrace.add("/\\ x = 160\n/\\ y = 4");
-		expectedTrace.add("/\\ x = 43\n/\\ y = 5");
-		expectedTrace.add("/\\ x = 341\n/\\ y = 6");
-		expectedTrace.add("/\\ x = 941\n/\\ y = 7");
-		expectedTrace.add("/\\ x = 871\n/\\ y = 8");
-		expectedTrace.add("/\\ x = 429\n/\\ y = 9");
-		expectedTrace.add("/\\ x = 129\n/\\ y = 10");
+		expectedTrace.add("/\\ x = 843\n/\\ y = 0");
+		expectedTrace.add("/\\ x = 920\n/\\ y = 1");
+		expectedTrace.add("/\\ x = 483\n/\\ y = 2");
+		expectedTrace.add("/\\ x = 173\n/\\ y = 3");
+		expectedTrace.add("/\\ x = 590\n/\\ y = 4");
+		expectedTrace.add("/\\ x = 104\n/\\ y = 5");
+		expectedTrace.add("/\\ x = 785\n/\\ y = 6");
+		expectedTrace.add("/\\ x = 463\n/\\ y = 7");
+		expectedTrace.add("/\\ x = 443\n/\\ y = 8");
+		expectedTrace.add("/\\ x = 151\n/\\ y = 9");
+		expectedTrace.add("/\\ x = 767\n/\\ y = 10");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 	}
 }

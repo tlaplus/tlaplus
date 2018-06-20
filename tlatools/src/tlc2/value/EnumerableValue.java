@@ -130,9 +130,18 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 		public Random get() {
 			final Random random = super.get();
 			
-			final TLCState tlcState = IdThread.getCurrentState();
-			if (tlcState != null) {
-				random.setSeed(tlcState.fingerPrint());
+			final TLCState state = IdThread.getCurrentState();
+			// state is null during the generation of initial states and non-null in the
+			// scope of the next-state relation (however, state can be an initial state).
+			// Thus, an RNG is seeded with randomSeed during the generation of initial
+			// states and seeded with randomSeed ^ predecessor's fingerprint during the
+			// generation of next states.
+			if (state != null) {
+				// XOR the state's fingerprint with the initial randomSeed value. This is done
+				// so that two identical states (same fingerprint) of two different
+				// specifications do not produce the same random value.
+				final long seed = state.fingerPrint() ^ randomSeed;
+				random.setSeed(seed);
 			}
 			
 			return random;
