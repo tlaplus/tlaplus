@@ -257,7 +257,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }  
   
-	public EnumerableValue getRandomSubsetSet(final int numOfPicks, final double probability) {
+	public EnumerableValue getRandomSetOfSubsets(final int numOfPicks, final double probability) {
 		final CoinTossingSubsetEnumerator enumerator = new CoinTossingSubsetEnumerator(numOfPicks, probability);
 		
 		final ValueVec vec = new ValueVec(numOfPicks);

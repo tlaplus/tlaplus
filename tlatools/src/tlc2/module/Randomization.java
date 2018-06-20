@@ -51,38 +51,38 @@ public class Randomization implements ValueConstants {
         return ((Enumerable) v2).getRandomSubset(((IntValue) v1).val);
     }
     
-    public static Value RandomSubsetSet(final Value v1, final Value v2, final Value v3) {
+    public static Value RandomSetOfSubsets(final Value v1, final Value v2, final Value v3) {
 		// first parameter	
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSet", "nonnegative integer", Value.ppr(v1.toString()) });
+					new String[] { "first", "RandomSetOfSubsets", "nonnegative integer", Value.ppr(v1.toString()) });
 		}
 		final int numberOfPicks = ((IntValue) v1).val;
 		if (numberOfPicks < 0) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSet", "nonnegative integer", Value.ppr(v1.toString()) });
+					new String[] { "first", "RandomSetOfSubsets", "nonnegative integer", Value.ppr(v1.toString()) });
 		}
 		// second parameter	
 		if (!(v2 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSet", "nonnegative integer", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer", Value.ppr(v2.toString()) });
 		}
 		final int n = ((IntValue) v2).val;
 		if (n < 0) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSet", "nonnegative integer", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer", Value.ppr(v2.toString()) });
 		}
 		// third parameter	
         if (!(v3 instanceof Enumerable)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "third", "RandomSubsetSetFract", "finite set", Value.ppr(v3.toString()) });
+					new String[] { "third", "RandomSetOfSubsetsFract", "finite set", Value.ppr(v3.toString()) });
         }
         final EnumerableValue ev = (EnumerableValue) v3;
 		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {
 			// First compare exponents before explicit calculating size of subset. The
 			// calculated value which is the subset's size then won't overflow.
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSet",
+					new String[] { "first", "RandomSetOfSubsets",
 							"nonnegative integer that is smaller than the subset's size of 2^" + ev.size(),
 							Integer.toString(numberOfPicks) });
 		}
@@ -134,6 +134,6 @@ public class Randomization implements ValueConstants {
 							Integer.toString(numberOfPicks) });
 		}
 
-		return new SubsetValue(ev).getRandomSubsetSet(numberOfPicks, probability);
+		return new SubsetValue(ev).getRandomSetOfSubsets(numberOfPicks, probability);
     }
 }

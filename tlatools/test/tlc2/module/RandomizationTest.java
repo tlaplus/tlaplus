@@ -162,7 +162,7 @@ public class RandomizationTest {
 
 	@Test
 	public void testRSSV2Zero() {
-		final Enumerable randomSubset = (Enumerable) Randomization.RandomSubsetSet(IntValue.gen(23), IntValue.gen(0),
+		final Enumerable randomSubset = (Enumerable) Randomization.RandomSetOfSubsets(IntValue.gen(23), IntValue.gen(0),
 				new IntervalValue(1, 42));
 		assertEquals(1, randomSubset.size());
 		// empty set is only member
@@ -182,7 +182,7 @@ public class RandomizationTest {
 	
 	@Test
 	public void testRSSV2Cardinality() {
-		final Enumerable randomSubset = (Enumerable) Randomization.RandomSubsetSet(IntValue.gen(32), IntValue.gen(5),
+		final Enumerable randomSubset = (Enumerable) Randomization.RandomSetOfSubsets(IntValue.gen(32), IntValue.gen(5),
 				new IntervalValue(1, 5));
 		assertEquals(1, randomSubset.size());
 		// With probability 1 (n = 5), the operator - due to collisions - only generates
@@ -193,7 +193,7 @@ public class RandomizationTest {
 	@Test
 	public void testRSSV2TwiceCardinality() {
 		try {
-			Randomization.RandomSubsetSet(IntValue.gen(23), IntValue.gen(10), new IntervalValue(1, 5));
+			Randomization.RandomSetOfSubsets(IntValue.gen(23), IntValue.gen(10), new IntervalValue(1, 5));
 		} catch (final EvalException ee) {
 			assertTrue(ee.getMessage().contains(
 					"The second argument of RandomSubsetSetProbability should be a string literal does not represent a parsable probability, but instead it is:\n"
