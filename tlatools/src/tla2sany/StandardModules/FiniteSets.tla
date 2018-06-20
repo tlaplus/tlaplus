@@ -11,7 +11,7 @@ IsFiniteSet(S) ==
   (* A set S is finite iff there is a finite sequence containing all its   *)
   (* elements.                                                             *)
   (*************************************************************************)
-  \E seq \in Seq(S) : \A s \in S : \E n \in 1..Len(seq) : seq[n] = s
+  \E seq \in Seq(S) : \A s \in S : \E n \in 1..Len(seq) : seq[n] = s \* tlc2.module.FiniteSets.IsFiniteSet(Value)
 
 Cardinality(S) ==
   (*************************************************************************)
@@ -19,5 +19,5 @@ Cardinality(S) ==
   (*************************************************************************)
   LET CS[T \in SUBSET S] == IF T = {} THEN 0
                                       ELSE 1 + CS[T \ {CHOOSE x : x \in T}]
-  IN  CS[S]
+  IN  CS[S] \* tlc2.module.FiniteSets.Cardinality(Value)
 =============================================================================

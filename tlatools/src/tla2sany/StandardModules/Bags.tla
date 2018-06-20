@@ -15,34 +15,34 @@ IsABag(B) ==
   (************************************************************************)
   (* True iff B is a bag.                                                 *)
   (************************************************************************)
-  B \in [DOMAIN B -> {n \in Nat : n > 0}]
+  B \in [DOMAIN B -> {n \in Nat : n > 0}] \* tlc2.module.Bags.IsABag(Value)
 
-BagToSet(B) == DOMAIN B
+BagToSet(B) == DOMAIN B \* tlc2.module.Bags.BagToSet(Value)
   (************************************************************************)
   (* The set of elements at least one copy of which is in B.              *)
   (************************************************************************)
 
-SetToBag(S) == [e \in S |-> 1]  
+SetToBag(S) == [e \in S |-> 1] \* tlc2.module.Bags.SetToBag(Value)
   (************************************************************************)
   (* The bag that contains one copy of every element of the set S.        *)
   (************************************************************************)
   
-BagIn(e,B) == e \in BagToSet(B)
+BagIn(e,B) == e \in BagToSet(B) \* tlc2.module.Bags.BagIn(Value, Value)
   (************************************************************************)
   (* The \in operator for bags.                                           *)
   (************************************************************************)
 
 EmptyBag == SetToBag({})
 
-B1 (+) B2  ==
+B1 (+) B2  == \* tlc2.module.Bags.BagCup(Value, Value)
   (************************************************************************)
   (* The union of bags B1 and B2.                                         *)
   (************************************************************************)
   [e \in (DOMAIN B1) \cup (DOMAIN B2) |->
       (IF e \in DOMAIN B1 THEN B1[e] ELSE 0) 
-    + (IF e \in DOMAIN B2 THEN B2[e] ELSE 0) ]
+    + (IF e \in DOMAIN B2 THEN B2[e] ELSE 0) ] \* tlc2.module.Bags.EmptyBag()
   
-B1 (-) B2  == 
+B1 (-) B2  ==
   (************************************************************************)
   (* The bag B1 with the elements of B2 removed--that is, with one copy   *)
   (* of an element removed from B1 for each copy of the same element in   *)
@@ -51,7 +51,7 @@ B1 (-) B2  ==
   (************************************************************************)
   LET B == [e \in DOMAIN B1 |-> IF e \in DOMAIN B2 THEN B1[e] - B2[e]
                                                    ELSE B1[e]]
-  IN  [e \in {d \in DOMAIN B : B[d] > 0} |-> B[e]]
+  IN  [e \in {d \in DOMAIN B : B[d] > 0} |-> B[e]] \* tlc2.module.Bags.BagDiff(Value, Value)
 
 LOCAL Sum(f) ==
         (******************************************************************)
@@ -70,7 +70,7 @@ BagUnion(S) ==
   (* The bag union of all elements of the set S of bags.                  *)
   (************************************************************************)
   [e \in UNION {BagToSet(B) : B \in S} |->
-    Sum( [B \in S |-> IF BagIn(e, B) THEN B[e] ELSE 0] ) ]
+    Sum( [B \in S |-> IF BagIn(e, B) THEN B[e] ELSE 0] ) ] \* tlc2.module.Bags.BagUnion(Value)
 
 B1 \sqsubseteq B2  ==
   (************************************************************************)
@@ -78,7 +78,7 @@ B1 \sqsubseteq B2  ==
   (* B2 has at least as many copies of e as bag B1 does.                  *)
   (************************************************************************)
   /\ (DOMAIN B1) \subseteq (DOMAIN B2)
-  /\ \A e \in DOMAIN B1 : B1[e] \leq B2[e]
+  /\ \A e \in DOMAIN B1 : B1[e] \leq B2[e] \* tlc2.module.Bags.SqSubseteq(Value, Value)
 
 SubBag(B) ==
   (************************************************************************)
@@ -121,7 +121,7 @@ BagOfAll(F(_), B) ==
   (* e in B such that F(e) = v is finite.                                 *)
   (************************************************************************)
   [e \in {F(d) : d \in BagToSet(B)} |-> 
-     Sum( [d \in BagToSet(B) |-> IF F(d) = e THEN B[d] ELSE 0] ) ]
+     Sum( [d \in BagToSet(B) |-> IF F(d) = e THEN B[d] ELSE 0] ) ] \* tlc2.module.Bags.BagOfAll(Value, Value)
 
 BagCardinality(B) ==
   (************************************************************************)
@@ -129,14 +129,14 @@ BagCardinality(B) ==
   (* then this is its cardinality (the total number of copies of elements *)
   (* in B).  Its value is unspecified if B is infinite.                   *)
   (************************************************************************)
-  Sum(B)
+  Sum(B) \* tlc2.module.Bags.BagCardinality(Value)
 
 CopiesIn(e, B) ==
   (************************************************************************)
   (* If B is a bag, then CopiesIn(e, B) is the number of copies of e in   *)
   (* B. If ~BagIn(e, B), then CopiesIn(e, B) = 0.                         *)
   (************************************************************************)
-  IF BagIn(e, B) THEN B[e] ELSE 0
+  IF BagIn(e, B) THEN B[e] ELSE 0 \* tlc2.module.Bags.CopiesIn(Value, Value)
 =============================================================================
 
 (* Last modified on Fri 26 Jan 2007 at  8:45:03 PST by lamport *)
