@@ -8,7 +8,9 @@
 	<classpathentry kind="src" path="test-long"/>
 	<classpathentry kind="src" path="test-concurrent"/>
 	<classpathentry kind="src" path="test-verify"/>
+	<classpathentry kind="src" path="test-benchmark"/>
 	<classpathentry kind="lib" path="lib/javax.mail.jar"/>
 	<classpathentry kind="lib" path="lib/jpf.jar"/>
+	<classpathentry kind="lib" path="lib/jmh/jmh-core-1.21.jar"/>
 	<classpathentry kind="output" path="class"/>
 </classpath>

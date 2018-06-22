@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 20178 Microsoft Research. All rights reserved.
+ * Copyright (c) 2018 Microsoft Research. All rights reserved.
  *
  * The MIT License (MIT)
  *
