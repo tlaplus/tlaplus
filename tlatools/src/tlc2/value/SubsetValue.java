@@ -7,6 +7,8 @@
 package tlc2.value;
 
 import java.util.BitSet;
+import java.util.Collection;
+import java.util.HashSet;
 
 import tlc2.output.EC;
 import tlc2.tool.FingerprintException;
@@ -260,15 +262,17 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	public EnumerableValue getRandomSetOfSubsets(final int numOfPicks, final double probability) {
 		final CoinTossingSubsetEnumerator enumerator = new CoinTossingSubsetEnumerator(numOfPicks, probability);
 		
-		final ValueVec vec = new ValueVec(numOfPicks);
+		// Using a set here instead of ValueVec preserves the set invariant (no
+		// duplicates). The alternative - a ValueVec which gets sorted to remove
+		// duplicates after the while loops is slower.
+		final int estimated = (int) (numOfPicks * probability);
+		final Collection<Value> sets = new HashSet<>(estimated);
 		Value val;
 		while ((val = enumerator.nextElement()) != null) {
-			vec.addElement(val);
+			sets.add(val);
 		}
-		// Remove duplicates right away which also normalizes vec.
-		vec.sort(true);
 		
-    	return new SetEnumValue(vec, true);
+		return new SetEnumValue(new ValueVec(sets), false);
 	}
 
   public final ValueEnumeration elements() {

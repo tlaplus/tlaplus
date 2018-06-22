@@ -6,6 +6,7 @@
 package tlc2.value;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import tlc2.TLCGlobals;
 import util.WrongInvocationException;
@@ -32,7 +33,14 @@ public class ValueVec implements Cloneable, Serializable {
     this.elementData = elems;
     this.elementCount = elems.length;
   }
-  
+
+    public ValueVec(Collection<Value> elems) {
+    	this(elems.size());
+    	for (Value value : elems) {
+			addElement(value);
+		}
+    }
+
   public final void addElement(Value val) {
     if (this.elementCount == this.elementData.length) {
       ensureCapacity(this.elementCount+1);
