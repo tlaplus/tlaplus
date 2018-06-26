@@ -850,11 +850,11 @@ public class TLC
     		final String osVersion = System.getProperty("os.version");
     		final String osArch = System.getProperty("os.arch");
     		
+    		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
             if (isSimulate)
             {
                 // random simulation
-                RandomGenerator rng = new RandomGenerator();
                 if (noSeed)
                 {
                     seed = rng.nextLong();
@@ -876,13 +876,15 @@ public class TLC
                 simulator.simulate();
             } else
             {
-				if (!noSeed) {
-					EnumerableValue.setRandom(seed);
+				if (noSeed) {
+                    seed = rng.nextLong();
 				}
+				EnumerableValue.setRandom(seed);
             	
-            	final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
-            			TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
-            					version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) };
+				final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
+						TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor, version,
+						arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
+						Long.toString(EnumerableValue.getRandomSeed()) };
 
             	// model checking
         		AbstractChecker mc = null;

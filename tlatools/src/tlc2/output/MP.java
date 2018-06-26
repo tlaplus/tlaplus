@@ -801,16 +801,16 @@ public class MP
             
         /*------------------------------------------- */
         case EC.TLC_STARTING:
-            b.append("Starting with random seed %1%... (").append(SDF.format(new Date())).append(")");
+            b.append("Starting... (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_FINISHED:
             b.append("Finished in %1% at (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_MODE_MC:
-            b.append("Running breadth-first search Model-Checking with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
+            b.append("Running breadth-first search Model-Checking with seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
             break;
         case EC.TLC_MODE_MC_DFS:
-            b.append("Running depth-first search Model-Checking with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
+            b.append("Running depth-first search Model-Checking with seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
             break;
         case EC.TLC_MODE_SIMU:
             b.append("Running Random Simulation with seed %1% with %2% worker%3% on %4% cores with %11%MB heap and %12%MB offheap memory (%5% %6% %7%, %8% %9% %10%).");
