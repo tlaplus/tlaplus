@@ -22,6 +22,9 @@ public class Combinatorics {
       return (long)1;
 		} else if (m == 1 || m == n - 1) {
       return (long)n;
+		} else if (n == 0 || m > n) {
+			// Cannot choose from zero elements or more elements than present.
+			return 0;
 		} else {
       int j = choosePairToInt(n, m);
       if (j < CHOOSETABLESIZE) {
