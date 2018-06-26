@@ -27,8 +27,7 @@ public class Combinatorics {
       if (j < CHOOSETABLESIZE) {
 	return CHOOSETABLE[j];
       }
-      Assert.fail(EC.TLC_CHOOSE_UPPER_BOUND, String.valueOf(MAXCHOOSENUM));
-      return 0;   // make compiler happy
+			return binomial(n, m); // calculate on demand
     }
   }
 
@@ -119,6 +118,20 @@ public class Combinatorics {
   }
 
   public static BigInteger bigChoose(int n, int m) {
+		if (n < MAXCHOOSENUM && m < MAXCHOOSENUM) {
+			return BigInteger.valueOf(choose(n, m));
+		}
+
+		BigInteger binomial = BigInteger.ONE;
+		for (int i = 1, j = n; i <= m; i++, j--) {
+			final BigInteger bj = BigInteger.valueOf(j);
+			final BigInteger bi = BigInteger.valueOf(i);
+			binomial = binomial.multiply(bj).divide(bi);
+		}
+		return binomial;
+	}
+	
+	public static BigInteger slowBigChoose(int n, int m) {
     BigInteger num = fact(n);
     BigInteger denom = fact(n - m).multiply(fact(m));
 
@@ -149,6 +162,23 @@ public class Combinatorics {
     }
     return new String(sb);
   }
+
+	// https://blog.plover.com/math/choose.html
+	public static final long binomial(int n, int k) {
+		if (k > n) {
+			return 0;
+		}
+		if (k > n - k) {
+			// Optimize to n choose n - k.
+			k = n - k;
+		}
+
+		long binomial = 1L;
+		for (int i = 1, m = n; i <= k; i++, m--) {
+			binomial = binomial * m / i;
+		}
+		return binomial;
+	}
 
 // SZ Jul 14, 2009: Dead code. not used.
 //  public static void main(String argv[]) {
