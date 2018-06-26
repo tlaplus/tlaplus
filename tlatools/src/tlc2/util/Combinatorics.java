@@ -10,18 +10,19 @@ import util.Assert;
 public class Combinatorics {
 
   public static final int MAXCHOOSENUM = 62;
-  private static final int CHOOSETABLESIZE = 
-                           (MAXCHOOSENUM-3)*(MAXCHOOSENUM-4)/2+MAXCHOOSENUM-3;
-  private static long[] CHOOSETABLE = new long[CHOOSETABLESIZE];
+	public static final int CHOOSETABLESIZE = (MAXCHOOSENUM - 3) * (MAXCHOOSENUM - 4) / 2 + MAXCHOOSENUM - 3;
+	public static long[] CHOOSETABLE = new long[CHOOSETABLESIZE];
   private static long[] SUMCHOOSETABLE = new long[CHOOSETABLESIZE];
 
   public static long choose(int n, int m) {
+		if (n < 0 || m < 0) {
     Assert.check(((m >= 0) && (n >= 0) && (n >= m)), EC.TLC_CHOOSE_ARGUMENTS_WRONG, "choose");
-    if (m == 0 || m == n)
+		}
+		if (m == 0 || m == n) {
       return (long)1;
-    else if (m == 1 || m == n-1)
+		} else if (m == 1 || m == n - 1) {
       return (long)n;
-    else {
+		} else {
       int j = choosePairToInt(n, m);
       if (j < CHOOSETABLESIZE) {
 	return CHOOSETABLE[j];
@@ -31,22 +32,19 @@ public class Combinatorics {
     }
   }
 
-  public static long sumChoose(int n, int m) 
-  {
+	public static long sumChoose(int n, int m) {
       Assert.check(((m>=0) && (n>=0) && (n>=m)), EC.TLC_CHOOSE_ARGUMENTS_WRONG, "sumChoose");
-      if (m == 0)
+		if (m == 0) {
           return (long)1;
-      else if (m == n)
+		} else if (m == n) {
           return ((long)1 << n);
-      else if (m == 1)
+		} else if (m == 1) {
           return (long)n;
-      else if (m == n-1)
+		} else if (m == n - 1) {
           return ((long)2 << n) - n;
-      else 
-      {
+		} else {
           int j = choosePairToInt(n,m);
-          if (j < CHOOSETABLESIZE) 
-          {
+			if (j < CHOOSETABLESIZE) {
               return SUMCHOOSETABLE[j];
           }
           Assert.fail(EC.TLC_CHOOSE_UPPER_BOUND, String.valueOf(MAXCHOOSENUM));
@@ -55,7 +53,7 @@ public class Combinatorics {
       }
   }
 	     
-  private static int choosePairToInt(int n, int m) {
+	public static int choosePairToInt(int n, int m) {
     return ((n-3)*(n-4))/2 + m -2;
   }
 
@@ -74,8 +72,7 @@ public class Combinatorics {
 	n++;
 	m = 2;
 	sum = 1+n;
-      }
-      else 
+			} else
 	m++;
     }
   }
@@ -135,8 +132,7 @@ public class Combinatorics {
       result = BigInt.BigZero;
       for (int i = 0; i <= m; i++) 
 	result = result.add(bigChoose(n, i));
-    }
-    else {
+		} else {
       result = BigInt.BigOne;
       result = result.shiftLeft(n);
       for (int i = m+1; i <= n; i++) 
