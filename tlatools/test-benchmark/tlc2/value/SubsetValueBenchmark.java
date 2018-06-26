@@ -26,12 +26,8 @@
 package tlc2.value;
 
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Warmup;
 
 import tlc2.util.FP64;
 
@@ -71,97 +67,61 @@ public class SubsetValueBenchmark {
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN035k80d01() {
 		return subset35.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN060k80d01() {
 		return subset60.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN100k80d01() {
 		return subset100.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN200k80d01() {
 		return subset200.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN300k80d01() {
 		return subset300.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN400k80d01() {
 		return subset400.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN035k16d01() {
 		return subset35.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN060k16d01() {
 		return subset60.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN100k16d01() {
 		return subset100.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN200k16d01() {
 		return subset200.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN300k16d01() {
 		return subset300.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN400k16d01() {
 		return subset400.getRandomSetOfSubsets(k2, d);
 	}
@@ -169,97 +129,61 @@ public class SubsetValueBenchmark {
 	/* d2 */
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN035k80d02() {
 		return subset35.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN060k80d02() {
 		return subset60.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN100k80d02() {
 		return subset100.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN200k80d02() {
 		return subset200.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN300k80d02() {
 		return subset300.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN400k80d02() {
 		return subset400.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN035k16d02() {
 		return subset35.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN060k16d02() {
 		return subset60.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN100k16d02() {
 		return subset100.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN200k16d02() {
 		return subset200.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN300k16d02() {
 		return subset300.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
 	public EnumerableValue probabilisticN400k16d02() {
 		return subset400.getRandomSetOfSubsets(k2, d2);
 	}
