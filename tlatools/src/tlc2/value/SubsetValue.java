@@ -12,6 +12,7 @@ import java.util.HashSet;
 
 import tlc2.output.EC;
 import tlc2.tool.FingerprintException;
+import tlc2.util.Combinatorics;
 import util.Assert;
 
 public class SubsetValue extends EnumerableValue implements Enumerable {
@@ -273,6 +274,117 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		}
 		
 		return new SetEnumValue(new ValueVec(sets), false);
+	}
+	
+	/**
+	 * @see SubsetValue#kElements(int)
+	 */
+	public final long numberOfKElements(final int k) {
+		final int size = this.set.size();
+		if (k < 0 || size < k || size > 62) {
+			throw new IllegalArgumentException(String.format("k=%s and n=%s", k, size));
+		}
+		if (k == 0 || k == size) {
+			return 1;
+		}
+		return Combinatorics.choose(size, k);
+	}
+	
+	/**
+	 * [S]^k (sometimes denoted S^[k]) == { t \in SUBSET S : Cardinality(t) = k }
+	 * @param k
+	 * @return
+	 */
+	public final ValueEnumeration kElements(final int k) {
+		if (k < 0 || this.set.size() < k) {
+			throw new IllegalArgumentException();
+		}
+		if (k == 0) {
+			return new ValueEnumeration() {
+				private boolean done = false;
+
+				@Override
+				public void reset() {
+					done = false;
+				}
+				
+				@Override
+				public Value nextElement() {
+					if (done) { return null; }
+					done = true;
+					return new SetEnumValue();
+				}
+			};
+		}
+
+		return new KElementEnumerator(k);
+	}
+	
+	public final class KElementEnumerator implements ValueEnumeration {
+		private final ValueVec elems;
+		private final int numKSubsetElems;
+		private final int k;
+		
+		private int index;
+		private int cnt;
+
+		public KElementEnumerator(final int k) {
+			this.k = k;
+			
+			this.numKSubsetElems = (int) numberOfKElements(k); 
+			if (numKSubsetElems < 0) {
+				throw new IllegalArgumentException("Subset too large.");
+			}
+			
+			final SetEnumValue convert = SetEnumValue.convert(set);
+			convert.normalize();
+			elems = convert.elems;
+
+			reset();
+		}
+		
+		@Override
+		public void reset() {
+			index = (1 << k) - 1;
+			cnt = 0;
+		}
+
+		// see "Compute the lexicographically next bit permutation" at
+		// http://graphics.stanford.edu/~seander/bithacks.html#NextBitPermutation
+		private int nextIndex() {
+			final int oldIdx = this.index;
+
+			final int t = (index | (index - 1)) + 1;
+			this.index = t | ((((t & -t) / (index & -index)) >> 1) - 1);
+
+			return oldIdx;
+		}
+
+		@Override
+		public Value nextElement() {
+			if (cnt >= numKSubsetElems) {
+				return null;
+			}
+			cnt++;
+
+			int bits = nextIndex();
+			final ValueVec vals = new ValueVec(Integer.bitCount(bits));
+			for (int i = 0; bits > 0 && i < elems.size(); i++) {
+				// Treat bits as a bitset and add the element of elem at current
+				// position i if the LSB of bits happens to be set.
+				if ((bits & 0x1) > 0) {
+					vals.addElement(elems.elementAt(i));
+				}
+				// ...right-shift zero-fill bits by one afterwards.
+				bits = bits >>> 1;
+			}
+			return new SetEnumValue(vals, false);
+		}
+		
+		public KElementEnumerator sort() {
+			this.elems.sort(true);
+			return this;
+		}
 	}
 
   public final ValueEnumeration elements() {

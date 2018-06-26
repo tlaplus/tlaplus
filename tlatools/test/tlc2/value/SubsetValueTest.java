@@ -26,7 +26,9 @@
 package tlc2.value;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +43,7 @@ import org.junit.Test;
 
 import tlc2.util.FP64;
 import tlc2.value.SubsetValue.CoinTossingSubsetEnumerator;
+import tlc2.value.SubsetValue.KElementEnumerator;
 import tlc2.value.SubsetValue.SubsetEnumerator;
 import util.Assert;
 
@@ -260,6 +263,152 @@ public class SubsetValueTest {
 			}
 			// No duplicates
 			assertEquals(2148, s.size());
+		}
+	}
+	
+	@Test
+	public void testKSubsetEnumerator() {
+		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		
+		assertEquals(1, subset.numberOfKElements(0));
+		assertEquals(4, subset.numberOfKElements(1));
+		assertEquals(6, subset.numberOfKElements(2));
+		assertEquals(4, subset.numberOfKElements(3));
+		assertEquals(1, subset.numberOfKElements(4));
+
+		ValueEnumeration enumerator = subset.kElements(0);
+		assertEquals(new SetEnumValue(), enumerator.nextElement());
+		assertNull(enumerator.nextElement());
+		
+		// Need to sort KElementEnumerator to be able to predict the order in which
+		// elements get returned.
+		enumerator = ((KElementEnumerator) subset.kElements(1)).sort();
+		assertEquals(new SetEnumValue(getValue("a"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("b"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("c"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("d"), false), enumerator.nextElement());
+		assertNull(enumerator.nextElement());
+		
+		enumerator = ((KElementEnumerator) subset.kElements(2)).sort();
+		assertEquals(new SetEnumValue(getValue("a", "b"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("a", "c"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("b", "c"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("a", "d"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("b", "d"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("c", "d"), false), enumerator.nextElement());
+		assertNull(enumerator.nextElement());
+
+		enumerator = ((KElementEnumerator) subset.kElements(3)).sort();
+		assertEquals(new SetEnumValue(getValue("a", "b", "c"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("a", "b", "d"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("a", "c", "d"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("b", "c", "d"), false), enumerator.nextElement());
+		assertNull(enumerator.nextElement());
+		
+		enumerator = ((KElementEnumerator) subset.kElements(4)).sort();
+		assertEquals(new SetEnumValue(getValue("a", "b", "c", "d"), false), enumerator.nextElement());
+		assertNull(enumerator.nextElement());
+	}
+	
+	@Test
+	public void testKSubsetEnumeratorNegative() {
+		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		try {
+			subset.kElements(-1);
+		} catch (IllegalArgumentException e) {
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	public void testKSubsetEnumeratorGTCapacity() {
+		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		try {
+			subset.kElements(innerSet.size() + 1);
+		} catch (IllegalArgumentException e) {
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	public void testNumKSubset() {
+		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
+		final SubsetValue subset = new SubsetValue(innerSet);
+
+		assertEquals(1, subset.numberOfKElements(0));
+		assertEquals(5, subset.numberOfKElements(1));
+		assertEquals(10, subset.numberOfKElements(2));
+		assertEquals(10, subset.numberOfKElements(3));
+		assertEquals(5, subset.numberOfKElements(4));
+		assertEquals(1, subset.numberOfKElements(5));
+	}
+
+	@Test
+	public void testNumKSubset2() {
+		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e", "f", "g", "h"), true);
+		final SubsetValue subset = new SubsetValue(innerSet);
+
+		int sum = 0;
+		for (int i = 0; i <= innerSet.size(); i++) {
+			sum += subset.numberOfKElements(i);
+		}
+		assertEquals(1 << innerSet.size(), sum);
+	}
+	
+	@Test
+	public void testNumKSubsetNeg() {
+		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
+		final SubsetValue subset = new SubsetValue(innerSet);
+
+		try {
+			subset.numberOfKElements(-1);
+		} catch (IllegalArgumentException e) {
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	public void testNumKSubsetKGTN() {
+		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
+		final SubsetValue subset = new SubsetValue(innerSet);
+
+		try {
+			subset.numberOfKElements(innerSet.size() + 1);
+		} catch (IllegalArgumentException e) {
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	public void testNumKSubsetUpTo62() {
+		for (int i = 1; i < 62; i++) {
+			final SubsetValue subset = new SubsetValue(new IntervalValue(1, i));
+			long sum = 0L;
+			for (int j = 0; j <= i; j++) {
+				sum += subset.numberOfKElements(j);
+			}
+			assertEquals(1L << i, sum);
+		}
+	}
+	
+	@Test
+	public void testNumKSubsetPreventsOverflow() {
+		final IntervalValue innerSet = new IntervalValue(1, 63);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		for (int i = 0; i <= innerSet.size(); i++) {
+			try {
+				subset.numberOfKElements(i);
+			} catch (IllegalArgumentException e) {
+				continue;
+			}
+			fail();
 		}
 	}
 }
