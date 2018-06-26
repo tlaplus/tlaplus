@@ -45,6 +45,10 @@ public class SubsetValueBenchmark {
 	private static final SubsetValue subset60;
 	private static final SubsetValue subset100;
 	private static final SubsetValue subset200;
+	private static final SubsetValue subset300;
+	private static final SubsetValue subset400;
+	
+	private static final int k = 80000;
 
 	static {
 		EnumerableValue.setRandom(15041980L);
@@ -56,6 +60,8 @@ public class SubsetValueBenchmark {
 		subset60 = new SubsetValue(new IntervalValue(1, 60));
 		subset100 = new SubsetValue(new IntervalValue(1, 100));
 		subset200 = new SubsetValue(new IntervalValue(1, 200));
+		subset300 = new SubsetValue(new IntervalValue(1, 300));
+		subset400 = new SubsetValue(new IntervalValue(1, 400));
 		
 		new File("target" + File.separator + "probabilistic").mkdirs();
 	}
@@ -64,48 +70,72 @@ public class SubsetValueBenchmark {
 	@Warmup(iterations = 3, time = 1)
 	@Measurement(iterations = 3, time = 1)
 	@BenchmarkMode(Mode.Throughput)
-	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
-			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
-			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
-			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN35" })
-	public EnumerableValue probabilistic35() {
-		return subset35.getRandomSetOfSubsets(78000, .1d);
+//	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
+//			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
+//			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
+//			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN035" })
+	public EnumerableValue probabilisticN035() {
+		return subset35.getRandomSetOfSubsets(k, .1d);
 	}
 
 	@Benchmark
 	@Warmup(iterations = 3, time = 1)
 	@Measurement(iterations = 3, time = 1)
 	@BenchmarkMode(Mode.Throughput)
-	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
-			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
-			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
-			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN60" })
-	public EnumerableValue probabilistic60() {
-		return subset60.getRandomSetOfSubsets(78000, .1d);
+//	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
+//			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
+//			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
+//			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN060" })
+	public EnumerableValue probabilisticN060() {
+		return subset60.getRandomSetOfSubsets(k, .1d);
 	}
 
 	@Benchmark
 	@Warmup(iterations = 3, time = 1)
 	@Measurement(iterations = 3, time = 1)
 	@BenchmarkMode(Mode.Throughput)
-	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
-			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
-			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
-			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN100" })
-	public EnumerableValue probabilistic100() {
-		return subset100.getRandomSetOfSubsets(78000, .1d);
+//	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
+//			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
+//			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
+//			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN100" })
+	public EnumerableValue probabilisticN100() {
+		return subset100.getRandomSetOfSubsets(k, .1d);
 	}
 
 	@Benchmark
 	@Warmup(iterations = 3, time = 1)
 	@Measurement(iterations = 3, time = 1)
 	@BenchmarkMode(Mode.Throughput)
-	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
-			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
-			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
-			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN200" })
-	public EnumerableValue probabilistic200() {
-		return subset200.getRandomSetOfSubsets(78000, .1d);
+//	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
+//			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
+//			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
+//			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN200" })
+	public EnumerableValue probabilisticN200() {
+		return subset200.getRandomSetOfSubsets(k, .1d);
+	}
+
+	@Benchmark
+	@Warmup(iterations = 3, time = 1)
+	@Measurement(iterations = 3, time = 1)
+	@BenchmarkMode(Mode.Throughput)
+//	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
+//			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
+//			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
+//			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN300" })
+	public EnumerableValue probabilisticN300() {
+		return subset300.getRandomSetOfSubsets(k, .1d);
+	}
+
+	@Benchmark
+	@Warmup(iterations = 3, time = 1)
+	@Measurement(iterations = 3, time = 1)
+	@BenchmarkMode(Mode.Throughput)
+//	@Fork(jvmArgsAppend = { "-XX:+UnlockCommercialFeatures", "-XX:+UnlockDiagnosticVMOptions",
+//			"-XX:+DebugNonSafepoints", "-XX:+FlightRecorder",
+//			"-XX:StartFlightRecording=maxage=2h,settings=./test-benchmark/heapstats.jfc,",
+//			"-XX:FlightRecorderOptions=defaultrecording=true,disk=false,repository=/tmp,dumponexit=true,dumponexitpath=./target/probabilisticN400" })
+	public EnumerableValue probabilisticN400() {
+		return subset400.getRandomSetOfSubsets(k, .1d);
 	}
 }
 
