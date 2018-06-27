@@ -68,61 +68,73 @@ public class SubsetValueBenchmark {
 
 	@Benchmark
 	public EnumerableValue probabilisticN035k80d01() {
+		// ~49k subsets
 		return subset35.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN060k80d01() {
+		// ~76500 subsets
 		return subset60.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN100k80d01() {
+		// ~79900
 		return subset100.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN200k80d01() {
+		// ~80k
 		return subset200.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN300k80d01() {
+		// ~80k
 		return subset300.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN400k80d01() {
+		// ~80k
 		return subset400.getRandomSetOfSubsets(k, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN035k16d01() {
+		// ~73500
 		return subset35.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN060k16d01() {
+		// ~150k
 		return subset60.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN100k16d01() {
+		// ~160k
 		return subset100.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN200k16d01() {
+		// 160k
 		return subset200.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN300k16d01() {
+		// 160k
 		return subset300.getRandomSetOfSubsets(k2, d);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN400k16d01() {
+		// 160k
 		return subset400.getRandomSetOfSubsets(k2, d);
 	}
 	
@@ -130,62 +142,158 @@ public class SubsetValueBenchmark {
 
 	@Benchmark
 	public EnumerableValue probabilisticN035k80d02() {
+		// ~77600
 		return subset35.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN060k80d02() {
+		// 80k
 		return subset60.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN100k80d02() {
+		// 80k
 		return subset100.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN200k80d02() {
+		// 80k
 		return subset200.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN300k80d02() {
+		// 80k
 		return subset300.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN400k80d02() {
+		// 80k
 		return subset400.getRandomSetOfSubsets(k, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN035k16d02() {
+		// ~15200
 		return subset35.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN060k16d02() {
+		// 160k
 		return subset60.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN100k16d02() {
+		// 160k
 		return subset100.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN200k16d02() {
+		// 160k
 		return subset200.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN300k16d02() {
+		// 160k
 		return subset300.getRandomSetOfSubsets(k2, d2);
 	}
 
 	@Benchmark
 	public EnumerableValue probabilisticN400k16d02() {
+		// 160k
 		return subset400.getRandomSetOfSubsets(k2, d2);
+	}
+	
+	/* Exact getRandomSetOfSubsets */
+	
+	@Benchmark
+	public EnumerableValue exactN035K08() {
+		return subset35.getRandomSetOfSubsets(k, 8);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN035K13() {
+		return subset35.getRandomSetOfSubsets(k, 13);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN060K08() {
+		return subset60.getRandomSetOfSubsets(k, 8);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN100K08() {
+		return subset100.getRandomSetOfSubsets(k, 8);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN100K10() {
+		return subset100.getRandomSetOfSubsets(k, 10);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN200K10() {
+		return subset200.getRandomSetOfSubsets(k, 10);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN300K09() {
+		return subset300.getRandomSetOfSubsets(k, 9);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN400K09() {
+		return subset400.getRandomSetOfSubsets(k, 9);
+	}
+	
+	/* k2 */
+	
+	@Benchmark
+	public EnumerableValue exactN035K208() {
+		return subset35.getRandomSetOfSubsets(k2, 8);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN035K213() {
+		return subset35.getRandomSetOfSubsets(k2, 13);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN060K208() {
+		return subset60.getRandomSetOfSubsets(k2, 8);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN100K208() {
+		return subset100.getRandomSetOfSubsets(k2, 8);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN100K210() {
+		return subset100.getRandomSetOfSubsets(k2, 10);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN200K210() {
+		return subset200.getRandomSetOfSubsets(k2, 10);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN300K209() {
+		return subset300.getRandomSetOfSubsets(k2, 9);
+	}
+
+	@Benchmark
+	public EnumerableValue exactN400K209() {
+		return subset400.getRandomSetOfSubsets(k2, 9);
 	}
 }
 

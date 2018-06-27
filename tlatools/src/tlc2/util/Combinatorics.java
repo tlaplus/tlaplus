@@ -183,6 +183,34 @@ public class Combinatorics {
 		return binomial;
 	}
 
+	public static long[] pascalTableUpTo(final int maxN, final int maxK) {
+		if (maxN > MAXCHOOSENUM) {
+			final long[] ppt = new long[((maxN - MAXCHOOSENUM) * (maxK - 1))];
+			int idx = 0;
+
+			// Initialize first "row" of extension table from existing triangle.
+			int i = MAXCHOOSENUM + 1;
+			for (int j = 2; j <= maxK; j++) {
+				ppt[idx++] = choose(i, j);
+			}
+			// Subsequent rows initialize from previous row.
+			final int k = maxK - 1;
+			for (int j = 1; j < (maxN - MAXCHOOSENUM); j++) {
+				for (int l = 0; l < k; l++) {
+					if (l == 0) {
+						ppt[idx] = i++ + ppt[idx - k];
+					} else {
+						ppt[idx] = ppt[idx - k] + ppt[idx - k - 1];
+					}
+					idx++;
+				}
+			}
+			return ppt;
+		}
+		return new long[0];
+	}
+
+
 // SZ Jul 14, 2009: Dead code. not used.
 //  public static void main(String argv[]) {
 //    int i,j;

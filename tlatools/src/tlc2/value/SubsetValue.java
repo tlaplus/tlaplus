@@ -6,9 +6,13 @@
 
 package tlc2.value;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Random;
+import java.util.TreeMap;
 
 import tlc2.output.EC;
 import tlc2.tool.FingerprintException;
@@ -261,6 +265,148 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }  
   
+  	public Unrank getUnrank(final int kSubset) {
+		// Convert outer set only once.
+		final SetEnumValue convert = SetEnumValue.convert(set);
+		convert.normalize();
+		final ValueVec elems = convert.elems;
+
+		return new Unrank(kSubset, Combinatorics.bigSumChoose(elems.size(), kSubset).longValueExact(),
+				Combinatorics.pascalTableUpTo(elems.size(), kSubset), elems, kSubset);
+  	}
+ 
+	public EnumerableValue getRandomSetOfSubsets(final int numOfSubsetsRequested, final int maxLengthOfSubsets) {
+		// Convert outer set only once.
+		final SetEnumValue convert = SetEnumValue.convert(set);
+		convert.normalize();
+		final ValueVec elems = convert.elems;
+		final int size = elems.size();
+
+		// Calculate the sums of the rows of the Pascal Triangle up to
+		// maxLengthOfSubsets.
+		final long[] kss = new long[maxLengthOfSubsets + 1];
+		kss[0] = 1L;
+		// Sum the elems.size()'s row of the Pascal Triangle up to maxLengthOfSubsets.
+		// This corresponds to Combinatorics.bigSumChoose except that we also keep the
+		// intermediate results.
+		BigInteger sum = BigInteger.ONE; // 1 for k=0
+		for (int i = 1; i <= maxLengthOfSubsets; i++) {
+			kss[i] = Combinatorics.bigChoose(size, i).longValueExact();
+			sum = sum.add(BigInteger.valueOf(kss[i]));
+		}
+		assert sum.equals(Combinatorics.bigSumChoose(size, maxLengthOfSubsets));
+
+		// Extend existing Pascal Triangle by a table for the k's 2..maxLengthOfSubset
+		// for all n up to |S| (if needed, otherwise long[0]).
+		final long[] ppt = Combinatorics.pascalTableUpTo(size, maxLengthOfSubsets);
+
+		final ValueVec vec = new ValueVec(numOfSubsetsRequested);
+		for (int rank = 0; rank < kss.length; rank++) {
+			final BigDecimal divide = BigDecimal.valueOf(kss[rank]).divide(new BigDecimal(sum), 32,
+					BigDecimal.ROUND_HALF_DOWN);
+			// Small bias towards smaller/shorter k-Subsets because 0 gets rounded up to 1.
+			final long n = divide.multiply(BigDecimal.valueOf(numOfSubsetsRequested)).max(BigDecimal.ONE).toBigInteger()
+					.longValueExact();
+
+			// The last one (kSubsetSizes.length - 1) is generates the outstanding
+			// number of subsets (will be close to its calculated n anyway).
+			final RandomUnrank unrank = new RandomUnrank(rank,
+					rank == kss.length - 1 ? numOfSubsetsRequested - vec.size() : n, ppt, elems, maxLengthOfSubsets,
+					EnumerableValue.getRandom());
+
+			Value subset;
+			while ((subset = unrank.randomSubset()) != null && vec.size() < numOfSubsetsRequested) {
+				vec.addElement(subset);
+			}
+		}
+		assert vec.size() == numOfSubsetsRequested;
+		return new SetEnumValue(vec, false);
+	}
+
+	public class Unrank {
+
+		private final TreeMap<Long, Integer> sums = new TreeMap<>();
+		private final long[] partialPascalTable;
+		private final int maxK;
+
+		private final ValueVec elems;
+
+		private final int k; // rank of k-Subset
+
+		public Unrank(final int k, final long n, final long[] ppt, final ValueVec elems, final int maxK) {
+			this.k = k;
+			this.elems = elems;
+			this.partialPascalTable = ppt;
+			this.maxK = maxK - 1;
+
+			// Cache the sum of all binomials lt n for 0..elems.size choose k.
+			int choice = Math.max(k - 1, 0);
+			sums.put(-1L, choice); // As base for idx = 0 (see lowerEntry below);
+			long bin = 0L;
+			while ((bin = memoizedBinomial(choice, k)) < n) {
+				sums.put(bin, ++choice);
+			}
+		}
+
+		public Value subsetAt(long idx) {
+			// More subsets in this kSubset available.
+			final ValueVec vec = new ValueVec(k);
+
+			int y = k, choice = sums.lowerEntry(idx).getValue();
+			for (; choice >= 0 && k > 0; choice--) {
+				final long c = memoizedBinomial(choice, y);
+				if (c <= idx) {
+					idx -= c;
+					y--;
+					vec.addElement(this.elems.elementAt(choice));
+				}
+			}
+			return new SetEnumValue(vec, false);
+		}
+
+		protected long memoizedBinomial(final int n, final int k) {
+			if (k == 0 || k == n) {
+				return (long) 1;
+			} else if (k == 1 || k == n - 1) {
+				return (long) n;
+			} else if (n == 0 || k > n) {
+				// Cannot choose from zero elements or more elements than present.
+				return 0;
+			}
+			final int pti = Combinatorics.choosePairToInt(n, k);
+			if (pti < Combinatorics.CHOOSETABLE.length) {
+				return Combinatorics.choose(n, k);
+			}
+			return partialPascalTable[(n - Combinatorics.MAXCHOOSENUM - 1) * maxK + k - 2];
+		}
+	}
+
+	private class RandomUnrank extends Unrank {
+
+		// Primes taken from: https://primes.utm.edu/lists/2small/0bit.html
+		// TODO: 9223372036854775783L; // 2^63 - 25
+//		private static final long x = 549755813881L; // 2^39 - 7 
+		private static final long x = 34359738337L; // 2^35 - 31
+
+		private final long n;
+		private final long a;
+		private long i;
+
+		public RandomUnrank(final int k, final long n, final long[] ppt, final ValueVec elems, final int maxK,
+				final Random random) {
+			super(k, n, ppt, elems, maxK);
+			this.n = n;
+			this.a = Math.abs(random.nextLong()) % n;
+		}
+
+		public Value randomSubset() {
+			if (i < n) {
+				return subsetAt(((x * i++) + a) % n);
+			}
+			return null;
+		}
+	}
+
 	public EnumerableValue getRandomSetOfSubsets(final int numOfPicks, final double probability) {
 		final CoinTossingSubsetEnumerator enumerator = new CoinTossingSubsetEnumerator(numOfPicks, probability);
 		

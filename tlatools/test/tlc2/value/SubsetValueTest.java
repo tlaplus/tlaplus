@@ -45,6 +45,7 @@ import tlc2.util.FP64;
 import tlc2.value.SubsetValue.CoinTossingSubsetEnumerator;
 import tlc2.value.SubsetValue.KElementEnumerator;
 import tlc2.value.SubsetValue.SubsetEnumerator;
+import tlc2.value.SubsetValue.Unrank;
 import util.Assert;
 
 public class SubsetValueTest {
@@ -412,5 +413,107 @@ public class SubsetValueTest {
 			}
 			fail();
 		}
+	}
+	
+	@Test
+	public void testUnrankKSubsets() {
+		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		
+		final int sizeS = innerSet.size();
+		for (int k = 0; k < sizeS; k++) {
+			final Unrank unranker = subset.getUnrank(k);
+			// for each k-subset...
+			final long numElementsInKSubset = subset.numberOfKElements(k);
+			final Set<Value> kSubset = new HashSet<>();
+			for (int i = 0; i < numElementsInKSubset; i++) {
+				final Value kElementAt = unranker.subsetAt(i);
+				// check k-Subset is indeed k-Subset
+				assertEquals(k, kElementAt.size());
+				kSubset.add(kElementAt);
+			}
+			// check for no duplicates.
+			assertEquals(numElementsInKSubset, kSubset.size());
+		}
+	}
+
+	@Test
+	public void testUnrank16viaRank() {
+		final IntervalValue innerSet = new IntervalValue(1, 16);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		
+		int size = innerSet.size();
+		
+		final long sizeS = 1L << size; // 2^innerSet.size()
+		final Set<Value> unranked = new HashSet<>((int)sizeS);
+		
+		for (int k = 0; k <= size; k++) {
+			final Unrank unranker = subset.getUnrank(k);
+			// for each k-subset...
+			final long numElementsInKSubset = subset.numberOfKElements(k);
+			for (int i = 0; i < numElementsInKSubset; i++) {
+				final Value kElementAt = unranker.subsetAt(i);
+				assertEquals(k, kElementAt.size());
+				unranked.add(kElementAt);
+			}
+		}
+		assertEquals(sizeS, unranked.size());
+	}
+
+	@Test
+	public void testRandomSetOfSubsets() {
+		final IntervalValue innerSet = new IntervalValue(1, 22);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		
+		final int maxLength = 10;
+		final int k = 23131;
+		final SetEnumValue setOfSubsets = (SetEnumValue) subset.getRandomSetOfSubsets(k, maxLength);
+		assertEquals(k, setOfSubsets.size());
+		
+		final ValueEnumeration elements = setOfSubsets.elements();
+		Value val = null;
+		while ((val = elements.nextElement()) != null) {
+			assertTrue(val.size() <= maxLength);
+		}
+		setOfSubsets.normalize();
+		assertEquals(k, setOfSubsets.size());
+	}
+
+	@Test
+	public void testRandomSetOfSubsets300() {
+		final IntervalValue innerSet = new IntervalValue(1, 300);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		
+		final int maxLength = 9;
+		final int k = 23071;
+		final SetEnumValue setOfSubsets = (SetEnumValue) subset.getRandomSetOfSubsets(k, maxLength);
+		assertEquals(k, setOfSubsets.size());
+		
+		final ValueEnumeration elements = setOfSubsets.elements();
+		Value val = null;
+		while ((val = elements.nextElement()) != null) {
+			assertTrue(val.size() <= maxLength);
+		}
+		setOfSubsets.normalize();
+		assertEquals(k, setOfSubsets.size());
+	}
+
+	@Test
+	public void testRandomSetOfSubsets400() {
+		final IntervalValue innerSet = new IntervalValue(1, 400);
+		final SubsetValue subset = new SubsetValue(innerSet);
+		
+		final int maxLength = 9;
+		final int k = 23077;
+		final SetEnumValue setOfSubsets = (SetEnumValue) subset.getRandomSetOfSubsets(k, maxLength);
+		assertEquals(k, setOfSubsets.size());
+		
+		final ValueEnumeration elements = setOfSubsets.elements();
+		Value val = null;
+		while ((val = elements.nextElement()) != null) {
+			assertTrue(val.size() <= maxLength);
+		}
+		setOfSubsets.normalize();
+		assertEquals(k, setOfSubsets.size());
 	}
 }
