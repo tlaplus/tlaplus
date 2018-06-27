@@ -8,7 +8,7 @@
 
 LOCAL INSTANCE Naturals
   (*************************************************************************)
-  (* Imports the definitions from Naturals, but don't export them.         *)
+  (* Imports the definitions from Naturals, but doesn't export them.       *)
   (*************************************************************************)
   
 Seq(S) == UNION {[1..n -> S] : n \in Nat} \* tlc2.module.Sequences.Seq(Value)
