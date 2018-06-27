@@ -1,8 +1,15 @@
 -------------------------------- MODULE Reals -------------------------------
+------------------------------- MODULE Reals -------------------------------
 (***************************************************************************)
-(* A dummy module that declares the operators that are defined in the      *)
-(* real Reals module.  It should produce an error if TLC tries to          *)
-(* evaluate these operators when it shouldn't.                             *)
+(* This module provides dummy definitions of the operators that are        *)
+(* defined by the real Reals module.  It is expected that any tool that    *)
+(* handles specifications that use real numbers will provide its own       *)
+(* implementations of these operators.  TLC currently does not handle real *)
+(* numbers and produces an error if a specification requires TLC to        *)
+(* evaluate the operators defined here or to evaluate any operator defined *)
+(* in the Integers module that is applied to non-integer real numbers.     *)
+(*                                                                         *)
+(* See the book "Specifying Systems" for the real Reals module.            *)
 (***************************************************************************)
 EXTENDS Integers
 
