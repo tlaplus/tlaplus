@@ -8,10 +8,9 @@ package tlc2.value;
 
 import java.util.Arrays;
 
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 import util.UniqueString;
@@ -285,7 +284,7 @@ public class RecordValue extends Value implements Applicable {
 
   public final boolean isNormalized() { return this.isNorm; }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (!this.isNorm) {
         int len = this.names.length;
@@ -321,6 +320,7 @@ public class RecordValue extends Value implements Applicable {
         }
         this.isNorm = true;
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

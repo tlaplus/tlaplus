@@ -6,9 +6,8 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.TLCGlobals;
+import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
@@ -189,7 +188,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (this.tupleSet == null || this.tupleSet == DummyEnum) {
         for (int i = 0; i < this.sets.length; i++) {
@@ -199,6 +198,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
       else {
         this.tupleSet.normalize();
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

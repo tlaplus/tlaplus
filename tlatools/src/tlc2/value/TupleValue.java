@@ -266,7 +266,7 @@ public class TupleValue extends Value implements Applicable {
   /* The normalization of the value. */
   public final boolean isNormalized() { return true; }
 
-  public final void normalize() { /*nop*/ }
+  public final Value normalize() { /*nop*/return this; }
 
   public final boolean isDefined() {
     try {

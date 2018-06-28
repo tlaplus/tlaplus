@@ -6,7 +6,6 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
@@ -119,7 +118,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (this.capSet == null || this.capSet == DummyEnum) {
         this.set1.normalize();
@@ -128,6 +127,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
       else {
         this.capSet.normalize();
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

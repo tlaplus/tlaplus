@@ -499,7 +499,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final boolean isNormalized() { return this.isNorm; }
 
   /* This method normalizes (destructively) this function. */
-  public final void normalize() {
+  public final Value normalize() {
     try {
 
       if (!this.isNorm) {
@@ -539,7 +539,7 @@ public class FcnRcdValue extends Value implements Applicable {
         }
         this.isNorm = true;
       }
-
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

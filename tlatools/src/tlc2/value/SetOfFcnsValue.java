@@ -161,7 +161,7 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (this.fcnSet == null || this.fcnSet == DummyEnum) {
         this.domain.normalize();
@@ -170,6 +170,7 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
       else {
         this.fcnSet.normalize();
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

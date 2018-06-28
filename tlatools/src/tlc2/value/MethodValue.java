@@ -190,7 +190,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       throw new WrongInvocationException("It is a TLC bug: Attempted to normalize an operator.");
     }

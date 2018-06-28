@@ -72,7 +72,7 @@ public abstract class Value implements ValueConstants, Serializable {
    * the value. It is essential for equality comparison.
    */
   public abstract boolean isNormalized();
-  public abstract void normalize();
+  public abstract Value normalize();
 
   public final boolean isEmpty() {
     try {

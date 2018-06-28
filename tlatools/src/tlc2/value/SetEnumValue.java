@@ -200,12 +200,13 @@ implements Enumerable, Reducible {
   /* This method normalizes (destructively) this set. */
   public final boolean isNormalized() { return this.isNorm; }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (!this.isNorm) {
         this.elems.sort(true);   // duplicates eliminated
         this.isNorm = true;
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

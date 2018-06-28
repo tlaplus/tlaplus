@@ -6,7 +6,6 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
@@ -122,7 +121,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (this.diffSet == null || this.diffSet == DummyEnum) {
         this.set1.normalize();
@@ -131,6 +130,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
       else {
         this.diffSet.normalize();
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

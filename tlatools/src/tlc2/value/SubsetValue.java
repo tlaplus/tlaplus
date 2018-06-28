@@ -155,7 +155,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (this.pset == null || this.pset == DummyEnum) {
         this.set.normalize();
@@ -163,6 +163,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       else {
         this.pset.normalize();
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

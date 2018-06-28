@@ -6,7 +6,6 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -129,7 +128,7 @@ public class StringValue extends Value {
 
   public final boolean isNormalized() { return true; }
 
-  public final void normalize() { /*SKIP*/ }
+  public final Value normalize() { /*SKIP*/return this; }
 
   public final boolean isDefined() { return true; }
 

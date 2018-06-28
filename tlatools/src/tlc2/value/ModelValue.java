@@ -39,7 +39,6 @@ package tlc2.value;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -255,7 +254,7 @@ public class ModelValue extends Value {
 
   public final boolean isNormalized() { return true; }
 
-  public final void normalize() { /*nop*/ }
+  public final Value normalize() { /*nop*/return this; }
 
   public final boolean isDefined() { return true; }
 

@@ -6,10 +6,9 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
+import tlc2.tool.FingerprintException;
 import util.Assert;
 import util.UniqueString;
 
@@ -174,7 +173,7 @@ public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (this.rcdSet == null || this.rcdSet == DummyEnum) {
         for (int i = 0; i < this.names.length; i++) {
@@ -184,6 +183,7 @@ public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
       else {
         this.rcdSet.normalize();
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

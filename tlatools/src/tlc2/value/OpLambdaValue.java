@@ -8,7 +8,6 @@ package tlc2.value;
 
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefNode;
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
@@ -183,7 +182,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       throw new WrongInvocationException("Should not normalize an operator.");
     }

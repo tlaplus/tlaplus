@@ -117,7 +117,8 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public void normalize() {
+		public Value normalize() {
+			return this;
 		}
 
 		@Override

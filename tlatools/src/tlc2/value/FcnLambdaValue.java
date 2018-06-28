@@ -13,10 +13,9 @@ import java.io.ObjectOutputStream;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
+import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.Context;
@@ -531,11 +530,12 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       if (this.fcnRcd != null) {
         this.fcnRcd.normalize();
       }
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

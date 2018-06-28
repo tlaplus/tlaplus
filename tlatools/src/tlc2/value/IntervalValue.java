@@ -205,7 +205,7 @@ implements Enumerable, Reducible {
 
   public final boolean isNormalized() { return true; }
 
-  public final void normalize() { /*nop*/ }
+  public final Value normalize() { /*nop*/return this; }
 
   public final boolean isDefined() { return true; }
 

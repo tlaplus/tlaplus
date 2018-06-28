@@ -6,7 +6,6 @@
 
 package tlc2.value;
 
-import tlc2.tool.ModelChecker;
 import tlc2.tool.FingerprintException;
 import tlc2.util.Vect;
 import util.Assert;
@@ -207,7 +206,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       throw new WrongInvocationException("Should not normalize an operator.");
     }

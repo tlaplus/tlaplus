@@ -12,9 +12,8 @@ import java.io.ObjectOutputStream;
 
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.SemanticNode;
-import tlc2.tool.ModelChecker;
-import tlc2.tool.FingerprintException;
 import tlc2.tool.EvalException;
+import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.Context;
@@ -206,9 +205,10 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final void normalize() {
+  public final Value normalize() {
     try {
       this.inVal.normalize();
+      return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
