@@ -1,4 +1,9 @@
 ---------------------------- MODULE FiniteSets -----------------------------
+(***************************************************************************)
+(* The two definitions in this standard module are overridden by TLC in    *)
+(* the Java class tlc2.module.FiniteSets.  Each operator is overridden by  *)
+(* the Java method with the same name.                                     *)
+(***************************************************************************)
 LOCAL INSTANCE Naturals
 LOCAL INSTANCE Sequences
   (*************************************************************************)
@@ -11,7 +16,7 @@ IsFiniteSet(S) ==
   (* A set S is finite iff there is a finite sequence containing all its   *)
   (* elements.                                                             *)
   (*************************************************************************)
-  \E seq \in Seq(S) : \A s \in S : \E n \in 1..Len(seq) : seq[n] = s \* tlc2.module.FiniteSets.IsFiniteSet(Value)
+  \E seq \in Seq(S) : \A s \in S : \E n \in 1..Len(seq) : seq[n] = s
 
 Cardinality(S) ==
   (*************************************************************************)
@@ -19,5 +24,5 @@ Cardinality(S) ==
   (*************************************************************************)
   LET CS[T \in SUBSET S] == IF T = {} THEN 0
                                       ELSE 1 + CS[T \ {CHOOSE x : x \in T}]
-  IN  CS[S] \* tlc2.module.FiniteSets.Cardinality(Value)
+  IN  CS[S]
 =============================================================================

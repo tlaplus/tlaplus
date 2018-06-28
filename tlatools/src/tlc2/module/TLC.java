@@ -41,6 +41,10 @@ public class TLC implements ValueConstants
 
     static
     {
+		// The following two entries in TLARegistry define a mapping from a TLA+ infix
+		// operator to a Java method, e.g. the TLA+ infix operator "@@" is mapped to and
+		// thus implemented by the Java method tlc2.module.TLC.CombineFcn(Value, Value)
+		// below.
         Assert.check(TLARegistry.put("MakeFcn", ":>") == null, EC.TLC_REGISTRY_INIT_ERROR, "MakeFcn");
         Assert.check(TLARegistry.put("CombineFcn", "@@") == null, EC.TLC_REGISTRY_INIT_ERROR, "CombineFcn");
     }

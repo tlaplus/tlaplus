@@ -18,6 +18,7 @@ import tlc2.value.SetEnumValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
+import util.Assert;
 
 public class Bags implements ValueConstants
 {
@@ -25,9 +26,13 @@ public class Bags implements ValueConstants
 
     static
     {
-        TLARegistry.put("BagCup", "\\oplus");
-        TLARegistry.put("BagDiff", "\\ominus");
-        TLARegistry.put("SqSubseteq", "\\sqsubseteq");
+		// The following entries in TLARegistry each define a mapping from a TLA+ infix
+		// operator to a Java method, e.g. the TLA+ infix operator \\oplus (which is the
+		// same as a (+) b ) is mapped to and thus implemented by the Java method
+		// tlc2.module.Bags.BagCup(Value, Value) below.
+        Assert.check(TLARegistry.put("BagCup", "\\oplus") == null, EC.TLC_REGISTRY_INIT_ERROR, "BagCup");
+        Assert.check(TLARegistry.put("BagDiff", "\\ominus") == null, EC.TLC_REGISTRY_INIT_ERROR, "BagDiff");
+        Assert.check(TLARegistry.put("SqSubseteq", "\\sqsubseteq") == null, EC.TLC_REGISTRY_INIT_ERROR, "SqSubseteq");
     }
 
     public static Value EmptyBag()

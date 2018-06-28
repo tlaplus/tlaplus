@@ -23,6 +23,11 @@ public class Integers extends UserObj implements ValueConstants
 
     static
     {
+		// The following entries in TLARegistry each define a mapping from a TLA+ infix
+		// operator to a Java method, e.g. the TLA+ infix operator "+" is mapped to and
+		// thus implemented by the Java method tlc2.module.Integers.Plus(IntValue,
+		// IntValue) below.
+    	//TODO Why does tlc2.module.Naturals define identical mappings?
         TLARegistry.put("Plus", "+");
         TLARegistry.put("Minus", "-");
         TLARegistry.put("Times", "*");

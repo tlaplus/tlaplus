@@ -40,7 +40,9 @@ public class Sequences extends UserObj implements ValueConstants
 
     static
     {
-        // SZ Jul 13, 2009: added message for initialization assertion
+		// This entry in TLARegistry defines a mapping from TLA+' infix
+		// operator \o to the Java method tlc2.module.Sequences.Concat(Value, Value)
+		// below.
         Assert.check(TLARegistry.put("Concat", "\\o") == null, EC.TLC_REGISTRY_INIT_ERROR, "Concat");
     }
 

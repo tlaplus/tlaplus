@@ -1,4 +1,9 @@
 ----------------------------- MODULE RealTime -------------------------------
+(***************************************************************************)
+(* This standard module is described in Chapter 9 of the book "Specifying  *)
+(* Systems".  The type of specification described there cannot be handled  *)
+(* by the TLC model checker.                                               *)
+(***************************************************************************)
 EXTENDS Reals 
 VARIABLE now
 
