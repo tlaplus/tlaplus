@@ -6,10 +6,12 @@
 (* "Specifying Systems" for the real Integers module.                      *)
 (***************************************************************************)
 (***************************************************************************)
-(* The two definitions are both overridden by TLC in the Java class        *)
-(* tlc2.module.Integers. Each operator is overridden by the Java method    *)
-(* with the same name, except that the mapping for TLA+ infix operators    *)
-(* is defined in the static block at the beginning of the Java class.      *)
+(* The two definitions here and the definitions imported from the Naturals *)
+(* module are overridden by TLC in the Java class tlc2.module.Integers.    *)
+(* Each operator is overridden by the Java method with the same name,      *)
+(* except that the mappings for the prefix - operator and the TLA+ infix   *)
+(* operators are defined in the static block at the beginning of the Java  *)
+(* class.                                                                  *)
 (***************************************************************************)
 EXTENDS Naturals
 

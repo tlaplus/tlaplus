@@ -29,7 +29,7 @@ JavaTime == CHOOSE n : n \in Nat
 (* TLC can read and set a special list of values while evaluating          *)
 (* expressions using the operators TLCSet and TLCGet.  When TLC evaluates  *)
 (* TLCSet(i,v), for any positive integer i and arbitrary value v, it       *)
-(* obtains the value TRUE andd sets element number i of the list to v.     *)
+(* obtains the value TRUE and sets element number i of the list to v.      *)
 (* When TLC evaluates TLCGet(i), the value it obtains is the current value *)
 (* of the element number i of this list.                                   *)
 (*                                                                         *)

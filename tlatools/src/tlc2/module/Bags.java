@@ -26,9 +26,9 @@ public class Bags implements ValueConstants
 
     static
     {
-		// The following entries in TLARegistry each define a mapping from a TLA+ infix
+		// The following entries in TLARegistry each defines a mapping from a TLA+ infix
 		// operator to a Java method, e.g. the TLA+ infix operator \\oplus (which is the
-		// same as a (+) b ) is mapped to and thus implemented by the Java method
+		// same as (+) ) is mapped to and thus implemented by the Java method
 		// tlc2.module.Bags.BagCup(Value, Value) below.
         Assert.check(TLARegistry.put("BagCup", "\\oplus") == null, EC.TLC_REGISTRY_INIT_ERROR, "BagCup");
         Assert.check(TLARegistry.put("BagDiff", "\\ominus") == null, EC.TLC_REGISTRY_INIT_ERROR, "BagDiff");
