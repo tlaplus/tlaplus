@@ -338,6 +338,7 @@ public class TLC implements ValueConstants
                 Value.ppr(res.toString()) });
     }
 
+    // Returns a set of size n! where n = |s|.
     public static Value Permutations(Value s)
     {
         SetEnumValue s1 = SetEnumValue.convert(s);
@@ -355,20 +356,19 @@ public class TLC implements ValueConstants
             return new SetEnumValue(elems1, true);
         }
 
+        int factorial = 1;
         Value[] domain = new Value[len];
-        for (int i = 0; i < len; i++)
-        {
-            domain[i] = elems.elementAt(i);
-        }
         int[] idxArray = new int[len];
         boolean[] inUse = new boolean[len];
         for (int i = 0; i < len; i++)
         {
+            domain[i] = elems.elementAt(i);
             idxArray[i] = i;
             inUse[i] = true;
+            factorial = factorial * (i + 1);
         }
 
-        ValueVec fcns = new ValueVec();
+        ValueVec fcns = new ValueVec(factorial);
         _done: while (true)
         {
             Value[] vals = new Value[len];
@@ -392,10 +392,12 @@ public class TLC implements ValueConstants
                         break;
                     }
                 }
-                if (found)
+                if (found) {
                     break;
-                if (i == 0)
+                }
+                if (i == 0) {
                     break _done;
+                }
                 inUse[idxArray[i]] = false;
             }
             for (int j = i + 1; j < len; j++)

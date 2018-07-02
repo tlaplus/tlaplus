@@ -26,16 +26,30 @@
 
 package tlc2.module;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import tlc2.util.FP64;
+import tlc2.value.EnumerableValue;
 import tlc2.value.FcnRcdValue;
 import tlc2.value.IntValue;
+import tlc2.value.IntervalValue;
+import tlc2.value.SetEnumValue;
 import tlc2.value.TupleValue;
 import tlc2.value.Value;
+import tlc2.value.ValueEnumeration;
 
 public class TLCTest {
 
+	@BeforeClass
+	public static void setup() {
+		FP64.Init();
+	}
+	
 	/**
 	 * func2 == <<1,2,3>>
 	 * ASSUME (3 :> 11 @@ func2) = <<1,2,11>>
@@ -84,5 +98,26 @@ public class TLCTest {
 		Assert.assertEquals(4, rcdVal.values.length);
 		Assert.assertArrayEquals(new Value[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(11) },
 				rcdVal.values);
+	}
+
+	@Test
+	public void testPermutations() {
+		final SetEnumValue in = SetEnumValue.convert(new IntervalValue(1, 5));
+		Assert.assertEquals(5, in.size());
+		
+		final Value permutations = TLC.Permutations(in);
+		Assert.assertTrue(permutations instanceof EnumerableValue);
+		Assert.assertEquals(120, permutations.size());
+
+		final Set<Value> values = new HashSet<>(permutations.size());
+		
+		final ValueEnumeration elements = ((EnumerableValue) permutations).elements();
+		Value val = null;
+		while ((val = elements.nextElement()) != null) {
+			Assert.assertEquals(in.size(), val.size());
+			values.add(val);
+		}
+		
+		Assert.assertEquals(120, values.size());
 	}
 }
