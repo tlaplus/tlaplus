@@ -3063,21 +3063,22 @@ public class Tool
 
   /* Return the set of all permutations under the symmetry assumption. */
   public final MVPerm[] getSymmetryPerms() {
-    String name = this.config.getSymmetry();
-    if (name.length() == 0) return null;
-    Object symm = this.defns.get(name);
+    final String name = this.config.getSymmetry();
+    if (name.length() == 0) { return null; }
+    final Object symm = this.defns.get(name);
     if (symm == null) {
       Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "symmetry function", name});
     }
     if (!(symm instanceof OpDefNode)) {
       Assert.fail("The symmetry function " + name + " must specify a set of permutations.");
     }
-    Value fcns = this.eval(((OpDefNode)symm).getBody(), Context.Empty, TLCState.Empty);
+    // This calls tlc2.module.TLC.Permutations(Value) and returns a Value of |fcns|
+    // = n! where n is the capacity of the symmetry set.
+    final Value fcns = this.eval(((OpDefNode)symm).getBody(), Context.Empty, TLCState.Empty);
     if (!(fcns instanceof Enumerable)) {
       Assert.fail("The symmetry operator must specify a set of functions.");
     }
-    ValueEnumeration Enum = ((Enumerable)fcns).elements();
-    return MVPerm.permutationSubgroup(Enum);
+    return MVPerm.permutationSubgroup((Enumerable) fcns);
   }
 
   public boolean hasSymmetry() {
