@@ -168,7 +168,7 @@ public class ValueVec implements Cloneable, Serializable {
     return false;
   }
 
-  public final void sort(boolean noDup) {
+  public final ValueVec sort(boolean noDup) {
     int newCount = (this.elementCount == 0) ? 0 : 1;
     for (int i = 1; i < this.elementCount; i++) {
       Value elem = this.elementData[i];
@@ -194,6 +194,7 @@ public class ValueVec implements Cloneable, Serializable {
       }
     }
     this.elementCount = newCount;
+    return this;
   }
   
   public final String toString() {

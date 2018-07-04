@@ -19,6 +19,7 @@ public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
 
   /* Constructor */
   public SetOfRcdsValue(UniqueString[] names, Value[] values, boolean isNorm) {
+	  assert names.length == values.length; // see tlc2.tool.Tool.evalAppl(OpApplNode, Context, TLCState, TLCState, int) case for OPCODE_sor
     this.names = names;
     this.values = values;
     this.rcdSet = null;
@@ -409,4 +410,68 @@ public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
 
   }
 
+	@Override
+	public EnumerableValue getRandomSubset(final int kOutOfN) {
+    	final ValueVec vec = new ValueVec(kOutOfN);
+    	
+    	final ValueEnumeration ve = elements(kOutOfN);
+    	
+    	Value v = null;
+    	while ((v = ve.nextElement()) != null) {
+    		vec.addElement(v);
+    	}
+    	// Assert no duplicates and cannot return more elements than available.
+    	assert vec.size() == kOutOfN && vec.sort(true).size() == Math.min(kOutOfN, size());
+    	
+    	return new SetEnumValue(vec, false);
+	}
+
+	@Override
+	public ValueEnumeration elements(final int k) {
+		return new SubsetEnumerator(k, size());
+	}
+	
+	class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
+		
+		private final SetEnumValue[] convert;
+		private final int[] rescaleBy;
+
+		SubsetEnumerator(final int k, final int n) {
+			super(k, n);
+			
+			convert = new SetEnumValue[values.length];
+			rescaleBy = new int[values.length];
+			
+			int numElems = 1; // 1 to avoid div by zero in elementAt
+			for (int i = values.length - 1; i >= 0; i--) {
+				convert[i] = SetEnumValue.convert(values[i]);
+				rescaleBy[i] = numElems;
+				numElems *= convert[i].elems.size();
+			}
+		}
+
+		RecordValue elementAt(final int idx) {
+			assert 0 <= idx && idx < size();
+			
+			final Value[] val = new Value[names.length];
+			for (int i = 0; i < val.length; i++) {
+				final SetEnumValue sev = convert[i];
+				final int mod = sev.elems.size();
+				
+				final int rescaledIdx = (int) Math.floor(idx / rescaleBy[i]);
+				final int elementAt = rescaledIdx % mod;
+				
+				val[i] = sev.elems.elementAt(elementAt);
+			}
+			return new RecordValue(names, val, false);
+		}
+
+		@Override
+		public Value nextElement() {
+			if (!hasNext()) {
+				return null;
+			}
+			return elementAt(nextIndex());
+		}
+	}
 }

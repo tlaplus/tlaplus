@@ -7,6 +7,7 @@ package tlc2.value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface ValueEnumeration {
   /* Reset allows repeated use of this enumerator. */
@@ -22,5 +23,12 @@ public interface ValueEnumeration {
 			values.add(elem);
 		}
 		return values;
+	}
+
+	default void forEach(final Consumer<? super Value> action) {
+		Value elem;
+		while ((elem = nextElement()) != null) {
+			action.accept(elem);
+		}
 	}
 }
