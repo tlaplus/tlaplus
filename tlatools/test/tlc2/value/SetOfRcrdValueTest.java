@@ -167,4 +167,30 @@ public class SetOfRcrdValueTest {
 			}
 		}
 	}
+
+	@Test
+	public void testRandomSubsetAstronomically() {
+		//	RandomSubset(10000, [a1 : {k : k \in 1..50}, a2 : {k : k \in 1..50}, a3 : {k : k \in 1..50},
+		//                       a4 : {k : k \in 1..50}, a5 : {k : k \in 1..50}, a6 : {k : k \in 1..50},
+		//                       a7 : {k : k \in 1..50}, a8 : {k : k \in 1..50}, a9 : {k : k \in 1..50},
+		//                      a10 : {k : k \in 1..50}])
+		final UniqueString[] names = getNames(10);
+		final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(50, names), true);
+
+		final int k = 10000;
+		final EnumerableValue randomSubset = setOfRcrdValue.getRandomSubset(k);
+		final Set<RecordValue> randomsubsetValues = new HashSet<>(k);
+
+		final ValueEnumeration enumerator = randomSubset.elements();
+		RecordValue rcd;
+		while ((rcd = (RecordValue) enumerator.nextElement()) != null) {
+			assertEquals(names.length, rcd.names.length);
+			assertEquals(names.length, rcd.values.length);
+			randomsubsetValues.add(rcd);
+			// Check element is in the original SetOfFcnsValue.
+			assertTrue(setOfRcrdValue.member(rcd));
+		}
+
+		assertEquals(k, randomsubsetValues.size());
+	}
 }

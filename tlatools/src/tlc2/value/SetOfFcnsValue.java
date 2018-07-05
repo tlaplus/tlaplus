@@ -12,7 +12,7 @@ import tlc2.TLCGlobals;
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
-public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
+public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public Value domain;        /* Function domain  */
   public Value range;         /* Function range   */
   protected SetEnumValue fcnSet;
@@ -147,6 +147,20 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
       else { throw e; }
     }
   }
+
+	@Override
+	protected boolean needBigInteger() {
+		final int rsz = this.range.size();
+		final int dsz = this.domain.size();
+		long sz = 1;
+		for (int i = 0; i < dsz; i++) {
+			sz *= rsz;
+			if (sz < -2147483648 || sz > 2147483647) {
+				return true;
+			}
+		}
+		return false;
+	}
 
   public final boolean isNormalized() {
     try {
@@ -377,30 +391,13 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 		}
 
   }
-
-	@Override
-	public EnumerableValue getRandomSubset(final int kOutOfN) {
-    	final ValueVec vec = new ValueVec(kOutOfN);
-    	
-    	final ValueEnumeration ve = elements(kOutOfN);
-    	
-    	Value v = null;
-    	while ((v = ve.nextElement()) != null) {
-    		vec.addElement(v);
-    	}
-    	return new SetEnumValue(vec, false);
-	}
-
-	@Override
-	public ValueEnumeration elements(final int k) {
-		if (cannotHandle(this.range.size(), this.domain.size())) {
-			return new BigIntegerSubsetEnumerator(k);
-		} else {
-			return new SubsetEnumerator(k, size());
-		}
-	}
 	
-	class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
+	@Override
+	protected tlc2.value.SetOfFcnsOrRcdsValue.SubsetEnumerator getSubsetEnumerator(int k, int n) {
+		return new SubsetEnumerator(k, n);
+	}
+
+	class SubsetEnumerator extends SetOfFcnsOrRcdsValue.SubsetEnumerator {
 		private final SetEnumValue domSet;
 		private final SetEnumValue rangeSet;
 		private final int mod;
@@ -415,7 +412,8 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 			mod = range.size();
 		}
 
-		Value elementAt(final int idx) {
+		@Override
+		protected Value elementAt(final int idx) {
 			assert 0 <= idx && idx < size();
 
 			final Value[] range = new Value[domSet.size()];
@@ -427,31 +425,22 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 
 			return new FcnRcdValue(domSet.elems, range, true);
 		}
+	}
 
-		@Override
-		public Value nextElement() {
-			if (!hasNext()) {
-				return null;
-			}
-			return elementAt(nextIndex());
-		}
+	@Override
+	protected tlc2.value.SetOfFcnsOrRcdsValue.BigIntegerSubsetEnumerator getBigSubsetEnumerator(int k) {
+		return new BigIntegerSubsetEnumerator(k);
 	}
 	
-	class BigIntegerSubsetEnumerator implements ValueEnumeration {
+	class BigIntegerSubsetEnumerator extends SetOfFcnsOrRcdsValue.BigIntegerSubsetEnumerator {
 		
 		private final SetEnumValue domSet;
 		private final SetEnumValue rangeSet;
 		private final BigInteger bMod;
 		private final int mod;
 
-		private final BigInteger x;
-		private final BigInteger a;
-		private final BigInteger sz;
-
-		private final int k;
-		private int i;
-
 		public BigIntegerSubsetEnumerator(final int k) {
+			super(k);
 			this.domSet = SetEnumValue.convert(domain);
 			this.domSet.normalize();
 			
@@ -459,36 +448,11 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 			this.mod = range.size();
 			this.bMod = BigInteger.valueOf(mod);
 
-			this.k = k;
-			this.i = 0;
-
 			this.sz = bMod.pow(domSet.size());
-
-			this.a = BigInteger.valueOf(Math.abs(getRandom().nextLong()));
-			
-			// http://primes.utm.edu/lists/2small/0bit.html
-			// (2^63 - 25)
-			this.x = BigInteger.valueOf(Long.MAX_VALUE - 24L);
 		}
 
 		@Override
-		public void reset() {
-			this.i = 0;
-		}
-		
-		private boolean hasNext() {
-			return this.i < this.k;
-		}
-
-		@Override
-		public Value nextElement() {
-			if (!hasNext()) {
-				return null;
-			}
-			return elementsAt(nextIndex());
-		}
-
-		private Value elementsAt(final BigInteger idx) {
+		protected Value elementAt(final BigInteger idx) {
 			final Value[] range = new Value[domSet.size()];
 
 			for (int i = 0; i < domSet.size(); i++) {
@@ -502,23 +466,5 @@ public class SetOfFcnsValue extends EnumerableValue implements Enumerable {
 
 			return new FcnRcdValue(domSet.elems, range, true);
 		}
-
-		private BigInteger nextIndex() {
-			// ((x * i) + a) % sz
-			final BigInteger bi = BigInteger.valueOf(this.i++);
-			final BigInteger multiply = this.x.multiply(bi);
-			return multiply.add(this.a).mod(this.sz);
-		}
-	}
-	
-	private static boolean cannotHandle(int rsz, int dsz) {
-		long sz = 1;
-		for (int i = 0; i < dsz; i++) {
-			sz *= rsz;
-			if (sz < -2147483648 || sz > 2147483647) {
-				return true;
-			}
-		}
-		return false;
 	}
 }

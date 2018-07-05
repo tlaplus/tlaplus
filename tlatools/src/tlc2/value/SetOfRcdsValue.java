@@ -6,13 +6,15 @@
 
 package tlc2.value;
 
+import java.math.BigInteger;
+
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.tool.FingerprintException;
 import util.Assert;
 import util.UniqueString;
 
-public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
+public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public UniqueString[] names;      // The names of the fields.
   public Value[] values;            // The values of the fields.
   protected SetEnumValue rcdSet;
@@ -155,6 +157,18 @@ public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
       else { throw e; }
     }
   }
+
+	@Override
+	protected boolean needBigInteger() {
+		long sz = 1;
+		for (int i = 0; i < values.length; i++) {
+			sz *= values[i].size();
+			if (sz < -2147483648 || sz > 2147483647) {
+				return true;
+			}
+		}
+		return false;
+	}
 
   public final boolean isNormalized() {
     try {
@@ -411,27 +425,11 @@ public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
   }
 
 	@Override
-	public EnumerableValue getRandomSubset(final int kOutOfN) {
-    	final ValueVec vec = new ValueVec(kOutOfN);
-    	
-    	final ValueEnumeration ve = elements(kOutOfN);
-    	
-    	Value v = null;
-    	while ((v = ve.nextElement()) != null) {
-    		vec.addElement(v);
-    	}
-    	// Assert no duplicates and cannot return more elements than available.
-    	assert vec.size() == kOutOfN && vec.sort(true).size() == Math.min(kOutOfN, size());
-    	
-    	return new SetEnumValue(vec, false);
-	}
-
-	@Override
-	public ValueEnumeration elements(final int k) {
-		return new SubsetEnumerator(k, size());
+	protected tlc2.value.SetOfFcnsOrRcdsValue.SubsetEnumerator getSubsetEnumerator(int k, int n) {
+		return new SubsetEnumerator(k, n);
 	}
 	
-	class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
+	class SubsetEnumerator extends SetOfFcnsOrRcdsValue.SubsetEnumerator {
 		
 		private final SetEnumValue[] convert;
 		private final int[] rescaleBy;
@@ -450,7 +448,7 @@ public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
 			}
 		}
 
-		RecordValue elementAt(final int idx) {
+		protected RecordValue elementAt(final int idx) {
 			assert 0 <= idx && idx < size();
 			
 			final Value[] val = new Value[names.length];
@@ -465,13 +463,49 @@ public class SetOfRcdsValue extends EnumerableValue implements Enumerable {
 			}
 			return new RecordValue(names, val, false);
 		}
+	}
+	
+	@Override
+	protected BigIntegerSubsetEnumerator getBigSubsetEnumerator(int k) {
+		return new BigIntegerSubsetEnumerator(k);
+	}
+	
+	class BigIntegerSubsetEnumerator extends SetOfFcnsOrRcdsValue.BigIntegerSubsetEnumerator {
+		
+		private final SetEnumValue[] convert;
+		private final BigInteger[] rescaleBy;
+		
+		public BigIntegerSubsetEnumerator(final int k) {
+			super(k);
+			
+			convert = new SetEnumValue[values.length];
+			rescaleBy = new BigInteger[values.length];
+			
+			BigInteger numElems = BigInteger.ONE; // 1 to avoid div by zero in elementAt
+			for (int i = values.length - 1; i >= 0; i--) {
+				convert[i] = SetEnumValue.convert(values[i]);
+				rescaleBy[i] = numElems;
+				numElems = numElems.multiply(BigInteger.valueOf(convert[i].elems.size()));
+			}
+			
+			// The size of the (enumerated) SetOfFcnsOrRcdsValue needs BigInteger.
+			this.sz = numElems;
+		}
 
 		@Override
-		public Value nextElement() {
-			if (!hasNext()) {
-				return null;
+		protected Value elementAt(final BigInteger idx) {
+			final Value[] val = new Value[names.length];
+			for (int i = 0; i < val.length; i++) {
+				final SetEnumValue sev = convert[i];
+				final int mod = sev.elems.size();
+
+				final BigInteger d = idx.divide(rescaleBy[i]);
+				final BigInteger m = d.mod(BigInteger.valueOf(mod));
+				final int elementAt = m.intValueExact();
+
+				val[i] = sev.elems.elementAt(elementAt);
 			}
-			return elementAt(nextIndex());
+			return new RecordValue(names, val, false);
 		}
 	}
 }
