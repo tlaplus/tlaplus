@@ -112,8 +112,8 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		// See http://aws.amazon.com/amazon-linux-ami/instance-type-matrix/
 		// for paravirtual vs. hvm (if instance startup fails with funny errors
 		// such as symlinks failing to be created, you accidentally picked paravirtual.
-		 // "us-east-1,xenial,amd64,hvm:instance-store"
-		final String imageId = System.getProperty("aws-ec2.image", "ami-2ece7e51");
+		 // "us-east-1,bionic,amd64,hvm:instance-store"
+		final String imageId = System.getProperty("aws-ec2.image", "ami-9fedbbe0");
 		return getRegion() + "/" + imageId;
 	}
 
