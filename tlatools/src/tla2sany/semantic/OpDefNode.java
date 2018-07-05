@@ -1242,7 +1242,7 @@ public class OpDefNode extends OpDefOrDeclNode
 	public String getSignature() {
 		final StringBuffer buf = new StringBuffer();
 		buf.append(getName().toString());
-		if (getArity() > 0) {
+		if (getArity() > 0 && getKind() != ASTConstants.BuiltInKind) {
 			buf.append("(");
 			//TODO This hack doesn't work for infix operators
 			final FormalParamNode[] params = getParams();
