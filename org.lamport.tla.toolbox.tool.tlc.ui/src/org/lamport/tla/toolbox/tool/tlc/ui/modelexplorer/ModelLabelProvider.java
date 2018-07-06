@@ -44,7 +44,7 @@ public class ModelLabelProvider extends LabelProvider implements IDescriptionPro
 	private Image modelImage = TLCUIActivator.getImageDescriptor("/icons/full/choice_sc_obj.gif").createImage();
 	private Image modelNoError = TLCUIActivator.getImageDescriptor("/icons/full/model_no_error.gif").createImage();
 	private Image modelWithError = TLCUIActivator.getImageDescriptor("/icons/full/model_with_error.gif").createImage();
-	private Image modelCloudTLCRunning = TLCUIActivator.getImageDescriptor("/icons/full/model_running_remotely.gif").createImage();
+	private Image modelCloudTLCRunning = TLCUIActivator.getImageDescriptor("/icons/full/thread_view.png").createImage();
 	
 	/**
 	 * Retrieves model's image
