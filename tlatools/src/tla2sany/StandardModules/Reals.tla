@@ -1,5 +1,4 @@
 -------------------------------- MODULE Reals -------------------------------
-------------------------------- MODULE Reals -------------------------------
 (***************************************************************************)
 (* This module provides dummy definitions of the operators that are        *)
 (* defined by the real Reals module.  It is expected that any tool that    *)
