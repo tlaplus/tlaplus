@@ -26,6 +26,7 @@ import tlc2.util.IStateWriter;
 import tlc2.util.ObjLongTable;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
+import util.Assert;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -342,6 +343,9 @@ public class ModelChecker extends AbstractChecker
 		} catch (DoInitFunctor.InvariantViolatedException ive) {
 			this.errState = functor.errState;
 			return functor.returnValue;
+		} catch (Assert.TLCRuntimeException e) {
+			this.errState = functor.errState;
+			throw e;
 		}
 		
 		// Iff one of the init states' checks violates any properties, the
@@ -1086,15 +1090,19 @@ public class ModelChecker extends AbstractChecker
 						}
 					}
 				}
+			} catch (InvariantViolatedException | Assert.TLCRuntimeException e) {
+				// IVE gets thrown above when an Invariant is violated. TLCRuntimeException gets
+				// thrown when Tool fails to evaluate a statement because of e.g. too large sets
+				// or type errors such as in DoInitFunctorInvariantMinimalErrorStackTest test.
+				this.errState = curState;
+				this.e = e;
+				throw e;
+			} catch (OutOfMemoryError e) {
+				MP.printError(EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT);
+				returnValue = false;
+				return returnValue;
 			} catch (Throwable e) {
 				// Assert.printStack(e);
-				if (e instanceof OutOfMemoryError) {
-					MP.printError(EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT);
-					returnValue = false;
-					return returnValue;
-				} else if (e instanceof InvariantViolatedException) {
-					throw (InvariantViolatedException) e;
-				}
 				this.errState = curState;
 				this.e = e;
 			}
@@ -1102,3 +1110,4 @@ public class ModelChecker extends AbstractChecker
 		}
 	}
 }
+	
