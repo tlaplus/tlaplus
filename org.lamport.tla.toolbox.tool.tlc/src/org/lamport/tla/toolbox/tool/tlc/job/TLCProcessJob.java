@@ -254,7 +254,7 @@ public class TLCProcessJob extends TLCJob
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 								return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-										"Error waiting for process termianation.", e);
+										"Error waiting for process termination.", e);
 							}
 						}
 						if (!process.isTerminated()) {
