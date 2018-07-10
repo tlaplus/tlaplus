@@ -265,7 +265,7 @@ public class CloudDistributedTLCJob extends Job {
 					// It uses "sudo" because the script is explicitly
 					// run as a user. No need to run the TLC process as
 					// root.
-					+ "sudo shutdown -h +10"
+					+ "sudo shutdown -h +" + System.getProperty(CloudDistributedTLCJob.class.getName() + ".shutdownMinutes", "10")
 					+ (isCLI ? "" : "\""); // closing opening '"' of screen/bash -c
 			if (isCLI) {
 				monitor.subTask("Starting TLC model checker process");
