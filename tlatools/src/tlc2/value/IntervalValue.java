@@ -271,6 +271,15 @@ implements Enumerable, Reducible {
     	return new SetEnumValue(vec, false);
 	}
 
+	public Value elementAt(final int idx) {
+		if (0 <= idx && idx < size()) {
+			return IntValue.gen(low + idx);
+		}
+		Assert.fail(
+				"Attempted to retrieve out-of-bounds element from the interval value " + ppr(this.toString()) + ".");
+        return null; // make compiler happy
+	}
+    
   public final ValueEnumeration elements() {
     try {
       return new Enumerator();
