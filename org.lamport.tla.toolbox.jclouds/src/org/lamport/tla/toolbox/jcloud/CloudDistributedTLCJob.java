@@ -98,6 +98,8 @@ import com.google.inject.AbstractModule;
  */
 public class CloudDistributedTLCJob extends Job {
 	
+	private static final String SHUTDOWN_AFTER = System
+			.getProperty(CloudDistributedTLCJob.class.getName() + ".shutdownMinutes", "10");
 	/**
 	 * The groupName has to be unique per job. This is how cloud instances are
 	 * associated to this job. If two jobs use the same groupName, they will talk
@@ -265,7 +267,7 @@ public class CloudDistributedTLCJob extends Job {
 					// It uses "sudo" because the script is explicitly
 					// run as a user. No need to run the TLC process as
 					// root.
-					+ "sudo shutdown -h +" + System.getProperty(CloudDistributedTLCJob.class.getName() + ".shutdownMinutes", "10")
+					+ "sudo shutdown -h +" + SHUTDOWN_AFTER
 					+ (isCLI ? "" : "\""); // closing opening '"' of screen/bash -c
 			if (isCLI) {
 				monitor.subTask("Starting TLC model checker process");
@@ -413,7 +415,7 @@ public class CloudDistributedTLCJob extends Job {
 									+ "Expect to receive an email at %s with the model checking result eventually.",
 							hostname,
 							props.get("result.mail.address")), null, new URL(
-							"http://" + hostname + "/munin/"), execChannel.getOutput());
+							"http://" + hostname + "/munin/"), execChannel.getOutput(), sshClient);
 		} catch (ExecutionException|InterruptedException|RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException|SshException e) {
 			e.printStackTrace();
 			if (context != null) {
@@ -696,12 +698,14 @@ public class CloudDistributedTLCJob extends Job {
 
 		private final URL url;
 		private final InputStream output;
+		private final SshClient sshClient;
 
 		public CloudStatus(int severity, String pluginId, int code,
-				String message, Throwable exception, URL url, InputStream output) {
+				String message, Throwable exception, URL url, InputStream output, SshClient sshClient) {
 			super(severity, pluginId, code, message, exception);
 			this.url = url;
 			this.output = output;
+			this.sshClient = sshClient;
 		}
 
 		@Override
@@ -712,6 +716,12 @@ public class CloudDistributedTLCJob extends Job {
 		@Override
 	    public InputStream getOutput() {
 			return this.output;
+		}
+		
+		public void killTLC() {
+			// For some reason shutdown has to be called before kill (shrugs).
+			sshClient.execChannel(
+					String.format("sudo shutdown -h +%s && kill $(pgrep -f tla2tools.jar)", SHUTDOWN_AFTER));
 		}
 	}
 

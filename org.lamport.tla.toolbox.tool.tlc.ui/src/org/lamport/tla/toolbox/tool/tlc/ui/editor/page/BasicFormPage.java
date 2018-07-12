@@ -891,7 +891,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
          */
         public boolean isEnabled()
         {
-            return getModel().isRunning();
+            return getModel().isRunning() || getModel().isRunningRemotely();
         }
     }
 

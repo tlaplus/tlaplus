@@ -10,4 +10,6 @@ public interface ITLCJobStatus extends IStatus {
 	URL getURL();
 
 	InputStream getOutput();
+	
+	void killTLC();
 }

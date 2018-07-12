@@ -1007,9 +1007,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 								String.format("Consuming output of Cloud TLC for model %s", model.getName())) {
 							@Override
 							protected IStatus run(IProgressMonitor monitor) {
+								final ITLCJobStatus tlcJobStatus = (ITLCJobStatus) status;
 								// Read the output provided by the status and send it to all sinks. The sinks
 								// take care of updating the UI.
-								final InputStream output = ((ITLCJobStatus) status).getOutput();
+								final InputStream output = tlcJobStatus.getOutput();
 								try {
 									final BufferedReader in = new BufferedReader(
 											new InputStreamReader(output));
@@ -1018,6 +1019,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 										// sinks expect a newline to correctly handle the line.
 										for (IProcessOutputSink iProcessOutputSink : sinks) {
 											iProcessOutputSink.appendText(line + "\n");
+										}
+										
+										// Kill remote process when monitor gets c
+										if (monitor.isCanceled()) {
+											tlcJobStatus.killTLC();
+											return Status.OK_STATUS;
 										}
 									}
 								} catch (IOException e) {
@@ -1031,6 +1038,24 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 									snapshot.setRunningRemotely(false);
 								}
 								return Status.OK_STATUS;
+							}
+							
+							/* (non-Javadoc)
+							 * @see org.eclipse.core.runtime.jobs.Job#belongsTo(java.lang.Object)
+							 */
+							@Override
+							public boolean belongsTo(final Object family) {
+								return snapshot == family;
+							}
+
+							@Override
+							protected void canceling() {
+								if (status instanceof ITLCJobStatus && snapshot.isRunningRemotely()) {
+									final ITLCJobStatus tlcJobStatus = (ITLCJobStatus) status;
+									tlcJobStatus.killTLC();
+									snapshot.setRunningRemotely(false);
+								}
+								super.canceling();
 							}
 						};
 						j.schedule();

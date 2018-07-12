@@ -887,6 +887,11 @@ public class ModelEditor extends FormEditor
                 // send cancellations to all jobs...
                 runningSpecJobs[i].cancel();
             }
+        } else if (getModel().isRunningRemotely()) {
+        	final Job[] remoteJobs = Job.getJobManager().find(getModel());
+        	for (Job remoteJob : remoteJobs) {
+				remoteJob.cancel();
+			}
         }
     }
 
