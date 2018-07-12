@@ -754,6 +754,13 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 			        	tlcParams.append(" ");
 			        }
 			        
+			        // add -lncheck final if requested.
+			        if (model.getAttribute(LAUNCH_DEFER_LIVENESS, false)) {
+			        	tlcParams.append("-lncheck ");
+			        	tlcParams.append("final");
+			        	tlcParams.append(" ");
+			        }
+			        
 			        boolean checkDeadlock = config.getAttribute(IModelConfigurationConstants.MODEL_CORRECTNESS_CHECK_DEADLOCK,
 							IModelConfigurationDefaults.MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
 					if (!checkDeadlock) {
