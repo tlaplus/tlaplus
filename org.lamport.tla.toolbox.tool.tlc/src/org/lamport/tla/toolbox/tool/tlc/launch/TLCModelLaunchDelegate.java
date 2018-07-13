@@ -1029,7 +1029,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 										}
 										
 										// Kill remote process when monitor gets c
-										if (monitor.isCanceled()) {
+										if (monitor.isCanceled() && !PlatformUI.getWorkbench().isClosing()) {
 											tlcJobStatus.killTLC();
 											return Status.OK_STATUS;
 										}
@@ -1057,6 +1057,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
 							@Override
 							protected void canceling() {
+								if (PlatformUI.getWorkbench().isClosing()) {
+									// Do not terminate the remote instance when the Toolbox gets closed.
+									super.canceling();
+									return;
+								}
 								if (status instanceof ITLCJobStatus && snapshot.isRunningRemotely()) {
 									final ITLCJobStatus tlcJobStatus = (ITLCJobStatus) status;
 									tlcJobStatus.killTLC();
