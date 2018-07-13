@@ -28,6 +28,7 @@ package tlc2.util;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,6 +50,9 @@ public class DotStateWriter extends StateWriter {
 	// into a StateWriter incrementally, one at a time, this table is built up over
 	// time, adding new actions as we find out about them.
 	private final Map<String, Integer> actionToColors = new HashMap<>();
+	
+	// A mapping from ranks to nodes.
+	private final Map<Short, Set<Long>> rankToNodes = new HashMap<>();
 
 	// Determines whether or not transition edges should be colorized in the state
 	// graph.
@@ -112,8 +116,14 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(states2dot(state));
 		this.writer.append("\"]");
 		this.writer.append("\n");
+		
+		maintainRanks(state);
 	}
 	
+	protected void maintainRanks(final TLCState state) {
+		rankToNodes.computeIfAbsent(state.level, k -> new HashSet<Long>()).add(state.fingerPrint());
+	}
+
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean)
 	 */
@@ -175,6 +185,8 @@ public class DotStateWriter extends StateWriter {
 			this.writer.append("\"]");
 			this.writer.append(";\n");
 		}
+		
+		maintainRanks(state);
 	}
 	
 	/**
@@ -277,6 +289,13 @@ public class DotStateWriter extends StateWriter {
 	 * @see tlc2.util.IStateWriter#close()
 	 */
 	public void close() {
+		for (final Set<Long> entry : rankToNodes.values()) {
+			this.writer.append("{rank = same; ");
+			for (final Long l : entry) {
+				this.writer.append(l + ";");
+			}
+			this.writer.append("}\n");
+		}
 		this.writer.append("}\n"); // closes the main subgraph.
 		// We only need the legend if the edges are colored by action and there is more
 		// than a single action.
