@@ -278,21 +278,21 @@ public class CloudDistributedTLCJob extends Job {
 				// Send remote TLC's stdout to local stdout (this throws a TransportException
 				// unless shutdown is postponed by a few minutes above).
 				ByteStreams.copy(channel.getOutput(), System.out);
-				if (doJfr) {
-					// Get Java Flight Recording from remote machine and save if to a local file in
-					// the current working directory. We call "cat" because sftclient#get fails with
-					// the old net.schmizz.sshj and an update to the newer com.hierynomus seems 
-					// awful lot of work.
-					channel = sshClient.execChannel("cat /mnt/tlc/tlc.jfr");
-					final InputStream output = channel.getOutput();
-					final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
-					final File jfr = new File(cwd + "tlc.jfr");
-					ByteStreams.copy(output, new FileOutputStream(jfr));
-					if (jfr.length() == 0) {
-						System.err.println("Received empty Java Flight recording. Not creating tlc.jfr file");
-						jfr.delete();
-					}
-				}
+//				if (doJfr) {
+//					// Get Java Flight Recording from remote machine and save if to a local file in
+//					// the current working directory. We call "cat" because sftclient#get fails with
+//					// the old net.schmizz.sshj and an update to the newer com.hierynomus seems 
+//					// awful lot of work.
+//					channel = sshClient.execChannel("cat /mnt/tlc/tlc.jfr");
+//					final InputStream output = channel.getOutput();
+//					final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
+//					final File jfr = new File(cwd + "tlc.jfr");
+//					ByteStreams.copy(output, new FileOutputStream(jfr));
+//					if (jfr.length() == 0) {
+//						System.err.println("Received empty Java Flight recording. Not creating tlc.jfr file");
+//						jfr.delete();
+//					}
+//				}
 				// Finally close the ssh connection.
 				sshClient.disconnect();
 				monitor.subTask("TLC model checker process finished");
@@ -547,8 +547,6 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							+ params.getHostnameSetup()
 							+ " && "
-							// Oracle Java 8
-							+ "add-apt-repository ppa:webupd8team/java -y && "
 							// Accept license before apt (dpkg) tries to present it to us (which fails due to 'noninteractive' mode below)
 							// see http://stackoverflow.com/a/19391042
 							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections && "
@@ -593,7 +591,7 @@ public class CloudDistributedTLCJob extends Job {
 							// worker tla2tools.jar (strip spec) and
 							// unattended-upgrades makes sure the instance
 							// is up-to-date security-wise. 
-							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades oracle-java8-installer oracle-java8-set-default "
+							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades "
 									+ params.getExtraPackages() + " -y"
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
