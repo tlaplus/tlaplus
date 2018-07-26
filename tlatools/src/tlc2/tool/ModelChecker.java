@@ -337,7 +337,15 @@ public class ModelChecker extends AbstractChecker
 		// it to the queue, fingerprint set and trace file. This avoids
 		// allocating memory for StateVec (which depending on the number of init
 		// states can grow to be GBs) and the subsequent loop over StateVec.
-		final DoInitFunctor functor = new DoInitFunctor();
+        final DoInitFunctor functor;
+        if (ignoreCancel) {
+			// Rerunning state space exploration to reconstruct the error stack to determine
+			// what caused Tool to fail to evaluate the init predicate expressions. Thus,
+			// re-check all invariants even if state is already known (= part of theFPSet).
+        	functor = new DoInitFunctor(ignoreCancel);
+        } else {
+        	functor = new DoInitFunctor();
+        }
 		try {
 			this.tool.getInitStates(functor);
 		} catch (DoInitFunctor.InvariantViolatedException ive) {
@@ -1021,6 +1029,16 @@ public class ModelChecker extends AbstractChecker
 		 * This outcome is stored as returnValue.
 		 */
 		private boolean returnValue = true;
+		
+		private final boolean forceChecks;
+		
+		public DoInitFunctor() {
+			this(false);
+		}
+		
+		public DoInitFunctor(boolean forceChecks) {
+			this.forceChecks = forceChecks;
+		}
 
 		/* (non-Javadoc)
 		 * @see tlc2.tool.IStateFunctor#addElement(tlc2.tool.TLCState)
@@ -1066,7 +1084,7 @@ public class ModelChecker extends AbstractChecker
 					}
 				}
 				// Check properties of the state:
-				if (!seen) {
+				if (!seen || forceChecks) {
 					for (int j = 0; j < invariants.length; j++) {
 						if (!tool.isValid(invariants[j], curState)) {
 							// We get here because of invariant violation:

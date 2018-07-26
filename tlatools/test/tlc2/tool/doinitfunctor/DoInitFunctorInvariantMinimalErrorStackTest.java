@@ -42,7 +42,7 @@ public class DoInitFunctorInvariantMinimalErrorStackTest extends ModelCheckerTes
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "2", "2"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1", "1", "1"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE,
