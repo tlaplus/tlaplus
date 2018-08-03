@@ -980,6 +980,9 @@ public class TLC
 				File resolve = resolver.resolve(pu.getFileName(), false);
 				result.add(resolve);
     		}
+    		if (ModelInJar.hasCfg()) {
+    			result.add(ModelInJar.getCfg());
+    		}
     	}
         return result;
     }

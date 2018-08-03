@@ -1,7 +1,11 @@
 package model;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -10,6 +14,21 @@ public abstract class ModelInJar {
 	
 	public static boolean hasModel() {
 		return ModelInJar.class.getResource("/model/MC.tla") != null;
+	}
+	
+	public static boolean hasCfg() {
+		return ModelInJar.class.getResource("/model/MC.cfg") != null;
+	}
+
+	public static File getCfg() {
+		try {
+			final InputStream source = ModelInJar.class.getResourceAsStream("/model/MC.cfg");
+			Path target = Files.createTempFile("MC", ".cfg");
+			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+			return target.toFile();
+		} catch (IOException notExpectedToHappen) {
+			return new File("");
+		}
 	}
 	
 	public static boolean loadProperties() {
