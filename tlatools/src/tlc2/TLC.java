@@ -983,6 +983,10 @@ public class TLC
     		if (ModelInJar.hasCfg()) {
     			result.add(ModelInJar.getCfg());
     		}
+			// It might be desirable to include tlc.jfr - a flight recording aka profiling
+			// at the JVM level here. This doesn't work though as the recording get created
+			// after the termination of the JVM. A recording can also be several hundred
+    		// MBs large.
     	}
         return result;
     }
