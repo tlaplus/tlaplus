@@ -11,7 +11,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import tlc2.output.EC;
 import tlc2.tool.TLCTrace;
-import tlc2.util.BufferedRandomAccessFile;
+import tlc2.tool.TLCTrace.Enumerator;
 import util.Assert;
 
 /**
@@ -204,15 +204,13 @@ public class MultiFPSet extends FPSet {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#recover()
 	 */
-	public final void recover() throws IOException {
-		long recoverPtr = TLCTrace.getRecoverPtr();
-		BufferedRandomAccessFile braf = new BufferedRandomAccessFile(TLCTrace.getFilename(), "r");
-		while (braf.getFilePointer() < recoverPtr) {
-			braf.readLongNat(); /* drop */
-			long fp = braf.readLong();
+	public final void recover(TLCTrace trace) throws IOException {
+		final Enumerator elements = trace.elements();
+		while (elements.nextPos() != -1) {
+			long fp = elements.nextFP();
 			getFPSet(fp).recoverFP(fp);
 		}
-		braf.close();
+		elements.close();
 	}
 
 	/* (non-Javadoc)

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2017 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -25,57 +25,49 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
-import tlc2.value.IntValue;
-import tlc2.value.Value;
-import util.UniqueString;
 
-public class RandomSubsetNextT4Test extends ModelCheckerTestCase {
+public class DistributedTrace extends ModelCheckerTestCase {
 
-	public RandomSubsetNextT4Test() {
-		super("RandomSubsetNext");
+	public DistributedTrace() {
+		super("DistributedTrace");
 	}
 
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.TLC_BUG));
-
-		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
+		assertFalse(recorder.recorded(EC.GENERAL));
 		
-		final List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
-		assertEquals(11, records.size());
-		
-		int cnt = 0;
-		for (Object r : records) {
-			final Object[] objs = (Object[]) r;
-			final TLCStateInfo info = (TLCStateInfo) objs[0];
-			final Map<UniqueString, Value> vals = info.state.getVals();
-
-			final Value y = vals.get(UniqueString.uniqueStringOf("y"));
-			assertEquals(cnt++, ((IntValue) y).val);
-			
-			final Value x = info.state.getVals().get(UniqueString.uniqueStringOf("x"));
-			assertTrue(1 <= ((IntValue) x).val && ((IntValue) x).val <= 1000);
-			
-			final int statenum = (int) objs[1];
-			assertEquals(cnt, statenum);
-		}
+		// Assert the error trace
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		final List<String> expectedTrace = new ArrayList<String>(5);
+		expectedTrace.add("x = 10");
+		expectedTrace.add("x = 11");
+		expectedTrace.add("x = 12");
+		expectedTrace.add("x = 13");
+		expectedTrace.add("x = 14");
+		expectedTrace.add("x = 15");
+		expectedTrace.add("x = 16");
+		expectedTrace.add("x = 17");
+		expectedTrace.add("x = 18");
+		expectedTrace.add("x = 19");
+		expectedTrace.add("x = 20");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.liveness.ModelCheckerTestCase#getNumberOfThreads()
+	 */
 	protected int getNumberOfThreads() {
-		// With 4 threads the counter-examples is not predictable anymore because it
-		// depends on thread scheduling.
 		return 4;
 	}
 }

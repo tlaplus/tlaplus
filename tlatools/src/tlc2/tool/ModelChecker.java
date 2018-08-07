@@ -51,7 +51,7 @@ public class ModelChecker extends AbstractChecker
 	private long numberOfInitialStates;
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
     public IStateQueue theStateQueue; // the state queue
-    public TLCTrace trace; // the trace file
+    public final ConcurrentTLCTrace trace; // the trace file
     // used to calculate the spm metric
     public long distinctStatesPerMinute, statesPerMinute = 0L;
     protected long oldNumOfGenStates, oldFPSetSize = 0L;
@@ -93,13 +93,13 @@ public class ModelChecker extends AbstractChecker
         this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile);
 
         // Finally, initialize the trace file:
-        this.trace = new TLCTrace(this.metadir, specFile, this.tool);
+        this.trace = new ConcurrentTLCTrace(this.metadir, specFile, this.tool);
 
         // Initialize all the workers:
         this.workers = new Worker[TLCGlobals.getNumWorkers()];
         for (int i = 0; i < this.workers.length; i++)
         {
-            this.workers[i] = new Worker(i, this);
+            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, specFile));
         }
     }
 
@@ -250,7 +250,10 @@ public class ModelChecker extends AbstractChecker
                 this.tool.setCallStack();
                 try
                 {
-                    this.doNext(this.predErrState, new ObjLongTable(10), new Worker(4223, this));
+					// Not adding newly created Worker to trace#addWorker because it is not supposed
+					// to rewrite the trace file but to reconstruct actual states referenced by
+					// their fingerprints in the trace.
+                    this.doNext(this.predErrState, new ObjLongTable(10), new Worker(4223, this, this.metadir, specObj.getFileName()));
                 } catch (FingerprintException e)
                 {
                     MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
@@ -476,8 +479,7 @@ public class ModelChecker extends AbstractChecker
                             // exploring this new state. Conversely, the state has to
                             // be in the trace in case either invariant or implied action
                             // checks want to print the trace. 
-							long loc = this.trace.writeState(curState, fp, worker);
-							succState.uid = loc;
+                        	worker.writeState(curState, fp, succState);
 							unseenSuccessorStates++;
 						}
 						// For liveness checking:
@@ -820,7 +822,7 @@ public class ModelChecker extends AbstractChecker
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, this.fromChkpt);
             this.trace.recover();
             this.theStateQueue.recover();
-            this.theFPSet.recover();
+            this.theFPSet.recover(this.trace);
             if (this.checkLiveness)
             {
 				// Liveness checking requires the initial states to be
@@ -877,7 +879,7 @@ public class ModelChecker extends AbstractChecker
                 String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size()) });
         if (success)
         {
-			MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForFinalReporting()));
+            MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForReporting()));
 			
         	// Aggregate outdegree from statistics maintained by individual workers. 
         	final BucketStatistics aggOutDegree = new BucketStatistics("State Graph OutDegree");
@@ -1074,7 +1076,7 @@ public class ModelChecker extends AbstractChecker
 					seen = theFPSet.put(fp);
 					if (!seen) {
 						allStateWriter.writeState(curState);
-						curState.uid = trace.writeState(fp);
+						((Worker) workers[0]).writeState(curState, fp);
 						theStateQueue.enqueue(curState);
 
 						// build behavior graph for liveness checking

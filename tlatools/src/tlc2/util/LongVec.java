@@ -8,14 +8,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 
 import util.FileUtil;
 
-/**
- * 
- * 
- * @version $Id$
- */
 public class LongVec implements Cloneable, Serializable {
 	private static final long serialVersionUID = 2406899362740899071L;
 	protected long[] elementData;
@@ -26,6 +22,11 @@ public class LongVec implements Cloneable, Serializable {
 	public LongVec(int initialCapacity) {
 		this.elementCount = 0;
 		this.elementData = new long[initialCapacity];
+	}
+
+	private LongVec(final LongVec other) {
+		this.elementCount = other.elementCount;
+		this.elementData = Arrays.copyOfRange(other.elementData, 0, other.elementCount);
 	}
 
 	public final void addElement(long x) {
@@ -132,4 +133,26 @@ public class LongVec implements Cloneable, Serializable {
 		System.err.println(vec1.elementAt(2));
 	}
 
+	private LongVec reverse0() {
+		int left = 0;
+		int right = elementData.length - 1;
+
+		while (left < right) {
+			long temp = elementData[left];
+			elementData[left] = elementData[right];
+			elementData[right] = temp;
+
+			left++;
+			right--;
+		}
+		return this;
+	}
+	
+	public LongVec reverse() {
+		try {
+			return new LongVec(this).reverse0();
+		} catch (Exception e) {
+			throw e;
+		}
+	}
 }

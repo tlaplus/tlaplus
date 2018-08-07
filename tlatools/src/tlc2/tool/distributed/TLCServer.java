@@ -201,7 +201,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		final FPSet fpSet = FPSetFactory.getFPSet(work.getFPSetConfiguration());
 		fpSet.init(1, metadir, work.getFileName());
 		return new NonDistributedFPSetManager(fpSet, InetAddress.getLocalHost()
-				.getCanonicalHostName());
+				.getCanonicalHostName(), trace);
 	}
 
 	/* (non-Javadoc)

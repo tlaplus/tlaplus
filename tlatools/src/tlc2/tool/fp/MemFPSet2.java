@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.TLCTrace;
 import util.Assert;
 import util.BufferedDataInputStream;
 import util.BufferedDataOutputStream;
@@ -247,7 +248,7 @@ public final class MemFPSet2 extends FPSet {
     this.commitChkpt(this.filename);
   }
 
-  public final void recover() throws IOException {
+  public final void recover(TLCTrace trace) throws IOException {
     this.recover(this.filename);
   }
 

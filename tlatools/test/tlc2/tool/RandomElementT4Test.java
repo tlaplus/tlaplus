@@ -66,7 +66,7 @@ public class RandomElementT4Test extends ModelCheckerTestCase {
 			assertEquals(cnt++, ((IntValue) y).val);
 			
 			final Value x = info.state.getVals().get(UniqueString.uniqueStringOf("x"));
-			assertTrue(1 <= ((IntValue) x).val && ((IntValue) x).val < 1000);
+			assertTrue(1 <= ((IntValue) x).val && ((IntValue) x).val <= 1000);
 			
 			final int statenum = (int) objs[1];
 			assertEquals(cnt, statenum);

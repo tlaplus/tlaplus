@@ -109,7 +109,7 @@ public abstract class AbstractHeapBasedDiskFPSetTest {
 		// Create a DiskFPSet 
 		final DiskFPSet fpSet = getDiskFPSet(new FPSetConfiguration());
 		fpSet.init(1, metadir, filename);
-		fpSet.recover();
+		fpSet.recover(trace);
 
 		// Verify successful recovery
 		assertEquals(limit-1, fpSet.size());

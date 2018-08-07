@@ -20,8 +20,9 @@ import tlc2.value.ValueOutputStream;
 import util.UniqueString;
 
 public abstract class TLCState implements Cloneable, Serializable {
+  public short workerId = Short.MAX_VALUE; // Must be set to a non-negative number. Valid worker ids \in [0,Short.MAX_VALUE] and start at 0.
   public long uid = -1;   // Must be set to a non-negative number
-  public short level = 0;
+  public short level = 1;
   
   // Set by subclasses. Cannot set until we know what the variables are.
   public static TLCState Empty = null;
@@ -44,12 +45,14 @@ public abstract class TLCState implements Cloneable, Serializable {
   }
 
   public void read(ValueInputStream vis) throws IOException {
-    this.uid = vis.readLongNat();
+	this.workerId = vis.readShortNat();
+	this.uid = vis.readLongNat();
     this.level = vis.readShortNat();
     assert this.level >= 0; // Should never overflow.
   }
   
   public void write(ValueOutputStream vos) throws IOException {
+	vos.writeShortNat(this.workerId);
     vos.writeLongNat(this.uid);
     vos.writeShortNat(this.level);
   }
@@ -82,7 +85,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   }
 
   public boolean isInitial() {
-	return this.level == 0;
+	return this.level == 1;
   }
   
   /* Returns a string representation of this state.  */

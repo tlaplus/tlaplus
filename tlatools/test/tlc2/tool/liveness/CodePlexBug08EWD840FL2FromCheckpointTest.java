@@ -56,6 +56,15 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 	@Override
 	public void setUp() {
 		try {
+			/* Recreate checkpoint.zip whenever file format changes:
+			 * 
+			 * 1) Run CodePlexBug08EWD840FL2Test with "-gzip"
+			 * 2) Connect to running test via JMX and request TLC checkpoint to be taken
+			 * 3) Terminate CodePlexBug08EWD840FL2Test once checkpoint successfully taken
+			 * 4) Locate the directory with the checkpoint data
+			 * 5) Replace the content of checkpoint.zip with the content of 4)
+			 * 6) Update the number below on states found...
+			 */
 			String prefix = BASE_DIR + TEST_MODEL + "CodePlexBug08" + File.separator;
 			ZipFile zipFile = new ZipFile(prefix + "checkpoint.zip");
 			Enumeration<?> enu = zipFile.entries();
@@ -95,17 +104,17 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_START));
 		// Recovery completed. 1032 states examined. 996 states on queue.
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_END, "1028", "1013"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_END, "1510", "39"));
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "15961", "1566","0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2334", "1566","0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 	
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
-		assertNodeAndPtrSizes(54037212L, 831296L);
+		assertNodeAndPtrSizes(54038132L, 831296L);
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
@@ -155,4 +164,12 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 		// last state points back to state 1
 		assertBackToState(1);
 	}
+
+
+	@Override
+	protected int getNumberOfThreads() {
+		return 3;
+	}
+	
+	
 }

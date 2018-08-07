@@ -19,6 +19,7 @@ import javax.management.NotCompliantMBeanException;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCTrace;
+import tlc2.tool.TLCTrace.Enumerator;
 import tlc2.tool.fp.management.DiskFPSetMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.BufferedRandomAccessFile;
@@ -763,19 +764,13 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#recover()
 	 */
-	public final void recover() throws IOException {
-		long recoverPtr = TLCTrace.getRecoverPtr();
-		final RandomAccessFile braf = new BufferedRandomAccessFile(
-				TLCTrace.getFilename(), "r");
-		while (braf.getFilePointer() < recoverPtr) {
-			// drop readLongNat
-			if (braf.readInt() < 0)
-				braf.readInt();
-			
-			long fp = braf.readLong();
+	public final void recover(TLCTrace trace) throws IOException {
+		final Enumerator elements = trace.elements();
+		while (elements.nextPos() != -1) {
+			long fp = elements.nextFP();
 			this.recoverFP(fp);
 		}
-		braf.close();
+		elements.close();
 	}
 
 	private String getChkptName(String fname, String name) {

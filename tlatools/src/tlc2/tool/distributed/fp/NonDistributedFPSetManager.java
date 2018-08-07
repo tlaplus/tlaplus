@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.TLCTrace;
 import tlc2.util.BitVector;
 import tlc2.util.LongVec;
 
@@ -14,11 +15,13 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 
 	private final FPSetRMI fpSet;
 	private final String hostname;
+	private final TLCTrace trace;
 
 	public NonDistributedFPSetManager(final FPSetRMI fpSet,
-			final String hostname) throws IOException {
+			final String hostname, TLCTrace trace) throws IOException {
 		this.fpSet = fpSet;
 		this.hostname = hostname;
+		this.trace = trace;
 	}
 
 	/* (non-Javadoc)
@@ -211,7 +214,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	 * @see tlc2.tool.distributed.fp.FPSetManager#recover(java.lang.String)
 	 */
 	public void recover(String fname) throws InterruptedException, IOException {
-		this.fpSet.recover();
+		this.fpSet.recover(trace);
 	}
 
 	/* (non-Javadoc)

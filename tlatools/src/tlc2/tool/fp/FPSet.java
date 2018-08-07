@@ -10,6 +10,7 @@ import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import tlc2.tool.TLCTrace;
 import tlc2.tool.distributed.fp.DistributedFPSet;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.util.BitVector;
@@ -115,7 +116,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
     /* (non-Javadoc)
      * @see tlc2.tool.distributed.fp.FPSetRMI#recover()
      */
-    public abstract void recover() throws IOException;
+    public abstract void recover(TLCTrace trace) throws IOException;
 
     public abstract void recoverFP(long fp) throws IOException;
 

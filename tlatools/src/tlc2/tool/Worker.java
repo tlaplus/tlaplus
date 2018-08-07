@@ -5,13 +5,20 @@
 
 package tlc2.tool;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.queue.IStateQueue;
+import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
 import tlc2.util.statistics.FixedSizedBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
+import util.FileUtil;
 
 public class Worker extends IdThread implements IWorker {
 	
@@ -24,11 +31,15 @@ public class Worker extends IdThread implements IWorker {
 	private final IStateQueue squeue;
 	private final ObjLongTable astCounts;
 	private final IBucketStatistics outDegree;
+	private final String filename;
+	private final BufferedRandomAccessFile raf;
+
+	private long lastPtr;
 	private long statesGenerated;
-	
+	private volatile int maxLevel = 0;
 
 	// SZ Feb 20, 2009: changed due to super type introduction
-	public Worker(int id, AbstractChecker tlc) {
+	public Worker(int id, AbstractChecker tlc, String metadir, String specFile) throws IOException {
 		super(id);
 		// SZ 12.04.2009: added thread name
 		this.setName("TLC Worker " + id);
@@ -37,6 +48,9 @@ public class Worker extends IdThread implements IWorker {
 		this.astCounts = new ObjLongTable(10);
 		this.outDegree = new FixedSizedBucketStatistics(this.getName(), 32); // maximum outdegree of 32 appears sufficient for now.
 		this.setName("TLCWorkerThread-" + String.format("%03d", id));
+
+		this.filename = metadir + FileUtil.separator + specFile + "-" + myGetId();
+		this.raf = new BufferedRandomAccessFile(filename + TLCTrace.EXT, "rw");
 	}
 
   public final ObjLongTable getCounts() { return this.astCounts; }
@@ -79,6 +93,8 @@ public class Worker extends IdThread implements IWorker {
 			return;
 		}
 	}
+	
+	/* Statistics */
 
 	void incrementStatesGenerated(long l) {
 		this.statesGenerated += l;		
@@ -94,5 +110,133 @@ public class Worker extends IdThread implements IWorker {
 
 	public IBucketStatistics getOutDegree() {
 		return this.outDegree;
+	}
+	
+	public int getMaxLevel() {
+		return maxLevel;
+	}
+	
+	/* Maintain trace file (to reconstruct error-trace) */
+	
+	/*
+	 * Synchronize reads and writes to read a consistent union of all trace file
+	 * fragments when one worker W wants to create the counter-example. Otherwise, we
+	 * might not be able to correctly trace the path from state to an initial state.
+	 * The W thread holds ModelChecker.this. The other workers might either: a) Wait
+	 * on IStateQueue#sDequeue (waiting for a new state to be read from disk or
+	 * added to the queue) b) Wait on ModelChecker.this (because they also found
+	 * another counter-example but are blocked until we are done printing it) c)
+	 * Wait on ModelChecker.this in Worker#run because the state queue is empty and
+	 * they which to terminate. d) Run state space exploration The on-disk file of
+	 * each worker's trace fragment is potentially inconsistent because the worker's
+	 * cache in BufferedRandomAccessFile hasn't been flushed out.
+	 */
+	
+	public synchronized void writeState(final TLCState initialState, final long fp) throws IOException {
+		// Write initial state to trace file.
+		this.lastPtr = this.raf.getFilePointer();
+		this.raf.writeLongNat(1L);
+		this.raf.writeShortNat(myGetId());
+		this.raf.writeLong(fp);
+		
+		// Add predecessor pointer to success state.
+		initialState.workerId = (short) myGetId();
+		initialState.uid = this.lastPtr;
+	}
+
+	public synchronized void writeState(final TLCState curState, final long sucStateFp, final TLCState sucState) throws IOException {
+		// Keep track of maximum diameter.
+		maxLevel = Math.max(curState.level + 1, maxLevel);
+		
+		// Write to trace file.
+		this.lastPtr = this.raf.getFilePointer();
+		this.raf.writeLongNat(curState.uid);
+		this.raf.writeShortNat(curState.workerId);
+		this.raf.writeLong(sucStateFp);
+		
+		// Add predecessor pointer to success state.
+		sucState.workerId = (short) myGetId();
+		sucState.uid = this.lastPtr;
+		
+//		System.err.println(String.format("<<%s, %s>>: pred=<<%s, %s>>, %s -> %s", myGetId(), this.lastPtr, 
+//				curState.uid, curState.workerId,
+//				curState.fingerPrint(), sucStateFp));
+	}
+
+	// Read from previously written (see writeState) trace file.
+	public synchronized ConcurrentTLCTrace.Record readStateRecord(final long ptr) throws IOException {
+		this.raf.seek(ptr);
+		
+		final long prev = this.raf.readLongNat();
+		assert 0 <= ptr;
+		
+		final int worker = this.raf.readShortNat();
+		assert 0 <= worker && worker < tlc.workers.length;
+			
+		final long fp = this.raf.readLong();
+		assert tlc.theFPSet.contains(fp);
+		
+		return new ConcurrentTLCTrace.Record(prev, worker, fp);
+	}
+	
+	/* Checkpointing */
+
+	public synchronized void beginChkpt() throws IOException {
+		this.raf.flush();
+		final DataOutputStream dos = FileUtil.newDFOS(filename + ".tmp");
+		dos.writeLong(this.raf.getFilePointer());
+		dos.writeLong(this.lastPtr);
+		dos.close();
+	}
+
+	public synchronized void commitChkpt() throws IOException {
+		final File oldChkpt = new File(filename + ".chkpt");
+		final File newChkpt = new File(filename + ".tmp");
+		if ((oldChkpt.exists() && !oldChkpt.delete()) || !newChkpt.renameTo(oldChkpt)) {
+			throw new IOException("Trace.commitChkpt: cannot delete " + oldChkpt);
+		}
+	}
+
+	public void recover() throws IOException {
+		final DataInputStream dis = FileUtil.newDFIS(filename + ".chkpt");
+		final long filePos = dis.readLong();
+		this.lastPtr = dis.readLong();
+		dis.close();
+		this.raf.seek(filePos);
+	}
+	
+	/* Enumerator */
+	
+	public Enumerator elements() throws IOException {
+		return new Enumerator();
+	}
+
+	public class Enumerator {
+
+		private final long len;
+		private final BufferedRandomAccessFile enumRaf;
+
+		Enumerator() throws IOException {
+			this.len = raf.getFilePointer();
+			this.enumRaf = new BufferedRandomAccessFile(filename + TLCTrace.EXT, "r");
+		}
+
+		public boolean hasMoreFP() {
+			final long fpos = this.enumRaf.getFilePointer();
+			if (fpos < this.len) {
+				return true;
+			}
+			return false;
+		}
+
+		public long nextFP() throws IOException {
+			this.enumRaf.readLongNat(); /* drop */
+			this.enumRaf.readShortNat(); /* drop */
+			return this.enumRaf.readLong();
+		}
+
+		public void close() throws IOException {
+			this.enumRaf.close();
+		}
 	}
 }
