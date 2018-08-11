@@ -81,7 +81,11 @@ public abstract class CloudTLCInstanceParameters {
 			return getJavaWorkerVMArgs();
 		}
 		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
-		return ("--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions " + extraVMArgs).trim();
+		return ("--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions "
+				+ "-XX:+UseParallelGC " // Java > 1.8 has switched to a low-latency GC which isn't optimized for
+										// throughput anymore. Obviously, we are not interested in latency but primarily
+										// in throughput.
+				+ extraVMArgs).trim();
 	}
 
 	public abstract String getJavaWorkerVMArgs();
