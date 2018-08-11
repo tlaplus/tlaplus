@@ -27,7 +27,19 @@ public class MethodValue extends OpValue implements Applicable {
 	public MethodValue(final Method md) {
 		this.md = md;
 		try {
-			this.mh = MethodHandles.publicLookup().unreflect(md);
+			final int parameterCount = this.md.getParameterCount();
+			if (parameterCount > 0) {
+				// With more than one argument, we want to setup the method handle to use a
+				// spreader which essentially converts the Value[] into something that is
+				// accepted by the method handle. Without a spreader, passing a Value[] to
+				// MethodHandle#invoke does not work. Instead one has to use MethodHandle#invokeWithArguments.
+				// MethodHandle#invokeWithArguments internally creates a spreader on the fly
+				// which turns out to be costly (for the spec MongoRepl of the performance
+				// tests it resulted in a 20% performance drop).
+				this.mh = MethodHandles.publicLookup().unreflect(md).asSpreader(Value[].class, parameterCount);
+			} else {
+				this.mh = MethodHandles.publicLookup().unreflect(md); 
+			}
 		} catch (IllegalAccessException e) {
 			throw new TLCRuntimeException(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, MP.getMessage(
 					EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[] { md.toString(), e.getMessage() }));
@@ -99,7 +111,11 @@ public class MethodValue extends OpValue implements Applicable {
       Value res = null;
       try
       {
-    	  res = (Value) this.mh.invokeWithArguments((Object[]) args);
+    	  if (args.length == 0) {
+    		  res = (Value) this.mh.invokeExact();
+    	  } else {
+    		  res = (Value) this.mh.invoke(args);
+    	  }
       } catch (Throwable e)
       {
           if (e instanceof InvocationTargetException)
