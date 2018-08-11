@@ -415,7 +415,7 @@ public class CloudDistributedTLCJob extends Job {
 									+ "Expect to receive an email at %s with the model checking result eventually.",
 							hostname,
 							props.get("result.mail.address")), null, new URL(
-							"http://" + hostname + "/munin/"), execChannel.getOutput(), sshClient);
+							"http://" + hostname + "/munin/"), execChannel == null ? null : execChannel.getOutput(), sshClient);
 		} catch (ExecutionException|InterruptedException|RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException|SshException e) {
 			e.printStackTrace();
 			if (context != null) {
