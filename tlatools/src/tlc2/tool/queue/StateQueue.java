@@ -10,6 +10,7 @@ import java.io.IOException;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
 import util.Assert;
@@ -84,6 +85,22 @@ public abstract class StateQueue implements IStateQueue {
 			this.notifyAll();
 		}
 	}
+	
+	public final synchronized void sEnqueue(final StateVec stateVec) {
+		int cnt = 0;
+		for (int j = 0; j < stateVec.size(); j++) {
+			TLCState state = stateVec.elementAt(j);
+			if (state != null) {
+				this.enqueueInner(state);
+				cnt++;
+			}
+		}
+		this.len += cnt;
+		if (this.numWaiting > 0 && !this.stop) {
+			this.notifyAll();
+		}
+	}
+
 
 	public final synchronized TLCState sPeek() {
 		if (this.isAvail()) {

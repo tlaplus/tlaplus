@@ -2,6 +2,7 @@ package tlc2.tool.queue;
 
 import java.io.IOException;
 
+import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
 
@@ -21,7 +22,8 @@ public interface IStateQueue {
 
 	/* Enqueues a list of states. Wake up any waiting thread. */
 	public abstract void sEnqueue(final TLCState states[]);
-
+	public abstract void sEnqueue(final StateVec stateVec);
+	
 	/* Return the first element in the queue. Wait if empty. */
 	public abstract TLCState sDequeue();
 	

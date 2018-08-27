@@ -122,6 +122,14 @@ public final class StateVec implements IStateFunctor {
     this.size--;
   }
   
+  public void removeAt(final int index) {
+	  replaceAt(index, null);
+  }
+  
+  public void replaceAt(final int index, final TLCState state) {
+	  this.v[index] = state;
+  }
+  
   public final StateVec copy() {
     TLCState[] res = new TLCState[this.size];
     for (int i = 0; i < this.size; i++) {
