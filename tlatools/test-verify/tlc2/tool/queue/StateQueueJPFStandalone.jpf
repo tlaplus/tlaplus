@@ -1,0 +1,22 @@
+##
+## Adjust for current system!!! Run in Eclispe with .launch file.
+##
+basepath=/home/markus/src/TLA/tla/tlatools
+
+
+target=tlc2.tool.queue.StateQueueJPFTest
+jpf-visual.sourcepath+=${basepath}/test-verify;${basepath}/src
+
+# register console errorTracePrinter as a publisher
+report.publisher+=,errorTracePrinter
+report.errorTracePrinter.class=ErrorTracePrinter
+
+# print trace when property is violated
+report.errorTracePrinter.property_violation=trace
+
+#turn on the shell
+shell=.shell.basicshell.BasicShell
+
+#turn on the new panel
+shell.panels+=,errorTrace
+shell.panels.errorTrace=ErrorTracePanel

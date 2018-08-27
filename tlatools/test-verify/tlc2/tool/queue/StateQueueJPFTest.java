@@ -35,6 +35,10 @@ import tlc2.tool.TLCState;
 
 public class StateQueueJPFTest extends TestJPF {
 
+	public static void main(String[] args) {
+		new StateQueueJPFTest().test();
+	}
+	
 	@Test
 	public void test() {
 		if (verifyNoPropertyViolation()) {
@@ -50,21 +54,23 @@ public class StateQueueJPFTest extends TestJPF {
 				}
 			}, "Main");
 			main.start();
-			
-			Thread worker = new Thread(new Runnable() {
-				public void run() {
-					for (int i = 0; i < 10; i++) {
-						TLCState state = queue.dequeue();
-						if (state == null) {
-							queue.finishAll();
-							return;
+
+			for (int i = 0; i < 3; i++) {
+				Thread worker = new Thread(new Runnable() {
+					public void run() {
+						for (int i = 0; i < 3; i++) {
+							TLCState state = queue.dequeue();
+							if (state == null) {
+								queue.finishAll();
+								return;
+							}
+							queue.enqueue(tlcState);
 						}
-						queue.enqueue(tlcState);
+						queue.finishAll();
 					}
-					queue.finishAll();
-				}
-			}, "Worker");
-			worker.start();
+				}, "Worker" + i);
+				worker.start();
+			}
 		}
 	}
 	
