@@ -24,8 +24,10 @@ public class IdThread extends Thread {
 	public static final void setCurrentState(final TLCState state) {
 		currentState.set(state);
 	}
-	public static final void resetCurrentState() {
+	public static final TLCState resetCurrentState() {
+		final TLCState tlcState = currentState.get();
 		currentState.remove();
+		return tlcState;
 	}
 	
     private final int id;
