@@ -225,6 +225,17 @@ public final class LongArray {
 		set(position2, tmp);
 	}
 	
+	/*
+	 * Variant of swap that uses copyMemory. This implementation - suprisingly - is
+	 * *not* faster compared to swap above (see LongArrayBenchmark).
+	 */
+	void swapCopy(final long position1, final long position2) {
+		final long tmp = unsafe.getAddress(log2phy(position1));
+		unsafe.copyMemory(log2phy(position2), log2phy(position1), 8L);
+		unsafe.putAddress(log2phy(position2), tmp);
+	}
+
+	
     /**
      * Returns the number of elements in this array.
      *

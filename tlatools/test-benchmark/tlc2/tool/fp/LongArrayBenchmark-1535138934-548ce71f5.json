@@ -1,0 +1,128 @@
+[
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayBenchmark.AswapWithCopy",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 3,
+        "jvm" : "/usr/lib/jvm/java-11-openjdk-amd64/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "10.0.2",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "10.0.2+13-Ubuntu-1ubuntu0.18.04.1",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 3,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "primaryMetric" : {
+            "score" : 1.9284288211942446E8,
+            "scoreError" : 1.2894808885787597E7,
+            "scoreConfidence" : [
+                1.7994807323363686E8,
+                2.0573769100521207E8
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.8376569492012057E8,
+                "50.0" : 1.9164345746308792E8,
+                "90.0" : 2.0265063750222045E8,
+                "95.0" : 2.0265063750222045E8,
+                "99.0" : 2.0265063750222045E8,
+                "99.9" : 2.0265063750222045E8,
+                "99.99" : 2.0265063750222045E8,
+                "99.999" : 2.0265063750222045E8,
+                "99.9999" : 2.0265063750222045E8,
+                "100.0" : 2.0265063750222045E8
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    2.0265063750222045E8,
+                    2.0163514267585754E8,
+                    2.0146764720797616E8
+                ],
+                [
+                    1.8787724608521232E8,
+                    1.8376569492012057E8,
+                    1.8502766664432153E8
+                ],
+                [
+                    1.9164345746308792E8,
+                    1.860197486552854E8,
+                    1.9549869792073822E8
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayBenchmark.BswapGetSet",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 3,
+        "jvm" : "/usr/lib/jvm/java-11-openjdk-amd64/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "10.0.2",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "10.0.2+13-Ubuntu-1ubuntu0.18.04.1",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 3,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "primaryMetric" : {
+            "score" : 6.087182668510927E8,
+            "scoreError" : 1.2923203076996244E7,
+            "scoreConfidence" : [
+                5.957950637740965E8,
+                6.216414699280889E8
+            ],
+            "scorePercentiles" : {
+                "0.0" : 5.959914922634013E8,
+                "50.0" : 6.098126314774866E8,
+                "90.0" : 6.174645254898823E8,
+                "95.0" : 6.174645254898823E8,
+                "99.0" : 6.174645254898823E8,
+                "99.9" : 6.174645254898823E8,
+                "99.99" : 6.174645254898823E8,
+                "99.999" : 6.174645254898823E8,
+                "99.9999" : 6.174645254898823E8,
+                "100.0" : 6.174645254898823E8
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    5.970025135703455E8,
+                    5.959914922634013E8,
+                    6.090513375990788E8
+                ],
+                [
+                    6.098126314774866E8,
+                    6.123331210694003E8,
+                    6.067840687850246E8
+                ],
+                [
+                    6.148359838927962E8,
+                    6.151887275124179E8,
+                    6.174645254898823E8
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+

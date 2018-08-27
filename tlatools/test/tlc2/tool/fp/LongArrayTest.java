@@ -30,6 +30,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 import org.junit.Assume;
 import org.junit.Before;
@@ -153,6 +157,56 @@ public class LongArrayTest {
 					array.set(j, -1L);
 				}
 			}
+		}
+	}
+	
+	@Test
+	public void testSwap() throws IOException {
+		final int elements = 10321;
+
+		final LongArray array = new LongArray(elements);
+		array.zeroMemory(1);
+		
+		for (long i = 0L; i < elements; i++) {
+			long value = Long.MAX_VALUE - i;
+			array.set(i, value);
+		}
+		
+		for (int i = 0; i < (elements / 2); i++) {
+			array.swapCopy(i, (elements - 1) - i);
+		}
+		
+		for (long i = 0L; i < elements; i++) {
+			assertEquals(Long.MAX_VALUE - (elements -1) + i, array.get(i));
+		}
+	}
+	
+	@Test
+	public void testSwapRandom() throws IOException {
+		final int elements = 21383;
+		
+		final List<Long> vals = new ArrayList<Long>();
+		final Random rnd = new Random();
+		
+		for (int i = 0; i < elements; i++) {
+			vals.add(rnd.nextLong());
+		}
+		
+		final LongArray array = new LongArray(elements);
+		array.zeroMemory(1);
+		
+		for (int i = 0; i < elements; i++) {
+			array.set(i, vals.get(i));
+		}
+		
+		for (int i = 0; i < (elements / 2); i++) {
+			array.swapCopy(i, (elements - 1) - i);
+		}
+		
+		Collections.reverse(vals);
+		
+		for (int i = 0; i < elements; i++) {
+			assertEquals((long) vals.get(i), array.get(i));
 		}
 	}
 }
