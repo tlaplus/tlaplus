@@ -161,28 +161,28 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(" -> ");
 		this.writer.append(successorsFP);
 		if (visualization == Visualization.STUTTERING) {
-			this.writer.append(" [style=\"dashed\"]");
-		}
-		
-		// Add the transition edge label.
-		if(action!=null) {
-			String transitionLabel = this.dotTransitionLabel(state, successor, action);
-			this.writer.append(transitionLabel);	
-		}
-		
-		this.writer.append(";\n");
-		
-		// If the successor is new, print the state's label. Labels are printed
-		// when writeState sees the successor. It does not print the label for
-		// the current state. If it would print the label for the current state,
-		// the init state labels would be printed twice.
-		if (successorStateIsNew) {
-			// Write the successor's label.
-			this.writer.append(successorsFP);
-			this.writer.append(" [label=\"");
-			this.writer.append(states2dot(successor));
-			this.writer.append("\"]");
+			this.writer.append(" [style=\"dashed\"];\n");
+		} else {
+			// Add the transition edge label.
+			if(action!=null) {
+				String transitionLabel = this.dotTransitionLabel(state, successor, action);
+				this.writer.append(transitionLabel);	
+			}
+			
 			this.writer.append(";\n");
+			
+			// If the successor is new, print the state's label. Labels are printed
+			// when writeState sees the successor. It does not print the label for
+			// the current state. If it would print the label for the current state,
+			// the init state labels would be printed twice.
+			if (successorStateIsNew) {
+				// Write the successor's label.
+				this.writer.append(successorsFP);
+				this.writer.append(" [label=\"");
+				this.writer.append(states2dot(successor));
+				this.writer.append("\"]");
+				this.writer.append(";\n");
+			}
 		}
 		
 		maintainRanks(state);
