@@ -169,7 +169,8 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 	 */
 	@Override
 	public String getJavaVMArgs() {
-		return System.getProperty("aws-ec2.vmargs", super.getJavaVMArgs("-Xmx56G -Xms56G"));
+		return System.getProperty("aws-ec2.vmargs",
+				super.getJavaVMArgs(System.getProperty("aws-ec2.vmargs.memory", "-Xmx56G -Xms56G")));
 	}
 
 	/* (non-Javadoc)
@@ -177,7 +178,7 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 	 */
 	@Override
 	public String getTLCParameters() {
-		return System.getProperty("aws-ec2.tlcparams", super.getTLCParameters(32));
+		return System.getProperty("aws-ec2.tlcparams", super.getTLCParameters(Integer.getInteger("aws-ec2.tlcparams.workers", 32)));
 	}
 
 	/* (non-Javadoc)
@@ -185,6 +186,7 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 	 */
 	@Override
 	public String getJavaWorkerVMArgs() {
-		return System.getProperty("aws-ec2.vmworkerargs", super.getJavaWorkerVMArgs("-Xmx24G -Xms24G -XX:MaxDirectMemorySize=32g"));
+		return System.getProperty("aws-ec2.vmworkerargs", super.getJavaWorkerVMArgs(
+				System.getProperty("aws-ec2.vmworkerargs.memory", "-Xmx24G -Xms24G -XX:MaxDirectMemorySize=32g")));
 	}
 }
