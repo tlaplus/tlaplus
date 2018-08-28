@@ -281,7 +281,8 @@ public class DotStateWriter extends StateWriter {
 
 	protected static String states2dot(final TLCState state) {
 		// Replace "\" with "\\" and """ with "\"".	
-		return state.toString().replace("\\", "\\\\").replace("\"", "\\\"").trim();
+		return state.toString().replace("\\", "\\\\").replace("\"", "\\\"").trim()
+				.replace("\n", "\\n"); // Do not remove remaining (i.e. no danling/leading) "\n". 
 	}
 
 	/* (non-Javadoc)
