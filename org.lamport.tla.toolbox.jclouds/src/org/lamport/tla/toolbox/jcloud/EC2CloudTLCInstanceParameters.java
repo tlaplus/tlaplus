@@ -100,8 +100,20 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 	 */
 	@Override
 	public void mungeTemplateOptions(TemplateOptions templateOptions) {
+		//TODO Create (and the reuse) subnet automatically for instance types that require it.
 		final String subnetId = System.getProperty("aws-ec2.subnetid");
 		if (subnetId != null) {
+			// Manually create a subnet first:
+			// 1) Log into https://console.aws.amazon.com/vpc/ and select the correct region (match getRegion())
+			// 1a) Optionally choose tenancy "dedicated" for more predictable performance
+			// 2) Create a VPC (defaults are fine)
+			// 3) Create a subnet (accept defaults) associated with VPC
+			// 3a) "Modify auto-assign IP settings" of newly created subnet to automatically assign a public ip
+			// 4) Create an Internet Gateway associated with the VPC
+			// 4a) Associate with VPC 
+			// 5) Create a Route Table for the VPC
+			// 5a) Create a route with CIDR 0.0.0.0/0 via the gateway created in 4)
+			// 6) Modify inbound rules of (automatically) created security group to include ssh/22,http/80,https/443 with source "0.0.0.0/0"
 			templateOptions.as(AWSEC2TemplateOptions.class).subnetId(subnetId);
 		}
 	}
