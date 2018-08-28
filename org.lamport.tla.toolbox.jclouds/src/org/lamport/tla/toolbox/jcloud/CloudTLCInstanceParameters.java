@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.eclipse.core.runtime.IStatus;
 import org.jclouds.ContextBuilder;
+import org.jclouds.compute.options.TemplateOptions;
 
 import tlc2.tool.distributed.fp.TLCWorkerAndFPSet;
 
@@ -136,6 +137,10 @@ public abstract class CloudTLCInstanceParameters {
 
 	public void mungeBuilder(ContextBuilder builder) {
 		// Nothing to be done here
+	}
+
+	public void mungeTemplateOptions(TemplateOptions templateOptions) {
+		// no-op, subclass may override
 	}
 
 	public String getOSFilesystemTuning() {

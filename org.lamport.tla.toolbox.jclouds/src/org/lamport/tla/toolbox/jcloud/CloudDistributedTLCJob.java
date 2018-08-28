@@ -507,7 +507,8 @@ public class CloudDistributedTLCJob extends Job {
 			if (isCLI) {
 				templateOptions.tags(Arrays.asList("CLI"));
 			}
-
+			params.mungeTemplateOptions(templateOptions);
+			
             final TemplateBuilder templateBuilder = compute.templateBuilder();
             templateBuilder.options(templateOptions);
             templateBuilder.imageId(params.getImageId());

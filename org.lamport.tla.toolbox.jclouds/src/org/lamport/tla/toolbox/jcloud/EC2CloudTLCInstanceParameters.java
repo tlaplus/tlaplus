@@ -30,7 +30,9 @@ import java.util.Properties;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jclouds.aws.ec2.compute.AWSEC2TemplateOptions;
 import org.jclouds.aws.ec2.reference.AWSEC2Constants;
+import org.jclouds.compute.options.TemplateOptions;
 import org.jclouds.location.reference.LocationConstants;
 
 public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
@@ -91,6 +93,17 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		// added because I was seeing intermittent timeouts with other regions
 		// (i.e. South America).
 		properties.setProperty(LocationConstants.PROPERTY_REGIONS, getRegion());
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#mungeTemplateOptions(org.jclouds.compute.options.TemplateOptions)
+	 */
+	@Override
+	public void mungeTemplateOptions(TemplateOptions templateOptions) {
+		final String subnetId = System.getProperty("aws-ec2.subnetid");
+		if (subnetId != null) {
+			templateOptions.as(AWSEC2TemplateOptions.class).subnetId(subnetId);
+		}
 	}
 
 	@Override
