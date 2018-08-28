@@ -111,10 +111,9 @@ public class DotStateWriter extends StateWriter {
 	public synchronized void writeState(final TLCState state) {
 		// Marker the state as an initial state by using a filled style.
 		this.writer.append(Long.toString(state.fingerPrint()));
-		this.writer.append(" [style = filled]");
 		this.writer.append(" [label=\"");
 		this.writer.append(states2dot(state));
-		this.writer.append("\"]");
+		this.writer.append("\",style = filled]");
 		this.writer.append("\n");
 		
 		maintainRanks(state);
@@ -233,7 +232,7 @@ public class DotStateWriter extends StateWriter {
 	    // Only add action label if specified.
 		final String actionName = actionLabels ? action.getName().toString() : "" ;
 		
-		final String labelFmtStr = " [label=\"%s\" color=\"%s\" fontcolor=\"%s\"]";
+		final String labelFmtStr = " [label=\"%s\",color=\"%s\",fontcolor=\"%s\"]";
 		return String.format(labelFmtStr, actionName, color, color);
 	}
 	
@@ -250,10 +249,10 @@ public class DotStateWriter extends StateWriter {
 		sb.append(String.format("subgraph %s {", "cluster_legend"));
 		sb.append("graph[style=bold];");
 		sb.append("label = \"Next State Actions\" style=\"solid\"\n");
-		sb.append(String.format("node [ labeljust=\"l\" colorscheme=\"%s\" style=filled shape=record ]\n",
+		sb.append(String.format("node [ labeljust=\"l\",colorscheme=\"%s\",style=filled,shape=record ]\n",
 				dotColorScheme));
 		for (String action : actions) {
-			String str = String.format("%s [label=\"%s\" fillcolor=%d]", action, action,
+			String str = String.format("%s [label=\"%s\",fillcolor=%d]", action, action,
 					this.actionToColors.get(action));
 			sb.append(str);
 			sb.append("\n");
