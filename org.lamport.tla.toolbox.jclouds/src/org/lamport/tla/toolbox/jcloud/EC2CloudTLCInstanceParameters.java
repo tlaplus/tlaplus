@@ -155,7 +155,7 @@ public class EC2CloudTLCInstanceParameters extends CloudTLCInstanceParameters {
 		// Create a raid0 out of the two instance store
 		// disks and optimize its fs towards performance
 		// by sacrificing data durability.
-		return "umount /mnt && "
+		return "umount /mnt ; "
 		+ "/usr/bin/yes|/sbin/mdadm --create --force --auto=yes /dev/md0 --level=0 --raid-devices=2 --assume-clean --name=tlaplus /dev/xvdb /dev/xvdc && "
 		+ "/sbin/mdadm --detail --scan >> /etc/mdadm/mdadm.conf && "
 		+ "sed -i '\\?^/dev/xvdb?d' /etc/fstab && "
