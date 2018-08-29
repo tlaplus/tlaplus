@@ -554,6 +554,9 @@ public class CloudDistributedTLCJob extends Job {
 							// see http://stackoverflow.com/a/19391042
 							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections && "
 							+ "echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections && "
+							// http://repos.azulsystems.com/
+//                            + "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x219BD9C9 && "
+//                            + "apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main' && "
 							+ params.getExtraRepositories()
 							+ " && "
 							// Update Ubuntu's package index. The public/remote
@@ -597,7 +600,9 @@ public class CloudDistributedTLCJob extends Job {
 							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades "
 									+ params.getExtraPackages() + " -y"
 							+ " && "
-							+ (doJfr ? "apt-get install --no-install-recommends oracle-java8-installer oracle-java8-set-default -y " : "/bin/true")
+							+ (doJfr ? "apt-get install --no-install-recommends oracle-java8-installer oracle-java8-set-default -y"
+									 : "/bin/true")
+//									 : "apt-get install --no-install-recommends zulu-8 -y") // Azul Zulu seems to beat Oracle but doesn't have support for JFR. Also, it adds another external dependency, ie repos.azulsystems.com
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
 							+ params.getOSFilesystemTuning()
