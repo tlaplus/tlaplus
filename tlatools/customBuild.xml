@@ -188,9 +188,6 @@
 		<!-- where it creates the plugin -->
 		<unzip src="lib/javax.mail.jar" dest="target/classes"/>
 
-		<!-- TODO: add javax.activation to lib/ and extract it here too. Otherwise we have a -->
-		<!-- runtime dependency on Java 6. -->
-
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}" level="9">

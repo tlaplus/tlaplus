@@ -3,6 +3,7 @@ package util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -13,8 +14,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -34,7 +33,6 @@ import javax.naming.directory.InitialDirContext;
 import model.ModelInJar;
 import tlc2.output.MP;
 
-// Requires Java >=6 due to javax.activation only part starting with 6
 public class MailSender {
 
 	public static final String MODEL_NAME = "modelName";
@@ -99,8 +97,7 @@ public class MailSender {
 						continue;
 					}
 					messageBodyPart = new MimeBodyPart();
-					messageBodyPart.setDataHandler(new DataHandler(
-							new FileDataSource(file)));
+					messageBodyPart.attachFile(file);
 					messageBodyPart.setFileName(file.getName());
 					messageBodyPart.setHeader("Content-Type", "text/plain");
 					multipart.addBodyPart(messageBodyPart);
@@ -127,6 +124,8 @@ public class MailSender {
 			} catch (AddressException e) {
 				e.printStackTrace();
 			} catch (MessagingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
