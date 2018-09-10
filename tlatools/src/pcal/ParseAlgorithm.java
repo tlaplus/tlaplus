@@ -954,6 +954,8 @@ public class ParseAlgorithm
          }
        else
          { result.unlabDo = GetCStmt() ; } ;
+       if (result.unlabDo.size() == 0)
+         { ParsingError("Missing body of while statement at"); }
        result.labDo = new Vector() ;
          /******************************************************************
          * For historical reasons, some methods expect a labDo field to    *
