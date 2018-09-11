@@ -319,7 +319,11 @@ public class Tool
   public final void getInitStates(IStateFunctor functor) {
 	  Vect init = this.getInitStateSpec();
 	  ActionItemList acts = ActionItemList.Empty;
-	  for (int i = 1; i < init.size(); i++) {
+      // MAK 09/11/2018: Tail to head iteration order cause the first elem added with
+      // acts.cons to be acts tail. This fixes the bug/funny behavior that the init
+      // predicate Init == A /\ B /\ C /\ D was evaluated in the order A, D, C, B (A
+      // doesn't get added to acts at all).
+	  for (int i = (init.size() - 1); i > 0; i--) {
 		  Action elem = (Action)init.elementAt(i);
 		  acts = acts.cons(elem.pred, elem.con, ActionItemList.PRED);
 	  }

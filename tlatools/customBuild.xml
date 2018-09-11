@@ -301,6 +301,7 @@
 						<exclude name="**/TLCServerTestCase.java" />
 						<exclude name="**/SuccessfulSimulationTestCase.java" />
 						<exclude name="**/AbstractExampleTestCase.java" />
+						<exclude name="**/InitEvalOrderTest.java" />
 						<exclude name="**/TestMPRecorder.java" />
 						<exclude name="**/TestPrintStream.java" />
 						<exclude name="**/Abstract*Test.java" />
@@ -361,6 +362,7 @@
 					<exclude name="**/TLCServerTestCase.java" />
 					<exclude name="**/SuccessfulSimulationTestCase.java" />
 					<exclude name="**/AbstractExampleTestCase.java" />
+					<exclude name="**/InitEvalOrderTest.java" />
 					<exclude name="**/TestMPRecorder.java" />
 					<exclude name="**/TestPrintStream.java" />
 					<exclude name="**/Abstract*Test.java" />
