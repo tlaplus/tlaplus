@@ -452,7 +452,6 @@ public class Simulator implements Cancelable {
 		try {
 			this.aril = rng.getAril();
 			// Start up multiple simulation worker threads, each with their own unique seed.
-			MP.printMessage(EC.GENERAL, "Starting " + String.valueOf(this.numWorkers) + " simulation workers.");
 			ArrayList<SimulationWorker> workers = new ArrayList<>();
 			for (int i = 0; i < this.numWorkers; i++) {
 				SimulationWorker worker = new SimulationWorker(i, this.rng.nextLong());
