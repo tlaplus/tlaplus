@@ -868,8 +868,8 @@ public class TLC
 						new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
 								TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
 								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) });
-                Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
-                        traceNum, rng, seed, true, resolver, specObj);
+				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
+                        traceNum, rng, seed, true, resolver, specObj, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
 //                MP.printMessage(EC.TLC_STARTING);
