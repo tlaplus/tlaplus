@@ -2,9 +2,8 @@
 EXTENDS Integers
 
 \*
-\* This spec attempts to define the simplest state machine that 
-\* has more than one behavior. Originally added to verify correctness of simulation
-\* mode in both single and multi-threaded mode.
+\* This spec attempts to define a simple state machine that has multiple behaviors. 
+\* Originally added to verify correctness of simulation mode in both single and multi-threaded mode.
 \*
 
 VARIABLE branch, depth
@@ -37,7 +36,7 @@ UnderspecifiedNextSpec == Init /\ [][UnderspecifiedNext]_<<branch, depth>>
 InvInitState == ~(branch = 0)
 
 \* A valid invariant that should be violated by the spec.
-Inv == ~(branch = 1)
+Inv == ~(depth = 2)
 
 \* A nonsensical invariant that will cause a runtime evaluation error on the initial state.
 InvBadEvalInitState == (0 = "a")
@@ -45,6 +44,21 @@ InvBadEvalInitState == (0 = "a")
 \* A nonsensical invariant that will cause a runtime evaluation error on a non-initial state.
 InvBadEvalNonInitState == IF branch = 0 THEN TRUE ELSE (0 = "a")
 
-TemporalProp == <>(branch = 15)
+\* A valid action property that should be violated by the spec.
+ActionProp == [][branch' > branch]_<<branch, depth>>
+
+\* A nonsensical action property that will cause a runtime evaluation error.
+ActionPropBadEval == [][IF branch = 0 THEN TRUE ELSE 0 = "a"]_<<branch, depth>>
+
+\* A simple state and action constraint, and an invariant that should hold true 
+\* given either constraint.
+StateConstraint == depth < 4
+ActionConstraint == ~(depth' = 4 /\ depth = 3)
+InvConstraint   == depth <= 4
+
+
+
+\*TemporalProp == <>(branch = 15)
+
 
 =============================================================================

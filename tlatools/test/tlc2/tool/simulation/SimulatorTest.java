@@ -1,8 +1,6 @@
 package tlc2.tool.simulation;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 
@@ -10,7 +8,6 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
 
-import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.output.EC;
@@ -23,7 +20,7 @@ import util.SimpleFilenameToStream;
 import util.ToolIO;
 
 /**
- * Correctness tests of single-threaded Simulator.
+ * Correctness tests for a Simulator.
  */
 public class SimulatorTest extends CommonTestCase {
 	
@@ -32,7 +29,6 @@ public class SimulatorTest extends CommonTestCase {
 	public SimulatorTest() {
 		super(new TestMPRecorder());
 		MP.setRecorder(recorder);
-		TLC.traceNum = 100;
 	}
 	
 	@Before
@@ -61,8 +57,16 @@ public class SimulatorTest extends CommonTestCase {
 					true, new SimpleFilenameToStream(), null, numWorkers());
 			simulator.simulate();
 		} catch (Exception e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
+	}
+	
+	@Test
+	public void testSuccessfulSimulation() {	
+		runSimulatorTest("BasicMultiTrace", "MC", false, 100, 100);
+		assertFalse(recorder.recorded(EC.TLC_INVARIANT_VIOLATED_INITIAL));
+		assertTrue(recorder.recorded(EC.TLC_PROGRESS_SIMU));
 	}
 	
 	@Test
@@ -74,37 +78,49 @@ public class SimulatorTest extends CommonTestCase {
 	@Test
 	public void testInvariantViolation() {	
 		runSimulatorTest("BasicMultiTrace", "MCInv", false, 100, 100);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, "Inv"));
 	}
 	
 	@Test
 	public void testInvariantBadEvalInitState() {
 		runSimulatorTest("BasicMultiTrace", "MCBadInvInitState", false, 100, 100);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
 		assertTrue(recorder.recorded(EC.TLC_INITIAL_STATE));
 	}
 	
 	@Test
 	public void testInvariantBadEvalNonInitState() {
 		runSimulatorTest("BasicMultiTrace", "MCBadInvNonInitState", false, 100, 100);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_EVALUATION_FAILED, "InvBadEvalNonInitState"));
-	}
-	
-	@Test
-	public void testUnderspecifiedNext() {
-		runSimulatorTest("BasicMultiTrace", "MCUnderspecNext", false, 100, 100);
-		assertTrue(recorder.recorded(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT));
 	}
 	
 	@Test
 	public void testUnderspecifiedInit() {
 		runSimulatorTest("BasicMultiTrace", "MCUnderspecInit", false, 100, 100);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
 		assertTrue(recorder.recorded(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_INITIAL));
 	}
 	
 	@Test
-	public void testDeadlock() {
-		runSimulatorTest("BasicMultiTrace", "MC", true, 100, 100);
-		assertTrue(recorder.recorded(EC.TLC_DEADLOCK_REACHED));
+	public void testInvariantViolationContinue() {	
+		TLCGlobals.continuation = true;
+		runSimulatorTest("BasicMultiTrace", "MCInv", false, 100, 100);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, "Inv"));
+	}
+	
+	@Test
+	public void testDontContinueOnRuntimeSpecError() {
+		// We should only continue simulating if a worker encounters a safety or liveness violation.
+		// Errors in the spec e.g. runtime evaluation errors should terminate all workers, even if
+		// continue=true. We set the traceCnt to something extremely high, so that this test should
+		// hang if the simulator does not terminate on the first error.
+		TLCGlobals.continuation = true;
+		runSimulatorTest("BasicMultiTrace", "MCBadInvNonInitState", false, 100, Long.MAX_VALUE);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_EVALUATION_FAILED, "InvBadEvalNonInitState"));
 	}
 	
 
