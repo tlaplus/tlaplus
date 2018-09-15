@@ -40,6 +40,10 @@ public class ValueVec implements Cloneable, Serializable {
 			addElement(value);
 		}
     }
+    public final void addElementAt(Value val, int index) {
+        this.elementData[index] = val;
+        this.elementCount++;
+    }
 
   public final void addElement(Value val) {
     if (this.elementCount == this.elementData.length) {

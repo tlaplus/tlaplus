@@ -423,6 +423,96 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		return new SetEnumValue(new ValueVec(sets), false);
 	}
 	
+	private final ValueEnumeration emptyEnumeration = new ValueEnumeration() {
+		private boolean done = false;
+
+		@Override
+		public void reset() {
+			done = false;
+		}
+		
+		@Override
+		public Value nextElement() {
+			if (done) { return null; }
+			done = true;
+			return new SetEnumValue();
+		}
+	};
+
+	/**
+	 * @see file SubsetValue.tla.
+	 * <p>
+	 * In addition, this generates all subsets of this SubsetValue instance which extends
+	 * the order definition given in SubsetValue.tla such that a subset s is considered 
+	 * lower than t (s < t) if Cardinality(s) < Cardinality(t) \/ Definition in SubsetValue.tla.
+	 * <p>
+	 * The most noteworthy difference between bElements and 
+	 */
+	final ValueEnumeration elementsNormalized() {
+		final int n = set.size();
+		if (n == 0) {
+			emptyEnumeration.reset();
+			return emptyEnumeration;
+		}
+		final ValueVec elems = ((SetEnumValue) SetEnumValue.convert(set).normalize()).elems;
+		return new ValueEnumeration() {
+
+			private int k = 0;
+			private final int[] indices = new int[n];
+
+			@Override
+			public void reset() {
+				reset(0);
+			}
+
+			private void reset(final int k) {
+				this.k = k;
+				if (k > n) {
+					return;
+				}
+				for (int i = 0; i < k; i++) {
+					indices[i] = i;
+				}
+			}
+
+			@Override
+			public Value nextElement() {
+				if (k > n) {
+					return null;
+				} else if (k == 0) {
+					reset(k + 1);
+					return new SetEnumValue();
+				}
+
+				final ValueVec vals = new ValueVec(k);
+				int i = k - 1;
+				for (int j = i; j >= 0; j--) {
+					vals.addElementAt(elems.elementAt(indices[j]), j);
+					if (indices[j] + k - j == n) {
+						i = j - 1;
+					}
+				}
+				final SetEnumValue result = new SetEnumValue(vals, true);
+
+				if (indices[0] == n - k) {
+					// Increment k to generate the set of k-subset for this k.
+					reset(k + 1);
+					return result;
+				}
+
+				// Increment the right element r by one and remember its old value.
+				indices[i]++;
+
+				// Adjust all the elements right to the right element r. For all indices j > i,
+				// the element at j is set to p[i] + j.
+				for (i++; i < k; i++) {
+					indices[i] = indices[i - 1] + 1;
+				}
+				return result;
+			}
+		};
+	}
+	
 	/**
 	 * @see SubsetValue#kElements(int)
 	 */
@@ -447,21 +537,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			throw new IllegalArgumentException();
 		}
 		if (k == 0) {
-			return new ValueEnumeration() {
-				private boolean done = false;
-
-				@Override
-				public void reset() {
-					done = false;
-				}
-				
-				@Override
-				public Value nextElement() {
-					if (done) { return null; }
-					done = true;
-					return new SetEnumValue();
-				}
-			};
+			emptyEnumeration.reset();
+			return emptyEnumeration;
 		}
 
 		return new KElementEnumerator(k);
@@ -537,7 +614,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   public final ValueEnumeration elements() {
     try {
       if (this.pset == null || this.pset == DummyEnum) {
-        return new Enumerator();
+    	  return elementsNormalized();
       }
       return this.pset.elements();
     }
@@ -545,6 +622,10 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
+  }
+  
+  final ValueEnumeration elementsLexicographic() {
+      return new Enumerator();
   }
 
   final class Enumerator implements ValueEnumeration {

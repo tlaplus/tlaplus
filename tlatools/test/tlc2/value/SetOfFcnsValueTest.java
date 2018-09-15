@@ -82,14 +82,12 @@ public class SetOfFcnsValueTest {
 				enumerator.elementAt(i++));
 		assertEquals(new FcnRcdValue(values,
 				new Value[] { emptyset, emptyset,
+						new SetEnumValue(new Value[] { new StringValue("c") }, true) },
+				true), enumerator.elementAt(i++));
+		assertEquals(new FcnRcdValue(values,
+				new Value[] { emptyset, emptyset,
 						new SetEnumValue(new Value[] { new StringValue("a"), new StringValue("b") }, true) },
 				true), enumerator.elementAt(i++));
-		assertEquals(
-				new FcnRcdValue(values,
-						new Value[] { emptyset, emptyset,
-								new SetEnumValue(new Value[] { new StringValue("c") }, true) },
-						true),
-				enumerator.elementAt(i++));
 
 		// Last element
 		final SetEnumValue setEnumValue = new SetEnumValue(

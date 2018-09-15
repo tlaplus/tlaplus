@@ -1,0 +1,3184 @@
+[
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "0"
+        },
+        "primaryMetric" : {
+            "score" : 3.611267082827124E7,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3.611267082827124E7,
+                "50.0" : 3.611267082827124E7,
+                "90.0" : 3.611267082827124E7,
+                "95.0" : 3.611267082827124E7,
+                "99.0" : 3.611267082827124E7,
+                "99.9" : 3.611267082827124E7,
+                "99.99" : 3.611267082827124E7,
+                "99.999" : 3.611267082827124E7,
+                "99.9999" : 3.611267082827124E7,
+                "100.0" : 3.611267082827124E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    3.611267082827124E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 1.0354789744882155E7,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.0354789744882155E7,
+                "50.0" : 1.0354789744882155E7,
+                "90.0" : 1.0354789744882155E7,
+                "95.0" : 1.0354789744882155E7,
+                "99.0" : 1.0354789744882155E7,
+                "99.9" : 1.0354789744882155E7,
+                "99.99" : 1.0354789744882155E7,
+                "99.999" : 1.0354789744882155E7,
+                "99.9999" : 1.0354789744882155E7,
+                "100.0" : 1.0354789744882155E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1.0354789744882155E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "2"
+        },
+        "primaryMetric" : {
+            "score" : 7424758.104352328,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 7424758.104352328,
+                "50.0" : 7424758.104352328,
+                "90.0" : 7424758.104352328,
+                "95.0" : 7424758.104352328,
+                "99.0" : 7424758.104352328,
+                "99.9" : 7424758.104352328,
+                "99.99" : 7424758.104352328,
+                "99.999" : 7424758.104352328,
+                "99.9999" : 7424758.104352328,
+                "100.0" : 7424758.104352328
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    7424758.104352328
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "3"
+        },
+        "primaryMetric" : {
+            "score" : 4520093.423989947,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 4520093.423989947,
+                "50.0" : 4520093.423989947,
+                "90.0" : 4520093.423989947,
+                "95.0" : 4520093.423989947,
+                "99.0" : 4520093.423989947,
+                "99.9" : 4520093.423989947,
+                "99.99" : 4520093.423989947,
+                "99.999" : 4520093.423989947,
+                "99.9999" : 4520093.423989947,
+                "100.0" : 4520093.423989947
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    4520093.423989947
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "4"
+        },
+        "primaryMetric" : {
+            "score" : 1925178.7174611264,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1925178.7174611264,
+                "50.0" : 1925178.7174611264,
+                "90.0" : 1925178.7174611264,
+                "95.0" : 1925178.7174611264,
+                "99.0" : 1925178.7174611264,
+                "99.9" : 1925178.7174611264,
+                "99.99" : 1925178.7174611264,
+                "99.999" : 1925178.7174611264,
+                "99.9999" : 1925178.7174611264,
+                "100.0" : 1925178.7174611264
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1925178.7174611264
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 133009.5244991998,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 133009.5244991998,
+                "50.0" : 133009.5244991998,
+                "90.0" : 133009.5244991998,
+                "95.0" : 133009.5244991998,
+                "99.0" : 133009.5244991998,
+                "99.9" : 133009.5244991998,
+                "99.99" : 133009.5244991998,
+                "99.999" : 133009.5244991998,
+                "99.9999" : 133009.5244991998,
+                "100.0" : 133009.5244991998
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    133009.5244991998
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "10"
+        },
+        "primaryMetric" : {
+            "score" : 29226.867534242203,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 29226.867534242203,
+                "50.0" : 29226.867534242203,
+                "90.0" : 29226.867534242203,
+                "95.0" : 29226.867534242203,
+                "99.0" : 29226.867534242203,
+                "99.9" : 29226.867534242203,
+                "99.99" : 29226.867534242203,
+                "99.999" : 29226.867534242203,
+                "99.9999" : 29226.867534242203,
+                "100.0" : 29226.867534242203
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    29226.867534242203
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "12"
+        },
+        "primaryMetric" : {
+            "score" : 6081.382406132828,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 6081.382406132828,
+                "50.0" : 6081.382406132828,
+                "90.0" : 6081.382406132828,
+                "95.0" : 6081.382406132828,
+                "99.0" : 6081.382406132828,
+                "99.9" : 6081.382406132828,
+                "99.99" : 6081.382406132828,
+                "99.999" : 6081.382406132828,
+                "99.9999" : 6081.382406132828,
+                "100.0" : 6081.382406132828
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    6081.382406132828
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "14"
+        },
+        "primaryMetric" : {
+            "score" : 1390.845676349573,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1390.845676349573,
+                "50.0" : 1390.845676349573,
+                "90.0" : 1390.845676349573,
+                "95.0" : 1390.845676349573,
+                "99.0" : 1390.845676349573,
+                "99.9" : 1390.845676349573,
+                "99.99" : 1390.845676349573,
+                "99.999" : 1390.845676349573,
+                "99.9999" : 1390.845676349573,
+                "100.0" : 1390.845676349573
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1390.845676349573
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 330.27592509790907,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 330.27592509790907,
+                "50.0" : 330.27592509790907,
+                "90.0" : 330.27592509790907,
+                "95.0" : 330.27592509790907,
+                "99.0" : 330.27592509790907,
+                "99.9" : 330.27592509790907,
+                "99.99" : 330.27592509790907,
+                "99.999" : 330.27592509790907,
+                "99.9999" : 330.27592509790907,
+                "100.0" : 330.27592509790907
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    330.27592509790907
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "18"
+        },
+        "primaryMetric" : {
+            "score" : 73.27729464188555,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 73.27729464188555,
+                "50.0" : 73.27729464188555,
+                "90.0" : 73.27729464188555,
+                "95.0" : 73.27729464188555,
+                "99.0" : 73.27729464188555,
+                "99.9" : 73.27729464188555,
+                "99.99" : 73.27729464188555,
+                "99.999" : 73.27729464188555,
+                "99.9999" : 73.27729464188555,
+                "100.0" : 73.27729464188555
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    73.27729464188555
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsAlwaysNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "19"
+        },
+        "primaryMetric" : {
+            "score" : 27.9553224857132,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 27.9553224857132,
+                "50.0" : 27.9553224857132,
+                "90.0" : 27.9553224857132,
+                "95.0" : 27.9553224857132,
+                "99.0" : 27.9553224857132,
+                "99.9" : 27.9553224857132,
+                "99.99" : 27.9553224857132,
+                "99.999" : 27.9553224857132,
+                "99.9999" : 27.9553224857132,
+                "100.0" : 27.9553224857132
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    27.9553224857132
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "0"
+        },
+        "primaryMetric" : {
+            "score" : 1.3197374943346184E7,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.3197374943346184E7,
+                "50.0" : 1.3197374943346184E7,
+                "90.0" : 1.3197374943346184E7,
+                "95.0" : 1.3197374943346184E7,
+                "99.0" : 1.3197374943346184E7,
+                "99.9" : 1.3197374943346184E7,
+                "99.99" : 1.3197374943346184E7,
+                "99.999" : 1.3197374943346184E7,
+                "99.9999" : 1.3197374943346184E7,
+                "100.0" : 1.3197374943346184E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1.3197374943346184E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 6123381.900721031,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 6123381.900721031,
+                "50.0" : 6123381.900721031,
+                "90.0" : 6123381.900721031,
+                "95.0" : 6123381.900721031,
+                "99.0" : 6123381.900721031,
+                "99.9" : 6123381.900721031,
+                "99.99" : 6123381.900721031,
+                "99.999" : 6123381.900721031,
+                "99.9999" : 6123381.900721031,
+                "100.0" : 6123381.900721031
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    6123381.900721031
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "2"
+        },
+        "primaryMetric" : {
+            "score" : 4565321.513276472,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 4565321.513276472,
+                "50.0" : 4565321.513276472,
+                "90.0" : 4565321.513276472,
+                "95.0" : 4565321.513276472,
+                "99.0" : 4565321.513276472,
+                "99.9" : 4565321.513276472,
+                "99.99" : 4565321.513276472,
+                "99.999" : 4565321.513276472,
+                "99.9999" : 4565321.513276472,
+                "100.0" : 4565321.513276472
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    4565321.513276472
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "3"
+        },
+        "primaryMetric" : {
+            "score" : 2608382.546140382,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 2608382.546140382,
+                "50.0" : 2608382.546140382,
+                "90.0" : 2608382.546140382,
+                "95.0" : 2608382.546140382,
+                "99.0" : 2608382.546140382,
+                "99.9" : 2608382.546140382,
+                "99.99" : 2608382.546140382,
+                "99.999" : 2608382.546140382,
+                "99.9999" : 2608382.546140382,
+                "100.0" : 2608382.546140382
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    2608382.546140382
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "4"
+        },
+        "primaryMetric" : {
+            "score" : 1122145.0197631393,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1122145.0197631393,
+                "50.0" : 1122145.0197631393,
+                "90.0" : 1122145.0197631393,
+                "95.0" : 1122145.0197631393,
+                "99.0" : 1122145.0197631393,
+                "99.9" : 1122145.0197631393,
+                "99.99" : 1122145.0197631393,
+                "99.999" : 1122145.0197631393,
+                "99.9999" : 1122145.0197631393,
+                "100.0" : 1122145.0197631393
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1122145.0197631393
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 25729.526497328603,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 25729.526497328603,
+                "50.0" : 25729.526497328603,
+                "90.0" : 25729.526497328603,
+                "95.0" : 25729.526497328603,
+                "99.0" : 25729.526497328603,
+                "99.9" : 25729.526497328603,
+                "99.99" : 25729.526497328603,
+                "99.999" : 25729.526497328603,
+                "99.9999" : 25729.526497328603,
+                "100.0" : 25729.526497328603
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    25729.526497328603
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "10"
+        },
+        "primaryMetric" : {
+            "score" : 2847.859944849876,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 2847.859944849876,
+                "50.0" : 2847.859944849876,
+                "90.0" : 2847.859944849876,
+                "95.0" : 2847.859944849876,
+                "99.0" : 2847.859944849876,
+                "99.9" : 2847.859944849876,
+                "99.99" : 2847.859944849876,
+                "99.999" : 2847.859944849876,
+                "99.9999" : 2847.859944849876,
+                "100.0" : 2847.859944849876
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    2847.859944849876
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "12"
+        },
+        "primaryMetric" : {
+            "score" : 324.61093701658825,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 324.61093701658825,
+                "50.0" : 324.61093701658825,
+                "90.0" : 324.61093701658825,
+                "95.0" : 324.61093701658825,
+                "99.0" : 324.61093701658825,
+                "99.9" : 324.61093701658825,
+                "99.99" : 324.61093701658825,
+                "99.999" : 324.61093701658825,
+                "99.9999" : 324.61093701658825,
+                "100.0" : 324.61093701658825
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    324.61093701658825
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "14"
+        },
+        "primaryMetric" : {
+            "score" : 29.229042769052267,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 29.229042769052267,
+                "50.0" : 29.229042769052267,
+                "90.0" : 29.229042769052267,
+                "95.0" : 29.229042769052267,
+                "99.0" : 29.229042769052267,
+                "99.9" : 29.229042769052267,
+                "99.99" : 29.229042769052267,
+                "99.999" : 29.229042769052267,
+                "99.9999" : 29.229042769052267,
+                "100.0" : 29.229042769052267
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    29.229042769052267
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 1.9081657766508895,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.9081657766508895,
+                "50.0" : 1.9081657766508895,
+                "90.0" : 1.9081657766508895,
+                "95.0" : 1.9081657766508895,
+                "99.0" : 1.9081657766508895,
+                "99.9" : 1.9081657766508895,
+                "99.99" : 1.9081657766508895,
+                "99.999" : 1.9081657766508895,
+                "99.9999" : 1.9081657766508895,
+                "100.0" : 1.9081657766508895
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1.9081657766508895
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "18"
+        },
+        "primaryMetric" : {
+            "score" : 0.128569060485454,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.128569060485454,
+                "50.0" : 0.128569060485454,
+                "90.0" : 0.128569060485454,
+                "95.0" : 0.128569060485454,
+                "99.0" : 0.128569060485454,
+                "99.9" : 0.128569060485454,
+                "99.99" : 0.128569060485454,
+                "99.999" : 0.128569060485454,
+                "99.9999" : 0.128569060485454,
+                "100.0" : 0.128569060485454
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    0.128569060485454
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "19"
+        },
+        "primaryMetric" : {
+            "score" : 0.031828143851718595,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.031828143851718595,
+                "50.0" : 0.031828143851718595,
+                "90.0" : 0.031828143851718595,
+                "95.0" : 0.031828143851718595,
+                "99.0" : 0.031828143851718595,
+                "99.9" : 0.031828143851718595,
+                "99.99" : 0.031828143851718595,
+                "99.999" : 0.031828143851718595,
+                "99.9999" : 0.031828143851718595,
+                "100.0" : 0.031828143851718595
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    0.031828143851718595
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "0"
+        },
+        "primaryMetric" : {
+            "score" : 1.700831123275485E7,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.700831123275485E7,
+                "50.0" : 1.700831123275485E7,
+                "90.0" : 1.700831123275485E7,
+                "95.0" : 1.700831123275485E7,
+                "99.0" : 1.700831123275485E7,
+                "99.9" : 1.700831123275485E7,
+                "99.99" : 1.700831123275485E7,
+                "99.999" : 1.700831123275485E7,
+                "99.9999" : 1.700831123275485E7,
+                "100.0" : 1.700831123275485E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1.700831123275485E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 1.1138688178715378E7,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.1138688178715378E7,
+                "50.0" : 1.1138688178715378E7,
+                "90.0" : 1.1138688178715378E7,
+                "95.0" : 1.1138688178715378E7,
+                "99.0" : 1.1138688178715378E7,
+                "99.9" : 1.1138688178715378E7,
+                "99.99" : 1.1138688178715378E7,
+                "99.999" : 1.1138688178715378E7,
+                "99.9999" : 1.1138688178715378E7,
+                "100.0" : 1.1138688178715378E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1.1138688178715378E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "2"
+        },
+        "primaryMetric" : {
+            "score" : 7759027.958066327,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 7759027.958066327,
+                "50.0" : 7759027.958066327,
+                "90.0" : 7759027.958066327,
+                "95.0" : 7759027.958066327,
+                "99.0" : 7759027.958066327,
+                "99.9" : 7759027.958066327,
+                "99.99" : 7759027.958066327,
+                "99.999" : 7759027.958066327,
+                "99.9999" : 7759027.958066327,
+                "100.0" : 7759027.958066327
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    7759027.958066327
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "3"
+        },
+        "primaryMetric" : {
+            "score" : 4547334.765941614,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 4547334.765941614,
+                "50.0" : 4547334.765941614,
+                "90.0" : 4547334.765941614,
+                "95.0" : 4547334.765941614,
+                "99.0" : 4547334.765941614,
+                "99.9" : 4547334.765941614,
+                "99.99" : 4547334.765941614,
+                "99.999" : 4547334.765941614,
+                "99.9999" : 4547334.765941614,
+                "100.0" : 4547334.765941614
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    4547334.765941614
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "4"
+        },
+        "primaryMetric" : {
+            "score" : 2563987.258485594,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 2563987.258485594,
+                "50.0" : 2563987.258485594,
+                "90.0" : 2563987.258485594,
+                "95.0" : 2563987.258485594,
+                "99.0" : 2563987.258485594,
+                "99.9" : 2563987.258485594,
+                "99.99" : 2563987.258485594,
+                "99.999" : 2563987.258485594,
+                "99.9999" : 2563987.258485594,
+                "100.0" : 2563987.258485594
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    2563987.258485594
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 131149.70918675946,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 131149.70918675946,
+                "50.0" : 131149.70918675946,
+                "90.0" : 131149.70918675946,
+                "95.0" : 131149.70918675946,
+                "99.0" : 131149.70918675946,
+                "99.9" : 131149.70918675946,
+                "99.99" : 131149.70918675946,
+                "99.999" : 131149.70918675946,
+                "99.9999" : 131149.70918675946,
+                "100.0" : 131149.70918675946
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    131149.70918675946
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "10"
+        },
+        "primaryMetric" : {
+            "score" : 12308.28613737422,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 12308.28613737422,
+                "50.0" : 12308.28613737422,
+                "90.0" : 12308.28613737422,
+                "95.0" : 12308.28613737422,
+                "99.0" : 12308.28613737422,
+                "99.9" : 12308.28613737422,
+                "99.99" : 12308.28613737422,
+                "99.999" : 12308.28613737422,
+                "99.9999" : 12308.28613737422,
+                "100.0" : 12308.28613737422
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    12308.28613737422
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "12"
+        },
+        "primaryMetric" : {
+            "score" : 2598.9041516352163,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 2598.9041516352163,
+                "50.0" : 2598.9041516352163,
+                "90.0" : 2598.9041516352163,
+                "95.0" : 2598.9041516352163,
+                "99.0" : 2598.9041516352163,
+                "99.9" : 2598.9041516352163,
+                "99.99" : 2598.9041516352163,
+                "99.999" : 2598.9041516352163,
+                "99.9999" : 2598.9041516352163,
+                "100.0" : 2598.9041516352163
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    2598.9041516352163
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "14"
+        },
+        "primaryMetric" : {
+            "score" : 621.0476255011224,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 621.0476255011224,
+                "50.0" : 621.0476255011224,
+                "90.0" : 621.0476255011224,
+                "95.0" : 621.0476255011224,
+                "99.0" : 621.0476255011224,
+                "99.9" : 621.0476255011224,
+                "99.99" : 621.0476255011224,
+                "99.999" : 621.0476255011224,
+                "99.9999" : 621.0476255011224,
+                "100.0" : 621.0476255011224
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    621.0476255011224
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 139.82630658657763,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 139.82630658657763,
+                "50.0" : 139.82630658657763,
+                "90.0" : 139.82630658657763,
+                "95.0" : 139.82630658657763,
+                "99.0" : 139.82630658657763,
+                "99.9" : 139.82630658657763,
+                "99.99" : 139.82630658657763,
+                "99.999" : 139.82630658657763,
+                "99.9999" : 139.82630658657763,
+                "100.0" : 139.82630658657763
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    139.82630658657763
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "18"
+        },
+        "primaryMetric" : {
+            "score" : 32.359718767696705,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 32.359718767696705,
+                "50.0" : 32.359718767696705,
+                "90.0" : 32.359718767696705,
+                "95.0" : 32.359718767696705,
+                "99.0" : 32.359718767696705,
+                "99.9" : 32.359718767696705,
+                "99.99" : 32.359718767696705,
+                "99.999" : 32.359718767696705,
+                "99.9999" : 32.359718767696705,
+                "100.0" : 32.359718767696705
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    32.359718767696705
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.elementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "19"
+        },
+        "primaryMetric" : {
+            "score" : 15.903491038693316,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 15.903491038693316,
+                "50.0" : 15.903491038693316,
+                "90.0" : 15.903491038693316,
+                "95.0" : 15.903491038693316,
+                "99.0" : 15.903491038693316,
+                "99.9" : 15.903491038693316,
+                "99.99" : 15.903491038693316,
+                "99.999" : 15.903491038693316,
+                "99.9999" : 15.903491038693316,
+                "100.0" : 15.903491038693316
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    15.903491038693316
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "0"
+        },
+        "primaryMetric" : {
+            "score" : 3.0952316339848503E7,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3.0952316339848503E7,
+                "50.0" : 3.0952316339848503E7,
+                "90.0" : 3.0952316339848503E7,
+                "95.0" : 3.0952316339848503E7,
+                "99.0" : 3.0952316339848503E7,
+                "99.9" : 3.0952316339848503E7,
+                "99.99" : 3.0952316339848503E7,
+                "99.999" : 3.0952316339848503E7,
+                "99.9999" : 3.0952316339848503E7,
+                "100.0" : 3.0952316339848503E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    3.0952316339848503E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 7560521.642894856,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 7560521.642894856,
+                "50.0" : 7560521.642894856,
+                "90.0" : 7560521.642894856,
+                "95.0" : 7560521.642894856,
+                "99.0" : 7560521.642894856,
+                "99.9" : 7560521.642894856,
+                "99.99" : 7560521.642894856,
+                "99.999" : 7560521.642894856,
+                "99.9999" : 7560521.642894856,
+                "100.0" : 7560521.642894856
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    7560521.642894856
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "2"
+        },
+        "primaryMetric" : {
+            "score" : 3557526.180877572,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3557526.180877572,
+                "50.0" : 3557526.180877572,
+                "90.0" : 3557526.180877572,
+                "95.0" : 3557526.180877572,
+                "99.0" : 3557526.180877572,
+                "99.9" : 3557526.180877572,
+                "99.99" : 3557526.180877572,
+                "99.999" : 3557526.180877572,
+                "99.9999" : 3557526.180877572,
+                "100.0" : 3557526.180877572
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    3557526.180877572
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "3"
+        },
+        "primaryMetric" : {
+            "score" : 1721980.583759659,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1721980.583759659,
+                "50.0" : 1721980.583759659,
+                "90.0" : 1721980.583759659,
+                "95.0" : 1721980.583759659,
+                "99.0" : 1721980.583759659,
+                "99.9" : 1721980.583759659,
+                "99.99" : 1721980.583759659,
+                "99.999" : 1721980.583759659,
+                "99.9999" : 1721980.583759659,
+                "100.0" : 1721980.583759659
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1721980.583759659
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "4"
+        },
+        "primaryMetric" : {
+            "score" : 737795.2258201947,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 737795.2258201947,
+                "50.0" : 737795.2258201947,
+                "90.0" : 737795.2258201947,
+                "95.0" : 737795.2258201947,
+                "99.0" : 737795.2258201947,
+                "99.9" : 737795.2258201947,
+                "99.99" : 737795.2258201947,
+                "99.999" : 737795.2258201947,
+                "99.9999" : 737795.2258201947,
+                "100.0" : 737795.2258201947
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    737795.2258201947
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 14470.141135737491,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 14470.141135737491,
+                "50.0" : 14470.141135737491,
+                "90.0" : 14470.141135737491,
+                "95.0" : 14470.141135737491,
+                "99.0" : 14470.141135737491,
+                "99.9" : 14470.141135737491,
+                "99.99" : 14470.141135737491,
+                "99.999" : 14470.141135737491,
+                "99.9999" : 14470.141135737491,
+                "100.0" : 14470.141135737491
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    14470.141135737491
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "10"
+        },
+        "primaryMetric" : {
+            "score" : 3409.1535618738417,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3409.1535618738417,
+                "50.0" : 3409.1535618738417,
+                "90.0" : 3409.1535618738417,
+                "95.0" : 3409.1535618738417,
+                "99.0" : 3409.1535618738417,
+                "99.9" : 3409.1535618738417,
+                "99.99" : 3409.1535618738417,
+                "99.999" : 3409.1535618738417,
+                "99.9999" : 3409.1535618738417,
+                "100.0" : 3409.1535618738417
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    3409.1535618738417
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "12"
+        },
+        "primaryMetric" : {
+            "score" : 662.9793727227765,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 662.9793727227765,
+                "50.0" : 662.9793727227765,
+                "90.0" : 662.9793727227765,
+                "95.0" : 662.9793727227765,
+                "99.0" : 662.9793727227765,
+                "99.9" : 662.9793727227765,
+                "99.99" : 662.9793727227765,
+                "99.999" : 662.9793727227765,
+                "99.9999" : 662.9793727227765,
+                "100.0" : 662.9793727227765
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    662.9793727227765
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "14"
+        },
+        "primaryMetric" : {
+            "score" : 89.74606370164268,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 89.74606370164268,
+                "50.0" : 89.74606370164268,
+                "90.0" : 89.74606370164268,
+                "95.0" : 89.74606370164268,
+                "99.0" : 89.74606370164268,
+                "99.9" : 89.74606370164268,
+                "99.99" : 89.74606370164268,
+                "99.999" : 89.74606370164268,
+                "99.9999" : 89.74606370164268,
+                "100.0" : 89.74606370164268
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    89.74606370164268
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 9.497863578110545,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 9.497863578110545,
+                "50.0" : 9.497863578110545,
+                "90.0" : 9.497863578110545,
+                "95.0" : 9.497863578110545,
+                "99.0" : 9.497863578110545,
+                "99.9" : 9.497863578110545,
+                "99.99" : 9.497863578110545,
+                "99.999" : 9.497863578110545,
+                "99.9999" : 9.497863578110545,
+                "100.0" : 9.497863578110545
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    9.497863578110545
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "18"
+        },
+        "primaryMetric" : {
+            "score" : 0.7630303029631332,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.7630303029631332,
+                "50.0" : 0.7630303029631332,
+                "90.0" : 0.7630303029631332,
+                "95.0" : 0.7630303029631332,
+                "99.0" : 0.7630303029631332,
+                "99.9" : 0.7630303029631332,
+                "99.99" : 0.7630303029631332,
+                "99.999" : 0.7630303029631332,
+                "99.9999" : 0.7630303029631332,
+                "100.0" : 0.7630303029631332
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    0.7630303029631332
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "19"
+        },
+        "primaryMetric" : {
+            "score" : 0.18791317607485522,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.18791317607485522,
+                "50.0" : 0.18791317607485522,
+                "90.0" : 0.18791317607485522,
+                "95.0" : 0.18791317607485522,
+                "99.0" : 0.18791317607485522,
+                "99.9" : 0.18791317607485522,
+                "99.99" : 0.18791317607485522,
+                "99.999" : 0.18791317607485522,
+                "99.9999" : 0.18791317607485522,
+                "100.0" : 0.18791317607485522
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    0.18791317607485522
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "0"
+        },
+        "primaryMetric" : {
+            "score" : 3.916296940504498E7,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3.916296940504498E7,
+                "50.0" : 3.916296940504498E7,
+                "90.0" : 3.916296940504498E7,
+                "95.0" : 3.916296940504498E7,
+                "99.0" : 3.916296940504498E7,
+                "99.9" : 3.916296940504498E7,
+                "99.99" : 3.916296940504498E7,
+                "99.999" : 3.916296940504498E7,
+                "99.9999" : 3.916296940504498E7,
+                "100.0" : 3.916296940504498E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    3.916296940504498E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "1"
+        },
+        "primaryMetric" : {
+            "score" : 1.0229672606085628E7,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.0229672606085628E7,
+                "50.0" : 1.0229672606085628E7,
+                "90.0" : 1.0229672606085628E7,
+                "95.0" : 1.0229672606085628E7,
+                "99.0" : 1.0229672606085628E7,
+                "99.9" : 1.0229672606085628E7,
+                "99.99" : 1.0229672606085628E7,
+                "99.999" : 1.0229672606085628E7,
+                "99.9999" : 1.0229672606085628E7,
+                "100.0" : 1.0229672606085628E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1.0229672606085628E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "2"
+        },
+        "primaryMetric" : {
+            "score" : 5187949.167063834,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 5187949.167063834,
+                "50.0" : 5187949.167063834,
+                "90.0" : 5187949.167063834,
+                "95.0" : 5187949.167063834,
+                "99.0" : 5187949.167063834,
+                "99.9" : 5187949.167063834,
+                "99.99" : 5187949.167063834,
+                "99.999" : 5187949.167063834,
+                "99.9999" : 5187949.167063834,
+                "100.0" : 5187949.167063834
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    5187949.167063834
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "3"
+        },
+        "primaryMetric" : {
+            "score" : 2615973.0534431874,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 2615973.0534431874,
+                "50.0" : 2615973.0534431874,
+                "90.0" : 2615973.0534431874,
+                "95.0" : 2615973.0534431874,
+                "99.0" : 2615973.0534431874,
+                "99.9" : 2615973.0534431874,
+                "99.99" : 2615973.0534431874,
+                "99.999" : 2615973.0534431874,
+                "99.9999" : 2615973.0534431874,
+                "100.0" : 2615973.0534431874
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    2615973.0534431874
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "4"
+        },
+        "primaryMetric" : {
+            "score" : 1488347.4408349597,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1488347.4408349597,
+                "50.0" : 1488347.4408349597,
+                "90.0" : 1488347.4408349597,
+                "95.0" : 1488347.4408349597,
+                "99.0" : 1488347.4408349597,
+                "99.9" : 1488347.4408349597,
+                "99.99" : 1488347.4408349597,
+                "99.999" : 1488347.4408349597,
+                "99.9999" : 1488347.4408349597,
+                "100.0" : 1488347.4408349597
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1488347.4408349597
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 88358.67738981682,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 88358.67738981682,
+                "50.0" : 88358.67738981682,
+                "90.0" : 88358.67738981682,
+                "95.0" : 88358.67738981682,
+                "99.0" : 88358.67738981682,
+                "99.9" : 88358.67738981682,
+                "99.99" : 88358.67738981682,
+                "99.999" : 88358.67738981682,
+                "99.9999" : 88358.67738981682,
+                "100.0" : 88358.67738981682
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    88358.67738981682
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "10"
+        },
+        "primaryMetric" : {
+            "score" : 16036.52761637113,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 16036.52761637113,
+                "50.0" : 16036.52761637113,
+                "90.0" : 16036.52761637113,
+                "95.0" : 16036.52761637113,
+                "99.0" : 16036.52761637113,
+                "99.9" : 16036.52761637113,
+                "99.99" : 16036.52761637113,
+                "99.999" : 16036.52761637113,
+                "99.9999" : 16036.52761637113,
+                "100.0" : 16036.52761637113
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    16036.52761637113
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "12"
+        },
+        "primaryMetric" : {
+            "score" : 3750.424490260002,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3750.424490260002,
+                "50.0" : 3750.424490260002,
+                "90.0" : 3750.424490260002,
+                "95.0" : 3750.424490260002,
+                "99.0" : 3750.424490260002,
+                "99.9" : 3750.424490260002,
+                "99.99" : 3750.424490260002,
+                "99.999" : 3750.424490260002,
+                "99.9999" : 3750.424490260002,
+                "100.0" : 3750.424490260002
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    3750.424490260002
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "14"
+        },
+        "primaryMetric" : {
+            "score" : 825.1117433250652,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 825.1117433250652,
+                "50.0" : 825.1117433250652,
+                "90.0" : 825.1117433250652,
+                "95.0" : 825.1117433250652,
+                "99.0" : 825.1117433250652,
+                "99.9" : 825.1117433250652,
+                "99.99" : 825.1117433250652,
+                "99.999" : 825.1117433250652,
+                "99.9999" : 825.1117433250652,
+                "100.0" : 825.1117433250652
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    825.1117433250652
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 212.8694242448053,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 212.8694242448053,
+                "50.0" : 212.8694242448053,
+                "90.0" : 212.8694242448053,
+                "95.0" : 212.8694242448053,
+                "99.0" : 212.8694242448053,
+                "99.9" : 212.8694242448053,
+                "99.99" : 212.8694242448053,
+                "99.999" : 212.8694242448053,
+                "99.9999" : 212.8694242448053,
+                "100.0" : 212.8694242448053
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    212.8694242448053
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "18"
+        },
+        "primaryMetric" : {
+            "score" : 51.088303317628935,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 51.088303317628935,
+                "50.0" : 51.088303317628935,
+                "90.0" : 51.088303317628935,
+                "95.0" : 51.088303317628935,
+                "99.0" : 51.088303317628935,
+                "99.9" : 51.088303317628935,
+                "99.99" : 51.088303317628935,
+                "99.999" : 51.088303317628935,
+                "99.9999" : 51.088303317628935,
+                "100.0" : 51.088303317628935
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    51.088303317628935
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.EnumerateSubsetBenchmark.kElementsNotNormalized",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+            "-Xms8192m",
+            "-Xmx8192m",
+            "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
+        ],
+        "jdkVersion" : "1.8.0_181",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.181-b13",
+        "warmupIterations" : 1,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 1,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "numOfElements" : "19"
+        },
+        "primaryMetric" : {
+            "score" : 24.809251093862,
+            "scoreError" : "NaN",
+            "scoreConfidence" : [
+                "NaN",
+                "NaN"
+            ],
+            "scorePercentiles" : {
+                "0.0" : 24.809251093862,
+                "50.0" : 24.809251093862,
+                "90.0" : 24.809251093862,
+                "95.0" : 24.809251093862,
+                "99.0" : 24.809251093862,
+                "99.9" : 24.809251093862,
+                "99.99" : 24.809251093862,
+                "99.999" : 24.809251093862,
+                "99.9999" : 24.809251093862,
+                "100.0" : 24.809251093862
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    24.809251093862
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+

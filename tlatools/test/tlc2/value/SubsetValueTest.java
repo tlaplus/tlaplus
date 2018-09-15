@@ -516,4 +516,36 @@ public class SubsetValueTest {
 		setOfSubsets.normalize();
 		assertEquals(k, setOfSubsets.size());
 	}
+	
+	@Test
+	public void testSubsetNeedsNormalization() {
+		final IntervalValue inner = new IntervalValue(1, 5);
+		final SubsetValue subset = new SubsetValue(inner);
+
+		final ValueVec vec = new ValueVec(subset.size());
+		for (int i = 0; i <= inner.size(); i++) {
+			List<Value> kElements = subset.kElements(i).all();
+			kElements.forEach(e -> vec.addElement(e));
+		}
+        final Value unnormalized = new SetEnumValue(vec, false);
+        
+        final Value normalized = SetEnumValue.convert(subset).normalize();
+        
+        assertEquals(normalized, unnormalized);
+	}
+	
+	@Test
+	public void testSubsetNeedsNormalization2() {
+		final IntervalValue inner = new IntervalValue(1, 6);
+		final SubsetValue subset = new SubsetValue(inner);
+
+		final ValueVec vec = new ValueVec(subset.size());
+		final ValueEnumeration bElements = subset.elementsNormalized();
+		bElements.forEach(e -> vec.addElement(e));
+        final Value unnormalized = new SetEnumValue(vec, true);
+        
+        final Value normalized = SetEnumValue.convert(subset).normalize();
+        
+        assertEquals(normalized, unnormalized);
+	}
 }
