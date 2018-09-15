@@ -420,6 +420,8 @@ public class ModelChecker extends AbstractChecker
 				// of nextStates in a single invocation
 				// (LiveCheck#addNextState(..). If this limitation is ever
 				// removed, the functor pattern could be applied to doNext too.
+				// Other problems are access to worker and curState. A stateless functor has no
+				// access to curState and worker except when it uses thread local storage.
 				StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
 				int sz = nextStates.size();
 				worker.incrementStatesGenerated(sz);
