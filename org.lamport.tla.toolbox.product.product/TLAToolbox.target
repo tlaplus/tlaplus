@@ -4,7 +4,7 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.4.201704242114"/>
 <unit id="org.eclipse.ajdt.feature.group" version="2.2.4.201704242114"/>
-<repository location="http://download.eclipse.org/tools/ajdt/47/dev/update/ajdt-e47-2.2.4.201704242114/" id="eclipse-ajdt"/>
+<repository id="eclipse-ajdt" location="http://download.eclipse.org/tools/ajdt/47/dev/update/ajdt-e47-2.2.4.201704242114/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
@@ -16,14 +16,14 @@
 <unit id="javax.activation" version="1.1.0.v201211130549"/>
 <unit id="javax.mail" version="1.4.0.v201005080615"/>
 <unit id="org.easymock" version="2.4.0.v20090202-0900"/>
-<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository/" id="eclipse-orbit"/>
+<repository id="eclipse-orbit" location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.ide.feature.group" version="2.6.0.201706141832"/>
 <unit id="org.eclipse.swtbot.eclipse.test.junit.feature.group" version="2.6.0.201706141832"/>
 <unit id="org.eclipse.swtbot.feature.group" version="2.6.0.201706141832"/>
 <unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.6.0.201706141832"/>
-<repository location="http://download.eclipse.org/technology/swtbot/releases/2.6.0/" id="eclipse-swtbot"/>
+<repository id="eclipse-swtbot" location="http://download.eclipse.org/technology/swtbot/releases/2.6.0/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.jclouds.feature.feature.group" version="0.0.0"/>
@@ -45,7 +45,7 @@
 <unit id="org.eclipse.equinox.sdk.feature.group" version="3.13.4.v20180322-2228"/>
 <unit id="org.eclipse.core.runtime.feature.feature.group" version="1.2.2.v20180210-1608"/>
 <unit id="org.eclipse.sdk.ide" version="4.7.3.M20180330-0640"/>
-<repository location="http://download.eclipse.org/eclipse/updates/4.7/" id="eclipse"/>
+<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.7/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
