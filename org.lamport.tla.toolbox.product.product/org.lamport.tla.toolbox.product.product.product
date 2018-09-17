@@ -80,7 +80,7 @@ openFile
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
-      <plugin id="org.eclipse.update.configurator"/>
+      <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10" />
       <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
       <plugin id="sts" autoStart="true" startLevel="4" />
       <property name="eclipse.buildId" value="1.5.7" />
