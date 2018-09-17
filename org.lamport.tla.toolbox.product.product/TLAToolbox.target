@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="82">
+<?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="83">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.4.201704242114"/>
@@ -52,8 +52,8 @@
 <repository location="http://lemmy.github.com/Pdf4Eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="2.1.201501.201606262232"/>
-<repository location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.1.201501/com.abstratt.eclipsegraphviz.repository-2.1.201501.zip!/"/>
+<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="2.2.201709.201806130252"/>
+<repository location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.2.201709/com.abstratt.eclipsegraphviz.repository-2.2.201709.zip!/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="2.5.0.v20171201-1623"/>
