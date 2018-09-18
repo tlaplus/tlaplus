@@ -333,6 +333,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     // case EC.TLC_SUCCESS:
                 case EC.TLC_PROGRESS_START_STATS_DFID:
                 case EC.TLC_INITIAL_STATE:
+                case EC.TLC_COMPUTING_INIT_PROGRESS:
                 case EC.TLC_STATS:
                 case EC.TLC_STATS_DFID:
                 case EC.TLC_STATS_SIMU:
