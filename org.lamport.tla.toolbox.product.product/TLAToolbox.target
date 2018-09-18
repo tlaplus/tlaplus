@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="83">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.4.201704242114"/>
-<unit id="org.eclipse.ajdt.feature.group" version="2.2.4.201704242114"/>
-<repository id="eclipse-ajdt" location="http://download.eclipse.org/tools/ajdt/47/dev/update/ajdt-e47-2.2.4.201704242114/"/>
+<unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.4.201805281636"/>
+<unit id="org.eclipse.ajdt.feature.group" version="2.2.4.201805281636"/>
+<repository id="eclipse-ajdt" location="http://download.eclipse.org/tools/ajdt/48/dev/update/ajdt-e48-2.2.4.201805281636/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
