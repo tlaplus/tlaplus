@@ -8,14 +8,13 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
 <unit id="org.hamcrest" version="1.1.0.v20090501071000"/>
-<unit id="com.jcraft.jsch.source" version="0.1.46.v201205102330"/>
-<unit id="com.jcraft.jsch" version="0.1.46.v201205102330"/>
-<unit id="org.apache.commons.io.source" version="2.0.1.v201105210651"/>
-<unit id="org.apache.commons.io" version="2.0.1.v201105210651"/>
+<unit id="com.jcraft.jsch" version="0.1.54.v20170116-1932"/>
+<unit id="org.apache.commons.io" version="2.2.0.v201405211200"/>
+<unit id="org.apache.commons.collections" version="3.2.2.v201511171945"/>
 <unit id="javax.activation" version="1.1.0.v201211130549"/>
 <unit id="javax.mail" version="1.4.0.v201005080615"/>
 <unit id="org.easymock" version="2.4.0.v20090202-0900"/>
-<repository id="eclipse-orbit" location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository/"/>
+<repository id="eclipse-orbit" location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.ide.feature.group" version="2.7.0.201806111355"/>
@@ -58,9 +57,6 @@
 <unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="2.5.0.v20171201-1623"/>
 <repository location="http://download.eclipse.org/releases/oxygen"/>
 </location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.apache.commons.collections" version="3.2.2.v201511171945"/>
-<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20170919201930/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.mylyn.commons.feature.group" version="3.24.2.v20180904-2231"/>
