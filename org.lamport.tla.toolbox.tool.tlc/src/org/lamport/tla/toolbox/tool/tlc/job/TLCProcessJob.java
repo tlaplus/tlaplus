@@ -8,8 +8,8 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -170,7 +170,7 @@ public class TLCProcessJob extends TLCJob
             try
             {
                 // step 3
-                runner.run(tlcConfig, launch, new SubProgressMonitor(monitor, STEP));
+                runner.run(tlcConfig, launch, new NullProgressMonitor());
                 tlcStartTime = System.currentTimeMillis();
             } catch (CoreException e)
             {

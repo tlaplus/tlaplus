@@ -26,6 +26,7 @@
 package org.lamport.tla.toolbox.tool.tlc.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -249,6 +250,36 @@ public class ModelHelperTest extends TestCase
 		}
 
 		public boolean isReadOnly() {
+			return false;
+		}
+
+		public void delete(int flag) throws CoreException {
+		}
+
+		public ILaunchConfiguration getPrototype() throws CoreException {
+			return null;
+		}
+
+		public boolean isAttributeModified(String attribute) throws CoreException {
+			return false;
+		}
+
+		public Collection<ILaunchConfiguration> getPrototypeChildren() throws CoreException {
+			return new ArrayList<ILaunchConfiguration>();
+		}
+
+		public int getKind() throws CoreException {
+			return 0;
+		}
+
+		public Set<String> getPrototypeVisibleAttributes() throws CoreException {
+			return null;
+		}
+
+		public void setPrototypeAttributeVisibility(String attribute, boolean visible) throws CoreException {
+		}
+
+		public boolean isPrototype() {
 			return false;
 		}
     }
