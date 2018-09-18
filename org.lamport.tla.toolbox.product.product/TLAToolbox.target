@@ -63,9 +63,9 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20170919201930/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.mylyn.commons.feature.group" version="3.21.0.v20160707-1856"/>
-<unit id="org.eclipse.mylyn.commons.notifications.feature.group" version="1.13.0.v20160721-2347"/>
-<repository location="http://download.eclipse.org/mylyn/releases/3.21"/>
+<unit id="org.eclipse.mylyn.commons.feature.group" version="3.24.2.v20180904-2231"/>
+<unit id="org.eclipse.mylyn.commons.notifications.feature.group" version="1.16.0.v20180904-2231"/>
+<repository location="http://download.eclipse.org/mylyn/releases/3.24"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>
