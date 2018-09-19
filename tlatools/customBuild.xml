@@ -492,6 +492,7 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
 				<pathelement location="lib/jmh/jmh-core-1.21.jar" />
 				<pathelement location="lib/jmh/jmh-generator-annprocess-1.21.jar" />
 			</classpath>
