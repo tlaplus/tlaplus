@@ -81,7 +81,6 @@
 		    			<property name="maven.test.halt" value="${maven.test.halt}"/>
 	    				<ant antfile="customBuild.xml" inheritRefs="true">
 	    					<target name="default" />
-	    					<target name="dist-mixed-zip" />
 	    				</ant>
 	    			</tasks>
 	    		</configuration>
