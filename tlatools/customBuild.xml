@@ -193,7 +193,11 @@
 		<jar destfile="${dist.file}" level="9">
 			<fileset dir="${class.dir}" includes="**/*" excludes="
 					**/*.jpg,
+					README.txt,
+				    heapstats.jfc,
+				    jpf.properties,
 					tlc2/tool/fp/*.tla,
+					tlc2/value/*.tla,
 					pcal/*.tla,
 					META-INF/maven/,
 					src/tla2sany/parser/ParseException.09-09-07,
@@ -207,6 +211,7 @@
 					src/tla2sany/parser/TLAplusParserTokenManager.11-02-10,
 					src/tla2sany/parser/Token.09-09-07,
 					src/tla2sany/parser/TokenMgrError.09-09-07"/>
+			<fileset dir="${doc.dir}" includes="License.txt"/>
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Build-Tag" value="${env.BUILD_TAG}" />
