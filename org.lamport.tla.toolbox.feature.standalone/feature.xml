@@ -297,6 +297,13 @@
          unpack="false"/>
 
    <plugin
+         id="com.google.guava"
+         download-size="0"
+         install-size="0"
+         version="21.0.0.v20170206-1425"
+         unpack="false"/>
+
+   <plugin
          id="org.eclipse.mylyn.commons.ui"
          download-size="0"
          install-size="0"
