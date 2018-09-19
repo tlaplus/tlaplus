@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
  jclouds-scriptbuilder;bundle-version="1.7.3",
  jclouds-slf4j;bundle-version="1.7.3",
  jclouds-sshj;bundle-version="1.7.3",
- com.google.guava;bundle-version="[15.0.0,21.0.0)",
+ com.google.guava;bundle-version="21.0.0",
  com.google.inject;bundle-version="3.0.0",
  org.apache.commons.io;bundle-version="2.0.1",
  org.lamport.tlatools;bundle-version="1.0.0"
