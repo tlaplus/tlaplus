@@ -454,6 +454,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			emptyEnumeration.reset();
 			return emptyEnumeration;
 		}
+		// Only normalized inputs will yield a normalized output. Note that SEV#convert
+		// (unfortunately) enumerates the input. Thus "SUBSET SUBSET 1..10" will result
+		// in the nested/right SUBSET to be fully enumerated (1..10 obviously too).
 		final ValueVec elems = ((SetEnumValue) SetEnumValue.convert(set).normalize()).elems;
 		return new ValueEnumeration() {
 
@@ -609,6 +612,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			this.elems.sort(true);
 			return this;
 		}
+	}
+	
+	@Override
+	public ValueEnumeration elements(final Ordering ordering) {
+		// Use elementsNormalized regardless of requested ordering. Even for ordering
+		// UNDEFINED, elementsNormalized is fastest.
+		return elements();
 	}
 
   public final ValueEnumeration elements() {

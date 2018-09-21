@@ -119,9 +119,11 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			args.add("0");
 			
 			// Always print the state graph in dot file notation.
-			args.add("-dump");
-			args.add("dot");
-			args.add("${metadir}" + FileUtil.separator + getClass().getCanonicalName() + ".dot");
+			if (doDump()) {
+				args.add("-dump");
+				args.add("dot");
+				args.add("${metadir}" + FileUtil.separator + getClass().getCanonicalName() + ".dot");
+			}
 
 			args.addAll(Arrays.asList(extraArguments));
 			
@@ -141,6 +143,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	 */
 	protected boolean checkDeadLock() {
 		return false;
+	}
+	
+	protected boolean doDump() {
+		return true;
 	}
 
 	/**

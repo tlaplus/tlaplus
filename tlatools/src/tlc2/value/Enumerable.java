@@ -7,9 +7,22 @@ package tlc2.value;
 
 public interface Enumerable {
 
+	enum Ordering {
+		UNDEFINED,
+		/**
+		 * The normalized order is the order of elements when a Value gets
+		 * fingerprinted (@see {@link Value#fingerPrint(long)}.
+		 */
+		NORMALIZED;
+	}
+	
   public int size();
   public boolean member(Value elem);
+  /**
+   * Semantics or Enumerable#elements(Ordering#UNDEFINED) 
+   */
   public ValueEnumeration elements();
+  public ValueEnumeration elements(final Ordering ordering);
   /**
    * Returns a {@link ValueEnumeration} which returns k 
    * {@link Value}s of all {@link Value}s returned by 

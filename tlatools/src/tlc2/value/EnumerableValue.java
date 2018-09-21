@@ -62,6 +62,26 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
     	return SetEnumValue.convert(this).getRandomSubset(kOutOfN);
 	}
 
+	@Override
+	public ValueEnumeration elements(final Ordering ordering) {
+		if (ordering == Ordering.NORMALIZED) {
+			// By default, none of the EnumerableValues supports a ValueEnumeration that
+			// provides normalized ordering. Thus, to traverse the elements in normalized
+			// ordering, any EV type gets converted into a SetEnumValue - this effectively
+			// enumerates the EV and normalizes the new SEV. Traversing the normalized
+			// SEV with a ValueEnumeration returned by Enumerable#elements is guaranteed 
+			// to be in normalized order (@see Ordering.NORMALIZED for what this means).
+			// In case a subclass provides a more efficient ValueEnumeration that guarantees
+			// normalized order, the subclass may override this default method. This is
+			// so far done by SubsetValue.
+			final Value enumerated = SetEnumValue.convert(this);
+			if (enumerated != null) {
+				return ((EnumerableValue) enumerated.normalize()).elements();
+			}
+		}
+		return elements();
+	}
+	
 	public ValueEnumeration elements(final int k) {
 		// The generic implementation collects all n elements of the actual Enumerable
 		// into the temporary variable values. The SubSetEnumerator then randomly

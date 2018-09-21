@@ -1590,23 +1590,38 @@ public class Tool
                           "form CHOOSE x \\in S: P, but S was not enumerable.\n" + expr);
             }
 
-            // To fix Bugzilla Bug 279 : TLC bug caused by TLC's not preserving the semantics of CHOOSE,
+            // To fix Bugzilla Bug 279 : TLC bug caused by TLC's not preserving the semantics of CHOOSE
+            // (@see tlc2.tool.BugzillaBug279Test),
             // the statement
             //
             //    inVal.normalize();
             //
             // was replaced by the following by LL on 7 Mar 2012.  This fix has not yet received
             // the blessing of Yuan Yu, so it should be considered to be provisional.
-            //
-            Value convertedVal = SetEnumValue.convert(inVal);
-            if (convertedVal != null) {
-              inVal = convertedVal;
-            } else {
-              inVal.normalize();
-            }
+            // 
+            //     Value convertedVal = SetEnumValue.convert(inVal);
+            //       if (convertedVal != null) {
+            //         inVal = convertedVal;
+            //       } else {
+            //         inVal.normalize();
+            //     }
             // end of fix.
+            
+            // MAK 09/22/2018:
+			// The old fix above has the undesired side effect of enumerating inVal. In
+			// other words, e.g. a SUBSET 1..8 would be enumerated and normalized into a
+			// SetEnumValue. This is expensive and especially overkill, if the CHOOSE
+			// predicate holds for most if not all elements of inVal. In this case, we
+            // don't want to fully enumerate inVal but instead return the first element
+			// obtained from Enumerable#elements for which the predicate holds. Thus,
+			// Enumerable#elements(Ordering) has been added by which we make the requirement
+			// for elements to be normalized explicit. Implementor of Enumerable, such as
+			// SubsetValue are then free to implement elements that returns elements in
+			// normalized order without converting SubsetValue into SetEnumValue first.
+            
+            inVal.normalize();
 
-            ValueEnumeration enumSet = ((Enumerable)inVal).elements();
+            ValueEnumeration enumSet = ((Enumerable)inVal).elements(Enumerable.Ordering.NORMALIZED);
             FormalParamNode[] bvars = expr.getBdedQuantSymbolLists()[0];
             boolean isTuple = expr.isBdedQuantATuple()[0];
             if (isTuple) {
