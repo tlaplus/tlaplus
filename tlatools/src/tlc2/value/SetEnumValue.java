@@ -296,7 +296,10 @@ implements Enumerable, Reducible {
           while ((elem = Enum.nextElement()) != null) {
             vals.addElement(elem);
           }
-          return new SetEnumValue(vals, false);
+          // For as long as pset.elements() (SubsetValue#elements)
+          // internally calls SubsetValue#elementsNormalized, the
+          // result SetEnumValue here is indeed normalized.
+          return new SetEnumValue(vals, true);
         }
       case SETOFRCDSVALUE:
         {

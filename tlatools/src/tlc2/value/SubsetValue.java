@@ -614,6 +614,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   public final ValueEnumeration elements() {
     try {
       if (this.pset == null || this.pset == DummyEnum) {
+    	  // See note on SetEnumValue#convert for SubsetValue wrt
+    	  // the normalized SetEnumValue result.
     	  return elementsNormalized();
       }
       return this.pset.elements();
