@@ -88,7 +88,8 @@
 		<!-- http://maven.apache.org/general.html#encoding-warning  -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<tycho-version>1.1.0</tycho-version>
+		<!-- https://wiki.eclipse.org/Tycho/Release_Notes/1.2 -->
+		<tycho-version>1.2.0</tycho-version>
 
 		<!-- no default here -->
 		<tycho.test.vm.argline>-Xmx500m -Xdebug -Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=n</tycho.test.vm.argline>
