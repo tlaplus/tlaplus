@@ -822,14 +822,17 @@ public class MP
             b.append("Computed %1% initial states...");
             break;
         case EC.TLC_INIT_GENERATED1:
-            b.append("Finished computing initial states: %1% distinct state%2% generated.");
+			b.append("Finished computing initial states: %1% distinct state%2% generated at ")
+					.append(SDF.format(new Date())).append(".");
             break;
         case EC.TLC_INIT_GENERATED2:
-            b.append("Finished computing initial states: %1% state%2% generated, with %3% of them distinct.");
+			b.append("Finished computing initial states: %1% state%2% generated, with %3% of them distinct at ")
+					.append(SDF.format(new Date())).append(".");
             break;
         case EC.TLC_INIT_GENERATED3:
-            b.append("Finished computing initial states: %1% states generated.\n"
-                    + "Because TLC recovers from a previous checkpoint, only %2% of them require further exploration.");
+			b.append("Finished computing initial states: %1% states generated.\n"
+					+ "Because TLC recovers from a previous checkpoint, only %2% of them require further exploration at ")
+					.append(SDF.format(new Date())).append(".");
             break;
         case EC.TLC_INIT_GENERATED4:
             b.append("Finished computing initial states: %1% states generated, with %2% of them distinct.");

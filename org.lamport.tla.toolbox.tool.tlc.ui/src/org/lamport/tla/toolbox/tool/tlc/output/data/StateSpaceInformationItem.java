@@ -55,6 +55,14 @@ public class StateSpaceInformationItem
 		this.distinctSPM = distinctSPM;
 	}
 	
+	private StateSpaceInformationItem(Date time, long foundStates, long distinctStates) {
+		this(time, 0, foundStates, distinctStates, distinctStates, 0, 0);
+	}
+
+	private StateSpaceInformationItem(Date time, long distinctStates) {
+		this(time, distinctStates, distinctStates);
+	}
+	
 	private StateSpaceInformationItem(long foundStates, long distinctStates) {
 		this(new Date(), 0, foundStates, distinctStates, distinctStates, 0, 0);
 	}
@@ -200,6 +208,7 @@ public class StateSpaceInformationItem
         //   b.append("Finished computing initial states: %1% distinct state%2% generated.");
         //   b.append("Finished computing initial states: %1% state%2% generated, with %3% of them distinct.");
 
+		// Legacy pattern without date.
 		Pattern pattern = Pattern.compile("^Finished computing initial states: ([0-9]+) distinct state[s]* generated.$");
 		Matcher matcher = pattern.matcher(outputMessage);
 		if (matcher.find()) {
@@ -215,11 +224,37 @@ public class StateSpaceInformationItem
 			final long distinctStates = Long.parseLong(matcher.group(2));
 			return new StateSpaceInformationItem(foundStates, distinctStates);
 		}
+		
+		// New patterns with date.
+		pattern = Pattern.compile("^Finished computing initial states: ([0-9]+) distinct state[s]* generated at (.*).$");
+		matcher = pattern.matcher(outputMessage);
+		if (matcher.find()) {
+			final long distinctStates = Long.parseLong(matcher.group(1));
+			final Date date = parseDate(matcher.group(2));
+			return new StateSpaceInformationItem(date, distinctStates);
+		}
+
+		pattern = Pattern.compile(
+				"^Finished computing initial states: ([0-9]+) states generated, with ([0-9]+) of them distinct at (.*).$");
+		matcher = pattern.matcher(outputMessage);
+		if (matcher.find()) {
+			final long foundStates = Long.parseLong(matcher.group(1));
+			final long distinctStates = Long.parseLong(matcher.group(2));
+			final Date date = parseDate(matcher.group(3));
+			return new StateSpaceInformationItem(date, foundStates, distinctStates);
+		}
 		return null;
 	}
 	
-	
-    /**
+	private static Date parseDate(String str) {
+		try {
+			return SDF.parse(str);
+		} catch (ParseException e) {
+			return new Date();
+		}
+	}
+
+	/**
      * @param outputMessage
      * @return
      */
