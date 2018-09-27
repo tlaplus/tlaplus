@@ -197,7 +197,10 @@ public abstract class SemanticNode
 
   // YY's code
   public final Location getLocation() {
-    return this.stn.getLocation();
+	  if (this.stn != null) {
+		  return this.stn.getLocation();
+	  }
+	  return Location.nullLoc;
   }
 
   /**
