@@ -6,7 +6,7 @@ import java.util.Vector;
 import org.eclipse.jface.text.Document;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
-import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
+import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformation;
 import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
@@ -33,7 +33,7 @@ public class Bug267Listener extends TLCModelLaunchDataProvider implements
 		isTLCStarted = false;
 		errors = new Vector<TLCError>();
 		lastDetectedError = null;
-		coverageInfo = new Vector<CoverageInformationItem>();
+		coverageInfo = new CoverageInformation();
 		progressInformation = new Vector<StateSpaceInformationItem>();
 		startTimestamp = Long.MIN_VALUE;
 		finishTimestamp = Long.MIN_VALUE;

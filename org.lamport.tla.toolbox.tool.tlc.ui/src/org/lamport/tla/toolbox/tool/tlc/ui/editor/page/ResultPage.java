@@ -79,6 +79,7 @@ import org.lamport.tla.toolbox.editor.basic.TLAFastPartitioner;
 import org.lamport.tla.toolbox.editor.basic.TLAPartitionScanner;
 import org.lamport.tla.toolbox.editor.basic.TLASourceViewerConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformation;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
@@ -241,9 +242,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
 	                    break;
 	                case COVERAGE:
-	                	final List<CoverageInformationItem> coverageInfo = dataProvider.getCoverageInfo();
+	                	final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();
 	                	ResultPage.this.coverage.setInput(coverageInfo);
-						if (dataProvider.isDone() && coverageInfo.size() > 0) {
+						if (dataProvider.isDone() && !coverageInfo.isEmpty()) {
 							if (dataProvider.hasZeroCoverage()) {
 								if (zeroCoverage == null) {
 									final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
@@ -892,6 +893,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 if (inputElement != null && inputElement instanceof List)
                 {
                     return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
+                } else if (inputElement instanceof CoverageInformation) {
+                	return ((CoverageInformation) inputElement).toArray();
                 }
                 return null;
             }

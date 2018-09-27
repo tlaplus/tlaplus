@@ -117,7 +117,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     // reports the probability of a fingerprint collision
     protected String fingerprintCollisionProbability;
     // coverage items
-    protected List<CoverageInformationItem> coverageInfo;
+    protected CoverageInformation coverageInfo;
     // One of the coverage infos indicate zero coverage.
     protected boolean zeroCoverage = false;
     // progress information
@@ -172,7 +172,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         lastDetectedError = null;
         model.removeMarkers(ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 
-        coverageInfo = new Vector<CoverageInformationItem>();
+        coverageInfo = new CoverageInformation();
         progressInformation = new Vector<StateSpaceInformationItem>();
         startTimestamp = Long.MIN_VALUE;
         finishTimestamp = Long.MIN_VALUE;
@@ -437,7 +437,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 // Coverage information
                 case EC.TLC_COVERAGE_START:
                     this.coverageTimestamp = CoverageInformationItem.parseCoverageTimestamp(outputMessage);
-                    this.coverageInfo = new Vector<CoverageInformationItem>();
+                    this.coverageInfo = new CoverageInformation();
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_TIME);
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
@@ -936,12 +936,23 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         this.coverageTimestamp = coverageTimestamp;
     }
 
-    public List<CoverageInformationItem> getCoverageInfo()
+    public CoverageInformation getCoverageInfo()
     {
         return coverageInfo;
     }
 
-    public void setCoverageInfo(List<CoverageInformationItem> coverageInfo)
+    public CoverageInformation getCoverageInfo(IFile file)
+    {
+        CoverageInformation subset = new CoverageInformation();
+    	for (CoverageInformationItem coverageInformationItem : coverageInfo) {
+			if (coverageInformationItem.getModuleLocation().source().equals(file.getName().replace(".tla", ""))) {
+				subset.add(coverageInformationItem);
+			}
+		}
+        return subset;
+    }
+
+    public void setCoverageInfo(CoverageInformation coverageInfo)
     {
         this.coverageInfo = coverageInfo;
     }

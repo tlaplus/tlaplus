@@ -28,7 +28,7 @@ public class CoverageInformationItem implements IModuleLocatable
      * @param module
      */
 
-    public CoverageInformationItem(Location location, long count, String modelName)
+    private CoverageInformationItem(Location location, long count, String modelName)
     {
         this.location = location;
         this.locationString = this.location.toString();
