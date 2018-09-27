@@ -212,8 +212,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
             IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
 
-            TLCActivator.logDebug("Writing files to: " + targetFolderPath.toOSString());
-
             final IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
             if (modelFolder.exists())
@@ -636,7 +634,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             return false;
         } else
         {
-            TLCActivator.logDebug("Final check for the " + mode + " mode. The result of the check is " + status);
             return status;
         }
     }
@@ -1126,7 +1123,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
                     break;
                 }
             }
-            TLCActivator.logDebug("Job '" + jobName + "' terminated with status: { " + status + " }");
         }
     };
 

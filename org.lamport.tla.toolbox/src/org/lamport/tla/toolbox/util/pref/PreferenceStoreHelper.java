@@ -63,10 +63,7 @@ public class PreferenceStoreHelper
 					rootFileName = ResourceHelper.PARENT_ONE_PROJECT_LOC + path.lastSegment(); 
 					convertAbsoluteToRelative(projectPrefs, rootFileName);
 				}
-				final IFile linkedFile = ResourceHelper.getLinkedFile(project, rootFileName);
-				Activator.getDefault().logDebug(
-						"footFileName = " + (linkedFile != null ? linkedFile.getLocation().toOSString() : null));
-				return linkedFile;
+				return ResourceHelper.getLinkedFile(project, rootFileName);
 			}
 		} else {
 			Activator.getDefault().logInfo("projectPrefs is null");

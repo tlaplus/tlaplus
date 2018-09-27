@@ -151,8 +151,6 @@ public class ParseResultBroadcaster
         if (!listeners.contains(parseResultListener))
         {
             listeners.add(parseResultListener);
-			Activator.getDefault().logDebug("Added a parse result listener."
-					+ "There are now " + listeners.size() + " listeners.");
         }
     }
 
@@ -164,12 +162,7 @@ public class ParseResultBroadcaster
      */
     public void removeParseResultListener(IParseResultListener parseResultListener)
     {
-        boolean removed = listeners.remove(parseResultListener);
-        if (removed)
-        {
-			Activator.getDefault().logDebug("Removed a parse result listener."
-					+ "There are now " + listeners.size() + " listeners.");
-        }
+        listeners.remove(parseResultListener);
     }
 
     /**
