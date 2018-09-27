@@ -19,6 +19,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -32,6 +33,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -63,6 +65,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
@@ -73,7 +76,9 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
+import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAFastPartitioner;
 import org.lamport.tla.toolbox.editor.basic.TLAPartitionScanner;
@@ -87,6 +92,8 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
@@ -94,6 +101,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -264,6 +272,52 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						}
 	                    break;
 	                case COVERAGE_END:
+	                	// Install invocation statistics markers on saved TLA+ files.
+						final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
+						final Map<IFile, Map<Long, AnnotationPreference>> coveredFiles = new HashMap<>();
+
+						for (IFile tlaFile : modelEditor.getModel().getSavedTLAFiles()) {
+							final Map<Long, AnnotationPreference> annotationPrefs = new HashMap<>();
+							final CoverageInformation coveragesForTLAFile = dataProvider
+									.getCoverageInfo(tlaFile);
+							if (!coveragesForTLAFile.isEmpty()) {
+								coveredFiles.put(tlaFile, annotationPrefs);
+								for (CoverageInformationItem coverageForTLAFile : coveragesForTLAFile) {
+									try {
+										// Reuse the AnnotationPreference (the visualization instruction, ie the text
+										// highlighting in a particular color) for the same counts.
+										final AnnotationPreference ap = annotationPrefs.computeIfAbsent(
+												coverageForTLAFile.getCount(),
+												c -> new TLACoverageEditor.AnnotationPreference(c, coveragesForTLAFile.getMaxCount()));
+
+										// TODO do we need to clear existing coverage markers first or can we update
+										// existing markers with new invocation counts?
+										final IMarker coverageMarker = tlaFile
+												.createMarker((String) ap.getAnnotationType());
+										coverageMarker.isSubtypeOf(IMarker.MARKER);
+										final IRegion region = AdapterFactory
+												.locationToRegion(coverageForTLAFile.getModuleLocation());
+										coverageMarker.setAttribute(IMarker.CHAR_START, region.getOffset());
+										coverageMarker.setAttribute(IMarker.CHAR_END,
+												region.getOffset() + region.getLength());
+									} catch (CoreException e) {
+										TLCUIActivator.getDefault().logError(e.getMessage(), e);
+									}
+								}
+							}
+						}
+
+						// Open the files as pages of the current model editor.
+						for (IFile coveredFile : coveredFiles.keySet()) {
+							if (modelEditor.findEditors(new FileEditorInput(coveredFile)).length == 0) {
+								try {
+									modelEditor.addPage(new TLACoverageEditor(coveredFiles.get(coveredFile)),
+											new FileEditorInput(coveredFile));
+								} catch (PartInitException e) {
+									e.printStackTrace();
+								}
+							}
+						}
 	                	break;
 	                case PROGRESS:
 	                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());

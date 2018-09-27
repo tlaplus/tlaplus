@@ -869,4 +869,27 @@ Console Facory
          </adapter>
       </factory>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="see.org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor"
+            colorPreferenceKey="toolbox.markers.tlc.coverage.dummyA"
+            overviewRulerPreferenceKey="toolbox.markers.tlc.coverage.dummyB"
+            textPreferenceKey="toolbox.markers.tlc.coverage.dummyC"
+            colorPreferenceValue="0,0,0"
+            overviewRulerPreferenceValue="false"
+            textPreferenceValue="true"
+            highlightPreferenceKey="toolbox.markers.tlc.coverage.prototype"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="prototype">
+      </specification>
+   </extension>
+   <extension
+         point="org.eclipse.core.filebuffers.annotationModelCreation">
+      <factory
+            class="org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor$Factory"
+            extensions="tla">
+      </factory>
+   </extension>
 </plugin>
