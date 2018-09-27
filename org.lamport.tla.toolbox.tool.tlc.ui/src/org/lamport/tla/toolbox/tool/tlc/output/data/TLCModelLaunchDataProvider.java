@@ -455,6 +455,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     }
                     break;
                 case EC.TLC_COVERAGE_END:
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_END);
                     break;
                 case EC.TLC_DISTRIBUTED_SERVER_RUNNING:
                 	numWorkers = 0;

@@ -263,6 +263,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							}
 						}
 	                    break;
+	                case COVERAGE_END:
+	                	break;
 	                case PROGRESS:
 	                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
 	
