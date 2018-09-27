@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationPresentation;
@@ -95,10 +96,14 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 
 	public TLACoverageEditor(Map<Long, org.eclipse.ui.texteditor.AnnotationPreference> map) {
 		this.prefs = map;
-//		
-//		IPreferenceStore preferenceStore = getPreferenceStore();
-//		this.prefs.values().forEach(ap -> preferenceStore.setValue(ap.getColorPreferenceKey(),
-//				ap.getColorPreferenceValue().toString().replace("RGB {", "").replace("}", "")));
+		
+		final IPreferenceStore preferenceStore = getPreferenceStore();
+		for (final org.eclipse.ui.texteditor.AnnotationPreference ap : prefs.values()) {
+			final RGB colorPreferenceValue = ap.getColorPreferenceValue();
+			final String format = String.format("%s,%s,%s", colorPreferenceValue.red, colorPreferenceValue.green,
+					colorPreferenceValue.blue);
+			preferenceStore.setValue(ap.getColorPreferenceKey(), format);
+		}
 	}
 
 	@Override
