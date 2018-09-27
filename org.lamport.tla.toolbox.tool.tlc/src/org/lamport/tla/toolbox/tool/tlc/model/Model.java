@@ -754,11 +754,29 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
         return (IFolder) getSpec().getProject().findMember(getName());
 	}
 
+	public List<IFile> getSavedTLAFiles() {
+		try {
+			List<IFile> res = new ArrayList<>();
+			List<IResource> asList = Arrays.asList(getTargetDirectory().members());
+			for (IResource iResource : asList) {
+				if (iResource instanceof IFile) {
+					IFile f = (IFile) iResource;
+					if (f.exists() && "tla".equalsIgnoreCase(f.getFileExtension())) {
+						res.add(f);
+					}
+				}
+			}
+			return res;
+		} catch (CoreException e) {
+			return new ArrayList<>();
+		}
+	}
+	
 	/**
-	 * Retrieves the TLA file that is being model checked on the model run
+	 * Retrieves the TLA file that is being model checked on the model run. This is
+	 * the MC.tla file.
 	 * 
-	 * @param config
-	 *            configuration representing the model
+	 * @param config configuration representing the model
 	 * @return a file handle or <code>null</code>
 	 */
 	public IFile getTLAFile() {

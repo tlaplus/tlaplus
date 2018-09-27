@@ -108,14 +108,16 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     private static final String PARAM_DELIMITER = ":";
 
+    public static final String FILE_TLA_EXTENSION = ".tla";
+    
     public static final String MC_MODEL_NAME = "MC";
-    public static final String FILE_TLA = MC_MODEL_NAME + ".tla";
+    public static final String FILE_TLA = MC_MODEL_NAME + FILE_TLA_EXTENSION;
     public static final String FILE_CFG = MC_MODEL_NAME + ".cfg";
     public static final String FILE_OUT = MC_MODEL_NAME + ".out";
 
     // trace explorer file names
     public static final String TE_MODEL_NAME = "TE";
-    public static final String TE_FILE_TLA = TE_MODEL_NAME + ".tla";
+    public static final String TE_FILE_TLA = TE_MODEL_NAME + FILE_TLA_EXTENSION;
     public static final String TE_FILE_CFG = TE_MODEL_NAME + ".cfg";
     public static final String TE_FILE_OUT = TE_MODEL_NAME + ".out";
     // the file to which TLC's output is written so
