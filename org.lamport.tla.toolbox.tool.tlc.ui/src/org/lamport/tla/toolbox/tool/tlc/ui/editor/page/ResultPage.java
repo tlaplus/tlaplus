@@ -284,16 +284,23 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 								coveredFiles.put(tlaFile, annotationPrefs);
 								for (CoverageInformationItem coverageForTLAFile : coveragesForTLAFile) {
 									try {
-										// Reuse the AnnotationPreference (the visualization instruction, ie the text
-										// highlighting in a particular color) for the same counts.
-										final AnnotationPreference ap = annotationPrefs.computeIfAbsent(
-												coverageForTLAFile.getCount(),
-												c -> new TLACoverageEditor.AnnotationPreference(c, coveragesForTLAFile.getMaxCount()));
+										final IMarker coverageMarker;
+										if (coverageForTLAFile.getCount() == 0) {
+											coverageMarker = tlaFile
+													.createMarker(TLACoverageEditor.ANNOTATION_UNUSED);
+										} else {
+											// Reuse the AnnotationPreference (the visualization instruction, ie the
+											// text
+											// highlighting in a particular color) for the same counts.
+											final AnnotationPreference ap = annotationPrefs.computeIfAbsent(
+													coverageForTLAFile.getCount(),
+													c -> new TLACoverageEditor.AnnotationPreference(c,
+															coveragesForTLAFile.getMaxCount()));
 
-										// TODO do we need to clear existing coverage markers first or can we update
-										// existing markers with new invocation counts?
-										final IMarker coverageMarker = tlaFile
-												.createMarker((String) ap.getAnnotationType());
+											// TODO do we need to clear existing coverage markers first or can we update
+											// existing markers with new invocation counts?
+											coverageMarker = tlaFile.createMarker((String) ap.getAnnotationType());
+										}
 										coverageMarker.isSubtypeOf(IMarker.MARKER);
 										final IRegion region = AdapterFactory
 												.locationToRegion(coverageForTLAFile.getModuleLocation());

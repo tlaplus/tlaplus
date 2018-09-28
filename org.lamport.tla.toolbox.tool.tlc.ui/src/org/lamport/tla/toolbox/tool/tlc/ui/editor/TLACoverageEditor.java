@@ -21,14 +21,16 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly;
 
 public class TLACoverageEditor extends TLAEditorReadOnly {
 	
+	public static final String ANNOTATION_UNUSED = "toolbox.markers.tlc.coverage.unused";
+	
 	/* AnnotationPreference */
 	
-	private static final String ANNOTATION_PREFIX = "toolbox.markers.tlc.coverage.";
+	private static final String ANNOTATION_USED_PREFIX = "toolbox.markers.tlc.coverage.covered.";
 
 	public static class AnnotationPreference extends org.eclipse.ui.texteditor.AnnotationPreference {
 
 		public AnnotationPreference(final long count, final long maxCount) {
-			super(ANNOTATION_PREFIX + Long.toString(count), ANNOTATION_PREFIX + Long.toString(count) + ".colorKey", "",
+			super(ANNOTATION_USED_PREFIX + Long.toString(count), ANNOTATION_USED_PREFIX + Long.toString(count) + ".colorKey", "",
 					"", IAnnotationPresentation.DEFAULT_LAYER);
 			this.setIncludeOnPreferencePage(false);
 			this.setColorPreferenceValue(getRGB(count, maxCount));
@@ -40,7 +42,7 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 			// The basic crux is that the Annotation handling is completely over-engineered
 			// but does not allow to dynamically adapt an Annotation depending on the
 			// attributed of an IMarker.
-			this.setHighlightPreferenceKey(ANNOTATION_PREFIX + "prototype");
+			this.setHighlightPreferenceKey(ANNOTATION_USED_PREFIX + "prototype");
 			this.setHighlightPreferenceValue(true);
 		}
 
@@ -80,7 +82,7 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 				try {
 					// For our programmatically created AnnotationPreferences above, the marker
 					// annotation type has to be set manually.
-					if (marker.getType().startsWith(ANNOTATION_PREFIX)) {
+					if (marker.getType().startsWith(ANNOTATION_USED_PREFIX)) {
 						createMarkerAnnotation.setType(marker.getType());
 					}
 				} catch (final CoreException e) {
