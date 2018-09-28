@@ -7,6 +7,8 @@ package tlc2.tool;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
@@ -81,7 +83,7 @@ public class Simulator implements Cancelable {
 		this.rng = rng;
 		this.seed = seed;
 		this.aril = 0;
-		this.astCounts = new ObjLongTable(10);
+		this.astCounts = new ObjLongTable<SemanticNode>(10);
 		// Initialization for liveness checking
 		if (this.checkLiveness) {
 			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
@@ -111,7 +113,7 @@ public class Simulator implements Cancelable {
 	private final RandomGenerator rng;
 	private final long seed;
 	private long aril;
-	private final ObjLongTable astCounts;
+	private final ObjLongTable<SemanticNode> astCounts;
 	private boolean isCancelled; // SZ Feb 24, 2009: cancellation added
 	private Value[] localValues = new Value[4];
 
@@ -411,17 +413,18 @@ public class Simulator implements Cancelable {
 	public final void reportCoverage() {
 		if (TLCGlobals.coverageInterval >= 0) {
 			MP.printMessage(EC.TLC_COVERAGE_START);
-			ObjLongTable counts = this.tool.getPrimedLocs();
-			ObjLongTable.Enumerator keys = this.astCounts.keys();
-			Object key;
-			while ((key = keys.nextElement()) != null) {
-				String loc = ((SemanticNode) key).getLocation().toString();
-				counts.add(loc, astCounts.get(key));
-			}
-			Object[] skeys = counts.sortStringKeys();
+			final ObjLongTable<SemanticNode> counts = this.tool.getPrimedLocs().mergeInto(this.astCounts);
+			final SemanticNode[] skeys = counts.toArray(new SemanticNode[0]);
+			Arrays.sort(skeys, new Comparator<SemanticNode>() {
+				@Override
+				public int compare(SemanticNode arg0, SemanticNode arg1) {
+					return arg0.getLocation().toString().compareTo(arg1.getLocation().toString());
+				}
+			});
 			for (int i = 0; i < skeys.length; i++) {
-				long val = counts.get(skeys[i]);
-				MP.printMessage(EC.TLC_COVERAGE_VALUE, new String[] { skeys[i].toString(), String.valueOf(val) });
+				final long val = counts.get(skeys[i]);
+				MP.printMessage(EC.TLC_COVERAGE_VALUE,
+						new String[] { skeys[i].getLocation().toString(), String.valueOf(val) });
 			}
 			MP.printMessage(EC.TLC_COVERAGE_END);
 		}

@@ -1796,15 +1796,15 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
      * spec of forms x' = e and x' \in e. Warning: Current implementation
      * may not be able to find all such locations.
      */
-    public final ObjLongTable getPrimedLocs()
+    public final ObjLongTable<SemanticNode> getPrimedLocs()
     {
-        ObjLongTable tbl = new ObjLongTable(10);
+        ObjLongTable<SemanticNode> tbl = new ObjLongTable<SemanticNode>(10);
         Action act = this.getNextStateSpec();
         this.collectPrimedLocs(act.pred, act.con, tbl);
         return tbl;
     }
 
-    public final void collectPrimedLocs(SemanticNode pred, Context c, ObjLongTable tbl)
+    public final void collectPrimedLocs(SemanticNode pred, Context c, ObjLongTable<SemanticNode> tbl)
     {
         switch (pred.getKind()) {
         case OpApplKind: {
@@ -1856,7 +1856,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         }
     }
 
-    private final void collectPrimedLocsAppl(OpApplNode pred, Context c, ObjLongTable tbl)
+    private final void collectPrimedLocsAppl(OpApplNode pred, Context c, ObjLongTable<SemanticNode> tbl)
     {
         ExprOrOpArgNode[] args = pred.getArgs();
         SymbolNode opNode = pred.getOperator();
@@ -1888,7 +1888,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             SymbolNode var = this.getPrimedVar(args[0], c, false);
             if (var != null && var.getName().getVarLoc() != -1)
             {
-                tbl.put(pred.toString(), 0);
+                tbl.put(pred, 0);
             }
             break;
         }
@@ -1919,7 +1919,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         case OPCODE_sa: // [A]_e
         {
             this.collectPrimedLocs(args[0], c, tbl);
-            tbl.put(args[1].toString(), 0);
+            tbl.put(args[1], 0);
             break;
         }
         default: {
@@ -1947,7 +1947,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         }
     }
 
-    private final void collectUnchangedLocs(SemanticNode expr, Context c, ObjLongTable tbl)
+    private final void collectUnchangedLocs(SemanticNode expr, Context c, ObjLongTable<SemanticNode> tbl)
     {
         if (expr instanceof OpApplNode)
         {
@@ -1959,7 +1959,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             if (opName.getVarLoc() >= 0)
             {
                 // a state variable:
-                tbl.put(expr.toString(), 0);
+                tbl.put(expr, 0);
                 return;
             }
 

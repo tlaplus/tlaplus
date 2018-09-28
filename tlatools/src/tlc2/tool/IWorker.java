@@ -1,5 +1,6 @@
 package tlc2.tool;
 
+import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.util.ObjLongTable;
 import tlc2.value.Value;
@@ -19,7 +20,7 @@ public interface IWorker
      * extracted from Worker and DFID worker
      * used in the {@link AbstractChecker#reportCoverage(IWorker[])} 
      */
-    public ObjLongTable getCounts();
+    public ObjLongTable<SemanticNode> getCounts();
 
     // see Thread
     

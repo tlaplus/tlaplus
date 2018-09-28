@@ -2,6 +2,8 @@ package tlc2.tool;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.SemanticNode;
@@ -164,24 +166,24 @@ public abstract class AbstractChecker implements Cancelable
 		{
             MP.printMessage(EC.TLC_COVERAGE_START);
             // First collecting all counts from all workers:
-            ObjLongTable counts = this.tool.getPrimedLocs();
-            for (int i = 0; i < workers.length; i++)
+            final ObjLongTable<SemanticNode> counts = this.tool.getPrimedLocs();
+            
+            for (IWorker worker : workers) {
+				counts.mergeInto(worker.getCounts());
+			}
+            // Reporting (sorted by location):
+            final SemanticNode[] array = counts.toArray(new SemanticNode[0]);
+			Arrays.sort(array, new Comparator<SemanticNode>() {
+				@Override
+				public int compare(SemanticNode arg0, SemanticNode arg1) {
+					return arg0.getLocation().toString().compareTo(arg1.getLocation().toString());
+				}
+			});
+            for (int i = 0; i < array.length; i++)
             {
-                ObjLongTable counts1 = workers[i].getCounts();
-                ObjLongTable.Enumerator keys = counts1.keys();
-                Object key;
-                while ((key = keys.nextElement()) != null)
-                {
-                    String loc = ((SemanticNode) key).getLocation().toString();
-                    counts.add(loc, counts1.get(key));
-                }
-            }
-            // Reporting:
-            Object[] skeys = counts.sortStringKeys();
-            for (int i = 0; i < skeys.length; i++)
-            {
-                long val = counts.get(skeys[i]);
-                MP.printMessage(EC.TLC_COVERAGE_VALUE, new String[] { skeys[i].toString(), String.valueOf(val) });
+            	final SemanticNode semanticNode = array[i];
+                final long val = counts.get(semanticNode);
+                MP.printMessage(EC.TLC_COVERAGE_VALUE, new String[] { semanticNode.getLocation().toString(), String.valueOf(val) });
             }
             MP.printMessage(EC.TLC_COVERAGE_END);
         }

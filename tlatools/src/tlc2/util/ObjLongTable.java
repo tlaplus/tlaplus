@@ -5,38 +5,40 @@
 
 package tlc2.util;
 
-public final class ObjLongTable {
+public final class ObjLongTable<T> {
   private int count;
   private int length;
   private int thresh;
-  private Object[] keys;
+  private T[] keys;
   private long[] elems;
 
+  @SuppressWarnings("unchecked")
   public ObjLongTable(int size) {
-    this.keys = new Object[size];
+    this.keys = (T[]) new Object[size];
     this.elems = new long[size];
     this.count = 0;
     this.length = size;
     this.thresh = this.length / 2;
   }
 
+  @SuppressWarnings("unchecked")
   private final void grow() {
     Object[] oldKeys = this.keys;
     long[] oldElems = this.elems;
     this.count = 0;
     this.length = 2 * this.length + 1;
     this.thresh = this.length / 2;
-    this.keys = new Object[this.length];
+    this.keys = (T[]) new Object[this.length];
     this.elems = new long[this.length];
     for (int i = 0; i < oldKeys.length; i++) {
-      Object key = oldKeys[i];
+      T key = (T) oldKeys[i];
       if (key != null) this.put(key, oldElems[i]);
     }
   }
 
   public final int size() { return this.count; }
 
-  public final int put(Object k, long elem) {
+  public final int put(T k, long elem) {
     if (count >= thresh) this.grow();
     int loc = ((int)k.hashCode() & 0x7FFFFFFF) % this.length;
     while (true) {
@@ -55,7 +57,7 @@ public final class ObjLongTable {
     }
   }
 
-  public final int add(Object k, long elem) {
+  public final int add(T k, long elem) {
     if (count >= thresh) this.grow();
     int loc = ((int)k.hashCode() & 0x7FFFFFFF) % this.length;
     while (true) {
@@ -84,41 +86,46 @@ public final class ObjLongTable {
     }
   }
 
-  public final String[] sortStringKeys() {
-    String[] res = new String[this.count];
-    int idx = -1;
-    for (int i = 0; i < this.length; i++) {
-      String key = (String)this.keys[i];
-      if (key != null) {
-	int j = idx;
-	while (j >= 0) {
-	  if (res[j].compareTo(key) <= 0) break;
-	  res[j+1] = res[j];
-	  j--;
+	/**
+	 * Merges the keys and longs of into this instance. If this instance already
+	 * contains an entry with a given key, the long values will be accumulated.
+	 */
+	public ObjLongTable<T> mergeInto(final ObjLongTable<T> other) {
+		T key;
+		ObjLongTable<T>.Enumerator<T> keys2 = keys();
+		while ((key = keys2.nextElement()) != null) {
+			add(key, other.get(key));
+		}
+		return this;
 	}
-	res[j+1] = key;
-	idx++;
-      }
-    }
-    return res;
-  }
+
+	@SuppressWarnings("unchecked")
+	public T[] toArray(T[] a) {
+		a = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), count);
+		ObjLongTable<T>.Enumerator<T> keys2 = keys();
+		T e = null;
+		int i = 0;
+		while((e = keys2.nextElement()) != null) {
+			a[i++] = e;
+		}
+		return a;
+	}
   
+  public final Enumerator<T> keys() { return new Enumerator<T>(); }
 
-  public final Enumerator keys() { return new Enumerator(); }
-
-  public final class Enumerator {
+  @SuppressWarnings("hiding")
+  public final class Enumerator<T> {
     int index = 0;
 
-    public final Object nextElement() {
+    @SuppressWarnings("unchecked")
+	public final T nextElement() {
       while (this.index < keys.length) {
 	if (keys[this.index] != null) {
-	  return keys[this.index++];
+	  return (T) keys[this.index++];
 	}
 	this.index++;
       }
       return null;
     }
   }
-    
-
 }

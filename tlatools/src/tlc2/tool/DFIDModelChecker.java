@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -156,7 +157,7 @@ public class DFIDModelChecker extends AbstractChecker
                         this.tool.setCallStack();
                         try
                         {
-                            this.doNext(this.predErrState, this.predErrState.fingerPrint(), true, new ObjLongTable(10),
+                            this.doNext(this.predErrState, this.predErrState.fingerPrint(), true, new ObjLongTable<SemanticNode>(10),
                                     new StateVec(1), new LongVec());
                         } catch (Throwable e)
                         {
@@ -342,7 +343,7 @@ public class DFIDModelChecker extends AbstractChecker
      * not been done in nextStates.  Return true if it finds a leaf
      * successor of curState.
      */
-    public final boolean doNext(TLCState curState, long cfp, boolean isLeaf, ObjLongTable counts, StateVec states,
+    public final boolean doNext(TLCState curState, long cfp, boolean isLeaf, ObjLongTable<SemanticNode> counts, StateVec states,
             LongVec fps) throws Throwable
     {
         boolean deadLocked = true;

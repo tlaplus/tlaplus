@@ -233,7 +233,7 @@ implements Cloneable, Serializable {
     return fp;
   }
 
-  public final void addCounts(ObjLongTable counts) {
+  public final void addCounts(final ObjLongTable<SemanticNode> counts) {
     for (int i = 0; i < this.asts.length; i++) {
       counts.add(this.asts[i], 1);
     }      

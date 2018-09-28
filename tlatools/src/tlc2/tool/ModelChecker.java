@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -253,7 +254,7 @@ public class ModelChecker extends AbstractChecker
 					// Not adding newly created Worker to trace#addWorker because it is not supposed
 					// to rewrite the trace file but to reconstruct actual states referenced by
 					// their fingerprints in the trace.
-                    this.doNext(this.predErrState, new ObjLongTable(10), new Worker(4223, this, this.metadir, specObj.getFileName()));
+                    this.doNext(this.predErrState, new ObjLongTable<SemanticNode>(10), new Worker(4223, this, this.metadir, specObj.getFileName()));
                 } catch (FingerprintException e)
                 {
                     MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
@@ -380,7 +381,7 @@ public class ModelChecker extends AbstractChecker
      * 
      * This method is called from the workers on every step
      */
-    public final boolean doNext(TLCState curState, ObjLongTable counts, final Worker worker) throws Throwable
+    public final boolean doNext(TLCState curState, ObjLongTable<SemanticNode> counts, final Worker worker) throws Throwable
     {
         // SZ Feb 23, 2009: cancel the calculation
         if (this.cancellationFlag)
