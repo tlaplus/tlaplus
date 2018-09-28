@@ -22,6 +22,10 @@ public class NewSpecWizard extends Wizard implements INewWizard
 	private boolean importExisting;
 	private final String absolutePath;
 
+	public NewSpecWizard() {
+		this("");
+	}
+	
 	public NewSpecWizard(String absolutePath) {
 		this.absolutePath = absolutePath;
 	}
