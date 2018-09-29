@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import util.UniqueString;
@@ -397,16 +399,17 @@ public class InstanceNode extends LevelNode {
       return res;
    }
 
-  public final void walkGaph(Hashtable semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public final void walkGaph(Hashtable<Integer, ExploreNode> semNodesTable, final ExplorerVisitor visitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
 
-    semNodesTable.put(new Integer(myUID), this);
+    semNodesTable.put(myUID, this);
+    visitor.visit(this);
 
     for (int i = 0; i < params.length; i++) {
-      params[i].walkGraph(semNodesTable);
+      params[i].walkGraph(semNodesTable, visitor);
     }
-    module.walkGraph(semNodesTable);
+    module.walkGraph(semNodesTable, visitor);
   }
 
   public final String toString(int depth) {

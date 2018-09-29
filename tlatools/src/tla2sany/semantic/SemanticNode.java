@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
@@ -178,10 +179,11 @@ public abstract class SemanticNode
    * of walkgraph is to find all reachable nodes in the semantic graph
    * and insert them in a Hashtable for use by the Explorer tool.
    */
-  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
+    preorderVisitor.visit(this);
   }
 
   /**

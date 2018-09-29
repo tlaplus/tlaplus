@@ -4,6 +4,7 @@ package tla2sany.semantic;
 import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
@@ -59,12 +60,13 @@ public class DefStepNode extends LevelNode {
    }
 
   @Override
-  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
+    preorderVisitor.visit(this);
     for (int  i = 0; i < defs.length; i++) {
-      defs[i].walkGraph(semNodesTable);
+      defs[i].walkGraph(semNodesTable, preorderVisitor);
       } ;
    }
 

@@ -25,6 +25,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
@@ -670,7 +671,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         this.levelConstraints.putAll(this.ranges[i].getLevelConstraints());
       }
       for (int i = 0; i < this.operands.length; i++) {
-        Integer mlevel = new Integer(opDef.getMaxLevel(i));
+        Integer mlevel = Integer.valueOf(opDef.getMaxLevel(i));
         if (this.operands[i] != null) {
           Iterator<SymbolNode> iter = this.operands[i].getLevelParams().iterator();
           while (iter.hasNext()) {
@@ -701,7 +702,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           for (int j = 0; j < this.operands.length; j++) {
             for (int k = 0; k < alen; k++) {
               if (opDef.getOpLevelCond(i, j, k)) {
-                Integer mlevel = new Integer(argDef.getMaxLevel(k));
+                Integer mlevel = Integer.valueOf(argDef.getMaxLevel(k));
                 Iterator<SymbolNode> iter = this.operands[j].getLevelParams().iterator();
                 while (iter.hasNext()) {
                   this.levelConstraints.put(iter.next(), mlevel);
@@ -746,7 +747,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             /***************************************************************
             * Need to invoke levelCheck before invoking getMaxLevel.       *
             ***************************************************************/
-          Integer mlevel = new Integer(argDef.getMaxLevel(alp.i));
+          Integer mlevel = Integer.valueOf(argDef.getMaxLevel(alp.i));
           this.levelConstraints.put(alp.param, mlevel);
         }
       } // while
@@ -774,14 +775,14 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           int alen = opArg.getArity();
           for (int j = 0; j < alen; j++) {
             ParamAndPosition pap = new ParamAndPosition(opArg, j);
-            Integer mlevel = new Integer(opDef.getMinMaxLevel(i, j));
+            Integer mlevel = Integer.valueOf(opDef.getMinMaxLevel(i, j));
             this.argLevelConstraints.put(pap, mlevel);
           }
           for (int j = 0; j < this.operands.length; j++) {
             for (int k = 0; k < alen; k++) {
               if (opDef.getOpLevelCond(i, j, k)) {
                 ParamAndPosition pap = new ParamAndPosition(opArg, k);
-                Integer mlevel = new Integer(this.operands[j].getLevel());
+                Integer mlevel = Integer.valueOf(this.operands[j].getLevel());
                 this.argLevelConstraints.put(pap, mlevel);
               }
             }
@@ -798,7 +799,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             * Have to invoke levelCheck before invoking getLevel.          *
             ***************************************************************/
           ParamAndPosition pap = new ParamAndPosition(alp.op, alp.i);
-          this.argLevelConstraints.put(pap, new Integer(arg.getLevel()));
+          this.argLevelConstraints.put(pap, Integer.valueOf(arg.getLevel()));
         }
       }
 
@@ -1122,30 +1123,31 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * and inserts them in the Hashtable semNodesTable for use by the Explorer tool.
    */
   @Override
-  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
+    preorderVisitor.visit(this);
 
     if (operator != null) {
-      operator.walkGraph(semNodesTable);
+      operator.walkGraph(semNodesTable, preorderVisitor);
     }
 
     if (unboundedBoundSymbols != null && unboundedBoundSymbols.length > 0) {
       for (int i = 0; i < unboundedBoundSymbols.length; i++)
         if (unboundedBoundSymbols[i] != null)
-           unboundedBoundSymbols[i].walkGraph(semNodesTable);
+           unboundedBoundSymbols[i].walkGraph(semNodesTable, preorderVisitor);
     }
 
     if (operands != null && operands.length > 0) {
       for (int i = 0; i < operands.length; i++)
-        if (operands[i] != null) operands[i].walkGraph(semNodesTable);
+        if (operands[i] != null) operands[i].walkGraph(semNodesTable, preorderVisitor);
     }
 
     if (ranges.length > 0) {
       for (int i = 0; i < ranges.length; i++)
-        if (ranges[i] != null) ranges[i].walkGraph(semNodesTable);
+        if (ranges[i] != null) ranges[i].walkGraph(semNodesTable, preorderVisitor);
     }
 
     if (boundedBoundSymbols != null && boundedBoundSymbols.length > 0) {
@@ -1153,7 +1155,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         if (boundedBoundSymbols[i] != null && boundedBoundSymbols[i].length > 0) {
           for (int j = 0; j < boundedBoundSymbols[i].length; j++) {
             if (boundedBoundSymbols[i][j] != null)
-               boundedBoundSymbols[i][j].walkGraph(semNodesTable);
+               boundedBoundSymbols[i][j].walkGraph(semNodesTable, preorderVisitor);
           }
         }
       }

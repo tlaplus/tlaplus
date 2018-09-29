@@ -25,6 +25,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.semantic.Context.Pair;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
@@ -1077,17 +1078,18 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
    }
 
   @Override
-  public final void walkGraph (Hashtable<Integer, ExploreNode> semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public final void walkGraph (Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
 
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
+    preorderVisitor.visit(this);
     if (ctxt != null) {
-      ctxt.walkGraph(semNodesTable);
+      ctxt.walkGraph(semNodesTable, preorderVisitor);
     }
     for (int i = 0; i < topLevelVec.size(); i++) {
-      ((LevelNode)(topLevelVec.elementAt(i))).walkGraph(semNodesTable);
+      ((LevelNode)(topLevelVec.elementAt(i))).walkGraph(semNodesTable, preorderVisitor);
     }
 //     for (int i = 0; i < instanceVec.size(); i++) {
 //       ((InstanceNode)(instanceVec.elementAt(i))).walkGraph(semNodesTable);

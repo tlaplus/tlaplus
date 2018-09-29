@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
@@ -505,18 +506,19 @@ public class SubstInNode extends ExprNode {
   }
 
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
+    preorderVisitor.visit(this);
 
     if (this.substs != null) {
       for (int i = 0; i < this.substs.length; i++) {
-        if (this.substs[i] != null) this.substs[i].walkGraph(semNodesTable);
+        if (this.substs[i] != null) this.substs[i].walkGraph(semNodesTable, preorderVisitor);
       }
     }
-    if (this.body != null) this.body.walkGraph(semNodesTable);
+    if (this.body != null) this.body.walkGraph(semNodesTable, preorderVisitor);
     return;
   }
 

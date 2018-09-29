@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
@@ -282,13 +283,14 @@ public class LabelNode extends ExprNode
   * The methods for implementing the ExploreNode interface.                *
   *************************************************************************/
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
-    if (body != null) body.walkGraph(semNodesTable);
+    preorderVisitor.visit(this);
+    if (body != null) body.walkGraph(semNodesTable, preorderVisitor);
     for (int i = 0 ; i < params.length; i++) {
-      params[i].walkGraph(semNodesTable);
+      params[i].walkGraph(semNodesTable, preorderVisitor);
      } ;
   }
 

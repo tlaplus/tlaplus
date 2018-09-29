@@ -12,6 +12,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.Location;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
@@ -506,7 +507,8 @@ public class Context implements ExploreNode {
     return ctxtEntries;
   }
 
-  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+	  preorderVisitor.visit(this);
     UniqueString key;
     Enumeration<?>  e = table.keys();
 
@@ -533,7 +535,7 @@ public class Context implements ExploreNode {
         }
       else {
         key = (UniqueString) next;
-        ((Pair)table.get(key)).info.walkGraph(semNodesTable);
+        ((Pair)table.get(key)).info.walkGraph(semNodesTable, preorderVisitor);
        } ;
     }
 

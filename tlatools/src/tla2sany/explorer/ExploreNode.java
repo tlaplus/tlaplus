@@ -22,13 +22,13 @@ public interface ExploreNode {
     ***********************************************************************/
   public String levelDataToString();
 
-  public void   walkGraph(Hashtable<Integer, ExploreNode> semNodesTable);
+  public void   walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, final ExplorerVisitor preorderVisitor);
     /***********************************************************************
     * This method is apparently supposed to insert an entry in             *
     * semNodesTable for itself and every descendant in the semantic tree   *
     * by executing                                                         *
     *                                                                      *
-    *     Integer uid = new Integer(myUID);                                *
+    *     Integer uid = Integer.valueOf(myUID);                                *
     *     if (semNodesTable.get(uid) != null) return;                      *
     *     semNodesTable.put(uid, this);                                    *
     *                                                                      *

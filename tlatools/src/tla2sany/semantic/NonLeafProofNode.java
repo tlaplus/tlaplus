@@ -4,6 +4,7 @@ package tla2sany.semantic;
 import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
@@ -173,19 +174,20 @@ public class NonLeafProofNode extends ProofNode {
    }
 
   @Override
-  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
+    preorderVisitor.visit(this);
     for (int  i = 0; i < steps.length; i++) {
-      steps[i].walkGraph(semNodesTable);
+      steps[i].walkGraph(semNodesTable, preorderVisitor);
       } ;
     /***********************************************************************
     * Note: there's no need to walk the defs array because all the nodes   *
     * on it are walked from the nodes under which they appear.             *
     ***********************************************************************/
 
-    context.walkGraph(semNodesTable) ;
+    context.walkGraph(semNodesTable, preorderVisitor) ;
       /*********************************************************************
       * Walk the ThmOrOpApplDef NumberedProofStepKind nodes.               *
       *********************************************************************/

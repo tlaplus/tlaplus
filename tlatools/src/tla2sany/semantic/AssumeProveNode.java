@@ -7,6 +7,7 @@ package tla2sany.semantic;
 import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
@@ -351,16 +352,17 @@ public class AssumeProveNode extends LevelNode {
   }
 
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> h) {
-    Integer uid = new Integer(myUID);
+  public final void walkGraph(Hashtable<Integer, ExploreNode> h, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (h.get(uid) != null) return;
     h.put(uid, this);
+    preorderVisitor.visit(this);
     int i = 0 ;
     while (i <  assumes.length) {
-      assumes[i].walkGraph(h) ;
+      assumes[i].walkGraph(h, preorderVisitor) ;
       i = i+1;
      } ;
-    prove.walkGraph(h) ;
+    prove.walkGraph(h, preorderVisitor) ;
   } // end walkGraph()
 
 

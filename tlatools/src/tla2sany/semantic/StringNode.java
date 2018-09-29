@@ -5,6 +5,7 @@ package tla2sany.semantic;
 import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
 import util.UniqueString;
@@ -84,11 +85,12 @@ public class StringNode extends ExprNode implements ExploreNode {
 //  }
 
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
-    Integer uid = new Integer(myUID);
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+    Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
+    preorderVisitor.visit(this);
   }
 
   final String PrintVersion(String str) {

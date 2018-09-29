@@ -7,6 +7,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
@@ -229,9 +230,10 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
 
   public final String levelDataToString() { return "Dummy level string"; }
 
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable) {
-    if (op != null) op.walkGraph(semNodesTable);
-    if (expr != null) expr.walkGraph(semNodesTable);
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+	preorderVisitor.visit(this);
+    if (op != null) op.walkGraph(semNodesTable, preorderVisitor);
+    if (expr != null) expr.walkGraph(semNodesTable, preorderVisitor);
   }
 
   public final String toString(int depth) {
