@@ -219,7 +219,7 @@ public class Simulator implements Cancelable {
 						this.numOfGenStates++;
 						TLCState state = nextStates.elementAt(i);
 
-						if (TLCGlobals.coverageInterval >= 0) {
+						if (TLCGlobals.isCoverageEnabled()) {
 							((TLCStateMutSource) state).addCounts(this.astCounts);
 						}
 
@@ -411,7 +411,7 @@ public class Simulator implements Cancelable {
 	 * Reports coverage
 	 */
 	public final void reportCoverage() {
-		if (TLCGlobals.coverageInterval >= 0) {
+		if (TLCGlobals.isCoverageEnabled()) {
 			MP.printMessage(EC.TLC_COVERAGE_START);
 			final ObjLongTable<SemanticNode> counts = this.tool.getPrimedLocs().mergeInto(this.astCounts);
 			final SemanticNode[] skeys = counts.toArray(new SemanticNode[0]);

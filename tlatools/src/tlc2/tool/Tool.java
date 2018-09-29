@@ -110,7 +110,7 @@ public class Tool
       SpecObj processSpec = super.processSpec(spec);
 
       // Initialize state.
-      if (TLCGlobals.coverageInterval >= 0) {
+      if (TLCGlobals.isCoverageEnabled()) {
           TLCStateMutSource.init(this);
       }
       else {
@@ -1403,7 +1403,7 @@ public class Tool
     }
   }
 
-  private final Value evalAppl(OpApplNode expr, Context c, TLCState s0,
+  private final Value evalAppl(final OpApplNode expr, Context c, TLCState s0,
                               TLCState s1, final int control) {
     if (this.callStack != null) this.callStack.push(expr);
     try {

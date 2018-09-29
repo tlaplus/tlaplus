@@ -92,6 +92,10 @@ public class TLCGlobals
     // Enable collecting coverage information
     public static int coverageInterval = -1;
 
+    public static final boolean isCoverageEnabled() {
+    	return coverageInterval >= 0;
+    }
+    
     // Depth for depth-first iterative deepening
     public static int DFIDMax = -1;
 

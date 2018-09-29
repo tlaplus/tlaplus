@@ -459,7 +459,7 @@ public class ModelChecker extends AbstractChecker
                     		return true;
                     	}
 					}
-                    if (TLCGlobals.coverageInterval >= 0)
+                    if (TLCGlobals.isCoverageEnabled())
                     {
 						((TLCStateMutSource) succState).addCounts(counts);
 					}

@@ -394,7 +394,7 @@ public class DFIDModelChecker extends AbstractChecker
                         return allSuccNonLeaf;
                     }
 
-                    if (TLCGlobals.coverageInterval >= 0)
+                    if (TLCGlobals.isCoverageEnabled())
                     {
                         ((TLCStateMutSource) succState).addCounts(counts);
                     }
