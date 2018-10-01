@@ -26,6 +26,7 @@
 package tla2sany.st;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -35,6 +36,15 @@ import java.util.TreeSet;
 import org.junit.Test;
 
 public class LocationTest {
+
+	@Test
+	public void testContains() {
+		assertTrue(new Location(0, 0, 10, 10).includes(new Location(0, 0, 10, 10)));
+		assertFalse(new Location(1, 0, 10, 9).includes(new Location(0, 0, 10, 10)));
+		
+		assertTrue(new Location(0, 0, 10, 10).includes(new Location(1, 0, 10, 9)));
+		assertFalse(new Location(1, 0, 10, 9).includes(new Location(0, 0, 10, 10)));
+	}
 	
 	@Test
 	public void testComparator() {

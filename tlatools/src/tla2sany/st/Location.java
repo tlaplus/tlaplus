@@ -413,4 +413,27 @@ public final class Location implements Comparable<Location>
 		}
 		return 1;
 	}
+	
+	/**
+	 * @return true if other is a location within this location (same module file
+	 *         and the range of chars is within this range of chars).
+	 */
+	public boolean includes(final Location other) {
+		if (this.name != other.name) {
+			return false;
+		}
+		if (this.bLine > other.bLine) {
+			return false;
+		}
+		if (this.eLine < other.eLine) {
+			return false;
+		}
+		if (this.bColumn > other.bColumn) {
+			return false;
+		}
+		if (this.eColumn < other.eColumn) {
+			return false;
+		}
+		return true;
+	}
 }
