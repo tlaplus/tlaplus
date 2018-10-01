@@ -8,8 +8,6 @@ import java.util.regex.Pattern;
 
 import pcal.PCalLocation;
 import pcal.Region;
-
-import tlc2.output.EC;
 import util.Assert;
 import util.UniqueString;
 
@@ -21,7 +19,7 @@ import util.UniqueString;
  * @author Leslie Lamport, Simon Zambrovski
  * @version $Id$                                                              
  */
-public final class Location
+public final class Location implements Comparable<Location>
 {
     // strings used in toString() and Regex
     private static final String LINE = "line ";
@@ -381,5 +379,38 @@ public final class Location
 	public Region toRegion() {
 		return new pcal.Region(new PCalLocation(bLine - 1, bColumn - 1),
 				new PCalLocation(eLine - 1, eColumn - 1));
+	}
+
+	@Override
+	public int compareTo(final Location other) {
+		if (this.equals(other)) {
+			return 0;
+		}
+		if (this.name.compareTo(other.name) != 0) {
+			return this.name.compareTo(other.name);
+		}
+
+		if (this.bLine > other.bLine) {
+			return 1;
+		} else if (this.bLine < other.bLine) {
+			return -1;
+		}
+
+		if (this.bColumn > other.bColumn) {
+			return 1;
+		} else if (this.bColumn < other.bColumn) {
+			return -1;
+		}
+		
+		if (this.eLine > other.eLine) {
+			return 1;
+		} else if (this.eLine < other.eLine) {
+			return -1;
+		}
+
+		if (this.eColumn < other.eColumn) {
+			return -1;
+		}
+		return 1;
 	}
 }
