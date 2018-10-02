@@ -357,6 +357,21 @@ public final class Location
         return false;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + bColumn;
+		result = prime * result + bLine;
+		result = prime * result + eColumn;
+		result = prime * result + eLine;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
 	/**
 	 * Translates the {@link Location} into a PCal {@link Region} adjusting the
 	 * 1-based offset to a 0-based one.
