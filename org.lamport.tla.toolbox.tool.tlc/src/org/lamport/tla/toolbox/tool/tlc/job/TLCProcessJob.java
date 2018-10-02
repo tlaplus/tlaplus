@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.job;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -95,10 +94,6 @@ public class TLCProcessJob extends TLCJob
             // arguments
             String[] arguments = constructProgramArguments();
 
-            // log output
-			TLCActivator
-					.logInfo("TLC ARGUMENTS: " + Arrays.toString(arguments));
-
             final List<String> vmArgs = new ArrayList<String>();
 
             // get max heap size as fraction from model editor
@@ -154,10 +149,15 @@ public class TLCProcessJob extends TLCJob
             tlcConfig.setVMArguments((String[]) vmArgs.toArray(new String[vmArgs.size()]));
             tlcConfig.setWorkingDirectory(ResourceHelper.getParentDirName(rootModule));
             // Following added for testing by LL on 6 Jul 2012
-            TLCActivator.logInfo("JAVA VM ARGUMENTS: " + Arrays.toString(tlcConfig.getVMArguments()));             
             final IVMInstall vmInstall = getVMInstall();
-            TLCActivator.logInfo("Nested JVM used for model checker is: "
-					+ vmInstall.getInstallLocation());
+            
+            // Create command-line that can (almost) copied&pasted verbatim to a shell to run TLC directly.
+            // (Working directory needed because TLC does not find MC.tla even if -metadir is set).
+			TLCActivator.logInfo(String.format("TLC COMMAND-LINE (CWD: %s): %s%sbin%sjava -cp %s %s %s %s",
+					tlcConfig.getWorkingDirectory(), vmInstall.getInstallLocation(), File.separator, File.separator,
+					String.join(File.pathSeparator, tlcConfig.getClassPath()),
+					String.join(" ", tlcConfig.getVMArguments()), String.join(" ", tlcConfig.getClassToLaunch()),
+					String.join(" ", arguments)));
             
 			final IVMRunner runner = vmInstall.getVMRunner(ILaunchManager.RUN_MODE);
 
