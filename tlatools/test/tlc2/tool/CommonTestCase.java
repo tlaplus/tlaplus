@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
@@ -161,5 +162,15 @@ public abstract class CommonTestCase {
 		assertTrue(ptrs.exists());
 		assertEquals(ptrsSize, ptrs.length());
 	}
-
+	
+	protected void assertCoverage(final String expectedCoverage) {
+		final String[] expectedCoverageLine = expectedCoverage.split("\n");
+		final Map<String, Integer> coverageRecords = recorder.getCoverageRecords();
+		assertEquals(expectedCoverageLine.length, coverageRecords.size());
+		for (String line : expectedCoverageLine) {
+			String[] coverage = line.split(":");
+			assertTrue(coverageRecords.containsKey(coverage[0].trim()));
+			assertEquals(Integer.valueOf(coverage[1].trim()), coverageRecords.get(coverage[0].trim()));
+		}
+	}
 }

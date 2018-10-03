@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tlc2.output.EC;
+
 public class TestMPRecorder extends tlc2.output.MPRecorder {
 	private final Map<Integer, List<Object>> records = new HashMap<Integer, List<Object>>();
 	
@@ -110,6 +112,17 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 			}
 		}
 		return true;
+	}
+
+	public Map<String, Integer> getCoverageRecords() {
+		final List<Object> coverages = getRecords(EC.TLC_COVERAGE_VALUE);
+
+		final Map<String, Integer> cover = new HashMap<>();
+		for (final Object o : coverages) {
+			final String[] coverage = (String[]) o;
+			cover.put(coverage[0], Integer.parseInt(coverage[1]));
+		}
+		return cover;
 	}
 
 	/* (non-Javadoc)
