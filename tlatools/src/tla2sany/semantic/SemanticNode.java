@@ -5,6 +5,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -30,11 +31,11 @@ public abstract class SemanticNode
 
   private static final Object[] EmptyArr = new Object[0];
 
-  private static int uid = 0;  // the next unique ID for any semantic node
+  private static final AtomicInteger uid = new AtomicInteger();  // the next unique ID for any semantic node
 
   protected static Errors errors;
 
-  public    int      myUID;    // the unique ID of THIS semantic node
+  public    final int      myUID;    // the unique ID of THIS semantic node
   public    TreeNode stn;      // the concrete syntax tree node associated with THIS semantic node
   private   Object[] tools;    // each tool has a location in this array where
                                //   it may store an object for its own purposes
@@ -42,7 +43,7 @@ public abstract class SemanticNode
                                //   strongly correlated with the Java type of the node
 
   public SemanticNode(int kind, TreeNode stn) {
-    myUID = uid++;
+    myUID = uid.getAndIncrement();
     this.kind = kind;
     this.stn = stn;
     this.tools = EmptyArr;
