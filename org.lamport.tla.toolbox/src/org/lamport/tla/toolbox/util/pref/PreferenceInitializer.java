@@ -39,6 +39,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
         
         store.setDefault(EditorPreferencePage.CLEAR_DECLARATION_USE_MARKERS_ON_PARSE, 
                 EditorPreferencePage.CLEAR_DECLARATION_USE_MARKERS_ON_PARSE_DEFAULT);
+
+        store.setDefault(EditorPreferencePage.EDITOR_ADD_MODIFICATION_HISTORY,
+                EditorPreferencePage.EDITOR_ADD_MODIFICATION_HISTORY_DEFAULT);
               
         /*
          * Set default for Renumber Proof command option.

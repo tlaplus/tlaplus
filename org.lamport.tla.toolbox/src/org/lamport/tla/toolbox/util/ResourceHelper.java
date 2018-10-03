@@ -732,11 +732,15 @@ public class ResourceHelper
     public static StringBuffer getModuleClosingTag()
     {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(
-                StringHelper.copyString("=", Activator.getDefault().getPreferenceStore().getInt(
-                        EditorPreferencePage.EDITOR_RIGHT_MARGIN))).append("\n"+modificationHistory).append(
-                StringHelper.newline).append("\\* Created ").append(new Date()).append(" by ").append(
-                System.getProperty("user.name")).append(StringHelper.newline);
+        IPreferenceStore preferencesStore = Activator.getDefault().getPreferenceStore();
+        int rightMarginWidth = preferencesStore.getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
+        buffer.append(StringHelper.copyString("=", rightMarginWidth)).append(StringHelper.newline);
+
+        if (preferencesStore.getBoolean(EditorPreferencePage.EDITOR_ADD_MODIFICATION_HISTORY)) {
+            buffer.append(modificationHistory).append(StringHelper.newline)
+                .append("\\* Created ").append(new Date()).append(" by ")
+                .append(System.getProperty("user.name")).append(StringHelper.newline);
+        }
         return buffer;
     }
 

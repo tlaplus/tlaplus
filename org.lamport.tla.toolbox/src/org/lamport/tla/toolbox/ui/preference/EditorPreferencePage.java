@@ -29,6 +29,9 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
     public static final String EDITOR_RIGHT_MARGIN = "editorRightMargin";
     public static final int EDITOR_RIGHT_MARGIN_DEFAULT = 77;
     
+    public static final String EDITOR_ADD_MODIFICATION_HISTORY = "editorAddModificationHistory";
+    public static final boolean EDITOR_ADD_MODIFICATION_HISTORY_DEFAULT = true;
+
     public static final String CLEAR_DECLARATION_USE_MARKERS_ON_PARSE = "removeDeclarationUseMarkersOnParse";
     public static final boolean CLEAR_DECLARATION_USE_MARKERS_ON_PARSE_DEFAULT = true;
 
@@ -101,6 +104,9 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
         addField(new BooleanFieldEditor(CLEAR_DECLARATION_USE_MARKERS_ON_PARSE,
                 "&Clear declaration use markers when parsing", getFieldEditorParent()));
         
+        addField(new BooleanFieldEditor(EDITOR_ADD_MODIFICATION_HISTORY,
+                "&Add a modification history comment to new specs", getFieldEditorParent()));
+
         // Preferences for renumbering.  Added 25 July 2013 by LL
         Label lbl = new Label(getFieldEditorParent(), SWT.NONE);
         GridData gd = new GridData();
