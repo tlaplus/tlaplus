@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.output.data;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IModuleLocatable;
 
 import tla2sany.st.Location;
+import tlc2.TLCGlobals;
 
 /**
  * Coverage information item
@@ -19,6 +20,7 @@ public class CoverageInformationItem implements IModuleLocatable
     private Location location;
     private String modelName;
     private long count;
+	private int layer;
 
     /**
      * Creates an simple item storing information about a coverage at a certain location
@@ -28,12 +30,13 @@ public class CoverageInformationItem implements IModuleLocatable
      * @param module
      */
 
-    private CoverageInformationItem(Location location, long count, String modelName)
+    private CoverageInformationItem(Location location, long count, String modelName, int layer)
     {
         this.location = location;
         this.locationString = this.location.toString();
         this.count = count;
         this.modelName = modelName;
+        this.layer = layer;
     }
 
     public final String getModule()
@@ -51,6 +54,14 @@ public class CoverageInformationItem implements IModuleLocatable
         return count;
     }
 
+	/**
+	 * If two CCI are co-located (overlapping, nested, ...), the layer indicates
+	 * which one is considered more important.
+	 */
+	public int getLayer() {
+		return layer;
+	}
+
     /**
      * Parses the coverage information item from a string
      * @param outputMessage
@@ -62,9 +73,12 @@ public class CoverageInformationItem implements IModuleLocatable
 
         // "  line 84, col 32 to line 85, col 73 of module AtomicBakery: 1012492"
         outputMessage = outputMessage.trim();
+        
+        final int layer = outputMessage.lastIndexOf(TLCGlobals.coverageIndent) + 1;
+        
         int index = outputMessage.indexOf(COLON);
-        return new CoverageInformationItem(Location.parseLocation(outputMessage.substring(0, index)), Long
-                .parseLong(outputMessage.substring(index + COLON.length())), modelName);
+        return new CoverageInformationItem(Location.parseLocation(outputMessage.substring(layer, index)), Long
+                .parseLong(outputMessage.substring(index + COLON.length())), modelName, layer);
     }
 
     /**

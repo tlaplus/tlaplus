@@ -302,6 +302,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 											coverageMarker = tlaFile.createMarker((String) ap.getAnnotationType());
 										}
 										coverageMarker.isSubtypeOf(IMarker.MARKER);
+										coverageMarker.setAttribute(TLACoverageEditor.LAYER, coverageForTLAFile.getLayer());
 										final IRegion region = AdapterFactory
 												.locationToRegion(coverageForTLAFile.getModuleLocation());
 										coverageMarker.setAttribute(IMarker.CHAR_START, region.getOffset());

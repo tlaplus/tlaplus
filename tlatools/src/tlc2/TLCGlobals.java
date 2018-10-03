@@ -89,6 +89,9 @@ public class TLCGlobals
     // The main simulator object (null if mainChecker non-null)
     public static Simulator simulator = null;
 
+    // Char to indent nested coverage information.
+	public static final char coverageIndent = '|';
+    
     // Enable collecting coverage information
     public static int coverageInterval = -1;
 

@@ -1,3 +1,28 @@
+/*******************************************************************************
+ * Copyright (c) 2018 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Markus Alexander Kuppe - initial API and implementation
+ ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import java.util.HashMap;
@@ -10,10 +35,13 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
+import org.eclipse.jface.text.source.IAnnotationAccess;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationPresentation;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
@@ -78,22 +106,36 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 
 			@Override
 			protected MarkerAnnotation createMarkerAnnotation(final IMarker marker) {
-				final MarkerAnnotation createMarkerAnnotation = super.createMarkerAnnotation(marker);
 				try {
 					// For our programmatically created AnnotationPreferences above, the marker
 					// annotation type has to be set manually.
 					if (marker.getType().startsWith(ANNOTATION_USED_PREFIX)) {
-						createMarkerAnnotation.setType(marker.getType());
+						return new MyMarkerAnnotation(marker);
 					}
 				} catch (final CoreException e) {
 				}
-				return createMarkerAnnotation;
+				return super.createMarkerAnnotation(marker);
+			}
+		}
+		
+		public static class MyMarkerAnnotation extends MarkerAnnotation {
+
+			public MyMarkerAnnotation(final IMarker marker) throws CoreException {
+				super(marker);
+				this.setType(marker.getType());
+			}
+
+			@Override
+			public int getLayer() {
+				return getMarker().getAttribute(LAYER, 0);
 			}
 		}
 	}
 
 	/* TLACoverageEditor */
-	
+
+	public static final String LAYER = "tlacoverageeditor.layer";
+
 	private final Map<Long, org.eclipse.ui.texteditor.AnnotationPreference> prefs;
 
 	public TLACoverageEditor(Map<Long, org.eclipse.ui.texteditor.AnnotationPreference> map) {
@@ -112,5 +154,23 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 	protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
 		prefs.values().forEach(p -> support.setAnnotationPreference(p));
 		super.configureSourceViewerDecorationSupport(support);
+	}
+	
+	@Override
+	protected IAnnotationAccess createAnnotationAccess() {
+		return new MyDefaultMarkerAnnotationAccess();
+	}
+	
+	public static class MyDefaultMarkerAnnotationAccess extends DefaultMarkerAnnotationAccess {
+
+		@SuppressWarnings("deprecation")
+		@Override
+		public int getLayer(final Annotation annotation) {
+			if (annotation instanceof MarkerAnnotation) {
+				final MarkerAnnotation ma = (MarkerAnnotation) annotation;
+				return ma.getLayer();
+			}
+			return super.getLayer(annotation);
+		}
 	}
 }
