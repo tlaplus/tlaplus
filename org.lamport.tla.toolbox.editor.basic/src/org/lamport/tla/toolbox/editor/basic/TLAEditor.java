@@ -191,6 +191,10 @@ public class TLAEditor extends TextEditor
         }
     }
 
+    protected TLASourceViewerConfiguration getTLASourceViewerConfiguration(IPreferenceStore preferenceStore) {
+    	return new TLASourceViewerConfiguration(preferenceStore, this); 
+    }
+    
     /*
      * (non-Javadoc)
      * @see org.eclipse.ui.texteditor.AbstractTextEditor#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
@@ -205,7 +209,7 @@ public class TLAEditor extends TextEditor
                 TLAEditorActivator.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 
         // set source viewer configuration
-        setSourceViewerConfiguration(new TLASourceViewerConfiguration(preferenceStore, this));
+        setSourceViewerConfiguration(getTLASourceViewerConfiguration(preferenceStore));
 
         // set preference store
         setPreferenceStore(preferenceStore);

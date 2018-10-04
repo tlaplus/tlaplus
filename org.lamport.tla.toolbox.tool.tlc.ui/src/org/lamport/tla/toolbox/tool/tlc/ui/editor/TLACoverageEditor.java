@@ -25,8 +25,11 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.IAnnotationModelFactory;
@@ -35,17 +38,25 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.DefaultTextHover;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationAccess;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationPresentation;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly;
+import org.lamport.tla.toolbox.editor.basic.TLASourceViewerConfiguration;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor.Factory.MyMarkerAnnotation;
 
 public class TLACoverageEditor extends TLAEditorReadOnly {
 	
@@ -149,6 +160,61 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 			preferenceStore.setValue(ap.getColorPreferenceKey(), format);
 		}
 	}
+	
+	// Show the actual coverage count/value in a mouse-over hover.
+    protected TLASourceViewerConfiguration getTLASourceViewerConfiguration(IPreferenceStore preferenceStore) {
+    	return new TLACoverageSourceViewerConfiguration(preferenceStore, this); 
+    }
+
+    private static class TLACoverageSourceViewerConfiguration extends TLASourceViewerConfiguration {
+
+		public TLACoverageSourceViewerConfiguration(IPreferenceStore preferenceStore,
+				TLACoverageEditor tlaCoverageEditor) {
+			super(preferenceStore, tlaCoverageEditor);
+		}
+
+		@Override
+		public ITextHover getTextHover(final ISourceViewer sourceViewer, String contentType) {
+			return new DefaultTextHover(sourceViewer) {
+				
+				@Override
+				public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
+					final IAnnotationModel model = sourceViewer.getAnnotationModel();
+
+					// Compared to DefaultTextHover, this implementation takes the annotation's layer into account.
+					final TreeSet<Annotation> layers = new TreeSet<Annotation>(new Comparator<Annotation>() {
+						@Override
+						public int compare(Annotation a1, Annotation a2) {
+							if (a1 instanceof MyMarkerAnnotation & a2 instanceof MyMarkerAnnotation) {
+								final MyMarkerAnnotation m1 = (MyMarkerAnnotation) a1;
+								final MyMarkerAnnotation m2 = (MyMarkerAnnotation) a2;
+								return Integer.compare(m1.getLayer(), m2.getLayer());
+							}
+							return 0;
+						}
+					});
+					final Iterator<Annotation> e= model.getAnnotationIterator();
+					while (e.hasNext()) {
+						final Annotation a= e.next();
+						if (isIncluded(a)) {
+							final Position p= model.getPosition(a);
+							if (p != null && p.overlapsWith(hoverRegion.getOffset(), hoverRegion.getLength())) {
+								final String msg= a.getText();
+								if (msg != null && msg.trim().length() > 0) {
+									layers.add(a);
+								}
+							}
+						}
+					}
+					if (layers.isEmpty()) {
+						return null;
+					}
+					return layers.last().getText();
+				}
+			};
+		}
+    }
+    
 
 	@Override
 	protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
