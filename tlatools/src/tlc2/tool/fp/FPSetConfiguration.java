@@ -51,7 +51,7 @@ public class FPSetConfiguration implements Serializable {
 	 *         {@link FPSet} sees).
 	 */
 	public int getFpBits() {
-		if (fpBits == 0 && FPSetFactory.isDiskFPSet(implementation)) {
+		if (fpBits == 0 && FPSetFactory.getInstance().isDiskFPSet(implementation)) {
 			// DiskFPSets always require two instances. A single DiskFPSet
 			// essentially only uses 63. fingerprint bits and thus increases the
 			// likelihood of hash collisions.
@@ -70,7 +70,7 @@ public class FPSetConfiguration implements Serializable {
 		
 		// Here the user has given a ratio of available memory to 
 		// use for fingerprint storage
-		if (FPSetFactory.allocatesOnHeap(implementation)) {
+		if (FPSetFactory.getInstance().allocatesOnHeap(implementation)) {
 			// If a user has set memory explicitly, we pass this value to 
 			// getFPMemSize(double) which sanitizes the value.
 			if (memoryInBytes > 0) {

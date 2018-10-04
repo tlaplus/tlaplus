@@ -25,20 +25,20 @@ public class FPSetFactoryTest {
 	
 	@Test
 	public void testGetDiskFPSet() {
-		assertTrue(FPSetFactory.isDiskFPSet(DiskFPSet.class.getName()));
-		assertTrue(FPSetFactory.isDiskFPSet(HeapBasedDiskFPSet.class.getName()));
-		assertTrue(FPSetFactory.isDiskFPSet(OffHeapDiskFPSet.class.getName()));
-		assertTrue(FPSetFactory.isDiskFPSet(LSBDiskFPSet.class.getName()));
-		assertTrue(FPSetFactory.isDiskFPSet(MSBDiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.getInstance().isDiskFPSet(DiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.getInstance().isDiskFPSet(HeapBasedDiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.getInstance().isDiskFPSet(OffHeapDiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.getInstance().isDiskFPSet(LSBDiskFPSet.class.getName()));
+		assertTrue(FPSetFactory.getInstance().isDiskFPSet(MSBDiskFPSet.class.getName()));
 
-		assertFalse(FPSetFactory.isDiskFPSet(FPSet.class.getName()));
-		assertFalse(FPSetFactory.isDiskFPSet(FPSetRMI.class.getName()));
+		assertFalse(FPSetFactory.getInstance().isDiskFPSet(FPSet.class.getName()));
+		assertFalse(FPSetFactory.getInstance().isDiskFPSet(FPSetRMI.class.getName()));
 		
-		assertFalse(FPSetFactory.isDiskFPSet(MultiFPSet.class.getName()));
+		assertFalse(FPSetFactory.getInstance().isDiskFPSet(MultiFPSet.class.getName()));
 		
-		assertFalse(FPSetFactory.isDiskFPSet(MemFPSet.class.getName()));
-		assertFalse(FPSetFactory.isDiskFPSet(MemFPSet1.class.getName()));
-		assertFalse(FPSetFactory.isDiskFPSet(MemFPSet2.class.getName()));
+		assertFalse(FPSetFactory.getInstance().isDiskFPSet(MemFPSet.class.getName()));
+		assertFalse(FPSetFactory.getInstance().isDiskFPSet(MemFPSet1.class.getName()));
+		assertFalse(FPSetFactory.getInstance().isDiskFPSet(MemFPSet2.class.getName()));
 		
 		System.setProperty(FPSetFactory.IMPL_PROPERTY, MSBDiskFPSet.class.getName());
 		final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
@@ -236,8 +236,8 @@ public class FPSetFactoryTest {
 	/* Helper methods */
 	
 	private FPSet doTestGetFPSet(final Class<? extends FPSet> class1, final FPSetConfiguration fpSetConfig) throws RemoteException, NoSuchObjectException {
-		final FPSet fpSet = FPSetFactory.getFPSet(fpSetConfig);
-		if (!FPSetFactory.isDiskFPSet(class1.getName())) {
+		final FPSet fpSet = FPSetFactory.getInstance().getFPSet(fpSetConfig);
+		if (!FPSetFactory.getInstance().isDiskFPSet(class1.getName())) {
 			assertTrue(class1.isAssignableFrom(fpSet.getClass()));
 		}
 		

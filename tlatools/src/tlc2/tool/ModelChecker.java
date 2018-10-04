@@ -88,7 +88,7 @@ public class ModelChecker extends AbstractChecker
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         //TODO why used to div by 20?
-		this.theFPSet = FPSetFactory.getFPSet(fpSetConfig);
+		this.theFPSet = FPSetFactory.getInstance().getFPSet(fpSetConfig);
 
         // initialize the set
         this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile);

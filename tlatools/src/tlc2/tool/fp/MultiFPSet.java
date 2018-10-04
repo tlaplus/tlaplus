@@ -63,7 +63,7 @@ public class MultiFPSet extends FPSet {
 		int len = fpSetConfiguration.getMultiFPSetCnt();
 		final FPSet[] s = new FPSet[len];
 		for (int i = 0; i < len; i++) {
-			s[i] = FPSetFactory.getFPSet(new MultiFPSetConfiguration(fpSetConfiguration));
+			s[i] = FPSetFactory.getInstance().getFPSet(new MultiFPSetConfiguration(fpSetConfiguration));
 		}
 		return s;
 	}
