@@ -296,26 +296,9 @@
 				<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 				<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
-				<batchtest fork="yes" todir="${test.reports}">
+				<batchtest fork="yes" todir="${test.reports}" skipNonTests="true">
 					<fileset dir="${test.dir}">
 						<include name="**/*Test*.java" />
-						<exclude name="**/PCalTest.java" />
-						<exclude name="**/CommonTestCase.java" />
-						<exclude name="**/ModelCheckerTestCase.java" />
-						<exclude name="**/PCalModelCheckerTestCase.java" />
-						<exclude name="**/SuiteTestCase.java" />
-						<exclude name="**/SuiteETestCase.java" />
-						<exclude name="**/DistributedTLCTestCase.java" />
-						<exclude name="**/TLCServerTestCase.java" />
-						<exclude name="**/SuccessfulSimulationTestCase.java" />
-						<exclude name="**/AbstractExampleTestCase.java" />
-						<exclude name="**/InitEvalOrderTest.java" />
-						<exclude name="**/TestMPRecorder.java" />
-						<exclude name="**/TestPrintStream.java" />
-						<exclude name="**/Abstract*Test.java" />
-						<exclude name="**/TestDriver.java" />
-						<exclude name="**/TestDriver2.java" />
-						<exclude name="**/AllTests.java" />
 						<!-- Known test failures -->
 						<exclude name="**/pcal/StackTestTest.java" />
 						<exclude name="**/pcal/TestPCandStackTest.java" />
@@ -357,26 +340,9 @@
 			<sysproperty key="basedir" value="${basedir}/"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 
-			<batchtest fork="yes" todir="${test.reports}/onJar">
+			<batchtest fork="yes" todir="${test.reports}/onJar" skipNonTests="true">
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
-					<exclude name="**/PCalTest.java" />
-					<exclude name="**/CommonTestCase.java" />
-					<exclude name="**/ModelCheckerTestCase.java" />
-					<exclude name="**/PCalModelCheckerTestCase.java" />
-					<exclude name="**/SuiteTestCase.java" />
-					<exclude name="**/SuiteETestCase.java" />
-					<exclude name="**/DistributedTLCTestCase.java" />
-					<exclude name="**/TLCServerTestCase.java" />
-					<exclude name="**/SuccessfulSimulationTestCase.java" />
-					<exclude name="**/AbstractExampleTestCase.java" />
-					<exclude name="**/InitEvalOrderTest.java" />
-					<exclude name="**/TestMPRecorder.java" />
-					<exclude name="**/TestPrintStream.java" />
-					<exclude name="**/Abstract*Test.java" />
-					<exclude name="**/TestDriver.java" />
-					<exclude name="**/TestDriver2.java" />
-					<exclude name="**/AllTests.java" />
 					<!-- Known test failures -->
 					<exclude name="**/pcal/StackTestTest.java" />
 					<exclude name="**/pcal/TestPCandStackTest.java" />
