@@ -84,7 +84,7 @@ public class FPSetManagerTest {
 
 		final List<FPSets> sets = new ArrayList<FPSets>();
 		for (int i = 0; i < fpSetConfiguration.getMultiFPSetCnt(); i++) {
-			final FPSet fpSet = FPSetFactory.getInstance().getFPSet(fpSetConfiguration);
+			final FPSet fpSet = FPSetFactory.getFPSet(fpSetConfiguration);
 			fpSet.init(1, tmpdir, "test" + expectedNumOfServers);
 			sets.add(new FPSets(fpSet, "localhost" + i));
 		}

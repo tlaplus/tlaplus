@@ -119,22 +119,22 @@ public class TLCProcessJob extends TLCJob
 					// into JVM heap and non-heap/off-heap memory. Let's assign 2/3 to the off-heap
 					// FPSet.
 					final long offheapMemory = (long) (absolutePhysicalSystemMemory * 0.6666d);
-					vmArgs.add(FPSetFactory.getInstance().getVMArguments(OffHeapDiskFPSet.class.getName(), offheapMemory));
+					vmArgs.add(FPSetFactory.getVMArguments(OffHeapDiskFPSet.class.getName(), offheapMemory));
 
 					// Rest goes to the heap (state queue/...).
-					vmArgs.add(FPSetFactory.getInstance().getVMArguments(FPSetFactory.getImplementationDefault(),
+					vmArgs.add(FPSetFactory.getVMArguments(FPSetFactory.getImplementationDefault(),
 							absolutePhysicalSystemMemory - offheapMemory));
 					
 					vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + OffHeapDiskFPSet.class.getName());
 				} else {
 					// Off-heap fpset couldn't be loaded. Use default fpset and assign all memory to
 					// heap memory.
-					vmArgs.add(FPSetFactory.getInstance().getVMArguments(FPSetFactory.getImplementationDefault(),
+					vmArgs.add(FPSetFactory.getVMArguments(FPSetFactory.getImplementationDefault(),
 							absolutePhysicalSystemMemory));
 					vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + FPSetFactory.getImplementationDefault());
 				}
 			} else {
-				vmArgs.add(FPSetFactory.getInstance().getVMArguments(clazz, absolutePhysicalSystemMemory));
+				vmArgs.add(FPSetFactory.getVMArguments(clazz, absolutePhysicalSystemMemory));
 				vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + clazz);
 			}
 			

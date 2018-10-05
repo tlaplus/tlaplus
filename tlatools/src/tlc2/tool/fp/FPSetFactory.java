@@ -12,36 +12,19 @@ import tlc2.output.MP;
 import util.TLCRuntime;
 import util.TLCRuntime.ARCH;
 
-public class FPSetFactory {
+public abstract class FPSetFactory {
 
-	private static FPSetFactory INSTANCE;
-
-	public static void setInstance(FPSetFactory fpSetFactory) {
-		INSTANCE = fpSetFactory;
-	}
-
-	public static synchronized FPSetFactory getInstance() {
-		if (INSTANCE == null) {
-			INSTANCE = new FPSetFactory();
-		}
-		return INSTANCE;
-	}
-	
-	protected FPSetFactory() {
-		// private
-	}
-	
 	/**
 	 * System property with which a consumer defines the class name of the
 	 * {@link FPSet} implementation to use.
 	 */
 	public static final String IMPL_PROPERTY = FPSet.class.getName() + ".impl";
 	
-	protected boolean allocatesOnHeap(final Class<? extends FPSet> clazz) {
+	private static boolean allocatesOnHeap(final Class<? extends FPSet> clazz) {
 		return !OffHeapDiskFPSet.class.isAssignableFrom(clazz);
 	}
 
-	public boolean allocatesOnHeap(final String clazz) {
+	public static boolean allocatesOnHeap(final String clazz) {
 		try {
 			final ClassLoader classLoader = FPSet.class.getClassLoader();
 			@SuppressWarnings("unchecked")
@@ -53,7 +36,7 @@ public class FPSetFactory {
 		}
 	}
 
-	protected boolean supportsArchitecture(String clazz) {
+	private static boolean supportsArchitecture(String clazz) {
 		try {
 			final ClassLoader classLoader = FPSet.class.getClassLoader();
 			@SuppressWarnings("unchecked")
@@ -65,7 +48,7 @@ public class FPSetFactory {
 		}
 	}
 
-	protected boolean supports32Bits(final Class<? extends FPSet> clazz) {
+	private static boolean supports32Bits(final Class<? extends FPSet> clazz) {
 		if (TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86
 				&& OffHeapDiskFPSet.class.isAssignableFrom(clazz)) {
 			return false;
@@ -73,11 +56,11 @@ public class FPSetFactory {
 		return true;
 	}
 	
-	protected boolean isDiskFPSet(Class<? extends FPSet> cls) {
+	private static boolean isDiskFPSet(Class<? extends FPSet> cls) {
 		return DiskFPSet.class.isAssignableFrom(cls);
 	}
 
-	boolean isDiskFPSet(final String clazz) {
+	static boolean isDiskFPSet(final String clazz) {
 		try {
 			final ClassLoader classLoader = FPSet.class.getClassLoader();
 			@SuppressWarnings("unchecked")
@@ -94,7 +77,7 @@ public class FPSetFactory {
 	 * @return
 	 * @throws RemoteException 
 	 */
-	public FPSet getFPSet() throws RemoteException {
+	public static FPSet getFPSet() throws RemoteException {
 		return getFPSet(new FPSetConfiguration());
 	}
 
@@ -105,7 +88,7 @@ public class FPSetFactory {
 	 * @return
 	 * @throws RemoteException
 	 */
-	public FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+	public static FPSet getFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		
 		final String implClassname = fpSetConfig.getImplementation();
 		
@@ -138,7 +121,7 @@ public class FPSetFactory {
 	 * @return A list of classes implementing {@link FPSet}. Eventually this
 	 *         list should be constructed dynamically during runtime.
 	 */
-	public String[] getImplementations() {
+	public static String[] getImplementations() {
 		final List<String> l = new ArrayList<String>();
 		
 		l.add(MSBDiskFPSet.class.getName());
@@ -160,7 +143,7 @@ public class FPSetFactory {
 	 * @param memory Memory dedicated to the FPSet implementation in MiB
 	 * @return
 	 */
-	public String getVMArguments(final String clazz, final long memory) {
+	public static String getVMArguments(final String clazz, final long memory) {
 		if (allocatesOnHeap(clazz)) {
 			return "-Xmx" + memory + "m";
 		} else {
@@ -177,7 +160,7 @@ public class FPSetFactory {
 	 * @param fpBits 
 	 * @return
 	 */
-	protected FPSet loadImplementation(final String clazz, final FPSetConfiguration fpSetConfig) {
+	private static FPSet loadImplementation(final String clazz, final FPSetConfiguration fpSetConfig) {
 		Exception exp = null;
 		try {
 			// poor mans version of modularity, booh!

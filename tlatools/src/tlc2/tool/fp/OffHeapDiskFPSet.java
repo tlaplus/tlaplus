@@ -129,7 +129,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 	private int numThreads;
 
-	public OffHeapDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+	protected OffHeapDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
 		super(fpSetConfig);
 		
 		final long positions = fpSetConfig.getMemoryInFingerprintCnt();

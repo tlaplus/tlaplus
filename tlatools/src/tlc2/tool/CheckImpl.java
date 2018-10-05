@@ -38,7 +38,7 @@ public abstract class CheckImpl extends ModelChecker {
     super(specFile, configFile, metadir, new NoopStateWriter(), deadlock, fromChkpt, null, null, fpSetConfig); // no name resolver and no specobj
     this.depth = depth;
     this.curState = null;
-    this.coverSet = FPSetFactory.getInstance().getFPSet();
+    this.coverSet = FPSetFactory.getFPSet();
     this.coverSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile+"_cs");
     this.stateEnum = null;
   }

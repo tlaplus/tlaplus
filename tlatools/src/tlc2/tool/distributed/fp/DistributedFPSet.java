@@ -53,7 +53,7 @@ public class DistributedFPSet  {
 			// Initialize this FPSet with n-prefix bits and m mask bits
 			final FPSetConfiguration fpSetConfiguration = new FPSetConfiguration(1.0d);
 			fpSetConfiguration.setFpBits(1 + prefixBits);
-			final FPSet fpSet = FPSetFactory.getInstance().getFPSet(fpSetConfiguration);
+			final FPSet fpSet = FPSetFactory.getFPSet(fpSetConfiguration);
 			final String filename = "FPSet" + System.currentTimeMillis();
 			fpSet.init(1,metadir,filename);
 			
