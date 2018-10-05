@@ -29,10 +29,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
+@RunWith(BlockJUnit4ClassRunner.class)
 public class UserModuleOverrideTest extends ModelCheckerTestCase {
 
 	public UserModuleOverrideTest() {

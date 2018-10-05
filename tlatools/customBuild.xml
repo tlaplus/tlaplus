@@ -270,7 +270,7 @@
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
 		<jacoco:coverage destfile="target/code-coverage.exec">
-			<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}"  forkmode="perTest" fork="yes">
+			<junit printsummary="yes" haltonfailure="${test.halt}" showoutput="no" haltonerror="${test.halt}"  forkmode="perBatch" fork="yes">
 				<!-- enable all assertions -->
 				<jvmarg value="-ea"/>
 				<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
@@ -296,9 +296,20 @@
 				<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 				<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
+				<!-- The tests below can be tricked into running in a single VM by fiddling with the classloader 
+				     to reload and thus initialize all classes for each tests. -->
 				<batchtest fork="yes" todir="${test.reports}">
 					<fileset dir="${test.dir}">
 						<include name="**/*Test*.java" />
+						
+						<!-- Produce bogus crash with Quarantine runner. -->
+						<exclude name="tlc2/tool/distributed/TLCSetTest.java" />
+						<exclude name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
+						<!-- Just fail because of Quarantine runner. -->
+						<exclude name="tlc2/TLCTest.java"/>
+						<exclude name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
+						<exclude name="tlc2/tool/UserModuleOverrideTest.java" />
+						
 						<exclude name="**/PCalTest.java" />
 						<exclude name="**/CommonTestCase.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
@@ -316,6 +327,7 @@
 						<exclude name="**/TestDriver.java" />
 						<exclude name="**/TestDriver2.java" />
 						<exclude name="**/AllTests.java" />
+						<exclude name="util/IsolatedTestCaseRunner.java"/>
 						<!-- Known test failures -->
 						<exclude name="**/pcal/StackTestTest.java" />
 						<exclude name="**/pcal/TestPCandStackTest.java" />
@@ -326,6 +338,27 @@
 						<exclude name="**/DetlefsTest.java" />
 						<exclude name="**/StarkMutexTest.java" />
 						<exclude name="**/SimpleMultiProcTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/tool/UserModuleOverrideTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/tool/distributed/TLCSetTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/TLCTest.java"/>
+						<include name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
 					</fileset>
 				</batchtest>
 			</junit>
@@ -360,6 +393,15 @@
 			<batchtest fork="yes" todir="${test.reports}/onJar">
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
+					
+					<!-- Produce bogus crash with Quarantine runner. -->
+					<exclude name="tlc2/tool/distributed/TLCSetTest.java" />
+					<exclude name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
+					<!-- Just fail because of Quarantine runner. -->
+					<exclude name="tlc2/TLCTest.java"/>
+					<exclude name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
+					<exclude name="tlc2/tool/UserModuleOverrideTest.java" />
+					
 					<exclude name="**/PCalTest.java" />
 					<exclude name="**/CommonTestCase.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
@@ -377,6 +419,7 @@
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
+					<exclude name="util/IsolatedTestCaseRunner.java"/>
 					<!-- Known test failures -->
 					<exclude name="**/pcal/StackTestTest.java" />
 					<exclude name="**/pcal/TestPCandStackTest.java" />
@@ -387,6 +430,27 @@
 					<exclude name="**/DetlefsTest.java" />
 					<exclude name="**/StarkMutexTest.java" />
 					<exclude name="**/SimpleMultiProcTest.java" />
+				</fileset>
+			</batchtest>
+			<batchtest fork="yes" todir="${test.reports}/onJar">
+				<fileset dir="${test.dir}">
+					<include name="tlc2/tool/UserModuleOverrideTest.java" />
+				</fileset>
+			</batchtest>
+			<batchtest fork="yes" todir="${test.reports}/onJar">
+				<fileset dir="${test.dir}">
+					<include name="tlc2/tool/distributed/TLCSetTest.java" />
+				</fileset>
+			</batchtest>
+			<batchtest fork="yes" todir="${test.reports}/onJar">
+				<fileset dir="${test.dir}">
+					<include name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
+				</fileset>
+			</batchtest>
+			<batchtest fork="yes" todir="${test.reports}/onJar">
+				<fileset dir="${test.dir}">
+					<include name="tlc2/TLCTest.java"/>
+					<include name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
 				</fileset>
 			</batchtest>
 		</junit>

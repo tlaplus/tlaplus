@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 import tlc2.TLCGlobals;
 import tlc2.output.MP;
@@ -40,6 +42,7 @@ import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.MSBDiskFPSet;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
+@RunWith(BlockJUnit4ClassRunner.class)
 public abstract class TLCServerTestCase extends ModelCheckerTestCase {
 
 	public TLCServerTestCase(String spec) {

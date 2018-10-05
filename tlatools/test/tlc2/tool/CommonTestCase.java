@@ -34,6 +34,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.runner.RunWith;
+
 import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.output.EC;
@@ -41,7 +43,9 @@ import tlc2.output.MPRecorder;
 import tlc2.tool.liveness.GraphNode;
 import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
+import util.IsolatedTestCaseRunner;
 
+@RunWith(IsolatedTestCaseRunner.class)
 public abstract class CommonTestCase {
 
 	protected static final String BASE_DIR = System.getProperty("basedir", "");
