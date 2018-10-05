@@ -269,7 +269,7 @@
 	<target name="test" unless="test.skip">
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
-		<jacoco:coverage destfile="target/code-coverage.exec">
+		<jacoco:coverage destfile="target/code-coverage.exec" includes="pcal.*:tla2sany.*:tla2tex.*:tlc2.*:util.*:org.lamport.*" excludes="**/Tests.*:**/*Test*">
 			<junit printsummary="yes" haltonfailure="${test.halt}" showoutput="no" haltonerror="${test.halt}"  forkmode="perBatch" fork="yes">
 				<!-- enable all assertions -->
 				<jvmarg value="-ea"/>
