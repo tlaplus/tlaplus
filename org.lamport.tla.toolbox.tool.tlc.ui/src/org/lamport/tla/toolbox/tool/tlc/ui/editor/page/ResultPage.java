@@ -303,7 +303,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 										}
 										coverageMarker.isSubtypeOf(IMarker.MARKER);
 										coverageMarker.setAttribute(IMarker.MESSAGE,
-												Long.toString(coverageForTLAFile.getCount()));
+												String.format("%,d", coverageForTLAFile.getCount()));
 										coverageMarker.setAttribute(TLACoverageEditor.LAYER,
 												coverageForTLAFile.getLayer());
 										final IRegion region = AdapterFactory
