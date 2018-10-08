@@ -5,11 +5,14 @@ import java.io.IOException;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
+import tla2sany.modanalyzer.SpecObj;
 import tlc2.tool.Simulator;
 import tlc2.util.RandomGenerator;
 import util.SimpleFilenameToStream;
@@ -20,16 +23,44 @@ import util.ToolIO;
  */
 @State(Scope.Benchmark)
 public class SimulatorBenchmark {
+	
+    @Param({ "1", "2", "3", "4", "5", "6"})
+    public int nWorkers;
+    
+	Simulator simulator;
+	SpecObj specObj;
+	RandomGenerator rng = new RandomGenerator(0);
+	long seed = 0;
 
     @Setup
     public void up() throws IOException {
 		ToolIO.setUserDir("test-model" + File.separator + "simulation" + File.separator + "BenchmarkSpec");
-    }    
+    }  
+    
+    @Setup(Level.Iteration)
+    public void reseedIter() {
+    	// For each iteration of a benchmark, we set the seed to a known value, so that each 
+    	// benchmark fork starts a particular iteration with the same seed. 
+		seed += 1;
+		rng.setSeed(seed);
+    }
+    
+    @Setup(Level.Trial)
+    public void reseed() {
+    	// We reset the random number generator to a fixed seed before benchmarking a specific worker count.
+    	// This should help to make these benchmarks more deterministic for a fixed set of benchmark parameters. The initial
+    	// seed of this random number generator should effectively determine what traces are explored in what order by the simulation
+    	// workers, so a particular seed should correspond to a fixed exploration order of the behavior space.
+    	System.out.println("Re-zeroing seed");
+		rng.setSeed(0);
+		seed = 0;
+    }
     
     public void simulatorBenchmark(int nWorkers) {
 		try {
-			RandomGenerator rng = new RandomGenerator(System.nanoTime());
-			Simulator simulator = new Simulator("BenchmarkSpec", "MCInv", null, false, 35, Long.MAX_VALUE, rng, 0, true, new SimpleFilenameToStream(), null, nWorkers);
+			int maxTraceDepth = 20;
+			Simulator simulator = new Simulator("BenchmarkSpec", "MCInv", null, false, maxTraceDepth, Long.MAX_VALUE, rng, 0, true,
+					new SimpleFilenameToStream(), null, nWorkers);
 			simulator.simulate();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -38,31 +69,7 @@ public class SimulatorBenchmark {
 	
 	@Benchmark
 	@BenchmarkMode(Mode.AverageTime)
-	public void Simulator1Workers() {
-		simulatorBenchmark(1);  
-	}
-
-	@Benchmark
-	@BenchmarkMode(Mode.AverageTime)
-	public void Simulator2Workers() {
-		simulatorBenchmark(2);
-	}
-	
-	@Benchmark
-	@BenchmarkMode(Mode.AverageTime)
-	public void Simulator4Workers() {
-		simulatorBenchmark(4);
-	}
-	
-	@Benchmark
-	@BenchmarkMode(Mode.AverageTime)
-	public void Simulator8Workers() {
-		simulatorBenchmark(8);
-	}
-	
-	@Benchmark
-	@BenchmarkMode(Mode.AverageTime)
-	public void Simulator12Workers() {
-		simulatorBenchmark(12);
+	public void SimulatorWorkers() {
+		simulatorBenchmark(nWorkers);  
 	}
 }
