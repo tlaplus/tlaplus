@@ -68,11 +68,11 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 
 	public static class AnnotationPreference extends org.eclipse.ui.texteditor.AnnotationPreference {
 
-		public AnnotationPreference(final long count, final long maxCount) {
+		public AnnotationPreference(final int count) {
 			super(ANNOTATION_USED_PREFIX + Long.toString(count), ANNOTATION_USED_PREFIX + Long.toString(count) + ".colorKey", "",
 					"", IAnnotationPresentation.DEFAULT_LAYER);
 			this.setIncludeOnPreferencePage(false);
-			this.setColorPreferenceValue(getRGB(count, maxCount));
+			this.setColorPreferenceValue(getRGB(count));
 			// The Highlight* has to match the
 			// org.eclipse.ui.editors.markerAnnotationSpecification defined in the
 			// plugin.xml even though markerAnnotationSpecification isn't used. However, it
@@ -87,12 +87,9 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 
 		// Cache RGB instances because they are expensive.
 		private static final Map<Integer, RGB> COLORS = new HashMap<>();
-		private static final float BLUE = 240;
 
-		private RGB getRGB(final float val, final float maxval) {
-			final float h = BLUE - ((val / maxval) * BLUE);
-			// https://en.wikipedia.org/wiki/HSL_and_HSV
-			return COLORS.computeIfAbsent(Math.round(h), hue -> new RGB(hue, .25f, 1f));
+		private RGB getRGB(final int val) {
+			return COLORS.computeIfAbsent(val, hue -> new RGB(hue, .25f, 1f));
 		}
 	}
 	

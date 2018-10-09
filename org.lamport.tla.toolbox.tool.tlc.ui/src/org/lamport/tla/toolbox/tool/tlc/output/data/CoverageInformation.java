@@ -28,15 +28,17 @@ package org.lamport.tla.toolbox.tool.tlc.output.data;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class CoverageInformation implements Iterable<CoverageInformationItem> {
 	
-	private long maxValue = -1l;
+	private final TreeSet<Long> counts = new TreeSet<>();
 	
 	private final List<CoverageInformationItem> items = new ArrayList<>();
 
-	public void add(CoverageInformationItem item) {
-		this.maxValue = Math.max(this.maxValue, item.getCount());
+	public void add(final CoverageInformationItem item) {
+		this.counts.add(item.getCount());
 		this.items.add(item);
 	}
 
@@ -49,11 +51,16 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 		return this.items.isEmpty();
 	}
 
-	public long getMaxCount() {
-		return maxValue;
-	}
-
 	public Object[] toArray() {
 		return this.items.toArray();
+	}
+
+	private static final int BLUE = 240;
+
+	public int getHue(final CoverageInformationItem item) {
+		final int size = counts.size();
+		final float r = 240f / size;
+		final SortedSet<Long> headSet = counts.headSet(item.getCount());
+		return BLUE - Math.round(r * headSet.size());
 	}
 }

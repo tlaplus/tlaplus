@@ -283,7 +283,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							if (!coveragesForTLAFile.isEmpty()) {
 								coveredFiles.put(tlaFile, annotationPrefs);
 								for (CoverageInformationItem coverageForTLAFile : coveragesForTLAFile) {
-									try {
+									final IRegion region = AdapterFactory
+											.locationToRegion(coverageForTLAFile.getModuleLocation());
+									if (region == null) {
+										// Region can be null if a model gets openend with coverage results but the spec
+										// has changed in the meantime. This shouldn't happen though, as we used the tla
+										// spec that has been copied to the Model_1 directory when model checking
+										// started.
+										continue;
+									}
+                            		try {
 										final IMarker coverageMarker;
 										if (coverageForTLAFile.getCount() == 0) {
 											coverageMarker = tlaFile
@@ -294,8 +303,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 											// highlighting in a particular color) for the same counts.
 											final AnnotationPreference ap = annotationPrefs.computeIfAbsent(
 													coverageForTLAFile.getCount(),
-													c -> new TLACoverageEditor.AnnotationPreference(c,
-															coveragesForTLAFile.getMaxCount()));
+													c -> new TLACoverageEditor.AnnotationPreference(
+															coveragesForTLAFile.getHue(coverageForTLAFile)));
 
 											// TODO do we need to clear existing coverage markers first or can we update
 											// existing markers with new invocation counts?
@@ -306,8 +315,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 												String.format("%,d", coverageForTLAFile.getCount()));
 										coverageMarker.setAttribute(TLACoverageEditor.LAYER,
 												coverageForTLAFile.getLayer());
-										final IRegion region = AdapterFactory
-												.locationToRegion(coverageForTLAFile.getModuleLocation());
 										coverageMarker.setAttribute(IMarker.CHAR_START, region.getOffset());
 										coverageMarker.setAttribute(IMarker.CHAR_END,
 												region.getOffset() + region.getLength());
