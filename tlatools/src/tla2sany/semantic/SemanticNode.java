@@ -234,6 +234,36 @@ public abstract class SemanticNode
        return (loc1.beginColumn() < loc2.beginColumn())?-1:1;
   }
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + kind;
+		result = prime * result + myUID;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		SemanticNode other = (SemanticNode) obj;
+		if (kind != other.kind) {
+			return false;
+		}
+		if (myUID != other.myUID) {
+			return false;
+		}
+		return true;
+	}
+
 /***************************************************************************
 * XXXXX A test for getLocation() returning null should be added            *
 *       to the following two toString methods.                             *
