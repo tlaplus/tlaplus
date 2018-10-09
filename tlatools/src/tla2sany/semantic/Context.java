@@ -507,8 +507,8 @@ public class Context implements ExploreNode {
     return ctxtEntries;
   }
 
-  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
-	  preorderVisitor.visit(this);
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
+	  visitor.preVisit(this);
     UniqueString key;
     Enumeration<?>  e = table.keys();
 
@@ -535,8 +535,9 @@ public class Context implements ExploreNode {
         }
       else {
         key = (UniqueString) next;
-        ((Pair)table.get(key)).info.walkGraph(semNodesTable, preorderVisitor);
+        ((Pair)table.get(key)).info.walkGraph(semNodesTable, visitor);
        } ;
+       visitor.postVisit(this);
     }
 
   }

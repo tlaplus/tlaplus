@@ -1078,18 +1078,18 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
    }
 
   @Override
-  public final void walkGraph (Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph (Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
 
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
+    visitor.preVisit(this);
     if (ctxt != null) {
-      ctxt.walkGraph(semNodesTable, preorderVisitor);
+      ctxt.walkGraph(semNodesTable, visitor);
     }
     for (int i = 0; i < topLevelVec.size(); i++) {
-      ((LevelNode)(topLevelVec.elementAt(i))).walkGraph(semNodesTable, preorderVisitor);
+      ((LevelNode)(topLevelVec.elementAt(i))).walkGraph(semNodesTable, visitor);
     }
 //     for (int i = 0; i < instanceVec.size(); i++) {
 //       ((InstanceNode)(instanceVec.elementAt(i))).walkGraph(semNodesTable);
@@ -1100,6 +1100,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 //     for (int i = 0; i < assumptionVec.size(); i++) {
 //       ((AssumeNode)(assumptionVec.elementAt(i))).walkGraph(semNodesTable);
 //     }
+    visitor.postVisit(this);
   }
 
   public final void print(int indent, int depth, boolean b) {

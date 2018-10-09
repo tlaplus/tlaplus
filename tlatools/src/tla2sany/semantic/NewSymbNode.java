@@ -171,12 +171,13 @@ public class NewSymbNode extends LevelNode {
   }
 
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
-    if (set != null) { set.walkGraph(semNodesTable, preorderVisitor); } ;
+    visitor.preVisit(this);
+    if (set != null) { set.walkGraph(semNodesTable, visitor); } ;
+    visitor.postVisit(this);
    }
 
   @Override

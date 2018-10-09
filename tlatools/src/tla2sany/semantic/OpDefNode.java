@@ -1226,18 +1226,19 @@ public class OpDefNode extends OpDefOrDeclNode
    * the Explorer tool.
    */
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
+    visitor.preVisit(this);
     if (params != null && params.length > 0) {
       for (int i = 0; i < params.length; i++) {
-        if (params[i] != null) params[i].walkGraph(semNodesTable, preorderVisitor);
+        if (params[i] != null) params[i].walkGraph(semNodesTable, visitor);
       }
     }
-    if (body != null) body.walkGraph(semNodesTable, preorderVisitor);
-    if (stepNode != null) stepNode.walkGraph(semNodesTable, preorderVisitor);
+    if (body != null) body.walkGraph(semNodesTable, visitor);
+    if (stepNode != null) stepNode.walkGraph(semNodesTable, visitor);
+    visitor.postVisit(this);
   }
 
 	@Override

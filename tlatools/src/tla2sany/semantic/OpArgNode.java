@@ -113,12 +113,12 @@ public class OpArgNode extends ExprOrOpArgNode {
 //  }
 
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
+    visitor.preVisit(this);
 
     /***********************************************************************
     * Modified on 28 Mar 2007 by LL to walk the operator node of the       *
@@ -128,7 +128,8 @@ public class OpArgNode extends ExprOrOpArgNode {
     * walking the node representing the declaration or definition of the   *
     * operator.                                                            *
     ***********************************************************************/
-    if (op != null) {op.walkGraph(semNodesTable, preorderVisitor) ;} ;
+    if (op != null) {op.walkGraph(semNodesTable, visitor) ;} ;
+    visitor.postVisit(this);
   }
 
   @Override

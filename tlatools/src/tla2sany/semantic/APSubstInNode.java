@@ -436,19 +436,20 @@ public class APSubstInNode extends LevelNode {
   }
 
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
+    visitor.preVisit(this);
 
     if (this.substs != null) {
       for (int i = 0; i < this.substs.length; i++) {
-        if (this.substs[i] != null) this.substs[i].walkGraph(semNodesTable, preorderVisitor);
+        if (this.substs[i] != null) this.substs[i].walkGraph(semNodesTable, visitor);
       }
     }
-    if (this.body != null) this.body.walkGraph(semNodesTable, preorderVisitor);
+    if (this.body != null) this.body.walkGraph(semNodesTable, visitor);
+    visitor.postVisit(this);
     return;
   }
 

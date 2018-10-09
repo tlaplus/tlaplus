@@ -1123,31 +1123,31 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * and inserts them in the Hashtable semNodesTable for use by the Explorer tool.
    */
   @Override
-  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
+    visitor.preVisit(this);
 
     if (operator != null) {
-      operator.walkGraph(semNodesTable, preorderVisitor);
+      operator.walkGraph(semNodesTable, visitor);
     }
 
     if (unboundedBoundSymbols != null && unboundedBoundSymbols.length > 0) {
       for (int i = 0; i < unboundedBoundSymbols.length; i++)
         if (unboundedBoundSymbols[i] != null)
-           unboundedBoundSymbols[i].walkGraph(semNodesTable, preorderVisitor);
+           unboundedBoundSymbols[i].walkGraph(semNodesTable, visitor);
     }
 
     if (operands != null && operands.length > 0) {
       for (int i = 0; i < operands.length; i++)
-        if (operands[i] != null) operands[i].walkGraph(semNodesTable, preorderVisitor);
+        if (operands[i] != null) operands[i].walkGraph(semNodesTable, visitor);
     }
 
     if (ranges.length > 0) {
       for (int i = 0; i < ranges.length; i++)
-        if (ranges[i] != null) ranges[i].walkGraph(semNodesTable, preorderVisitor);
+        if (ranges[i] != null) ranges[i].walkGraph(semNodesTable, visitor);
     }
 
     if (boundedBoundSymbols != null && boundedBoundSymbols.length > 0) {
@@ -1155,11 +1155,12 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         if (boundedBoundSymbols[i] != null && boundedBoundSymbols[i].length > 0) {
           for (int j = 0; j < boundedBoundSymbols[i].length; j++) {
             if (boundedBoundSymbols[i][j] != null)
-               boundedBoundSymbols[i][j].walkGraph(semNodesTable, preorderVisitor);
+               boundedBoundSymbols[i][j].walkGraph(semNodesTable, visitor);
           }
         }
       }
     }
+    visitor.postVisit(this);
   }
 
   // Used in implementation of toString() below

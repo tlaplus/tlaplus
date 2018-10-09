@@ -174,23 +174,24 @@ public class NonLeafProofNode extends ProofNode {
    }
 
   @Override
-  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
+    visitor.preVisit(this);
     for (int  i = 0; i < steps.length; i++) {
-      steps[i].walkGraph(semNodesTable, preorderVisitor);
+      steps[i].walkGraph(semNodesTable, visitor);
       } ;
     /***********************************************************************
     * Note: there's no need to walk the defs array because all the nodes   *
     * on it are walked from the nodes under which they appear.             *
     ***********************************************************************/
 
-    context.walkGraph(semNodesTable, preorderVisitor) ;
+    context.walkGraph(semNodesTable, visitor) ;
       /*********************************************************************
       * Walk the ThmOrOpApplDef NumberedProofStepKind nodes.               *
       *********************************************************************/
+    visitor.postVisit(this);
    }
 
   @Override

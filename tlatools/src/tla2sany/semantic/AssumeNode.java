@@ -185,14 +185,15 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
    * Explorer tool.
    */
   @Override
-  public final void walkGraph (Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph (Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
 
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
-    if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable, preorderVisitor);} ;
+    visitor.preVisit(this);
+    if (assumeExpr != null) {assumeExpr.walkGraph(semNodesTable, visitor);} ;
+    visitor.postVisit(this);
   }
 
   /* MR: This is the same as SymbolNode.exportDefinition. Exports the actual theorem content, not only a reference.

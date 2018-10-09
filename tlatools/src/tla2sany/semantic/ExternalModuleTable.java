@@ -50,9 +50,9 @@ public class ExternalModuleTable implements ExploreNode {
      */
     public String levelDataToString() { return "Dummy level string"; }
 
-    public void walkGraph(Hashtable<Integer, ExploreNode> moduleNodesTable, ExplorerVisitor preorderVisitor) {
-      if (moduleNode != null)   moduleNode.walkGraph(moduleNodesTable, preorderVisitor);
-      if (ctxt != null)      ctxt.walkGraph(moduleNodesTable, preorderVisitor);
+    public void walkGraph(Hashtable<Integer, ExploreNode> moduleNodesTable, ExplorerVisitor visitor) {
+      if (moduleNode != null)   moduleNode.walkGraph(moduleNodesTable, visitor);
+      if (ctxt != null)      ctxt.walkGraph(moduleNodesTable, visitor);
     } // end walkGraph()
 
     public String toString(int depth) {
@@ -192,12 +192,12 @@ public class ExternalModuleTable implements ExploreNode {
 	  walkGraph(moduleNodesTable, ExplorerVisitor.NoopVisitor);
   }
 
-  public void walkGraph(Hashtable<Integer, ExploreNode> moduleNodesTable, ExplorerVisitor preorderVisitor) {
+  public void walkGraph(Hashtable<Integer, ExploreNode> moduleNodesTable, ExplorerVisitor visitor) {
     Enumeration Enum = moduleHashTable.elements();
 
     while ( Enum.hasMoreElements() ) {
 	ExternalModuleTableEntry mte = (ExternalModuleTableEntry)Enum.nextElement();
-	mte.walkGraph(moduleNodesTable, preorderVisitor);
+	mte.walkGraph(moduleNodesTable, visitor);
     }
   }
 

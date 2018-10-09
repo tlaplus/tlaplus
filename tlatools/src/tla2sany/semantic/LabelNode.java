@@ -283,15 +283,16 @@ public class LabelNode extends ExprNode
   * The methods for implementing the ExploreNode interface.                *
   *************************************************************************/
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
-    if (body != null) body.walkGraph(semNodesTable, preorderVisitor);
+    visitor.preVisit(this);
+    if (body != null) body.walkGraph(semNodesTable, visitor);
     for (int i = 0 ; i < params.length; i++) {
-      params[i].walkGraph(semNodesTable, preorderVisitor);
+      params[i].walkGraph(semNodesTable, visitor);
      } ;
+     visitor.postVisit(this);
   }
 
   @Override

@@ -582,12 +582,13 @@ public class ThmOrAssumpDefNode extends SymbolNode
   }
 
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (semNodesTable.get(uid) != null) return;
     semNodesTable.put(uid, this);
-    preorderVisitor.visit(this);
-    if(this.body != null) {this.body.walkGraph(semNodesTable, preorderVisitor) ;} ;
+    visitor.preVisit(this);
+    if(this.body != null) {this.body.walkGraph(semNodesTable, visitor) ;} ;
+    visitor.postVisit(this);
    }
 
   @Override

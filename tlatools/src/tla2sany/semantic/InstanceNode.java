@@ -404,12 +404,13 @@ public class InstanceNode extends LevelNode {
     if (semNodesTable.get(uid) != null) return;
 
     semNodesTable.put(myUID, this);
-    visitor.visit(this);
+    visitor.preVisit(this);
 
     for (int i = 0; i < params.length; i++) {
       params[i].walkGraph(semNodesTable, visitor);
     }
     module.walkGraph(semNodesTable, visitor);
+    visitor.postVisit(this);
   }
 
   public final String toString(int depth) {

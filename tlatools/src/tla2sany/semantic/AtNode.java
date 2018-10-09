@@ -152,7 +152,7 @@ public class AtNode extends ExprNode {
    * and inserts them in the Hashtable semNodesTable for use by the Explorer tool.
    */
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> h, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> h, ExplorerVisitor visitor) {
   // Empty because there are no nodes reachable through an AtNode that are not
   // reachable by other paths through the semantic graph.
   } // end walkGraph()

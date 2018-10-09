@@ -230,10 +230,11 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
 
   public final String levelDataToString() { return "Dummy level string"; }
 
-  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor preorderVisitor) {
-	preorderVisitor.visit(this);
-    if (op != null) op.walkGraph(semNodesTable, preorderVisitor);
-    if (expr != null) expr.walkGraph(semNodesTable, preorderVisitor);
+  public final void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
+	visitor.preVisit(this);
+    if (op != null) op.walkGraph(semNodesTable, visitor);
+    if (expr != null) expr.walkGraph(semNodesTable, visitor);
+    visitor.postVisit(this);
   }
 
   public final String toString(int depth) {

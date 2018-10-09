@@ -352,17 +352,18 @@ public class AssumeProveNode extends LevelNode {
   }
 
   @Override
-  public final void walkGraph(Hashtable<Integer, ExploreNode> h, ExplorerVisitor preorderVisitor) {
+  public final void walkGraph(Hashtable<Integer, ExploreNode> h, ExplorerVisitor visitor) {
     Integer uid = Integer.valueOf(myUID);
     if (h.get(uid) != null) return;
     h.put(uid, this);
-    preorderVisitor.visit(this);
+    visitor.preVisit(this);
     int i = 0 ;
     while (i <  assumes.length) {
-      assumes[i].walkGraph(h, preorderVisitor) ;
+      assumes[i].walkGraph(h, visitor) ;
       i = i+1;
      } ;
-    prove.walkGraph(h, preorderVisitor) ;
+    prove.walkGraph(h, visitor) ;
+    visitor.postVisit(this);
   } // end walkGraph()
 
 

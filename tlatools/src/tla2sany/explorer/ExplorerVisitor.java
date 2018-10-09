@@ -29,6 +29,9 @@ public class ExplorerVisitor {
 
 	public static final ExplorerVisitor NoopVisitor = new ExplorerVisitor();
 
-	public void visit(final ExploreNode exploreNode) {
+	public void preVisit(final ExploreNode exploreNode) {
+	}
+	
+	public void postVisit(final ExploreNode exploreNode) {
 	}
 }
