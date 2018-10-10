@@ -1883,8 +1883,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             }
             break;
         }
-        case OPCODE_eq:
-        case OPCODE_in: {
+        case OPCODE_eq:   // x' = 42
+        case OPCODE_in: { // x' \in S (eq case "falls through")
             SymbolNode var = this.getPrimedVar(args[0], c, false);
             if (var != null && var.getName().getVarLoc() != -1)
             {
@@ -1908,7 +1908,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             break;
         }
         case OPCODE_unchanged: {
-            this.collectUnchangedLocs(args[0], c, tbl);
+            this.collectUnchangedLocs(args[0], c, tbl, args[0]);
             break;
         }
         case OPCODE_aa: // AngleAct <A>_e
@@ -1947,8 +1947,8 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         }
     }
 
-    private final void collectUnchangedLocs(SemanticNode expr, Context c, ObjLongTable<SemanticNode> tbl)
-    {
+	private final void collectUnchangedLocs(final SemanticNode expr, final Context c,
+			final ObjLongTable<SemanticNode> tbl, final SemanticNode parent) {
         if (expr instanceof OpApplNode)
         {
             OpApplNode expr1 = (OpApplNode) expr;
@@ -1959,17 +1959,28 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             if (opName.getVarLoc() >= 0)
             {
                 // a state variable:
-                tbl.put(expr, 0);
+                tbl.put(expr == parent ? expr : parent, 0);
                 return;
             }
 
             ExprOrOpArgNode[] args = expr1.getArgs();
             if (opcode == OPCODE_tup)
             {
-                // a tuple:
+				// a tuple, might be:
+            	// UNCHANGED <<x,y,z>>
+            	// or:
+            	// vars == <<x,y,z>>
+            	// ...
+            	// UNCHANGED vars
+				// For the latter, we don't want vars == <<x,y,z>> to show up, but the vars in
+				// UNCHANGED vars (see CoverageStatisticsTest).
                 for (int i = 0; i < args.length; i++)
                 {
-                    this.collectUnchangedLocs(args[i], c, tbl);
+                	if (parent.getLocation().includes(expr.getLocation())) {
+                		this.collectUnchangedLocs(args[i], c, tbl, expr1);
+                	} else {
+                		this.collectUnchangedLocs(args[i], c, tbl, parent);
+                	}
                 }
                 return;
             }
@@ -1980,7 +1991,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 Object val = this.lookup(opNode, c, false);
                 if (val instanceof OpDefNode)
                 {
-                    this.collectUnchangedLocs(((OpDefNode) val).getBody(), c, tbl);
+                    this.collectUnchangedLocs(((OpDefNode) val).getBody(), c, tbl, expr);
                     return;
                 }
             }

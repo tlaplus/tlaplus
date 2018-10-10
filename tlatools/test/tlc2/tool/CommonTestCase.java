@@ -173,7 +173,7 @@ public abstract class CommonTestCase {
 		assertEquals(expectedCoverageLine.length, coverageRecords.size());
 		for (String line : expectedCoverageLine) {
 			String[] coverage = line.split(":");
-			assertTrue(coverageRecords.containsKey(coverage[0].trim()));
+			assertTrue(coverage[0].trim() + " not found.", coverageRecords.containsKey(coverage[0].trim()));
 			assertEquals(Integer.valueOf(coverage[1].trim()), coverageRecords.get(coverage[0].trim()));
 		}
 	}
