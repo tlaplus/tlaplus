@@ -756,11 +756,16 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 
 	public List<IFile> getSavedTLAFiles() {
 		try {
-			List<IFile> res = new ArrayList<>();
-			List<IResource> asList = Arrays.asList(getTargetDirectory().members());
-			for (IResource iResource : asList) {
+			final List<IFile> res = new ArrayList<>();
+			final IFolder targetDirectory = getTargetDirectory();
+			if (targetDirectory == null) {
+				// Model has not been run yet.
+				return res;
+			}
+			final List<IResource> asList = Arrays.asList(targetDirectory.members());
+			for (final IResource iResource : asList) {
 				if (iResource instanceof IFile) {
-					IFile f = (IFile) iResource;
+					final IFile f = (IFile) iResource;
 					if (f.exists() && "tla".equalsIgnoreCase(f.getFileExtension())) {
 						res.add(f);
 					}
