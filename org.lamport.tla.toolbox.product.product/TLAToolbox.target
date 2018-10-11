@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="83">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="84">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.4.201805281636"/>
@@ -40,6 +40,7 @@
 <unit id="org.eclipse.equinox.sdk.feature.group" version="3.15.0.v20180904-1442"/>
 <unit id="org.eclipse.core.runtime.feature.feature.group" version="1.2.200.v20180903-1343"/>
 <unit id="org.eclipse.jdt.feature.group" version="3.15.0.v20180906-0745"/>
+<unit id="org.eclipse.pde.source.feature.group" version="3.13.200.v20180906-0745"/>
 <repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.9/R-4.9-201809060745"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -53,11 +54,16 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="2.5.4.v20180909-1132"/>
 <repository location="http://download.eclipse.org/releases/2018-09/201809191000"/>
+<unit id="org.eclipse.egit.feature.group" version="5.1.0.201809111528-r"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.mylyn.commons.feature.group" version="3.24.2.v20180904-2231"/>
 <unit id="org.eclipse.mylyn.commons.notifications.feature.group" version="1.16.0.v20180904-2231"/>
 <repository location="http://download.eclipse.org/mylyn/releases/3.24"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.e4.tools.spies.feature.feature.group" version="0.18.0.v20171217-2215"/>
+<repository location="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"/>

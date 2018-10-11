@@ -70,6 +70,8 @@
     <requirement
         name="org.eclipse.egit.feature.group"/>
     <requirement
+        name="org.eclipse.e4.tools.spies.feature.feature.group"/>
+    <requirement
         name="com.abstratt.eclipsegraphviz.feature.feature.group"/>
     <repository
         url="http://download.eclipse.org/technology/swtbot/releases/latest/"/>
@@ -77,6 +79,8 @@
         url="http://download.eclipse.org/tools/ajdt/47/dev/update/"/>
     <repository
         url="http://download.eclipse.org/technology/m2e/releases/"/>
+    <repository
+        url="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
     <repository
         url="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.1/com.abstratt.mdd.oss.repository-2.1.zip!/"/>
     <description>Install the tools needed in the IDE to work with the source code for ${scope.project.label}</description>
