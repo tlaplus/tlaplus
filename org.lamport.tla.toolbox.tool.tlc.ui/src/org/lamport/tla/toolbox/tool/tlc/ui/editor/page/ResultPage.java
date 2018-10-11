@@ -272,6 +272,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						}
 	                    break;
 	                case COVERAGE_END:
+	                	if (dataProvider.getCoverageInfo().isEmpty()) {
+	                		// Cannot show coverage information without coverage data.
+	                		break;
+	                	}
 	                	// Install invocation statistics markers on saved TLA+ files.
 						final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
 						final Map<IFile, Map<Long, AnnotationPreference>> coveredFiles = new HashMap<>();
