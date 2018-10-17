@@ -110,6 +110,9 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 				args.add("-deadlock");
 			}
 			
+			args.add("-coverage");
+			args.add("1");
+			
 			args.add("-workers");
 			args.add(Integer.toString(getNumberOfThreads()));
 			

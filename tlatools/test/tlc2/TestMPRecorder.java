@@ -116,8 +116,10 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 
 	public Map<String, Integer> getCoverageRecords() {
 		final List<Object> coverages = getRecords(EC.TLC_COVERAGE_VALUE);
-
 		final Map<String, Integer> cover = new HashMap<>();
+		if (coverages == null) {
+			return cover;
+		}
 		for (final Object o : coverages) {
 			final String[] coverage = (String[]) o;
 			cover.put(coverage[0], Integer.parseInt(coverage[1]));
