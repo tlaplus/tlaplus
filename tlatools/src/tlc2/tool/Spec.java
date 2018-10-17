@@ -1798,8 +1798,15 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
      */
     public final ObjLongTable<SemanticNode> getPrimedLocs()
     {
-        ObjLongTable<SemanticNode> tbl = new ObjLongTable<SemanticNode>(10);
-        Action act = this.getNextStateSpec();
+        final ObjLongTable<SemanticNode> tbl = new ObjLongTable<SemanticNode>(10);
+        final Action act = this.getNextStateSpec();
+		if (act == null) {
+			// MAK 10/17/2018: If spec defines no next-state action (see e.g.
+			// tlc2.tool.ASTest) and this method is called before ModelChecker checks
+			// actions (search for tlc2.output.EC.TLC_STATES_AND_NO_NEXT_ACTION) this will
+			// NPE.
+			return tbl;
+		}
         this.collectPrimedLocs(act.pred, act.con, tbl);
         return tbl;
     }
