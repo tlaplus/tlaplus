@@ -528,7 +528,7 @@ public class LiveWorker extends IdThread {
 		// collision handling. NodePtrTable uses open addressing (see
 		// http://en.wikipedia.org/wiki/Open_addressing).
 		//
-		// Initializing the NTPT with 128 buckets/slows is a significant memory
+		// Initializing the TNPT with 128 buckets/slots is a significant memory
 		// overhead (especially when comStack contains < 10 elements) which
 		// regularly results in OutOfMemoryErrors being thrown. To alleviate the
 		// problem the key-space of the comStack elements could be checked and
