@@ -24,18 +24,20 @@
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
 
-package tlc2.tool.liveness;
+package tlc2.tool.suite;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
 import tlc2.output.EC;
 
-public class Test056 extends ModelCheckerTestCase {
+public class Test57 extends SuiteTestCase {
 
-	public Test056() {
-		super("test56");
+	public Test57() {
+		// Can pass any value to super because testSpec is overriden. 
+		super("-1", "-1", "-1", "-1");
 	}
 
 	@Test
@@ -45,8 +47,6 @@ public class Test056 extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recorded(EC.TLC_COMPUTING_INIT));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "3"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "6", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "Invariant1", "x = 1\n"));
 	}
 }
