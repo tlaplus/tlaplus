@@ -264,9 +264,11 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.AbstractDiskGraph#toDotViz(int, int)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#toDotViz(tlc2.tool.liveness.OrderOfSolution)
 	 */
-	public final String toDotViz(final int slen, final int alen) {
+	public final String toDotViz(final OrderOfSolution oos) {
+		final int slen = oos.getCheckState().length;
+		final int alen = oos.getCheckAction().length;
 
 		// The following code relies on gnodes not being null, thus safeguard
 		// against accidental invocations.
@@ -282,6 +284,9 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 			sb.append("digraph DiskGraph {\n");
 			sb.append("nodesep = 0.7\n");
 			sb.append("rankdir=LR;\n"); // Left to right rather than top to bottom
+			sb.append(toDotVizLegend(oos));
+			sb.append("subgraph cluster_graph {\n"); 
+	        sb.append("color=\"white\";\n"); // no border.
 			//TODO Reading the file front to end potentially yields node duplicates in the output. Better to create a (temporary) nodeptrtable and traverse it instead.
 			long nodePtr = this.nodeRAF.getFilePointer();
 			long nodePtrPtr = this.nodePtrRAF.getFilePointer();
@@ -294,7 +299,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 				GraphNode gnode = this.getNode(fp, tidx, loc);
 				sb.append(gnode.toDotViz(isInitState(gnode), true, slen, alen));
 			}
-			sb.append("}");
+			sb.append("}}");
 			this.nodeRAF.seek(nodePtr);
 			this.nodePtrRAF.seek(nodePtrPtr);
 		} catch (IOException e) {

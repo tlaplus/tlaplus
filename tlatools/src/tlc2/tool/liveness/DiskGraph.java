@@ -174,10 +174,11 @@ public class DiskGraph extends AbstractDiskGraph {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.AbstractDiskGraph#toDotViz(int, int)
+	 * @see tlc2.tool.liveness.AbstractDiskGraph#toDotViz(tlc2.tool.liveness.OrderOfSolution)
 	 */
-	public final String toDotViz(final int slen, final int alen) {
-
+	public final String toDotViz(final OrderOfSolution oos) {
+		final int slen = oos.getCheckState().length;
+		final int alen = oos.getCheckAction().length;
 		// The following code relies on gnodes not being null, thus safeguard
 		// against accidental invocations.
 		// Essentially one has to wrap the toDotViz call with
@@ -192,6 +193,9 @@ public class DiskGraph extends AbstractDiskGraph {
 			sb.append("digraph DiskGraph {\n");
 			sb.append("nodesep = 0.7\n");
 			sb.append("rankdir=LR;\n"); // Left to right rather than top to bottom
+			sb.append(toDotVizLegend(oos));
+			sb.append("subgraph cluster_graph {\n"); 
+	        sb.append("color=\"white\";\n"); // no border.
 			long nodePtr = this.nodeRAF.getFilePointer();
 			long nodePtrPtr = this.nodePtrRAF.getFilePointer();
 			long len = this.nodePtrRAF.length();
@@ -203,7 +207,7 @@ public class DiskGraph extends AbstractDiskGraph {
 				GraphNode gnode = this.getNode(fp, tidx, loc);
 				sb.append(gnode.toDotViz(isInitState(gnode), false, slen, alen));
 			}
-			sb.append("}");
+			sb.append("}}");
 			this.nodeRAF.seek(nodePtr);
 			this.nodePtrRAF.seek(nodePtrPtr);
 		} catch (IOException e) {

@@ -434,12 +434,42 @@ public abstract class AbstractDiskGraph {
 	 * Copy&Paste output "digraph DiskGraph {...} to a file called graphviz.txt
 	 * and call something similar to: 'dot -T svg graphviz.txt -o
 	 * "Graphviz.svg"'. It obviously needs Graphviz (http://www.graphviz.org).
-	 *
-	 * @param slen Length of state checks
-	 * @param alen Length of action checks 
 	 */
-	public abstract String toDotViz(final int slen, final int alen);
+	public abstract String toDotViz(final OrderOfSolution oos);
 
+	protected String toDotVizLegend(final OrderOfSolution oos) {
+		final StringBuffer sb = new StringBuffer();
+		sb.append("subgraph cluster_legend {");
+		sb.append("graph[style=bold];");
+		sb.append("label = \"PossibleErrorModel\" style=\"solid\"\n");
+		sb.append("node [ labeljust=\"l\",shape=record ]\n");
+		
+		// State checks
+		int i = 1;
+		LiveExprNode[] checkState = oos.getCheckState();
+		for (LiveExprNode liveExprNode : checkState) {
+			sb.append(String.format("S%s [label=\"S%s: %s\"]", i, i++, node2dot(liveExprNode)));
+			sb.append("\n");
+		}
+		// Actions checks
+		i = 1;
+		checkState = oos.getCheckAction();
+		for (LiveExprNode liveExprNode : checkState) {
+			sb.append(String.format("A%s [label=\"A%s: %s\"]", i, i++, node2dot(liveExprNode)));
+			sb.append("\n");
+		}
+		
+		sb.append("}");
+		return sb.toString();
+	}
+	
+	protected static String node2dot(final LiveExprNode node) {
+		// Replace "\" with "\\" and """ with "\"".	Replace "<" and ">" with "\<" and "\>".
+		return node.toString().replace("\\", "\\\\").replace("\"", "\\\"").replace("<", "\\<").replace(">", "\\>").trim()
+				.replace("\n", "\\l"); // Do not remove remaining (i.e. no dangling/leading) "\n". 
+	}
+
+	
 	/**
 	 * Only useful for debugging.
 	 * 
@@ -450,21 +480,21 @@ public abstract class AbstractDiskGraph {
 	 * the installation instructions at
 	 * https://github.com/abstratt/eclipsegraphviz
 	 * 
-	 * @param slen
+	 * @param oos
 	 *            Length of state checks
 	 * @param alen
 	 *            Length of action checks
 	 * @param file
 	 *            Destination
 	 */
-	public final void writeDotViz(final int slen, final int alen, final File file) {
+	public final void writeDotViz(final OrderOfSolution oos, final File file) {
 		this.createCache();
 
 		try {
 			final BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
 
 			// write contents of StringBuffer to a file
-			bwr.write(toDotViz(slen, alen));
+			bwr.write(toDotViz(oos));
 
 			// flush the stream
 			bwr.flush();

@@ -434,7 +434,17 @@ public class GraphNode extends AbstractGraphNode {
 		// label iff the first 6 (+2) chars of their fingerprint match. However
 		// the graph will still contain all nodes regardless of the label
 		// collision due to id.
-		final String label = Long.toString(this.stateFP).substring(0, 6) + (hasTableau ? "." + this.tindex : "");
+		String label = Long.toString(this.stateFP).substring(0, 6) + (hasTableau ? "." + this.tindex : "");
+		if (slen > 0) {
+			label += "\n";
+			for (int i = 0; i < slen; i++) {
+				if (getCheckState(i)) {
+					label += "t";
+				} else {
+					label += "f";
+				}
+			}
+		}
 		final StringBuffer buf = new StringBuffer();
 		if (isInitState) {
 			buf.append("\"" + id + "\" [style = filled][label = \"" + label + "\"]\n"); // node's label

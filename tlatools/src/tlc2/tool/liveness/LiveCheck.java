@@ -111,7 +111,7 @@ public class LiveCheck implements ILiveCheck {
 			
 			// Write the content of the current graph to a file in GraphViz
 			// format. Useful when debugging!
-//			check.getDiskGraph().writeDotViz(oos.getCheckState().length, alen, new java.io.File(
+//			check.getDiskGraph().writeDotViz(oos, new java.io.File(
 //					metadir + java.io.File.separator + "dgraph_" + i + "_" + System.currentTimeMillis() + ".dot"));
 		}
 	}
