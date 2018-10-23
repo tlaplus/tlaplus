@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -23,47 +23,40 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
+package tlc2.tool.liveness;
 
-package tlc2.util;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public interface IntStack {
+import java.util.ArrayList;
+import java.util.List;
 
-	/**
-	 * Return the number of items on the stack.
-	 */
-	long size();
+import org.junit.Test;
 
-	/**
-	 * Push an integer onto the stack.
-	 */
-	void pushInt(final int x);
+import tlc2.output.EC;
 
-	/**
-	 * Push a long integer onto the stack.
-	 */
-	void pushLong(final long x);
+public abstract class BidirectionalTransitions1BTest extends ModelCheckerTestCase {
 
-	/**
-	 * Pop the integer from the top of the stack.
-	 */
-	int popInt();
-
-	/**
-	 * Pop the long integer from the top of the stack.
-	 */
-	long popLong();
-	
-	/**
-	 * Removes all elements from the stack
-	 */
-	void reset();
-
-	// Some implementors support peak operations.
-	default long peakLong() {
-		throw new UnsupportedOperationException("Not implemented");
+	public BidirectionalTransitions1BTest(final String config) {
+		super("BidirectionalTransitions", new String[] {"-config", config});
 	}
 	
-	default int peakInt() {
-		throw new UnsupportedOperationException("Not implemented");
+	@Test
+	public void testSpec() {
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertFalse(recorder.recorded(EC.GENERAL));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "13", "3", "0"));
+
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+		final List<String> expectedTrace = new ArrayList<String>(3);
+		expectedTrace.add("x = 0");
+		expectedTrace.add("x = 2");
+		expectedTrace.add("x = 1");
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+
+		assertBackToState(1);
 	}
 }

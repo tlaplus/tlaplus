@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -23,47 +23,11 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
+package tlc2.tool.liveness;
 
-package tlc2.util;
+public class BidirectionalTransitions1BxTest extends BidirectionalTransitions1BTest {
 
-public interface IntStack {
-
-	/**
-	 * Return the number of items on the stack.
-	 */
-	long size();
-
-	/**
-	 * Push an integer onto the stack.
-	 */
-	void pushInt(final int x);
-
-	/**
-	 * Push a long integer onto the stack.
-	 */
-	void pushLong(final long x);
-
-	/**
-	 * Pop the integer from the top of the stack.
-	 */
-	int popInt();
-
-	/**
-	 * Pop the long integer from the top of the stack.
-	 */
-	long popLong();
-	
-	/**
-	 * Removes all elements from the stack
-	 */
-	void reset();
-
-	// Some implementors support peak operations.
-	default long peakLong() {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-	
-	default int peakInt() {
-		throw new UnsupportedOperationException("Not implemented");
+	public BidirectionalTransitions1BxTest() {
+		super("BidirectionalTransitions1Bx.cfg");
 	}
 }

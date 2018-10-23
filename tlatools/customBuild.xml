@@ -323,6 +323,8 @@
 						<exclude name="**/InitEvalOrderTest.java" />
 						<exclude name="**/TestMPRecorder.java" />
 						<exclude name="**/TestPrintStream.java" />
+						<exclude name="**/BidirectionalTransitions1BTest.java" />
+						<exclude name="**/BidirectionalTransitions2CTest.java" />
 						<exclude name="**/Abstract*Test.java" />
 						<exclude name="**/TestDriver.java" />
 						<exclude name="**/TestDriver2.java" />
@@ -413,6 +415,8 @@
 					<exclude name="**/SuccessfulSimulationTestCase.java" />
 					<exclude name="**/AbstractExampleTestCase.java" />
 					<exclude name="**/InitEvalOrderTest.java" />
+					<exclude name="**/BidirectionalTransitions1BTest.java" />
+					<exclude name="**/BidirectionalTransitions2CTest.java" />
 					<exclude name="**/TestMPRecorder.java" />
 					<exclude name="**/TestPrintStream.java" />
 					<exclude name="**/Abstract*Test.java" />

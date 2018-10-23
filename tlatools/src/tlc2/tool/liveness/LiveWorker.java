@@ -375,9 +375,8 @@ public class LiveWorker extends IdThread {
 								// P-satisfiability.
 								//
 								// This check is related to the fairness spec.
-								// Usually, it evals to true when no or weak
-								// fairness have been specified. False on strong
-								// fairness.
+								// Skip to check the other conjuncts of the PossibleErrorModel (PEM) if the
+								// action check is false (thus does not satisfy the PEM).
 								if (gnode.getCheckAction(slen, alen, i, eaaction)) {
 									// If the node's nextLink still points to
 									// disk, it means it has no link assigned
@@ -566,6 +565,7 @@ public class LiveWorker extends IdThread {
 		final boolean[] AEStateRes = new boolean[aeslen];
 		final boolean[] AEActionRes = new boolean[aealen];
 		final boolean[] promiseRes = new boolean[plen];
+		final int[] eaaction = this.pem.EAAction;
 
 		// Extract a node from the nodePtrTable "com".
 		// Note the upper limit is NodePtrTable#getSize() instead of
@@ -634,13 +634,51 @@ public class LiveWorker extends IdThread {
 					// processed SCC (com). Successors, which are not part of
 					// the current SCC have obviously no relevance here. After
 					// all, we check the SCC.
-					if (com.getLoc(nextState, nextTidx) != -1) {
-						for (int j = 0; j < aealen; j++) {
-							// Only set false to true, but never true to false. 
-							if (!AEActionRes[j]) {
-								final int idx = this.pem.AEAction[j];
-								AEActionRes[j] = curNode.getCheckAction(slen, alen, i, idx);
-							}
+					if (com.getLoc(nextState, nextTidx) == -1) {
+						continue;
+					}
+					// MAK 10/23/2018:
+					// Line 380 above "if(gnode.getCheckAction)" causes a transition A from state s
+					// -> t to be skipped even if a belongs to an SCC iff the transition A does not
+					// satisfy the EA action of the PossibleErrorModel (if the EA action(s) is not
+					// satisfied, the PEM cannot hold at all).
+					// However, some state graphs are such that there exists not just the transition
+					// A from s -> t but a second transition A' from t -> s - which satisfies the EA
+					// action(s) of the PEM. In the case of a "bidirectional" transition, the states
+					// s and t will be in the set of states 'com' (which make up the SCC). Thus, the
+					// transition A from s -> t will be incorrectly traversed here unless it is
+					// skipped (again). Not skipping the transition A will result in TLC reporting a
+					// (bogus) counterexample even if the liveness is not violated.
+					// 
+					// Consider the spec BT for which TLC incorrectly reports a liveness property 
+					// violation and prints a bogus counterexample:
+					//
+					// ---- BT -----
+					// EXTENDS Naturals
+					// VARIABLE x
+					// A == \/ x' = (x + 1) % 3
+					// B == x' \in 0..2
+					// Spec == (x=0) /\ [][A \/ B]_x/\ WF_x(A)
+					// Prop == Spec /\ WF_x(A) /\ []<><<A>>_x
+					// =============
+					//
+					// > Temporal properties were violated.
+					// > The following behavior constitutes a counter-example:
+					// > 1: <Initial predicate>
+					// > x = 0
+					// > 2: <A line xx...BT>
+					// > x = 1
+					// > 1: Back to state: <B line xx... BT>
+					//
+					// (see tlc2.tool.BidirectionalTransitions1Test and BidirectionalTransitions2Test)
+					if(!curNode.getCheckAction(slen, alen, i, eaaction)) {
+						continue;
+					}
+					for (int j = 0; j < aealen; j++) {
+						// Only set false to true, but never true to false. 
+						if (!AEActionRes[j]) {
+							final int idx = this.pem.AEAction[j];
+							AEActionRes[j] = curNode.getCheckAction(slen, alen, i, idx);
 						}
 					}
 				}
@@ -898,6 +936,10 @@ public class LiveWorker extends IdThread {
 	// BFS search
 	private LongVec bfsPostFix(final long state, final int tidx, final TableauNodePtrTable nodeTbl, GraphNode curNode)
 			throws IOException {
+		final int slen = this.oos.getCheckState().length;
+		final int alen = this.oos.getCheckAction().length;
+		final int[] eaaction = this.pem.EAAction;
+		
 		final LongVec postfix = new LongVec(16);
 		final long startState = curNode.stateFP;
 		final long startTidx = curNode.tindex;
@@ -942,6 +984,13 @@ public class LiveWorker extends IdThread {
 						if (curState == nextState && curTidx == nextTidx) {
 							assert TableauNodePtrTable.isSeen(nodes);
 							continue SUCCESSORS;
+						}
+						
+						// Prevent bogus counterexample: Do not close the loop by taking an action which
+						// does not satisfy the PossibleErrorModel (read more about it on line 640 in
+						// checkComponent).
+						if(!curNode.getCheckAction(slen, alen, j, eaaction)) {
+							continue;
 						}
 						
 						if (nextState == state && nextTidx == tidx) {
@@ -992,6 +1041,7 @@ public class LiveWorker extends IdThread {
 		final boolean[] AEStateRes = new boolean[this.pem.AEState.length];
 		final boolean[] AEActionRes = new boolean[this.pem.AEAction.length];
 		final boolean[] promiseRes = new boolean[this.oos.getPromises().length];
+		final int[] eaaction = this.pem.EAAction;
 		// The number/count of all liveness checks. The while loop A) terminates
 		// once it has accumulated all states that violate all checks (we know
 		// that the states in nodeTbl have to violate the liveness property
@@ -1052,18 +1102,26 @@ public class LiveWorker extends IdThread {
 					nodes = nodeTbl.getNodes(nextState);
 					if (nodes != null) {
 						tloc = nodeTbl.getIdx(nodes, nextTidx);
-						if (tloc != -1) {
-							// <nextState, nextTidx> is in nodeTbl.
-							nextState1 = nextState;
-							nextTidx1 = nextTidx;
-							tloc1 = tloc;
-							nodes1 = nodes;
-							for (int j = 0; j < this.pem.AEAction.length; j++) {
-								int idx = this.pem.AEAction[j];
-								if (!AEActionRes[j] && curNode.getCheckAction(slen, alen, i, idx)) {
-									AEActionRes[j] = true;
-									cnt--;
-								}
+						// See checkComponent line 637.
+						if (tloc == -1) {
+							continue;
+						}
+						// Prevent bogus counterexample: Do not close the loop by taking an action which
+						// does not satisfy the PossibleErrorModel (read more about it on line 640 in
+						// checkComponent).
+						if(!curNode.getCheckAction(slen, alen, i, eaaction)) {
+							continue;
+						}
+						// <nextState, nextTidx> is in nodeTbl.
+						nextState1 = nextState;
+						nextTidx1 = nextTidx;
+						tloc1 = tloc;
+						nodes1 = nodes;
+						for (int j = 0; j < this.pem.AEAction.length; j++) {
+							int idx = this.pem.AEAction[j];
+							if (!AEActionRes[j] && curNode.getCheckAction(slen, alen, i, idx)) {
+								AEActionRes[j] = true;
+								cnt--;
 							}
 						}
 					}
