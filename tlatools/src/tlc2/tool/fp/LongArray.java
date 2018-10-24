@@ -107,6 +107,17 @@ public final class LongArray {
 					e);
 		}
 	}
+
+	/**
+	 * Initializes the memory by overriding each byte with zero starting at
+	 * <code>baseAddress</code> and ending when all positions have been written.
+	 * 
+	 * @throws IOException
+	 */
+	public final void zeroMemory()
+			throws IOException {
+		this.unsafe.setMemory(baseAddress, length * 8L, (byte) 0); // times 8L because it only writes a single byte.
+	}
 	
 	/**
 	 * Initializes the memory by overriding each byte with zero starting at
@@ -272,5 +283,12 @@ public final class LongArray {
             }
             b.append(", ");
         }
+	}
+	
+	public static void main(final String[] args) throws IOException {
+		final long elements = 1L << Integer.valueOf(args[0]);
+		System.out.format("Allocating LongArray with %,d elements.\n", elements);
+		final LongArray longArray = new LongArray(elements);
+		longArray.zeroMemory();
 	}
 }

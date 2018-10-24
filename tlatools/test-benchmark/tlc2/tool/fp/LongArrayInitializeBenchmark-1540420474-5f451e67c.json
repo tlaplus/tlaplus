@@ -1,0 +1,829 @@
+[
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.AputAddressSingle",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 15691.037304952166,
+            "scoreError" : 3227.6738320727072,
+            "scoreConfidence" : [
+                12463.363472879459,
+                18918.711137024875
+            ],
+            "scorePercentiles" : {
+                "0.0" : 15149.456337242189,
+                "50.0" : 15709.295867528572,
+                "90.0" : 16196.101147509331,
+                "95.0" : 16196.101147509331,
+                "99.0" : 16196.101147509331,
+                "99.9" : 16196.101147509331,
+                "99.99" : 16196.101147509331,
+                "99.999" : 16196.101147509331,
+                "99.9999" : 16196.101147509331,
+                "100.0" : 16196.101147509331
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    16025.043319946451,
+                    15393.548415110692
+                ],
+                [
+                    16196.101147509331,
+                    15149.456337242189
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.AputAddressSingle",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 10257.952132803022,
+            "scoreError" : 1609.8651787441936,
+            "scoreConfidence" : [
+                8648.086954058828,
+                11867.817311547216
+            ],
+            "scorePercentiles" : {
+                "0.0" : 10002.640123830502,
+                "50.0" : 10219.707935833161,
+                "90.0" : 10589.752535715264,
+                "95.0" : 10589.752535715264,
+                "99.0" : 10589.752535715264,
+                "99.9" : 10589.752535715264,
+                "99.99" : 10589.752535715264,
+                "99.999" : 10589.752535715264,
+                "99.9999" : 10589.752535715264,
+                "100.0" : 10589.752535715264
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    10589.752535715264,
+                    10156.48634104379
+                ],
+                [
+                    10282.929530622534,
+                    10002.640123830502
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.AputAddressSingle",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "24"
+        },
+        "primaryMetric" : {
+            "score" : 76.898812891649,
+            "scoreError" : 2.7474408988974544,
+            "scoreConfidence" : [
+                74.15137199275155,
+                79.64625379054645
+            ],
+            "scorePercentiles" : {
+                "0.0" : 76.48035969067071,
+                "50.0" : 76.8971373633593,
+                "90.0" : 77.32061714920668,
+                "95.0" : 77.32061714920668,
+                "99.0" : 77.32061714920668,
+                "99.9" : 77.32061714920668,
+                "99.99" : 77.32061714920668,
+                "99.999" : 77.32061714920668,
+                "99.9999" : 77.32061714920668,
+                "100.0" : 77.32061714920668
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    77.32061714920668,
+                    76.48035969067071
+                ],
+                [
+                    77.20477337813603,
+                    76.58950134858259
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.AputAddressSingle",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "28"
+        },
+        "primaryMetric" : {
+            "score" : 4.8919062820566035,
+            "scoreError" : 0.13982428649979478,
+            "scoreConfidence" : [
+                4.752081995556809,
+                5.031730568556398
+            ],
+            "scorePercentiles" : {
+                "0.0" : 4.869023032502967,
+                "50.0" : 4.892757182572337,
+                "90.0" : 4.913087730578771,
+                "95.0" : 4.913087730578771,
+                "99.0" : 4.913087730578771,
+                "99.9" : 4.913087730578771,
+                "99.99" : 4.913087730578771,
+                "99.999" : 4.913087730578771,
+                "99.9999" : 4.913087730578771,
+                "100.0" : 4.913087730578771
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    4.913087730578771,
+                    4.869023032502967
+                ],
+                [
+                    4.907434706339786,
+                    4.8780796588048885
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.AputAddressSingle",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "31"
+        },
+        "primaryMetric" : {
+            "score" : 0.6054237172952491,
+            "scoreError" : 0.057545101881470405,
+            "scoreConfidence" : [
+                0.5478786154137787,
+                0.6629688191767196
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.5920856333767331,
+                "50.0" : 0.6095564484306197,
+                "90.0" : 0.6104963389430239,
+                "95.0" : 0.6104963389430239,
+                "99.0" : 0.6104963389430239,
+                "99.9" : 0.6104963389430239,
+                "99.99" : 0.6104963389430239,
+                "99.999" : 0.6104963389430239,
+                "99.9999" : 0.6104963389430239,
+                "100.0" : 0.6104963389430239
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    0.6093206980085581,
+                    0.5920856333767331
+                ],
+                [
+                    0.6097921988526813,
+                    0.6104963389430239
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.BputAddressConcurrent",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 5823.508981235277,
+            "scoreError" : 331.24359175202756,
+            "scoreConfidence" : [
+                5492.265389483249,
+                6154.752572987305
+            ],
+            "scorePercentiles" : {
+                "0.0" : 5753.76878817967,
+                "50.0" : 5838.788951447104,
+                "90.0" : 5862.689233867229,
+                "95.0" : 5862.689233867229,
+                "99.0" : 5862.689233867229,
+                "99.9" : 5862.689233867229,
+                "99.99" : 5862.689233867229,
+                "99.999" : 5862.689233867229,
+                "99.9999" : 5862.689233867229,
+                "100.0" : 5862.689233867229
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    5861.34019538168,
+                    5816.237707512529
+                ],
+                [
+                    5862.689233867229,
+                    5753.76878817967
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.BputAddressConcurrent",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 5123.978800612953,
+            "scoreError" : 106.38946063324629,
+            "scoreConfidence" : [
+                5017.589339979707,
+                5230.368261246199
+            ],
+            "scorePercentiles" : {
+                "0.0" : 5100.830231354179,
+                "50.0" : 5128.5271012328085,
+                "90.0" : 5138.030768632014,
+                "95.0" : 5138.030768632014,
+                "99.0" : 5138.030768632014,
+                "99.9" : 5138.030768632014,
+                "99.99" : 5138.030768632014,
+                "99.999" : 5138.030768632014,
+                "99.9999" : 5138.030768632014,
+                "100.0" : 5138.030768632014
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    5138.030768632014,
+                    5132.914045761264
+                ],
+                [
+                    5100.830231354179,
+                    5124.140156704352
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.BputAddressConcurrent",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "24"
+        },
+        "primaryMetric" : {
+            "score" : 68.97129891399425,
+            "scoreError" : 2.413345681248791,
+            "scoreConfidence" : [
+                66.55795323274546,
+                71.38464459524303
+            ],
+            "scorePercentiles" : {
+                "0.0" : 68.58880458551265,
+                "50.0" : 68.91555687043092,
+                "90.0" : 69.4652773296025,
+                "95.0" : 69.4652773296025,
+                "99.0" : 69.4652773296025,
+                "99.9" : 69.4652773296025,
+                "99.99" : 69.4652773296025,
+                "99.999" : 69.4652773296025,
+                "99.9999" : 69.4652773296025,
+                "100.0" : 69.4652773296025
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    68.81090527067398,
+                    69.02020847018787
+                ],
+                [
+                    68.58880458551265,
+                    69.4652773296025
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.BputAddressConcurrent",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "28"
+        },
+        "primaryMetric" : {
+            "score" : 4.295134928414715,
+            "scoreError" : 0.107034811914763,
+            "scoreConfidence" : [
+                4.188100116499952,
+                4.4021697403294775
+            ],
+            "scorePercentiles" : {
+                "0.0" : 4.278376300240857,
+                "50.0" : 4.295239726791536,
+                "90.0" : 4.311683959834933,
+                "95.0" : 4.311683959834933,
+                "99.0" : 4.311683959834933,
+                "99.9" : 4.311683959834933,
+                "99.99" : 4.311683959834933,
+                "99.999" : 4.311683959834933,
+                "99.9999" : 4.311683959834933,
+                "100.0" : 4.311683959834933
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    4.278376300240857,
+                    4.311683959834933
+                ],
+                [
+                    4.2836567656737925,
+                    4.30682268790928
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.BputAddressConcurrent",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "31"
+        },
+        "primaryMetric" : {
+            "score" : 0.5397866544024822,
+            "scoreError" : 0.0015897046802224838,
+            "scoreConfidence" : [
+                0.5381969497222597,
+                0.5413763590827047
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.5394561862215702,
+                "50.0" : 0.539844153558601,
+                "90.0" : 0.5400021242711565,
+                "95.0" : 0.5400021242711565,
+                "99.0" : 0.5400021242711565,
+                "99.9" : 0.5400021242711565,
+                "99.99" : 0.5400021242711565,
+                "99.999" : 0.5400021242711565,
+                "99.9999" : 0.5400021242711565,
+                "100.0" : 0.5400021242711565
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    0.5400021242711565,
+                    0.5399424181107918
+                ],
+                [
+                    0.5397458890064103,
+                    0.5394561862215702
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.CsetMemory",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 1.7117812650403537E7,
+            "scoreError" : 1858981.951784521,
+            "scoreConfidence" : [
+                1.5258830698619016E7,
+                1.897679460218806E7
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1.6809496813037805E7,
+                "50.0" : 1.7132330412883125E7,
+                "90.0" : 1.7397092962810084E7,
+                "95.0" : 1.7397092962810084E7,
+                "99.0" : 1.7397092962810084E7,
+                "99.9" : 1.7397092962810084E7,
+                "99.99" : 1.7397092962810084E7,
+                "99.999" : 1.7397092962810084E7,
+                "99.9999" : 1.7397092962810084E7,
+                "100.0" : 1.7397092962810084E7
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1.6809496813037805E7,
+                    1.6938938543361507E7
+                ],
+                [
+                    1.7325722282404747E7,
+                    1.7397092962810084E7
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.CsetMemory",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 79289.53265336789,
+            "scoreError" : 4239.252439267255,
+            "scoreConfidence" : [
+                75050.28021410064,
+                83528.78509263514
+            ],
+            "scorePercentiles" : {
+                "0.0" : 78885.94805588268,
+                "50.0" : 79001.56006617282,
+                "90.0" : 80269.06242524325,
+                "95.0" : 80269.06242524325,
+                "99.0" : 80269.06242524325,
+                "99.9" : 80269.06242524325,
+                "99.99" : 80269.06242524325,
+                "99.999" : 80269.06242524325,
+                "99.9999" : 80269.06242524325,
+                "100.0" : 80269.06242524325
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    79039.68258539782,
+                    80269.06242524325
+                ],
+                [
+                    78885.94805588268,
+                    78963.43754694781
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.CsetMemory",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "24"
+        },
+        "primaryMetric" : {
+            "score" : 81.08833107753068,
+            "scoreError" : 2.958405915843286,
+            "scoreConfidence" : [
+                78.1299251616874,
+                84.04673699337397
+            ],
+            "scorePercentiles" : {
+                "0.0" : 80.60014890852541,
+                "50.0" : 81.07172218289426,
+                "90.0" : 81.60973103580875,
+                "95.0" : 81.60973103580875,
+                "99.0" : 81.60973103580875,
+                "99.9" : 81.60973103580875,
+                "99.99" : 81.60973103580875,
+                "99.999" : 81.60973103580875,
+                "99.9999" : 81.60973103580875,
+                "100.0" : 81.60973103580875
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    80.82876474476265,
+                    81.60973103580875
+                ],
+                [
+                    80.60014890852541,
+                    81.31467962102589
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.CsetMemory",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "28"
+        },
+        "primaryMetric" : {
+            "score" : 5.073907234951268,
+            "scoreError" : 0.14121152721716443,
+            "scoreConfidence" : [
+                4.932695707734104,
+                5.215118762168433
+            ],
+            "scorePercentiles" : {
+                "0.0" : 5.054526541541467,
+                "50.0" : 5.074118390666934,
+                "90.0" : 5.092865616929739,
+                "95.0" : 5.092865616929739,
+                "99.0" : 5.092865616929739,
+                "99.9" : 5.092865616929739,
+                "99.99" : 5.092865616929739,
+                "99.999" : 5.092865616929739,
+                "99.9999" : 5.092865616929739,
+                "100.0" : 5.092865616929739
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    5.055443635693725,
+                    5.092793145640142
+                ],
+                [
+                    5.054526541541467,
+                    5.092865616929739
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.tool.fp.LongArrayInitializeBenchmark.CsetMemory",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/usr/lib/jvm/java-8-oracle/jre/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "1.8.0_191",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "25.191-b12",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "31"
+        },
+        "primaryMetric" : {
+            "score" : 0.6308208674513708,
+            "scoreError" : 0.0021647577060876096,
+            "scoreConfidence" : [
+                0.6286561097452832,
+                0.6329856251574584
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.6303389225544128,
+                "50.0" : 0.6309177899582723,
+                "90.0" : 0.6311089673345258,
+                "95.0" : 0.6311089673345258,
+                "99.0" : 0.6311089673345258,
+                "99.9" : 0.6311089673345258,
+                "99.99" : 0.6311089673345258,
+                "99.999" : 0.6311089673345258,
+                "99.9999" : 0.6311089673345258,
+                "100.0" : 0.6311089673345258
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    0.6308816519037619,
+                    0.6311089673345258
+                ],
+                [
+                    0.6303389225544128,
+                    0.6309539280127826
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+

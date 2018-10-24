@@ -53,7 +53,7 @@ public class LongArrayTest {
 		final int elements = 100;
 
 		final LongArray array = new LongArray(elements);
-		array.zeroMemory(1);
+		array.zeroMemory();
 		
 		for (long i = 0L; i < elements; i++) {
 			assertEquals(0L, array.get(i));
@@ -111,7 +111,7 @@ public class LongArrayTest {
 		final int elements = 100;
 
 		final LongArray array = new LongArray(elements);
-		array.zeroMemory(1);
+		array.zeroMemory();
 		
 		// Assert zero successful
 		for (long i = 0L; i < elements; i++) {
@@ -165,7 +165,7 @@ public class LongArrayTest {
 		final int elements = 10321;
 
 		final LongArray array = new LongArray(elements);
-		array.zeroMemory(1);
+		array.zeroMemory();
 		
 		for (long i = 0L; i < elements; i++) {
 			long value = Long.MAX_VALUE - i;
@@ -193,7 +193,7 @@ public class LongArrayTest {
 		}
 		
 		final LongArray array = new LongArray(elements);
-		array.zeroMemory(1);
+		array.zeroMemory();
 		
 		for (int i = 0; i < elements; i++) {
 			array.set(i, vals.get(i));
