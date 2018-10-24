@@ -315,6 +315,12 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			LiveExprNode lnArg = astToLive(tool, (ExprNode) args[0], con);
 			return new LNEven(lnArg);
 		}
+		case OPCODE_aa: { // AngleAct <A>_e
+			assert Spec.getLevel(expr, con) == 2;
+			final ExprNode body = (ExprNode) args[0]; // the A in <<A>>_e
+			final ExprNode subs = (ExprNode) args[1]; // the e in <<A>>_e
+			return new LNAction(body, con, subs, false);
+		}
 
 		// The following case added by LL on 13 Nov 2009 to handle subexpression
 		// names.
@@ -322,11 +328,23 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			return astToLive(tool, (ExprNode) args[0], con);
 		}
 		default: {
-			// We handle all the other built-in operators here.
+			// We handle all the other built-in operators here. Surprisingly, even OPCODE_aa
+			// (AngleAct <A>_e) is handled here and not as the dedicated case statement below
+			// such that e gets passed as subscript to LNAction:
+			//
+			//		case OPCODE_aa: { // AngleAct <A>_e
+			//			assert Spec.getLevel(expr, con) == 2;
+			//			final ExprNode body = (ExprNode) args[0]; // the A in <<A>>_e
+			//			final ExprNode subscript = (ExprNode) args[1]; // the e in <<A>>_e
+			//			return new LNAction(body, con, subscript, false);
+			//		}
+			//
+			// The default handling here results in LNAction#subscript to be null skipping
+			// the subscript related branch in LNAction#eval(Tool, TLCState, TLCState). This
+			// poses no problem though because Tool#evalAppl eventually checks if e' = e.
 			int level = Spec.getLevel(expr, con);
 			if (level > 2) {
 				Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
-				;
 			}
 			return astToLive(tool, expr, con, level);
 		}
