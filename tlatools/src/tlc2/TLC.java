@@ -29,6 +29,7 @@ import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.DotStateWriter;
@@ -891,8 +892,9 @@ public class TLC
                 if (TLCGlobals.DFIDMax == -1)
                 {
 					MP.printMessage(EC.TLC_MODE_MC, parameters);
-                    mc = new ModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver, specObj, fpSetConfiguration);
-                    modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
+					mc = new ModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver,
+							specObj, FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
+					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
 					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);

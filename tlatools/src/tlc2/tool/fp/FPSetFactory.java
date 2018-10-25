@@ -6,7 +6,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import util.TLCRuntime;
@@ -115,6 +120,27 @@ public abstract class FPSetFactory {
 			}
 			return new MSBDiskFPSet(fpSetConfig);
 		}
+	}
+	
+
+	/**
+	 * Create and *initialize* the set.
+	 */
+	public static Future<FPSet> getFPSetInitialized(final FPSetConfiguration fpSetConfiguration, final String metadir,
+			final String mainFile) {
+		final ExecutorService es = Executors.newSingleThreadExecutor();
+		return es.submit(new Callable<FPSet>() {
+			@Override
+			public FPSet call() throws Exception {
+				try {
+					final FPSet fpSet = FPSetFactory.getFPSet(fpSetConfiguration);
+					fpSet.init(TLCGlobals.getNumWorkers(), metadir, mainFile);
+					return fpSet;
+				} finally {
+					es.shutdown();
+				}
+			}
+		});
 	}
 
 	/**

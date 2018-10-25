@@ -8,6 +8,8 @@ package tlc2.tool;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -70,15 +72,26 @@ public class ModelChecker extends AbstractChecker
 	private boolean forceLiveCheck = false;
 
     /* Constructors  */
+    public ModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
+            FilenameToStream resolver, SpecObj specObj, final Future<FPSet> future) throws EvalException, IOException, InterruptedException, ExecutionException {
+    	this(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver, specObj);
+    	this.theFPSet = future.get();
+    }
+    
+    public ModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
+            FilenameToStream resolver, SpecObj specObj, final FPSetConfiguration fpSetConfig) throws EvalException, IOException {
+    	this(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver, specObj);
+    	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, specFile);
+    }
+    
     /**
      * The only used constructor of the TLA+ model checker
      * SZ Feb 20, 2009
      * @param resolver name resolver to be able to load files (specs and configs) from managed environments 
      * @param specObj external SpecObj added to enable to work on existing specification 
-     * Modified on 6 Apr 2010 by Yuan Yu to add fpMemSize parameter.
      */
-    public ModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
-            FilenameToStream resolver, SpecObj specObj, final FPSetConfiguration fpSetConfig) throws EvalException, IOException
+    private ModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
+            FilenameToStream resolver, SpecObj specObj) throws EvalException, IOException
     {
         // call the abstract constructor
         super(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, true, resolver, specObj);
@@ -86,12 +99,6 @@ public class ModelChecker extends AbstractChecker
         // SZ Feb 20, 2009: this is a selected alternative
         this.theStateQueue = new DiskStateQueue(this.metadir);
         // this.theStateQueue = new MemStateQueue(this.metadir);
-
-        //TODO why used to div by 20?
-		this.theFPSet = FPSetFactory.getFPSet(fpSetConfig);
-
-        // initialize the set
-        this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile);
 
         // Finally, initialize the trace file:
         this.trace = new ConcurrentTLCTrace(this.metadir, specFile, this.tool);
