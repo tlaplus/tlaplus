@@ -34,9 +34,10 @@ public final class MemFPSet1 extends FPSet {
     this.set = new SetOfLong(10001, 0.75f);
   }
 
-  public final void init(int numThreads, String metadir, String filename) {
+  public final FPSet init(int numThreads, String metadir, String filename) {
     this.metadir = metadir;
     this.filename = filename;
+	return this;
   }
 
   public final long size() { return this.set.size(); }

@@ -64,9 +64,10 @@ public class MemFPSet extends FPSet {
     this.mask = initialCapacity - 1;
   }
 
-  public final void init(int numThreads, String metadir, String filename) {
+  public final FPSet init(int numThreads, String metadir, String filename) {
     this.metadir = metadir;
     this.filename = filename;
+	return this;
   }
     
   /**

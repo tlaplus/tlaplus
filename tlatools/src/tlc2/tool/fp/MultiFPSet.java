@@ -71,10 +71,11 @@ public class MultiFPSet extends FPSet {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#init(int, java.lang.String, java.lang.String)
 	 */
-	public final void init(int numThreads, String metadir, String filename) throws IOException {
+	public final FPSet init(final int numThreads, final String metadir, final String filename) throws IOException {
 		for (int i = 0; i < this.sets.length; i++) {
 			this.sets[i].init(numThreads, metadir, filename + "_" + i);
 		}
+		return this;
 	}
 
 	

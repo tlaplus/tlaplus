@@ -44,7 +44,8 @@ public class NoopFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#init(int, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void init(int numThreads, String metadir, String filename) throws IOException {
+	public FPSet init(int numThreads, String metadir, String filename) throws IOException {
+		return this;
 	}
 
 	/* (non-Javadoc)

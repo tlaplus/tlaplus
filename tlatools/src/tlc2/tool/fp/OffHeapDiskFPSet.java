@@ -163,12 +163,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * @see tlc2.tool.fp.DiskFPSet#init(int, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void init(final int numThreads, String aMetadir, String filename)
+	public FPSet init(final int numThreads, String aMetadir, String filename)
 			throws IOException {
 		super.init(numThreads, aMetadir, filename);
 		this.numThreads = numThreads;
 		
 		array.zeroMemory(numThreads);
+		return this;
 	}
 	
 	/* (non-Javadoc)

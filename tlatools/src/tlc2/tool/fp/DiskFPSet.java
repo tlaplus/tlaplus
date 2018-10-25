@@ -211,7 +211,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#init(int, java.lang.String, java.lang.String)
 	 */
-	public void init(int numThreads, String aMetadir, String filename)
+	public FPSet init(int numThreads, String aMetadir, String filename)
 			throws IOException {
 		
 		// Make it possible to pass in alternative location for the .fp and
@@ -266,6 +266,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 					new String[] { this.fpFilename, e.getMessage() });
 			throw new IOException(message);
 		}
+		return this;
 	}
 
 	/* (non-Javadoc)

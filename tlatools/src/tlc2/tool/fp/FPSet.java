@@ -48,7 +48,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
      * override this method as necessary. This method must be called
      * after the constructor but before any of the other methods below.
      */
-    public abstract void init(int numThreads, String metadir, String filename) throws IOException;
+    public abstract FPSet init(int numThreads, String metadir, String filename) throws IOException;
     
     public void incWorkers(int num) {
     	// subclasses may override

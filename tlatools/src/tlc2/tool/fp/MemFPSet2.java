@@ -73,9 +73,10 @@ public final class MemFPSet2 extends FPSet {
     this.mask = spineSize - 1;
   }
   
-  public void init(int numThreads, String metadir, String fname) {
+  public FPSet init(int numThreads, String metadir, String fname) {
     this.metadir = metadir;
     this.filename = metadir + FileUtil.separator + fname;
+	return this;
   }
 
   public synchronized final long size() { return this.count; }
