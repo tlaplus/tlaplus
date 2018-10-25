@@ -61,7 +61,7 @@
 <repository location="http://download.eclipse.org/mylyn/releases/3.24"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.e4.tools.spies.feature.feature.group" version="0.18.0.v20171217-2215"/>
+<unit id="org.eclipse.e4.tools.spies.feature.feature.group" version="0.18.0.v20181023-1826"/>
 <repository location="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
 </location>
 </locations>
