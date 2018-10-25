@@ -421,19 +421,19 @@ public abstract class FPSetManager implements IFPSetManager {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.IFPSetManager#checkFPs()
 	 */
-	public double checkFPs() {
+	public long checkFPs() {
 		final int len = this.fpSets.size();
 		// Instantiation of a thread pool here is fine, as long as checkFPs is only called seldomly.
 		final ExecutorService executorService = Executors.newFixedThreadPool(len);
 		try {
 			// Start checkFP on all FPSets concurrently
 			// (checkFPs scans the full set sequentially!)
-			final CompletionService<Double> ecs = new ExecutorCompletionService<Double>(executorService);
+			final CompletionService<Long> ecs = new ExecutorCompletionService<Long>(executorService);
 			for (int i = 0; i < len; i++) {
 				ecs.submit(new CheckFPsCallable(fpSets.get(i).getFpset()));
 			}
 			// Return minimum value
-			double res = Double.MAX_VALUE;
+			long res = Long.MAX_VALUE;
 			for (int i = 0; i < len; i++) {
 				try {
 					res = Math.min(res, ecs.take().get());

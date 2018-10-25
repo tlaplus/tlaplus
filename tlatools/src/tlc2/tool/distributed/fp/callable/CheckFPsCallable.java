@@ -8,7 +8,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.distributed.fp.FPSetRMI;
 
-public class CheckFPsCallable implements Callable<Double> {
+public class CheckFPsCallable implements Callable<Long> {
 	private final FPSetRMI fpSetRMI;
 	
 	public CheckFPsCallable(FPSetRMI fpSetRMI) {
@@ -18,7 +18,7 @@ public class CheckFPsCallable implements Callable<Double> {
 	/* (non-Javadoc)
 	 * @see java.util.concurrent.Callable#call()
 	 */
-	public Double call() throws Exception {
+	public Long call() throws Exception {
 		try {
 			return fpSetRMI.checkFPs();
 		} catch (IOException e) {
@@ -26,7 +26,7 @@ public class CheckFPsCallable implements Callable<Double> {
 			MP.printError(EC.GENERAL, e);
 			// return max value to indicate to caller that the result is
 			// incorrect.
-			return Double.MAX_VALUE;
+			return Long.MAX_VALUE;
 		}
 	}
 }

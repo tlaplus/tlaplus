@@ -454,9 +454,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	 * @see tlc2.tool.fp.DiskFPSet#checkFPs()
 	 */
 	@Override
-	public double checkFPs() throws IOException {
+	public long checkFPs() throws IOException {
 		if (getTblCnt() <= 0) {
-			return Double.MAX_VALUE;
+			return Long.MAX_VALUE;
 		}
 		// The superclass implementation provides insufficient performance and
 		// scalability. These problems get more pronounced with a large array.
@@ -541,7 +541,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					}
 				}
 			}).get().get();
-			return 1.0 / distance;
+			return distance;
 		} catch (InterruptedException ie) {
 			Thread.currentThread().interrupt();
 			throw new OffHeapRuntimeException(ie);

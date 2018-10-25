@@ -73,8 +73,8 @@ public class MultiFPIntSet extends FPIntSet {
   }
 
   /* This is not quite correct. */
-  public final double checkFPs() throws IOException {
-    double res = Double.NEGATIVE_INFINITY;
+  public final long checkFPs() throws IOException {
+    long res = Long.MIN_VALUE;
     for (int i = 0; i < this.sets.length; i++) {
       res = Math.max(res, this.sets[i].checkFPs());
     }

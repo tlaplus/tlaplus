@@ -927,8 +927,8 @@ public class ModelChecker extends AbstractChecker
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
     {
         final long fpSetSize = anFpSet.size();
-        final double actualProb = anFpSet.checkFPs();
-        reportSuccess(fpSetSize,  actualProb, numOfGenStates);
+        final long actualDistance = anFpSet.checkFPs();
+        reportSuccess(fpSetSize,  actualDistance, numOfGenStates);
     }
 
     /**

@@ -76,7 +76,7 @@ public class NoopFPSet extends FPSet {
 	 * @see tlc2.tool.fp.FPSet#checkFPs()
 	 */
 	@Override
-	public double checkFPs() throws IOException {
+	public long checkFPs() throws IOException {
 		return 0;
 	}
 

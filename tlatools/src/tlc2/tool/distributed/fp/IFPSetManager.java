@@ -20,7 +20,7 @@ public interface IFPSetManager extends Serializable {
 	/**
 	 * @see FPSetRMI#checkFPs()
 	 */
-	double checkFPs();
+	long checkFPs();
 
 	/**
 	 * @see FPSetRMI#checkInvariant()

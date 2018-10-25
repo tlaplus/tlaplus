@@ -115,7 +115,7 @@ public abstract class FPIntSet
   
   public abstract void exit(boolean cleanup) throws IOException;
 
-  public abstract double checkFPs() throws IOException;
+  public abstract long checkFPs() throws IOException;
 
   public abstract void beginChkpt() throws IOException;
   public abstract void commitChkpt() throws IOException;

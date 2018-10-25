@@ -153,9 +153,9 @@ public class MultiFPSet extends FPSet {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#checkFPs()
 	 */
-	public final double checkFPs() throws IOException {
+	public final long checkFPs() throws IOException {
 		/* This is not quite correct. */
-		double res = Double.NEGATIVE_INFINITY;
+		long res = Long.MIN_VALUE;
 		for (int i = 0; i < this.sets.length; i++) {
 			res = Math.max(res, this.sets[i].checkFPs());
 		}

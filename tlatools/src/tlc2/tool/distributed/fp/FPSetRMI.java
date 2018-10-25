@@ -33,7 +33,7 @@ public interface FPSetRMI extends Remote {
 	 *         This distance reflects the probability of a fingerprint
 	 *         collision.
 	 */
-	double checkFPs() throws IOException;
+	long checkFPs() throws IOException;
 	
 	/**
 	 * @see FPSet#checkInvariant()

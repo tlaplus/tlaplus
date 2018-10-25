@@ -215,7 +215,7 @@ public class MemFPSet extends FPSet {
     System.exit(0);    
   }
 
-  public final double checkFPs() {
+  public final long checkFPs() {
     long dis = Long.MAX_VALUE;
     for (int i = 0; i < this.table.length; i++) {
       long[] bucket = this.table[i];
@@ -240,7 +240,7 @@ public class MemFPSet extends FPSet {
 	}
       }
     }
-    return (1.0/dis);
+    return dis;
   }
 
   // Checkpoint.

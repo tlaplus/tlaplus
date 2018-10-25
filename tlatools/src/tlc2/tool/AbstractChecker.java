@@ -2,6 +2,8 @@ package tlc2.tool;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -221,7 +223,7 @@ public abstract class AbstractChecker implements Cancelable
         }
     }
     
-    public static final void reportSuccess(final long numOfDistinctStates, final double actualProb, final long numOfGenStates) throws IOException
+    public static final void reportSuccess(final long numOfDistinctStates, final long actualDistance, final long numOfGenStates) throws IOException
     {
         // shown as 'calculated' in Toolbox
         final double optimisticProb = numOfDistinctStates * ((numOfGenStates - numOfDistinctStates) / Math.pow(2, 64));
@@ -236,7 +238,8 @@ public abstract class AbstractChecker implements Cancelable
         // Following two lines added by LL on 17 April 2012
         final String optimisticProbStr = "val = " + ProbabilityToString(optimisticProb, 2);
         // shown as 'observed' in Toolbox
-        final String actualProbStr = "val = " + ProbabilityToString(actualProb, 2);
+        final BigDecimal actualProb = BigDecimal.valueOf(1d).divide(BigDecimal.valueOf(actualDistance), new MathContext(2));
+        final String actualProbStr = "val = " + actualProb.toString();
         MP.printMessage(EC.TLC_SUCCESS, new String[] { optimisticProbStr, actualProbStr });
     }
     

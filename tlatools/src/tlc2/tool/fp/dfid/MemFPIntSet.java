@@ -262,7 +262,7 @@ public class MemFPIntSet extends FPIntSet {
     System.exit(0);    
   }
 
-  public final double checkFPs() {
+  public final long checkFPs() {
     long dis = Long.MAX_VALUE;
     for (int i = 0; i < this.table.length; i++) {
       int[] bucket = this.table[i];
@@ -289,7 +289,7 @@ public class MemFPIntSet extends FPIntSet {
 	}
       }
     }
-    return (1.0/dis);
+    return dis;
   }
 
   // Checkpoint.

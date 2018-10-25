@@ -602,9 +602,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		// Postprocessing:
 		if (hasNoErrors()) {
 			// We get here because the checking has succeeded.
-			final double actualProb = fpSetManager.checkFPs();
+			final long actualDistance = fpSetManager.checkFPs();
 			final long statesSeen = fpSetManager.getStatesSeen();
-			ModelChecker.reportSuccess(finalNumberOfDistinctStates, actualProb, statesSeen);
+			ModelChecker.reportSuccess(finalNumberOfDistinctStates, actualDistance, statesSeen);
 		} else if (keepCallStack) {
 			// We redo the work on the error state, recording the call stack.
 			work.setCallStack();

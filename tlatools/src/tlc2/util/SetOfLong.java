@@ -86,7 +86,7 @@ public final class SetOfLong {
 
   public final long sizeof() { return 20 + (8 * this.length); }
 
-  public final double checkFPs() {
+  public final long checkFPs() {
     int cnt = 0;
     for (int i = 0; i < this.length; i++) {
       long x = this.table[i];
@@ -107,7 +107,7 @@ public final class SetOfLong {
       dis = Math.min(dis, this.table[i]-x);
       x = this.table[i];
     }
-    return (1.0/dis);
+    return dis;
   }
 
   public final void beginChkpt(DataOutputStream dos) throws IOException {

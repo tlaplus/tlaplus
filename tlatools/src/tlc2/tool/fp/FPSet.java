@@ -101,7 +101,7 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
     /* (non-Javadoc)
      * @see tlc2.tool.distributed.fp.FPSetRMI#checkFPs()
      */
-    public abstract double checkFPs() throws IOException;
+    public abstract long checkFPs() throws IOException;
 
     /* (non-Javadoc)
      * @see tlc2.tool.distributed.fp.FPSetRMI#beginChkpt()

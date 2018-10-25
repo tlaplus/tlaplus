@@ -64,7 +64,7 @@ public final class MemFPSet1 extends FPSet {
     System.exit(0);    
   }
 
-  public final double checkFPs() { return this.set.checkFPs(); }
+  public final long checkFPs() { return this.set.checkFPs(); }
 
   /* Checkpoint. */
   public final void beginChkpt(String fname) throws IOException {

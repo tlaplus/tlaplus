@@ -142,7 +142,7 @@ public final class MemFPSet2 extends FPSet {
     System.exit(0);    
   }
 
-  public final double checkFPs() {
+  public final long checkFPs() {
     long dis = Long.MAX_VALUE;
     for (int i = 0; i < this.table.length; i++) {
       long low = i & 0xffffffL;	
@@ -191,7 +191,7 @@ public final class MemFPSet2 extends FPSet {
 	}
       }
     }
-    return (1.0/dis);
+    return dis;
   }
 
   public final void beginChkpt(String fname) throws IOException {

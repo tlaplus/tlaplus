@@ -140,7 +140,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.fp.FPSetManager#checkFPs()
 	 */
-	public double checkFPs() {
+	public long checkFPs() {
 		try {
 			return this.fpSet.checkFPs();
 		} catch (IOException e) {
