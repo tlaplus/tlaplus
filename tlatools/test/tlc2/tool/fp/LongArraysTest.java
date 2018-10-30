@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import tlc2.tool.fp.LongArrays.LongComparator;
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
-import util.TLCRuntime;
 
 public class LongArraysTest {
 	
