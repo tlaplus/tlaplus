@@ -459,7 +459,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			return Long.MAX_VALUE;
 		}
 		// The superclass implementation provides insufficient performance and
-		// scalability. These problems get more pronounced with a large array.
+		// scalability. These problems get more pronounced with large arrays.
 		// In order to provide a faster solution to the closest pair problem in
 		// one-dimensional space, we cheat and determine the minimum distance
 		// between fingerprints only on a subset of fingerprints. The subset are
@@ -471,6 +471,20 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// => O(n log n)
 		// Scalability is achieved by partitioning the array for 1) and 2),
 		// which is possible due to the bounded disorder in array.
+		
+		// One can think of two shortcuts to approximate of the closest pair:
+		// a) Track the minimum distance during the 1) step in prepareTable. A possible
+		// implementation can pass something similar to a BinaryOpeartor to the
+		// LongComparator. Due to the bounded disorder, this generally works except for
+		// the corner case where the closest pair are two fingerprints in two
+		// non-adjacent partitions, i.e. [,,,fp23],[],...,[],[,,fp42,,,]. This is
+		// frequently the case for very sparsely populated arrays. 
+		// b) For low load factors (thus low collision rates) simply skip step 1) and do
+		// not sort the array at all. A zero collision rate implies that the array
+		// is sorted (except for first PROBE_LIMIT slots) if fingerprints wrapped around.
+		// c) Select just 1..N partitions out of the set of all array partitions
+		// for which the closest pair gets calculated. This is a more extreme variant
+		// of the current approximation which skips fingerprints on disk.
 		
 		// 1) Sort all fingerprints, either with a sequential or concurrent
 		// flusher depending on the size of the array.
@@ -550,6 +564,31 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		} finally {
 			executorService.shutdown();
 		}
+		
+		
+		// Dynamic variant to maintain closest pair:
+		// The dynamic (during insertions and not on static data) variant of the closest
+		// pair problem also provides an approximation of the actual closest pair. It
+		// can be maintained with little overhead in runtime and space and returned in
+		// constant time O(1). Contrary to the current implementation, it does not skip
+		// fingerprints on disk but observes all fingerprints.
+		// For that, we observe the minimum distance OD of the fingerprint to be inserted
+		// and all fingerprints it collides with in the method memInsert0. Before
+		// returning from memInsert0, the global minimum distance GD gets updated to the
+		// observed distance OD iff OD < GD (for scalability reasons we want to use a
+		// java.util.concurrent.atomic.LongAccumulator).
+		// This provides a sufficient approximation iff the collision rate is
+		// sufficiently high. Under a low collision rate, the number of comparisons in
+		// memInsert0 will be low. But even under a high collision rate, the
+		// approximation GD does not necessarily converge with the real minimum distance:
+		// Let f1 differs from f2 in just the lowest significant bit (LSB) and let f1 <
+		// f2. Depending on the size of the array, it is possible that f1 and f2 are
+		// indexed to two adjacent positions. If both positions for f1 and f2 are empty
+		// by the time f1 and f2 get inserted, no distance for f1 and f2 will be
+		// calculated.
+		// For low hash table/array collision rates (small load factors), we could
+		// simply report "insufficient data". Users will still have the optimistic FP64
+		// collision probability, which will also be very small.
 	}
 
 	//**************************** Indexer ****************************//
