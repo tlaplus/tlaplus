@@ -51,7 +51,6 @@ public class SimulatorBenchmark {
     	// This should help to make these benchmarks more deterministic for a fixed set of benchmark parameters. The initial
     	// seed of this random number generator should effectively determine what traces are explored in what order by the simulation
     	// workers, so a particular seed should correspond to a fixed exploration order of the behavior space.
-    	System.out.println("Re-zeroing seed");
 		rng.setSeed(0);
 		seed = 0;
     }
