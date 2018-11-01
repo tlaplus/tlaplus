@@ -12,8 +12,10 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -52,6 +54,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Scrollable;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.forms.widgets.Form;
@@ -462,15 +465,42 @@ public class TLCErrorView extends ViewPart
         // detect when the user has tried to resize the individual columns.
         // The following might work, if I can figure out the real event type
         // to use.
-        int eventType = SWT.Resize; // (2^25) - 1 ; // 1023; // what should this
-        // be?
-        resizer.column[0].addListener(eventType, resizer);
+        resizer.column[0].addListener(SWT.Resize, resizer);
 
         variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
         variableViewer.getTree().addKeyListener(new ActionClickListener(variableViewer));
 
-// This is working but I'm not sure we need it. ActionClickListener
-// has a keystroke to collapse the viewer.        
+        
+        // Make it possible to expand and collapse the error trace with the push of a button.
+		final ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
+		final ToolBar toolbar = toolBarManager.createControl(errorTraceSection);
+		final ShiftClickAction action = new ShiftClickAction(
+				"Toggle between expand and collapse all (Shift+Click to default back to two-level expansion)",
+				TLCUIActivator.getImageDescriptor("icons/elcl16/toggle_expand_state.png")) {
+			@Override
+			public void runWithKey(final boolean pressed) {
+				if (pressed) {
+					// expandAll() followed by expandToLevel(2) requires us
+					// to collapse the viewer first.
+					variableViewer.collapseAll();
+					variableViewer.expandToLevel(2);
+				} else {
+					final Object[] expandedElements = variableViewer.getExpandedElements();
+					if (expandedElements.length == 0) {
+						variableViewer.expandAll();
+					} else {
+						variableViewer.collapseAll();
+					}
+				}
+			}
+		};
+		parent.getDisplay().addFilter(SWT.KeyDown, action);
+		parent.getDisplay().addFilter(SWT.KeyUp, action);
+		toolBarManager.add(action);
+		toolBarManager.update(true);
+		errorTraceSection.setTextClient(toolbar);
+// This is working but now redundant to the buttons on the section (see above).
+// Also ActionClickListener has a keystroke to collapse the viewer.        
 //        // Add a right click context menu to expand and collapse all variables. 
 //		final MenuManager contextMenu = new MenuManager("#ViewerMenu"); //$NON-NLS-1$
 //		contextMenu.setRemoveAllWhenShown(true);
@@ -1341,5 +1371,35 @@ public class TLCErrorView extends ViewPart
 	
 	TreeViewer getViewer() {
 		return variableViewer;
+	}
+	
+	public class ShiftClickAction extends Action implements Listener {
+
+		private boolean holdDown = false;
+
+		public ShiftClickAction(final String text, final ImageDescriptor imageDescriptor) {
+			super(text, imageDescriptor);
+		}
+
+		@Override
+		public void runWithEvent(Event event) {
+			runWithKey(holdDown);
+		}
+
+		public void runWithKey(boolean shiftPressed) {
+			// Override by subclass
+			run();
+		}
+
+		@Override
+		public void handleEvent(Event event) {
+			if (event.keyCode == SWT.SHIFT) {
+				if (event.stateMask == SWT.SHIFT) {
+					holdDown = false;
+				} else if (event.stateMask == SWT.NONE){
+					holdDown = true;
+				}
+			}
+		}
 	}
 }
