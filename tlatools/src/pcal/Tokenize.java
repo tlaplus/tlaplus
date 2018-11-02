@@ -814,6 +814,7 @@ public class Tokenize
                 || tok.equals("procedure")
                 || tok.equals("define")
                 || tok.equals("process")
+                || tok.equals("fair")
                ) ;
       }
 
