@@ -475,7 +475,7 @@ public class TLCErrorView extends ViewPart
 		final ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
 		final ToolBar toolbar = toolBarManager.createControl(errorTraceSection);
 		final ShiftClickAction action = new ShiftClickAction(
-				"Toggle between expand and collapse all (Shift+Click to default back to two-level expansion)",
+				"Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)",
 				TLCUIActivator.getImageDescriptor("icons/elcl16/toggle_expand_state.png")) {
 			@Override
 			public void runWithKey(final boolean pressed) {
