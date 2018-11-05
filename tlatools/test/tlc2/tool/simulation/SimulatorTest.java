@@ -14,6 +14,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.CommonTestCase;
 import tlc2.tool.Simulator;
+import tlc2.util.FP64;
 import tlc2.util.RandomGenerator;
 import util.FileUtil;
 import util.SimpleFilenameToStream;
@@ -121,6 +122,27 @@ public class SimulatorTest extends CommonTestCase {
 		runSimulatorTest("BasicMultiTrace", "MCBadInvNonInitState", false, 100, Long.MAX_VALUE);
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_EVALUATION_FAILED, "InvBadEvalNonInitState"));
+	}
+	
+	@Test
+	public void testLivenessViolation() {	
+		FP64.Init();
+		runSimulatorTest("BasicMultiTrace", "MCLivenessProp", false, 100, 100);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+	}
+	
+	@Test
+	public void testLivenessViolationIgnoresContinue() {	
+		FP64.Init();
+		TLCGlobals.continuation = true;
+		// We should always terminate after the first liveness violation, regardless of
+		// the "continue" parameter.
+		runSimulatorTest("BasicMultiTrace", "MCLivenessProp", false, 100, Long.MAX_VALUE);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_COMPUTING_INIT_PROGRESS, "1"));
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 	}
 	
 
