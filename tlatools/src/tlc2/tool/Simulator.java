@@ -270,17 +270,24 @@ public class Simulator implements Cancelable {
 			// If the result is an error, print it.
 			if (result.isError()) {
 				SimulationWorkerError error = result.error();
-				printBehavior(error);
 				
-				if(error.exception != null) {
-					// Print a summary in case of a liveness error.
+				// We assume that if a worker threw an unexpected exception, there is a bug
+				// somewhere, so we print out the exception and terminate. In the case of a
+				// liveness error, which is reported as an exception, we also terminate.
+				if (error.exception != null) {
 					if (error.exception instanceof LiveException) {
+						// In case of a liveness error, there is no need to print out
+						// the behavior since the liveness checker should take care of that itself.
 						this.printSummary();
 					} else {
-						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) },
-								error.state, error.stateTrace);
+						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) }, error.state,
+								error.stateTrace);
 					}
+					break;
 				}
+				
+				// Print the trace for all other errors.
+				printBehavior(error);
 				
 				// For certain, "fatal" errors, we shut down all workers and terminate,
 				// regardless of the "continue" parameter, since these errors likely indicate a bug in the spec.

@@ -366,7 +366,7 @@ public class SimulationWorker extends Thread {
 					}
 				} catch (final Exception e) {
 					return Optional.of(new SimulationWorkerError(EC.TLC_INVARIANT_EVALUATION_FAILED,
-							new String[] { tool.getInvNames()[idx], e.getMessage() }, state, stateTrace, e));
+							new String[] { tool.getInvNames()[idx], e.getMessage() }, state, stateTrace, null));
 				}
 
 				// Check action properties.
@@ -380,7 +380,7 @@ public class SimulationWorker extends Thread {
 					}
 				} catch (final Exception e) {
 					return Optional.of(new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
-							new String[] { tool.getImpliedActNames()[idx], e.getMessage() }, state, stateTrace, e));
+							new String[] { tool.getImpliedActNames()[idx], e.getMessage() }, state, stateTrace, null));
 				}
 
 			}

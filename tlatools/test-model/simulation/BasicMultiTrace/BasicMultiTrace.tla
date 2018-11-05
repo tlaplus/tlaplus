@@ -56,9 +56,8 @@ StateConstraint == depth < 4
 ActionConstraint == ~(depth' = 4 /\ depth = 3)
 InvConstraint   == depth <= 4
 
-
-
-\*TemporalProp == <>(branch = 15)
+\* A liveness property that should be violated.
+LivenessProp == <>(branch = -1)
 
 
 =============================================================================
