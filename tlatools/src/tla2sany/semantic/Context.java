@@ -279,12 +279,12 @@ public class Context implements ExploreNode {
   * instances of class ThmOrAssumpDefNode or ModuleInstanceKind            *
   * Code copied from getOpDefs().                                          *
   *************************************************************************/
-  public Vector getThmOrAssDefs() {
+  public Vector<ThmOrAssumpDefNode> getThmOrAssDefs() {
       // SZ Apr 21, 2009: not used instance
       // Class template = ThmOrAssumpDefNode.class;
     Pair nextPair = lastPair;
 
-    Vector result = new Vector();
+    Vector<ThmOrAssumpDefNode> result = new Vector<>();
     while (nextPair != null) {
       if ( nextPair.info instanceof ThmOrAssumpDefNode)
         { result.addElement( (ThmOrAssumpDefNode)(nextPair.info) );} ;
@@ -296,13 +296,13 @@ public class Context implements ExploreNode {
   /**
    * Returns vector of OpDeclNodes that represent CONSTANT declarations
    */
-  public Vector getConstantDecls() {
-    Class templateClass = OpDeclNode.class;
-    Enumeration list = table.elements();
+  public Vector<SemanticNode> getConstantDecls() {
+    Class<? extends SemanticNode> templateClass = OpDeclNode.class;
+    Enumeration<Pair> list = table.elements();
 
-    Vector result = new Vector();
+    Vector<SemanticNode> result = new Vector<>();
     while (list.hasMoreElements()) {
-      Pair elt = (Pair)list.nextElement();
+      Pair elt = list.nextElement();
       if (templateClass.isInstance(elt.info) &&     // true for superclasses too.
          ((OpDeclNode)elt.info).getKind() == ASTConstants.ConstantDeclKind  )
         result.addElement( (SemanticNode)(elt.info) );
@@ -312,13 +312,13 @@ public class Context implements ExploreNode {
   }
 
   /* Returns vector of OpDeclNodes that represent CONSTANT declarations  */
-  public Vector getVariableDecls() {
-    Class templateClass = OpDeclNode.class;
-    Enumeration list = table.elements();
+  public Vector<SemanticNode> getVariableDecls() {
+    Class<? extends SemanticNode> templateClass = OpDeclNode.class;
+    Enumeration<Pair> list = table.elements();
 
-    Vector result = new Vector();
+    Vector<SemanticNode> result = new Vector<>();
     while (list.hasMoreElements()) {
-      Pair elt = (Pair)list.nextElement();
+      Pair elt = list.nextElement();
       if (templateClass.isInstance(elt.info) &&     // true for superclasses too.
            ((OpDeclNode)elt.info).getKind() == ASTConstants.VariableDeclKind  )
         result.addElement( (SemanticNode)(elt.info) );
@@ -330,13 +330,13 @@ public class Context implements ExploreNode {
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class ModuleNode
    */
-  public Vector getModDefs() {
-    Class template = ModuleNode.class;
-    Enumeration list = table.elements();
+  public Vector<SemanticNode> getModDefs() {
+    Class<? extends SemanticNode> template = ModuleNode.class;
+    Enumeration<Pair> list = table.elements();
 
-    Vector result = new Vector();
+    Vector<SemanticNode> result = new Vector<>();
     while (list.hasMoreElements()) {
-      Pair elt = (Pair)list.nextElement();
+      Pair elt = list.nextElement();
       if (template.isInstance(elt.info))    // true for superclasses too.
         result.addElement( (SemanticNode)(elt.info) );
     }
@@ -480,8 +480,8 @@ public class Context implements ExploreNode {
   * comment in the walkGraph method of this file for a bit more            *
   * information.                                                           *
   *************************************************************************/
-  public Vector getContextEntryStringVector(int depth, boolean b) {
-    Vector ctxtEntries = new Vector(100);  // vector of Strings
+  public Vector<String> getContextEntryStringVector(int depth, boolean b) {
+    Vector<String> ctxtEntries = new Vector<>(100);  // vector of Strings
     Context naturalsContext =
                exMT.getContext(UniqueString.uniqueStringOf("Naturals"));
 
@@ -505,7 +505,7 @@ public class Context implements ExploreNode {
     }
 
     // Reverse the order of elements in the vector so they print properly
-    Object obj;
+    String obj;
     int n = ctxtEntries.size();
     for (int i = 0; i < n/2; i++) {
       obj = ctxtEntries.elementAt(i);
