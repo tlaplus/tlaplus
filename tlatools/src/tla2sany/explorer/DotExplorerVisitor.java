@@ -81,7 +81,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		}
-		this.writer.append("\nstrict digraph DiskGraph {\n"); // strict removes redundant edges
+		this.writer.append("strict digraph DiskGraph {\n"); // strict removes redundant edges
 	}
 	
 	@Override
@@ -141,7 +141,6 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 		return table;
 	}
 	
-	
 	private static String toDot(final String sn) {
 		return sn.replace("\\", "\\\\").replace("\"", "\\\"").trim().replace("\n", "\\n");
 	}
@@ -162,8 +161,21 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 	@SuppressWarnings("serial")
 	private class NoopTable<K, V> extends Hashtable<K, V> {
 		@Override
-		public V put(K key, V value) {
-			return value;
+		public V get(Object key) {
+			// Return null here to visit an OpDefNode D multiple times if D is "called" from
+			// multiple OpApplNodes. However, stop endless recursion if D is a RECURSIVE
+			// operator.
+			final V v = super.get(key);
+			if (v instanceof OpDefNode) {
+				final OpDefNode odn = (OpDefNode) v;
+				if (odn.getInRecursive()) {
+					if (stack.contains(odn)) {
+						// RECURSIVE operators
+						return v;
+					}
+				}
+			}
+			return null;
 		}
 	}
 }
