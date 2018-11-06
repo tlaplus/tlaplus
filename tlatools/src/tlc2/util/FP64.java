@@ -203,7 +203,16 @@ public class FP64 {
     /** Unlikely fingerprint? */
     public static final long Zero = 0L;
 
-    /* This file provides procedures that construct fingerprints of
+    /* Background Reading:
+       - Galois Field (GF) or Finite Field
+       https://en.wikipedia.org/wiki/Finite_field
+       - GHash/MAC
+       https://en.wikipedia.org/wiki/Galois/Counter_Mode
+       - Universal Hashing
+       https://en.wikipedia.org/wiki/Universal_hashing
+       ----
+       
+       This file provides procedures that construct fingerprints of
        strings of bytes via operations in GF[2^64].  GF[64] is represented
        as the set polynomials of degree 64 with coefficients in Z(2),
        modulo an irreducible polynomial P of degree 64.  The computer
