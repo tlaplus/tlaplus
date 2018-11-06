@@ -30,10 +30,8 @@ import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Set;
 
 import tla2sany.semantic.Context;
 import tla2sany.semantic.FormalParamNode;
@@ -48,24 +46,12 @@ import util.FileUtil;
 public class DotExplorerVisitor extends ExplorerVisitor {
 
 	private static final Map<Class<? extends SemanticNode>, String> type2format = new HashMap<>();
-	private static final Set<String> standardModules = new HashSet<>();
 	
 	static {
 		type2format.put(OpDefNode.class, " [style=filled,shape=diamond,fillcolor=\"red\",");
 		type2format.put(OpApplNode.class, " [color=\"green\",");
 		type2format.put(OpDeclNode.class, " [shape=square,color=\"yellow\",");
 		type2format.put(LetInNode.class, " [color=\"orange\",");
-
-		// Quick'n'Dirty hack!
-		standardModules.add("FiniteSets");
-		standardModules.add("Sequences");
-		standardModules.add("Bags");
-		standardModules.add("Naturals");
-		standardModules.add("Integers");
-		standardModules.add("Reals");
-		standardModules.add("RealTime");
-		standardModules.add("Randomization");
-		standardModules.add("TLC");
 	}
 	
 	private final ModuleNode rootModule;
@@ -153,7 +139,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 			return true;
 		}
 		if (exploreNode instanceof SemanticNode) {
-			return standardModules.contains(((SemanticNode) exploreNode).getLocation().source());
+			return ((SemanticNode) exploreNode).isStandardModule();
 		}
 		return false;
 	}
