@@ -8,6 +8,7 @@
 
 package tla2sany.semantic;
 
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -17,9 +18,6 @@ import tla2sany.st.Location;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import util.UniqueString;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 // A context contains def/declNodes only.
 // Implements a simple context for symbol decls and defs. Also
@@ -91,23 +89,23 @@ public class Context implements ExploreNode {
 
   public class InitialSymbolEnumeration {
 
-    Enumeration e = initialContext.content();
+    Enumeration<Pair> e = initialContext.content();
 
     public boolean hasMoreElements() { return e.hasMoreElements(); }
 
     public SymbolNode nextElement() {
-      return (SymbolNode)(((Pair)(e.nextElement())).getSymbol());
+      return (SymbolNode) e.nextElement().getSymbol();
     }
   }
 
   public class ContextSymbolEnumeration {
 
-    Enumeration e = Context.this.content();
+    Enumeration<Pair> e = Context.this.content();
 
     public boolean hasMoreElements() { return e.hasMoreElements(); }
 
     public SymbolNode nextElement() {
-      return ((Pair)(e.nextElement())).getSymbol();
+      return e.nextElement().getSymbol();
     }
 
    /* public Element export(Document doc) {
@@ -133,7 +131,7 @@ public class Context implements ExploreNode {
                                       // belongs to is null for global contex shared by all modules.
 
   private Errors         errors;      // Object in which to register errors
-  private Hashtable      table;       // Mapping from symbol name to Pair's that include SymbolNode's
+  private Hashtable<Object, Pair>      table;       // Mapping from symbol name to Pair's that include SymbolNode's
   private Pair           lastPair;    // Pair added last to the this.table
 
   /**
@@ -141,7 +139,7 @@ public class Context implements ExploreNode {
    * SymbolTable this Context is part of (or null).
    */
   public Context(ExternalModuleTable mt, Errors errs) {
-    table = new Hashtable();
+    table = new Hashtable<>();
     this.exMT = mt;
     this.errors = errs;
     this.lastPair = null;
@@ -164,6 +162,16 @@ public class Context implements ExploreNode {
   public static Context getGlobalContext() {
     return initialContext;
   }
+  
+	public static boolean isBuiltIn(final ExploreNode exploreNode) {
+		final Collection<Pair> pairs = initialContext.table.values();
+		for (Pair p : pairs) {
+			if (exploreNode == p.info) {
+				return true;
+			}
+		}
+		return false;
+	}
 
   public Errors getErrors() { return errors; }
 
@@ -233,11 +241,11 @@ public class Context implements ExploreNode {
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class "template" (or one of its subclasses)
    */
-  public Vector getByClass( Class template ) {
-    Vector result = new Vector();
-    Enumeration list = table.elements();
+  public Vector<SymbolNode> getByClass( Class template ) {
+    Vector<SymbolNode> result = new Vector<>();
+    Enumeration<Pair> list = table.elements();
     while (list.hasMoreElements()) {
-      Pair elt = (Pair)list.nextElement();
+      Pair elt = list.nextElement();
       if (template.isInstance(elt.info)) {
         result.addElement( elt.info );
       }
@@ -250,12 +258,12 @@ public class Context implements ExploreNode {
    * instances of class OpDefNode and that are NOT of kind BuiltInKind
    * or ModuleInstanceKind
    */
-  public Vector getOpDefs() {
+  public Vector<OpDefNode> getOpDefs() {
       // SZ Apr 21, 2009: not used instance
       // Class template = OpDefNode.class;
     Pair nextPair = lastPair;
 
-    Vector result = new Vector();
+    Vector<OpDefNode> result = new Vector<>();
     while (nextPair != null) {
       if ( nextPair.info instanceof OpDefNode &&     // true for superclasses too.
            ((OpDefNode)nextPair.info).getKind() != ASTConstants.ModuleInstanceKind &&
