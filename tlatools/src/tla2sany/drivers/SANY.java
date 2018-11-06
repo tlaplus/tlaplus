@@ -452,7 +452,7 @@ public class SANY {
               // Run the Semantic Graph Exploration tool
               Explorer explorer = new Explorer(spec.getExternalModuleTable());
               try {
-                explorer.main();
+                explorer.main(args);
               }
               catch (ExplorerQuitException e) { /*do nothing*/ }
             }

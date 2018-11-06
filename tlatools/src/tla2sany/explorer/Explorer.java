@@ -9,9 +9,11 @@ package tla2sany.explorer;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import tla2sany.semantic.ExternalModuleTable;
@@ -384,31 +386,51 @@ public class Explorer {
 		}
 	}
 
-	public void main() throws ExplorerQuitException {
+	public void main(final String[] args) throws ExplorerQuitException {
 
 		if (mt == null) {
 			System.out.println("*** module table == null in Explorer.main() ***");
 			return;
 		}
 
-		// Get all semNodes in semNodeTable
-		mt.walkGraph(semNodesTable);
-
-		// Print initial user input prompt
-		System.out.println("\n\n*** TLA+ semantic graph exploration tool v 1.0 (DRJ)");
-		System.out.print("\n>>");
-
-		// Main command interpreter loop
-      while (getLine()) {
-
-        inputTokens = new StringTokenizer(input.toString());
-
+		final List<String> asList = Arrays.asList(args);
+		// Passing single token commands as command line parameter skips Explorer's
+		// interpreter mode.
+		if (asList.contains("cst")) {
+			inputTokens = new StringTokenizer("cst");
 			parseAndExecuteCommand();
+			System.exit(0);
+		} else if (asList.contains("dot")) {
+			inputTokens = new StringTokenizer("dot");
+			parseAndExecuteCommand();
+			System.exit(0);
+		} else  if (asList.contains("mt")) {
+			inputTokens = new StringTokenizer("mt");
+			parseAndExecuteCommand();
+			System.exit(0);
+		} else if (asList.contains("mt*")) {
+			inputTokens = new StringTokenizer("mt*");
+			parseAndExecuteCommand();
+			System.exit(0);
+		} else {
+			// Get all semNodes in semNodeTable
+			mt.walkGraph(semNodesTable);
 
-			// Print next user prompt
+			// Print initial user input prompt
+			System.out.println("\n\n*** TLA+ semantic graph exploration tool v 1.0 (DRJ)");
 			System.out.print("\n>>");
-
-      } // end while
+			// Main command interpreter loop
+			while (getLine()) {
+				
+				inputTokens = new StringTokenizer(input.toString());
+				
+				parseAndExecuteCommand();
+				
+				// Print next user prompt
+				System.out.print("\n>>");
+				
+			} // end while
+		}
 
 	} // end main() method
 
