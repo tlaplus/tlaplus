@@ -23,12 +23,10 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tla2sany.StandardModules;
+package tla2sany.semantic;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import tla2sany.semantic.SemanticNode;
 
 public class StandardModules {
 
