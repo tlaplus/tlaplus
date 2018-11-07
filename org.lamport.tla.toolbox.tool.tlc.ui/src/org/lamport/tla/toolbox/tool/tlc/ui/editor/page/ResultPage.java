@@ -276,16 +276,48 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                		// Cannot show coverage information without coverage data.
 	                		break;
 	                	}
-	                	// Install invocation statistics markers on saved TLA+ files.
 						final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
 						final Map<IFile, Map<Long, AnnotationPreference>> coveredFiles = new HashMap<>();
-
-						for (IFile tlaFile : modelEditor.getModel().getSavedTLAFiles()) {
+						
+						// Setup the AnnotationPreferences and open the editor. The editor has to be
+						// opened *before* any marker gets created. Otherwise, there is race condition
+						// between the editor registering the AnnotationPainter as a
+						// ITextYadaYadaListener and notification being send out for the markers.
+						final List<IFile> savedTLAFiles = modelEditor.getModel().getSavedTLAFiles();
+						for (IFile tlaFile : savedTLAFiles) {
 							final Map<Long, AnnotationPreference> annotationPrefs = new HashMap<>();
-							final CoverageInformation coveragesForTLAFile = dataProvider
-									.getCoverageInfo(tlaFile);
+							final CoverageInformation coveragesForTLAFile = dataProvider.getCoverageInfo(tlaFile);
 							if (!coveragesForTLAFile.isEmpty()) {
 								coveredFiles.put(tlaFile, annotationPrefs);
+								for (CoverageInformationItem coverageForTLAFile : coveragesForTLAFile) {
+									if (coverageForTLAFile.getCount() > 0) {
+										// Reuse the AnnotationPreference (the visualization instruction, ie the
+										// text highlighting in a particular color) for the same counts.
+										annotationPrefs.computeIfAbsent(coverageForTLAFile.getCount(),
+												c -> new TLACoverageEditor.AnnotationPreference(
+														coveragesForTLAFile.getHue(coverageForTLAFile)));
+									}
+								}
+							}
+						}
+						
+						// Open the files as pages of the current model editor.
+						for (IFile coveredFile : coveredFiles.keySet()) {
+							if (modelEditor.findEditors(new FileEditorInput(coveredFile)).length == 0) {
+								try {
+									modelEditor.addPage(new TLACoverageEditor(coveredFiles.get(coveredFile)),
+											new FileEditorInput(coveredFile));
+								} catch (PartInitException e) {
+									e.printStackTrace();
+								}
+							}
+						}
+
+	                	// Install invocation statistics markers on saved TLA+ files when the editor is open.
+						for (IFile tlaFile : savedTLAFiles) {
+							final CoverageInformation coveragesForTLAFile = dataProvider.getCoverageInfo(tlaFile);
+							if (!coveragesForTLAFile.isEmpty()) {
+								final Map<Long, AnnotationPreference> annotationPrefs = coveredFiles.get(tlaFile);
 								for (CoverageInformationItem coverageForTLAFile : coveragesForTLAFile) {
 									final IRegion region = AdapterFactory
 											.locationToRegion(coverageForTLAFile.getModuleLocation());
@@ -296,19 +328,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 										// started.
 										continue;
 									}
-                            		try {
+									try {
 										final IMarker coverageMarker;
 										if (coverageForTLAFile.getCount() == 0) {
-											coverageMarker = tlaFile
-													.createMarker(TLACoverageEditor.ANNOTATION_UNUSED);
+											coverageMarker = tlaFile.createMarker(TLACoverageEditor.ANNOTATION_UNUSED);
 										} else {
-											// Reuse the AnnotationPreference (the visualization instruction, ie the
-											// text
-											// highlighting in a particular color) for the same counts.
-											final AnnotationPreference ap = annotationPrefs.computeIfAbsent(
-													coverageForTLAFile.getCount(),
-													c -> new TLACoverageEditor.AnnotationPreference(
-															coveragesForTLAFile.getHue(coverageForTLAFile)));
+											AnnotationPreference ap = annotationPrefs
+													.get(coverageForTLAFile.getCount());
 
 											// TODO do we need to clear existing coverage markers first or can we update
 											// existing markers with new invocation counts?
@@ -325,18 +351,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 									} catch (CoreException e) {
 										TLCUIActivator.getDefault().logError(e.getMessage(), e);
 									}
-								}
-							}
-						}
-
-						// Open the files as pages of the current model editor.
-						for (IFile coveredFile : coveredFiles.keySet()) {
-							if (modelEditor.findEditors(new FileEditorInput(coveredFile)).length == 0) {
-								try {
-									modelEditor.addPage(new TLACoverageEditor(coveredFiles.get(coveredFile)),
-											new FileEditorInput(coveredFile));
-								} catch (PartInitException e) {
-									e.printStackTrace();
 								}
 							}
 						}
