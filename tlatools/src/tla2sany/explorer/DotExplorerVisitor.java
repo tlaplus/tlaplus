@@ -58,6 +58,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 	private final Hashtable<Integer, ExploreNode> table;
 	private final PrintWriter writer;
 	private final Deque<ExploreNode> stack = new ArrayDeque<>();
+	private final boolean includeLineNumbers = Boolean.getBoolean(DotExplorerVisitor.class.getName() + ".includeLineNumbers");
 
 	public DotExplorerVisitor(final ModuleNode rootModule) {
 		this.rootModule = rootModule;
@@ -96,6 +97,12 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 				this.writer.append(toDot(((OpDefNode) sn).getName().toString()));
 			} else {
 				this.writer.append(toDot(sn.getTreeNode().getHumanReadableImage()));
+			}
+			if (includeLineNumbers) {
+				// Wrap location for more compact nodes in dot output.
+				final String loc = sn.getLocation().toString();
+				this.writer.append("\n");
+				this.writer.append(loc.replace("of module", "\n"));
 			}
 			this.writer.append("\"]");
 			this.writer.append(";\n");
