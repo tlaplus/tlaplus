@@ -25,21 +25,13 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
-import tlc2.value.BoolValue;
-import tlc2.value.IntValue;
-import tlc2.value.Value;
-import util.UniqueString;
 
 public class RandomSubsetSetOfFcnsTest extends ModelCheckerTestCase {
 
@@ -84,5 +76,7 @@ public class RandomSubsetSetOfFcnsTest extends ModelCheckerTestCase {
 //		assertEquals(firstY.val, ((IntValue) secondState.get(UniqueString.uniqueStringOf("y"))).val);
 //		// Check z is false
 //		assertEquals(BoolValue.ValFalse, (BoolValue) secondState.get(UniqueString.uniqueStringOf("z")));
+
+		assertCoverage("  line 16, col 22 to line 16, col 26 of module RandomSubsetSetOfFcns: 0");
 	}
 }

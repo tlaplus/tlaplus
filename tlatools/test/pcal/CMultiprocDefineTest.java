@@ -46,5 +46,10 @@ public class CMultiprocDefineTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "8", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
+		
+		assertCoverage("  line 38, col 18 to line 38, col 49 of module CMultiprocDefine: 12\n" + 
+				"  line 41, col 18 to line 41, col 51 of module CMultiprocDefine: 12\n" + 
+				"  line 42, col 18 to line 42, col 23 of module CMultiprocDefine: 12\n" + 
+				"  line 48, col 70 to line 48, col 73 of module CMultiprocDefine: 0");
 	}
 }

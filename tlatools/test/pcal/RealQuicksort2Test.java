@@ -46,6 +46,27 @@ public class RealQuicksort2Test extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "853", "612", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "11"));
+
+		assertCoverage("  line 100, col 32 to line 100, col 59 of module RealQuicksort2: 0\n" +
+			"  line 101, col 21 to line 101, col 32 of module RealQuicksort2: 0\n" +
+			"  line 104, col 12 to line 104, col 32 of module RealQuicksort2: 71\n" +
+			"  line 105, col 12 to line 105, col 22 of module RealQuicksort2: 71\n" +
+			"  line 106, col 22 to line 106, col 52 of module RealQuicksort2: 0\n" +
+			"  line 110, col 41 to line 110, col 44 of module RealQuicksort2: 0\n" +
+			"  line 72, col 18 to line 72, col 36 of module RealQuicksort2: 144\n" +
+			"  line 77, col 23 to line 77, col 29 of module RealQuicksort2: 144\n" +
+			"  line 78, col 23 to line 78, col 42 of module RealQuicksort2: 144\n" +
+			"  line 79, col 23 to line 79, col 46 of module RealQuicksort2: 144\n" +
+			"  line 80, col 23 to line 80, col 42 of module RealQuicksort2: 144\n" +
+			"  line 81, col 21 to line 81, col 35 of module RealQuicksort2: 0\n" +
+			"  line 88, col 24 to line 88, col 34 of module RealQuicksort2: 469\n" +
+			"  line 89, col 22 to line 89, col 41 of module RealQuicksort2: 469\n" +
+			"  line 91, col 36 to line 91, col 48 of module RealQuicksort2: 87\n" +
+			"  line 92, col 36 to line 95, col 53 of module RealQuicksort2: 87\n" +
+			"  line 96, col 33 to line 96, col 43 of module RealQuicksort2: 87\n" +
+			"  line 97, col 33 to line 97, col 43 of module RealQuicksort2: 382\n" +
+			"  line 98, col 43 to line 98, col 59 of module RealQuicksort2: 0\n" +
+			"  line 99, col 22 to line 99, col 33 of module RealQuicksort2: 68");
 	}
 }
 /*

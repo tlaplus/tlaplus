@@ -46,5 +46,26 @@ public class Either3Test extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "12", "9", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
+		
+		assertCoverage("  line 31, col 15 to line 31, col 20 of module Either3: 1\n" + 
+				"  line 32, col 15 to line 32, col 23 of module Either3: 1\n" + 
+				"  line 33, col 25 to line 33, col 32 of module Either3: 0\n" + 
+				"  line 34, col 15 to line 34, col 20 of module Either3: 1\n" + 
+				"  line 35, col 15 to line 35, col 23 of module Either3: 1\n" + 
+				"  line 36, col 25 to line 36, col 32 of module Either3: 0\n" + 
+				"  line 37, col 15 to line 37, col 22 of module Either3: 1\n" + 
+				"  line 38, col 15 to line 38, col 23 of module Either3: 1\n" + 
+				"  line 39, col 25 to line 39, col 32 of module Either3: 0\n" + 
+				"  line 42, col 9 to line 42, col 18 of module Either3: 1\n" + 
+				"  line 43, col 9 to line 43, col 17 of module Either3: 1\n" + 
+				"  line 44, col 19 to line 44, col 28 of module Either3: 0\n" + 
+				"  line 47, col 9 to line 47, col 18 of module Either3: 1\n" + 
+				"  line 48, col 9 to line 48, col 17 of module Either3: 1\n" + 
+				"  line 49, col 19 to line 49, col 28 of module Either3: 0\n" + 
+				"  line 53, col 15 to line 53, col 24 of module Either3: 2\n" + 
+				"  line 55, col 15 to line 55, col 24 of module Either3: 1\n" + 
+				"  line 60, col 9 to line 60, col 20 of module Either3: 3\n" + 
+				"  line 61, col 19 to line 61, col 28 of module Either3: 0\n" + 
+				"  line 65, col 41 to line 65, col 44 of module Either3: 0");
 	}
 }

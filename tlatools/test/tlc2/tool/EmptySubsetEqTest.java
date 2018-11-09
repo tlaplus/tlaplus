@@ -61,5 +61,7 @@ public class EmptySubsetEqTest extends ModelCheckerTestCase {
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		expectedTrace.add("b = TRUE");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+
+	assertCoverage("  line 8, col 9 to line 8, col 48 of module EmptySubsetEq: 0");
 	}
 }

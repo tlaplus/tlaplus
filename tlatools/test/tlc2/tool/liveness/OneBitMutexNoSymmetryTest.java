@@ -159,5 +159,34 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
 		assertBackToState(9, "<e2 line 66, col 13 to line 74, col 21 of module OneBitMutex>");
+
+	assertCoverage("  line 101, col 16 to line 101, col 46 of module OneBitMutex: 18\n" +
+		"  line 102, col 26 to line 102, col 50 of module OneBitMutex: 0\n" +
+		"  line 105, col 15 to line 105, col 45 of module OneBitMutex: 18\n" +
+		"  line 106, col 15 to line 106, col 47 of module OneBitMutex: 18\n" +
+		"  line 107, col 25 to line 107, col 46 of module OneBitMutex: 0\n" +
+		"  line 57, col 17 to line 57, col 48 of module OneBitMutex: 44\n" +
+		"  line 58, col 27 to line 58, col 51 of module OneBitMutex: 0\n" +
+		"  line 61, col 16 to line 61, col 45 of module OneBitMutex: 44\n" +
+		"  line 62, col 16 to line 62, col 71 of module OneBitMutex: 44\n" +
+		"  line 63, col 16 to line 63, col 47 of module OneBitMutex: 44\n" +
+		"  line 64, col 16 to line 64, col 29 of module OneBitMutex: 44\n" +
+		"  line 69, col 29 to line 69, col 63 of module OneBitMutex: 48\n" +
+		"  line 70, col 27 to line 70, col 100 of module OneBitMutex: 48\n" +
+		"  line 71, col 27 to line 71, col 58 of module OneBitMutex: 48\n" +
+		"  line 72, col 27 to line 72, col 58 of module OneBitMutex: 18\n" +
+		"  line 73, col 37 to line 73, col 58 of module OneBitMutex: 0\n" +
+		"  line 74, col 16 to line 74, col 21 of module OneBitMutex: 66\n" +
+		"  line 79, col 38 to line 79, col 69 of module OneBitMutex: 14\n" +
+		"  line 80, col 38 to line 80, col 69 of module OneBitMutex: 0\n" +
+		"  line 81, col 27 to line 81, col 58 of module OneBitMutex: 10\n" +
+		"  line 82, col 26 to line 82, col 50 of module OneBitMutex: 0\n" +
+		"  line 85, col 16 to line 85, col 46 of module OneBitMutex: 20\n" +
+		"  line 86, col 16 to line 86, col 47 of module OneBitMutex: 20\n" +
+		"  line 87, col 26 to line 87, col 47 of module OneBitMutex: 0\n" +
+		"  line 91, col 16 to line 91, col 47 of module OneBitMutex: 6\n" +
+		"  line 92, col 26 to line 92, col 50 of module OneBitMutex: 0\n" +
+		"  line 96, col 16 to line 96, col 47 of module OneBitMutex: 0\n" +
+		"  line 97, col 26 to line 97, col 50 of module OneBitMutex: 0");
 	}
 }

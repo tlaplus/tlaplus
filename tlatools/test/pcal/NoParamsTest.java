@@ -46,6 +46,19 @@ public class NoParamsTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "7", "6", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "6"));
+
+		assertCoverage("  line 31, col 10 to line 31, col 23 of module NoParams: 2\n" +
+			"  line 32, col 10 to line 32, col 29 of module NoParams: 2\n" +
+			"  line 33, col 10 to line 33, col 29 of module NoParams: 2\n" +
+			"  line 38, col 10 to line 40, col 27 of module NoParams: 1\n" +
+			"  line 41, col 10 to line 41, col 19 of module NoParams: 1\n" +
+			"  line 42, col 10 to line 42, col 19 of module NoParams: 1\n" +
+			"  line 45, col 10 to line 47, col 27 of module NoParams: 1\n" +
+			"  line 48, col 10 to line 48, col 19 of module NoParams: 1\n" +
+			"  line 49, col 10 to line 49, col 19 of module NoParams: 1\n" +
+			"  line 53, col 10 to line 53, col 21 of module NoParams: 1\n" +
+			"  line 54, col 20 to line 54, col 35 of module NoParams: 0\n" +
+			"  line 58, col 41 to line 58, col 44 of module NoParams: 0");
 	}
 }
 /*

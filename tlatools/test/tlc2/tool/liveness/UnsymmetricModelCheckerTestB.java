@@ -51,5 +51,9 @@ public class UnsymmetricModelCheckerTestB extends ModelCheckerTestCase {
 	
 		// Contrary to UMCTA, B doesn't find a counter-example. This is due to
 		// the CHOOSE on S and the selected initial state.
+
+	assertCoverage("  line 37, col 31 to line 37, col 36 of module Unsymmetric: 0\n" +
+		"  line 38, col 31 to line 38, col 36 of module Unsymmetric: 1\n" +
+		"  line 8, col 15 to line 8, col 22 of module Unsymmetric: 2");
 	}
 }

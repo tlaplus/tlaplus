@@ -46,6 +46,18 @@ public class NoLoopTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "8", "6", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
+
+		assertCoverage("  line 26, col 11 to line 26, col 16 of module NoLoop: 1\n" +
+			"  line 27, col 9 to line 27, col 17 of module NoLoop: 1\n" +
+			"  line 28, col 9 to line 28, col 14 of module NoLoop: 1\n" +
+			"  line 32, col 14 to line 32, col 19 of module NoLoop: 2\n" +
+			"  line 33, col 14 to line 33, col 24 of module NoLoop: 2\n" +
+			"  line 34, col 9 to line 34, col 17 of module NoLoop: 2\n" +
+			"  line 38, col 20 to line 38, col 29 of module NoLoop: 1\n" +
+			"  line 39, col 20 to line 39, col 29 of module NoLoop: 1\n" +
+			"  line 41, col 9 to line 41, col 20 of module NoLoop: 2\n" +
+			"  line 42, col 9 to line 42, col 14 of module NoLoop: 2\n" +
+			"  line 46, col 41 to line 46, col 44 of module NoLoop: 0");
 	}
 }
 /*

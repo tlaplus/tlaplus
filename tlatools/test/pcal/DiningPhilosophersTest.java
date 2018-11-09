@@ -46,5 +46,26 @@ public class DiningPhilosophersTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "301", "118", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "14"));
+		
+		assertCoverage("  line 100, col 10 to line 100, col 19 of module DiningPhilosophers: 10\n" + 
+				"  line 103, col 11 to line 103, col 38 of module DiningPhilosophers: 10\n" + 
+				"  line 104, col 11 to line 104, col 40 of module DiningPhilosophers: 10\n" + 
+				"  line 107, col 11 to line 107, col 40 of module DiningPhilosophers: 22\n" + 
+				"  line 108, col 11 to line 108, col 40 of module DiningPhilosophers: 22\n" + 
+				"  line 64, col 16 to line 64, col 46 of module DiningPhilosophers: 59\n" + 
+				"  line 65, col 16 to line 65, col 47 of module DiningPhilosophers: 59\n" + 
+				"  line 69, col 16 to line 69, col 54 of module DiningPhilosophers: 30\n" + 
+				"  line 70, col 16 to line 70, col 46 of module DiningPhilosophers: 30\n" + 
+				"  line 74, col 15 to line 74, col 46 of module DiningPhilosophers: 30\n" + 
+				"  line 75, col 15 to line 75, col 24 of module DiningPhilosophers: 30\n" + 
+				"  line 78, col 16 to line 78, col 46 of module DiningPhilosophers: 30\n" + 
+				"  line 79, col 16 to line 79, col 47 of module DiningPhilosophers: 30\n" + 
+				"  line 82, col 16 to line 82, col 54 of module DiningPhilosophers: 76\n" + 
+				"  line 83, col 16 to line 83, col 47 of module DiningPhilosophers: 76\n" + 
+				"  line 89, col 11 to line 89, col 40 of module DiningPhilosophers: 23\n" + 
+				"  line 90, col 11 to line 90, col 40 of module DiningPhilosophers: 23\n" + 
+				"  line 94, col 11 to line 94, col 38 of module DiningPhilosophers: 10\n" + 
+				"  line 95, col 11 to line 95, col 39 of module DiningPhilosophers: 10\n" + 
+				"  line 99, col 10 to line 99, col 39 of module DiningPhilosophers: 10");
 	}
 }

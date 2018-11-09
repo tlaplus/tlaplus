@@ -42,5 +42,7 @@ public class ETest4 extends SuiteETestCase {
 			+ "2. Line 15, column 12 to line 15, column 26 in etest4\n"
 			+ "3. Line 15, column 12 to line 15, column 22 in etest4\n\n";
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_NESTED_EXPRESSION, s));
+
+	assertCoverage("  line 18, col 19 to line 18, col 19 of module etest4: 0");
 	}
 }

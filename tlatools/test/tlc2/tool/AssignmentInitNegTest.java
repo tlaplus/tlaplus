@@ -44,5 +44,7 @@ public class AssignmentInitNegTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
+
+	assertCoverage("  line 7, col 33 to line 7, col 33 of module AssignmentInitNeg: 1");
 	}
 }

@@ -45,5 +45,17 @@ public class Bug051231Test extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "4", "3", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
+		
+		assertCoverage("  line 35, col 10 to line 35, col 29 of module bug_05_12_31: 1\n" + 
+				"  line 36, col 10 to line 36, col 27 of module bug_05_12_31: 1\n" + 
+				"  line 37, col 10 to line 37, col 27 of module bug_05_12_31: 1\n" + 
+				"  line 38, col 10 to line 38, col 27 of module bug_05_12_31: 1\n" + 
+				"  line 39, col 10 to line 39, col 29 of module bug_05_12_31: 1\n" + 
+				"  line 44, col 12 to line 44, col 17 of module bug_05_12_31: 1\n" + 
+				"  line 45, col 12 to line 50, col 29 of module bug_05_12_31: 1\n" + 
+				"  line 51, col 9 to line 51, col 15 of module bug_05_12_31: 1\n" + 
+				"  line 52, col 9 to line 52, col 17 of module bug_05_12_31: 1\n" + 
+				"  line 53, col 9 to line 53, col 18 of module bug_05_12_31: 1\n" + 
+				"  line 57, col 41 to line 57, col 44 of module bug_05_12_31: 0");
 	}
 }

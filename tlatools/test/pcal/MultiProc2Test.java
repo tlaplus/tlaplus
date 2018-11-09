@@ -46,6 +46,34 @@ public class MultiProc2Test extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1212", "504", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "14"));
+		assertCoverage("  line 104, col 16 to line 104, col 42 of module MultiProc2: 200\n" +
+				"  line 105, col 16 to line 105, col 47 of module MultiProc2: 200\n" +
+				"  line 106, col 26 to line 106, col 49 of module MultiProc2: 0\n" +
+				"  line 109, col 16 to line 109, col 43 of module MultiProc2: 200\n" +
+				"  line 110, col 16 to line 110, col 49 of module MultiProc2: 200\n" +
+				"  line 111, col 26 to line 111, col 58 of module MultiProc2: 0\n" +
+				"  line 119, col 70 to line 119, col 73 of module MultiProc2: 0\n" +
+				"  line 59, col 16 to line 59, col 60 of module MultiProc2: 300\n" +
+				"  line 60, col 16 to line 60, col 47 of module MultiProc2: 300\n" +
+				"  line 61, col 26 to line 61, col 61 of module MultiProc2: 0\n" +
+				"  line 64, col 16 to line 64, col 35 of module MultiProc2: 300\n" +
+				"  line 65, col 16 to line 65, col 63 of module MultiProc2: 300\n" +
+				"  line 66, col 16 to line 66, col 60 of module MultiProc2: 300\n" +
+				"  line 67, col 16 to line 67, col 66 of module MultiProc2: 300\n" +
+				"  line 68, col 16 to line 68, col 66 of module MultiProc2: 300\n" +
+				"  line 69, col 26 to line 69, col 44 of module MultiProc2: 0\n" +
+				"  line 74, col 13 to line 74, col 52 of module MultiProc2: 100\n" +
+				"  line 75, col 13 to line 79, col 57 of module MultiProc2: 100\n" +
+				"  line 80, col 10 to line 80, col 34 of module MultiProc2: 100\n" +
+				"  line 81, col 10 to line 81, col 39 of module MultiProc2: 100\n" +
+				"  line 82, col 20 to line 82, col 43 of module MultiProc2: 0\n" +
+				"  line 85, col 10 to line 85, col 35 of module MultiProc2: 100\n" +
+				"  line 86, col 10 to line 86, col 39 of module MultiProc2: 100\n" +
+				"  line 87, col 20 to line 87, col 52 of module MultiProc2: 0\n" +
+				"  line 92, col 10 to line 92, col 41 of module MultiProc2: 4\n" +
+				"  line 93, col 20 to line 93, col 58 of module MultiProc2: 0\n" +
+				"  line 98, col 19 to line 98, col 68 of module MultiProc2: 200\n" +
+				"  line 99, col 19 to line 103, col 67 of module MultiProc2: 200");
 	}
 }
 /*

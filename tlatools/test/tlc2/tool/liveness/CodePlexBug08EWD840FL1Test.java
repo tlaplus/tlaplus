@@ -102,5 +102,19 @@ public class CodePlexBug08EWD840FL1Test extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
 		assertBackToState(1);
+
+	assertCoverage("  line 32, col 6 to line 32, col 16 of module EWD840: 448\n" +
+		"  line 33, col 6 to line 33, col 22 of module EWD840: 448\n" +
+		"  line 34, col 6 to line 34, col 21 of module EWD840: 448\n" +
+		"  line 35, col 6 to line 35, col 43 of module EWD840: 448\n" +
+		"  line 49, col 6 to line 49, col 16 of module EWD840: 2030\n" +
+		"  line 50, col 6 to line 50, col 61 of module EWD840: 2030\n" +
+		"  line 51, col 6 to line 51, col 21 of module EWD840: 2030\n" +
+		"  line 52, col 6 to line 52, col 43 of module EWD840: 2030\n" +
+		"  line 63, col 12 to line 63, col 48 of module EWD840: 9363\n" +
+		"  line 64, col 12 to line 64, col 68 of module EWD840: 9363\n" +
+		"  line 65, col 16 to line 65, col 31 of module EWD840: 0\n" +
+		"  line 70, col 6 to line 70, col 43 of module EWD840: 3121\n" +
+		"  line 71, col 16 to line 71, col 38 of module EWD840: 0");
 	}
 }

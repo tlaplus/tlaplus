@@ -46,6 +46,12 @@ public class SimpleLoopTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "13", "12", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "12"));
+
+		assertCoverage("  line 26, col 20 to line 26, col 27 of module SimpleLoop: 10\n" +
+			"  line 30, col 20 to line 30, col 28 of module SimpleLoop: 10\n" +
+			"  line 31, col 20 to line 31, col 31 of module SimpleLoop: 1\n" +
+			"  line 32, col 20 to line 32, col 25 of module SimpleLoop: 1\n" +
+			"  line 36, col 41 to line 36, col 44 of module SimpleLoop: 0");
 	}
 }
 /*

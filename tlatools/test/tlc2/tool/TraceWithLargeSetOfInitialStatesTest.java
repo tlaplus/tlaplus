@@ -54,5 +54,8 @@ public class TraceWithLargeSetOfInitialStatesTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 1\n/\\ y = FALSE");
 		expectedTrace.add("/\\ x = 1\n/\\ y = TRUE");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+
+	assertCoverage("  line 6, col 42 to line 6, col 47 of module TraceWithLargeSetOfInitialStatesTest: 1\n" +
+		"  line 6, col 52 to line 6, col 60 of module TraceWithLargeSetOfInitialStatesTest: 1");
 	}
 }

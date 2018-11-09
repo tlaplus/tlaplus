@@ -51,5 +51,7 @@ public class MinimalSetOfInitStatesTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "6"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "6", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "0"));
+
+	assertCoverage("  line 61, col 19 to line 61, col 19 of module MinimalSetOfInitStates: 6");
 	}
 }

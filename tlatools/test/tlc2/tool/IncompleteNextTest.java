@@ -62,5 +62,7 @@ public class IncompleteNextTest extends ModelCheckerTestCase {
 		final List<Object> records = recorder.getRecords(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
 		assertEquals(" is", ((String[]) records.get(0))[0]);
 		assertEquals("y", ((String[]) records.get(0))[1]);
+
+	assertCoverage("  line 6, col 30 to line 6, col 35 of module IncompleteNext: 0");
 	}
 }

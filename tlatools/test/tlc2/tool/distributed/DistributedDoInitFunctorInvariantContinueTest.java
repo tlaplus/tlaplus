@@ -46,5 +46,7 @@ public class DistributedDoInitFunctorInvariantContinueTest extends ModelCheckerT
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "NotNine", "x = 9\n"));
+
+	assertCoverage("  line 9, col 9 to line 9, col 14 of module DoInitFunctorInvariant: 11");
 	}
 }

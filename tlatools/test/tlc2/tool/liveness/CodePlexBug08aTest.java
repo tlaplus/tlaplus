@@ -71,5 +71,10 @@ public class CodePlexBug08aTest extends ModelCheckerTestCase {
 		
 		// Assert the error trace contains a stuttering step at position 5
 		assertStuttering(9);
+
+	assertCoverage("  line 12, col 9 to line 12, col 15 of module CodeplexBug8: 5\n" +
+		"  line 13, col 9 to line 13, col 18 of module CodeplexBug8: 5\n" +
+		"  line 8, col 9 to line 8, col 15 of module CodeplexBug8: 5\n" +
+		"  line 9, col 19 to line 9, col 19 of module CodeplexBug8: 5");
 	}
 }

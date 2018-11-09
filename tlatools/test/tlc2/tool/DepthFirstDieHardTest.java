@@ -60,5 +60,25 @@ public class DepthFirstDieHardTest extends ModelCheckerTestCase {
 		
 		expectedTrace.add("/\\ action = \"pour big to small\"\n/\\ smallBucket = 3\n/\\ bigBucket = 4\n/\\ water_to_pour = 1");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT1), expectedTrace);
+		assertCoverage("  line 58, col 19 to line 58, col 36 of module DieHard: 53\n" +
+				"  line 59, col 19 to line 59, col 32 of module DieHard: 53\n" +
+				"  line 60, col 29 to line 60, col 58 of module DieHard: 0\n" +
+				"  line 61, col 19 to line 61, col 37 of module DieHard: 53\n" +
+				"  line 62, col 19 to line 62, col 32 of module DieHard: 53\n" +
+				"  line 63, col 29 to line 63, col 58 of module DieHard: 0\n" +
+				"  line 64, col 19 to line 64, col 38 of module DieHard: 53\n" +
+				"  line 65, col 19 to line 65, col 34 of module DieHard: 53\n" +
+				"  line 66, col 29 to line 66, col 56 of module DieHard: 0\n" +
+				"  line 67, col 19 to line 67, col 39 of module DieHard: 53\n" +
+				"  line 68, col 19 to line 68, col 34 of module DieHard: 53\n" +
+				"  line 69, col 29 to line 69, col 56 of module DieHard: 0\n" +
+				"  line 70, col 19 to line 70, col 40 of module DieHard: 53\n" +
+				"  line 71, col 19 to line 71, col 66 of module DieHard: 53\n" +
+				"  line 72, col 19 to line 72, col 61 of module DieHard: 53\n" +
+				"  line 73, col 19 to line 73, col 57 of module DieHard: 53\n" +
+				"  line 74, col 19 to line 74, col 40 of module DieHard: 52\n" +
+				"  line 75, col 19 to line 75, col 66 of module DieHard: 52\n" +
+				"  line 76, col 19 to line 76, col 61 of module DieHard: 52\n" +
+				"  line 77, col 19 to line 77, col 57 of module DieHard: 52");
 	}
 }

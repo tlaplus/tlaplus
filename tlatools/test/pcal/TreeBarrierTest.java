@@ -46,6 +46,42 @@ public class TreeBarrierTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5414", "2095", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "106"));
+
+		assertCoverage("  line 100, col 16 to line 100, col 47 of module TreeBarrier: 78\n" +
+			"  line 101, col 26 to line 101, col 41 of module TreeBarrier: 0\n" +
+			"  line 105, col 16 to line 105, col 63 of module TreeBarrier: 639\n" +
+			"  line 106, col 16 to line 106, col 47 of module TreeBarrier: 639\n" +
+			"  line 107, col 26 to line 107, col 44 of module TreeBarrier: 0\n" +
+			"  line 110, col 16 to line 110, col 69 of module TreeBarrier: 639\n" +
+			"  line 111, col 16 to line 111, col 48 of module TreeBarrier: 639\n" +
+			"  line 112, col 26 to line 112, col 50 of module TreeBarrier: 0\n" +
+			"  line 120, col 70 to line 120, col 73 of module TreeBarrier: 0\n" +
+			"  line 52, col 17 to line 52, col 50 of module TreeBarrier: 725\n" +
+			"  line 53, col 27 to line 53, col 54 of module TreeBarrier: 0\n" +
+			"  line 57, col 18 to line 57, col 49 of module TreeBarrier: 725\n" +
+			"  line 58, col 28 to line 58, col 55 of module TreeBarrier: 0\n" +
+			"  line 62, col 27 to line 62, col 58 of module TreeBarrier: 279\n" +
+			"  line 63, col 27 to line 63, col 58 of module TreeBarrier: 446\n" +
+			"  line 64, col 26 to line 64, col 53 of module TreeBarrier: 0\n" +
+			"  line 68, col 16 to line 68, col 65 of module TreeBarrier: 66\n" +
+			"  line 69, col 16 to line 69, col 47 of module TreeBarrier: 66\n" +
+			"  line 70, col 26 to line 70, col 44 of module TreeBarrier: 0\n" +
+			"  line 74, col 16 to line 74, col 69 of module TreeBarrier: 16\n" +
+			"  line 75, col 16 to line 75, col 47 of module TreeBarrier: 16\n" +
+			"  line 76, col 26 to line 76, col 44 of module TreeBarrier: 0\n" +
+			"  line 79, col 16 to line 79, col 63 of module TreeBarrier: 462\n" +
+			"  line 80, col 16 to line 80, col 47 of module TreeBarrier: 462\n" +
+			"  line 81, col 26 to line 81, col 44 of module TreeBarrier: 0\n" +
+			"  line 85, col 27 to line 85, col 53 of module TreeBarrier: 12\n" +
+			"  line 86, col 27 to line 86, col 58 of module TreeBarrier: 12\n" +
+			"  line 87, col 27 to line 87, col 58 of module TreeBarrier: 1005\n" +
+			"  line 88, col 27 to line 88, col 32 of module TreeBarrier: 1005\n" +
+			"  line 89, col 26 to line 89, col 50 of module TreeBarrier: 0\n" +
+			"  line 93, col 27 to line 93, col 58 of module TreeBarrier: 78\n" +
+			"  line 94, col 27 to line 94, col 58 of module TreeBarrier: 243\n" +
+			"  line 95, col 26 to line 95, col 53 of module TreeBarrier: 0\n" +
+			"  line 98, col 16 to line 98, col 66 of module TreeBarrier: 78\n" +
+			"  line 99, col 16 to line 99, col 52 of module TreeBarrier: 78");
 	}
 }
 /*

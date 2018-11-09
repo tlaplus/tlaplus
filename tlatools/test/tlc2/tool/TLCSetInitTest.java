@@ -42,5 +42,7 @@ public class TLCSetInitTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertFalse(recorder.recorded(EC.GENERAL));
+
+	assertCoverage("  line 7, col 19 to line 7, col 28 of module TLCSetInit: 9");
 	}
 }

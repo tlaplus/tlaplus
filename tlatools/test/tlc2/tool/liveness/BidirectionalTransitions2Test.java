@@ -44,5 +44,9 @@ public class BidirectionalTransitions2Test extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "4", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
+
+	assertCoverage("  line 19, col 6 to line 19, col 21 of module BidirectionalTransitions: 4\n" +
+		"  line 20, col 20 to line 20, col 25 of module BidirectionalTransitions: 1\n" +
+		"  line 20, col 33 to line 20, col 42 of module BidirectionalTransitions: 3");
 	}
 }

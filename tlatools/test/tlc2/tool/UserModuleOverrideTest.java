@@ -48,5 +48,7 @@ public class UserModuleOverrideTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
+
+	assertCoverage("  line 9, col 9 to line 9, col 17 of module UserModuleOverride: 1");
 	}
 }

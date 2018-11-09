@@ -55,5 +55,7 @@ public class DoInitFunctorInvariantMinimalErrorStackTest extends ModelCheckerTes
 				+ "2. Line 9, column 6 to line 9, column 13 in DoInitFunctorMinimalErrorStack\n"
 				+ "3. Line 14, column 8 to line 14, column 13 in DoInitFunctorMinimalErrorStack\n\n";
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_NESTED_EXPRESSION, errorStack));
+
+	assertCoverage("  line 11, col 30 to line 11, col 33 of module DoInitFunctorMinimalErrorStack: 0");
 	}
 }

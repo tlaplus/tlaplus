@@ -46,6 +46,15 @@ public class Dijkstra1Test extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "16775", "5510", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "10"));
+		
+		assertCoverage("  line 43, col 10 to line 43, col 38 of module Dijkstra1: 740\n" + 
+				"  line 44, col 10 to line 44, col 15 of module Dijkstra1: 740\n" + 
+				"  line 47, col 10 to line 47, col 46 of module Dijkstra1: 1580\n" + 
+				"  line 48, col 10 to line 48, col 38 of module Dijkstra1: 1580\n" + 
+				"  line 54, col 16 to line 54, col 47 of module Dijkstra1: 6765\n" + 
+				"  line 55, col 16 to line 55, col 21 of module Dijkstra1: 6765\n" + 
+				"  line 58, col 16 to line 58, col 52 of module Dijkstra1: 7065\n" + 
+				"  line 59, col 16 to line 59, col 47 of module Dijkstra1: 7065");
 	}
 }
 /*

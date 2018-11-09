@@ -53,5 +53,17 @@ public class NoSymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertFalse(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
+
+	assertCoverage("  line 10, col 39 to line 10, col 58 of module SymmetryLivenessTableau: 3528\n" +
+		"  line 11, col 39 to line 11, col 58 of module SymmetryLivenessTableau: 756\n" +
+		"  line 38, col 20 to line 38, col 49 of module SymmetryLivenessTableau: 3528\n" +
+		"  line 39, col 20 to line 39, col 52 of module SymmetryLivenessTableau: 3528\n" +
+		"  line 40, col 24 to line 40, col 26 of module SymmetryLivenessTableau: 3528\n" +
+		"  line 44, col 6 to line 46, col 22 of module SymmetryLivenessTableau: 1200\n" +
+		"  line 47, col 6 to line 49, col 55 of module SymmetryLivenessTableau: 1200\n" +
+		"  line 50, col 6 to line 50, col 38 of module SymmetryLivenessTableau: 1200\n" +
+		"  line 51, col 16 to line 51, col 21 of module SymmetryLivenessTableau: 1200\n" +
+		"  line 55, col 14 to line 55, col 44 of module SymmetryLivenessTableau: 756\n" +
+		"  line 56, col 24 to line 56, col 35 of module SymmetryLivenessTableau: 0");
 	}
 }

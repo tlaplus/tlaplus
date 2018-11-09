@@ -61,5 +61,8 @@ public class Test3 extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		assertBackToState(1);
+
+	assertCoverage("  line 10, col 21 to line 10, col 33 of module Test3: 2\n" +
+		"  line 11, col 14 to line 11, col 19 of module Test3: 2");
 	}
 }

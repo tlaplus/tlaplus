@@ -70,5 +70,10 @@ public class LoopTestForcedPartial extends ModelCheckerTestCase {
 		
 		// Stuttering after the init state.
 		assertStuttering(2);
+
+	assertCoverage("  line 10, col 17 to line 10, col 22 of module SystemLoop: 1\n" +
+		"  line 11, col 17 to line 11, col 22 of module SystemLoop: 1\n" +
+		"  line 12, col 19 to line 12, col 24 of module SystemLoop: 1\n" +
+		"  line 13, col 18 to line 13, col 23 of module SystemLoop: 1");
 	}
 }

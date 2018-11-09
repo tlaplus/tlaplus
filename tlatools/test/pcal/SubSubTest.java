@@ -45,5 +45,11 @@ public class SubSubTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "8", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
+
+	assertCoverage("  line 42, col 17 to line 42, col 43 of module SubSub: 12\n" +
+		"  line 43, col 17 to line 43, col 55 of module SubSub: 12\n" +
+		"  line 44, col 17 to line 44, col 63 of module SubSub: 12\n" +
+		"  line 49, col 17 to line 49, col 50 of module SubSub: 12\n" +
+		"  line 55, col 70 to line 55, col 73 of module SubSub: 0");
 	}
 }

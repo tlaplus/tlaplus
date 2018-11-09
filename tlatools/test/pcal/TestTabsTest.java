@@ -45,6 +45,10 @@ public class TestTabsTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "2", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
+
+		assertCoverage("  line 29, col 9 to line 36, col 22 of module TestTabs: 1\n" +
+			"  line 38, col 9 to line 38, col 20 of module TestTabs: 1\n" +
+			"  line 42, col 41 to line 42, col 44 of module TestTabs: 0");
 	}
 }
 /*

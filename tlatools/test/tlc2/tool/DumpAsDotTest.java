@@ -61,6 +61,11 @@ public class DumpAsDotTest extends ModelCheckerTestCase {
 		// If the file exist, simply compare it to a correct and manually checked version.
 		final InputStream master = getClass().getResourceAsStream("DumpAsDotTest.dot");
 		assertTrue(Arrays.equals(getBytes(master), getBytes(new FileInputStream(dumpFile))));
+
+		assertCoverage("  line 12, col 9 to line 12, col 15 of module CodeplexBug8: 5\n" +
+			"  line 13, col 9 to line 13, col 18 of module CodeplexBug8: 5\n" +
+			"  line 8, col 9 to line 8, col 15 of module CodeplexBug8: 5\n" +
+			"  line 9, col 19 to line 9, col 19 of module CodeplexBug8: 5");
 	}
 	
 	// http://stackoverflow.com/a/17861016

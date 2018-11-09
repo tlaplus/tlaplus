@@ -46,6 +46,24 @@ public class SimpleLoopWithProcedureTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "66", "64", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "32"));
+
+		assertCoverage("  line 40, col 10 to line 40, col 26 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 41, col 10 to line 41, col 19 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 42, col 20 to line 42, col 48 of module SimpleLoopWithProcedure: 0\n" +
+			"  line 45, col 10 to line 45, col 29 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 46, col 10 to line 46, col 27 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 47, col 10 to line 47, col 33 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 48, col 10 to line 48, col 29 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 49, col 20 to line 49, col 35 of module SimpleLoopWithProcedure: 0\n" +
+			"  line 56, col 20 to line 56, col 29 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 57, col 23 to line 57, col 31 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 58, col 23 to line 62, col 40 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 63, col 20 to line 63, col 25 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 64, col 20 to line 64, col 29 of module SimpleLoopWithProcedure: 20\n" +
+			"  line 65, col 20 to line 65, col 31 of module SimpleLoopWithProcedure: 2\n" +
+			"  line 66, col 30 to line 66, col 52 of module SimpleLoopWithProcedure: 0\n" +
+			"  line 67, col 19 to line 67, col 31 of module SimpleLoopWithProcedure: 0\n" +
+			"  line 71, col 41 to line 71, col 44 of module SimpleLoopWithProcedure: 0");
 	}
 }
 /*

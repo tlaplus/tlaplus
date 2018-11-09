@@ -57,5 +57,7 @@ public class DoInitFunctorInvariantContinueTest extends ModelCheckerTestCase {
 			assertEquals("Inv", violation[0]);
 			assertEquals("x = " + (j+1) + "\n", violation[1]);
 		}
+
+	assertCoverage("  line 9, col 9 to line 9, col 14 of module DoInitFunctorInvariantContinue: 11");
 	}
 }

@@ -106,5 +106,19 @@ public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
 		assertBackToState(10);
+
+	assertCoverage("  line 59, col 6 to line 59, col 74 of module AgentRing: 60\n" +
+		"  line 60, col 16 to line 60, col 35 of module AgentRing: 0\n" +
+		"  line 67, col 18 to line 67, col 98 of module AgentRing: 16\n" +
+		"  line 68, col 18 to line 68, col 68 of module AgentRing: 16\n" +
+		"  line 70, col 18 to line 70, col 98 of module AgentRing: 16\n" +
+		"  line 71, col 18 to line 71, col 68 of module AgentRing: 16\n" +
+		"  line 73, col 18 to line 73, col 82 of module AgentRing: 28\n" +
+		"  line 74, col 28 to line 74, col 32 of module AgentRing: 28\n" +
+		"  line 75, col 16 to line 75, col 24 of module AgentRing: 60\n" +
+		"  line 78, col 6 to line 78, col 23 of module AgentRing: 120\n" +
+		"  line 79, col 16 to line 79, col 31 of module AgentRing: 0\n" +
+		"  line 83, col 27 to line 83, col 69 of module AgentRing: 120\n" +
+		"  line 84, col 16 to line 84, col 35 of module AgentRing: 0");
 	}
 }

@@ -39,5 +39,8 @@ public class Test216 extends SuiteETestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "28", "7", "0"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "21", "s", "7"));
 		assertFalse(recorder.recorded(EC.GENERAL));
+
+	assertCoverage("  line 12, col 22 to line 12, col 32 of module test216: 0\n" +
+		"  line 17, col 9 to line 17, col 18 of module test216: 7");
 	}
 }

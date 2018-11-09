@@ -46,5 +46,24 @@ public class FactorialTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "10", "9", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "9"));
+
+		assertCoverage("  line 39, col 21 to line 39, col 40 of module Factorial: 1\n" + 
+				"  line 40, col 21 to line 40, col 38 of module Factorial: 1\n" + 
+				"  line 41, col 21 to line 41, col 44 of module Factorial: 1\n" + 
+				"  line 42, col 21 to line 42, col 40 of module Factorial: 1\n" + 
+				"  line 43, col 31 to line 43, col 36 of module Factorial: 1\n" + 
+				"  line 44, col 21 to line 44, col 43 of module Factorial: 5\n" + 
+				"  line 45, col 21 to line 45, col 36 of module Factorial: 5\n" + 
+				"  line 46, col 21 to line 46, col 26 of module Factorial: 5\n" + 
+				"  line 47, col 21 to line 47, col 30 of module Factorial: 5\n" + 
+				"  line 48, col 21 to line 48, col 34 of module Factorial: 5\n" + 
+				"  line 53, col 13 to line 53, col 21 of module Factorial: 1\n" + 
+				"  line 54, col 13 to line 58, col 30 of module Factorial: 1\n" + 
+				"  line 59, col 10 to line 59, col 15 of module Factorial: 1\n" + 
+				"  line 60, col 10 to line 60, col 19 of module Factorial: 1\n" + 
+				"  line 61, col 20 to line 61, col 25 of module Factorial: 1\n" + 
+				"  line 65, col 10 to line 65, col 21 of module Factorial: 1\n" + 
+				"  line 66, col 20 to line 66, col 47 of module Factorial: 0\n" + 
+				"  line 70, col 41 to line 70, col 44 of module Factorial: 0");
 	}
 }

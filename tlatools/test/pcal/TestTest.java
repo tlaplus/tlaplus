@@ -46,5 +46,29 @@ public class TestTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "4", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
+
+	assertCoverage("  line 47, col 31 to line 47, col 37 of module Test: 0\n" +
+		"  line 48, col 31 to line 48, col 37 of module Test: 0\n" +
+		"  line 51, col 24 to line 51, col 30 of module Test: 0\n" +
+		"  line 52, col 9 to line 52, col 28 of module Test: 0\n" +
+		"  line 53, col 9 to line 53, col 28 of module Test: 0\n" +
+		"  line 54, col 9 to line 54, col 14 of module Test: 0\n" +
+		"  line 59, col 10 to line 59, col 15 of module Test: 1\n" +
+		"  line 60, col 10 to line 60, col 19 of module Test: 1\n" +
+		"  line 61, col 20 to line 61, col 33 of module Test: 0\n" +
+		"  line 68, col 43 to line 68, col 49 of module Test: 0\n" +
+		"  line 69, col 43 to line 69, col 49 of module Test: 0\n" +
+		"  line 72, col 36 to line 72, col 42 of module Test: 0\n" +
+		"  line 73, col 21 to line 73, col 26 of module Test: 0\n" +
+		"  line 74, col 21 to line 74, col 27 of module Test: 1\n" +
+		"  line 75, col 21 to line 75, col 26 of module Test: 1\n" +
+		"  line 76, col 10 to line 76, col 19 of module Test: 1\n" +
+		"  line 77, col 10 to line 77, col 23 of module Test: 1\n" +
+		"  line 83, col 32 to line 83, col 38 of module Test: 1\n" +
+		"  line 84, col 32 to line 84, col 38 of module Test: 0\n" +
+		"  line 87, col 25 to line 87, col 31 of module Test: 0\n" +
+		"  line 89, col 10 to line 89, col 21 of module Test: 1\n" +
+		"  line 90, col 20 to line 90, col 33 of module Test: 0\n" +
+		"  line 94, col 41 to line 94, col 44 of module Test: 0");
 	}
 }

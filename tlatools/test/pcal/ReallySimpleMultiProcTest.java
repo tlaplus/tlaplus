@@ -46,5 +46,19 @@ public class ReallySimpleMultiProcTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "144", "76", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "7"));
+
+	assertCoverage("  line 49, col 13 to line 49, col 38 of module ReallySimpleMultiProc: 36\n" +
+		"  line 50, col 13 to line 50, col 37 of module ReallySimpleMultiProc: 36\n" +
+		"  line 51, col 10 to line 51, col 39 of module ReallySimpleMultiProc: 36\n" +
+		"  line 52, col 20 to line 52, col 32 of module ReallySimpleMultiProc: 0\n" +
+		"  line 57, col 10 to line 57, col 41 of module ReallySimpleMultiProc: 4\n" +
+		"  line 58, col 20 to line 58, col 43 of module ReallySimpleMultiProc: 0\n" +
+		"  line 63, col 16 to line 63, col 48 of module ReallySimpleMultiProc: 48\n" +
+		"  line 64, col 16 to line 64, col 47 of module ReallySimpleMultiProc: 48\n" +
+		"  line 65, col 26 to line 65, col 44 of module ReallySimpleMultiProc: 0\n" +
+		"  line 68, col 16 to line 68, col 43 of module ReallySimpleMultiProc: 48\n" +
+		"  line 69, col 16 to line 69, col 49 of module ReallySimpleMultiProc: 48\n" +
+		"  line 70, col 26 to line 70, col 43 of module ReallySimpleMultiProc: 0\n" +
+		"  line 77, col 70 to line 77, col 73 of module ReallySimpleMultiProc: 0");
 	}
 }

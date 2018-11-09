@@ -129,6 +129,21 @@ public class RABTest extends PCalModelCheckerTestCase {
 				"/\\ flags = [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
 				"  B |-> [valid |-> FALSE, value |-> FALSE] ]");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+
+		assertCoverage("  line 165, col 20 to line 165, col 59 of module RAB: 220\n" +
+			"  line 167, col 29 to line 171, col 61 of module RAB: 150\n" +
+			"  line 172, col 29 to line 172, col 68 of module RAB: 150\n" +
+			"  line 173, col 29 to line 173, col 67 of module RAB: 70\n" +
+			"  line 174, col 29 to line 174, col 40 of module RAB: 70\n" +
+			"  line 175, col 28 to line 175, col 44 of module RAB: 0\n" +
+			"  line 179, col 23 to line 179, col 56 of module RAB: 103\n" +
+			"  line 180, col 33 to line 180, col 63 of module RAB: 0\n" +
+			"  line 183, col 24 to line 183, col 73 of module RAB: 127\n" +
+			"  line 184, col 24 to line 184, col 63 of module RAB: 127\n" +
+			"  line 185, col 34 to line 185, col 58 of module RAB: 0\n" +
+			"  line 188, col 24 to line 188, col 42 of module RAB: 97\n" +
+			"  line 189, col 24 to line 189, col 62 of module RAB: 97\n" +
+			"  line 190, col 34 to line 190, col 57 of module RAB: 0");
 	}
 }
 /*

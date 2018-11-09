@@ -68,5 +68,10 @@ public class CodePlexBug08Test extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
 		assertStuttering(7);
+
+	assertCoverage("  line 12, col 9 to line 12, col 15 of module CodeplexBug8: 5\n" +
+		"  line 13, col 9 to line 13, col 18 of module CodeplexBug8: 5\n" +
+		"  line 8, col 9 to line 8, col 15 of module CodeplexBug8: 5\n" +
+		"  line 9, col 19 to line 9, col 19 of module CodeplexBug8: 5");
 	}
 }

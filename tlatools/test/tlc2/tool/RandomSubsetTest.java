@@ -84,5 +84,8 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 		assertEquals(firstY.val, ((IntValue) secondState.get(UniqueString.uniqueStringOf("y"))).val);
 		// Check z is false
 		assertEquals(BoolValue.ValFalse, (BoolValue) secondState.get(UniqueString.uniqueStringOf("z")));
+
+	assertCoverage("  line 10, col 22 to line 10, col 29 of module RandomSubset: 0\n" +
+		"  line 11, col 12 to line 11, col 21 of module RandomSubset: 1");
 	}
 }

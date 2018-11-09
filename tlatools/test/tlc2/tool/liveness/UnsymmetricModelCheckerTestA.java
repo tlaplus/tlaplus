@@ -62,5 +62,9 @@ public class UnsymmetricModelCheckerTestA extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
 		assertBackToState(1);
+
+	assertCoverage("  line 18, col 31 to line 18, col 36 of module Unsymmetric: 1\n" +
+		"  line 19, col 31 to line 19, col 36 of module Unsymmetric: 0\n" +
+		"  line 8, col 15 to line 8, col 22 of module Unsymmetric: 2");
 	}
 }

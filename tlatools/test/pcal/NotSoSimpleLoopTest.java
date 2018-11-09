@@ -46,6 +46,14 @@ public class NotSoSimpleLoopTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "13", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "13"));
+
+		assertCoverage("  line 28, col 20 to line 28, col 27 of module NotSoSimpleLoop: 10\n" +
+			"  line 32, col 20 to line 32, col 28 of module NotSoSimpleLoop: 10\n" +
+			"  line 33, col 20 to line 33, col 27 of module NotSoSimpleLoop: 1\n" +
+			"  line 36, col 20 to line 36, col 28 of module NotSoSimpleLoop: 1\n" +
+			"  line 40, col 9 to line 40, col 20 of module NotSoSimpleLoop: 1\n" +
+			"  line 41, col 9 to line 41, col 14 of module NotSoSimpleLoop: 1\n" +
+			"  line 45, col 41 to line 45, col 44 of module NotSoSimpleLoop: 0");
 	}
 }
 /*

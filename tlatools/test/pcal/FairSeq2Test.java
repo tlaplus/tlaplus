@@ -46,5 +46,11 @@ public class FairSeq2Test extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "13", "12", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "12"));
+
+		assertCoverage("  line 24, col 24 to line 24, col 31 of module FairSeq2: 10\n" + 
+				"  line 25, col 24 to line 25, col 36 of module FairSeq2: 10\n" + 
+				"  line 26, col 24 to line 26, col 35 of module FairSeq2: 1\n" + 
+				"  line 27, col 24 to line 27, col 29 of module FairSeq2: 1\n" + 
+				"  line 31, col 41 to line 31, col 44 of module FairSeq2: 0");
 	}
 }

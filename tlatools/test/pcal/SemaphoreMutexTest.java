@@ -46,6 +46,15 @@ public class SemaphoreMutexTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "73", "32", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "6"));
+
+		assertCoverage("  line 44, col 19 to line 44, col 53 of module SemaphoreMutex: 36\n" +
+			"  line 45, col 19 to line 45, col 28 of module SemaphoreMutex: 36\n" +
+			"  line 49, col 19 to line 49, col 32 of module SemaphoreMutex: 12\n" +
+			"  line 50, col 19 to line 50, col 50 of module SemaphoreMutex: 12\n" +
+			"  line 54, col 16 to line 54, col 49 of module SemaphoreMutex: 12\n" +
+			"  line 55, col 16 to line 55, col 25 of module SemaphoreMutex: 12\n" +
+			"  line 58, col 18 to line 58, col 31 of module SemaphoreMutex: 12\n" +
+			"  line 59, col 18 to line 59, col 52 of module SemaphoreMutex: 12");
 	}
 }
 /*
