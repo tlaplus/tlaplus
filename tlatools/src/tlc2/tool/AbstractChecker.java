@@ -225,6 +225,13 @@ public abstract class AbstractChecker implements Cancelable
     
     public static final void reportSuccess(final long numOfDistinctStates, final long actualDistance, final long numOfGenStates) throws IOException
     {
+    	// Prevent div-by-zero when calculating collision probabilities when no states are generated.
+    	if (numOfDistinctStates == numOfGenStates && numOfGenStates == 0) {
+			// When the number of states is zero, printing a collision probability is
+			// useless anyway. But the Toolbox will probably crash if omitted.
+            MP.printMessage(EC.TLC_SUCCESS, new String[] { "val = 0.0", "val = 0.0" });
+    		return;
+    	}
         // shown as 'calculated' in Toolbox
         final double optimisticProb = numOfDistinctStates * ((numOfGenStates - numOfDistinctStates) / Math.pow(2, 64));
         /* The following code added by LL on 3 Aug 2009 to print probabilities
