@@ -233,10 +233,13 @@ public class TLC
             // the email has failed, the result would be lost.
 			if (!success) {
 				System.exit(1);
-			}
+			} else {
+                System.exit(0);
+            }
+        } else {
+            // terminate
+            System.exit(2);
         }
-        // terminate
-        System.exit(0);
     }
 
     /**

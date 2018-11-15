@@ -284,7 +284,12 @@ class trans
      */
     public static void main(String[] args)
     {
-        runMe(args);
+        TLAtoPCalMapping mapping = runMe(args);
+        if (mapping == null) {
+            System.exit(1);
+        } else {
+            System.exit(0);
+        }
     }
 
     /**
@@ -877,7 +882,7 @@ class trans
 //            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
             return null ; // added for testing
         }
-        // } // end else of if (PcalParams.fromPcalFile) -- i.e., end processing
+        // end else of if (PcalParams.fromPcalFile) -- i.e., end processing
         // of .tla input file.
 
         /*********************************************************************

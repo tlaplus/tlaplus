@@ -129,15 +129,6 @@ public class SANY {
       if (doSemanticAnalysis) 
             {frontEndSemanticAnalysis(spec, syserr, doLevelChecking);} ;
     }
-    catch (InitException ie) {
-      return;
-    }
-    catch (ParseException pe) {
-      return;
-    }
-    catch (SemanticException se) {
-      return;
-    }
     catch (Exception e) {
       // e.printStackTrace(syserr);
       syserr.println(e.toString());
@@ -412,7 +403,7 @@ public class SANY {
            doStats      = !doStats;      
       else {
         ToolIO.out.println("Illegal switch: " + args[i]);
-        System.exit(-1);
+        System.exit(1);
       }
     }
 
@@ -439,10 +430,11 @@ public class SANY {
               frontEndMain(spec, args[i], ToolIO.out);
             }
             catch (FrontEndException fe) {
-              // For debugging
-              fe.printStackTrace();   
-              ToolIO.out.println(fe);
-              return;
+                // For debugging
+                fe.printStackTrace();
+                ToolIO.out.println(fe);
+                System.exit(2);
+                return;
             }
 
             // Compile operator usage stats
