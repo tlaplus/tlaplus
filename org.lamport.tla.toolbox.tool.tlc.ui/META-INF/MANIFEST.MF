@@ -28,3 +28,4 @@ Export-Package: org.lamport.tla.toolbox.tool.tlc.output;x-friends:="org.lamport.
  org.lamport.tla.toolbox.tool.tlc.ui.editor;x-friends:="org.lamport.tla.toolbox.tool.tlc.ui.uitest",
  org.lamport.tla.toolbox.tool.tlc.ui.util;x-friends:="org.lamport.tla.toolbox.tool.tlc.ui.test"
 Bundle-ClassPath: .
+Automatic-Module-Name: org.lamport.tla.toolbox.tool.tlc.ui

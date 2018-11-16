@@ -24,3 +24,4 @@ Bundle-Activator: org.lamport.tla.toolbox.StandaloneActivator
 Export-Package: org.lamport.tla.toolbox.lifecycle,
  org.lamport.tla.toolbox.ui.intro
 Import-Package: org.eclipse.equinox.p2.core
+Automatic-Module-Name: org.lamport.tla.toolbox.product.standalone

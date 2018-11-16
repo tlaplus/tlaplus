@@ -12,3 +12,4 @@ Require-Bundle: org.lamport.tla.toolbox;bundle-version="1.0.0",
  org.eclipse.help.ui;bundle-version="4.0.100",
  org.eclipse.core.resources;bundle-version="3.10.1"
 Bundle-Activator: org.lamport.tla.toolbox.doc.HelpActivator
+Automatic-Module-Name: org.lamport.tla.toolbox.doc

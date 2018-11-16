@@ -21,3 +21,4 @@ Import-Package: org.jclouds.aws.ec2.compute;version="2.1.0",
  org.jclouds.aws.ec2.reference;version="1.7.3",
  org.jclouds.ec2.reference;version="1.7.3",
  org.lamport.tla.toolbox.tool.tlc.job;resolution:=optional
+Automatic-Module-Name: org.lamport.tla.toolbox.jclouds

@@ -21,3 +21,4 @@ Eclipse-SupplementBundle: org.lamport.tla.toolbox*
 Export-Package: org.lamport.tla.toolbox.test,
  org.lamport.tla.toolbox.test.threading,
  org.lamport.tla.toolbox.ui.wizard
+Automatic-Module-Name: org.lamport.tla.toolbox.uitest

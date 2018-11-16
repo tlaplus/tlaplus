@@ -9,3 +9,5 @@ Service-Component: OSGi-INF/workerConsumer.xml,
  OSGi-INF/fpsetConsumer.xml
 Import-Package: org.osgi.framework;version="1.6.0",
  org.osgi.service.packageadmin
+Automatic-Module-Name: org.lamport.tlatools.consumer.distributed
+Bundle-ActivationPolicy: lazy

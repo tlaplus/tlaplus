@@ -42,3 +42,4 @@ Require-Bundle: org.aspectj.runtime;bundle-version="1.6.0";resolution:=optional;
  javax.mail;bundle-version="1.4.0";resolution:=optional,
  org.easymock;bundle-version="2.4.0";resolution:=optional
 Bundle-ClassPath: .
+Automatic-Module-Name: org.lamport.tlatools

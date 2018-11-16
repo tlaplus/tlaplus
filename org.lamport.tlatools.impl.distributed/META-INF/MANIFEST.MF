@@ -11,3 +11,4 @@ Service-Component: OSGI-INF/worker.xml,
  OSGI-INF/fpset.xml
 Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe
 Import-Package: org.osgi.framework;version="1.5.0"
+Automatic-Module-Name: org.lamport.tlatools.impl.distributed

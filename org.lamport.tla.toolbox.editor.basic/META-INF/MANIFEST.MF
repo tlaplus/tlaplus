@@ -26,3 +26,4 @@ Export-Package: org.lamport.tla.toolbox.editor.basic,
  org.lamport.tla.toolbox.editor.basic.handlers;x-friends:="org.lamport.tla.toolbox",
  org.lamport.tla.toolbox.editor.basic.tla,
  org.lamport.tla.toolbox.editor.basic.util
+Automatic-Module-Name: org.lamport.tla.toolbox.editor.basic
