@@ -274,7 +274,7 @@ class trans
     /** Status indicating no errors and successful process */
     static final int STATUS_OK = 1;
     /** Status of no errors, but abort of the translation */
-    private static final int STATUS_EXIT_WITHOUT_ERROR = 0;
+    static final int STATUS_EXIT_WITHOUT_ERROR = 0;
     /** Status of present errors and abort of the translation */
     static final int STATUS_EXIT_WITH_ERRORS = -1;
 
@@ -298,16 +298,7 @@ class trans
      * value was not being used.)  If the translation fails, it returns
      * null.
      */
-    /**
-     * @param args
-     * @return
-     */
-    /**
-     * @param args
-     * @return
-     */
-//    public static int runMe(String[] args)  
-    public static TLAtoPCalMapping runMe(String[] args)   // added for testing
+    public static int runMe(String[] args)  
     {
         /*********************************************************************
         * Get and print version number.                                      *
@@ -335,20 +326,11 @@ class trans
         /*********************************************************************
         * Get and process arguments.                                         
         *********************************************************************/
-        
-        /**
-         * Create the new TLAtoPCalMapping object, call it mapping
-         * here and set PcalParams.tlaPcalMapping to point to it.
-         */
-        TLAtoPCalMapping mapping = new TLAtoPCalMapping() ;
-        PcalParams.tlaPcalMapping = mapping;
-        
         int status = parseAndProcessArguments(args);
 
         if (status != STATUS_OK)
         {
-//            return exitWithStatus(status);
-            return new TLAtoPCalMapping() ; // added for testing
+            return exitWithStatus(status);
         }
 
         /*********************************************************************
@@ -363,8 +345,7 @@ class trans
         } catch (FileToStringVectorException e)
         {
             PcalDebug.reportError(e);
-//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-            return null ; // added for testing
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         }
 
         /*********************************************************************
@@ -372,9 +353,9 @@ class trans
         * which was not always the case in the aborted version 1.31.         *
         *********************************************************************/
         // Vector outputVec = PcalParams.fromPcalFile ? new Vector() : inputVec;
-        final Vector<String> outputVec = runMe(inputVec, mapping);
+        final Vector<String> outputVec = runMe(inputVec);
         if (outputVec == null) {
-        	return null;
+        	return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         }
         
         /*********************************************************************
@@ -398,8 +379,7 @@ class trans
         {
             PcalDebug.reportError("Could not rename input file " + PcalParams.TLAInputFile + ".tla" + " to "
                     + PcalParams.TLAInputFile + ".old");
-//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-            return null ; // added for testing
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         }
         ;
         // }
@@ -439,8 +419,7 @@ class trans
         } catch (StringVectorToFileException e)
         {
             PcalDebug.reportError(e);
-//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-            return null ; // added for testing
+            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         }
 
         PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".tla" + " written.");
@@ -461,8 +440,7 @@ class trans
                 } catch (FileToStringVectorException e)
                 {
                     PcalDebug.reportError(e);
-//                    return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-                    return null ; // added for testing
+                    return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
                 }
             } else
             {
@@ -570,18 +548,23 @@ class trans
             } catch (StringVectorToFileException e)
             {
                 PcalDebug.reportError(e);
-//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-                return null ; // added for testing
+                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
             }
             PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".cfg" + " written.");
         }
         ;
 
-//        return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
-        return PcalParams.tlaPcalMapping ; // added for testing
+        return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
     } // END main
 
-    public static Vector<String> runMe(final Vector<String> inputVec, final TLAtoPCalMapping mapping) {
+    public static Vector<String> runMe(final Vector<String> inputVec) {
+        /**
+         * Create the new TLAtoPCalMapping object, call it mapping
+         * here and set PcalParams.tlaPcalMapping to point to it.
+         */
+        final TLAtoPCalMapping mapping = new TLAtoPCalMapping() ;
+        PcalParams.tlaPcalMapping = mapping;
+        
         /*********************************************************************
         * Set untabInputVec to be the vector of strings obtained from        *
         * inputVec by replacing tabs with spaces.                            *
@@ -691,7 +674,6 @@ class trans
             if (endTranslationLine == -1)
             {
                 PcalDebug.reportError("No line containing `" + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2);
-//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
                 return null;
             }
 
@@ -741,8 +723,7 @@ class trans
         if (!foundBegin)
         {
             PcalDebug.reportError("Beginning of algorithm string " + PcalParams.BeginAlg + " not found.");
-//            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-            return null ; // added for testing
+            return null;
         }
         ;
         
@@ -831,8 +812,7 @@ class trans
             
             if (notFound) {
             	PcalDebug.reportError("Algorithm not in properly terminated comment");
-//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-                return null ; // added for testing
+                return null;
             }
             
             // Report an error  if there's something else on the line that doesn't begin with "\*".  This is probably
@@ -841,8 +821,7 @@ class trans
             
             if (!endStuff.equals("") && !endStuff.startsWith("\\*")) {
             	PcalDebug.reportError("Text on same line following `*)' that ends the \n   comment containing the algorithm.");
-//                return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
-                return null ; // added for testing
+                return null ;
             } ;
             
             inputVec.insertElementAt("\\* BEGIN TRANSLATION", ecLine+1) ;
@@ -1003,7 +982,6 @@ class trans
      * If run in the system mode, exits the program, in tool mode returns the status
      * @param status
      */
-    @SuppressWarnings("unused")
 	private static int exitWithStatus(int status)
     {
         if (ToolIO.getMode() == ToolIO.SYSTEM)

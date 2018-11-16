@@ -68,7 +68,7 @@ public class Translator
 			in.add(line);
 		}
 		
-		final Vector<String> out = trans.runMe(in, PcalParams.tlaPcalMapping);
+		final Vector<String> out = trans.runMe(in);
 		if (out != null) {
 			final StringBuffer buf = new StringBuffer(out.size());
 			for (String line : out) {

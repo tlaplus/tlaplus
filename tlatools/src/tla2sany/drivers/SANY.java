@@ -114,7 +114,7 @@ public class SANY {
    * processing--those are reported in the returned specification
    * object, which must be checked as described above.
    */
-  public static final void frontEndMain(
+  public static final int frontEndMain(
                              SpecObj spec, 
                              String fileName, 
                              PrintStream syserr) throws FrontEndException {
@@ -130,20 +130,20 @@ public class SANY {
             {frontEndSemanticAnalysis(spec, syserr, doLevelChecking);} ;
     }
     catch (InitException ie) {
-      return;
+      return -1;
     }
     catch (ParseException pe) {
-      return;
+      return -1;
     }
     catch (SemanticException se) {
-      return;
+      return -1;
     }
     catch (Exception e) {
       // e.printStackTrace(syserr);
       syserr.println(e.toString());
       throw new FrontEndException(e);
     }
-    return;
+    return 0;
   }
 
   /** 
@@ -436,13 +436,16 @@ public class SANY {
       if (FileUtil.createNamedInputStream(args[i], spec.getResolver()) != null) 
       {
           try {
-              frontEndMain(spec, args[i], ToolIO.out);
+              int ret = frontEndMain(spec, args[i], ToolIO.out);
+			  if (ret != 0) {
+            	  System.exit(ret);
+              }
             }
             catch (FrontEndException fe) {
               // For debugging
               fe.printStackTrace();   
               ToolIO.out.println(fe);
-              return;
+              System.exit(-1);
             }
 
             // Compile operator usage stats
@@ -459,6 +462,7 @@ public class SANY {
       } else 
       {
           ToolIO.out.println("Cannot find the specified file " + args[i] + ".");
+          System.exit(-1);
       }
     }
   }

@@ -1,7 +1,6 @@
 package pcal;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -13,7 +12,8 @@ public class MissingBodyInWhileTest extends PCalTest {
 	
 	@Test
 	public void test() {
-		assertNull(trans.runMe(new String[] {"-nocfg", CommonTestCase.BASE_PATH + "MissingBodyInWhile.tla"}));
+		assertEquals(trans.STATUS_EXIT_WITH_ERRORS,
+				trans.runMe(new String[] {"-nocfg", CommonTestCase.BASE_PATH + "MissingBodyInWhile.tla"}));
 		
 		final String[] messages = ToolIO.getAllMessages();
 		assertTrue(messages.length == 1);

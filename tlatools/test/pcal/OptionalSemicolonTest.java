@@ -25,7 +25,7 @@
  ******************************************************************************/
 package pcal;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,7 +132,7 @@ public class OptionalSemicolonTest extends PCalTest {
 	}
 
 	private void test(final String filename, final String absolutePath) {
-		assertNotNull(trans.runMe(new String[] { "-nocfg", absolutePath }));
+		assertEquals(trans.STATUS_EXIT_WITHOUT_ERROR, trans.runMe(new String[] { "-nocfg", absolutePath }));
 
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
