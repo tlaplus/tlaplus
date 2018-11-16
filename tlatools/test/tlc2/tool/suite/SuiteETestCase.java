@@ -26,6 +26,7 @@
 
 package tlc2.tool.suite;
 import static org.junit.Assert.fail;
+
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;

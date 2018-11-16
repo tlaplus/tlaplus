@@ -7,9 +7,8 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 
-import tla2sany.st.Location;
-
 import junit.framework.TestCase;
+import tla2sany.st.Location;
 
 /**
  * Tests the regex matcher for generated ids

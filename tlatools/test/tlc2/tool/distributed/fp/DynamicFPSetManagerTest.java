@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.junit.Test;
+
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MemFPSet;
 import tlc2.util.BitVector;

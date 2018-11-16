@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.window.IShellProvider;
@@ -26,7 +25,6 @@ import org.lamport.tla.toolbox.tool.prover.ProverPreferenceInitializer;
 import org.lamport.tla.toolbox.tool.prover.job.ITLAPMOptions;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 /**

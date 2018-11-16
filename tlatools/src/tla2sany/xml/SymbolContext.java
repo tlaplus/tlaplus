@@ -1,11 +1,11 @@
 package tla2sany.xml;
 
-import tla2sany.semantic.SymbolNode;
-import tla2sany.semantic.TheoremNode;
-import tla2sany.semantic.AssumeNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+
+import tla2sany.semantic.AssumeNode;
+import tla2sany.semantic.SymbolNode;
+import tla2sany.semantic.TheoremNode;
 
 /* TL
  * This class is used to track the occurrence of SymbolNodes

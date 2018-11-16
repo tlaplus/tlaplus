@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
-
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
 /**

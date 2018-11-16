@@ -532,10 +532,8 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
-import tla2sany.semantic.SymbolTable;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
-import tla2sany.st.TreeNode;
 import util.UniqueString;
 
 public class DecomposeProofHandler extends AbstractHandler implements

@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.junit.Test;
+
 import tlc2.util.LongVec;
 
 public class ShortDiskFPSetTest extends AbstractFPSetTest {

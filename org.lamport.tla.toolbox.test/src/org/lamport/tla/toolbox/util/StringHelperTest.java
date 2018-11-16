@@ -27,6 +27,7 @@
 package org.lamport.tla.toolbox.util;
 
 import static org.junit.Assert.assertArrayEquals;
+
 import junit.framework.TestCase;
 
 public class StringHelperTest extends TestCase {

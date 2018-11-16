@@ -5,7 +5,6 @@ import java.util.Vector;
 import pcal.AST.VarDecl;
 import pcal.exception.PcalTLAGenException;
 import pcal.exception.TLAExprException;
-import tla2tex.Debug;
 
 /****************************************************************************
  * Given an exploded and disambiguated AST, generate the equivalent TLA+.

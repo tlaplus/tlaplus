@@ -3,48 +3,16 @@
 
 package tla2sany.xml;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * a tool for exporting the loaded modules to XML format
  */
 
 import java.io.PrintStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Iterator;
+import java.net.URL;
 import java.util.LinkedList;
 
-import tla2sany.drivers.SANY;
-import tla2sany.drivers.FrontEndException;
-import tla2sany.configuration.Configuration;
-import tla2sany.explorer.Explorer;
-import tla2sany.explorer.ExplorerQuitException;
-import tla2sany.modanalyzer.ParseUnit;
-import tla2sany.modanalyzer.SpecObj;
-import tla2sany.parser.ParseException;
-import tla2sany.semantic.AbortException;
-import tla2sany.semantic.BuiltInLevel;
-import tla2sany.semantic.Context;
-import tla2sany.semantic.Errors;
-import tla2sany.semantic.ExternalModuleTable;
-import tla2sany.semantic.Generator;
-import tla2sany.semantic.ModuleNode;
-import tla2sany.semantic.SemanticNode;
-import tla2sany.st.Location;
-import tla2sany.semantic.ModuleNode;
-import util.FileUtil;
-import util.ToolIO;
-import util.UniqueString;
-import util.FilenameToStream;
-import util.SimpleFilenameToStream;
-import tla2sany.semantic.SymbolNode;
-import tla2sany.semantic.AssumeNode;
-import tla2sany.semantic.TheoremNode;
-import tla2sany.semantic.InstanceNode;
-import tla2sany.semantic.OpDeclNode;
-import tla2sany.semantic.OpDefNode;
-
-
-// XML packages
-import java.io.File;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,16 +21,23 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import org.xml.sax.SAXException;
-import java.net.URL;
-import java.net.MalformedURLException;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import tla2sany.drivers.FrontEndException;
+import tla2sany.drivers.SANY;
+import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.ExternalModuleTable;
+import tla2sany.semantic.ModuleNode;
+import util.FileUtil;
+import util.FilenameToStream;
+import util.SimpleFilenameToStream;
+import util.ToolIO;
 
 public class XMLExporter {
 

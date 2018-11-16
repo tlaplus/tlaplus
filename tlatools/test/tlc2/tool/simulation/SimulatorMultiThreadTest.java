@@ -1,26 +1,5 @@
 package tlc2.tool.simulation;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.After;
-
-import tlc2.TLC;
-import tlc2.TLCGlobals;
-import tlc2.TestMPRecorder;
-import tlc2.output.EC;
-import tlc2.output.MP;
-import tlc2.tool.CommonTestCase;
-import tlc2.tool.Simulator;
-import tlc2.util.RandomGenerator;
-import util.FileUtil;
-import util.SimpleFilenameToStream;
-import util.ToolIO;
-
 /**
  * Correctness tests of a multi-threaded Simulator.
  * 

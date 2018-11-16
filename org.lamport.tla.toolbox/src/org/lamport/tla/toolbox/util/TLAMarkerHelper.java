@@ -24,7 +24,6 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
 import pcal.TLAtoPCalMapping;
-
 import tla2sany.st.Location;
 
 /**

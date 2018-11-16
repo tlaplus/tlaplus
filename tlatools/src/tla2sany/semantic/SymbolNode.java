@@ -2,11 +2,11 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import tla2sany.st.TreeNode;
-import util.UniqueString;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import tla2sany.st.TreeNode;
+import util.UniqueString;
 
 /**
  * Abstract class extended by classes that represent the meaning of an

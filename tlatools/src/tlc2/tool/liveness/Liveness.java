@@ -21,6 +21,7 @@ import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ContextEnumerator;
 import tlc2.tool.EvalControl;
+import tlc2.tool.ModelChecker;
 import tlc2.tool.Spec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;

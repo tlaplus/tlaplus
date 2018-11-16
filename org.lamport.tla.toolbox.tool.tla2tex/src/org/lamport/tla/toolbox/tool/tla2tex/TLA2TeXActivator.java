@@ -1,13 +1,13 @@
 package org.lamport.tla.toolbox.tool.tla2tex;
 
-import com.abstratt.graphviz.GraphVizActivator;
-import com.abstratt.graphviz.GraphVizActivator.DotMethod;
-
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.lamport.tla.toolbox.AbstractTLCActivator;
 import org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants;
 import org.osgi.framework.BundleContext;
+
+import com.abstratt.graphviz.GraphVizActivator;
+import com.abstratt.graphviz.GraphVizActivator.DotMethod;
 
 /**
  * The activator class controls the plug-in life cycle

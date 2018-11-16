@@ -1,8 +1,5 @@
 package org.lamport.tla.toolbox;
 
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.internal.WorkbenchWindow;
-
 /**
  * Window toolkit
  * @author Simon Zambrovski

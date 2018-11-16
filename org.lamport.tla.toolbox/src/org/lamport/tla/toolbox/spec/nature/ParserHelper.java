@@ -8,9 +8,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
-import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.spec.parser.SpecificationParserLauncher;
-import org.lamport.tla.toolbox.util.AdapterFactory;
 
 /**
  * Encapsulates parser launching methods

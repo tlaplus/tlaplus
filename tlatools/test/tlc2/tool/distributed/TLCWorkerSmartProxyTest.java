@@ -4,7 +4,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.rmi.RemoteException;
+
 import org.junit.Test;
+
 import tlc2.tool.TLCState;
 import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.selector.DummyTLCWorker;

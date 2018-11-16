@@ -6,6 +6,7 @@ import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,8 +14,6 @@ import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 import org.lamport.tla.toolbox.test.threading.MonitorAdaptor;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
-
-import org.junit.Assert;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class PDFHandlerThreadingTest {

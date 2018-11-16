@@ -1,10 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue.InputPair;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue.VariableValueParseException;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 public class TLCVariableValueTest extends TestCase
 {

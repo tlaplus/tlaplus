@@ -3,11 +3,10 @@ package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.eclipse.swt.custom.StyleRange;
 import org.junit.Test;
 
+import junit.framework.Assert;
 import tla2sany.st.Location;
 
 /**

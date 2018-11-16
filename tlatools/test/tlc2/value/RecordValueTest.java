@@ -29,6 +29,7 @@ package tlc2.value;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
 import util.InternTable;
 import util.UniqueString;
 

@@ -33,8 +33,8 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.lamport.tla.toolbox.editor.basic.pcal.PCalWordDetector;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper;
-import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.DocumentHelper.WordRegion;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 
 import tla2sany.modanalyzer.SpecObj;

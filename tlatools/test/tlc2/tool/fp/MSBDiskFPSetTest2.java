@@ -9,7 +9,9 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.NoSuchElementException;
+
 import org.junit.Test;
+
 import tlc2.tool.fp.MSBDiskFPSet.TLCIterator;
 
 public class MSBDiskFPSetTest2 extends AbstractHeapBasedDiskFPSetTest {

@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import tlc2.tool.fp.OffHeapDiskFPSet.Iterator;
-import util.TLCRuntime;
 
 public class OffHeapIteratorTest {
 	

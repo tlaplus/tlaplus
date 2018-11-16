@@ -1,10 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
-import junit.framework.TestCase;
-
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TypedRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.PartitionToolkit;
+
+import junit.framework.TestCase;
 
 /**
  * Tests of parsing toolkit

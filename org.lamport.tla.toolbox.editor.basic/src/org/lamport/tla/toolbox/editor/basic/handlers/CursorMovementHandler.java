@@ -7,15 +7,12 @@
  */
 package org.lamport.tla.toolbox.editor.basic.handlers;
 
-import javax.swing.text.BadLocationException;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;

@@ -129,7 +129,8 @@ public class Assert
         }
     }
 
-    public static class TLCRuntimeException extends RuntimeException {
+    @SuppressWarnings("serial")
+	public static class TLCRuntimeException extends RuntimeException {
 
 		public final int errorCode;
 

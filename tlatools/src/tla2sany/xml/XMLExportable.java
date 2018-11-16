@@ -2,12 +2,13 @@
 
 package tla2sany.xml;
 
+import org.w3c.dom.Document;
+
 /**
  * an interface for being able to export XML content
  */
 
 import org.w3c.dom.Element;
-import org.w3c.dom.Document;
 
 public interface XMLExportable {
 

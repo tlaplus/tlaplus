@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 
-import junit.framework.TestCase;
-
 import org.eclipse.core.internal.resources.LinkDescription;
 import org.eclipse.core.internal.resources.Project;
 import org.eclipse.core.internal.resources.ProjectDescription;
@@ -43,6 +41,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
+
+import junit.framework.TestCase;
 
 @SuppressWarnings("restriction")
 public class AddModuleHandlerTest extends TestCase {

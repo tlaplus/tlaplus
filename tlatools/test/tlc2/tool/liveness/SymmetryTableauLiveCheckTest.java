@@ -278,7 +278,6 @@ public class SymmetryTableauLiveCheckTest {
 	 * @param s The smallest state under symmetry
 	 * @param sSymmetric A symmetric state to s
 	 */
-	@SuppressWarnings("deprecation")
 	private ILiveCheck getLiveCheckWithTwoNodeTableauSymmetry(final TLCState s, final TLCState sSymmetric, final TLCState t) throws IOException {
 		final TBGraphNode node2 = EasyMock.createMock(TBGraphNode.class);
 		// consistency

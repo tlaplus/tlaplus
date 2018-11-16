@@ -7,10 +7,10 @@
 package tlc2.value;
 
 import tla2sany.semantic.SymbolNode;
-import tlc2.tool.FingerprintException;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.EvalControl;
+import tlc2.tool.FingerprintException;
 import tlc2.util.Context;
 import tlc2.util.FP64;
 import util.Assert;

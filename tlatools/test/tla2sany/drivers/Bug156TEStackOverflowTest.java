@@ -2,6 +2,7 @@ package tla2sany.drivers;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import util.SimpleFilenameToStream;

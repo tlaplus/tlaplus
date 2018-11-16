@@ -5,13 +5,13 @@ package tla2sany.semantic;
 import java.math.BigDecimal;
 import java.util.Hashtable;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * Describes a decimal like 1347.052.  This number is represented by the

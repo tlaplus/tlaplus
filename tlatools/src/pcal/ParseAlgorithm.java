@@ -108,11 +108,11 @@ package pcal;
 
 import java.util.Hashtable;
 import java.util.Vector;
+
 import pcal.exception.ParseAlgorithmException;
 import pcal.exception.TLAExprException;
 import pcal.exception.TokenizerException;
 import pcal.exception.UnrecoverableException;
-import tla2sany.parser.ParseError;
 import tla2tex.Debug;
 
 

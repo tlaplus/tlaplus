@@ -3,9 +3,11 @@ package tlc2.tool.queue;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import tlc2.tool.TLCState;
 
 public class DiskStateQueueTest extends StateQueueTest {

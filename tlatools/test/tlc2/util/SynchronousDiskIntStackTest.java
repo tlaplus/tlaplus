@@ -29,6 +29,7 @@ package tlc2.util;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+
 import org.junit.Test;
 
 public class SynchronousDiskIntStackTest {

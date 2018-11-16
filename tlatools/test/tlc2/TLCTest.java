@@ -5,11 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-import org.junit.Assume;
 import org.junit.Test;
 
-import tlc2.TLC;
-import tlc2.TLCGlobals;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import util.TLCRuntime;

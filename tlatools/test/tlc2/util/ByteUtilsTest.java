@@ -7,8 +7,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Random;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import util.ToolIO;
 
 /**

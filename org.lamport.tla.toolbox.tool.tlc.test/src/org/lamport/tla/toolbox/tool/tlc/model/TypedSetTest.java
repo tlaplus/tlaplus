@@ -1,7 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.model;
 
-import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
-
 import junit.framework.TestCase;
 
 /**

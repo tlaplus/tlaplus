@@ -26,8 +26,8 @@
 
 package tlc2.tool;
 
-import tlc2.value.Value;
 import tla2sany.semantic.SemanticNode;
+import tlc2.value.Value;
 
 public class FingerprintException extends RuntimeException {
 

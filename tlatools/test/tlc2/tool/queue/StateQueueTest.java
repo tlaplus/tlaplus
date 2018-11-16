@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import tlc2.tool.TLCState;
 
 public class StateQueueTest {
