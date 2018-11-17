@@ -255,7 +255,7 @@ public class LiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#checkTrace(tlc2.tool.StateVec)
 	 */
-	public void checkTrace(final StateVec stateTrace) throws InterruptedException, IOException {
+	public synchronized void checkTrace(final StateVec stateTrace) throws InterruptedException, IOException {
 		// Add the first state to the LiveCheck as the current init state
 		addInitState(stateTrace.elementAt(0), stateTrace.elementAt(0).fingerPrint());
 		
