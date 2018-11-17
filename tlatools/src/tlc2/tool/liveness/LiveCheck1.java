@@ -484,7 +484,7 @@ public class LiveCheck1 implements ILiveCheck {
 	 * Checks if the behavior graph constructed from a state trace contains any
 	 * "bad" cycle.
 	 */
-	public void checkTrace(final StateVec trace) {
+	public synchronized void checkTrace(final StateVec trace) {
 		stateTrace = trace;
 		for (int soln = 0; soln < solutions.length; soln++) {
 			OrderOfSolution os = solutions[soln];
