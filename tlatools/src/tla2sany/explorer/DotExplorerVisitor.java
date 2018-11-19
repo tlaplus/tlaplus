@@ -41,6 +41,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.Subst;
 import util.FileUtil;
 
 public class DotExplorerVisitor extends ExplorerVisitor {
@@ -140,6 +141,9 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 	
 	private static boolean skipNode(final ExploreNode exploreNode) {
 		if (exploreNode instanceof Context || exploreNode instanceof FormalParamNode) {
+			return true;
+		}
+		if (exploreNode instanceof Subst) {
 			return true;
 		}
 		if (Context.isBuiltIn(exploreNode)) {
