@@ -837,14 +837,15 @@ public class ModelEditor extends FormEditor
 						model.launch(mode, new SubProgressMonitor(monitor, 1), true);
 						
 						/*
-						 * Close any tabs in this editor containing read-only
-						 * versions of modules. They will be changed by the
-						 * launch, regardless of the mode. We could do something
-						 * more sophisticated like listening to resource changes
-						 * and updating the editors when the underlying files
-						 * change, but the doesn't seem worth the effort.
+						 * Close any tabs in this editor containing read-only versions of modules. They
+						 * will be changed by the launch, regardless of the mode. We could do something
+						 * more sophisticated like listening to resource changes and updating the
+						 * editors when the underlying files change, but the doesn't seem worth the
+						 * effort.
+						 * 
+						 * Close pages in reverse order because removing a page invalidates indices.
 						 */
-						for (int i = 0; i < getPageCount(); i++) {
+						for (int i = getPageCount() - 1; i >= 0; i--) {
 							/*
 							 * The normal form pages (main model page, advanced options, results) are remain
 							 * open, all other pages get closed i.e. Saved Module Editor and State Graph
