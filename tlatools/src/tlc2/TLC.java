@@ -743,6 +743,12 @@ public class TLC
             configFile = mainFile;
         }
 
+        if (cleanup && fromChkpt == null)
+        {
+            // clean up the states directory only when not recovering
+            FileUtil.deleteDir(TLCGlobals.metaRoot, true);
+        }
+        
         startTime = System.currentTimeMillis();
 
         // Check if mainFile is an absolute or relative file system path. If it is
@@ -824,13 +830,6 @@ public class TLC
             {
                 // We must recover the intern var table as early as possible
                 UniqueString.internTbl.recover(fromChkpt);
-            }
-            if (cleanup && fromChkpt == null)
-            {
-				// TODO Broken because this deleteDir call removes the states/$startTime/ folder
-				// created by handleParameters.
-                // clean up the states directory only when not recovering
-                FileUtil.deleteDir(TLCGlobals.metaRoot, true);
             }
             FP64.Init(fpIndex);
 
