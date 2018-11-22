@@ -39,7 +39,6 @@ import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.ui.PlatformUI;
 import org.lamport.tla.toolbox.Activator;
 
-@SuppressWarnings("unused")
 public class E4HandlerWrapper implements IExecutableExtensionFactory, IExecutableExtension {
 
 	private String clazz;

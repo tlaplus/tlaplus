@@ -278,9 +278,6 @@ public class TLC
 							traceFile = arg.replace("file=", "");
 						}
 					}
-					for (int i = 0; i < simArgs.length; i++) {
-
-					}
 				}
             } else if (args[index].equals("-modelcheck"))
             {
@@ -830,6 +827,8 @@ public class TLC
             }
             if (cleanup && fromChkpt == null)
             {
+				// TODO Broken because this deleteDir call removes the states/$startTime/ folder
+				// created by handleParameters.
                 // clean up the states directory only when not recovering
                 FileUtil.deleteDir(TLCGlobals.metaRoot, true);
             }
