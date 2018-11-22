@@ -63,4 +63,6 @@ public interface IStateWriter {
 	String getDumpFileName();
 
 	boolean isNoop();
+	
+	boolean isDot();
 }

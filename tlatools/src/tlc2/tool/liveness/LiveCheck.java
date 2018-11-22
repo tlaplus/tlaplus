@@ -58,10 +58,13 @@ public class LiveCheck implements ILiveCheck {
 		outDegreeGraphStats = bucketStatistics;
 		checker = new ILiveChecker[solutions.length];
 		for (int soln = 0; soln < solutions.length; soln++) {
+			final ILivenessStateWriter writer = stateWriter.isNoop() || !stateWriter.isDot()
+					? new NoopLivenessStateWriter()
+					: new DotLivenessStateWriter(stateWriter);
 			if (!solutions[soln].hasTableau()) {
-				checker[soln] = new LiveChecker(solutions[soln], soln, bucketStatistics, stateWriter.isNoop() ? new NoopLivenessStateWriter() : new DotLivenessStateWriter(stateWriter));
+				checker[soln] = new LiveChecker(solutions[soln], soln, bucketStatistics, writer);
 			} else {
-				checker[soln] = new TableauLiveChecker(solutions[soln], soln, bucketStatistics, stateWriter.isNoop() ? new NoopLivenessStateWriter() : new DotLivenessStateWriter(stateWriter));
+				checker[soln] = new TableauLiveChecker(solutions[soln], soln, bucketStatistics, writer);
 			}
 		}
 	}

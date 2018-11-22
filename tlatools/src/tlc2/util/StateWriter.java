@@ -37,6 +37,14 @@ public class StateWriter implements IStateWriter
 	public boolean isNoop() {
 		return false;
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#isDot()
+	 */
+	@Override
+	public boolean isDot() {
+		return false;
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState)

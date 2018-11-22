@@ -117,4 +117,12 @@ public class NoopLivenessStateWriter implements ILivenessStateWriter {
 	public boolean isNoop() {
 		return true;
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#isDot()
+	 */
+	@Override
+	public boolean isDot() {
+		return false;
+	}
 }

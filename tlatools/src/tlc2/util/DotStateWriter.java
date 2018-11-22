@@ -106,6 +106,14 @@ public class DotStateWriter extends StateWriter {
 	}
 
 	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#isDot()
+	 */
+	@Override
+	public boolean isDot() {
+		return true;
+	}
+
+	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState)
 	 */
 	public synchronized void writeState(final TLCState state) {

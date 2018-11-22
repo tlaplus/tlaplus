@@ -86,6 +86,14 @@ public final class NoopStateWriter implements IStateWriter {
 	public boolean isNoop() {
 		return true;
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#isDot()
+	 */
+	@Override
+	public boolean isDot() {
+		return false;
+	}
 		
 	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#getDumpFileName()
@@ -93,4 +101,5 @@ public final class NoopStateWriter implements IStateWriter {
 	public String getDumpFileName() {
 		return "";
 	}
+
 }
