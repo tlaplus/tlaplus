@@ -108,6 +108,10 @@ public class ExternalModuleTable implements ExploreNode {
     return p.ctxt;
   }
 
+  public final Context getContextForRootModule() {
+	  return getContext(getRootModule().getName());
+  }
+  
   /**
    *  Returns a vector of ModuleNodes, one for each outer module (i.e. not
    *  inner modules) in the specification.  InnerModules can be obtained 

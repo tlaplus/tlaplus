@@ -12,6 +12,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
@@ -58,8 +59,10 @@ import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -450,16 +453,31 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
 
                 // the specification name-formula pair
-                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
-                        ModelWriter.SPEC_SCHEME, config), "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+            	final String spec = config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
+    			if (model.getSpec().declares(spec)) {
+            		writer.addFormulaList(spec, "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+    			} else {
+    				writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
+    						ModelWriter.SPEC_SCHEME, config), "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+    			}
                 break;
             case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
-
-                // the init and next formulas
-                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
-                        ModelWriter.INIT_SCHEME, config), "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
-                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
-                        ModelWriter.NEXT_SCHEME, config), "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
+            	// the init and next formulas
+            	final String init = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
+				if (model.getSpec().declares(init)) {
+            		writer.addFormulaList(init, "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+            	} else {
+            		writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
+            				ModelWriter.INIT_SCHEME, config), "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+            	}
+				
+            	final String next = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
+				if (model.getSpec().declares(next)) {
+	           		writer.addFormulaList(next, "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+            	} else {
+	                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
+	                        ModelWriter.NEXT_SCHEME, config), "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
+            	}
                 break;
             }
 
@@ -470,15 +488,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             // do not write invariants and properties if there is no behavior spec
             if (hasSpec)
             {
-                // invariants
-                writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
-                        MODEL_CORRECTNESS_INVARIANTS, new Vector<String>()), ModelWriter.INVARIANT_SCHEME), "INVARIANT",
-                        MODEL_CORRECTNESS_INVARIANTS);
+            	// invariants (separate those declared in the spec from those declared in the model).
+				final List<String> invariants = config.getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
+				writer.addFormulaList(
+						createProperties(writer, model.getSpec(), invariants, ModelWriter.INVARIANT_SCHEME),
+						"INVARIANT", MODEL_CORRECTNESS_INVARIANTS);
 
-                // properties
-                writer.addFormulaList(ModelWriter.createFormulaListContent(config.getAttribute(
-                        MODEL_CORRECTNESS_PROPERTIES, new Vector<String>()), ModelWriter.PROP_SCHEME), "PROPERTY",
-                        MODEL_CORRECTNESS_PROPERTIES);
+				// properties
+				final List<String> properties = config.getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
+				writer.addFormulaList(createProperties(writer, model.getSpec(), properties, ModelWriter.PROP_SCHEME),
+						"PROPERTY", MODEL_CORRECTNESS_PROPERTIES);
             }
 
             monitor.worked(STEP);
@@ -498,6 +517,28 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
         // we don't want to rebuild the workspace
         return false;
+    }
+    
+	private static List<String[]> createProperties(final ModelWriter writer, final TLCSpec spec, final List<String> properties,
+			final String scheme) {
+		
+		// Convert list of strings such as {"1Inv", "0x \in Nat"} into a subset of
+		// checked formulas (prefixed with 1).
+		final List<Formula> checkedFormula = ModelHelper.deserializeFormulaList(properties);
+
+		// Collect those formula that are declared in the model.
+		final List<Formula> undeclaredFormula = checkedFormula.stream().filter(f -> !spec.declares(f.getFormula()))
+				.collect(Collectors.toList());
+
+		// Create the input for the model writer out of the undeclared formula...
+		final List<String[]> createFormulaListContent = ModelWriter.createFormulaListContentFormula(undeclaredFormula,
+				scheme);
+		
+		// ...and append the declared ones such that the model writer does not redeclare it.
+		checkedFormula.removeAll(undeclaredFormula);
+		checkedFormula.forEach(f -> createFormulaListContent.add(new String[] { f.getFormula(), EMPTY_STRING }));
+		
+		return createFormulaListContent;
     }
 
 	// Copy userModule overrides (see tlc2.tool.Spec.processSpec(SpecObj)) if

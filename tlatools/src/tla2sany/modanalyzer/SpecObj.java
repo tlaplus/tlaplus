@@ -30,7 +30,7 @@ public class SpecObj
     // The raw file name for the root (top) module, unprocessed by adding
     // ".tla" or by prepending the full file system path to it)
 
-    ExternalModuleTable externalModuleTable = new ExternalModuleTable();
+    final ExternalModuleTable externalModuleTable = new ExternalModuleTable();
     // This is the one ExternalModuleTable for the entire specification;
     // it includes ModuleNode's for the root module, and for all modules
     // that it depends on directly or indirectly by EXTENDS or INSTANCE

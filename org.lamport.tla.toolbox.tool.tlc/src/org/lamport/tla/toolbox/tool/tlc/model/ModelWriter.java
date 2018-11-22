@@ -25,6 +25,7 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.model;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -464,7 +465,12 @@ public class ModelWriter
             }
         }
     }
-
+    public void addFormulaList(String element, String keyword, String attributeName) {
+    	final List<String[]> elements = new ArrayList<>(1);
+    	elements.add(new String[] {element, EMPTY_STRING});
+    	addFormulaList(elements, keyword, attributeName);
+    }
+    
     /**
      * Puts (String[])element[0] to CFG file and element[1] to TLA_MC file
      * 
@@ -485,7 +491,7 @@ public class ModelWriter
         {
             String[] element = elements.get(i);
             cfgBuffer.append(element[0]).append(CR);
-            // when a definition in the root module is overriden as a model value
+            // when a definition in the root module is overridden as a model value
             // there is nothing to add to the MC.tla file so, we do not do the following
             if (!element[1].equals(EMPTY_STRING))
             {
@@ -560,7 +566,12 @@ public class ModelWriter
     public static List<String[]> createFormulaListContent(List<String> serializedFormulaList, String labelingScheme)
     {
         List<Formula> formulaList = ModelHelper.deserializeFormulaList(serializedFormulaList);
-        return (createListContent(formulaList, labelingScheme));
+        return createFormulaListContentFormula(formulaList, labelingScheme);
+    }
+    
+    public static List<String[]> createFormulaListContentFormula(List<Formula> serializedFormulaList, String labelingScheme)
+    {
+    	return (createListContent(serializedFormulaList, labelingScheme));
     }
 
     /**

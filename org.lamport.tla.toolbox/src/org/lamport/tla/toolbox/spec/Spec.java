@@ -35,7 +35,10 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import pcal.TLAtoPCalMapping;
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.semantic.Context;
+import tla2sany.semantic.ExternalModuleTable;
 import util.SimpleFilenameToStream;
+import util.UniqueString;
 
 /**
  * Represents a specification handle in the toolbox
@@ -640,5 +643,20 @@ public class Spec implements IAdaptable {
 			modules.add(module);
 		}
 		return modules;
+	}
+
+	public boolean declares(final String str) {
+		return declares(UniqueString.uniqueStringOf(str));
+	}
+
+	public boolean declares(final UniqueString us) {
+		if (getRootModule() != null) {
+			final ExternalModuleTable externalModuleTable = getRootModule().getExternalModuleTable();
+			final Context context = externalModuleTable.getContextForRootModule();
+			if (context != null) {
+				return context.occurSymbol(us);
+			}
+		}
+		return false;
 	}
 }

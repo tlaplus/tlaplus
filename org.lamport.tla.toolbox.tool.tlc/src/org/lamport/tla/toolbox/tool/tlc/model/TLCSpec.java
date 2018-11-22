@@ -40,6 +40,8 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 
+import tla2sany.modanalyzer.SpecObj;
+
 /**
  * {@link TLCSpec} is the glue between {@link Spec} and {@link Model}. Why do we
  * need glue? The Toolbox is written in a modular style. Thus, it is
@@ -54,11 +56,19 @@ import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
  */
 public class TLCSpec extends Spec {
 
+	private final Spec spec;
+
 	/**
 	 * Only supposed to be called by {@link TLCSpecFactory}
 	 */
 	TLCSpec(Spec spec) {
 		super(spec.getProject());
+		this.spec = spec;
+	}
+
+	@Override
+	public SpecObj getRootModule() {
+		return this.spec.getRootModule();
 	}
 
 	/**
