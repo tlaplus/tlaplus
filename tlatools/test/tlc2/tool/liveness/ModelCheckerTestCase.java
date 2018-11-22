@@ -110,6 +110,9 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 				args.add("-deadlock");
 			}
 			
+			args.add("-fp");
+			args.add("0");
+			
 			args.add("-coverage");
 			args.add("1");
 			

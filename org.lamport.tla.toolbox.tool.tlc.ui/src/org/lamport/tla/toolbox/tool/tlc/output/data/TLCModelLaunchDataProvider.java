@@ -148,6 +148,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
     protected int numWorkers = 0;
 
+	private int fpIndex;
+
     public TLCModelLaunchDataProvider(Model model)
     {
         this.model = model;
@@ -345,11 +347,13 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     break;
                 case EC.TLC_MODE_MC:
                     this.tlcMode = "Breadth-first search";
+					this.fpIndex = getFPIndex(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.TLC_MODE);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_MODE_MC_DFS:
                     this.tlcMode = "Depth-first search";
+					this.fpIndex = getFPIndex(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.TLC_MODE);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
@@ -549,6 +553,14 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             }
         }
     }
+
+	private int getFPIndex(final String startupMessage) {
+		final Matcher matcher = startupMessagePattern.matcher(startupMessage);
+		if (matcher.find()) {
+			return Integer.parseInt(matcher.group(2));
+		}
+		return 0; // legacy support
+	}
 
     /**
      * @param latest
@@ -837,6 +849,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private static final String CR = "\n";
     private static final String EMPTY = "";
 
+	private static final Pattern startupMessagePattern = Pattern.compile(
+			"^Running (depth|breadth)-first search Model-Checking with fp ([0-9]+) and seed [-0-9]+ with [0-9]+ workers on [0-9]+ cores with .*? heap and 635MB.*? offheap memory \\(.*\\).$");;
+
     /**
      * Sets text to a document
      * @param document
@@ -1081,5 +1096,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 	
 	public String toString() {
 		return getModel().getSpec().getName() + "___" + getModelName();
+	}
+
+	public int getFPIndex() {
+		return this.fpIndex;
 	}
 }

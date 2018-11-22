@@ -11,12 +11,15 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
@@ -47,6 +50,7 @@ import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MultiFPSet;
+import tlc2.util.FP64;
 
 /**
  * Represent all advanced model elements
@@ -76,6 +80,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      * Offset for the -fp parameter passed to TLC process to select the hash seed 
      */
     private Spinner fpIndexSpinner;
+    private Button fpIndexRandomly;
 	/**
 	 * -fpbits parameter designed to select how many fp bits are used for hash
 	 * lookup
@@ -180,9 +185,12 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         deferLiveness.setSelection(getModel().getAttribute(LAUNCH_DEFER_LIVENESS, LAUNCH_DEFER_LIVENESS_DEFAULT));
         
         // fp index
+        final boolean randomly = getModel().getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT);
+		fpIndexRandomly.setSelection(randomly);
         final int fpIndex = getModel().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
-       	fpIndexSpinner.setSelection(fpIndex);
-       	
+        fpIndexSpinner.setSelection(fpIndex);
+        fpIndexSpinner.setEnabled(!randomly);
+
         // fpBits
         int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
@@ -245,8 +253,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // Defer Liveness
         getModel().setAttribute(LAUNCH_DEFER_LIVENESS, deferLiveness.getSelection());
         
-        // FP Seed index
-        getModel().setAttribute(LAUNCH_FP_INDEX, fpIndexSpinner.getSelection());
+        // FP Seed choose randomly
+		getModel().setAttribute(LAUNCH_FP_INDEX_RANDOM, fpIndexRandomly.getSelection());
+		// FP Seed index
+		getModel().setAttribute(LAUNCH_FP_INDEX, fpIndexSpinner.getSelection());
 
         // fpBits
         getModel().setAttribute(LAUNCH_FPBITS, fpBits.getSelection());
@@ -778,6 +788,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simuSeedText.addModifyListener(launchListener);
         simuDepthText.addModifyListener(launchListener);
         fpIndexSpinner.addModifyListener(launchListener);
+        fpIndexRandomly.addSelectionListener(launchListener);
         fpBits.addModifyListener(launchListener);
         maxSetSize.addModifyListener(launchListener);
         dfidDepthText.addModifyListener(launchListener);
@@ -949,20 +960,37 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd = new GridData();
         gd.horizontalIndent = 0;
         fpLabel.setLayoutData(gd);
+      
+        final Composite fpIndex = toolkit.createComposite(area);
+        fpIndex.setLayout(new GridLayout(2, false));
+        
+        fpIndexRandomly = toolkit.createButton(fpIndex, "Select randomly", SWT.CHECK);
+		fpIndexRandomly.setToolTipText(
+				"Let TLC randomly choose the irreducible polynomial at startup. The actual value will be shon in TLC's startup banner.");
+        gd = new GridData();
+        fpIndexRandomly.setSelection(true);
+        fpIndexRandomly.setLayoutData(gd);
+        fpIndexRandomly.addFocusListener(focusListener);
+        fpIndexRandomly.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				fpIndexSpinner.setEnabled(!fpIndexRandomly.getSelection());
+			}
+		});
         
         // field fpIndex
-        fpIndexSpinner = new Spinner(area, SWT.NONE);
+        fpIndexSpinner = new Spinner(fpIndex, SWT.NONE);
+        fpIndexSpinner.setEnabled(false);
         fpIndexSpinner.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
-        fpIndexSpinner.setToolTipText("Index of irreducible polynominal used as a seed for fingerprint hashing (corresponds to \"-fp value-1\")");
+		fpIndexSpinner.setToolTipText(
+				"Index of irreducible polynominal used as a seed for fingerprint hashing (corresponds to \"-fp value\"). Set to the irreducible polynomial used for the previous run if \"Select randomly\" checked.");
         gd = new GridData();
         gd.widthHint = 200;
-        gd.verticalIndent = 20;
-        gd.horizontalIndent = 0;
         fpIndexSpinner.setLayoutData(gd);
         
         // validation for fpIndex spinner
-        fpIndexSpinner.setMinimum(1);
-        fpIndexSpinner.setMaximum(64);
+        fpIndexSpinner.setMinimum(0);
+        fpIndexSpinner.setMaximum(FP64.Polys.length - 1);
         
         fpIndexSpinner.addFocusListener(focusListener);
         
@@ -1061,4 +1089,22 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         
         return advancedSection;
     }
+
+	public void setFpIndex(final int fpIndex) {
+		if (this.fpIndexSpinner.getSelection() == fpIndex) {
+			return;
+		}
+		// Temporarily disable all modify listeners to prevent the model from becoming
+		// dirty. We don't want the model to become dirty as a result of model checking.
+		final Listener[] listeners = this.fpIndexSpinner.getListeners(SWT.Modify);
+		for (Listener listener : listeners) {
+			this.fpIndexSpinner.removeListener(SWT.Modify, listener);
+		}
+		
+		this.fpIndexSpinner.setSelection(fpIndex);
+		
+		for (Listener listener : listeners) {
+			this.fpIndexSpinner.addListener(SWT.Modify, listener);
+		}
+	}
 }

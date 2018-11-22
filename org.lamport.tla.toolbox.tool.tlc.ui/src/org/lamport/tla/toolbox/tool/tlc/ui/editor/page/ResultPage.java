@@ -232,6 +232,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    break;
 	                case TLC_MODE:
 	                	ResultPage.this.tlcModeText.setText(dataProvider.getTLCMode());
+	                	((AdvancedModelPage) getEditor().findPage(AdvancedModelPage.ID)).setFpIndex(dataProvider.getFPIndex());
 	                case LAST_CHECKPOINT_TIME:
 	                    long lastCheckpointTimeStamp = dataProvider.getLastCheckpointTimeStamp();
 	                    if(lastCheckpointTimeStamp > 0) {

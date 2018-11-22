@@ -89,6 +89,10 @@ public interface IConfigurationConstants
      * the fp seed index "-fp" 
      */
     public static final String LAUNCH_FP_INDEX = "fpIndex";
+    /**
+     * Choose FP index randomly
+     */
+    public static final String LAUNCH_FP_INDEX_RANDOM = "fpIndexRandom";
 
     /**
 	 * Defers verification of liveness properties upon the final stage of model

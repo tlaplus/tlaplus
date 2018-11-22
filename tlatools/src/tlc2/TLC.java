@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Random;
 import java.util.TimeZone;
 
 import model.InJarFilenameToStream;
@@ -127,7 +128,7 @@ public class TLC
         fromChkpt = null;
         resolver = null;
 
-        fpIndex = 0;
+        fpIndex = new Random().nextInt(FP64.Polys.length);
         traceDepth = 100;
         
         // instance is not set
@@ -883,7 +884,7 @@ public class TLC
 				final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
 						TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor, version,
 						arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
-						Long.toString(EnumerableValue.getRandomSeed()) };
+						Long.toString(EnumerableValue.getRandomSeed()), Integer.toString(fpIndex) };
 
             	// model checking
         		AbstractChecker mc = null;
