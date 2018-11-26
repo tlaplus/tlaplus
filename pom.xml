@@ -35,6 +35,7 @@
 		<module>org.lamport.tlatools.consumer.distributed</module>
 
 		<!-- bundles -->
+		<module>org.lamport.tla.toolbox.rss</module>
 		<module>org.lamport.tla.toolbox</module>
 		<module>org.lamport.tla.toolbox.jclouds</module>
 		<module>org.lamport.tla.toolbox.jnlp</module>

@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Extends Mylyn Notification Feed for Java11
+Bundle-SymbolicName: org.lamport.tla.toolbox.rss
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Markus Alexander Kuppe
+Fragment-Host: org.eclipse.mylyn.commons.notifications.feed;bundle-version="1.16.0"
+Automatic-Module-Name: org.eclipse.mylyn.commons.notifications.feed.jaxb
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ClassPath: .,
+ lib/istack-commons-runtime-3.0.7.jar,
+ lib/jaxb-api-2.3.1.jar,
+ lib/jaxb-runtime-2.3.1.jar
+Require-Bundle: javax.activation;bundle-version="1.1.0"

@@ -31,8 +31,7 @@ openFile
       </programArgs>
       <programArgsLin>--launcher.GTK_version 2
       </programArgsLin>
-      <vmArgs>--add-modules=java.se.ee
--XX:+IgnoreUnrecognizedVMOptions
+      <vmArgs>-XX:+IgnoreUnrecognizedVMOptions
 -Xmx1000m
 -Dorg.eclipse.equinox.http.jetty.http.port=10996
 -Dosgi.splashPath=platform:/base/

@@ -327,4 +327,12 @@
          version="1.1.300.v20180905-0314"
          unpack="false"/>
 
+   <plugin
+         id="org.lamport.tla.toolbox.rss"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
 </feature>
