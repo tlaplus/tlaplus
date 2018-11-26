@@ -850,7 +850,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private static final String EMPTY = "";
 
 	private static final Pattern startupMessagePattern = Pattern.compile(
-			"^Running (depth|breadth)-first search Model-Checking with fp ([0-9]+) and seed [-0-9]+ with [0-9]+ workers on [0-9]+ cores with .*? heap and 635MB.*? offheap memory \\(.*\\).$");;
+			"^Running (depth|breadth)-first search Model-Checking with fp ([0-9]+) and seed "
+			+ "[-0-9]+ with [0-9]+ workers on [0-9]+ cores with .*? heap and .*? offheap memory \\(.*\\).$");
 
     /**
      * Sets text to a document
