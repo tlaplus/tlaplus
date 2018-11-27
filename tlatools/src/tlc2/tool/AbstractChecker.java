@@ -223,32 +223,36 @@ public abstract class AbstractChecker implements Cancelable
         }
     }
     
-    public static final void reportSuccess(final long numOfDistinctStates, final long actualDistance, final long numOfGenStates) throws IOException
-    {
-    	// Prevent div-by-zero when calculating collision probabilities when no states are generated.
-    	if (numOfDistinctStates == numOfGenStates && numOfGenStates == 0) {
+    public static final double calculateOptimisticProbability(final long numOfDistinctStates, final long numOfGenStates) {
+        return numOfDistinctStates * ((numOfGenStates - numOfDistinctStates) / Math.pow(2, 64));
+    }
+    
+	public static final void reportSuccess(final long numOfDistinctStates, final long numOfGenStates)
+			throws IOException {
+		final double optimisticProb = calculateOptimisticProbability(numOfDistinctStates, numOfGenStates);
+		MP.printMessage(EC.TLC_SUCCESS, new String[] { "val = " + ProbabilityToString(optimisticProb, 2) });
+	}
+   
+	public static final void reportSuccess(final long numOfDistinctStates, final long actualDistance,
+			final long numOfGenStates) throws IOException {
+		// Prevent div-by-zero when calculating collision probabilities when no states
+		// are generated.
+		if (numOfDistinctStates == numOfGenStates && numOfGenStates == 0) {
 			// When the number of states is zero, printing a collision probability is
 			// useless anyway. But the Toolbox will probably crash if omitted.
-            MP.printMessage(EC.TLC_SUCCESS, new String[] { "val = 0.0", "val = 0.0" });
-    		return;
-    	}
-        // shown as 'calculated' in Toolbox
-        final double optimisticProb = numOfDistinctStates * ((numOfGenStates - numOfDistinctStates) / Math.pow(2, 64));
-        /* The following code added by LL on 3 Aug 2009 to print probabilities
-         * to only one decimal point.  Removed by LL on 17 April 2012 because it
-         * seemed to report probabilities > 10-4 as probability 0.
-         */
-         // final PrintfFormat fmt = new PrintfFormat("val = %.1G");
-         // final String optimisticProbStr = fmt.sprintf(optimisticProb);
-         // final String actualProbStr = fmt.sprintf(actualProb);
-        
-        // Following two lines added by LL on 17 April 2012
-        final String optimisticProbStr = "val = " + ProbabilityToString(optimisticProb, 2);
-        // shown as 'observed' in Toolbox
-        final BigDecimal actualProb = BigDecimal.valueOf(1d).divide(BigDecimal.valueOf(actualDistance), new MathContext(2));
-        final String actualProbStr = "val = " + actualProb.toString();
-        MP.printMessage(EC.TLC_SUCCESS, new String[] { optimisticProbStr, actualProbStr });
-    }
+			MP.printMessage(EC.TLC_SUCCESS, new String[] { "val = 0.0", "val = 0.0" });
+			return;
+		}
+		// shown as 'calculated' in Toolbox
+		final String optimisticProbStr = "val = "
+				+ ProbabilityToString(calculateOptimisticProbability(numOfDistinctStates, numOfGenStates), 2);
+
+		// shown as 'observed' in Toolbox
+		final BigDecimal actualProb = BigDecimal.valueOf(1d).divide(BigDecimal.valueOf(actualDistance),
+				new MathContext(2));
+		final String actualProbStr = "val = " + actualProb.toString();
+		MP.printMessage(EC.TLC_SUCCESS, new String[] { optimisticProbStr, actualProbStr });
+	}
     
     /**
      * This method added by LL on 17 April 2012 to replace the use of the PrintfFormat

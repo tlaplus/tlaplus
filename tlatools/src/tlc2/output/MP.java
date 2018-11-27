@@ -846,9 +846,13 @@ public class MP
 	        break;
         case EC.TLC_SUCCESS:
             b.append("Model checking completed. No error has been found.\n"
-                    + "  Estimates of the probability that TLC did not check all reachable states\n"
-                    + "  because two distinct states had the same fingerprint:\n" + "  calculated (optimistic):  %1%\n"
-                    + "  based on the actual fingerprints:  %2%");
+                    + "  Estimates of the probability that TLC did not check all reachable states\n");
+            if (parameters.length == 1) {
+            	b.append("  because two distinct states had the same fingerprint:\n" + "  calculated (optimistic):  %1%");
+            } else {
+            	b.append("  because two distinct states had the same fingerprint:\n"
+            			+ "  calculated (optimistic):  %1%\n" + "  based on the actual fingerprints:  %2%");
+            }
             break;
         case EC.TLC_SEARCH_DEPTH:
 			b.append("The depth of the complete state graph search is %1%.");

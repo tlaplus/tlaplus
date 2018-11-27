@@ -933,9 +933,15 @@ public class ModelChecker extends AbstractChecker
 
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
     {
-        final long fpSetSize = anFpSet.size();
-        final long actualDistance = anFpSet.checkFPs();
-        reportSuccess(fpSetSize,  actualDistance, numOfGenStates);
+        final long numOfDistinctStates = anFpSet.size();
+        final double optimisticProb = calculateOptimisticProbability(numOfDistinctStates, numOfGenStates);
+        if (optimisticProb < 1E-10) {
+			// If the optimistic probability is sufficiently low, don't waste time
+			// calculating the actual probability.
+        	reportSuccess(numOfDistinctStates, numOfGenStates);
+        } else {
+        	reportSuccess(numOfDistinctStates, anFpSet.checkFPs(), numOfGenStates);
+        }
     }
 
     /**

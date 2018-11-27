@@ -1049,6 +1049,14 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     {
         return constantExprEvalOutput;
     }
+    
+    private static final Pattern collisionProbabilityPattern = Pattern.compile(
+			"^Model checking completed\\. No error has been found\\.\\n  Estimates of the probability "
+			+ "that TLC did not check all reachable states\\n  because two distinct states had the "
+			+ "same fingerprint:\\n  calculated \\(optimistic\\):  val = "
+			+ "([0-9]*\\.?[0-9]+[eE][-+]?[0-9]+?)" // group 1
+			+ "(\\n  based on the actual fingerprints:  val = "
+			+ "([0-9]*\\.?[0-9]+[eE][-+]?[0-9]+?))?$"); // group 3 iff present (group 2 is last two lines)
 
     /**
      * Extracts the fingerprint collision probability information line
@@ -1061,29 +1069,17 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      */
     private String extractCollisionProbability(String outputMessage)
     {
-        String result = "";
-        int valIndex;
-        int endValIndex;
-        int startIndex = 0;
-        String[] labels = { "calculated: ", ",  observed: " };
-        for (int i = 0; i < 2; i++)
-        {
-            result = result + labels[i];
-            valIndex = outputMessage.indexOf(" val = ", startIndex);
-            if (valIndex > 0)
-            {
-                startIndex = valIndex + 7;
-                endValIndex = startIndex;
-                while (endValIndex < outputMessage.length()
-                        && (! Character.isWhitespace(outputMessage.charAt(endValIndex))))
-                {
-                    endValIndex++;
-                }
-                result = result + outputMessage.substring(startIndex, endValIndex);
-                startIndex = endValIndex;
-            }
-        }
-        return result;
+		final Matcher matcher = collisionProbabilityPattern.matcher(outputMessage);
+		if (matcher.find()) {
+			final String optimistic = matcher.group(1);
+			final String actual = matcher.group(3);
+			if (actual != null) {
+				return String.format("calculated: %s  observed: %s", optimistic, actual);
+			} else {
+				return String.format("calculated: %s", optimistic);
+			}
+		}
+		return ""; // legacy support
     }
     
 	/**
