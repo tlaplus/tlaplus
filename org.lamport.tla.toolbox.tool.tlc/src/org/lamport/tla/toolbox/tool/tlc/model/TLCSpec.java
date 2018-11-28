@@ -71,6 +71,10 @@ public class TLCSpec extends Spec {
 		return this.spec.getRootModule();
 	}
 
+	public Spec toSpec() {
+		return this.spec;
+	}
+	
 	/**
 	 * @return All {@link Model}s associated with the given {@link Spec} excluding
 	 *         snapshots of models.

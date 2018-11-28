@@ -60,7 +60,12 @@ public class ModelContentProvider implements ITreeContentProvider {
 					@Override
 					public void run() {
 						final Model model = event.getModel();
-						final TLCSpec parent = model.getSpec();
+						// getViewer().remove(...) internally (see
+						// org.eclipse.jface.viewers.StructuredViewer.findItems(Object)) tries to find
+						// the TreeItem corresponding to Spec (not TLCSpec). TLCSpec just wraps Spec but
+						// does not exist in the SpecExplorers content tree. With TLCSpec setSelection
+						// and remove are actually (silent) no-ops.
+						final Spec parent = model.getSpec().toSpec();
 						// The CommonViewer is stupid in that it accesses an element (model) even
 						// after it has been removed in order to update the viewer's current selection.
 						// Since we have to prevent this access to avoid a null pointer, we explicitly
