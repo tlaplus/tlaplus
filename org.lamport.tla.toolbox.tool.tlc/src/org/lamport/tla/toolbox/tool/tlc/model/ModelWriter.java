@@ -472,7 +472,7 @@ public class ModelWriter
     }
     
     /**
-     * Puts (String[])element[0] to CFG file and element[1] to TLA_MC file
+     * Puts (String[])element[0] to CFG file and element[1] to TLA_MC file, if element[2] present, uses it as index.
      * 
      * @param elements a list of String[] elements
      * @param keyword the keyword to be used in the CFG file
@@ -496,7 +496,7 @@ public class ModelWriter
             if (!element[1].equals(EMPTY_STRING))
             {
                 tlaBuffer.append(COMMENT).append(keyword + " definition ").append(ATTRIBUTE).append(attributeName)
-                        .append(INDEX).append(i).append(CR);
+                        .append(INDEX).append(element.length > 2 ? element[2] : i).append(CR);
                 tlaBuffer.append(element[1]).append(CR).append(SEP).append(CR);
             }
         }
@@ -571,7 +571,7 @@ public class ModelWriter
     
     public static List<String[]> createFormulaListContentFormula(List<Formula> serializedFormulaList, String labelingScheme)
     {
-    	return (createListContent(serializedFormulaList, labelingScheme));
+    	return createListContent(serializedFormulaList, labelingScheme);
     }
 
     /**
@@ -730,7 +730,7 @@ public class ModelWriter
             // formulas
             // to .cfg : <id>
             // to _MC.tla : <id> == <expression>
-            content = new String[] { label, label + DEFINES_CR + formulaList.get(i).getFormula() };
+            content = new String[] { label, label + DEFINES_CR + formulaList.get(i).getFormula(), String.valueOf(i) };
             resultContent.add(content);
         }
         return resultContent;

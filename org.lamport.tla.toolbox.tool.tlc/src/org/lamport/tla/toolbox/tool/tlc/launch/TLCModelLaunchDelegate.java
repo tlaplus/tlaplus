@@ -526,18 +526,26 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 		// checked formulas (prefixed with 1).
 		final List<Formula> checkedFormula = ModelHelper.deserializeFormulaList(properties);
 
-		// Collect those formula that are declared in the model.
-		final List<Formula> undeclaredFormula = checkedFormula.stream().filter(f -> !spec.declares(f.getFormula()))
+		// Create the input for the model writer out of all formula...
+		final List<String[]> createFormulaListContent = ModelWriter.createFormulaListContentFormula(checkedFormula,
+				scheme);
+
+		// Collect those formula that are declared in the spec, not the MC.tla file.
+		final List<Formula> declaredFormula = checkedFormula.stream().filter(f -> spec.declares(f.getFormula()))
 				.collect(Collectors.toList());
 
-		// Create the input for the model writer out of the undeclared formula...
-		final List<String[]> createFormulaListContent = ModelWriter.createFormulaListContentFormula(undeclaredFormula,
-				scheme);
-		
-		// ...and append the declared ones such that the model writer does not redeclare it.
-		checkedFormula.removeAll(undeclaredFormula);
-		checkedFormula.forEach(f -> createFormulaListContent.add(new String[] { f.getFormula(), EMPTY_STRING }));
-		
+		// Override each declared formula with its original declaration. This will cause
+		// ModelWriter.addFormulaList to omit it from the MC.tla file and only add it to MC.cfg.
+		declaredFormula.forEach(f -> createFormulaListContent.set(checkedFormula.indexOf(f),
+				new String[] { f.getFormula(), EMPTY_STRING, String.valueOf(checkedFormula.indexOf(f)) }));
+
+		// createFormulaListContent has to be in the same order as checkedFormula.
+		// Otherwise, TLCModelLaunchDataProvider.createError(TLCRegion,
+		// String) would fail to match the violated invariant to the one stored in the
+		// model. This results in the Toolbox reporting the wrong invariant. As a second
+		// safeguard ModelWriter.createFormulaListContentFormula adds the formula's index
+		// to the String[] which - if present - is eventually used as the formula's index
+		// by ModelWriter.addFormulaList.
 		return createFormulaListContent;
     }
 
