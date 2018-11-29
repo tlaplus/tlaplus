@@ -46,12 +46,7 @@ public class MultiAssignmentTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "56", "27", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "7"));
-		assertCoverage("  line 37, col 18 to line 38, col 56 of module MultiAssignment: 27\n" +
-				"  line 39, col 18 to line 39, col 44 of module MultiAssignment: 27\n" +
-				"  line 42, col 15 to line 42, col 45 of module MultiAssignment: 27\n" +
-				"  line 47, col 15 to line 47, col 48 of module MultiAssignment: 27\n" +
-				"  line 48, col 25 to line 48, col 34 of module MultiAssignment: 0\n" +
-				"  line 54, col 70 to line 54, col 73 of module MultiAssignment: 0");
+		assertZeroUncovered();
 	}
 }
 /*

@@ -50,5 +50,7 @@ public class ETest8 extends SuiteETestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recorded(EC.TLC_STATS_SIMU));
 		assertFalse(recorder.recorded(EC.TLC_DEADLOCK_REACHED));
+		
+		assertUncovered("line 18, col 15 to line 18, col 22 of module etest8: 0\n");
 	}
 }

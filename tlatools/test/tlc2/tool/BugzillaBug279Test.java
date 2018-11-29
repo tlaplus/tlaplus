@@ -111,11 +111,6 @@ public class BugzillaBug279Test extends ModelCheckerTestCase {
 						+ "\n/\\ pc = 2\n/\\ fun = {5}");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		assertCoverage("  line 31, col 13 to line 31, col 19 of module InitStateBug: 1\n" +
-				"  line 31, col 24 to line 31, col 32 of module InitStateBug: 1\n" +
-				"  line 31, col 37 to line 31, col 51 of module InitStateBug: 1\n" +
-				"  line 33, col 13 to line 33, col 19 of module InitStateBug: 1\n" +
-				"  line 33, col 24 to line 33, col 32 of module InitStateBug: 1\n" +
-				"  line 33, col 37 to line 33, col 51 of module InitStateBug: 1");
+		assertZeroUncovered();
 	}
 }

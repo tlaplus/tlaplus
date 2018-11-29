@@ -46,50 +46,7 @@ public class SyncConsTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "22580", "8754", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "48"));
 
-		assertCoverage("  line 136, col 27 to line 136, col 64 of module SyncCons: 892\n" +
-			"  line 137, col 27 to line 137, col 58 of module SyncCons: 892\n" +
-			"  line 138, col 37 to line 138, col 42 of module SyncCons: 892\n" +
-			"  line 139, col 27 to line 141, col 81 of module SyncCons: 1716\n" +
-			"  line 142, col 27 to line 142, col 60 of module SyncCons: 1716\n" +
-			"  line 143, col 27 to line 143, col 40 of module SyncCons: 1716\n" +
-			"  line 144, col 26 to line 144, col 80 of module SyncCons: 0\n" +
-			"  line 149, col 32 to line 154, col 74 of module SyncCons: 4168\n" +
-			"  line 155, col 32 to line 155, col 85 of module SyncCons: 4168\n" +
-			"  line 156, col 27 to line 156, col 58 of module SyncCons: 4168\n" +
-			"  line 157, col 27 to line 157, col 58 of module SyncCons: 1724\n" +
-			"  line 158, col 37 to line 158, col 55 of module SyncCons: 0\n" +
-			"  line 159, col 26 to line 159, col 80 of module SyncCons: 0\n" +
-			"  line 163, col 27 to line 163, col 64 of module SyncCons: 736\n" +
-			"  line 164, col 27 to line 164, col 61 of module SyncCons: 736\n" +
-			"  line 165, col 27 to line 165, col 58 of module SyncCons: 736\n" +
-			"  line 166, col 27 to line 166, col 58 of module SyncCons: 988\n" +
-			"  line 167, col 37 to line 167, col 53 of module SyncCons: 0\n" +
-			"  line 168, col 26 to line 169, col 36 of module SyncCons: 0\n" +
-			"  line 178, col 34 to line 181, col 64 of module SyncCons: 3232\n" +
-			"  line 182, col 34 to line 182, col 87 of module SyncCons: 3232\n" +
-			"  line 183, col 34 to line 183, col 89 of module SyncCons: 3232\n" +
-			"  line 184, col 27 to line 184, col 58 of module SyncCons: 3232\n" +
-			"  line 185, col 27 to line 185, col 58 of module SyncCons: 760\n" +
-			"  line 186, col 37 to line 186, col 61 of module SyncCons: 0\n" +
-			"  line 187, col 26 to line 187, col 74 of module SyncCons: 0\n" +
-			"  line 191, col 27 to line 191, col 63 of module SyncCons: 84\n" +
-			"  line 192, col 27 to line 193, col 88 of module SyncCons: 676\n" +
-			"  line 194, col 16 to line 194, col 47 of module SyncCons: 760\n" +
-			"  line 195, col 26 to line 196, col 42 of module SyncCons: 0\n" +
-			"  line 199, col 16 to line 199, col 64 of module SyncCons: 1748\n" +
-			"  line 200, col 16 to line 200, col 47 of module SyncCons: 1748\n" +
-			"  line 201, col 26 to line 202, col 42 of module SyncCons: 0\n" +
-			"  line 210, col 25 to line 210, col 42 of module SyncCons: 278\n" +
-			"  line 211, col 25 to line 211, col 61 of module SyncCons: 278\n" +
-			"  line 212, col 25 to line 212, col 59 of module SyncCons: 248\n" +
-			"  line 213, col 25 to line 213, col 38 of module SyncCons: 248\n" +
-			"  line 214, col 24 to line 215, col 33 of module SyncCons: 0\n" +
-			"  line 222, col 26 to line 222, col 54 of module SyncCons: 1228\n" +
-			"  line 223, col 24 to line 223, col 59 of module SyncCons: 1228\n" +
-			"  line 224, col 24 to line 224, col 58 of module SyncCons: 4070\n" +
-			"  line 225, col 34 to line 225, col 40 of module SyncCons: 4070\n" +
-			"  line 226, col 23 to line 227, col 32 of module SyncCons: 0\n" +
-			"  line 234, col 70 to line 234, col 73 of module SyncCons: 0");
+		assertZeroUncovered();
 	}
 }
 /*

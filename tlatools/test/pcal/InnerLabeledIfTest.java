@@ -46,22 +46,7 @@ public class InnerLabeledIfTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "20", "16", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
-		assertCoverage("  line 36, col 31 to line 36, col 39 of module InnerLabeledIf: 1\n" +
-				"  line 37, col 31 to line 37, col 39 of module InnerLabeledIf: 1\n" +
-				"  line 40, col 31 to line 40, col 39 of module InnerLabeledIf: 1\n" +
-				"  line 41, col 31 to line 41, col 39 of module InnerLabeledIf: 1\n" +
-				"  line 42, col 9 to line 42, col 14 of module InnerLabeledIf: 4\n" +
-				"  line 46, col 9 to line 46, col 17 of module InnerLabeledIf: 1\n" +
-				"  line 47, col 9 to line 47, col 14 of module InnerLabeledIf: 1\n" +
-				"  line 51, col 9 to line 51, col 17 of module InnerLabeledIf: 1\n" +
-				"  line 52, col 9 to line 52, col 14 of module InnerLabeledIf: 1\n" +
-				"  line 56, col 9 to line 56, col 17 of module InnerLabeledIf: 1\n" +
-				"  line 57, col 9 to line 57, col 14 of module InnerLabeledIf: 1\n" +
-				"  line 61, col 9 to line 61, col 17 of module InnerLabeledIf: 1\n" +
-				"  line 62, col 9 to line 62, col 14 of module InnerLabeledIf: 1\n" +
-				"  line 66, col 9 to line 66, col 20 of module InnerLabeledIf: 4\n" +
-				"  line 67, col 9 to line 67, col 14 of module InnerLabeledIf: 4\n" +
-				"  line 71, col 41 to line 71, col 44 of module InnerLabeledIf: 0");
+		assertZeroUncovered();
 	}
 }
 /*

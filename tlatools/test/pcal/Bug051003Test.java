@@ -46,8 +46,6 @@ public class Bug051003Test extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6", "4", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
 		
-		assertCoverage("  line 28, col 19 to line 28, col 51 of module bug_05_10_03: 4\n" + 
-				"  line 31, col 19 to line 31, col 52 of module bug_05_10_03: 4\n" + 
-				"  line 37, col 70 to line 37, col 73 of module bug_05_10_03: 0");
+		assertZeroUncovered();
 	}
 }

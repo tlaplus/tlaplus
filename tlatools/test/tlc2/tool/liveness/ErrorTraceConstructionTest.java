@@ -70,21 +70,6 @@ public class ErrorTraceConstructionTest extends ModelCheckerTestCase {
 		
 		assertBackToState(4, "<N7 line 32, col 7 to line 34, col 19 of module ErrorTraceConstruction>");
 
-	assertCoverage("  line 12, col 14 to line 12, col 21 of module ErrorTraceConstruction: 1\n" +
-		"  line 13, col 14 to line 13, col 19 of module ErrorTraceConstruction: 1\n" +
-		"  line 15, col 14 to line 15, col 21 of module ErrorTraceConstruction: 1\n" +
-		"  line 16, col 14 to line 16, col 19 of module ErrorTraceConstruction: 1\n" +
-		"  line 18, col 14 to line 18, col 21 of module ErrorTraceConstruction: 1\n" +
-		"  line 19, col 14 to line 19, col 19 of module ErrorTraceConstruction: 1\n" +
-		"  line 21, col 14 to line 21, col 21 of module ErrorTraceConstruction: 1\n" +
-		"  line 22, col 14 to line 22, col 19 of module ErrorTraceConstruction: 1\n" +
-		"  line 24, col 14 to line 24, col 21 of module ErrorTraceConstruction: 1\n" +
-		"  line 25, col 14 to line 25, col 26 of module ErrorTraceConstruction: 1\n" +
-		"  line 27, col 14 to line 27, col 21 of module ErrorTraceConstruction: 1\n" +
-		"  line 28, col 14 to line 28, col 26 of module ErrorTraceConstruction: 1\n" +
-		"  line 30, col 14 to line 30, col 21 of module ErrorTraceConstruction: 1\n" +
-		"  line 31, col 14 to line 31, col 19 of module ErrorTraceConstruction: 1\n" +
-		"  line 33, col 14 to line 33, col 19 of module ErrorTraceConstruction: 1\n" +
-		"  line 34, col 14 to line 34, col 19 of module ErrorTraceConstruction: 1");
+	assertZeroUncovered();
 	}
 }

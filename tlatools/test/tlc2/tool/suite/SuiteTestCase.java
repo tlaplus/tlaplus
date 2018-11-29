@@ -39,6 +39,7 @@ public abstract class SuiteTestCase extends ModelCheckerTestCase {
 	private String leftStates = "0";
 	private String distinctStates = "1";
 	private String stateGenerated = "2";
+	private String uncovered;
 	
 	public SuiteTestCase() {
 		super("setBySetUp", "suite");
@@ -52,6 +53,10 @@ public abstract class SuiteTestCase extends ModelCheckerTestCase {
 		this.initStates = initStates;
 	}
 
+	public SuiteTestCase(String stateGenerated, String distinctStates, String leftStates, String initStates, final String uncovered) {
+		this(stateGenerated, distinctStates, leftStates, initStates);
+		this.uncovered = uncovered;
+	}
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ModelCheckerTestCase#setUp()
 	 */
@@ -68,5 +73,11 @@ public abstract class SuiteTestCase extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, stateGenerated, distinctStates, leftStates));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, initStates));
 		assertFalse(recorder.recorded(EC.GENERAL));
+		
+		if (this.uncovered != null) {
+			assertUncovered(this.uncovered);
+		} else {
+			assertZeroUncovered();
+		}
 	}
 }

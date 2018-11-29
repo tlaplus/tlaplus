@@ -64,7 +64,6 @@ public class RandomSubsetNextTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 30\n/\\ y = 10");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		assertCoverage("  line 10, col 12 to line 10, col 21 of module RandomSubsetNext: 67311\n" +
-				"  line 9, col 12 to line 9, col 42 of module RandomSubsetNext: 67311");
+		assertZeroUncovered();
 	}
 }

@@ -58,7 +58,6 @@ public class RandomElementXandYTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 0\n/\\ y = 1");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-	assertCoverage("  line 10, col 12 to line 10, col 35 of module RandomElementXandY: 2\n" +
-		"  line 9, col 12 to line 9, col 35 of module RandomElementXandY: 2");
+	assertZeroUncovered();
 	}
 }

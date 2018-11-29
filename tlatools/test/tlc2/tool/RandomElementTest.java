@@ -64,8 +64,6 @@ public class RandomElementTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 767\n/\\ y = 10");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-	assertCoverage("  line 10, col 15 to line 10, col 20 of module RandomElement: 465\n" +
-		"  line 11, col 12 to line 11, col 21 of module RandomElement: 931\n" +
-		"  line 9, col 15 to line 9, col 41 of module RandomElement: 466");
+	assertZeroUncovered();
 	}
 }

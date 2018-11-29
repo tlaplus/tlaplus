@@ -77,6 +77,6 @@ public class RandomSubsetSetOfFcnsTest extends ModelCheckerTestCase {
 //		// Check z is false
 //		assertEquals(BoolValue.ValFalse, (BoolValue) secondState.get(UniqueString.uniqueStringOf("z")));
 
-		assertCoverage("  line 16, col 22 to line 16, col 26 of module RandomSubsetSetOfFcns: 0");
+		assertZeroUncovered();
 	}
 }

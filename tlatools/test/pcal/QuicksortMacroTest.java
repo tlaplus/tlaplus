@@ -47,37 +47,7 @@ public class QuicksortMacroTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "390", "306", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "13"));
 
-		assertCoverage("  line 100, col 14 to line 100, col 28 of module QuicksortMacro: 44\n" +
-			"  line 101, col 11 to line 101, col 20 of module QuicksortMacro: 44\n" +
-			"  line 102, col 11 to line 102, col 21 of module QuicksortMacro: 44\n" +
-			"  line 103, col 21 to line 103, col 45 of module QuicksortMacro: 0\n" +
-			"  line 108, col 15 to line 108, col 27 of module QuicksortMacro: 27\n" +
-			"  line 109, col 15 to line 109, col 22 of module QuicksortMacro: 27\n" +
-			"  line 110, col 15 to line 115, col 32 of module QuicksortMacro: 27\n" +
-			"  line 116, col 12 to line 116, col 21 of module QuicksortMacro: 27\n" +
-			"  line 117, col 12 to line 117, col 22 of module QuicksortMacro: 27\n" +
-			"  line 118, col 22 to line 118, col 39 of module QuicksortMacro: 0\n" +
-			"  line 122, col 41 to line 122, col 44 of module QuicksortMacro: 0\n" +
-			"  line 64, col 27 to line 64, col 42 of module QuicksortMacro: 112\n" +
-			"  line 70, col 29 to line 70, col 35 of module QuicksortMacro: 112\n" +
-			"  line 71, col 22 to line 71, col 32 of module QuicksortMacro: 112\n" +
-			"  line 72, col 32 to line 72, col 59 of module QuicksortMacro: 0\n" +
-			"  line 73, col 22 to line 73, col 41 of module QuicksortMacro: 64\n" +
-			"  line 74, col 22 to line 74, col 47 of module QuicksortMacro: 64\n" +
-			"  line 75, col 22 to line 75, col 43 of module QuicksortMacro: 64\n" +
-			"  line 76, col 22 to line 76, col 43 of module QuicksortMacro: 64\n" +
-			"  line 77, col 22 to line 77, col 41 of module QuicksortMacro: 64\n" +
-			"  line 78, col 32 to line 78, col 49 of module QuicksortMacro: 0\n" +
-			"  line 81, col 11 to line 81, col 28 of module QuicksortMacro: 48\n" +
-			"  line 82, col 11 to line 82, col 21 of module QuicksortMacro: 48\n" +
-			"  line 83, col 21 to line 83, col 55 of module QuicksortMacro: 0\n" +
-			"  line 86, col 14 to line 86, col 25 of module QuicksortMacro: 48\n" +
-			"  line 87, col 14 to line 87, col 23 of module QuicksortMacro: 48\n" +
-			"  line 88, col 14 to line 93, col 31 of module QuicksortMacro: 48\n" +
-			"  line 94, col 11 to line 94, col 20 of module QuicksortMacro: 48\n" +
-			"  line 95, col 11 to line 95, col 21 of module QuicksortMacro: 48\n" +
-			"  line 96, col 21 to line 96, col 38 of module QuicksortMacro: 0\n" +
-			"  line 99, col 14 to line 99, col 23 of module QuicksortMacro: 44");
+		assertZeroUncovered();
 	}
 }
 /*

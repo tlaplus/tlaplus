@@ -47,13 +47,6 @@ public class NestedMacrosTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "9", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "5"));
 
-	assertCoverage("  line 45, col 16 to line 45, col 42 of module NestedMacros: 6\n" +
-		"  line 46, col 16 to line 46, col 47 of module NestedMacros: 6\n" +
-		"  line 47, col 26 to line 47, col 35 of module NestedMacros: 0\n" +
-		"  line 50, col 16 to line 50, col 22 of module NestedMacros: 6\n" +
-		"  line 51, col 16 to line 51, col 43 of module NestedMacros: 6\n" +
-		"  line 52, col 16 to line 52, col 22 of module NestedMacros: 6\n" +
-		"  line 55, col 16 to line 55, col 49 of module NestedMacros: 6\n" +
-		"  line 61, col 70 to line 61, col 73 of module NestedMacros: 0");
+	assertZeroUncovered();
 	}
 }

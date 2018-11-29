@@ -38,6 +38,6 @@ public class ETest11 extends SuiteETestCase {
 		assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL,
 				"Attempted to check if the value:\n1\nis an element of STRING."));
 
-	assertCoverage("  line 13, col 12 to line 13, col 15 of module etest11: 0");
+		assertUncovered("line 13, col 12 to line 13, col 15 of module etest11: 0");
 	}
 }

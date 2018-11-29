@@ -46,19 +46,7 @@ public class UniprocDefineTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "4", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
 
-		assertCoverage("  line 41, col 11 to line 41, col 29 of module UniprocDefine: 1\n" +
-			"  line 42, col 11 to line 42, col 30 of module UniprocDefine: 1\n" +
-			"  line 43, col 11 to line 43, col 28 of module UniprocDefine: 1\n" +
-			"  line 44, col 11 to line 44, col 28 of module UniprocDefine: 1\n" +
-			"  line 45, col 11 to line 45, col 30 of module UniprocDefine: 1\n" +
-			"  line 50, col 15 to line 50, col 20 of module UniprocDefine: 1\n" +
-			"  line 51, col 15 to line 55, col 32 of module UniprocDefine: 1\n" +
-			"  line 56, col 12 to line 56, col 17 of module UniprocDefine: 1\n" +
-			"  line 57, col 12 to line 57, col 22 of module UniprocDefine: 1\n" +
-			"  line 58, col 12 to line 58, col 17 of module UniprocDefine: 1\n" +
-			"  line 62, col 13 to line 62, col 24 of module UniprocDefine: 1\n" +
-			"  line 63, col 23 to line 63, col 42 of module UniprocDefine: 0\n" +
-			"  line 67, col 41 to line 67, col 44 of module UniprocDefine: 0");
+		assertZeroUncovered();
 	}
 }
 /*

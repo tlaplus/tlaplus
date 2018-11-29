@@ -47,23 +47,7 @@ public class NoLoop2Test extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "9", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "6"));
 
-		assertCoverage("  line 30, col 11 to line 30, col 16 of module NoLoop2: 1\n" +
-			"  line 31, col 9 to line 31, col 17 of module NoLoop2: 1\n" +
-			"  line 32, col 9 to line 32, col 14 of module NoLoop2: 1\n" +
-			"  line 36, col 14 to line 36, col 19 of module NoLoop2: 2\n" +
-			"  line 37, col 14 to line 37, col 24 of module NoLoop2: 2\n" +
-			"  line 38, col 9 to line 38, col 17 of module NoLoop2: 2\n" +
-			"  line 42, col 20 to line 42, col 29 of module NoLoop2: 1\n" +
-			"  line 43, col 20 to line 43, col 28 of module NoLoop2: 1\n" +
-			"  line 44, col 20 to line 44, col 29 of module NoLoop2: 1\n" +
-			"  line 45, col 20 to line 45, col 28 of module NoLoop2: 1\n" +
-			"  line 46, col 9 to line 46, col 14 of module NoLoop2: 2\n" +
-			"  line 49, col 9 to line 49, col 18 of module NoLoop2: 1\n" +
-			"  line 50, col 9 to line 50, col 17 of module NoLoop2: 1\n" +
-			"  line 51, col 9 to line 51, col 14 of module NoLoop2: 1\n" +
-			"  line 55, col 9 to line 55, col 20 of module NoLoop2: 2\n" +
-			"  line 56, col 19 to line 56, col 28 of module NoLoop2: 0\n" +
-			"  line 60, col 41 to line 60, col 44 of module NoLoop2: 0");
+		assertZeroUncovered();
 	}
 }
 /*

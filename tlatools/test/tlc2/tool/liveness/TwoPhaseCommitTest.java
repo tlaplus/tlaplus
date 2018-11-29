@@ -43,21 +43,6 @@ public class TwoPhaseCommitTest extends ModelCheckerTestCase {
 	public void testSpec() {
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-	assertCoverage("  line 105, col 6 to line 105, col 24 of module TwoPhaseCommit: 1060\n" +
-		"  line 106, col 6 to line 106, col 32 of module TwoPhaseCommit: 1060\n" +
-		"  line 107, col 16 to line 107, col 36 of module TwoPhaseCommit: 0\n" +
-		"  line 75, col 59 to line 75, col 87 of module TwoPhaseCommit: 355\n" +
-		"  line 75, col 9 to line 75, col 54 of module TwoPhaseCommit: 355\n" +
-		"  line 76, col 58 to line 76, col 85 of module TwoPhaseCommit: 355\n" +
-		"  line 76, col 9 to line 76, col 53 of module TwoPhaseCommit: 355\n" +
-		"  line 77, col 16 to line 77, col 36 of module TwoPhaseCommit: 0\n" +
-		"  line 83, col 30 to line 83, col 73 of module TwoPhaseCommit: 30\n" +
-		"  line 84, col 29 to line 84, col 70 of module TwoPhaseCommit: 2700\n" +
-		"  line 85, col 16 to line 85, col 42 of module TwoPhaseCommit: 0\n" +
-		"  line 93, col 6 to line 93, col 36 of module TwoPhaseCommit: 640\n" +
-		"  line 95, col 14 to line 95, col 34 of module TwoPhaseCommit: 1\n" +
-		"  line 96, col 14 to line 96, col 41 of module TwoPhaseCommit: 1\n" +
-		"  line 97, col 21 to line 97, col 36 of module TwoPhaseCommit: 0\n" +
-		"  line 98, col 6 to line 98, col 21 of module TwoPhaseCommit: 640");
+	assertZeroUncovered();
 	}
 }

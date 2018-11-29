@@ -61,6 +61,6 @@ public class DepthFirstErrorTraceTest extends ModelCheckerTestCase {
 		expectedTrace.add("x = 6");
 		expectedTrace.add("x = 7");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT1), expectedTrace);
-		assertCoverage("  line 6, col 21 to line 6, col 26 of module DepthFirstErrorTrace: 7");
+		assertZeroUncovered();
 	}
 }

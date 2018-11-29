@@ -52,6 +52,6 @@ public class SubsetEqTest extends ModelCheckerTestCase {
 		// No error trace!
 		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
 
-	assertCoverage("  line 8, col 9 to line 17, col 49 of module SubsetEq: 1");
+	assertZeroUncovered();
 	}
 }

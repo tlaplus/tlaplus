@@ -92,7 +92,7 @@ public final class ObjLongTable<T> {
 	 */
 	public ObjLongTable<T> mergeInto(final ObjLongTable<T> other) {
 		T key;
-		ObjLongTable<T>.Enumerator<T> keys2 = keys();
+		final ObjLongTable<T>.Enumerator<T> keys2 = other.keys();
 		while ((key = keys2.nextElement()) != null) {
 			add(key, other.get(key));
 		}

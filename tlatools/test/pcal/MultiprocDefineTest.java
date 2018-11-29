@@ -46,10 +46,7 @@ public class MultiprocDefineTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "8", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
 
-		assertCoverage("  line 39, col 18 to line 39, col 49 of module MultiprocDefine: 12\n" +
-			"  line 42, col 18 to line 42, col 51 of module MultiprocDefine: 12\n" +
-			"  line 43, col 18 to line 43, col 23 of module MultiprocDefine: 12\n" +
-			"  line 49, col 70 to line 49, col 73 of module MultiprocDefine: 0");
+		assertZeroUncovered();
 	}
 }
 /*

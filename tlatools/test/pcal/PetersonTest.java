@@ -46,21 +46,6 @@ public class PetersonTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "85", "42", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "11"));
 
-	assertCoverage("  line 52, col 16 to line 52, col 47 of module Peterson: 18\n" +
-		"  line 53, col 26 to line 53, col 41 of module Peterson: 0\n" +
-		"  line 56, col 16 to line 56, col 51 of module Peterson: 18\n" +
-		"  line 57, col 16 to line 57, col 47 of module Peterson: 18\n" +
-		"  line 58, col 16 to line 58, col 27 of module Peterson: 18\n" +
-		"  line 61, col 16 to line 61, col 32 of module Peterson: 18\n" +
-		"  line 62, col 16 to line 62, col 47 of module Peterson: 18\n" +
-		"  line 63, col 16 to line 63, col 27 of module Peterson: 18\n" +
-		"  line 68, col 27 to line 68, col 58 of module Peterson: 8\n" +
-		"  line 69, col 27 to line 69, col 58 of module Peterson: 6\n" +
-		"  line 70, col 26 to line 70, col 41 of module Peterson: 0\n" +
-		"  line 74, col 16 to line 74, col 47 of module Peterson: 8\n" +
-		"  line 75, col 26 to line 75, col 41 of module Peterson: 0\n" +
-		"  line 78, col 16 to line 78, col 52 of module Peterson: 8\n" +
-		"  line 79, col 16 to line 79, col 47 of module Peterson: 8\n" +
-		"  line 80, col 16 to line 80, col 27 of module Peterson: 8");
+	assertZeroUncovered();
 	}
 }

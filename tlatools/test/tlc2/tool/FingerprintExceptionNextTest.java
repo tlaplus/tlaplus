@@ -52,8 +52,6 @@ public class FingerprintExceptionNextTest extends ModelCheckerTestCase {
 			+ "SUBSET 1..32";
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_FINGERPRINT_EXCEPTION, arg1, arg2));
 		
-		assertCoverage("  line 8, col 39 to line 8, col 64 of module FingerprintExceptionNext: 1\n" +
-				"  line 8, col 71 to line 8, col 76 of module FingerprintExceptionNext: 0");
+		assertUncovered("line 8, col 71 to line 8, col 76 of module FingerprintExceptionNext: 0\n");
 	}
-
 }

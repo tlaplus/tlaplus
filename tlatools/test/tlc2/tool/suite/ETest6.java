@@ -38,7 +38,7 @@ public class ETest6 extends SuiteETestCase {
 		assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL,
 				"In evaluation, the identifier x is either undefined or not an operator.\nline 16, col 23 to line 16, col 23 of module etest6"));
 
-	assertCoverage("  line 13, col 14 to line 13, col 43 of module etest6: 0\n" +
-		"  line 19, col 23 to line 19, col 23 of module etest6: 0");
+		assertUncovered("line 13, col 14 to line 13, col 43 of module etest6: 0\n"
+				+ "line 19, col 23 to line 19, col 23 of module etest6: 0");
 	}
 }

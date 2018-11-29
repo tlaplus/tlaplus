@@ -47,20 +47,6 @@ public class Either1Test extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "7", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
 		
-		assertCoverage("  line 24, col 15 to line 24, col 20 of module Either1: 1\n" + 
-				"  line 25, col 15 to line 25, col 23 of module Either1: 1\n" + 
-				"  line 26, col 15 to line 26, col 20 of module Either1: 1\n" + 
-				"  line 27, col 15 to line 27, col 20 of module Either1: 1\n" + 
-				"  line 28, col 15 to line 28, col 23 of module Either1: 1\n" + 
-				"  line 29, col 15 to line 29, col 20 of module Either1: 1\n" + 
-				"  line 32, col 9 to line 32, col 18 of module Either1: 1\n" + 
-				"  line 33, col 9 to line 33, col 17 of module Either1: 1\n" + 
-				"  line 34, col 9 to line 34, col 14 of module Either1: 1\n" + 
-				"  line 37, col 9 to line 37, col 18 of module Either1: 1\n" + 
-				"  line 38, col 9 to line 38, col 17 of module Either1: 1\n" + 
-				"  line 39, col 9 to line 39, col 14 of module Either1: 1\n" + 
-				"  line 43, col 9 to line 43, col 20 of module Either1: 2\n" + 
-				"  line 44, col 19 to line 44, col 28 of module Either1: 0\n" + 
-				"  line 48, col 41 to line 48, col 44 of module Either1: 0");
+		assertZeroUncovered();
 	}
 }

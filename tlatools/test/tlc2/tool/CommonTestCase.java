@@ -31,13 +31,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.runner.RunWith;
 
 import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
+import tlc2.TestMPRecorder.Coverage;
 import tlc2.output.EC;
 import tlc2.output.MPRecorder;
 import tlc2.tool.liveness.GraphNode;
@@ -166,15 +169,18 @@ public abstract class CommonTestCase {
 		assertTrue(ptrs.exists());
 		assertEquals(ptrsSize, ptrs.length());
 	}
+
+	protected void assertUncovered(final String expectedUncovered) {
+		final List<Coverage> expected = Arrays.asList(expectedUncovered.trim().split("\n")).stream()
+				.map(o -> new Coverage(o.split(":"))).collect(Collectors.toList());
+
+		// Checks if all uncovered (zero) lines are found and no more.
+		final Set<Coverage> expectedZero = expected.stream().filter(Coverage::isZero).collect(Collectors.toSet());
+		final Set<Coverage> actualZeroCoverage = recorder.getZeroCoverage().stream().collect(Collectors.toSet());
+		assertEquals(expectedZero, actualZeroCoverage);
+	}
 	
-	protected void assertCoverage(final String expectedCoverage) {
-		final String[] expectedCoverageLine = expectedCoverage.split("\n");
-		final Map<String, Integer> coverageRecords = recorder.getCoverageRecords();
-		assertEquals(expectedCoverageLine.length, coverageRecords.size());
-		for (String line : expectedCoverageLine) {
-			String[] coverage = line.split(":");
-			assertTrue(coverage[0].trim() + " not found.", coverageRecords.containsKey(coverage[0].trim()));
-			assertEquals(Integer.valueOf(coverage[1].trim()), coverageRecords.get(coverage[0].trim()));
-		}
+	protected void assertZeroUncovered() {
+		assertTrue(recorder.getZeroCoverage().isEmpty());
 	}
 }

@@ -68,8 +68,7 @@ public class PrintTraceRaceTest extends ModelCheckerTestCase {
 		
 		assertEquals(2, objs.length);
 
-		assertCoverage("  line 12, col 13 to line 12, col 65 of module PrintTraceRace: 1\n" +
-			"  line 15, col 22 to line 15, col 28 of module PrintTraceRace: 0");
+		assertUncovered("line 15, col 25 to line 15, col 25 of module PrintTraceRace: 0\n");
 	}
 	
 	protected int getNumberOfThreads() {

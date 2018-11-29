@@ -50,6 +50,6 @@ public class DoInitFunctorEvalExceptionTest extends ModelCheckerTestCase {
 				"TLC expected a boolean value, but did not find one. line 15, col 15 to line 15, col 18 of module DoInitFunctorEvalException",
 				"x = 1\n"));
 
-	assertCoverage("  line 9, col 9 to line 9, col 14 of module DoInitFunctorEvalException: 0");
+		assertUncovered("line 9, col 9 to line 9, col 14 of module DoInitFunctorEvalException: 0");
 	}
 }

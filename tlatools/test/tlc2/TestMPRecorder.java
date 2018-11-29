@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import tlc2.output.EC;
 
@@ -49,6 +51,10 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 
 	public List<Object> getRecords(int code) {
 		return records.get(code);
+	}
+	
+	private List<Object> getRecordsOrDefault(final int code, final List<Object> defaultValue) {
+		return records.getOrDefault(code, defaultValue);
 	}
 
 	public int getRecordAsInt(int code) {
@@ -114,19 +120,88 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 		return true;
 	}
 
-	public Map<String, Integer> getCoverageRecords() {
+	public String getCoverageRecords() {
 		final List<Object> coverages = getRecords(EC.TLC_COVERAGE_VALUE);
-		final Map<String, Integer> cover = new HashMap<>();
+		String out = "";
 		if (coverages == null) {
-			return cover;
+			return out;
 		}
 		for (final Object o : coverages) {
 			final String[] coverage = (String[]) o;
-			cover.put(coverage[0], Integer.parseInt(coverage[1]));
+			out += coverage[0] + ": " + Integer.parseInt(coverage[1]) + "\n";
 		}
-		return cover;
+		return out;
+	}
+	
+	public List<Coverage> getZeroCoverage() {
+		return getCoverage((Predicate<? super String[]>) o -> Long.valueOf(((String[]) o)[1]) == 0);
+	}
+	
+	public List<Coverage> getNonZeroCoverage() {
+		return getCoverage((Predicate<? super String[]>) o -> Long.valueOf(((String[]) o)[1]) > 0);
 	}
 
+	private List<Coverage> getCoverage(Predicate<? super String[]> p) {
+		final List<Object> coverages = getRecordsOrDefault(EC.TLC_COVERAGE_VALUE, new ArrayList<>(0));
+		return coverages.stream().map(o -> (String[]) o).filter(p)
+				.map(a -> new Coverage(a)).collect(Collectors.toList());
+	}
+	
+	public static class Coverage {
+		private final String line;
+		private final long count;
+		
+		public Coverage(String[] line) {
+			this.line = line[0].trim();
+			this.count = Long.valueOf(line[1].trim());
+		}
+		
+		public String getLine() {
+			return line;
+		}
+
+		public long getCount() {
+			return count;
+		}
+		
+		public boolean isZero() {
+			return count == 0L;
+		}
+
+		@Override
+		public String toString() {
+			return "Coverage [line=" + line + ", count=" + count + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + (int) (count ^ (count >>> 32));
+			result = prime * result + ((line == null) ? 0 : line.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Coverage other = (Coverage) obj;
+			if (count != other.count)
+				return false;
+			if (line == null) {
+				if (other.line != null)
+					return false;
+			} else if (!line.equals(other.line))
+				return false;
+			return true;
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */

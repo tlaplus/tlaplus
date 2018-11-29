@@ -46,25 +46,6 @@ public class CDiningPhilosophersTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "301", "118", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "14"));
 		
-		assertCoverage("  line 100, col 11 to line 100, col 40 of module CDiningPhilosophers: 22\n" + 
-				"  line 101, col 11 to line 101, col 40 of module CDiningPhilosophers: 22\n" + 
-				"  line 57, col 16 to line 57, col 46 of module CDiningPhilosophers: 59\n" + 
-				"  line 58, col 16 to line 58, col 47 of module CDiningPhilosophers: 59\n" + 
-				"  line 62, col 16 to line 62, col 54 of module CDiningPhilosophers: 30\n" + 
-				"  line 63, col 16 to line 63, col 46 of module CDiningPhilosophers: 30\n" + 
-				"  line 67, col 15 to line 67, col 46 of module CDiningPhilosophers: 30\n" + 
-				"  line 68, col 15 to line 68, col 24 of module CDiningPhilosophers: 30\n" + 
-				"  line 71, col 16 to line 71, col 46 of module CDiningPhilosophers: 30\n" + 
-				"  line 72, col 16 to line 72, col 47 of module CDiningPhilosophers: 30\n" + 
-				"  line 75, col 16 to line 75, col 54 of module CDiningPhilosophers: 76\n" + 
-				"  line 76, col 16 to line 76, col 47 of module CDiningPhilosophers: 76\n" + 
-				"  line 82, col 11 to line 82, col 40 of module CDiningPhilosophers: 23\n" + 
-				"  line 83, col 11 to line 83, col 40 of module CDiningPhilosophers: 23\n" + 
-				"  line 87, col 11 to line 87, col 38 of module CDiningPhilosophers: 10\n" + 
-				"  line 88, col 11 to line 88, col 39 of module CDiningPhilosophers: 10\n" + 
-				"  line 92, col 10 to line 92, col 39 of module CDiningPhilosophers: 10\n" + 
-				"  line 93, col 10 to line 93, col 19 of module CDiningPhilosophers: 10\n" + 
-				"  line 96, col 11 to line 96, col 38 of module CDiningPhilosophers: 10\n" + 
-				"  line 97, col 11 to line 97, col 40 of module CDiningPhilosophers: 10");
+		assertZeroUncovered();
 	}
 }

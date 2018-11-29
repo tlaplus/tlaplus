@@ -47,33 +47,9 @@ public class EvenOddTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "13", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "13"));
 
-		assertCoverage("  line 103, col 41 to line 103, col 44 of module EvenOdd: 0\n" + 
-				"  line 50, col 24 to line 50, col 37 of module EvenOdd: 1\n" + 
-				"  line 51, col 24 to line 51, col 43 of module EvenOdd: 1\n" + 
-				"  line 52, col 24 to line 52, col 49 of module EvenOdd: 1\n" + 
-				"  line 53, col 24 to line 53, col 43 of module EvenOdd: 1\n" + 
-				"  line 54, col 24 to line 54, col 35 of module EvenOdd: 1\n" + 
-				"  line 55, col 27 to line 58, col 50 of module EvenOdd: 3\n" + 
-				"  line 59, col 27 to line 59, col 43 of module EvenOdd: 3\n" + 
-				"  line 60, col 24 to line 60, col 35 of module EvenOdd: 3\n" + 
-				"  line 61, col 34 to line 61, col 52 of module EvenOdd: 0\n" + 
-				"  line 67, col 23 to line 67, col 37 of module EvenOdd: 0\n" + 
-				"  line 68, col 23 to line 68, col 34 of module EvenOdd: 0\n" + 
-				"  line 69, col 33 to line 69, col 50 of module EvenOdd: 0\n" + 
-				"  line 70, col 26 to line 73, col 43 of module EvenOdd: 3\n" + 
-				"  line 74, col 26 to line 74, col 42 of module EvenOdd: 3\n" + 
-				"  line 75, col 23 to line 75, col 35 of module EvenOdd: 3\n" + 
-				"  line 76, col 33 to line 76, col 38 of module EvenOdd: 3\n" + 
-				"  line 77, col 12 to line 77, col 23 of module EvenOdd: 3\n" + 
-				"  line 80, col 12 to line 80, col 31 of module EvenOdd: 3\n" + 
-				"  line 81, col 12 to line 81, col 35 of module EvenOdd: 3\n" + 
-				"  line 82, col 12 to line 82, col 31 of module EvenOdd: 3\n" + 
-				"  line 83, col 22 to line 83, col 40 of module EvenOdd: 0\n" + 
-				"  line 88, col 13 to line 91, col 30 of module EvenOdd: 1\n" + 
-				"  line 92, col 13 to line 92, col 22 of module EvenOdd: 1\n" + 
-				"  line 93, col 10 to line 93, col 22 of module EvenOdd: 1\n" + 
-				"  line 94, col 20 to line 94, col 37 of module EvenOdd: 0\n" + 
-				"  line 98, col 10 to line 98, col 21 of module EvenOdd: 1\n" + 
-				"  line 99, col 20 to line 99, col 51 of module EvenOdd: 0");
+		assertUncovered("line 67, col 23 to line 67, col 37 of module EvenOdd: 0\n" + 
+				"line 68, col 23 to line 68, col 34 of module EvenOdd: 0\n" + 
+				"line 69, col 36 to line 69, col 40 of module EvenOdd: 0\n" + 
+				"line 69, col 43 to line 69, col 47 of module EvenOdd: 0");
 	}
 }

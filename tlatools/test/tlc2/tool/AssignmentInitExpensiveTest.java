@@ -45,6 +45,6 @@ public class AssignmentInitExpensiveTest extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "10002", "1", "0"));
 
-	assertCoverage("  line 15, col 33 to line 15, col 33 of module AssignmentInitExpensive: 1");
+	assertZeroUncovered();
 	}
 }

@@ -47,29 +47,7 @@ public class FischerTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2487", "1002", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "24"));
 
-		assertCoverage("  line 102, col 16 to line 102, col 46 of module Fischer: 48\n" + 
-				"  line 103, col 26 to line 103, col 50 of module Fischer: 0\n" + 
-				"  line 106, col 15 to line 106, col 20 of module Fischer: 48\n" + 
-				"  line 107, col 15 to line 107, col 45 of module Fischer: 48\n" + 
-				"  line 108, col 25 to line 108, col 46 of module Fischer: 0\n" + 
-				"  line 115, col 10 to line 117, col 47 of module Fischer: 530\n" + 
-				"  line 118, col 10 to line 118, col 38 of module Fischer: 530\n" + 
-				"  line 119, col 20 to line 119, col 37 of module Fischer: 0\n" + 
-				"  line 73, col 15 to line 73, col 45 of module Fischer: 375\n" + 
-				"  line 74, col 25 to line 74, col 49 of module Fischer: 0\n" + 
-				"  line 78, col 26 to line 78, col 56 of module Fischer: 375\n" + 
-				"  line 79, col 26 to line 79, col 57 of module Fischer: 48\n" + 
-				"  line 80, col 25 to line 80, col 49 of module Fischer: 0\n" + 
-				"  line 84, col 15 to line 84, col 53 of module Fischer: 135\n" + 
-				"  line 85, col 15 to line 85, col 45 of module Fischer: 135\n" + 
-				"  line 86, col 25 to line 86, col 42 of module Fischer: 0\n" + 
-				"  line 89, col 15 to line 89, col 23 of module Fischer: 609\n" + 
-				"  line 90, col 15 to line 90, col 55 of module Fischer: 609\n" + 
-				"  line 91, col 15 to line 91, col 45 of module Fischer: 609\n" + 
-				"  line 92, col 25 to line 92, col 33 of module Fischer: 609\n" + 
-				"  line 96, col 15 to line 96, col 56 of module Fischer: 318\n" + 
-				"  line 97, col 15 to line 97, col 45 of module Fischer: 318\n" + 
-				"  line 98, col 25 to line 98, col 42 of module Fischer: 0");
+		assertZeroUncovered();
 	}
 }
 /*

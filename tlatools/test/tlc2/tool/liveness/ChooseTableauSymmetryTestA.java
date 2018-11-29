@@ -65,8 +65,6 @@ public class ChooseTableauSymmetryTestA extends ModelCheckerTestCase {
 		
 		assertBackToState(3, "<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
 
-	assertCoverage("  line 11, col 15 to line 11, col 46 of module ChooseTableauSymmetry: 4\n" +
-		"  line 14, col 15 to line 14, col 47 of module ChooseTableauSymmetry: 4\n" +
-		"  line 8, col 16 to line 8, col 47 of module ChooseTableauSymmetry: 4");
+	assertZeroUncovered();
 	}
 }

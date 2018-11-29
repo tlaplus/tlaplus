@@ -44,6 +44,6 @@ public class AssignmentNext3Test extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "26", "5", "0"));
-		assertCoverage("  line 5, col 12 to line 5, col 23 of module AssignmentNext3: 25");
+		assertZeroUncovered();
 	}
 }

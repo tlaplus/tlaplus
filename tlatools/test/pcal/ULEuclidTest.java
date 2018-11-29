@@ -47,16 +47,6 @@ public class ULEuclidTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6752", "6352", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "42"));
 
-	assertCoverage("  line 59, col 38 to line 59, col 43 of module ULEuclid: 698\n" +
-		"  line 60, col 38 to line 60, col 43 of module ULEuclid: 698\n" +
-		"  line 62, col 45 to line 62, col 54 of module ULEuclid: 0\n" +
-		"  line 63, col 24 to line 63, col 36 of module ULEuclid: 2776\n" +
-		"  line 66, col 24 to line 66, col 35 of module ULEuclid: 400\n" +
-		"  line 67, col 34 to line 67, col 43 of module ULEuclid: 0\n" +
-		"  line 68, col 23 to line 68, col 40 of module ULEuclid: 0\n" +
-		"  line 71, col 13 to line 71, col 22 of module ULEuclid: 2776\n" +
-		"  line 72, col 13 to line 72, col 25 of module ULEuclid: 2776\n" +
-		"  line 73, col 23 to line 73, col 43 of module ULEuclid: 0\n" +
-		"  line 77, col 41 to line 77, col 44 of module ULEuclid: 0");
+	assertZeroUncovered();
 	}
 }

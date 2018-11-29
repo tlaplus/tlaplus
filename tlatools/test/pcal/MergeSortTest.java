@@ -46,84 +46,9 @@ public class MergeSortTest extends PCalModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "86", "80", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "18"));
-		assertCoverage("  line 104, col 21 to line 104, col 41 of module MergeSort: 4\n" +
-				"  line 105, col 21 to line 105, col 30 of module MergeSort: 4\n" +
-				"  line 106, col 21 to line 106, col 30 of module MergeSort: 10\n" +
-				"  line 107, col 21 to line 107, col 26 of module MergeSort: 10\n" +
-				"  line 108, col 20 to line 108, col 51 of module MergeSort: 0\n" +
-				"  line 111, col 13 to line 111, col 18 of module MergeSort: 4\n" +
-				"  line 112, col 13 to line 112, col 18 of module MergeSort: 4\n" +
-				"  line 113, col 13 to line 121, col 30 of module MergeSort: 4\n" +
-				"  line 122, col 10 to line 122, col 30 of module MergeSort: 4\n" +
-				"  line 123, col 10 to line 123, col 30 of module MergeSort: 4\n" +
-				"  line 124, col 10 to line 124, col 30 of module MergeSort: 4\n" +
-				"  line 125, col 10 to line 125, col 30 of module MergeSort: 4\n" +
-				"  line 126, col 10 to line 126, col 19 of module MergeSort: 4\n" +
-				"  line 127, col 20 to line 127, col 29 of module MergeSort: 0\n" +
-				"  line 130, col 13 to line 130, col 20 of module MergeSort: 4\n" +
-				"  line 131, col 13 to line 131, col 18 of module MergeSort: 4\n" +
-				"  line 132, col 13 to line 140, col 30 of module MergeSort: 4\n" +
-				"  line 141, col 10 to line 141, col 30 of module MergeSort: 4\n" +
-				"  line 142, col 10 to line 142, col 30 of module MergeSort: 4\n" +
-				"  line 143, col 10 to line 143, col 30 of module MergeSort: 4\n" +
-				"  line 144, col 10 to line 144, col 30 of module MergeSort: 4\n" +
-				"  line 145, col 10 to line 145, col 19 of module MergeSort: 4\n" +
-				"  line 146, col 20 to line 146, col 29 of module MergeSort: 0\n" +
-				"  line 149, col 10 to line 149, col 15 of module MergeSort: 4\n" +
-				"  line 150, col 10 to line 150, col 19 of module MergeSort: 4\n" +
-				"  line 151, col 20 to line 151, col 51 of module MergeSort: 0\n" +
-				"  line 155, col 21 to line 155, col 47 of module MergeSort: 4\n" +
-				"  line 156, col 21 to line 156, col 30 of module MergeSort: 4\n" +
-				"  line 157, col 21 to line 157, col 30 of module MergeSort: 4\n" +
-				"  line 158, col 21 to line 158, col 26 of module MergeSort: 4\n" +
-				"  line 160, col 32 to line 160, col 37 of module MergeSort: 4\n" +
-				"  line 162, col 32 to line 162, col 61 of module MergeSort: 0\n" +
-				"  line 163, col 21 to line 163, col 30 of module MergeSort: 4\n" +
-				"  line 164, col 21 to line 164, col 30 of module MergeSort: 4\n" +
-				"  line 165, col 21 to line 165, col 26 of module MergeSort: 4\n" +
-				"  line 166, col 20 to line 166, col 45 of module MergeSort: 0\n" +
-				"  line 170, col 21 to line 170, col 59 of module MergeSort: 4\n" +
-				"  line 171, col 21 to line 171, col 30 of module MergeSort: 4\n" +
-				"  line 172, col 21 to line 172, col 30 of module MergeSort: 4\n" +
-				"  line 173, col 31 to line 173, col 40 of module MergeSort: 0\n" +
-				"  line 175, col 32 to line 175, col 37 of module MergeSort: 4\n" +
-				"  line 176, col 32 to line 176, col 37 of module MergeSort: 4\n" +
-				"  line 178, col 32 to line 178, col 61 of module MergeSort: 0\n" +
-				"  line 179, col 32 to line 179, col 37 of module MergeSort: 0\n" +
-				"  line 180, col 21 to line 180, col 26 of module MergeSort: 4\n" +
-				"  line 181, col 21 to line 181, col 30 of module MergeSort: 4\n" +
-				"  line 182, col 21 to line 182, col 26 of module MergeSort: 4\n" +
-				"  line 183, col 20 to line 183, col 42 of module MergeSort: 0\n" +
-				"  line 188, col 32 to line 188, col 58 of module MergeSort: 1\n" +
-				"  line 189, col 32 to line 189, col 41 of module MergeSort: 1\n" +
-				"  line 190, col 32 to line 190, col 37 of module MergeSort: 1\n" +
-				"  line 191, col 32 to line 191, col 58 of module MergeSort: 7\n" +
-				"  line 192, col 32 to line 192, col 41 of module MergeSort: 7\n" +
-				"  line 193, col 32 to line 193, col 37 of module MergeSort: 7\n" +
-				"  line 194, col 21 to line 194, col 30 of module MergeSort: 8\n" +
-				"  line 195, col 21 to line 195, col 30 of module MergeSort: 8\n" +
-				"  line 196, col 21 to line 196, col 30 of module MergeSort: 4\n" +
-				"  line 197, col 31 to line 197, col 46 of module MergeSort: 0\n" +
-				"  line 198, col 20 to line 198, col 42 of module MergeSort: 0\n" +
-				"  line 201, col 10 to line 201, col 29 of module MergeSort: 14\n" +
-				"  line 202, col 10 to line 202, col 27 of module MergeSort: 14\n" +
-				"  line 203, col 10 to line 203, col 27 of module MergeSort: 14\n" +
-				"  line 204, col 10 to line 204, col 27 of module MergeSort: 14\n" +
-				"  line 205, col 10 to line 205, col 27 of module MergeSort: 14\n" +
-				"  line 206, col 10 to line 206, col 27 of module MergeSort: 14\n" +
-				"  line 207, col 10 to line 207, col 27 of module MergeSort: 14\n" +
-				"  line 208, col 10 to line 208, col 29 of module MergeSort: 14\n" +
-				"  line 209, col 20 to line 209, col 29 of module MergeSort: 0\n" +
-				"  line 214, col 15 to line 214, col 20 of module MergeSort: 6\n" +
-				"  line 215, col 15 to line 215, col 25 of module MergeSort: 6\n" +
-				"  line 216, col 15 to line 224, col 32 of module MergeSort: 6\n" +
-				"  line 225, col 12 to line 225, col 32 of module MergeSort: 6\n" +
-				"  line 226, col 12 to line 226, col 32 of module MergeSort: 6\n" +
-				"  line 227, col 12 to line 227, col 32 of module MergeSort: 6\n" +
-				"  line 228, col 12 to line 228, col 32 of module MergeSort: 6\n" +
-				"  line 229, col 12 to line 229, col 21 of module MergeSort: 6\n" +
-				"  line 230, col 22 to line 230, col 31 of module MergeSort: 0\n" +
-				"  line 234, col 41 to line 234, col 44 of module MergeSort: 0");
+		assertUncovered("line 162, col 32 to line 162, col 61 of module MergeSort: 0\n" + 
+				"line 178, col 32 to line 178, col 61 of module MergeSort: 0\n" + 
+				"line 179, col 32 to line 179, col 37 of module MergeSort: 0");
 	}
 }
 /*

@@ -50,15 +50,14 @@ public class CoverageStatisticsTest extends ModelCheckerTestCase {
 		// No 'general' errors recorded
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertCoverage("  line 17, col 9 to line 17, col 17 of module CoverageStatistics: 19\n" + 
-				"  line 18, col 19 to line 18, col 19 of module CoverageStatistics: 19\n" + 
-				"  line 21, col 19 to line 21, col 25 of module CoverageStatistics: 0\n" + 
-				"  line 21, col 23 to line 21, col 23 of module CoverageStatistics: 19\n" + 
-				"  line 24, col 9 to line 24, col 17 of module CoverageStatistics: 0\n" + 
+		assertUncovered("line 24, col 9 to line 24, col 17 of module CoverageStatistics: 0\n" + 
 				"  line 25, col 9 to line 25, col 18 of module CoverageStatistics: 0\n" + 
-				"  line 27, col 26 to line 27, col 29 of module CoverageStatistics: 0\n" + 
-				"  line 29, col 26 to line 29, col 32 of module CoverageStatistics: 0\n" + 
+				"  line 29, col 28 to line 29, col 28 of module CoverageStatistics: 0\n" + 
+				"  line 29, col 30 to line 29, col 30 of module CoverageStatistics: 0\n" + 
 				"  line 31, col 26 to line 31, col 26 of module CoverageStatistics: 0\n" + 
-				"  line 31, col 41 to line 31, col 41 of module CoverageStatistics: 0");
+				"  line 31, col 41 to line 31, col 41 of module CoverageStatistics: 0\n" + 
+				"  line 6, col 6 to line 6, col 6 of module CoverageStatistics: 0\n" + 
+				"  line 8, col 11 to line 8, col 11 of module CoverageStatistics: 0\n" + 
+				"  line 8, col 13 to line 8, col 13 of module CoverageStatistics: 0");
     }
 }

@@ -27,6 +27,8 @@ package tlc2.tool.suite;
 
 public class Test32 extends SuiteTestCase {
 	public Test32() {
-		super("3", "1", "0", "1");
+		super("3", "1", "0", "1", "line 23, col 17 to line 23, col 21 of module test32: 0\n" + 
+				"line 23, col 26 to line 23, col 29 of module test32: 0\n" + 
+				"line 27, col 23 to line 27, col 29 of module test32: 0\n");
 	}
 }

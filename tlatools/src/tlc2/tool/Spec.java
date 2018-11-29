@@ -1915,7 +1915,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             break;
         }
         case OPCODE_unchanged: {
-            this.collectUnchangedLocs(args[0], c, tbl, args[0]);
+            this.collectUnchangedLocs(args[0], c, tbl);
             break;
         }
         case OPCODE_aa: // AngleAct <A>_e
@@ -1955,7 +1955,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
     }
 
 	private final void collectUnchangedLocs(final SemanticNode expr, final Context c,
-			final ObjLongTable<SemanticNode> tbl, final SemanticNode parent) {
+			final ObjLongTable<SemanticNode> tbl) {
         if (expr instanceof OpApplNode)
         {
             OpApplNode expr1 = (OpApplNode) expr;
@@ -1966,7 +1966,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             if (opName.getVarLoc() >= 0)
             {
                 // a state variable:
-                tbl.put(expr == parent ? expr : parent, 0);
+                tbl.put(expr, 0);
                 return;
             }
 
@@ -1983,11 +1983,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
 				// UNCHANGED vars (see CoverageStatisticsTest).
                 for (int i = 0; i < args.length; i++)
                 {
-                	if (parent.getLocation().includes(expr.getLocation())) {
-                		this.collectUnchangedLocs(args[i], c, tbl, expr1);
-                	} else {
-                		this.collectUnchangedLocs(args[i], c, tbl, parent);
-                	}
+               		this.collectUnchangedLocs(args[i], c, tbl);
                 }
                 return;
             }
@@ -1998,7 +1994,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 Object val = this.lookup(opNode, c, false);
                 if (val instanceof OpDefNode)
                 {
-                    this.collectUnchangedLocs(((OpDefNode) val).getBody(), c, tbl, expr);
+                    this.collectUnchangedLocs(((OpDefNode) val).getBody(), c, tbl);
                     return;
                 }
             }
