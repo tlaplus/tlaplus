@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.editor.basic;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoContext;
 import org.eclipse.core.commands.operations.IUndoableOperation;
 import org.eclipse.core.commands.operations.OperationHistoryEvent;
+import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IMarkerDelta;
@@ -66,6 +68,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -847,8 +850,21 @@ public class TLAEditor extends TextEditor
      * @return
      */
 	public String getModuleName() {
-		IFile moduleFile = ((FileEditorInput) this.getEditorInput()).getFile();
-		return ResourceHelper.getModuleName(moduleFile);
+		final IEditorInput iei = this.getEditorInput();
+		if (iei instanceof FileEditorInput) {
+			final IFile moduleFile = ((FileEditorInput) iei).getFile();
+			return ResourceHelper.getModuleName(moduleFile);
+		} else if (iei instanceof IURIEditorInput) {
+			final URI uri = ((IURIEditorInput) iei).getURI();
+			if (uri != null) {
+				final IPath path = URIUtil.toPath(uri);
+				if (path != null) {
+					final IFile moduleFile = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+					return ResourceHelper.getModuleName(moduleFile);
+				}
+			}
+		}
+		return "";
 	}
 
 	public TextViewer getViewer() {

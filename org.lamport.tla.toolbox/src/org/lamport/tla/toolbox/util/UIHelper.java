@@ -1139,40 +1139,44 @@ public class UIHelper {
 					(IFile) moduleResource));
 
 			if (editor != null) {
-				ITextEditor textEditor;
-				/*
-				 * Try to get the text editor that contains the module. The
-				 * module may be open in a multipage editor.
-				 */
-				if (editor instanceof ITextEditor) {
-					textEditor = (ITextEditor) editor;
-				} else {
-					textEditor = (ITextEditor) editor.getAdapter(ITextEditor.class);
-				}
+				jumpToSelection(editor, its);
+			}
+		}
+	}
 
-				if (editor instanceof MultiPageEditorPart) {
-					/*
-					 * In this case, get all editors that are part of the
-					 * multipage editor. Iterate through until a text editor is
-					 * found.
-					 */
-					IEditorPart[] editors = ((MultiPageEditorPart) editor).findEditors(editor.getEditorInput());
-					for (int i = 0; i < editors.length; i++) {
-						if (editors[i] instanceof ITextEditor) {
-							textEditor = (ITextEditor) editors[i];
-						}
-					}
-				}
+	public static void jumpToSelection(IEditorPart editor, ITextSelection its) {
+		ITextEditor textEditor;
+		/*
+		 * Try to get the text editor that contains the module. The
+		 * module may be open in a multipage editor.
+		 */
+		if (editor instanceof ITextEditor) {
+			textEditor = (ITextEditor) editor;
+		} else {
+			textEditor = (ITextEditor) editor.getAdapter(ITextEditor.class);
+		}
 
-				if (textEditor != null) {
-					// the text editor may not be active, so set it active
-					if (editor instanceof MultiPageEditorPart) {
-						((MultiPageEditorPart) editor).setActiveEditor(textEditor);
-					}
-					// getActivePage().activate(textEditor);
-					textEditor.selectAndReveal(its.getOffset(), its.getLength());
+		if (editor instanceof MultiPageEditorPart) {
+			/*
+			 * In this case, get all editors that are part of the
+			 * multipage editor. Iterate through until a text editor is
+			 * found.
+			 */
+			IEditorPart[] editors = ((MultiPageEditorPart) editor).findEditors(editor.getEditorInput());
+			for (int i = 0; i < editors.length; i++) {
+				if (editors[i] instanceof ITextEditor) {
+					textEditor = (ITextEditor) editors[i];
 				}
 			}
+		}
+
+		if (textEditor != null) {
+			// the text editor may not be active, so set it active
+			if (editor instanceof MultiPageEditorPart) {
+				((MultiPageEditorPart) editor).setActiveEditor(textEditor);
+			}
+			// getActivePage().activate(textEditor);
+			textEditor.selectAndReveal(its.getOffset(), its.getLength());
 		}
 	}
 

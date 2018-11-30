@@ -803,8 +803,7 @@ public class EditorUtil
         if (srcEditor != null)
         {
             Spec spec = ToolboxHandle.getCurrentSpec();
-            spec.setOpenDeclModuleName(srcEditor.getEditorInput().getName());
-            spec.setOpenDeclSelection((ITextSelection) srcEditor.getSelectionProvider().getSelection());
+            spec.setOpenDeclModuleName(srcEditor);
         }
     }
 
