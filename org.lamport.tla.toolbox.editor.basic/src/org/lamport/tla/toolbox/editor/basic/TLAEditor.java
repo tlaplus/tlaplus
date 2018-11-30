@@ -63,6 +63,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -957,33 +958,29 @@ public class TLAEditor extends TextEditor
      */
     public static final class OpenDeclarationHandler extends AbstractHandler
     {
-        public OpenDeclarationHandler()
-        {
-        }
-
         public Object execute(ExecutionEvent event) throws ExecutionException
         {
+            final IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+            final TLAEditor tlaEditor = activeEditor.getAdapter(TLAEditor.class);
 
-            TLAEditorAndPDFViewer editor = (TLAEditorAndPDFViewer) HandlerUtil.getActiveEditor(event);
-            ISourceViewer internalSourceViewer = editor.getTLAEditor().getSourceViewer();
-
-            ITextSelection selection = (ITextSelection) editor.getTLAEditor().getSelectionProvider().getSelection();
-            IRegion region = new Region(selection.getOffset(), selection.getLength());
+            final ITextSelection selection = (ITextSelection) tlaEditor.getSelectionProvider().getSelection();
+            final IRegion region = new Region(selection.getOffset(), selection.getLength());
 
             // get the detectors
-            IHyperlinkDetector[] hyperlinkDetectors = editor.getTLAEditor().getSourceViewerConfiguration()
+            final ISourceViewer internalSourceViewer = tlaEditor.getSourceViewer();
+            final IHyperlinkDetector[] hyperlinkDetectors = tlaEditor.getSourceViewerConfiguration()
                     .getHyperlinkDetectors(internalSourceViewer);
             if (hyperlinkDetectors != null)
             {
                 for (int i = 0; i < hyperlinkDetectors.length; i++)
                 {
                     // detect
-                    IHyperlink[] hyperlinks = hyperlinkDetectors[i].detectHyperlinks(internalSourceViewer, region,
+                    final IHyperlink[] hyperlinks = hyperlinkDetectors[i].detectHyperlinks(internalSourceViewer, region,
                             false);
                     if (hyperlinks != null && hyperlinks.length > 0)
                     {
                         // open
-                        IHyperlink hyperlink = hyperlinks[0];
+                        final IHyperlink hyperlink = hyperlinks[0];
                         hyperlink.open();
                         break;
                     }
@@ -992,5 +989,4 @@ public class TLAEditor extends TextEditor
             return null;
         }
     }
-
 }

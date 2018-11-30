@@ -52,6 +52,11 @@ public class OpenDeclarationAction extends Action implements IHyperlink
         	((TLAEditorAndPDFViewer) editor).getTLAEditor().selectAndReveal(location.getOffset(), location.getLength());
         } else if (editor instanceof TLAEditor) {
         	((TLAEditor) editor).selectAndReveal(location.getOffset(), location.getLength());
+        } else {
+        	TLAEditor adapter = editor.getAdapter(TLAEditor.class);
+        	if (adapter != null) {
+        		adapter.selectAndReveal(location.getOffset(), location.getLength());
+        	}
         }
     }
 

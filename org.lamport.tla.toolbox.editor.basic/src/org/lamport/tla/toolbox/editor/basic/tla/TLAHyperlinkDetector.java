@@ -20,10 +20,12 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
+import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorAndPDFViewer;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly;
 import org.lamport.tla.toolbox.editor.basic.actions.OpenDeclarationAction;
+import org.lamport.tla.toolbox.editor.basic.actions.OpenDeclarationInCurrentAction;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -88,8 +90,6 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        IDocument document = textViewer.getDocument();
-
         // set currentTokenSpec to the TokenSpec object specifying the
         // currently selected symbol and its resolution.
         TokenSpec currentTokenSpec = TokenSpec.findCurrentTokenSpec(region);
@@ -134,11 +134,17 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
                 {
                     csNode = (SyntaxTreeNode) resolvedSymbol.stn.heirs()[0]; // .heirs()[1];
                 }
-                for (int i = 0; i < csNode.getAttachedComments().length; i++)
-                {
-                	TLAEditorActivator.getDefault().logDebug(csNode.getAttachedComments()[i]);
-                }
-
+                
+                // Before using the default TLA+ editor below, try to identify and reuse the current
+                // editor if it shows the same module already.
+                final TLAEditor tlaEditor = EditorUtil.getTLAEditorWithFocus();
+				if (tlaEditor != null && csNode.getLocation().source().equals(tlaEditor.getModuleName())) {
+					final IDocument document = tlaEditor.getDocumentProvider().getDocument(tlaEditor.getEditorInput());
+					final int[] region2 = getRegion(getCS(resolvedSymbol, csNode), document);
+					return new IHyperlink[] { new OpenDeclarationInCurrentAction(tlaEditor,
+							new Region(region2[0], region2[1] - region2[0]), label, region) };
+				}
+                
 				IDocumentProvider documentProvider = null;
 				IEditorInput editorInput = null;
 				String editorId = "";
@@ -168,66 +174,10 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
 					return null;
 				}
 
-                // connect to the resource
-                try
-                {
-                    documentProvider.connect(editorInput);
-                    document = documentProvider.getDocument(editorInput);
-                } finally
-                {
-                    /*
-                     * Once the document has been retrieved, the document provider is
-                     * not needed. Always disconnect it to avoid a memory leak.
-                     * 
-                     * Keeping it connected only seems to provide synchronization of
-                     * the document with file changes. That is not necessary in this context.
-                     */
-                    documentProvider.disconnect(editorInput);
-                }
-
-                try
-                {
-                    // Get the location to highlight. If it's an OpDefNode, want
-                    // to get just the symbol from the left-hand side. (Otherwise,
-                    // the user can't execute Goto Declaration immediately followed
-                    // by Show Uses.)
-                    if (resolvedSymbol instanceof OpDefNode && csNode.getHeirs().length >= 1)
-                    {
-                        // Need to pick out the symbol from the left-hand side of
-                        // the definition.
-                        csNode = csNode.getHeirs()[0];
-                        if (csNode.getKind() == SyntaxTreeConstants.N_IdentLHS)
-                        {
-                            csNode = csNode.getHeirs()[0];
-                        } else
-                        {
-                            if ((csNode.getKind() == SyntaxTreeConstants.N_InfixLHS)
-                                    || (csNode.getKind() == SyntaxTreeConstants.N_PostfixLHS))
-                            {
-                                csNode = csNode.getHeirs()[1];
-                            }
-                        }
-                    } else if ((resolvedSymbol instanceof ThmOrAssumpDefNode && csNode.getHeirs().length >= 2)
-                            && ((csNode.getKind() == SyntaxTreeConstants.N_Theorem) || (csNode.getKind() == SyntaxTreeConstants.N_Assumption)))
-                    {
-                        csNode = csNode.getHeirs()[1];
-                    }
-                    IRegion startLineRegion = document.getLineInformation(csNode.getLocation().beginLine() - 1);
-                    IRegion endLineRegion = document.getLineInformation(csNode.getLocation().endLine() - 1);
-
-                    // offsets
-                    int startOffset = startLineRegion.getOffset() + csNode.getLocation().beginColumn() - 1;
-                    int endOffset = endLineRegion.getOffset() + csNode.getLocation().endColumn();
-
-                    return new IHyperlink[] { new OpenDeclarationAction(editorId, editorInput, new Region(startOffset, endOffset
-                            - startOffset), label, region) };
-
-                } catch (BadLocationException e)
-                {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
+                final int[] region2 = getDocumentAndRegion(getCS(resolvedSymbol, csNode), documentProvider, editorInput);
+				return new IHyperlink[] { new OpenDeclarationAction(editorId, editorInput,
+						new Region(region2[0], region2[1] - region2[0]), label, region) };
+	           }
         } catch (CoreException e)
         {
             // TODO Auto-generated catch block
@@ -235,4 +185,66 @@ public class TLAHyperlinkDetector extends AbstractHyperlinkDetector
         }
         return null;
     }
+
+	private int[] getDocumentAndRegion(SyntaxTreeNode csNode, IDocumentProvider documentProvider, IEditorInput editorInput)
+			throws CoreException {
+		IDocument document;
+		// connect to the resource
+		try {
+			documentProvider.connect(editorInput);
+			document = documentProvider.getDocument(editorInput);
+		} finally {
+			/*
+			 * Once the document has been retrieved, the document provider is not needed.
+			 * Always disconnect it to avoid a memory leak.
+			 * 
+			 * Keeping it connected only seems to provide synchronization of the document
+			 * with file changes. That is not necessary in this context.
+			 */
+			documentProvider.disconnect(editorInput);
+		}
+
+		return getRegion(csNode, document);
+	}
+
+	private int[] getRegion(SyntaxTreeNode csNode, IDocument document) {
+		try {
+			IRegion startLineRegion = document.getLineInformation(csNode.getLocation().beginLine() - 1);
+			IRegion endLineRegion = document.getLineInformation(csNode.getLocation().endLine() - 1);
+
+			// offsets
+			int startOffset = startLineRegion.getOffset() + csNode.getLocation().beginColumn() - 1;
+			int endOffset = endLineRegion.getOffset() + csNode.getLocation().endColumn();
+
+			return new int[] { startOffset, endOffset };
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+		return new int[] { 0, 0 };
+	}
+
+	private SyntaxTreeNode getCS(SymbolNode resolvedSymbol, SyntaxTreeNode csNode) {
+		// Get the location to highlight. If it's an OpDefNode, want
+		// to get just the symbol from the left-hand side. (Otherwise,
+		// the user can't execute Goto Declaration immediately followed
+		// by Show Uses.)
+		if (resolvedSymbol instanceof OpDefNode && csNode.getHeirs().length >= 1) {
+			// Need to pick out the symbol from the left-hand side of
+			// the definition.
+			csNode = csNode.getHeirs()[0];
+			if (csNode.getKind() == SyntaxTreeConstants.N_IdentLHS) {
+				csNode = csNode.getHeirs()[0];
+			} else {
+				if ((csNode.getKind() == SyntaxTreeConstants.N_InfixLHS)
+						|| (csNode.getKind() == SyntaxTreeConstants.N_PostfixLHS)) {
+					csNode = csNode.getHeirs()[1];
+				}
+			}
+		} else if ((resolvedSymbol instanceof ThmOrAssumpDefNode && csNode.getHeirs().length >= 2)
+				&& ((csNode.getKind() == SyntaxTreeConstants.N_Theorem)
+						|| (csNode.getKind() == SyntaxTreeConstants.N_Assumption))) {
+			csNode = csNode.getHeirs()[1];
+		}
+		return csNode;
+	}
 }

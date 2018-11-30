@@ -83,17 +83,18 @@ public class EditorUtil
      */
     public static TLAEditor getTLAEditorWithFocus()
     {
-        IEditorPart activeEditor = UIHelper.getActiveEditor();
-        // activeEditor.getAdapter(ITexto)
-        if (activeEditor instanceof TLAEditorAndPDFViewer)
-        {
-            TLAEditor editor = ((TLAEditorAndPDFViewer) activeEditor).getTLAEditor();
-            if (editor != null && editor.getViewer().getTextWidget().isFocusControl())
-            {
-                return editor;
-            }
-        }
-
+		IEditorPart activeEditor = UIHelper.getActiveEditor();
+		if (activeEditor instanceof TLAEditorAndPDFViewer) {
+			TLAEditor editor = ((TLAEditorAndPDFViewer) activeEditor).getTLAEditor();
+			if (editor != null && editor.getViewer().getTextWidget().isFocusControl()) {
+				return editor;
+			}
+		} else if (activeEditor.getAdapter(TLAEditor.class) != null) {
+			TLAEditor editor = activeEditor.getAdapter(TLAEditor.class);
+			if (editor != null && editor.getViewer().getTextWidget().isFocusControl()) {
+				return editor;
+			}
+		}
         return null;
     }
 
@@ -114,9 +115,9 @@ public class EditorUtil
         if (activeEditor instanceof TLAEditorAndPDFViewer)
         {
             return ((TLAEditorAndPDFViewer) activeEditor).getTLAEditor();
-        }
+		}
 
-        return null;
+        return activeEditor.getAdapter(TLAEditor.class);
     }
 
     /**
