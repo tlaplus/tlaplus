@@ -31,7 +31,7 @@ public class RecordValue extends Value implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      RecordValue rcd = convert(obj);
+      RecordValue rcd = obj instanceof Value ? ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare record:\n" + ppr(this.toString()) +
@@ -59,7 +59,7 @@ public class RecordValue extends Value implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      RecordValue rcd = convert(obj);
+      RecordValue rcd = obj instanceof Value ? ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -149,35 +149,25 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  /*
-   * This method converts a value to a function value. It returns
-   * null if the conversion fails.
-   */
-  public static final RecordValue convert(Object val) {
-    if (val instanceof RecordValue) {
-      return (RecordValue)val;
-    }
-    else if (val instanceof FcnRcdValue ||
-       val instanceof FcnLambdaValue) {
-      FcnRcdValue fcn = FcnRcdValue.convert(val);
-      if (fcn == null || fcn.domain == null) return null;
-      fcn.normalize();
-      UniqueString[] vars = new UniqueString[fcn.domain.length];
-      for (int i = 0; i < fcn.domain.length; i++) {
-        if (!(fcn.domain[i] instanceof StringValue)) {
-          return null;
-        }
-        vars[i] = ((StringValue)fcn.domain[i]).getVal();
-      }
-      return new RecordValue(vars, fcn.values, fcn.isNormalized());
-    }
-    else if ((val instanceof TupleValue) &&
-      ((TupleValue)val).size() == 0) {
-      return EmptyRcd;
-    }
-    // return null if not convertable
-    return null;
+  @Override
+  public RecordValue toRcd() {
+	  return this;
   }
+  
+  @Override
+  public TupleValue toTuple() {
+	  return size() == 0 ? EmptyTuple : super.toTuple();
+  }
+
+  @Override
+	public FcnRcdValue toFcnRcd() {
+        this.normalize();
+        Value[] dom = new Value[this.names.length];
+        for (int i = 0; i < this.names.length; i++) {
+          dom[i] = new StringValue(this.names[i]);
+        }
+        return new FcnRcdValue(dom, this.values, this.isNormalized());
+	}
 
   public final int size() {
     try {

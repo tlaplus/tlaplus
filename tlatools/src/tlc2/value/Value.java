@@ -410,7 +410,35 @@ public abstract class Value implements ValueConstants, Serializable {
     }
   }
 
+  /* Convert val into a SetEnumValue.  Returns null if not possible. */
+  public SetEnumValue toSetEnum() {
+	  return null;
+  }
 
+  /*
+   * This method converts a value to a function value. It returns
+   * null if the conversion fails.
+   */
+  public FcnRcdValue toFcnRcd() {
+	  return null;
+  }
+
+  /*
+   * This method converts a value to a function value. It returns
+   * null if the conversion fails.
+   */
+  public RecordValue toRcd() {
+	  return null;
+  }
+
+  /*
+   * This method converts a value to a tuple value. It returns
+   * null if the conversion fails.
+   */
+  public TupleValue toTuple() {
+	  return null;
+  }
+  
   public static Value getValue(SemanticNode expr) {
     return (Value)expr.getToolObject(TLCGlobals.ToolId);
   }

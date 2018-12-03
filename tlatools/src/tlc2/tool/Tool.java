@@ -1599,7 +1599,7 @@ public class Tool
             // was replaced by the following by LL on 7 Mar 2012.  This fix has not yet received
             // the blessing of Yuan Yu, so it should be considered to be provisional.
             // 
-            //     Value convertedVal = SetEnumValue.convert(inVal);
+            //     Value convertedVal = inVal.ToSetEnum();
             //       if (convertedVal != null) {
             //         inVal = convertedVal;
             //       } else {
@@ -1629,7 +1629,7 @@ public class Tool
               int cnt = bvars.length;
               Value val;
               while ((val = enumSet.nextElement()) != null) {
-                TupleValue tv = TupleValue.convert(val);
+                TupleValue tv = val.toTuple();
                 if (tv == null || tv.size() != cnt) {
                   Assert.fail("Attempted to compute the value of an expression of form\n" +
                               "CHOOSE <<x1, ... , xN>> \\in S: P, but S was not a set\n" +
@@ -1884,7 +1884,7 @@ public class Tool
               return result;
             }
             else {
-              FcnRcdValue fcn = FcnRcdValue.convert(rval);
+              FcnRcdValue fcn = rval.toFcnRcd();
               if (fcn == null) {
                 Assert.fail("Attempted to select field " + sval + " from a non-record" +
                             " value " + Value.ppr(rval.toString()) + "\n" + expr);
@@ -3126,7 +3126,7 @@ public class Tool
       }
       if (isTuples[0]) {
         FormalParamNode[] ids = formals[0];
-        TupleValue tv = TupleValue.convert(argVal);
+        TupleValue tv = argVal.toTuple();
         if (tv == null || argVal.size() != ids.length) {
           Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
                       ",\nthe argument is:\n" + Value.ppr(argVal.toString()) +
@@ -3142,7 +3142,7 @@ public class Tool
       }
     }
     else {
-      TupleValue tv = TupleValue.convert(argVal);
+      TupleValue tv = argVal.toTuple();
       if (tv == null) {
         Assert.fail("Attempted to apply a function to an argument not in its" +
                     " domain.\n" + args[0]);
@@ -3159,7 +3159,7 @@ public class Tool
                         Value.ppr(elems[argn].toString()) +
                         "\nwhich is not in its domain.\n" + args[0]);
           }
-          TupleValue tv1 = TupleValue.convert(elems[argn++]);
+          TupleValue tv1 = elems[argn++].toTuple();
           if (tv1 == null || tv1.size() != ids.length) {
             Assert.fail("In applying the function\n" + Value.ppr(fcn.toString()) +
                         ",\nthe argument number " + argn + " is:\n" +

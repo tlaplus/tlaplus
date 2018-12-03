@@ -74,7 +74,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final boolean member(Value elem) {
     try {
-      RecordValue rcd = RecordValue.convert(elem);
+      RecordValue rcd = elem.toRcd();
       if (rcd == null) {
         if (elem instanceof ModelValue)
            return ((ModelValue) elem).modelValueMember(this) ;
@@ -292,13 +292,13 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.rcdSet == null) {
-      this.rcdSet = SetEnumValue.convert(this);
+      this.rcdSet = this.toSetEnum();
     }
     else if (this.rcdSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.rcdSet == DummyEnum) {
-          val = SetEnumValue.convert(this);
+          val = this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -306,6 +306,20 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         if (this.rcdSet == DummyEnum) { this.rcdSet = val; }
       }
     }
+  }
+
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (this.rcdSet != null && this.rcdSet != DummyEnum) {
+        return this.rcdSet;
+      }
+      ValueVec vals = new ValueVec();
+      ValueEnumeration Enum = this.elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      return new SetEnumValue(vals, this.isNormalized());
   }
 
   /* The string representation of the value. */
@@ -328,7 +342,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       catch (Throwable e) { unlazy = false; }
 
       if (unlazy) {
-        Value val = SetEnumValue.convert(this);
+        Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {
@@ -442,7 +456,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 			
 			int numElems = 1; // 1 to avoid div by zero in elementAt
 			for (int i = values.length - 1; i >= 0; i--) {
-				convert[i] = SetEnumValue.convert(values[i]);
+				convert[i] = values[i].toSetEnum();
 				rescaleBy[i] = numElems;
 				numElems *= convert[i].elems.size();
 			}
@@ -483,7 +497,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 			
 			BigInteger numElems = BigInteger.ONE; // 1 to avoid div by zero in elementAt
 			for (int i = values.length - 1; i >= 0; i--) {
-				convert[i] = SetEnumValue.convert(values[i]);
+				convert[i] = values[i].toSetEnum();
 				rescaleBy[i] = numElems;
 				numElems = numElems.multiply(BigInteger.valueOf(convert[i].elems.size()));
 			}

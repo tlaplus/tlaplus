@@ -6,12 +6,10 @@
 
 package tlc2.value;
 
-import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
-import tlc2.util.Context;
 import tlc2.util.FP64;
 import util.Assert;
 
@@ -36,10 +34,10 @@ public class TupleValue extends Value implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      TupleValue tv = convert(obj);
+      TupleValue tv = obj instanceof Value ? ((Value)obj).toTuple() : null;
       if (tv == null) {
         // Well, we have to convert this to function and compare.
-        return FcnRcdValue.convert(this).compareTo(obj);
+        return this.toFcnRcd().compareTo(obj);
       }
       int len = this.elems.length;
       int cmp = len - tv.elems.length;
@@ -59,10 +57,10 @@ public class TupleValue extends Value implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      TupleValue tv = convert(obj);
+      TupleValue tv = obj instanceof Value ? ((Value)obj).toTuple() : null;
       if (tv == null) {
         // Well, we have to convert this to function and compare.
-        return FcnRcdValue.convert(this).equals(obj);
+        return this.toFcnRcd().equals(obj);
       }
       int len = this.elems.length;
       if (len != tv.elems.length)
@@ -194,74 +192,21 @@ public class TupleValue extends Value implements Applicable {
 
   public final int size() { return this.elems.length; }
 
-  /*
-   * This method converts a value to a tuple value. It returns
-   * null if the conversion fails.
-   */
-  public static TupleValue convert(Object val) {
-    if (val instanceof TupleValue) {
-      return (TupleValue)val;
-    }
-    else if (val instanceof FcnRcdValue) {
-      FcnRcdValue fcn = (FcnRcdValue)val;
-      if (fcn.intv != null) {
-        if (fcn.intv.low != 1) return null;
-        return new TupleValue(fcn.values);
-      }
-      int len = fcn.values.length;
-      Value[] elems = new Value[len];
-      for (int i = 0; i < len; i++) {
-        if (!(fcn.domain[i] instanceof IntValue)) return null;
-        int idx = ((IntValue)fcn.domain[i]).val;
-        if (0 < idx && idx <= len) {
-          if (elems[idx-1] != null) return null;
-          elems[idx-1] = fcn.values[i];
-        }
-        else {
-          return null;
-        }
-      }
-      return new TupleValue(elems);
-    }
-    else if (val instanceof FcnLambdaValue) {
-      FcnLambdaValue fcn = (FcnLambdaValue)val;
-      if (fcn.params.length() != 1) return null;
-      Value dom = fcn.params.domains[0];
-      SymbolNode var = fcn.params.formals[0][0];
-      if (dom instanceof IntervalValue) {
-        IntervalValue intv = (IntervalValue)dom;
-        if (intv.low != 1) return null;
-        Value[] elems = new Value[intv.high];
-        for (int i = 1; i <= intv.high; i++) {
-          Context c1 = fcn.con.cons(var, IntValue.gen(i));
-          elems[i-1] = fcn.tool.eval(fcn.body, c1, fcn.state, fcn.pstate, fcn.control);
-        }
-        return new TupleValue(elems);
-      }
-      else {
-        SetEnumValue eSet = SetEnumValue.convert(dom);
-        if (eSet == null)
-          Assert.fail("To convert a function of form [x \\in S |-> f(x)] " +
-                "to a tuple, the set S must be enumerable.");
-        eSet.normalize();
-        int len = eSet.size();
-        Value[] elems = new Value[len];
-        for (int i = 0; i < len; i++) {
-          Value argVal = eSet.elems.elementAt(i);
-          if (!(argVal instanceof IntValue)) return null;
-          if (((IntValue)argVal).val != i + 1) return null;
-          Context c1 = fcn.con.cons(var, argVal);
-          elems[i] = fcn.tool.eval(fcn.body, c1, fcn.state, fcn.pstate, fcn.control);
-        }
-        return new TupleValue(elems);
-      }
-    }
-    else if ((val instanceof RecordValue) &&
-	     ((RecordValue)val).size() == 0) {
-      return EmptyTuple;
-    }
-    return null;
+  @Override
+  public TupleValue toTuple() {
+	  return this;
   }
+  
+  @Override
+  public RecordValue toRcd() {
+	  return size() == 0 ? EmptyRcd : super.toRcd();
+  }
+
+	@Override
+	public FcnRcdValue toFcnRcd() {
+        IntervalValue intv = new IntervalValue(1, this.elems.length);
+        return new FcnRcdValue(intv, this.elems);
+	}
 
   /* The normalization of the value. */
   public final boolean isNormalized() { return true; }

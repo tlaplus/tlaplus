@@ -60,7 +60,7 @@ public class Sequences extends UserObj implements ValueConstants
             return IntValue.gen(((StringValue) s).length());
         }
 
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq != null)
         {
             return IntValue.gen(seq.size());
@@ -71,7 +71,7 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Head(Value s)
     {
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq != null)
         {
             if (seq.size() == 0)
@@ -95,7 +95,7 @@ public class Sequences extends UserObj implements ValueConstants
     		return new StringValue(str.substring(1));
     	}
     	
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq != null)
         {
             if (seq.size() == 0)
@@ -113,7 +113,7 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Cons(Value v, Value s)
     {
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "Cons(v, s)", "sequence",
@@ -128,7 +128,7 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Append(Value s, Value v)
     {
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "Append(v, s)", "sequence",
@@ -155,13 +155,13 @@ public class Sequences extends UserObj implements ValueConstants
             return new StringValue(u1.concat(u2));
         }
 
-        TupleValue seq1 = TupleValue.convert(s1);
+        TupleValue seq1 = s1.toTuple();
         if (seq1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "s \\o t", "sequence",
                     Value.ppr(s1.toString()) });
         }
-        TupleValue seq2 = TupleValue.convert(s2);
+        TupleValue seq2 = s2.toTuple();
         if (seq2 == null)
         {
             throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "t \\o s", "sequence",
@@ -191,7 +191,7 @@ public class Sequences extends UserObj implements ValueConstants
      */
     public static Value SelectInSeq(Value s, Value test)
     {
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SelectInSeq", "sequence",
@@ -222,7 +222,7 @@ public class Sequences extends UserObj implements ValueConstants
 
     /**  Not in the standard interface.
     public static Value Remove(Value s, Value index) {
-      TupleValue seq = TupleValue.convert(s);
+      TupleValue seq = s.toTuple()
       if (seq != null) {
         if (index instanceof IntValue) {
     int ridx = ((IntValue)index).val;
@@ -268,7 +268,7 @@ public class Sequences extends UserObj implements ValueConstants
     	}
     	
     	if (! isString) {
-          seq = TupleValue.convert(s);
+          seq = s.toTuple();
           if (seq == null)
           {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SubSeq", "sequence",
@@ -324,7 +324,7 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value SelectSeq(Value s, Value test)
     {
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SelectSeq", "sequence",
@@ -387,7 +387,7 @@ public class Sequences extends UserObj implements ValueConstants
 
     public final boolean member(Value s)
     {
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq == null)
         {
             if (s instanceof ModelValue)
@@ -431,7 +431,7 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Insert(Value s, Value v, Value test)
     {
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "Insert", "sequence",

@@ -529,7 +529,7 @@ public class SubsetValueTest {
 		}
         final Value unnormalized = new SetEnumValue(vec, false);
         
-        final Value normalized = SetEnumValue.convert(subset).normalize();
+        final Value normalized = subset.toSetEnum().normalize();
         
         assertEquals(normalized, unnormalized);
 	}
@@ -544,7 +544,7 @@ public class SubsetValueTest {
 		bElements.forEach(e -> vec.addElement(e));
         final Value unnormalized = new SetEnumValue(vec, true);
         
-        final Value normalized = SetEnumValue.convert(subset).normalize();
+        final Value normalized = subset.toSetEnum().normalize();
         
         assertEquals(normalized, unnormalized);
 	}

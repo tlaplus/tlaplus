@@ -198,8 +198,8 @@ public class TLC implements ValueConstants
      */
     public static Value CombineFcn(Value f1, Value f2)
     {
-        FcnRcdValue fcn1 = FcnRcdValue.convert(f1);
-        FcnRcdValue fcn2 = FcnRcdValue.convert(f2);
+        FcnRcdValue fcn1 = f1.toFcnRcd();
+        FcnRcdValue fcn2 = f2.toFcnRcd();
         if (fcn1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "@@", "function",
@@ -290,7 +290,7 @@ public class TLC implements ValueConstants
 
     public static Value SortSeq(Value s, Value cmp)
     {
-        TupleValue seq = TupleValue.convert(s);
+        TupleValue seq = s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SortSeq", "natural number",
@@ -341,7 +341,7 @@ public class TLC implements ValueConstants
     // Returns a set of size n! where n = |s|.
     public static Value Permutations(Value s)
     {
-        SetEnumValue s1 = SetEnumValue.convert(s);
+        SetEnumValue s1 = s.toSetEnum();
         if (s1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "Permutations",
@@ -422,7 +422,7 @@ public class TLC implements ValueConstants
         case SETOFFCNSVALUE: {
             SetOfFcnsValue sfv = (SetOfFcnsValue) val;
             sfv.normalize();
-            SetEnumValue domSet = SetEnumValue.convert(sfv.domain);
+            SetEnumValue domSet = sfv.domain.toSetEnum();
             if (domSet == null)
             {
                 throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "RandomElement",
@@ -460,7 +460,7 @@ public class TLC implements ValueConstants
             return new TupleValue(vals);
         }
         default: {
-            SetEnumValue enumVal = SetEnumValue.convert(val);
+            SetEnumValue enumVal = val.toSetEnum();
             if (enumVal == null)
             {
                 throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "RandomElement",
@@ -485,11 +485,11 @@ public class TLC implements ValueConstants
      * @return
      */
     public static Value TLCEval(Value val) {
-        Value evalVal = SetEnumValue.convert(val);
+        Value evalVal = val.toSetEnum();
         if (evalVal != null) {
             return evalVal;
         }
-        evalVal = FcnRcdValue.convert(val);
+        evalVal = val.toFcnRcd();
         if (evalVal != null) {
             return evalVal;
         }
@@ -498,7 +498,7 @@ public class TLC implements ValueConstants
     }
     /*
     public static Value FApply(Value f, Value op, Value base) {
-      FcnRcdValue fcn = FcnRcdValue.convert(f);
+      FcnRcdValue fcn = f.toFcnRcd();
       if (fcn == null) {
         String msg = "The first argument of FApply must be a " +
     "function with finite domain, but instead it is\n" +
@@ -521,7 +521,7 @@ public class TLC implements ValueConstants
     }
     
     public static Value FSum(Value f) {
-      FcnRcdValue fcn = FcnRcdValue.convert(f);
+      FcnRcdValue fcn = f.toFcnRcd();
       if (fcn == null) {
         String msg = "The argument of FSum should be a function; " +
     "but instead it is:\n" + Value.ppr(f.toString());

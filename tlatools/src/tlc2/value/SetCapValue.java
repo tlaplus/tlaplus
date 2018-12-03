@@ -182,13 +182,13 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.capSet == null) {
-      this.capSet = SetEnumValue.convert(this);
+      this.capSet = this.toSetEnum();
     }
     else if (this.capSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.capSet == DummyEnum) {
-          val = SetEnumValue.convert(this);
+          val = this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -198,12 +198,26 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (this.capSet != null && this.capSet != DummyEnum) {
+        return this.capSet;
+      }
+      ValueVec vals = new ValueVec();
+      ValueEnumeration Enum = this.elements();	
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      return new SetEnumValue(vals, this.isNormalized());
+  }
+
   /* String representation of this value.  */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
       try {
         if (expand) {
-          Value val = SetEnumValue.convert(this);
+          Value val = this.toSetEnum();
           return val.toString(sb, offset);
         }
       }

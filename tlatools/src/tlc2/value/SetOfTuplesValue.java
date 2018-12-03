@@ -76,9 +76,9 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   public final boolean member(Value elem) {
     try {
-      TupleValue tv = TupleValue.convert(elem);
+      TupleValue tv = elem.toTuple();
       if (tv == null) {
-        FcnRcdValue fcn = FcnRcdValue.convert(elem);
+        FcnRcdValue fcn = elem.toFcnRcd();
         if (fcn == null) {
           if (elem instanceof ModelValue)
             return ((ModelValue) elem).modelValueMember(this) ;
@@ -257,13 +257,13 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.tupleSet == null) {
-      this.tupleSet = SetEnumValue.convert(this);
+      this.tupleSet = this.toSetEnum();
     }
     else if (this.tupleSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.tupleSet == DummyEnum) {
-          val = SetEnumValue.convert(this);
+          val = this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -271,6 +271,20 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
         if (this.tupleSet == DummyEnum) { this.tupleSet = val; }
       }
     }
+  }
+
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (((SetOfTuplesValue)this).tupleSet != null && ((SetOfTuplesValue)this).tupleSet != DummyEnum) {
+        return ((SetOfTuplesValue)this).tupleSet;
+      }
+      ValueVec vals = new ValueVec();
+      ValueEnumeration Enum = ((SetOfTuplesValue)this).elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      return new SetEnumValue(vals, ((SetOfTuplesValue)this).isNormalized());
   }
 
   /* The string representation of the value. */
@@ -293,7 +307,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
       catch (Throwable e) { unlazy = false; }
 
       if (unlazy) {
-        Value val = SetEnumValue.convert(this);
+        Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {

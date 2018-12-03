@@ -107,7 +107,7 @@ public class BugzillaBug279Test extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ set = {}\n/\\ pc = 0\n/\\ fun = {}");
 		expectedTrace.add("/\\ set = SUBSET 1..20\n/\\ pc = 1\n/\\ fun = {5}");
 		expectedTrace.add(
-				"/\\ set = " + Value.ppr(SetEnumValue.convert(new SubsetValue(new IntervalValue(1, 8))).normalize())
+				"/\\ set = " + Value.ppr(new SubsetValue(new IntervalValue(1, 8)).toSetEnum().normalize())
 						+ "\n/\\ pc = 2\n/\\ fun = {5}");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		

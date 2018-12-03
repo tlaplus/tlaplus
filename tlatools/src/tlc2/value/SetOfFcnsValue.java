@@ -55,7 +55,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final boolean member(Value elem) {
     try {
-      FcnRcdValue fcn = FcnRcdValue.convert(elem);
+      FcnRcdValue fcn = elem.toFcnRcd();
       if (fcn == null) {
         if (elem instanceof ModelValue)
            return ((ModelValue) elem).modelValueMember(this) ;
@@ -239,13 +239,13 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.fcnSet == null) {
-      this.fcnSet = SetEnumValue.convert(this);
+      this.fcnSet = this.toSetEnum();
     }
     else if (this.fcnSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.fcnSet == DummyEnum) {
-          val = SetEnumValue.convert(this);
+          val = this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -253,6 +253,20 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         if (this.fcnSet == DummyEnum) { this.fcnSet = val; }
       }
     }
+  }
+
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (this.fcnSet != null && this.fcnSet != DummyEnum) {
+        return this.fcnSet;
+      }
+      ValueVec vals = new ValueVec();
+      ValueEnumeration Enum = this.elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      return new SetEnumValue(vals, this.isNormalized());
   }
 
   /* The string representation of the value. */
@@ -277,7 +291,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       catch (Throwable e) { unlazy = false; }
 
       if (unlazy) {
-        Value val = SetEnumValue.convert(this);
+        Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {
@@ -316,7 +330,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
     public Enumerator() {
       this.isDone = false;
-      SetEnumValue domSet = SetEnumValue.convert(domain);
+      SetEnumValue domSet = domain.toSetEnum();
       if (domSet == null)
         Assert.fail("Attempted to enumerate a set of the form [D -> R]," +
               "but the domain D:\n" + ppr(domain.toString()) +
@@ -404,10 +418,10 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 		
 		SubsetEnumerator(final int k, final int n) {
 			super(k, n);
-			domSet = SetEnumValue.convert(domain);
+			domSet = domain.toSetEnum();
 			domSet.normalize();
 
-			rangeSet = SetEnumValue.convert(range);
+			rangeSet = range.toSetEnum();
 
 			mod = range.size();
 		}
@@ -441,10 +455,10 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
 		public BigIntegerSubsetEnumerator(final int k) {
 			super(k);
-			this.domSet = SetEnumValue.convert(domain);
+			this.domSet = domain.toSetEnum();
 			this.domSet.normalize();
 			
-			this.rangeSet = SetEnumValue.convert(range);
+			this.rangeSet = range.toSetEnum();
 			this.mod = range.size();
 			this.bMod = BigInteger.valueOf(mod);
 

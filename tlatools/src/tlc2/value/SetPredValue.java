@@ -60,7 +60,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final int compareTo(Object obj) {
     try {
-      this.inVal = SetEnumValue.convert(this);
+      this.inVal = this.toSetEnum();
       this.tool = null;
       return this.inVal.compareTo(obj);
     }
@@ -72,7 +72,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final boolean equals(Object obj) {
     try {
-      this.inVal = SetEnumValue.convert(this);
+      this.inVal = this.toSetEnum();
       this.tool = null;
       return this.inVal.equals(obj);
     }
@@ -95,7 +95,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
           }
           else {
             FormalParamNode[] ids = (FormalParamNode[])this.vars;
-            TupleValue tv = TupleValue.convert(elem);
+            TupleValue tv = elem.toTuple();
             if ((tv != null) && (tv.elems.length == ids.length)) {
               Value[] vals = ((TupleValue)tv).elems;
               for (int i = 0; i < ids.length; i++) {
@@ -171,7 +171,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final int size() {
     try {
-      this.inVal = SetEnumValue.convert(this);
+      this.inVal = this.toSetEnum();
       this.tool = null;
       return this.inVal.size();
     }
@@ -188,7 +188,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   private final void writeObject(ObjectOutputStream oos) throws IOException {
     if (this.tool != null) {
-      this.inVal = SetEnumValue.convert(this);
+      this.inVal = this.toSetEnum();
       this.tool = null;
     }
     oos.writeObject(this.inVal);
@@ -233,7 +233,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   /* The fingerprint method */
   public final long fingerPrint(long fp) {
     try {
-      this.inVal = SetEnumValue.convert(this);
+      this.inVal = this.toSetEnum();
       this.tool = null;
       return this.inVal.fingerPrint(fp);
     }
@@ -245,7 +245,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final Value permute(MVPerm perm) {
     try {
-      this.inVal = SetEnumValue.convert(this);
+      this.inVal = this.toSetEnum();
       this.tool = null;
       return this.inVal.permute(perm);
     }
@@ -255,12 +255,24 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (((SetPredValue)this).tool == null) return (SetEnumValue)((SetPredValue)this).inVal;
+      ValueVec vals = new ValueVec();
+      ValueEnumeration Enum = ((SetPredValue)this).elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      return new SetEnumValue(vals, ((SetPredValue)this).isNormalized());
+  }
+
   /* The string representation of the value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
       try {
         if (expand) {
-          Value val = SetEnumValue.convert(this);
+          Value val = this.toSetEnum();
           return val.toString(sb, offset);
         }
       }
@@ -322,7 +334,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
         }
         else {
           FormalParamNode[] ids = (FormalParamNode[])vars;
-          TupleValue tv = TupleValue.convert(elem);
+          TupleValue tv = elem.toTuple();
           if ((tv != null) &&
               (((TupleValue)tv).elems.length == ids.length)) {
             Value[] vals = ((TupleValue)tv).elems;

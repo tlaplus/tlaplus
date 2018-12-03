@@ -32,7 +32,7 @@ implements Enumerable, Reducible {
         return this.low - intv.low;
       }
       // Well, we have to convert them to sets and compare.
-      return SetEnumValue.convert(this).compareTo(obj);
+      return this.toSetEnum().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -48,7 +48,7 @@ implements Enumerable, Reducible {
         return (this.low == intv.low) && (this.high == intv.high);
       }
       // Well, we have to convert them to sets and compare.
-      return SetEnumValue.convert(this).equals(obj);
+      return this.toSetEnum().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -242,6 +242,15 @@ implements Enumerable, Reducible {
 
   public final Value permute(MVPerm perm) {
     return this;
+  }
+
+  @Override
+  public SetEnumValue toSetEnum() {
+      Value[] vals = new Value[size()];
+      for (int i = 0; i < vals.length; i++) {
+        vals[i] = IntValue.gen(i + this.low);
+      }
+      return new SetEnumValue(vals, true);
   }
 
   /* The string representation */

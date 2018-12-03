@@ -42,7 +42,7 @@ public class Bags implements ValueConstants
 
     public static BoolValue IsABag(final Value b)
     {
-        final FcnRcdValue fcn = FcnRcdValue.convert(b);
+        final FcnRcdValue fcn = b.toFcnRcd();
         if (fcn == null)
         {
         	// MAK 02/23/2018 Changed to return ValFalse instead of exception when Value is not a bag.
@@ -63,7 +63,7 @@ public class Bags implements ValueConstants
 
     public static IntValue BagCardinality(Value b)
     {
-        FcnRcdValue fcn = FcnRcdValue.convert(b);
+        FcnRcdValue fcn = b.toFcnRcd();
         if (fcn == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality",
@@ -95,7 +95,7 @@ public class Bags implements ValueConstants
 
     public static BoolValue BagIn(final Value e, final Value b)
     {
-        final FcnRcdValue fcn = FcnRcdValue.convert(b);
+        final FcnRcdValue fcn = b.toFcnRcd();
         final Value[] values = fcn.values;
         final Value[] domain = fcn.getDomainAsValues();
         for (int i = 0; i < domain.length; i++)
@@ -115,7 +115,7 @@ public class Bags implements ValueConstants
 
     public static IntValue CopiesIn(final Value e, final Value b)
     {
-        final FcnRcdValue fcn = FcnRcdValue.convert(b);
+        final FcnRcdValue fcn = b.toFcnRcd();
         final Value[] values = fcn.values;
         final Value[] domain = fcn.getDomainAsValues();
         for (int i = 0; i < domain.length; i++)
@@ -135,8 +135,8 @@ public class Bags implements ValueConstants
 
     public static Value BagCup(Value b1, Value b2)
     {
-        FcnRcdValue fcn1 = FcnRcdValue.convert(b1);
-        FcnRcdValue fcn2 = FcnRcdValue.convert(b2);
+        FcnRcdValue fcn1 = b1.toFcnRcd();
+        FcnRcdValue fcn2 = b2.toFcnRcd();
         if (!IsABag(fcn1).val)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "(+)", "bag",
@@ -190,8 +190,8 @@ public class Bags implements ValueConstants
 
     public static Value BagDiff(Value b1, Value b2)
     {
-        FcnRcdValue fcn1 = FcnRcdValue.convert(b1);
-        FcnRcdValue fcn2 = FcnRcdValue.convert(b2);
+        FcnRcdValue fcn1 = b1.toFcnRcd();
+        FcnRcdValue fcn2 = b2.toFcnRcd();
         if (fcn1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "(-)", "bag",
@@ -238,7 +238,7 @@ public class Bags implements ValueConstants
 
     public static Value BagUnion(final Value s)
     {
-        final SetEnumValue s1 = SetEnumValue.convert(s);
+        final SetEnumValue s1 = s.toSetEnum();
         if (s1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagUnion",
@@ -261,7 +261,7 @@ public class Bags implements ValueConstants
         }
         ValueVec dVec = new ValueVec();
         ValueVec vVec = new ValueVec();
-        FcnRcdValue fcn = FcnRcdValue.convert(elems.elementAt(0));
+        FcnRcdValue fcn = elems.elementAt(0).toFcnRcd();
         if (fcn == null)
         {
             throw new EvalException(EC.TLC_MODULE_BAG_UNION1, Value.ppr(s.toString()));
@@ -275,7 +275,7 @@ public class Bags implements ValueConstants
         }
         for (int i = 1; i < sz; i++)
         {
-            fcn = FcnRcdValue.convert(elems.elementAt(i));
+            fcn = elems.elementAt(i).toFcnRcd();
             if (fcn == null)
             {
 
@@ -316,8 +316,8 @@ public class Bags implements ValueConstants
 
     public static BoolValue SqSubseteq(Value b1, Value b2)
     {
-        FcnRcdValue fcn1 = FcnRcdValue.convert(b1);
-        FcnRcdValue fcn2 = FcnRcdValue.convert(b2);
+        FcnRcdValue fcn1 = b1.toFcnRcd();
+        FcnRcdValue fcn2 = b2.toFcnRcd();
         if (fcn1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "\\sqsubseteq",
@@ -358,7 +358,7 @@ public class Bags implements ValueConstants
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "BagOfAll", "operator",
                     Value.ppr(f.toString()) });
         }
-        FcnRcdValue fcn = FcnRcdValue.convert(b);
+        FcnRcdValue fcn = b.toFcnRcd();
         if (fcn == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "BagOfAll",
@@ -405,7 +405,7 @@ public class Bags implements ValueConstants
     /******
      // For now, we do not override SubBag. So, We are using the TLA+ definition.
     public static Value SubBag(Value b) {
-      FcnRcdValue fcn = FcnRcdValue.convert(b);
+      FcnRcdValue fcn = b.toFcnRcd();
       if (fcn == null) {
         String msg = "Applying SubBag to the following value, which is\n" +
     "not a function with a finite domain:\n" + Value.ppr(b.toString());
@@ -417,7 +417,7 @@ public class Bags implements ValueConstants
 
     public static Value BagToSet(Value b)
     {
-        FcnRcdValue fcn = FcnRcdValue.convert(b);
+        FcnRcdValue fcn = b.toFcnRcd();
         if (fcn == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagToSet",
@@ -428,7 +428,7 @@ public class Bags implements ValueConstants
 
     public static Value SetToBag(Value b)
     {
-        SetEnumValue s1 = SetEnumValue.convert(b);
+        SetEnumValue s1 = b.toSetEnum();
         if (s1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagToSet",

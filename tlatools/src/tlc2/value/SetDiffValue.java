@@ -185,13 +185,13 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.diffSet == null) {
-      this.diffSet = SetEnumValue.convert(this);
+      this.diffSet = this.toSetEnum();
     }
     else if (this.diffSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.diffSet == DummyEnum) {
-          val = SetEnumValue.convert(this);
+          val = this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -201,12 +201,26 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (this.diffSet != null && this.diffSet != DummyEnum) {
+        return this.diffSet;
+      }
+      ValueVec vals = new ValueVec();
+      ValueEnumeration Enum = this.elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      return new SetEnumValue(vals, this.set1.isNormalized());
+  }
+
   /* The string representation  */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
       try {
         if (expand) {
-          Value val = SetEnumValue.convert(this);
+          Value val = this.toSetEnum();
           return val.toString(sb, offset);
         }
       }

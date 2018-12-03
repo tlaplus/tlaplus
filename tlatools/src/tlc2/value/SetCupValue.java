@@ -174,13 +174,13 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.cupSet == null) {
-      this.cupSet = SetEnumValue.convert(this);
+      this.cupSet = this.toSetEnum();
     }
     else if (this.cupSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.cupSet == DummyEnum) {
-          val = SetEnumValue.convert(this);
+          val = this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -190,12 +190,26 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (this.cupSet != null && this.cupSet != DummyEnum) {
+        return this.cupSet;
+      }
+      ValueVec vals = new ValueVec();
+      ValueEnumeration Enum = this.elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      return new SetEnumValue(vals, false);
+  }
+
   /* String representation of the value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
       try {
         if (expand) {
-          Value val = SetEnumValue.convert(this);
+          Value val = this.toSetEnum();
           return val.toString(sb, offset);
         }
       }

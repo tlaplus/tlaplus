@@ -12,6 +12,7 @@ import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
+import util.UniqueString;
 
 public class FcnRcdValue extends Value implements Applicable {
   public final Value[] domain;
@@ -93,7 +94,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final int compareTo(Object obj) {
     try {
 
-      FcnRcdValue fcn = convert(obj);
+      FcnRcdValue fcn = obj instanceof Value ? ((Value) obj).toFcnRcd() : null;
       if (fcn == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare the function " + ppr(this.toString()) +
@@ -163,7 +164,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final boolean equals(Object obj) {
     try {
 
-      FcnRcdValue fcn = convert(obj);
+      FcnRcdValue fcn = obj instanceof Value ? ((Value)obj).toFcnRcd() : null;
       if (fcn == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -459,42 +460,47 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  /*
-   * This method converts a value to a function value. It returns
-   * null if the conversion fails.
-   */
-  public static final FcnRcdValue convert(Object val) {
-    switch (((Value)val).getKind()) {
-      case FCNRCDVALUE:
-        {
-          return (FcnRcdValue)val;
+  @Override
+  public TupleValue toTuple() {
+      if (this.intv != null) {
+        if (this.intv.low != 1) return null;
+        return new TupleValue(this.values);
+      }
+      int len = this.values.length;
+      Value[] elems = new Value[len];
+      for (int i = 0; i < len; i++) {
+        if (!(this.domain[i] instanceof IntValue)) return null;
+        int idx = ((IntValue)this.domain[i]).val;
+        if (0 < idx && idx <= len) {
+          if (elems[idx-1] != null) return null;
+          elems[idx-1] = this.values[i];
         }
-      case FCNLAMBDAVALUE:
-        {
-          return ((FcnLambdaValue)val).toFcnRcd();
+        else {
+          return null;
         }
-      case RECORDVALUE:
-        {
-          RecordValue rcd = (RecordValue)val;
-          rcd.normalize();
-          Value[] dom = new Value[rcd.names.length];
-          for (int i = 0; i < rcd.names.length; i++) {
-            dom[i] = new StringValue(rcd.names[i]);
-          }
-          return new FcnRcdValue(dom, rcd.values, rcd.isNormalized());
-        }
-      case TUPLEVALUE:
-        {
-          Value[] elems = ((TupleValue)val).elems;
-          IntervalValue intv = new IntervalValue(1, elems.length);
-          return new FcnRcdValue(intv, elems);
-        }
-      default:
-        // return null if not convertable
-        return null;
-    }
+      }
+      return new TupleValue(elems);
   }
 
+  @Override
+  public RecordValue toRcd() {
+      if (this.domain == null) return null;
+      this.normalize();
+      UniqueString[] vars = new UniqueString[this.domain.length];
+      for (int i = 0; i < this.domain.length; i++) {
+        if (!(this.domain[i] instanceof StringValue)) {
+          return null;
+        }
+        vars[i] = ((StringValue)this.domain[i]).getVal();
+      }
+      return new RecordValue(vars, this.values, this.isNormalized());
+  }
+
+  	@Override
+	public FcnRcdValue toFcnRcd() {
+		return this;
+	}
+  
   /* Return true iff this function is in normal form. */
   public final boolean isNormalized() { return this.isNorm; }
 

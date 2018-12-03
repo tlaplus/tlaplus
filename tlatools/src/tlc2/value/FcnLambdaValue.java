@@ -20,6 +20,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.Context;
 import util.Assert;
+import util.UniqueString;
 
 public class FcnLambdaValue extends Value implements Applicable {
   public FcnParams params;       // the function formals
@@ -78,7 +79,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      FcnRcdValue fcn = FcnRcdValue.convert(this);
+      FcnRcdValue fcn = this.toFcnRcd();
       return fcn.compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -89,7 +90,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      FcnRcdValue fcn = FcnRcdValue.convert(this);
+      FcnRcdValue fcn = this.toFcnRcd();
       return fcn.equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -165,7 +166,7 @@ public class FcnLambdaValue extends Value implements Applicable {
           }
           if (isTuples[0]) {
             FormalParamNode[] ids = formals[0];
-            TupleValue argVal = TupleValue.convert(args);
+            TupleValue argVal = args.toTuple();
             if (argVal == null) {
               Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
               ",\nthe first argument is:\n" + Value.ppr(args.toString()) +
@@ -182,7 +183,7 @@ public class FcnLambdaValue extends Value implements Applicable {
           }
         }
         else {
-          TupleValue tv = TupleValue.convert(args);
+          TupleValue tv = args.toTuple();
           if (tv == null) {
             Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
                   ",\nthe argument list is:\n" + Value.ppr(args.toString()) +
@@ -200,7 +201,7 @@ public class FcnLambdaValue extends Value implements Applicable {
                 Value.ppr(elems[argn].toString()) +
                 "\nwhich is not in its domain.\n");
               }
-              TupleValue tv1 = TupleValue.convert(elems[argn++]);
+              TupleValue tv1 = elems[argn++].toTuple();
               if (tv1 == null || tv1.size() != ids.length) {
                 Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
                 ",\nthe argument number " + argn + " is:\n" +
@@ -290,7 +291,7 @@ public class FcnLambdaValue extends Value implements Applicable {
           if (!domains[0].member(arg)) return null;
           if (isTuples[0]) {
             FormalParamNode[] ids = formals[0];
-            TupleValue argVal = TupleValue.convert(arg);
+            TupleValue argVal = arg.toTuple();
             /*
              * SZA: Changed from argVal.toString() to arg.toString() to prevent a NullPointerException
              */
@@ -310,7 +311,7 @@ public class FcnLambdaValue extends Value implements Applicable {
           }
         }
         else {
-          TupleValue tv = TupleValue.convert(arg);
+          TupleValue tv = arg.toTuple();
           if (tv == null) {
             Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
                   ",\nthe argument list is:\n" + Value.ppr(arg.toString()) +
@@ -323,7 +324,7 @@ public class FcnLambdaValue extends Value implements Applicable {
             Value domain = domains[i];
             if (isTuples[i]) {
               if (!domain.member(elems[argn])) return null;
-              TupleValue tv1 = TupleValue.convert(elems[argn++]);
+              TupleValue tv1 = elems[argn++].toTuple();
               if (tv1 == null) {
                 Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
                 ",\nthe argument number " + argn + " is:\n" +
@@ -543,6 +544,56 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
+  @Override
+  public TupleValue toTuple() {
+      if (this.params.length() != 1) return null;
+      Value dom = this.params.domains[0];
+      SymbolNode var = this.params.formals[0][0];
+      if (dom instanceof IntervalValue) {
+        IntervalValue intv = (IntervalValue)dom;
+        if (intv.low != 1) return null;
+        Value[] elems = new Value[intv.high];
+        for (int i = 1; i <= intv.high; i++) {
+          Context c1 = this.con.cons(var, IntValue.gen(i));
+          elems[i-1] = this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
+        }
+        return new TupleValue(elems);
+      }
+      else {
+        SetEnumValue eSet = dom.toSetEnum();
+        if (eSet == null)
+          Assert.fail("To convert a function of form [x \\in S |-> f(x)] " +
+                "to a tuple, the set S must be enumerable.");
+        eSet.normalize();
+        int len = eSet.size();
+        Value[] elems = new Value[len];
+        for (int i = 0; i < len; i++) {
+          Value argVal = eSet.elems.elementAt(i);
+          if (!(argVal instanceof IntValue)) return null;
+          if (((IntValue)argVal).val != i + 1) return null;
+          Context c1 = this.con.cons(var, argVal);
+          elems[i] = this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
+        }
+        return new TupleValue(elems);
+      }
+  }
+
+  @Override
+  public RecordValue toRcd() {
+      FcnRcdValue fcn = this.toFcnRcd();
+      if (fcn == null || fcn.domain == null) return null;
+      fcn.normalize();
+      UniqueString[] vars = new UniqueString[fcn.domain.length];
+      for (int i = 0; i < fcn.domain.length; i++) {
+        if (!(fcn.domain[i] instanceof StringValue)) {
+          return null;
+        }
+        vars[i] = ((StringValue)fcn.domain[i]).getVal();
+      }
+      return new RecordValue(vars, fcn.values, fcn.isNormalized());
+  }
+
+  @Override
   public final FcnRcdValue toFcnRcd() {
     try {
 
@@ -613,7 +664,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   /* The fingerprint methods.  */
   public final long fingerPrint(long fp) {
     try {
-      FcnRcdValue fcn = FcnRcdValue.convert(this);
+      FcnRcdValue fcn = this.toFcnRcd();
       return fcn.fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -624,7 +675,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final Value permute(MVPerm perm) {
     try {
-      FcnRcdValue fcn = FcnRcdValue.convert(this);
+      FcnRcdValue fcn = this.toFcnRcd();
       return fcn.permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -638,7 +689,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     try {
       if (expand || this.params == null) {
         try {
-          Value val = FcnRcdValue.convert(this);
+          Value val = this.toFcnRcd();
           return val.toString(sb, offset);
         }
         catch (Throwable e) { /*SKIP*/ }

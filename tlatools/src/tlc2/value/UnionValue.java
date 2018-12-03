@@ -215,13 +215,13 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.realSet == null) {
-      this.realSet = SetEnumValue.convert(this);
+      this.realSet = this.toSetEnum();
     }
     else if (this.realSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.realSet == DummyEnum) {
-          val = SetEnumValue.convert(this);
+          val = this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -231,11 +231,25 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (this.realSet != null && this.realSet != DummyEnum) {
+        return this.realSet;
+      }
+      ValueVec vals = new ValueVec();
+      ValueEnumeration Enum = this.elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      return new SetEnumValue(vals, false);
+  }
+
   /* String representation of this value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
       if (expand) {
-        Value val = SetEnumValue.convert(this);
+        Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {

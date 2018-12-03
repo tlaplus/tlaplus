@@ -35,7 +35,7 @@ implements Enumerable, Reducible {
 
   public final int compareTo(Object obj) {
     try {
-      SetEnumValue set = convert(obj);
+      SetEnumValue set = obj instanceof Value ? ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare the set " + ppr(this.toString()) +
@@ -60,7 +60,7 @@ implements Enumerable, Reducible {
 
   public final boolean equals(Object obj) {
     try {
-      SetEnumValue set = convert(obj);
+      SetEnumValue set = obj instanceof Value ? ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -213,152 +213,10 @@ implements Enumerable, Reducible {
       else { throw e; }
     }
   }
-
-  /* Convert val into a SetEnumValue.  Returns null if not possible. */
-  public static final SetEnumValue convert(Object val) {
-    switch (((Value)val).getKind()) {
-      case SETENUMVALUE:
-        return (SetEnumValue)val;
-      case INTERVALVALUE:
-        {
-          IntervalValue intv = (IntervalValue)val;
-          Value[] vals = new Value[intv.size()];
-          for (int i = 0; i < vals.length; i++) {
-            vals[i] = IntValue.gen(i + intv.low);
-          }
-          return new SetEnumValue(vals, true);
-        }
-      case SETCAPVALUE:
-        {
-          SetCapValue cap = (SetCapValue)val;
-          if (cap.capSet != null && cap.capSet != DummyEnum) {
-            return cap.capSet;
-          }
-          ValueVec vals = new ValueVec();
-          ValueEnumeration Enum = cap.elements();	
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          return new SetEnumValue(vals, cap.isNormalized());
-        }
-      case SETCUPVALUE:
-        {
-          SetCupValue cup = (SetCupValue)val;
-          if (cup.cupSet != null && cup.cupSet != DummyEnum) {
-            return cup.cupSet;
-          }
-          ValueVec vals = new ValueVec();
-          ValueEnumeration Enum = cup.elements();
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          return new SetEnumValue(vals, false);
-        }
-      case SETDIFFVALUE:
-        {
-          SetDiffValue diff = (SetDiffValue)val;
-          if (diff.diffSet != null && diff.diffSet != DummyEnum) {
-            return diff.diffSet;
-          }
-          ValueVec vals = new ValueVec();
-          ValueEnumeration Enum = diff.elements();
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          return new SetEnumValue(vals, diff.set1.isNormalized());
-        }
-      case UNIONVALUE:
-        {
-          UnionValue uv = (UnionValue)val;
-          if (uv.realSet != null && uv.realSet != DummyEnum) {
-            return uv.realSet;
-          }
-          ValueVec vals = new ValueVec();
-          ValueEnumeration Enum = uv.elements();
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          return new SetEnumValue(vals, false);
-        }
-      case SUBSETVALUE:
-        {
-          SubsetValue pset = (SubsetValue)val;
-          if (pset.pset != null && pset.pset != DummyEnum) {
-            return pset.pset;
-          }
-          ValueVec vals = new ValueVec(pset.size());
-          ValueEnumeration Enum = pset.elements();
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          // For as long as pset.elements() (SubsetValue#elements)
-          // internally calls SubsetValue#elementsNormalized, the
-          // result SetEnumValue here is indeed normalized.
-          return new SetEnumValue(vals, true);
-        }
-      case SETOFRCDSVALUE:
-        {
-          SetOfRcdsValue rcds = (SetOfRcdsValue)val;
-          if (rcds.rcdSet != null && rcds.rcdSet != DummyEnum) {
-            return rcds.rcdSet;
-          }
-          ValueVec vals = new ValueVec();
-          ValueEnumeration Enum = rcds.elements();
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          return new SetEnumValue(vals, rcds.isNormalized());
-        }
-      case SETOFFCNSVALUE:
-        {
-          SetOfFcnsValue fcns = (SetOfFcnsValue)val;
-          if (fcns.fcnSet != null && fcns.fcnSet != DummyEnum) {
-            return fcns.fcnSet;
-          }
-          ValueVec vals = new ValueVec();
-          ValueEnumeration Enum = fcns.elements();
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          return new SetEnumValue(vals, fcns.isNormalized());
-        }
-      case SETOFTUPLESVALUE:
-        {
-          SetOfTuplesValue tvs = (SetOfTuplesValue)val;
-          if (tvs.tupleSet != null && tvs.tupleSet != DummyEnum) {
-            return tvs.tupleSet;
-          }
-          ValueVec vals = new ValueVec();
-          ValueEnumeration Enum = tvs.elements();
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          return new SetEnumValue(vals, tvs.isNormalized());
-        }
-      case SETPREDVALUE:
-        {
-          SetPredValue sPred = (SetPredValue)val;
-          if (sPred.tool == null) return (SetEnumValue)sPred.inVal;
-          ValueVec vals = new ValueVec();
-          ValueEnumeration Enum = sPred.elements();
-          Value elem;
-          while ((elem = Enum.nextElement()) != null) {
-            vals.addElement(elem);
-          }
-          return new SetEnumValue(vals, sPred.isNormalized());
-        }
-      default:
-        // null if val can not be converted.
-        return null;
-    }
+  
+  @Override
+  public SetEnumValue toSetEnum() {
+	  return this;
   }
 
   public final boolean isDefined() {

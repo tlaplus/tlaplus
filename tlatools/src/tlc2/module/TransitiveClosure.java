@@ -39,7 +39,7 @@ public class TransitiveClosure implements ValueConstants
         Value elem = null;
         while ((elem = elems.nextElement()) != null)
         {
-            TupleValue tv = TupleValue.convert(elem);
+            TupleValue tv = elem.toTuple();
             if (tv == null || tv.size() != 2)
             {
                 throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Value.ppr(elem.toString()));

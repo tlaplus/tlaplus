@@ -222,13 +222,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.pset == null) {
-      this.pset = SetEnumValue.convert(this);
+      this.pset = this.toSetEnum();
     }
     else if (this.pset == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.pset == DummyEnum) {
-          val = SetEnumValue.convert(this);
+          val = this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -236,6 +236,23 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
         if (this.pset == DummyEnum) { this.pset = val; }
       }
     }
+  }
+
+  @Override
+  public SetEnumValue toSetEnum() {
+      if (this.pset != null && this.pset != DummyEnum) {
+        return this.pset;
+      }
+      ValueVec vals = new ValueVec(this.size());
+      ValueEnumeration Enum = this.elements();
+      Value elem;
+      while ((elem = Enum.nextElement()) != null) {
+        vals.addElement(elem);
+      }
+      // For as long as pset.elements() (SubsetValue#elements)
+      // internally calls SubsetValue#elementsNormalized, the
+      // result SetEnumValue here is indeed normalized.
+      return new SetEnumValue(vals, true);
   }
 
   /* The string representation  */
@@ -250,7 +267,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       catch (Throwable e) { unlazy = false; }
 
       if (unlazy) {
-        Value val = SetEnumValue.convert(this);
+        Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {
@@ -267,7 +284,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   
   	public Unrank getUnrank(final int kSubset) {
 		// Convert outer set only once.
-		final SetEnumValue convert = SetEnumValue.convert(set);
+		final SetEnumValue convert = set.toSetEnum();
 		convert.normalize();
 		final ValueVec elems = convert.elems;
 
@@ -277,7 +294,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
  
 	public EnumerableValue getRandomSetOfSubsets(final int numOfSubsetsRequested, final int maxLengthOfSubsets) {
 		// Convert outer set only once.
-		final SetEnumValue convert = SetEnumValue.convert(set);
+		final SetEnumValue convert = set.toSetEnum();
 		convert.normalize();
 		final ValueVec elems = convert.elems;
 		final int size = elems.size();
@@ -457,7 +474,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		// Only normalized inputs will yield a normalized output. Note that SEV#convert
 		// (unfortunately) enumerates the input. Thus "SUBSET SUBSET 1..10" will result
 		// in the nested/right SUBSET to be fully enumerated (1..10 obviously too).
-		final ValueVec elems = ((SetEnumValue) SetEnumValue.convert(set).normalize()).elems;
+		final ValueVec elems = ((SetEnumValue) set.toSetEnum().normalize()).elems;
 		return new ValueEnumeration() {
 
 			private int k = 0;
@@ -563,7 +580,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 				throw new IllegalArgumentException("Subset too large.");
 			}
 			
-			final SetEnumValue convert = SetEnumValue.convert(set);
+			final SetEnumValue convert = set.toSetEnum();
 			convert.normalize();
 			elems = convert.elems;
 
@@ -646,7 +663,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
     public Enumerator() {
     	//WARNING! Mutates the outer instance!?
-      set = SetEnumValue.convert(set);
+      set = set.toSetEnum();
       set.normalize();
       this.elems = ((SetEnumValue)set).elems;
       this.descriptor = new BitSet(this.elems.size());
@@ -706,7 +723,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
 		SubsetEnumerator(final int k) {
 			super(k, 1 << set.size());
-			final SetEnumValue convert = SetEnumValue.convert(set);
+			final SetEnumValue convert = set.toSetEnum();
       		convert.normalize();
       		this.elems = convert.elems;
 		}
@@ -755,7 +772,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			this.numOfPicks = numOfPicks;
 			this.probability = probability;
 
-			final SetEnumValue convert = SetEnumValue.convert(set);
+			final SetEnumValue convert = set.toSetEnum();
 			convert.normalize();
 			this.elems = convert.elems;
 		}

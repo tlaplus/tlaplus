@@ -49,7 +49,7 @@ public class FiniteSets implements ValueConstants
     }
 
     public static Value listToSet(Value list) {
-      TupleValue tv = TupleValue.convert(list);
+      TupleValue tv = list.toTuple()
       if (tv == null) {
         throw new EvalException("listToSet");
       }
@@ -61,7 +61,7 @@ public class FiniteSets implements ValueConstants
     }
     
     public static Value appendSetToList(Value list, Value set) {
-      TupleValue tv = TupleValue.convert(list);
+      TupleValue tv = list.toTuple();
       if (tv == null || IsFiniteSet(set) == ValFalse) {
         throw new EvalException("appendSetToList");
       }
@@ -81,7 +81,7 @@ public class FiniteSets implements ValueConstants
     }
     
     public static Value deleteSetFromList(Value set, Value list) {
-      TupleValue tv = TupleValue.convert(list);
+      TupleValue tv = list.toTuple();
       if (tv == null) {
         throw new EvalException("deleteSetFromList");
       }
@@ -99,7 +99,7 @@ public class FiniteSets implements ValueConstants
     }
     
     public static Value keepSetFromList(Value set, Value list) {
-      TupleValue tv = TupleValue.convert(list);
+      TupleValue tv = list.toTuple()
       if (tv == null) {
         throw new EvalException("keepSetFromList");
       }
