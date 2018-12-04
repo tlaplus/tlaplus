@@ -65,7 +65,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
         ValueEnumeration Enum = ((Enumerable)val).elements();
         Value elem;
         while ((elem = Enum.nextElement()) != null) {
-          if (!this.set.member(elem)) return false;
+          if (!this.set.member(elem)) {
+        	  return false;
+          }
         }
       }
       else {

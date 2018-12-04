@@ -10,8 +10,8 @@ import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class SetCupValue extends EnumerableValue implements Enumerable {
-  public Value set1;
-  public Value set2;
+  public final Value set1;
+  public final Value set2;
   protected SetEnumValue cupSet;
 
   /* Constructor */

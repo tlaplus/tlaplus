@@ -15,8 +15,8 @@ import util.Assert;
 import util.UniqueString;
 
 public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
-  public UniqueString[] names;      // The names of the fields.
-  public Value[] values;            // The values of the fields.
+  public final UniqueString[] names;      // The names of the fields.
+  public final Value[] values;            // The values of the fields.
   protected SetEnumValue rcdSet;
 
   /* Constructor */
@@ -49,8 +49,8 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         SetOfRcdsValue rcds = (SetOfRcdsValue)obj;
 
         boolean isEmpty1 = this.isEmpty();
-        if (isEmpty1) return rcds.isEmpty();
-        if (rcds.isEmpty()) return isEmpty1;
+        if (isEmpty1) { return rcds.isEmpty(); }
+        if (rcds.isEmpty()) { return isEmpty1; }
 
         if (this.names.length != rcds.names.length) {
           return false;

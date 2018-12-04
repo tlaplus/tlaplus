@@ -23,13 +23,13 @@ import util.Assert;
 import util.UniqueString;
 
 public class FcnLambdaValue extends Value implements Applicable {
-  public FcnParams params;       // the function formals
-  public SemanticNode body;      // the function body
+  public final FcnParams params;       // the function formals
+  public final SemanticNode body;      // the function body
   public ValueExcept[] excepts;  // the EXCEPTs
-  public Tool tool;
+  public final Tool tool;
   public Context con;
-  public TLCState state;
-  public TLCState pstate;
+  public final TLCState state;
+  public final TLCState pstate;
   public int control;
   public FcnRcdValue fcnRcd;
 
@@ -581,7 +581,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   @Override
   public RecordValue toRcd() {
       FcnRcdValue fcn = this.toFcnRcd();
-      if (fcn == null || fcn.domain == null) return null;
+      if (fcn == null || fcn.domain == null) { return null; }
       fcn.normalize();
       UniqueString[] vars = new UniqueString[fcn.domain.length];
       for (int i = 0; i < fcn.domain.length; i++) {

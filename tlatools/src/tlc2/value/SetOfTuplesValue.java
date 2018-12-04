@@ -11,7 +11,7 @@ import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
-  public Value[] sets;
+  public final Value[] sets;
   protected SetEnumValue tupleSet;
 
   /* Constructor */
@@ -21,16 +21,14 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   }
 
   public SetOfTuplesValue(Value val) {
-    this.sets = new Value[1];
+	  this(new Value[1]);
     this.sets[0] = val;
-    this.tupleSet = null;
   }
 
   public SetOfTuplesValue(Value v1, Value v2) {
-    this.sets = new Value[2];
+	  this(new Value[2]);
     this.sets[0] = v1;
     this.sets[1] = v2;
-    this.tupleSet = null;
   }
 
   public final byte getKind() { return SETOFTUPLESVALUE; }
@@ -275,16 +273,16 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   @Override
   public SetEnumValue toSetEnum() {
-      if (((SetOfTuplesValue)this).tupleSet != null && ((SetOfTuplesValue)this).tupleSet != DummyEnum) {
-        return ((SetOfTuplesValue)this).tupleSet;
+      if (this.tupleSet != null && this.tupleSet != DummyEnum) {
+        return this.tupleSet;
       }
       ValueVec vals = new ValueVec();
-      ValueEnumeration Enum = ((SetOfTuplesValue)this).elements();
+      ValueEnumeration Enum = this.elements();
       Value elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
-      return new SetEnumValue(vals, ((SetOfTuplesValue)this).isNormalized());
+      return new SetEnumValue(vals, this.isNormalized());
   }
 
   /* The string representation of the value. */

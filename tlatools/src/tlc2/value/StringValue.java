@@ -12,7 +12,7 @@ import util.Assert;
 import util.UniqueString;
 
 public class StringValue extends Value {
-  public UniqueString val;
+  public final UniqueString val;
 
   /* Constructor */
   public StringValue(String str) {

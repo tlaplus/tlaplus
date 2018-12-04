@@ -16,8 +16,8 @@ import util.Assert;
 import util.UniqueString;
 
 public class RecordValue extends Value implements Applicable {
-  public UniqueString[] names;   // the field names
-  public Value[] values;         // the field values
+  public final UniqueString[] names;   // the field names
+  public final Value[] values;         // the field values
   private boolean isNorm;
 
   /* Constructor */

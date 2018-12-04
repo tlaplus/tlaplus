@@ -20,17 +20,17 @@ import tlc2.util.Context;
 import util.Assert;
 
 public class SetPredValue extends EnumerableValue implements Enumerable {
-  public Object vars;           // FormalParamNode or FormalParamNode[]
+  public final Object vars;           // FormalParamNode or FormalParamNode[]
     /***********************************************************************
     * Was OpDeclNode or OpDeclNode[].                                      *
     ***********************************************************************/
   public Value inVal;           // the in value or the real set
-  public SemanticNode pred;     // the predicate
+  public final SemanticNode pred;     // the predicate
   public Tool tool;             // null iff inVal is the real set
-  public Context con;
-  public TLCState state;
-  public TLCState pstate;
-  public int control;
+  public final Context con;
+  public final TLCState state;
+  public final TLCState pstate;
+  public final int control;
 
   /* Constructor */
   public SetPredValue(Object vars, Value inVal, SemanticNode pred, Tool tool,
@@ -257,9 +257,11 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   @Override
   public SetEnumValue toSetEnum() {
-      if (((SetPredValue)this).tool == null) return (SetEnumValue)((SetPredValue)this).inVal;
+      if (this.tool == null) {
+    	  return (SetEnumValue) this.inVal;
+      }
       ValueVec vals = new ValueVec();
-      ValueEnumeration Enum = ((SetPredValue)this).elements();
+      ValueEnumeration Enum = this.elements();
       Value elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);

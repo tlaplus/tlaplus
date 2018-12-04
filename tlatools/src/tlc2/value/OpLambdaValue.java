@@ -16,11 +16,11 @@ import util.Assert;
 import util.WrongInvocationException;
 
 public class OpLambdaValue extends OpValue implements Applicable {
-  public OpDefNode opDef;       // the operator definition.
-  public Tool tool;
-  public Context con;
-  public TLCState state;
-  public TLCState pstate;
+  public final OpDefNode opDef;       // the operator definition.
+  public final Tool tool;
+  public final Context con;
+  public final TLCState state;
+  public final TLCState pstate;
 
   /* Constructor */
   public OpLambdaValue(OpDefNode op, Tool tool,	Context con,

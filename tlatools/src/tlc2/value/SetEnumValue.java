@@ -17,8 +17,7 @@ implements Enumerable, Reducible {
 
   /* Constructor */
   public SetEnumValue(Value[] elems, boolean isNorm) {
-    this.elems = new ValueVec(elems);
-    this.isNorm = isNorm;
+	  this(new ValueVec(elems), isNorm);
   }
 
   public SetEnumValue(ValueVec elems, boolean isNorm) {
@@ -27,8 +26,7 @@ implements Enumerable, Reducible {
   }
   
   public SetEnumValue() {
-    this.elems = new ValueVec(0);
-    this.isNorm = true;
+	  this(new ValueVec(0), true);
   }
 
   public final byte getKind() { return SETENUMVALUE; }

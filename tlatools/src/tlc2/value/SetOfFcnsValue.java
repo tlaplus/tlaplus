@@ -13,8 +13,8 @@ import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
-  public Value domain;        /* Function domain  */
-  public Value range;         /* Function range   */
+  public final Value domain;        /* Function domain  */
+  public final Value range;         /* Function range   */
   protected SetEnumValue fcnSet;
 
   /* Constructor */

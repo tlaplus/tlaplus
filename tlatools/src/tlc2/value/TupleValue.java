@@ -20,12 +20,12 @@ public class TupleValue extends Value implements Applicable {
   public TupleValue(Value[] elems) { this.elems = elems; }
 
   public TupleValue(Value v) {
-    this.elems = new Value[1];
+	  this(new Value[1]);
     this.elems[0] = v;
   }
 
   public TupleValue(Value v1, Value v2) {
-    this.elems = new Value[2];
+	  this(new Value[2]);
     this.elems[0] = v1;
     this.elems[1] = v2;
   }

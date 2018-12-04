@@ -10,7 +10,7 @@ import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class UnionValue extends EnumerableValue implements Enumerable {
-  public Value set;
+  public final Value set;
   protected SetEnumValue realSet;
 
   /* Constructor */
@@ -181,7 +181,9 @@ public class UnionValue extends EnumerableValue implements Enumerable {
           ValueVec elems1 = ((SetEnumValue)elems.elementAt(i)).elems;
           for (int j = 0; j < elems1.size(); j++) {
             Value elem = elems1.elementAt(j);
-            if (!result.member(elem)) resElems.addElement(elem);
+            if (!result.member(elem)) {
+            	resElems.addElement(elem);
+            }
           }
         }
         return result;
