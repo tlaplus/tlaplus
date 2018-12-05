@@ -24,7 +24,7 @@
 
 	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
 		<classpath>
-			<pathelement location="lib/aspectjtools-1.8.5.jar" />
+			<pathelement location="lib/aspectjtools-1.9.2.jar" />
 		</classpath>
 	</taskdef>
 	
@@ -150,8 +150,8 @@
 		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.8" target="1.8">
 			<classpath refid="project.classpath" />
 			<classpath>
-				<pathelement location="lib/aspectjrt-1.8.5.jar" />
-				<pathelement location="lib/aspectjtools-1.8.5.jar" />
+				<pathelement location="lib/aspectjrt-1.9.2.jar" />
+				<pathelement location="lib/aspectjtools-1.9.2.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</iajc>
@@ -168,8 +168,8 @@
 		<!-- These files are requried for load time weaving and during runtime -->
 		<copy todir="${class.dir}/lib">
 			<fileset dir="lib/">
-				<include name="aspectjrt-1.8.5.jar" />
-				<include name="aspectjweaver-1.8.5.jar" />
+				<include name="aspectjrt-1.9.2.jar" />
+				<include name="aspectjweaver-1.9.2.jar" />
 			</fileset>
 		</copy>
 	</target>
@@ -487,7 +487,7 @@
 		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes">
 			<!-- enable all assertions -->
 			<jvmarg value="-ea"/>
-			<jvmarg value="-javaagent:lib/aspectjweaver-1.8.5.jar" />
+			<jvmarg value="-javaagent:lib/aspectjweaver-1.9.2.jar" />
 			<sysproperty key="org.aspectj.weaver.showWeaveInfo" value="false"/>
 			<sysproperty key="aj.weaving.verbose" value="false"/>
 			<classpath refid="project.classpath" />
