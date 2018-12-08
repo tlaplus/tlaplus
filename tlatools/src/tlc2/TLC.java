@@ -220,9 +220,24 @@ public class TLC
 
         // Setup how spec files will be resolved in the filesystem.
         if (MODEL_PART_OF_JAR) {
+            // There was not spec file given, it instead exists in the
+            // .jar file being executed. So we need to use a special file
+            // resolver to parse it.
         		tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
         } else {
-        		tlc.setResolver(new SimpleFilenameToStream());
+            // The user passed us a spec file directly. To ensure we can
+            // recover it during semantic parsing, we must include its
+            // parent directory as a library path in the file resolver.
+            //
+            // If the spec file has no parent directory, use the "standard"
+            // library paths provided by SimpleFilenameToStream.
+            String[] libraryPaths = {};
+
+            String dir = FileUtil.parseDirname(tlc.getMainFile());
+            if (!dir.isEmpty()) {
+                libraryPaths = new String[]{dir};
+            }
+            tlc.setResolver(new SimpleFilenameToStream(libraryPaths));
         }
 
         // Execute TLC.
@@ -1079,6 +1094,10 @@ public class TLC
 
     FPSetConfiguration getFPSetConfiguration() {
     	return fpSetConfiguration;
+    }
+
+    public String getMainFile() {
+        return mainFile;
     }
 
 	public String getModelName() {

@@ -40,6 +40,19 @@ public class FileUtil
     public static final String pathSeparator = File.pathSeparator;
 
     /**
+     * Parses the directory path from a filename. If the filename
+     * is already a basename, returns the empty string.
+     */
+    public static String parseDirname(String filename) {
+        int lastSep = filename.lastIndexOf(separatorChar);
+        if (lastSep == -1) {
+            // No parent directory.
+            return "";
+        }
+        return filename.substring(0, lastSep + 1);
+    }
+
+    /**
      * Deletes the file or directory. Returns true iff the deletion
      * succeeds. The argument recurse forces the deletion of non-empty
      * directory.
