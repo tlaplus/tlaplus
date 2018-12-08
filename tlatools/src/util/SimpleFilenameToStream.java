@@ -51,6 +51,10 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	  libraryPaths = getLibraryPaths(getInstallationBasePath(), null);
   }
 
+  public SimpleFilenameToStream(final String libraryPath) {
+	  this(new String[] {libraryPath});
+  }
+  
 /**
  * August 2014 - TL
  * This constructor was on the interface but was not implemented.
