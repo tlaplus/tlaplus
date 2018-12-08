@@ -3,12 +3,11 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
-trigger:
-- master
+jobs:
 
+- job: Linux
 pool:
   vmImage: 'Ubuntu-16.04'
-
 steps:
 - task: Maven@3
   inputs:
@@ -20,3 +19,38 @@ steps:
     publishJUnitResults: false
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
+    options: '-Dmaven.test.skip=true'
+
+
+- job: Windows
+pool:
+    vmImage: 'vs2017-win2016'
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: false
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'package'
+    options: '-Dmaven.test.skip=true'
+
+
+- job: Mac
+pool:
+    vmImage: 'macOS-10.13'
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: false
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    goals: 'package'
+    options: '-Dmaven.test.skip=true'
