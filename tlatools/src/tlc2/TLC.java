@@ -206,37 +206,53 @@ public class TLC
     {
         TLC tlc = new TLC();
 
-        // handle parameters
-        if (tlc.handleParameters(args))
-        {
-        	final MailSender ms = new MailSender();
-        	if (MODEL_PART_OF_JAR) {
-        		tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
-        	} else {
-        		tlc.setResolver(new SimpleFilenameToStream());
-        	}
-        	ms.setModelName(tlc.getModelName());
-        	ms.setSpecName(tlc.getSpecName());
-
-            // call the actual processing method
-            tlc.process();
-
-            // Send logged output by email
-            boolean success = ms.send(tlc.getModuleFiles());
-            
-			// In case sending the mail has failed, we treat this as an error.
-			// This is needed when TLC runs on another host and email is
-			// the only means for the user to get access to the model checking
-			// results. 
-			// With distributed TLC and CloudDistributedTLCJob in particular,
-			// the cloud node is immediately turned off once the TLC process has
-			// finished. If we were to shutdown the node even when sending out 
-            // the email has failed, the result would be lost.
-			if (!success) {
-				System.exit(1);
-			}
+        // Try to parse parameters.
+        if (!tlc.handleParameters(args)) {
+            // This is a tool failure. We must exit with a non-zero exit
+            // code or else we will mislead system tools and scripts into
+            // thinking everything went smoothly.
+            //
+            // FIXME: handleParameters should return an error object (or
+            // null), where the error object contains an error message.
+            // This makes handleParameters a function we can test.
+            System.exit(1);
         }
-        // terminate
+
+        // Setup how spec files will be resolved in the filesystem.
+        if (MODEL_PART_OF_JAR) {
+        		tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
+        } else {
+        		tlc.setResolver(new SimpleFilenameToStream());
+        }
+
+        // Execute TLC.
+        //
+        // FIXME: process should return a success or failure status,
+        // catching all exceptions thrown by its callees. This makes
+        // process a function we can test.
+        tlc.process();
+
+        // Send logged output by email.
+        //
+        // This is needed when TLC runs on another host and email is
+        // the only means for the user to get access to the model
+        // checking results.
+        final MailSender ms = new MailSender();
+        ms.setModelName(tlc.getModelName());
+        ms.setSpecName(tlc.getSpecName());
+        boolean mailSent = ms.send(tlc.getModuleFiles());
+
+        // Treat failure to send mail as a tool failure.
+        //
+        // With distributed TLC and CloudDistributedTLCJob in particular,
+        // the cloud node is immediately turned off once the TLC process
+        // has finished. If we were to shutdown the node even when sending
+        // out the email has failed, the result would be lost.
+        if (!mailSent) {
+            System.exit(1);
+        }
+
+        // Be explicit about tool success.
         System.exit(0);
     }
 
