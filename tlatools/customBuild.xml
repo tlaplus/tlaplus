@@ -65,6 +65,17 @@
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
 		<antcall target="test-dist" inheritall="true" inheritrefs="true" />
 	</target>
+	
+	<!-- Similar to default except it skips test and only runs test-dist. This is called from pom.xml -->
+	<target name="default-maven" depends="info" description="Default">
+		<antcall target="compile" inheritall="true" inheritrefs="true" />
+		<antcall target="compile-aj" inheritall="true" inheritrefs="true" />
+		<antcall target="compile-test" inheritall="true" inheritrefs="true" />
+		<!-- <antcall target="test" inheritall="true" inheritrefs="true" /> -->
+		<antcall target="git-revision" inheritall="true" inheritrefs="true" />
+		<antcall target="dist" inheritall="true" inheritrefs="true" />
+		<antcall target="test-dist" inheritall="true" inheritrefs="true" />
+	</target>
 
 	<target name="default-release" depends="info" description="Produces a release">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />

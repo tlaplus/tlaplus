@@ -21,7 +21,6 @@ jobs:
       publishJUnitResults: false
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
       goals: 'package'
-      options: '-Dmaven.test.skip=true'
 
 
 - job: Windows
@@ -40,7 +39,6 @@ jobs:
       publishJUnitResults: false
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
       goals: 'package'
-      options: '-Dmaven.test.skip=true'
 
 
 - job: Mac
@@ -59,4 +57,3 @@ jobs:
       publishJUnitResults: false
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
       goals: 'package'
-      options: '-Dmaven.test.skip=true'
