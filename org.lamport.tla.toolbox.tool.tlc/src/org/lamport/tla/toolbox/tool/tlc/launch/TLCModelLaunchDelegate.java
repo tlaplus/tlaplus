@@ -454,7 +454,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
                 // the specification name-formula pair
             	final String spec = config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
-    			if (model.getSpec().declares(spec)) {
+    			if (model.getSpec().declares(spec) && !isExpression(spec)) {
             		writer.addFormulaList(spec, "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
     			} else {
     				writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
@@ -464,7 +464,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
             	// the init and next formulas
             	final String init = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
-				if (model.getSpec().declares(init)) {
+				if (model.getSpec().declares(init) && !isExpression(init)) {
             		writer.addFormulaList(init, "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	} else {
             		writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
@@ -472,7 +472,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             	}
 				
             	final String next = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
-				if (model.getSpec().declares(next)) {
+				if (model.getSpec().declares(next) && !isExpression(next)) {
 	           		writer.addFormulaList(next, "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	} else {
 	                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
@@ -519,6 +519,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         return false;
     }
     
+	private static boolean isExpression(final String formula) {
+		// TLC's config file only accepts identifiers but no expressions
+		// (tlc2.tool.ModelConfig.parse()). TLAplusParserTokenManager unfortunately does
+		// not parse tokens such as "C!Spec" into an identifier. Subsequently this leads
+		// to an invalid config. Thus, treat a formula with a bang as an expressions. If
+		// tla+.jj ever gets changed to handle instantiated operators, this
+		// workaround/hack can be removed.
+		return !formula.contains("!");
+	}
+
 	private static List<String[]> createProperties(final ModelWriter writer, final TLCSpec spec, final List<String> properties,
 			final String scheme) {
 		
@@ -531,7 +541,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 				scheme);
 
 		// Collect those formula that are declared in the spec, not the MC.tla file.
-		final List<Formula> declaredFormula = checkedFormula.stream().filter(f -> spec.declares(f.getFormula()))
+		final List<Formula> declaredFormula = checkedFormula.stream().filter(f -> spec.declares(f.getFormula()) && !isExpression(f.getFormula()))
 				.collect(Collectors.toList());
 
 		// Override each declared formula with its original declaration. This will cause
