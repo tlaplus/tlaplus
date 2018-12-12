@@ -53,7 +53,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="2.5.4.v20180909-1132"/>
-<repository location="http://download.eclipse.org/releases/2018-09/201809191000"/>
+<repository location="http://download.eclipse.org/recommenders/updates/stable/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.mylyn.commons.feature.group" version="3.24.2.v20180904-2231"/>
