@@ -807,13 +807,25 @@ public class MP
             b.append("Finished in %1% at (").append(SDF.format(new Date())).append(")");
             break;
         case EC.TLC_MODE_MC:
-            b.append("Running breadth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
+            b.append("Running breadth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory");
+            if (!"".equals(parameters[13])) {
+            	b.append(" [pid: %14%]");
+            }
+            b.append(" (%4% %5% %6%, %7% %8% %9%).");
             break;
         case EC.TLC_MODE_MC_DFS:
-            b.append("Running depth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory (%4% %5% %6%, %7% %8% %9%).");
+            b.append("Running depth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory");
+            if (!"".equals(parameters[13])) {
+            	b.append(" [pid: %14%]");
+            }
+     		b.append(" (%4% %5% %6%, %7% %8% %9%).");
             break;
         case EC.TLC_MODE_SIMU:
-            b.append("Running Random Simulation with seed %1% with %2% worker%3% on %4% cores with %11%MB heap and %12%MB offheap memory (%5% %6% %7%, %8% %9% %10%).");
+            b.append("Running Random Simulation with seed %1% with %2% worker%3% on %4% cores with %11%MB heap and %12%MB offheap memory");
+            if (!"".equals(parameters[12])) {
+            	b.append(" [pid: %13%]");
+            }
+            b.append(" (%5% %6% %7%, %8% %9% %10%).");
             break;
         case EC.TLC_COMPUTING_INIT:
             b.append("Computing initial states...");

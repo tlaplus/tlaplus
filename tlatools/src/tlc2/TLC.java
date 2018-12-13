@@ -880,6 +880,8 @@ public class TLC
     		final String osVersion = System.getProperty("os.version");
     		final String osArch = System.getProperty("os.arch");
     		
+    		final long pid = TLCRuntime.getInstance().pid();
+    		
     		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
             if (isSimulate)
@@ -896,7 +898,8 @@ public class TLC
 				MP.printMessage(EC.TLC_MODE_SIMU,
 						new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
 								TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
-								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory) });
+								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
+								pid == -1 ? "" : String.valueOf(pid) });
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
                         traceNum, rng, seed, true, resolver, specObj, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
@@ -914,7 +917,8 @@ public class TLC
 				final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
 						TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor, version,
 						arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
-						Long.toString(EnumerableValue.getRandomSeed()), Integer.toString(fpIndex) };
+						Long.toString(EnumerableValue.getRandomSeed()), Integer.toString(fpIndex),
+						pid == -1 ? "" : String.valueOf(pid) };
 
             	// model checking
         		AbstractChecker mc = null;
