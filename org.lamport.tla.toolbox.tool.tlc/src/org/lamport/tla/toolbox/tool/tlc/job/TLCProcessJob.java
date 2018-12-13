@@ -151,13 +151,6 @@ public class TLCProcessJob extends TLCJob
             // Following added for testing by LL on 6 Jul 2012
             final IVMInstall vmInstall = getVMInstall();
             
-            // Create command-line that can (almost) copied&pasted verbatim to a shell to run TLC directly.
-            // (Working directory needed because TLC does not find MC.tla even if -metadir is set).
-			TLCActivator.logInfo(String.format("TLC COMMAND-LINE (CWD: %s): %s%sbin%sjava -cp %s %s %s %s",
-					tlcConfig.getWorkingDirectory(), vmInstall.getInstallLocation(), File.separator, File.separator,
-					String.join(File.pathSeparator, tlcConfig.getClassPath()),
-					String.join(" ", tlcConfig.getVMArguments()), String.join(" ", tlcConfig.getClassToLaunch()),
-					String.join(" ", arguments)));
             
 			final IVMRunner runner = vmInstall.getVMRunner(ILaunchManager.RUN_MODE);
 
@@ -174,7 +167,14 @@ public class TLCProcessJob extends TLCJob
                 tlcStartTime = System.currentTimeMillis();
             } catch (CoreException e)
             {
-                return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error launching TLC modle checker", e);
+            	// Include command-line for users to figure out what failed.
+				return new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+						String.format("Error launching TLC with command-line (CWD: %s): %s%sbin%sjava -cp %s %s %s %s",
+								tlcConfig.getWorkingDirectory(), vmInstall.getInstallLocation(), File.separator,
+								File.separator, String.join(File.pathSeparator, tlcConfig.getClassPath()),
+								String.join(" ", tlcConfig.getVMArguments()),
+								String.join(" ", tlcConfig.getClassToLaunch()), String.join(" ", arguments)),
+						e);
             }
 
             // find the running process
@@ -187,6 +187,14 @@ public class TLCProcessJob extends TLCJob
             // process found
             if (this.process != null)
             {
+				// Log command-line that can (almost) copied&pasted verbatim to a shell to
+				// run TLC directly.
+				// (Working directory needed because TLC does not find MC.tla even if -metadir
+				// is set).
+            	final String cmd = this.process.getAttribute(IProcess.ATTR_CMDLINE);
+            	final String cwd = this.process.getAttribute(DebugPlugin.ATTR_WORKING_DIRECTORY);
+            	TLCActivator.logInfo(String.format("TLC COMMAND-LINE (CWD: %s): %s", cwd, cmd));
+            	
                 // step 5
                 monitor.worked(STEP);
                 monitor.subTask("Model checking...");
