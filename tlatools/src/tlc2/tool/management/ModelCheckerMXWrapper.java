@@ -18,6 +18,8 @@ import tlc2.tool.fp.DiskFPSet;
  */
 public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatisticsMXBean {
 
+	static final String OBJ_NAME = "tlc2.tool:type=ModelChecker";
+
 	private final ModelChecker modelChecker;
 	private final TLC tlc;
 
@@ -27,7 +29,7 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 		this.modelChecker = aModelChecker;
 		this.tlc = tlc;
 		// register all TLCStatisticsMXBeans under the same name
-		registerMBean("tlc2.tool:type=ModelChecker");
+		registerMBean(OBJ_NAME);
 	}
 
 	/* (non-Javadoc)
