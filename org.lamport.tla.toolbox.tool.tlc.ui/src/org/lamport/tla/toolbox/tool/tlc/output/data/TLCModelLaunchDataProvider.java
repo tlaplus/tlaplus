@@ -150,6 +150,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
 	private int fpIndex;
 
+	private boolean isSymmetryWithLiveness = false;
+	
     public TLCModelLaunchDataProvider(Model model)
     {
         this.model = model;
@@ -186,6 +188,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         progressOutput = new Document(NO_OUTPUT_AVAILABLE);
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
         constantExprEvalOutput = "";
+        isSymmetryWithLiveness = false;
 
 		final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
 		stateSortDirection = dialogSettings.getBoolean(STATESORTORDER);
@@ -292,8 +295,12 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     
                 // send to progress output
                 case EC.TLC_FEATURE_UNSUPPORTED:
-                case EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY:
                     setDocumentText(this.progressOutput, outputMessage, true);
+                    break;
+                case EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY:
+                	this.isSymmetryWithLiveness = true;
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    informPresenter(ITLCModelLaunchDataPresenter.WARNINGS);
                     break;
                     
                 // usual errors
@@ -1097,5 +1104,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
 	public int getFPIndex() {
 		return this.fpIndex;
+	}
+
+	public boolean isSymmetryWithLiveness() {
+		return isSymmetryWithLiveness;
 	}
 }

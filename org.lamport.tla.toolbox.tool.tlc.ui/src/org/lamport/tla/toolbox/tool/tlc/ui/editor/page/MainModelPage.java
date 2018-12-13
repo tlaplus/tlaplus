@@ -388,7 +388,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // constants in the table
         @SuppressWarnings("unchecked")
-		List<Assignment> constants = (List<Assignment>) constantTable.getInput();
+		List<Assignment> constants = getConstants();
         // merge constants with currently defined in the specobj, if any
         if (rootModuleNode != null)
         {
@@ -442,9 +442,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     if (constant.isSymmetricalSet())
                     {
             			if (((CheckboxTableViewer) propertiesTable).getCheckedElements().length > 0) {
-							modelEditor.addErrorMessage(constant.getLabel(), constant.getLabel()
-									+ " declared to be symmetric. Liveness checking under symmetry might fail to find a violation.",
-									this.getId(), IMessageProvider.WARNING,
+							modelEditor.addErrorMessage(constant.getLabel(), String.format(
+									"%s declared to be symmetric while one or more temporal formulas are set to be checked.\n"
+									+ "If the temporal formula is a liveness property, liveness checking might fail to find\n"
+									+ "violations. The Model Checking Result page will show a warning during TLC startup if\n"
+									+ "any one of the temporal formulas is a liveness property.",
+									constant.getLabel()), this.getId(), IMessageProvider.INFORMATION,
 									UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
             				expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
             				expandSection(dm.getSectionForAttribute(MODEL_CORRECTNESS_PROPERTIES));
@@ -954,6 +957,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         super.commit(onSave);
     }
 
+	@SuppressWarnings("unchecked")
+	public List<Assignment> getConstants() {
+		return (List<Assignment>) constantTable.getInput();
+	}
+	
     /**
      * Checks if checkpoint information changed 
      */

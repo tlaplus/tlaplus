@@ -429,7 +429,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     public Model getModel() {
-    	return ((ModelEditor) getEditor()).getModel();
+    	return getModelEditor().getModel();
     }
     
     /**
@@ -461,8 +461,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     private void handleProblemMarkers(boolean switchToErrorPage)
     {
         // delegate to the editor
-        ((ModelEditor) getEditor()).handleProblemMarkers(switchToErrorPage);
+        getModelEditor().handleProblemMarkers(switchToErrorPage);
     }
+
+	protected ModelEditor getModelEditor() {
+		return (ModelEditor) getEditor();
+	}
 
     /**
      * Returns if the input is complete and the page contains no errors
@@ -732,7 +736,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public DataBindingManager getDataBindingManager()
     {
-        return ((ModelEditor) getEditor()).getDataBindingManager();
+        return getModelEditor().getDataBindingManager();
     }
 
     /**
@@ -740,7 +744,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void doRun()
     {
-        ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
+        getModelEditor().launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
     }
 
     /**
@@ -748,7 +752,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void doGenerate()
     {
-        ((ModelEditor) getEditor()).launchModel(TLCModelLaunchDelegate.MODE_GENERATE, true);
+        getModelEditor().launchModel(TLCModelLaunchDelegate.MODE_GENERATE, true);
     }
 
     /**
@@ -756,7 +760,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void doStop()
     {
-        ((ModelEditor) getEditor()).stop();
+        getModelEditor().stop();
     }
 
     /**

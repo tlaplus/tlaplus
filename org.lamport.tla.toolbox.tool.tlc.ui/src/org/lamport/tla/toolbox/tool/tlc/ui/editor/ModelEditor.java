@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -65,6 +66,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ErrorMessage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
@@ -1163,7 +1165,22 @@ public class ModelEditor extends FormEditor
 			basicFormPage.expandSections(sections);
 		}
 	}
+	
+	public void expandSections(final String pageId, final List<String> sections) {
+		final BasicFormPage formPage = getFormPage(pageId);
+		formPage.expandSections(sections.toArray(new String[sections.size()]));
+	}
 
+	public BasicFormPage getFormPage(final String id) {
+		for (int i = 0; i < pagesToAdd.length; i++) {
+			final BasicFormPage basicFormPage = pagesToAdd[i];
+			if (basicFormPage.getId().equals(id)) {
+				return basicFormPage;
+			}
+		}
+		return null;
+	}
+	
     // TODO remove
     public void setUpPage(BasicFormPage newPage, int index)
     {
@@ -1195,6 +1212,13 @@ public class ModelEditor extends FormEditor
             }
         }
     }
+    
+	public void addErrorMessage(final ErrorMessage errorMessage) {
+		addErrorMessage(errorMessage.getKey(), errorMessage.getMessage(), errorMessage.getModelEditorPageId(),
+				IMessageProvider.WARNING,
+				UIHelper.getWidget(getDataBindingManager().getAttributeControl(errorMessage.getViewerId())));
+		expandSections(errorMessage.getModelEditorPageId(), errorMessage.getSections());
+	}
 
     /**
      * This removes the error "message" added by the corresponding call to

@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
@@ -83,6 +84,8 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAFastPartitioner;
 import org.lamport.tla.toolbox.editor.basic.TLAPartitionScanner;
 import org.lamport.tla.toolbox.editor.basic.TLASourceViewerConfiguration;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformation;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
@@ -92,6 +95,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
@@ -377,6 +381,23 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                        }
 	                    }
 	                    break;
+	                case WARNINGS:
+						if (dataProvider.isSymmetryWithLiveness()) {
+							final MainModelPage mmp = (MainModelPage) getModelEditor().getFormPage(MainModelPage.ID);
+							final Optional<Assignment> possibleSymmetrySet = mmp.getConstants().stream()
+									.filter(c -> c.isSymmetricalSet()).findFirst();
+							if (possibleSymmetrySet.isPresent()) {
+								final Assignment symmetrySet = possibleSymmetrySet.get();
+								getModelEditor().addErrorMessage(new ErrorMessage(String.format("%s %s",
+										symmetrySet.getLabel(),
+										"declared to be symmetric. Liveness checking under symmetry might fail to find a violation."),
+										symmetrySet.getLabel(), MainModelPage.ID,
+										Arrays.asList(ISectionConstants.SEC_WHAT_IS_THE_MODEL,
+												ISectionConstants.SEC_WHAT_TO_CHECK_PROPERTIES),
+										IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS));
+							}
+						}
+						break;
 	                case ERRORS:
 	                    String text;
 	                    Color color;
