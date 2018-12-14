@@ -77,6 +77,8 @@
 		<!-- product related -->
 		<module>org.lamport.tla.toolbox.product.product</module>
 
+		<!-- Finally run UI tests on fully built product (AUT) -->
+		<module>org.lamport.tla.toolbox.product.uitest</module>
 	</modules>
 
 	<!-- tycho requires maven >= 3.0 -->

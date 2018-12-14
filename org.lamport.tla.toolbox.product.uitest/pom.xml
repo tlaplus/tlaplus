@@ -1,0 +1,215 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>parent</artifactId>
+    <groupId>tlatoolbox</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <groupId>tlatoolbox</groupId>
+  <artifactId>org.lamport.tla.toolbox.product.uitest</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>rcpttTest</packaging>
+
+  <!-- RCPTT Maven Plugin and RCPTT Runner are hosted in this repository -->
+  <pluginRepositories>
+    <pluginRepository>
+      <id>rcptt-releases</id>
+      <name>RCPTT Maven repository</name>
+      <url>https://repo.eclipse.org/content/repositories/rcptt-releases/</url>
+    </pluginRepository>
+    <!-- Need RCPTT 2.4 because the Toolbox's target platform is on 2018-09 and https://bugs.eclipse.org/538719 -->
+    <pluginRepository>
+      <id>rcptt-snapshots</id>
+      <name>RCPTT Maven Snapshots repository</name>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <url>https://repo.eclipse.org/content/repositories/rcptt-snapshots/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <!-- 
+       If RCPTT tests are planned to be run on an update site, 
+       RCPTT Maven Plugin can download Eclipse SDK of required version
+       for current platform from repository below (to see 
+       an up-to-date list of available versions visit this link:
+       http://maven.xored.com/nexus/content/repositories/ci4rcptt-releases/org/eclipse/sdk/
+  -->
+  <properties>
+    <rcptt-maven-version>2.4.0-SNAPSHOT</rcptt-maven-version>
+  </properties>
+
+  <!-- The main part of RCPTT Maven plugin -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.rcptt</groupId>
+        <artifactId>rcptt-maven-plugin</artifactId>
+        <version>${rcptt-maven-version}</version>
+        <extensions>true</extensions>
+        <configuration>
+
+          <!-- This element describes where to get an AUT to run tests -->
+          <aut>
+            <!-- There are several ways to specify AUT location,
+                 Uncomment an element corresponding to a most suitable way
+            -->
+
+            <!-- Use AUT from current build results. [classifier] will be
+            automatically replaced according to the current platform -->
+            <explicit>../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.5.7-[platform].zip</explicit>
+
+            <!-- Or specify a path to AUT folder -->
+            <!--
+            <explicit>/Users/RCPTTuser/path/to/aut</explicit>
+            -->
+
+            <!-- As well AUT can be downloaded from HTTP -->
+            <!--
+            <explicit>http://server/path/aut-archive.zip</explicit>
+            -->
+            
+            <!-- AUT can be downloaded automatically from Maven repository -->
+            <!-- 
+            <groupId>com.company.product</groupId>
+            <artifactId>com.company.product.rcp</artifactId>
+            <version>3.7.2</version>
+            -->
+
+            <!-- AUT Artifact classifier is based on a current platform:
+                 Windows 32bit: win32.win32.x86
+                 Windows 64bit: win32.win32.x86_64
+                 Linux 32bit: linux.gtk.x86
+                 Linux 64bit: linux.gtk.x86_64
+                 Mac OS X 64bit: macosx.coca.x86_64
+            -->
+
+            <!-- Optionally it is possible to specify extra features to 
+                 be installed into AUT, this is useful when RCPTT tests
+                 need to be executed using a repository assembled as 
+                 part of current Maven build.
+
+                 Inside an 'injection element it is possible to specify a list of 
+                 features/plugins to install, if nothing is set, all available
+                 features will be installed.
+                 feature.group suffix is required by p2,
+                 otherwise it searches for a plugin with given id
+
+                 Currently RCPTT Runner does not install requirements automatically,
+                 so the full list of features to install must be explicitly set
+            -->
+
+
+                 
+            <injections>
+              <!-- features are optional - when omitted, all features from given site will be installed -->
+              <!--
+              <injection>
+                <site></site>
+                <features>
+                  <feature>com.comanyname.featureid</feature>
+                </features>
+              </injection>
+              -->
+            </injections>
+
+           <!-- additional AUT args (besides taken in its ini-file) can be set 
+                Use one argument per <arg> element -->
+           <!-- 
+            <args>
+              <arg>-ws</arg>
+              <arg>$${target.ws}</arg>
+            </args>
+            -->
+           <!-- optional VM args can be set too -->
+           <!--
+		   <vmArgs>
+			 <vmArg>-Xmx768m</vmArg>
+			 <vmArg>-XX:MaxPermSize=256m</vmArg>
+		   </vmArgs>
+           -->
+          </aut>
+
+          <runner>
+            <!-- RCPTT Runner location can be set using the same methods 
+                 as AUT location:
+            -->
+            <!--
+            <explicit>/path/to/rcptt/runner</explicit>
+            -->
+            
+            <!-- but the most convenient way is to just set its version,
+                 RCPTT maven plugin will automatically set right groupId and
+                 artifact ID and will download RCPTT Runner from Xored Maven Repo -->
+            <version>${rcptt-maven-version}</version>
+
+            <vmArgs>
+            </vmArgs>
+          </runner>
+
+          <!-- Test options for RCPTT Runner, most popular options listed here.
+               Full list of options is available at:
+               https://ci.xored.com/doc/runner/
+          -->
+          <testOptions>
+            <!-- Timeout for all tests, in seconds -->
+            <execTimeout>1800</execTimeout>
+            <!-- Timeout for a single test case, in seconds -->
+            <testExecTimeout>300</testExecTimeout>
+
+            <!-- When set to true, in case of test failure
+                 AUT will be restarted. This significantly
+                 slows down execution, but may be useful 
+                 for some test suites -->
+            <!--
+            <restartAUTOnFailure>true</restartAUTOnFailure>
+            -->
+          </testOptions>
+
+          <!-- By default RCPTT Runner runs tests from a project directory,
+               but in some cases it might be required to import additional 
+               projects into runner's workspace -->
+          <!--
+          <projects>
+            <project>${project.basedir}/../project</project>
+          </projects>
+          -->
+
+          <!-- By default RCPTT Runner runs all tests from workspace,
+               but it is possible to pass test suite names, so it
+               will execute only test suites from given project. -->
+
+          <!--
+		  <suites>
+			<suite>MyTestSuite</suite>
+		  </suites>
+          -->
+
+          <!-- Sometimes it might be useful to skip a test case
+               (for instance because of some unresolved bug). RCPTT
+               can skip tests based on its tags. By default RCPTT skips
+               tests with tag 'skipExecution' (this value has been 
+               chosen because on one hand it is descriptive enough,
+               on another hand it is unlikely that this tag name
+               will collide with some user's tag)
+               -->
+          <!--
+          <skipTags>
+            <skipTag>linuxOnly</skipTag>
+          </skipTags>
+          -->
+
+          <!-- By default RCPTT generates a single HTML report file with
+               all tests, but it is possible to generate one file per
+               test -->
+          <!--
+          <splitHtmlReport>true</splitHtmlReport>
+          -->
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
