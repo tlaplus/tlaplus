@@ -578,4 +578,20 @@ public abstract class AbstractChecker implements Cancelable
      * @throws Exception
      */
     public abstract void modelCheck() throws Exception;
+
+	public int getProgress() {
+		return -1;
+	}
+	
+	public void stop() {
+		// Noop
+	}
+
+	public long getStateQueueSize() {
+		return -1;
+	}
+
+	public long getDistinctStatesGenerated() {
+		return -1;
+	}
 }

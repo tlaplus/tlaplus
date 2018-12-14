@@ -92,4 +92,9 @@ public interface TLCStatisticsMXBean {
 	 * @return The name of the model curreclty being checked by TLC.
 	 */
 	String getModelName();
+
+	/**
+	 * Force TLC to stop model checking.
+	 */
+	void stop();
 }

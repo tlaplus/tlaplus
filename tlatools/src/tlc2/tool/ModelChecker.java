@@ -1024,7 +1024,49 @@ public class ModelChecker extends AbstractChecker
 		}
     	return sum;
     }
-    
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.AbstractChecker#getProgress()
+	 */
+	@Override
+	public int getProgress() {
+		try {
+			return trace.getLevelForReporting();
+		} catch (IOException e) {
+			// The modelchecker trace file might be closed already (e.g. it
+			// gets closed at the end of the modelchecker run)
+			return -1;
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.AbstractChecker#stop()
+	 */
+	@Override
+	public void stop() {
+		synchronized (this) {
+			this.setDone();
+			this.theStateQueue.finishAll();
+			this.notifyAll();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.AbstractChecker#getStateQueueSize()
+	 */
+	@Override
+	public long getStateQueueSize() {
+		return theStateQueue.size();
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.AbstractChecker#getDistinctStatesGenerated()
+	 */
+	@Override
+	public long getDistinctStatesGenerated() {
+		return theFPSet.size();
+	}
+   
 	/**
 	 * An implementation of {@link IStateFunctor} for
 	 * {@link ModelChecker#doInit(boolean)}.
