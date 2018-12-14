@@ -82,27 +82,6 @@
 							<artifactId>org.lamport.tla.toolbox.product.standalone</artifactId>
 							<version>0.0.0</version>
 						</dependency>
-						<!-- explicit dependency toward AspectJ -->
-						<dependency>
-							<type>p2-installable-unit</type>
-							<artifactId>org.aspectj.runtime</artifactId>
-							<version>0.0.0</version>
-						</dependency>
-						<dependency>
-							<type>p2-installable-unit</type>
-							<artifactId>org.aspectj.weaver</artifactId>
-							<version>0.0.0</version>
-						</dependency>
-						<dependency>
-							<type>p2-installable-unit</type>
-							<artifactId>org.eclipse.equinox.weaving.aspectj</artifactId>
-							<version>0.0.0</version>
-						</dependency>
-						<dependency>
-							<type>p2-installable-unit</type>
-							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>0.0.0</version>
-						</dependency>
 						<dependency>
 							<type>p2-installable-unit</type>
 							<artifactId>org.eclipse.equinox.event</artifactId>
@@ -110,31 +89,7 @@
 						</dependency>
 					</dependencies>
 
-					<!-- Enable JDT weaving -->
-					<frameworkExtensions>
-						<frameworkExtension>
-							<groupId>p2.osgi.bundle</groupId>
-							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-							<version>1.2.200.v20180827-1235</version>
-						</frameworkExtension>
-					</frameworkExtensions>
-
 					<bundleStartLevel>
-						<bundle>
-							<id>org.eclipse.equinox.weaving.aspectj</id>
-							<level>3</level>
-							<autoStart>true</autoStart>
-						</bundle>
-						<bundle>
-							<id>org.aspectj.weaver</id>
-							<level>3</level>
-							<autoStart>true</autoStart>
-						</bundle>
-						<bundle>
-							<id>org.aspectj.runtime</id>
-							<level>3</level>
-							<autoStart>true</autoStart>
-						</bundle>
 						<bundle>
 							<id>org.eclipse.equinox.event</id>
 							<level>4</level>

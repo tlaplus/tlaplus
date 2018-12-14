@@ -19,11 +19,6 @@
   </properties>
 
 	<dependencies>
-  		<dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>1.9.1</version>
-        </dependency>
         <!-- Down below we manually install the standalone feature. Maven/Tycho isn't
         	 smart enough to figure this out by itself. Thus, we have to tell Tycho
         	 explicitly. -->
@@ -64,23 +59,6 @@
 	        </configuration>
 	      </plugin>
 	      
-			<!-- Compile aspects -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.11</version>
-                <configuration>
-                    <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-               </executions>
-           </plugin>
-
 			<!-- Run JUnit tests -->
       		<plugin>
 				<groupId>org.eclipse.tycho</groupId>

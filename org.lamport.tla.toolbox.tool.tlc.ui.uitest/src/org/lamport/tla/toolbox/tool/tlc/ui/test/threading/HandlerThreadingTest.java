@@ -13,6 +13,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
@@ -61,6 +62,7 @@ public class HandlerThreadingTest extends AbstractTest {
 	 * @see Bug #103 in general/bugzilla/index.html
 	 */
 	@Test
+	@Ignore
 	public void parseSpecInNonUIThread() {
 
 		// Open specA
