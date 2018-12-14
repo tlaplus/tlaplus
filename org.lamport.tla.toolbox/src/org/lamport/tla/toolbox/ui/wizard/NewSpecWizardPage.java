@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.ui.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -235,6 +236,12 @@ public class NewSpecWizardPage extends WizardPage
             {
                 reportError("Root file name should be provided");
                 return;
+            } else if (rootfilePath.contains("${rnd.tmp.dir}")) {
+            	// For UI testing only.
+            	final String tmpdir = System.getProperty("java.io.tmpdir");
+				final String rndTmpDir = tmpdir + File.separator + UUID.randomUUID().toString();
+				this.fileText.setText(rootfilePath.replace("${rnd.tmp.dir}", rndTmpDir));
+            	return;
             } else if (new File(rootfilePath).isDirectory())
             {
                 reportError("Root file should be a TLA file and not a directory");
