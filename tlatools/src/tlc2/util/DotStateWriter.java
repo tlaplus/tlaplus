@@ -39,6 +39,11 @@ import tlc2.tool.TLCState;
  * Writes the given state in dot notation.
  * 
  * @see https://en.wikipedia.org/wiki/DOT_(graph_description_language)
+ * 
+ * 
+ * To ASCII-render a graph (on Debian|Ubuntu) install cpanminus, sudo cpanm Graph::Easy and run:
+ * cat your.dot | graph-easy --from=dot --as_ascii
+ * (https://stackoverflow.com/questions/3211801/graphviz-and-ascii-output)
  */
 public class DotStateWriter extends StateWriter {
 
