@@ -334,7 +334,7 @@ public class TLC implements ValueConstants
         {
             return ((BoolValue) res).val;
         }
-        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SortSeq", "noolean function",
+        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SortSeq", "boolean function",
                 Value.ppr(res.toString()) });
     }
 
