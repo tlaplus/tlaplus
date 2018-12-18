@@ -32,10 +32,13 @@ import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
 import util.Assert;
 import util.ToolIO;
+import util.UniqueString;
 
 public class TLC implements ValueConstants
 {
 	public static final long serialVersionUID = 20160822L;
+
+	private static final long startTime = System.currentTimeMillis();
 
 	public static BufferedWriter OUTPUT;
 
@@ -152,6 +155,39 @@ public class TLC implements ValueConstants
                 }
                 return res;
             }
+        } else if (vidx instanceof StringValue) {
+			final StringValue sv = (StringValue) vidx;
+			if (UniqueString.uniqueStringOf("diameter") == sv.val) {
+				try {
+					return IntValue.gen(TLCGlobals.mainChecker.getProgress());
+				} catch (ArithmeticException e) {
+					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
+							Long.toString(TLCGlobals.mainChecker.getProgress()));
+				}
+			} else if (UniqueString.uniqueStringOf("distinct") == sv.val) {
+				try {
+					return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
+				} catch (ArithmeticException e) {
+					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
+							Long.toString(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
+				}
+			} else if (UniqueString.uniqueStringOf("queue") == sv.val) {
+				try {
+					return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getStateQueueSize()));
+				} catch (ArithmeticException e) {
+					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
+							Long.toString(TLCGlobals.mainChecker.getStateQueueSize()));
+				}
+			} else if (UniqueString.uniqueStringOf("duration") == sv.val) {
+				try {
+					final int duration = (int) ((System.currentTimeMillis() - startTime) / 1000L);
+					return IntValue.gen(Math.toIntExact(duration));
+				} catch (ArithmeticException e) {
+					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
+							Long.toString(TLCGlobals.mainChecker.getStateQueueSize()));
+				}
+			}
+            throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
         }
         throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b" /* delete the space*/, "TLCGet",
                 "nonnegative integer", Value.ppr(vidx.toString()) });
@@ -177,8 +213,15 @@ public class TLC implements ValueConstants
                 }
                 return ValTrue;
             }
+        } else if (vidx instanceof StringValue) {
+        	final StringValue sv = (StringValue) vidx;
+        	if (UniqueString.uniqueStringOf("exit") == sv.val) {
+        		if (val == BoolValue.ValTrue) {
+        			TLCGlobals.mainChecker.stop();
+        		}
+        		return ValTrue;
+        	}
         }
-
         throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "TLCSet", "nonnegative integer",
                 Value.ppr(vidx.toString()) });
     }

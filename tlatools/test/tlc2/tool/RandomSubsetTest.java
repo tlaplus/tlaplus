@@ -54,7 +54,7 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 		
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "2002"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2003", "2003", "2001"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
+		assertEquals(2, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		
@@ -85,6 +85,6 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 		// Check z is false
 		assertEquals(BoolValue.ValFalse, (BoolValue) secondState.get(UniqueString.uniqueStringOf("z")));
 
-	assertZeroUncovered();
+		assertZeroUncovered();
 	}
 }

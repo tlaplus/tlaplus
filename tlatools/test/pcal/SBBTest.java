@@ -25,6 +25,7 @@
  ******************************************************************************/
 package pcal;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -47,7 +48,7 @@ public class SBBTest extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3126", "1617", "328"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "15"));
+		assertEquals(15, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>();
@@ -143,6 +144,6 @@ public class SBBTest extends PCalModelCheckerTestCase {
 				"/\\ pc = (p0 :> \"Loop\" @@ p1 :> \"Modify2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-	assertZeroUncovered();
+		assertZeroUncovered();
 	}
 }

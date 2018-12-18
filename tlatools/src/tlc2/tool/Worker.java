@@ -116,7 +116,11 @@ public class Worker extends IdThread implements IWorker {
 	public int getMaxLevel() {
 		return maxLevel;
 	}
-	
+
+	void setLevel(int level) {
+		maxLevel = level;
+	}
+
 	/* Maintain trace file (to reconstruct error-trace) */
 	
 	/*

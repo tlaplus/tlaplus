@@ -287,7 +287,7 @@ public class TLCTrace {
 			TLCStateInfo sinfo = this.tool.getState(fp);
 			if (sinfo == null) {
 				MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
-				MP.printError(EC.TLC_BUG, "1");
+				MP.printError(EC.TLC_BUG, "1 " + Long.toString(fp));
 				System.exit(1);
 			}
 			// Recover successor states from its predecessor and its fingerprint.
@@ -302,7 +302,7 @@ public class TLCTrace {
 					 * error trace. LL 7 Mar 2012
 					 */
 					MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
-					MP.printError(EC.TLC_BUG, "2");
+					MP.printError(EC.TLC_BUG, "2 " + Long.toString(fp));
 					System.exit(1);
 				}
 				res[stateNum++] = sinfo;
