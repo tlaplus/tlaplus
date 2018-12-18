@@ -64,7 +64,7 @@ public class ConcurrentTLCTrace extends TLCTrace {
 	}
 
 	public synchronized final int getLevel() throws IOException {
-		int maxLevel = 0;
+		int maxLevel = 1; // With a single, init state the level/progress/diameter is 1, not 0!
 		for (Worker worker : workers) {
 			maxLevel = Math.max(maxLevel, worker.getMaxLevel());
 		}

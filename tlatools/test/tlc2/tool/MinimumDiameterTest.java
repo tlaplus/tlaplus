@@ -33,25 +33,21 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class MinimalSetOfInitStatesTest extends ModelCheckerTestCase {
+public class MinimumDiameterTest extends ModelCheckerTestCase {
 
-	public MinimalSetOfInitStatesTest() {
-		super("MinimalSetOfInitStates");
+	public MinimumDiameterTest() {
+		super("MinimumDiameter");
 	}
 
 	@Test
 	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		
-		// Without the fix to tlc2.tool.Tool.getInitStates(ActionItemList, TLCState,
-		// IStateFunctor), the number of generated initial states would be 6 with
-		// 4 being distinct. The fix in getInitStates causes TLC to more efficiently
-		// evaluate the init predicate and avoid generating the two duplicates.
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "6"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "6", "0"));
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
+
+		// Minimum diameter with a single state is 1 (not zero)!
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "1"));
 
-	assertZeroUncovered();
+		assertZeroUncovered();
 	}
 }

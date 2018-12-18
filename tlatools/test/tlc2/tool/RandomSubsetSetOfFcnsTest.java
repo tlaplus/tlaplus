@@ -46,7 +46,7 @@ public class RandomSubsetSetOfFcnsTest extends ModelCheckerTestCase {
 		
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1000"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2000", "1000", "0"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "0"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "1"));
 //
 //		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 //		
