@@ -147,7 +147,7 @@ public class Worker extends IdThread implements IWorker {
 
 	public synchronized void writeState(final TLCState curState, final long sucStateFp, final TLCState sucState) throws IOException {
 		// Keep track of maximum diameter.
-		maxLevel = Math.max(curState.level + 1, maxLevel);
+		maxLevel = Math.max(curState.getLevel() + 1, maxLevel);
 		
 		// Write to trace file.
 		this.lastPtr = this.raf.getFilePointer();

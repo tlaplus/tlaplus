@@ -14,15 +14,17 @@ import java.util.Set;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
+import tlc2.output.EC;
 import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
+import util.Assert;
 import util.UniqueString;
 
 public abstract class TLCState implements Cloneable, Serializable {
   public short workerId = Short.MAX_VALUE; // Must be set to a non-negative number. Valid worker ids \in [0,Short.MAX_VALUE] and start at 0.
   public long uid = -1;   // Must be set to a non-negative number
-  public short level = 1;
+  private int level = 1;
   
   // Set by subclasses. Cannot set until we know what the variables are.
   public static TLCState Empty = null;
@@ -51,11 +53,20 @@ public abstract class TLCState implements Cloneable, Serializable {
     assert this.level >= 0; // Should never overflow.
   }
   
-  public void write(ValueOutputStream vos) throws IOException {
-	vos.writeShortNat(this.workerId);
-    vos.writeLongNat(this.uid);
-    vos.writeShortNat(this.level);
-  }
+	public void write(ValueOutputStream vos) throws IOException {
+		if (this.level > Short.MAX_VALUE) {
+			// The on-disk representation of TLCState limits the diameter/level to
+			// Short.MAX_VALUE whereas the in-memory rep supports int. The underlying
+			// assumption being that state spaces with a diameter beyond 32767 AND which
+			// require TLC to swap the state queue to disk are infeasible to check anyway.
+			// However, one can easily come up with a spec that corresponds to few, very long
+			// behaviors which can be kept in memory.
+			Assert.fail(EC.TLC_TRACE_TOO_LONG, this.toString());
+		}
+		vos.writeShortNat(this.workerId);
+		vos.writeLongNat(this.uid);
+		vos.writeShortNat((short) this.level);
+	}
 
   public abstract TLCState bind(UniqueString name, Value value, SemanticNode expr);
   public abstract TLCState bind(SymbolNode id, Value value, SemanticNode expr);  
@@ -84,6 +95,17 @@ public abstract class TLCState implements Cloneable, Serializable {
     return valMap;
   }
 
+  public final void setPredecessor(final TLCState predecessor) {
+	  if (predecessor.getLevel() == Integer.MAX_VALUE) {
+		  Assert.fail(EC.TLC_TRACE_TOO_LONG, this.toString());
+	  }
+	  this.level = predecessor.getLevel() + 1;
+  }
+
+  public int getLevel() {
+	return this.level;  
+  }
+  
   public boolean isInitial() {
 	return this.level == 1;
   }

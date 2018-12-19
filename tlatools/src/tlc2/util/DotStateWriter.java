@@ -57,7 +57,7 @@ public class DotStateWriter extends StateWriter {
 	private final Map<String, Integer> actionToColors = new HashMap<>();
 	
 	// A mapping from ranks to nodes.
-	private final Map<Short, Set<Long>> rankToNodes = new HashMap<>();
+	private final Map<Integer, Set<Long>> rankToNodes = new HashMap<>();
 
 	// Determines whether or not transition edges should be colorized in the state
 	// graph.
@@ -133,7 +133,7 @@ public class DotStateWriter extends StateWriter {
 	}
 	
 	protected void maintainRanks(final TLCState state) {
-		rankToNodes.computeIfAbsent(state.level, k -> new HashSet<Long>()).add(state.fingerPrint());
+		rankToNodes.computeIfAbsent(state.getLevel(), k -> new HashSet<Long>()).add(state.fingerPrint());
 	}
 
 	/* (non-Javadoc)

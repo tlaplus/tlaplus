@@ -50,4 +50,9 @@ public class MinimumDiameterTest extends ModelCheckerTestCase {
 
 		assertZeroUncovered();
 	}
+
+	@Override
+	protected boolean doDump() {
+		return false;
+	}
 }

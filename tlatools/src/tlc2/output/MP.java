@@ -1021,6 +1021,11 @@ public class MP
             b.append("The specification contains more than one conjunct of the form [][Next]_v,"
                     + "\nbut TLC can handle only specifications with one next-state relation.");
             break;
+        case EC.TLC_TRACE_TOO_LONG:
+            b.append("The specification contains one or more behaviors with 65536 or more states,"
+                    + "\nbut TLC can only handle behaviors of length up to 65535 states. The last\n"
+                    + "state in the behavior is:\n%1%");
+        	break;
         case EC.TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED:
             b.append("The property %1% is not correctly defined.");
             break;

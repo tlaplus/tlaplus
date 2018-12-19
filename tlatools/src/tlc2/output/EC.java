@@ -265,4 +265,5 @@ public interface EC
     public static final int TLC_COUNTER_EXAMPLE = 2264;
     
     public static final int TLC_INTEGER_TOO_BIG = 2265;
+    public static final int TLC_TRACE_TOO_LONG = 2282;
 }
