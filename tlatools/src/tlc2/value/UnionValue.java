@@ -6,6 +6,8 @@
 
 package tlc2.value;
 
+import java.io.IOException;
+
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
@@ -191,6 +193,11 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
     return new UnionValue(val);
   }
+
+	@Override
+	public void write(final ValueOutputStream vos) throws IOException {
+		realSet.write(vos);
+	}
 
   /* The fingerprint  */
   public final long fingerPrint(long fp) {

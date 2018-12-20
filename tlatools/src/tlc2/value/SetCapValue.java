@@ -6,6 +6,8 @@
 
 package tlc2.value;
 
+import java.io.IOException;
+
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
@@ -156,6 +158,11 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
       else { throw e; }
     }
   }
+
+	@Override
+	public void write(final ValueOutputStream vos) throws IOException {
+		capSet.write(vos);
+	}
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {

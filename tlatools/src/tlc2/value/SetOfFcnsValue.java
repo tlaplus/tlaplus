@@ -6,6 +6,7 @@
 
 package tlc2.value;
 
+import java.io.IOException;
 import java.math.BigInteger;
 
 import tlc2.TLCGlobals;
@@ -267,6 +268,11 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         vals.addElement(elem);
       }
       return new SetEnumValue(vals, this.isNormalized());
+  }
+
+  @Override
+  public void write(final ValueOutputStream vos) throws IOException {
+	  fcnSet.write(vos);
   }
 
   /* The string representation of the value. */

@@ -6,6 +6,8 @@
 
 package tlc2.value;
 
+import java.io.IOException;
+
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -243,6 +245,22 @@ implements Enumerable, Reducible {
       else { throw e; }
     }
   }
+
+	@Override
+	public void write(ValueOutputStream vos) throws IOException {
+		final int index = vos.put(this);
+		if (index == -1) {
+			vos.writeByte(SETENUMVALUE);
+			final int len = elems.size();
+			vos.writeInt((isNormalized()) ? len : -len);
+			for (int i = 0; i < len; i++) {
+				elems.elementAt(i).write(vos);
+			}
+		} else {
+			vos.writeByte(DUMMYVALUE);
+			vos.writeNat(index);
+		}
+	}
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {

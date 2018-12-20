@@ -291,7 +291,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     super.write(vos);
     int len = this.values.length;
     for (int i = 0; i < len; i++) {
-      vos.write(this.values[i]);
+    	this.values[i].write(vos);
     }
   }
   

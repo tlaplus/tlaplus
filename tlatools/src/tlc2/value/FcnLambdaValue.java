@@ -661,6 +661,11 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
+	@Override
+	public void write(final ValueOutputStream vos) throws IOException {
+		fcnRcd.write(vos);
+	}
+  
   /* The fingerprint methods.  */
   public final long fingerPrint(long fp) {
     try {

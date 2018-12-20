@@ -6,6 +6,7 @@
 
 package tlc2.value;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import tlc2.output.EC;
@@ -370,6 +371,30 @@ public class RecordValue extends Value implements Applicable {
       else { throw e; }
     }
   }
+
+	@Override
+	public void write(final ValueOutputStream vos) throws IOException {
+		final int index = vos.put(this);
+		if (index == -1) {
+			vos.writeByte(RECORDVALUE);
+			final int len = names.length;
+			vos.writeInt((isNormalized()) ? len : -len);
+			for (int i = 0; i < len; i++) {
+				final int index1 = vos.put(names[i]);
+				if (index1 == -1) {
+					vos.writeByte(STRINGVALUE);
+					names[i].write(vos.getOutputStream());
+				} else {
+					vos.writeByte(DUMMYVALUE);
+					vos.writeNat(index1);
+				}
+				values[i].write(vos);
+			}
+		} else {
+			vos.writeByte(DUMMYVALUE);
+			vos.writeNat(index);
+		}
+	}
 
   /* The fingerprint methods.  */
   public final long fingerPrint(long fp) {

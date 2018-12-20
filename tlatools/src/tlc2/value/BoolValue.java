@@ -6,6 +6,8 @@
 
 package tlc2.value;
 
+import java.io.IOException;
+
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -136,6 +138,12 @@ public class BoolValue extends Value {
       else { throw e; }
     }
   }
+
+	@Override
+	public void write(ValueOutputStream vos) throws IOException {
+		vos.writeByte(BOOLVALUE);
+		vos.writeBoolean(val);
+	}
 
   /* The fingerprint method */
   public final long fingerPrint(long fp) {

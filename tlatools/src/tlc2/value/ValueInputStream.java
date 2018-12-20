@@ -13,8 +13,8 @@ import util.WrongInvocationException;
 
 public final class ValueInputStream implements ValueConstants {
 
-  private BufferedDataInputStream dis;
-  private HandleTable handles;
+  private final BufferedDataInputStream dis;
+  private final HandleTable handles;
 
   public ValueInputStream(File file) throws IOException 
   {

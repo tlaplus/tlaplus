@@ -6,6 +6,7 @@
 
 package tlc2.value;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.BitSet;
@@ -198,6 +199,11 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       else { throw e; }
     }
   }
+
+	@Override
+	public void write(final ValueOutputStream vos) throws IOException {
+		pset.write(vos);
+	}
 
   /* The fingerprint  */
   public final long fingerPrint(long fp) {

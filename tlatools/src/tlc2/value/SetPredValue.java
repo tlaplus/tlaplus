@@ -269,6 +269,11 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       return new SetEnumValue(vals, ((SetPredValue)this).isNormalized());
   }
 
+  @Override
+  public void write(final ValueOutputStream vos) throws IOException {
+	  inVal.write(vos);
+  }
+
   /* The string representation of the value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {

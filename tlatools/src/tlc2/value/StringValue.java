@@ -6,6 +6,8 @@
 
 package tlc2.value;
 
+import java.io.IOException;
+
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
@@ -155,6 +157,18 @@ public class StringValue extends Value {
     }
   }
 
+	@Override
+	public void write(ValueOutputStream vos) throws IOException {
+		final int index = vos.put(this);
+		if (index == -1) {
+			vos.writeByte(STRINGVALUE);
+			val.write(vos.getOutputStream());
+		} else {
+			vos.writeByte(DUMMYVALUE);
+			vos.writeNat(index);
+		}
+	}
+
   /* The fingerprint method */
   public final long fingerPrint(long fp) {
     try {
@@ -222,5 +236,10 @@ public class StringValue extends Value {
       else { throw e; }
     }
   }
+
+	public static Value createFrom(ValueInputStream valueInputStream) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

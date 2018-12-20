@@ -6,6 +6,7 @@
 
 package tlc2.value;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import tla2sany.semantic.SemanticNode;
@@ -14,6 +15,7 @@ import tlc2.pprint.PrettyPrint;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
+import util.WrongInvocationException;
 
 public abstract class Value implements ValueConstants, Serializable {
   /**
@@ -49,6 +51,11 @@ public abstract class Value implements ValueConstants, Serializable {
   /* This method returns a new value after taking the excepts. */
   public abstract Value takeExcept(ValueExcept[] exs);
 
+  public void write(ValueOutputStream vos) throws IOException {
+		throw new WrongInvocationException("ValueOutputStream: Can not pickle the value\n" +
+			    Value.ppr(toString()));
+  }
+  
   /**
    * These methods allow storage and retrieval of the SemanticNode used to create the Value,
    * which is helpful for FingerprintException.

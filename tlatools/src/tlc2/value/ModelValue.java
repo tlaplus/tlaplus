@@ -36,6 +36,7 @@
 
 package tlc2.value;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -270,6 +271,12 @@ public class ModelValue extends Value {
       else { throw e; }
     }
   }
+
+	@Override
+	public void write(ValueOutputStream vos) throws IOException {
+		vos.writeByte(MODELVALUE);
+		vos.writeShort((short) index);
+	}
 
   /* The fingerprint methods */
   public final long fingerPrint(long fp) {
