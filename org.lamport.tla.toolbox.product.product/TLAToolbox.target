@@ -48,8 +48,8 @@
 <repository location="http://lemmy.github.com/Pdf4Eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="2.2.201709.201810091858"/>
-<repository location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.2.201709/com.abstratt.eclipsegraphviz.repository-2.2.201709.zip!"/>
+<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="2.3.201812.001"/>
+<repository location="http://lemmy.github.com/eclipsegraphviz/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="2.5.4.v20180909-1132"/>
