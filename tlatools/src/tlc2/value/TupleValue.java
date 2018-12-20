@@ -334,4 +334,15 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
+	public static Value createFrom(final ValueInputStream vos) throws IOException {
+		final int index = vos.getIndex();
+		final int len = vos.readNat();
+		final Value[] elems = new Value[len];
+		for (int i = 0; i < len; i++) {
+			elems[i] = vos.read();
+		}
+		final Value res = new TupleValue(elems);
+		vos.assign(res, index);
+		return res;
+	}
 }

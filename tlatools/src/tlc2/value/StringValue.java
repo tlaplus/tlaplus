@@ -237,9 +237,12 @@ public class StringValue extends Value {
     }
   }
 
-	public static Value createFrom(ValueInputStream valueInputStream) {
-		// TODO Auto-generated method stub
-		return null;
+	public static Value createFrom(final ValueInputStream vos) throws IOException {
+		final UniqueString str = UniqueString.read(vos.getInputStream());
+		final Value res = new StringValue(str);
+		final int index = vos.getIndex();
+		vos.assign(res, index);
+		return res;
 	}
 
 }

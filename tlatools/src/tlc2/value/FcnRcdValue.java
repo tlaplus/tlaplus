@@ -802,4 +802,29 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
+	public static Value createFrom(final ValueInputStream vos) throws IOException {
+		final int index = vos.getIndex();
+		final int len = vos.readNat();
+		final int info = vos.readByte();
+		Value res;
+		final Value[] rvals = new Value[len];
+		if (info == 0) {
+			final int low = vos.readInt();
+			final int high = vos.readInt();
+			for (int i = 0; i < len; i++) {
+				rvals[i] = vos.read();
+			}
+			final IntervalValue intv = new IntervalValue(low, high);
+			res = new FcnRcdValue(intv, rvals);
+		} else {
+			final Value[] dvals = new Value[len];
+			for (int i = 0; i < len; i++) {
+				dvals[i] = vos.read();
+				rvals[i] = vos.read();
+			}
+			res = new FcnRcdValue(dvals, rvals, (info == 1));
+		}
+		vos.assign(res, index);
+		return res;
+	}
 }

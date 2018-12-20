@@ -135,7 +135,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
     
     /** Write the boolean value <code>b</code> to this stream as
         a single byte. */
-    public void writeBoolean(boolean bool) throws IOException {
+    public final void writeBoolean(boolean bool) throws IOException {
         byte b = (bool ? (byte)1 : (byte)0);
         this.writeByte(b);
     }
