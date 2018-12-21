@@ -158,7 +158,11 @@
 			====================================================================
 		</echo>
 		<!-- compile aspectj related class files -->
-		<iajc destdir="${class.dir}" sourceRoots="${src-aj.dir}" debug="true" source="1.8" target="1.8">
+		<iajc destdir="${class.dir}" debug="true" verbose="true" source="1.8" target="1.8">
+			<sourceroots>
+				<!-- Here we implicitly decide to use AspectJ Load-Time weaving by excludign ${src.dir} as a pathelement. Adding ${src.dir} results in aspects being woven at compile-time as part of the ant build. -->
+				<pathelement location="${src-aj.dir}"/>
+			</sourceroots>
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/aspectjrt-1.9.2.jar" />
