@@ -41,7 +41,7 @@ public class NQSpecTest extends ModelCheckerTestCase {
 
 	public NQSpecTest() {
 		super("MC", "simulation" + File.separator + "NQSpec", new String[] { "-simulate" });
-		TLC.traceNum = 100;
+		TLC.setTraceNum(100);
 	}
 
 	@Test

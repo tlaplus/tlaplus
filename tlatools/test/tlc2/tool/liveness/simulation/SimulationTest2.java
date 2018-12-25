@@ -32,6 +32,6 @@ public class SimulationTest2 extends SuccessfulSimulationTestCase {
 
 	public SimulationTest2() {
 		super("Test2", "/", new String[] {"-simulate", "-depth", "6"});
-		TLC.traceNum = 50;
+		TLC.setTraceNum(50);
 	}
 }

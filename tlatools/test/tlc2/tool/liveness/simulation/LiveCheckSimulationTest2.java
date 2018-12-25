@@ -37,6 +37,6 @@ public class LiveCheckSimulationTest2 extends SuccessfulSimulationTestCase {
 
 	public LiveCheckSimulationTest2() {
 		super("Test2", "/", new String[] {"-simulate", "-depth", "10"});
-		TLC.traceNum = 50;
+		TLC.setTraceNum(50);
 	}
 }

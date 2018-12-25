@@ -94,7 +94,7 @@ public class TLC
     /**
      * The number of traces/behaviors to generate in simulation mode
      */
-    public static long traceNum = Long.MAX_VALUE;
+    private static long traceNum = Long.MAX_VALUE;
     private String traceFile = null;
     private int traceDepth;
     private FilenameToStream resolver;
@@ -269,6 +269,10 @@ public class TLC
         // Be explicit about tool success.
         System.exit(0);
     }
+    
+	public static void setTraceNum(int aTraceNum) {
+		traceNum = aTraceNum;
+	}
 
     /**
      * This method handles parameter arguments and prepares the actual call
