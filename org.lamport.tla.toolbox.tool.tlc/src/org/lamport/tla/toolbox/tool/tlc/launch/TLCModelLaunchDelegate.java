@@ -526,7 +526,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 		// to an invalid config. Thus, treat a formula with a bang as an expressions. If
 		// tla+.jj ever gets changed to handle instantiated operators, this
 		// workaround/hack can be removed.
-		return !formula.contains("!");
+		return formula.contains("!");
 	}
 
 	private static List<String[]> createProperties(final ModelWriter writer, final TLCSpec spec, final List<String> properties,
