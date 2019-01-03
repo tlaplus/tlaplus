@@ -1371,7 +1371,7 @@
             id="org.lamport.tla.tooblox.rss.feed"
             name="TLA+ News"
             uri="https://groups.google.com/forum/feed/tlaplus-announce/msgs/rss_v2_0.xml"
-            pollingInterval="60">
+            pollingInterval="1440">
       </feed>
    </extension>
    
