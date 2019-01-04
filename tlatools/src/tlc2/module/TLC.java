@@ -156,42 +156,46 @@ public class TLC implements ValueConstants
                 return res;
             }
         } else if (vidx instanceof StringValue) {
-			final StringValue sv = (StringValue) vidx;
-			if (UniqueString.uniqueStringOf("diameter") == sv.val) {
-				try {
-					return IntValue.gen(TLCGlobals.mainChecker.getProgress());
-				} catch (ArithmeticException e) {
-					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
-							Long.toString(TLCGlobals.mainChecker.getProgress()));
-				}
-			} else if (UniqueString.uniqueStringOf("distinct") == sv.val) {
-				try {
-					return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
-				} catch (ArithmeticException e) {
-					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
-							Long.toString(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
-				}
-			} else if (UniqueString.uniqueStringOf("queue") == sv.val) {
-				try {
-					return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getStateQueueSize()));
-				} catch (ArithmeticException e) {
-					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
-							Long.toString(TLCGlobals.mainChecker.getStateQueueSize()));
-				}
-			} else if (UniqueString.uniqueStringOf("duration") == sv.val) {
-				try {
-					final int duration = (int) ((System.currentTimeMillis() - startTime) / 1000L);
-					return IntValue.gen(Math.toIntExact(duration));
-				} catch (ArithmeticException e) {
-					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
-							Long.toString(((System.currentTimeMillis() - startTime) / 1000L)));
-				}
-			}
-            throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
+			return TLCGetStringValue(vidx);
         }
         throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b" /* delete the space*/, "TLCGet",
                 "nonnegative integer", Value.ppr(vidx.toString()) });
     }
+
+	private static final Value TLCGetStringValue(final Value vidx) {
+		final StringValue sv = (StringValue) vidx;
+		if (UniqueString.uniqueStringOf("diameter") == sv.val) {
+			try {
+				return IntValue.gen(TLCGlobals.mainChecker.getProgress());
+			} catch (ArithmeticException e) {
+				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
+						Long.toString(TLCGlobals.mainChecker.getProgress()));
+			}
+		} else if (UniqueString.uniqueStringOf("distinct") == sv.val) {
+			try {
+				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
+			} catch (ArithmeticException e) {
+				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
+						Long.toString(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
+			}
+		} else if (UniqueString.uniqueStringOf("queue") == sv.val) {
+			try {
+				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getStateQueueSize()));
+			} catch (ArithmeticException e) {
+				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
+						Long.toString(TLCGlobals.mainChecker.getStateQueueSize()));
+			}
+		} else if (UniqueString.uniqueStringOf("duration") == sv.val) {
+			try {
+				final int duration = (int) ((System.currentTimeMillis() - startTime) / 1000L);
+				return IntValue.gen(Math.toIntExact(duration));
+			} catch (ArithmeticException e) {
+				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
+						Long.toString(((System.currentTimeMillis() - startTime) / 1000L)));
+			}
+		}
+		throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
+	}
 
     public static Value TLCSet(Value vidx, Value val)
     {
