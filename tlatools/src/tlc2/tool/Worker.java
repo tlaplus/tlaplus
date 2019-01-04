@@ -163,6 +163,8 @@ public class Worker extends IdThread implements IWorker {
 		sucState.workerId = (short) myGetId();
 		sucState.uid = this.lastPtr;
 		
+		sucState.setPredecessor(curState);
+		
 //		System.err.println(String.format("<<%s, %s>>: pred=<<%s, %s>>, %s -> %s", myGetId(), this.lastPtr, 
 //				curState.uid, curState.workerId,
 //				curState.fingerPrint(), sucStateFp));

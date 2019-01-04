@@ -420,7 +420,6 @@ public class ModelChecker extends AbstractChecker
                 SUCCESSORS: for (int j = 0; j < sz; j++)
                 {
 					succState = nextStates.elementAt(j);
-					succState.setPredecessor(curState);
 					// Check if succState is a legal state.
                     if (!this.tool.isGoodState(succState))
                     {
