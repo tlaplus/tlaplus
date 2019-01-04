@@ -1049,19 +1049,6 @@ public class TLC
     {
         this.specObj = specObj;
     }
-
-    /**
-     * Delegate cancellation request to the instance
-     * @param flag
-     */
-    public void setCanceledFlag(boolean flag)
-    {
-        if (this.instance != null) 
-        {
-            this.instance.setCancelFlag(flag);
-            DebugPrinter.print("Cancel flag set to " + flag);
-        }
-    }
     
     /**
      * Print out an error message, with usage hint

@@ -91,7 +91,6 @@ public abstract class AbstractChecker implements Cancelable
     public final Action[] impliedInits;
     public final Action[] actions;
     protected final IStateWriter allStateWriter;
-    protected boolean cancellationFlag;
     protected IWorker[] workers;
 	protected final ILiveCheck liveCheck;
 
@@ -117,8 +116,6 @@ public abstract class AbstractChecker implements Cancelable
     public AbstractChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
             boolean preprocess, FilenameToStream resolver, SpecObj spec) throws EvalException, IOException
     {
-        this.cancellationFlag = false;
-
         this.checkDeadlock = deadlock;
 
         final File f = new File(specFile);
@@ -441,12 +438,6 @@ public abstract class AbstractChecker implements Cancelable
      */
     public final boolean runTLC(int depth) throws Exception
     {
-        // SZ Feb 23, 2009: exit if canceled
-        if (this.cancellationFlag)
-        {
-            return false;
-        }
-
         if (depth < 2)
         {
             return true;
@@ -489,7 +480,7 @@ public abstract class AbstractChecker implements Cancelable
         // SZ Feb 23, 2009: exit if canceled
         // added condition to run in the cycle
         // while (true) {
-        while (!this.cancellationFlag)
+        while (true)
         {
             if (!this.doPeriodicWork())
             {
@@ -521,11 +512,6 @@ public abstract class AbstractChecker implements Cancelable
             workers[i].join();
         }
         return true;
-    }
-
-    public void setCancelFlag(boolean flag)
-    {
-        this.cancellationFlag = flag;
     }
     
 	public final void setAllValues(int idx, Value val) {

@@ -334,12 +334,6 @@ public class ModelChecker extends AbstractChecker
      */
     public final boolean doInit(boolean ignoreCancel) throws Throwable
     {
-		// SZ Feb 23, 2009: cancel flag set, quit
-        if (!ignoreCancel && this.cancellationFlag)
-        {
-			return false;
-		}
-
 		// Generate the initial states.
         //
 		// The functor is passed to getInitStates() to - instead of adding all
@@ -390,12 +384,6 @@ public class ModelChecker extends AbstractChecker
      */
     public final boolean doNext(TLCState curState, ObjLongTable<SemanticNode> counts, final Worker worker) throws Throwable
     {
-        // SZ Feb 23, 2009: cancel the calculation
-        if (this.cancellationFlag)
-        {
-            return false;
-        }
-
         boolean deadLocked = true;
         TLCState succState = null;
         SetOfStates liveNextStates = null;
@@ -413,12 +401,6 @@ public class ModelChecker extends AbstractChecker
 			// <--
             for (int i = 0; i < this.actions.length; i++)
             {
-				// SZ Feb 23, 2009: cancel the calculation
-                if (this.cancellationFlag)
-                {
-					return false;
-				}
-
 				//TODO Implement IStateFunctor pattern for getNextStates() too
 				// to reduce memory and runtime overhead of allocating and
 				// looping StateVec. However - contrary to doInit() - doNext()
@@ -505,12 +487,6 @@ public class ModelChecker extends AbstractChecker
 							int len = this.invariants.length;
                             INVARIANTS: for (k = 0; k < len; k++)
                             {
-								// SZ Feb 23, 2009: cancel the calculation
-                                if (this.cancellationFlag)
-                                {
-									return false;
-								}
-
                                 if (!tool.isValid(this.invariants[k], succState))
                                 {
                                     // We get here because of invariant violation:
@@ -574,12 +550,6 @@ public class ModelChecker extends AbstractChecker
 						int len = this.impliedActions.length;
                         IMPLIED: for (k = 0; k < len; k++)
                         {
-							// SZ Feb 23, 2009: cancel the calculation
-                            if (this.cancellationFlag)
-                            {
-								return false;
-							}
-
                             if (!tool.isValid(this.impliedActions[k], curState, succState))
                             {
                                 // We get here because of implied-action violation:
