@@ -184,7 +184,7 @@ public class TLC implements ValueConstants
 					return IntValue.gen(Math.toIntExact(duration));
 				} catch (ArithmeticException e) {
 					throw new EvalException(EC.TLC_MODULE_OVERFLOW,
-							Long.toString(TLCGlobals.mainChecker.getStateQueueSize()));
+							Long.toString(((System.currentTimeMillis() - startTime) / 1000L)));
 				}
 			}
             throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
