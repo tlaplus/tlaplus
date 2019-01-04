@@ -44,6 +44,10 @@ public final class SetOfStates {
 	private int length;
 	private int thresh;
 
+	public SetOfStates() {
+		this(16);
+	}
+
 	public SetOfStates(final int size) {
 		this.count = 0;
 		this.length = size;
