@@ -206,7 +206,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public final SetEnumValue toSetEnum() {
       if (this.capSet != null && this.capSet != DummyEnum) {
         return this.capSet;
       }

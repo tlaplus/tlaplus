@@ -201,7 +201,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
 	@Override
-	public void write(final ValueOutputStream vos) throws IOException {
+	public final void write(final ValueOutputStream vos) throws IOException {
 		pset.write(vos);
 	}
 
@@ -247,7 +247,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public final SetEnumValue toSetEnum() {
       if (this.pset != null && this.pset != DummyEnum) {
         return this.pset;
       }

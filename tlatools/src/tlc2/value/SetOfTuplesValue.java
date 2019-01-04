@@ -274,7 +274,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public final SetEnumValue toSetEnum() {
       if (this.tupleSet != null && this.tupleSet != DummyEnum) {
         return this.tupleSet;
       }
@@ -288,7 +288,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public void write(final ValueOutputStream vos) throws IOException {
+  public final void write(final ValueOutputStream vos) throws IOException {
 	  tupleSet.write(vos);
   }
 

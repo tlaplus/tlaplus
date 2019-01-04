@@ -195,17 +195,17 @@ public class TupleValue extends Value implements Applicable {
   public final int size() { return this.elems.length; }
 
   @Override
-  public TupleValue toTuple() {
+  public final TupleValue toTuple() {
 	  return this;
   }
   
   @Override
-  public RecordValue toRcd() {
+  public final RecordValue toRcd() {
 	  return size() == 0 ? EmptyRcd : super.toRcd();
   }
 
 	@Override
-	public FcnRcdValue toFcnRcd() {
+	public final FcnRcdValue toFcnRcd() {
         IntervalValue intv = new IntervalValue(1, this.elems.length);
         return new FcnRcdValue(intv, this.elems);
 	}
@@ -260,7 +260,7 @@ public class TupleValue extends Value implements Applicable {
   }
 
 	@Override
-	public void write(ValueOutputStream vos) throws IOException {
+	public final void write(ValueOutputStream vos) throws IOException {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(TUPLEVALUE);

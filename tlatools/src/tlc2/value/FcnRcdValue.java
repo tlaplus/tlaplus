@@ -442,7 +442,7 @@ public class FcnRcdValue extends Value implements Applicable {
    * Returns the domain of this FunctionRecordValue regardless of its internal
    * representation as either Value[] or IntervalValue as Value[].
    */
-  public Value[] getDomainAsValues() {
+  public final Value[] getDomainAsValues() {
 	  if (this.intv != null) {
 		  return this.intv.asValues();
 	  } else {
@@ -462,7 +462,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   @Override
-  public TupleValue toTuple() {
+  public final TupleValue toTuple() {
       if (this.intv != null) {
         if (this.intv.low != 1) return null;
         return new TupleValue(this.values);
@@ -484,7 +484,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   @Override
-  public RecordValue toRcd() {
+  public final RecordValue toRcd() {
       if (this.domain == null) return null;
       this.normalize();
       UniqueString[] vars = new UniqueString[this.domain.length];
@@ -498,7 +498,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   	@Override
-	public FcnRcdValue toFcnRcd() {
+	public final FcnRcdValue toFcnRcd() {
 		return this;
 	}
   
@@ -609,7 +609,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
 	@Override
-	public void write(final ValueOutputStream vos) throws IOException {
+	public final void write(final ValueOutputStream vos) throws IOException {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(FCNRCDVALUE);

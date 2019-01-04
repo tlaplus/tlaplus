@@ -382,7 +382,7 @@ public class ModelChecker extends AbstractChecker
      * 
      * This method is called from the workers on every step
      */
-    public final boolean doNext(TLCState curState, ObjLongTable<SemanticNode> counts, final Worker worker) throws Throwable
+    public final boolean doNext(final TLCState curState, final ObjLongTable<SemanticNode> counts, final Worker worker) throws Throwable
     {
         boolean deadLocked = true;
         TLCState succState = null;
@@ -412,8 +412,8 @@ public class ModelChecker extends AbstractChecker
 				// removed, the functor pattern could be applied to doNext too.
 				// Other problems are access to worker and curState. A stateless functor has no
 				// access to curState and worker except when it uses thread local storage.
-				StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
-				int sz = nextStates.size();
+				final StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
+				final int sz = nextStates.size();
 				worker.incrementStatesGenerated(sz);
 				deadLocked = deadLocked && (sz == 0);
 
@@ -483,7 +483,7 @@ public class ModelChecker extends AbstractChecker
                     {
                         try
                         {
-							int len = this.invariants.length;
+							final int len = this.invariants.length;
                             INVARIANTS: for (k = 0; k < len; k++)
                             {
                                 if (!tool.isValid(this.invariants[k], succState))
@@ -546,7 +546,7 @@ public class ModelChecker extends AbstractChecker
                     // even if succState is not new.
                     try
                     {
-						int len = this.impliedActions.length;
+						final int len = this.impliedActions.length;
                         IMPLIED: for (k = 0; k < len; k++)
                         {
                             if (!tool.isValid(this.impliedActions[k], curState, succState))

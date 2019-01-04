@@ -85,7 +85,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   /** 
    * Returns a mapping of variable names to their assigned values in this state.
    */ 
-  public Map<UniqueString, Value> getVals() {
+  public final Map<UniqueString, Value> getVals() {
 	final Map<UniqueString, Value> valMap = new HashMap<UniqueString, Value>();
 	for(int i = 0; i < vars.length; i++) {
         UniqueString key = vars[i].getName();
@@ -102,11 +102,11 @@ public abstract class TLCState implements Cloneable, Serializable {
 	  this.level = predecessor.getLevel() + 1;
   }
 
-  public int getLevel() {
+  public final int getLevel() {
 	return this.level;  
   }
   
-  public boolean isInitial() {
+  public final boolean isInitial() {
 	return this.level == 1;
   }
   

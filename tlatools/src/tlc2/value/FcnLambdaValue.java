@@ -579,7 +579,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   @Override
-  public RecordValue toRcd() {
+  public final RecordValue toRcd() {
       FcnRcdValue fcn = this.toFcnRcd();
       if (fcn == null || fcn.domain == null) { return null; }
       fcn.normalize();
@@ -662,7 +662,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
 	@Override
-	public void write(final ValueOutputStream vos) throws IOException {
+	public final void write(final ValueOutputStream vos) throws IOException {
 		fcnRcd.write(vos);
 	}
   

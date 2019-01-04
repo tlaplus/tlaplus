@@ -21,7 +21,7 @@ import tlc2.util.statistics.FixedSizedBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import util.FileUtil;
 
-public class Worker extends IdThread implements IWorker {
+public final class Worker extends IdThread implements IWorker {
 	
 	/**
 	 * Multi-threading helps only when running on multiprocessors. TLC can
@@ -61,7 +61,7 @@ public class Worker extends IdThread implements IWorker {
    * possible next states of the state, checks the invariants, and
    * updates the state set and state queue.
 	 */
-	public final void run() {
+	public void run() {
 		TLCState curState = null;
 		try {
 			while (true) {
@@ -97,27 +97,27 @@ public class Worker extends IdThread implements IWorker {
 	
 	/* Statistics */
 
-	void incrementStatesGenerated(long l) {
+	final void incrementStatesGenerated(long l) {
 		this.statesGenerated += l;		
 	}
 	
-	long getStatesGenerated() {
+	final long getStatesGenerated() {
 		return this.statesGenerated;
 	}
 
-	void setOutDegree(final int numOfSuccessors) {
+	final void setOutDegree(final int numOfSuccessors) {
 		this.outDegree.addSample(numOfSuccessors);
 	}
 
-	public IBucketStatistics getOutDegree() {
+	public final IBucketStatistics getOutDegree() {
 		return this.outDegree;
 	}
 	
-	public int getMaxLevel() {
+	public final int getMaxLevel() {
 		return maxLevel;
 	}
 
-	void setLevel(int level) {
+	final void setLevel(int level) {
 		maxLevel = level;
 	}
 
@@ -137,7 +137,7 @@ public class Worker extends IdThread implements IWorker {
 	 * cache in BufferedRandomAccessFile hasn't been flushed out.
 	 */
 	
-	public synchronized void writeState(final TLCState initialState, final long fp) throws IOException {
+	public final synchronized void writeState(final TLCState initialState, final long fp) throws IOException {
 		// Write initial state to trace file.
 		this.lastPtr = this.raf.getFilePointer();
 		this.raf.writeLongNat(1L);
@@ -149,7 +149,7 @@ public class Worker extends IdThread implements IWorker {
 		initialState.uid = this.lastPtr;
 	}
 
-	public synchronized void writeState(final TLCState curState, final long sucStateFp, final TLCState sucState) throws IOException {
+	public final synchronized void writeState(final TLCState curState, final long sucStateFp, final TLCState sucState) throws IOException {
 		// Keep track of maximum diameter.
 		maxLevel = Math.max(curState.getLevel() + 1, maxLevel);
 		
@@ -171,7 +171,7 @@ public class Worker extends IdThread implements IWorker {
 	}
 
 	// Read from previously written (see writeState) trace file.
-	public synchronized ConcurrentTLCTrace.Record readStateRecord(final long ptr) throws IOException {
+	public final synchronized ConcurrentTLCTrace.Record readStateRecord(final long ptr) throws IOException {
 		this.raf.seek(ptr);
 		
 		final long prev = this.raf.readLongNat();
@@ -188,7 +188,7 @@ public class Worker extends IdThread implements IWorker {
 	
 	/* Checkpointing */
 
-	public synchronized void beginChkpt() throws IOException {
+	public final synchronized void beginChkpt() throws IOException {
 		this.raf.flush();
 		final DataOutputStream dos = FileUtil.newDFOS(filename + ".tmp");
 		dos.writeLong(this.raf.getFilePointer());
@@ -196,7 +196,7 @@ public class Worker extends IdThread implements IWorker {
 		dos.close();
 	}
 
-	public synchronized void commitChkpt() throws IOException {
+	public final synchronized void commitChkpt() throws IOException {
 		final File oldChkpt = new File(filename + ".chkpt");
 		final File newChkpt = new File(filename + ".tmp");
 		if ((oldChkpt.exists() && !oldChkpt.delete()) || !newChkpt.renameTo(oldChkpt)) {
@@ -204,7 +204,7 @@ public class Worker extends IdThread implements IWorker {
 		}
 	}
 
-	public void recover() throws IOException {
+	public final void recover() throws IOException {
 		final DataInputStream dis = FileUtil.newDFIS(filename + ".chkpt");
 		final long filePos = dis.readLong();
 		this.lastPtr = dis.readLong();
@@ -214,7 +214,7 @@ public class Worker extends IdThread implements IWorker {
 	
 	/* Enumerator */
 	
-	public Enumerator elements() throws IOException {
+	public final Enumerator elements() throws IOException {
 		return new Enumerator();
 	}
 

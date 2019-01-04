@@ -257,7 +257,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public final SetEnumValue toSetEnum() {
       if (this.fcnSet != null && this.fcnSet != DummyEnum) {
         return this.fcnSet;
       }
@@ -271,7 +271,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public void write(final ValueOutputStream vos) throws IOException {
+  public final void write(final ValueOutputStream vos) throws IOException {
 	  fcnSet.write(vos);
   }
 

@@ -213,9 +213,9 @@ implements Enumerable, Reducible {
       else { throw e; }
     }
   }
-  
+
   @Override
-  public SetEnumValue toSetEnum() {
+  public final SetEnumValue toSetEnum() {
 	  return this;
   }
 
@@ -247,7 +247,7 @@ implements Enumerable, Reducible {
   }
 
 	@Override
-	public void write(ValueOutputStream vos) throws IOException {
+	public final void write(ValueOutputStream vos) throws IOException {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(SETENUMVALUE);
@@ -340,7 +340,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public Value randomElement() {
+  public final Value randomElement() {
      int sz = size();
      int index = (int) Math.floor(getRandom().nextDouble() * sz);
      return this.elems.elementAt(index);

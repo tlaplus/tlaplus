@@ -152,7 +152,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   }
 
 	@Override
-	public void write(final ValueOutputStream vos) throws IOException {
+	public final void write(final ValueOutputStream vos) throws IOException {
 		cupSet.write(vos);
 	}
 
@@ -198,7 +198,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public final SetEnumValue toSetEnum() {
       if (this.cupSet != null && this.cupSet != DummyEnum) {
         return this.cupSet;
       }

@@ -241,7 +241,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public final SetEnumValue toSetEnum() {
       if (this.realSet != null && this.realSet != DummyEnum) {
         return this.realSet;
       }

@@ -55,7 +55,7 @@ public final class SetOfStates {
 		this.states = new TLCState[length];
 	}
 
-	public void clear() {
+	public final void clear() {
 		this.count = 0;
 		this.states = new TLCState[length];
 	}
@@ -108,7 +108,7 @@ public final class SetOfStates {
 	/**
 	 * @return The current capacity of this set. [](capacity > size)
 	 */
-	public int capacity() {
+	public final int capacity() {
 		return this.length;
 	}
 	
