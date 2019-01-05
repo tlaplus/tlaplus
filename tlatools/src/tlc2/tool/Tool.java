@@ -1261,27 +1261,31 @@ public class Tool
 
   private final TLCState processUnchanged(SemanticNode expr, ActionItemList acts, Context c,
                                           TLCState s0, TLCState s1, StateVec nss) {
-    if (this.callStack != null) this.callStack.push(expr);
-    try {
-        SymbolNode var = this.getVar(expr, c, false);
+	  if (this.callStack != null) {
+		  return processUnchangedWithCallStack(expr, acts, c, s0, s1, nss);
+	  } else {
+		   return processUnchangedImpl(expr, acts, c, s0, s1, nss);
+	  }
+  }
+  private final TLCState processUnchangedWithCallStack(SemanticNode expr, ActionItemList acts, Context c,
+          TLCState s0, TLCState s1, StateVec nss) {
+	   this.callStack.push(expr);
+	   try {
+		   return processUnchangedImpl(expr, acts, c, s0, s1, nss);
+	    } catch (TLCRuntimeException | EvalException e) {
+	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
+	    	this.callStack.freeze();
+	    	throw e;
+	    } finally {
+	    	this.callStack.pop();
+	    }
+  }
+  private final TLCState processUnchangedImpl(SemanticNode expr, ActionItemList acts, Context c,
+          TLCState s0, TLCState s1, StateVec nss) {
+         SymbolNode var = this.getVar(expr, c, false);
         TLCState resState = s1;
         if (var != null) {
-          // expr is a state variable:
-          UniqueString varName = var.getName();
-          Value val0 = s0.lookup(varName);
-          Value val1 = s1.lookup(varName);
-          if (val1 == null) {
-            resState.bind(varName, val0, expr);
-            resState = this.getNextStates(acts, s0, resState, nss);
-            resState.unbind(varName);
-          }
-          else if (val0.equals(val1)) {
-            resState = this.getNextStates(acts, s0, s1, nss);
-          }
-          else {
-            MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
-          }
-          return resState;
+            return processUnchangedImplVar(expr, acts, s0, s1, nss, var);
         }
 
         if (expr instanceof OpApplNode) {
@@ -1293,15 +1297,7 @@ public class Tool
           int opcode = BuiltInOPs.getOpCode(opName);
 
           if (opcode == OPCODE_tup) {
-            // a tuple:
-            if (alen != 0) {
-              ActionItemList acts1 = acts;
-              for (int i = alen-1; i > 0; i--) {
-                acts1 = acts1.cons(args[i], c, ActionItemList.UNCHANGED);
-              }
-              return this.processUnchanged(args[0], acts1, c, s0, s1, nss);
-            }
-            return this.getNextStates(acts, s0, s1, nss);
+            return processUnchangedImplTuple(acts, c, s0, s1, nss, args, alen);
           }
 
           if (opcode == 0 && alen == 0) {
@@ -1329,15 +1325,42 @@ public class Tool
           resState = this.getNextStates(acts, s0, s1, nss);
         }
         return resState;
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-    	throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
+  }
+
+  private final TLCState processUnchangedImplTuple(ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss,
+  		ExprOrOpArgNode[] args, int alen) {
+  	// a tuple:
+  	if (alen != 0) {
+  	  ActionItemList acts1 = acts;
+  	  for (int i = alen-1; i > 0; i--) {
+  	    acts1 = acts1.cons(args[i], c, ActionItemList.UNCHANGED);
+  	  }
+  	  return this.processUnchanged(args[0], acts1, c, s0, s1, nss);
+  	}
+  	return this.getNextStates(acts, s0, s1, nss);
   }
   
+  private final TLCState processUnchangedImplVar(SemanticNode expr, ActionItemList acts, TLCState s0, TLCState s1, StateVec nss,
+  		SymbolNode var) {
+          TLCState resState = s1;
+          // expr is a state variable:
+          final UniqueString varName = var.getName();
+          final Value val0 = s0.lookup(varName);
+          final Value val1 = s1.lookup(varName);
+          if (val1 == null) {
+		  	resState.bind(varName, val0, expr);
+		  	resState = this.getNextStates(acts, s0, resState, nss);
+		  	resState.unbind(varName);
+          }
+          else if (val0.equals(val1)) {
+        	  resState = this.getNextStates(acts, s0, s1, nss);
+          }
+          else {
+        	  MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
+          }
+          return resState;
+  }
+    
   /* eval */
 
   /* Special version of eval for state expressions. */
