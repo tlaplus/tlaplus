@@ -95,65 +95,26 @@ public class FcnRcdValue extends Value implements Applicable {
   public final int compareTo(Object obj) {
     try {
 
-      FcnRcdValue fcn = obj instanceof Value ? ((Value) obj).toFcnRcd() : null;
-      if (fcn == null) {
-        if (obj instanceof ModelValue) return 1;
-        Assert.fail("Attempted to compare the function " + ppr(this.toString()) +
-        " with the value:\n" + ppr(obj.toString()));
-      }
-      this.normalize();
-      fcn.normalize();
+			final FcnRcdValue fcn = obj instanceof Value ? ((Value) obj).toFcnRcd() : null;
+			if (fcn == null) {
+				if (obj instanceof ModelValue)
+					return 1;
+				Assert.fail("Attempted to compare the function " + ppr(this.toString()) + " with the value:\n"
+						+ ppr(obj.toString()));
+			}
+			this.normalize();
+			fcn.normalize();
 
-      int result = this.values.length - fcn.values.length;
-      if (result != 0) return result;
+			final int result = this.values.length - fcn.values.length;
+			if (result != 0) {
+				return result;
+			}
 
-      if (this.intv != null) {
-        if (fcn.intv != null) {
-          result = this.intv.low - fcn.intv.low;
-          if (result != 0) return result;
-          for (int i = 0; i < this.values.length; i++) {
-            result = this.values[i].compareTo(fcn.values[i]);
-            if (result != 0) return result;
-          }
-        }
-        else {
-          for (int i = 0; i < fcn.domain.length; i++) {
-            Value dElem = fcn.domain[i];
-            if (!(dElem instanceof IntValue)) {
-              Assert.fail("Attempted to compare integer with non-integer:\n" +
-              ppr(dElem.toString()) + ".");
-            }
-            result = this.intv.low + i - ((IntValue)dElem).val;
-            if (result != 0) return result;
-            result = this.values[i].compareTo(fcn.values[i]);
-            if (result != 0) return result;
-          }
-        }
-      }
-      else {
-        if (fcn.intv != null) {
-          for (int i = 0; i < this.domain.length; i++) {
-            Value dElem = this.domain[i];
-            if (!(dElem instanceof IntValue)) {
-              Assert.fail("Attempted to compare integer with non-integer\n" +
-              ppr(dElem.toString()) + ".");
-            }
-            result = ((IntValue)dElem).val - (fcn.intv.low + i);
-            if (result != 0) return result;
-            result = this.values[i].compareTo(fcn.values[i]);
-            if (result != 0) return result;
-          }
-        }
-        else {
-          for (int i = 0; i < this.domain.length; i++) {
-            result = this.domain[i].compareTo(fcn.domain[i]);
-            if (result != 0) return result;
-            result = this.values[i].compareTo(fcn.values[i]);
-            if (result != 0) return result;
-          }
-        }
-      }
-      return 0;
+			if (this.intv != null) {
+				return compareToInterval(fcn);
+			} else {
+				return compareOtherInterval(fcn);
+			}
 
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -162,6 +123,72 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
+  private final int compareOtherInterval(final FcnRcdValue fcn) {
+	int result;
+	if (fcn.intv != null) {
+		for (int i = 0; i < this.domain.length; i++) {
+			final Value dElem = this.domain[i];
+			if (!(dElem instanceof IntValue)) {
+				Assert.fail(
+						"Attempted to compare integer with non-integer\n" + ppr(dElem.toString()) + ".");
+			}
+			result = ((IntValue) dElem).val - (fcn.intv.low + i);
+			if (result != 0) {
+				return result;
+			}
+			result = this.values[i].compareTo(fcn.values[i]);
+			if (result != 0) {
+				return result;
+			}
+		}
+	} else {
+		for (int i = 0; i < this.domain.length; i++) {
+			result = this.domain[i].compareTo(fcn.domain[i]);
+			if (result != 0) {
+				return result;
+			}
+			result = this.values[i].compareTo(fcn.values[i]);
+			if (result != 0) {
+				return result;
+			}
+		}
+	}
+	return 0;
+  }
+
+  private final int compareToInterval(final FcnRcdValue fcn) {
+  	int result;
+  	if (fcn.intv != null) {
+  		result = this.intv.low - fcn.intv.low;
+  		if (result != 0) {
+  			return result;
+  		}
+  		for (int i = 0; i < this.values.length; i++) {
+  			result = this.values[i].compareTo(fcn.values[i]);
+  			if (result != 0) {
+  				return result;
+  			}
+  		}
+  	} else {
+  		for (int i = 0; i < fcn.domain.length; i++) {
+  			final Value dElem = fcn.domain[i];
+  			if (!(dElem instanceof IntValue)) {
+  				Assert.fail(
+  						"Attempted to compare integer with non-integer:\n" + ppr(dElem.toString()) + ".");
+  			}
+  			result = this.intv.low + i - ((IntValue) dElem).val;
+  			if (result != 0) {
+  				return result;
+  			}
+  			result = this.values[i].compareTo(fcn.values[i]);
+  			if (result != 0) {
+  				return result;
+  			}
+  		}
+  	}
+  	return 0;
+  }
+  
   public final boolean equals(Object obj) {
     try {
 
