@@ -213,6 +213,20 @@ implements Enumerable, Reducible {
       else { throw e; }
     }
   }
+  
+  @Override
+  public final void deepNormalize() {
+	    try {
+      for (int i = 0; i < elems.size(); i++) {
+          elems.elementAt(i).deepNormalize();
+        }
+        normalize();
+	    }
+	    catch (RuntimeException | OutOfMemoryError e) {
+	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	      else { throw e; }
+	    }
+  }
 
   @Override
   public final SetEnumValue toSetEnum() {

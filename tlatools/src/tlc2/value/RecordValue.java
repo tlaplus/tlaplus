@@ -320,6 +320,20 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
+  @Override
+  public final void deepNormalize() {
+	  try {
+      for (int i = 0; i < values.length; i++) {
+          values[i].deepNormalize();
+        }
+        normalize();
+	    }
+	    catch (RuntimeException | OutOfMemoryError e) {
+	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	      else { throw e; }
+	    }
+  }
+
   public final boolean isDefined() {
     try {
       boolean defined = true;

@@ -216,6 +216,17 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
+  public final void deepNormalize() {
+	  try {
+      inVal.deepNormalize();
+	    }
+	    catch (RuntimeException | OutOfMemoryError e) {
+	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	      else { throw e; }
+	    }
+  }
+
   public final boolean isDefined() { return true; }
 
   public final Value deepCopy() { return this; }

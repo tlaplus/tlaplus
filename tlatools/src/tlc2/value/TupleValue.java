@@ -195,6 +195,19 @@ public class TupleValue extends Value implements Applicable {
   public final int size() { return this.elems.length; }
 
   @Override
+  public final void deepNormalize() {
+	  try {
+      for (int i = 0; i < elems.length; i++) {
+          elems[i].deepNormalize();
+        }
+	    }
+	    catch (RuntimeException | OutOfMemoryError e) {
+	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	      else { throw e; }
+	    }
+  }
+
+  @Override
   public final TupleValue toTuple() {
 	  return this;
   }

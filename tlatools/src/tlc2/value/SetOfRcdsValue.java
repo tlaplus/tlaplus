@@ -207,6 +207,25 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
+  public final void deepNormalize() {
+	    try {
+      for (int i = 0; i < values.length; i++) {
+          values[i].deepNormalize();
+        }
+        if (rcdSet == null) {
+          rcdSet = DummyEnum;
+        }
+        else if (rcdSet != DummyEnum) {
+          rcdSet.deepNormalize();
+        }
+	    }
+	    catch (RuntimeException | OutOfMemoryError e) {
+	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	      else { throw e; }
+	    }
+  }
+
   private final void sortByNames() {
     for (int i = 1; i < this.names.length; i++) {
       int cmp = this.names[0].compareTo(this.names[i]);
@@ -310,7 +329,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public final SetEnumValue toSetEnum() {
       if (this.rcdSet != null && this.rcdSet != DummyEnum) {
         return this.rcdSet;
       }
@@ -324,7 +343,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public void write(final ValueOutputStream vos) throws IOException {
+  public final void write(final ValueOutputStream vos) throws IOException {
 	  rcdSet.write(vos);
   }
 

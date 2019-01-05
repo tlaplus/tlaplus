@@ -146,6 +146,22 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
+  public final void deepNormalize() {
+	    try {
+      if (realSet == null) {
+        realSet = DummyEnum;
+      }
+      else if (realSet != DummyEnum) {
+        realSet.deepNormalize();
+      }
+	    }
+	    catch (RuntimeException | OutOfMemoryError e) {
+	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	      else { throw e; }
+	    }
+  }
+
   public final boolean isDefined() {
     try {
       return this.set.isDefined();

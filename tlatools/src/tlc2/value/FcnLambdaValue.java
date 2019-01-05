@@ -545,7 +545,34 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   @Override
-  public TupleValue toTuple() {
+  public final void deepNormalize() {
+	    try {
+      if (fcnRcd == null) {
+        if (excepts != null) {
+          for (int i = 0; i < excepts.length; i++) {
+            excepts[i].value.deepNormalize();
+            for (int j = 0; j < excepts[i].path.length; j++) {
+        excepts[i].path[j].deepNormalize();
+            }
+          }
+        }
+        Value[] paramDoms = params.domains;
+        for (int i = 0; i < paramDoms.length; i++) {
+          paramDoms[i].deepNormalize();
+        }
+      }
+      else {
+        fcnRcd.deepNormalize();
+      }
+	    }
+	    catch (RuntimeException | OutOfMemoryError e) {
+	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	      else { throw e; }
+	    }
+  }
+
+  @Override
+  public final TupleValue toTuple() {
       if (this.params.length() != 1) return null;
       Value dom = this.params.domains[0];
       SymbolNode var = this.params.formals[0][0];
