@@ -769,8 +769,29 @@ public class Tool
 
   private final TLCState getNextStates(SemanticNode pred, ActionItemList acts, Context c,
                                        TLCState s0, TLCState s1, StateVec nss) {
-    if (this.callStack != null) this.callStack.push(pred);
-    try {
+	    if (this.callStack != null) {
+	    	return getNextStatesWithCallStack(pred, acts, c, s0, s1, nss);
+	    } else {
+	    	return getNextStatesImpl(pred, acts, c, s0, s1, nss);
+	    }
+  }
+  
+  private final TLCState getNextStatesWithCallStack(SemanticNode pred, ActionItemList acts, Context c,
+              TLCState s0, TLCState s1, StateVec nss) {
+	    this.callStack.push(pred);
+	    try {
+	    	return getNextStatesImpl(pred, acts, c, s0, s1, nss);
+	    } catch (TLCRuntimeException | EvalException e) {
+	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
+	    	this.callStack.freeze();
+		    throw e;
+	    } finally {
+	    	this.callStack.pop();
+	    }
+  }
+  
+  private final TLCState getNextStatesImpl(SemanticNode pred, ActionItemList acts, Context c,
+              TLCState s0, TLCState s1, StateVec nss) {
         switch (pred.getKind()) {
         case OpApplKind:
           {
@@ -784,28 +805,12 @@ public class Tool
           }
         case SubstInKind:
           {
-            SubstInNode pred1 = (SubstInNode)pred;
-            Subst[] subs = pred1.getSubsts();
-            int slen = subs.length;
-            Context c1 = c;
-            for (int i = 0; i < slen; i++) {
-              Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
-            }
-            return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+            return getNextStatesImplSubstInKind((SubstInNode) pred, acts, c, s0, s1, nss);
           }
         // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
         case APSubstInKind:
           {
-            APSubstInNode pred1 = (APSubstInNode)pred;
-            Subst[] subs = pred1.getSubsts();
-            int slen = subs.length;
-            Context c1 = c;
-            for (int i = 0; i < slen; i++) {
-              Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
-            }
-            return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+            return getNextStatesImplApSubstInKind((APSubstInNode) pred, acts, c, s0, s1, nss);
           }
         // LabelKind class added by LL on 13 Jun 2007
         case LabelKind:
@@ -819,15 +824,30 @@ public class Tool
           }
         }
     	return s1;
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-	    throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
 
+  private final TLCState getNextStatesImplSubstInKind(SubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss) {
+  	Subst[] subs = pred1.getSubsts();
+  	int slen = subs.length;
+  	Context c1 = c;
+  	for (int i = 0; i < slen; i++) {
+  	  Subst sub = subs[i];
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
+  	}
+  	return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+  }
+  
+  private final TLCState getNextStatesImplApSubstInKind(APSubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss) {
+  	Subst[] subs = pred1.getSubsts();
+  	int slen = subs.length;
+  	Context c1 = c;
+  	for (int i = 0; i < slen; i++) {
+  	  Subst sub = subs[i];
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false));
+  	}
+  	return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss);
+  }
+  
   private final TLCState getNextStates(ActionItemList acts, final TLCState s0, final TLCState s1,
                                        final StateVec nss) {
     int kind = acts.carKind();
