@@ -1424,9 +1424,30 @@ public class Tool
   }
 
   private final Value evalAppl(final OpApplNode expr, Context c, TLCState s0,
+          TLCState s1, final int control) {
+	  if (this.callStack != null) {
+		  return evalApplWithCallStack(expr, c, s0, s1, control);
+	  } else {
+		  return evalApplImpl(expr, c, s0, s1, control);
+	  }
+  }
+
+  private final Value evalApplWithCallStack(final OpApplNode expr, Context c, TLCState s0,
+          TLCState s1, final int control) {
+	    this.callStack.push(expr);
+	    try {
+	    	return evalApplImpl(expr, c, s0, s1, control);
+	    } catch (TLCRuntimeException | EvalException e) {
+	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
+	    	this.callStack.freeze();
+	    	throw e;
+	    } finally {
+	    	this.callStack.pop();
+	    }
+  }
+  
+  private final Value evalApplImpl(final OpApplNode expr, Context c, TLCState s0,
                               TLCState s1, final int control) {
-    if (this.callStack != null) this.callStack.push(expr);
-    try {
         ExprOrOpArgNode[] args = expr.getArgs();
         SymbolNode opNode = expr.getOperator();
         int opcode = BuiltInOPs.getOpCode(opNode.getName());
@@ -2304,13 +2325,6 @@ public class Tool
             return null;
           }
         }
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-    	throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
 
   private final Value setSource(final SemanticNode expr, final Value value) {
