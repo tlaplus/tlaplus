@@ -1319,6 +1319,8 @@ public class Tool
     	if (this.callStack != null) { this.callStack.pop(); }
     }
   }
+  
+  /* eval */
 
   /* Special version of eval for state expressions. */
   public final Value eval(SemanticNode expr, Context c, TLCState s0) {
@@ -1331,8 +1333,28 @@ public class Tool
    */
   public final Value eval(SemanticNode expr, Context c, TLCState s0,
                           TLCState s1, final int control) {
-    if (this.callStack != null) this.callStack.push(expr);
-    try {
+	    if (this.callStack != null) {
+	    	return evalWithCallStack(expr, c, s0, s1, control);
+	    } else {
+	    	return evalImpl(expr, c, s0, s1, control);
+	    }
+  }
+  private final Value evalWithCallStack(SemanticNode expr, Context c, TLCState s0,
+          TLCState s1, final int control) {
+	    this.callStack.push(expr);
+	    try {
+	    	return evalImpl(expr, c, s0, s1, control);
+	    } catch (TLCRuntimeException | EvalException e) {
+	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
+	    	this.callStack.freeze();
+	    	throw e;
+	    } finally {
+	    	this.callStack.pop();
+	    }
+  }
+  
+  private final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
+          final TLCState s1, final int control) {
         switch (expr.getKind()) {
         /***********************************************************************
         * LabelKind class added by LL on 13 Jun 2007.                          *
@@ -1349,43 +1371,16 @@ public class Tool
           }
         case LetInKind:
           {
-            LetInNode expr1 = (LetInNode)expr;
-            OpDefNode[] letDefs = expr1.getLets();
-            int letLen = letDefs.length;
-            Context c1 = c;
-            for (int i = 0; i < letLen; i++) {
-              OpDefNode opDef = letDefs[i];
-              if (opDef.getArity() == 0) {
-                Value rhs = new LazyValue(opDef.getBody(), c1);
-                c1 = c1.cons(opDef, rhs);
-              }
-            }
-            return this.eval(expr1.getBody(), c1, s0, s1, control);
+            return evalImplLetInKind((LetInNode) expr, c, s0, s1, control);
           }
         case SubstInKind:
           {
-            SubstInNode expr1 = (SubstInNode)expr;
-            Subst[] subs = expr1.getSubsts();
-            int slen = subs.length;
-            Context c1 = c;
-            for (int i = 0; i < slen; i++) {
-              Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
-            }
-            return this.eval(expr1.getBody(), c1, s0, s1, control);
+            return evalImplSubstInKind((SubstInNode) expr, c, s0, s1, control);
           }
         // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
         case APSubstInKind:
           {
-            APSubstInNode expr1 = (APSubstInNode)expr;
-            Subst[] subs = expr1.getSubsts();
-            int slen = subs.length;
-            Context c1 = c;
-            for (int i = 0; i < slen; i++) {
-              Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
-            }
-            return this.eval(expr1.getBody(), c1, s0, s1, control);
+            return evalImplApSubstInKind((APSubstInNode) expr, c, s0, s1, control);
           }
         case NumeralKind:
         case DecimalKind:
@@ -1399,13 +1394,7 @@ public class Tool
           }
         case OpArgKind:
           {
-            OpArgNode expr1 = (OpArgNode)expr;
-            SymbolNode opNode = expr1.getOp();
-            Object val = this.lookup(opNode, c, false);
-            if (val instanceof OpDefNode) {
-              return setSource(expr, new OpLambdaValue((OpDefNode)val, this, c, s0, s1));
-            }
-            return (Value)val;
+            return evalImplOpArgKind((OpArgNode) expr, c, s0, s1);
           }
         default:
           {
@@ -1414,15 +1403,55 @@ public class Tool
             return null;     // make compiler happy
           }
         }
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-    	throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
 
+  private final Value evalImplLetInKind(LetInNode expr1, Context c, TLCState s0, TLCState s1, final int control) {
+	OpDefNode[] letDefs = expr1.getLets();
+	int letLen = letDefs.length;
+	Context c1 = c;
+	for (int i = 0; i < letLen; i++) {
+	  OpDefNode opDef = letDefs[i];
+	  if (opDef.getArity() == 0) {
+	    Value rhs = new LazyValue(opDef.getBody(), c1);
+	    c1 = c1.cons(opDef, rhs);
+	  }
+	}
+	return this.eval(expr1.getBody(), c1, s0, s1, control);
+  }
+
+  private final Value evalImplSubstInKind(SubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control) {
+  	Subst[] subs = expr1.getSubsts();
+  	int slen = subs.length;
+  	Context c1 = c;
+  	for (int i = 0; i < slen; i++) {
+  	  Subst sub = subs[i];
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
+  	}
+  	return this.eval(expr1.getBody(), c1, s0, s1, control);
+  }
+    
+  private final Value evalImplApSubstInKind(APSubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control) {
+  	Subst[] subs = expr1.getSubsts();
+  	int slen = subs.length;
+  	Context c1 = c;
+  	for (int i = 0; i < slen; i++) {
+  	  Subst sub = subs[i];
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true));
+  	}
+  	return this.eval(expr1.getBody(), c1, s0, s1, control);
+  }
+  
+  private final Value evalImplOpArgKind(OpArgNode expr1, Context c, TLCState s0, TLCState s1) {
+  	SymbolNode opNode = expr1.getOp();
+  	Object val = this.lookup(opNode, c, false);
+  	if (val instanceof OpDefNode) {
+  	  return setSource(expr1, new OpLambdaValue((OpDefNode)val, this, c, s0, s1));
+  	}
+  	return (Value)val;
+  }
+  
+  /* evalAppl */
+  
   private final Value evalAppl(final OpApplNode expr, Context c, TLCState s0,
           TLCState s1, final int control) {
 	  if (this.callStack != null) {
