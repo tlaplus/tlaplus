@@ -910,10 +910,33 @@ public class Tool
     return s1;
   }
 
+  /* getNextStatesAppl */
+
   private final TLCState getNextStatesAppl(OpApplNode pred, ActionItemList acts, Context c,
+          TLCState s0, TLCState s1, StateVec nss) {
+	  if (this.callStack != null) {
+		  return getNextStatesApplWithCallStack(pred, acts, c, s0, s1, nss);
+	  } else {
+	      return getNextStatesApplImpl(pred, acts, c, s0, s1, nss);
+	  }
+  }
+  
+  private final TLCState getNextStatesApplWithCallStack(OpApplNode pred, ActionItemList acts, Context c,
+          TLCState s0, TLCState s1, StateVec nss) {
+	    this.callStack.push(pred);
+	    try {
+	    	return getNextStatesApplImpl(pred, acts, c, s0, s1, nss);
+	    } catch (TLCRuntimeException | EvalException e) {
+	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
+	    	this.callStack.freeze();
+	    	throw e;
+	    } finally {
+	    	this.callStack.pop();
+	    }
+  }
+
+  private final TLCState getNextStatesApplImpl(OpApplNode pred, ActionItemList acts, Context c,
                                            TLCState s0, TLCState s1, StateVec nss) {
-    if (this.callStack != null) this.callStack.push(pred);
-    try {
         ExprOrOpArgNode[] args = pred.getArgs();
         int alen = args.length;
         SymbolNode opNode = pred.getOperator();
@@ -1232,14 +1255,9 @@ public class Tool
             return resState;
           }
         }
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-    	throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
+  
+  /* processUnchanged */
 
   private final TLCState processUnchanged(SemanticNode expr, ActionItemList acts, Context c,
                                           TLCState s0, TLCState s1, StateVec nss) {
