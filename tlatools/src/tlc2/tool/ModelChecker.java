@@ -396,9 +396,6 @@ public class ModelChecker extends AbstractChecker
 
         try
         {
-			int k = 0;
-			// <--
-			// <--
             for (int i = 0; i < this.actions.length; i++)
             {
 				//TODO Implement IStateFunctor pattern for getNextStates() too
@@ -418,7 +415,7 @@ public class ModelChecker extends AbstractChecker
 				worker.incrementStatesGenerated(sz);
 				deadLocked = deadLocked && (sz == 0);
 
-                SUCCESSORS: for (int j = 0; j < sz; j++)
+                for (int j = 0; j < sz; j++)
                 {
 					succState = nextStates.elementAt(j);
 					// Check if succState is a legal state.
@@ -461,93 +458,15 @@ public class ModelChecker extends AbstractChecker
 					// Check if succState violates any invariant:
                     if (!seen)
                     {
-                        try
-                        {
-							final int len = this.invariants.length;
-                            INVARIANTS: for (k = 0; k < len; k++)
-                            {
-                                if (!tool.isValid(this.invariants[k], succState))
-                                {
-                                    // We get here because of invariant violation:
-                                	if (TLCGlobals.continuation) {
-                                        synchronized (this)
-                                        {
-											MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
-													this.tool.getInvNames()[k]);
-											this.trace.printTrace(curState, succState);
-											break INVARIANTS;
-                                        }
-                                	} else {
-										return doNextSetErr(curState, succState, false,
-												EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
-                                	}
-								}
-							}
-							if (k < len) {
-								if (inModel && !seen) {
-									// Even though the state violates an
-									// invariant, add it to the queue. After
-									// all, the user selected to continue model
-									// checking even if an invariant is
-									// violated.
-									this.theStateQueue.sEnqueue(succState);
-								}
-								// Continue with next successor iff an
-								// invariant is violated and
-								// TLCGlobals.continuation is true.
-								continue SUCCESSORS;
-							}
-                        } catch (Exception e)
-                        {
-							doNextEvalFailed(curState, succState, EC.TLC_INVARIANT_EVALUATION_FAILED,
-									this.tool.getInvNames()[k], e);
-						}
+                    	if (doNextCheckInvariants(curState, succState, inModel, seen)) {
+                    		return true;
+                    	}
 					}
                     // Check if the state violates any implied action. We need to do it
                     // even if succState is not new.
-                    try
-                    {
-						final int len = this.impliedActions.length;
-                        IMPLIED: for (k = 0; k < len; k++)
-                        {
-                            if (!tool.isValid(this.impliedActions[k], curState, succState))
-                            {
-                                // We get here because of implied-action violation:
-                                if (TLCGlobals.continuation)
-                                {
-                                    synchronized (this)
-                                    {
-                                        MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
-                                                .getImpliedActNames()[k]);
-										this.trace.printTrace(curState, succState);
-										break IMPLIED;
-                                   }
-                                } else {
-									return doNextSetErr(curState, succState, false,
-											EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
-											this.tool.getImpliedActNames()[k]);
-                            	}
-							}
-						}
-						if (k < len) {
-							if (inModel && !seen) {
-								// Even though the state violates an
-								// invariant, add it to the queue. After
-								// all, the user selected to continue model
-								// checking even if an implied action is
-								// violated.
-								this.theStateQueue.sEnqueue(succState);
-							}
-							// Continue with next successor iff an
-							// implied action is violated and
-							// TLCGlobals.continuation is true.
-							continue SUCCESSORS;
-						}
-                    } catch (Exception e)
-                    {
-						doNextEvalFailed(curState, succState, EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
-								this.tool.getImpliedActNames()[k], e);
-					}
+                    if (doNextCheckImplied(curState, succState, inModel, seen)) {
+                    	return true;
+                    }
                     if (inModel && !seen) {
 						// The state is inModel, unseen and neither invariants
 						// nor implied actions are violated. It is thus eligible
@@ -577,51 +496,68 @@ public class ModelChecker extends AbstractChecker
 		}
     }
 
-	private final void doNextFailed(TLCState curState, TLCState succState, Throwable e)
-			throws IOException, WorkerException, Throwable {
-		// Assert.printStack(e);
-		final boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError)
-		        || (e instanceof AssertionError));
-		synchronized (this)
-		{
-		    if (this.setErrState(curState, succState, !keep))
-		    {
-		        if (e instanceof StackOverflowError)
-		        {
-					MP.printError(EC.SYSTEM_STACK_OVERFLOW, e);
-		        } else if (e instanceof OutOfMemoryError)
-		        {
-					MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
-		        } else if (e instanceof AssertionError)
-		        {
-					MP.printError(EC.TLC_BUG, e);
-		        } else if (e.getMessage() != null)
-		        {
-		            MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
+	private final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState, final boolean inModel, final boolean seen) throws IOException, WorkerException, Exception {
+        int k = 0;
+		try
+        {
+			for (k = 0; k < this.invariants.length; k++)
+            {
+                if (!tool.isValid(this.invariants[k], succState))
+                {
+                    // We get here because of invariant violation:
+                	if (TLCGlobals.continuation) {
+                        synchronized (this)
+                        {
+							MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
+									this.tool.getInvNames()[k]);
+							this.trace.printTrace(curState, succState);
+							return false;
+                        }
+                	} else {
+						return doNextSetErr(curState, succState, false,
+								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
+                	}
 				}
-				this.trace.printTrace(curState, succState);
-				this.theStateQueue.finishAll();
-				this.notify();
 			}
+        } catch (Exception e)
+        {
+			doNextEvalFailed(curState, succState, EC.TLC_INVARIANT_EVALUATION_FAILED,
+					this.tool.getInvNames()[k], e);
 		}
+		return false;
 	}
 
-	private final void doNextCheckLiveness(TLCState curState, SetOfStates liveNextStates) throws IOException {
-		final long curStateFP = curState.fingerPrint();
-
-		// Add the stuttering step:
-		liveNextStates.put(curStateFP, curState);
-		this.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
-
-		liveCheck.addNextState(curState, curStateFP, liveNextStates);
-
-		// Poor man's version of a controller. If necessary, try e.g.
-		// PID controller instead.
-		final int multiplier = threadLocal.get();
-		if (liveNextStates.capacity() > (multiplier * INITIAL_CAPACITY)) {
-			// Increase initial size for as long as the set has to grow
-			threadLocal.set(multiplier + 1);
+	private final boolean doNextCheckImplied(final TLCState curState, final TLCState succState, final boolean inModel, boolean seen) throws IOException, WorkerException, Exception {
+		int k = 0;
+        try
+        {
+			for (k = 0; k < this.impliedActions.length; k++)
+            {
+                if (!tool.isValid(this.impliedActions[k], curState, succState))
+                {
+                    // We get here because of implied-action violation:
+                    if (TLCGlobals.continuation)
+                    {
+                        synchronized (this)
+                        {
+                            MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
+                                    .getImpliedActNames()[k]);
+							this.trace.printTrace(curState, succState);
+							return false;
+                       }
+                    } else {
+						return doNextSetErr(curState, succState, false,
+								EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
+								this.tool.getImpliedActNames()[k]);
+                	}
+				}
+			}
+        } catch (Exception e)
+        {
+			doNextEvalFailed(curState, succState, EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
+					this.tool.getImpliedActNames()[k], e);
 		}
+        return false;
 	}
 
 	private final boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
@@ -678,6 +614,53 @@ public class ModelChecker extends AbstractChecker
 				this.notify();
 			}
 			throw e;
+		}
+	}
+
+	private final void doNextFailed(TLCState curState, TLCState succState, Throwable e)
+			throws IOException, WorkerException, Throwable {
+		// Assert.printStack(e);
+		final boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError)
+		        || (e instanceof AssertionError));
+		synchronized (this)
+		{
+		    if (this.setErrState(curState, succState, !keep))
+		    {
+		        if (e instanceof StackOverflowError)
+		        {
+					MP.printError(EC.SYSTEM_STACK_OVERFLOW, e);
+		        } else if (e instanceof OutOfMemoryError)
+		        {
+					MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
+		        } else if (e instanceof AssertionError)
+		        {
+					MP.printError(EC.TLC_BUG, e);
+		        } else if (e.getMessage() != null)
+		        {
+		            MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
+				}
+				this.trace.printTrace(curState, succState);
+				this.theStateQueue.finishAll();
+				this.notify();
+			}
+		}
+	}
+
+    private final void doNextCheckLiveness(TLCState curState, SetOfStates liveNextStates) throws IOException {
+		final long curStateFP = curState.fingerPrint();
+
+		// Add the stuttering step:
+		liveNextStates.put(curStateFP, curState);
+		this.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
+
+		liveCheck.addNextState(curState, curStateFP, liveNextStates);
+
+		// Poor man's version of a controller. If necessary, try e.g.
+		// PID controller instead.
+		final int multiplier = threadLocal.get();
+		if (liveNextStates.capacity() > (multiplier * INITIAL_CAPACITY)) {
+			// Increase initial size for as long as the set has to grow
+			threadLocal.set(multiplier + 1);
 		}
 	}
 
