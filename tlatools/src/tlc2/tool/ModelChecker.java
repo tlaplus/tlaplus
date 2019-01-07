@@ -261,7 +261,9 @@ public class ModelChecker extends AbstractChecker
 					// Not adding newly created Worker to trace#addWorker because it is not supposed
 					// to rewrite the trace file but to reconstruct actual states referenced by
 					// their fingerprints in the trace.
-                    this.doNext(this.predErrState, new ObjLongTable<SemanticNode>(10), new Worker(4223, this, this.metadir, specObj.getFileName()));
+					this.doNext(this.predErrState, new ObjLongTable<SemanticNode>(10),
+							this.checkLiveness ? new SetOfStates() : null,
+							new Worker(4223, this, this.metadir, specObj.getFileName()));
                 } catch (FingerprintException e)
                 {
                     MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
@@ -382,17 +384,10 @@ public class ModelChecker extends AbstractChecker
      * 
      * This method is called from the workers on every step
      */
-    public final boolean doNext(final TLCState curState, final ObjLongTable<SemanticNode> counts, final Worker worker) throws Throwable
+    public final boolean doNext(final TLCState curState, final ObjLongTable<SemanticNode> counts, final SetOfStates liveNextStates, final Worker worker) throws Throwable
     {
         boolean deadLocked = true;
         TLCState succState = null;
-        SetOfStates liveNextStates = null;
-
-        if (this.checkLiveness)
-        {
-            liveNextStates = new SetOfStates(INITIAL_CAPACITY * threadLocal.get());
-        }
-
         try
         {
             for (int i = 0; i < this.actions.length; i++)
@@ -460,11 +455,6 @@ public class ModelChecker extends AbstractChecker
             {
                 return doNextSetErr(curState, null, false, EC.TLC_DEADLOCK_REACHED, null);
 			}
-            // Finally, add curState into the behavior graph for liveness checking:
-            if (this.checkLiveness)
-            {
-				doNextCheckLiveness(curState, liveNextStates);
-            }
 			return false;
         } catch (final Throwable e)
         {
@@ -646,24 +636,6 @@ public class ModelChecker extends AbstractChecker
 				this.theStateQueue.finishAll();
 				this.notify();
 			}
-		}
-	}
-
-    private final void doNextCheckLiveness(TLCState curState, SetOfStates liveNextStates) throws IOException {
-		final long curStateFP = curState.fingerPrint();
-
-		// Add the stuttering step:
-		liveNextStates.put(curStateFP, curState);
-		this.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
-
-		liveCheck.addNextState(curState, curStateFP, liveNextStates);
-
-		// Poor man's version of a controller. If necessary, try e.g.
-		// PID controller instead.
-		final int multiplier = threadLocal.get();
-		if (liveNextStates.capacity() > (multiplier * INITIAL_CAPACITY)) {
-			// Increase initial size for as long as the set has to grow
-			threadLocal.set(multiplier + 1);
 		}
 	}
 

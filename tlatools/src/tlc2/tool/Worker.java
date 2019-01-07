@@ -15,13 +15,23 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.BufferedRandomAccessFile;
+import tlc2.util.IStateWriter;
 import tlc2.util.IdThread;
 import tlc2.util.ObjLongTable;
+import tlc2.util.SetOfStates;
 import tlc2.util.statistics.FixedSizedBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import util.FileUtil;
 
 public final class Worker extends IdThread implements IWorker {
+
+	private final ThreadLocal<Integer> threadLocal = new ThreadLocal<Integer>() {
+		protected Integer initialValue() {
+			return 1;
+		}
+	};
+
+	private static final int INITIAL_CAPACITY = 16;
 	
 	/**
 	 * Multi-threading helps only when running on multiprocessors. TLC can
@@ -55,7 +65,7 @@ public final class Worker extends IdThread implements IWorker {
 		this.raf = new BufferedRandomAccessFile(filename + TLCTrace.EXT, "rw");
 	}
 
-  public final ObjLongTable<SemanticNode> getCounts() { return this.astCounts; }
+    public final ObjLongTable<SemanticNode> getCounts() { return this.astCounts; }
 
 	/**
    * This method gets a state from the queue, generates all the
@@ -63,6 +73,7 @@ public final class Worker extends IdThread implements IWorker {
    * updates the state set and state queue.
 	 */
 	public void run() {
+		final boolean checkLiveness = this.tlc.checkLiveness;
 		TLCState curState = null;
 		try {
 			while (true) {
@@ -76,9 +87,21 @@ public final class Worker extends IdThread implements IWorker {
 					return;
 				}
 				setCurrentState(curState);
-				if (this.tlc.doNext(curState, this.astCounts, this)) {
+				
+				SetOfStates setOfStates = null;
+				if (checkLiveness) {
+					setOfStates = createSetOfStates();
+				}
+				
+				if (this.tlc.doNext(curState, this.astCounts, setOfStates, this)) {
 					return;
 				}
+				
+	            // Finally, add curState into the behavior graph for liveness checking:
+	            if (checkLiveness)
+	            {
+					doNextCheckLiveness(curState, setOfStates);
+	            }
 				
 				this.outDegree.addSample(unseenSuccessorStates);
 				unseenSuccessorStates = 0;
@@ -97,6 +120,27 @@ public final class Worker extends IdThread implements IWorker {
 			}
 			return;
 		}
+	}
+	
+	/* Liveness */
+
+	private final void doNextCheckLiveness(TLCState curState, SetOfStates liveNextStates) throws IOException {
+		final long curStateFP = curState.fingerPrint();
+
+		// Add the stuttering step:
+		liveNextStates.put(curStateFP, curState);
+		this.tlc.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
+
+		this.tlc.liveCheck.addNextState(curState, curStateFP, liveNextStates);
+
+		if (liveNextStates.capacity() > (threadLocal.get() * INITIAL_CAPACITY)) {
+			// Increase initial size for as long as the set has to grow
+			threadLocal.set(threadLocal.get() + 1);
+		}
+	}
+	
+	private final SetOfStates createSetOfStates() {
+		return new SetOfStates(INITIAL_CAPACITY * threadLocal.get());
 	}
 	
 	/* Statistics */

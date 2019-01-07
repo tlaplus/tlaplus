@@ -43,6 +43,14 @@ public class DFIDModelChecker extends AbstractChecker
     public FPIntSet theFPSet; // the set of reachable states (SZ: note the type)
     private final AtomicLong numOfGenStates;
 
+	protected final ThreadLocal<Integer> threadLocal = new ThreadLocal<Integer>() {
+		protected Integer initialValue() {
+			return 1;
+		}
+	};
+
+	protected static final int INITIAL_CAPACITY = 16;
+
     /** 
      * Constructor for running DFID   
      * @param resolver 
