@@ -37,6 +37,7 @@ public final class Worker extends IdThread implements IWorker {
 
 	private long lastPtr;
 	private long statesGenerated;
+	private int unseenSuccessorStates = 0;
 	private volatile int maxLevel = 0;
 
 	// SZ Feb 20, 2009: changed due to super type introduction
@@ -78,6 +79,9 @@ public final class Worker extends IdThread implements IWorker {
 				if (this.tlc.doNext(curState, this.astCounts, this)) {
 					return;
 				}
+				
+				this.outDegree.addSample(unseenSuccessorStates);
+				unseenSuccessorStates = 0;
 			}
 		} catch (Throwable e) {
 			// Something bad happened. Quit ...
@@ -103,10 +107,6 @@ public final class Worker extends IdThread implements IWorker {
 	
 	final long getStatesGenerated() {
 		return this.statesGenerated;
-	}
-
-	final void setOutDegree(final int numOfSuccessors) {
-		this.outDegree.addSample(numOfSuccessors);
 	}
 
 	public final IBucketStatistics getOutDegree() {
@@ -164,6 +164,8 @@ public final class Worker extends IdThread implements IWorker {
 		sucState.uid = this.lastPtr;
 		
 		sucState.setPredecessor(curState);
+		
+    	unseenSuccessorStates++;
 		
 //		System.err.println(String.format("<<%s, %s>>: pred=<<%s, %s>>, %s -> %s", myGetId(), this.lastPtr, 
 //				curState.uid, curState.workerId,

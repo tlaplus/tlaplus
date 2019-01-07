@@ -387,7 +387,6 @@ public class ModelChecker extends AbstractChecker
         boolean deadLocked = true;
         TLCState succState = null;
         SetOfStates liveNextStates = null;
-        int unseenSuccessorStates = 0;
 
         if (this.checkLiveness)
         {
@@ -437,7 +436,6 @@ public class ModelChecker extends AbstractChecker
 					// Check if succState violates any invariant:
                     if (!seen)
                     {
-                    	unseenSuccessorStates++;
                     	if (doNextCheckInvariants(curState, succState, inModel, seen)) {
                     		return true;
                     	}
@@ -467,7 +465,6 @@ public class ModelChecker extends AbstractChecker
             {
 				doNextCheckLiveness(curState, liveNextStates);
             }
-            worker.setOutDegree(unseenSuccessorStates);
 			return false;
         } catch (final Throwable e)
         {
