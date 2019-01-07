@@ -432,32 +432,12 @@ public class ModelChecker extends AbstractChecker
 					boolean seen = false;
                     if (inModel)
                     {
-						long fp = succState.fingerPrint();
-						seen = this.theFPSet.put(fp);
-                        // Write out succState when needed:
-                        this.allStateWriter.writeState(curState, succState, !seen, action);
-                        if (!seen)
-                        {
-							// Write succState to trace only if it satisfies the
-							// model constraints. Do not enqueue it yet, but wait
-                            // for implied actions and invariants to be checked.
-                            // Those checks - if violated - will cause model checking
-                            // to terminate. Thus we cannot let concurrent workers start
-                            // exploring this new state. Conversely, the state has to
-                            // be in the trace in case either invariant or implied action
-                            // checks want to print the trace. 
-                        	worker.writeState(curState, fp, succState);
-							unseenSuccessorStates++;
-						}
-						// For liveness checking:
-                        if (this.checkLiveness)
-                        {
-							liveNextStates.put(fp, succState);
-						}
+						seen = isSeenState(curState, worker, succState, liveNextStates, action);
 					}
 					// Check if succState violates any invariant:
                     if (!seen)
                     {
+                    	unseenSuccessorStates++;
                     	if (doNextCheckInvariants(curState, succState, inModel, seen)) {
                     		return true;
                     	}
@@ -495,6 +475,32 @@ public class ModelChecker extends AbstractChecker
 			throw e;
 		}
     }
+
+	private final boolean isSeenState(final TLCState curState, final Worker worker, final TLCState succState,
+			final SetOfStates liveNextStates, final Action action) throws IOException {
+		final long fp = succState.fingerPrint();
+		final boolean seen = this.theFPSet.put(fp);
+		// Write out succState when needed:
+		this.allStateWriter.writeState(curState, succState, !seen, action);
+		if (!seen)
+		{
+			// Write succState to trace only if it satisfies the
+			// model constraints. Do not enqueue it yet, but wait
+		    // for implied actions and invariants to be checked.
+		    // Those checks - if violated - will cause model checking
+		    // to terminate. Thus we cannot let concurrent workers start
+		    // exploring this new state. Conversely, the state has to
+		    // be in the trace in case either invariant or implied action
+		    // checks want to print the trace. 
+			worker.writeState(curState, fp, succState);
+		}
+		// For liveness checking:
+		if (this.checkLiveness)
+		{
+			liveNextStates.put(fp, succState);
+		}
+		return seen;
+	}
 
 	private final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState, final boolean inModel, final boolean seen) throws IOException, WorkerException, Exception {
         int k = 0;
