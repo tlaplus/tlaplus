@@ -25,12 +25,6 @@ import util.FileUtil;
 
 public final class Worker extends IdThread implements IWorker {
 
-	private final ThreadLocal<Integer> threadLocal = new ThreadLocal<Integer>() {
-		protected Integer initialValue() {
-			return 1;
-		}
-	};
-
 	private static final int INITIAL_CAPACITY = 16;
 	
 	/**
@@ -123,6 +117,8 @@ public final class Worker extends IdThread implements IWorker {
 	}
 	
 	/* Liveness */
+	
+	private int multiplier = 1;
 
 	private final void doNextCheckLiveness(TLCState curState, SetOfStates liveNextStates) throws IOException {
 		final long curStateFP = curState.fingerPrint();
@@ -133,14 +129,14 @@ public final class Worker extends IdThread implements IWorker {
 
 		this.tlc.liveCheck.addNextState(curState, curStateFP, liveNextStates);
 
-		if (liveNextStates.capacity() > (threadLocal.get() * INITIAL_CAPACITY)) {
+		if (liveNextStates.capacity() > (multiplier * INITIAL_CAPACITY)) {
 			// Increase initial size for as long as the set has to grow
-			threadLocal.set(threadLocal.get() + 1);
+			multiplier++;
 		}
 	}
 	
 	private final SetOfStates createSetOfStates() {
-		return new SetOfStates(INITIAL_CAPACITY * threadLocal.get());
+		return new SetOfStates(multiplier * INITIAL_CAPACITY);
 	}
 	
 	/* Statistics */
