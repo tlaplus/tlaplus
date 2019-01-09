@@ -1235,9 +1235,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		}
 
 		public Color getBackground(Object element, int columnIndex) {
-			final CoverageInformationItem cii = (CoverageInformationItem) element;
-			if (cii.getCount() == 0) {
-				return TLCUIActivator.getColor(SWT.COLOR_YELLOW);
+			if (element instanceof CoverageInformationItem) {
+				if (((CoverageInformationItem) element).getCount() == 0) {
+					return TLCUIActivator.getColor(SWT.COLOR_YELLOW);
+				}
 			}
 			return null;
 		}
