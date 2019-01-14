@@ -89,7 +89,7 @@ public class EditorUtil
 			if (editor != null && editor.getViewer().getTextWidget().isFocusControl()) {
 				return editor;
 			}
-		} else if (activeEditor.getAdapter(TLAEditor.class) != null) {
+		} else if (activeEditor != null && activeEditor.getAdapter(TLAEditor.class) != null) {
 			TLAEditor editor = activeEditor.getAdapter(TLAEditor.class);
 			if (editor != null && editor.getViewer().getTextWidget().isFocusControl()) {
 				return editor;
