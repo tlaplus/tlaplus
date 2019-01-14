@@ -24,7 +24,7 @@
  *   loki der quaeler - initial API and implementation
  *   Markus Alexander Kuppe
  ******************************************************************************/
-package tlc2.tool;
+package tlc2.tool.coverage;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -32,32 +32,34 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class CoverageStatisticsTest extends ModelCheckerTestCase {
+public class DCoverageTest extends AbstractCoverageTest {
 
-    public CoverageStatisticsTest () {
-        super("CoverageStatistics", new String[] {"-coverage", "9999"}); // To not interfere with testing, 9999 to make sure only final coverage is reported.
+    public DCoverageTest () {
+        super("D");
     }
 
     @Test
     public void testSpec () {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "17"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "41", "19", "0"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "7", "3", "0"));
 
 		// No 'general' errors recorded
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertUncovered("line 24, col 9 to line 24, col 17 of module CoverageStatistics: 0\n" + 
-				"  line 25, col 9 to line 25, col 18 of module CoverageStatistics: 0\n" + 
-				"  line 29, col 28 to line 29, col 28 of module CoverageStatistics: 0\n" + 
-				"  line 29, col 30 to line 29, col 30 of module CoverageStatistics: 0\n" + 
-				"  line 31, col 26 to line 31, col 26 of module CoverageStatistics: 0\n" + 
-				"  line 31, col 41 to line 31, col 41 of module CoverageStatistics: 0\n" + 
-				"  line 6, col 6 to line 6, col 6 of module CoverageStatistics: 0\n" + 
-				"  line 8, col 11 to line 8, col 11 of module CoverageStatistics: 0\n" + 
-				"  line 8, col 13 to line 8, col 13 of module CoverageStatistics: 0");
+		assertFalse(recorder.recorded(EC.TLC_COVERAGE_MISMATCH));
+		assertCoverage("  line 5, col 9 to line 5, col 13 of module D: 1\n" + 
+				"  line 11, col 6 to line 11, col 17 of module D: 3\n" + 
+				"  |line 11, col 11 to line 11, col 17 of module D: 3\n" + 
+				"  ||line 9, col 12 to line 9, col 47 of module D: 9\n" + 
+				"  |||line 9, col 15 to line 9, col 19 of module D: 9\n" + 
+				"  |||line 9, col 33 to line 9, col 47 of module D: 6\n" + 
+				"  line 13, col 6 to line 13, col 17 of module D: 3\n" + 
+				"  |line 13, col 11 to line 13, col 17 of module D: 3\n" + 
+				"  ||line 9, col 12 to line 9, col 47 of module D: 27\n" + 
+				"  |||line 9, col 15 to line 9, col 19 of module D: 27\n" + 
+				"  |||line 9, col 33 to line 9, col 47 of module D: 24");
     }
 }

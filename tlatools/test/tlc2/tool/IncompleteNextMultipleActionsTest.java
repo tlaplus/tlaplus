@@ -66,9 +66,8 @@ public class IncompleteNextMultipleActionsTest extends ModelCheckerTestCase {
 		assertEquals("s are", ((String[]) records.get(0))[1]);
 		assertEquals("y, z", ((String[]) records.get(0))[2]);
 
-	assertUncovered("line 6, col 7 to line 6, col 15 of module IncompleteNextMultipleActions: 0\n" +
-		"  line 8, col 16 to line 8, col 21 of module IncompleteNextMultipleActions: 0\n" +
-		"  line 8, col 26 to line 8, col 31 of module IncompleteNextMultipleActions: 0\n" +
-		"  line 8, col 7 to line 8, col 11 of module IncompleteNextMultipleActions: 0");
+		assertUncovered("line 8, col 16 to line 8, col 21 of module IncompleteNextMultipleActions: 0\n"
+				+ "line 8, col 26 to line 8, col 31 of module IncompleteNextMultipleActions: 0\n"
+				+ "line 8, col 7 to line 8, col 11 of module IncompleteNextMultipleActions: 0\n");
 	}
 }

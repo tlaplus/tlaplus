@@ -7,8 +7,6 @@ package tlc2.tool;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,19 +15,18 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.LongAdder;
 
 import tla2sany.modanalyzer.SpecObj;
-import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.StatePrinter;
 import tlc2.tool.SimulationWorker.SimulationWorkerError;
 import tlc2.tool.SimulationWorker.SimulationWorkerResult;
+import tlc2.tool.coverage.CostModelCreator;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
 import tlc2.tool.liveness.NoOpLiveCheck;
-import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.Value;
@@ -97,7 +94,6 @@ public class Simulator implements Cancelable {
 		this.rng = rng;
 		this.seed = seed;
 		this.aril = 0;
-		this.astCounts = new ObjLongTable<SemanticNode>(10);
 		this.numWorkers = numWorkers;
 		// Initialization for liveness checking
 		if (this.checkLiveness) {
@@ -110,6 +106,10 @@ public class Simulator implements Cancelable {
 		} else {
 			liveCheck = new NoOpLiveCheck(tool, specDir);
 		}
+
+		if (TLCGlobals.isCoverageEnabled()) {
+        	CostModelCreator.create(this.tool);
+        }
 	}
 
 	/* Fields */
@@ -139,7 +139,6 @@ public class Simulator implements Cancelable {
 	private final RandomGenerator rng;
 	private final long seed;
 	private long aril;
-	private final ObjLongTable<SemanticNode> astCounts;
 	private boolean isCancelled; // SZ Feb 24, 2009: cancellation added
 	private Value[] localValues = new Value[4];
 
@@ -256,7 +255,7 @@ public class Simulator implements Cancelable {
 		for (int i = 0; i < this.numWorkers; i++) {			
 			final SimulationWorker worker = new SimulationWorker(i, this.tool, initStates, this.workerResultQueue,
 					this.rng.nextLong(), this.traceDepth, this.traceNum, this.checkDeadlock, this.traceFile,
-					this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.astCounts);		
+					this.liveCheck, this.numOfGenStates, this.numOfGenTraces);		
 
 			worker.start();
 			workers.add(worker);
@@ -398,21 +397,7 @@ public class Simulator implements Cancelable {
 	 */
 	public final void reportCoverage() {
 		if (TLCGlobals.isCoverageEnabled()) {
-			MP.printMessage(EC.TLC_COVERAGE_START);
-			final ObjLongTable<SemanticNode> counts = this.tool.getPrimedLocs().mergeInto(this.astCounts);
-			final SemanticNode[] skeys = counts.toArray(new SemanticNode[0]);
-			Arrays.sort(skeys, new Comparator<SemanticNode>() {
-				@Override
-				public int compare(SemanticNode arg0, SemanticNode arg1) {
-					return arg0.getLocation().toString().compareTo(arg1.getLocation().toString());
-				}
-			});
-			for (int i = 0; i < skeys.length; i++) {
-				final long val = counts.get(skeys[i]);
-				MP.printMessage(EC.TLC_COVERAGE_VALUE,
-						new String[] { skeys[i].getLocation().toString(), String.valueOf(val) });
-			}
-			MP.printMessage(EC.TLC_COVERAGE_END);
+            CostModelCreator.report(this.tool);
 		}
 	}
 

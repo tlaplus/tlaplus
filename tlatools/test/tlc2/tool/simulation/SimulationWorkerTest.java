@@ -13,7 +13,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.output.EC;
@@ -26,7 +25,6 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.NoOpLiveCheck;
-import tlc2.util.ObjLongTable;
 import util.FileUtil;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
@@ -67,7 +65,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		StateVec initStates = tool.getInitStates();
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, 1000, false, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		SimulationWorkerResult res = resultQueue.take();
 		assertFalse(res.isError());
@@ -84,7 +82,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		int maxTraceNum = 3;
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, maxTraceNum, false,
-				null, liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				null, liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		SimulationWorkerResult res = resultQueue.take();
 		
@@ -158,7 +156,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, 100, false, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		
 		SimulationWorkerResult res = resultQueue.take();
@@ -206,7 +204,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, 100, false, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		SimulationWorkerResult res = resultQueue.take();
 		
@@ -234,7 +232,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, 100, false, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		
 		SimulationWorkerResult res = resultQueue.take();
@@ -255,7 +253,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, 100, false, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		SimulationWorkerResult res = resultQueue.take();
 		
@@ -283,7 +281,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, 100, true, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		SimulationWorkerResult res = resultQueue.take();
 		
@@ -328,7 +326,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, 100, false, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		SimulationWorkerResult res = resultQueue.take();
 		assertFalse(res.isError());
@@ -345,7 +343,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, 100, false, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		SimulationWorkerResult res = resultQueue.take();
 		assertFalse(res.isError());
@@ -366,7 +364,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		// a result, we can cancel it and the worker will terminate.
 		long traceNum = Long.MAX_VALUE;
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, 100, traceNum, false, null,
-				liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				liveCheck, new LongAdder(), new LongAdder());
 		worker.start();
 		
 		// Check one result.
@@ -394,7 +392,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		// At this trace depth, the worker should never find the invariant violation.
 		long traceDepth = 1;
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, traceDepth, 100, false,
-				null, liveCheck, new LongAdder(), new LongAdder(), new ObjLongTable<SemanticNode>(10));
+				null, liveCheck, new LongAdder(), new LongAdder());
 		worker.start();				
 		SimulationWorkerResult res = resultQueue.take();
 		assertFalse(res.isError());
@@ -418,7 +416,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		long traceDepth = 5;
 		long traceNum = 5;
 		SimulationWorker worker = new SimulationWorker(0, tool, initStates, resultQueue, 0, traceDepth, traceNum, false,
-				null, liveCheck, numOfGenStates, numOfGenTraces, new ObjLongTable<SemanticNode>(10));
+				null, liveCheck, numOfGenStates, numOfGenTraces);
 
 		worker.start();
 		worker.join();

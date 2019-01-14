@@ -11,6 +11,7 @@ import tla2sany.semantic.OpDefNode;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
+import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import util.Assert;
 import util.WrongInvocationException;
@@ -30,6 +31,12 @@ public class OpLambdaValue extends OpValue implements Applicable {
     this.state = state;
     this.con = con;
     this.pstate = pstate;
+  }
+
+  public OpLambdaValue(OpDefNode op, Tool tool,	Context con,
+          TLCState state, TLCState pstate, CostModel cm) {
+	this(op, tool, con, state, pstate);
+	this.cm = cm;
   }
 
   public final byte getKind() { return OPLAMBDAVALUE; }

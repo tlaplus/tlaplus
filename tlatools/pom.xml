@@ -118,6 +118,11 @@
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                        <configuration>
+                            <complianceLevel>1.8</complianceLevel>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
                     </execution>
                </executions>
            </plugin>

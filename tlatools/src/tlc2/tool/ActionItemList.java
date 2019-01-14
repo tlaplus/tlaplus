@@ -4,9 +4,12 @@
 package tlc2.tool;
 
 import tla2sany.semantic.SemanticNode;
+import tlc2.TLCGlobals;
+import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 
 public class ActionItemList {
+	private static final boolean coverage = TLCGlobals.isCoverageEnabled();
 	/**
 	 * predicate of a conjunction
 	 */
@@ -31,17 +34,19 @@ public class ActionItemList {
   public final Context con;           // Context of the action
   private final int kind;  
   public final ActionItemList next;
+  public final CostModel cm;
 
   public final static ActionItemList
-    Empty = new ActionItemList(null, null, 0, null);
+    Empty = new ActionItemList(null, null, 0, null, null);
   
   /* Constructors */
   private ActionItemList(SemanticNode pred, Context con,
-			 int kind, ActionItemList next) {
+			 int kind, ActionItemList next, CostModel cm) {
     this.pred = pred;
     this.con = con;
     this.kind = kind;
     this.next = next;
+    this.cm = cm;
   }
 
   public final SemanticNode carPred() { return this.pred; }
@@ -60,8 +65,8 @@ public class ActionItemList {
   public final ActionItemList cdr() { return this.next; }
 
   public final ActionItemList cons(SemanticNode pred,
-				   Context con, int kind) {
-    return new ActionItemList(pred, con, kind, this);
+				   Context con, CostModel cm, int kind) {
+    return new ActionItemList(pred, con, kind, this, coverage ? cm.get(pred) : cm);
   }
 
   public final boolean isEmpty() { return this == Empty; }

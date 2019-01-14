@@ -26,22 +26,61 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Map;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.ui.editors.text.FileDocumentProvider;
+import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.util.AdapterFactory;
 
 public class CoverageInformation implements Iterable<CoverageInformationItem> {
 	
-	private final TreeSet<Long> counts = new TreeSet<>();
-	
 	private final List<CoverageInformationItem> items = new ArrayList<>();
 
-	public void add(final CoverageInformationItem item) {
-		this.counts.add(item.getCount());
-		this.items.add(item);
+	private final Map<String, IDocument> nameToDocument = new HashMap<>();
+
+	private final Map<IFile, ModuleCoverageInformation> fileToFCI = new HashMap<>();
+	
+	public CoverageInformation() {
+		// Testing only!
+	}
+	
+	public CoverageInformation(final List<IFile> savedTLAFiles) {
+		for (final IFile iFile : savedTLAFiles) {
+			try {
+				final FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+				final FileEditorInput fei = new FileEditorInput(iFile);
+				fileDocumentProvider.connect(fei);
+				final IDocument document = fileDocumentProvider.getDocument(fei);
+				nameToDocument.put(iFile.getName(), document);
+			} catch (final CoreException notExpectedToHappen) {
+				notExpectedToHappen.printStackTrace();
+			}
+		}
 	}
 
+	public void add(final CoverageInformationItem item) {
+		try {
+			final String filename = item.getModuleLocation().source() + ".tla";
+			if (nameToDocument.containsKey(filename)) {
+				final IDocument document = nameToDocument.get(filename);
+				final IRegion region = AdapterFactory.locationToRegion(document , item.getModuleLocation());
+				item.setRegion(region);
+			}
+		} catch (BadLocationException notExpectedToHappen) {
+			notExpectedToHappen.printStackTrace();
+		}
+		
+		this.items.add(item);
+	}
+	
 	@Override
 	public Iterator<CoverageInformationItem> iterator() {
 		return this.items.iterator();
@@ -54,13 +93,22 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 	public Object[] toArray() {
 		return this.items.toArray();
 	}
+	
+	/**
+	 * @return true if coverage information pre-dates TLC's new/hierarchical format introduced by the CostModel.
+	 */
+	public boolean isLegacy() {
+		// true if there are no ActionInformationItems.
+		return !items.stream().filter(i -> i instanceof ActionInformationItem).findAny().isPresent();
+	}
 
-	private static final int BLUE = 240;
+	public boolean has(final IFile iFile) {
+		return items.stream().filter(i -> i.isInFile(iFile)).findAny().isPresent();
+	}
 
-	public int getHue(final CoverageInformationItem item) {
-		final int size = counts.size();
-		final float r = 240f / size;
-		final SortedSet<Long> headSet = counts.headSet(item.getCount());
-		return BLUE - Math.round(r * headSet.size());
+	public ModuleCoverageInformation projectionFor(final IFile iFile) {
+		// The CoverageInformation keeps the CoverageInformationItems for the complete
+		// model whereas a FileCoverageInformation keeps the CII for a single module.
+		return fileToFCI.computeIfAbsent(iFile, f -> new ModuleCoverageInformation(f, items));
 	}
 }

@@ -50,7 +50,6 @@ public class EvenOddBadTest extends PCalModelCheckerTestCase {
 
 		assertUncovered("line 66, col 23 to line 66, col 37 of module EvenOddBad: 0\n" + 
 				"line 67, col 23 to line 67, col 32 of module EvenOddBad: 0\n" + 
-				"line 68, col 36 to line 68, col 40 of module EvenOddBad: 0\n" + 
-				"line 68, col 43 to line 68, col 47 of module EvenOddBad: 0");
+				"line 68, col 23 to line 68, col 50 of module EvenOddBad: 0");
 	}
 }

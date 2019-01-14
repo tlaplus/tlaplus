@@ -45,6 +45,7 @@ import tlc2.TLCGlobals;
 import tlc2.module.BuiltInModuleHelper;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.List;
 import tlc2.util.ObjLongTable;
@@ -66,6 +67,10 @@ import util.UniqueString;
 
 public class Spec implements ValueConstants, ToolGlobals, Serializable
 {
+	/**
+	 * @see See note on performance in CostModelCreator.
+	 */
+	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
 
     public String specDir; // The spec directory.
     public String rootFile; // The root file of this spec.
@@ -910,7 +915,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             {
                 Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "initial predicate", name });
             }
-            this.initPredVec.addElement(new Action(def.getBody(), Context.Empty));
+            this.initPredVec.addElement(new Action(def.getBody(), Context.Empty, def));
         }
 
         name = this.config.getNext();
@@ -930,7 +935,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             {
                 Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "next state action", name });
             }
-            this.nextPred = new Action(def.getBody(), Context.Empty);
+            this.nextPred = new Action(def.getBody(), Context.Empty, def);
         }
     }
 
@@ -966,7 +971,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 	Assert.fail(EC.TLC_INVARIANT_VIOLATED_LEVEL, def.getName().toString());
                 }
                 this.invNameVec.addElement(name);
-                this.invVec.addElement(new Action(def.getBody(), Context.Empty));
+                this.invVec.addElement(new Action(def.getBody(), Context.Empty, def));
             } else if (inv == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "invariant", name });
@@ -1005,7 +1010,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                     ExprNode body = ((OpDefNode) val).getBody();
                     if (this.getLevelBound(body, c) == 1)
                     {
-                        this.initPredVec.addElement(new Action(Spec.addSubsts(body, subs), c));
+                        this.initPredVec.addElement(new Action(Spec.addSubsts(body, subs), c, ((OpDefNode) val)));
                     } else
                     {
                         this.processConfigSpec(body, c, subs);
@@ -1649,7 +1654,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         return this.assumptionIsAxiom;
     }
     /**
-     * This method gets the value of a symbol from the enviroment. We
+     * This method gets the value of a symbol from the environment. We
      * look up in the context c, its tool object, and the state s.
      * 
      * It and the lookup method that follows it were modified by LL
@@ -1745,25 +1750,37 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         }
         return opNode;
     }
-
+    public final Object lookup(final SymbolNode opNode) {
+    	return lookup(opNode, Context.Empty, false);
+    }
     public final Object getVal(ExprOrOpArgNode expr, Context c, final boolean cachable)
     {
+    	return getVal(expr, c, cachable, CostModel.DO_NOT_RECORD);
+    }
+
+    public final Object getVal(ExprOrOpArgNode expr, Context c, final boolean cachable, CostModel cm)
+    {
+    	if (coverage) {cm = cm.get(expr);}
         if (expr instanceof ExprNode)
         {
-            return new LazyValue(expr, c, cachable);
+            return new LazyValue(expr, c, cachable, cm);
         }
         SymbolNode opNode = ((OpArgNode) expr).getOp();
         return this.lookup(opNode, c, false);
     }
-
     public final Context getOpContext(OpDefNode opDef, ExprOrOpArgNode[] args, Context c, boolean cachable)
+    {
+    	return getOpContext(opDef, args, c, cachable, CostModel.DO_NOT_RECORD);
+    }
+
+    public final Context getOpContext(OpDefNode opDef, ExprOrOpArgNode[] args, Context c, boolean cachable, final CostModel cm)
     {
         FormalParamNode[] formals = opDef.getParams();
         int alen = args.length;
         Context c1 = c;
         for (int i = 0; i < alen; i++)
         {
-            Object aval = this.getVal(args[i], c, cachable);
+            Object aval = this.getVal(args[i], c, cachable, cm);
             c1 = c1.cons(formals[i], aval);
         }
         return c1;

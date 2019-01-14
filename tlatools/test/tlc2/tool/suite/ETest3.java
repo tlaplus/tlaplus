@@ -48,9 +48,6 @@ public class ETest3 extends SuiteETestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "2", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-	assertUncovered("  line 15, col 12 to line 15, col 19 of module etest3: 1\n" +
-		"  line 16, col 12 to line 16, col 27 of module etest3: 1\n" +
-		"  line 17, col 12 to line 17, col 17 of module etest3: 1\n" +
-		"  line 18, col 12 to line 18, col 18 of module etest3: 0");
+		assertZeroUncovered();
 	}
 }

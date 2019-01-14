@@ -4,14 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.Arrays;
-import java.util.Comparator;
 
 import tla2sany.modanalyzer.SpecObj;
-import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.coverage.CostModelCreator;
 import tlc2.tool.liveness.AddAndCheckLiveCheck;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
@@ -19,7 +17,6 @@ import tlc2.tool.liveness.Liveness;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.IStateWriter;
 import tlc2.util.IdThread;
-import tlc2.util.ObjLongTable;
 import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
@@ -133,6 +130,10 @@ public abstract class AbstractChecker implements Cancelable
         this.impliedActions = this.tool.getImpliedActions(); // implied-actions to be checked
         this.actions = this.tool.getActions(); // the sub-actions
 
+        if (TLCGlobals.isCoverageEnabled()) {
+        	CostModelCreator.create(this.tool);
+        }
+        
         if (this.checkLiveness) {
         	if (tool.hasSymmetry()) {
         		// raise warning...
@@ -187,28 +188,7 @@ public abstract class AbstractChecker implements Cancelable
 		// Without actions (empty spec) there won't be any statistics anyway.
 		if (TLCGlobals.isCoverageEnabled() && this.actions.length > 0)
 		{
-            MP.printMessage(EC.TLC_COVERAGE_START);
-            // First collecting all counts from all workers:
-            final ObjLongTable<SemanticNode> counts = this.tool.getPrimedLocs();
-            
-            for (IWorker worker : workers) {
-				counts.mergeInto(worker.getCounts());
-			}
-            // Reporting (sorted by location):
-            final SemanticNode[] array = counts.toArray(new SemanticNode[0]);
-			Arrays.sort(array, new Comparator<SemanticNode>() {
-				@Override
-				public int compare(SemanticNode arg0, SemanticNode arg1) {
-					return arg0.getLocation().toString().compareTo(arg1.getLocation().toString());
-				}
-			});
-            for (int i = 0; i < array.length; i++)
-            {
-            	final SemanticNode semanticNode = array[i];
-                final long val = counts.get(semanticNode);
-                MP.printMessage(EC.TLC_COVERAGE_VALUE, new String[] { semanticNode.getLocation().toString(), String.valueOf(val) });
-            }
-            MP.printMessage(EC.TLC_COVERAGE_END);
+            CostModelCreator.report(this.tool);
         }
     }
     

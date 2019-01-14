@@ -150,9 +150,14 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 	public static class Coverage {
 		private final String line;
 		private final long count;
+		//TODO Take level into account in comparison!
+		private final int level;
+		private final boolean isAction;
 		
 		public Coverage(String[] line) {
-			this.line = line[0].trim();
+			this.isAction = line[0].startsWith("<");
+			this.line = line[0].replace("|", "").trim();
+			this.level = line[0].length() - this.line.length();
 			this.count = Long.valueOf(line[1].trim());
 		}
 		
@@ -164,8 +169,16 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 			return count;
 		}
 		
+		public int getLevel() {
+			return level;
+		}
+		
 		public boolean isZero() {
 			return count == 0L;
+		}
+		
+		public boolean isCoverage() {
+			return !isAction;
 		}
 
 		@Override

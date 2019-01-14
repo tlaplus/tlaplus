@@ -17,6 +17,7 @@ import java.util.TreeMap;
 
 import tlc2.output.EC;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.coverage.CostModel;
 import tlc2.util.Combinatorics;
 import util.Assert;
 
@@ -28,6 +29,11 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   public SubsetValue(Value set) {
     this.set = set;
     this.pset = null;
+  }
+
+  public SubsetValue(Value set, CostModel cm) {
+	  this(set);
+	  this.cm = cm;
   }
 
   public final byte getKind() { return SUBSETVALUE; }
@@ -277,7 +283,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       // For as long as pset.elements() (SubsetValue#elements)
       // internally calls SubsetValue#elementsNormalized, the
       // result SetEnumValue here is indeed normalized.
-      return new SetEnumValue(vals, true);
+      if (coverage) {cm.incSecondary(vals.size());}
+      return new SetEnumValue(vals, true, cm);
   }
 
   /* The string representation  */
@@ -362,7 +369,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 		}
 		assert vec.size() == numOfSubsetsRequested;
-		return new SetEnumValue(vec, false);
+		return new SetEnumValue(vec, false, cm);
 	}
 
 	public class Unrank {
@@ -403,7 +410,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 					vec.addElement(this.elems.elementAt(choice));
 				}
 			}
-			return new SetEnumValue(vec, false);
+			return new SetEnumValue(vec, false, cm);
 		}
 
 		protected long memoizedBinomial(final int n, final int k) {
@@ -462,7 +469,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			sets.add(val);
 		}
 		
-		return new SetEnumValue(new ValueVec(sets), false);
+		return new SetEnumValue(new ValueVec(sets), false, cm);
 	}
 	
 	private final ValueEnumeration emptyEnumeration = new ValueEnumeration() {
@@ -477,7 +484,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		public Value nextElement() {
 			if (done) { return null; }
 			done = true;
-			return new SetEnumValue();
+			return new SetEnumValue(cm);
 		}
 	};
 
@@ -526,7 +533,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 					return null;
 				} else if (k == 0) {
 					reset(k + 1);
-					return new SetEnumValue();
+					return new SetEnumValue(cm);
 				}
 
 				final ValueVec vals = new ValueVec(k);
@@ -537,8 +544,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 						i = j - 1;
 					}
 				}
-				final SetEnumValue result = new SetEnumValue(vals, true);
-
+				final SetEnumValue result = new SetEnumValue(vals, true, cm);
+				
 				if (indices[0] == n - k) {
 					// Increment k to generate the set of k-subset for this k.
 					reset(k + 1);
@@ -647,7 +654,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 				// ...right-shift zero-fill bits by one afterwards.
 				bits = bits >>> 1;
 			}
-			return new SetEnumValue(vals, false);
+			return new SetEnumValue(vals, false, cm);
 		}
 		
 		public KElementEnumerator sort() {
@@ -699,34 +706,36 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
 
     public final Value nextElement() {
-      if (this.descriptor == null) return null;
-      ValueVec vals = new ValueVec();
-      int sz = this.elems.size();
-      if (sz == 0) {
-        this.descriptor = null;
-      }
-      else {
-        for (int i = 0; i < sz; i++) {
-          if (this.descriptor.get(i)) {
-            vals.addElement(this.elems.elementAt(i));
-          }
-        }
-        for (int i = 0; i < sz; i++) {
-          if (this.descriptor.get(i)) {
-            this.descriptor.clear(i);
-            if (i >= sz - 1) {
-              this.descriptor = null;
-              break;
-            }
-          }
-          else {
-            this.descriptor.set(i);
-            break;
-          }
-        }
-      }
-      return new SetEnumValue(vals, true);
-    }
+			if (this.descriptor == null)
+				return null;
+			ValueVec vals;
+			int sz = this.elems.size();
+			if (sz == 0) {
+				vals = new ValueVec(0);
+				this.descriptor = null;
+			} else {
+				vals = new ValueVec(this.descriptor.cardinality());
+				for (int i = 0; i < sz; i++) {
+					if (this.descriptor.get(i)) {
+						vals.addElement(this.elems.elementAt(i));
+					}
+				}
+				for (int i = 0; i < sz; i++) {
+					if (this.descriptor.get(i)) {
+						this.descriptor.clear(i);
+						if (i >= sz - 1) {
+							this.descriptor = null;
+							break;
+						}
+					} else {
+						this.descriptor.set(i);
+						break;
+					}
+				}
+			}
+	    	  if (coverage) { cm.incSecondary(vals.size()); }
+			return new SetEnumValue(vals, true, cm);
+	    }
 
   }
 
@@ -769,7 +778,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 				// ...right-shift zero-fill bits by one afterwards.
 				bits = bits >>> 1;
 			}
-			return new SetEnumValue(vals, false);
+			return new SetEnumValue(vals, false, cm);
 		}
 	}
 
@@ -815,7 +824,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 				}
 			}
 			this.i++;
-			return new SetEnumValue(vals, false);
+			return new SetEnumValue(vals, false, cm);
 		}
 
 		private boolean hasNext() {

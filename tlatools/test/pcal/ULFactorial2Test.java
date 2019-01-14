@@ -51,8 +51,6 @@ public class ULFactorial2Test extends PCalModelCheckerTestCase {
 				+ "line 54, col 24 to line 54, col 41 of module ULFactorial2: 0\n"
 				+ "line 55, col 24 to line 55, col 47 of module ULFactorial2: 0\n"
 				+ "line 56, col 24 to line 56, col 43 of module ULFactorial2: 0\n"
-				+ "line 57, col 37 to line 57, col 42 of module ULFactorial2: 0\n"
-				+ "line 57, col 45 to line 57, col 48 of module ULFactorial2: 0\n"
-				+ "line 57, col 51 to line 57, col 52 of module ULFactorial2: 0");
+				+ "line 57, col 24 to line 57, col 55 of module ULFactorial2: 0");
 	}
 }

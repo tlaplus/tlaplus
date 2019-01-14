@@ -9,6 +9,7 @@ package tlc2.value;
 import java.io.IOException;
 
 import tlc2.tool.FingerprintException;
+import tlc2.tool.coverage.CostModel;
 import util.Assert;
 
 public class SetCupValue extends EnumerableValue implements Enumerable {
@@ -21,6 +22,11 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     this.set1 = set1;
     this.set2 = set2;
     this.cupSet = null;
+  }
+
+  public SetCupValue(Value set1, Value set2, CostModel cm) {
+	this(set1, set2);
+	this.cm = cm;
   }
 
   public final byte getKind() { return SETCUPVALUE; }
@@ -226,7 +232,8 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
-      return new SetEnumValue(vals, false);
+      if (coverage) {cm.incSecondary(vals.size());}
+      return new SetEnumValue(vals, false, cm);
   }
 
   /* String representation of the value. */
@@ -288,6 +295,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
 
     public final Value nextElement() {
+  	  if (coverage) { cm.incSecondary(); }
       Value elem = this.enum1.nextElement();
       if (elem != null) return elem;
       elem = this.enum2.nextElement();

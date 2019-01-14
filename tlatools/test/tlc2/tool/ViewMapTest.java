@@ -62,8 +62,6 @@ public class ViewMapTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {c1, c2, p1}");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertUncovered("line 48, col 12 to line 48, col 17 of module ViewMap: 0\n" + 
-				"line 48, col 20 to line 48, col 26 of module ViewMap: 0\n" + 
-				"line 48, col 29 to line 48, col 30 of module ViewMap: 0\n");
+		assertUncovered("line 91, col 60 to line 91, col 73 of module ViewMap: 0");
 	}
 }

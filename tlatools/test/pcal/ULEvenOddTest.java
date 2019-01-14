@@ -49,7 +49,6 @@ public class ULEvenOddTest extends PCalModelCheckerTestCase {
 
 		assertUncovered("line 67, col 24 to line 67, col 38 of module ULEvenOdd: 0\n"
 				+ "line 68, col 24 to line 68, col 36 of module ULEvenOdd: 0\n"
-				+ "line 69, col 37 to line 69, col 41 of module ULEvenOdd: 0\n"
-				+ "line 69, col 44 to line 69, col 48 of module ULEvenOdd: 0");
+				+ "line 69, col 24 to line 69, col 51 of module ULEvenOdd: 0");
 	}
 }

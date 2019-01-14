@@ -128,7 +128,7 @@ implements Enumerable, Reducible {
         Value elem = IntValue.gen(i);
         if (!val.member(elem)) diffElems.addElement(elem);
       }
-      return new SetEnumValue(diffElems, true);
+      return new SetEnumValue(diffElems, true, cm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -144,7 +144,7 @@ implements Enumerable, Reducible {
         Value elem = IntValue.gen(i);
         if (val.member(elem)) capElems.addElement(elem);
       }
-      return new SetEnumValue(capElems, true);
+      return new SetEnumValue(capElems, true, cm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -167,9 +167,9 @@ implements Enumerable, Reducible {
         while ((elem = Enum.nextElement()) != null) {
           if (!this.member(elem)) cupElems.addElement(elem);
         }
-        return new SetEnumValue(cupElems, false);
+        return new SetEnumValue(cupElems, false, cm);
       }
-      return new SetCupValue(this, set);
+      return new SetCupValue(this, set, cm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -259,7 +259,8 @@ implements Enumerable, Reducible {
       for (int i = 0; i < vals.length; i++) {
         vals[i] = IntValue.gen(i + this.low);
       }
-      return new SetEnumValue(vals, true);
+      if (coverage) {cm.incSecondary(vals.length);}
+      return new SetEnumValue(vals, true, cm);
   }
 
   /* The string representation */
@@ -286,7 +287,7 @@ implements Enumerable, Reducible {
     	while ((v = ve.nextElement()) != null) {
     		vec.addElement(v);
     	}
-    	return new SetEnumValue(vec, false);
+    	return new SetEnumValue(vec, false, cm);
 	}
 
 	public Value elementAt(final int idx) {
@@ -315,6 +316,7 @@ implements Enumerable, Reducible {
 
     public final Value nextElement() {
       if (this.index <= high) {
+    	  if (coverage) { cm.incSecondary(); }
         return IntValue.gen(this.index++);
       }
       return null;

@@ -94,7 +94,7 @@ public class Context implements ExploreNode {
     public boolean hasMoreElements() { return e.hasMoreElements(); }
 
     public SymbolNode nextElement() {
-      return (SymbolNode) e.nextElement().getSymbol();
+      return e.nextElement().getSymbol();
     }
   }
 

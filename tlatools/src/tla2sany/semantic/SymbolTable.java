@@ -88,14 +88,15 @@ public class SymbolTable implements ASTConstants {
   * Looks up `name' in the symbol table and returns the node it finds, or  *
   * null if there is no entry for `name'.                                  *
   *************************************************************************/
-  public final SymbolNode resolveSymbol(UniqueString name) {
-    for (int c = contextStack.size()-1; c >= 0; c-- ) {
-      Context ct = (Context)contextStack.elementAt(c);
-      SymbolNode r = ct.getSymbol( name );
-      if (r != null) return r;
-    }
-    return null;
-  }
+	public final SymbolNode resolveSymbol(UniqueString name) {
+		for (int c = contextStack.size() - 1; c >= 0; c--) {
+			Context ct = (Context) contextStack.elementAt(c);
+			SymbolNode r = ct.getSymbol(name);
+			if (r != null)
+				return r;
+		}
+		return null;
+	}
 
   public final ModuleNode resolveModule(UniqueString name) {
     ModuleName modName = new ModuleName(name);

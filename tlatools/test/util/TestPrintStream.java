@@ -25,6 +25,7 @@
  ******************************************************************************/
 package util;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.PipedOutputStream;
@@ -34,6 +35,7 @@ import java.util.List;
 
 public class TestPrintStream extends PrintStream {
 
+	private final StringBuffer buf = new StringBuffer();
 	private final List<String> strings = new ArrayList<String>();
 	
 	public TestPrintStream() {
@@ -45,8 +47,17 @@ public class TestPrintStream extends PrintStream {
 	 */
 	public void println(String x) {
 		strings.add(x);
+		buf.append(x + "\n");
 		System.out.println(x);
 		super.println(x);
+	}
+	
+	public void assertEmpty() {
+		assertTrue(this.strings.isEmpty());
+	}
+	
+	public void assertContains(final String seq) {
+		assertTrue(buf.toString().contains(seq));
 	}
 	
 	public void assertSubstring(String substring) {

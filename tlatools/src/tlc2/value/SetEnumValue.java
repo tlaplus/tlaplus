@@ -9,6 +9,7 @@ package tlc2.value;
 import java.io.IOException;
 
 import tlc2.tool.FingerprintException;
+import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import util.Assert;
 
@@ -22,13 +23,28 @@ implements Enumerable, Reducible {
 	  this(new ValueVec(elems), isNorm);
   }
 
+  public SetEnumValue(Value[] vals, boolean isNorm, CostModel cm) {
+	  this(vals, isNorm);
+	  this.cm = cm;
+  }
+
   public SetEnumValue(ValueVec elems, boolean isNorm) {
     this.elems = elems;
     this.isNorm = isNorm;
   }
-  
+
+  public SetEnumValue(ValueVec elems, boolean isNorm, final CostModel cm) {
+	  this(elems, isNorm);
+	  this.cm = cm;
+  }
+
   public SetEnumValue() {
 	  this(new ValueVec(0), true);
+  }
+  
+  public SetEnumValue(CostModel cm) {
+	  this();
+	  this.cm = cm;
   }
 
   public final byte getKind() { return SETENUMVALUE; }
@@ -108,7 +124,7 @@ implements Enumerable, Reducible {
           diffElems.addElement(elem);
         }
       }
-      return new SetEnumValue(diffElems, this.isNormalized());
+      return new SetEnumValue(diffElems, this.isNormalized(), cm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -126,7 +142,7 @@ implements Enumerable, Reducible {
           capElems.addElement(elem);
         }
       }
-      return new SetEnumValue(capElems, this.isNormalized());
+      return new SetEnumValue(capElems, this.isNormalized(), cm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -152,7 +168,7 @@ implements Enumerable, Reducible {
         }
         return new SetEnumValue(cupElems, false);
       }
-      return new SetCupValue(this, set);
+      return new SetCupValue(this, set, cm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -380,6 +396,7 @@ implements Enumerable, Reducible {
     public final void reset() { this.index = 0; }
 
     public final Value nextElement() {
+    	if (coverage) { cm.incSecondary(); }
       if (this.index < elems.size()) {
         return elems.elementAt(this.index++);
       }
@@ -397,7 +414,7 @@ implements Enumerable, Reducible {
     	while ((v = ve.nextElement()) != null) {
     		vec.addElement(v);
     	}
-    	return new SetEnumValue(vec, false);
+    	return new SetEnumValue(vec, false, cm);
 	}
 
 	@Override

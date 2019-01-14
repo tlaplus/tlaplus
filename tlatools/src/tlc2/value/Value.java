@@ -13,11 +13,16 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.pprint.PrettyPrint;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import util.Assert;
 import util.WrongInvocationException;
 
 public abstract class Value implements ValueConstants, Serializable {
+	/**
+	 * @see See note on performance in CostModelCreator.
+	 */
+	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
   /**
    * For each kind of value, we introduce a subclass of Value.
    * All the subclasses are given in this value package.
@@ -54,6 +59,17 @@ public abstract class Value implements ValueConstants, Serializable {
   public void write(ValueOutputStream vos) throws IOException {
 		throw new WrongInvocationException("ValueOutputStream: Can not pickle the value\n" +
 			    Value.ppr(toString()));
+  }
+
+  public transient CostModel cm = CostModel.DO_NOT_RECORD;
+  
+  public Value setCostModel(CostModel cm) {
+	  this.cm = cm;
+	  return this;
+  }
+  
+  public CostModel getCostModel() {
+	  return this.cm;
   }
   
   /**

@@ -30,6 +30,7 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
+import tlc2.tool.BuiltInOPs;
 import tlc2.value.TupleValue;
 import tlc2.value.Value;
 import util.UniqueString;
@@ -1103,6 +1104,11 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 //           "ArgLevelConstraints: " + this.argLevelConstraints + "\n" +
 //           "ArgLevelParams: "      + this.argLevelParams      + "\n" ;
 //  }
+
+
+  public boolean hasOpcode(final int opCode) {
+      return opCode == BuiltInOPs.getOpCode(getOperator().getName());
+  }
 
   @Override
   public SemanticNode[] getChildren() {

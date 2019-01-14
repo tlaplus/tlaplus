@@ -18,6 +18,7 @@ import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
+import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import util.Assert;
 import util.UniqueString;
@@ -50,6 +51,12 @@ public class FcnLambdaValue extends Value implements Applicable {
 
     this.control = control;
     this.fcnRcd = null;
+  }
+
+  public FcnLambdaValue(FcnParams params, SemanticNode body, Tool tool,
+	      Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
+	  this(params, body, tool, c, s0, s1, control);
+	  this.cm = cm;
   }
 
   public FcnLambdaValue(FcnLambdaValue fcn) {
@@ -584,7 +591,8 @@ public class FcnLambdaValue extends Value implements Applicable {
           Context c1 = this.con.cons(var, IntValue.gen(i));
           elems[i-1] = this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
         }
-        return new TupleValue(elems);
+        if (coverage) {cm.incSecondary(elems.length);}
+        return new TupleValue(elems, cm);
       }
       else {
         SetEnumValue eSet = dom.toSetEnum();
@@ -601,7 +609,8 @@ public class FcnLambdaValue extends Value implements Applicable {
           Context c1 = this.con.cons(var, argVal);
           elems[i] = this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
         }
-        return new TupleValue(elems);
+        cm.incSecondary(elems.length);
+        return new TupleValue(elems, cm);
       }
   }
 
@@ -617,7 +626,8 @@ public class FcnLambdaValue extends Value implements Applicable {
         }
         vars[i] = ((StringValue)fcn.domain[i]).getVal();
       }
-      return new RecordValue(vars, fcn.values, fcn.isNormalized());
+      if (coverage) {cm.incSecondary(vars.length);}
+      return new RecordValue(vars, fcn.values, fcn.isNormalized(), cm);
   }
 
   @Override
@@ -674,7 +684,8 @@ public class FcnLambdaValue extends Value implements Applicable {
             values[idx++] = this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
           }
         }
-        this.fcnRcd = new FcnRcdValue(domain, values, false);
+        if (coverage) {cm.incSecondary(sz);}
+        this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
         if (this.excepts != null) {
           this.fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(this.excepts);
         }

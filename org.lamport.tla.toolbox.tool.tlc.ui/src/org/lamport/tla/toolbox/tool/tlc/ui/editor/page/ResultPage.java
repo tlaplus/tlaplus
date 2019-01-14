@@ -34,7 +34,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -66,6 +65,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -79,7 +79,6 @@ import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
-import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAFastPartitioner;
 import org.lamport.tla.toolbox.editor.basic.TLAPartitionScanner;
@@ -105,7 +104,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
-import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -277,86 +275,32 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						}
 	                    break;
 	                case COVERAGE_END:
-	                	if (dataProvider.getCoverageInfo().isEmpty()) {
-	                		// Cannot show coverage information without coverage data.
+	                	final CoverageInformation ci = dataProvider.getCoverageInfo();
+	                	if (ci.isEmpty() || ci.isLegacy()) {
+							// Cannot show coverage information without (non-legacy) coverage data.
 	                		break;
 	                	}
 						final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
-						final Map<IFile, Map<Long, AnnotationPreference>> coveredFiles = new HashMap<>();
 						
-						// Setup the AnnotationPreferences and open the editor. The editor has to be
-						// opened *before* any marker gets created. Otherwise, there is race condition
-						// between the editor registering the AnnotationPainter as a
-						// ITextYadaYadaListener and notification being send out for the markers.
 						final List<IFile> savedTLAFiles = modelEditor.getModel().getSavedTLAFiles();
-						for (IFile tlaFile : savedTLAFiles) {
-							final Map<Long, AnnotationPreference> annotationPrefs = new HashMap<>();
-							final CoverageInformation coveragesForTLAFile = dataProvider.getCoverageInfo(tlaFile);
-							if (!coveragesForTLAFile.isEmpty()) {
-								coveredFiles.put(tlaFile, annotationPrefs);
-								for (CoverageInformationItem coverageForTLAFile : coveragesForTLAFile) {
-									if (coverageForTLAFile.getCount() > 0) {
-										// Reuse the AnnotationPreference (the visualization instruction, ie the
-										// text highlighting in a particular color) for the same counts.
-										annotationPrefs.computeIfAbsent(coverageForTLAFile.getCount(),
-												c -> new TLACoverageEditor.AnnotationPreference(
-														coveragesForTLAFile.getHue(coverageForTLAFile)));
-									}
-								}
+						for (IFile iFile : savedTLAFiles) {
+							if (!ci.has(iFile)) {
+								continue;
 							}
-						}
-						
-						// Open the files as pages of the current model editor.
-						for (IFile coveredFile : coveredFiles.keySet()) {
-							if (modelEditor.findEditors(new FileEditorInput(coveredFile)).length == 0) {
-								try {
-									modelEditor.addPage(new TLACoverageEditor(coveredFiles.get(coveredFile)),
-											new FileEditorInput(coveredFile));
-								} catch (PartInitException e) {
-									e.printStackTrace();
-								}
-							}
-						}
-
-	                	// Install invocation statistics markers on saved TLA+ files when the editor is open.
-						for (IFile tlaFile : savedTLAFiles) {
-							final CoverageInformation coveragesForTLAFile = dataProvider.getCoverageInfo(tlaFile);
-							if (!coveragesForTLAFile.isEmpty()) {
-								final Map<Long, AnnotationPreference> annotationPrefs = coveredFiles.get(tlaFile);
-								for (CoverageInformationItem coverageForTLAFile : coveragesForTLAFile) {
-									final IRegion region = AdapterFactory
-											.locationToRegion(coverageForTLAFile.getModuleLocation());
-									if (region == null) {
-										// Region can be null if a model gets openend with coverage results but the spec
-										// has changed in the meantime. This shouldn't happen though, as we used the tla
-										// spec that has been copied to the Model_1 directory when model checking
-										// started.
-										continue;
-									}
-									try {
-										final IMarker coverageMarker;
-										if (coverageForTLAFile.getCount() == 0) {
-											coverageMarker = tlaFile.createMarker(TLACoverageEditor.ANNOTATION_UNUSED);
-										} else {
-											AnnotationPreference ap = annotationPrefs
-													.get(coverageForTLAFile.getCount());
-
-											// TODO do we need to clear existing coverage markers first or can we update
-											// existing markers with new invocation counts?
-											coverageMarker = tlaFile.createMarker((String) ap.getAnnotationType());
-										}
-										coverageMarker.isSubtypeOf(IMarker.MARKER);
-										coverageMarker.setAttribute(IMarker.MESSAGE,
-												String.format("%,d", coverageForTLAFile.getCount()));
-										coverageMarker.setAttribute(TLACoverageEditor.LAYER,
-												coverageForTLAFile.getLayer());
-										coverageMarker.setAttribute(IMarker.CHAR_START, region.getOffset());
-										coverageMarker.setAttribute(IMarker.CHAR_END,
-												region.getOffset() + region.getLength());
-									} catch (CoreException e) {
-										TLCUIActivator.getDefault().logError(e.getMessage(), e);
+							// Open the files as pages of the current model editor.
+							final FileEditorInput input = new FileEditorInput(iFile);
+							final IEditorPart[] findEditors = modelEditor.findEditors(input);
+							try {
+								if (findEditors.length == 0) {
+									modelEditor.addPage(new TLACoverageEditor(ci.projectionFor(iFile)), input);
+								} else {
+									if (findEditors[0] instanceof TLACoverageEditor) {
+										final TLACoverageEditor coverageEditor = (TLACoverageEditor) findEditors[0];
+										coverageEditor.resetInput(ci.projectionFor(iFile));
 									}
 								}
+							} catch (PartInitException e) {
+								TLCUIActivator.getDefault().logError(e.getMessage(), e);
 							}
 						}
 	                	break;

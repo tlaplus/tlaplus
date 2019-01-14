@@ -448,22 +448,37 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 // Coverage information
                 case EC.TLC_COVERAGE_START:
                     this.coverageTimestamp = CoverageInformationItem.parseCoverageTimestamp(outputMessage);
-                    this.coverageInfo = new CoverageInformation();
+                    this.coverageInfo = new CoverageInformation(model.getSavedTLAFiles());
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_TIME);
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
-                case EC.TLC_COVERAGE_VALUE:
-                    // Commented out by LL for testing on 25 sep 2010
-                    CoverageInformationItem item = CoverageInformationItem.parse(outputMessage, getModelName());
-                    if (!item.getModule().equals(ModelHelper.MC_MODEL_NAME))
-                    {
-                        // only add coverage of the spec files
-                        this.coverageInfo.add(item);
-                        if (item.getCount() == 0) {
-                        	this.zeroCoverage = true;
-                        }
-                        informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+                case EC.TLC_COVERAGE_PROPERTY:
+                    this.coverageInfo.add(ActionInformationItem.parseProp(outputMessage, getModelName()));
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+                    break;
+                case EC.TLC_COVERAGE_INIT:
+                    this.coverageInfo.add(ActionInformationItem.parseInit(outputMessage, getModelName()));
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+                    break;
+                case EC.TLC_COVERAGE_NEXT:
+                    this.coverageInfo.add(ActionInformationItem.parseNext(outputMessage, getModelName()));
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+                    break;
+                case EC.TLC_COVERAGE_VALUE_COST:
+                    CoverageInformationItem item = CoverageInformationItem.parseCost(outputMessage, getModelName());
+                    this.coverageInfo.add(item);
+                    if (item.getCount() == 0) {
+                    	this.zeroCoverage = true;
                     }
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+                    break;
+                case EC.TLC_COVERAGE_VALUE:
+                	item = CoverageInformationItem.parse(outputMessage, getModelName());
+                    this.coverageInfo.add(item);
+                    if (item.getCount() == 0) {
+                    	this.zeroCoverage = true;
+                    }
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
                 case EC.TLC_COVERAGE_END:
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_END);
@@ -965,22 +980,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         return coverageInfo;
     }
 
-    public CoverageInformation getCoverageInfo(IFile file)
-    {
-        CoverageInformation subset = new CoverageInformation();
-    	for (CoverageInformationItem coverageInformationItem : coverageInfo) {
-			if (coverageInformationItem.getModuleLocation().source().equals(file.getName().replace(".tla", ""))) {
-				subset.add(coverageInformationItem);
-			}
-		}
-        return subset;
-    }
-
-    public void setCoverageInfo(CoverageInformation coverageInfo)
-    {
-        this.coverageInfo = coverageInfo;
-    }
-
     public boolean hasZeroCoverage() {
     	return this.zeroCoverage;
     }
@@ -1000,19 +999,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         return userOutput;
     }
 
-    public void setUserOutput(Document userOutput)
-    {
-        this.userOutput = userOutput;
-    }
-
     public Document getProgressOutput()
     {
         return progressOutput;
-    }
-
-    public void setProgressOutput(Document progressOutput)
-    {
-        this.progressOutput = progressOutput;
     }
 
     public long getLastCheckpointTimeStamp()

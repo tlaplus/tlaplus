@@ -47,41 +47,17 @@ public class CallReturn2Test extends PCalModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "12", "11", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "11"));
 		
-		assertUncovered("line 129, col 10 to line 129, col 15 of module CallReturn2: 0\n" + 
-				"line 130, col 10 to line 130, col 19 of module CallReturn2: 0\n" + 
-				"line 131, col 23 to line 131, col 27 of module CallReturn2: 0\n" + 
-				"line 131, col 30 to line 131, col 34 of module CallReturn2: 0\n" + 
-				"line 131, col 37 to line 131, col 37 of module CallReturn2: 0\n" + 
-				"line 131, col 40 to line 131, col 41 of module CallReturn2: 0\n" + 
-				"line 131, col 44 to line 131, col 44 of module CallReturn2: 0\n" + 
-				"line 131, col 47 to line 131, col 48 of module CallReturn2: 0\n" + 
-				"line 131, col 51 to line 131, col 52 of module CallReturn2: 0\n" + 
-				"line 131, col 55 to line 131, col 56 of module CallReturn2: 0\n" + 
-				"line 131, col 59 to line 131, col 59 of module CallReturn2: 0\n" + 
-				"line 131, col 62 to line 131, col 62 of module CallReturn2: 0\n" + 
-				"line 134, col 13 to line 134, col 18 of module CallReturn2: 0\n" + 
-				"line 135, col 13 to line 138, col 36 of module CallReturn2: 0\n" + 
-				"line 139, col 13 to line 139, col 30 of module CallReturn2: 0\n" + 
-				"line 140, col 10 to line 140, col 19 of module CallReturn2: 0\n" + 
-				"line 141, col 23 to line 141, col 27 of module CallReturn2: 0\n" + 
-				"line 141, col 30 to line 141, col 30 of module CallReturn2: 0\n" + 
-				"line 141, col 33 to line 141, col 34 of module CallReturn2: 0\n" + 
-				"line 141, col 37 to line 141, col 37 of module CallReturn2: 0\n" + 
-				"line 141, col 40 to line 141, col 41 of module CallReturn2: 0\n" + 
-				"line 141, col 44 to line 141, col 45 of module CallReturn2: 0\n" + 
-				"line 141, col 48 to line 141, col 49 of module CallReturn2: 0\n" + 
-				"line 141, col 52 to line 141, col 52 of module CallReturn2: 0\n" + 
-				"line 147, col 10 to line 147, col 29 of module CallReturn2: 0\n" + 
-				"line 148, col 10 to line 148, col 27 of module CallReturn2: 0\n" + 
-				"line 149, col 10 to line 149, col 29 of module CallReturn2: 0\n" + 
-				"line 150, col 23 to line 150, col 27 of module CallReturn2: 0\n" + 
-				"line 150, col 30 to line 150, col 30 of module CallReturn2: 0\n" + 
-				"line 150, col 33 to line 150, col 34 of module CallReturn2: 0\n" + 
-				"line 150, col 37 to line 150, col 37 of module CallReturn2: 0\n" + 
-				"line 150, col 40 to line 150, col 41 of module CallReturn2: 0\n" + 
-				"line 150, col 44 to line 150, col 45 of module CallReturn2: 0\n" + 
-				"line 150, col 48 to line 150, col 49 of module CallReturn2: 0\n" + 
-				"line 150, col 52 to line 150, col 52 of module CallReturn2: 0\n" + 
-				"line 150, col 55 to line 150, col 55 of module CallReturn2: 0");
+		assertUncovered("  line 129, col 10 to line 129, col 15 of module CallReturn2: 0\n" + 
+				"  line 130, col 10 to line 130, col 19 of module CallReturn2: 0\n" + 
+				"  line 131, col 10 to line 131, col 65 of module CallReturn2: 0\n" + 
+				"  line 134, col 13 to line 134, col 18 of module CallReturn2: 0\n" + 
+				"  line 135, col 13 to line 138, col 36 of module CallReturn2: 0\n" + 
+				"  line 139, col 13 to line 139, col 30 of module CallReturn2: 0\n" + 
+				"  line 140, col 10 to line 140, col 19 of module CallReturn2: 0\n" + 
+				"  line 141, col 10 to line 141, col 55 of module CallReturn2: 0\n" + 
+				"  line 147, col 10 to line 147, col 29 of module CallReturn2: 0\n" + 
+				"  line 148, col 10 to line 148, col 27 of module CallReturn2: 0\n" + 
+				"  line 149, col 10 to line 149, col 29 of module CallReturn2: 0\n" + 
+				"  line 150, col 10 to line 150, col 58 of module CallReturn2: 0");
 	}
 }

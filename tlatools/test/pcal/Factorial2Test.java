@@ -51,8 +51,6 @@ public class Factorial2Test extends PCalModelCheckerTestCase {
 				"line 54, col 21 to line 54, col 38 of module Factorial2: 0\n" + 
 				"line 55, col 21 to line 55, col 44 of module Factorial2: 0\n" + 
 				"line 56, col 21 to line 56, col 40 of module Factorial2: 0\n" + 
-				"line 57, col 34 to line 57, col 39 of module Factorial2: 0\n" + 
-				"line 57, col 42 to line 57, col 45 of module Factorial2: 0\n" + 
-				"line 57, col 48 to line 57, col 49 of module Factorial2: 0");
+				"line 57, col 21 to line 57, col 52 of module Factorial2: 0");
 	}
 }

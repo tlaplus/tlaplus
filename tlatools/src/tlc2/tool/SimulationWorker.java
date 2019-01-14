@@ -30,11 +30,8 @@ import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.LongAdder;
 
-import tla2sany.semantic.SemanticNode;
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ILiveCheck;
-import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
 import util.FileUtil;
 
@@ -100,9 +97,6 @@ public class SimulationWorker extends Thread {
 	// update it whenever it generates a new state or trace.
 	private final LongAdder numOfGenStates;
 	private final LongAdder numOfGenTraces;
-	
-	// Stores information for coverage metrics.
-	private final ObjLongTable<SemanticNode> astCounts;
 
 	private final Tool tool;
 	private final ILiveCheck liveCheck;	
@@ -191,7 +185,7 @@ public class SimulationWorker extends Thread {
 
 	public SimulationWorker(int id, Tool tool, StateVec initStates, BlockingQueue<SimulationWorkerResult> resultQueue,
 			long seed, long maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
-			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces, ObjLongTable<SemanticNode> astCounts) {
+			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces) {
 		this.id = id;
 		this.localRng = new RandomGenerator(seed);
 		this.tool = tool;
@@ -204,7 +198,6 @@ public class SimulationWorker extends Thread {
 		this.liveCheck = liveCheck;
 		this.numOfGenStates = numOfGenStates;
 		this.numOfGenTraces = numOfGenTraces;
-		this.astCounts = astCounts;
 	}
 	
 	/**
@@ -343,11 +336,6 @@ public class SimulationWorker extends Thread {
 			for (int i = 0; i < nextStates.size(); i++) {
 				numOfGenStates.increment();
 				final TLCState state = nextStates.elementAt(i);
-
-				if (TLCGlobals.coverageInterval >= 0) {
-					// TODO: Is 'astCounts' thread safe? (Will Schultz)
-					 ((TLCStateMutSource) state).addCounts(astCounts);
-				}
 
 				if (!tool.isGoodState(state)) {
 					return Optional.of(new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, state,

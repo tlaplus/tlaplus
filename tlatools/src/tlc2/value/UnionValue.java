@@ -9,6 +9,7 @@ package tlc2.value;
 import java.io.IOException;
 
 import tlc2.tool.FingerprintException;
+import tlc2.tool.coverage.CostModel;
 import util.Assert;
 
 public class UnionValue extends EnumerableValue implements Enumerable {
@@ -19,6 +20,11 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   public UnionValue(Value set) {
     this.set = set;
     this.realSet = null;
+  }
+
+  public UnionValue(Value val, CostModel cm) {
+	  this(val);
+	  this.cm = cm;
   }
 
   public byte getKind() { return UNIONVALUE; }
@@ -194,7 +200,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
       }
       if (canCombine) {
         ValueVec resElems = new ValueVec();
-        Value result = new SetEnumValue(resElems, false);
+        Value result = new SetEnumValue(resElems, false, val.cm);
         for (int i = 0; i < elems.size(); i++) {
           ValueVec elems1 = ((SetEnumValue)elems.elementAt(i)).elems;
           for (int j = 0; j < elems1.size(); j++) {
@@ -207,7 +213,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
         return result;
       }
     }
-    return new UnionValue(val);
+    return new UnionValue(val, val.cm);
   }
 
 	@Override
@@ -267,7 +273,8 @@ public class UnionValue extends EnumerableValue implements Enumerable {
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
-      return new SetEnumValue(vals, false);
+      if (coverage) {cm.incSecondary(vals.size());}
+      return new SetEnumValue(vals, false, cm);
   }
 
   /* String representation of this value. */
@@ -343,6 +350,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
         this.elemSetEnum = ((Enumerable)this.elemSet).elements();
         val = this.nextElement();
       }
+	  if (coverage) { cm.incSecondary(); }
       return val;
     }
 

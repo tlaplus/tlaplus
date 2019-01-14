@@ -5,12 +5,9 @@
 
 package tlc2.tool;
 
-import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
-import tlc2.value.Value;
 import util.Assert;
-import util.UniqueString;
 
 /*
  * This class represents a TLA+ state vector.
@@ -68,22 +65,6 @@ public final class StateVec implements IStateFunctor {
     this.size = 0;
   }
   
-  // Add the binding to all the variables
-  public final StateVec bind(UniqueString var, Value val, SemanticNode ast) {
-    for (int i = 0; i < this.size; i++) {
-      TLCState s = this.v[i];
-      if (s.containsKey(var)) return null;
-      v[i] = s.bind(var, val, ast);
-    }
-    return this;
-  }
-
-  // Bind a value in one of the states.
-  public final StateVec bindAt(int i, UniqueString var, Value val, SemanticNode ast) {
-    v[i] = v[i].bind(var, val, ast);
-    return this;
-  }
-
   /* (non-Javadoc)
    * @see tlc2.tool.IStateFunction#addElement(tlc2.tool.TLCState)
    */

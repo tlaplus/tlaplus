@@ -65,6 +65,6 @@ public class IncompleteNextTest extends ModelCheckerTestCase {
 		assertEquals(" is", ((String[]) records.get(0))[0]);
 		assertEquals("y", ((String[]) records.get(0))[1]);
 
-	assertUncovered("  line 6, col 30 to line 6, col 35 of module IncompleteNext: 0");
+		assertZeroUncovered();
 	}
 }

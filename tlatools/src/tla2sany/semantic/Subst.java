@@ -15,6 +15,7 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
 import tla2sany.xml.XMLExportable;
+import tlc2.tool.coverage.CostModel;
 
 public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExportable /* interface for exporting into XML */ {
 
@@ -26,6 +27,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
   private ExprOrOpArgNode  expr;
   private TreeNode         exprSTN;
   private boolean          implicit;
+  private CostModel        cm = CostModel.DO_NOT_RECORD;
 
   /* Constructors */
   public Subst(OpDeclNode odn, ExprOrOpArgNode exp, TreeNode exSTN, boolean imp) {
@@ -51,6 +53,13 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
   public final void setExprSTN(TreeNode stn) { this.exprSTN = stn; }
 
   public final boolean isImplicit() { return this.implicit; }
+  
+  public final CostModel getCM() { return this.cm; }
+  
+  public final Subst setCM(final CostModel cm) {
+	  this.cm = cm;
+	  return this;
+  }
 
   public static ExprOrOpArgNode getSub(Object param, Subst[] subs) {
     for (int i = 0; i < subs.length; i++) {

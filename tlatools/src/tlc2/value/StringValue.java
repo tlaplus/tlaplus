@@ -9,6 +9,7 @@ package tlc2.value;
 import java.io.IOException;
 
 import tlc2.tool.FingerprintException;
+import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import util.Assert;
 import util.UniqueString;
@@ -24,6 +25,11 @@ public class StringValue extends Value {
 
   public StringValue(UniqueString var) {
     this.val = var;
+  }
+
+  public StringValue(UniqueString var, CostModel cm) {
+	  this(var);
+	  this.cm = cm;
   }
 
   public final byte getKind() { return STRINGVALUE; }

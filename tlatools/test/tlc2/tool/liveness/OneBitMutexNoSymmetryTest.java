@@ -164,8 +164,6 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 
 		assertUncovered("line 80, col 38 to line 80, col 69 of module OneBitMutex: 0\n"
 				+ "line 96, col 16 to line 96, col 47 of module OneBitMutex: 0\n"
-				+ "line 97, col 29 to line 97, col 29 of module OneBitMutex: 0\n"
-				+ "line 97, col 32 to line 97, col 40 of module OneBitMutex: 0\n"
-				+ "line 97, col 43 to line 97, col 47 of module OneBitMutex: 0");
+				+ "line 97, col 16 to line 97, col 50 of module OneBitMutex: 0");
 	}
 }

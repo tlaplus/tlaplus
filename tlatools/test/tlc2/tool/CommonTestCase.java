@@ -183,4 +183,21 @@ public abstract class CommonTestCase {
 	protected void assertZeroUncovered() {
 		assertTrue(recorder.getZeroCoverage().isEmpty());
 	}
+	
+	protected void assertCoverage(final String expectedCoverage) {
+		// Lines can be reported multiple times if invoked from different actions!!!
+		
+		final List<Coverage> expected = Arrays.asList(expectedCoverage.split("\n")).stream()
+				.map(o -> new Coverage(o.split(":"))).collect(Collectors.toList());
+		
+		// Validation of coverage results is split into two steps. Step A checks if all
+		// uncovered (zero) lines are found, step B checks if non-zero lines exist.		
+		final Set<Coverage> expectedZero = expected.stream().filter(Coverage::isZero)
+				.filter(Coverage::isCoverage).collect(Collectors.toSet());
+		final Set<Coverage> actualZeroCoverage = recorder.getZeroCoverage().stream().collect(Collectors.toSet());
+		assertEquals(expectedZero, actualZeroCoverage);
+		
+		// Step B:
+//		final List<Coverage> actualNonZeroCoverage = recorder.getNonZeroCoverage();
+	}
 }
