@@ -3,7 +3,9 @@ package org.lamport.tla.toolbox.ui.handler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jface.text.Region;
@@ -83,50 +85,31 @@ public class GotoDefinitionTest extends AbstractTest {
 	 * 
 	 * We don't need to test the hyperlink jump, we only need to test that the TokenSpec instance returned by
 	 *     TokenSpec.findCurrentTokenSpec(IRegion) has a non-null resolvedSymbol attribute.
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void verifyTokenSpecSymbolResolution () {
+	public void verifyTokenSpecSymbolResolution () throws InterruptedException {
+		final BlockingQueue<TokenSpec> queue = new ArrayBlockingQueue<TokenSpec>(1);
+		final Region r = new Region(193, 0);
 	    // This region is expected to place the cursor just prior to the subscripted identifier, the 's' in "..._s" in:
 	    //             Spec == s = "" /\ [][Next(s)]_s
-	    final Region r = new Region(193, 0);
-	    final ArrayList<TokenSpec> crossThreadSmuggler = new ArrayList<>();
-	    final Runnable uiRunnable = new Runnable () {
-	        public void run () {
-	            TokenSpec ts = TokenSpec.findCurrentTokenSpec(r);
-	            
-	            synchronized (crossThreadSmuggler) {
-	                crossThreadSmuggler.add(ts);
-	            }
-	        }
-	    };
-	    final TokenSpec ts;
-	    int size = 0;
-	    int waitCycles = 0;
+	    UIHelper.runUIAsync(new Runnable() {
+			@Override
+			public void run() {
+				queue.add(TokenSpec.findCurrentTokenSpec(r));
+			}
+		});
+		
+		final TokenSpec ts = queue.poll(15, TimeUnit.SECONDS);
 
-	    UIHelper.runUIAsync(uiRunnable);
-	    while ((size == 0) && (waitCycles < 15)) {
-	        try {
-	            Thread.sleep(575);
-	        }
-	        catch (Exception e) { } // NOPMD
-	        
-	        waitCycles++;
-	        synchronized (crossThreadSmuggler) {
-	            size = crossThreadSmuggler.size();
-	        }
-	    }
+		Assert.assertNotNull("TokenSpec was unable to find any token at " + r.toString(), ts);
 
-	    Assert.assertNotEquals("We timed out waiting for the TokenSpec find.", 0, size);
-	    
-	    ts = crossThreadSmuggler.get(0);
-	    
-	    Assert.assertNotNull("TokenSpec was unable to find any token at " + r.toString(), ts);
-	    
-	    Assert.assertEquals("TokenSpec was not for the expected token, perhaps someone has changed GotoDefinition.tla?", "_s",
-	                        ts.token);
+		Assert.assertEquals("TokenSpec was not for the expected token, perhaps someone has changed GotoDefinition.tla?",
+				"_s", ts.token);
 
-	    Assert.assertNotNull("TokenSpec was unable to resolve the symbol for the token [" + ts.token + "] at " + r.toString(),
-	                         ts.resolvedSymbol);
+		Assert.assertNotNull(
+				"TokenSpec was unable to resolve the symbol for the token [" + ts.token + "] at " + r.toString(),
+				ts.resolvedSymbol);
 	    
 	    // No real reason this need be done from a test functionality perspective
         SWTBotEditor activeEditor = bot.activeEditor();
