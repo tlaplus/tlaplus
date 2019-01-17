@@ -12,7 +12,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
@@ -72,14 +71,14 @@ public class ModelChecker extends AbstractChecker
 
     /* Constructors  */
     public ModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
-            FilenameToStream resolver, SpecObj specObj, final Future<FPSet> future) throws EvalException, IOException, InterruptedException, ExecutionException {
-    	this(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver, specObj);
+            FilenameToStream resolver, final Future<FPSet> future) throws EvalException, IOException, InterruptedException, ExecutionException {
+    	this(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver);
     	this.theFPSet = future.get();
     }
     
     public ModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
-            FilenameToStream resolver, SpecObj specObj, final FPSetConfiguration fpSetConfig) throws EvalException, IOException {
-    	this(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver, specObj);
+            FilenameToStream resolver, final FPSetConfiguration fpSetConfig) throws EvalException, IOException {
+    	this(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver);
     	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, specFile);
     }
     
@@ -90,10 +89,10 @@ public class ModelChecker extends AbstractChecker
      * @param specObj external SpecObj added to enable to work on existing specification 
      */
     private ModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
-            FilenameToStream resolver, SpecObj specObj) throws EvalException, IOException
+            FilenameToStream resolver) throws EvalException, IOException
     {
         // call the abstract constructor
-        super(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, true, resolver, specObj);
+        super(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, true, resolver);
 
         // SZ Feb 20, 2009: this is a selected alternative
         this.theStateQueue = new DiskStateQueue(this.metadir);

@@ -59,7 +59,7 @@ public class SimulatorBenchmark {
 		try {
 			int maxTraceDepth = 20;
 			Simulator simulator = new Simulator("BenchmarkSpec", "MCInv", null, false, maxTraceDepth, Long.MAX_VALUE, rng, 0, true,
-					new SimpleFilenameToStream(), null, nWorkers);
+					new SimpleFilenameToStream(), nWorkers);
 			simulator.simulate();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

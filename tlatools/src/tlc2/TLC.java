@@ -20,7 +20,6 @@ import java.util.TimeZone;
 import model.InJarFilenameToStream;
 import model.ModelInJar;
 import tla2sany.modanalyzer.ParseUnit;
-import tla2sany.modanalyzer.SpecObj;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.AbstractChecker;
@@ -98,7 +97,6 @@ public class TLC
     private String traceFile = null;
     private int traceDepth;
     private FilenameToStream resolver;
-    private SpecObj specObj;
 
     // flag if the welcome message is already printed
     private boolean welcomePrinted;
@@ -905,7 +903,7 @@ public class TLC
 								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
 								pid == -1 ? "" : String.valueOf(pid) });
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
-                        traceNum, rng, seed, true, resolver, specObj, TLCGlobals.getNumWorkers());
+                        traceNum, rng, seed, true, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
 //                MP.printMessage(EC.TLC_STARTING);
@@ -930,12 +928,12 @@ public class TLC
                 {
 					MP.printMessage(EC.TLC_MODE_MC, parameters);
 					mc = new ModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver,
-							specObj, FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
+							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
 					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
-					mc = new DFIDModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, true, resolver, specObj);
+					mc = new DFIDModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, true, resolver);
                 }
                 TLCGlobals.mainChecker = mc;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
@@ -1041,15 +1039,6 @@ public class TLC
         ToolIO.setDefaultResolver(resolver);
     }
 
-    /**
-     * Set external specification object
-     * @param specObj spec object created external SANY run
-     */
-    public void setSpecObject(SpecObj specObj) 
-    {
-        this.specObj = specObj;
-    }
-    
     /**
      * Print out an error message, with usage hint
      * @param msg, message to print

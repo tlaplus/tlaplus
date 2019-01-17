@@ -108,6 +108,11 @@ public class Tool
    * Initialization. Any Tool object must call it before doing anything.
    * @param spec - <code>null</code> or a filled spec object from previous SANY run
    */
+  public final SpecObj init(boolean preprocess)
+  {
+	  return init(preprocess, null);
+  }
+
   public final SpecObj init(boolean preprocess, SpecObj spec)
   {
 

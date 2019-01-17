@@ -35,7 +35,7 @@ public abstract class CheckImpl extends ModelChecker {
 		   int depth, String fromChkpt, final FPSetConfiguration fpSetConfig)
   throws IOException {
     // SZ Feb 20, 2009: patched due to changes to ModelCheker
-    super(specFile, configFile, metadir, new NoopStateWriter(), deadlock, fromChkpt, null, null, fpSetConfig); // no name resolver and no specobj
+    super(specFile, configFile, metadir, new NoopStateWriter(), deadlock, fromChkpt, null, fpSetConfig); // no name resolver and no specobj
     this.depth = depth;
     this.curState = null;
     this.coverSet = FPSetFactory.getFPSet();

@@ -103,14 +103,14 @@ public abstract class AbstractChecker implements Cancelable
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
     public AbstractChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
-            boolean preprocess, FilenameToStream resolver, SpecObj spec) throws EvalException, IOException
+            boolean preprocess, FilenameToStream resolver) throws EvalException, IOException
     {
         this.checkDeadlock = deadlock;
 
         final File f = new File(specFile);
         this.tool = new Tool(f.isAbsolute() ? f.getParent() : "", specFile, configFile, resolver);
 
-        this.specObj = this.tool.init(preprocess, spec);
+        this.specObj = this.tool.init(preprocess);
         this.checkLiveness = !this.tool.livenessIsTrue();
 
         // moved to file utilities

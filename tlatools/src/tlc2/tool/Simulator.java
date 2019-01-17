@@ -44,29 +44,18 @@ public class Simulator implements Cancelable {
 	 * compatibility constructor
 	 * 
 	 * @throws IOException
-	 *
-	 * @deprecated use
-	 *             {@link Simulator#Simulator(String, String, String, boolean, int, long, RandomGenerator, long, boolean, FilenameToStream, SpecObj)}
-	 *             instead and pass the <code>null</code> as SpecObj
 	 */
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
 			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver)
 			throws IOException {
-		this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, null);
-	}
-
-	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
-			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver,
-			SpecObj specObj) throws IOException {
 		// Default to 1 worker thread if not specified.
-		this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, specObj,
-				1);
+		this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, 1);
 	}
 
 	// SZ Feb 20, 2009: added the possibility to pass the SpecObject
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
 			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver,
-			SpecObj specObj, int numWorkers) throws IOException {
+			int numWorkers) throws IOException {
 		int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
 		String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep + 1);
 		specFile = specFile.substring(lastSep + 1);
@@ -76,7 +65,7 @@ public class Simulator implements Cancelable {
 		// ToolIO.setUserDir(specDir);
 
 		this.tool = new Tool(specDir, specFile, configFile, resolver);
-		this.tool.init(preprocess, specObj); // parse and process the spec
+		this.tool.init(preprocess, null); // parse and process the spec
 
 		this.checkDeadlock = deadlock;
 		this.checkLiveness = !this.tool.livenessIsTrue();

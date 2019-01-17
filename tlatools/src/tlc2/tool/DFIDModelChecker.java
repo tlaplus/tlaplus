@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
@@ -54,10 +53,10 @@ public class DFIDModelChecker extends AbstractChecker
      * @param resolver 
      */
     public DFIDModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
-            boolean preprocess, FilenameToStream resolver, SpecObj specObj) throws EvalException, IOException
+            boolean preprocess, FilenameToStream resolver) throws EvalException, IOException
     {
         // call the abstract constructor
-        super(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, preprocess, resolver, specObj);
+        super(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, preprocess, resolver);
 
         this.theInitStates = null;
         this.theInitFPs = null;
