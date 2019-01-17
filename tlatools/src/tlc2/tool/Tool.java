@@ -97,7 +97,14 @@ public class Tool
       this.callStack = null;
   }
 
-  /**
+  public Tool(Tool other) {
+	  super(other);
+	  this.actions = other.actions;
+	  this.callStack = other.callStack;
+	  this.actionVec = other.actionVec;
+  }
+
+/**
    * Initialization. Any Tool object must call it before doing anything.
    * @param spec - <code>null</code> or a filled spec object from previous SANY run
    */
