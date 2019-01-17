@@ -2508,8 +2508,29 @@ public class Tool
    */
   public final TLCState enabled(SemanticNode pred, ActionItemList acts,
                                 Context c, TLCState s0, TLCState s1, CostModel cm) {
-    if (this.callStack != null) this.callStack.push(pred);
+	    if (this.callStack != null) {
+	    	return enabledWithCallStack(pred, acts, c, s0, s1, cm);
+	    } else {
+	    	return enabledImpl(pred, acts, c, s0, s1, cm);
+	    }
+  }
+
+  private final TLCState enabledWithCallStack(SemanticNode pred, ActionItemList acts,
+          Context c, TLCState s0, TLCState s1, CostModel cm) {
+    this.callStack.push(pred);
     try {
+    	return enabledImpl(pred, acts, c, s0, s1, cm);
+    } catch (TLCRuntimeException | EvalException e) {
+    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
+    	this.callStack.freeze();
+    	throw e;
+    } finally {
+    	this.callStack.pop();
+    }
+  }
+  
+  private final TLCState enabledImpl(SemanticNode pred, ActionItemList acts,
+          Context c, TLCState s0, TLCState s1, CostModel cm) {
         switch (pred.getKind()) {
         case OpApplKind:
           {
@@ -2568,13 +2589,6 @@ public class Tool
             return null;    // make compiler happy
           }
         }
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-    	throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
 
   private final TLCState enabled(ActionItemList acts, TLCState s0, TLCState s1, CostModel cm) {
@@ -2611,9 +2625,30 @@ public class Tool
 
   private final TLCState enabledAppl(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm)
   {
-    if (this.callStack != null) this.callStack.push(pred);
+	    if (this.callStack != null) {
+	    	return enabledApplWithCallStack(pred, acts, c, s0, s1, cm);
+	    } else {
+	    	return enabledApplImpl(pred, acts, c, s0, s1, cm);
+	    }
+  }
+
+  private final TLCState enabledApplWithCallStack(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm)
+  {
+	    this.callStack.push(pred);
+	    try {
+	    	return enabledApplImpl(pred, acts, c, s0, s1, cm);
+	    } catch (TLCRuntimeException | EvalException e) {
+	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
+	    	this.callStack.freeze();
+	    	throw e;
+	    } finally {
+	    	this.callStack.pop();
+	    }
+  }
+ 
+  private final TLCState enabledApplImpl(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm)
+  {
     if (coverage) {cm = cm.get(pred);}
-    try {
         ExprOrOpArgNode[] args = pred.getArgs();
         int alen = args.length;
         SymbolNode opNode = pred.getOperator();
@@ -3014,19 +3049,33 @@ public class Tool
             return null;
           }
         }
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-    	throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
 
   private final TLCState enabledUnchanged(SemanticNode expr, ActionItemList acts,
                                           Context c, TLCState s0, TLCState s1, CostModel cm) {
-    if (this.callStack != null) this.callStack.push(expr);
+	    if (this.callStack != null) {
+	    	return enabledUnchangedWithCallStack(expr, acts, c, s0, s1, cm);
+	    } else {
+	    	return enabledUnchangedImpl(expr, acts, c, s0, s1, cm);
+	    }
+  }
+
+  private final TLCState enabledUnchangedWithCallStack(SemanticNode expr, ActionItemList acts,
+          Context c, TLCState s0, TLCState s1, CostModel cm) {
+    this.callStack.push(expr);
     try {
+    	return enabledUnchangedImpl(expr, acts, c, s0, s1, cm);
+    } catch (TLCRuntimeException | EvalException e) {
+    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
+    	this.callStack.freeze();
+    	throw e;
+    } finally {
+    	this.callStack.pop();
+    }
+  }
+  
+  private final TLCState enabledUnchangedImpl(SemanticNode expr, ActionItemList acts,
+            Context c, TLCState s0, TLCState s1, CostModel cm) {
         SymbolNode var = this.getVar(expr, c, true);
         if (var != null) {
           // a state variable, e.g. UNCHANGED var1
@@ -3116,13 +3165,6 @@ public class Tool
           return null;
         }
         return this.enabled(acts, s0, s1, cm);
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-    	throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
 
   /* This method determines if the action predicate is valid in (s0, s1). */
