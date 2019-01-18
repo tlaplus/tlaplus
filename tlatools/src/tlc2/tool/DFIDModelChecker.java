@@ -20,7 +20,6 @@ import tlc2.util.IdThread;
 import tlc2.util.LongVec;
 import tlc2.util.SetOfStates;
 import util.FileUtil;
-import util.FilenameToStream;
 import util.UniqueString;
 
 /** 
@@ -52,16 +51,15 @@ public class DFIDModelChecker extends AbstractChecker
      * Constructor for running DFID   
      * @param resolver 
      */
-    public DFIDModelChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
-            boolean preprocess, FilenameToStream resolver) throws EvalException, IOException
-    {
+	public DFIDModelChecker(Tool tool, String metadir, final IStateWriter stateWriter,
+			boolean deadlock, String fromChkpt) throws EvalException, IOException {
         // call the abstract constructor
-        super(specFile, configFile, metadir, stateWriter, deadlock, fromChkpt, preprocess, resolver);
+        super(tool, metadir, stateWriter, deadlock, fromChkpt);
 
         this.theInitStates = null;
         this.theInitFPs = null;
         this.theFPSet = new MemFPIntSet(); // init the state set
-        this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, specFile);
+        this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, this.tool.rootFile);
 
         // Initialize all the workers:
         this.workers = new DFIDWorker[TLCGlobals.getNumWorkers()];

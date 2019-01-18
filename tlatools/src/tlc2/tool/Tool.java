@@ -6,6 +6,8 @@
 
 package tlc2.tool;
 
+import java.io.File;
+
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
@@ -86,10 +88,20 @@ public class Tool
 
   /**
    * Creates a new tool handle
-   * @param specDir
-   * @param specFile
-   * @param configFile
    */
+  public Tool(String specFile, String configFile) {
+	  this(new File(specFile), specFile, configFile, null);
+  }
+  
+  public Tool(String specFile, String configFile, FilenameToStream resolver) {
+	  this(new File(specFile), specFile, configFile, resolver);
+  }
+
+  private Tool(File specDir, String specFile, String configFile, FilenameToStream resolver)
+  {
+	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver);
+  }
+  
   public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver)
   {
       super(specDir, specFile, configFile, resolver);
@@ -104,13 +116,13 @@ public class Tool
 	  this.actionVec = other.actionVec;
   }
 
-/**
+  /**
    * Initialization. Any Tool object must call it before doing anything.
    * @param spec - <code>null</code> or a filled spec object from previous SANY run
    */
-  public final SpecObj init(boolean preprocess)
+  public final SpecObj init()
   {
-	  return init(preprocess, null);
+	  return init(true, null);
   }
 
   public final SpecObj init(boolean preprocess, SpecObj spec)

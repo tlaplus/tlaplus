@@ -39,10 +39,10 @@ public class CheckImplFile extends CheckImpl
      * to ModelChecker constructor.
      * 
      */
-    public CheckImplFile(String specFile, String configFile, String metadir, boolean deadlock, int depth, String fromChkpt,
+    public CheckImplFile(Tool tool, String metadir, boolean deadlock, int depth, String fromChkpt,
             String traceFile, final FPSetConfiguration fpSetConfig) throws IOException
     {
-        super(specFile, configFile, metadir, deadlock, depth, fromChkpt, fpSetConfig);
+        super(tool, metadir, deadlock, depth, fromChkpt, fpSetConfig);
         this.traceFile = traceFile;
         this.states = null;
         this.sidx = 0;
@@ -311,7 +311,8 @@ public class CheckImplFile extends CheckImpl
       FP64.Init(0);
       
       // Start the checker:
-      CheckImplFile checker = new CheckImplFile(mainFile, configFile, metadir, deadlock,
+      final Tool tool = new Tool(mainFile, configFile);
+      CheckImplFile checker = new CheckImplFile(tool, metadir, deadlock,
 						depth, fromChkpt, traceFile, new FPSetConfiguration());
       checker.init();
       while (true) {

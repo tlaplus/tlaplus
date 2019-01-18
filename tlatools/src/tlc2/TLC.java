@@ -27,6 +27,7 @@ import tlc2.tool.Cancelable;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
+import tlc2.tool.Tool;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
@@ -923,17 +924,19 @@ public class TLC
 						pid == -1 ? "" : String.valueOf(pid) };
 
             	// model checking
+		        final Tool tool = new Tool(mainFile, configFile, resolver);
+
         		AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
 					MP.printMessage(EC.TLC_MODE_MC, parameters);
-					mc = new ModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, resolver,
+					mc = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
 							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
                 } else
                 {
 					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
-					mc = new DFIDModelChecker(mainFile, configFile, metadir, stateWriter, deadlock, fromChkpt, true, resolver);
+					mc = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt);
                 }
                 TLCGlobals.mainChecker = mc;
 // The following statement moved to Spec.processSpec by LL on 10 March 2011               
