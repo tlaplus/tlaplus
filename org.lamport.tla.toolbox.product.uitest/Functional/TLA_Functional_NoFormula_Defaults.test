@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _ntQ8oBB4EemUS_ZdBJsvQg
 Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/15/19 12:48 PM
+Save-Time: 1/18/19 11:18 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -28,7 +28,7 @@ get-window "New model..." | get-label "Please input the name of the model to cre
     | equals "Please input the name of the model to create" | verify-true
 get-window "New model..." | get-button OK | click
 
-    wait -ms 1000
+    wait -ms 500
 
 with [get-editor "Model_1"] {
     get-section "General (\"What is the behavior spec?\" on \"Model Overview\" page has no behavior spec)" 
@@ -84,8 +84,8 @@ get-view "Parsing Errors" | get-expand-bar | get-item -path "TLA\\+ Parser Error
 
 get-menu -path "File/Parse Spec" | click
 get-menu -path "File/Parse Module" | click
-get-menu -path "Window/Reset Window Layout" | click
-get-window "Reset Perspective" | get-button Yes | click
+//get-menu -path "Window/Reset Window Layout" | click
+//get-window "Reset Perspective" | get-button Yes | click
 
 } -finally
 {

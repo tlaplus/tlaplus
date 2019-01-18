@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _y2T94AL0EemtrbArmQOOJA
 Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/15/19 11:31 AM
+Save-Time: 1/18/19 11:23 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -36,19 +36,19 @@ get-menu -path "Help/The TLA+ Cheat Sheet" | click
 get-editor "TLA+ Cheat Sheet" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
     | verify-true
 
-  wait -ms 1000
-get-menu -path "Window/Reset Window Layout" | click
-get-window "Reset Perspective" 
-    | get-label "Do you want to reset the current Specification perspective to its defaults?" | get-property caption 
-    | equals "Do you want to reset the current Specification perspective to its defaults?" | verify-true
-get-window "Reset Perspective" | get-button Yes | click
-get-editor $TLA-File | click
-get-editor "TLA+ Cheat Sheet" | close
-get-editor "PlusCal Manual" | close
+  wait -ms 500
+  
+
 get-editor "Specifying Systems" | close
+get-editor "PlusCal Manual" | close
+get-view Help | click
+with [get-editor "new.tla"] {
+    click
+    click
+}
+get-editor "TLA+ Cheat Sheet" | close
 get-editor $TLA-File | click
 get-view Help | close
-
 
 } -finally
 //Delete Spec
