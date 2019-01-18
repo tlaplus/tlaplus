@@ -14,7 +14,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.LongAdder;
 
-import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -33,7 +32,7 @@ import tlc2.value.Value;
 import util.FileUtil;
 import util.FilenameToStream;
 
-public class Simulator implements Cancelable {
+public class Simulator {
 
 	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean
 			.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
@@ -128,7 +127,6 @@ public class Simulator implements Cancelable {
 	private final RandomGenerator rng;
 	private final long seed;
 	private long aril;
-	private boolean isCancelled; // SZ Feb 24, 2009: cancellation added
 	private Value[] localValues = new Value[4];
 
 	// The set of all initial states for the given spec. This should be only be
@@ -169,10 +167,6 @@ public class Simulator implements Cancelable {
 	 */
 	public void simulate() throws Exception {
 		TLCState curState = null;
-
-		if (isCancelled) {
-			return;
-		}
 
 		//
 		// Compute the initial states.
@@ -336,15 +330,6 @@ public class Simulator implements Cancelable {
 			StatePrinter.printState(state, null, stateTrace.size() + 1);
 		}
 		this.printSummary();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tlc2.tool.Cancelable#setCancelFlag(boolean)
-	 */
-	public void setCancelFlag(boolean flag) {
-		this.isCancelled = flag;
 	}
 
 	public Value getLocalValue(int idx) {

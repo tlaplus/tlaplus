@@ -22,8 +22,6 @@ import model.ModelInJar;
 import tla2sany.modanalyzer.ParseUnit;
 import tlc2.output.EC;
 import tlc2.output.MP;
-import tlc2.tool.AbstractChecker;
-import tlc2.tool.Cancelable;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
@@ -102,9 +100,6 @@ public class TLC
     // flag if the welcome message is already printed
     private boolean welcomePrinted;
     
-    // handle to the cancellable instance (MC or Simulator)
-    private Cancelable instance;
-
     private FPSetConfiguration fpSetConfiguration;
     
     /**
@@ -129,9 +124,6 @@ public class TLC
 
         fpIndex = new Random().nextInt(FP64.Polys.length);
         traceDepth = 100;
-        
-        // instance is not set
-        instance = null;
 
         fpSetConfiguration = new FPSetConfiguration();
     }
@@ -906,9 +898,6 @@ public class TLC
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
                         traceNum, rng, seed, true, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
-// The following statement moved to Spec.processSpec by LL on 10 March 2011               
-//                MP.printMessage(EC.TLC_STARTING);
-                instance = simulator;
                 simulator.simulate();
             } else
             {
@@ -926,24 +915,19 @@ public class TLC
             	// model checking
 		        final Tool tool = new Tool(mainFile, configFile, resolver);
 
-        		AbstractChecker mc = null;
                 if (TLCGlobals.DFIDMax == -1)
                 {
 					MP.printMessage(EC.TLC_MODE_MC, parameters);
-					mc = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
+					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
 							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
-					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) mc, this);
+					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) TLCGlobals.mainChecker, this);
+					TLCGlobals.mainChecker.modelCheck();
                 } else
                 {
 					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
-					mc = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt);
+					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt);
+					TLCGlobals.mainChecker.modelCheck();
                 }
-                TLCGlobals.mainChecker = mc;
-// The following statement moved to Spec.processSpec by LL on 10 March 2011               
-//                MP.printMessage(EC.TLC_STARTING);
-                instance = mc;
-                mc.modelCheck();
-                
             }
         } catch (Throwable e)
         {
@@ -1011,8 +995,8 @@ public class TLC
 	public List<File> getModuleFiles() {
     	final List<File> result = new ArrayList<File>();
     	
-    	if (instance instanceof ModelChecker) {
-    		ModelChecker mc = (ModelChecker) instance;
+    	if (TLCGlobals.mainChecker instanceof ModelChecker) {
+    		ModelChecker mc = (ModelChecker) TLCGlobals.mainChecker;
 			final Enumeration<ParseUnit> parseUnitContext = mc.specObj.parseUnitContext
 					.elements();
     		while (parseUnitContext.hasMoreElements()) {

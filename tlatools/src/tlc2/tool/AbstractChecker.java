@@ -26,7 +26,7 @@ import util.DebugPrinter;
  * The abstract checker
  * @author Simon Zambrovski
  */
-public abstract class AbstractChecker implements Cancelable
+public abstract class AbstractChecker
 {
 	/**
 	 * True when unit tests explicitly request to use
