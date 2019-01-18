@@ -1,0 +1,38 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Invalid.File
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _RNcosP5FEeilFekyyVb9lA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/9/19 2:16 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+BVT Level Test that types an inalid formula into model, then error is verified
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+try -command {
+get-menu -path "File/Open Spec/Add New Spec..." | click
+get-window -class WizardDialog | get-editbox -after [get-label "New TLA+ Specification"] | get-property text 
+    | equals "Creates a new TLA+ specification\n"
+    + "Enter a complete file name like c:\\jones\\specs\\foo.tla or click on Browse." | verify-true
+get-window -class WizardDialog | get-editbox -after [get-label "Root-module file:"] | set-text $TLA-BADFile
+with [get-window -class WizardDialog] {
+    get-editbox -after [get-label "New TLA+ Specification"] | get-property text 
+        | equals "Root file name should have a file-system path and extension .tla" | verify-true
+    get-button Finish | get-property enablement | equals false | verify-true
+}
+
+} -finally
+{
+get-window -class WizardDialog | get-button Cancel | click
+}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

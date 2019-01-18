@@ -1,0 +1,90 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Links
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _CTEKoBUbEemG79v6PBILBA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/15/19 11:32 AM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+Create Spec
+Create Model
+Verify Links and Activate
+Verify that proper navigation takes place
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+OpenTLACreateNew
+
+
+try -command {
+with [get-editor $TLA-File | get-text-viewer] {
+    key-type Down
+    type-text "EXTENDS Naturals"
+    key-type Enter
+    type-text "VARIABLE x"
+    key-type Enter -times 1
+    type-text "Init == x = 1"
+    key-type Enter -times 2
+    type-text "Next == x' = x * 1"
+     key-type "M1+s"
+    }
+    wait -ms 500
+
+    get-menu -path "TLC Model Checker/Run model" | click
+get-menu -path "TLC Model Checker/New Model..." | click
+get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+    | equals "Please input the name of the model to create" | verify-true
+get-window "New model..." | get-button OK | click
+get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+
+
+
+with [get-editor "Model_1"] {
+    get-section "Model description" | get-text-viewer | type-text sample
+    get-section "What is the model?" | click
+    with [get-section "How to run?"] {
+        click
+        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
+    }
+    get-section "What is the model?" | get-link "Additional definitions," | click
+}
+get-editor "Model_1" | get-section "Additional Definitions" | get-label "Additional Definitions" | get-property caption 
+    | equals "Additional Definitions" | verify-true
+with [get-editor "Model_1"] {
+    get-tab-folder | get-tab-item "Model Overview" | click
+    get-section "What is the model?" | get-button Edit | click
+    get-section "How to run?" | get-link "Validate model" | click
+    get-section "What is the behavior spec?" | get-button "No Behavior Spec" | click
+    get-section "How to run?" | get-link "Validate model" | click
+    get-section "What is the model?" | get-link "State constraints," | click
+}
+get-editor "Model_1" | get-section "State Constraint" | get-label "State Constraint" | get-property caption 
+    | equals "State Constraint" | verify-true
+get-editor $TLA-File | click
+with [get-editor "Model_1"] {
+    click
+    get-tab-folder | get-tab-item "Model Overview" | click
+    get-section "What is the model?" | get-link "Additional model values." | click
+}
+get-editor "Model_1" | get-section "Model Values" | get-label "Model Values" | get-property caption 
+    | equals "Model Values" | verify-true
+with [get-editor "Model_1"] {
+    with [get-section "TLC Options"] {
+        click
+        get-button "Select randomly" | uncheck
+    }
+    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+}
+} -finally
+//Delete Spec
+{DeleteSpecNew}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

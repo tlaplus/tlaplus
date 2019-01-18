@@ -1,0 +1,54 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Multiple.Models
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _3CVCoAMFEemtrbArmQOOJA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/15/19 10:54 AM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+Create new spec
+Add 10 Models
+Verify
+Delete eveything
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+OpenTLACreateNew
+//try -command {
+//Create 10 Models
+CreateNewModel
+wait -ms 200
+  
+  
+get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
+get-menu -path "File/Parse Spec" | click
+get-menu -path "File/Parse Module" | click
+
+  
+
+get-view "Spec Explorer" | get-tree | select $TLA-TREE-NAME | get-menu -path Delete | click
+get-window "Delete specification?" 
+    | get-label "Do you really want the Toolbox to forget the specification new and delete all its models?" 
+    | get-property className | equals "org.eclipse.swt.widgets.Label" | verify-true
+get-window "Delete specification?" | get-button Yes | click
+with [get-window "Save Resources" | get-button "Select All"] {
+    get-property enablement | equals true | verify-true
+    get-property caption | equals "&Select All" | verify-true
+}
+get-window "Save Resources" | get-button OK | click
+
+wait -ms 2000
+
+
+
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

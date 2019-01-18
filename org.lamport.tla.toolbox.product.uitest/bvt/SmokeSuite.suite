@@ -1,0 +1,24 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: SmokeSuite
+Element-Type: testsuite
+Element-Version: 2.0
+Id: _3DuDsP8pEeimGdyWh_qiaA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/10/19 10:27 AM
+
+------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8
+Content-Type: text/testcase
+Entry-Name: testcase-items
+
+_4M7XgP21EeiCTvrXzYZPCg	// kind: 'test' name: 'TLA.Smoke.Create.Close.Open' path: 'TLA.Smoke.Create.Close.Open.test'
+_c0C1QP19EeiqL7RHpA20Ww	// kind: 'test' name: 'TLA.Smoke.Create.Delete' path: 'TLA.Smoke.Create.Delete.test'
+_Nhf3gP9aEeiWgvGqW2E8Fg	// kind: 'test' name: 'TLA.Smoke.Create.Test.Spec' path: 'TLA.Smoke.Create.Test.Spec.test'
+__NXfoAPwEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Smoke.Model.Tabs' path: 'TLA_Smoke_Model_Tabs.test'
+_thReYP27EeiCTvrXzYZPCg	// kind: 'test' name: 'TLA.Smoke.New.Model.Simple' path: 'TLA.Smoke.New.Model.Simple.test'
+_LlgJkAL3EemtrbArmQOOJA	// kind: 'test' name: 'TLA.Smoke.Quick.Access' path: 'TLA_Smoke_Quick_Access.test'
+_HS58UP2vEeiCTvrXzYZPCg	// kind: 'test' name: 'TLA.Smoke.Rename.Spec' path: 'TLA.Smoke.Rename.Spec.test'
+_lPDvMP18EeiqL7RHpA20Ww	// kind: 'test' name: 'TLA.Smoke.Valid.Path' path: 'TLA.Smoke.Valid.Path.test'
+_CxeGQAP2EemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Smoke.Window.Reset' path: 'TLA_Smoke_Window_Reset.test'
+
+------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8--
