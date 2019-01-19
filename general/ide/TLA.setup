@@ -82,7 +82,7 @@
     <repository
         url="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
     <repository
-        url="http://lemmy.github.com/eclipsegraphviz/"/>
+        url="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.5.201812/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
     <description>Install the tools needed in the IDE to work with the source code for ${scope.project.label}</description>
   </setupTask>
   <setupTask
