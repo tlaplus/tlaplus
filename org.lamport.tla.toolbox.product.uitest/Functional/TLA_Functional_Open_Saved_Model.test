@@ -1,0 +1,60 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Open.Saved.Model
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _gPS3MAPrEemwBd2liJ-qvA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/9/19 2:14 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+Create Spec
+Create Model
+Close Model
+Open Saved Model
+Delete Spec
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+OpenTLACreateNew
+try -command {
+with [get-editor $TLA-File | get-text-viewer] {
+    key-type Down
+    type-text "EXTENDS Naturals"
+    key-type Enter
+    type-text "VARIABLE x"
+    key-type Enter -times 1
+    type-text "Init == x = 0"
+    key-type Enter -times 2
+    type-text "Next == x' = x - 1"
+     key-type "M1+s"
+    }
+
+
+get-menu -path "TLC Model Checker/New Model..." | click
+get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+    | equals "Please input the name of the model to create" | verify-true
+with [get-window "New model..."] {
+    get-editbox -after [get-label "Please input the name of the model to create"] | set-text saved
+    get-button OK | click
+}
+get-editor $TLA-File | click
+get-editor saved | close
+get-menu -path "TLC Model Checker/Open Model/saved" | click
+
+with [get-editor saved] {
+    get-section "What to check?" | get-button Deadlock | uncheck
+    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+}
+    
+} -finally
+//Delete Spec
+{DeleteSpecNew}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

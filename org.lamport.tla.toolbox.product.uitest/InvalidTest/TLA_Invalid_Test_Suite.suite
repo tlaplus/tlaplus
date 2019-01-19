@@ -1,0 +1,20 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Invalid.Test.Suite
+Element-Type: testsuite
+Element-Version: 2.0
+Id: _iadp4APNEemtrbArmQOOJA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 12/19/18 12:35 PM
+
+------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8
+Content-Type: text/testcase
+Entry-Name: testcase-items
+
+_RNcosP5FEeilFekyyVb9lA	// kind: 'test' name: 'TLA.Invalid.File' path: 'TLA.Invalid.File.test'
+_GbDfMAJNEemDc-4PKyNT9w	// kind: 'test' name: 'TLA.Invalid.Model.Content' path: 'TLA_Invalid_Model_Content.test'
+_N4SlcAJQEemDc-4PKyNT9w	// kind: 'test' name: 'TLA.Invalid.Model.Formula' path: 'TLA_Invalid_Model_Formula.test'
+_8r57gAJbEemDc-4PKyNT9w	// kind: 'test' name: 'TLA.Invalid.Non.Real.Number' path: 'TLA_Invalid_Non_Real_Number.test'
+_rVC6oPz7Eeidh8ibqA9n7A	// kind: 'test' name: 'TLA.Invalid.Set' path: 'TLA.Invalid.Set.test'
+
+------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8--

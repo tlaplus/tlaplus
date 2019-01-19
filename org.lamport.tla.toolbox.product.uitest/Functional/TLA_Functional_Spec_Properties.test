@@ -1,0 +1,36 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Spec.Properties
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _Lbbs8AMKEemtrbArmQOOJA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/9/19 2:15 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+Create Spec
+View Model Properties, Verify Display
+Delete Spec
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+OpenTLACreateNew
+
+try -command {
+get-view "Spec Explorer" | get-tree | select $TLA-MODEL-NEW | get-menu -path "Show in History" | click
+
+get-view History | get-button Refresh | get-property kind | equals Tool | verify-true
+get-view "Spec Explorer" | click
+get-view History | close
+
+} -finally
+//Delete Spec
+{DeleteSpecNew}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

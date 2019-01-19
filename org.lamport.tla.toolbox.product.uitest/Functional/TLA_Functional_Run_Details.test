@@ -1,0 +1,77 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Run.Details
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _8o7w0APsEemwBd2liJ-qvA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/14/19 7:47 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+End-End
+Create Spec
+Create Model
+Close Spec and Model Windows
+Run Model: Should open Model Check
+Verify
+Delete
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+OpenTLACreateNew
+try -command {
+with [get-editor $TLA-File | get-text-viewer] {
+    key-type Down
+    type-text "EXTENDS Naturals"
+    key-type Enter
+    type-text "VARIABLE x"
+    key-type Enter -times 1
+    type-text "Init == x = 0"
+    key-type Enter -times 2
+    type-text "Next == x' = x - 1"
+     key-type "M1+s"
+    }
+
+
+get-menu -path "TLC Model Checker/New Model..." | click
+get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+    | equals "Please input the name of the model to create" | verify-true
+with [get-window "New model..."] {
+    get-editbox -after [get-label "Please input the name of the model to create"] | set-text saved
+    get-button OK | click
+}
+   
+
+get-editor $TLA-File | click
+get-editor saved | close
+get-view "Spec Explorer" | click
+get-editor $TLA-File | close
+get-menu -path "TLC Model Checker/Run model" | click
+
+wait -ms 1000
+  //TODO
+get-window "TLC run for saved" | get-button "Details >>" | click
+wait -ms 1000
+
+get-window "TLC run for saved" | get-label "TLC run for saved" | get-property caption | equals "TLC run for saved" 
+    | verify-true
+wait -ms 1000
+
+get-window "TLC run for saved" | get-button Cancel | click
+
+wait-run
+
+get-editor saved | get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" 
+    | verify-true
+    
+} -finally
+//Delete Spec
+{DeleteSpecNew}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

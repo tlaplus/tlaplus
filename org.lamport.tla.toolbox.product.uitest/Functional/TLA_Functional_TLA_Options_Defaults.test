@@ -1,0 +1,101 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.TLA.Options.Defaults
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _HJaIUBU4EemG79v6PBILBA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/10/19 5:03 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+Advanced Options >>TLC Option
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+OpenTLACreateNew
+
+
+try -command {
+with [get-editor $TLA-File | get-text-viewer] {
+    key-type Down
+    type-text "EXTENDS Naturals"
+    key-type Enter
+    type-text "VARIABLE x"
+    key-type Enter -times 1
+    type-text "Init == x = 1"
+    key-type Enter -times 2
+    type-text "Next == x' = x * 2"
+     key-type "M1+s"
+    }
+    wait -ms 1000
+
+    get-menu -path "TLC Model Checker/Run model" | click
+get-menu -path "TLC Model Checker/New Model..." | click
+get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+    | equals "Please input the name of the model to create" | verify-true
+get-window "New model..." | get-button OK | click
+get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+
+
+get-editor "Model_1" | get-tab-folder | get-tab-item "Advanced Options" | click
+get-editor "Model_1" | get-label "Advanced Options" | get-property caption | equals "Advanced Options" | verify-true
+get-editor "Model_1" | get-section "TLC Options" | click
+with [get-editor "Model_1" | get-section "TLC Options"] {
+    with [get-button "Model-checking mode"] {
+        get-property caption | equals "Model-checking mode" | verify-true
+        get-property selected | equals true | verify-true
+    }
+    get-label "View:" | get-property caption | equals "View:" | verify-true
+    get-button "Depth-first" | get-property caption | equals "Depth-first" | verify-true
+    get-label "Depth:" | get-property caption | equals "Depth:" | verify-true
+    with [get-button "Simulation mode"] {
+        get-property caption | equals "Simulation mode" | verify-true
+        get-property selected | equals false | verify-true
+    }
+    get-label "Maximum length of the trace:" | get-property caption | equals "Maximum length of the trace:" 
+        | verify-true
+    get-label "Seed:" | get-property caption | equals "Seed:" | verify-true
+    get-label "Aril:" | get-property caption | equals "Aril:" | verify-true
+    get-label "Verify temporal properties upon termination only:" | get-property caption 
+        | equals "Verify temporal properties upon termination only:" | verify-true
+    with [get-button "Defer verification of temporal properties (liveness) to the end of model checking to reduce overall model checking time. Liveness violations will be found late compared to invariant violations. In other words check liveness only once on the complete state space."] {
+        get-property tooltip 
+            | equals "Defer verification of temporal properties (liveness) to the end of model checking to reduce overall model checking time. Liveness violations will be found late compared to invariant violations. In other words check liveness only once on the complete state space." 
+            | verify-true
+        get-property selected | equals false | verify-true
+    }
+    get-label "Fingerprint seed index:" | get-property caption | equals "Fingerprint seed index:" | verify-true
+    with [get-button "Select randomly"] {
+        get-property caption | equals "Select randomly" | verify-true
+        get-property selected | equals true | verify-true
+    }
+    get-editbox -after [get-label "Fingerprint seed index:"] | get-property enablement | equals false | verify-true
+    get-editbox -after [get-label "Log base 2 of number of disk storage files:"] | get-property text | equals "1.0" 
+        | verify-true
+    get-label "Log base 2 of number of disk storage files:" | get-property caption 
+        | equals "Log base 2 of number of disk storage files:" | verify-true
+    get-label "Cardinality of largest enumerable set:" | get-property caption 
+        | equals "Cardinality of largest enumerable set:" | verify-true
+    get-editbox -after [get-label "Cardinality of largest enumerable set:"] | get-property text | equals "1000000.0" 
+        | verify-true
+    get-label "Visualize state graph after completion of model checking:" | get-property caption 
+        | equals "Visualize state graph after completion of model checking:" | verify-true
+    get-button "Draw the state graph after completion of model checking provided the state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking)." 
+        | get-property selected | equals false | verify-true
+    get-label "JVM arguments:" | get-property caption | equals "JVM arguments:" | verify-true
+    get-editbox -after [get-label "JVM arguments:"] | get-property text | equals "" | verify-true
+    get-label "TLC command line parameters:" | get-property caption | equals "TLC command line parameters:" 
+        | verify-true
+    get-editbox -after [get-label "TLC command line parameters:"] | get-property text | equals "" | verify-true
+}
+} -finally
+//Delete Spec
+{DeleteSpecNew}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

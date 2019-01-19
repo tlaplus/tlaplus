@@ -1,0 +1,41 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Smoke.Create.Close.Open
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _4M7XgP21EeiCTvrXzYZPCg
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/14/19 8:12 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+Create TLA
+Close it
+Reopen and Verify
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+//Create Spec
+OpenTLACreateNew
+try -command {
+//Reopen
+get-menu -path "File/Close Spec" | click
+
+
+get-view "Spec Explorer" | get-tree | select $TLA-TREE-NAME
+get-menu -path "File/Spec Explorer" | click
+get-menu -path "File/Open Spec/new" | click
+get-view "Spec Explorer" | get-tree | get-item -path [concat $TLA-TREE-NAME "/modules"] | get-property caption 
+    | equals modules | verify-true
+      
+} -finally
+//Delete Spec
+{DeleteSpecNew}
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

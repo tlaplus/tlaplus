@@ -1,0 +1,33 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Context-Type: org.eclipse.rcptt.ctx.parameters
+Element-Name: TLA.Test.Parameters
+Element-Type: context
+Element-Version: 2.0
+Id: _zmZVMP5NEeilFekyyVb9lA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 12/20/18 11:24 AM
+
+------=_.parameters.context-2e023de5-3294-36a9-ac1d-6701f05a40ee
+Content-Type: text/properties
+Entry-Name: .parameters.context
+
+#Thu Dec 20 11:24:49 PST 2018
+TLA-MODEL-ONE-TREE=new [ new.tla ]/models/Model_1
+TLA-TREE-NAME=new [ new.tla ]
+TLA-BAD-DIR=C\:\\foo
+TLA-Long-Model-Name=thisisaverylongnameforamodel
+TLA-MODEL-TREE-NAME=new [ new.tla ]/models
+TLA-TREE-NAME-LONG=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz [ zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.tla ]
+TLA-NEW-FILE-RENAME=new_Copy
+TLA-LongName=c\:\\users\\ricardgu\\new.tla
+TLA-MODEL-TEN=new [ new.tla ]/models/Model_10
+TLA-File-Long=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.tla
+TLA-BADFile=QQQ
+TLA-MODEL-ONE=Model_1
+Model-TEST-Name=foo
+TLA-TREE-NAME-RENAME=new_Copy [ new.tla ]
+TLA-File=new.tla
+TLA-MODEL-NEW=new [ new.tla ]/modules/new
+
+------=_.parameters.context-2e023de5-3294-36a9-ac1d-6701f05a40ee--

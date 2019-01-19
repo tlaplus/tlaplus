@@ -1,0 +1,28 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA-Functional.Long.Name.Spec
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _QZqp4AL8EemtrbArmQOOJA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/14/19 12:15 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+Long Name - Boundary Case
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+try -command {
+//Create Spec with Long name
+OpenTLACreateNewLongName
+} -finally
+//Delete Long Name Spec
+{DeleteSpecNew}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

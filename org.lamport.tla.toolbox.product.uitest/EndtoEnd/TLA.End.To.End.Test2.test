@@ -1,0 +1,139 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.End.To.End.Test2
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _0133MAldEem_pLt0eVfQIQ
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/14/19 8:31 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+End to End Test
+ type-text "EXTENDS Naturals"
+    key-type Enter
+    type-text "VARIABLE x"
+    key-type Enter -times 1
+    type-text "Init == x = 0"
+    key-type Enter -times 2
+    type-text "Next == x' = x + 1"
+    key-type Enter -times 1
+    type-text "Spec == Init /\ [][Next]_x"
+
+Invariant: x<10
+Trace Error Eval: x \\in Nat
+get-view "TLC Errors" | get-text-viewer | get-property text | equals "TLC threw an unexpected exception.\n"
+    + "This was probably caused by an error in the spec or model.\n"
+    + "See the User Output or TLC Console for clues to what happened.\n"
+    + "The exception was a java.lang.RuntimeException\n"
+    + ": \n"
+    + "A state predicate was evaluated to a non-boolean value.\n\n"
+    + "The error occurred when TLC was evaluating the nested\n"
+    + "expressions at the following positions:\n"
+    + "    The error call stack is empty." | verify-true
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+OpenTLACreateNew
+
+try -command {
+with [get-editor $TLA-File | get-text-viewer] {
+    key-type Down
+    type-text "EXTENDS Naturals"
+    key-type Enter
+    type-text "VARIABLE x"
+    key-type Enter -times 1
+    type-text "Init == x = 0"
+    key-type Enter -times 2
+    type-text "Next == x' = x + 1"
+    key-type Enter -times 1
+    type-text "Spec == Init /\ [][Next]_x"
+    key-type Enter -times 1
+     key-type "M1+s"
+    }
+    
+    get-menu -path "TLC Model Checker/New Model..." | click
+get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+    | equals "Please input the name of the model to create" | verify-true
+get-window "New model..." | get-button OK | click
+get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+with [get-editor "Model_1" | get-section "What to check?"] {
+    get-button Deadlock | uncheck
+    with [get-section Invariants] {
+        click
+        get-button Add | click
+    }
+}
+with [get-window -class WizardDialog] {
+    get-text-viewer | type-text "x<10"
+    get-button Finish | click
+}
+with [get-editor "Model_1" | get-section "How to run?"] {
+    click
+    get-editbox -after [get-label "Number of worker threads:"] | set-text 2
+    get-link "Run TLC" | click
+}
+
+
+wait-run      
+    
+
+get-view "TLC Errors" | get-section "Error-Trace" 
+    | get-button "Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)" 
+    | click
+get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-property itemCount | equals 11 | verify-true
+with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
+    click
+    get-button Add | click
+}
+with [get-window -class WizardDialog] {
+    get-text-viewer | type-text "x \\in Nat"
+    wait -ms 1000   
+    get-button Finish | click
+}
+get-view "TLC Errors" | get-section "Error-Trace Exploration" | get-button Explore | click
+
+    
+wait-run         
+//wait -ms 30000
+//get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-item -path " <Initial predicate>/x \\in Nat" 
+  //  | get-property caption | equals "x \\in Nat" | verify-true
+with [get-editor "Model_1"] {
+    get-section "User Output" | click
+    with [get-tab-folder] {
+        get-tab-item "Model Overview" | click
+        get-tab-item "Advanced Options" | click
+        get-tab-item "Model Checking Results" | click
+        get-tab-item "Model Overview" | click
+    }
+    with [get-section "What to check?" | get-section Properties] {
+        click
+        get-button Add | click
+    }
+}
+with [get-window -class WizardDialog] {
+    get-text-viewer | type-text "<>[](x - 10)"
+    get-button Finish | click
+}
+get-editor "Model_1" | get-section "How to run?" | get-link "Run TLC" | click
+wait-run        
+
+with [get-view "TLC Errors" | get-text-viewer] {
+    get-property enablement | equals true | verify-true
+    get-property "getBlockSelectionBounds().isEmpty()" | equals false | verify-true
+}
+
+get-view "TLC Errors" | get-section "Error-Trace" 
+    | get-button "Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)" 
+    | click
+
+} -finally
+//Delete Spec
+{DeleteSpecNew}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

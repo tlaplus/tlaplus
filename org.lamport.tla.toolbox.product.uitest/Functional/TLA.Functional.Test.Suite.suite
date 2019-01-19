@@ -1,0 +1,48 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Test.Suite
+Element-Type: testsuite
+Element-Version: 2.0
+Id: _XtCd4APNEemtrbArmQOOJA
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/11/19 1:36 PM
+
+------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8
+Content-Type: text/testcase
+Entry-Name: testcase-items
+
+_QZqp4AL8EemtrbArmQOOJA	// kind: 'test' name: 'TLA-Functional.Long.Name.Spec' path: 'TLA-Functional_Long_Name_Spec.test'
+_7jq7EAOuEemtrbArmQOOJA	// kind: 'test' name: 'TLA-Functional.Tree.Collapse' path: 'TLA-Functional_Tree_Collapse.test'
+_44K9cAJWEemDc-4PKyNT9w	// kind: 'test' name: 'TLA.Functional.Basic.Model' path: 'TLA_Functional_Basic_Model.test'
+_I-Xj0APqEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Clear.Console' path: 'TLA_Functional_Clear_Console.test'
+_ARWUAAJjEemDc-4PKyNT9w	// kind: 'test' name: 'TLA.Functional.Clone.Model' path: 'TLA_Functional_Clone_Model.test'
+_qD9ogAPmEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Deadlock.Unchecked' path: 'TLA_Functional_Deadlock_Unchecked.test'
+_dOXZwAJfEemDc-4PKyNT9w	// kind: 'test' name: 'TLA.Functional.Exp' path: 'TLA_Functional_Exp.test'
+_cCrygP25EeiCTvrXzYZPCg	// kind: 'test' name: 'TLA.Functional.File.Property' path: 'TLA.Functional.File.Property.test'
+_uAilEAPhEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Find.Replace' path: 'TLA_Functional_Find_Replace.test'
+_orbhsAJZEemDc-4PKyNT9w	// kind: 'test' name: 'TLA.Functional.Fingerprint' path: 'TLA_Functional_Fingerprint.test'
+_y2T94AL0EemtrbArmQOOJA	// kind: 'test' name: 'TLA.Functional.Help.Menu' path: 'TLA.Functional.Help.Menu.test'
+_myVagAP4EemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Model.Defaults' path: 'TLA_Functional_Model_Defaults.test'
+_3CVCoAMFEemtrbArmQOOJA	// kind: 'test' name: 'TLA.Functional.Multiple.Models' path: 'TLA_Functional_Multiple_Models.test'
+_DliAUAMNEemtrbArmQOOJA	// kind: 'test' name: 'TLA.Functional.Multiple.Models.Description' path: 'TLA_Functional_Multiple_Models_Description.test'
+_LxG3gAJFEemDc-4PKyNT9w	// kind: 'test' name: 'TLA.Functional.New.Model' path: 'TLA.Functional.New.Model.test'
+_ntQ8oBB4EemUS_ZdBJsvQg	// kind: 'test' name: 'TLA.Functional.NoFormula.Defaults' path: 'TLA_Functional_NoFormula_Defaults.test'
+_5O_HkgPuEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Open.More.Editors' path: 'TLA_Functional_Open_More_Editors.test'
+_gPS3MAPrEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Open.Saved.Model' path: 'TLA_Functional_Open_Saved_Model.test'
+_eblOcP23EeiCTvrXzYZPCg	// kind: 'test' name: 'TLA.Functional.Parse.Pref' path: 'TLA.Functional.Parse.Pref.test'
+_8o7w0APsEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Run.Details' path: 'TLA_Functional_Run_Details.test'
+_Lbbs8AMKEemtrbArmQOOJA	// kind: 'test' name: 'TLA.Functional.Spec.Properties' path: 'TLA_Functional_Spec_Properties.test'
+_6Vm88APkEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Spec.Properties.Valid' path: 'TLA_Functional_Spec_Properties_Valid.test'
+_g-dKoAPoEemwBd2liJ-qvA	// kind: 'test' name: 'TLA.Functional.Temporal.Formula' path: 'TLA.Functional.Temporal.Formula.test'
+_TZC_4BU2EemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.Action.Constraint' path: 'TLA_Functional_Action_Constraint.test'
+_ax464BUkEemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.Check.Model.OnError' path: 'TLA_Functional_Check_Model_OnError.test'
+_gOLvABUlEemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.Clear.Error.Temporal' path: 'TLA_Functional_Clear_Error_Temporal.test'
+_1MkFEBUzEemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.Definition.Override' path: 'TLA_Functional_Definition_Override.test'
+_Gvi30BUtEemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.Distributed.Mode.Options' path: 'TLA_Functional_Distributed_Mode_Options.test'
+_7RvKABUnEemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.Invariant .Formula' path: 'TLA_Functional_Invariant _Formula.test'
+_CTEKoBUbEemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.Links' path: 'TLA_Functional_Links.test'
+_EdNeQBUsEemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.Property.Formula' path: 'TLA_Functional_Property_Formula.test'
+_HJaIUBU4EemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.TLA.Options.Defaults' path: 'TLA_Functional_TLA_Options_Defaults.test'
+_s4DEYBXnEemrGZBXFuwIoA	// kind: 'test' name: 'TLA.Functional.Model.Results.Defaults' path: 'TLA_Functional_Model_Results_Defaults.test'
+
+------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8--

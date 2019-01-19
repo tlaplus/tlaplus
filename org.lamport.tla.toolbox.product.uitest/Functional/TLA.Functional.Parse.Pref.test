@@ -1,0 +1,28 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Parse.Pref
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _eblOcP23EeiCTvrXzYZPCg
+Runtime-Version: 2.3.0.201806262310
+Save-Time: 1/9/19 2:14 PM
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+//New Spec
+OpenTLACreateNew
+try -command {
+get-menu -path "File/Parse Module" | click
+get-preferences-menu | click
+get-window Preferences | get-label "Automatic Update" | get-property caption | equals "Automatic Update" | verify-true
+get-window Preferences | get-button Cancel | click
+
+
+} -finally
+//Delete Spec
+{DeleteSpecNew}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
