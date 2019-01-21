@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -238,7 +239,12 @@ public class NewSpecWizardPage extends WizardPage
                 return;
             } else if (rootfilePath.contains("${rnd.tmp.dir}")) {
             	// For UI testing only.
-            	final String tmpdir = System.getProperty("java.io.tmpdir");
+            	String tmpdir = System.getProperty("java.io.tmpdir");
+            	if (Platform.getOS().equals(Platform.OS_MACOSX)) {
+					// On macOS java.io.tmpdir is a symlink to /private/... The Toolbox does not
+					// accept Symlinks because it fails to handle them correctly.
+            		tmpdir = File.separator + "private" + tmpdir;
+            	}
 				final String rndTmpDir = tmpdir + File.separator + UUID.randomUUID().toString();
 				this.fileText.setText(rootfilePath.replace("${rnd.tmp.dir}", rndTmpDir));
             	return;
