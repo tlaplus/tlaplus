@@ -20,7 +20,7 @@ jobs:
       jdkArchitectureOption: 'x64'
       publishJUnitResults: false
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
-      goals: 'package'
+      goals: 'verify'
 
 
 - job: Windows
@@ -38,7 +38,7 @@ jobs:
       jdkArchitectureOption: 'x64'
       publishJUnitResults: false
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
-      goals: 'package'
+      goals: 'verify'
 
 
 - job: Mac
@@ -56,4 +56,4 @@ jobs:
       jdkArchitectureOption: 'x64'
       publishJUnitResults: false
       testResultsFiles: '**/surefire-reports/TEST-*.xml'
-      goals: 'package'
+      goals: 'verify'
