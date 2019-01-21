@@ -15,7 +15,7 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 
 	private final FPSetRMI fpSet;
 	private final String hostname;
-	private final TLCTrace trace;
+	private final transient TLCTrace trace; // Do not serialize trace and send it over the wire. Recovery executes on the master, not on the workers.
 
 	public NonDistributedFPSetManager(final FPSetRMI fpSet,
 			final String hostname, TLCTrace trace) throws IOException {
