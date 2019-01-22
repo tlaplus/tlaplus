@@ -81,7 +81,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final boolean member(Value elem) {
     try {
-      RecordValue rcd = elem.toRcd();
+      RecordValue rcd = (RecordValue) elem.toRcd();
       if (rcd == null) {
         if (elem instanceof ModelValue)
            return ((ModelValue) elem).modelValueMember(this) ;

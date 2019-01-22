@@ -528,7 +528,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   @Override
-  public final RecordValue toRcd() {
+  public final Value toRcd() {
       if (this.domain == null) return null;
       this.normalize();
       UniqueString[] vars = new UniqueString[this.domain.length];

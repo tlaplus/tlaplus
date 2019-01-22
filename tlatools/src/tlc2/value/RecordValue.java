@@ -39,7 +39,7 @@ public class RecordValue extends Value implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      RecordValue rcd = obj instanceof Value ? ((Value)obj).toRcd() : null;
+      RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare record:\n" + Values.ppr(this.toString()) +
@@ -67,7 +67,7 @@ public class RecordValue extends Value implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      RecordValue rcd = obj instanceof Value ? ((Value)obj).toRcd() : null;
+      RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -158,7 +158,7 @@ public class RecordValue extends Value implements Applicable {
   }
 
   @Override
-  public final RecordValue toRcd() {
+  public final Value toRcd() {
 	  return this;
   }
   

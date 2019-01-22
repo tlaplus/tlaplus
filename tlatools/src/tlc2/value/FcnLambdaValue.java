@@ -615,7 +615,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   @Override
-  public final RecordValue toRcd() {
+  public final Value toRcd() {
       FcnRcdValue fcn = this.toFcnRcd();
       if (fcn == null || fcn.domain == null) { return null; }
       fcn.normalize();

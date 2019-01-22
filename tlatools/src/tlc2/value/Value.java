@@ -272,7 +272,7 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method converts a value to a function value. It returns
    * null if the conversion fails.
    */
-  public RecordValue toRcd() {
+  public Value toRcd() {
 	  return null;
   }
 

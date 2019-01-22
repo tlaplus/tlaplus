@@ -219,7 +219,7 @@ public class TupleValue extends Value implements Applicable {
   }
   
   @Override
-  public final RecordValue toRcd() {
+  public final Value toRcd() {
 	  return size() == 0 ? EmptyRcd : super.toRcd();
   }
 
