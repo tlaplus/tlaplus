@@ -338,7 +338,7 @@ public class TLC implements ValueConstants
 
     public static Value SortSeq(Value s, Value cmp)
     {
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SortSeq", "natural number",

@@ -1826,7 +1826,7 @@ public class Tool
               int cnt = bvars.length;
               Value val;
               while ((val = enumSet.nextElement()) != null) {
-                TupleValue tv = val.toTuple();
+                TupleValue tv = (TupleValue) val.toTuple();
                 if (tv == null || tv.size() != cnt) {
                   Assert.fail("Attempted to compute the value of an expression of form\n" +
                               "CHOOSE <<x1, ... , xN>> \\in S: P, but S was not a set\n" +
@@ -3366,7 +3366,7 @@ public class Tool
       }
       if (isTuples[0]) {
         FormalParamNode[] ids = formals[0];
-        TupleValue tv = argVal.toTuple();
+        TupleValue tv = (TupleValue) argVal.toTuple();
         if (tv == null || argVal.size() != ids.length) {
           Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                       ",\nthe argument is:\n" + Values.ppr(argVal.toString()) +
@@ -3382,7 +3382,7 @@ public class Tool
       }
     }
     else {
-      TupleValue tv = argVal.toTuple();
+      TupleValue tv = (TupleValue) argVal.toTuple();
       if (tv == null) {
         Assert.fail("Attempted to apply a function to an argument not in its" +
                     " domain.\n" + args[0]);
@@ -3399,7 +3399,7 @@ public class Tool
                         Values.ppr(elems[argn].toString()) +
                         "\nwhich is not in its domain.\n" + args[0]);
           }
-          TupleValue tv1 = elems[argn++].toTuple();
+          TupleValue tv1 = (TupleValue) elems[argn++].toTuple();
           if (tv1 == null || tv1.size() != ids.length) {
             Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
                         ",\nthe argument number " + argn + " is:\n" +

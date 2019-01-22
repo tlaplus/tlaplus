@@ -505,7 +505,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   @Override
-  public final TupleValue toTuple() {
+  public final Value toTuple() {
       if (this.intv != null) {
         if (this.intv.low != 1) return null;
         return new TupleValue(this.values);

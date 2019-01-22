@@ -163,7 +163,7 @@ public class RecordValue extends Value implements Applicable {
   }
   
   @Override
-  public final TupleValue toTuple() {
+  public final Value toTuple() {
 	  return size() == 0 ? EmptyTuple : super.toTuple();
   }
 

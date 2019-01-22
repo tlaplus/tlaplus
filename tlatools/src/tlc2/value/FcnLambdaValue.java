@@ -173,7 +173,7 @@ public class FcnLambdaValue extends Value implements Applicable {
           }
           if (isTuples[0]) {
             FormalParamNode[] ids = formals[0];
-            TupleValue argVal = args.toTuple();
+            TupleValue argVal = (TupleValue) args.toTuple();
             if (argVal == null) {
               Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
               ",\nthe first argument is:\n" + Values.ppr(args.toString()) +
@@ -190,7 +190,7 @@ public class FcnLambdaValue extends Value implements Applicable {
           }
         }
         else {
-          TupleValue tv = args.toTuple();
+          TupleValue tv = (TupleValue) args.toTuple();
           if (tv == null) {
             Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                   ",\nthe argument list is:\n" + Values.ppr(args.toString()) +
@@ -208,7 +208,7 @@ public class FcnLambdaValue extends Value implements Applicable {
                 Values.ppr(elems[argn].toString()) +
                 "\nwhich is not in its domain.\n");
               }
-              TupleValue tv1 = elems[argn++].toTuple();
+              TupleValue tv1 = (TupleValue) elems[argn++].toTuple();
               if (tv1 == null || tv1.size() != ids.length) {
                 Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                 ",\nthe argument number " + argn + " is:\n" +
@@ -298,7 +298,7 @@ public class FcnLambdaValue extends Value implements Applicable {
           if (!domains[0].member(arg)) return null;
           if (isTuples[0]) {
             FormalParamNode[] ids = formals[0];
-            TupleValue argVal = arg.toTuple();
+            TupleValue argVal = (TupleValue) arg.toTuple();
             /*
              * SZA: Changed from argVal.toString() to arg.toString() to prevent a NullPointerException
              */
@@ -318,7 +318,7 @@ public class FcnLambdaValue extends Value implements Applicable {
           }
         }
         else {
-          TupleValue tv = arg.toTuple();
+          TupleValue tv = (TupleValue) arg.toTuple();
           if (tv == null) {
             Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                   ",\nthe argument list is:\n" + Values.ppr(arg.toString()) +
@@ -331,7 +331,7 @@ public class FcnLambdaValue extends Value implements Applicable {
             Value domain = domains[i];
             if (isTuples[i]) {
               if (!domain.member(elems[argn])) return null;
-              TupleValue tv1 = elems[argn++].toTuple();
+              TupleValue tv1 = (TupleValue) elems[argn++].toTuple();
               if (tv1 == null) {
                 Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                 ",\nthe argument number " + argn + " is:\n" +
@@ -579,7 +579,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   @Override
-  public final TupleValue toTuple() {
+  public final Value toTuple() {
       if (this.params.length() != 1) return null;
       Value dom = this.params.domains[0];
       SymbolNode var = this.params.formals[0][0];

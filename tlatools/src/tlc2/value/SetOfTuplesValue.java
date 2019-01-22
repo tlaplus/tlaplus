@@ -81,7 +81,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   public final boolean member(Value elem) {
     try {
-      TupleValue tv = elem.toTuple();
+      TupleValue tv = (TupleValue) elem.toTuple();
       if (tv == null) {
         FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
         if (fcn == null) {

@@ -42,7 +42,7 @@ public class TupleValue extends Value implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      TupleValue tv = obj instanceof Value ? ((Value)obj).toTuple() : null;
+      TupleValue tv = obj instanceof Value ? (TupleValue) ((Value)obj).toTuple() : null;
       if (tv == null) {
         // Well, we have to convert this to function and compare.
         return this.toFcnRcd().compareTo(obj);
@@ -65,7 +65,7 @@ public class TupleValue extends Value implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      TupleValue tv = obj instanceof Value ? ((Value)obj).toTuple() : null;
+      TupleValue tv = obj instanceof Value ? (TupleValue) ((Value)obj).toTuple() : null;
       if (tv == null) {
         // Well, we have to convert this to function and compare.
         return this.toFcnRcd().equals(obj);
@@ -214,7 +214,7 @@ public class TupleValue extends Value implements Applicable {
   }
 
   @Override
-  public final TupleValue toTuple() {
+  public final Value toTuple() {
 	  return this;
   }
   

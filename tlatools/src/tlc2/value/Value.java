@@ -280,7 +280,7 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method converts a value to a tuple value. It returns
    * null if the conversion fails.
    */
-  public TupleValue toTuple() {
+  public Value toTuple() {
 	  return null;
   }
   
