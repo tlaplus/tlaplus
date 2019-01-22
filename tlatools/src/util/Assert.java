@@ -4,7 +4,6 @@
 
 package util;
 
-import tlc2.output.EC;
 import tlc2.output.MP;
 
 /**
@@ -17,7 +16,6 @@ public class Assert
     /**
      * Unconditioned way to throw an exception
      * @param reason the explaining message to be enclosed into the exception
-     * @deprecated Use {@link EC} constants instead
      */
     public static void fail(String reason) throws RuntimeException
     {
