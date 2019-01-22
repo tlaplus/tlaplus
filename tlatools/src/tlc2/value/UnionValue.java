@@ -8,6 +8,7 @@ package tlc2.value;
 
 import java.io.IOException;
 
+import tlc2.TLCGlobals;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import util.Assert;
@@ -280,7 +281,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   /* String representation of this value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
-      if (expand) {
+      if (TLCGlobals.expand) {
         Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }

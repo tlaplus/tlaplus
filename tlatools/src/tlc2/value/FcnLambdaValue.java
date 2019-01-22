@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
+import tlc2.TLCGlobals;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
@@ -730,7 +731,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   /* The string representation of this function.  */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
-      if (expand || this.params == null) {
+      if (TLCGlobals.expand || this.params == null) {
         try {
           Value val = this.toFcnRcd();
           return val.toString(sb, offset);

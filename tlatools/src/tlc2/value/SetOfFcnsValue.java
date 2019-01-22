@@ -303,7 +303,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   /* The string representation of the value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
-      boolean unlazy = expand;
+      boolean unlazy = TLCGlobals.expand;
       try {
         if (unlazy) {
           int dsz = this.domain.size();

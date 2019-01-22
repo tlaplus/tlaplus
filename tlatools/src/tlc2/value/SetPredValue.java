@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.SemanticNode;
+import tlc2.TLCGlobals;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
@@ -297,7 +298,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
       try {
-        if (expand) {
+        if (TLCGlobals.expand) {
           Value val = this.toSetEnum();
           return val.toString(sb, offset);
         }

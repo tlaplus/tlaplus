@@ -8,6 +8,7 @@ package tlc2.value;
 
 import java.io.IOException;
 
+import tlc2.TLCGlobals;
 import tlc2.tool.FingerprintException;
 import util.Assert;
 
@@ -242,7 +243,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
       try {
-        if (expand) {
+        if (TLCGlobals.expand) {
           Value val = this.toSetEnum();
           return val.toString(sb, offset);
         }

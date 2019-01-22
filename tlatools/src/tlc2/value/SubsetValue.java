@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.TreeMap;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
@@ -290,7 +291,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   /* The string representation  */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
-      boolean unlazy = expand;
+      boolean unlazy = TLCGlobals.expand;
       try {
         if (unlazy) {
           unlazy = this.set.size() < 7;

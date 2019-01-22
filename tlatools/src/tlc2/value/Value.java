@@ -229,8 +229,6 @@ public abstract class Value implements ValueConstants, Serializable {
     }
   }
 
-  public static boolean expand = true;
-
   /**
    * This method selects the component of this value. The component is
    * specified by path.

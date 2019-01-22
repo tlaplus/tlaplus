@@ -25,7 +25,6 @@ import tlc2.tool.WorkerException;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.util.FP64;
-import tlc2.value.Value;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
@@ -378,7 +377,7 @@ public class TLCApp extends DistApp {
 				}
 			} else if (args[index].equals("-terse")) {
 				index++;
-				Value.expand = false;
+				TLCGlobals.expand = false;
 			} else if (args[index].equals("-nowarning")) {
 				index++;
 				TLCGlobals.warn = false;

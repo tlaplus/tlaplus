@@ -38,7 +38,6 @@ import tlc2.util.NoopStateWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.StateWriter;
 import tlc2.value.EnumerableValue;
-import tlc2.value.Value;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -336,7 +335,7 @@ public class TLC
             } else if (args[index].equals("-terse"))
             {
                 index++;
-                Value.expand = false;
+                TLCGlobals.expand = false;
             } else if (args[index].equals("-continue"))
             {
                 index++;

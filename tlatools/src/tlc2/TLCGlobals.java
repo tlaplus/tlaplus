@@ -197,4 +197,6 @@ public class TLCGlobals
 		}
 		return null;
 	}
+
+	public static boolean expand = true;
 }
