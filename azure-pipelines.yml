@@ -14,7 +14,7 @@ jobs:
   - task: Maven@3
     inputs:
       mavenPomFile: 'pom.xml'
-      mavenOptions: '-Xmx3072m'
+      mavenOptions: '-Xmx3072m -Dtest.skip=true'
       options: '-fae'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.8'
@@ -33,7 +33,7 @@ jobs:
   - task: Maven@3
     inputs:
       mavenPomFile: 'pom.xml'
-      mavenOptions: '-Xmx3072m'
+      mavenOptions: '-Xmx3072m -Dtest.skip=true'
       options: '-fae'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.8'
@@ -52,7 +52,7 @@ jobs:
   - task: Maven@3
     inputs:
       mavenPomFile: 'pom.xml'
-      mavenOptions: '-Xmx3072m'
+      mavenOptions: '-Xmx3072m -Dtest.skip=true'
       options: '-fae'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.8'
