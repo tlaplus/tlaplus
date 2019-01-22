@@ -59,7 +59,7 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 	public EnumerableValue getRandomSubset(final int kOutOfN) {
 		// By default, convert all EVs into SetEnumValue and delegate to its
 		// getRandomSubset.
-    	return this.toSetEnum().getRandomSubset(kOutOfN);
+    	return ((SetEnumValue) this.toSetEnum()).getRandomSubset(kOutOfN);
 	}
 
 	@Override

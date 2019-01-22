@@ -205,13 +205,13 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.cupSet == null) {
-      this.cupSet = this.toSetEnum();
+      this.cupSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.cupSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.cupSet == DummyEnum) {
-          val = this.toSetEnum();
+          val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -222,7 +222,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.cupSet != null && this.cupSet != DummyEnum) {
         return this.cupSet;
       }

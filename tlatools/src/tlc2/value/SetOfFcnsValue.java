@@ -264,13 +264,13 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.fcnSet == null) {
-      this.fcnSet = this.toSetEnum();
+      this.fcnSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.fcnSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.fcnSet == DummyEnum) {
-          val = this.toSetEnum();
+          val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -281,7 +281,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.fcnSet != null && this.fcnSet != DummyEnum) {
         return this.fcnSet;
       }
@@ -361,7 +361,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
     public Enumerator() {
       this.isDone = false;
-      SetEnumValue domSet = domain.toSetEnum();
+      SetEnumValue domSet = (SetEnumValue) domain.toSetEnum();
       if (domSet == null)
         Assert.fail("Attempted to enumerate a set of the form [D -> R]," +
               "but the domain D:\n" + Values.ppr(domain.toString()) +
@@ -451,10 +451,10 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 		
 		SubsetEnumerator(final int k, final int n) {
 			super(k, n);
-			domSet = domain.toSetEnum();
+			domSet = (SetEnumValue) domain.toSetEnum();
 			domSet.normalize();
 
-			rangeSet = range.toSetEnum();
+			rangeSet = (SetEnumValue) range.toSetEnum();
 
 			mod = range.size();
 		}
@@ -488,10 +488,10 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
 		public BigIntegerSubsetEnumerator(final int k) {
 			super(k);
-			this.domSet = domain.toSetEnum();
+			this.domSet = (SetEnumValue) domain.toSetEnum();
 			this.domSet.normalize();
 			
-			this.rangeSet = range.toSetEnum();
+			this.rangeSet = (SetEnumValue) range.toSetEnum();
 			this.mod = range.size();
 			this.bMod = BigInteger.valueOf(mod);
 

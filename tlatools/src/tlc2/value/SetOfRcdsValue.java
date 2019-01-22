@@ -318,13 +318,13 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.rcdSet == null) {
-      this.rcdSet = this.toSetEnum();
+      this.rcdSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.rcdSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.rcdSet == DummyEnum) {
-          val = this.toSetEnum();
+          val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -335,7 +335,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.rcdSet != null && this.rcdSet != DummyEnum) {
         return this.rcdSet;
       }
@@ -489,7 +489,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 			
 			int numElems = 1; // 1 to avoid div by zero in elementAt
 			for (int i = values.length - 1; i >= 0; i--) {
-				convert[i] = values[i].toSetEnum();
+				convert[i] = (SetEnumValue) values[i].toSetEnum();
 				rescaleBy[i] = numElems;
 				numElems *= convert[i].elems.size();
 			}
@@ -530,7 +530,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 			
 			BigInteger numElems = BigInteger.ONE; // 1 to avoid div by zero in elementAt
 			for (int i = values.length - 1; i >= 0; i--) {
-				convert[i] = values[i].toSetEnum();
+				convert[i] = (SetEnumValue) values[i].toSetEnum();
 				rescaleBy[i] = numElems;
 				numElems = numElems.multiply(BigInteger.valueOf(convert[i].elems.size()));
 			}

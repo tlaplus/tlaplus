@@ -51,7 +51,7 @@ implements Enumerable, Reducible {
 
   public final int compareTo(Object obj) {
     try {
-      SetEnumValue set = obj instanceof Value ? ((Value)obj).toSetEnum() : null;
+      SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
@@ -76,7 +76,7 @@ implements Enumerable, Reducible {
 
   public final boolean equals(Object obj) {
     try {
-      SetEnumValue set = obj instanceof Value ? ((Value)obj).toSetEnum() : null;
+      SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -245,7 +245,7 @@ implements Enumerable, Reducible {
   }
 
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
 	  return this;
   }
 

@@ -256,7 +256,7 @@ public abstract class Value implements ValueConstants, Serializable {
   }
 
   /* Convert val into a SetEnumValue.  Returns null if not possible. */
-  public SetEnumValue toSetEnum() {
+  public Value toSetEnum() {
 	  return null;
   }
 

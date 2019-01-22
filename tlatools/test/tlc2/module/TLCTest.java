@@ -102,7 +102,7 @@ public class TLCTest {
 
 	@Test
 	public void testPermutations() {
-		final SetEnumValue in = new IntervalValue(1, 5).toSetEnum();
+		final SetEnumValue in = (SetEnumValue) new IntervalValue(1, 5).toSetEnum();
 		Assert.assertEquals(5, in.size());
 		
 		final Value permutations = TLC.Permutations(in);

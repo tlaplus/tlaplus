@@ -189,13 +189,13 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.capSet == null) {
-      this.capSet = this.toSetEnum();
+      this.capSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.capSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.capSet == DummyEnum) {
-          val = this.toSetEnum();
+          val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -224,7 +224,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   }
 	  
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.capSet != null && this.capSet != DummyEnum) {
         return this.capSet;
       }

@@ -246,13 +246,13 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.realSet == null) {
-      this.realSet = this.toSetEnum();
+      this.realSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.realSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.realSet == DummyEnum) {
-          val = this.toSetEnum();
+          val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -263,7 +263,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.realSet != null && this.realSet != DummyEnum) {
         return this.realSet;
       }

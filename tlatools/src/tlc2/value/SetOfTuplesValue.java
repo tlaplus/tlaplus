@@ -281,13 +281,13 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.tupleSet == null) {
-      this.tupleSet = this.toSetEnum();
+      this.tupleSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.tupleSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.tupleSet == DummyEnum) {
-          val = this.toSetEnum();
+          val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -298,7 +298,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.tupleSet != null && this.tupleSet != DummyEnum) {
         return this.tupleSet;
       }

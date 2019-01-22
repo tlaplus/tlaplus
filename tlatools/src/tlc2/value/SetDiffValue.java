@@ -210,13 +210,13 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.diffSet == null) {
-      this.diffSet = this.toSetEnum();
+      this.diffSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.diffSet == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.diffSet == DummyEnum) {
-          val = this.toSetEnum();
+          val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -227,7 +227,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.diffSet != null && this.diffSet != DummyEnum) {
         return this.diffSet;
       }

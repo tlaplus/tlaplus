@@ -239,7 +239,7 @@ public class Bags implements ValueConstants
 
     public static Value BagUnion(final Value s)
     {
-        final SetEnumValue s1 = s.toSetEnum();
+        final SetEnumValue s1 = (SetEnumValue) s.toSetEnum();
         if (s1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagUnion",
@@ -429,7 +429,7 @@ public class Bags implements ValueConstants
 
     public static Value SetToBag(Value b)
     {
-        SetEnumValue s1 = b.toSetEnum();
+        SetEnumValue s1 = (SetEnumValue) b.toSetEnum();
         if (s1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagToSet",

@@ -254,7 +254,7 @@ implements Enumerable, Reducible {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public Value toSetEnum() {
       Value[] vals = new Value[size()];
       for (int i = 0; i < vals.length; i++) {
         vals[i] = IntValue.gen(i + this.low);

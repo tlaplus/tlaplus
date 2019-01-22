@@ -389,7 +389,7 @@ public class TLC implements ValueConstants
     // Returns a set of size n! where n = |s|.
     public static Value Permutations(Value s)
     {
-        SetEnumValue s1 = s.toSetEnum();
+        SetEnumValue s1 = (SetEnumValue) s.toSetEnum();
         if (s1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "Permutations",
@@ -470,7 +470,7 @@ public class TLC implements ValueConstants
         case SETOFFCNSVALUE: {
             SetOfFcnsValue sfv = (SetOfFcnsValue) val;
             sfv.normalize();
-            SetEnumValue domSet = sfv.domain.toSetEnum();
+            SetEnumValue domSet = (SetEnumValue) sfv.domain.toSetEnum();
             if (domSet == null)
             {
                 throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "RandomElement",
@@ -508,7 +508,7 @@ public class TLC implements ValueConstants
             return new TupleValue(vals);
         }
         default: {
-            SetEnumValue enumVal = val.toSetEnum();
+            SetEnumValue enumVal = (SetEnumValue) val.toSetEnum();
             if (enumVal == null)
             {
                 throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "RandomElement",

@@ -595,7 +595,7 @@ public class FcnLambdaValue extends Value implements Applicable {
         return new TupleValue(elems, cm);
       }
       else {
-        SetEnumValue eSet = dom.toSetEnum();
+        SetEnumValue eSet = (SetEnumValue) dom.toSetEnum();
         if (eSet == null)
           Assert.fail("To convert a function of form [x \\in S |-> f(x)] " +
                 "to a tuple, the set S must be enumerable.");

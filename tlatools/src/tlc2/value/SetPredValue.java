@@ -274,7 +274,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public SetEnumValue toSetEnum() {
+  public Value toSetEnum() {
       if (this.tool == null) {
     	  return (SetEnumValue) this.inVal;
       }

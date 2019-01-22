@@ -253,13 +253,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
   private final void convertAndCache() {
     if (this.pset == null) {
-      this.pset = this.toSetEnum();
+      this.pset = (SetEnumValue) this.toSetEnum();
     }
     else if (this.pset == DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
         if (this.pset == DummyEnum) {
-          val = this.toSetEnum();
+          val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
@@ -270,7 +270,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final SetEnumValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.pset != null && this.pset != DummyEnum) {
         return this.pset;
       }
@@ -316,7 +316,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   
   	public Unrank getUnrank(final int kSubset) {
 		// Convert outer set only once.
-		final SetEnumValue convert = set.toSetEnum();
+		final SetEnumValue convert = (SetEnumValue) set.toSetEnum();
 		convert.normalize();
 		final ValueVec elems = convert.elems;
 
@@ -326,7 +326,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
  
 	public EnumerableValue getRandomSetOfSubsets(final int numOfSubsetsRequested, final int maxLengthOfSubsets) {
 		// Convert outer set only once.
-		final SetEnumValue convert = set.toSetEnum();
+		final SetEnumValue convert = (SetEnumValue) set.toSetEnum();
 		convert.normalize();
 		final ValueVec elems = convert.elems;
 		final int size = elems.size();
@@ -612,7 +612,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 				throw new IllegalArgumentException("Subset too large.");
 			}
 			
-			final SetEnumValue convert = set.toSetEnum();
+			final SetEnumValue convert = (SetEnumValue) set.toSetEnum();
 			convert.normalize();
 			elems = convert.elems;
 
@@ -757,7 +757,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
 		SubsetEnumerator(final int k) {
 			super(k, 1 << set.size());
-			final SetEnumValue convert = set.toSetEnum();
+			final SetEnumValue convert = (SetEnumValue) set.toSetEnum();
       		convert.normalize();
       		this.elems = convert.elems;
 		}
@@ -806,7 +806,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			this.numOfPicks = numOfPicks;
 			this.probability = probability;
 
-			final SetEnumValue convert = set.toSetEnum();
+			final SetEnumValue convert = (SetEnumValue) set.toSetEnum();
 			convert.normalize();
 			this.elems = convert.elems;
 		}
