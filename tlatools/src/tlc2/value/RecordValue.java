@@ -168,7 +168,7 @@ public class RecordValue extends Value implements Applicable {
   }
 
   @Override
-	public final FcnRcdValue toFcnRcd() {
+	public final Value toFcnRcd() {
         this.normalize();
         Value[] dom = new Value[this.names.length];
         for (int i = 0; i < this.names.length; i++) {

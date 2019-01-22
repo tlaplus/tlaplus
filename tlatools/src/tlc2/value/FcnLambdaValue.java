@@ -86,7 +86,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      FcnRcdValue fcn = this.toFcnRcd();
+      FcnRcdValue fcn = (FcnRcdValue) this.toFcnRcd();
       return fcn.compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -97,7 +97,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      FcnRcdValue fcn = this.toFcnRcd();
+      FcnRcdValue fcn = (FcnRcdValue) this.toFcnRcd();
       return fcn.equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -521,7 +521,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   private void writeObject(ObjectOutputStream oos) throws IOException {
-    FcnRcdValue res = this.toFcnRcd();
+    FcnRcdValue res = (FcnRcdValue) this.toFcnRcd();
     oos.writeObject(res);
   }
 
@@ -616,7 +616,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   @Override
   public final Value toRcd() {
-      FcnRcdValue fcn = this.toFcnRcd();
+      FcnRcdValue fcn = (FcnRcdValue) this.toFcnRcd();
       if (fcn == null || fcn.domain == null) { return null; }
       fcn.normalize();
       UniqueString[] vars = new UniqueString[fcn.domain.length];
@@ -631,7 +631,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   @Override
-  public final FcnRcdValue toFcnRcd() {
+  public final Value toFcnRcd() {
     try {
 
       if (this.fcnRcd == null) {
@@ -707,7 +707,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   /* The fingerprint methods.  */
   public final long fingerPrint(long fp) {
     try {
-      FcnRcdValue fcn = this.toFcnRcd();
+      Value fcn = this.toFcnRcd();
       return fcn.fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -718,7 +718,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final Value permute(MVPerm perm) {
     try {
-      FcnRcdValue fcn = this.toFcnRcd();
+      Value fcn = this.toFcnRcd();
       return fcn.permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {

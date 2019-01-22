@@ -543,7 +543,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   	@Override
-	public final FcnRcdValue toFcnRcd() {
+	public final Value toFcnRcd() {
 		return this;
 	}
   
