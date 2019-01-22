@@ -246,8 +246,8 @@ public class TLC implements ValueConstants
      */
     public static Value CombineFcn(Value f1, Value f2)
     {
-        FcnRcdValue fcn1 = f1.toFcnRcd();
-        FcnRcdValue fcn2 = f2.toFcnRcd();
+        FcnRcdValue fcn1 = (FcnRcdValue) f1.toFcnRcd();
+        FcnRcdValue fcn2 = (FcnRcdValue) f2.toFcnRcd();
         if (fcn1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "@@", "function",

@@ -97,7 +97,7 @@ public final class MVPerm {
     // Compute the group generators:
     Value elem;
     while ((elem = Enum.nextElement()) != null) {
-      final FcnRcdValue fcn = elem.toFcnRcd();
+      final FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
       if (fcn == null) {
 	Assert.fail("The symmetry operator must specify a set of functions.");
       }

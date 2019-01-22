@@ -83,7 +83,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     try {
       TupleValue tv = elem.toTuple();
       if (tv == null) {
-        FcnRcdValue fcn = elem.toFcnRcd();
+        FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
         if (fcn == null) {
           if (elem instanceof ModelValue)
             return ((ModelValue) elem).modelValueMember(this) ;

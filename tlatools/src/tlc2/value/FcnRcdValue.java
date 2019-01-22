@@ -111,7 +111,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final int compareTo(Object obj) {
     try {
 
-			final FcnRcdValue fcn = obj instanceof Value ? ((Value) obj).toFcnRcd() : null;
+			final FcnRcdValue fcn = obj instanceof Value ? (FcnRcdValue) ((Value) obj).toFcnRcd() : null;
 			if (fcn == null) {
 				if (obj instanceof ModelValue)
 					return 1;
@@ -208,7 +208,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final boolean equals(Object obj) {
     try {
 
-      FcnRcdValue fcn = obj instanceof Value ? ((Value)obj).toFcnRcd() : null;
+      FcnRcdValue fcn = obj instanceof Value ? (FcnRcdValue) ((Value)obj).toFcnRcd() : null;
       if (fcn == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;

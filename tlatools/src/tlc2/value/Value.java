@@ -264,7 +264,7 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method converts a value to a function value. It returns
    * null if the conversion fails.
    */
-  public FcnRcdValue toFcnRcd() {
+  public Value toFcnRcd() {
 	  return null;
   }
 

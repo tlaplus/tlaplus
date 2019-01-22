@@ -62,7 +62,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final boolean member(Value elem) {
     try {
-      FcnRcdValue fcn = elem.toFcnRcd();
+      FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
       if (fcn == null) {
         if (elem instanceof ModelValue)
            return ((ModelValue) elem).modelValueMember(this) ;

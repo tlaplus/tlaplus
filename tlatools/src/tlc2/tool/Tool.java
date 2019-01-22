@@ -2081,7 +2081,7 @@ public class Tool
               return result;
             }
             else {
-              FcnRcdValue fcn = rval.toFcnRcd();
+              FcnRcdValue fcn = (FcnRcdValue) rval.toFcnRcd();
               if (fcn == null) {
                 Assert.fail("Attempted to select field " + sval + " from a non-record" +
                             " value " + Values.ppr(rval.toString()) + "\n" + expr);
