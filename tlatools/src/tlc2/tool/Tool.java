@@ -64,6 +64,7 @@ import tlc2.value.ValueConstants;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueExcept;
 import tlc2.value.ValueVec;
+import tlc2.value.Values;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
@@ -1508,7 +1509,7 @@ public class Tool
         case DecimalKind:
         case StringKind:
           {
-            return Value.getValue(expr);
+            return Values.getValue(expr);
           }
         case AtNodeKind:
           {
@@ -2062,7 +2063,7 @@ public class Tool
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
-              names[i] = ((StringValue)Value.getValue(pair[0])).getVal();
+              names[i] = ((StringValue)Values.getValue(pair[0])).getVal();
               vals[i] = this.eval(pair[1], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
             }
             return setSource(expr, new RecordValue(names, vals, false, cm));
@@ -2070,12 +2071,12 @@ public class Tool
         case OPCODE_rs:     // RcdSelect
           {
             Value rval = this.eval(args[0], c, s0, s1, control, cm);
-            Value sval = Value.getValue(args[1]);
+            Value sval = Values.getValue(args[1]);
             if (rval instanceof RecordValue) {
               Value result = ((RecordValue)rval).select(sval);
               if (result == null) {
                 Assert.fail("Attempted to select nonexistent field " + sval + " from the" +
-                            " record\n" + Value.ppr(rval.toString()) + "\n" + expr);
+                            " record\n" + Values.ppr(rval.toString()) + "\n" + expr);
               }
               return result;
             }
@@ -2083,7 +2084,7 @@ public class Tool
               FcnRcdValue fcn = rval.toFcnRcd();
               if (fcn == null) {
                 Assert.fail("Attempted to select field " + sval + " from a non-record" +
-                            " value " + Value.ppr(rval.toString()) + "\n" + expr);
+                            " value " + Values.ppr(rval.toString()) + "\n" + expr);
               }
               return fcn.apply(sval, control);
             }
@@ -2118,7 +2119,7 @@ public class Tool
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
-              names[i] = ((StringValue)Value.getValue(pair[0])).getVal();
+              names[i] = ((StringValue)Values.getValue(pair[0])).getVal();
               vals[i] = this.eval(pair[1], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
             }
             return setSource(expr, new SetOfRcdsValue(names, vals, false, cm));
@@ -3359,16 +3360,16 @@ public class Tool
 
     if (plen == 1) {
       if (!domains[0].member(argVal)) {
-        Assert.fail("In applying the function\n" + Value.ppr(fcn.toString()) +
-                    ",\nthe first argument is:\n" + Value.ppr(argVal.toString()) +
+        Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
+                    ",\nthe first argument is:\n" + Values.ppr(argVal.toString()) +
                     "which is not in its domain.\n" + args[0]);
       }
       if (isTuples[0]) {
         FormalParamNode[] ids = formals[0];
         TupleValue tv = argVal.toTuple();
         if (tv == null || argVal.size() != ids.length) {
-          Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
-                      ",\nthe argument is:\n" + Value.ppr(argVal.toString()) +
+          Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
+                      ",\nthe argument is:\n" + Values.ppr(argVal.toString()) +
                       "which does not match its formal parameter.\n" + args[0]);
         }
         Value[] elems = tv.elems;
@@ -3393,16 +3394,16 @@ public class Tool
         Value domain = domains[i];
         if (isTuples[i]) {
           if (!domain.member(elems[argn])) {
-            Assert.fail("In applying the function\n" + Value.ppr(fcn.toString()) +
+            Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
                         ",\nthe argument number " + (argn+1) + " is:\n" +
-                        Value.ppr(elems[argn].toString()) +
+                        Values.ppr(elems[argn].toString()) +
                         "\nwhich is not in its domain.\n" + args[0]);
           }
           TupleValue tv1 = elems[argn++].toTuple();
           if (tv1 == null || tv1.size() != ids.length) {
-            Assert.fail("In applying the function\n" + Value.ppr(fcn.toString()) +
+            Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
                         ",\nthe argument number " + argn + " is:\n" +
-                        Value.ppr(elems[argn-1].toString()) +
+                        Values.ppr(elems[argn-1].toString()) +
                         "which does not match its formal parameter.\n" + args[0]);
           }
           Value[] avals = tv1.elems;
@@ -3413,9 +3414,9 @@ public class Tool
         else {
           for (int j = 0; j < ids.length; j++) {
             if (!domain.member(elems[argn])) {
-              Assert.fail("In applying the function\n" + Value.ppr(fcn.toString()) +
+              Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
                           ",\nthe argument number " + (argn+1) + " is:\n" +
-                          Value.ppr(elems[argn].toString()) +
+                          Values.ppr(elems[argn].toString()) +
                           "which is not in its domain.\n" + args[0]);
             }
             fcon = fcon.cons(ids[j], elems[argn++]);
@@ -3450,7 +3451,7 @@ public class Tool
       Value boundSet = this.eval(domains[i], c, s0, s1, control, cm);
       if (!(boundSet instanceof Enumerable)) {
         Assert.fail("TLC encountered a non-enumerable quantifier bound\n" +
-                    Value.ppr(boundSet.toString()) + ".\n" + domains[i]);
+                    Values.ppr(boundSet.toString()) + ".\n" + domains[i]);
       }
       FormalParamNode[] farg = formals[i];
       if (isTuples[i]) {

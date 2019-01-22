@@ -86,7 +86,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         if (elem instanceof ModelValue)
            return ((ModelValue) elem).modelValueMember(this) ;
         Assert.fail("Attempted to check if non-record\n" + elem + "\nis in the" +
-        " set of records:\n" + ppr(this.toString()));
+        " set of records:\n" + Values.ppr(this.toString()));
       }
       rcd.normalize();
       if (this.names.length != rcd.names.length) {
@@ -123,7 +123,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set of records:\n" +
-        ppr(this.toString()));
+        Values.ppr(this.toString()));
       }
       return ex.value;
     }
@@ -137,7 +137,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set of records:\n" +
-        ppr(this.toString()));
+        Values.ppr(this.toString()));
       }
       return this;
     }
@@ -154,7 +154,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         sz *= this.values[i].size();
         if (sz < -2147483648 || sz > 2147483647) {
           Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
-                ppr(this.toString()));
+                Values.ppr(this.toString()));
         }
       }
       return (int)sz;
@@ -434,7 +434,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         else {
           Assert.fail("Attempted to enumerate a set of the form [l1 : v1, ..., ln : vn]," +
                 "\nbut can't enumerate the value of the `" + names[i] + "' field:\n" +
-                ppr(values[i].toString()));
+                Values.ppr(values[i].toString()));
         }
       }
     }

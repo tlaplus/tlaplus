@@ -42,8 +42,8 @@ public class RecordValue extends Value implements Applicable {
       RecordValue rcd = obj instanceof Value ? ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue) return 1;
-        Assert.fail("Attempted to compare record:\n" + ppr(this.toString()) +
-        "\nwith non-record\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to compare record:\n" + Values.ppr(this.toString()) +
+        "\nwith non-record\n" + Values.ppr(obj.toString()));
       }
       this.normalize();
       rcd.normalize();
@@ -71,8 +71,8 @@ public class RecordValue extends Value implements Applicable {
       if (rcd == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail("Attempted to check equality of record:\n" + ppr(this.toString()) +
-        "\nwith non-record\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to check equality of record:\n" + Values.ppr(this.toString()) +
+        "\nwith non-record\n" + Values.ppr(obj.toString()));
       }
       this.normalize();
       rcd.normalize();
@@ -93,8 +93,8 @@ public class RecordValue extends Value implements Applicable {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if element:\n" + ppr(elem.toString()) +
-                  "\nis in the record:\n" + ppr(this.toString()));
+      Assert.fail("Attempted to check if element:\n" + Values.ppr(elem.toString()) +
+                  "\nis in the record:\n" + Values.ppr(this.toString()));
       return false;    // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -132,7 +132,7 @@ public class RecordValue extends Value implements Applicable {
           return new RecordValue(newNames, newValues, this.isNorm);
         }
         else {
-            MP.printWarning(EC.TLC_WRONG_RECORD_FIELD_NAME, new String[]{ppr(arcVal.toString())});
+            MP.printWarning(EC.TLC_WRONG_RECORD_FIELD_NAME, new String[]{Values.ppr(arcVal.toString())});
         }
       }
       return ex.value;
@@ -192,7 +192,7 @@ public class RecordValue extends Value implements Applicable {
     try {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to apply record to a non-string value " +
-        ppr(arg.toString()) + ".");
+        Values.ppr(arg.toString()) + ".");
       }
       UniqueString name = ((StringValue)arg).getVal();
       int rlen = this.names.length;
@@ -201,7 +201,7 @@ public class RecordValue extends Value implements Applicable {
           return this.values[i];
         }
       }
-      Assert.fail("Attempted to apply the record\n" + ppr(this.toString()) +
+      Assert.fail("Attempted to apply the record\n" + Values.ppr(this.toString()) +
       "\nto nonexistent record field " + name + ".");
       return null;    // make compiler happy
     }
@@ -229,7 +229,7 @@ public class RecordValue extends Value implements Applicable {
     try {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to apply record to a non-string argument " +
-        ppr(arg.toString()) + ".");
+        Values.ppr(arg.toString()) + ".");
       }
       UniqueString name = ((StringValue)arg).getVal();
       int rlen = this.names.length;

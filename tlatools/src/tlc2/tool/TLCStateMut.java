@@ -21,6 +21,7 @@ import tlc2.value.MVPerm;
 import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
+import tlc2.value.Values;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -308,7 +309,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
       Value val = this.lookup(key);
       result.append(key.toString());
       result.append(" = ");
-      result.append(Value.ppr(val));
+      result.append(Values.ppr(val));
       result.append("\n");
     }
     else {
@@ -318,7 +319,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 	result.append("/\\ ");
 	result.append(key.toString());
     result.append(" = ");
-    result.append(Value.ppr(val));
+    result.append(Values.ppr(val));
     result.append("\n");
       }
     }
@@ -337,7 +338,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
       Value lstateVal = lstate.lookup(key);
       if (!lstateVal.equals(val)) {
 	result.append(key.toString());
-	result.append(" = " + Value.ppr(val) + "\n");
+	result.append(" = " + Values.ppr(val) + "\n");
       }
     }
     else {
@@ -348,7 +349,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 	if (!lstateVal.equals(val)) {
 	  result.append("/\\ ");
 	  result.append(key.toString());
-	  result.append(" = " + Value.ppr(val) + "\n");
+	  result.append(" = " + Values.ppr(val) + "\n");
 	}
       }
     }

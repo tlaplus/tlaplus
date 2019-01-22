@@ -37,8 +37,8 @@ public class UndefValue extends Value {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-      "\nis an element " + ppr(this.toString()));
+      Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
+      "\nis an element " + Values.ppr(this.toString()));
       return false;    // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -49,7 +49,7 @@ public class UndefValue extends Value {
 
   public final boolean isFinite() {
     try {
-      Assert.fail("Attempted to check if the value " + ppr(this.toString()) +
+      Assert.fail("Attempted to check if the value " + Values.ppr(this.toString()) +
       " is a finite set.");
       return false;    // make compiler happy
     }
@@ -63,7 +63,7 @@ public class UndefValue extends Value {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the value " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return ex.value;
     }
@@ -77,7 +77,7 @@ public class UndefValue extends Value {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the value " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return this;
     }
@@ -90,7 +90,7 @@ public class UndefValue extends Value {
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the value " +
-      ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".");
       return 0;     // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {

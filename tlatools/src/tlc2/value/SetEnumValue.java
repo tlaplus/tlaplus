@@ -54,8 +54,8 @@ implements Enumerable, Reducible {
       SetEnumValue set = obj instanceof Value ? ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
-        Assert.fail("Attempted to compare the set " + ppr(this.toString()) +
-        " with the value:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
+        " with the value:\n" + Values.ppr(obj.toString()));
       }
       this.normalize();
       set.normalize();
@@ -80,8 +80,8 @@ implements Enumerable, Reducible {
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail("Attempted to check equality of the set " + ppr(this.toString()) +
-        " with the value:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to check equality of the set " + Values.ppr(this.toString()) +
+        " with the value:\n" + Values.ppr(obj.toString()));
       }
       this.normalize();
       set.normalize();
@@ -179,7 +179,7 @@ implements Enumerable, Reducible {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
       }
       return ex.value;
     }
@@ -192,7 +192,7 @@ implements Enumerable, Reducible {
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
       }
       return this;
     }

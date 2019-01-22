@@ -33,6 +33,7 @@ import tla2sany.xml.SymbolContext;
 import tlc2.tool.BuiltInOPs;
 import tlc2.value.TupleValue;
 import tlc2.value.Value;
+import tlc2.value.Values;
 import util.UniqueString;
 
 /**
@@ -1270,7 +1271,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 
 				final Value value = ((TupleValue) aValue).elems[idx++];
 				result.append(" = ");
-				result.append(Value.ppr(value));
+				result.append(Values.ppr(value));
 				result.append("\n");
 			}
 			return result.toString();

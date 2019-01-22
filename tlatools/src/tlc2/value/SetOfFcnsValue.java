@@ -67,7 +67,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         if (elem instanceof ModelValue)
            return ((ModelValue) elem).modelValueMember(this) ;
         Assert.fail("Attempted to check if \n" + elem + "\nwhich is not a TLC function" +
-        " value, is in the set of functions:\n" + ppr(this.toString()));
+        " value, is in the set of functions:\n" + Values.ppr(this.toString()));
       }
       if (fcn.intv == null) {
         fcn.normalize();
@@ -111,7 +111,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set of functions:\n" +
-        ppr(this.toString()));
+        Values.ppr(this.toString()));
       }
       return ex.value;
     }
@@ -125,7 +125,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set of functions:\n" +
-        ppr(this.toString()));
+        Values.ppr(this.toString()));
       }
       return this;
     }
@@ -144,7 +144,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         sz *= rsz;
         if (sz < -2147483648 || sz > 2147483647) {
           Assert.fail("Overflow when computing the number of elements in:\n" +
-                ppr(toString()));
+                Values.ppr(toString()));
         }
       }
       return (int)sz;
@@ -364,7 +364,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       SetEnumValue domSet = domain.toSetEnum();
       if (domSet == null)
         Assert.fail("Attempted to enumerate a set of the form [D -> R]," +
-              "but the domain D:\n" + ppr(domain.toString()) +
+              "but the domain D:\n" + Values.ppr(domain.toString()) +
               "\ncannot be enumerated.");
       domSet.normalize();
       ValueVec elems = domSet.elems;
@@ -388,7 +388,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
       else {
         Assert.fail("Attempted to enumerate a set of the form [D -> R]," +
-              "but the range R:\n" + ppr(range.toString()) +
+              "but the range R:\n" + Values.ppr(range.toString()) +
               "\ncannot be enumerated.");
       }
     }

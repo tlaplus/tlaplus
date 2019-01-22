@@ -16,6 +16,7 @@ import tlc2.value.UserObj;
 import tlc2.value.UserValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
+import tlc2.value.Values;
 
 public class Naturals extends UserObj implements ValueConstants
 {
@@ -95,12 +96,12 @@ public class Naturals extends UserObj implements ValueConstants
         if (!(x instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "<", "integer",
-                    Value.ppr(x.toString()) });
+                    Values.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", "<", "integer",
-                    Value.ppr(y.toString()) });
+                    Values.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val < ((IntValue) y).val) ? ValTrue : ValFalse;
@@ -111,12 +112,12 @@ public class Naturals extends UserObj implements ValueConstants
         if (!(x instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "<=", "integer",
-                    Value.ppr(x.toString()) });
+                    Values.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", "<=", "integer",
-                    Value.ppr(y.toString()) });
+                    Values.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val <= ((IntValue) y).val) ? ValTrue : ValFalse;
@@ -127,13 +128,13 @@ public class Naturals extends UserObj implements ValueConstants
         if (!(x instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", ">", "integer",
-                    Value.ppr(x.toString()) });
+                    Values.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
             // On 21 May 2012 LL corrected following call, which was reporting the first argument.
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", ">", "integer",
-                    Value.ppr(y.toString()) });
+                    Values.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val > ((IntValue) y).val) ? ValTrue : ValFalse;
@@ -144,13 +145,13 @@ public class Naturals extends UserObj implements ValueConstants
         if (!(x instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", ">", "integer",
-                    Value.ppr(x.toString()) });
+                    Values.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
             // On 21 May 2012 LL corrected following call, which was reporting the first argument.
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", ">", "integer",
-                    Value.ppr(y.toString()) });
+                    Values.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val >= ((IntValue) y).val) ? ValTrue : ValFalse;
@@ -232,7 +233,7 @@ public class Naturals extends UserObj implements ValueConstants
         }
         if (val instanceof ModelValue)
             return 1;
-        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "Nat", Value.ppr(val.toString()) });
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "Nat", Values.ppr(val.toString()) });
     }
 
     public final boolean member(Value val)
@@ -242,7 +243,7 @@ public class Naturals extends UserObj implements ValueConstants
         if (val instanceof ModelValue)
             return ((ModelValue) val).modelValueMember(this);
 
-        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Value.ppr(val.toString()), "Nat" });
+        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Values.ppr(val.toString()), "Nat" });
     }
 
     public final boolean isFinite()

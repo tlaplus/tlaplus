@@ -67,8 +67,8 @@ implements Enumerable, Reducible {
       if (   (this.low <= this.high)
            && (   !(elem instanceof ModelValue)
                || (((ModelValue) elem).type != 0)) ) {
-        Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-        "\nis in the integer interval " + ppr(this.toString()));
+        Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
+        "\nis in the integer interval " + Values.ppr(this.toString()));
       }
       return false;
     }
@@ -181,7 +181,7 @@ implements Enumerable, Reducible {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the interval value " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return ex.value;
     }
@@ -195,7 +195,7 @@ implements Enumerable, Reducible {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the interval value " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return this;
     }
@@ -295,7 +295,7 @@ implements Enumerable, Reducible {
 			return IntValue.gen(low + idx);
 		}
 		Assert.fail(
-				"Attempted to retrieve out-of-bounds element from the interval value " + ppr(this.toString()) + ".");
+				"Attempted to retrieve out-of-bounds element from the interval value " + Values.ppr(this.toString()) + ".");
         return null; // make compiler happy
 	}
     

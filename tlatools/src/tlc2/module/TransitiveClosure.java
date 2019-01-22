@@ -17,6 +17,7 @@ import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueVec;
+import tlc2.value.Values;
 
 public class TransitiveClosure implements ValueConstants
 {
@@ -28,7 +29,7 @@ public class TransitiveClosure implements ValueConstants
         if (!(rel instanceof Enumerable))
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "TransitiveClosure",
-                    "an enumerable set", Value.ppr(rel.toString()) });
+                    "an enumerable set", Values.ppr(rel.toString()) });
         }
         int maxLen = 2 * rel.size();
         boolean[][] matrix = new boolean[maxLen][maxLen];
@@ -42,7 +43,7 @@ public class TransitiveClosure implements ValueConstants
             TupleValue tv = elem.toTuple();
             if (tv == null || tv.size() != 2)
             {
-                throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Value.ppr(elem.toString()));
+                throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Values.ppr(elem.toString()));
             }
             Value elem1 = tv.elems[0];
             Value elem2 = tv.elems[1];

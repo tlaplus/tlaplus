@@ -10,6 +10,7 @@ import tlc2.tool.EvalException;
 import tlc2.value.UserObj;
 import tlc2.value.UserValue;
 import tlc2.value.Value;
+import tlc2.value.Values;
 
 public class AnySet extends UserObj
 {
@@ -24,7 +25,7 @@ public class AnySet extends UserObj
 
     public final int compareTo(Value val)
     {
-        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "ANY", Value.ppr(val.toString()) });
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "ANY", Values.ppr(val.toString()) });
     }
 
     public final boolean member(Value val)

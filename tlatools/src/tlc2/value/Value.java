@@ -11,7 +11,6 @@ import java.io.Serializable;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
-import tlc2.pprint.PrettyPrint;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
@@ -58,7 +57,7 @@ public abstract class Value implements ValueConstants, Serializable {
 
   public void write(ValueOutputStream vos) throws IOException {
 		throw new WrongInvocationException("ValueOutputStream: Can not pickle the value\n" +
-			    Value.ppr(toString()));
+			    Values.ppr(toString()));
   }
 
   public transient CostModel cm = CostModel.DO_NOT_RECORD;
@@ -157,7 +156,7 @@ public abstract class Value implements ValueConstants, Serializable {
             return spv.elements().nextElement() == null;
           }
         default:
-          Assert.fail("Shouldn't call isEmpty() on value " + Value.ppr(this.toString()));
+          Assert.fail("Shouldn't call isEmpty() on value " + Values.ppr(this.toString()));
           return false;
       }
 
@@ -176,7 +175,7 @@ public abstract class Value implements ValueConstants, Serializable {
   public long fingerPrint(long fp) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
-      Value.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
+      Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
       return 0;      // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -192,7 +191,7 @@ public abstract class Value implements ValueConstants, Serializable {
   public Value permute(MVPerm perm) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
-      Value.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
+      Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
       return null;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -242,7 +241,7 @@ public abstract class Value implements ValueConstants, Serializable {
       for (int i = 0; i < path.length; i++) {
         if (!(result instanceof Applicable)) {
           Assert.fail("Attempted to apply EXCEPT construct to the value " +
-                ppr(result.toString()) + ".");
+                Values.ppr(result.toString()) + ".");
         }
         Value elem = path[i];
         result = ((Applicable)result).select(elem);
@@ -285,10 +284,6 @@ public abstract class Value implements ValueConstants, Serializable {
 	  return null;
   }
   
-  public static Value getValue(SemanticNode expr) {
-    return (Value)expr.getToolObject(TLCGlobals.ToolId);
-  }
-
   /**
    * This abstract method returns a string representation of this
    * value. Each subclass must provide its own implementation.
@@ -318,15 +313,5 @@ public abstract class Value implements ValueConstants, Serializable {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
-  }
-
-  public static String ppr(String s) {
-    return PrettyPrint.mypp(s, 80) ;
-  }
-  public static String ppr(Value v) {
-	  if (v == null) {
-		  return "null";
-	  }
-	 return PrettyPrint.mypp(v.toString(), 80) ;
   }
 }

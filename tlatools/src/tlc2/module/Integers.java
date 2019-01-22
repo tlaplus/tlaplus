@@ -16,6 +16,7 @@ import tlc2.value.UserObj;
 import tlc2.value.UserValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
+import tlc2.value.Values;
 
 public class Integers extends UserObj implements ValueConstants
 {
@@ -74,12 +75,12 @@ public class Integers extends UserObj implements ValueConstants
         if (!(x instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "<", "integer",
-                    Value.ppr(x.toString()) });
+                    Values.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", "<", "integer",
-                    Value.ppr(y.toString()) });
+                    Values.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val < ((IntValue) y).val) ? ValTrue : ValFalse;
@@ -90,12 +91,12 @@ public class Integers extends UserObj implements ValueConstants
         if (!(x instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "<=", "integer",
-                    Value.ppr(x.toString()) });
+                    Values.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", "<=", "integer",
-                    Value.ppr(y.toString()) });
+                    Values.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val <= ((IntValue) y).val) ? ValTrue : ValFalse;
@@ -106,12 +107,12 @@ public class Integers extends UserObj implements ValueConstants
         if (!(x instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", ">", "integer",
-                    Value.ppr(x.toString()) });
+                    Values.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", ">", "integer",
-                    Value.ppr(y.toString()) });
+                    Values.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val > ((IntValue) y).val) ? ValTrue : ValFalse;
@@ -122,12 +123,12 @@ public class Integers extends UserObj implements ValueConstants
         if (!(x instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", ">=", "integer",
-                    Value.ppr(x.toString()) });
+                    Values.ppr(x.toString()) });
         }
         if (!(y instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "second", ">=", "integer",
-                    Value.ppr(y.toString()) });
+                    Values.ppr(y.toString()) });
         }
 
         return (((IntValue) x).val >= ((IntValue) y).val) ? ValTrue : ValFalse;
@@ -222,7 +223,7 @@ public class Integers extends UserObj implements ValueConstants
         }
         if (val instanceof ModelValue)
             return 1;
-        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "Int", Value.ppr(val.toString()) });
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "Int", Values.ppr(val.toString()) });
     }
 
     public final boolean member(Value val)
@@ -233,7 +234,7 @@ public class Integers extends UserObj implements ValueConstants
         {
             return ((ModelValue) val).modelValueMember(this);
         }
-        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Value.ppr(val.toString()), "Int" });
+        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Values.ppr(val.toString()), "Int" });
     }
 
     public final boolean isFinite()

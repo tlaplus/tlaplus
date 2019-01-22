@@ -42,8 +42,8 @@ public class StringValue extends Value {
         return this.val.compareTo(((StringValue)obj).val);
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to compare string " + ppr(this.toString()) +
-        " with non-string:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to compare string " + Values.ppr(this.toString()) +
+        " with non-string:\n" + Values.ppr(obj.toString()));
       }
       return 1;
     }
@@ -59,8 +59,8 @@ public class StringValue extends Value {
         return this.val.equals(((StringValue)obj).getVal());
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to check equality of string " + ppr(this.toString()) +
-        " with non-string:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to check equality of string " + Values.ppr(this.toString()) +
+        " with non-string:\n" + Values.ppr(obj.toString()));
       }
       return ((ModelValue) obj).modelValueEquals(this) ;
     }
@@ -72,8 +72,8 @@ public class StringValue extends Value {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-      "\nis an element of the string " + ppr(this.toString()));
+      Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
+      "\nis an element of the string " + Values.ppr(this.toString()));
       return false;     // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -84,7 +84,7 @@ public class StringValue extends Value {
 
   public final boolean isFinite() {
     try {
-      Assert.fail("Attempted to check if the string " + ppr(this.toString()) +
+      Assert.fail("Attempted to check if the string " + Values.ppr(this.toString()) +
       " is a finite set.");
       return false;     // make compiler happy
     }
@@ -98,7 +98,7 @@ public class StringValue extends Value {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the string " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return ex.value;
     }
@@ -112,7 +112,7 @@ public class StringValue extends Value {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the string " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return this;
     }
@@ -125,7 +125,7 @@ public class StringValue extends Value {
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the string " +
-      ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".");
       return 0;       // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {

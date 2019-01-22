@@ -28,8 +28,8 @@ public class BoolValue extends Value {
         return x - y;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to compare boolean " + ppr(this.toString()) +
-        " with non-boolean:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to compare boolean " + Values.ppr(this.toString()) +
+        " with non-boolean:\n" + Values.ppr(obj.toString()));
       }
       return 1;
     }
@@ -45,8 +45,8 @@ public class BoolValue extends Value {
         return this.val == ((BoolValue)obj).val;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to compare equality of boolean " + ppr(this.toString()) +
-        " with non-boolean:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to compare equality of boolean " + Values.ppr(this.toString()) +
+        " with non-boolean:\n" + Values.ppr(obj.toString()));
       }
       return ((ModelValue) obj).modelValueEquals(this) ;
     }
@@ -58,8 +58,8 @@ public class BoolValue extends Value {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-      "\nis an element of the boolean " + ppr(this.toString()));
+      Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
+      "\nis an element of the boolean " + Values.ppr(this.toString()));
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -70,7 +70,7 @@ public class BoolValue extends Value {
 
   public final boolean isFinite() {
     try {
-      Assert.fail("Attempted to check if the boolean " + ppr(this.toString()) +
+      Assert.fail("Attempted to check if the boolean " + Values.ppr(this.toString()) +
       " is a finite set.");
       return false;   // make compiler happy
     }
@@ -84,7 +84,7 @@ public class BoolValue extends Value {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the boolean " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return ex.value;
     }
@@ -98,7 +98,7 @@ public class BoolValue extends Value {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the boolean " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return this;
     }
@@ -111,7 +111,7 @@ public class BoolValue extends Value {
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the boolean " +
-      ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".");
       return 0;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {

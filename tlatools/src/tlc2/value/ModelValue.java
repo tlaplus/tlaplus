@@ -136,13 +136,13 @@ public class ModelValue extends Value {
          else {
           Assert.fail("Attempted to check equality "
                       + "of the differently-typed model values "
-                        + ppr(this.toString()) + " and "
-                        + ppr(mobj.toString()));
+                        + Values.ppr(this.toString()) + " and "
+                        + Values.ppr(mobj.toString()));
           } ;
        } ;
       Assert.fail("Attempted to check equality of typed model value "
-                   + ppr(this.toString()) + " and non-model value\n"
-                   + ppr(obj.toString())) ;
+                   + Values.ppr(this.toString()) + " and non-model value\n"
+                   + Values.ppr(obj.toString())) ;
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -160,8 +160,8 @@ public class ModelValue extends Value {
     try {
       if (this.type != 0) {
       Assert.fail("Attempted to check equality of the typed model value "
-                   + ppr(this.toString()) + " and the non-model value\n"
-                   + ppr(obj.toString())) ;
+                   + Values.ppr(this.toString()) + " and the non-model value\n"
+                   + Values.ppr(obj.toString())) ;
 
        } ;
       return false ;
@@ -176,9 +176,9 @@ public class ModelValue extends Value {
     try {
       if (this.type != 0) {
       Assert.fail("Attempted to check if the typed model value "
-                   + ppr(this.toString())
+                   + Values.ppr(this.toString())
                    + " is an element of\n"
-                   + ppr(obj.toString())) ;
+                   + Values.ppr(obj.toString())) ;
 
        } ;
       return false ;
@@ -191,8 +191,8 @@ public class ModelValue extends Value {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-      "\nis an element of the model value " + ppr(this.toString()));
+      Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
+      "\nis an element of the model value " + Values.ppr(this.toString()));
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -203,7 +203,7 @@ public class ModelValue extends Value {
 
   public final boolean isFinite() {
     try {
-      Assert.fail("Attempted to check if the model value " + ppr(this.toString()) +
+      Assert.fail("Attempted to check if the model value " + Values.ppr(this.toString()) +
       " is a finite set.");
       return false;   // make compiler happy
     }
@@ -217,7 +217,7 @@ public class ModelValue extends Value {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the model value " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return ex.value;
     }
@@ -231,7 +231,7 @@ public class ModelValue extends Value {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the model value " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return this;
     }
@@ -244,7 +244,7 @@ public class ModelValue extends Value {
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the model value " +
-      ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".");
       return 0;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {

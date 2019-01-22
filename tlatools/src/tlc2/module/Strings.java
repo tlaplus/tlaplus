@@ -12,6 +12,7 @@ import tlc2.value.StringValue;
 import tlc2.value.UserObj;
 import tlc2.value.UserValue;
 import tlc2.value.Value;
+import tlc2.value.Values;
 
 public class Strings extends UserObj
 {
@@ -32,7 +33,7 @@ public class Strings extends UserObj
         }
         if (val instanceof ModelValue)
             return 1;
-        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "STRING", Value.ppr(val.toString()) });
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "STRING", Values.ppr(val.toString()) });
     }
 
     public final boolean member(Value val)
@@ -41,7 +42,7 @@ public class Strings extends UserObj
             return true;
         if (val instanceof ModelValue)
             return ((ModelValue) val).modelValueMember(this);
-        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Value.ppr(val.toString()), "STRING" });
+        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Values.ppr(val.toString()), "STRING" });
     }
 
     public final boolean isFinite()

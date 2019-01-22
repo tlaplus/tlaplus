@@ -110,7 +110,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
               }
             }
             else {
-              Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
+              Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
               "\nis an element of a set of " + ids.length + "-tuples.");
             }
           }
@@ -123,8 +123,8 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
         }
       }
       catch (EvalException e) {
-        Assert.fail("Cannot decide if element:\n" + ppr(elem.toString()) +
-        "\n is element of:\n" + ppr(this.inVal.toString()) +
+        Assert.fail("Cannot decide if element:\n" + Values.ppr(elem.toString()) +
+        "\n is element of:\n" + Values.ppr(this.inVal.toString()) +
         "\nand satisfies the predicate " + this.pred);
       }
       return false;
@@ -139,7 +139,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     try {
       if (!(this.inVal.isFinite())) {
         Assert.fail("Attempted to check if expression of form {x \\in S : p(x)} is a " +
-        "finite set, but cannot check if S:\n" + ppr(this.inVal.toString()) +
+        "finite set, but cannot check if S:\n" + Values.ppr(this.inVal.toString()) +
         "\nis finite.");
       }
       return true;
@@ -153,7 +153,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
       }
       return ex.value;
     }
@@ -166,7 +166,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
       }
       return this;
     }
@@ -344,7 +344,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     public Enumerator() {
       if (!(inVal instanceof Enumerable)) {
         Assert.fail("Attempted to enumerate { x \\in S : p(x) } when S:\n" +
-              ppr(inVal.toString()) + "\nis not enumerable");
+              Values.ppr(inVal.toString()) + "\nis not enumerable");
       }
       this.Enum = ((Enumerable)inVal).elements();
     }
@@ -370,7 +370,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
             }
           }
           else {
-            Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
+            Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
             "\nis an element of a set of " + ids.length + "-tuples.");
           }
         }

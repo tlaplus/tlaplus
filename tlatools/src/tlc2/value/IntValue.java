@@ -61,8 +61,8 @@ public class IntValue extends Value {
         return this.val - ((IntValue)obj).val;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to compare integer " + ppr(this.toString()) +
-        " with non-integer:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to compare integer " + Values.ppr(this.toString()) +
+        " with non-integer:\n" + Values.ppr(obj.toString()));
       }
       return 1;
     }
@@ -78,8 +78,8 @@ public class IntValue extends Value {
         return this.val == ((IntValue)obj).val;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to check equality of integer " + ppr(this.toString()) +
-        " with non-integer:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to check equality of integer " + Values.ppr(this.toString()) +
+        " with non-integer:\n" + Values.ppr(obj.toString()));
       }
       return ((ModelValue) obj).modelValueEquals(this);
     }
@@ -91,8 +91,8 @@ public class IntValue extends Value {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-      "\nis an element of the integer " + ppr(this.toString()));
+      Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
+      "\nis an element of the integer " + Values.ppr(this.toString()));
       return false;  // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -103,7 +103,7 @@ public class IntValue extends Value {
 
   public final boolean isFinite() {
     try {
-      Assert.fail("Attempted to check if the integer " + ppr(this.toString()) +
+      Assert.fail("Attempted to check if the integer " + Values.ppr(this.toString()) +
       " is a finite set.");
       return false;   // make compiler happy
     }
@@ -117,7 +117,7 @@ public class IntValue extends Value {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to appy EXCEPT construct to the integer " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return ex.value;
     }
@@ -131,7 +131,7 @@ public class IntValue extends Value {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the integer " +
-        ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".");
       }
       return this;
     }
@@ -144,7 +144,7 @@ public class IntValue extends Value {
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the integer " +
-      ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".");
       return 0;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {

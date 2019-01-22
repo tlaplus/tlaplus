@@ -97,8 +97,8 @@ public class FcnRcdValue extends Value implements Applicable {
     while (true) {
       int idx = this.indexTbl[loc];
       if (idx == -1) {
-        Assert.fail("Attempted to apply function:\n" + ppr(this.toString()) +
-              "\nto argument " + ppr(arg.toString()) +
+        Assert.fail("Attempted to apply function:\n" + Values.ppr(this.toString()) +
+              "\nto argument " + Values.ppr(arg.toString()) +
               ", which is not in the domain of the function.");
       }
       if (this.domain[idx].equals(arg)) {
@@ -115,8 +115,8 @@ public class FcnRcdValue extends Value implements Applicable {
 			if (fcn == null) {
 				if (obj instanceof ModelValue)
 					return 1;
-				Assert.fail("Attempted to compare the function " + ppr(this.toString()) + " with the value:\n"
-						+ ppr(obj.toString()));
+				Assert.fail("Attempted to compare the function " + Values.ppr(this.toString()) + " with the value:\n"
+						+ Values.ppr(obj.toString()));
 			}
 			this.normalize();
 			fcn.normalize();
@@ -146,7 +146,7 @@ public class FcnRcdValue extends Value implements Applicable {
 			final Value dElem = this.domain[i];
 			if (!(dElem instanceof IntValue)) {
 				Assert.fail(
-						"Attempted to compare integer with non-integer\n" + ppr(dElem.toString()) + ".");
+						"Attempted to compare integer with non-integer\n" + Values.ppr(dElem.toString()) + ".");
 			}
 			result = ((IntValue) dElem).val - (fcn.intv.low + i);
 			if (result != 0) {
@@ -190,7 +190,7 @@ public class FcnRcdValue extends Value implements Applicable {
   			final Value dElem = fcn.domain[i];
   			if (!(dElem instanceof IntValue)) {
   				Assert.fail(
-  						"Attempted to compare integer with non-integer:\n" + ppr(dElem.toString()) + ".");
+  						"Attempted to compare integer with non-integer:\n" + Values.ppr(dElem.toString()) + ".");
   			}
   			result = this.intv.low + i - ((IntValue) dElem).val;
   			if (result != 0) {
@@ -212,8 +212,8 @@ public class FcnRcdValue extends Value implements Applicable {
       if (fcn == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail("Attempted to check equality of the function " + ppr(this.toString()) +
-        " with the value:\n" + ppr(obj.toString()));
+        Assert.fail("Attempted to check equality of the function " + Values.ppr(this.toString()) +
+        " with the value:\n" + Values.ppr(obj.toString()));
       }
       this.normalize();
       fcn.normalize();
@@ -232,7 +232,7 @@ public class FcnRcdValue extends Value implements Applicable {
             Value dElem = fcn.domain[i];
             if (!(dElem instanceof IntValue)) {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
-              ppr(dElem.toString()) + ".");
+              Values.ppr(dElem.toString()) + ".");
             }
             if (((IntValue)dElem).val != (this.intv.low + i) ||
                 !this.values[i].equals(fcn.values[i])) {
@@ -248,7 +248,7 @@ public class FcnRcdValue extends Value implements Applicable {
             Value dElem = this.domain[i];
             if (!(dElem instanceof IntValue)) {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
-              ppr(dElem.toString()) + ".");
+              Values.ppr(dElem.toString()) + ".");
             }
             if (((IntValue)dElem).val != (fcn.intv.low + i) ||
                 !this.values[i].equals(fcn.values[i])) {
@@ -276,8 +276,8 @@ public class FcnRcdValue extends Value implements Applicable {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-      "\nis an element of the function " + ppr(this.toString()));
+      Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
+      "\nis an element of the function " + Values.ppr(this.toString()));
       return false;  // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -292,8 +292,8 @@ public class FcnRcdValue extends Value implements Applicable {
     try {
       Value result = this.select(arg);
       if (result == null) {
-        Assert.fail("Attempted to apply function:\n" + ppr(this.toString()) +
-        "\nto argument " + ppr(arg.toString()) + ", which is" +
+        Assert.fail("Attempted to apply function:\n" + Values.ppr(this.toString()) +
+        "\nto argument " + Values.ppr(arg.toString()) + ", which is" +
         " not in the domain of the function.");
       }
       return result;
@@ -322,7 +322,7 @@ public class FcnRcdValue extends Value implements Applicable {
         // domain is represented as an integer interval:
         if (!(arg instanceof IntValue)) {
           Assert.fail("Attempted to apply function with integer domain to" +
-                " the non-integer argument " + ppr(arg.toString()));
+                " the non-integer argument " + Values.ppr(arg.toString()));
         }
         int idx = ((IntValue)arg).val;
         if ((idx >= this.intv.low) && (idx <= this.intv.high)) {

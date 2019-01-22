@@ -108,8 +108,8 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if the value:\n" + ppr(elem.toString()) +
-      "\nis an element of the function " + ppr(this.toString()));
+      Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
+      "\nis an element of the function " + Values.ppr(this.toString()));
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -120,7 +120,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final boolean isFinite() {
     try {
-      Assert.fail("Attempted to check if the function:\n" + ppr(this.toString()) +
+      Assert.fail("Attempted to check if the function:\n" + Values.ppr(this.toString()) +
       "\nis a finite set.");
       return false;   // make compiler happy
     }
@@ -167,16 +167,16 @@ public class FcnLambdaValue extends Value implements Applicable {
 
         if (plen == 1) {
           if (!domains[0].member(args)) {
-            Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
-            ",\nthe first argument is:\n" + Value.ppr(args.toString()) +
+            Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
+            ",\nthe first argument is:\n" + Values.ppr(args.toString()) +
             "\nwhich is not in its domain.\n");
           }
           if (isTuples[0]) {
             FormalParamNode[] ids = formals[0];
             TupleValue argVal = args.toTuple();
             if (argVal == null) {
-              Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
-              ",\nthe first argument is:\n" + Value.ppr(args.toString()) +
+              Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
+              ",\nthe first argument is:\n" + Values.ppr(args.toString()) +
               "\nwhich does not match its formal parameter.\n");
             }
             if (argVal.size() != ids.length) return null;
@@ -192,8 +192,8 @@ public class FcnLambdaValue extends Value implements Applicable {
         else {
           TupleValue tv = args.toTuple();
           if (tv == null) {
-            Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
-                  ",\nthe argument list is:\n" + Value.ppr(args.toString()) +
+            Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
+                  ",\nthe argument list is:\n" + Values.ppr(args.toString()) +
                   "\nwhich does not match its formal parameter.\n");
           }
           Value[] elems = tv.elems;
@@ -203,16 +203,16 @@ public class FcnLambdaValue extends Value implements Applicable {
             Value domain = domains[i];
             if (isTuples[i]) {
               if (!domain.member(elems[argn])) {
-                Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
+                Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                 ",\nthe argument number " + (argn+1) + " is:\n" +
-                Value.ppr(elems[argn].toString()) +
+                Values.ppr(elems[argn].toString()) +
                 "\nwhich is not in its domain.\n");
               }
               TupleValue tv1 = elems[argn++].toTuple();
               if (tv1 == null || tv1.size() != ids.length) {
-                Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
+                Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                 ",\nthe argument number " + argn + " is:\n" +
-                Value.ppr(elems[argn-1].toString()) +
+                Values.ppr(elems[argn-1].toString()) +
                 "\nwhich does not match its formal parameter.\n");
               }
               Value[] avals = tv1.elems;
@@ -223,9 +223,9 @@ public class FcnLambdaValue extends Value implements Applicable {
             else {
               for (int j = 0; j < ids.length; j++) {
                 if (!domain.member(elems[argn])) {
-                  Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
+                  Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                         ",\nthe argument number " + (argn+1) + " is:\n" +
-                        Value.ppr(elems[argn].toString()) + "\nwhich is not in its domain.\n");
+                        Values.ppr(elems[argn].toString()) + "\nwhich is not in its domain.\n");
                 }
                 c1 = c1.cons(ids[j], elems[argn++]);
               }
@@ -303,8 +303,8 @@ public class FcnLambdaValue extends Value implements Applicable {
              * SZA: Changed from argVal.toString() to arg.toString() to prevent a NullPointerException
              */
             if (argVal == null) {
-              Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
-              ",\nthe first argument is:\n" + Value.ppr(arg.toString()) +
+              Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
+              ",\nthe first argument is:\n" + Values.ppr(arg.toString()) +
               "\nwhich does not match its formal parameter.\n");
             }
             if (argVal.size() != ids.length) return null;
@@ -320,8 +320,8 @@ public class FcnLambdaValue extends Value implements Applicable {
         else {
           TupleValue tv = arg.toTuple();
           if (tv == null) {
-            Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
-                  ",\nthe argument list is:\n" + Value.ppr(arg.toString()) +
+            Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
+                  ",\nthe argument list is:\n" + Values.ppr(arg.toString()) +
                   "\nwhich does not match its formal parameter.\n");
           }
           Value[] elems = tv.elems;
@@ -333,9 +333,9 @@ public class FcnLambdaValue extends Value implements Applicable {
               if (!domain.member(elems[argn])) return null;
               TupleValue tv1 = elems[argn++].toTuple();
               if (tv1 == null) {
-                Assert.fail("In applying the function\n" + Value.ppr(this.toString()) +
+                Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                 ",\nthe argument number " + argn + " is:\n" +
-                Value.ppr(elems[argn-1].toString()) +
+                Values.ppr(elems[argn-1].toString()) +
                 "\nwhich does not match its formal parameter.\n");
               }
               if (tv1.size() != ids.length) return null;

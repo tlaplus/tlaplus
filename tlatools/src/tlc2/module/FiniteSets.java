@@ -12,6 +12,7 @@ import tlc2.value.Enumerable;
 import tlc2.value.IntValue;
 import tlc2.value.Value;
 import tlc2.value.ValueConstants;
+import tlc2.value.Values;
 
 public class FiniteSets implements ValueConstants
 {
@@ -28,7 +29,7 @@ public class FiniteSets implements ValueConstants
         {
             return IntValue.gen(((Enumerable) val).size());
         }
-        throw new EvalException(EC.TLC_MODULE_COMPUTING_CARDINALITY, Value.ppr(val.toString()));
+        throw new EvalException(EC.TLC_MODULE_COMPUTING_CARDINALITY, Values.ppr(val.toString()));
     }
 
     // SZ 16.07.2009: commented the following code out, since it is not a part of FiniteSets

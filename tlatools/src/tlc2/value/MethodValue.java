@@ -51,7 +51,7 @@ public class MethodValue extends OpValue implements Applicable {
   public final int compareTo(Object obj) {
     try {
       Assert.fail("Attempted to compare operator " + this.toString() +
-      " with value:\n" + obj == null ? "null" : ppr(obj.toString()));
+      " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()));
       return 0;       // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -63,7 +63,7 @@ public class MethodValue extends OpValue implements Applicable {
   public final boolean equals(Object obj) {
     try {
       Assert.fail("Attempted to check equality of operator " + this.toString() +
-      " with value:\n" + obj == null ? "null" : ppr(obj.toString()));
+      " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()));
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -74,7 +74,7 @@ public class MethodValue extends OpValue implements Applicable {
 
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check if the value:\n" + elem == null ? "null" : ppr(elem.toString()) +
+      Assert.fail("Attempted to check if the value:\n" + elem == null ? "null" : Values.ppr(elem.toString()) +
       "\nis an element of operator " + this.toString());
       return false;   // make compiler happy
     }

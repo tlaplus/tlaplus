@@ -105,7 +105,7 @@ public class TupleValue extends Value implements Applicable {
       }
       int idx = ((IntValue)arg).val;
       if (idx <= 0 || idx > this.elems.length) {
-        Assert.fail("Attempted to apply tuple\n" + ppr(this.toString()) +
+        Assert.fail("Attempted to apply tuple\n" + Values.ppr(this.toString()) +
         "\nto integer " + idx + " which is out of domain.");
       }
       return this.elems[idx-1];
@@ -133,7 +133,7 @@ public class TupleValue extends Value implements Applicable {
     try {
       if (!(arg instanceof IntValue)) {
         Assert.fail("Attempted to apply tuple to a non-integer argument " +
-        ppr(arg.toString()) + ".");
+        Values.ppr(arg.toString()) + ".");
       }
       int idx = ((IntValue)arg).val;
       if (idx > 0 && idx <= this.elems.length) {
@@ -164,7 +164,7 @@ public class TupleValue extends Value implements Applicable {
           }
           return new TupleValue(newElems);
         }
-        MP.printWarning(EC.TLC_WRONG_TUPLE_FIELD_NAME, new String[]{ppr(arcVal.toString())});
+        MP.printWarning(EC.TLC_WRONG_TUPLE_FIELD_NAME, new String[]{Values.ppr(arcVal.toString())});
       }
       return ex.value;
     }
