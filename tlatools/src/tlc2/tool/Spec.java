@@ -12,7 +12,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Set;
 
 import tla2sany.drivers.FrontEndException;
@@ -27,7 +26,6 @@ import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
-import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.OpApplNode;
@@ -1051,7 +1049,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                     ExprNode body = ((OpDefNode) val).getBody();
                     if (this.getLevelBound(body, c) == 1)
                     {
-                        this.initPredVec.addElement(new Action(Spec.addSubsts(body, subs), c, ((OpDefNode) val)));
+                        this.initPredVec.addElement(new Action(Specs.addSubsts(body, subs), c, ((OpDefNode) val)));
                     } else
                     {
                         this.processConfigSpec(body, c, subs);
@@ -1241,7 +1239,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                     }
                     if (this.nextPred == null)
                     {
-                        this.nextPred = new Action(Spec.addSubsts(arg, subs), c);
+                        this.nextPred = new Action(Specs.addSubsts(arg, subs), c);
                     } else
                     {
                         Assert.fail(EC.TLC_CANT_HANDLE_TOO_MANY_NEXT_STATE_RELS);
@@ -1249,7 +1247,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                     // ---sm 09/06/04 >>>
                 } else
                 {
-                    this.temporalVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
+                    this.temporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
                     this.temporalNameVec.addElement(pred.toString());
                 }
                 return;
@@ -1265,10 +1263,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         int level = this.getLevelBound(pred, c);
         if (level <= 1)
         {
-            this.initPredVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
+            this.initPredVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
         } else if (level == 3)
         {
-            this.temporalVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
+            this.temporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
             this.temporalNameVec.addElement(pred.toString());
         } else
         {
@@ -1339,10 +1337,10 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                         name = boxArg1.getOperator().getName().toString();
                     }
                     this.impliedActNameVec.addElement(name);
-                    this.impliedActionVec.addElement(new Action(Spec.addSubsts(boxArg, subs), c));
+                    this.impliedActionVec.addElement(new Action(Specs.addSubsts(boxArg, subs), c));
                 } else if (this.getLevelBound(boxArg, c) < 2)
                 {
-                    this.invVec.addElement(new Action(Spec.addSubsts(boxArg, subs), c));
+                    this.invVec.addElement(new Action(Specs.addSubsts(boxArg, subs), c));
                     if ((boxArg instanceof OpApplNode) && (((OpApplNode) boxArg).getArgs().length == 0))
                     {
                         name = ((OpApplNode) boxArg).getOperator().getName().toString();
@@ -1350,7 +1348,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                     this.invNameVec.addElement(name);
                 } else
                 {
-                    this.impliedTemporalVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
+                    this.impliedTemporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
                     this.impliedTemporalNameVec.addElement(name);
                 }
                 return;
@@ -1365,11 +1363,11 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         int level = this.getLevelBound(pred, c);
         if (level <= 1)
         {
-            this.impliedInitVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
+            this.impliedInitVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
             this.impliedInitNameVec.addElement(name);
         } else if (level == 3)
         {
-            this.impliedTemporalVec.addElement(new Action(Spec.addSubsts(pred, subs), c));
+            this.impliedTemporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
             this.impliedTemporalNameVec.addElement(name);
         } else
         {
@@ -2209,57 +2207,5 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
 
     public String getSpecDir() {
     	return this.specDir;
-    }
-    
-    /** 
-     * The level of the expression according to level checking.
-     * static method, does not change instance state 
-     */
-    public static int getLevel(LevelNode expr, Context c)
-    {
-        HashSet lpSet = expr.getLevelParams();
-        if (lpSet.isEmpty())
-            return expr.getLevel();
-
-        int level = expr.getLevel();
-        Iterator iter = lpSet.iterator();
-        while (iter.hasNext())
-        {
-            SymbolNode param = (SymbolNode) iter.next();
-            Object res = c.lookup(param, true);
-            if (res != null)
-            {
-                if (res instanceof LazyValue)
-                {
-                    LazyValue lv = (LazyValue) res;
-                    int plevel = getLevel((LevelNode) lv.expr, lv.con);
-                    level = (plevel > level) ? plevel : level;
-                } else if (res instanceof OpDefNode)
-                {
-                    int plevel = getLevel((LevelNode) res, c);
-                    level = (plevel > level) ? plevel : level;
-                }
-            }
-        }
-        return level;
-    }
-
-    /**
-     * Static method, does not change instance state
-     * @param expr
-     * @param subs
-     * @return
-     */
-    private static final ExprNode addSubsts(ExprNode expr, List subs)
-    {
-        ExprNode res = expr;
-
-        while (!subs.isEmpty())
-        {
-            SubstInNode sn = (SubstInNode) subs.car();
-            res = new SubstInNode(sn.stn, sn.getSubsts(), res, sn.getInstantiatingModule(), sn.getInstantiatedModule());
-            subs = subs.cdr();
-        }
-        return res;
     }
 }

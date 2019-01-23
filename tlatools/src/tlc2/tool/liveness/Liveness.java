@@ -23,7 +23,7 @@ import tlc2.tool.ContextEnumerator;
 import tlc2.tool.EvalControl;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
-import tlc2.tool.Spec;
+import tlc2.tool.Specs;
 import tlc2.tool.TLCState;
 import tlc2.tool.ToolGlobals;
 import tlc2.util.Context;
@@ -81,7 +81,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			return astToLive(tool, expr1.getBody(), con1);
 		}
 		default: {
-			int level = Spec.getLevel(expr, con);
+			int level = Specs.getLevel(expr, con);
 			if (level > 2) {
 				Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 			}
@@ -127,7 +127,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			}
 
 			if (opcode == 0) {
-				int level = Spec.getLevel(expr, con);
+				int level = Specs.getLevel(expr, con);
 				if (level > 2) {
 					Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 				}
@@ -155,7 +155,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			} catch (Exception e) {
 				// Catching Exception here seem dangerous
 				// Assert.printStack(e);
-				int level = Spec.getLevel(expr, con);
+				int level = Specs.getLevel(expr, con);
 				if (level > 2) {
 					Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 					;
@@ -182,7 +182,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			} catch (Exception e) {
 				// Catching Exception here seem dangerous
 				// Assert.printStack(e);
-				int level = Spec.getLevel(expr, con);
+				int level = Specs.getLevel(expr, con);
 				if (level > 2) {
 					if (e instanceof Assert.TLCRuntimeException) {
 						Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, new String[] {expr.toString(), e.getMessage()});
@@ -317,7 +317,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			return new LNEven(lnArg);
 		}
 		case OPCODE_aa: { // AngleAct <A>_e
-			assert Spec.getLevel(expr, con) == 2;
+			assert Specs.getLevel(expr, con) == 2;
 			final ExprNode body = (ExprNode) args[0]; // the A in <<A>>_e
 			final ExprNode subs = (ExprNode) args[1]; // the e in <<A>>_e
 			return new LNAction(body, con, subs, false);
@@ -343,7 +343,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			// The default handling here results in LNAction#subscript to be null skipping
 			// the subscript related branch in LNAction#eval(Tool, TLCState, TLCState). This
 			// poses no problem though because Tool#evalAppl eventually checks if e' = e.
-			int level = Spec.getLevel(expr, con);
+			int level = Specs.getLevel(expr, con);
 			if (level > 2) {
 				Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 			}
