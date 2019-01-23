@@ -37,8 +37,8 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.value.BoolValue;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
-import tlc2.value.Value;
 import util.UniqueString;
 
 public class RandomSubsetTest extends ModelCheckerTestCase {
@@ -63,7 +63,7 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 		
 		final TLCStateInfo first = (TLCStateInfo) ((Object[]) actual.get(0))[0];
 		assertTrue(((String) first.info).startsWith("<Initial predicate>"));
-		final Map<UniqueString, Value> firstState = first.state.getVals();
+		final Map<UniqueString, IValue> firstState = first.state.getVals();
 		assertEquals(3, firstState.size());
 		
 		// Check x and y values are within defined ranges.
@@ -77,7 +77,7 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 		
 		final TLCStateInfo second = (TLCStateInfo) ((Object[]) actual.get(1))[0];
 		assertTrue(((String) second.info).startsWith("<Next line 10, col 9 to line 11, col 21 of module RandomSubset>"));
-		final Map<UniqueString, Value> secondState = second.state.getVals();
+		final Map<UniqueString, IValue> secondState = second.state.getVals();
 		assertEquals(3, secondState.size());
 		// UNCHANGED x,y
 		assertEquals(firstX.val, ((IntValue) secondState.get(UniqueString.uniqueStringOf("x"))).val);

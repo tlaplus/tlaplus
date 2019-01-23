@@ -5,15 +5,15 @@ import java.util.stream.Collectors;
 
 import tlc2.value.BoolValue;
 import tlc2.value.FcnRcdValue;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
-import tlc2.value.Value;
 
 public class ModuleOverwrites {
 
-	public static Value noDupesOverwrite(final FcnRcdValue frv, final IntValue exclude) {
+	public static IValue noDupesOverwrite(final FcnRcdValue frv, final IntValue exclude) {
 		// LET sub == SelectSeq(t, LAMBDA e: e # emp)
 		// IN ...
-		final List<Value> filtered = Arrays.asList(frv.values).stream().filter(e -> e != exclude).collect(Collectors.toList());
+		final List<IValue> filtered = Arrays.asList(frv.values).stream().filter(e -> e != exclude).collect(Collectors.toList());
 		
 		// IF Len(sub) < 2 THEN TRUE ...
 		if (filtered.size() < 2) {

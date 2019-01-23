@@ -17,7 +17,7 @@ import tlc2.util.FP64;
 import util.Assert;
 import util.WrongInvocationException;
 
-public abstract class Value implements ValueConstants, Serializable {
+public abstract class Value implements ValueConstants, Serializable, IValue {
 	/**
 	 * @see See note on performance in CostModelCreator.
 	 */
@@ -31,9 +31,11 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method returns the value kind: an integer that represents
    * the kind of this value. See the interface ValueConstants.java.
    */
-  public abstract byte getKind();
+  @Override
+public abstract byte getKind();
 
-  public String getKindString() {
+  @Override
+public String getKindString() {
     try {
       return ValueImage[this.getKind()];
     }
@@ -44,30 +46,37 @@ public abstract class Value implements ValueConstants, Serializable {
   }
 
   /* This method compares this with val.  */
-  public abstract int compareTo(Object val);
+  @Override
+public abstract int compareTo(Object val);
 
   /* This method returns true iff elem is a member of this. */
-  public abstract boolean member(Value elem);
+  @Override
+public abstract boolean member(IValue elem);
 
   /* This method returns a new value after taking the except. */
-  public abstract Value takeExcept(ValueExcept ex);
+  @Override
+public abstract IValue takeExcept(ValueExcept ex);
 
   /* This method returns a new value after taking the excepts. */
-  public abstract Value takeExcept(ValueExcept[] exs);
+  @Override
+public abstract IValue takeExcept(ValueExcept[] exs);
 
-  public void write(ValueOutputStream vos) throws IOException {
+  @Override
+public void write(ValueOutputStream vos) throws IOException {
 		throw new WrongInvocationException("ValueOutputStream: Can not pickle the value\n" +
 			    Values.ppr(toString()));
   }
 
   public transient CostModel cm = CostModel.DO_NOT_RECORD;
   
-  public Value setCostModel(CostModel cm) {
+  @Override
+public IValue setCostModel(CostModel cm) {
 	  this.cm = cm;
 	  return this;
   }
   
-  public CostModel getCostModel() {
+  @Override
+public CostModel getCostModel() {
 	  return this.cm;
   }
   
@@ -77,15 +86,18 @@ public abstract class Value implements ValueConstants, Serializable {
    */
   private transient SemanticNode source = null;
 
-  public void setSource(final SemanticNode semanticNode) {
+  @Override
+public void setSource(final SemanticNode semanticNode) {
     source = semanticNode;
   }
 
-  public SemanticNode getSource() {
+  @Override
+public SemanticNode getSource() {
     return source;
   }
   
-  public boolean hasSource() {
+  @Override
+public boolean hasSource() {
 	  return source != null;
   }
 
@@ -93,10 +105,13 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method normalizes (destructively) the representation of
    * the value. It is essential for equality comparison.
    */
-  public abstract boolean isNormalized();
-  public abstract Value normalize();
+  @Override
+public abstract boolean isNormalized();
+  @Override
+public abstract IValue normalize();
 
-  public final boolean isEmpty() {
+  @Override
+public final boolean isEmpty() {
     try {
 
       switch (this.getKind()) {
@@ -168,11 +183,13 @@ public abstract class Value implements ValueConstants, Serializable {
   }
 
   /* Fully normalize this (composite) value. */
-  public void deepNormalize() {
+  @Override
+public void deepNormalize() {
   }
 
   /* This method returns the fingerprint of this value. */
-  public long fingerPrint(long fp) {
+  @Override
+public long fingerPrint(long fp) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
       Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
@@ -188,7 +205,8 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method returns the value permuted by the permutation. It
    * returns this if nothing is permuted.
    */
-  public Value permute(MVPerm perm) {
+  @Override
+public IValue permute(MVPerm perm) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
       Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
@@ -201,22 +219,28 @@ public abstract class Value implements ValueConstants, Serializable {
   }
 
   /* This method returns true iff the value is finite. */
-  public abstract boolean isFinite();
+  @Override
+public abstract boolean isFinite();
 
   /* This method returns the size of the value.  */
-  public abstract int size();
+  @Override
+public abstract int size();
 
   /* This method returns true iff the value is fully defined. */
-  public abstract boolean isDefined();
+  @Override
+public abstract boolean isDefined();
 
   /* This method makes a real deep copy of this.  */
-  public abstract Value deepCopy();
+  @Override
+public abstract IValue deepCopy();
 
   /* This method returns true iff val can be assigned to this. */
-  public abstract boolean assignable(Value val);
+  @Override
+public abstract boolean assignable(IValue val);
 
   /* This method returns the hash code of this value. */
-  public final int hashCode() {
+  @Override
+public final int hashCode() {
     try {
       long fp = this.fingerPrint(FP64.New());
       int high = (int)(fp >> 32);
@@ -233,15 +257,16 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method selects the component of this value. The component is
    * specified by path.
    */
-  public final Value select(Value[] path) {
+  @Override
+public final IValue select(IValue[] path) {
     try {
-      Value result = this;
+      IValue result = this;
       for (int i = 0; i < path.length; i++) {
         if (!(result instanceof Applicable)) {
           Assert.fail("Attempted to apply EXCEPT construct to the value " +
                 Values.ppr(result.toString()) + ".");
         }
-        Value elem = path[i];
+        IValue elem = path[i];
         result = ((Applicable)result).select(elem);
         if (result == null) return null;
       }
@@ -254,7 +279,8 @@ public abstract class Value implements ValueConstants, Serializable {
   }
 
   /* Convert val into a SetEnumValue.  Returns null if not possible. */
-  public Value toSetEnum() {
+  @Override
+public IValue toSetEnum() {
 	  return null;
   }
 
@@ -262,7 +288,8 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method converts a value to a function value. It returns
    * null if the conversion fails.
    */
-  public Value toFcnRcd() {
+  @Override
+public IValue toFcnRcd() {
 	  return null;
   }
 
@@ -270,7 +297,8 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method converts a value to a function value. It returns
    * null if the conversion fails.
    */
-  public Value toRcd() {
+  @Override
+public IValue toRcd() {
 	  return null;
   }
 
@@ -278,7 +306,8 @@ public abstract class Value implements ValueConstants, Serializable {
    * This method converts a value to a tuple value. It returns
    * null if the conversion fails.
    */
-  public Value toTuple() {
+  @Override
+public IValue toTuple() {
 	  return null;
   }
   
@@ -286,10 +315,12 @@ public abstract class Value implements ValueConstants, Serializable {
    * This abstract method returns a string representation of this
    * value. Each subclass must provide its own implementation.
    */
-  public abstract StringBuffer toString(StringBuffer sb, int offset);
+  @Override
+public abstract StringBuffer toString(StringBuffer sb, int offset);
 
   /* The string representation of this value */
-  public final String toString() {
+  @Override
+public final String toString() {
     try {
       StringBuffer sb = new StringBuffer();
       return this.toString(sb, 0).toString();
@@ -300,7 +331,8 @@ public abstract class Value implements ValueConstants, Serializable {
     }
   }
 
-  public final String toString(String delim) {
+  @Override
+public final String toString(String delim) {
     try {
       StringBuffer sb = new StringBuffer();
       sb = this.toString(sb, 0);

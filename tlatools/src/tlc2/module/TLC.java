@@ -18,6 +18,7 @@ import tlc2.util.IdThread;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
 import tlc2.value.FcnRcdValue;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
 import tlc2.value.RecordValue;
@@ -27,7 +28,6 @@ import tlc2.value.SetOfRcdsValue;
 import tlc2.value.SetOfTuplesValue;
 import tlc2.value.StringValue;
 import tlc2.value.TupleValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
 import tlc2.value.Values;
@@ -62,10 +62,10 @@ public class TLC implements ValueConstants
      * {"a", "a"} instead of {"a"}.  For safety, the values are copied before normalizing,
      * thought that's probably not necessary.
      */
-    public static Value Print(Value v1, Value v2)
+    public static IValue Print(IValue v1, IValue v2)
     {
-        Value v1c = v1.deepCopy();
-        Value v2c = v2.deepCopy();
+        IValue v1c = v1.deepCopy();
+        IValue v2c = v2.deepCopy();
         v1c.deepNormalize();
         v2c.deepNormalize();
         if (OUTPUT == null) {
@@ -85,9 +85,9 @@ public class TLC implements ValueConstants
      * 
      * Modified on 22 June 2011 by LL.  See comment on the Print method
      */
-    public static Value PrintT(Value v1)
+    public static IValue PrintT(IValue v1)
     {
-        Value v1c = v1.deepCopy();
+        IValue v1c = v1.deepCopy();
         v1c.deepNormalize();   
         if (OUTPUT == null) {
         	String ppr = Values.ppr(v1c.toString());
@@ -103,7 +103,7 @@ public class TLC implements ValueConstants
     }
 
     /* Returns the string value of the string representation of v. */
-    public static Value ToString(Value v)
+    public static IValue ToString(IValue v)
     {
         return new StringValue(v.toString());
     }
@@ -112,7 +112,7 @@ public class TLC implements ValueConstants
      * Returns true if the value of v1 is true. Otherwise, throws
      * an exception with v2 as the error message.
      */
-    public static Value Assert(Value v1, Value v2)
+    public static IValue Assert(IValue v1, IValue v2)
     {
         if ((v1 instanceof BoolValue) && ((BoolValue) v1).val)
         {
@@ -125,13 +125,13 @@ public class TLC implements ValueConstants
      * The current wall clock time.  Note that it is not declared as final.
      * So, TLC will not treat it as a constant.
      */
-    public static Value JavaTime()
+    public static IValue JavaTime()
     {
         int t = (int) System.currentTimeMillis();
         return IntValue.gen(t & 0x7FFFFFFF);
     }
 
-    public static Value TLCGet(Value vidx)
+    public static IValue TLCGet(IValue vidx)
     {
         if (vidx instanceof IntValue)
         {
@@ -139,7 +139,7 @@ public class TLC implements ValueConstants
             if (idx >= 0)
             {
                 Thread th = Thread.currentThread();
-                Value res = null;
+                IValue res = null;
                 if (th instanceof IdThread)
                 {
                     res = ((IdThread) th).getLocalValue(idx);
@@ -163,7 +163,7 @@ public class TLC implements ValueConstants
                 "nonnegative integer", Values.ppr(vidx.toString()) });
     }
 
-	private static final Value TLCGetStringValue(final Value vidx) {
+	private static final IValue TLCGetStringValue(final IValue vidx) {
 		final StringValue sv = (StringValue) vidx;
 		if (UniqueString.uniqueStringOf("diameter") == sv.val) {
 			try {
@@ -198,7 +198,7 @@ public class TLC implements ValueConstants
 		throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 	}
 
-    public static Value TLCSet(Value vidx, Value val)
+    public static IValue TLCSet(IValue vidx, IValue val)
     {
         if (vidx instanceof IntValue)
         {
@@ -231,10 +231,10 @@ public class TLC implements ValueConstants
                 Values.ppr(vidx.toString()) });
     }
 
-    public static Value MakeFcn(Value d, Value e)
+    public static IValue MakeFcn(IValue d, IValue e)
     {
-        Value[] dom = new Value[1];
-        Value[] vals = new Value[1];
+    	IValue[] dom = new IValue[1];
+    	IValue[] vals = new IValue[1];
         dom[0] = d;
         vals[0] = e;
         return new FcnRcdValue(dom, vals, true);
@@ -244,7 +244,7 @@ public class TLC implements ValueConstants
      * f @@ g == [x \in (DOMAIN f) \cup (DOMAIN g) |->
      *            IF x \in DOMAIN f THEN f[x] ELSE g[x]]
      */
-    public static Value CombineFcn(Value f1, Value f2)
+    public static IValue CombineFcn(IValue f1, IValue f2)
     {
         FcnRcdValue fcn1 = (FcnRcdValue) f1.toFcnRcd();
         FcnRcdValue fcn2 = (FcnRcdValue) f2.toFcnRcd();
@@ -260,10 +260,10 @@ public class TLC implements ValueConstants
         }
         ValueVec dom = new ValueVec();
         ValueVec vals = new ValueVec();
-        Value[] vals1 = fcn1.values;
-        Value[] vals2 = fcn2.values;
+        IValue[] vals1 = fcn1.values;
+        IValue[] vals2 = fcn2.values;
 
-        Value[] dom1 = fcn1.domain;
+        IValue[] dom1 = fcn1.domain;
         if (dom1 == null)
         {
             IntervalValue intv1 = fcn1.intv;
@@ -282,13 +282,13 @@ public class TLC implements ValueConstants
         }
 
         int len1 = dom.size();
-        Value[] dom2 = fcn2.domain;
+        IValue[] dom2 = fcn2.domain;
         if (dom2 == null)
         {
             IntervalValue intv2 = fcn2.intv;
             for (int i = intv2.low; i <= intv2.high; i++)
             {
-                Value val = IntValue.gen(i);
+            	IValue val = IntValue.gen(i);
                 boolean found = false;
                 for (int j = 0; j < len1; j++)
                 {
@@ -308,7 +308,7 @@ public class TLC implements ValueConstants
         {
             for (int i = 0; i < dom2.length; i++)
             {
-                Value val = dom2[i];
+            	IValue val = dom2[i];
                 boolean found = false;
                 for (int j = 0; j < len1; j++)
                 {
@@ -326,8 +326,8 @@ public class TLC implements ValueConstants
             }
         }
 
-        Value[] domain = new Value[dom.size()];
-        Value[] values = new Value[dom.size()];
+        IValue[] domain = new IValue[dom.size()];
+        IValue[] values = new IValue[dom.size()];
         for (int i = 0; i < domain.length; i++)
         {
             domain[i] = dom.elementAt(i);
@@ -336,7 +336,7 @@ public class TLC implements ValueConstants
         return new FcnRcdValue(domain, values, false);
     }
 
-    public static Value SortSeq(Value s, Value cmp)
+    public static IValue SortSeq(IValue s, IValue cmp)
     {
         TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
@@ -350,12 +350,12 @@ public class TLC implements ValueConstants
                     Values.ppr(cmp.toString()) });
         }
         Applicable fcmp = (Applicable) cmp;
-        Value[] elems = seq.elems;
+        IValue[] elems = seq.elems;
         int len = elems.length;
         if (len == 0)
             return seq;
-        Value[] args = new Value[2];
-        Value[] newElems = new Value[len];
+        IValue[] args = new IValue[2];
+        IValue[] newElems = new IValue[len];
         newElems[0] = elems[0];
         for (int i = 1; i < len; i++)
         {
@@ -375,9 +375,9 @@ public class TLC implements ValueConstants
         return new TupleValue(newElems);
     }
 
-    private static boolean compare(Applicable fcmp, Value[] args)
+    private static boolean compare(Applicable fcmp, IValue[] args)
     {
-        Value res = fcmp.apply(args, EvalControl.Clear);
+        IValue res = fcmp.apply(args, EvalControl.Clear);
         if (res instanceof BoolValue)
         {
             return ((BoolValue) res).val;
@@ -387,7 +387,7 @@ public class TLC implements ValueConstants
     }
 
     // Returns a set of size n! where n = |s|.
-    public static Value Permutations(Value s)
+    public static IValue Permutations(IValue s)
     {
         SetEnumValue s1 = (SetEnumValue) s.toSetEnum();
         if (s1 == null)
@@ -400,12 +400,12 @@ public class TLC implements ValueConstants
         int len = elems.size();
         if (len == 0)
         {
-            Value[] elems1 = { EmptyFcn };
+        	IValue[] elems1 = { EmptyFcn };
             return new SetEnumValue(elems1, true);
         }
 
         int factorial = 1;
-        Value[] domain = new Value[len];
+        IValue[] domain = new IValue[len];
         int[] idxArray = new int[len];
         boolean[] inUse = new boolean[len];
         for (int i = 0; i < len; i++)
@@ -419,7 +419,7 @@ public class TLC implements ValueConstants
         ValueVec fcns = new ValueVec(factorial);
         _done: while (true)
         {
-            Value[] vals = new Value[len];
+        	IValue[] vals = new IValue[len];
             for (int i = 0; i < len; i++)
             {
                 vals[i] = domain[idxArray[i]];
@@ -464,7 +464,7 @@ public class TLC implements ValueConstants
         return new SetEnumValue(fcns, false);
     }
 
-    public static Value RandomElement(Value val)
+    public static IValue RandomElement(IValue val)
     {
         switch (val.getKind()) {
         case SETOFFCNSVALUE: {
@@ -478,8 +478,8 @@ public class TLC implements ValueConstants
             }
             domSet.normalize();
             ValueVec elems = domSet.elems;
-            Value[] dom = new Value[elems.size()];
-            Value[] vals = new Value[elems.size()];
+            IValue[] dom = new IValue[elems.size()];
+            IValue[] vals = new IValue[elems.size()];
             for (int i = 0; i < dom.length; i++)
             {
                 dom[i] = elems.elementAt(i);
@@ -490,7 +490,7 @@ public class TLC implements ValueConstants
         case SETOFRCDSVALUE: {
             SetOfRcdsValue srv = (SetOfRcdsValue) val;
             srv.normalize();
-            Value[] vals = new Value[srv.names.length];
+            IValue[] vals = new IValue[srv.names.length];
             for (int i = 0; i < vals.length; i++)
             {
                 vals[i] = RandomElement(srv.values[i]);
@@ -500,7 +500,7 @@ public class TLC implements ValueConstants
         case SETOFTUPLESVALUE: {
             SetOfTuplesValue stv = (SetOfTuplesValue) val;
             stv.normalize();
-            Value[] vals = new Value[stv.sets.length];
+            IValue[] vals = new IValue[stv.sets.length];
             for (int i = 0; i < vals.length; i++)
             {
                 vals[i] = RandomElement(stv.sets[i]);
@@ -519,7 +519,7 @@ public class TLC implements ValueConstants
         }
     }
 
-    public static Value Any()
+    public static IValue Any()
     {
         return AnySet.ANY();
     }
@@ -532,8 +532,8 @@ public class TLC implements ValueConstants
      * @param val
      * @return
      */
-    public static Value TLCEval(Value val) {
-        Value evalVal = val.toSetEnum();
+    public static IValue TLCEval(IValue val) {
+        IValue evalVal = val.toSetEnum();
         if (evalVal != null) {
             return evalVal;
         }

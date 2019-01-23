@@ -49,11 +49,11 @@ public class RecordValueTest {
 		final UniqueString a = internTable.put("a");
 		final UniqueString b = internTable.put("b");
 		
-		final Value aVal = new StringValue("aVal");
-		final Value bVal = new StringValue("bVal");
+		final IValue aVal = new StringValue("aVal");
+		final IValue bVal = new StringValue("bVal");
 		
 		// Create the source to create a deep copy of
-		final RecordValue orig = new RecordValue(new UniqueString[] {b, a}, new Value[] {bVal, aVal}, false);
+		final RecordValue orig = new RecordValue(new UniqueString[] {b, a}, new IValue[] {bVal, aVal}, false);
 		
 		// Verify the mappings in RecordValue are correct
 		assertTrue(orig.names[0].equals(b));

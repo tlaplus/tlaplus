@@ -12,7 +12,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Tool;
 import tlc2.util.Context;
 import tlc2.value.BoolValue;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import util.Assert;
 import util.WrongInvocationException;
 
@@ -61,8 +61,8 @@ public class LNAction extends LiveExprNode {
 
 	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
 		if (this.subscript != null) {
-			Value v1 = tool.eval(this.subscript, con, s1, TLCState.Empty, EvalControl.Clear);
-			Value v2 = tool.eval(this.subscript, con, s2, null, EvalControl.Clear);
+			IValue v1 = tool.eval(this.subscript, con, s1, TLCState.Empty, EvalControl.Clear);
+			IValue v2 = tool.eval(this.subscript, con, s2, null, EvalControl.Clear);
 			boolean isStut = v1.equals(v2);
 			if (this.isBox) {
 				if (isStut) {
@@ -74,7 +74,7 @@ public class LNAction extends LiveExprNode {
 				}
 			}
 		}
-		Value val = tool.eval(this.body, con, s1, s2, EvalControl.Clear);
+		IValue val = tool.eval(this.body, con, s1, s2, EvalControl.Clear);
 		if (!(val instanceof BoolValue)) {
 			Assert.fail(EC.TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE);
 		}

@@ -19,7 +19,7 @@ import tlc2.util.IdThread;
 import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import util.DebugPrinter;
 
 /**
@@ -481,13 +481,13 @@ public abstract class AbstractChecker
         return true;
     }
     
-	public final void setAllValues(int idx, Value val) {
+	public final void setAllValues(int idx, IValue val) {
 		for (int i = 0; i < this.workers.length; i++) {
 			workers[i].setLocalValue(idx, val);
 		}
 	}
 
-	public final Value getValue(int i, int idx) {
+	public final IValue getValue(int i, int idx) {
 		return workers[i].getLocalValue(idx);
 	}
 

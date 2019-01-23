@@ -28,7 +28,7 @@ import tlc2.tool.liveness.LiveException;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import util.FileUtil;
 import util.FilenameToStream;
 
@@ -127,7 +127,7 @@ public class Simulator {
 	private final RandomGenerator rng;
 	private final long seed;
 	private long aril;
-	private Value[] localValues = new Value[4];
+	private IValue[] localValues = new IValue[4];
 
 	// The set of all initial states for the given spec. This should be only be
 	// computed once and re-used whenever a new random trace is generated. This
@@ -332,16 +332,16 @@ public class Simulator {
 		this.printSummary();
 	}
 
-	public Value getLocalValue(int idx) {
+	public IValue getLocalValue(int idx) {
 		if (idx < this.localValues.length) {
 			return this.localValues[idx];
 		}
 		return null;
 	}
 
-	public void setLocalValue(int idx, Value val) {
+	public void setLocalValue(int idx, IValue val) {
 		if (idx >= this.localValues.length) {
-			Value[] vals = new Value[idx + 1];
+			IValue[] vals = new IValue[idx + 1];
 			System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
 			this.localValues = vals;
 		}

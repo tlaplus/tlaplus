@@ -14,19 +14,19 @@ public interface ValueEnumeration {
   public void reset();
 
   /* Return the next element if there is one. Otherwise return null. */
-  public Value nextElement();
+  public IValue nextElement();
   
-	default List<Value> all() {
-		final List<Value> values = new ArrayList<Value>();
-		Value elem;
+	default List<IValue> all() {
+		final List<IValue> values = new ArrayList<IValue>();
+		IValue elem;
 		while ((elem = nextElement()) != null) {
 			values.add(elem);
 		}
 		return values;
 	}
 
-	default void forEach(final Consumer<? super Value> action) {
-		Value elem;
+	default void forEach(final Consumer<? super IValue> action) {
+		IValue elem;
 		while ((elem = nextElement()) != null) {
 			action.accept(elem);
 		}

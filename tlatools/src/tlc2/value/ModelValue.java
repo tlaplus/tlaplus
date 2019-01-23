@@ -189,7 +189,7 @@ public class ModelValue extends Value {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of the model value " + Values.ppr(this.toString()));
@@ -213,7 +213,7 @@ public class ModelValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the model value " +
@@ -227,7 +227,7 @@ public class ModelValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the model value " +
@@ -255,13 +255,13 @@ public class ModelValue extends Value {
 
   public final boolean isNormalized() { return true; }
 
-  public final Value normalize() { /*nop*/return this; }
+  public final IValue normalize() { /*nop*/return this; }
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return ((val instanceof ModelValue) &&
         this.val.equals(((ModelValue)val).val));
@@ -289,9 +289,9 @@ public class ModelValue extends Value {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
-      Value res = perm.get(this);
+      IValue res = perm.get(this);
       if (res == null) return this;
       return res;
     }

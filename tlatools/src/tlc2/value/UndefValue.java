@@ -35,7 +35,7 @@ public class UndefValue extends Value {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element " + Values.ppr(this.toString()));
@@ -59,7 +59,7 @@ public class UndefValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the value " +
@@ -73,7 +73,7 @@ public class UndefValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the value " +
@@ -101,13 +101,13 @@ public class UndefValue extends Value {
 
   public final boolean isNormalized() { return true; }
 
-  public final Value normalize() { /*nop*/return this; }
+  public final IValue normalize() { /*nop*/return this; }
 
   public final boolean isDefined() { return false; }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) { return true; }
+  public final boolean assignable(IValue val) { return true; }
 
   /* The string representation. */
   public final StringBuffer toString(StringBuffer sb, int offset) {

@@ -70,7 +70,7 @@ public class StringValue extends Value {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of the string " + Values.ppr(this.toString()));
@@ -94,7 +94,7 @@ public class StringValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the string " +
@@ -108,7 +108,7 @@ public class StringValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the string " +
@@ -136,13 +136,13 @@ public class StringValue extends Value {
 
   public final boolean isNormalized() { return true; }
 
-  public final Value normalize() { /*SKIP*/return this; }
+  public final IValue normalize() { /*SKIP*/return this; }
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return ((val instanceof StringValue) &&
         this.equals(val));
@@ -189,7 +189,7 @@ public class StringValue extends Value {
     }
   }
 
-  public final Value permute(MVPerm perm) { return this; }
+  public final IValue permute(MVPerm perm) { return this; }
 
   /*************************************************************************
   * toString() modified 23 Aug 2007 by LL to call PrintVersion so strings  *
@@ -243,9 +243,9 @@ public class StringValue extends Value {
     }
   }
 
-	public static Value createFrom(final ValueInputStream vos) throws IOException {
+	public static IValue createFrom(final ValueInputStream vos) throws IOException {
 		final UniqueString str = UniqueString.read(vos.getInputStream());
-		final Value res = new StringValue(str);
+		final IValue res = new StringValue(str);
 		final int index = vos.getIndex();
 		vos.assign(res, index);
 		return res;

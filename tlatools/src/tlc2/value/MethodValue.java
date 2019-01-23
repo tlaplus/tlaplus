@@ -36,7 +36,7 @@ public class MethodValue extends OpValue implements Applicable {
 				// MethodHandle#invokeWithArguments internally creates a spreader on the fly
 				// which turns out to be costly (for the spec MongoRepl of the performance
 				// tests it resulted in a 20% performance drop).
-				this.mh = MethodHandles.publicLookup().unreflect(md).asSpreader(Value[].class, parameterCount);
+				this.mh = MethodHandles.publicLookup().unreflect(md).asSpreader(IValue[].class, parameterCount);
 			} else {
 				this.mh = MethodHandles.publicLookup().unreflect(md); 
 			}
@@ -72,7 +72,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + elem == null ? "null" : Values.ppr(elem.toString()) +
       "\nis an element of operator " + this.toString());
@@ -96,7 +96,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value apply(Value arg, int control) {
+  public final IValue apply(IValue arg, int control) {
     try {
       throw new WrongInvocationException("It is a TLC bug: Should use the other apply method.");
     }
@@ -106,15 +106,15 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value apply(Value[] args, int control) {
+  public final IValue apply(IValue[] args, int control) {
     try {
-      Value res = null;
+      IValue res = null;
       try
       {
     	  if (args.length == 0) {
-    		  res = (Value) this.mh.invokeExact();
+    		  res = (IValue) this.mh.invokeExact();
     	  } else {
-    		  res = (Value) this.mh.invoke(args);
+    		  res = (IValue) this.mh.invoke(args);
     	  }
       } catch (Throwable e)
       {
@@ -137,7 +137,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value select(Value arg) {
+  public final IValue select(IValue arg) {
     try {
       throw new WrongInvocationException("It is a TLC bug: Attempted to call MethodValue.select().");
     }
@@ -147,7 +147,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
       this.toString() + ".");
@@ -159,7 +159,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       this.toString() + ".");
@@ -171,7 +171,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value getDomain() {
+  public final IValue getDomain() {
     try {
       Assert.fail("Attempted to compute the domain of the operator " +
       this.toString() + ".");
@@ -206,7 +206,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       throw new WrongInvocationException("It is a TLC bug: Attempted to normalize an operator.");
     }
@@ -218,9 +218,9 @@ public class MethodValue extends OpValue implements Applicable {
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       throw new WrongInvocationException("It is a TLC bug: Attempted to initialize an operator.");
     }

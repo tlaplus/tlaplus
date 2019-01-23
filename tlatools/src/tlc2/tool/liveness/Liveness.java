@@ -30,7 +30,7 @@ import tlc2.util.Context;
 import tlc2.util.Vect;
 import tlc2.value.BoolValue;
 import tlc2.value.FcnLambdaValue;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import util.Assert;
 import util.ToolIO;
 
@@ -38,7 +38,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 
 	private static LiveExprNode astToLive(Tool tool, ExprNode expr, Context con, int level) {
 		if (level == 0) {
-			Value val = tool.eval(expr, con, TLCState.Empty);
+			IValue val = tool.eval(expr, con, TLCState.Empty);
 			if (!(val instanceof BoolValue)) {
 				Assert.fail(EC.TLC_EXPECTED_VALUE, new String[] { "boolean", expr.toString() });
 			}
@@ -110,7 +110,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 						FormalParamNode[] formals = opDef.getParams();
 						Context con1 = con;
 						for (int i = 0; i < alen; i++) {
-							Value argVal = tool.eval(args[i], con, TLCState.Empty);
+							IValue argVal = tool.eval(args[i], con, TLCState.Empty);
 							con1 = con1.cons(formals[i], argVal);
 						}
 						LiveExprNode res = astToLive(tool, opDef.getBody(), con1);
@@ -222,7 +222,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		case OPCODE_fa: // FcnApply
 		{
 			try {
-				Value fval = tool.eval(args[0], con, TLCState.Empty);
+				IValue fval = tool.eval(args[0], con, TLCState.Empty);
 				if (fval instanceof FcnLambdaValue) {
 					FcnLambdaValue fcn = (FcnLambdaValue) fval;
 					if (fcn.fcnRcd == null) {

@@ -19,7 +19,7 @@ public class UserValue extends Value {
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof UserValue) {
-        return this.userObj.compareTo((Value)obj);
+        return this.userObj.compareTo((IValue)obj);
       }
       if (!(obj instanceof ModelValue))
         Assert.fail("Attempted to compare overridden value " + Values.ppr(this.toString()) +
@@ -42,7 +42,7 @@ public class UserValue extends Value {
     }
   }
 
-  public final boolean member(Value val) {
+  public final boolean member(IValue val) {
     try {
       return this.userObj.member(val);
     }
@@ -62,7 +62,7 @@ public class UserValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the overridden value " +
@@ -76,7 +76,7 @@ public class UserValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the overridden value " +
@@ -105,13 +105,13 @@ public class UserValue extends Value {
   /* Nothing to normalize. */
   public final boolean isNormalized() { return true; }
 
-  public final Value normalize() { /*SKIP*/return this; }
+  public final IValue normalize() { /*SKIP*/return this; }
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return this.equals(val);
     }

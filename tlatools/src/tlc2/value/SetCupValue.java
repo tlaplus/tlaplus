@@ -14,18 +14,18 @@ import tlc2.tool.coverage.CostModel;
 import util.Assert;
 
 public class SetCupValue extends EnumerableValue implements Enumerable {
-  public final Value set1;
-  public final Value set2;
+  public final IValue set1;
+  public final IValue set2;
   protected SetEnumValue cupSet;
 
   /* Constructor */
-  public SetCupValue(Value set1, Value set2) {
+  public SetCupValue(IValue set1, IValue set2) {
     this.set1 = set1;
     this.set2 = set2;
     this.cupSet = null;
   }
 
-  public SetCupValue(Value set1, Value set2, CostModel cm) {
+  public SetCupValue(IValue set1, IValue set2, CostModel cm) {
 	this(set1, set2);
 	this.cm = cm;
   }
@@ -54,7 +54,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       return this.set1.member(elem) || this.set2.member(elem);
     }
@@ -74,7 +74,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -87,7 +87,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -123,7 +123,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       if (this.cupSet != null && this.cupSet != DummyEnum) {
         this.cupSet.normalize();
@@ -164,9 +164,9 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return this.equals(val);
     }
@@ -193,7 +193,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
       this.convertAndCache();
       return this.cupSet.permute(perm);
@@ -223,13 +223,13 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final Value toSetEnum() {
+  public final IValue toSetEnum() {
       if (this.cupSet != null && this.cupSet != DummyEnum) {
         return this.cupSet;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
-      Value elem;
+      IValue elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
@@ -242,7 +242,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     try {
       try {
         if (TLCGlobals.expand) {
-          Value val = this.toSetEnum();
+          IValue val = this.toSetEnum();
           return val.toString(sb, offset);
         }
       }
@@ -295,9 +295,9 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
       this.enum2.reset();
     }
 
-    public final Value nextElement() {
+    public final IValue nextElement() {
   	  if (coverage) { cm.incSecondary(); }
-      Value elem = this.enum1.nextElement();
+  	IValue elem = this.enum1.nextElement();
       if (elem != null) return elem;
       elem = this.enum2.nextElement();
       return elem;

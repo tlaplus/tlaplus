@@ -13,6 +13,7 @@ import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.util.Context;
+import tlc2.value.IValue;
 import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
@@ -27,12 +28,12 @@ import util.WrongInvocationException;
  */
 public final class TLCStateFun extends TLCState {
   private SymbolNode name;
-  private Value value;
+  private IValue value;
   private TLCStateFun next;
 
   public final static TLCState Empty = new TLCStateFun(null, null, null);
   
-  private TLCStateFun(SymbolNode name, Value value, TLCStateFun state) {
+  private TLCStateFun(SymbolNode name, IValue value, TLCStateFun state) {
     this.name = name;
     this.value = value;
     this.next = state;
@@ -40,11 +41,11 @@ public final class TLCStateFun extends TLCState {
 
   public final TLCState createEmpty() { return Empty; }
 
-  public final TLCState bind(UniqueString name, Value value, SemanticNode expr) {
+  public final TLCState bind(UniqueString name, IValue value, SemanticNode expr) {
       throw new WrongInvocationException("TLCStateFun.bind: This is a TLC bug.");
   }
 
-  public final TLCState bind(SymbolNode id, Value value, SemanticNode expr) {
+  public final TLCState bind(SymbolNode id, IValue value, SemanticNode expr) {
     return new TLCStateFun(id, value, this);
   }
   
@@ -52,7 +53,7 @@ public final class TLCStateFun extends TLCState {
       throw new WrongInvocationException("TLCStateFun.unbind: This is a TLC bug.");
   }
   
-  public final Value lookup(UniqueString var) {
+  public final IValue lookup(UniqueString var) {
     for (TLCStateFun cur = this; cur != Empty; cur = cur.next) {
       if (var == cur.name.getName()) return cur.value;
     }

@@ -35,15 +35,15 @@ public abstract class Values {
 	    return PrettyPrint.mypp(s, 80) ;
 	  }
 
-	public static String ppr(Value v) {
+	public static String ppr(IValue v) {
 		  if (v == null) {
 			  return "null";
 		  }
 		 return PrettyPrint.mypp(v.toString(), 80) ;
 	  }
 
-	public static Value getValue(SemanticNode expr) {
-	    return (Value)expr.getToolObject(TLCGlobals.ToolId);
+	public static IValue getValue(SemanticNode expr) {
+	    return (IValue)expr.getToolObject(TLCGlobals.ToolId);
 	  }
 
 }

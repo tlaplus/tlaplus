@@ -17,14 +17,14 @@ import util.Assert;
 import util.UniqueString;
 
 public class FcnRcdValue extends Value implements Applicable {
-  public final Value[] domain;
+  public final IValue[] domain;
   public final IntervalValue intv;
-  public final Value[] values;
+  public final IValue[] values;
   private boolean isNorm;
   private int[] indexTbl;  // speed up function application
 
   /* Constructor */
-  public FcnRcdValue(Value[] domain, Value[] values, boolean isNorm) {
+  public FcnRcdValue(IValue[] domain, IValue[] values, boolean isNorm) {
     this.domain = domain;
     this.values = values;
     this.intv = null;
@@ -32,7 +32,7 @@ public class FcnRcdValue extends Value implements Applicable {
     this.indexTbl = null;
   }
 
-  public FcnRcdValue(IntervalValue intv, Value[] values) {
+  public FcnRcdValue(IntervalValue intv, IValue[] values) {
     this.intv = intv;
     this.values = values;
     this.domain = null;
@@ -40,12 +40,12 @@ public class FcnRcdValue extends Value implements Applicable {
     this.indexTbl = null;
   }
 
-  public FcnRcdValue(IntervalValue intv, Value[] values, CostModel cm) {
+  public FcnRcdValue(IntervalValue intv, IValue[] values, CostModel cm) {
 	  this(intv, values);
 	  this.cm = cm;
   }
 
-  private FcnRcdValue(FcnRcdValue fcn, Value[] values) {
+  private FcnRcdValue(FcnRcdValue fcn, IValue[] values) {
     this.domain = fcn.domain;
     this.intv = fcn.intv;
     this.values = values;
@@ -53,16 +53,16 @@ public class FcnRcdValue extends Value implements Applicable {
     this.indexTbl = fcn.indexTbl;
   }
 
-  public FcnRcdValue(ValueVec elems, Value[] values, boolean isNorm) {
+  public FcnRcdValue(ValueVec elems, IValue[] values, boolean isNorm) {
 	  this(elems.toArray(), values, isNorm);
   }
 
-  public FcnRcdValue(ValueVec elems, Value[] values, boolean isNorm, CostModel cm) {
+  public FcnRcdValue(ValueVec elems, IValue[] values, boolean isNorm, CostModel cm) {
 	  this(elems, values, isNorm);
 	  this.cm = cm;
   }
 
-  public FcnRcdValue(Value[] domain, Value[] values, boolean isNorm, CostModel cm) {
+  public FcnRcdValue(IValue[] domain, IValue[] values, boolean isNorm, CostModel cm) {
 	  this(domain, values, isNorm);
 	  this.cm = cm;
   }
@@ -91,7 +91,7 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  private final int lookupIndex(Value arg) {
+  private final int lookupIndex(IValue arg) {
     int len = this.indexTbl.length;
     int loc = (arg.hashCode() & 0x7FFFFFFF) % len;
     while (true) {
@@ -111,7 +111,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final int compareTo(Object obj) {
     try {
 
-			final FcnRcdValue fcn = obj instanceof Value ? (FcnRcdValue) ((Value) obj).toFcnRcd() : null;
+			final FcnRcdValue fcn = obj instanceof IValue ? (FcnRcdValue) ((IValue) obj).toFcnRcd() : null;
 			if (fcn == null) {
 				if (obj instanceof ModelValue)
 					return 1;
@@ -143,7 +143,7 @@ public class FcnRcdValue extends Value implements Applicable {
 	int result;
 	if (fcn.intv != null) {
 		for (int i = 0; i < this.domain.length; i++) {
-			final Value dElem = this.domain[i];
+			final IValue dElem = this.domain[i];
 			if (!(dElem instanceof IntValue)) {
 				Assert.fail(
 						"Attempted to compare integer with non-integer\n" + Values.ppr(dElem.toString()) + ".");
@@ -187,7 +187,7 @@ public class FcnRcdValue extends Value implements Applicable {
   		}
   	} else {
   		for (int i = 0; i < fcn.domain.length; i++) {
-  			final Value dElem = fcn.domain[i];
+  			final IValue dElem = fcn.domain[i];
   			if (!(dElem instanceof IntValue)) {
   				Assert.fail(
   						"Attempted to compare integer with non-integer:\n" + Values.ppr(dElem.toString()) + ".");
@@ -208,7 +208,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final boolean equals(Object obj) {
     try {
 
-      FcnRcdValue fcn = obj instanceof Value ? (FcnRcdValue) ((Value)obj).toFcnRcd() : null;
+      FcnRcdValue fcn = obj instanceof IValue ? (FcnRcdValue) ((IValue)obj).toFcnRcd() : null;
       if (fcn == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -229,7 +229,7 @@ public class FcnRcdValue extends Value implements Applicable {
         else {
           if (fcn.domain.length != this.intv.size()) return false;
           for (int i = 0; i < fcn.domain.length; i++) {
-            Value dElem = fcn.domain[i];
+            IValue dElem = fcn.domain[i];
             if (!(dElem instanceof IntValue)) {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".");
@@ -245,7 +245,7 @@ public class FcnRcdValue extends Value implements Applicable {
         if (this.values.length != fcn.values.length) return false;
         if (fcn.intv != null) {
           for (int i = 0; i < this.domain.length; i++) {
-            Value dElem = this.domain[i];
+            IValue dElem = this.domain[i];
             if (!(dElem instanceof IntValue)) {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".");
@@ -274,7 +274,7 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of the function " + Values.ppr(this.toString()));
@@ -288,9 +288,9 @@ public class FcnRcdValue extends Value implements Applicable {
 
   public final boolean isFinite() { return true; }
 
-  public final Value apply(Value arg, int control) {
+  public final IValue apply(IValue arg, int control) {
     try {
-      Value result = this.select(arg);
+    	IValue result = this.select(arg);
       if (result == null) {
         Assert.fail("Attempted to apply function:\n" + Values.ppr(this.toString()) +
         "\nto argument " + Values.ppr(arg.toString()) + ", which is" +
@@ -305,7 +305,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   /* This one does not seem to be needed anymore.  */
-  public final Value apply(Value[] args, int control) {
+  public final IValue apply(IValue[] args, int control) {
     try {
       return this.apply(new TupleValue(args), EvalControl.Clear);
     }
@@ -315,7 +315,7 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final Value select(Value arg) {
+  public final IValue select(IValue arg) {
     try {
 
       if (this.intv != null) {
@@ -357,7 +357,7 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final boolean assign(Value[] args, Value val) {
+  public final boolean assign(IValue[] args, IValue val) {
     try {
 
       if (this.intv != null) {
@@ -380,7 +380,7 @@ public class FcnRcdValue extends Value implements Applicable {
       }
       else {
         // domain is represented as an array of values:
-        Value argv = new TupleValue(args);
+        IValue argv = new TupleValue(args);
         int len = this.domain.length;
         for (int i = 0; i < len; i++) {
           if (this.domain[i].equals(argv)) {
@@ -403,17 +403,17 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
 
       if (ex.idx >= ex.path.length) return ex.value;
 
       int flen = this.values.length;
-      Value[] newValues = new Value[flen];
+      IValue[] newValues = new IValue[flen];
       for (int i = 0; i < flen; i++) {
         newValues[i] = this.values[i];
       }
-      Value arg = ex.path[ex.idx];
+      IValue arg = ex.path[ex.idx];
 
       if (this.intv != null) {
         // domain is represented as an integer interval:
@@ -433,9 +433,9 @@ public class FcnRcdValue extends Value implements Applicable {
           if (arg.equals(this.domain[i])) {
             ex.idx++;
             newValues[i] = newValues[i].takeExcept(ex);
-            Value[] newDomain = this.domain;
+            IValue[] newDomain = this.domain;
             if (!this.isNorm) {
-              newDomain = new Value[flen];
+              newDomain = new IValue[flen];
               for (int j = 0; j < flen; j++) {
                 newDomain[j] = this.domain[j];
               }
@@ -453,9 +453,9 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
-      Value res = this;
+      IValue res = this;
       for (int i = 0; i < exs.length; i++) {
         res = res.takeExcept(exs[i]);
       }
@@ -467,7 +467,7 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final Value getDomain() {
+  public final IValue getDomain() {
     try {
       if (this.intv != null) {
         return this.intv;
@@ -485,7 +485,7 @@ public class FcnRcdValue extends Value implements Applicable {
    * Returns the domain of this FunctionRecordValue regardless of its internal
    * representation as either Value[] or IntervalValue as Value[].
    */
-  public final Value[] getDomainAsValues() {
+  public final IValue[] getDomainAsValues() {
 	  if (this.intv != null) {
 		  return this.intv.asValues();
 	  } else {
@@ -505,13 +505,13 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   @Override
-  public final Value toTuple() {
+  public final IValue toTuple() {
       if (this.intv != null) {
         if (this.intv.low != 1) return null;
         return new TupleValue(this.values);
       }
       int len = this.values.length;
-      Value[] elems = new Value[len];
+      IValue[] elems = new IValue[len];
       for (int i = 0; i < len; i++) {
         if (!(this.domain[i] instanceof IntValue)) return null;
         int idx = ((IntValue)this.domain[i]).val;
@@ -528,7 +528,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   @Override
-  public final Value toRcd() {
+  public final IValue toRcd() {
       if (this.domain == null) return null;
       this.normalize();
       UniqueString[] vars = new UniqueString[this.domain.length];
@@ -543,7 +543,7 @@ public class FcnRcdValue extends Value implements Applicable {
   }
 
   	@Override
-	public final Value toFcnRcd() {
+	public final IValue toFcnRcd() {
 		return this;
 	}
   
@@ -551,7 +551,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final boolean isNormalized() { return this.isNorm; }
 
   /* This method normalizes (destructively) this function. */
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
 
       if (!this.isNorm) {
@@ -564,7 +564,7 @@ public class FcnRcdValue extends Value implements Applicable {
                   "\noccurs multiple times in the function domain.");
           }
           else if (cmp > 0) {
-            Value tv = this.domain[0];
+        	  IValue tv = this.domain[0];
             this.domain[0] = this.domain[i];
             this.domain[i] = tv;
             tv = this.values[0];
@@ -573,8 +573,8 @@ public class FcnRcdValue extends Value implements Applicable {
           }
         }
         for (int i = 2; i < dlen; i++) {
-          Value d = this.domain[i];
-          Value v = this.values[i];
+        	IValue d = this.domain[i];
+        	IValue v = this.values[i];
           int j = i;
           int cmp;
           while ((cmp = d.compareTo(this.domain[j-1])) < 0) {
@@ -634,9 +634,9 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final Value deepCopy() {
+  public final IValue deepCopy() {
     try {
-      Value[] vals = new Value[this.values.length];
+    	IValue[] vals = new IValue[this.values.length];
       for (int i = 0; i < vals.length; i++) {
         vals[i] = this.values[i].deepCopy();
       }
@@ -648,7 +648,7 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       boolean canAssign = ((val instanceof FcnRcdValue) &&
         this.values.length == ((FcnRcdValue)val).values.length);
@@ -722,12 +722,12 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
 
       this.normalize();
       int flen = this.domain.length;
-      Value[] vals = new Value[flen];
+      IValue[] vals = new IValue[flen];
 
       boolean vchanged = false;
       for (int i = 0; i < flen; i++) {
@@ -736,7 +736,7 @@ public class FcnRcdValue extends Value implements Applicable {
       }
 
       if (this.intv == null) {
-        Value[] dom = new Value[flen];
+    	  IValue[] dom = new IValue[flen];
         boolean dchanged = false;
         for (int i = 0; i < flen; i++) {
           dom[i] = this.domain[i].permute(perm);
@@ -781,7 +781,7 @@ public class FcnRcdValue extends Value implements Applicable {
   private final boolean isRcd() {
     if (this.intv != null) return false;
     for (int i = 0; i < this.domain.length; i++) {
-      Value dval = this.domain[i];
+      IValue dval = this.domain[i];
       boolean isName = ((dval instanceof StringValue) &&
       isName(((StringValue)dval).val.toString()));
       if (!isName) return false;
@@ -861,12 +861,12 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-	public static Value createFrom(final ValueInputStream vos) throws IOException {
+	public static IValue createFrom(final ValueInputStream vos) throws IOException {
 		final int index = vos.getIndex();
 		final int len = vos.readNat();
 		final int info = vos.readByte();
-		Value res;
-		final Value[] rvals = new Value[len];
+		IValue res;
+		final IValue[] rvals = new IValue[len];
 		if (info == 0) {
 			final int low = vos.readInt();
 			final int high = vos.readInt();
@@ -876,7 +876,7 @@ public class FcnRcdValue extends Value implements Applicable {
 			final IntervalValue intv = new IntervalValue(low, high);
 			res = new FcnRcdValue(intv, rvals);
 		} else {
-			final Value[] dvals = new Value[len];
+			final IValue[] dvals = new IValue[len];
 			for (int i = 0; i < len; i++) {
 				dvals[i] = vos.read();
 				rvals[i] = vos.read();

@@ -15,7 +15,7 @@ import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import util.Assert;
@@ -68,10 +68,10 @@ public abstract class TLCState implements Cloneable, Serializable {
 		vos.writeShortNat((short) this.level);
 	}
 
-  public abstract TLCState bind(UniqueString name, Value value, SemanticNode expr);
-  public abstract TLCState bind(SymbolNode id, Value value, SemanticNode expr);  
+  public abstract TLCState bind(UniqueString name, IValue value, SemanticNode expr);
+  public abstract TLCState bind(SymbolNode id, IValue value, SemanticNode expr);  
   public abstract TLCState unbind(UniqueString name);
-  public abstract Value lookup(UniqueString var);
+  public abstract IValue lookup(UniqueString var);
   public abstract boolean containsKey(UniqueString var);
   public abstract TLCState copy();
   public abstract TLCState deepCopy();
@@ -85,11 +85,11 @@ public abstract class TLCState implements Cloneable, Serializable {
   /** 
    * Returns a mapping of variable names to their assigned values in this state.
    */ 
-  public final Map<UniqueString, Value> getVals() {
-	final Map<UniqueString, Value> valMap = new HashMap<UniqueString, Value>();
+  public final Map<UniqueString, IValue> getVals() {
+	final Map<UniqueString, IValue> valMap = new HashMap<UniqueString, IValue>();
 	for(int i = 0; i < vars.length; i++) {
         UniqueString key = vars[i].getName();
-        Value val = this.lookup(key);
+        IValue val = this.lookup(key);
         valMap.put(key, val);
     }
     return valMap;

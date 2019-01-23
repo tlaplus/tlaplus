@@ -17,7 +17,7 @@ public interface Enumerable {
 	}
 	
   public int size();
-  public boolean member(Value elem);
+  public boolean member(IValue elem);
   /**
    * Semantics or Enumerable#elements(Ordering#UNDEFINED) 
    */
@@ -25,13 +25,13 @@ public interface Enumerable {
   public ValueEnumeration elements(final Ordering ordering);
   /**
    * Returns a {@link ValueEnumeration} which returns k 
-   * {@link Value}s of all {@link Value}s returned by 
+   * {@link IValue}s of all {@link IValue}s returned by 
    * {@link Enumerable#elements()}. In other words, it returns
-   * a randomly chosen subset of all {@link Value} members of
+   * a randomly chosen subset of all {@link IValue} members of
    * this {@link Enumerable}.
    */
   public ValueEnumeration elements(final int k);
   public EnumerableValue getRandomSubset(final int k);
-  public Value isSubsetEq(Value other);
+  public IValue isSubsetEq(IValue other);
 }
 

@@ -17,7 +17,7 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.XMLExportable;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import tlc2.value.Values;
 import util.ToolIO;
 
@@ -304,7 +304,7 @@ public abstract class SemanticNode
 	  return getLocation().toString();
   }
   
-  public String toString(final Value aValue) {
+  public String toString(final IValue aValue) {
 	return Values.ppr(aValue.toString());
   }
 

@@ -66,8 +66,8 @@ public class SetOfFcnsBenchmark {
 				|| (sizeS == 16 && sizeT == 16)
 				|| (sizeS == 16 && sizeT == 32)
 				|| (sizeS == 46 && sizeT == 46)) {
-			final Value domain = new IntervalValue(1, sizeS);
-			final Value range = new IntervalValue(1, sizeT);
+			final IValue domain = new IntervalValue(1, sizeS);
+			final IValue range = new IntervalValue(1, sizeT);
 			setOfFcns = (Enumerable) new SetOfFcnsValue(domain, range).normalize();
 		} else {
 			// This appears to be the only way to skip permutations from the parameter space

@@ -35,7 +35,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 
 import tlc2.value.FcnRcdValue;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
@@ -88,7 +88,7 @@ public class ModuleOverwritesBenchmark {
 	private static final void shuffleValues() {
 		final FcnRcdValue frv = (FcnRcdValue) state.getVals().get(UniqueString.uniqueStringOf("t"));
 
-		final List<Value> values = Arrays.asList(frv.values);
+		final List<IValue> values = Arrays.asList(frv.values);
 		Collections.shuffle(values);
 
 		for (int i = 0; i < values.size(); i++) {

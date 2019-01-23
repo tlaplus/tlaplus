@@ -36,6 +36,7 @@ import org.junit.Test;
 import tlc2.util.FP64;
 import tlc2.value.EnumerableValue;
 import tlc2.value.FcnRcdValue;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
 import tlc2.value.SetEnumValue;
@@ -56,10 +57,10 @@ public class TLCTest {
 	 */
 	@Test
 	public void testA() {
-		final Value f = new FcnRcdValue(new Value[] { IntValue.gen(3) }, new Value[] { IntValue.gen(11) }, true);
-		final Value g = new TupleValue(new Value[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3) });
+		final IValue f = new FcnRcdValue(new IValue[] { IntValue.gen(3) }, new IValue[] { IntValue.gen(11) }, true);
+		final IValue g = new TupleValue(new IValue[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3) });
 
-		final Value combined = TLC.CombineFcn(f, g);
+		final IValue combined = TLC.CombineFcn(f, g);
 		Assert.assertTrue(combined instanceof FcnRcdValue);
 		final FcnRcdValue rcdVal = (FcnRcdValue) combined;
 		// Have to normalize to bring values/domain into natural order expected by assertions below
@@ -67,11 +68,11 @@ public class TLCTest {
 
 		// domain
 		Assert.assertEquals(3, rcdVal.domain.length);
-		Assert.assertArrayEquals(new Value[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3) }, rcdVal.domain);
+		Assert.assertArrayEquals(new IValue[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3) }, rcdVal.domain);
 
 		// values
 		Assert.assertEquals(3, rcdVal.values.length);
-		Assert.assertArrayEquals(new Value[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(11) }, rcdVal.values);
+		Assert.assertArrayEquals(new IValue[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(11) }, rcdVal.values);
 	}
 
 	/**
@@ -80,10 +81,10 @@ public class TLCTest {
 	 */
 	@Test
 	public void testB() {
-		final Value f = new FcnRcdValue(new Value[] { IntValue.gen(4) }, new Value[] { IntValue.gen(11) }, true);
-		final Value g = new TupleValue(new Value[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(11) });
+		final IValue f = new FcnRcdValue(new IValue[] { IntValue.gen(4) }, new IValue[] { IntValue.gen(11) }, true);
+		final IValue g = new TupleValue(new IValue[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(11) });
 
-		final Value combined = TLC.CombineFcn(f, g);
+		final IValue combined = TLC.CombineFcn(f, g);
 		Assert.assertTrue(combined instanceof FcnRcdValue);
 		final FcnRcdValue rcdVal = (FcnRcdValue) combined;
 		// Have to normalize to bring values/domain into natural order expected by assertions below
@@ -91,12 +92,12 @@ public class TLCTest {
 		
 		// domain
 		Assert.assertEquals(4, rcdVal.domain.length);
-		Assert.assertArrayEquals(new Value[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(4) },
+		Assert.assertArrayEquals(new IValue[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(4) },
 				rcdVal.domain);
 
 		// values
 		Assert.assertEquals(4, rcdVal.values.length);
-		Assert.assertArrayEquals(new Value[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(11) },
+		Assert.assertArrayEquals(new IValue[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3), IntValue.gen(11) },
 				rcdVal.values);
 	}
 
@@ -105,14 +106,14 @@ public class TLCTest {
 		final SetEnumValue in = (SetEnumValue) new IntervalValue(1, 5).toSetEnum();
 		Assert.assertEquals(5, in.size());
 		
-		final Value permutations = TLC.Permutations(in);
+		final IValue permutations = TLC.Permutations(in);
 		Assert.assertTrue(permutations instanceof EnumerableValue);
 		Assert.assertEquals(120, permutations.size());
 
-		final Set<Value> values = new HashSet<>(permutations.size());
+		final Set<IValue> values = new HashSet<>(permutations.size());
 		
 		final ValueEnumeration elements = ((EnumerableValue) permutations).elements();
-		Value val = null;
+		IValue val = null;
 		while ((val = elements.nextElement()) != null) {
 			Assert.assertEquals(in.size(), val.size());
 			values.add(val);

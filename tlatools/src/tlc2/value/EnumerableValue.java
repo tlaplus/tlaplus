@@ -38,10 +38,10 @@ import tlc2.util.IdThread;
 
 public abstract class EnumerableValue extends Value implements Enumerable, ValueConstants {
 
-  public Value isSubsetEq(Value other) {
+  public IValue isSubsetEq(IValue other) {
     try {
       final ValueEnumeration Enum = this.elements();
-      Value elem;
+      IValue elem;
       while ((elem = Enum.nextElement()) != null) {
         if (!other.member(elem)) {
           return ValFalse;
@@ -74,7 +74,7 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 			// In case a subclass provides a more efficient ValueEnumeration that guarantees
 			// normalized order, the subclass may override this default method. This is
 			// so far done by SubsetValue.
-			final Value enumerated = this.toSetEnum();
+			final IValue enumerated = this.toSetEnum();
 			if (enumerated != null) {
 				return ((EnumerableValue) enumerated.normalize()).elements();
 			}
@@ -92,10 +92,10 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 		// subclasses can provide a more efficient implementation (e.g. see
 		// IntervalValue and SetEnumValue which return a more efficient subclass
 		// of SubsetEnumerator).
-		final List<Value> values = elements().all();
+		final List<IValue> values = elements().all();
 		return new SubsetEnumerator(k) {
 			@Override
-			public Value nextElement() {
+			public IValue nextElement() {
 				if (!hasNext()) {
 					return null;
 				}
@@ -285,6 +285,6 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 			return index;
 		}
 
-		public abstract Value nextElement();
+		public abstract IValue nextElement();
 	}
 }

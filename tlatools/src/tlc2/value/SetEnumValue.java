@@ -19,11 +19,11 @@ implements Enumerable, Reducible {
   private boolean isNorm;        // normalized?
 
   /* Constructor */
-  public SetEnumValue(Value[] elems, boolean isNorm) {
+  public SetEnumValue(IValue[] elems, boolean isNorm) {
 	  this(new ValueVec(elems), isNorm);
   }
 
-  public SetEnumValue(Value[] vals, boolean isNorm, CostModel cm) {
+  public SetEnumValue(IValue[] vals, boolean isNorm, CostModel cm) {
 	  this(vals, isNorm);
 	  this.cm = cm;
   }
@@ -51,7 +51,7 @@ implements Enumerable, Reducible {
 
   public final int compareTo(Object obj) {
     try {
-      SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
+      SetEnumValue set = obj instanceof IValue ? (SetEnumValue) ((IValue)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
@@ -76,7 +76,7 @@ implements Enumerable, Reducible {
 
   public final boolean equals(Object obj) {
     try {
-      SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
+      SetEnumValue set = obj instanceof IValue ? (SetEnumValue) ((IValue)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -102,7 +102,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       return this.elems.search(elem, this.isNorm);
     }
@@ -114,12 +114,12 @@ implements Enumerable, Reducible {
 
   public final boolean isFinite() { return true; }
 
-  public final Value diff(Value val) {
+  public final IValue diff(IValue val) {
     try {
       int sz = this.elems.size();
       ValueVec diffElems = new ValueVec();
       for (int i = 0; i < sz; i++) {
-        Value elem = this.elems.elementAt(i);
+    	  IValue elem = this.elems.elementAt(i);
         if (!val.member(elem)) {
           diffElems.addElement(elem);
         }
@@ -132,12 +132,12 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final Value cap(Value val) {
+  public final IValue cap(IValue val) {
     try {
       int sz = this.elems.size();
       ValueVec capElems = new ValueVec();
       for (int i = 0; i < sz; i++) {
-        Value elem = this.elems.elementAt(i);
+    	  IValue elem = this.elems.elementAt(i);
         if (val.member(elem)) {
           capElems.addElement(elem);
         }
@@ -150,7 +150,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final Value cup(Value set) {
+  public final IValue cup(IValue set) {
     try {
       int sz = this.elems.size();
       if (sz == 0) return set;
@@ -158,11 +158,11 @@ implements Enumerable, Reducible {
       if (set instanceof Reducible) {
         ValueVec cupElems = new ValueVec();
         for (int i = 0; i < sz; i++) {
-          Value elem = this.elems.elementAt(i);
+        	IValue elem = this.elems.elementAt(i);
           cupElems.addElement(elem);
         }
         ValueEnumeration Enum = ((Enumerable)set).elements();
-        Value elem;
+        IValue elem;
         while ((elem = Enum.nextElement()) != null) {
           if (!this.member(elem)) cupElems.addElement(elem);
         }
@@ -176,7 +176,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -189,7 +189,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -216,7 +216,7 @@ implements Enumerable, Reducible {
   /* This method normalizes (destructively) this set. */
   public final boolean isNormalized() { return this.isNorm; }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       if (!this.isNorm) {
         this.elems.sort(true);   // duplicates eliminated
@@ -245,7 +245,7 @@ implements Enumerable, Reducible {
   }
 
   @Override
-  public final Value toSetEnum() {
+  public final IValue toSetEnum() {
 	  return this;
   }
 
@@ -264,9 +264,9 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return this.equals(val);
     }
@@ -300,7 +300,7 @@ implements Enumerable, Reducible {
       fp = FP64.Extend(fp, SETENUMVALUE);
       fp = FP64.Extend(fp, sz);
       for (int i = 0; i < sz; i++) {
-        Value elem = this.elems.elementAt(i);
+        IValue elem = this.elems.elementAt(i);
         fp = elem.fingerPrint(fp);
       }
       return fp;
@@ -311,10 +311,10 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
       int sz = this.elems.size();
-      Value[] vals = new Value[sz];
+      IValue[] vals = new IValue[sz];
       boolean changed = false;
       for (int i = 0; i < sz; i++) {
         vals[i] = this.elems.elementAt(i).permute(perm);
@@ -370,7 +370,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final Value randomElement() {
+  public final IValue randomElement() {
      int sz = size();
      int index = (int) Math.floor(getRandom().nextDouble() * sz);
      return this.elems.elementAt(index);
@@ -395,7 +395,7 @@ implements Enumerable, Reducible {
 
     public final void reset() { this.index = 0; }
 
-    public final Value nextElement() {
+    public final IValue nextElement() {
     	if (coverage) { cm.incSecondary(); }
       if (this.index < elems.size()) {
         return elems.elementAt(this.index++);
@@ -410,7 +410,7 @@ implements Enumerable, Reducible {
     	
     	final ValueEnumeration ve = elements(kOutOfN);
     	
-    	Value v = null;
+    	IValue v = null;
     	while ((v = ve.nextElement()) != null) {
     		vec.addElement(v);
     	}
@@ -422,7 +422,7 @@ implements Enumerable, Reducible {
 		normalize();
 		return new EnumerableValue.SubsetEnumerator(k) {
 			@Override
-			public Value nextElement() {
+			public IValue nextElement() {
 				if (!hasNext()) {
 					return null;
 				}
@@ -431,7 +431,7 @@ implements Enumerable, Reducible {
 		};
 	}
 
-	public static Value createFrom(final ValueInputStream vos) throws IOException {
+	public static IValue createFrom(final ValueInputStream vos) throws IOException {
 		final int index = vos.getIndex();
 		boolean isNorm = true;
 		int len = vos.readInt();
@@ -439,11 +439,11 @@ implements Enumerable, Reducible {
 			len = -len;
 			isNorm = false;
 		}
-		final Value[] elems = new Value[len];
+		final IValue[] elems = new IValue[len];
 		for (int i = 0; i < len; i++) {
 			elems[i] = vos.read();
 		}
-		final Value res = new SetEnumValue(elems, isNorm);
+		final IValue res = new SetEnumValue(elems, isNorm);
 		vos.assign(res, index);
 		return res;
 	}

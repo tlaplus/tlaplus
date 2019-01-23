@@ -8,11 +8,11 @@ package tlc2.value;
 import tla2sany.semantic.FormalParamNode;
 
 public class ValueExcept {
-  public Value[] path;
-  public Value value;
+  public IValue[] path;
+  public IValue value;
   public int idx;
 
-  public ValueExcept(Value[] lhs, Value rhs) {
+  public ValueExcept(IValue[] lhs, IValue rhs) {
     this.path = lhs;
     this.value = rhs;
     this.idx = 0;
@@ -25,15 +25,15 @@ public class ValueExcept {
   }
 
   public final ValueExcept checkArg(FcnLambdaValue fcn) {
-    Value argv = this.path[idx];
+    IValue argv = this.path[idx];
     if (fcn.params.length() == 1) {
       if (!fcn.params.domains[0].member(argv)) return null;
     }
     else {
       TupleValue tval = (TupleValue)argv;
-      Value[] argList = tval.elems;
+      IValue[] argList = tval.elems;
       FormalParamNode[][] formals = fcn.params.formals;
-      Value[] domains = fcn.params.domains;
+      IValue[] domains = fcn.params.domains;
       int argn = 0;
       for (int i = 0; i < fcn.params.formals.length; i++) {
         FormalParamNode[] formal = formals[i];
@@ -45,7 +45,7 @@ public class ValueExcept {
     return this;
   }
 
-  public final Value current() { return this.path[this.idx]; }
+  public final IValue current() { return this.path[this.idx]; }
 
   public final boolean isLast() {
     return this.idx == (this.path.length - 1);

@@ -14,26 +14,26 @@ import tlc2.tool.coverage.CostModel;
 import util.Assert;
 
 public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
-  public final Value[] sets;
+  public final IValue[] sets;
   protected SetEnumValue tupleSet;
 
   /* Constructor */
-  public SetOfTuplesValue(Value[] sets) {
+  public SetOfTuplesValue(IValue[] sets) {
     this.sets = sets;
     this.tupleSet = null;
   }
-  public SetOfTuplesValue(Value[] set, CostModel cm) {
+  public SetOfTuplesValue(IValue[] set, CostModel cm) {
 	  this(set);
 	  this.cm = cm;
   }
 
-  public SetOfTuplesValue(Value val) {
-	  this(new Value[1]);
+  public SetOfTuplesValue(IValue val) {
+	  this(new IValue[1]);
     this.sets[0] = val;
   }
 
-  public SetOfTuplesValue(Value v1, Value v2) {
-	  this(new Value[2]);
+  public SetOfTuplesValue(IValue v1, IValue v2) {
+	  this(new IValue[2]);
     this.sets[0] = v1;
     this.sets[1] = v2;
   }
@@ -79,7 +79,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       TupleValue tv = (TupleValue) elem.toTuple();
       if (tv == null) {
@@ -129,7 +129,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the set of tuples:\n" +
@@ -143,7 +143,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the set of tuples:\n" +
@@ -193,7 +193,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       if (this.tupleSet == null || this.tupleSet == DummyEnum) {
         for (int i = 0; i < this.sets.length; i++) {
@@ -244,9 +244,9 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return this.equals(val);
     }
@@ -268,7 +268,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
       this.convertAndCache();
       return this.tupleSet.permute(perm);
@@ -298,13 +298,13 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final Value toSetEnum() {
+  public final IValue toSetEnum() {
       if (this.tupleSet != null && this.tupleSet != DummyEnum) {
         return this.tupleSet;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
-      Value elem;
+      IValue elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
@@ -337,7 +337,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
       catch (Throwable e) { unlazy = false; }
 
       if (unlazy) {
-        Value val = this.toSetEnum();
+        IValue val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {
@@ -376,12 +376,12 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   final class Enumerator implements ValueEnumeration {
     private ValueEnumeration[] enums;
-    private Value[] currentElems;
+    private IValue[] currentElems;
     private boolean isDone;
 
     public Enumerator() {
       this.enums = new ValueEnumeration[sets.length];
-      this.currentElems = new Value[sets.length];
+      this.currentElems = new IValue[sets.length];
       this.isDone = false;
       for (int i = 0; i < sets.length; i++) {
         if (sets[i] instanceof Enumerable) {
@@ -410,9 +410,9 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
       }
     }
 
-    public final Value nextElement() {
+    public final IValue nextElement() {
       if (this.isDone) return null;
-      Value[] elems = new Value[this.currentElems.length];
+      IValue[] elems = new IValue[this.currentElems.length];
 	  if (coverage) { cm.incSecondary(elems.length); }
       for (int i = 0; i < elems.length; i++) {
         elems[i] = this.currentElems[i];

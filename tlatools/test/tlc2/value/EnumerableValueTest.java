@@ -75,7 +75,7 @@ public class EnumerableValueTest {
 		public ValueEnumeration elements(final int k) {
 			return new EnumerableValue.SubsetEnumerator(k) {
 				@Override
-				public Value nextElement() {
+				public IValue nextElement() {
 					return null;
 				}
 			};
@@ -97,17 +97,17 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public boolean member(Value elem) {
+		public boolean member(IValue elem) {
 			return false;
 		}
 
 		@Override
-		public Value takeExcept(ValueExcept ex) {
+		public IValue takeExcept(ValueExcept ex) {
 			return null;
 		}
 
 		@Override
-		public Value takeExcept(ValueExcept[] exs) {
+		public IValue takeExcept(ValueExcept[] exs) {
 			return null;
 		}
 
@@ -117,7 +117,7 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public Value normalize() {
+		public IValue normalize() {
 			return this;
 		}
 
@@ -132,12 +132,12 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public Value deepCopy() {
+		public IValue deepCopy() {
 			return null;
 		}
 
 		@Override
-		public boolean assignable(Value val) {
+		public boolean assignable(IValue val) {
 			return false;
 		}
 

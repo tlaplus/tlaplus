@@ -9,12 +9,12 @@ import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
 import tlc2.value.BoolValue;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
 import tlc2.value.ModelValue;
 import tlc2.value.UserObj;
 import tlc2.value.UserValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 
@@ -43,14 +43,14 @@ public class Integers extends UserObj implements ValueConstants
         TLARegistry.put("Expt", "^");
     }
 
-    private static Value SetInt = new UserValue(new Integers());
+    private static IValue SetInt = new UserValue(new Integers());
 
-    public static Value Int()
+    public static IValue Int()
     {
         return SetInt;
     }
 
-    public static Value Nat()
+    public static IValue Nat()
     {
         return Naturals.Nat();
     }
@@ -70,7 +70,7 @@ public class Integers extends UserObj implements ValueConstants
         return Naturals.Times(x, y);
     }
 
-    public static BoolValue LT(Value x, Value y)
+    public static BoolValue LT(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -86,7 +86,7 @@ public class Integers extends UserObj implements ValueConstants
         return (((IntValue) x).val < ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue LE(Value x, Value y)
+    public static BoolValue LE(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -102,7 +102,7 @@ public class Integers extends UserObj implements ValueConstants
         return (((IntValue) x).val <= ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue GT(Value x, Value y)
+    public static BoolValue GT(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -118,7 +118,7 @@ public class Integers extends UserObj implements ValueConstants
         return (((IntValue) x).val > ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue GEQ(Value x, Value y)
+    public static BoolValue GEQ(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -208,7 +208,7 @@ public class Integers extends UserObj implements ValueConstants
         return IntValue.gen((int) res);
     }
 
-    public final int compareTo(Value val)
+    public final int compareTo(IValue val)
     {
         if (val instanceof UserValue)
         {
@@ -226,7 +226,7 @@ public class Integers extends UserObj implements ValueConstants
         throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "Int", Values.ppr(val.toString()) });
     }
 
-    public final boolean member(Value val)
+    public final boolean member(IValue val)
     {
         if (val instanceof IntValue)
             return true;

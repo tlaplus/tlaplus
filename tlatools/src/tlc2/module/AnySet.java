@@ -7,28 +7,28 @@ package tlc2.module;
 
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
+import tlc2.value.IValue;
 import tlc2.value.UserObj;
 import tlc2.value.UserValue;
-import tlc2.value.Value;
 import tlc2.value.Values;
 
 public class AnySet extends UserObj
 {
 	public static final long serialVersionUID = 20160822L;
 
-    private static Value AnySet = new UserValue(new AnySet());
+    private static IValue AnySet = new UserValue(new AnySet());
 
-    public static Value ANY()
+    public static IValue ANY()
     {
         return AnySet;
     }
 
-    public final int compareTo(Value val)
+    public final int compareTo(IValue val)
     {
         throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "ANY", Values.ppr(val.toString()) });
     }
 
-    public final boolean member(Value val)
+    public final boolean member(IValue val)
     {
         return true;
     }

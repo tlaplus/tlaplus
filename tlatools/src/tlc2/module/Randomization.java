@@ -29,10 +29,10 @@ import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.value.Enumerable;
 import tlc2.value.EnumerableValue;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.StringValue;
 import tlc2.value.SubsetValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 
@@ -40,7 +40,7 @@ public class Randomization implements ValueConstants {
 	
 	public static final long serialVersionUID = 20180618L;
 	
-    public static Value RandomSubset(final Value v1, final Value v2) {
+    public static IValue RandomSubset(final IValue v1, final IValue v2) {
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
 					new String[] { "first", "RandomSubset", "nonnegative integer", Values.ppr(v1.toString()) });
@@ -52,7 +52,7 @@ public class Randomization implements ValueConstants {
         return ((Enumerable) v2).getRandomSubset(((IntValue) v1).val);
     }
     
-    public static Value RandomSetOfSubsets(final Value v1, final Value v2, final Value v3) {
+    public static IValue RandomSetOfSubsets(final IValue v1, final IValue v2, final IValue v3) {
 		// first parameter	
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
@@ -100,7 +100,7 @@ public class Randomization implements ValueConstants {
 		return new SubsetValue(ev).getRandomSetOfSubsets(numberOfPicks, probability);
     }
     
-    public static Value RandomSubsetSet(final Value v1, final Value v2, final Value v3) {
+    public static IValue RandomSubsetSet(final IValue v1, final IValue v2, final IValue v3) {
 		// first parameter	
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,

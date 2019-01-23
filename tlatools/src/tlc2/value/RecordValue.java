@@ -20,17 +20,17 @@ import util.UniqueString;
 
 public class RecordValue extends Value implements Applicable {
   public final UniqueString[] names;   // the field names
-  public final Value[] values;         // the field values
+  public final IValue[] values;         // the field values
   private boolean isNorm;
 
   /* Constructor */
-  public RecordValue(UniqueString[] names, Value[] values, boolean isNorm) {
+  public RecordValue(UniqueString[] names, IValue[] values, boolean isNorm) {
     this.names = names;
     this.values = values;
     this.isNorm = isNorm;
   }
 
-  public RecordValue(UniqueString[] names, Value[] values, boolean isNorm, CostModel cm) {
+  public RecordValue(UniqueString[] names, IValue[] values, boolean isNorm, CostModel cm) {
 	  this(names, values, isNorm);
 	  this.cm = cm;
   }
@@ -39,7 +39,7 @@ public class RecordValue extends Value implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
+      RecordValue rcd = obj instanceof IValue ? (RecordValue) ((IValue)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare record:\n" + Values.ppr(this.toString()) +
@@ -67,7 +67,7 @@ public class RecordValue extends Value implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
+      RecordValue rcd = obj instanceof IValue ? (RecordValue) ((IValue)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -91,7 +91,7 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if element:\n" + Values.ppr(elem.toString()) +
                   "\nis in the record:\n" + Values.ppr(this.toString()));
@@ -105,12 +105,12 @@ public class RecordValue extends Value implements Applicable {
 
   public final boolean isFinite() { return true; }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         int rlen = this.names.length;
-        Value[] newValues = new Value[rlen];
-        Value arcVal = ex.path[ex.idx];
+        IValue[] newValues = new IValue[rlen];
+        IValue arcVal = ex.path[ex.idx];
         if (arcVal instanceof StringValue) {
           UniqueString arc = ((StringValue)arcVal).val;
           for (int i = 0; i < rlen; i++) {
@@ -143,9 +143,9 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
-      Value res = this;
+      IValue res = this;
       for (int i = 0; i < exs.length; i++) {
         res = res.takeExcept(exs[i]);
       }
@@ -158,19 +158,19 @@ public class RecordValue extends Value implements Applicable {
   }
 
   @Override
-  public final Value toRcd() {
+  public final IValue toRcd() {
 	  return this;
   }
   
   @Override
-  public final Value toTuple() {
+  public final IValue toTuple() {
 	  return size() == 0 ? EmptyTuple : super.toTuple();
   }
 
   @Override
-	public final Value toFcnRcd() {
+	public final IValue toFcnRcd() {
         this.normalize();
-        Value[] dom = new Value[this.names.length];
+        IValue[] dom = new IValue[this.names.length];
         for (int i = 0; i < this.names.length; i++) {
           dom[i] = new StringValue(this.names[i], cm);
         }
@@ -188,7 +188,7 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final Value apply(Value arg, int control) {
+  public final IValue apply(IValue arg, int control) {
     try {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to apply record to a non-string value " +
@@ -211,7 +211,7 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final Value apply(Value[] args, int control) {
+  public final IValue apply(IValue[] args, int control) {
     try {
       if (args.length != 1) {
         Assert.fail("Attempted to apply record to more than one arguments.");
@@ -225,7 +225,7 @@ public class RecordValue extends Value implements Applicable {
   }
 
   /* This method returns the named component of the record. */
-  public final Value select(Value arg) {
+  public final IValue select(IValue arg) {
     try {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to apply record to a non-string argument " +
@@ -246,9 +246,9 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final Value getDomain() {
+  public final IValue getDomain() {
     try {
-      Value[] dElems = new Value[this.names.length];
+    	IValue[] dElems = new IValue[this.names.length];
       for (int i = 0; i < this.names.length; i++) {
         dElems[i] = new StringValue(this.names[i]);
       }
@@ -260,7 +260,7 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final boolean assign(UniqueString name, Value val) {
+  public final boolean assign(UniqueString name, IValue val) {
     try {
       for (int i = 0; i < this.names.length; i++) {
         if (name.equals(this.names[i])) {
@@ -283,7 +283,7 @@ public class RecordValue extends Value implements Applicable {
 
   public final boolean isNormalized() { return this.isNorm; }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       if (!this.isNorm) {
         int len = this.names.length;
@@ -296,7 +296,7 @@ public class RecordValue extends Value implements Applicable {
             UniqueString ts = this.names[0];
             this.names[0] = this.names[i];
             this.names[i] = ts;
-            Value tv = this.values[0];
+            IValue tv = this.values[0];
             this.values[0] = this.values[i];
             this.values[i] = tv;
           }
@@ -304,7 +304,7 @@ public class RecordValue extends Value implements Applicable {
         for (int i = 2; i < len; i++) {
           int j = i;
           UniqueString st = this.names[i];
-          Value val = this.values[i];
+          IValue val = this.values[i];
           int cmp;
           while ((cmp = st.compareTo(this.names[j-1])) < 0) {
             this.names[j] = this.names[j-1];
@@ -355,9 +355,9 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final Value deepCopy() {
+  public final IValue deepCopy() {
     try {
-      Value[] vals = new Value[this.values.length];
+    	IValue[] vals = new IValue[this.values.length];
       for (int i = 0; i < this.values.length; i++) {
         vals[i] = this.values[i].deepCopy();
       }
@@ -376,7 +376,7 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       boolean canAssign = ((val instanceof RecordValue) &&
         this.names.length == ((RecordValue)val).names.length);
@@ -440,11 +440,11 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
       this.normalize();
       int rlen = this.names.length;
-      Value[] vals = new Value[rlen];
+      IValue[] vals = new IValue[rlen];
       boolean changed = false;
       for (int i = 0; i < rlen; i++) {
         vals[i] = this.values[i].permute(perm);
@@ -484,7 +484,7 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-	public static Value createFrom(final ValueInputStream vos) throws EOFException, IOException {
+	public static IValue createFrom(final ValueInputStream vos) throws EOFException, IOException {
 		final int index = vos.getIndex();
 		boolean isNorm = true;
 		int len = vos.readInt();
@@ -493,7 +493,7 @@ public class RecordValue extends Value implements Applicable {
 			isNorm = false;
 		}
 		final UniqueString[] names = new UniqueString[len];
-		final Value[] vals = new Value[len];
+		final IValue[] vals = new IValue[len];
 		for (int i = 0; i < len; i++) {
 			final byte kind1 = vos.readByte();
 			if (kind1 == DUMMYVALUE) {
@@ -506,7 +506,7 @@ public class RecordValue extends Value implements Applicable {
 			}
 			vals[i] = vos.read();
 		}
-		final Value res = new RecordValue(names, vals, isNorm);
+		final IValue res = new RecordValue(names, vals, isNorm);
 		vos.assign(res, index);
 		return res;
 	}

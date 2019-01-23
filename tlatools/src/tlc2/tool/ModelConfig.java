@@ -17,6 +17,7 @@ import tla2sany.parser.Token;
 import tla2sany.parser.TokenMgrError;
 import tlc2.output.EC;
 import tlc2.util.Vect;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.ModelValue;
 import tlc2.value.SetEnumValue;
@@ -315,7 +316,7 @@ public class ModelConfig implements ValueConstants, Serializable
                                 while (true)
                                 {
                                     tt = getNextToken(tmgr);
-                                    Value arg = this.parseValue(tt, scs, tmgr);
+                                    IValue arg = this.parseValue(tt, scs, tmgr);
                                     line.addElement(arg);
                                     tt = getNextToken(tmgr);
                                     if (!tt.image.equals(","))
@@ -414,7 +415,7 @@ public class ModelConfig implements ValueConstants, Serializable
     /**
      * Parses a value (number, string, boolean and set)
      */
-    private Value parseValue(Token tt, SimpleCharStream scs, TLAplusParserTokenManager tmgr) throws IOException
+    private IValue parseValue(Token tt, SimpleCharStream scs, TLAplusParserTokenManager tmgr) throws IOException
     {
         if (tt.kind == TLAplusParserConstants.NUMBER_LITERAL)
         {
@@ -438,7 +439,7 @@ public class ModelConfig implements ValueConstants, Serializable
             {
                 while (true)
                 {
-                    Value elem = this.parseValue(tt, scs, tmgr);
+                	IValue elem = this.parseValue(tt, scs, tmgr);
                     elems.addElement(elem);
                     tt = getNextToken(tmgr);
                     if (!tt.image.equals(","))

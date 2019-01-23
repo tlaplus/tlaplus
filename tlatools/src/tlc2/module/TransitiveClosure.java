@@ -11,9 +11,9 @@ import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.util.Vect;
 import tlc2.value.Enumerable;
+import tlc2.value.IValue;
 import tlc2.value.SetEnumValue;
 import tlc2.value.TupleValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueVec;
@@ -24,7 +24,7 @@ public class TransitiveClosure implements ValueConstants
 	public static final long serialVersionUID = 20160822L;
 
     /* Implement the Warshall algorithm for transitive closure. */
-    public static Value Warshall(Value rel)
+    public static IValue Warshall(IValue rel)
     {
         if (!(rel instanceof Enumerable))
         {
@@ -37,7 +37,7 @@ public class TransitiveClosure implements ValueConstants
         Vect elemList = new Vect();
         Hashtable fps = new Hashtable();
         int cnt = 0;
-        Value elem = null;
+        IValue elem = null;
         while ((elem = elems.nextElement()) != null)
         {
             TupleValue tv = (TupleValue) elem.toTuple();
@@ -45,8 +45,8 @@ public class TransitiveClosure implements ValueConstants
             {
                 throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Values.ppr(elem.toString()));
             }
-            Value elem1 = tv.elems[0];
-            Value elem2 = tv.elems[1];
+            IValue elem1 = tv.elems[0];
+            IValue elem2 = tv.elems[1];
             int num1 = cnt;
             Integer num = (Integer) fps.get(elem1);
             if (num == null)
@@ -94,9 +94,9 @@ public class TransitiveClosure implements ValueConstants
             {
                 if (matrix[i][j])
                 {
-                    Value elem1 = (Value) elemList.elementAt(i);
-                    Value elem2 = (Value) elemList.elementAt(j);
-                    Value newElem = new TupleValue(elem1, elem2);
+                	IValue elem1 = (IValue) elemList.elementAt(i);
+                	IValue elem2 = (IValue) elemList.elementAt(j);
+                	IValue newElem = new TupleValue(elem1, elem2);
                     newElems.addElement(newElem);
                 }
             }

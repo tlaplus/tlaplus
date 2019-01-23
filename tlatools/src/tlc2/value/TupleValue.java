@@ -17,23 +17,23 @@ import tlc2.util.FP64;
 import util.Assert;
 
 public class TupleValue extends Value implements Applicable {
-  public final Value[] elems;          // the elements of this tuple.
+  public final IValue[] elems;          // the elements of this tuple.
 
   /* Constructor */
-  public TupleValue(Value[] elems) { this.elems = elems; }
+  public TupleValue(IValue[] elems) { this.elems = elems; }
 
-  public TupleValue(Value v) {
-	  this(new Value[1]);
+  public TupleValue(IValue v) {
+	  this(new IValue[1]);
     this.elems[0] = v;
   }
 
-  public TupleValue(Value v1, Value v2) {
-	  this(new Value[2]);
+  public TupleValue(IValue v1, IValue v2) {
+	  this(new IValue[2]);
     this.elems[0] = v1;
     this.elems[1] = v2;
   }
 
-  public TupleValue(Value[] elems, CostModel cm) {
+  public TupleValue(IValue[] elems, CostModel cm) {
 	  this(elems);
 	  this.cm = cm;
   }
@@ -42,7 +42,7 @@ public class TupleValue extends Value implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      TupleValue tv = obj instanceof Value ? (TupleValue) ((Value)obj).toTuple() : null;
+      TupleValue tv = obj instanceof IValue ? (TupleValue) ((IValue)obj).toTuple() : null;
       if (tv == null) {
         // Well, we have to convert this to function and compare.
         return this.toFcnRcd().compareTo(obj);
@@ -65,7 +65,7 @@ public class TupleValue extends Value implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      TupleValue tv = obj instanceof Value ? (TupleValue) ((Value)obj).toTuple() : null;
+      TupleValue tv = obj instanceof IValue ? (TupleValue) ((IValue)obj).toTuple() : null;
       if (tv == null) {
         // Well, we have to convert this to function and compare.
         return this.toFcnRcd().equals(obj);
@@ -85,7 +85,7 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check set membership in a tuple value.");
       return false;   // make compiler happy
@@ -98,7 +98,7 @@ public class TupleValue extends Value implements Applicable {
 
   public final boolean isFinite() { return true; }
 
-  public final Value apply(Value arg, int control) {
+  public final IValue apply(IValue arg, int control) {
     try {
       if (!(arg instanceof IntValue)) {
         Assert.fail("Attempted to apply tuple to a non-integer argument.");
@@ -116,7 +116,7 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final Value apply(Value[] args, int control) {
+  public final IValue apply(IValue[] args, int control) {
     try {
       if (args.length != 1) {
         Assert.fail("Attetmpted to apply tuple with wrong number of arguments.");
@@ -129,7 +129,7 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final Value select(Value arg) {
+  public final IValue select(IValue arg) {
     try {
       if (!(arg instanceof IntValue)) {
         Assert.fail("Attempted to apply tuple to a non-integer argument " +
@@ -147,12 +147,12 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         int tlen = this.elems.length;
-        Value[] newElems = new Value[tlen];
-        Value arcVal = ex.path[ex.idx];
+        IValue[] newElems = new IValue[tlen];
+        IValue arcVal = ex.path[ex.idx];
         if (arcVal instanceof IntValue) {
           int idx = ((IntValue)arcVal).val - 1;
           if (0 <= idx && idx < tlen) {
@@ -174,9 +174,9 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
-      Value val = this;
+      IValue val = this;
       for (int i = 0; i < exs.length; i++) {
         val = val.takeExcept(exs[i]);
       }
@@ -188,7 +188,7 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final Value getDomain() {
+  public final IValue getDomain() {
     try {
       return new IntervalValue(1, this.size());
     }
@@ -214,17 +214,17 @@ public class TupleValue extends Value implements Applicable {
   }
 
   @Override
-  public final Value toTuple() {
+  public final IValue toTuple() {
 	  return this;
   }
   
   @Override
-  public final Value toRcd() {
+  public final IValue toRcd() {
 	  return size() == 0 ? EmptyRcd : super.toRcd();
   }
 
 	@Override
-	public final Value toFcnRcd() {
+	public final IValue toFcnRcd() {
         final IntervalValue intv = new IntervalValue(1, this.elems.length);
         if (coverage) {cm.incSecondary(this.elems.length);}
         return new FcnRcdValue(intv, this.elems, cm);
@@ -233,7 +233,7 @@ public class TupleValue extends Value implements Applicable {
   /* The normalization of the value. */
   public final boolean isNormalized() { return true; }
 
-  public final Value normalize() { /*nop*/return this; }
+  public final IValue normalize() { /*nop*/return this; }
 
   public final boolean isDefined() {
     try {
@@ -249,9 +249,9 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final Value deepCopy() {
+  public final IValue deepCopy() {
     try {
-      Value[] vals = new Value[this.elems.length];
+    	IValue[] vals = new IValue[this.elems.length];
       for (int i = 0; i < this.elems.length; i++) {
         vals[i] = this.elems[i].deepCopy();
       }
@@ -263,7 +263,7 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       boolean canAssign = ((val instanceof TupleValue) &&
          (this.elems.length == ((TupleValue)val).elems.length));
@@ -314,9 +314,9 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
-      Value[] vals = new Value[this.elems.length];
+    	IValue[] vals = new IValue[this.elems.length];
       boolean changed = false;
       for (int i = 0; i < vals.length; i++) {
         vals[i] = this.elems[i].permute(perm);
@@ -354,14 +354,14 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-	public static Value createFrom(final ValueInputStream vos) throws IOException {
+	public static IValue createFrom(final ValueInputStream vos) throws IOException {
 		final int index = vos.getIndex();
 		final int len = vos.readNat();
-		final Value[] elems = new Value[len];
+		final IValue[] elems = new IValue[len];
 		for (int i = 0; i < len; i++) {
 			elems[i] = vos.read();
 		}
-		final Value res = new TupleValue(elems);
+		final IValue res = new TupleValue(elems);
 		vos.assign(res, index);
 		return res;
 	}

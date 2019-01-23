@@ -52,7 +52,7 @@ public class EnumerateSubsetBenchmark {
 
 		final ValueVec vals = new ValueVec(subset.size());
 		final ValueEnumeration Enum = subset.elementsNormalized();
-		Value elem;
+		IValue elem;
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}
@@ -67,7 +67,7 @@ public class EnumerateSubsetBenchmark {
 		final ValueVec vec = new ValueVec(subset.size());
 		for (int i = 0; i <= inner.size(); i++) {
 			final ValueEnumeration Enum = subset.kElements(i);
-			Value elem;
+			IValue elem;
 			while ((elem = Enum.nextElement()) != null) {
 				vec.addElement(elem);
 			}
@@ -83,7 +83,7 @@ public class EnumerateSubsetBenchmark {
 		final ValueVec vec = new ValueVec(subset.size());
 		for (int i = 0; i <= inner.size(); i++) {
 			final ValueEnumeration Enum = subset.kElements(i);
-			Value elem;
+			IValue elem;
 			while ((elem = Enum.nextElement()) != null) {
 				vec.addElement(elem);
 			}
@@ -98,7 +98,7 @@ public class EnumerateSubsetBenchmark {
 		
 		final ValueVec vals = new ValueVec(subset.size());
 		final ValueEnumeration Enum = subset.elementsLexicographic();
-		Value elem;
+		IValue elem;
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}
@@ -112,7 +112,7 @@ public class EnumerateSubsetBenchmark {
 		
 		final ValueVec vals = new ValueVec(subset.size());
 		final ValueEnumeration Enum = subset.elementsLexicographic();
-		Value elem;
+		IValue elem;
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}

@@ -56,7 +56,7 @@ public class BoolValue extends Value {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of the boolean " + Values.ppr(this.toString()));
@@ -80,7 +80,7 @@ public class BoolValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the boolean " +
@@ -94,7 +94,7 @@ public class BoolValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the boolean " +
@@ -122,13 +122,13 @@ public class BoolValue extends Value {
 
   public final boolean isNormalized() { return true; }
 
-  public final Value normalize() { /*nop*/ return this; }
+  public final IValue normalize() { /*nop*/ return this; }
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return ((val instanceof BoolValue) &&
         this.val == ((BoolValue)val).val);
@@ -158,7 +158,7 @@ public class BoolValue extends Value {
     }
   }
 
-  public final Value permute(MVPerm perm) { return this; }
+  public final IValue permute(MVPerm perm) { return this; }
 
   /* The string representation */
   public final StringBuffer toString(StringBuffer sb, int offset) {

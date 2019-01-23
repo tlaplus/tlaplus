@@ -8,7 +8,7 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import util.UniqueString;
 
 @SuppressWarnings("serial")
@@ -29,14 +29,14 @@ public class DummyTLCState extends TLCState {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#bind(util.UniqueString, tlc2.value.Value, tla2sany.semantic.SemanticNode)
 	 */
-	public TLCState bind(UniqueString name, Value value, SemanticNode expr) {
+	public TLCState bind(UniqueString name, IValue value, SemanticNode expr) {
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#bind(tla2sany.semantic.SymbolNode, tlc2.value.Value, tla2sany.semantic.SemanticNode)
 	 */
-	public TLCState bind(SymbolNode id, Value value, SemanticNode expr) {
+	public TLCState bind(SymbolNode id, IValue value, SemanticNode expr) {
 		return null;
 	}
 
@@ -50,7 +50,7 @@ public class DummyTLCState extends TLCState {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#lookup(util.UniqueString)
 	 */
-	public Value lookup(UniqueString var) {
+	public IValue lookup(UniqueString var) {
 		return null;
 	}
 

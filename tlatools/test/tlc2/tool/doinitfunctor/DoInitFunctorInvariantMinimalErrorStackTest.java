@@ -46,7 +46,7 @@ public class DoInitFunctorInvariantMinimalErrorStackTest extends ModelCheckerTes
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE,
-				"public static tlc2.value.BoolValue tlc2.module.Naturals.GEQ(tlc2.value.Value,tlc2.value.Value)",
+				"public static tlc2.value.BoolValue tlc2.module.Naturals.GEQ(tlc2.value.IValue,tlc2.value.IValue)",
 				"The first argument of > should be an integer, but instead it is:\n" + 
 				"<<1, 1>>"));
 

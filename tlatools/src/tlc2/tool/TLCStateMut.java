@@ -17,6 +17,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
 import tlc2.util.Context;
 import tlc2.util.FP64;
+import tlc2.value.IValue;
 import tlc2.value.MVPerm;
 import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
@@ -34,7 +35,7 @@ import util.WrongInvocationException;
  * The viewMap was added by Rajeev Joshi.
  */
 public final class TLCStateMut extends TLCState implements Cloneable, Serializable {
-  private Value values[];
+  private IValue values[];
   private static Tool mytool = null;
 
   /**
@@ -49,18 +50,18 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
    */
   private static MVPerm[] perms = null;
 
-  private TLCStateMut(Value[] vals) { this.values = vals; }
+  private TLCStateMut(IValue[] vals) { this.values = vals; }
 
   public static void init(Tool tool) {
     mytool = tool;
-    Value[] vals = new Value[vars.length];
+    IValue[] vals = new IValue[vars.length];
     Empty = new TLCStateMut(vals);
     viewMap = tool.getViewSpec();
     perms = tool.getSymmetryPerms();
   }
 
   public final TLCState createEmpty() {
-    Value[] vals = new Value[vars.length];
+	  IValue[] vals = new IValue[vars.length];
     return new TLCStateMut(vals);
   }
 
@@ -82,14 +83,14 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     return false;
   }
   
-  public final TLCState bind(UniqueString name, Value value, SemanticNode expr) {
+  public final TLCState bind(UniqueString name, IValue value, SemanticNode expr) {
 	  // Note, tla2sany.semantic.OpApplNode.toString(Value) relies on this ordering.
     int loc = name.getVarLoc();
     this.values[loc] = value;
     return this;
   }
 
-  public final TLCState bind(SymbolNode id, Value value, SemanticNode expr) {
+  public final TLCState bind(SymbolNode id, IValue value, SemanticNode expr) {
     throw new WrongInvocationException("TLCStateMut.bind: This is a TLC bug.");
   }
   
@@ -99,7 +100,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     return this;
   }
 
-  public final Value lookup(UniqueString var) {
+  public final IValue lookup(UniqueString var) {
     int loc = var.getVarLoc();
     if (loc < 0) return null;
     return this.values[loc];
@@ -111,7 +112,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 
   public final TLCState copy() {
     int len = this.values.length;
-    Value[] vals = new Value[len];
+    IValue[] vals = new IValue[len];
     for (int i = 0; i < len; i++) {
       vals[i] = this.values[i];
     }
@@ -120,9 +121,9 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 
   public final TLCState deepCopy() {
     int len = this.values.length;
-    Value[] vals = new Value[len];
+    IValue[] vals = new IValue[len];
     for (int i = 0; i < len; i++) {
-      Value val = this.values[i];
+      IValue val = this.values[i];
       if (val != null) {
 	vals[i] = val.deepCopy();
       }
@@ -136,7 +137,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
   
   public final void deepNormalize() {
     for (int i = 0; i < this.values.length; i++) {
-      Value val = this.values[i];
+      IValue val = this.values[i];
       if (val != null) {
 	val.deepNormalize();
       }
@@ -185,9 +186,9 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 		// If this state is not the lexicographically smallest state ss, its current
 		// minVals will be replaced temporarily with the values of ss for the
 		// calculation of the fingerprint.
-		Value[] minVals = this.values;
+		IValue[] minVals = this.values;
 		if (perms != null) {
-			Value[] vals = new Value[sz];
+			IValue[] vals = new IValue[sz];
 			// The following for loop converges to the smallest state ss under symmetry by
 			// looping over all permutations applying each. If the outcome turns out to be
 			// lexicographically smaller than the currently smallest, it replaces the
@@ -221,9 +222,9 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 				if (cmp < 0) {
 					if (minVals == this.values) {
 						minVals = vals;
-						vals = new Value[sz];
+						vals = new IValue[sz];
 					} else {
-						Value[] temp = minVals;
+						IValue[] temp = minVals;
 						minVals = vals;
 						vals = temp;
 					}
@@ -249,7 +250,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 			if (minVals != this.values) {
 				state = new TLCStateMut(minVals);
 			}
-			Value val = mytool.eval(viewMap, Context.Empty, state);
+			IValue val = mytool.eval(viewMap, Context.Empty, state);
 			fp = val.fingerPrint(fp);
 		}
 		return fp;
@@ -299,14 +300,14 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
   /* Returns a string representation of this state.  */
   public final String toString() {
     if (TLCGlobals.useView && viewMap != null) {
-      Value val = mytool.eval(viewMap, Context.Empty, this);
+      IValue val = mytool.eval(viewMap, Context.Empty, this);
       return viewMap.toString(val);
     }
     StringBuffer result = new StringBuffer();
     int vlen = vars.length;
     if (vlen == 1) {
       UniqueString key = vars[0].getName();
-      Value val = this.lookup(key);
+      IValue val = this.lookup(key);
       result.append(key.toString());
       result.append(" = ");
       result.append(Values.ppr(val));
@@ -315,7 +316,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     else {
       for (int i = 0; i < vlen; i++) {
 	UniqueString key = vars[i].getName();
-	Value val = this.lookup(key);
+	IValue val = this.lookup(key);
 	result.append("/\\ ");
 	result.append(key.toString());
     result.append(" = ");
@@ -334,8 +335,8 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     int vlen = vars.length;
     if (vlen == 1) {
       UniqueString key = vars[0].getName();
-      Value val = this.lookup(key);
-      Value lstateVal = lstate.lookup(key);
+      IValue val = this.lookup(key);
+      IValue lstateVal = lstate.lookup(key);
       if (!lstateVal.equals(val)) {
 	result.append(key.toString());
 	result.append(" = " + Values.ppr(val) + "\n");
@@ -344,8 +345,8 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     else {
       for (int i = 0; i < vlen; i++) {
 	UniqueString key = vars[i].getName();
-	Value val = this.lookup(key);
-	Value lstateVal = lstate.lookup(key);
+	IValue val = this.lookup(key);
+	IValue lstateVal = lstate.lookup(key);
 	if (!lstateVal.equals(val)) {
 	  result.append("/\\ ");
 	  result.append(key.toString());

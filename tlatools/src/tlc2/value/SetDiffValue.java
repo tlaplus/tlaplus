@@ -13,12 +13,12 @@ import tlc2.tool.FingerprintException;
 import util.Assert;
 
 public class SetDiffValue extends EnumerableValue implements Enumerable {
-  public final Value set1;
-  public final Value set2;
+  public final IValue set1;
+  public final IValue set2;
   protected SetEnumValue diffSet;
 
   /* Constructor */
-  public SetDiffValue(Value set1, Value set2) {
+  public SetDiffValue(IValue set1, IValue set2) {
     this.set1 = set1;
     this.set2 = set2;
     this.diffSet = null;
@@ -48,7 +48,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       return (this.set1.member(elem) && !this.set2.member(elem));
     }
@@ -74,7 +74,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -87,7 +87,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -124,7 +124,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       if (this.diffSet == null || this.diffSet == DummyEnum) {
         this.set1.normalize();
@@ -169,9 +169,9 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return this.equals(val);
     }
@@ -198,7 +198,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
       this.convertAndCache();
       return this.diffSet.permute(perm);
@@ -228,13 +228,13 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final Value toSetEnum() {
+  public final IValue toSetEnum() {
       if (this.diffSet != null && this.diffSet != DummyEnum) {
         return this.diffSet;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
-      Value elem;
+      IValue elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
@@ -247,7 +247,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     try {
       try {
         if (TLCGlobals.expand) {
-          Value val = this.toSetEnum();
+          IValue val = this.toSetEnum();
           return val.toString(sb, offset);
         }
       }
@@ -293,8 +293,8 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 
     public final void reset() { this.enum1.reset(); }
 
-    public final Value nextElement() {
-      Value elem = this.enum1.nextElement();
+    public final IValue nextElement() {
+    	IValue elem = this.enum1.nextElement();
       while (elem != null) {
     	  if (coverage) { cm.incSecondary(); }
         if (!set2.member(elem)) return elem;

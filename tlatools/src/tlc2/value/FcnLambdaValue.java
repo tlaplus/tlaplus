@@ -107,7 +107,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of the function " + Values.ppr(this.toString()));
@@ -132,7 +132,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   /* Apply this function to the arguments given by args.  */
-  public final Value apply(Value args, int control) throws EvalException {
+  public final IValue apply(IValue args, int control) throws EvalException {
     try {
 
       if (this.fcnRcd != null) {
@@ -140,14 +140,14 @@ public class FcnLambdaValue extends Value implements Applicable {
       }
 
       // First, find all the excepts that match args.
-      Value res = null;
+      IValue res = null;
       int num = 0;
       ValueExcept[] excepts1 = null;
       if (this.excepts != null) {
         int exlen = this.excepts.length;
         for (int i = exlen-1; i >= 0; i--) {
           ValueExcept ex = this.excepts[i];
-          Value arg = ex.current();
+          IValue arg = ex.current();
           boolean inExcept = true;
           inExcept = arg.equals(args);
           if (inExcept) {
@@ -162,7 +162,7 @@ public class FcnLambdaValue extends Value implements Applicable {
       if (res == null) {
         Context c1 = this.con;
         FormalParamNode[][] formals = this.params.formals;
-        Value[] domains = this.params.domains;
+        IValue[] domains = this.params.domains;
         boolean[] isTuples = this.params.isTuples;
         int plen = this.params.length();
 
@@ -181,7 +181,7 @@ public class FcnLambdaValue extends Value implements Applicable {
               "\nwhich does not match its formal parameter.\n");
             }
             if (argVal.size() != ids.length) return null;
-            Value[] elems = argVal.elems;
+            IValue[] elems = argVal.elems;
             for (int i = 0; i < ids.length; i++) {
               c1 = c1.cons(ids[i], elems[i]);
             }
@@ -197,11 +197,11 @@ public class FcnLambdaValue extends Value implements Applicable {
                   ",\nthe argument list is:\n" + Values.ppr(args.toString()) +
                   "\nwhich does not match its formal parameter.\n");
           }
-          Value[] elems = tv.elems;
+          IValue[] elems = tv.elems;
           int argn = 0;
           for (int i = 0; i < formals.length; i++) {
             FormalParamNode[] ids = formals[i];
-            Value domain = domains[i];
+            IValue domain = domains[i];
             if (isTuples[i]) {
               if (!domain.member(elems[argn])) {
                 Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
@@ -216,7 +216,7 @@ public class FcnLambdaValue extends Value implements Applicable {
                 Values.ppr(elems[argn-1].toString()) +
                 "\nwhich does not match its formal parameter.\n");
               }
-              Value[] avals = tv1.elems;
+              IValue[] avals = tv1.elems;
               for (int j = 0; j < ids.length; j++) {
                 c1 = c1.cons(ids[j], avals[j]);
               }
@@ -252,7 +252,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   /* This one does not seem to be needed anymore.  */
-  public final Value apply(Value[] args, int control) throws EvalException {
+  public final IValue apply(IValue[] args, int control) throws EvalException {
     try {
       return this.apply(new TupleValue(args), control);
     }
@@ -262,7 +262,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
-  public final Value select(Value arg) {
+  public final IValue select(IValue arg) {
     try {
 
       if (this.fcnRcd != null) {
@@ -270,14 +270,14 @@ public class FcnLambdaValue extends Value implements Applicable {
       }
 
       // First, find all the excepts that match arg.
-      Value res = null;
+      IValue res = null;
       int num = 0;
       ValueExcept[] excepts1 = null;
       if (this.excepts != null) {
         int exlen = this.excepts.length;
         for (int i = exlen-1; i >= 0; i--) {
           ValueExcept ex = this.excepts[i];
-          Value exArg = ex.current();
+          IValue exArg = ex.current();
           boolean inExcept = exArg.equals(arg);
           if (inExcept) {
             if (ex.isLast()) { res = ex.value; break; }
@@ -291,7 +291,7 @@ public class FcnLambdaValue extends Value implements Applicable {
       if (res == null) {
         Context c1 = this.con;
         FormalParamNode[][] formals = this.params.formals;
-        Value[] domains = this.params.domains;
+        IValue[] domains = this.params.domains;
         boolean[] isTuples = this.params.isTuples;
         int plen = this.params.length();
 
@@ -309,7 +309,7 @@ public class FcnLambdaValue extends Value implements Applicable {
               "\nwhich does not match its formal parameter.\n");
             }
             if (argVal.size() != ids.length) return null;
-            Value[] elems = argVal.elems;
+            IValue[] elems = argVal.elems;
             for (int i = 0; i < ids.length; i++) {
               c1 = c1.cons(ids[i], elems[i]);
             }
@@ -325,11 +325,11 @@ public class FcnLambdaValue extends Value implements Applicable {
                   ",\nthe argument list is:\n" + Values.ppr(arg.toString()) +
                   "\nwhich does not match its formal parameter.\n");
           }
-          Value[] elems = tv.elems;
+          IValue[] elems = tv.elems;
           int argn = 0;
           for (int i = 0; i < formals.length; i++) {
             FormalParamNode[] ids = formals[i];
-            Value domain = domains[i];
+            IValue domain = domains[i];
             if (isTuples[i]) {
               if (!domain.member(elems[argn])) return null;
               TupleValue tv1 = (TupleValue) elems[argn++].toTuple();
@@ -340,7 +340,7 @@ public class FcnLambdaValue extends Value implements Applicable {
                 "\nwhich does not match its formal parameter.\n");
               }
               if (tv1.size() != ids.length) return null;
-              Value[] avals = tv1.elems;
+              IValue[] avals = tv1.elems;
               for (int j = 0; j < ids.length; j++) {
                 c1 = c1.cons(ids[j], avals[j]);
               }
@@ -372,7 +372,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   /* This method returns a new function value by taking except. */
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
 
       if (ex.idx >= ex.path.length) return ex.value;
@@ -403,7 +403,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   /* This method returns a new function value by taking excepts. */
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
 
       if (this.fcnRcd != null) {
@@ -441,7 +441,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
-  public final Value getDomain() {
+  public final IValue getDomain() {
     try {
 
       if (this.fcnRcd != null) {
@@ -451,13 +451,13 @@ public class FcnLambdaValue extends Value implements Applicable {
       if (len == 1) {
         return this.params.domains[0];
       }
-      Value[] sets = new Value[len];
+      IValue[] sets = new IValue[len];
       int dlen = this.params.domains.length;
       boolean[] isTuples = this.params.isTuples;
       int idx = 0;
       for (int i = 0; i < dlen; i++) {
         FormalParamNode[] formal = this.params.formals[i];
-        Value domain = this.params.domains[i];
+        IValue domain = this.params.domains[i];
         if (isTuples[i]) {
           sets[idx++] = domain;
         }
@@ -491,7 +491,7 @@ public class FcnLambdaValue extends Value implements Applicable {
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() {
+  public final IValue deepCopy() {
     try {
       FcnLambdaValue fcn = new FcnLambdaValue(this);
       // A bug occured when printing a function whose domain is a Cartesian product because this.fcnRcd 
@@ -507,7 +507,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return (val instanceof FcnLambdaValue);
     }
@@ -539,7 +539,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       if (this.fcnRcd != null) {
         this.fcnRcd.normalize();
@@ -564,7 +564,7 @@ public class FcnLambdaValue extends Value implements Applicable {
             }
           }
         }
-        Value[] paramDoms = params.domains;
+        IValue[] paramDoms = params.domains;
         for (int i = 0; i < paramDoms.length; i++) {
           paramDoms[i].deepNormalize();
         }
@@ -580,14 +580,14 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   @Override
-  public final Value toTuple() {
+  public final IValue toTuple() {
       if (this.params.length() != 1) return null;
-      Value dom = this.params.domains[0];
+      IValue dom = this.params.domains[0];
       SymbolNode var = this.params.formals[0][0];
       if (dom instanceof IntervalValue) {
         IntervalValue intv = (IntervalValue)dom;
         if (intv.low != 1) return null;
-        Value[] elems = new Value[intv.high];
+        IValue[] elems = new IValue[intv.high];
         for (int i = 1; i <= intv.high; i++) {
           Context c1 = this.con.cons(var, IntValue.gen(i));
           elems[i-1] = this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
@@ -602,9 +602,9 @@ public class FcnLambdaValue extends Value implements Applicable {
                 "to a tuple, the set S must be enumerable.");
         eSet.normalize();
         int len = eSet.size();
-        Value[] elems = new Value[len];
+        IValue[] elems = new IValue[len];
         for (int i = 0; i < len; i++) {
-          Value argVal = eSet.elems.elementAt(i);
+          IValue argVal = eSet.elems.elementAt(i);
           if (!(argVal instanceof IntValue)) return null;
           if (((IntValue)argVal).val != i + 1) return null;
           Context c1 = this.con.cons(var, argVal);
@@ -616,7 +616,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   @Override
-  public final Value toRcd() {
+  public final IValue toRcd() {
       FcnRcdValue fcn = (FcnRcdValue) this.toFcnRcd();
       if (fcn == null || fcn.domain == null) { return null; }
       fcn.normalize();
@@ -632,7 +632,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   }
 
   @Override
-  public final Value toFcnRcd() {
+  public final IValue toFcnRcd() {
     try {
 
       if (this.fcnRcd == null) {
@@ -640,18 +640,18 @@ public class FcnLambdaValue extends Value implements Applicable {
         FormalParamNode[][] formals = this.params.formals;
         boolean[] isTuples = this.params.isTuples;
 
-        Value[] domain = new Value[sz];
-        Value[] values = new Value[sz];
+        IValue[] domain = new IValue[sz];
+        IValue[] values = new IValue[sz];
         int idx = 0;
         ValueEnumeration Enum = this.params.elements();
-        Value arg;
+        IValue arg;
         if (this.params.length() == 1) {
           while ((arg = Enum.nextElement()) != null) {
             domain[idx] = arg;
             Context c1 = this.con;
             if (isTuples[0]) {
               FormalParamNode[] ids = formals[0];
-              Value[] avals = ((TupleValue)arg).elems;
+              IValue[] avals = ((TupleValue)arg).elems;
               for (int j = 0; j < ids.length; j++) {
                 c1 = c1.cons(ids[j], avals[j]);
               }
@@ -665,13 +665,13 @@ public class FcnLambdaValue extends Value implements Applicable {
         else {
           while ((arg = Enum.nextElement()) != null) {
             domain[idx] = arg;
-            Value[] argList = ((TupleValue)arg).elems;
+            IValue[] argList = ((TupleValue)arg).elems;
             int argn = 0;
             Context c1 = this.con;
             for (int i = 0; i < formals.length; i++) {
               FormalParamNode[] ids = formals[i];
               if (isTuples[i]) {
-                Value[] avals = ((TupleValue)argList[argn++]).elems;
+                IValue[] avals = ((TupleValue)argList[argn++]).elems;
                 for (int j = 0; j < ids.length; j++) {
                   c1 = c1.cons(ids[j], avals[j]);
                 }
@@ -708,7 +708,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   /* The fingerprint methods.  */
   public final long fingerPrint(long fp) {
     try {
-      Value fcn = this.toFcnRcd();
+      IValue fcn = this.toFcnRcd();
       return fcn.fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -717,9 +717,9 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
-      Value fcn = this.toFcnRcd();
+      IValue fcn = this.toFcnRcd();
       return fcn.permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -733,7 +733,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     try {
       if (TLCGlobals.expand || this.params == null) {
         try {
-          Value val = this.toFcnRcd();
+          IValue val = this.toFcnRcd();
           return val.toString(sb, offset);
         }
         catch (Throwable e) { /*SKIP*/ }

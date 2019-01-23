@@ -28,7 +28,7 @@ public final class ValueInputStream implements ValueConstants {
       this(new File(fname));
   }
 
-	public final Value read() throws IOException {
+	public final IValue read() throws IOException {
 		final byte kind = this.dis.readByte();
 
 		switch (kind) {
@@ -60,7 +60,7 @@ public final class ValueInputStream implements ValueConstants {
 			return TupleValue.createFrom(this);
 		}
 		case DUMMYVALUE: {
-			return (Value) this.handles.getValue(this.readNat());
+			return (IValue) this.handles.getValue(this.readNat());
 		}
 		default: {
 			throw new WrongInvocationException("ValueInputStream: Can not unpickle a value of kind " + kind);

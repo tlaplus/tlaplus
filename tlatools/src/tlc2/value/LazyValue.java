@@ -45,7 +45,7 @@ public class LazyValue extends Value {
 
   public SemanticNode expr;
   public Context con;
-  private Value val;
+  private IValue val;
 
   public LazyValue(SemanticNode expr, Context con, final CostModel cm) {
 	  this(expr, con, true, coverage ? cm.get(expr) : cm);
@@ -65,12 +65,12 @@ public class LazyValue extends Value {
 
   public final boolean isUncachable() { return this.val == ValUndef; }
 
-  public final void setValue(final Value aValue) {
+  public final void setValue(final IValue aValue) {
 	  assert !isUncachable();
 	  this.val = aValue;
   }
 
-  public final Value getValue() {
+  public final IValue getValue() {
 	  // cache hit on (this.val != null && !isUncachable)
       // cache miss on (this.val == null)
 	  return this.val;
@@ -104,7 +104,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       if (this.val == null || this.val == ValUndef) {
         Assert.fail("Error(TLC): Attempted to check set membership of lazy values.");
@@ -130,7 +130,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (this.val == null || this.val == ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
@@ -143,7 +143,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (this.val == null || this.val == ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
@@ -170,7 +170,7 @@ public class LazyValue extends Value {
   }
 
   private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-    this.val = (Value)ois.readObject();
+    this.val = (IValue)ois.readObject();
   }
 
   private void writeObject(ObjectOutputStream oos) throws IOException {
@@ -194,7 +194,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       if (this.val == null || this.val == ValUndef) {
         Assert.fail("Error(TLC): Attempted to normalize lazy value.");
@@ -210,7 +210,7 @@ public class LazyValue extends Value {
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() {
+  public final IValue deepCopy() {
     try {
       if (this.val == null || this.val == ValUndef) return this;
       return this.val.deepCopy();
@@ -221,7 +221,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       if (this.val == null || this.val == ValUndef) {
         Assert.fail("Error(TLC): Attempted to call assignable on lazy value.");
@@ -248,7 +248,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
       if (this.val == null || this.val == ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply permutation to lazy value.");

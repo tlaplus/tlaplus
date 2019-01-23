@@ -26,7 +26,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     /***********************************************************************
     * Was OpDeclNode or OpDeclNode[].                                      *
     ***********************************************************************/
-  public Value inVal;           // the in value or the real set
+  public IValue inVal;           // the in value or the real set
   public final SemanticNode pred;     // the predicate
   public Tool tool;             // null iff inVal is the real set
   public final Context con;
@@ -35,7 +35,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final int control;
 
   /* Constructor */
-  public SetPredValue(Object vars, Value inVal, SemanticNode pred, Tool tool,
+  public SetPredValue(Object vars, IValue inVal, SemanticNode pred, Tool tool,
           Context con, TLCState s0, TLCState s1, int control) {
     this.vars = vars;
     this.inVal = inVal;
@@ -58,7 +58,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     this.control = control;
   }
 
-  public SetPredValue(Object vars, Value inVal, SemanticNode pred, Tool tool,
+  public SetPredValue(Object vars, IValue inVal, SemanticNode pred, Tool tool,
           Context con, TLCState s0, TLCState s1, int control, CostModel cm) {
 	  this(vars, inVal, pred, tool, con, s0, s1, control);
 	  this.cm = cm;
@@ -90,7 +90,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       if (this.tool == null) {
         return this.inVal.member(elem);
@@ -105,7 +105,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
             FormalParamNode[] ids = (FormalParamNode[])this.vars;
             TupleValue tv = (TupleValue) elem.toTuple();
             if ((tv != null) && (tv.elems.length == ids.length)) {
-              Value[] vals = ((TupleValue)tv).elems;
+              IValue[] vals = ((TupleValue)tv).elems;
               for (int i = 0; i < ids.length; i++) {
                 con1 = con1.cons(ids[i], vals[i]);
               }
@@ -115,7 +115,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
               "\nis an element of a set of " + ids.length + "-tuples.");
             }
           }
-          Value res = this.tool.eval(this.pred, con1, this.state, this.pstate, this.control);
+          IValue res = this.tool.eval(this.pred, con1, this.state, this.pstate, this.control);
           if (!(res instanceof BoolValue)) {
             Assert.fail("The evaluation of predicate " + this.pred +
                   " yielded non-Boolean value.");
@@ -151,7 +151,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -164,7 +164,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -190,7 +190,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   private final void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-    this.inVal = (Value)ois.readObject();
+    this.inVal = (IValue)ois.readObject();
     this.tool = null;
   }
 
@@ -213,7 +213,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       this.inVal.normalize();
       return this;
@@ -237,9 +237,9 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return this.equals(val);
     }
@@ -262,7 +262,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
       this.inVal = this.toSetEnum();
       this.tool = null;
@@ -275,13 +275,13 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public Value toSetEnum() {
+  public IValue toSetEnum() {
       if (this.tool == null) {
     	  return (SetEnumValue) this.inVal;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
-      Value elem;
+      IValue elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
@@ -299,7 +299,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     try {
       try {
         if (TLCGlobals.expand) {
-          Value val = this.toSetEnum();
+          IValue val = this.toSetEnum();
           return val.toString(sb, offset);
         }
       }
@@ -352,8 +352,8 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
     public final void reset() { this.Enum.reset(); }
 
-    public final Value nextElement() {
-      Value elem;
+    public final IValue nextElement() {
+    	IValue elem;
       while ((elem = this.Enum.nextElement()) != null) {
     	  if (coverage) { cm.incSecondary(); }
         Context con1 = con;
@@ -365,7 +365,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
           TupleValue tv = (TupleValue) elem.toTuple();
           if ((tv != null) &&
               (((TupleValue)tv).elems.length == ids.length)) {
-            Value[] vals = ((TupleValue)tv).elems;
+            IValue[] vals = ((TupleValue)tv).elems;
             for (int i = 0; i < ids.length; i++) {
               con1 = con1.cons(ids[i], vals[i]);
             }
@@ -375,7 +375,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
             "\nis an element of a set of " + ids.length + "-tuples.");
           }
         }
-        Value res = tool.eval(pred, con1, state, pstate, control, cm);
+        IValue res = tool.eval(pred, con1, state, pstate, control, cm);
         if (!(res instanceof BoolValue)) {
           Assert.fail("Evaluating predicate " + pred + " yielded non-Boolean value.");
         }

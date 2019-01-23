@@ -9,12 +9,12 @@ import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
 import tlc2.value.BoolValue;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
 import tlc2.value.ModelValue;
 import tlc2.value.UserObj;
 import tlc2.value.UserValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 
@@ -42,9 +42,9 @@ public class Naturals extends UserObj implements ValueConstants
         TLARegistry.put("Expt", "^");
     }
 
-    private static Value SetNat = new UserValue(new Naturals());
+    private static IValue SetNat = new UserValue(new Naturals());
 
-    public static Value Nat()
+    public static IValue Nat()
     {
         return SetNat;
     }
@@ -91,7 +91,7 @@ public class Naturals extends UserObj implements ValueConstants
         return IntValue.gen((int) res);
     }
 
-    public static BoolValue LT(Value x, Value y)
+    public static BoolValue LT(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -107,7 +107,7 @@ public class Naturals extends UserObj implements ValueConstants
         return (((IntValue) x).val < ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue LE(Value x, Value y)
+    public static BoolValue LE(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -123,7 +123,7 @@ public class Naturals extends UserObj implements ValueConstants
         return (((IntValue) x).val <= ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue GT(Value x, Value y)
+    public static BoolValue GT(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -140,7 +140,7 @@ public class Naturals extends UserObj implements ValueConstants
         return (((IntValue) x).val > ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue GEQ(Value x, Value y)
+    public static BoolValue GEQ(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -218,7 +218,7 @@ public class Naturals extends UserObj implements ValueConstants
         return IntValue.gen((int) res);
     }
 
-    public final int compareTo(Value val)
+    public final int compareTo(IValue val)
     {
         if (val instanceof UserValue)
         {
@@ -236,7 +236,7 @@ public class Naturals extends UserObj implements ValueConstants
         throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "Nat", Values.ppr(val.toString()) });
     }
 
-    public final boolean member(Value val)
+    public final boolean member(IValue val)
     {
         if (val instanceof IntValue)
             return ((IntValue) val).val >= 0;

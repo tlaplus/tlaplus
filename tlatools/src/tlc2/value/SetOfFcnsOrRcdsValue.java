@@ -35,7 +35,7 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 
 		final ValueEnumeration ve = elements(kOutOfN);
 
-		Value v = null;
+		IValue v = null;
 		while ((v = ve.nextElement()) != null) {
 			vec.addElement(v);
 		}
@@ -70,14 +70,14 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 		}
 
 		@Override
-		public Value nextElement() {
+		public IValue nextElement() {
 			if (!hasNext()) {
 				return null;
 			}
 			return elementAt(nextIndex());
 		}
 
-		protected abstract Value elementAt(int nextIndex);
+		protected abstract IValue elementAt(int nextIndex);
 	}
 
 	abstract class BigIntegerSubsetEnumerator implements ValueEnumeration {
@@ -118,13 +118,13 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 		}
 
 		@Override
-		public Value nextElement() {
+		public IValue nextElement() {
 			if (!hasNext()) {
 				return null;
 			}
 			return elementAt(nextIndex());
 		}
 
-		protected abstract Value elementAt(BigInteger nextIndex);
+		protected abstract IValue elementAt(BigInteger nextIndex);
 	}
 }

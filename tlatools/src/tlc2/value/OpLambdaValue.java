@@ -65,7 +65,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final boolean member(Value elem) {
+  public final boolean member(IValue elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of operator " + Values.ppr(this.toString()));
@@ -89,7 +89,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value apply(Value arg, int control) {
+  public final IValue apply(IValue arg, int control) {
     try {
       throw new WrongInvocationException("Should use the other apply method.");
     }
@@ -99,7 +99,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value apply(Value[] args, int control) {
+  public final IValue apply(IValue[] args, int control) {
     try {
       int alen = this.opDef.getArity();
       if (alen != args.length) {
@@ -120,7 +120,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value select(Value arg) {
+  public final IValue select(IValue arg) {
     try {
       throw new WrongInvocationException("Error(TLC): attempted to call OpLambdaValue.select().");
     }
@@ -130,7 +130,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
       Values.ppr(this.toString()) + ".");
@@ -142,7 +142,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       Values.ppr(this.toString()) + ".");
@@ -154,7 +154,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value getDomain() {
+  public final IValue getDomain() {
     try {
       Assert.fail("Attempted to compute the domain of the operator " +
       Values.ppr(this.toString()) + ".");
@@ -189,7 +189,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       throw new WrongInvocationException("Should not normalize an operator.");
     }
@@ -201,9 +201,9 @@ public class OpLambdaValue extends OpValue implements Applicable {
 
   public final boolean isDefined() { return true; }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       throw new WrongInvocationException("Should not initialize an operator.");
     }

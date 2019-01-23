@@ -9,10 +9,10 @@ package tlc2.value;
 public abstract class UserObj {
 
   /* Returns negative, 0, positive for less than, equal, greater than. */
-  public abstract int compareTo(Value val);
+  public abstract int compareTo(IValue val);
 
   /* True iff val is a member of this object. */
-  public abstract boolean member(Value val);
+  public abstract boolean member(IValue val);
 
   public abstract boolean isFinite();
   

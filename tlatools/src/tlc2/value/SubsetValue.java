@@ -23,16 +23,16 @@ import tlc2.util.Combinatorics;
 import util.Assert;
 
 public class SubsetValue extends EnumerableValue implements Enumerable {
-  public Value set;           // SUBSET set
+  public IValue set;           // SUBSET set
   protected SetEnumValue pset;
 
   /* Constructor */
-  public SubsetValue(Value set) {
+  public SubsetValue(IValue set) {
     this.set = set;
     this.pset = null;
   }
 
-  public SubsetValue(Value set, CostModel cm) {
+  public SubsetValue(IValue set, CostModel cm) {
 	  this(set);
 	  this.cm = cm;
   }
@@ -67,11 +67,11 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final boolean member(Value val) {
+  public final boolean member(IValue val) {
     try {
       if (val instanceof Enumerable) {
         ValueEnumeration Enum = ((Enumerable)val).elements();
-        Value elem;
+        IValue elem;
         while ((elem = Enum.nextElement()) != null) {
           if (!this.set.member(elem)) {
         	  return false;
@@ -90,7 +90,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public Value isSubsetEq(Value other) {
+  public IValue isSubsetEq(IValue other) {
     try {
       // Reduce (SUBSET A \subseteq SUBSET B) to (A \subseteq B) to avoid
       // exponential blowup inherent in generating the power set.
@@ -116,7 +116,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept ex) {
+  public final IValue takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -129,7 +129,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value takeExcept(ValueExcept[] exs) {
+  public final IValue takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -169,7 +169,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value normalize() {
+  public final IValue normalize() {
     try {
       if (this.pset == null || this.pset == DummyEnum) {
         this.set.normalize();
@@ -212,9 +212,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value deepCopy() { return this; }
+  public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
+  public final boolean assignable(IValue val) {
     try {
       return this.equals(val);
     }
@@ -241,7 +241,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final Value permute(MVPerm perm) {
+  public final IValue permute(MVPerm perm) {
     try {
       this.convertAndCache();
       return this.pset.permute(perm);
@@ -271,13 +271,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final Value toSetEnum() {
+  public final IValue toSetEnum() {
       if (this.pset != null && this.pset != DummyEnum) {
         return this.pset;
       }
       ValueVec vals = new ValueVec(this.size());
       ValueEnumeration Enum = this.elements();
-      Value elem;
+      IValue elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
@@ -300,7 +300,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       catch (Throwable e) { unlazy = false; }
 
       if (unlazy) {
-        Value val = this.toSetEnum();
+        IValue val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {
@@ -364,7 +364,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 					rank == kss.length - 1 ? numOfSubsetsRequested - vec.size() : n, ppt, elems, maxLengthOfSubsets,
 					EnumerableValue.getRandom());
 
-			Value subset;
+			IValue subset;
 			while ((subset = unrank.randomSubset()) != null && vec.size() < numOfSubsetsRequested) {
 				vec.addElement(subset);
 			}
@@ -398,7 +398,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 		}
 
-		public Value subsetAt(long idx) {
+		public IValue subsetAt(long idx) {
 			// More subsets in this kSubset available.
 			final ValueVec vec = new ValueVec(k);
 
@@ -449,7 +449,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			this.a = Math.abs(random.nextLong()) % n;
 		}
 
-		public Value randomSubset() {
+		public IValue randomSubset() {
 			if (i < n) {
 				return subsetAt(((x * i++) + a) % n);
 			}
@@ -464,8 +464,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		// duplicates). The alternative - a ValueVec which gets sorted to remove
 		// duplicates after the while loops is slower.
 		final int estimated = (int) (numOfPicks * probability);
-		final Collection<Value> sets = new HashSet<>(estimated);
-		Value val;
+		final Collection<IValue> sets = new HashSet<>(estimated);
+		IValue val;
 		while ((val = enumerator.nextElement()) != null) {
 			sets.add(val);
 		}
@@ -482,7 +482,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		}
 		
 		@Override
-		public Value nextElement() {
+		public IValue nextElement() {
 			if (done) { return null; }
 			done = true;
 			return new SetEnumValue(cm);
@@ -529,7 +529,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 
 			@Override
-			public Value nextElement() {
+			public IValue nextElement() {
 				if (k > n) {
 					return null;
 				} else if (k == 0) {
@@ -638,7 +638,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		}
 
 		@Override
-		public Value nextElement() {
+		public IValue nextElement() {
 			if (cnt >= numKSubsetElems) {
 				return null;
 			}
@@ -706,7 +706,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       this.descriptor = new BitSet(this.elems.size());
     }
 
-    public final Value nextElement() {
+    public final IValue nextElement() {
 			if (this.descriptor == null)
 				return null;
 			ValueVec vals;
@@ -764,7 +764,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		}
 
 		@Override
-		public Value nextElement() {
+		public IValue nextElement() {
 			if (!hasNext()) {
 				return null;
 			}
@@ -814,7 +814,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
 		// Repeated invocation can yield duplicate elements due to the probabilistic
 		// nature of CoinTossingSubsetEnumerator.
-		public Value nextElement() {
+		public IValue nextElement() {
 			if (!hasNext()) {
 				return null;
 			}

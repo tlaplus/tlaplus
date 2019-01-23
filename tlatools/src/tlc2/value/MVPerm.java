@@ -95,7 +95,7 @@ public final class MVPerm {
     final Set perms = new Set(sz);
     final Vect permVec = new Vect(sz);
     // Compute the group generators:
-    Value elem;
+    IValue elem;
     while ((elem = Enum.nextElement()) != null) {
       final FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
       if (fcn == null) {
@@ -103,8 +103,8 @@ public final class MVPerm {
       }
       final MVPerm perm = new MVPerm();
       for (int i = 0; i < fcn.domain.length; i++) {
-	final Value dval = fcn.domain[i];
-	final Value rval = fcn.values[i];
+	final IValue dval = fcn.domain[i];
+	final IValue rval = fcn.values[i];
 	if ((dval instanceof ModelValue) && (rval instanceof ModelValue)) {
 	  perm.put((ModelValue)dval, (ModelValue)rval);
 	}

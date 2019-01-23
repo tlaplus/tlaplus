@@ -1,7 +1,7 @@
 package tlc2.tool;
 
 import tlc2.TLCGlobals;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 
 /**
  * A common interface for workers
@@ -22,7 +22,7 @@ public interface IWorker
 
 	// see IdThread
 	
-	public Value getLocalValue(int idx);
+	public IValue getLocalValue(int idx);
 
-	public void setLocalValue(int idx, Value val);
+	public void setLocalValue(int idx, IValue val);
 }

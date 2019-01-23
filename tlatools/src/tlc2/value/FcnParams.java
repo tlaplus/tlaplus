@@ -12,10 +12,10 @@ import util.Assert;
 public class FcnParams {
   public FormalParamNode[][] formals;  // array of formal params
   public boolean[] isTuples;      // true iff tuple param
-  public Value[] domains;         // the bounds of the formals
+  public IValue[] domains;         // the bounds of the formals
   public int argLen;              // the number of arguments
   
-  public FcnParams(FormalParamNode[][] formals, boolean[] isTuples, Value[] domains) {
+  public FcnParams(FormalParamNode[][] formals, boolean[] isTuples, IValue[] domains) {
     this.formals = formals;
     this.isTuples = isTuples;
     this.domains = domains;
@@ -99,11 +99,11 @@ public class FcnParams {
 
   final class Enumerator implements ValueEnumeration {
     private ValueEnumeration[] enums;
-    private Value[] currentElems;
+    private IValue[] currentElems;
     
     public Enumerator() {
       this.enums = new ValueEnumeration[argLen];
-      this.currentElems = new Value[argLen];
+      this.currentElems = new IValue[argLen];
       int idx = 0;
       for (int i = 0; i < domains.length; i++) {
 	if (!(domains[i] instanceof Enumerable)) {
@@ -143,9 +143,9 @@ public class FcnParams {
       }
     }
 
-    public final Value nextElement() {
+    public final IValue nextElement() {
       if (this.enums == null) return null;
-      Value[] elems = new Value[argLen];
+      IValue[] elems = new IValue[argLen];
       for (int i = 0; i < argLen; i++) {
 	elems[i] = this.currentElems[i];
       }

@@ -12,10 +12,10 @@ import tlc2.TLCGlobals;
 import util.WrongInvocationException;
 
 public class ValueVec implements Cloneable, Serializable {
-  private Value[] elementData;
+  private IValue[] elementData;
   private int elementCount;
          
-  static private final Value[] empty = new Value[0];
+  static private final IValue[] empty = new IValue[0];
 
   public ValueVec() { this(10); }
 
@@ -25,34 +25,34 @@ public class ValueVec implements Cloneable, Serializable {
       this.elementData = empty;
     }
     else {
-      this.elementData = new Value[initialCapacity];
+      this.elementData = new IValue[initialCapacity];
     }
   }
 
-  public ValueVec(Value[] elems) {
+  public ValueVec(IValue[] elems) {
     this.elementData = elems;
     this.elementCount = elems.length;
   }
 
-    public ValueVec(Collection<Value> elems) {
+    public ValueVec(Collection<IValue> elems) {
     	this(elems.size());
-    	for (Value value : elems) {
+    	for (IValue value : elems) {
 			addElement(value);
 		}
     }
-    public final void addElementAt(Value val, int index) {
+    public final void addElementAt(IValue val, int index) {
         this.elementData[index] = val;
         this.elementCount++;
     }
 
-  public final void addElement(Value val) {
+  public final void addElement(IValue val) {
     if (this.elementCount == this.elementData.length) {
       ensureCapacity(this.elementCount+1);
     }
     this.elementData[this.elementCount++] = val;
   }
 
-  public final void addElement1(Value val) {
+  public final void addElement1(IValue val) {
     if (this.elementCount == this.elementData.length) {
       ensureCapacity(this.elementCount+1);
     }
@@ -81,15 +81,15 @@ public class ValueVec implements Cloneable, Serializable {
     return v;
   }
 
-  public final boolean contains(Value elem) {
+  public final boolean contains(IValue elem) {
     return (indexOf(elem) != -1);
   }
 
-  public final void copyInto(Value anArray[]) {
+  public final void copyInto(IValue anArray[]) {
     System.arraycopy(elementData, 0, anArray, 0, elementCount);
   }
 
-  public final Value elementAt(int index) {
+  public final IValue elementAt(int index) {
     // Assert.check(index < this.elementCount);
     return this.elementData[index];
   }
@@ -107,25 +107,25 @@ public class ValueVec implements Cloneable, Serializable {
       if (newCapacity > TLCGlobals.setBound) {
 	newCapacity = TLCGlobals.setBound;
       }
-      Value oldData[] = this.elementData;
-      this.elementData = new Value[newCapacity];
+      IValue oldData[] = this.elementData;
+      this.elementData = new IValue[newCapacity];
 
       System.arraycopy(oldData, 0, elementData, 0, elementCount);
     }
   }
 
-  public final Value firstElement() { return this.elementData[0]; }
+  public final IValue firstElement() { return this.elementData[0]; }
 
-  public final int indexOf(Value elem) { return indexOf(elem, 0); }
+  public final int indexOf(IValue elem) { return indexOf(elem, 0); }
 
-  public final int indexOf(Value elem, int index) {
+  public final int indexOf(IValue elem, int index) {
     for (int pos = index; pos < elementCount; pos++) {
       if (elem.equals(elementData[pos])) return pos;
     }
     return -1;
   }
 
-  public final void insertElementAt(Value obj, int index) {
+  public final void insertElementAt(IValue obj, int index) {
     if (elementCount == elementData.length) {
       this.ensureCapacity(elementCount+1);
     }
@@ -136,18 +136,18 @@ public class ValueVec implements Cloneable, Serializable {
 
   public final boolean isEmpty() { return (elementCount == 0); }
 
-  public final Value lastElement() {
+  public final IValue lastElement() {
     return this.elementData[this.elementCount-1];
   }
 
-  public final void setElementAt(Value obj, int index)	{
+  public final void setElementAt(IValue obj, int index)	{
     this.elementData[index] = obj;
   }
 
   public final int size() { return this.elementCount; }
 
   /* Assume that the elements are sorted. */
-  public final boolean search(Value elem, boolean sorted) {
+  public final boolean search(IValue elem, boolean sorted) {
     if (sorted) {
       int cmp = 0, mid = 0, low = 0, high = this.elementCount;
       while (low < high) {
@@ -175,7 +175,7 @@ public class ValueVec implements Cloneable, Serializable {
   public final ValueVec sort(boolean noDup) {
     int newCount = (this.elementCount == 0) ? 0 : 1;
     for (int i = 1; i < this.elementCount; i++) {
-      Value elem = this.elementData[i];
+      IValue elem = this.elementData[i];
       int cmp = 0, idx = 0, low = 0, high = newCount;
       while (low < high) {
 	idx = (low + high) >> 1;
@@ -216,8 +216,8 @@ public class ValueVec implements Cloneable, Serializable {
     return sb.toString();
   }
 
-	public Value[] toArray() {
-		final Value[] copy = new Value[elementCount];
+	public IValue[] toArray() {
+		final IValue[] copy = new IValue[elementCount];
 		System.arraycopy(elementData, 0, copy, 0, elementCount);
 		return copy;
 	}

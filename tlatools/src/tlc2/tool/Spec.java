@@ -51,6 +51,7 @@ import tlc2.util.List;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
 import tlc2.value.BoolValue;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.LazyValue;
 import tlc2.value.MethodValue;
@@ -276,7 +277,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         // Add predefined (Boolean and String) in defns.
         this.defns.put("TRUE", ValTrue);
         this.defns.put("FALSE", ValFalse);
-        Value[] elems = new Value[2];
+        IValue[] elems = new IValue[2];
         elems[0] = ValFalse;
         elems[1] = ValTrue;
         this.defns.put("BOOLEAN", new SetEnumValue(elems, true));
@@ -302,7 +303,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
 				// synthetic members from being processed.
                 if (!ms[i].isSynthetic()) {
                 	MethodValue mv = new MethodValue(ms[i]);
-                	Value val = (acnt == 0) ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
+                	IValue val = (acnt == 0) ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
                 	this.defns.put(name, val);
                 }
             }
@@ -395,7 +396,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             {
                 // Override with a user defined Java class for the TLA+ module.
                 // Collects new definitions:
-                Hashtable<UniqueString, Value> javaDefs = new Hashtable<UniqueString, Value>();
+                Hashtable<UniqueString, IValue> javaDefs = new Hashtable<UniqueString, IValue>();
                 Method[] mds = userModule.getDeclaredMethods();
                 for (int j = 0; j < mds.length; j++)
                 {
@@ -407,7 +408,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                         int acnt = mds[j].getParameterTypes().length;
                         MethodValue mv = new MethodValue(mds[j]);
                         boolean isConstant = (acnt == 0) && Modifier.isFinal(mdf);
-                        Value val = isConstant ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
+                        IValue val = isConstant ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
                         javaDefs.put(uname, val);
                         
                         if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
@@ -1399,7 +1400,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 } else
                 {
                     OpRcdValue opVal = (OpRcdValue) val;
-                    int arity = ((Value[]) opVal.domain.elementAt(0)).length;
+                    int arity = ((IValue[]) opVal.domain.elementAt(0)).length;
                     if (len != arity + 2)
                     {
                         Assert.fail(EC.TLC_CONFIG_OP_ARITY_INCONSISTENT, name);

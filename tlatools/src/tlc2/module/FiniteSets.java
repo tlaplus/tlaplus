@@ -9,8 +9,8 @@ import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.value.BoolValue;
 import tlc2.value.Enumerable;
+import tlc2.value.IValue;
 import tlc2.value.IntValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 
@@ -18,12 +18,12 @@ public class FiniteSets implements ValueConstants
 {
 	public static final long serialVersionUID = 20160822L;
 
-    public static BoolValue IsFiniteSet(Value val)
+    public static BoolValue IsFiniteSet(IValue val)
     {
         return val.isFinite() ? ValTrue : ValFalse;
     }
 
-    public static IntValue Cardinality(Value val)
+    public static IntValue Cardinality(IValue val)
     {
         if (val instanceof Enumerable)
         {
