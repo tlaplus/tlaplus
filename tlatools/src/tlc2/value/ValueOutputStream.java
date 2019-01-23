@@ -12,7 +12,7 @@ import java.util.zip.GZIPOutputStream;
 import tlc2.TLCGlobals;
 import util.BufferedDataOutputStream;
 
-public final class ValueOutputStream implements ValueConstants {
+public final class ValueOutputStream {
 
   private final BufferedDataOutputStream dos;
   private final HandleTable handles;
