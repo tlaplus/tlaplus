@@ -17,8 +17,8 @@ import tlc2.TLCGlobals;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import util.Assert;
@@ -28,7 +28,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   public final FcnParams params;       // the function formals
   public final SemanticNode body;      // the function body
   public ValueExcept[] excepts;  // the EXCEPTs
-  public final Tool tool;
+  public final ITool tool;
   public Context con;
   public final TLCState state;
   public final TLCState pstate;
@@ -36,7 +36,7 @@ public class FcnLambdaValue extends Value implements Applicable {
   public FcnRcdValue fcnRcd;
 
   /* Constructor */
-  public FcnLambdaValue(FcnParams params, SemanticNode body, Tool tool,
+  public FcnLambdaValue(FcnParams params, SemanticNode body, ITool tool,
       Context c, TLCState s0, TLCState s1, int control) {
     this.params = params;
     this.body = body;
@@ -54,7 +54,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     this.fcnRcd = null;
   }
 
-  public FcnLambdaValue(FcnParams params, SemanticNode body, Tool tool,
+  public FcnLambdaValue(FcnParams params, SemanticNode body, ITool tool,
 	      Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
 	  this(params, body, tool, c, s0, s1, control);
 	  this.cm = cm;

@@ -10,8 +10,8 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.st.TreeNode;
 import tlc2.output.EC;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.Context;
 import tlc2.value.BoolValue;
 import tlc2.value.IValue;
@@ -35,7 +35,7 @@ class LNStateAST extends LNState {
 		return this.body;
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		IValue val = tool.eval(this.body, getContext(), s1);
 		if (!(val instanceof BoolValue)) {
 			Assert.fail(EC.TLC_LIVE_STATE_PREDICATE_NON_BOOL);

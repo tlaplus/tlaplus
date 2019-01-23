@@ -51,7 +51,7 @@ public class DFIDModelChecker extends AbstractChecker
      * Constructor for running DFID   
      * @param resolver 
      */
-	public DFIDModelChecker(Tool tool, String metadir, final IStateWriter stateWriter,
+	public DFIDModelChecker(ITool tool, String metadir, final IStateWriter stateWriter,
 			boolean deadlock, String fromChkpt) throws EvalException, IOException {
         // call the abstract constructor
         super(tool, metadir, stateWriter, deadlock, fromChkpt);
@@ -59,7 +59,7 @@ public class DFIDModelChecker extends AbstractChecker
         this.theInitStates = null;
         this.theInitFPs = null;
         this.theFPSet = new MemFPIntSet(); // init the state set
-        this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, this.tool.rootFile);
+        this.theFPSet.init(TLCGlobals.getNumWorkers(), this.metadir, this.tool.getRootFile());
 
         // Initialize all the workers:
         this.workers = new DFIDWorker[TLCGlobals.getNumWorkers()];

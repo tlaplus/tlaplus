@@ -8,8 +8,8 @@ package tlc2.tool.liveness;
 import tla2sany.semantic.ExprNode;
 import tlc2.output.EC;
 import tlc2.tool.EvalControl;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.Context;
 import tlc2.value.BoolValue;
 import tlc2.value.IValue;
@@ -59,7 +59,7 @@ public class LNAction extends LiveExprNode {
 		return true;
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		if (this.subscript != null) {
 			IValue v1 = tool.eval(this.subscript, con, s1, TLCState.Empty, EvalControl.Clear);
 			IValue v2 = tool.eval(this.subscript, con, s2, null, EvalControl.Clear);

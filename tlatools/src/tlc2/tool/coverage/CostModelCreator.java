@@ -51,7 +51,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
-import tlc2.tool.Tool;
+import tlc2.tool.ITool;
 import tlc2.tool.coverage.ActionWrapper.Relation;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
@@ -158,7 +158,7 @@ public class CostModelCreator extends ExplorerVisitor {
 	private final Set<OpApplNodeWrapper> nodes = new HashSet<>();
 	
 	private ActionWrapper root;
-	private Tool tool;
+	private ITool tool;
 	private Context ctx = Context.Empty;
 	
 	private CostModelCreator(final SemanticNode root) {
@@ -167,7 +167,7 @@ public class CostModelCreator extends ExplorerVisitor {
 	}
 
 	// root cannot be type OpApplNode but has to be SemanticNode (see Test216).
-	private CostModelCreator(final Tool tool) {
+	private CostModelCreator(final ITool tool) {
 		this.tool = tool;
 		// MAK 10/08/2018: Annotate OApplNodes in the semantic tree that correspond to
 		// primed vars. It is unclear why OpApplNodes do not get marked as primed when
@@ -300,7 +300,7 @@ public class CostModelCreator extends ExplorerVisitor {
 		return this.stack.peek().getRoot();
 	}
 	
-	public static final void create(final Tool tool) {
+	public static final void create(final ITool tool) {
 		final CostModelCreator collector = new CostModelCreator(tool);
 
 		// TODO Start from the ModuleNode similar to how the Explorer works. It is
@@ -327,7 +327,7 @@ public class CostModelCreator extends ExplorerVisitor {
 		}
 	}
 	
-	public static void report(final Tool tool) {
+	public static void report(final ITool tool) {
         MP.printMessage(EC.TLC_COVERAGE_START);
     	final Vect init = tool.getInitStateSpec();
     	for (int i = 0; i < init.size(); i++) {

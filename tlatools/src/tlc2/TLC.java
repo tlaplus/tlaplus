@@ -23,6 +23,7 @@ import tla2sany.modanalyzer.ParseUnit;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.DFIDModelChecker;
+import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
 import tlc2.tool.Tool;
@@ -916,7 +917,7 @@ public class TLC
 						pid == -1 ? "" : String.valueOf(pid) };
 
             	// model checking
-		        final Tool tool = new Tool(mainFile, configFile, resolver);
+		        final ITool tool = new Tool(mainFile, configFile, resolver);
 
                 if (TLCGlobals.DFIDMax == -1)
                 {

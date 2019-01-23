@@ -15,8 +15,8 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import util.Assert;
@@ -28,14 +28,14 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     ***********************************************************************/
   public IValue inVal;           // the in value or the real set
   public final SemanticNode pred;     // the predicate
-  public Tool tool;             // null iff inVal is the real set
+  public ITool tool;             // null iff inVal is the real set
   public final Context con;
   public final TLCState state;
   public final TLCState pstate;
   public final int control;
 
   /* Constructor */
-  public SetPredValue(Object vars, IValue inVal, SemanticNode pred, Tool tool,
+  public SetPredValue(Object vars, IValue inVal, SemanticNode pred, ITool tool,
           Context con, TLCState s0, TLCState s1, int control) {
     this.vars = vars;
     this.inVal = inVal;
@@ -58,7 +58,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     this.control = control;
   }
 
-  public SetPredValue(Object vars, IValue inVal, SemanticNode pred, Tool tool,
+  public SetPredValue(Object vars, IValue inVal, SemanticNode pred, ITool tool,
           Context con, TLCState s0, TLCState s1, int control, CostModel cm) {
 	  this(vars, inVal, pred, tool, con, s0, s1, control);
 	  this.cm = cm;

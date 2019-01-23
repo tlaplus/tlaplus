@@ -17,6 +17,7 @@ import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.IStateFunctor;
+import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
@@ -41,7 +42,7 @@ public class TLCApp extends DistApp {
 		this(specFile, configFile, deadlock, true, null);
 
 		this.fromChkpt = fromChkpt;
-		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
+		this.metadir = FileUtil.makeMetaDir(this.tool.getSpecDir(), fromChkpt);
 		this.fpSetConfig = fpSetConfig;
 	}
 	
@@ -50,7 +51,7 @@ public class TLCApp extends DistApp {
 		this(specFile, configFile, deadlock, true, fts);
 
 		this.fromChkpt = fromChkpt;
-		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
+		this.metadir = FileUtil.makeMetaDir(this.tool.getSpecDir(), fromChkpt);
 		this.fpSetConfig = fpSetConfig;
 	}
 
@@ -87,7 +88,7 @@ public class TLCApp extends DistApp {
 	}
 
 	/* Fields */
-	public Tool tool;
+	public ITool tool;
 	public Action[] invariants; // the invariants to be checked
 	public Action[] impliedInits; // the implied-inits to be checked
 	public Action[] impliedActions; // the implied-actions to be checked
@@ -116,14 +117,14 @@ public class TLCApp extends DistApp {
 	 * @see tlc2.tool.distributed.DistApp#getFileName()
 	 */
 	public final String getFileName() {
-		return this.tool.rootFile;
+		return this.tool.getRootFile();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getSpecDir()
 	 */
 	public String getSpecDir() {
-		return this.tool.specDir;
+		return this.tool.getSpecDir();
 	}
 
 	/* (non-Javadoc)

@@ -5,8 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.Vect;
 
 class LNDisj extends LiveExprNode {
@@ -76,7 +76,7 @@ class LNDisj extends LiveExprNode {
 		return (this.info & 8) > 0;
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		int sz = disjs.size();
 		for (int i = 0; i < sz; i++) {
 			LiveExprNode item = (LiveExprNode) disjs.elementAt(i);

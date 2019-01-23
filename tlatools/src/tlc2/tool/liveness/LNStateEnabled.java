@@ -10,9 +10,9 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.st.TreeNode;
 import tlc2.tool.ActionItemList;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
-import tlc2.tool.Tool;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 
@@ -42,7 +42,7 @@ class LNStateEnabled extends LNState {
 		this.isBox = isBox;
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		// Note that s2 is useless.
 		if (this.isBox && this.subscript != null) {
 			return true;

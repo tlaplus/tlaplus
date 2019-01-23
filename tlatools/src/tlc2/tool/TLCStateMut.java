@@ -35,7 +35,7 @@ import util.WrongInvocationException;
  */
 public final class TLCStateMut extends TLCState implements Cloneable, Serializable {
   private IValue values[];
-  private static Tool mytool = null;
+  private static ITool mytool = null;
 
   /**
    * If non-null, viewMap denotes the function to be applied to
@@ -51,7 +51,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 
   private TLCStateMut(IValue[] vals) { this.values = vals; }
 
-  public static void init(Tool tool) {
+  public static void init(ITool tool) {
     mytool = tool;
     IValue[] vals = new IValue[vars.length];
     Empty = new TLCStateMut(vals);

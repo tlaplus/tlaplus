@@ -59,7 +59,6 @@ import tlc2.value.ModelValue;
 import tlc2.value.OpRcdValue;
 import tlc2.value.SetEnumValue;
 import tlc2.value.StringValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import util.Assert;
 import util.FilenameToStream;
@@ -2203,7 +2202,15 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
     {
         return resolver;
     }
+    
+    public String getRootFile() {
+    	return this.rootFile;
+    }
 
+    public String getSpecDir() {
+    	return this.specDir;
+    }
+    
     /** 
      * The level of the expression according to level checking.
      * static method, does not change instance state 

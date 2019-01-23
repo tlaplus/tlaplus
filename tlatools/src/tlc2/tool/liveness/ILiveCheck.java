@@ -27,9 +27,9 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
+import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.IBucketStatistics;
 
@@ -100,7 +100,7 @@ public interface ILiveCheck {
 	
 	String getMetaDir();
 
-	Tool getTool();
+	ITool getTool();
 
 	IBucketStatistics getOutDegreeStatistics();
 

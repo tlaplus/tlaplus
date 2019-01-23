@@ -7,8 +7,8 @@ package tlc2.tool.liveness;
 
 import java.io.PrintStream;
 
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.BitVector;
 
 /*
@@ -63,13 +63,13 @@ public class OrderOfSolution {
 	private LiveExprNode[] checkState; // state subformula
 	private LiveExprNode[] checkAction; // action subformula
 	private PossibleErrorModel[] pems;
-	private final Tool tool;
+	private final ITool tool;
 
-	public OrderOfSolution(final LNEven[] livenessEventually, Tool aTool) {
+	public OrderOfSolution(final LNEven[] livenessEventually, ITool aTool) {
 		this(null, livenessEventually, aTool);
 	}
 
-	public OrderOfSolution(final TBGraph aTableau, final LNEven[] livenessEventually, Tool aTool) {
+	public OrderOfSolution(final TBGraph aTableau, final LNEven[] livenessEventually, ITool aTool) {
 		tableau = aTableau;
 		promises = livenessEventually;
 		this.tool = aTool;

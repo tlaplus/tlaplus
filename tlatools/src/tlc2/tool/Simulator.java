@@ -102,7 +102,7 @@ public class Simulator {
 
 	/* Fields */
 	private final ILiveCheck liveCheck;
-	private final Tool tool;
+	private final ITool tool;
 	private final Action[] invariants; // the invariants to be checked
 	private final boolean checkDeadlock; // check deadlock?
 	private final boolean checkLiveness; // check liveness?

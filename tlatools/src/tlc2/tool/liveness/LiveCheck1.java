@@ -13,10 +13,10 @@ import tlc2.output.MP;
 import tlc2.output.StatePrinter;
 import tlc2.tool.Action;
 import tlc2.tool.EvalException;
+import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
-import tlc2.tool.Tool;
 import tlc2.util.FP64;
 import tlc2.util.LongObjTable;
 import tlc2.util.MemObjectStack;
@@ -30,7 +30,7 @@ public class LiveCheck1 implements ILiveCheck {
 	/**
 	 * Implementation of liveness checking based on MP book.
 	 */
-	private Tool myTool;
+	private ITool myTool;
 	private String metadir = "";
 	private Action[] actions;
 	private OrderOfSolution[] solutions;
@@ -72,13 +72,13 @@ public class LiveCheck1 implements ILiveCheck {
 	 */
 	private BEGraphNode initNode = null;
 
-	public LiveCheck1(Tool tool) {
+	public LiveCheck1(ITool tool) {
 		myTool = tool;
 		solutions = Liveness.processLiveness(myTool);
 		bgraphs = new BEGraph[0];
 	}
 
-	public void init(Tool tool, Action[] acts, String mdir) {
+	public void init(ITool tool, Action[] acts, String mdir) {
 		myTool = tool;
 		metadir = mdir;
 		actions = acts;
@@ -931,7 +931,7 @@ public class LiveCheck1 implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#getTool()
 	 */
-	public Tool getTool() {
+	public ITool getTool() {
 		return myTool;
 	}
 

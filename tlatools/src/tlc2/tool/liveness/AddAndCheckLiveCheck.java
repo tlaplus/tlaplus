@@ -31,8 +31,8 @@ import java.io.IOException;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.tool.Worker;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.IBucketStatistics;
@@ -49,7 +49,7 @@ import tlc2.util.statistics.IBucketStatistics;
  */
 public class AddAndCheckLiveCheck extends LiveCheck {
 
-	public AddAndCheckLiveCheck(Tool tool, Action[] actions, String metadir, IBucketStatistics stats) throws IOException {
+	public AddAndCheckLiveCheck(ITool tool, Action[] actions, String metadir, IBucketStatistics stats) throws IOException {
 		super(tool, actions, metadir, stats);
 		MP.printWarning(EC.UNIT_TEST, new String[]{ "!!!WARNING: TLC is running in inefficient unit testing mode!!!", ""} );
 	}

@@ -6,8 +6,8 @@
 package tlc2.tool.liveness;
 
 import tlc2.output.EC;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import util.Assert;
 
 /**
@@ -39,7 +39,7 @@ class LNAll extends LiveExprNode {
 		return this.body.containAction();
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		Assert.fail(EC.TLC_LIVE_CANNOT_EVAL_FORMULA, ALWAYS);
 		return false; // make compiler happy
 	}

@@ -81,7 +81,7 @@ import util.UniqueString;
  */
 public class Tool
     extends Spec
-    implements ValueConstants, ToolGlobals, TraceApp
+    implements ValueConstants, ToolGlobals, ITool
 {
   protected Action[] actions;     // the list of TLA actions.
   private CallStack callStack;    // the call stack.
@@ -122,12 +122,14 @@ public class Tool
    * Initialization. Any Tool object must call it before doing anything.
    * @param spec - <code>null</code> or a filled spec object from previous SANY run
    */
-  public final SpecObj init()
+  @Override
+public final SpecObj init()
   {
 	  return init(true, null);
   }
 
-  public final SpecObj init(boolean preprocess, SpecObj spec)
+  @Override
+public final SpecObj init(boolean preprocess, SpecObj spec)
   {
 
       // Parse and process this spec.
@@ -150,12 +152,14 @@ public class Tool
       return processSpec;
   }
 
-  public final void setCallStack()
+  @Override
+public final void setCallStack()
   {
       this.callStack = new CallStack();
   }
 
-  public final CallStack getCallStack()
+  @Override
+public final CallStack getCallStack()
   {
       return this.callStack;
   }
@@ -168,7 +172,8 @@ public class Tool
    * splitting it into a set of actions for the maximum prefix
    * of disjunction and existential quantification.
    */
-  public final Action[] getActions() {
+  @Override
+public final Action[] getActions() {
     if (this.actions == null) {
       Action next = this.getNextStateSpec();
       if (next == null) {
@@ -332,13 +337,15 @@ public class Tool
    * can be under-specified.  Too many possible initial states will
    * probably make tools like TLC useless.
    */
-  public final StateVec getInitStates() {
+  @Override
+public final StateVec getInitStates() {
 	  final StateVec initStates = new StateVec(0);
 	  getInitStates(initStates);
 	  return initStates;
   }
 
-  public final void getInitStates(IStateFunctor functor) {
+  @Override
+public final void getInitStates(IStateFunctor functor) {
 	  Vect init = this.getInitStateSpec();
 	  ActionItemList acts = ActionItemList.Empty;
       // MAK 09/11/2018: Tail to head iteration order cause the first elem added with
@@ -357,7 +364,8 @@ public class Tool
   }
 
   /* Create the state specified by pred.  */
-  public final TLCState makeState(SemanticNode pred) {
+  @Override
+public final TLCState makeState(SemanticNode pred) {
     ActionItemList acts = ActionItemList.Empty;
     TLCState ps = TLCState.Empty.createEmpty();
     StateVec states = new StateVec(0);
@@ -790,7 +798,8 @@ public class Tool
    * This method returns the set of next states when taking the action
    * in the given state.
    */
-  public final StateVec getNextStates(Action action, TLCState state) {
+  @Override
+public final StateVec getNextStates(Action action, TLCState state) {
     ActionItemList acts = ActionItemList.Empty;
     TLCState s1 = TLCState.Empty.createEmpty();
     StateVec nss = new StateVec(0);
@@ -1393,7 +1402,8 @@ public class Tool
 		return this.getNextStates(acts, s0, s1, nss, cm);
   }
 
-  public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
+  @Override
+public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
 	    return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, CostModel.DO_NOT_RECORD);
 	  }
 
@@ -1442,11 +1452,13 @@ public class Tool
   /* eval */
 
   /* Special version of eval for state expressions. */
-  public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
+  @Override
+public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
     return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, cm);
   }
   
-	  public final IValue eval(SemanticNode expr, Context c, TLCState s0,
+	  @Override
+	public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               TLCState s1, final int control) {
 		  return eval(expr, c, s0, s1, control, CostModel.DO_NOT_RECORD);
 	  }
@@ -1454,7 +1466,8 @@ public class Tool
    * This method evaluates the expression expr in the given context,
    * current state, and partial next state.
    */
-  public final IValue eval(SemanticNode expr, Context c, TLCState s0,
+  @Override
+public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                           TLCState s1, final int control, final CostModel cm) {
 	    if (this.callStack != null) {
 	    	return evalWithCallStack(expr, c, s0, s1, control, cm);
@@ -2496,12 +2509,14 @@ public class Tool
    * is good iff it assigns legal explicit values to all the global
    * state variables.
    */
-  public final boolean isGoodState(TLCState state) {
+  @Override
+public final boolean isGoodState(TLCState state) {
     return state.allAssigned();
   }
 
   /* This method determines if a state satisfies the model constraints. */
-  public final boolean isInModel(TLCState state) throws EvalException {
+  @Override
+public final boolean isInModel(TLCState state) throws EvalException {
     ExprNode[] constrs = this.getModelConstraints();
     for (int i = 0; i < constrs.length; i++) {
       IValue bval = this.eval(constrs[i], Context.Empty, state, CostModel.DO_NOT_RECORD);
@@ -2514,7 +2529,8 @@ public class Tool
   }
 
   /* This method determines if a pair of states satisfy the action constraints. */
-  public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
+  @Override
+public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
     ExprNode[] constrs = this.getActionConstraints();
     for (int i = 0; i < constrs.length; i++) {
       IValue bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, CostModel.DO_NOT_RECORD);
@@ -2532,7 +2548,8 @@ public class Tool
    * enabled in the state s and context act.con.
  * @param cm TODO
    */
-  public final TLCState enabled(SemanticNode pred, ActionItemList acts,
+  @Override
+public final TLCState enabled(SemanticNode pred, ActionItemList acts,
                                 Context c, TLCState s0, TLCState s1, CostModel cm) {
 	    if (this.callStack != null) {
 	    	return enabledWithCallStack(pred, acts, c, s0, s1, cm);
@@ -3194,7 +3211,8 @@ public class Tool
   }
 
   /* This method determines if the action predicate is valid in (s0, s1). */
-  public final boolean isValid(Action act, TLCState s0, TLCState s1) {
+  @Override
+public final boolean isValid(Action act, TLCState s0, TLCState s1) {
     IValue val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear, act.cm);
     if (!(val instanceof BoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()});
@@ -3203,16 +3221,19 @@ public class Tool
   }
 
   /* Returns true iff the predicate is valid in the state. */
-  public final boolean isValid(Action act, TLCState state) {
+  @Override
+public final boolean isValid(Action act, TLCState state) {
     return this.isValid(act, state, TLCState.Empty);
   }
 
   /* Returns true iff the predicate is valid in the state. */
-  public final boolean isValid(Action act) {
+  @Override
+public final boolean isValid(Action act) {
     return this.isValid(act, TLCState.Empty, TLCState.Empty);
   }
 
-  public final boolean isValid(ExprNode expr) {
+  @Override
+public final boolean isValid(ExprNode expr) {
     IValue val = this.eval(expr, Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
     if (!(val instanceof BoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
@@ -3221,6 +3242,7 @@ public class Tool
   }
 
     /* Reconstruct the initial state whose fingerprint is fp. */
+	@Override
 	public final TLCStateInfo getState(final long fp) {
 		class InitStateSelectorFunctor implements IStateFunctor {
 			private final long fp;
@@ -3272,7 +3294,8 @@ public class Tool
 	 *         the stateNumber (relative to the given sinfo) and a pointer to
 	 *         the predecessor.
 	 */
-  public final TLCStateInfo getState(long fp, TLCStateInfo sinfo) {
+  @Override
+public final TLCStateInfo getState(long fp, TLCStateInfo sinfo) {
     final TLCStateInfo tlcStateInfo = getState(fp, sinfo.state);
     if (tlcStateInfo == null) {
       throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
@@ -3284,7 +3307,8 @@ public class Tool
   }
 
   /* Reconstruct the next state of state s whose fingerprint is fp. */
-  public final TLCStateInfo getState(long fp, TLCState s) {
+  @Override
+public final TLCStateInfo getState(long fp, TLCState s) {
 	  IdThread.setCurrentState(s);
     for (int i = 0; i < this.actions.length; i++) {
       Action curAction = this.actions[i];
@@ -3301,7 +3325,8 @@ public class Tool
   }
 
   /* Reconstruct the info for s1.   */
-  public final TLCStateInfo getState(TLCState s1, TLCState s) {
+  @Override
+public final TLCStateInfo getState(TLCState s1, TLCState s) {
 	  IdThread.setCurrentState(s);
     for (int i = 0; i < this.actions.length; i++) {
       Action curAction = this.actions[i];
@@ -3317,7 +3342,8 @@ public class Tool
   }
 
   /* Return the set of all permutations under the symmetry assumption. */
-  public final IMVPerm[] getSymmetryPerms() {
+  @Override
+public final IMVPerm[] getSymmetryPerms() {
     final String name = this.config.getSymmetry();
     if (name.length() == 0) { return null; }
     final Object symm = this.defns.get(name);
@@ -3336,20 +3362,23 @@ public class Tool
     return MVPerms.permutationSubgroup((Enumerable) fcns);
   }
 
-  public final boolean hasSymmetry() {
+  @Override
+public final boolean hasSymmetry() {
     if (this.config == null) {
       return false;
     }
     final String name = this.config.getSymmetry();
     return name.length() > 0;
   }
-  public final Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args,
+  @Override
+public final Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args,
           Context c, TLCState s0, TLCState s1,
           final int control) {
 	  return getFcnContext(fcn, args, c, s0, s1, control, CostModel.DO_NOT_RECORD);
   }
 
-  public final Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args,
+  @Override
+public final Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args,
                                      Context c, TLCState s0, TLCState s1,
                                      final int control, CostModel cm) {
     Context fcon = fcn.con;
@@ -3428,13 +3457,15 @@ public class Tool
     return fcon;
   }
 
-  public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
+  @Override
+public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
           TLCState s1, final int control) {
 	  return contexts(appl, c, s0, s1, control, CostModel.DO_NOT_RECORD);
   }
   
   /* A context enumerator for an operator application. */
-  public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
+  @Override
+public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
                                           TLCState s1, final int control, CostModel cm) {
     FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
     boolean[] isTuples = appl.isBdedQuantATuple();

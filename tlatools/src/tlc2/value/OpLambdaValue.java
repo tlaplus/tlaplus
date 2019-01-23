@@ -9,8 +9,8 @@ package tlc2.value;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefNode;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import util.Assert;
@@ -18,13 +18,13 @@ import util.WrongInvocationException;
 
 public class OpLambdaValue extends OpValue implements Applicable {
   public final OpDefNode opDef;       // the operator definition.
-  public final Tool tool;
+  public final ITool tool;
   public final Context con;
   public final TLCState state;
   public final TLCState pstate;
 
   /* Constructor */
-  public OpLambdaValue(OpDefNode op, Tool tool,	Context con,
+  public OpLambdaValue(OpDefNode op, ITool tool,	Context con,
            TLCState state, TLCState pstate) {
     this.opDef = op;
     this.tool = tool;
@@ -33,7 +33,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     this.pstate = pstate;
   }
 
-  public OpLambdaValue(OpDefNode op, Tool tool,	Context con,
+  public OpLambdaValue(OpDefNode op, ITool tool,	Context con,
           TLCState state, TLCState pstate, CostModel cm) {
 	this(op, tool, con, state, pstate);
 	this.cm = cm;

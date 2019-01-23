@@ -53,7 +53,7 @@ public class ModuleOverwritesBenchmark {
 	private static final String BASE_PATH = System
 			.getProperty(ModuleOverwritesBenchmark.class.getName() + ".base");
 
-	private static final Tool tool;
+	private static final ITool tool;
 	private static final TLCStateMut state;
 
 	static {

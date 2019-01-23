@@ -21,10 +21,10 @@ import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ContextEnumerator;
 import tlc2.tool.EvalControl;
+import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Spec;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.tool.ToolGlobals;
 import tlc2.util.Context;
 import tlc2.util.Vect;
@@ -36,7 +36,7 @@ import util.ToolIO;
 
 public class Liveness implements ToolGlobals, ASTConstants {
 
-	private static LiveExprNode astToLive(Tool tool, ExprNode expr, Context con, int level) {
+	private static LiveExprNode astToLive(ITool tool, ExprNode expr, Context con, int level) {
 		if (level == 0) {
 			IValue val = tool.eval(expr, con, TLCState.Empty);
 			if (!(val instanceof BoolValue)) {
@@ -59,7 +59,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * the predicate body with []p. For the moment, we require that arguments to
 	 * predicates be computable from its context.
 	 */
-	private static LiveExprNode astToLive(Tool tool, ExprNode expr, Context con) {
+	private static LiveExprNode astToLive(ITool tool, ExprNode expr, Context con) {
 		switch (expr.getKind()) {
 		case OpApplKind: {
 			OpApplNode expr1 = (OpApplNode) expr;
@@ -90,7 +90,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		}
 	}
 
-	private static LiveExprNode astToLiveAppl(Tool tool, OpApplNode expr, Context con) {
+	private static LiveExprNode astToLiveAppl(ITool tool, OpApplNode expr, Context con) {
 		ExprOrOpArgNode[] args = expr.getArgs();
 		int alen = args.length;
 		SymbolNode opNode = expr.getOperator();
@@ -356,7 +356,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * Parse the temporals and impliedTemporals given in the config file. It
 	 * returns null if there is nothing to check.
 	 */
-	private static LiveExprNode parseLiveness(Tool tool) {
+	private static LiveExprNode parseLiveness(ITool tool) {
 		Action[] fairs = tool.getTemporals();
 		LNConj lnc = new LNConj(fairs.length);
 		for (int i = 0; i < fairs.length; i++) {
@@ -430,7 +430,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * <i>fairness</i> formulae where check1, check2, ... are the actual
 	 * <i>liveness properties</i> to be checked.
 	 */
-	public static OrderOfSolution[] processLiveness(Tool tool) {
+	public static OrderOfSolution[] processLiveness(ITool tool) {
 		LiveExprNode lexpr = parseLiveness(tool);
 
 		if (lexpr == null) {

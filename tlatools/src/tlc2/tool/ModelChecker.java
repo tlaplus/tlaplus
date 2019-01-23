@@ -69,16 +69,16 @@ public class ModelChecker extends AbstractChecker
 	private boolean forceLiveCheck = false;
 
     /* Constructors  */
-    public ModelChecker(Tool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
+    public ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
             final Future<FPSet> future) throws EvalException, IOException, InterruptedException, ExecutionException {
     	this(tool, metadir, stateWriter, deadlock, fromChkpt);
     	this.theFPSet = future.get();
     }
     
-    public ModelChecker(Tool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
+    public ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
             final FPSetConfiguration fpSetConfig) throws EvalException, IOException {
     	this(tool, metadir, stateWriter, deadlock, fromChkpt);
-    	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, tool.rootFile);
+    	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, tool.getRootFile());
     }
     
     /**
@@ -87,7 +87,7 @@ public class ModelChecker extends AbstractChecker
      * @param resolver name resolver to be able to load files (specs and configs) from managed environments 
      * @param specObj external SpecObj added to enable to work on existing specification 
      */
-    private ModelChecker(Tool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt) throws EvalException, IOException
+    private ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt) throws EvalException, IOException
     {
         // call the abstract constructor
         super(tool, metadir, stateWriter, deadlock, fromChkpt);
@@ -97,13 +97,13 @@ public class ModelChecker extends AbstractChecker
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         // Finally, initialize the trace file:
-        this.trace = new ConcurrentTLCTrace(this.metadir, this.tool.rootFile, this.tool);
+        this.trace = new ConcurrentTLCTrace(this.metadir, this.tool.getRootFile(), this.tool);
 
         // Initialize all the workers:
         this.workers = new Worker[TLCGlobals.getNumWorkers()];
         for (int i = 0; i < this.workers.length; i++)
         {
-            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.rootFile));
+            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootFile()));
         }
     }
 

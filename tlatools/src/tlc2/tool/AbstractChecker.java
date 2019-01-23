@@ -47,7 +47,7 @@ public abstract class AbstractChecker
     protected final boolean checkLiveness;
     protected final String fromChkpt;
     public final String metadir;
-    public final Tool tool;
+    public final ITool tool;
     public final SpecObj specObj;
     public final Action[] invariants;
 	/**
@@ -100,7 +100,7 @@ public abstract class AbstractChecker
      * @param resolver
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
-	public AbstractChecker(Tool tool, String metadir, final IStateWriter stateWriter,
+	public AbstractChecker(ITool tool, String metadir, final IStateWriter stateWriter,
 			boolean deadlock, String fromChkpt) throws EvalException, IOException {
         this.tool = tool;
 		this.specObj = tool.init();
