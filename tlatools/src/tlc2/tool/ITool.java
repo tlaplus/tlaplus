@@ -113,7 +113,6 @@ public interface ITool extends TraceApp {
 	   * This method determines if an action is enabled in the given state.
 	   * More precisely, it determines if (act.pred /\ (sub' # sub)) is
 	   * enabled in the state s and context act.con.
-	 * @param cm TODO
 	   */
 	TLCState enabled(SemanticNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm);
 
@@ -161,7 +160,7 @@ public interface ITool extends TraceApp {
 	/* A context enumerator for an operator application. */
 	ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0, TLCState s1, int control, CostModel cm);
 
-	Vect getInitStateSpec();
+	Vect<Action> getInitStateSpec();
 
 	Action[] getInvariants();
 

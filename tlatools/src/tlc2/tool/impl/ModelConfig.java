@@ -89,17 +89,17 @@ public class ModelConfig implements ValueConstants, Serializable
         ModelValue.init();
 
         this.configFileName = configFileName;
-        this.configTbl = new Hashtable();
-        Vect temp = new Vect();
+        this.configTbl = new Hashtable<>();
+        Vect temp = new Vect<>();
         this.configTbl.put(Constant, temp);
         this.configTbl.put(Constants, temp);
-        temp = new Vect();
+        temp = new Vect<>();
         this.configTbl.put(Constraint, temp);
         this.configTbl.put(Constraints, temp);
-        temp = new Vect();
+        temp = new Vect<>();
         this.configTbl.put(ActionConstraint, temp);
         this.configTbl.put(ActionConstraints, temp);
-        temp = new Vect();
+        temp = new Vect<>();
         this.configTbl.put(Invariant, temp);
         this.configTbl.put(Invariants, temp);
         this.configTbl.put(Init, "");
@@ -107,15 +107,15 @@ public class ModelConfig implements ValueConstants, Serializable
         this.configTbl.put(View, "");
         this.configTbl.put(Symmetry, "");
         this.configTbl.put(Spec, "");
-        temp = new Vect();
+        temp = new Vect<>();
         this.configTbl.put(Prop, temp);
         this.configTbl.put(Props, temp);
         this.configTbl.put(Type, "");
         this.configTbl.put(TypeConstraint, "");
 
-        this.modConstants = new Hashtable();
-        this.modOverrides = new Hashtable();
-        this.overrides = new Hashtable();
+        this.modConstants = new Hashtable<>();
+        this.modOverrides = new Hashtable<>();
+        this.overrides = new Hashtable<>();
     }
 
     /**

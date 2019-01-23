@@ -47,7 +47,6 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
@@ -215,7 +214,7 @@ public class CostModelCreator extends ExplorerVisitor {
 			
 			// CONSTANT operators (this is similar to the lookups in Tool#evalAppl on e.g.
 			// line 1442), except that we lookup ToolObject only.
-			final Object val = opApplNode.getOperator().getToolObject(TLCGlobals.ToolId);
+			final Object val = opApplNode.getOperator().getToolObject(tool.getId());
 			if (val instanceof OpDefNode) {
 				final OpDefNode odn = (OpDefNode) val;
 				final ExprNode body = odn.getBody();
@@ -306,9 +305,9 @@ public class CostModelCreator extends ExplorerVisitor {
 		// TODO Start from the ModuleNode similar to how the Explorer works. It is
 		// unclear how to lookup the corresponding subtree in the global CM graph
 		// in getNextState and getInitStates of the model checker.
-		final Vect init = tool.getInitStateSpec();
+		final Vect<Action> init = tool.getInitStateSpec();
 		for (int i = 0; i < init.size(); i++) {
-			final Action initAction = (Action) init.elementAt(i);
+			final Action initAction = init.elementAt(i);
 			initAction.cm = collector.getCM(initAction, Relation.INIT);
 		}
 
@@ -329,9 +328,9 @@ public class CostModelCreator extends ExplorerVisitor {
 	
 	public static void report(final ITool tool) {
         MP.printMessage(EC.TLC_COVERAGE_START);
-    	final Vect init = tool.getInitStateSpec();
+    	final Vect<Action> init = tool.getInitStateSpec();
     	for (int i = 0; i < init.size(); i++) {
-    		final Action initAction = (Action) init.elementAt(i);
+    		final Action initAction = init.elementAt(i);
     		initAction.cm.report();
     	}
 

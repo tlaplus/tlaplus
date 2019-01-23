@@ -104,7 +104,7 @@ public class Tool
   protected Action[] actions;     // the list of TLA actions.
   private CallStack callStack;    // the call stack.
 
-  private Vect actionVec = new Vect(10);
+  private Vect<Action> actionVec = new Vect<>(10);
 
   /**
    * Creates a new tool handle
@@ -364,7 +364,7 @@ public final StateVec getInitStates() {
 
   @Override
 public final void getInitStates(IStateFunctor functor) {
-	  Vect init = this.getInitStateSpec();
+	  Vect<Action> init = this.getInitStateSpec();
 	  ActionItemList acts = ActionItemList.Empty;
       // MAK 09/11/2018: Tail to head iteration order cause the first elem added with
       // acts.cons to be acts tail. This fixes the bug/funny behavior that the init

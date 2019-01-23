@@ -95,7 +95,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
     // SZ 10.04.2009: changed the name of the variable to reflect its nature
     public OpDeclNode[] variablesNodes; // The state variables.
     protected TLAClass tlaClass; // TLA built-in classes.
-    protected Vect initPredVec; // The initial state predicate.
+    protected Vect<Action> initPredVec; // The initial state predicate.
     protected Action nextPred; // The next state predicate.
     protected Action[] temporals; // Fairness specifications...
     protected String[] temporalNames; // ... and their names
@@ -125,7 +125,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         this.variablesNodes = null;
         this.defns = new Defns();
         this.tlaClass = new TLAClass("tlc2.module", resolver);
-        this.initPredVec = new Vect(5);
+        this.initPredVec = new Vect<>(5);
         this.nextPred = null;
         this.temporals = null;
         this.temporalNames = null;
@@ -374,11 +374,11 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
 
         // Apply config file module specific constants to operator defns.
         // We do not allow this kind of replacement for constant decls.
-        Hashtable modConstants = this.initializeModConstants();
+        Hashtable<String, Hashtable> modConstants = this.initializeModConstants();
         for (int i = 0; i < mods.length; i++)
         {
             UniqueString modName = mods[i].getName();
-            Hashtable mConsts = (Hashtable) modConstants.get(modName.toString());
+            Hashtable mConsts = modConstants.get(modName.toString());
             if (mConsts != null)
             {
                 OpDefNode[] opDefs = mods[i].getOpDefs();
@@ -501,12 +501,12 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
 
         // Apply config file module specific overrides to operator defns.
         // We do not allow this kind of replacement for constant decls.
-        Hashtable modOverrides = this.config.getModOverrides();
+        Hashtable<String, Hashtable> modOverrides = this.config.getModOverrides();
         for (int i = 0; i < mods.length; i++)
         {
             UniqueString modName = mods[i].getName();
-            Hashtable mDefs = (Hashtable) modOverrides.get(modName.toString());
-            HashSet modOverriden = new HashSet();
+            Hashtable mDefs = modOverrides.get(modName.toString());
+            HashSet<String> modOverriden = new HashSet<>();
             if (mDefs != null)
             {
                 // the operator definitions:
@@ -798,16 +798,16 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         return null;
     }
 
-    private Vect invVec = new Vect();
-    private Vect invNameVec = new Vect();
-    private Vect impliedInitVec = new Vect();
-    private Vect impliedInitNameVec = new Vect();
-    private Vect impliedActionVec = new Vect();
-    private Vect impliedActNameVec = new Vect();
-    private Vect temporalVec = new Vect();
-    private Vect temporalNameVec = new Vect();
-    private Vect impliedTemporalVec = new Vect();
-    private Vect impliedTemporalNameVec = new Vect();
+    private Vect<Action> invVec = new Vect<>();
+    private Vect<String> invNameVec = new Vect<>();
+    private Vect<Action> impliedInitVec = new Vect<>();
+    private Vect<String> impliedInitNameVec = new Vect<>();
+    private Vect<Action> impliedActionVec = new Vect<>();
+    private Vect<String> impliedActNameVec = new Vect<>();
+    private Vect<Action> temporalVec = new Vect<>();
+    private Vect<String> temporalNameVec = new Vect<>();
+    private Vect<Action> impliedTemporalVec = new Vect<>();
+    private Vect<String> impliedTemporalNameVec = new Vect<>();
 
     /** 
      * Process the configuration file. 
@@ -847,7 +847,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         }
 
         // Process the properties:
-        Vect propNames = this.config.getProperties();
+        Vect<String> propNames = this.config.getProperties();
         for (int i = 0; i < propNames.size(); i++)
         {
             String propName = (String) propNames.elementAt(i);
@@ -1116,11 +1116,11 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
                              * of this specification object -- otherwise TLC's
                              * analysis is incorrect.
                              **/
-                            Vect components;
+                            Vect<SymbolNode> components;
 
                             SubscriptCollector()
                             {
-                                this.components = new Vect();
+                                this.components = new Vect<>();
                             }
 
                             void enter(ExprNode subscript, Context c)
@@ -1206,7 +1206,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
                                 }
                             }
 
-                            Vect getComponents()
+                            Vect<SymbolNode> getComponents()
                             {
                                 return components;
                             }
@@ -1385,12 +1385,12 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         }
     }
 
-    private final Hashtable makeConstantTable(Vect consts)
+    private final Hashtable<String, Serializable> makeConstantTable(Vect<Vect<String>> consts)
     {
-        Hashtable constTbl = new Hashtable();
+        Hashtable<String, Serializable> constTbl = new Hashtable<>();
         for (int i = 0; i < consts.size(); i++)
         {
-            Vect line = (Vect) consts.elementAt(i);
+            Vect<String> line = (Vect<String>) consts.elementAt(i);
             int len = line.size();
             String name = (String) line.elementAt(0);
             if (len <= 2)
@@ -1424,23 +1424,23 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
      */
     public final Hashtable initializeConstants()
     {
-        Vect consts = this.config.getConstants();
+        Vect<Vect<String>> consts = this.config.getConstants();
         if (consts == null)
         {
-            return new Hashtable();
+            return new Hashtable<>();
         }
         return this.makeConstantTable(consts);
     }
 
-    public final Hashtable initializeModConstants()
+    public final Hashtable<String, Hashtable> initializeModConstants()
     {
-        Hashtable modConstants = this.config.getModConstants();
-        Hashtable constants = new Hashtable();
-        Enumeration mods = modConstants.keys();
+        Hashtable<String, ?> modConstants = this.config.getModConstants();
+        Hashtable<String, Hashtable> constants = new Hashtable<>();
+        Enumeration<String> mods = modConstants.keys();
         while (mods.hasMoreElements())
         {
-            String modName = (String) mods.nextElement();
-            constants.put(modName, this.makeConstantTable((Vect) modConstants.get(modName)));
+            String modName = mods.nextElement();
+            constants.put(modName, this.makeConstantTable((Vect<Vect<String>>) modConstants.get(modName)));
         }
         return constants;
     }
@@ -1542,7 +1542,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
     }
 
     /* Get the initial state predicate of the specification.  */
-    public final Vect getInitStateSpec()
+    public final Vect<Action> getInitStateSpec()
     {
         return this.initPredVec;
     }
