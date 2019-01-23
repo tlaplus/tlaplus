@@ -88,7 +88,7 @@ public class ModelValue extends Value {
   }
 
   /* Make str a new model value, if it is not one yet.  */
-  public static ModelValue make(String str) {
+  public static IValue make(String str) {
     ModelValue mv = (ModelValue)mvTable.get(str);
     if (mv != null) return mv;
     mv = new ModelValue(str);

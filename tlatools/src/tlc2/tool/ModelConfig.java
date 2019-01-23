@@ -22,7 +22,6 @@ import tlc2.value.IntValue;
 import tlc2.value.ModelValue;
 import tlc2.value.SetEnumValue;
 import tlc2.value.StringValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
 import util.FileUtil;
