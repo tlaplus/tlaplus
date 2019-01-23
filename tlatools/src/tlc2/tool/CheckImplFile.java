@@ -19,6 +19,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.impl.Tool;
 import tlc2.util.FP64;
 import util.Assert;
 import util.FileUtil;

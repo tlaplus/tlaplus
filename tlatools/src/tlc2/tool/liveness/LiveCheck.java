@@ -20,7 +20,7 @@ import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
+import tlc2.tool.impl.Tool;
 import tlc2.util.BitVector;
 import tlc2.util.FP64;
 import tlc2.util.IStateWriter;

@@ -45,12 +45,12 @@ public abstract class Specs {
 	 */
 	public static int getLevel(LevelNode expr, Context c)
 	{
-	    HashSet lpSet = expr.getLevelParams();
+	    HashSet<SymbolNode> lpSet = expr.getLevelParams();
 	    if (lpSet.isEmpty())
 	        return expr.getLevel();
 	
 	    int level = expr.getLevel();
-	    Iterator iter = lpSet.iterator();
+	    Iterator<SymbolNode> iter = lpSet.iterator();
 	    while (iter.hasNext())
 	    {
 	        SymbolNode param = (SymbolNode) iter.next();
@@ -78,7 +78,7 @@ public abstract class Specs {
 	 * @param subs
 	 * @return
 	 */
-	static final ExprNode addSubsts(ExprNode expr, List subs)
+	public static final ExprNode addSubsts(ExprNode expr, List subs)
 	{
 	    ExprNode res = expr;
 	

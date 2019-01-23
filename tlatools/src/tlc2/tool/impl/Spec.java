@@ -3,7 +3,7 @@
 // Last modified on Mon 19 May 2008 at  1:13:48 PST by lamport
 //      modified on Fri Aug 24 14:43:24 PDT 2001 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.impl;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -43,6 +43,15 @@ import tlc2.TLCGlobals;
 import tlc2.module.BuiltInModuleHelper;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.Action;
+import tlc2.tool.BuiltInOPs;
+import tlc2.tool.Defns;
+import tlc2.tool.EvalControl;
+import tlc2.tool.Specs;
+import tlc2.tool.TLAClass;
+import tlc2.tool.TLARegistry;
+import tlc2.tool.TLCState;
+import tlc2.tool.ToolGlobals;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.List;
@@ -64,7 +73,7 @@ import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 
-public class Spec implements ValueConstants, ToolGlobals, Serializable
+class Spec implements ValueConstants, ToolGlobals, Serializable
 {
 	/**
 	 * @see See note on performance in CostModelCreator.

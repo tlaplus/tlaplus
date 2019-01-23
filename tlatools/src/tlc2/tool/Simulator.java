@@ -21,6 +21,7 @@ import tlc2.output.StatePrinter;
 import tlc2.tool.SimulationWorker.SimulationWorkerError;
 import tlc2.tool.SimulationWorker.SimulationWorkerResult;
 import tlc2.tool.coverage.CostModelCreator;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.LiveCheck1;

@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 15:29:56 PST by lamport
 //      modified on Thu Aug 23 17:46:39 PDT 2001 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.impl;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -16,6 +16,7 @@ import tla2sany.parser.TLAplusParserTokenManager;
 import tla2sany.parser.Token;
 import tla2sany.parser.TokenMgrError;
 import tlc2.output.EC;
+import tlc2.tool.ConfigFileException;
 import tlc2.util.Vect;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
@@ -31,7 +32,6 @@ import util.SimpleFilenameToStream;
 /** 
  * Stores information from user's model configuration file.
  * @author Yuan Yu, Leslie Lamport
- * @version $Id$
  */
 public class ModelConfig implements ValueConstants, Serializable
 {

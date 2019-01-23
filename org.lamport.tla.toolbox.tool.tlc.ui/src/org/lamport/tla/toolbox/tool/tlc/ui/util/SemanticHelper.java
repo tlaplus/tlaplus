@@ -13,7 +13,7 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
-import tlc2.tool.ModelConfig;
+import tlc2.tool.impl.ModelConfig;
 import util.UniqueString;
 
 /**
@@ -35,9 +35,9 @@ public class SemanticHelper
      */
     public static final String TLA_BUILTIN = "--TLA+ BUILTINS--";
     
-    private static Set CONFIG_KEYWORDS = new HashSet(Arrays.asList(ModelConfig.ALL_KEYWORDS));
+    private static Set<String> CONFIG_KEYWORDS = new HashSet<>(Arrays.asList(ModelConfig.ALL_KEYWORDS));
 
-    private Hashtable pageStorage;
+    private Hashtable<Object, Hashtable<String, String>> pageStorage;
     private Context specContext;
     private Set<String> keywords = ITLAReserveredWords.ALL_WORDS_SET;
 

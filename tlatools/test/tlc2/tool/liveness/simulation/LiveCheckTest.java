@@ -37,7 +37,7 @@ import org.junit.Test;
 import tlc2.tool.Action;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.AbstractDiskGraph;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;

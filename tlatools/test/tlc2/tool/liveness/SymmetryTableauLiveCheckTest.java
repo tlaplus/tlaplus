@@ -43,7 +43,7 @@ import tlc2.tool.Action;
 import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.GraphNode.Transition;
 import tlc2.tool.queue.DummyTLCState;
 import tlc2.util.BitVector;
