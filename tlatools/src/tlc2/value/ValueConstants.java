@@ -74,11 +74,11 @@ public interface ValueConstants {
   public final IntValue ValZero   = IntValue.gen(0);
   public final IntValue ValOne    = IntValue.gen(1);
   public final IntValue ValNegOne = IntValue.gen(-1);
-  public final IValue EmptySet = new SetEnumValue(new ValueVec(0), true);
+  final IValue EmptySet = new SetEnumValue(new ValueVec(0), true);
   public final IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[0], true);
   public final ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
-  public final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new IValue[0], true);
-  public final UndefValue ValUndef = new UndefValue();
-  public final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
+  final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new IValue[0], true);
+  final UndefValue ValUndef = new UndefValue();
+  final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
 
 }
