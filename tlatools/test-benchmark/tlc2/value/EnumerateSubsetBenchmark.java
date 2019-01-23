@@ -36,8 +36,8 @@ import tlc2.util.FP64;
 public class EnumerateSubsetBenchmark {
 
 	static {
-		EnumerableValue.setRandom(15041980L);
-		EnumerableValue.resetRandom();
+		RandomEnumerableValues.setSeed(15041980L);
+		RandomEnumerableValues.reset();
 
 		FP64.Init();
 	}

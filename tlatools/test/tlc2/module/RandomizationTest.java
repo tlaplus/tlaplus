@@ -36,10 +36,10 @@ import org.junit.Test;
 import tlc2.tool.EvalException;
 import tlc2.util.FP64;
 import tlc2.value.Enumerable;
-import tlc2.value.EnumerableValue;
 import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
+import tlc2.value.RandomEnumerableValues;
 import tlc2.value.SetEnumValue;
 import tlc2.value.StringValue;
 
@@ -48,7 +48,7 @@ public class RandomizationTest {
 	@BeforeClass
 	public static void setup() {
 		// Make test repeatable by setting random seed always to same value. 
-		EnumerableValue.setRandom(15041980L);
+		RandomEnumerableValues.setSeed(15041980L);
 		
 		// Initialize FP64 to prevent NPE in hashCode (which relies on Value#fingerprint).
 		FP64.Init();

@@ -362,7 +362,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			// number of subsets (will be close to its calculated n anyway).
 			final RandomUnrank unrank = new RandomUnrank(rank,
 					rank == kss.length - 1 ? numOfSubsetsRequested - vec.size() : n, ppt, elems, maxLengthOfSubsets,
-					EnumerableValue.getRandom());
+							RandomEnumerableValues.get());
 
 			IValue subset;
 			while ((subset = unrank.randomSubset()) != null && vec.size() < numOfSubsetsRequested) {
@@ -820,7 +820,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 			final ValueVec vals = new ValueVec(elems.size());
 			for (int i = 0; i < elems.size(); i++) {
-				if (EnumerableValue.getRandom().nextDouble() < probability) {
+				if (RandomEnumerableValues.get().nextDouble() < probability) {
 					vals.addElement(elems.elementAt(i));
 				}
 			}

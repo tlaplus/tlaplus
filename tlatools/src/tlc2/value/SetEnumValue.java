@@ -372,7 +372,7 @@ implements Enumerable, Reducible {
 
   public final IValue randomElement() {
      int sz = size();
-     int index = (int) Math.floor(getRandom().nextDouble() * sz);
+     int index = (int) Math.floor(RandomEnumerableValues.get().nextDouble() * sz);
      return this.elems.elementAt(index);
   }
 

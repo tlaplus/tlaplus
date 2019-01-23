@@ -62,7 +62,7 @@ public class SubsetValueTest {
 	@BeforeClass
 	public static void setup() {
 		// Make test repeatable by setting random seed always to same value. 
-		EnumerableValue.setRandom(15041980L);
+		RandomEnumerableValues.setSeed(15041980L);
 		// Needed to insert elements into java.util.Set (because of hashcode) later to
 		// detect duplicates.
 		FP64.Init();

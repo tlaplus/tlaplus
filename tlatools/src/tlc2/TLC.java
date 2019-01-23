@@ -38,7 +38,7 @@ import tlc2.util.IStateWriter;
 import tlc2.util.NoopStateWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.StateWriter;
-import tlc2.value.EnumerableValue;
+import tlc2.value.RandomEnumerableValues;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -908,12 +908,12 @@ public class TLC
 				if (noSeed) {
                     seed = rng.nextLong();
 				}
-				EnumerableValue.setRandom(seed);
+				RandomEnumerableValues.setSeed(seed);
             	
 				final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
 						TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor, version,
 						arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
-						Long.toString(EnumerableValue.getRandomSeed()), Integer.toString(fpIndex),
+						Long.toString(RandomEnumerableValues.getSeed()), Integer.toString(fpIndex),
 						pid == -1 ? "" : String.valueOf(pid) };
 
             	// model checking

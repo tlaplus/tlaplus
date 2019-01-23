@@ -28,15 +28,10 @@
 package tlc2.value;
 
 import java.util.List;
-import java.util.Random;
 
-import tlc2.TLCGlobals;
 import tlc2.tool.FingerprintException;
-import tlc2.tool.ModelChecker;
-import tlc2.tool.TLCState;
-import tlc2.util.IdThread;
 
-public abstract class EnumerableValue extends Value implements Enumerable, ValueConstants {
+public abstract class EnumerableValue extends Value implements Enumerable {
 
   public IValue isSubsetEq(IValue other) {
     try {
@@ -104,125 +99,6 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 		};
   	}
 
-	/* Randomization for sets */
-		
-	private static long randomSeed; 
-	
-	public static long getRandomSeed() {
-		return randomSeed;
-	}
-	
-	/**
-	 * Initialize Random with the given seed value.
-	 **/
-	public static void setRandom(final long seed) {
-		randomSeed = seed;
-		resetRandom();
-	}
-	
-	/**
-	 * Re-Initialize Random with the recorded seed value.
-	 **/
-	public static void resetRandom() {
-		RANDOMS.remove();
-	}
-
-	public static Random getRandom() {
-		return RANDOMS.get();
-	}
-	
-	private static final ThreadLocal<Random> RANDOMS = new ThreadLocal<Random>() {
-		@Override
-		protected Random initialValue() {
-			if (TLCGlobals.mainChecker != null && ModelChecker.class.equals(TLCGlobals.mainChecker.getClass())) {
-				// In order to recreate the error trace in BFS mode - which essentially
-				// corresponds to rerunning state exploration following a given path - we have
-				// to recreate the same random values too. Otherwise, TLC will fail to recreate
-				// the trace because the recreated TLCState does not match the fingerprint in
-				// the error trace/path. Therefore, we maintain one RNG per IdThread (IWorker)
-				// which - for the initial states - is seeded with enumFractionSeed and - in the
-				// scope of next-state - gets seeded with the fingerprint of the predecessor
-				// state.
-				return new TLCStateRandom(randomSeed);
-			} else {
-				// DFS or Simulation need no special handling because:
-				// - DFS does not re-create the error trace (just prints the current trace).
-				// - Simulation mode is intended to allow users to gather statistics on
-				// behaviors generated with specified probabilities of different transitions.
-				// (For example, to find the expected time for a message to be delivered with
-				// retransmission as a function of the probability of message loss). For this,
-				// it's important that the random choice have no correlation with the state in
-				// which the choice is made.
-				return new DefaultRandom(randomSeed);
-			}
-		}
-
-		@Override
-		public Random get() {
-			// Hook to re-initialize random (no-op for DFS and simulation).
-			return ((EnumerableValueRandom) super.get()).initialize();
-		}
-	};
-		
-	private static interface EnumerableValueRandom {
-		public Random initialize();
-	}
-
-	@SuppressWarnings("serial")
-	private static final class DefaultRandom extends Random implements EnumerableValueRandom {
-		public DefaultRandom(long randomSeed) {
-			super(randomSeed);
-		}
-
-		@Override
-		public final Random initialize() {
-			// Noop
-			return this;
-		}
-	}
-
-	@SuppressWarnings("serial")
-	private static final class TLCStateRandom extends Random implements EnumerableValueRandom {
-
-		private TLCState state;
-
-		public TLCStateRandom(long randomSeed) {
-			super(randomSeed);
-		}
-
-		private void initializedFor(final TLCState state) {
-			// XOR the state's fingerprint with the initial randomSeed value. This is done
-			// so that two identical states (same fingerprint) of two different
-			// specifications do not produce the same random value.
-			final long seed = state.fingerPrint() ^ randomSeed;
-			this.setSeed(seed);
-			this.state = state;
-		}
-
-		private boolean isInitializedFor(final TLCState another) {
-			return state == another;
-		}
-
-		@Override
-		public Random initialize() {
-			final TLCState state = IdThread.getCurrentState();
-			// state is null during the generation of initial states and non-null in the
-			// scope of the next-state relation (however, state can be an initial state).
-			// Thus, an RNG is seeded with randomSeed during the generation of initial
-			// states and seeded with randomSeed ^ predecessor's fingerprint during the
-			// generation of next states.
-			// Do not re-initialize random for the same TLCState twice to produce two
-			// distinct values with high probability with a next-state such as:
-			// Next == x' = RandomElement(0..2) /\ y' = RandomElement(0..2)
-			// If random was to be re-initialized/re-seeded, RandomElement(0..2) for x' and y'
-			// would be identical values (also see tlc2.tool.RandomElementXandYTest).
-			if (state != null && !isInitializedFor(state)) {
-				initializedFor(state);
-			}
-			return this;
-		}
-	}
-
 	abstract class SubsetEnumerator implements ValueEnumeration {
 
 		protected final long x;
@@ -254,7 +130,7 @@ public abstract class EnumerableValue extends Value implements Enumerable, Value
 			// k out of n elements in the range 0 <= k <= n.
 			if (n > 0) {
 				this.k = k;
-				this.a = getRandom().nextInt(n);
+				this.a = RandomEnumerableValues.get().nextInt(n);
 			} else {
 				this.k = 0;
 				this.a = 0; // RANDOM.nextInt(0) causes IllegalArgumentException.

@@ -94,7 +94,7 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 			this.k = k;
 			this.i = 0;
 
-			this.a = BigInteger.valueOf(Math.abs(getRandom().nextLong()));
+			this.a = BigInteger.valueOf(Math.abs(RandomEnumerableValues.get().nextLong()));
 
 			// http://primes.utm.edu/lists/2small/0bit.html
 			// (2^63 - 25)

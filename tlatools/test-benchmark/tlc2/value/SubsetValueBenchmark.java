@@ -47,8 +47,8 @@ public class SubsetValueBenchmark {
 	private static final double d2 = 0.2d;
 
 	static {
-		EnumerableValue.setRandom(15041980L);
-		EnumerableValue.resetRandom();
+		RandomEnumerableValues.setSeed(15041980L);
+		RandomEnumerableValues.reset();
 
 		FP64.Init();
 
