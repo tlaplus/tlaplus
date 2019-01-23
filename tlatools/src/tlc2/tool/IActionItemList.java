@@ -25,7 +25,11 @@
  ******************************************************************************/
 package tlc2.tool;
 
-public interface ActionItemListConstant {
+import tla2sany.semantic.SemanticNode;
+import tlc2.tool.coverage.CostModel;
+import tlc2.util.Context;
+
+public interface IActionItemList {
 
 	/**
 	 * predicate of a conjunction
@@ -43,4 +47,6 @@ public interface ActionItemListConstant {
 	 * pred' # pred
 	 */
 	int CHANGED = -3;
+	
+	IActionItemList cons(SemanticNode exprOrOpArgNode, Context c, CostModel cm, int ailconst);
 }

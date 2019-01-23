@@ -114,7 +114,10 @@ public interface ITool extends TraceApp {
 	   * More precisely, it determines if (act.pred /\ (sub' # sub)) is
 	   * enabled in the state s and context act.con.
 	   */
-	TLCState enabled(SemanticNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm);
+	TLCState enabled(SemanticNode pred, Context c, TLCState s0, TLCState s1, ExprNode subscript, final int ail);
+	TLCState enabled(SemanticNode pred, Context c, TLCState s0, TLCState s1);
+	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1);
+	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm);
 
 	/* This method determines if the action predicate is valid in (s0, s1). */
 	boolean isValid(Action act, TLCState s0, TLCState s1);

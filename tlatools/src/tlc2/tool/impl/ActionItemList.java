@@ -1,14 +1,15 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 
-package tlc2.tool;
+package tlc2.tool.impl;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
+import tlc2.tool.IActionItemList;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 
-public class ActionItemList implements ActionItemListConstant {
+class ActionItemList implements IActionItemList {
 	private static final boolean coverage = TLCGlobals.isCoverageEnabled();
 	/**
    * We assume that this.pred is null iff the list is empty.
@@ -47,7 +48,7 @@ public class ActionItemList implements ActionItemListConstant {
 
   public final ActionItemList cdr() { return this.next; }
 
-  public final ActionItemList cons(SemanticNode pred,
+  public final IActionItemList cons(SemanticNode pred,
 				   Context con, CostModel cm, int kind) {
     return new ActionItemList(pred, con, kind, this, coverage ? cm.get(pred) : cm);
   }
