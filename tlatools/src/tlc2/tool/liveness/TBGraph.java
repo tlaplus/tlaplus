@@ -8,7 +8,7 @@ package tlc2.tool.liveness;
 import tlc2.util.Vect;
 
 @SuppressWarnings("serial")
-public class TBGraph extends Vect {
+public class TBGraph extends Vect<TBGraphNode> {
 	/**
 	 * TBGraph represents the nodes in the tableau graph.
 	 */

@@ -7,7 +7,7 @@ package tlc2.tool.liveness;
 
 import tlc2.util.Vect;
 
-public class TBParVec extends Vect {
+public class TBParVec extends Vect<TBPar> {
 
 	public TBParVec(int size) {
 		super(size);

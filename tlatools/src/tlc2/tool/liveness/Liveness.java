@@ -490,7 +490,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		// up \/ and /\ above them. tfbin contains the different tf's.
 		// pembin is a vect of vect-of-pems collecting each tf's pems.
 		final TBPar tfbin = new TBPar(dnf.getCount());
-		final Vect pembin = new Vect(dnf.getCount());
+		final Vect<Vect<OSExprPem>> pembin = new Vect<>(dnf.getCount());
 		for (int i = 0; i < dnf.getCount(); i++) {
 			int found = -1;
 			final LiveExprNode tf = tfs[i];
@@ -503,9 +503,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			if (found == -1) {
 				found = tfbin.size();
 				tfbin.addElement(tf);
-				pembin.addElement(new Vect());
+				pembin.addElement(new Vect<OSExprPem>());
 			}
-			((Vect) pembin.elementAt(found)).addElement(pems[i]);
+			((Vect<OSExprPem>) pembin.elementAt(found)).addElement(pems[i]);
 		}
 
 		// We then create an OrderOfSolution for each tf in tfbin.
@@ -527,9 +527,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 
 			// We lump all the pems into a single checkState and checkAct,
 			// and oss[i].pems will simply be integer lookups into them.
-			final Vect stateBin = new Vect();
-			final Vect actionBin = new Vect();
-			final Vect tfPems = (Vect) pembin.elementAt(i);
+			final Vect<LiveExprNode> stateBin = new Vect<>();
+			final Vect<LiveExprNode> actionBin = new Vect<>();
+			final Vect<OSExprPem> tfPems = (Vect<OSExprPem>) pembin.elementAt(i);
 			oss[i].setPems(new PossibleErrorModel[tfPems.size()]);
 			for (int j = 0; j < tfPems.size(); j++) {
 				final OSExprPem pem = (OSExprPem) tfPems.elementAt(j);
@@ -557,7 +557,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * Given a list of checks, ensures that the checks are in the bin. It
 	 * returns an array of index of the checks in the bin.
 	 */
-	private static int addToBin(LiveExprNode check, Vect bin) {
+	private static int addToBin(LiveExprNode check, Vect<LiveExprNode> bin) {
 		if (check == null) {
 			return -1;
 		}
@@ -575,7 +575,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		return idx;
 	}
 
-	private static int[] addToBin(Vect checks, Vect bin) {
+	private static int[] addToBin(Vect<LiveExprNode> checks, Vect<LiveExprNode> bin) {
 		int[] index = new int[checks.size()];
 		for (int i = 0; i < checks.size(); i++) {
 			LiveExprNode check = (LiveExprNode) checks.elementAt(i);
@@ -644,16 +644,16 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * PossibleErrorModel and OrderOfSolution.
 	 */
 	private static class OSExprPem {
-		Vect EAAction; // <>[]action's
-		Vect AEState; // []<>state's
-		Vect AEAction; // []<>action's
-		Vect tfs; // other temp formulae with no actions
+		Vect<LiveExprNode> EAAction; // <>[]action's
+		Vect<LiveExprNode> AEState; // []<>state's
+		Vect<LiveExprNode> AEAction; // []<>action's
+		Vect<LiveExprNode> tfs; // other temp formulae with no actions
 
 		public OSExprPem() {
-			this.EAAction = new Vect();
-			this.AEState = new Vect();
-			this.AEAction = new Vect();
-			this.tfs = new Vect();
+			this.EAAction = new Vect<>();
+			this.AEState = new Vect<>();
+			this.AEAction = new Vect<>();
+			this.tfs = new Vect<>();
 		}
 	}
 

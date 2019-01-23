@@ -153,8 +153,8 @@ public class Bags implements ValueConstants
         IValue[] values1 = fcn1.values;
         IValue[] domain2 = fcn2.getDomainAsValues();
         IValue[] values2 = fcn2.values;
-        Vect dVec = new Vect(domain1.length);
-        Vect vVec = new Vect(domain1.length);
+        Vect<IValue> dVec = new Vect<>(domain1.length);
+        Vect<IValue> vVec = new Vect<>(domain1.length);
         for (int i = 0; i < domain1.length; i++)
         {
             dVec.addElement(domain1[i]);
@@ -208,8 +208,8 @@ public class Bags implements ValueConstants
         IValue[] values1 = fcn1.values;
         IValue[] domain2 = fcn2.getDomainAsValues();
         IValue[] values2 = fcn2.values;
-        Vect dVec = new Vect(domain1.length);
-        Vect vVec = new Vect(domain1.length);
+        Vect<IValue> dVec = new Vect<>(domain1.length);
+        Vect<IValue> vVec = new Vect<>(domain1.length);
         for (int i = 0; i < domain1.length; i++)
         {
             int v1 = ((IntValue) values1[i]).val;

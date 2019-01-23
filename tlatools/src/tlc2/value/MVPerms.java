@@ -17,7 +17,7 @@ public abstract class MVPerms {
     final ValueEnumeration Enum = enumerable.elements();
 	final int sz = enumerable.size() - 1;
     final Set perms = new Set(sz);
-    final Vect permVec = new Vect(sz);
+    final Vect<IMVPerm> permVec = new Vect<>(sz);
     // Compute the group generators:
     IValue elem;
     while ((elem = Enum.nextElement()) != null) {

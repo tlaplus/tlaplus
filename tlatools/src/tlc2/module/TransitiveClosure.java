@@ -35,8 +35,8 @@ public class TransitiveClosure implements ValueConstants
         int maxLen = 2 * rel.size();
         boolean[][] matrix = new boolean[maxLen][maxLen];
         ValueEnumeration elems = ((Enumerable) rel).elements();
-        Vect elemList = new Vect();
-        Hashtable fps = new Hashtable();
+        Vect<IValue> elemList = new Vect<>();
+        Hashtable<IValue, Integer> fps = new Hashtable<>();
         int cnt = 0;
         IValue elem = null;
         while ((elem = elems.nextElement()) != null)

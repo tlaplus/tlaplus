@@ -19,7 +19,7 @@ public class TBGraphNode {
 	 * if a state-node is consistent with a tableau-node.
 	 */
 	private final TBPar par; // particle
-	public final Vect nexts; // outlinks
+	public final Vect<TBGraphNode> nexts; // outlinks
 	private int index; // unique id for this node
 	private final LiveExprNode[] statePreds; // state predicates in the particle
 
@@ -35,7 +35,7 @@ public class TBGraphNode {
 	public TBGraphNode(TBPar par) {
 		this.par = par;
 		this.index = 0;
-		this.nexts = new Vect();
+		this.nexts = new Vect<>();
 		TBPar preds = new TBPar(par.size());
 		for (int i = 0; i < par.size(); i++) {
 			LiveExprNode ln = par.exprAt(i);

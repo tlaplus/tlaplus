@@ -115,8 +115,8 @@ public class LiveCheck1 implements ILiveCheck {
 	 * state trace (a sequence of states). Assume trace.length > 0. It returns
 	 * the set of initial states.
 	 */
-	Vect constructBEGraph(OrderOfSolution os) {
-		Vect initNodes = new Vect(1);
+	Vect<BEGraphNode> constructBEGraph(OrderOfSolution os) {
+		Vect<BEGraphNode> initNodes = new Vect<>(1);
 		int slen = os.getCheckState().length;
 		int alen = os.getCheckAction().length;
 		TLCState srcState = stateTrace.elementAt(0); // the initial state
@@ -150,7 +150,7 @@ public class LiveCheck1 implements ILiveCheck {
 		} else {
 			// If there is tableau, construct begraph of (tableau X trace).
 			LongObjTable allNodes = new LongObjTable(255);
-			Vect srcNodes = new Vect();
+			Vect<BEGraphNode> srcNodes = new Vect<>();
 			int initCnt = os.getTableau().getInitCnt();
 			for (int i = 0; i < initCnt; i++) {
 				TBGraphNode tnode = os.getTableau().getNode(i);
@@ -175,7 +175,7 @@ public class LiveCheck1 implements ILiveCheck {
 				}
 			}
 			for (int i = 1; i < stateTrace.size(); i++) {
-				Vect destNodes = new Vect();
+				Vect<BEGraphNode> destNodes = new Vect<>();
 				TLCState destState = stateTrace.elementAt(i);
 				long destStateFP = destState.fingerPrint();
 				checkStateRes = os.checkState(destState);
@@ -488,7 +488,7 @@ public class LiveCheck1 implements ILiveCheck {
 		stateTrace = trace;
 		for (int soln = 0; soln < solutions.length; soln++) {
 			OrderOfSolution os = solutions[soln];
-			Vect initNodes = constructBEGraph(os);
+			Vect<BEGraphNode> initNodes = constructBEGraph(os);
 
 			// Liveness.printTBGraph(os.tableau);
 			// ToolIO.err.println(os.behavior.toString());
@@ -809,7 +809,7 @@ public class LiveCheck1 implements ILiveCheck {
 
 	/* This method checks whether a scc satisfies currentPEM. */
 	void checkComponent(BEGraphNode node) {
-		Vect nodes = extractComponent(node);
+		Vect<BEGraphNode> nodes = extractComponent(node);
 		if (nodes != null) {
 			PossibleErrorModel[] pems = currentOOS.getPems();
 			for (int i = 0; i < pems.length; i++) {
@@ -838,13 +838,13 @@ public class LiveCheck1 implements ILiveCheck {
 	 * trivial one. It also assigns a new number to all the nodes in the
 	 * component.
 	 */
-	Vect extractComponent(BEGraphNode node) {
+	Vect<BEGraphNode> extractComponent(BEGraphNode node) {
 		BEGraphNode node1 = (BEGraphNode) comStack.pop();
 		if (node == node1 && !node.transExists(node)) {
 			node.setNumber(MAX_FIRST);
 			return null;
 		}
-		Vect nodes = new Vect();
+		Vect<BEGraphNode> nodes = new Vect<>();
 		numFirstCom = secondNum++;
 		numSecondCom = thirdNum;
 		node1.setNumber(numFirstCom);
