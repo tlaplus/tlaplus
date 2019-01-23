@@ -8,26 +8,9 @@ import tlc2.TLCGlobals;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 
-public class ActionItemList {
+public class ActionItemList implements ActionItemListConstant {
 	private static final boolean coverage = TLCGlobals.isCoverageEnabled();
 	/**
-	 * predicate of a conjunction
-	 */
-	public static final int CONJUNCT = 0;
-	/**
-	 * predicate
-	 */
-	public static final int PRED = -1;
-	/**
-	 * UNCHANGED predicate
-	 */
-	public static final int UNCHANGED = -2;
-	/**
-	 * pred' # pred
-	 */
-	public static final int CHANGED = -3;
-	
-  /**
    * We assume that this.pred is null iff the list is empty.
    */
   public final SemanticNode pred;     // Expression of the action

@@ -32,6 +32,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.ActionItemList;
+import tlc2.tool.ActionItemListConstant;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.CallStack;
 import tlc2.tool.ContextEnumerator;
@@ -372,7 +373,7 @@ public final void getInitStates(IStateFunctor functor) {
       // doesn't get added to acts at all).
 	  for (int i = (init.size() - 1); i > 0; i--) {
 		  Action elem = (Action)init.elementAt(i);
-		  acts = acts.cons(elem.pred, elem.con, elem.cm, ActionItemList.PRED);
+		  acts = acts.cons(elem.pred, elem.con, elem.cm, ActionItemListConstant.PRED);
 	  }
 	  if (init.size() != 0) {
 		  Action elem = (Action)init.elementAt(0);
@@ -627,7 +628,7 @@ public final TLCState makeState(SemanticNode pred) {
               ActionItemList acts1 = acts;
               Context c2;
               while ((c2 = Enum.nextElement()) != null) {
-                acts1 = acts1.cons(body, c2, cm, ActionItemList.PRED);
+                acts1 = acts1.cons(body, c2, cm, ActionItemListConstant.PRED);
               }
               this.getInitStates(body, acts1, c1, ps, states, cm);
             }
@@ -1138,7 +1139,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
               ActionItemList acts1 = acts;
               Context c2;
               while ((c2 = Enum.nextElement()) != null) {
-                acts1 = acts1.cons(body, c2, cm, ActionItemList.PRED);
+                acts1 = acts1.cons(body, c2, cm, ActionItemListConstant.PRED);
               }
               resState = this.getNextStates(body, acts1, c1, s0, s1, nss, cm);
             }
@@ -1173,7 +1174,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           }
         case OPCODE_aa:     // AngleAct <A>_e
           {
-            ActionItemList acts1 = acts.cons(args[1], c, cm, ActionItemList.CHANGED);
+            ActionItemList acts1 = acts.cons(args[1], c, cm, ActionItemListConstant.CHANGED);
             return this.getNextStates(args[0], acts1, c, s0, s1, nss, cm);
           }
         case OPCODE_sa:     // [A]_e
@@ -1431,7 +1432,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
   	if (alen != 0) {
   	  ActionItemList acts1 = acts;
   	  for (int i = alen-1; i > 0; i--) {
-  	    acts1 = acts1.cons(args[i], c, cmNested, ActionItemList.UNCHANGED);
+  	    acts1 = acts1.cons(args[i], c, cmNested, ActionItemListConstant.UNCHANGED);
   	  }
   	  return this.processUnchanged(args[0], acts1, c, s0, s1, nss, cmNested);
   	}
@@ -2528,13 +2529,13 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
    * state variables.
    */
   @Override
-public final boolean isGoodState(TLCState state) {
+  public final boolean isGoodState(TLCState state) {
     return state.allAssigned();
   }
 
   /* This method determines if a state satisfies the model constraints. */
   @Override
-public final boolean isInModel(TLCState state) throws EvalException {
+  public final boolean isInModel(TLCState state) throws EvalException {
     ExprNode[] constrs = this.getModelConstraints();
     for (int i = 0; i < constrs.length; i++) {
       IValue bval = this.eval(constrs[i], Context.Empty, state, CostModel.DO_NOT_RECORD);
@@ -2548,7 +2549,7 @@ public final boolean isInModel(TLCState state) throws EvalException {
 
   /* This method determines if a pair of states satisfy the action constraints. */
   @Override
-public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
+  public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
     ExprNode[] constrs = this.getActionConstraints();
     for (int i = 0; i < constrs.length; i++) {
       IValue bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, CostModel.DO_NOT_RECORD);
@@ -2564,10 +2565,9 @@ public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException 
    * This method determines if an action is enabled in the given state.
    * More precisely, it determines if (act.pred /\ (sub' # sub)) is
    * enabled in the state s and context act.con.
- * @param cm TODO
    */
   @Override
-public final TLCState enabled(SemanticNode pred, ActionItemList acts,
+  public final TLCState enabled(SemanticNode pred, ActionItemList acts,
                                 Context c, TLCState s0, TLCState s1, CostModel cm) {
 	    if (this.callStack != null) {
 	    	return enabledWithCallStack(pred, acts, c, s0, s1, cm);
@@ -2660,15 +2660,15 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
     Context c = acts.carContext();
     cm = acts.cm;
     ActionItemList acts1 = acts.cdr();
-    if (kind > ActionItemList.CONJUNCT) {
+    if (kind > ActionItemListConstant.CONJUNCT) {
       TLCState res = this.enabled(pred, acts1, c, s0, s1, cm);
       return res;
     }
-    else if (kind == ActionItemList.PRED) {
+    else if (kind == ActionItemListConstant.PRED) {
       TLCState res = this.enabled(pred, acts1, c, s0, s1, cm);
       return res;
     }
-    if (kind == ActionItemList.UNCHANGED) {
+    if (kind == ActionItemListConstant.UNCHANGED) {
       TLCState res = this.enabledUnchanged(pred, acts1, c, s0, s1, cm);
       return res;
     }
@@ -2795,7 +2795,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
         switch (opcode) {
         case OPCODE_aa: // AngleAct <A>_e
           {
-            ActionItemList acts1 = acts.cons(args[1], c, cm, ActionItemList.CHANGED);
+            ActionItemList acts1 = acts.cons(args[1], c, cm, ActionItemListConstant.CHANGED);
             return this.enabled(args[0], acts1, c, s0, s1, cm);
           }
         case OPCODE_be: // BoundedExists
@@ -2825,7 +2825,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
             Context c2;
             while ((c2 = Enum.nextElement()) != null)
             {
-              acts1 = acts1.cons(body, c2, cm, ActionItemList.PRED);
+              acts1 = acts1.cons(body, c2, cm, ActionItemListConstant.PRED);
             }
             return this.enabled(body, acts1, c1, s0, s1, cm);
           }
@@ -3167,7 +3167,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
             if (alen != 0) {
               ActionItemList acts1 = acts;
               for (int i = 1; i < alen; i++) {
-                acts1 = acts1.cons(args[i], c, cm, ActionItemList.UNCHANGED);
+                acts1 = acts1.cons(args[i], c, cm, ActionItemListConstant.UNCHANGED);
               }
               return this.enabledUnchanged(args[0], acts1, c, s0, s1, cm);
             }

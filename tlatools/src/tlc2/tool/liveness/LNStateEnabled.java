@@ -9,7 +9,7 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.st.TreeNode;
-import tlc2.tool.ActionItemList;
+import tlc2.tool.ActionItemListConstant;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
@@ -52,7 +52,7 @@ class LNStateEnabled extends LNState {
 		TLCState sfun = TLCStateFun.Empty;
 		Context c1 = Context.branch(getContext());
 		if (this.subscript != null) {
-			acts = acts.cons(this.subscript, c1, CostModel.DO_NOT_RECORD, ActionItemList.CHANGED);
+			acts = acts.cons(this.subscript, c1, CostModel.DO_NOT_RECORD, ActionItemListConstant.CHANGED);
 		}
 		sfun = tool.enabled(this.pred, acts, c1, s1, sfun, CostModel.DO_NOT_RECORD);
 		return sfun != null;
