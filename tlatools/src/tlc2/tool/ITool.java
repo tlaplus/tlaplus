@@ -181,6 +181,8 @@ public interface ITool extends TraceApp {
 
 	String getRootFile();
 
+	String getConfigFile();
+
 	String getSpecDir();
 
 	String[] getImpliedInitNames();

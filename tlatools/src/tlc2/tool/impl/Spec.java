@@ -2215,6 +2215,10 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
     	return this.rootFile;
     }
 
+    public String getConfigFile() {
+    	return this.configFile;
+    }
+    
     public String getSpecDir() {
     	return this.specDir;
     }
