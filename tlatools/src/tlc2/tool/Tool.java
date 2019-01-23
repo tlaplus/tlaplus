@@ -43,6 +43,7 @@ import tlc2.value.FcnRcdValue;
 import tlc2.value.IBoolValue;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
+import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
 import tlc2.value.LazyValue;
 import tlc2.value.MVPerms;
@@ -2015,7 +2016,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               IValue argVal = this.eval(args[1], c, s0, s1, control, cm);
               result = fcn.apply(argVal, control);
             }
-            else if ((fval instanceof TupleValue) ||
+            else if ((fval instanceof ITupleValue) ||
                      (fval instanceof RecordValue)) {
               Applicable fcn = (Applicable)fval;
               if (args.length != 2) {

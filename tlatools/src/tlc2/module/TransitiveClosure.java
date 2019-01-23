@@ -11,6 +11,7 @@ import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.util.Vect;
 import tlc2.value.Enumerable;
+import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
 import tlc2.value.SetEnumValue;
 import tlc2.value.TupleValue;
@@ -40,13 +41,13 @@ public class TransitiveClosure implements ValueConstants
         IValue elem = null;
         while ((elem = elems.nextElement()) != null)
         {
-            TupleValue tv = (TupleValue) elem.toTuple();
+            ITupleValue tv = (ITupleValue) elem.toTuple();
             if (tv == null || tv.size() != 2)
             {
                 throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Values.ppr(elem.toString()));
             }
-            IValue elem1 = tv.elems[0];
-            IValue elem2 = tv.elems[1];
+            IValue elem1 = tv.getElem(0);
+            IValue elem2 = tv.getElem(1);
             int num1 = cnt;
             Integer num = (Integer) fps.get(elem1);
             if (num == null)

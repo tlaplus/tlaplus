@@ -8,8 +8,8 @@ package tlc2.tool;
 import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
 import tlc2.util.Context;
+import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
-import tlc2.value.TupleValue;
 import tlc2.value.ValueEnumeration;
 import util.Assert;
 
@@ -45,10 +45,10 @@ public final class ContextEnumerator {
           else {
               SymbolNode[] varList = (SymbolNode[])this.vars[i];
               IValue argVal = this.currentElems[i];
-              if (!(argVal instanceof TupleValue)) {
+              if (!(argVal instanceof ITupleValue)) {
                   Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
               }
-              IValue[] valList = ((TupleValue)argVal).elems;
+              IValue[] valList = ((ITupleValue)argVal).getElems();
               if (varList.length != valList.length) {
                   Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
               }

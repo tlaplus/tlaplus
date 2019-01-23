@@ -362,7 +362,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
         }
         else {
           FormalParamNode[] ids = (FormalParamNode[])vars;
-          TupleValue tv = (TupleValue) elem.toTuple();
+          ITupleValue tv = (ITupleValue) elem.toTuple();
           if ((tv != null) &&
               (((TupleValue)tv).elems.length == ids.length)) {
             IValue[] vals = ((TupleValue)tv).elems;

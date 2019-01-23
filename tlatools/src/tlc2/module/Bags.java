@@ -42,7 +42,7 @@ public class Bags implements ValueConstants
         return EmptyFcn;
     }
 
-    public static BoolValue IsABag(final IValue b)
+    public static IBoolValue IsABag(final IValue b)
     {
         final FcnRcdValue fcn = (FcnRcdValue) b.toFcnRcd();
         if (fcn == null)
@@ -139,12 +139,12 @@ public class Bags implements ValueConstants
     {
         FcnRcdValue fcn1 = (FcnRcdValue) b1.toFcnRcd();
         FcnRcdValue fcn2 = (FcnRcdValue) b2.toFcnRcd();
-        if (!IsABag(fcn1).val)
+        if (!IsABag(fcn1).getVal())
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "(+)", "bag",
                     Values.ppr(b1.toString()) });
         }
-        if (!IsABag(fcn2).val)
+        if (!IsABag(fcn2).getVal())
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "(+)", "bag",
                     Values.ppr(b2.toString()) });

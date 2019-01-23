@@ -30,8 +30,8 @@ public class ValueExcept {
       if (!fcn.getParams().domains[0].member(argv)) return null;
     }
     else {
-      TupleValue tval = (TupleValue)argv;
-      IValue[] argList = tval.elems;
+      ITupleValue tval = (ITupleValue)argv;
+      IValue[] argList = tval.getElems();
       FormalParamNode[][] formals = fcn.getParams().formals;
       IValue[] domains = fcn.getParams().domains;
       int argn = 0;

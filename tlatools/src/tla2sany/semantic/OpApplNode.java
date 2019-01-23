@@ -31,8 +31,8 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
 import tlc2.tool.BuiltInOPs;
+import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
-import tlc2.value.TupleValue;
 import tlc2.value.Values;
 import util.UniqueString;
 
@@ -1250,7 +1250,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 
     @Override
 	public String toString(final IValue aValue) {
-		if (aValue instanceof TupleValue && allParams.size() == ((TupleValue) aValue).size()) {
+		if (aValue instanceof ITupleValue && allParams.size() == ((ITupleValue) aValue).size()) {
 			final StringBuffer result = new StringBuffer();
 			
 			// The values in aValue are ordered by the varloc of the variable names (see
@@ -1269,7 +1269,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 				result.append("/\\ ");
 				result.append(sn.getName().toString());
 
-				final IValue value = ((TupleValue) aValue).elems[idx++];
+				final IValue value = ((ITupleValue) aValue).getElem(idx++);
 				result.append(" = ");
 				result.append(Values.ppr(value));
 				result.append("\n");

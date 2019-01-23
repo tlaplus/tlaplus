@@ -16,7 +16,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import util.Assert;
 
-public class TupleValue extends Value implements Applicable {
+public class TupleValue extends Value implements Applicable, ITupleValue {
   public final IValue[] elems;          // the elements of this tuple.
 
   /* Constructor */
@@ -38,6 +38,16 @@ public class TupleValue extends Value implements Applicable {
 	  this.cm = cm;
   }
 
+  @Override
+  public IValue getElem(int idx) {
+	  return elems[idx];
+  }
+  
+  @Override
+  public IValue[] getElems() {
+	  return elems;
+  }
+  
   public final byte getKind() { return TUPLEVALUE; }
 
   public final int compareTo(Object obj) {
