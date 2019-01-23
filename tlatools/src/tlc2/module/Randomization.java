@@ -27,14 +27,14 @@ package tlc2.module;
 
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
-import tlc2.value.Enumerable;
-import tlc2.value.EnumerableValue;
 import tlc2.value.IValue;
-import tlc2.value.IntValue;
-import tlc2.value.StringValue;
-import tlc2.value.SubsetValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
+import tlc2.value.impl.Enumerable;
+import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.StringValue;
+import tlc2.value.impl.SubsetValue;
 
 public class Randomization implements ValueConstants {
 	

@@ -35,7 +35,7 @@ import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.util.Context;
 import tlc2.util.List;
-import tlc2.value.LazyValue;
+import tlc2.value.impl.LazyValue;
 
 public abstract class Specs {
 

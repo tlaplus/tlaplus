@@ -28,6 +28,8 @@ package tlc2.value;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.util.Context;
+import tlc2.value.impl.FcnParams;
+import tlc2.value.impl.FcnRcdValue;
 
 public interface IFcnLambdaValue {
 

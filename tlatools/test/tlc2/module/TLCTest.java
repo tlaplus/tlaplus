@@ -34,15 +34,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import tlc2.util.FP64;
-import tlc2.value.EnumerableValue;
-import tlc2.value.FcnRcdValue;
 import tlc2.value.IValue;
-import tlc2.value.IntValue;
-import tlc2.value.IntervalValue;
-import tlc2.value.SetEnumValue;
-import tlc2.value.TupleValue;
-import tlc2.value.Value;
 import tlc2.value.ValueEnumeration;
+import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.IntervalValue;
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.Value;
 
 public class TLCTest {
 

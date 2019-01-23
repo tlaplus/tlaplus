@@ -10,13 +10,13 @@ import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
-import tlc2.value.IntValue;
-import tlc2.value.IntervalValue;
-import tlc2.value.ModelValue;
-import tlc2.value.UserObj;
-import tlc2.value.UserValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.IntervalValue;
+import tlc2.value.impl.ModelValue;
+import tlc2.value.impl.UserObj;
+import tlc2.value.impl.UserValue;
 
 public class Integers extends UserObj implements ValueConstants
 {

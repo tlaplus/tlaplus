@@ -10,15 +10,15 @@ import java.util.Hashtable;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.util.Vect;
-import tlc2.value.Enumerable;
 import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
-import tlc2.value.SetEnumValue;
-import tlc2.value.TupleValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueVec;
 import tlc2.value.Values;
+import tlc2.value.impl.Enumerable;
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.TupleValue;
 
 public class TransitiveClosure implements ValueConstants
 {

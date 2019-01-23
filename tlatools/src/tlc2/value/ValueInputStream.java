@@ -7,6 +7,14 @@ import java.io.File;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
+import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.IntervalValue;
+import tlc2.value.impl.ModelValue;
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.StringValue;
+import tlc2.value.impl.TupleValue;
 import util.BufferedDataInputStream;
 import util.FileUtil;
 import util.UniqueString;

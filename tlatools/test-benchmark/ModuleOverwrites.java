@@ -3,10 +3,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import tlc2.value.BoolValue;
-import tlc2.value.FcnRcdValue;
 import tlc2.value.IValue;
-import tlc2.value.IntValue;
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.IntValue;
 
 public class ModuleOverwrites {
 

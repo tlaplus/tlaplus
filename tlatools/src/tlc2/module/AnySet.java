@@ -8,9 +8,9 @@ package tlc2.module;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.value.IValue;
-import tlc2.value.UserObj;
-import tlc2.value.UserValue;
 import tlc2.value.Values;
+import tlc2.value.impl.UserObj;
+import tlc2.value.impl.UserValue;
 
 public class AnySet extends UserObj
 {

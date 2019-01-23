@@ -36,10 +36,10 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
-import tlc2.value.IntervalValue;
-import tlc2.value.SetEnumValue;
-import tlc2.value.SubsetValue;
 import tlc2.value.Values;
+import tlc2.value.impl.IntervalValue;
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.SubsetValue;
 
 /**
  * TLC bug caused by TLC's not preserving the semantics of CHOOSE

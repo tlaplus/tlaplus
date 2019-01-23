@@ -7,12 +7,12 @@ package tlc2.module;
 
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
-import tlc2.value.Enumerable;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
-import tlc2.value.IntValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
+import tlc2.value.impl.Enumerable;
+import tlc2.value.impl.IntValue;
 
 public class FiniteSets implements ValueConstants
 {

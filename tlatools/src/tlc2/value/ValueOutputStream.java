@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 
 import tlc2.TLCGlobals;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.StringValue;
 import util.BufferedDataOutputStream;
 
 public final class ValueOutputStream {
@@ -97,7 +99,7 @@ public final class ValueOutputStream {
 		return dos;
 	}
 
-	final int put(final Object obj) {
+	public final int put(final Object obj) {
 		return this.handles.put(obj);
 	}
   

@@ -10,16 +10,16 @@ import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
 import tlc2.util.Vect;
-import tlc2.value.Applicable;
-import tlc2.value.BoolValue;
-import tlc2.value.FcnRcdValue;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
-import tlc2.value.IntValue;
-import tlc2.value.SetEnumValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
 import tlc2.value.Values;
+import tlc2.value.impl.Applicable;
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.SetEnumValue;
 import util.Assert;
 
 public class Bags implements ValueConstants

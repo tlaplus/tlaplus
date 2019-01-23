@@ -5,6 +5,13 @@
 
 package tlc2.value;
 
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.UndefValue;
 import util.UniqueString;
 
 public interface ValueConstants {

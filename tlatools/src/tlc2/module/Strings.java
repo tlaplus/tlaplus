@@ -8,11 +8,11 @@ package tlc2.module;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.value.IValue;
-import tlc2.value.ModelValue;
-import tlc2.value.StringValue;
-import tlc2.value.UserObj;
-import tlc2.value.UserValue;
 import tlc2.value.Values;
+import tlc2.value.impl.ModelValue;
+import tlc2.value.impl.StringValue;
+import tlc2.value.impl.UserObj;
+import tlc2.value.impl.UserValue;
 
 public class Strings extends UserObj
 {

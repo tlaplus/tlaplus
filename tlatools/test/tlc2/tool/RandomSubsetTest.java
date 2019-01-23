@@ -36,10 +36,10 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
-import tlc2.value.BoolValue;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
-import tlc2.value.IntValue;
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.IntValue;
 import util.UniqueString;
 
 public class RandomSubsetTest extends ModelCheckerTestCase {

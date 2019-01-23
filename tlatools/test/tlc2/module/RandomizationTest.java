@@ -35,13 +35,13 @@ import org.junit.Test;
 
 import tlc2.tool.EvalException;
 import tlc2.util.FP64;
-import tlc2.value.Enumerable;
 import tlc2.value.IValue;
-import tlc2.value.IntValue;
-import tlc2.value.IntervalValue;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.SetEnumValue;
-import tlc2.value.StringValue;
+import tlc2.value.impl.Enumerable;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.IntervalValue;
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.StringValue;
 
 public class RandomizationTest {
 	

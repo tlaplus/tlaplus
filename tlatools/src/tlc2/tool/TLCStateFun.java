@@ -14,9 +14,9 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.util.Context;
 import tlc2.value.IValue;
-import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
+import tlc2.value.impl.Value;
 import util.UniqueString;
 import util.WrongInvocationException;
 

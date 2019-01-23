@@ -25,6 +25,8 @@
  ******************************************************************************/
 package tlc2.value;
 
+import tlc2.value.impl.ModelValue;
+
 public interface IMVPerm {
 
 	IValue get(IValue value);

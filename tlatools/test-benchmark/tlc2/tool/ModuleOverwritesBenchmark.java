@@ -34,8 +34,8 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 
-import tlc2.value.FcnRcdValue;
 import tlc2.value.IValue;
+import tlc2.value.impl.FcnRcdValue;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
