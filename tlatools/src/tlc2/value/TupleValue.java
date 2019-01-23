@@ -314,7 +314,7 @@ public class TupleValue extends Value implements Applicable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
     	IValue[] vals = new IValue[this.elems.length];
       boolean changed = false;

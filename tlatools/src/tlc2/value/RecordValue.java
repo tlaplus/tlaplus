@@ -440,7 +440,7 @@ public class RecordValue extends Value implements Applicable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       this.normalize();
       int rlen = this.names.length;

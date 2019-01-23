@@ -17,9 +17,8 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
 import tlc2.util.Context;
 import tlc2.util.FP64;
+import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.MVPerm;
-import tlc2.value.Value;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
@@ -48,7 +47,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
    * If non-null, perms denotes the set of permutations under the
    * symmetry assumption.
    */
-  private static MVPerm[] perms = null;
+  private static IMVPerm[] perms = null;
 
   private TLCStateMut(IValue[] vals) { this.values = vals; }
 

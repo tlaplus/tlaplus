@@ -241,7 +241,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       this.convertAndCache();
       return this.pset.permute(perm);

@@ -249,7 +249,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     return this;
   }
 

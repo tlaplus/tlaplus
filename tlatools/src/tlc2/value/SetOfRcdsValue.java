@@ -305,7 +305,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       this.convertAndCache();
       return this.rcdSet.permute(perm);

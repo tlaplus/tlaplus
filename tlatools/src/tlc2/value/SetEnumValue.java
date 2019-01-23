@@ -311,7 +311,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       int sz = this.elems.size();
       IValue[] vals = new IValue[sz];

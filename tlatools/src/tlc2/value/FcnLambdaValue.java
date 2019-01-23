@@ -717,7 +717,7 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       IValue fcn = this.toFcnRcd();
       return fcn.permute(perm);

@@ -198,7 +198,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       this.convertAndCache();
       return this.diffSet.permute(perm);

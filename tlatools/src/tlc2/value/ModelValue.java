@@ -289,7 +289,7 @@ public class ModelValue extends Value {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       IValue res = perm.get(this);
       if (res == null) return this;

@@ -262,7 +262,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       this.inVal = this.toSetEnum();
       this.tool = null;

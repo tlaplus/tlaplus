@@ -248,7 +248,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       if (this.val == null || this.val == ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply permutation to lazy value.");

@@ -206,7 +206,7 @@ public long fingerPrint(long fp) {
    * returns this if nothing is permuted.
    */
   @Override
-public IValue permute(MVPerm perm) {
+public IValue permute(IMVPerm perm) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
       Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access

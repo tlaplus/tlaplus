@@ -59,7 +59,7 @@ public interface IValue {
 	   * This method returns the value permuted by the permutation. It
 	   * returns this if nothing is permuted.
 	   */
-	IValue permute(MVPerm perm);
+	IValue permute(IMVPerm perm);
 
 	/* This method returns true iff the value is finite. */
 	boolean isFinite();

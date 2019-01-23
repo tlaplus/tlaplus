@@ -158,7 +158,7 @@ public class BoolValue extends Value {
     }
   }
 
-  public final IValue permute(MVPerm perm) { return this; }
+  public final IValue permute(IMVPerm perm) { return this; }
 
   /* The string representation */
   public final StringBuffer toString(StringBuffer sb, int offset) {

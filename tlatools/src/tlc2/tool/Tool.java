@@ -40,9 +40,10 @@ import tlc2.value.Enumerable;
 import tlc2.value.FcnLambdaValue;
 import tlc2.value.FcnParams;
 import tlc2.value.FcnRcdValue;
+import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.LazyValue;
-import tlc2.value.MVPerm;
+import tlc2.value.MVPerms;
 import tlc2.value.MethodValue;
 import tlc2.value.OpLambdaValue;
 import tlc2.value.OpValue;
@@ -60,7 +61,6 @@ import tlc2.value.StringValue;
 import tlc2.value.SubsetValue;
 import tlc2.value.TupleValue;
 import tlc2.value.UnionValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueExcept;
@@ -3317,7 +3317,7 @@ public class Tool
   }
 
   /* Return the set of all permutations under the symmetry assumption. */
-  public final MVPerm[] getSymmetryPerms() {
+  public final IMVPerm[] getSymmetryPerms() {
     final String name = this.config.getSymmetry();
     if (name.length() == 0) { return null; }
     final Object symm = this.defns.get(name);
@@ -3333,7 +3333,7 @@ public class Tool
     if (!(fcns instanceof Enumerable)) {
       Assert.fail("The symmetry operator must specify a set of functions.");
     }
-    return MVPerm.permutationSubgroup((Enumerable) fcns);
+    return MVPerms.permutationSubgroup((Enumerable) fcns);
   }
 
   public final boolean hasSymmetry() {

@@ -189,7 +189,7 @@ public class StringValue extends Value {
     }
   }
 
-  public final IValue permute(MVPerm perm) { return this; }
+  public final IValue permute(IMVPerm perm) { return this; }
 
   /*************************************************************************
   * toString() modified 23 Aug 2007 by LL to call PrintVersion so strings  *

@@ -722,7 +722,7 @@ public class FcnRcdValue extends Value implements Applicable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
 
       this.normalize();

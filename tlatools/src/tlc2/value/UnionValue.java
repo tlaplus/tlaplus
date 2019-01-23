@@ -234,7 +234,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final IValue permute(MVPerm perm) {
+  public final IValue permute(IMVPerm perm) {
     try {
       this.convertAndCache();
       return this.realSet.permute(perm);
