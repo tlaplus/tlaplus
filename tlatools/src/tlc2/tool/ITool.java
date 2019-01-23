@@ -36,7 +36,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
-import tlc2.value.FcnLambdaValue;
+import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 
@@ -151,9 +151,9 @@ public interface ITool extends TraceApp {
 
 	boolean hasSymmetry();
 
-	Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args, Context c, TLCState s0, TLCState s1, int control);
+	Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args, Context c, TLCState s0, TLCState s1, int control);
 
-	Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args, Context c, TLCState s0, TLCState s1, int control,
+	Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args, Context c, TLCState s0, TLCState s1, int control,
 			CostModel cm);
 
 	ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0, TLCState s1, int control);

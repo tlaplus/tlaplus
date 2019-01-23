@@ -40,6 +40,7 @@ import tlc2.value.Enumerable;
 import tlc2.value.FcnLambdaValue;
 import tlc2.value.FcnParams;
 import tlc2.value.FcnRcdValue;
+import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.LazyValue;
@@ -3371,21 +3372,21 @@ public final boolean hasSymmetry() {
     return name.length() > 0;
   }
   @Override
-public final Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args,
+public final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
           Context c, TLCState s0, TLCState s1,
           final int control) {
 	  return getFcnContext(fcn, args, c, s0, s1, control, CostModel.DO_NOT_RECORD);
   }
 
   @Override
-public final Context getFcnContext(FcnLambdaValue fcn, ExprOrOpArgNode[] args,
+public final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
                                      Context c, TLCState s0, TLCState s1,
                                      final int control, CostModel cm) {
-    Context fcon = fcn.con;
-    int plen = fcn.params.length();
-    FormalParamNode[][] formals = fcn.params.formals;
-    IValue[] domains = fcn.params.domains;
-    boolean[] isTuples = fcn.params.isTuples;
+    Context fcon = fcn.getCon();
+    int plen = fcn.getParams().length();
+    FormalParamNode[][] formals = fcn.getParams().formals;
+    IValue[] domains = fcn.getParams().domains;
+    boolean[] isTuples = fcn.getParams().isTuples;
     IValue argVal = this.eval(args[1], c, s0, s1, control, cm);
 
     if (plen == 1) {

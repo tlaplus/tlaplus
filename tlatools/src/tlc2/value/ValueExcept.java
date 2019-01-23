@@ -24,18 +24,18 @@ public class ValueExcept {
     this.idx = idx;
   }
 
-  public final ValueExcept checkArg(FcnLambdaValue fcn) {
+  public final ValueExcept checkArg(IFcnLambdaValue fcn) {
     IValue argv = this.path[idx];
-    if (fcn.params.length() == 1) {
-      if (!fcn.params.domains[0].member(argv)) return null;
+    if (fcn.getParams().length() == 1) {
+      if (!fcn.getParams().domains[0].member(argv)) return null;
     }
     else {
       TupleValue tval = (TupleValue)argv;
       IValue[] argList = tval.elems;
-      FormalParamNode[][] formals = fcn.params.formals;
-      IValue[] domains = fcn.params.domains;
+      FormalParamNode[][] formals = fcn.getParams().formals;
+      IValue[] domains = fcn.getParams().domains;
       int argn = 0;
-      for (int i = 0; i < fcn.params.formals.length; i++) {
+      for (int i = 0; i < fcn.getParams().formals.length; i++) {
         FormalParamNode[] formal = formals[i];
         for (int j = 0; j < formal.length; j++) {
           if (!domains[i].member(argList[argn++])) return null;

@@ -24,7 +24,7 @@ import tlc2.util.Context;
 import util.Assert;
 import util.UniqueString;
 
-public class FcnLambdaValue extends Value implements Applicable {
+public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue {
   public final FcnParams params;       // the function formals
   public final SemanticNode body;      // the function body
   public ValueExcept[] excepts;  // the EXCEPTs
@@ -748,4 +748,23 @@ public class FcnLambdaValue extends Value implements Applicable {
     }
   }
 
+	@Override
+	public final SemanticNode getBody() {
+		return body;
+	}
+	
+	@Override
+	public final FcnRcdValue getRcd() {
+		return fcnRcd;
+	}
+
+	@Override
+	public FcnParams getParams() {
+		return params;
+	}
+
+	@Override
+	public Context getCon() {
+		return con;
+	}
 }

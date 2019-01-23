@@ -29,7 +29,7 @@ import tlc2.tool.ToolGlobals;
 import tlc2.util.Context;
 import tlc2.util.Vect;
 import tlc2.value.BoolValue;
-import tlc2.value.FcnLambdaValue;
+import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IValue;
 import util.Assert;
 import util.ToolIO;
@@ -223,16 +223,16 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		{
 			try {
 				IValue fval = tool.eval(args[0], con, TLCState.Empty);
-				if (fval instanceof FcnLambdaValue) {
-					FcnLambdaValue fcn = (FcnLambdaValue) fval;
-					if (fcn.fcnRcd == null) {
+				if (fval instanceof IFcnLambdaValue) {
+					IFcnLambdaValue fcn = (IFcnLambdaValue) fval;
+					if (fcn.getRcd() == null) {
 						// this could be a bug, since con1 is created but not
 						// used
 						// SZ Jul 13, 2009: removed to kill the warning
 						// SZ Feb 20, 2009: variable never read locally
 						// Context con1 =
 						tool.getFcnContext(fcn, args, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
-						return astToLive(tool, (ExprNode) fcn.body, con);
+						return astToLive(tool, (ExprNode) fcn.getBody(), con);
 					}
 				}
 			} catch (Exception e) { /* SKIP */
