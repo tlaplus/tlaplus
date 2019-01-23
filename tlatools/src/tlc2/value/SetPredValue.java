@@ -116,7 +116,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
             }
           }
           IValue res = this.tool.eval(this.pred, con1, this.state, this.pstate, this.control);
-          if (!(res instanceof BoolValue)) {
+          if (!(res instanceof IBoolValue)) {
             Assert.fail("The evaluation of predicate " + this.pred +
                   " yielded non-Boolean value.");
           }
@@ -376,7 +376,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
           }
         }
         IValue res = tool.eval(pred, con1, state, pstate, control, cm);
-        if (!(res instanceof BoolValue)) {
+        if (!(res instanceof IBoolValue)) {
           Assert.fail("Evaluating predicate " + pred + " yielded non-Boolean value.");
         }
         if (((BoolValue)res).val) return elem;

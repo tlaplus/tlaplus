@@ -69,8 +69,8 @@ public interface ValueConstants {
   };
 
   /* Value constants. */
-  public final BoolValue ValTrue  = new BoolValue(true);
-  public final BoolValue ValFalse = new BoolValue(false);
+  public final IBoolValue ValTrue  = new BoolValue(true);
+  public final IBoolValue ValFalse = new BoolValue(false);
   public final IntValue ValZero   = IntValue.gen(0);
   public final IntValue ValOne    = IntValue.gen(1);
   public final IntValue ValNegOne = IntValue.gen(-1);

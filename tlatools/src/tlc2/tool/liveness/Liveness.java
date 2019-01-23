@@ -28,7 +28,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.ToolGlobals;
 import tlc2.util.Context;
 import tlc2.util.Vect;
-import tlc2.value.BoolValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IValue;
 import util.Assert;
@@ -39,10 +39,10 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	private static LiveExprNode astToLive(ITool tool, ExprNode expr, Context con, int level) {
 		if (level == 0) {
 			IValue val = tool.eval(expr, con, TLCState.Empty);
-			if (!(val instanceof BoolValue)) {
+			if (!(val instanceof IBoolValue)) {
 				Assert.fail(EC.TLC_EXPECTED_VALUE, new String[] { "boolean", expr.toString() });
 			}
-			return (((BoolValue) val).val) ? LNBool.TRUE : LNBool.FALSE;
+			return ((IBoolValue) val).getVal() ? LNBool.TRUE : LNBool.FALSE;
 		} else if (level == 1) {
 			return new LNStateAST(expr, con);
 		} else {
@@ -122,8 +122,8 @@ public class Liveness implements ToolGlobals, ASTConstants {
 					} catch (Exception e) { /* SKIP */
 					}
 				}
-			} else if (val instanceof BoolValue) {
-				return (((BoolValue) val).val) ? LNBool.TRUE : LNBool.FALSE;
+			} else if (val instanceof IBoolValue) {
+				return ((IBoolValue) val).getVal() ? LNBool.TRUE : LNBool.FALSE;
 			}
 
 			if (opcode == 0) {

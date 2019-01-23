@@ -12,12 +12,17 @@ import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import util.Assert;
 
-public class BoolValue extends Value {
+public class BoolValue extends Value implements IBoolValue {
   public boolean val;   // the boolean
 
   /* Constructor */
   public BoolValue(boolean b) { this.val = b; }
 
+  @Override
+  public final boolean getVal() {
+	  return val;
+  }
+  
   public final byte getKind() { return BOOLVALUE; }
 
   public final int compareTo(Object obj) {

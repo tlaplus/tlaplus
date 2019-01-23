@@ -13,7 +13,7 @@ import tlc2.output.EC;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.util.Context;
-import tlc2.value.BoolValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import util.Assert;
 
@@ -37,10 +37,10 @@ class LNStateAST extends LNState {
 
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		IValue val = tool.eval(this.body, getContext(), s1);
-		if (!(val instanceof BoolValue)) {
+		if (!(val instanceof IBoolValue)) {
 			Assert.fail(EC.TLC_LIVE_STATE_PREDICATE_NON_BOOL);
 		}
-		return ((BoolValue) val).val;
+		return ((IBoolValue) val).getVal();
 	}
 
 	public final void toString(StringBuffer sb, String padding) {

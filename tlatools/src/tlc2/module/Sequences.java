@@ -11,6 +11,7 @@ import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.ModelValue;
@@ -210,7 +211,7 @@ public class Sequences extends UserObj implements ValueConstants
         {
             args[0] = seq.elems[i];
             IValue val = ftest.apply(args, EvalControl.Clear);
-            if (!(val instanceof BoolValue))
+            if (!(val instanceof IBoolValue))
             {
                 throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SelectInSeq",
                         "boolean-valued function", Values.ppr(test.toString()) });
@@ -346,7 +347,7 @@ public class Sequences extends UserObj implements ValueConstants
         {
             args[0] = seq.elems[i];
             IValue val = ftest.apply(args, EvalControl.Clear);
-            if (val instanceof BoolValue)
+            if (val instanceof IBoolValue)
             {
                 if (((BoolValue) val).val)
                     vals.addElement(args[0]);
@@ -453,7 +454,7 @@ public class Sequences extends UserObj implements ValueConstants
         {
             args[1] = seq.elems[idx - 1];
             IValue val = ftest.apply(args, EvalControl.Clear);
-            if (!(val instanceof BoolValue))
+            if (!(val instanceof IBoolValue))
             {
                 throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "third", "Insert",
                         "boolean-valued operator", Values.ppr(test.toString()) });

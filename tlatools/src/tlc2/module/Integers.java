@@ -8,7 +8,7 @@ package tlc2.module;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLARegistry;
-import tlc2.value.BoolValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
@@ -70,7 +70,7 @@ public class Integers extends UserObj implements ValueConstants
         return Naturals.Times(x, y);
     }
 
-    public static BoolValue LT(IValue x, IValue y)
+    public static IBoolValue LT(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -86,7 +86,7 @@ public class Integers extends UserObj implements ValueConstants
         return (((IntValue) x).val < ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue LE(IValue x, IValue y)
+    public static IBoolValue LE(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -102,7 +102,7 @@ public class Integers extends UserObj implements ValueConstants
         return (((IntValue) x).val <= ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue GT(IValue x, IValue y)
+    public static IBoolValue GT(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {
@@ -118,7 +118,7 @@ public class Integers extends UserObj implements ValueConstants
         return (((IntValue) x).val > ((IntValue) y).val) ? ValTrue : ValFalse;
     }
 
-    public static BoolValue GEQ(IValue x, IValue y)
+    public static IBoolValue GEQ(IValue x, IValue y)
     {
         if (!(x instanceof IntValue))
         {

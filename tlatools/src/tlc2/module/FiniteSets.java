@@ -7,8 +7,8 @@ package tlc2.module;
 
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
-import tlc2.value.BoolValue;
 import tlc2.value.Enumerable;
+import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.ValueConstants;
@@ -18,7 +18,7 @@ public class FiniteSets implements ValueConstants
 {
 	public static final long serialVersionUID = 20160822L;
 
-    public static BoolValue IsFiniteSet(IValue val)
+    public static IBoolValue IsFiniteSet(IValue val)
     {
         return val.isFinite() ? ValTrue : ValFalse;
     }

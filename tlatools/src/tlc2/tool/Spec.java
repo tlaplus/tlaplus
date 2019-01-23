@@ -49,6 +49,7 @@ import tlc2.util.List;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
 import tlc2.value.BoolValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.LazyValue;
@@ -853,7 +854,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             } else if (prop == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "property", propName });
-            } else if (!(prop instanceof BoolValue) || !(((BoolValue) prop).val))
+            } else if (!(prop instanceof IBoolValue) || !(((BoolValue) prop).val))
             {
                 Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE, new String[] { "property", propName, prop.toString() });
             }
@@ -1014,7 +1015,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
             } else if (inv == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "invariant", name });
-            } else if (!(inv instanceof BoolValue) || !(((BoolValue) inv).val))
+            } else if (!(inv instanceof IBoolValue) || !(((BoolValue) inv).val))
             {
                 Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE, new String[] { "invariant", name, inv.toString() });
             }
@@ -1057,7 +1058,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 } else if (val == null)
                 {
                     Assert.fail(EC.TLC_CONFIG_OP_NOT_IN_SPEC, new String[] { opNode.getName().toString() });
-                } else if (val instanceof BoolValue)
+                } else if (val instanceof IBoolValue)
                 {
                     if (!((BoolValue) val).val)
                     {
@@ -1301,7 +1302,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 } else if (val == null)
                 {
                     Assert.fail(EC.TLC_CONFIG_OP_NOT_IN_SPEC, opNode.getName().toString());
-                } else if (val instanceof BoolValue)
+                } else if (val instanceof IBoolValue)
                 {
                     if (!((BoolValue) val).val)
                     {
@@ -1461,7 +1462,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 this.modelConstraints[idx++] = def.getBody();
             } else if (constr != null)
             {
-                if (!(constr instanceof BoolValue) || !((BoolValue) constr).val)
+                if (!(constr instanceof IBoolValue) || !((BoolValue) constr).val)
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE, new String[] { "constraint", name, constr.toString() });
                 }
@@ -1509,7 +1510,7 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
                 this.actionConstraints[idx++] = def.getBody();
             } else if (constr != null)
             {
-                if (!(constr instanceof BoolValue) || !((BoolValue) constr).val)
+                if (!(constr instanceof IBoolValue) || !((BoolValue) constr).val)
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE,
                             new String[] { "action constraint", name, constr.toString() });

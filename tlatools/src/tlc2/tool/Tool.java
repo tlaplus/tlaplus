@@ -40,6 +40,7 @@ import tlc2.value.Enumerable;
 import tlc2.value.FcnLambdaValue;
 import tlc2.value.FcnParams;
 import tlc2.value.FcnRcdValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
@@ -465,7 +466,7 @@ public final TLCState makeState(SemanticNode pred) {
 			// require TLC to generate a very large set of initial states.
 			while (!acts.isEmpty()) {
 				final IValue bval = this.eval(acts.carPred(), acts.carContext(), ps, TLCState.Empty, EvalControl.Init, acts.cm);
-				if (!(bval instanceof BoolValue)) {
+				if (!(bval instanceof IBoolValue)) {
 					//TODO Choose more fitting error message.
 					Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING,
 							new String[] { "initial states", "boolean", bval.toString(), acts.pred.toString() });
@@ -557,7 +558,7 @@ public final TLCState makeState(SemanticNode pred) {
 
           if (opcode == 0)
           {
-            if (!(bval instanceof BoolValue))
+            if (!(bval instanceof IBoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "initial states", "boolean",
                         bval.toString(), init.toString() });
@@ -619,7 +620,7 @@ public final TLCState makeState(SemanticNode pred) {
         case OPCODE_ite:    // IfThenElse
           {
             IValue guard = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
-            if (!(guard instanceof BoolValue)) {
+            if (!(guard instanceof IBoolValue)) {
               Assert.fail("In computing initial states, a non-boolean expression (" +
                           guard.getKindString() + ") was used as the condition " +
                           "of an IF.\n" + init);
@@ -639,7 +640,7 @@ public final TLCState makeState(SemanticNode pred) {
               }
               else {
                 IValue bval = this.eval(pairArgs[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
-                if (!(bval instanceof BoolValue)) {
+                if (!(bval instanceof IBoolValue)) {
                   Assert.fail("In computing initial states, a non-boolean expression (" +
                               bval.getKindString() + ") was used as a guard condition" +
                               " of a CASE.\n" + pairArgs[1]);
@@ -676,7 +677,7 @@ public final TLCState makeState(SemanticNode pred) {
             Applicable fcn = (Applicable) fval;
             IValue argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
             IValue bval = fcn.apply(argVal, EvalControl.Init);
-            if (!(bval instanceof BoolValue))
+            if (!(bval instanceof IBoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "initial states", "boolean",
                       init.toString() });
@@ -753,7 +754,7 @@ public final TLCState makeState(SemanticNode pred) {
         case OPCODE_implies:
           {
             IValue lval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
-            if (!(lval instanceof BoolValue)) {
+            if (!(lval instanceof IBoolValue)) {
               Assert.fail("In computing initial states of a predicate of form" +
                           " P => Q, P was " + lval.getKindString() + "\n." + init);
             }
@@ -775,7 +776,7 @@ public final TLCState makeState(SemanticNode pred) {
           {
             // For all the other builtin operators, simply evaluate:
             IValue bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
-            if (!(bval instanceof BoolValue)) {
+            if (!(bval instanceof IBoolValue)) {
 
               Assert.fail("In computing initial states, TLC expected a boolean expression," +
                           "\nbut instead found " + bval + ".\n" + init);
@@ -946,7 +947,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
 	  while (!acts.isEmpty()) {
 		  if (kind > 0 || kind == -1) {
 			  final IValue bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm2);
-			  if (!(bval instanceof BoolValue)) {
+			  if (!(bval instanceof IBoolValue)) {
 				  // TODO Choose more fitting error message.
 				  Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING,
 						  new String[] { "next states", "boolean", bval.toString(), acts.pred.toString() });
@@ -1063,7 +1064,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
 
           if (opcode == 0)
           {
-            if (!(bval instanceof BoolValue))
+            if (!(bval instanceof IBoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
                       bval.toString(), pred.toString() });
@@ -1145,7 +1146,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
             Applicable fcn = (Applicable)fval;
             IValue argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
             IValue bval = fcn.apply(argVal, EvalControl.Clear);
-            if (!(bval instanceof BoolValue)) {
+            if (!(bval instanceof IBoolValue)) {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "next states", "boolean",
                       pred.toString() });
             }
@@ -1173,7 +1174,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
         case OPCODE_ite:    // IfThenElse
           {
             IValue guard = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
-            if (!(guard instanceof BoolValue)) {
+            if (!(guard instanceof IBoolValue)) {
               Assert.fail("In computing next states, a non-boolean expression (" +
                           guard.getKindString() + ") was used as the condition of" +
                           " an IF." + pred);
@@ -1196,7 +1197,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
               }
               else {
                 IValue bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Clear, coverage ? cm.get(args[i]) : cm);
-                if (!(bval instanceof BoolValue)) {
+                if (!(bval instanceof IBoolValue)) {
                   Assert.fail("In computing next states, a non-boolean expression (" +
                               bval.getKindString() + ") was used as a guard condition" +
                               " of a CASE.\n" + pairArgs[1]);
@@ -1275,7 +1276,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
         case OPCODE_implies:
           {
             IValue bval = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
-            if (!(bval instanceof BoolValue)) {
+            if (!(bval instanceof IBoolValue)) {
               Assert.fail("In computing next states of a predicate of the form" +
                           " P => Q, P was\n" + bval.getKindString() + ".\n" + pred);
             }
@@ -1314,7 +1315,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           {
             // We handle all the other builtin operators here.
             IValue bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
-            if (!(bval instanceof BoolValue)) {
+            if (!(bval instanceof IBoolValue)) {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
                       bval.toString(), pred.toString() });
             }
@@ -1852,7 +1853,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                   c1 = c1.cons(bvars[i], tv.elems[i]);
                 }
                 IValue bval = this.eval(pred, c1, s0, s1, control, cm);
-                if (!(bval instanceof BoolValue)) {
+                if (!(bval instanceof IBoolValue)) {
                   Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
                 }
                 if (((BoolValue)bval).val) {
@@ -1867,7 +1868,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               while ((val = enumSet.nextElement()) != null) {
                 Context c1 = c.cons(name, val);
                 IValue bval = this.eval(pred, c1, s0, s1, control, cm);
-                if (!(bval instanceof BoolValue)) {
+                if (!(bval instanceof IBoolValue)) {
                   Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
                 }
                 if (((BoolValue)bval).val) {
@@ -1886,7 +1887,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             Context c1;
             while ((c1 = Enum.nextElement()) != null) {
               IValue bval = this.eval(body, c1, s0, s1, control, cm);
-              if (!(bval instanceof BoolValue)) {
+              if (!(bval instanceof IBoolValue)) {
                 Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
               }
               if (((BoolValue)bval).val) {
@@ -1902,7 +1903,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             Context c1;
             while ((c1 = Enum.nextElement()) != null) {
               IValue bval = this.eval(body, c1, s0, s1, control, cm);
-              if (!(bval instanceof BoolValue)) {
+              if (!(bval instanceof IBoolValue)) {
                 Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
               }
               if (!((BoolValue)bval).val) {
@@ -1923,7 +1924,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               }
               else {
                 IValue bval = this.eval(pairArgs[0], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
-                if (!(bval instanceof BoolValue)) {
+                if (!(bval instanceof IBoolValue)) {
                   Assert.fail("A non-boolean expression (" + bval.getKindString() +
                               ") was used as a condition of a CASE. " + pairArgs[0]);
                 }
@@ -1951,7 +1952,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             int alen = args.length;
             for (int i = 0; i < alen; i++) {
               IValue bval = this.eval(args[i], c, s0, s1, control, cm);
-              if (!(bval instanceof BoolValue)) {
+              if (!(bval instanceof IBoolValue)) {
                 Assert.fail("A non-boolean expression (" + bval.getKindString() +
                             ") was used as a formula in a conjunction.\n" + args[i]);
               }
@@ -1966,7 +1967,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             int alen = args.length;
             for (int i = 0; i < alen; i++) {
               IValue bval = this.eval(args[i], c, s0, s1, control, cm);
-              if (!(bval instanceof BoolValue)) {
+              if (!(bval instanceof IBoolValue)) {
                 Assert.fail("A non-boolean expression (" + bval.getKindString() +
                             ") was used as a formula in a disjunction.\n" + args[i]);
               }
@@ -2061,7 +2062,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_ite:    // IfThenElse
           {
             IValue bval = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(bval instanceof BoolValue)) {
+            if (!(bval instanceof IBoolValue)) {
               Assert.fail("A non-boolean expression (" + bval.getKindString() +
                           ") was used as the condition of an IF.\n" + expr);
             }
@@ -2164,7 +2165,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                     c1 = c1.cons(bvars[i], tuple[i]);
                   }
                   IValue bval = this.eval(pred, c1, s0, s1, control, cm);
-                  if (!(bval instanceof BoolValue)) {
+                  if (!(bval instanceof IBoolValue)) {
                     Assert.fail("Attempted to evaluate an expression of form {x \\in S : P(x)}" +
                                 " when P was " + bval.getKindString() + ".\n" + pred);
                   }
@@ -2178,7 +2179,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                 while ((elem = enumSet.nextElement()) != null) {
                   Context c1 = c.cons(idName, elem);
                   IValue bval = this.eval(pred, c1, s0, s1, control, cm);
-                  if (!(bval instanceof BoolValue)) {
+                  if (!(bval instanceof IBoolValue)) {
                     Assert.fail("Attempted to evaluate an expression of form {x \\in S : P(x)}" +
                                 " when P was " + bval.getKindString() + ".\n" + pred);
                   }
@@ -2229,7 +2230,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_lnot:
           {
             IValue arg = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg instanceof BoolValue)) {
+            if (!(arg instanceof IBoolValue)) {
               Assert.fail("Attempted to apply the operator ~ to a non-boolean\n(" +
                           arg.getKindString() + ")\n" + expr);
             }
@@ -2270,13 +2271,13 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_land:
           {
             IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg1 instanceof BoolValue)) {
+            if (!(arg1 instanceof IBoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P /\\ Q" +
                           " when P was\n" + arg1.getKindString() + ".\n" + expr);
             }
             if (((BoolValue)arg1).val) {
               IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-              if (!(arg2 instanceof BoolValue)) {
+              if (!(arg2 instanceof IBoolValue)) {
                 Assert.fail("Attempted to evaluate an expression of form P /\\ Q" +
                             " when Q was\n" + arg2.getKindString() + ".\n" + expr);
               }
@@ -2287,7 +2288,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_lor:
           {
             IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg1 instanceof BoolValue)) {
+            if (!(arg1 instanceof IBoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P \\/ Q" +
                           " when P was\n" + arg1.getKindString() + ".\n" + expr);
             }
@@ -2295,7 +2296,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               return ValTrue;
             }
             IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-            if (!(arg2 instanceof BoolValue)) {
+            if (!(arg2 instanceof IBoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P \\/ Q" +
                           " when Q was\n" + arg2.getKindString() + ".\n" + expr);
             }
@@ -2304,13 +2305,13 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_implies:
           {
             IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg1 instanceof BoolValue)) {
+            if (!(arg1 instanceof IBoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P => Q" +
                           " when P was\n" + arg1.getKindString() + ".\n" + expr);
             }
             if (((BoolValue)arg1).val) {
               IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-              if (!(arg2 instanceof BoolValue)) {
+              if (!(arg2 instanceof IBoolValue)) {
                 Assert.fail("Attempted to evaluate an expression of form P => Q" +
                             " when Q was\n" + arg2.getKindString() + ".\n" + expr);
               }
@@ -2322,7 +2323,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           {
             IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
             IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-            if (!(arg1 instanceof BoolValue) || !(arg2 instanceof BoolValue)) {
+            if (!(arg1 instanceof IBoolValue) || !(arg2 instanceof IBoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P <=> Q" +
                           " when P or Q was not a boolean.\n" + expr);
             }
@@ -2409,7 +2410,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_aa:     // <A>_e
           {
             IValue res = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(res instanceof BoolValue)) {
+            if (!(res instanceof IBoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form <A>_e," +
                           " but A was not a boolean.\n" + expr);
             }
@@ -2423,7 +2424,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_sa:     // [A]_e
           {
             IValue res = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(res instanceof BoolValue)) {
+            if (!(res instanceof IBoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form [A]_e," +
                           " but A was not a boolean.\n" + expr);
             }
@@ -2521,7 +2522,7 @@ public final boolean isInModel(TLCState state) throws EvalException {
     ExprNode[] constrs = this.getModelConstraints();
     for (int i = 0; i < constrs.length; i++) {
       IValue bval = this.eval(constrs[i], Context.Empty, state, CostModel.DO_NOT_RECORD);
-      if (!(bval instanceof BoolValue)) {
+      if (!(bval instanceof IBoolValue)) {
         Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
       }
       if (!((BoolValue)bval).val) return false;
@@ -2535,7 +2536,7 @@ public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException 
     ExprNode[] constrs = this.getActionConstraints();
     for (int i = 0; i < constrs.length; i++) {
       IValue bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, CostModel.DO_NOT_RECORD);
-      if (!(bval instanceof BoolValue)) {
+      if (!(bval instanceof IBoolValue)) {
         Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
       }
       if (!((BoolValue)bval).val) return false;
@@ -2762,7 +2763,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
 
           if (opcode == 0)
           {
-            if (!(bval instanceof BoolValue))
+            if (!(bval instanceof IBoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "ENABLED", "boolean",
                       bval.toString(), pred.toString() });
@@ -2825,7 +2826,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
               } else
               {
                 IValue bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Enabled, cm);
-                if (!(bval instanceof BoolValue))
+                if (!(bval instanceof IBoolValue))
                 {
                   Assert.fail("In computing ENABLED, a non-boolean expression(" + bval.getKindString()
                           + ") was used as a guard condition" + " of a CASE.\n" + pairArgs[1]);
@@ -2882,7 +2883,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
               Applicable fcn = (Applicable) fval;
               IValue argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               IValue bval = fcn.apply(argVal, EvalControl.Enabled); // EvalControl.Enabled not taken into account by any subclass of Applicable
-              if (!(bval instanceof BoolValue))
+              if (!(bval instanceof IBoolValue))
               {
                 Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "ENABLED", "boolean",
                         pred.toString() });
@@ -2900,7 +2901,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
         case OPCODE_ite: // IfThenElse
           {
             IValue guard = this.eval(args[0], c, s0, s1, EvalControl.Enabled, cm);
-            if (!(guard instanceof BoolValue))
+            if (!(guard instanceof IBoolValue))
             {
               Assert.fail("In computing ENABLED, a non-boolean expression(" + guard.getKindString()
                       + ") was used as the guard condition" + " of an IF.\n" + pred);
@@ -2994,7 +2995,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
         case OPCODE_implies:
           {
             IValue bval = this.eval(args[0], c, s0, s1, EvalControl.Enabled, cm);
-            if (!(bval instanceof BoolValue))
+            if (!(bval instanceof IBoolValue))
             {
               Assert.fail("While computing ENABLED of an expression of the form" + " P => Q, P was "
                       + bval.getKindString() + ".\n" + pred);
@@ -3081,7 +3082,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
           {
             // We handle all the other builtin operators here.
             IValue bval = this.eval(pred, c, s0, s1, EvalControl.Enabled, cm);
-            if (!(bval instanceof BoolValue))
+            if (!(bval instanceof IBoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "ENABLED", "boolean",
                       bval.toString(), pred.toString() });
@@ -3215,7 +3216,7 @@ public final TLCState enabled(SemanticNode pred, ActionItemList acts,
   @Override
 public final boolean isValid(Action act, TLCState s0, TLCState s1) {
     IValue val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear, act.cm);
-    if (!(val instanceof BoolValue)) {
+    if (!(val instanceof IBoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()});
     }
     return ((BoolValue)val).val;
@@ -3236,7 +3237,7 @@ public final boolean isValid(Action act) {
   @Override
 public final boolean isValid(ExprNode expr) {
     IValue val = this.eval(expr, Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
-    if (!(val instanceof BoolValue)) {
+    if (!(val instanceof IBoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
     }
     return ((BoolValue)val).val;

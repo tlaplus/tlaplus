@@ -13,6 +13,7 @@ import tlc2.util.Vect;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
 import tlc2.value.FcnRcdValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.SetEnumValue;
@@ -94,7 +95,7 @@ public class Bags implements ValueConstants
         return IntValue.gen(num);
     }
 
-    public static BoolValue BagIn(final IValue e, final IValue b)
+    public static IBoolValue BagIn(final IValue e, final IValue b)
     {
         final FcnRcdValue fcn = (FcnRcdValue) b.toFcnRcd();
         final IValue[] values = fcn.values;
@@ -315,7 +316,7 @@ public class Bags implements ValueConstants
         return new FcnRcdValue(dom, vals, false);
     }
 
-    public static BoolValue SqSubseteq(IValue b1, IValue b2)
+    public static IBoolValue SqSubseteq(IValue b1, IValue b2)
     {
         FcnRcdValue fcn1 = (FcnRcdValue) b1.toFcnRcd();
         FcnRcdValue fcn2 = (FcnRcdValue) b2.toFcnRcd();

@@ -11,7 +11,7 @@ import tlc2.tool.EvalControl;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.util.Context;
-import tlc2.value.BoolValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import util.Assert;
 import util.WrongInvocationException;
@@ -75,10 +75,10 @@ public class LNAction extends LiveExprNode {
 			}
 		}
 		IValue val = tool.eval(this.body, con, s1, s2, EvalControl.Clear);
-		if (!(val instanceof BoolValue)) {
+		if (!(val instanceof IBoolValue)) {
 			Assert.fail(EC.TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE);
 		}
-		return ((BoolValue) val).val;
+		return ((IBoolValue) val).getVal();
 	}
 
 	public final void toString(StringBuffer sb, String padding) {

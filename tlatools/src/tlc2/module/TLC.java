@@ -18,6 +18,7 @@ import tlc2.util.IdThread;
 import tlc2.value.Applicable;
 import tlc2.value.BoolValue;
 import tlc2.value.FcnRcdValue;
+import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.IntValue;
 import tlc2.value.IntervalValue;
@@ -114,7 +115,7 @@ public class TLC implements ValueConstants
      */
     public static IValue Assert(IValue v1, IValue v2)
     {
-        if ((v1 instanceof BoolValue) && ((BoolValue) v1).val)
+        if ((v1 instanceof IBoolValue) && ((BoolValue) v1).val)
         {
             return v1;
         }
@@ -378,7 +379,7 @@ public class TLC implements ValueConstants
     private static boolean compare(Applicable fcmp, IValue[] args)
     {
         IValue res = fcmp.apply(args, EvalControl.Clear);
-        if (res instanceof BoolValue)
+        if (res instanceof IBoolValue)
         {
             return ((BoolValue) res).val;
         }
