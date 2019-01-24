@@ -19,7 +19,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.xml.XMLExportable;
 import tlc2.value.IValue;
 import tlc2.value.Values;
-import util.ToolIO;
 
 /**
  * SemanticNode is the (abstract) superclass of all nodes in the
@@ -91,7 +90,6 @@ public abstract class SemanticNode
       this.tools = newTools;
     }
     this.tools[toolId] = obj;
-    ToolIO.registerSemanticNode(this, toolId);
   }
 
   /**

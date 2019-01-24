@@ -845,7 +845,6 @@ public class TLC
      */
     public void process()
     {
-        ToolIO.cleanToolObjects(TLCGlobals.ToolId);
         // UniqueString.initialize();
         
         // a JMX wrapper that exposes runtime statistics 
