@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:18:28 PST by lamport
 //      modified on Mon Jan 29 16:21:11 PST 2001 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.impl;
 
 import java.io.File;
 import java.net.URL;

@@ -8,7 +8,7 @@ package tlc2.module;
 import tlc2.output.EC;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
-import tlc2.tool.TLARegistry;
+import tlc2.tool.impl.TLARegistry;
 import tlc2.util.Vect;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;

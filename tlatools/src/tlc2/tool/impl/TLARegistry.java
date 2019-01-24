@@ -3,7 +3,7 @@
 // Last modified on Mon 30 Apr 2007 at 13:18:28 PST by lamport
 //      modified on Fri Sep 15 11:06:03 PDT 2000 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.impl;
 
 import java.util.Enumeration;
 import java.util.Hashtable;

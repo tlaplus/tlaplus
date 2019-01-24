@@ -49,8 +49,6 @@ import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
 import tlc2.tool.EvalControl;
 import tlc2.tool.Specs;
-import tlc2.tool.TLAClass;
-import tlc2.tool.TLARegistry;
 import tlc2.tool.TLCState;
 import tlc2.tool.ToolGlobals;
 import tlc2.tool.coverage.CostModel;
