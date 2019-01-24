@@ -57,7 +57,7 @@ public class SimulatorTest extends CommonTestCase {
 	public void runSimulatorTest(String specFile, String configFile, Boolean deadlock, int traceDepth, long traceNum) {
 		try {
 			Simulator simulator = new Simulator(specFile, configFile, null, deadlock, traceDepth, traceNum, rng, 0,
-					true, new SimpleFilenameToStream(), numWorkers());
+					new SimpleFilenameToStream(), numWorkers());
 			simulator.simulate();
 		} catch (Exception e) {
 			e.printStackTrace();

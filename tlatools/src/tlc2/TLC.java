@@ -899,7 +899,7 @@ public class TLC
 								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
 								pid == -1 ? "" : String.valueOf(pid) });
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
-                        traceNum, rng, seed, true, resolver, TLCGlobals.getNumWorkers());
+                        traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
                 simulator.simulate();
             } else
