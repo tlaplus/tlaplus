@@ -271,7 +271,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     try {
       for (int i = 0; i < this.names.length; i++) {
         if (name.equals(this.names[i])) {
-          if (this.values[i] == ValUndef ||
+          if (this.values[i] == UndefValue.ValUndef ||
               this.values[i].equals(val)) {
             this.values[i] = val;
             return true;

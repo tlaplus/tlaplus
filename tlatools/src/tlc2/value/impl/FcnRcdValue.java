@@ -376,7 +376,7 @@ public class FcnRcdValue extends Value implements Applicable {
           int idx = ((IntValue)args[0]).val;
           if ((idx >= this.intv.low) && (idx <= this.intv.high)) {
             int vIdx = idx - this.intv.low;
-            if (this.values[vIdx] == ValUndef ||
+            if (this.values[vIdx] == UndefValue.ValUndef ||
                 this.values[vIdx].equals(val)) {
               this.values[vIdx] = val;
               return true;
@@ -391,7 +391,7 @@ public class FcnRcdValue extends Value implements Applicable {
         int len = this.domain.length;
         for (int i = 0; i < len; i++) {
           if (this.domain[i].equals(argv)) {
-            if (this.values[i] == ValUndef ||
+            if (this.values[i] == UndefValue.ValUndef ||
                 this.values[i].equals(val)) {
               this.values[i] = val;
               return true;

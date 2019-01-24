@@ -62,11 +62,11 @@ public class LazyValue extends Value {
     // See comment on cachable's meager performance in Tool.java on line 1408.
     // See other note about a bug that surfaced with LazyValue in Tool.java on line ~1385.
     if (LAZYEVAL_OFF || !cachable) {
-    	this.val = ValUndef;
+    	this.val = UndefValue.ValUndef;
     }
   }
 
-  public final boolean isUncachable() { return this.val == ValUndef; }
+  public final boolean isUncachable() { return this.val == UndefValue.ValUndef; }
 
   public final void setValue(final IValue aValue) {
 	  assert !isUncachable();
@@ -83,7 +83,7 @@ public class LazyValue extends Value {
 
   public final int compareTo(Object obj) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to compare lazy values.");
       }
       return this.val.compareTo(obj);
@@ -96,7 +96,7 @@ public class LazyValue extends Value {
 
   public final boolean equals(Object obj) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to check equality of lazy values.");
       }
       return this.val.equals(obj);
@@ -109,7 +109,7 @@ public class LazyValue extends Value {
 
   public final boolean member(IValue elem) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to check set membership of lazy values.");
       }
       return this.val.member(elem);
@@ -122,7 +122,7 @@ public class LazyValue extends Value {
 
   public final boolean isFinite() {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to check if a lazy value is a finite set.");
       }
       return this.val.isFinite();
@@ -135,7 +135,7 @@ public class LazyValue extends Value {
 
   public final IValue takeExcept(ValueExcept ex) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
       }
       return this.val.takeExcept(ex);
@@ -148,7 +148,7 @@ public class LazyValue extends Value {
 
   public final IValue takeExcept(ValueExcept[] exs) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
       }
       return this.val.takeExcept(exs);
@@ -161,7 +161,7 @@ public class LazyValue extends Value {
 
   public final int size() {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
          Assert.fail("Error(TLC): Attempted to compute size of lazy value.");
       }
       return this.val.size();
@@ -177,7 +177,7 @@ public class LazyValue extends Value {
   }
 
   private void writeObject(ObjectOutputStream oos) throws IOException {
-    if (this.val == null || this.val == ValUndef) {
+    if (this.val == null || this.val == UndefValue.ValUndef) {
       Assert.fail("Error(TLC): Attempted to serialize lazy value.");
     }
     oos.writeObject(this.val);
@@ -186,7 +186,7 @@ public class LazyValue extends Value {
   /* Nothing to normalize. */
   public final boolean isNormalized() {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to normalize lazy value.");
       }
       return this.val.isNormalized();
@@ -199,7 +199,7 @@ public class LazyValue extends Value {
 
   public final IValue normalize() {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to normalize lazy value.");
       }
       this.val.normalize();
@@ -215,7 +215,7 @@ public class LazyValue extends Value {
 
   public final IValue deepCopy() {
     try {
-      if (this.val == null || this.val == ValUndef) return this;
+      if (this.val == null || this.val == UndefValue.ValUndef) return this;
       return this.val.deepCopy();
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -226,7 +226,7 @@ public class LazyValue extends Value {
 
   public final boolean assignable(IValue val) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to call assignable on lazy value.");
       }
       return this.val.assignable(val);
@@ -240,7 +240,7 @@ public class LazyValue extends Value {
   /* The fingerprint method */
   public final long fingerPrint(long fp) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to fingerprint a lazy value.");
       }
       return this.val.fingerPrint(fp);
@@ -253,7 +253,7 @@ public class LazyValue extends Value {
 
   public final IValue permute(IMVPerm perm) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply permutation to lazy value.");
       }
       return this.val.permute(perm);
@@ -267,7 +267,7 @@ public class LazyValue extends Value {
   /* The string representation of the value. */
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
-      if (this.val == null || this.val == ValUndef) {
+      if (this.val == null || this.val == UndefValue.ValUndef) {
         return sb.append("<LAZY " + this.expr + ">");
       }
       return this.val.toString(sb, offset);

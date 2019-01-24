@@ -14,7 +14,9 @@ import util.Assert;
 
 public class UndefValue extends Value {
 
-  public UndefValue() { /*SKIP*/ }
+  public final static UndefValue ValUndef = new UndefValue();
+
+public UndefValue() { /*SKIP*/ }
 
   public byte getKind() { return UNDEFVALUE; }
 

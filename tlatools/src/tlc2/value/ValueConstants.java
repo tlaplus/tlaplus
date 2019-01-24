@@ -9,7 +9,6 @@ import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.TupleValue;
-import tlc2.value.impl.UndefValue;
 
 public interface ValueConstants {
 
@@ -50,6 +49,5 @@ public interface ValueConstants {
   public final IntValue ValNegOne = IntValue.gen(-1);
   public final IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[0], true);
   public final ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
-  final UndefValue ValUndef = new UndefValue();
 
 }
