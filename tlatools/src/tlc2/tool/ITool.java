@@ -205,4 +205,6 @@ public interface ITool extends TraceApp {
 
 	SemanticNode getViewSpec();
 
+	int getId();
+
 }

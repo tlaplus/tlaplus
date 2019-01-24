@@ -27,7 +27,6 @@ import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
@@ -1541,7 +1540,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case DecimalKind:
         case StringKind:
           {
-            return Values.getValue(expr);
+            return (IValue) expr.getToolObject(toolId);
           }
         case AtNodeKind:
           {
@@ -2095,7 +2094,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
-              names[i] = ((StringValue)Values.getValue(pair[0])).getVal();
+              names[i] = ((StringValue)pair[0].getToolObject(toolId)).getVal();
               vals[i] = this.eval(pair[1], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
             }
             return setSource(expr, new RecordValue(names, vals, false, cm));
@@ -2103,7 +2102,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_rs:     // RcdSelect
           {
             IValue rval = this.eval(args[0], c, s0, s1, control, cm);
-            IValue sval = Values.getValue(args[1]);
+            IValue sval = (IValue) args[1].getToolObject(toolId);
             if (rval instanceof RecordValue) {
               IValue result = ((RecordValue)rval).select(sval);
               if (result == null) {
@@ -2151,7 +2150,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
-              names[i] = ((StringValue)Values.getValue(pair[0])).getVal();
+              names[i] = ((StringValue)pair[0].getToolObject(toolId)).getVal();
               vals[i] = this.eval(pair[1], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
             }
             return setSource(expr, new SetOfRcdsValue(names, vals, false, cm));
@@ -3571,7 +3570,7 @@ public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
     // run for constant definitions
     OpDeclNode[] consts = mod.getConstantDecls();
     for (int i = 0; i < consts.length; i++) {
-      Object val = consts[i].getToolObject(TLCGlobals.ToolId);
+      Object val = consts[i].getToolObject(toolId);
       if (val != null && val instanceof IValue) {
         ((IValue)val).deepNormalize();
         // System.err.println(consts[i].getName() + ": " + val);
@@ -3589,7 +3588,7 @@ public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
           try {
             IValue defVal = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
             defVal.deepNormalize();
-            consts[i].setToolObject(TLCGlobals.ToolId, defVal);
+            consts[i].setToolObject(toolId, defVal);
           } catch (Assert.TLCRuntimeException e) {
             Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
                 new String[] { consts[i].getName().toString(), opDef.getName().toString() });
@@ -3623,7 +3622,7 @@ public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
               IValue val = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
               val.deepNormalize();
               // System.err.println(opName + ": " + val);
-              opDef.setToolObject(TLCGlobals.ToolId, val);
+              opDef.setToolObject(toolId, val);
               Object def = this.defns.get(opName);
               if (def == opDef) {
                 this.defns.put(opName, val);

@@ -155,12 +155,13 @@ public class CostModelCreator extends ExplorerVisitor {
 	// to sets or maps. E.g. for a test, an OpApplNode instance belonging to
 	// Sequences.tla showed up in coverage output.
 	private final Set<OpApplNodeWrapper> nodes = new HashSet<>();
+	private final ITool tool;
 	
 	private ActionWrapper root;
-	private ITool tool;
 	private Context ctx = Context.Empty;
 	
-	private CostModelCreator(final SemanticNode root) {
+	private CostModelCreator(final SemanticNode root, final ITool tool) {
+		this.tool = tool;
 		this.stack.push(new RecursiveOpApplNodeWrapper());
 		root.walkGraph(new CoverageHashTable(opDefNodes), this);
 	}
@@ -219,7 +220,7 @@ public class CostModelCreator extends ExplorerVisitor {
 				final OpDefNode odn = (OpDefNode) val;
 				final ExprNode body = odn.getBody();
 				if (body instanceof OpApplNode) {
-					final CostModelCreator substitution = new CostModelCreator(body);
+					final CostModelCreator substitution = new CostModelCreator(body, tool);
 					oan.addChild((OpApplNodeWrapper) substitution.getModel());
 				}
 			}			

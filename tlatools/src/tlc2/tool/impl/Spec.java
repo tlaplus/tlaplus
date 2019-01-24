@@ -24,6 +24,7 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.FrontEnd;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.ModuleNode;
@@ -80,6 +81,8 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
 	 */
 	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
 
+	protected static final int toolId = FrontEnd.getToolId();
+	
     public String specDir; // The spec directory.
     public String rootFile; // The root file of this spec.
     protected String configFile; // The model config file.
@@ -352,7 +355,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
             {
                 Assert.fail(EC.TLC_CONFIG_VALUE_NOT_ASSIGNED_TO_CONSTANT_PARAM, name.toString());
             }
-            rootConsts[i].setToolObject(TLCGlobals.ToolId, val);
+            rootConsts[i].setToolObject(toolId, val);
             this.defns.put(name, val);
         }
 
@@ -367,7 +370,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
                 this.defns.put(name, rootOpDefs[i]);
             } else
             {
-                rootOpDefs[i].setToolObject(TLCGlobals.ToolId, val);
+                rootOpDefs[i].setToolObject(toolId, val);
                 this.defns.put(name, val);
             }
         }
@@ -388,7 +391,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
                     Object val = mConsts.get(name.toString());
                     if (val != null)
                     {
-                        opDefs[j].getBody().setToolObject(TLCGlobals.ToolId, val);
+                        opDefs[j].getBody().setToolObject(toolId, val);
                     }
                 }
             }
@@ -432,7 +435,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
                     Object val = javaDefs.get(uname);
                     if (val != null)
                     {
-                        opDefs[j].getBody().setToolObject(TLCGlobals.ToolId, val);
+                        opDefs[j].getBody().setToolObject(toolId, val);
                         this.defns.put(uname, val);
                     }
                 }
@@ -456,7 +459,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
                 {
                     Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION, new String[] { lhs.toString(), rhs });
                 }
-                rootConsts[i].setToolObject(TLCGlobals.ToolId, myVal);
+                rootConsts[i].setToolObject(toolId, myVal);
                 this.defns.put(lhs, myVal);
                 overriden.add(lhs.toString());
             }
@@ -483,7 +486,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
                 {
                     Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS, new String[] { lhs.toString(), rhs });
                 }
-                rootOpDefs[i].setToolObject(TLCGlobals.ToolId, myVal);
+                rootOpDefs[i].setToolObject(toolId, myVal);
                 this.defns.put(lhs, myVal);
                 overriden.add(lhs.toString());
             }
@@ -533,7 +536,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
                             Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS, new String[] { lhs.toString(),
                                     rhs });
                         }
-                        opDefs[j].getBody().setToolObject(TLCGlobals.ToolId, myVal);
+                        opDefs[j].getBody().setToolObject(toolId, myVal);
                         modOverriden.add(lhs.toString());
                     }
                 }
@@ -585,7 +588,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
             OpDefNode[] opDefs = expr1.getOpDefs();
             for (int i = 0; i < opDefs.length; i++)
             {
-                Object def = opDefs[i].getToolObject(TLCGlobals.ToolId);
+                Object def = opDefs[i].getToolObject(toolId);
                 if (def instanceof OpDefNode)
                 {
                 	this.processedDefs.add((OpDefNode) def);
@@ -623,7 +626,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
             Object val = this.defns.get(opNode.getName());
             if (val != null)
             {
-                opNode.setToolObject(TLCGlobals.ToolId, val);
+                opNode.setToolObject(toolId, val);
             } else
             {
                 SemanticNode[] args = expr1.getArgs();
@@ -686,7 +689,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
             	Assert.fail(EC.TLC_INTEGER_TOO_BIG, expr1.toString());
                 return;
             }
-            expr1.setToolObject(TLCGlobals.ToolId, val);
+            expr1.setToolObject(toolId, val);
             return;
         }
         case DecimalKind: {
@@ -697,7 +700,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         case StringKind: {
             StringNode expr1 = (StringNode) expr;
             StringValue val = new StringValue(expr1.getRep());
-            expr1.setToolObject(TLCGlobals.ToolId, val);
+            expr1.setToolObject(toolId, val);
             return;
         }
         case AssumeKind: {
@@ -1740,7 +1743,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         if (result != null)
             return result;
 
-        result = opNode.getToolObject(TLCGlobals.ToolId);
+        result = opNode.getToolObject(toolId);
         if (result != null)
             return result;
 
@@ -1748,14 +1751,14 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         {
             // Changed by LL on 10 Apr 2011 from
             //
-            //    result = ((OpDefNode) opNode).getBody().getToolObject(TLCGlobals.ToolId);
+            //    result = ((OpDefNode) opNode).getBody().getToolObject(toolId);
             //
             // to the following
             ExprNode body = ((OpDefNode) opNode).getBody();
-            result = body.getToolObject(TLCGlobals.ToolId);
+            result = body.getToolObject(toolId);
             while ((result == null) && (body.getKind() == SubstInKind)) {
                 body = ((SubstInNode) body).getBody();
-                result = body.getToolObject(TLCGlobals.ToolId);
+                result = body.getToolObject(toolId);
             }
             // end change
 
@@ -1776,7 +1779,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         if (result != null)
             return result;
 
-        result = opNode.getToolObject(TLCGlobals.ToolId);
+        result = opNode.getToolObject(toolId);
         if (result != null)
             return result;
 
@@ -1784,14 +1787,14 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         {
             // Changed by LL on 10 Apr 2011 from
             //
-            //    result = ((OpDefNode) opNode).getBody().getToolObject(TLCGlobals.ToolId);
+            //    result = ((OpDefNode) opNode).getBody().getToolObject(toolId);
             //
             // to the following
             ExprNode body = ((OpDefNode) opNode).getBody();
-            result = body.getToolObject(TLCGlobals.ToolId);
+            result = body.getToolObject(toolId);
             while ((result == null) && (body.getKind() == SubstInKind)) {
                 body = ((SubstInNode) body).getBody();
-                result = body.getToolObject(TLCGlobals.ToolId);
+                result = body.getToolObject(toolId);
             }
             // end change
             if (result != null)
@@ -2221,5 +2224,9 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
     
     public String getSpecDir() {
     	return this.specDir;
+    }
+    
+    public int getId() {
+    	return toolId;
     }
 }

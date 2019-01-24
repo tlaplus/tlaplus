@@ -25,8 +25,6 @@
  ******************************************************************************/
 package tlc2.value;
 
-import tla2sany.semantic.SemanticNode;
-import tlc2.TLCGlobals;
 import tlc2.pprint.PrettyPrint;
 
 public abstract class Values {
@@ -41,9 +39,4 @@ public abstract class Values {
 		  }
 		 return PrettyPrint.mypp(v.toString(), 80) ;
 	  }
-
-	public static IValue getValue(SemanticNode expr) {
-	    return (IValue)expr.getToolObject(TLCGlobals.ToolId);
-	  }
-
 }
