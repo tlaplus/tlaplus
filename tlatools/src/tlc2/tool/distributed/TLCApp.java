@@ -6,14 +6,10 @@ package tlc2.tool.distributed;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
-import tla2sany.modanalyzer.ParseUnit;
-import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.IStateFunctor;
@@ -34,7 +30,6 @@ import util.UniqueString;
 public class TLCApp extends DistApp {
 
 	private String config;
-	private final SpecObj specObj;
 
 	/* Constructors */
 	public TLCApp(String specFile, String configFile, boolean deadlock,
@@ -71,7 +66,7 @@ public class TLCApp extends DistApp {
 		this.checkDeadlock = deadlock.booleanValue();
 		this.preprocess = true;
 		this.tool = new Tool(specDir, specFile, configFile, fts);
-		specObj = this.tool.init();
+		this.tool.init();
 
 		this.impliedInits = this.tool.getImpliedInits();
 		this.invariants = this.tool.getInvariants();
@@ -141,16 +136,7 @@ public class TLCApp extends DistApp {
 	}
 	
 	public List<File> getModuleFiles() {
-		final List<File> result = new ArrayList<File>();
-
-		final Enumeration<ParseUnit> parseUnitContext = this.specObj.parseUnitContext.elements();
-		final FilenameToStream resolver = new InJarFilenameToStream(ModelInJar.PATH);
-		while (parseUnitContext.hasMoreElements()) {
-			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
-			File resolve = resolver.resolve(pu.getFileName(), false);
-			result.add(resolve);
-		}
-		return result;
+		return this.tool.getModuleFiles(new InJarFilenameToStream(ModelInJar.PATH));
     }
 
 	/* (non-Javadoc)

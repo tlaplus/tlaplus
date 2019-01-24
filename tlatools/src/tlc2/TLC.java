@@ -12,14 +12,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
-import tla2sany.modanalyzer.ParseUnit;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.DFIDModelChecker;
@@ -999,14 +997,8 @@ public class TLC
     	final List<File> result = new ArrayList<File>();
     	
     	if (TLCGlobals.mainChecker instanceof ModelChecker) {
-    		ModelChecker mc = (ModelChecker) TLCGlobals.mainChecker;
-			final Enumeration<ParseUnit> parseUnitContext = mc.specObj.parseUnitContext
-					.elements();
-    		while (parseUnitContext.hasMoreElements()) {
-    			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
-				File resolve = resolver.resolve(pu.getFileName(), false);
-				result.add(resolve);
-    		}
+    		final ModelChecker mc = (ModelChecker) TLCGlobals.mainChecker;
+    		result.addAll(mc.getModuleFiles(resolver));
     		if (ModelInJar.hasCfg()) {
     			result.add(ModelInJar.getCfg());
     		}

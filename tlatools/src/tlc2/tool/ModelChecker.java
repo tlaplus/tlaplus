@@ -6,7 +6,9 @@
 
 package tlc2.tool;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -29,6 +31,7 @@ import tlc2.util.statistics.BucketStatistics;
 import util.Assert;
 import util.DebugPrinter;
 import util.FileUtil;
+import util.FilenameToStream;
 import util.UniqueString;
 
 /** 
@@ -258,7 +261,7 @@ public class ModelChecker extends AbstractChecker
 					// to rewrite the trace file but to reconstruct actual states referenced by
 					// their fingerprints in the trace.
 					this.doNext(this.predErrState, this.checkLiveness ? new SetOfStates() : null,
-							new Worker(4223, this, this.metadir, specObj.getFileName()));
+							new Worker(4223, this, this.metadir, tool.getRootFile()));
                 } catch (FingerprintException e)
                 {
                     MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
@@ -1106,6 +1109,10 @@ public class ModelChecker extends AbstractChecker
 			}
 			return returnValue;
 		}
+	}
+
+	public List<File> getModuleFiles(FilenameToStream resolver) {
+		return this.tool.getModuleFiles(resolver);
 	}
 }
 	

@@ -25,6 +25,9 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import java.io.File;
+import java.util.List;
+
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
@@ -39,6 +42,7 @@ import tlc2.util.Vect;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
+import util.FilenameToStream;
 
 public interface ITool extends TraceApp {
 
@@ -204,5 +208,7 @@ public interface ITool extends TraceApp {
 	SemanticNode getViewSpec();
 
 	int getId();
+
+	List<File> getModuleFiles(FilenameToStream resolver);
 
 }

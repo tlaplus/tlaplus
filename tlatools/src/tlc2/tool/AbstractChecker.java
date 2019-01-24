@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
-import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -48,7 +47,6 @@ public abstract class AbstractChecker
     protected final String fromChkpt;
     public final String metadir;
     public final ITool tool;
-    public final SpecObj specObj;
     public final Action[] invariants;
 	/**
 	 * Checking a liveness property Prop (declared by the PROPERTY keyword in the
@@ -103,7 +101,7 @@ public abstract class AbstractChecker
 	public AbstractChecker(ITool tool, String metadir, final IStateWriter stateWriter,
 			boolean deadlock, String fromChkpt) throws EvalException, IOException {
         this.tool = tool;
-		this.specObj = tool.init();
+		tool.init();
 		
 		this.checkDeadlock = deadlock;
         this.checkLiveness = !this.tool.livenessIsTrue();
