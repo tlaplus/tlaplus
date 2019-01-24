@@ -48,8 +48,6 @@ public interface ITool extends TraceApp {
 	   */
 	SpecObj init();
 
-	SpecObj init(boolean preprocess, SpecObj spec);
-
 	void setCallStack();
 
 	CallStack getCallStack();

@@ -140,28 +140,18 @@ public class Tool
    * @param spec - <code>null</code> or a filled spec object from previous SANY run
    */
   @Override
-public final SpecObj init()
-  {
-	  return init(true, null);
-  }
-
-  @Override
-public final SpecObj init(boolean preprocess, SpecObj spec)
-  {
-
+  public final SpecObj init() {
       // Parse and process this spec.
       // It takes care of all overrides.
       // SZ Feb 20, 2009: added spec reference,
       // if not null it is just used instead of re-parsing
-      SpecObj processSpec = super.processSpec(spec);
+      SpecObj processSpec = super.processSpec();
 
       // Initialize state.
       TLCStateMut.init(this);
 
       // Pre-evaluate all the definitions in the spec that are constants.
-      if (preprocess) {
-          this.processConstantDefns();
-      }
+      this.processConstantDefns();
 
       // Finally, process the config file.
       super.processConfig();
@@ -170,7 +160,7 @@ public final SpecObj init(boolean preprocess, SpecObj spec)
   }
 
   @Override
-public final void setCallStack()
+  public final void setCallStack()
   {
       this.callStack = new CallStack();
   }

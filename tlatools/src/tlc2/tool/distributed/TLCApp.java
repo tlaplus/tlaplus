@@ -39,7 +39,7 @@ public class TLCApp extends DistApp {
 	/* Constructors */
 	public TLCApp(String specFile, String configFile, boolean deadlock,
 			String fromChkpt, FPSetConfiguration fpSetConfig) throws IOException {
-		this(specFile, configFile, deadlock, true, null);
+		this(specFile, configFile, deadlock, null);
 
 		this.fromChkpt = fromChkpt;
 		this.metadir = FileUtil.makeMetaDir(this.tool.getSpecDir(), fromChkpt);
@@ -48,7 +48,7 @@ public class TLCApp extends DistApp {
 	
 	public TLCApp(String specFile, String configFile, boolean deadlock,
 			String fromChkpt, FPSetConfiguration fpSetConfig, FilenameToStream fts) throws IOException {
-		this(specFile, configFile, deadlock, true, fts);
+		this(specFile, configFile, deadlock, fts);
 
 		this.fromChkpt = fromChkpt;
 		this.metadir = FileUtil.makeMetaDir(this.tool.getSpecDir(), fromChkpt);
@@ -57,7 +57,7 @@ public class TLCApp extends DistApp {
 
 	// TODO too many constructors redefinitions, replace with this(..) calls
 	public TLCApp(String specFile, String configFile,
-			Boolean deadlock, Boolean preprocess, FilenameToStream fts) throws IOException {
+			Boolean deadlock, FilenameToStream fts) throws IOException {
 
 		// get the spec dir from the spec file
 		int lastSep = specFile.lastIndexOf(File.separatorChar);
@@ -67,20 +67,12 @@ public class TLCApp extends DistApp {
 		
 		this.config = configFile;
 		
-		// TODO NameResolver
-		this.tool = new Tool(specDir, specFile, configFile, fts);
-		// SZ Feb 24, 2009: setup the user directory
-		if (ToolIO.getUserDir() == null) {
-			// First one to set specDir wins. This should only ever be the case
-			// With DistributedTLCTestCase which runs TLCServer and TLCWorker in
-			// a single VM.
-			ToolIO.setUserDir(specDir);
-		}
-
+		
 		this.checkDeadlock = deadlock.booleanValue();
-		this.preprocess = preprocess.booleanValue();
-		// SZ Feb 20, 2009: added null reference to SpecObj
-		specObj = this.tool.init(this.preprocess, null);
+		this.preprocess = true;
+		this.tool = new Tool(specDir, specFile, configFile, fts);
+		specObj = this.tool.init();
+
 		this.impliedInits = this.tool.getImpliedInits();
 		this.invariants = this.tool.getInvariants();
 		this.impliedActions = this.tool.getImpliedActions();
@@ -94,7 +86,7 @@ public class TLCApp extends DistApp {
 	public Action[] impliedActions; // the implied-actions to be checked
 	public Action[] actions; // the subactions
 	private boolean checkDeadlock; // check deadlock?
-	private boolean preprocess; // preprocess?
+	private final boolean preprocess; // preprocess?
 	private String fromChkpt = null; // recover from this checkpoint
 	private String metadir = null; // the directory pathname for metadata
 	private FPSetConfiguration fpSetConfig;

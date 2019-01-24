@@ -785,7 +785,7 @@ public class LiveCheck implements ILiveCheck {
 			// Re-create the tool to do the init states down below (LiveCheck#init
 			// doesn't really need tool).
 	        final ITool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
-	        tool.init(true, null);
+	        tool.init();
 	        
 			// Initialize tool's actions explicitly. LiveCheck#printTrace is
 			// going to access the actions and fails with a NPE unless
