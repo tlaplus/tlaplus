@@ -5,8 +5,6 @@
 
 package tlc2.value;
 
-import tlc2.value.impl.TupleValue;
-
 public interface ValueConstants {
 
   /* Type code for values. */
@@ -36,8 +34,6 @@ public interface ValueConstants {
   public final byte INTERVALVALUE    = USERVALUE + 1;
   public final byte UNDEFVALUE       = INTERVALVALUE + 1;
   public final byte LAZYVALUE        = UNDEFVALUE + 1;
-  public final byte DUMMYVALUE       = LAZYVALUE + 1;  
-
-  public final ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
+  public final byte DUMMYVALUE       = LAZYVALUE + 1;
 
 }

@@ -295,7 +295,7 @@ public class Sequences extends UserObj implements ValueConstants
         		return new StringValue("") ;
         	} 
         	else {
-              return EmptyTuple;
+              return TupleValue.EmptyTuple;
         	}
         }
         
@@ -334,7 +334,7 @@ public class Sequences extends UserObj implements ValueConstants
         }
         int len = seq.size();
         if (len == 0)
-            return EmptyTuple;
+            return TupleValue.EmptyTuple;
         if (!(test instanceof OpLambdaValue) && !(test instanceof OpRcdValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SelectSeq", "operator",

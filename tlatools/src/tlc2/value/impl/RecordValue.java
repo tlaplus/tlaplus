@@ -171,7 +171,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   
   @Override
   public final IValue toTuple() {
-	  return size() == 0 ? EmptyTuple : super.toTuple();
+	  return size() == 0 ? TupleValue.EmptyTuple : super.toTuple();
   }
 
   @Override
