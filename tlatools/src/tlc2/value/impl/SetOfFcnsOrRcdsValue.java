@@ -35,7 +35,7 @@ import tlc2.value.ValueVec;
 public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 
 	@Override
-	public EnumerableValue getRandomSubset(final int kOutOfN) {
+	public Enumerable getRandomSubset(final int kOutOfN) {
 		final ValueVec vec = new ValueVec(kOutOfN);
 
 		final ValueEnumeration ve = elements(kOutOfN);

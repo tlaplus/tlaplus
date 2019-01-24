@@ -44,7 +44,7 @@ import tlc2.util.FP64;
 import tlc2.value.IValue;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueVec;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.ModelValue;
@@ -120,7 +120,7 @@ public class SetOfFcnsValueTest {
 		assertNull(elements.nextElement());
 		
 		// Subset behaves similar.		
-		final EnumerableValue subset = setOfFcnsValue.getRandomSubset(5);
+		final Enumerable subset = setOfFcnsValue.getRandomSubset(5);
 		final ValueEnumeration subsetElements = subset.elements();
 		assertEquals(1, subset.size());
 		assertEquals(new FcnRcdValue(new IValue[0], new IValue[0], true), subsetElements.nextElement());
@@ -137,7 +137,7 @@ public class SetOfFcnsValueTest {
 		assertNull(setOfFcnsValue.elements().nextElement());
 		
 		// Subset behaves similar.		
-		final EnumerableValue subset = setOfFcnsValue.getRandomSubset(5);
+		final Enumerable subset = setOfFcnsValue.getRandomSubset(5);
 		assertEquals(0, subset.size());
 		assertNull(subset.elements().nextElement());
 		assertEquals(new SetEnumValue(), subset);
@@ -155,7 +155,7 @@ public class SetOfFcnsValueTest {
 		assertNull(elements.nextElement());
 		
 		// Subset behaves similar.		
-		final EnumerableValue subset = setOfFcnsValue.getRandomSubset(5);
+		final Enumerable subset = setOfFcnsValue.getRandomSubset(5);
 		final ValueEnumeration subsetElements = subset.elements();
 		assertEquals(1, subset.size());
 		assertEquals(new FcnRcdValue(new IValue[0], new IValue[0], true), subsetElements.nextElement());
@@ -181,7 +181,7 @@ public class SetOfFcnsValueTest {
 			enumeratorValues.add(rcd);
 		}
 
-		final EnumerableValue randomSubset = setOfFcnsValue.getRandomSubset(27);
+		final Enumerable randomSubset = setOfFcnsValue.getRandomSubset(27);
 		final Set<FcnRcdValue> randomsubsetValues = new HashSet<>(27);
 		
 		final ValueEnumeration enumerator2 = randomSubset.elements();
@@ -375,7 +375,7 @@ public class SetOfFcnsValueTest {
 					IntStream.of(0, 1, 2, 799, 1024, 8932, 16933/*, 109031*/).forEach(new IntConsumer() { // 109031 causes the test to take a little long to be included in the overall test suite.
 						@Override
 						public void accept(int kOutOfN) {
-							final EnumerableValue randomSubset = sofv.getRandomSubset(kOutOfN);
+							final Enumerable randomSubset = sofv.getRandomSubset(kOutOfN);
 							
 							// Check expected amount of elements.
 							assertEquals(kOutOfN, randomSubset.size());

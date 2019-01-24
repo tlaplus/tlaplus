@@ -102,9 +102,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     try {
       // Reduce (SUBSET A \subseteq SUBSET B) to (A \subseteq B) to avoid
       // exponential blowup inherent in generating the power set.
-      if (other instanceof SubsetValue && this.set instanceof EnumerableValue) {
+      if (other instanceof SubsetValue && this.set instanceof Enumerable) {
         final SubsetValue sv = (SubsetValue) other;
-        return ((EnumerableValue) this.set).isSubsetEq(sv.set);
+        return ((Enumerable) this.set).isSubsetEq(sv.set);
       }
       return super.isSubsetEq(other);
     }
@@ -333,7 +333,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 				Combinatorics.pascalTableUpTo(elems.size(), kSubset), elems, kSubset);
   	}
  
-	public EnumerableValue getRandomSetOfSubsets(final int numOfSubsetsRequested, final int maxLengthOfSubsets) {
+	public Enumerable getRandomSetOfSubsets(final int numOfSubsetsRequested, final int maxLengthOfSubsets) {
 		// Convert outer set only once.
 		final SetEnumValue convert = (SetEnumValue) set.toSetEnum();
 		convert.normalize();
@@ -465,7 +465,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		}
 	}
 
-	public EnumerableValue getRandomSetOfSubsets(final int numOfPicks, final double probability) {
+	public Enumerable getRandomSetOfSubsets(final int numOfPicks, final double probability) {
 		final CoinTossingSubsetEnumerator enumerator = new CoinTossingSubsetEnumerator(numOfPicks, probability);
 		
 		// Using a set here instead of ValueVec preserves the set invariant (no

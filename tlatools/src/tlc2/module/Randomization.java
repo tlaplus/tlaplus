@@ -31,7 +31,6 @@ import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.EnumerableValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.SubsetValue;
@@ -78,7 +77,7 @@ public class Randomization implements ValueConstants {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
 					new String[] { "third", "RandomSetOfSubsets", "finite set", Values.ppr(v3.toString()) });
         }
-        final EnumerableValue ev = (EnumerableValue) v3;
+        final Enumerable ev = (Enumerable) v3;
 		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {
 			// First compare exponents before explicit calculating size of subset. The
 			// calculated value which is the subset's size then won't overflow.
@@ -133,7 +132,7 @@ public class Randomization implements ValueConstants {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
 					new String[] { "third", "RandomSubsetSetProbability", "finite set", Values.ppr(v3.toString()) });
         }
-        final EnumerableValue ev = (EnumerableValue) v3;
+        final Enumerable ev = (Enumerable) v3;
 		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {
 			// First compare exponents before explicit calculating size of subset. The
 			// calculated value which is the subset's size then won't overflow.

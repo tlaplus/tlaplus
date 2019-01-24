@@ -217,7 +217,7 @@
 //		&& target(en) && !within(CostModelAspect) && if(TLCGlobals.isCoverageEnabled());
 //
 //	ValueEnumeration around(Enumerable en): (elementsExec(en)) {
-//		return new WrappingValueEnumeration(((EnumerableValue) en).getCostModel(), (ValueEnumeration) proceed(en));
+//		return new WrappingValueEnumeration(((Enumerable) en).getCostModel(), (ValueEnumeration) proceed(en));
 //	}
 //
 //	private static class WrappingValueEnumeration implements ValueEnumeration {

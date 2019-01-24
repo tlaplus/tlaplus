@@ -36,7 +36,7 @@ import tlc2.util.FP64;
 import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SetOfFcnsValue;
 
@@ -83,7 +83,7 @@ public class SetOfFcnsBenchmark {
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset() {
+	public Enumerable randomSubset() {
 		return setOfFcns.getRandomSubset(1 << numOfElements);
 	}
 }

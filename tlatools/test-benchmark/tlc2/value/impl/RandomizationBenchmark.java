@@ -34,7 +34,7 @@ import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueVec;
 import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SetEnumValue;
@@ -140,385 +140,385 @@ public class RandomizationBenchmark {
 	/* exact */
 	
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact024k008() {
+	public Enumerable randomSetOfSubsetExact024k008() {
 		return subset2pow24.getRandomSetOfSubsets(twoPow08, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact024k012() {
+	public Enumerable randomSetOfSubsetExact024k012() {
 		return subset2pow24.getRandomSetOfSubsets(twoPow12, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact024k016() {
+	public Enumerable randomSetOfSubsetExact024k016() {
 		return subset2pow24.getRandomSetOfSubsets(twoPow16, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact031k008() {
+	public Enumerable randomSetOfSubsetExact031k008() {
 		return subset2pow31.getRandomSetOfSubsets(twoPow08, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact031k012() {
+	public Enumerable randomSetOfSubsetExact031k012() {
 		return subset2pow31.getRandomSetOfSubsets(twoPow12, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact031k016() {
+	public Enumerable randomSetOfSubsetExact031k016() {
 		return subset2pow31.getRandomSetOfSubsets(twoPow16, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact65k008() {
+	public Enumerable randomSetOfSubsetExact65k008() {
 		return subset2pow65.getRandomSetOfSubsets(twoPow08, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact065k012() {
+	public Enumerable randomSetOfSubsetExact065k012() {
 		return subset2pow65.getRandomSetOfSubsets(twoPow12, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact065k016() {
+	public Enumerable randomSetOfSubsetExact065k016() {
 		return subset2pow65.getRandomSetOfSubsets(twoPow16, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact150k008() {
+	public Enumerable randomSetOfSubsetExact150k008() {
 		return subset2pow150.getRandomSetOfSubsets(twoPow08, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact150k012() {
+	public Enumerable randomSetOfSubsetExact150k012() {
 		return subset2pow150.getRandomSetOfSubsets(twoPow12, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact150k016() {
+	public Enumerable randomSetOfSubsetExact150k016() {
 		return subset2pow150.getRandomSetOfSubsets(twoPow16, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact268k008() {
+	public Enumerable randomSetOfSubsetExact268k008() {
 		return subset2pow268.getRandomSetOfSubsets(twoPow08, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact268k012() {
+	public Enumerable randomSetOfSubsetExact268k012() {
 		return subset2pow268.getRandomSetOfSubsets(twoPow12, 10);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetExact268k016() {
+	public Enumerable randomSetOfSubsetExact268k016() {
 		return subset2pow268.getRandomSetOfSubsets(twoPow16, 10);
 	}
 	
 	/* probabilistic */
 	
 	@Benchmark
-	public EnumerableValue randomSetOfSubset024k008() {
+	public Enumerable randomSetOfSubset024k008() {
 		return subset2pow24.getRandomSetOfSubsets(twoPow08, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset024k012() {
+	public Enumerable randomSetOfSubset024k012() {
 		return subset2pow24.getRandomSetOfSubsets(twoPow12, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset024k016() {
+	public Enumerable randomSetOfSubset024k016() {
 		return subset2pow24.getRandomSetOfSubsets(twoPow16, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset031k008() {
+	public Enumerable randomSetOfSubset031k008() {
 		return subset2pow31.getRandomSetOfSubsets(twoPow08, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset031k012() {
+	public Enumerable randomSetOfSubset031k012() {
 		return subset2pow31.getRandomSetOfSubsets(twoPow12, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset031k016() {
+	public Enumerable randomSetOfSubset031k016() {
 		return subset2pow31.getRandomSetOfSubsets(twoPow16, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset065k008() {
+	public Enumerable randomSetOfSubset065k008() {
 		return subset2pow65.getRandomSetOfSubsets(twoPow08, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset065k012() {
+	public Enumerable randomSetOfSubset065k012() {
 		return subset2pow65.getRandomSetOfSubsets(twoPow12, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset065k016() {
+	public Enumerable randomSetOfSubset065k016() {
 		return subset2pow65.getRandomSetOfSubsets(twoPow16, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset150k008() {
+	public Enumerable randomSetOfSubset150k008() {
 		return subset2pow150.getRandomSetOfSubsets(twoPow08, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset150k012() {
+	public Enumerable randomSetOfSubset150k012() {
 		return subset2pow150.getRandomSetOfSubsets(twoPow12, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset150k016() {
+	public Enumerable randomSetOfSubset150k016() {
 		return subset2pow150.getRandomSetOfSubsets(twoPow16, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset268k008() {
+	public Enumerable randomSetOfSubset268k008() {
 		return subset2pow268.getRandomSetOfSubsets(twoPow08, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset268k012() {
+	public Enumerable randomSetOfSubset268k012() {
 		return subset2pow268.getRandomSetOfSubsets(twoPow12, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubset268k016() {
+	public Enumerable randomSetOfSubset268k016() {
 		return subset2pow268.getRandomSetOfSubsets(twoPow16, .1d);
 	}
 	
 	/* IntervalValue */
 	
 	@Benchmark
-	public EnumerableValue randomInterval016setBound() {
+	public Enumerable randomInterval016setBound() {
 		return interval16.getRandomSubset(TLCGlobals.setBound);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomInterval020setBound() {
+	public Enumerable randomInterval020setBound() {
 		return interval20.getRandomSubset(TLCGlobals.setBound);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomInterval024setBound() {
+	public Enumerable randomInterval024setBound() {
 		return interval24.getRandomSubset(TLCGlobals.setBound);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomInterval028setBound() {
+	public Enumerable randomInterval028setBound() {
 		return interval28.getRandomSubset(TLCGlobals.setBound);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomInterval031setBound() {
+	public Enumerable randomInterval031setBound() {
 		return interval31.getRandomSubset(TLCGlobals.setBound);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomIntervalt016all() {
+	public Enumerable randomIntervalt016all() {
 		return interval16.getRandomSubset(interval16.size() - 1);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomInterval020all() {
+	public Enumerable randomInterval020all() {
 		return interval20.getRandomSubset(interval20.size() - 1);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomInterval024all() {
+	public Enumerable randomInterval024all() {
 		return interval24.getRandomSubset(interval24.size() - 1);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomIntervalt016half() {
+	public Enumerable randomIntervalt016half() {
 		return interval16.getRandomSubset(interval16.size() / 2);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomInterval020half() {
+	public Enumerable randomInterval020half() {
 		return interval20.getRandomSubset(interval20.size() / 2);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomInterval024half() {
+	public Enumerable randomInterval024half() {
 		return interval24.getRandomSubset(interval24.size() / 2);
 	}
 	
 	/* SetEnumValue */
 	
 	@Benchmark
-	public EnumerableValue randomSubset016() {
+	public Enumerable randomSubset016() {
 		return enum016.getRandomSubset(enum016.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset032() {
+	public Enumerable randomSubset032() {
 		return enum032.getRandomSubset(enum032.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset064() {
+	public Enumerable randomSubset064() {
 		return enum064.getRandomSubset(enum064.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset128() {
+	public Enumerable randomSubset128() {
 		return enum128.getRandomSubset(enum128.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset256() {
+	public Enumerable randomSubset256() {
 		return enum256.getRandomSubset(enum256.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset512() {
+	public Enumerable randomSubset512() {
 		return enum512.getRandomSubset(enum512.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset1024() {
+	public Enumerable randomSubset1024() {
 		return enum1024.getRandomSubset(enum1024.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset2048() {
+	public Enumerable randomSubset2048() {
 		return enum2048.getRandomSubset(enum2048.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset4096() {
+	public Enumerable randomSubset4096() {
 		return enum4096.getRandomSubset(enum4096.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset8192() {
+	public Enumerable randomSubset8192() {
 		return enum8192.getRandomSubset(enum8192.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset16384() {
+	public Enumerable randomSubset16384() {
 		return enum16384.getRandomSubset(enum16384.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset32768() {
+	public Enumerable randomSubset32768() {
 		return enum32768.getRandomSubset(enum32768.size() - 1);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetTLCBound() {
+	public Enumerable randomSubsetTLCBound() {
 		return enumTLCBound.getRandomSubset(enumTLCBound.size() - 1);
 	}
 	
 	/* randomSubset with SetOfFcns */
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns008x008p16() {
+	public Enumerable randomSubsetFcns008x008p16() {
 		return fcns008x008.getRandomSubset(twoPow16);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns008x008p08() {
+	public Enumerable randomSubsetFcns008x008p08() {
 		return fcns008x008.getRandomSubset(twoPow08);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns008x008p12() {
+	public Enumerable randomSubsetFcns008x008p12() {
 		return fcns008x008.getRandomSubset(twoPow12);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns011x011p16() {
+	public Enumerable randomSubsetFcns011x011p16() {
 		return fcns008x008.getRandomSubset(twoPow16);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns011x011p08() {
+	public Enumerable randomSubsetFcns011x011p08() {
 		return fcns011x011.getRandomSubset(twoPow08);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns011x011p12() {
+	public Enumerable randomSubsetFcns011x011p12() {
 		return fcns011x011.getRandomSubset(twoPow12);
 	}
 	
 	@Benchmark
-	public EnumerableValue randomSubsetFcns016x008p16() {
+	public Enumerable randomSubsetFcns016x008p16() {
 		return fcns011x011.getRandomSubset(twoPow16);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns016x008p08() {
+	public Enumerable randomSubsetFcns016x008p08() {
 		return fcns016x008.getRandomSubset(twoPow08);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns016x008p12() {
+	public Enumerable randomSubsetFcns016x008p12() {
 		return fcns016x008.getRandomSubset(twoPow12);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns016x016p16() {
+	public Enumerable randomSubsetFcns016x016p16() {
 		return fcns016x016.getRandomSubset(twoPow16);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns016x016p08() {
+	public Enumerable randomSubsetFcns016x016p08() {
 		return fcns016x016.getRandomSubset(twoPow08);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns016x016p12() {
+	public Enumerable randomSubsetFcns016x016p12() {
 		return fcns016x016.getRandomSubset(twoPow12);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns032x016p16() {
+	public Enumerable randomSubsetFcns032x016p16() {
 		return fcns032x016.getRandomSubset(twoPow16);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns032x016p08() {
+	public Enumerable randomSubsetFcns032x016p08() {
 		return fcns032x016.getRandomSubset(twoPow08);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns032x016p12() {
+	public Enumerable randomSubsetFcns032x016p12() {
 		return fcns032x016.getRandomSubset(twoPow12);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns032x032p16() {
+	public Enumerable randomSubsetFcns032x032p16() {
 		return fcns032x032.getRandomSubset(twoPow16);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns032x032p08() {
+	public Enumerable randomSubsetFcns032x032p08() {
 		return fcns032x032.getRandomSubset(twoPow08);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns032x032p12() {
+	public Enumerable randomSubsetFcns032x032p12() {
 		return fcns032x032.getRandomSubset(twoPow12);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns048x048p16() {
+	public Enumerable randomSubsetFcns048x048p16() {
 		return fcns048x048.getRandomSubset(twoPow16);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns048x048p08() {
+	public Enumerable randomSubsetFcns048x048p08() {
 		return fcns048x048.getRandomSubset(twoPow08);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubsetFcns048x048p12() {
+	public Enumerable randomSubsetFcns048x048p12() {
 		return fcns048x048.getRandomSubset(twoPow12);
 	}
 }

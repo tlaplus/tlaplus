@@ -38,7 +38,6 @@ import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueExcept;
-import tlc2.value.impl.EnumerableValue;
 import tlc2.value.impl.EnumerableValue.SubsetEnumerator;
 
 public class EnumerableValueTest {

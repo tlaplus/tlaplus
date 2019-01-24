@@ -285,7 +285,7 @@ implements Enumerable, Reducible {
   }
 
     @Override
-	public EnumerableValue getRandomSubset(final int kOutOfN) {
+	public Enumerable getRandomSubset(final int kOutOfN) {
     	final ValueVec vec = new ValueVec(kOutOfN);
     	
     	final ValueEnumeration ve = elements(kOutOfN);

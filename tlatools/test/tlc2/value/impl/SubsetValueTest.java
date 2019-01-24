@@ -46,7 +46,7 @@ import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueVec;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.StringValue;
@@ -77,11 +77,11 @@ public class SubsetValueTest {
 		FP64.Init();
 	}
 
-	private void doTest(final int expectedSize, final EnumerableValue innerSet) {
+	private void doTest(final int expectedSize, final Enumerable innerSet) {
 		doTest(expectedSize, innerSet, expectedSize);
 	}
 
-	private void doTest(final int expectedSize, final EnumerableValue innerSet,
+	private void doTest(final int expectedSize, final Enumerable innerSet,
 			int expectedElements) {
 		final SubsetValue subsetValue = new SubsetValue(innerSet);
 		assertEquals(expectedSize, subsetValue.size());

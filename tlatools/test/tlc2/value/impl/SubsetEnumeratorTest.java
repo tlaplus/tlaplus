@@ -47,7 +47,7 @@ import tlc2.value.IValue;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueVec;
 import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.SetEnumValue;
@@ -69,8 +69,8 @@ public class SubsetEnumeratorTest {
 	}
 
 	@Parameters
-	public static List<EnumerableValue> getEnumerable() {
-		final List<EnumerableValue> params = new ArrayList<EnumerableValue>();
+	public static List<Enumerable> getEnumerable() {
+		final List<Enumerable> params = new ArrayList<Enumerable>();
 		
 		// IntervalValue
 		params.add(new IntervalValue(1, 10));
@@ -160,7 +160,7 @@ public class SubsetEnumeratorTest {
 			public void accept(final double fraction) {
 				final int k = (int) Math.ceil(enumerable.size() * fraction);
 				
-				final EnumerableValue enumValue = enumerable.getRandomSubset(k);
+				final Enumerable enumValue = enumerable.getRandomSubset(k);
 				
 				// Expected size.
 				assertEquals(String.format("Failed for fraction: %s", fraction), k, enumValue.size());

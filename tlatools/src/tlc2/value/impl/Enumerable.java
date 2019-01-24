@@ -8,7 +8,7 @@ package tlc2.value.impl;
 import tlc2.value.IValue;
 import tlc2.value.ValueEnumeration;
 
-public interface Enumerable {
+public interface Enumerable extends IValue {
 
 	enum Ordering {
 		UNDEFINED,
@@ -34,7 +34,7 @@ public interface Enumerable {
    * this {@link Enumerable}.
    */
   public ValueEnumeration elements(final int k);
-  public EnumerableValue getRandomSubset(final int k);
+  public Enumerable getRandomSubset(final int k);
   public IValue isSubsetEq(IValue other);
 }
 

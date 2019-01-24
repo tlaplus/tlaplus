@@ -35,7 +35,7 @@ import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueVec;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.SubsetValue;
@@ -54,7 +54,7 @@ public class EnumerateSubsetBenchmark {
 	public int numOfElements;
 
 	@Benchmark
-	public EnumerableValue elementsAlwaysNormalized() {
+	public Enumerable elementsAlwaysNormalized() {
 		final IntervalValue inner = new IntervalValue(1, numOfElements);
 		final SubsetValue subset = new SubsetValue(inner);
 
@@ -64,11 +64,11 @@ public class EnumerateSubsetBenchmark {
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}
-        return (EnumerableValue) new SetEnumValue(vals, true).normalize();
+        return (Enumerable) new SetEnumValue(vals, true).normalize();
 	}
 
 	@Benchmark
-	public EnumerableValue kElementsNotNormalized() {
+	public Enumerable kElementsNotNormalized() {
 		final IntervalValue inner = new IntervalValue(1, numOfElements);
 		final SubsetValue subset = new SubsetValue(inner);
 
@@ -80,11 +80,11 @@ public class EnumerateSubsetBenchmark {
 				vec.addElement(elem);
 			}
 		}
-        return (EnumerableValue) new SetEnumValue(vec, false);
+        return (Enumerable) new SetEnumValue(vec, false);
 	}
 	
 	@Benchmark
-	public EnumerableValue kElementsNormalized() {
+	public Enumerable kElementsNormalized() {
 		final IntervalValue inner = new IntervalValue(1, numOfElements);
 		final SubsetValue subset = new SubsetValue(inner);
 
@@ -96,11 +96,11 @@ public class EnumerateSubsetBenchmark {
 				vec.addElement(elem);
 			}
 		}
-        return (EnumerableValue) new SetEnumValue(vec, false).normalize();
+        return (Enumerable) new SetEnumValue(vec, false).normalize();
 	}
 
 	@Benchmark
-	public EnumerableValue elementsNotNormalized() {
+	public Enumerable elementsNotNormalized() {
 		final IntervalValue inner = new IntervalValue(1, numOfElements);
 		final SubsetValue subset = new SubsetValue(inner);
 		
@@ -110,11 +110,11 @@ public class EnumerateSubsetBenchmark {
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}
-		return (EnumerableValue) new SetEnumValue(vals, false);
+		return (Enumerable) new SetEnumValue(vals, false);
 	}
 
 	@Benchmark
-	public EnumerableValue elementsNormalized() {
+	public Enumerable elementsNormalized() {
 		final IntervalValue inner = new IntervalValue(1, numOfElements);
 		final SubsetValue subset = new SubsetValue(inner);
 		
@@ -124,6 +124,6 @@ public class EnumerateSubsetBenchmark {
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}
-		return (EnumerableValue) new SetEnumValue(vals, false).normalize();
+		return (Enumerable) new SetEnumValue(vals, false).normalize();
 	}
 }

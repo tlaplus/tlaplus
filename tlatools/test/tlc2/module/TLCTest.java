@@ -36,7 +36,7 @@ import org.junit.Test;
 import tlc2.util.FP64;
 import tlc2.value.IValue;
 import tlc2.value.ValueEnumeration;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.IntervalValue;
@@ -107,12 +107,12 @@ public class TLCTest {
 		Assert.assertEquals(5, in.size());
 		
 		final IValue permutations = TLC.Permutations(in);
-		Assert.assertTrue(permutations instanceof EnumerableValue);
+		Assert.assertTrue(permutations instanceof Enumerable);
 		Assert.assertEquals(120, permutations.size());
 
 		final Set<IValue> values = new HashSet<>(permutations.size());
 		
-		final ValueEnumeration elements = ((EnumerableValue) permutations).elements();
+		final ValueEnumeration elements = ((Enumerable) permutations).elements();
 		IValue val = null;
 		while ((val = elements.nextElement()) != null) {
 			Assert.assertEquals(in.size(), val.size());

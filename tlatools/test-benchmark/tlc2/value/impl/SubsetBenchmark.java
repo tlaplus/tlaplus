@@ -34,7 +34,7 @@ import org.openjdk.jmh.annotations.State;
 
 import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SubsetValue;
 
@@ -69,12 +69,12 @@ public class SubsetBenchmark {
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsets() {
+	public Enumerable randomSetOfSubsets() {
 		return subset.getRandomSetOfSubsets(1 << numOfElements, .1d);
 	}
 
 	@Benchmark
-	public EnumerableValue randomSetOfSubsetsExact() {
+	public Enumerable randomSetOfSubsetsExact() {
 		return subset.getRandomSetOfSubsets(1 << numOfElements, 10);
 	}
 }

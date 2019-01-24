@@ -54,7 +54,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
   }
   
 	@Override
-	public EnumerableValue getRandomSubset(final int kOutOfN) {
+	public Enumerable getRandomSubset(final int kOutOfN) {
 		// By default, convert all EVs into SetEnumValue and delegate to its
 		// getRandomSubset.
     	return ((SetEnumValue) this.toSetEnum()).getRandomSubset(kOutOfN);
@@ -74,7 +74,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 			// so far done by SubsetValue.
 			final IValue enumerated = this.toSetEnum();
 			if (enumerated != null) {
-				return ((EnumerableValue) enumerated.normalize()).elements();
+				return ((Enumerable) enumerated.normalize()).elements();
 			}
 		}
 		return elements();
@@ -84,7 +84,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 		// The generic implementation collects all n elements of the actual Enumerable
 		// into the temporary variable values. The SubSetEnumerator then randomly
 		// returns up to k elements.
-		// The underlying assuming here is that the size of EnumerableValue (n) is
+		// The underlying assuming here is that the size of Enumerable (n) is
 		// very small and this method is not called as part of the next-state relation.
 		// If it gets called on larger sets or as part of the next-state relation,
 		// subclasses can provide a more efficient implementation (e.g. see

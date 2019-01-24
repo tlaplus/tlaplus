@@ -39,7 +39,7 @@ import org.junit.Test;
 import tlc2.util.FP64;
 import tlc2.value.IValue;
 import tlc2.value.ValueEnumeration;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.SetEnumValue;
@@ -133,7 +133,7 @@ public class SetOfRcrdValueTest {
 		final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(3, names), true);
 
 		final int size = 27;
-		final EnumerableValue randomSubset = setOfRcrdValue.getRandomSubset(size);
+		final Enumerable randomSubset = setOfRcrdValue.getRandomSubset(size);
 		final Set<RecordValue> randomsubsetValues = new HashSet<>(size);
 
 		final ValueEnumeration enumerator = randomSubset.elements();
@@ -157,7 +157,7 @@ public class SetOfRcrdValueTest {
 				final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(m, names), true);
 				final Set<RecordValue> randomsubsetValues = new HashSet<>();
 				for (int kOutOfN = 0; kOutOfN < setOfRcrdValue.size(); kOutOfN++) {
-					final EnumerableValue randomSubset = setOfRcrdValue.getRandomSubset(kOutOfN);
+					final Enumerable randomSubset = setOfRcrdValue.getRandomSubset(kOutOfN);
 
 					final ValueEnumeration enumerator = randomSubset.elements();
 					RecordValue rcd;
@@ -186,7 +186,7 @@ public class SetOfRcrdValueTest {
 		final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(50, names), true);
 
 		final int k = 10000;
-		final EnumerableValue randomSubset = setOfRcrdValue.getRandomSubset(k);
+		final Enumerable randomSubset = setOfRcrdValue.getRandomSubset(k);
 		final Set<RecordValue> randomsubsetValues = new HashSet<>(k);
 
 		final ValueEnumeration enumerator = randomSubset.elements();

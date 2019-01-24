@@ -36,7 +36,7 @@ import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueVec;
 import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.SetEnumValue;
 
@@ -72,7 +72,7 @@ public class SetEnumValueBenchmark {
 	}
 
 	@Benchmark
-	public EnumerableValue randomSubset() {
+	public Enumerable randomSubset() {
 		return setEnumValue.getRandomSubset(1 << numOfElements);
 	}
 }
