@@ -2095,7 +2095,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
             {
                 OpDefNode opDef = letDefs[i];
                 level = Math.max(level, this.getLevelBound(opDef.getBody(), c1));
-                c1 = c1.cons(opDef, ValOne);
+                c1 = c1.cons(opDef, IntValue.ValOne);
             }
             return Math.max(level, this.getLevelBound(expr1.getBody(), c1));
         }
@@ -2173,7 +2173,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
             // For recursive function, don't compute level of the function body
             // again in the recursive call.
             SymbolNode fname = expr.getUnbdedQuantSymbols()[0];
-            c = c.cons(fname, ValOne);
+            c = c.cons(fname, IntValue.ValOne);
         }
 
         ExprOrOpArgNode[] args = expr.getArgs();
@@ -2196,7 +2196,7 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
             if (val instanceof OpDefNode)
             {
                 OpDefNode opDef = (OpDefNode) val;
-                c = c.cons(opNode, ValOne);
+                c = c.cons(opNode, IntValue.ValOne);
                 level = Math.max(level, this.getLevelBound(opDef.getBody(), c));
             } else if (val instanceof LazyValue)
             {

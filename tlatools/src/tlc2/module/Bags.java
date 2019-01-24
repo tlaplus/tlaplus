@@ -132,7 +132,7 @@ public class Bags implements ValueConstants
                         Values.ppr(b.toString()) });
             }
         }
-        return ValZero;
+        return IntValue.ValZero;
     }
 
     public static IValue BagCup(IValue b1, IValue b2)
@@ -448,7 +448,7 @@ public class Bags implements ValueConstants
         for (int i = 0; i < elems.size(); i++)
         {
             domain[i] = elems.elementAt(i);
-            values[i] = ValOne;
+            values[i] = IntValue.ValOne;
         }
         return new FcnRcdValue(domain, values, s1.isNormalized());
     }

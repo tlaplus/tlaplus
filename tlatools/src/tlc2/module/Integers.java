@@ -194,7 +194,7 @@ public class Integers extends UserObj implements ValueConstants
             {
                 throw new EvalException(EC.TLC_MODULE_NULL_POWER_NULL);
             }
-            return ValOne;
+            return IntValue.ValOne;
         }
         long res = x.val;
         for (int i = 1; i < y.val; i++)

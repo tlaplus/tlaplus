@@ -20,10 +20,6 @@ import util.Assert;
 public class IntValue extends Value {
   private static final IntValue[] cache;
 
-  public int val;
-
-  private IntValue(int i) { this.val = i; }
-
   static {
     cache = new IntValue[10];
     for (int i = 0; i < cache.length; i++) {
@@ -31,7 +27,11 @@ public class IntValue extends Value {
     }
   }
 
-  public final byte getKind() { return INTVALUE; }
+	public final static IntValue ValNegOne = gen(-1);
+	
+	public final static IntValue ValOne    = gen(1);
+	
+	public final static IntValue ValZero   = gen(0);
 
   public static final int nbits(int tmp) {
     int nb = 0;
@@ -41,6 +41,12 @@ public class IntValue extends Value {
     }
     return nb + 1;
   }
+
+  public final int val;
+
+  private IntValue(int i) { this.val = i; }
+
+  public final byte getKind() { return INTVALUE; }
 
   // the number of bits needed to encode the value of this int
   public final int nbits() {

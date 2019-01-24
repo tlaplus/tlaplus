@@ -219,7 +219,7 @@ public class Sequences extends UserObj implements ValueConstants
             if (((BoolValue) val).val)
                 return IntValue.gen(i + 1);
         }
-        return ValZero;
+        return IntValue.ValZero;
     }
 
     /**  Not in the standard interface.

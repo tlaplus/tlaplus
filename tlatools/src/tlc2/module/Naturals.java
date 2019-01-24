@@ -205,7 +205,7 @@ public class Naturals extends UserObj implements ValueConstants
             {
                 throw new EvalException(EC.TLC_MODULE_NULL_POWER_NULL);
             }
-            return ValOne;
+            return IntValue.ValOne;
         }
         long res = n1;
         for (int i = 1; i < n2; i++)
