@@ -9,7 +9,6 @@ import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
-import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.UndefValue;
 import util.UniqueString;
@@ -51,7 +50,6 @@ public interface ValueConstants {
   public final IntValue ValZero   = IntValue.gen(0);
   public final IntValue ValOne    = IntValue.gen(1);
   public final IntValue ValNegOne = IntValue.gen(-1);
-  final IValue EmptySet = new SetEnumValue(new ValueVec(0), true);
   public final IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[0], true);
   public final ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
   final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new IValue[0], true);

@@ -178,7 +178,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     try {
       Assert.fail("Attempted to compute the domain of the operator " +
       Values.ppr(this.toString()) + ".");
-      return EmptySet;   // make compiler happy
+      return SetEnumValue.EmptySet;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
