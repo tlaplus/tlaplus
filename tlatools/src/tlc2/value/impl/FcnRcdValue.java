@@ -29,6 +29,7 @@ public class FcnRcdValue extends Value implements Applicable {
   public final IValue[] values;
   private boolean isNorm;
   private int[] indexTbl;  // speed up function application
+public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[0], true);
 
   /* Constructor */
   public FcnRcdValue(IValue[] domain, IValue[] values, boolean isNorm) {

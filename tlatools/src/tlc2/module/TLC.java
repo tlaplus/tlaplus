@@ -401,7 +401,7 @@ public class TLC implements ValueConstants
         int len = elems.size();
         if (len == 0)
         {
-        	IValue[] elems1 = { EmptyFcn };
+        	IValue[] elems1 = { FcnRcdValue.EmptyFcn };
             return new SetEnumValue(elems1, true);
         }
 

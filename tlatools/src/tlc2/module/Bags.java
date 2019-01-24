@@ -39,7 +39,7 @@ public class Bags implements ValueConstants
 
     public static IValue EmptyBag()
     {
-        return EmptyFcn;
+        return FcnRcdValue.EmptyFcn;
     }
 
     public static IBoolValue IsABag(final IValue b)
@@ -256,7 +256,7 @@ public class Bags implements ValueConstants
         ValueVec elems = s1.elems;
         int sz = elems.size();
         if (sz == 0) {
-        	return EmptyFcn;
+        	return FcnRcdValue.EmptyFcn;
         }
         if (sz == 1) {
         	return elems.elementAt(0);
