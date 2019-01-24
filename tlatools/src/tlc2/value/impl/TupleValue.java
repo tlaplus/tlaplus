@@ -237,7 +237,7 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   
   @Override
   public final IValue toRcd() {
-	  return size() == 0 ? EmptyRcd : super.toRcd();
+	  return size() == 0 ? RecordValue.EmptyRcd : super.toRcd();
   }
 
 	@Override

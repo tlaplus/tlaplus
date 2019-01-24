@@ -28,6 +28,7 @@ public class RecordValue extends Value implements Applicable {
   public final UniqueString[] names;   // the field names
   public final IValue[] values;         // the field values
   private boolean isNorm;
+public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new IValue[0], true);
 
   /* Constructor */
   public RecordValue(UniqueString[] names, IValue[] values, boolean isNorm) {
