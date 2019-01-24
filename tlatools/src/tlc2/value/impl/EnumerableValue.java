@@ -42,10 +42,10 @@ public abstract class EnumerableValue extends Value implements Enumerable {
       IValue elem;
       while ((elem = Enum.nextElement()) != null) {
         if (!other.member(elem)) {
-          return ValFalse;
+          return BoolValue.ValFalse;
         }
       }
-      return ValTrue;
+      return BoolValue.ValTrue;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

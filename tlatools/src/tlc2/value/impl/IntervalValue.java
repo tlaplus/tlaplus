@@ -90,7 +90,7 @@ implements Enumerable, Reducible {
       if (other instanceof IntervalValue) {
         final IntervalValue iv = (IntervalValue) other;
         if (iv.low <= low && iv.high >= high) {
-          return ValTrue;
+          return BoolValue.ValTrue;
         }
       }
       return super.isSubsetEq(other);

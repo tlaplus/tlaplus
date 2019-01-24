@@ -12,6 +12,7 @@ import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.ModelValue;
@@ -104,7 +105,7 @@ public class Naturals extends UserObj implements ValueConstants
                     Values.ppr(y.toString()) });
         }
 
-        return (((IntValue) x).val < ((IntValue) y).val) ? ValTrue : ValFalse;
+        return (((IntValue) x).val < ((IntValue) y).val) ? BoolValue.ValTrue : BoolValue.ValFalse;
     }
 
     public static IBoolValue LE(IValue x, IValue y)
@@ -120,7 +121,7 @@ public class Naturals extends UserObj implements ValueConstants
                     Values.ppr(y.toString()) });
         }
 
-        return (((IntValue) x).val <= ((IntValue) y).val) ? ValTrue : ValFalse;
+        return (((IntValue) x).val <= ((IntValue) y).val) ? BoolValue.ValTrue : BoolValue.ValFalse;
     }
 
     public static IBoolValue GT(IValue x, IValue y)
@@ -137,7 +138,7 @@ public class Naturals extends UserObj implements ValueConstants
                     Values.ppr(y.toString()) });
         }
 
-        return (((IntValue) x).val > ((IntValue) y).val) ? ValTrue : ValFalse;
+        return (((IntValue) x).val > ((IntValue) y).val) ? BoolValue.ValTrue : BoolValue.ValFalse;
     }
 
     public static IBoolValue GEQ(IValue x, IValue y)
@@ -154,7 +155,7 @@ public class Naturals extends UserObj implements ValueConstants
                     Values.ppr(y.toString()) });
         }
 
-        return (((IntValue) x).val >= ((IntValue) y).val) ? ValTrue : ValFalse;
+        return (((IntValue) x).val >= ((IntValue) y).val) ? BoolValue.ValTrue : BoolValue.ValFalse;
     }
 
     public static IntervalValue DotDot(IntValue x, IntValue y)

@@ -100,7 +100,7 @@ public class TLC implements ValueConstants
         		MP.printError(EC.GENERAL, e);
         	}
         }
-        return ValTrue;
+        return BoolValue.ValTrue;
     }
 
     /* Returns the string value of the string representation of v. */
@@ -217,7 +217,7 @@ public class TLC implements ValueConstants
                 {	
                     tlc2.TLCGlobals.simulator.setLocalValue(idx, val);
                 }
-                return ValTrue;
+                return BoolValue.ValTrue;
             }
         } else if (vidx instanceof StringValue) {
         	final StringValue sv = (StringValue) vidx;
@@ -225,7 +225,7 @@ public class TLC implements ValueConstants
         		if (val == BoolValue.ValTrue) {
         			TLCGlobals.mainChecker.stop();
         		}
-        		return ValTrue;
+        		return BoolValue.ValTrue;
         	}
         }
         throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "TLCSet", "nonnegative integer",

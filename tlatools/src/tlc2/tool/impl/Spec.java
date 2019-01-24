@@ -283,11 +283,11 @@ class Spec implements ValueConstants, ToolGlobals, Serializable
         this.defns.setDefnCount(varDecls.length);
 
         // Add predefined (Boolean and String) in defns.
-        this.defns.put("TRUE", ValTrue);
-        this.defns.put("FALSE", ValFalse);
+        this.defns.put("TRUE", BoolValue.ValTrue);
+        this.defns.put("FALSE", BoolValue.ValFalse);
         IValue[] elems = new IValue[2];
-        elems[0] = ValFalse;
-        elems[1] = ValTrue;
+        elems[0] = BoolValue.ValFalse;
+        elems[1] = BoolValue.ValTrue;
         this.defns.put("BOOLEAN", new SetEnumValue(elems, true));
 
         Class stringModule = this.tlaClass.loadClass("Strings");

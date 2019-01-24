@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.IntervalValue;
@@ -41,7 +42,7 @@ public final class ValueInputStream implements ValueConstants {
 
 		switch (kind) {
 		case BOOLVALUE: {
-			return (this.dis.readBoolean()) ? ValTrue : ValFalse;
+			return (this.dis.readBoolean()) ? BoolValue.ValTrue : BoolValue.ValFalse;
 		}
 		case INTVALUE: {
 			return IntValue.gen(this.dis.readInt());

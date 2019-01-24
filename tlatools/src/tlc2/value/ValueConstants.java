@@ -5,7 +5,6 @@
 
 package tlc2.value;
 
-import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.TupleValue;
@@ -41,9 +40,6 @@ public interface ValueConstants {
   public final byte LAZYVALUE        = UNDEFVALUE + 1;
   public final byte DUMMYVALUE       = LAZYVALUE + 1;  
 
-  /* Value constants. */
-  public final IBoolValue ValTrue  = new BoolValue(true);
-  public final IBoolValue ValFalse = new BoolValue(false);
   public final IntValue ValZero   = IntValue.gen(0);
   public final IntValue ValOne    = IntValue.gen(1);
   public final IntValue ValNegOne = IntValue.gen(-1);

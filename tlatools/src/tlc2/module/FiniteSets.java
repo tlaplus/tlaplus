@@ -11,6 +11,7 @@ import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntValue;
 
@@ -20,7 +21,7 @@ public class FiniteSets implements ValueConstants
 
     public static IBoolValue IsFiniteSet(IValue val)
     {
-        return val.isFinite() ? ValTrue : ValFalse;
+        return val.isFinite() ? BoolValue.ValTrue : BoolValue.ValFalse;
     }
 
     public static IntValue Cardinality(IValue val)

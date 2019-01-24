@@ -50,17 +50,17 @@ public class Bags implements ValueConstants
         	// MAK 02/23/2018 Changed to return ValFalse instead of exception when Value is not a bag.
             //throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "IsBag",
             //        "a function with a finite domain", Value.ppr(b.toString()) });
-        	return ValFalse;
+        	return BoolValue.ValFalse;
         }
         final IValue[] vals = fcn.values;
         for (int i = 0; i < vals.length; i++)
         {
             if (!(vals[i] instanceof IntValue) || ((IntValue) vals[i]).val <= 0)
             {
-                return ValFalse;
+                return BoolValue.ValFalse;
             }
         }
-        return ValTrue;
+        return BoolValue.ValTrue;
     }
 
     public static IntValue BagCardinality(IValue b)
@@ -106,13 +106,13 @@ public class Bags implements ValueConstants
             {
                 if (values[i] instanceof IntValue)
                 {
-                    return (((IntValue) values[i]).val > 0) ? ValTrue : ValFalse;
+                    return (((IntValue) values[i]).val > 0) ? BoolValue.ValTrue : BoolValue.ValFalse;
                 }
                 throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "BagIn", "bag",
                         Values.ppr(b.toString()) });
             }
         }
-        return ValFalse;
+        return BoolValue.ValFalse;
     }
 
     public static IntValue CopiesIn(final IValue e, final IValue b)
@@ -348,9 +348,9 @@ public class Bags implements ValueConstants
                 }
             }
             if (v1 > 0)
-                return ValFalse;
+                return BoolValue.ValFalse;
         }
-        return ValTrue;
+        return BoolValue.ValTrue;
     }
 
     public static IValue BagOfAll(IValue f, IValue b)

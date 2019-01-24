@@ -1906,10 +1906,10 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                 Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
               }
               if (((BoolValue)bval).val) {
-                return ValTrue;
+                return BoolValue.ValTrue;
               }
             }
-            return ValFalse;
+            return BoolValue.ValFalse;
           }
         case OPCODE_bf:     // BoundedForall
           {
@@ -1922,10 +1922,10 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                 Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
               }
               if (!((BoolValue)bval).val) {
-                return ValFalse;
+                return BoolValue.ValFalse;
               }
             }
-            return ValTrue;
+            return BoolValue.ValTrue;
           }
         case OPCODE_case:   // Case
           {
@@ -1972,10 +1972,10 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                             ") was used as a formula in a conjunction.\n" + args[i]);
               }
               if (!((BoolValue)bval).val) {
-                return ValFalse;
+                return BoolValue.ValFalse;
               }
             }
-            return ValTrue;
+            return BoolValue.ValTrue;
           }
         case OPCODE_dl:     // DisjList
           {
@@ -1987,10 +1987,10 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                             ") was used as a formula in a disjunction.\n" + args[i]);
               }
               if (((BoolValue)bval).val) {
-                return ValTrue;
+                return BoolValue.ValTrue;
               }
             }
-            return ValFalse;
+            return BoolValue.ValFalse;
           }
         case OPCODE_exc:    // Except
           {
@@ -2249,7 +2249,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               Assert.fail("Attempted to apply the operator ~ to a non-boolean\n(" +
                           arg.getKindString() + ")\n" + expr);
             }
-            return (((BoolValue)arg).val) ? ValFalse : ValTrue;
+            return (((BoolValue)arg).val) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
         case OPCODE_subset:
           {
@@ -2275,13 +2275,13 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             TLCState sfun = TLCStateFun.Empty;
             Context c1 = Context.branch(c);
             sfun = this.enabled(args[0], ActionItemList.Empty, c1, s0, sfun, cm);
-            return (sfun != null) ? ValTrue : ValFalse;
+            return (sfun != null) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_eq:
           {
             IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
             IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-            return (arg1.equals(arg2)) ? ValTrue : ValFalse;
+            return (arg1.equals(arg2)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_land:
           {
@@ -2298,7 +2298,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               }
               return arg2;
             }
-            return ValFalse;
+            return BoolValue.ValFalse;
           }
         case OPCODE_lor:
           {
@@ -2308,7 +2308,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                           " when P was\n" + arg1.getKindString() + ".\n" + expr);
             }
             if (((BoolValue)arg1).val) {
-              return ValTrue;
+              return BoolValue.ValTrue;
             }
             IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
             if (!(arg2 instanceof IBoolValue)) {
@@ -2332,7 +2332,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               }
               return arg2;
             }
-            return ValTrue;
+            return BoolValue.ValTrue;
           }
         case OPCODE_equiv:
           {
@@ -2344,13 +2344,13 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             }
             BoolValue bval1 = (BoolValue)arg1;
             BoolValue bval2 = (BoolValue)arg2;
-            return (bval1.val == bval2.val) ? ValTrue : ValFalse;
+            return (bval1.val == bval2.val) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_noteq:
           {
             IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
             IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-            return arg1.equals(arg2) ? ValFalse : ValTrue;
+            return arg1.equals(arg2) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
         case OPCODE_subseteq:
           {
@@ -2366,13 +2366,13 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           {
             IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
             IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-            return (arg2.member(arg1)) ? ValTrue : ValFalse;
+            return (arg2.member(arg1)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_notin:
           {
             IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
             IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-            return (arg2.member(arg1)) ? ValFalse : ValTrue;
+            return (arg2.member(arg1)) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
         case OPCODE_setdiff:
           {
@@ -2420,7 +2420,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           {
             IValue v0 = this.eval(args[0], c, s0, TLCState.Empty, control, cm);
             IValue v1 = this.eval(args[0], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
-            return (v0.equals(v1)) ? ValTrue : ValFalse;
+            return (v0.equals(v1)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_aa:     // <A>_e
           {
@@ -2430,11 +2430,11 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                           " but A was not a boolean.\n" + expr);
             }
             if (!((BoolValue)res).val) {
-              return ValFalse;
+              return BoolValue.ValFalse;
             }
             IValue v0 = this.eval(args[1], c, s0, TLCState.Empty, control, cm);
             IValue v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
-            return v0.equals(v1) ? ValFalse : ValTrue;
+            return v0.equals(v1) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
         case OPCODE_sa:     // [A]_e
           {
@@ -2444,11 +2444,11 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                           " but A was not a boolean.\n" + expr);
             }
             if (((BoolValue)res).val) {
-              return ValTrue;
+              return BoolValue.ValTrue;
             }
             IValue v0 = this.eval(args[1], c, s0, TLCState.Empty, control, cm);
             IValue v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
-            return (v0.equals(v1)) ? ValTrue : ValFalse;
+            return (v0.equals(v1)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_cdot:
           {

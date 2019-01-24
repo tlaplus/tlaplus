@@ -21,6 +21,7 @@ import tlc2.util.Vect;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueVec;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.SetEnumValue;
@@ -426,10 +427,10 @@ public class ModelConfig implements ValueConstants, Serializable
             return new StringValue(tval.substring(1, tval.length() - 1));
         } else if (tt.image.equals("TRUE"))
         {
-            return ValTrue;
+            return BoolValue.ValTrue;
         } else if (tt.image.equals("FALSE"))
         {
-            return ValFalse;
+            return BoolValue.ValFalse;
         } else if (tt.image.equals("{"))
         {
             ValueVec elems = new ValueVec();
