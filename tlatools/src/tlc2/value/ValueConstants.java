@@ -56,6 +56,5 @@ public interface ValueConstants {
   public final ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
   final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new IValue[0], true);
   final UndefValue ValUndef = new UndefValue();
-  final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
 
 }

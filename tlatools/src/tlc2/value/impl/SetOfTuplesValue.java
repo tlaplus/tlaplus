@@ -184,7 +184,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   public final boolean isNormalized() {
     try {
-      if (this.tupleSet == null || this.tupleSet == DummyEnum) {
+      if (this.tupleSet == null || this.tupleSet == SetEnumValue.DummyEnum) {
         for (int i = 0; i < this.sets.length; i++) {
           if (!this.sets[i].isNormalized()) {
             return false;
@@ -202,7 +202,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   public final IValue normalize() {
     try {
-      if (this.tupleSet == null || this.tupleSet == DummyEnum) {
+      if (this.tupleSet == null || this.tupleSet == SetEnumValue.DummyEnum) {
         for (int i = 0; i < this.sets.length; i++) {
           this.sets[i].normalize();
         }
@@ -225,9 +225,9 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
           sets[i].deepNormalize();
         }
         if (tupleSet == null) {
-          tupleSet = DummyEnum;
+          tupleSet = SetEnumValue.DummyEnum;
         }
-        else if (tupleSet != DummyEnum) {
+        else if (tupleSet != SetEnumValue.DummyEnum) {
           tupleSet.deepNormalize();
         }
 	    }
@@ -290,23 +290,23 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     if (this.tupleSet == null) {
       this.tupleSet = (SetEnumValue) this.toSetEnum();
     }
-    else if (this.tupleSet == DummyEnum) {
+    else if (this.tupleSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-        if (this.tupleSet == DummyEnum) {
+        if (this.tupleSet == SetEnumValue.DummyEnum) {
           val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
       synchronized(this) {
-        if (this.tupleSet == DummyEnum) { this.tupleSet = val; }
+        if (this.tupleSet == SetEnumValue.DummyEnum) { this.tupleSet = val; }
       }
     }
   }
 
   @Override
   public final IValue toSetEnum() {
-      if (this.tupleSet != null && this.tupleSet != DummyEnum) {
+      if (this.tupleSet != null && this.tupleSet != SetEnumValue.DummyEnum) {
         return this.tupleSet;
       }
       ValueVec vals = new ValueVec();
@@ -370,7 +370,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   public final ValueEnumeration elements() {
     try {
-      if (this.tupleSet == null || this.tupleSet == DummyEnum) {
+      if (this.tupleSet == null || this.tupleSet == SetEnumValue.DummyEnum) {
         return new Enumerator();
       }
       return this.tupleSet.elements();

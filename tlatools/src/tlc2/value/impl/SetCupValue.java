@@ -121,7 +121,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   public final boolean isNormalized() {
     try {
       return (this.cupSet != null &&
-        this.cupSet != DummyEnum &&
+        this.cupSet != SetEnumValue.DummyEnum &&
         this.cupSet.isNormalized());
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -132,7 +132,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
 
   public final IValue normalize() {
     try {
-      if (this.cupSet != null && this.cupSet != DummyEnum) {
+      if (this.cupSet != null && this.cupSet != SetEnumValue.DummyEnum) {
         this.cupSet.normalize();
       }
       return this;
@@ -149,9 +149,9 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
       set1.deepNormalize();
       set2.deepNormalize();
       if (cupSet == null) {
-        cupSet = DummyEnum;
+        cupSet = SetEnumValue.DummyEnum;
       }
-      else if (cupSet != DummyEnum) {
+      else if (cupSet != SetEnumValue.DummyEnum) {
         cupSet.deepNormalize();
       }
 	    }
@@ -215,23 +215,23 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     if (this.cupSet == null) {
       this.cupSet = (SetEnumValue) this.toSetEnum();
     }
-    else if (this.cupSet == DummyEnum) {
+    else if (this.cupSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-        if (this.cupSet == DummyEnum) {
+        if (this.cupSet == SetEnumValue.DummyEnum) {
           val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
       synchronized(this) {
-        if (this.cupSet == DummyEnum) {	this.cupSet = val; }
+        if (this.cupSet == SetEnumValue.DummyEnum) {	this.cupSet = val; }
       }
     }
   }
 
   @Override
   public final IValue toSetEnum() {
-      if (this.cupSet != null && this.cupSet != DummyEnum) {
+      if (this.cupSet != null && this.cupSet != SetEnumValue.DummyEnum) {
         return this.cupSet;
       }
       ValueVec vals = new ValueVec();
@@ -268,7 +268,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
 
   public final ValueEnumeration elements() {
     try {
-      if (this.cupSet == null || this.cupSet == DummyEnum) {
+      if (this.cupSet == null || this.cupSet == SetEnumValue.DummyEnum) {
         return new Enumerator();
       }
       return this.cupSet.elements();

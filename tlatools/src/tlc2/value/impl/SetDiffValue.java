@@ -120,7 +120,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 
   public final boolean isNormalized() {
     try {
-      if (this.diffSet == null || this.diffSet == DummyEnum) {
+      if (this.diffSet == null || this.diffSet == SetEnumValue.DummyEnum) {
         return this.set1.isNormalized();
       }
       return this.diffSet.isNormalized();
@@ -133,7 +133,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 
   public final IValue normalize() {
     try {
-      if (this.diffSet == null || this.diffSet == DummyEnum) {
+      if (this.diffSet == null || this.diffSet == SetEnumValue.DummyEnum) {
         this.set1.normalize();
         this.set2.normalize();
       }
@@ -154,9 +154,9 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
      set1.deepNormalize();
       set2.deepNormalize();
       if (diffSet == null) {
-        diffSet = DummyEnum;
+        diffSet = SetEnumValue.DummyEnum;
       }
-      else if (diffSet != DummyEnum) {
+      else if (diffSet != SetEnumValue.DummyEnum) {
         diffSet.deepNormalize();
       }
 	    }
@@ -220,23 +220,23 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     if (this.diffSet == null) {
       this.diffSet = (SetEnumValue) this.toSetEnum();
     }
-    else if (this.diffSet == DummyEnum) {
+    else if (this.diffSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-        if (this.diffSet == DummyEnum) {
+        if (this.diffSet == SetEnumValue.DummyEnum) {
           val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
       synchronized(this) {
-        if (this.diffSet == DummyEnum) { this.diffSet = val; }
+        if (this.diffSet == SetEnumValue.DummyEnum) { this.diffSet = val; }
       }
     }
   }
 
   @Override
   public final IValue toSetEnum() {
-      if (this.diffSet != null && this.diffSet != DummyEnum) {
+      if (this.diffSet != null && this.diffSet != SetEnumValue.DummyEnum) {
         return this.diffSet;
       }
       ValueVec vals = new ValueVec();
@@ -273,7 +273,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 
   public final ValueEnumeration elements() {
     try {
-      if (this.diffSet == null || this.diffSet == DummyEnum) {
+      if (this.diffSet == null || this.diffSet == SetEnumValue.DummyEnum) {
         return new Enumerator();
       }
       return this.diffSet.elements();

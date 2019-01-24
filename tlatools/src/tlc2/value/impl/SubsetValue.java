@@ -168,7 +168,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   public final boolean isNormalized() {
     try {
       return (this.pset != null &&
-        this.pset != DummyEnum &&
+        this.pset != SetEnumValue.DummyEnum &&
         this.pset.isNormalized());
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -179,7 +179,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
   public final IValue normalize() {
     try {
-      if (this.pset == null || this.pset == DummyEnum) {
+      if (this.pset == null || this.pset == SetEnumValue.DummyEnum) {
         this.set.normalize();
       }
       else {
@@ -198,9 +198,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	    try {
       set.deepNormalize();
       if (pset == null) {
-        pset = DummyEnum;
+        pset = SetEnumValue.DummyEnum;
       }
-      else if (pset != DummyEnum) {
+      else if (pset != SetEnumValue.DummyEnum) {
         pset.deepNormalize();
       }
 	    }
@@ -264,23 +264,23 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     if (this.pset == null) {
       this.pset = (SetEnumValue) this.toSetEnum();
     }
-    else if (this.pset == DummyEnum) {
+    else if (this.pset == SetEnumValue.DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-        if (this.pset == DummyEnum) {
+        if (this.pset == SetEnumValue.DummyEnum) {
           val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
       synchronized(this) {
-        if (this.pset == DummyEnum) { this.pset = val; }
+        if (this.pset == SetEnumValue.DummyEnum) { this.pset = val; }
       }
     }
   }
 
   @Override
   public final IValue toSetEnum() {
-      if (this.pset != null && this.pset != DummyEnum) {
+      if (this.pset != null && this.pset != SetEnumValue.DummyEnum) {
         return this.pset;
       }
       ValueVec vals = new ValueVec(this.size());
@@ -681,7 +681,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
   public final ValueEnumeration elements() {
     try {
-      if (this.pset == null || this.pset == DummyEnum) {
+      if (this.pset == null || this.pset == SetEnumValue.DummyEnum) {
     	  // See note on SetEnumValue#convert for SubsetValue wrt
     	  // the normalized SetEnumValue result.
     	  return elementsNormalized();

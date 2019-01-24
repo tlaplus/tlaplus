@@ -26,6 +26,7 @@ public class SetEnumValue extends EnumerableValue
 implements Enumerable, Reducible {
   public ValueVec elems;         // the elements of the set
   private boolean isNorm;        // normalized?
+public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
 
   /* Constructor */
   public SetEnumValue(IValue[] elems, boolean isNorm) {

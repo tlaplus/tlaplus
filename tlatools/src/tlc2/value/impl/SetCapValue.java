@@ -117,7 +117,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 
   public final boolean isNormalized() {
     try {
-      if (this.capSet == null || this.capSet == DummyEnum) {
+      if (this.capSet == null || this.capSet == SetEnumValue.DummyEnum) {
         return (this.set1.isNormalized() && this.set2.isNormalized());
       }
       return this.capSet.isNormalized();
@@ -130,7 +130,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 
   public final IValue normalize() {
     try {
-      if (this.capSet == null || this.capSet == DummyEnum) {
+      if (this.capSet == null || this.capSet == SetEnumValue.DummyEnum) {
         this.set1.normalize();
         this.set2.normalize();
       }
@@ -199,16 +199,16 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
     if (this.capSet == null) {
       this.capSet = (SetEnumValue) this.toSetEnum();
     }
-    else if (this.capSet == DummyEnum) {
+    else if (this.capSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-        if (this.capSet == DummyEnum) {
+        if (this.capSet == SetEnumValue.DummyEnum) {
           val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
       synchronized(this) {
-        if (this.capSet == DummyEnum) { this.capSet = val; }
+        if (this.capSet == SetEnumValue.DummyEnum) { this.capSet = val; }
       }
     }
   }
@@ -219,9 +219,9 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
       set1.deepNormalize();
       set2.deepNormalize();
       if (capSet == null) {
-        capSet = DummyEnum;
+        capSet = SetEnumValue.DummyEnum;
       }
-      else if (capSet != DummyEnum) {
+      else if (capSet != SetEnumValue.DummyEnum) {
         capSet.deepNormalize();
       }
 	    }
@@ -233,7 +233,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 	  
   @Override
   public final IValue toSetEnum() {
-      if (this.capSet != null && this.capSet != DummyEnum) {
+      if (this.capSet != null && this.capSet != SetEnumValue.DummyEnum) {
         return this.capSet;
       }
       ValueVec vals = new ValueVec();
@@ -270,7 +270,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 
   public final ValueEnumeration elements() {
     try {
-      if (this.capSet == null || this.capSet == DummyEnum) {
+      if (this.capSet == null || this.capSet == SetEnumValue.DummyEnum) {
         return new Enumerator();
       }
       return this.capSet.elements();

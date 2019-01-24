@@ -138,7 +138,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   public final boolean isNormalized() {
     try {
       return (this.realSet != null &&
-        this.realSet != DummyEnum &&
+        this.realSet != SetEnumValue.DummyEnum &&
         this.realSet.isNormalized());
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -149,7 +149,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 
   public final IValue normalize() {
     try {
-      if (this.realSet != null && this.realSet != DummyEnum) {
+      if (this.realSet != null && this.realSet != SetEnumValue.DummyEnum) {
         this.realSet.normalize();
       }
       return this;
@@ -164,9 +164,9 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   public final void deepNormalize() {
 	    try {
       if (realSet == null) {
-        realSet = DummyEnum;
+        realSet = SetEnumValue.DummyEnum;
       }
-      else if (realSet != DummyEnum) {
+      else if (realSet != SetEnumValue.DummyEnum) {
         realSet.deepNormalize();
       }
 	    }
@@ -256,23 +256,23 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     if (this.realSet == null) {
       this.realSet = (SetEnumValue) this.toSetEnum();
     }
-    else if (this.realSet == DummyEnum) {
+    else if (this.realSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-        if (this.realSet == DummyEnum) {
+        if (this.realSet == SetEnumValue.DummyEnum) {
           val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
       synchronized(this) {
-        if (this.realSet == DummyEnum) { this.realSet = val; }
+        if (this.realSet == SetEnumValue.DummyEnum) { this.realSet = val; }
       }
     }
   }
 
   @Override
   public final IValue toSetEnum() {
-      if (this.realSet != null && this.realSet != DummyEnum) {
+      if (this.realSet != null && this.realSet != SetEnumValue.DummyEnum) {
         return this.realSet;
       }
       ValueVec vals = new ValueVec();
@@ -307,7 +307,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 
   public final ValueEnumeration elements() {
     try {
-      if (this.realSet == null || this.realSet == DummyEnum) {
+      if (this.realSet == null || this.realSet == SetEnumValue.DummyEnum) {
         return new Enumerator();
       }
       return this.realSet.elements();

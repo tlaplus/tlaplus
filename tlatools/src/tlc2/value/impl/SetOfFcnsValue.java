@@ -178,7 +178,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final boolean isNormalized() {
     try {
-      if (this.fcnSet == null || this.fcnSet == DummyEnum) {
+      if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
         return this.domain.isNormalized() && this.range.isNormalized();
       }
       return this.fcnSet.isNormalized();
@@ -191,7 +191,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final IValue normalize() {
     try {
-      if (this.fcnSet == null || this.fcnSet == DummyEnum) {
+      if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
         this.domain.normalize();
         this.range.normalize();
       }
@@ -212,9 +212,9 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       domain.deepNormalize();
       range.deepNormalize();
       if (fcnSet == null) {
-        fcnSet = DummyEnum;
+        fcnSet = SetEnumValue.DummyEnum;
       }
-      else if (fcnSet != DummyEnum) {
+      else if (fcnSet != SetEnumValue.DummyEnum) {
         fcnSet.deepNormalize();
       }
 	    }
@@ -273,23 +273,23 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     if (this.fcnSet == null) {
       this.fcnSet = (SetEnumValue) this.toSetEnum();
     }
-    else if (this.fcnSet == DummyEnum) {
+    else if (this.fcnSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = null;
       synchronized(this) {
-        if (this.fcnSet == DummyEnum) {
+        if (this.fcnSet == SetEnumValue.DummyEnum) {
           val = (SetEnumValue) this.toSetEnum();
           val.deepNormalize();
         }
       }
       synchronized(this) {
-        if (this.fcnSet == DummyEnum) { this.fcnSet = val; }
+        if (this.fcnSet == SetEnumValue.DummyEnum) { this.fcnSet = val; }
       }
     }
   }
 
   @Override
   public final IValue toSetEnum() {
-      if (this.fcnSet != null && this.fcnSet != DummyEnum) {
+      if (this.fcnSet != null && this.fcnSet != SetEnumValue.DummyEnum) {
         return this.fcnSet;
       }
       ValueVec vals = new ValueVec();
@@ -349,7 +349,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final ValueEnumeration elements() {
     try {
-      if (this.fcnSet == null || this.fcnSet == DummyEnum) {
+      if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
         return new Enumerator();
       }
       return this.fcnSet.elements();
