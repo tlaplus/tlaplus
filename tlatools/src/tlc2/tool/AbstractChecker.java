@@ -1,6 +1,5 @@
 package tlc2.tool;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -22,13 +21,12 @@ import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.Value;
 import util.DebugPrinter;
-import util.FilenameToStream;
 
 /**
  * The abstract checker
  * @author Simon Zambrovski
  */
-public abstract class AbstractChecker implements Cancelable
+public abstract class AbstractChecker
 {
 	/**
 	 * True when unit tests explicitly request to use
@@ -102,15 +100,12 @@ public abstract class AbstractChecker implements Cancelable
      * @param resolver
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
-    public AbstractChecker(String specFile, String configFile, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
-            boolean preprocess, FilenameToStream resolver, SpecObj spec) throws EvalException, IOException
-    {
-        this.checkDeadlock = deadlock;
-
-        final File f = new File(specFile);
-        this.tool = new Tool(f.isAbsolute() ? f.getParent() : "", specFile, configFile, resolver);
-
-        this.specObj = this.tool.init(preprocess, spec);
+	public AbstractChecker(Tool tool, String metadir, final IStateWriter stateWriter,
+			boolean deadlock, String fromChkpt) throws EvalException, IOException {
+        this.tool = tool;
+		this.specObj = tool.init();
+		
+		this.checkDeadlock = deadlock;
         this.checkLiveness = !this.tool.livenessIsTrue();
 
         // moved to file utilities

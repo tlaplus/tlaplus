@@ -147,7 +147,48 @@ public class Spec implements ValueConstants, ToolGlobals, Serializable
         this.config.parse();
         ModelValue.setValues(); // called after seeing all model values
     }
+    
+    public Spec(Spec other) {
+    	this.specDir = other.specDir;
+    	this.rootFile = other.rootFile;
+    	this.configFile = other.configFile;
+    	this.config = other.config;
+    	this.moduleTbl = other.moduleTbl;
+    	this.rootModule = other.rootModule;
+    	this.processedDefs = other.processedDefs;
+    	this.defns = other.defns;
+    	this.variablesNodes = other.variablesNodes;
+    	this.tlaClass = other.tlaClass;
+        this.initPredVec = other.initPredVec;
+    	this.nextPred = other.nextPred;
+    	this.temporals = other.temporals;
+    	this.temporalNames = other.temporalNames;
+    	this.impliedTemporals = other.impliedTemporals;
+    	this.impliedTemporalNames = other.impliedTemporalNames;
+    	this.invariants = other.invariants;
+    	this.invNames = other.invNames;
+    	this.impliedInits = other.impliedInits;
+        this.impliedInitNames = other.impliedInitNames;
+        this.impliedActions = other.impliedActions;
+        this.impliedActNames = other.impliedActNames;
+        this.modelConstraints = other.modelConstraints;
+        this.actionConstraints = other.actionConstraints;
+        this.assumptions = other.assumptions;
+        this.assumptionIsAxiom = other.assumptionIsAxiom;
+        this.resolver = other.resolver;
 
+        this.invVec = other.invVec;
+        this.invNameVec = other.invNameVec;
+        this.impliedInitVec = other.impliedInitVec;
+        this.impliedInitNameVec = other.impliedInitNameVec;
+        this.impliedActionVec = other.impliedActionVec;
+        this.impliedActNameVec = other.impliedActNameVec;
+        this.temporalVec = other.temporalVec;
+        this.temporalNameVec = other.temporalNameVec;
+        this.impliedTemporalVec = other.impliedTemporalVec;
+        this.impliedTemporalNameVec = other.impliedTemporalNameVec;
+    }
+    
     /**
      * Processes the specification and collects information to be used
      * by tools. The processing tries to use any customized module (Java

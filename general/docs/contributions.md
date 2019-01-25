@@ -5,7 +5,7 @@ Please also consult the [issues tracker](https://github.com/tlaplus/tlaplus/issu
 
 TLC model checker
 -----------------
-#### Concurrent search for strongly connected components (difficulty: high) (skills: Java, TLA+)
+#### ([In Progress](https://bitbucket.org/parvmor/tarjanconcurrentscc/)) Concurrent search for strongly connected components (difficulty: high) (skills: Java, TLA+)
 One part of TLC's procedure to check liveness properties, is to find the liveness graph's [strongly connected components](https://en.wikipedia.org/wiki/Strongly_connected_component) (SCC). TLC's implementation uses [Tarjan's](https://en.wikipedia.org/wiki/Strongly_connected_component) canonical solution to this problem. Tarjan's algorithm is a sequential algorithm that runs in linear time. While the time complexity is acceptable, its sequential nature causes TLC's liveness checking not to scale. Recently, concurrent variants of the algorithm have been proposed and studied in the scope of other model checkers ([Multi-Core On-The-Fly SCC Decomposition](https://github.com/utwente-fmt/ppopp16) & [Concurrent On-the-Fly SCC Detection for Automata-Based Model Checking with Fairness Assumption](http://ieeexplore.ieee.org/document/7816578/)). This work will require writing a TLA+ specification and ideally a formal proof of the algorithm's correctness.
 
 #### Liveness checking under symmetry (difficulty: high) (skills: Java, TLA+)

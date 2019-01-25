@@ -14,7 +14,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.LongAdder;
 
-import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -33,7 +32,7 @@ import tlc2.value.Value;
 import util.FileUtil;
 import util.FilenameToStream;
 
-public class Simulator implements Cancelable {
+public class Simulator {
 
 	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean
 			.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
@@ -44,29 +43,18 @@ public class Simulator implements Cancelable {
 	 * compatibility constructor
 	 * 
 	 * @throws IOException
-	 *
-	 * @deprecated use
-	 *             {@link Simulator#Simulator(String, String, String, boolean, int, long, RandomGenerator, long, boolean, FilenameToStream, SpecObj)}
-	 *             instead and pass the <code>null</code> as SpecObj
 	 */
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
 			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver)
 			throws IOException {
-		this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, null);
-	}
-
-	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
-			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver,
-			SpecObj specObj) throws IOException {
 		// Default to 1 worker thread if not specified.
-		this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, specObj,
-				1);
+		this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, 1);
 	}
 
 	// SZ Feb 20, 2009: added the possibility to pass the SpecObject
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
 			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver,
-			SpecObj specObj, int numWorkers) throws IOException {
+			int numWorkers) throws IOException {
 		int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
 		String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep + 1);
 		specFile = specFile.substring(lastSep + 1);
@@ -76,7 +64,7 @@ public class Simulator implements Cancelable {
 		// ToolIO.setUserDir(specDir);
 
 		this.tool = new Tool(specDir, specFile, configFile, resolver);
-		this.tool.init(preprocess, specObj); // parse and process the spec
+		this.tool.init(preprocess, null); // parse and process the spec
 
 		this.checkDeadlock = deadlock;
 		this.checkLiveness = !this.tool.livenessIsTrue();
@@ -139,7 +127,6 @@ public class Simulator implements Cancelable {
 	private final RandomGenerator rng;
 	private final long seed;
 	private long aril;
-	private boolean isCancelled; // SZ Feb 24, 2009: cancellation added
 	private Value[] localValues = new Value[4];
 
 	// The set of all initial states for the given spec. This should be only be
@@ -180,10 +167,6 @@ public class Simulator implements Cancelable {
 	 */
 	public void simulate() throws Exception {
 		TLCState curState = null;
-
-		if (isCancelled) {
-			return;
-		}
 
 		//
 		// Compute the initial states.
@@ -347,15 +330,6 @@ public class Simulator implements Cancelable {
 			StatePrinter.printState(state, null, stateTrace.size() + 1);
 		}
 		this.printSummary();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see tlc2.tool.Cancelable#setCancelFlag(boolean)
-	 */
-	public void setCancelFlag(boolean flag) {
-		this.isCancelled = flag;
 	}
 
 	public Value getLocalValue(int idx) {
