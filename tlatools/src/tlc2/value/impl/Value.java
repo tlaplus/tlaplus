@@ -17,7 +17,6 @@ import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
@@ -59,20 +58,9 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	 * @see See note on performance in CostModelCreator.
 	 */
 	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
-  /**
-   * For each kind of value, we introduce a subclass of Value.
-   * All the subclasses are given in this value package.
-   */
-
-  /**
-   * This method returns the value kind: an integer that represents
-   * the kind of this value. See the interface ValueConstants.java.
-   */
-  @Override
-public abstract byte getKind();
 
   @Override
-public String getKindString() {
+  public String getKindString() {
     try {
       return ValueImage[this.getKind()];
     }
@@ -82,24 +70,8 @@ public String getKindString() {
     }
   }
 
-  /* This method compares this with val.  */
   @Override
-public abstract int compareTo(Object val);
-
-  /* This method returns true iff elem is a member of this. */
-  @Override
-public abstract boolean member(IValue elem);
-
-  /* This method returns a new value after taking the except. */
-  @Override
-public abstract IValue takeExcept(ValueExcept ex);
-
-  /* This method returns a new value after taking the excepts. */
-  @Override
-public abstract IValue takeExcept(ValueExcept[] exs);
-
-  @Override
-public void write(ValueOutputStream vos) throws IOException {
+  public void write(ValueOutputStream vos) throws IOException {
 		throw new WrongInvocationException("ValueOutputStream: Can not pickle the value\n" +
 			    Values.ppr(toString()));
   }
@@ -107,13 +79,13 @@ public void write(ValueOutputStream vos) throws IOException {
   public transient CostModel cm = CostModel.DO_NOT_RECORD;
   
   @Override
-public IValue setCostModel(CostModel cm) {
+  public IValue setCostModel(CostModel cm) {
 	  this.cm = cm;
 	  return this;
   }
   
   @Override
-public CostModel getCostModel() {
+  public CostModel getCostModel() {
 	  return this.cm;
   }
   
@@ -124,31 +96,22 @@ public CostModel getCostModel() {
   private transient SemanticNode source = null;
 
   @Override
-public void setSource(final SemanticNode semanticNode) {
+  public void setSource(final SemanticNode semanticNode) {
     source = semanticNode;
   }
 
   @Override
-public SemanticNode getSource() {
+  public SemanticNode getSource() {
     return source;
   }
   
   @Override
-public boolean hasSource() {
+  public boolean hasSource() {
 	  return source != null;
   }
 
-  /**
-   * This method normalizes (destructively) the representation of
-   * the value. It is essential for equality comparison.
-   */
   @Override
-public abstract boolean isNormalized();
-  @Override
-public abstract IValue normalize();
-
-  @Override
-public final boolean isEmpty() {
+  public final boolean isEmpty() {
     try {
 
       switch (this.getKind()) {
@@ -221,12 +184,12 @@ public final boolean isEmpty() {
 
   /* Fully normalize this (composite) value. */
   @Override
-public void deepNormalize() {
+  public void deepNormalize() {
   }
 
   /* This method returns the fingerprint of this value. */
   @Override
-public long fingerPrint(long fp) {
+  public long fingerPrint(long fp) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
       Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
@@ -243,7 +206,7 @@ public long fingerPrint(long fp) {
    * returns this if nothing is permuted.
    */
   @Override
-public IValue permute(IMVPerm perm) {
+  public IValue permute(IMVPerm perm) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
       Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
@@ -255,29 +218,9 @@ public IValue permute(IMVPerm perm) {
     }
   }
 
-  /* This method returns true iff the value is finite. */
-  @Override
-public abstract boolean isFinite();
-
-  /* This method returns the size of the value.  */
-  @Override
-public abstract int size();
-
-  /* This method returns true iff the value is fully defined. */
-  @Override
-public abstract boolean isDefined();
-
-  /* This method makes a real deep copy of this.  */
-  @Override
-public abstract IValue deepCopy();
-
-  /* This method returns true iff val can be assigned to this. */
-  @Override
-public abstract boolean assignable(IValue val);
-
   /* This method returns the hash code of this value. */
   @Override
-public final int hashCode() {
+  public final int hashCode() {
     try {
       long fp = this.fingerPrint(FP64.New());
       int high = (int)(fp >> 32);
@@ -295,7 +238,7 @@ public final int hashCode() {
    * specified by path.
    */
   @Override
-public final IValue select(IValue[] path) {
+  public final IValue select(IValue[] path) {
     try {
       IValue result = this;
       for (int i = 0; i < path.length; i++) {
@@ -317,7 +260,7 @@ public final IValue select(IValue[] path) {
 
   /* Convert val into a SetEnumValue.  Returns null if not possible. */
   @Override
-public IValue toSetEnum() {
+  public IValue toSetEnum() {
 	  return null;
   }
 
@@ -326,7 +269,7 @@ public IValue toSetEnum() {
    * null if the conversion fails.
    */
   @Override
-public IValue toFcnRcd() {
+  public IValue toFcnRcd() {
 	  return null;
   }
 
@@ -335,7 +278,7 @@ public IValue toFcnRcd() {
    * null if the conversion fails.
    */
   @Override
-public IValue toRcd() {
+  public IValue toRcd() {
 	  return null;
   }
 
@@ -344,20 +287,13 @@ public IValue toRcd() {
    * null if the conversion fails.
    */
   @Override
-public IValue toTuple() {
+  public IValue toTuple() {
 	  return null;
   }
   
-  /**
-   * This abstract method returns a string representation of this
-   * value. Each subclass must provide its own implementation.
-   */
-  @Override
-public abstract StringBuffer toString(StringBuffer sb, int offset);
-
   /* The string representation of this value */
   @Override
-public final String toString() {
+  public final String toString() {
     try {
       StringBuffer sb = new StringBuffer();
       return this.toString(sb, 0).toString();
@@ -369,7 +305,7 @@ public final String toString() {
   }
 
   @Override
-public final String toString(String delim) {
+  public final String toString(String delim) {
     try {
       StringBuffer sb = new StringBuffer();
       sb = this.toString(sb, 0);
