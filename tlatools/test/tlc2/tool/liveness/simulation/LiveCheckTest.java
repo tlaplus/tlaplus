@@ -34,10 +34,8 @@ import java.io.IOException;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
-import tlc2.tool.Action;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.AbstractDiskGraph;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
@@ -107,7 +105,7 @@ public class LiveCheckTest {
 		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		return new LiveCheck(EasyMock.createNiceMock(ITool.class), new Action[0],
+		return new LiveCheck(EasyMock.createNiceMock(ITool.class),
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
 	}
 	
@@ -134,7 +132,7 @@ public class LiveCheckTest {
 		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		return new LiveCheck(EasyMock.createNiceMock(ITool.class), new Action[0],
+		return new LiveCheck(EasyMock.createNiceMock(ITool.class),
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
 	}
 }

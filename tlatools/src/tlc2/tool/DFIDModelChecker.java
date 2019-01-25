@@ -116,7 +116,7 @@ public class DFIDModelChecker extends AbstractChecker
         }
 
         // Return if there is no next state predicate:
-        if (this.actions.length == 0)
+        if (this.tool.getActions().length == 0)
         {
             this.reportSuccess();
             this.printSummary(true);
@@ -291,9 +291,9 @@ public class DFIDModelChecker extends AbstractChecker
                 // Check properties of the state:
                 if (status == FPIntSet.NEW)
                 {
-                    for (int j = 0; j < this.invariants.length; j++)
+                    for (int j = 0; j < this.tool.getInvariants().length; j++)
                     {
-                        if (!this.tool.isValid(this.invariants[j], curState))
+                        if (!this.tool.isValid(this.tool.getInvariants()[j], curState))
                         {
                             // We get here because of invariant violation:
                             MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL, new String[] { this.tool.getInvNames()[j],
@@ -302,9 +302,9 @@ public class DFIDModelChecker extends AbstractChecker
                                 return false;
                         }
                     }
-                    for (int j = 0; j < this.impliedInits.length; j++)
+                    for (int j = 0; j < this.tool.getImpliedInits().length; j++)
                     {
-                        if (!this.tool.isValid(this.impliedInits[j], curState))
+                        if (!this.tool.isValid(this.tool.getImpliedInits()[j], curState))
                         {
                             // We get here because of implied-inits violation:
                             MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL, new String[] {
@@ -363,9 +363,9 @@ public class DFIDModelChecker extends AbstractChecker
             int k = 0;
             boolean allSuccDone = true;
             boolean allSuccNonLeaf = true;
-            for (int i = 0; i < this.actions.length; i++)
+            for (int i = 0; i < this.tool.getActions().length; i++)
             {
-                StateVec nextStates = this.tool.getNextStates(this.actions[i], curState);
+                StateVec nextStates = this.tool.getNextStates(this.tool.getActions()[i], curState);
                 int sz = nextStates.size();
                 this.numOfGenStates.getAndAdd(sz);
                 deadLocked = deadLocked && (sz == 0);
@@ -380,12 +380,12 @@ public class DFIDModelChecker extends AbstractChecker
 							if (this.setErrState(curState, succState, false)) {
 								final Set<OpDeclNode> unassigned = succState.getUnassigned();
 								String[] parameters;
-								if (this.actions.length == 1) {
+								if (this.tool.getActions().length == 1) {
 									parameters = new String[] { unassigned.size() > 1 ? "s are" : " is",
 											unassigned.stream().map(n -> n.getName().toString())
 													.collect(Collectors.joining(", ")) };
 								} else {
-									parameters = new String[] { this.actions[i].getName().toString(),
+									parameters = new String[] { this.tool.getActions()[i].getName().toString(),
 											unassigned.size() > 1 ? "s are" : " is",
 											unassigned.stream().map(n -> n.getName().toString())
 													.collect(Collectors.joining(", ")) };
@@ -428,10 +428,10 @@ public class DFIDModelChecker extends AbstractChecker
                     {
                         try
                         {
-                            int len = this.invariants.length;
+                            int len = this.tool.getInvariants().length;
                             for (k = 0; k < len; k++)
                             {
-                                if (!tool.isValid(this.invariants[k], succState))
+                                if (!tool.isValid(this.tool.getInvariants()[k], succState))
                                 {
                                     // We get here because of invariant violation:
                                     synchronized (this)
@@ -474,10 +474,10 @@ public class DFIDModelChecker extends AbstractChecker
                     // even if succState is not new.
                     try
                     {
-                        int len = this.impliedActions.length;
+                        int len = this.tool.getImpliedActions().length;
                         for (k = 0; k < len; k++)
                         {
-                            if (!tool.isValid(this.impliedActions[k], curState, succState))
+                            if (!tool.isValid(this.tool.getImpliedActions()[k], curState, succState))
                             {
                                 // We get here because of implied-action violation:
                                 synchronized (this)

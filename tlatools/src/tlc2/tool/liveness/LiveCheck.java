@@ -40,21 +40,21 @@ public class LiveCheck implements ILiveCheck {
 	private final IBucketStatistics outDegreeGraphStats;
 	private final ILiveChecker[] checker;
 	
-	public LiveCheck(ITool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics) throws IOException {
-		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, new NoopStateWriter());
+	public LiveCheck(ITool tool, String mdir, IBucketStatistics bucketStatistics) throws IOException {
+		this(tool, Liveness.processLiveness(tool), mdir, bucketStatistics, new NoopStateWriter());
 	}
 	
-	public LiveCheck(ITool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
-		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, stateWriter);
+	public LiveCheck(ITool tool, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
+		this(tool, Liveness.processLiveness(tool), mdir, bucketStatistics, stateWriter);
 	}
 	
-	public LiveCheck(ITool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics) throws IOException {
-		this(tool, acts, solutions, mdir, bucketStatistics, new NoopLivenessStateWriter());
+	public LiveCheck(ITool tool, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics) throws IOException {
+		this(tool, solutions, mdir, bucketStatistics, new NoopLivenessStateWriter());
 	}
 
-	public LiveCheck(ITool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
+	public LiveCheck(ITool tool, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
 		myTool = tool;
-		actions = acts;
+		actions = tool.getActions();
 		metadir = mdir;
 		outDegreeGraphStats = bucketStatistics;
 		checker = new ILiveChecker[solutions.length];

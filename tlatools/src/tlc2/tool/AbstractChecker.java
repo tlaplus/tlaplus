@@ -47,42 +47,6 @@ public abstract class AbstractChecker
     protected final String fromChkpt;
     public final String metadir;
     public final ITool tool;
-    public final Action[] invariants;
-	/**
-	 * Checking a liveness property Prop (declared by the PROPERTY keyword in the
-	 * config file) means to verify Spec => Prop. An implied action is the [][A]_x
-	 * (A \/ x' = x) part of Prop where A is an action and x is a variable.
-	 * 
-	 * See the following tests:<br>
-	 * tlc2.tool.suite.Test52
-	 * <ul>
-	 * <li></li>
-	 * <li></li>
-	 * </ul>
-	 * tlc2.tool.suite.Test56
-	 * <ul>
-	 * <li></li>
-	 * </ul>
-	 */
-    public final Action[] impliedActions;
-	/**
-	 * Initial predicate of the liveness property Prop (see impliedActions above).
-	 * Most common used when checking if a Spec implements another one, i.e. ASpec
-	 * => BSpec.
-	 * <p>
-	 * See the following tests:<br>
-	 * tlc2.tool.suite.Test55
-	 * <ul>
-	 * <li>Action line 7, col 1 to line 7, col 41 of module test55</li>
-	 * <li>Action line 7, col 1 to line 7, col 41 of module test55</li>
-	 * </ul>
-	 * tlc2.tool.suite.Test63
-	 * <ul>
-	 * <li>Action line 52, col 1 to line 52, col 21 of module test63</li>
-	 * </ul>
-	 */
-    public final Action[] impliedInits;
-    public final Action[] actions;
     protected final IStateWriter allStateWriter;
     protected IWorker[] workers;
 	protected final ILiveCheck liveCheck;
@@ -117,11 +81,6 @@ public abstract class AbstractChecker
         
         this.allStateWriter = stateWriter;
 
-        this.impliedInits = this.tool.getImpliedInits(); // implied-inits to be checked
-        this.invariants = this.tool.getInvariants(); // invariants to be checked
-        this.impliedActions = this.tool.getImpliedActions(); // implied-actions to be checked
-        this.actions = this.tool.getActions(); // the sub-actions
-
         if (TLCGlobals.isCoverageEnabled()) {
         	CostModelCreator.create(this.tool);
         }
@@ -139,9 +98,9 @@ public abstract class AbstractChecker
 						"DiskGraphsOutDegree");
 			}
 			if (LIVENESS_TESTING_IMPLEMENTATION) {
-				this.liveCheck = new AddAndCheckLiveCheck(this.tool, this.actions, this.metadir, stats);
+				this.liveCheck = new AddAndCheckLiveCheck(this.tool, this.metadir, stats);
 			} else {
-				this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats, stateWriter);
+				this.liveCheck = new LiveCheck(this.tool, this.metadir, stats, stateWriter);
 			}
             report("liveness checking initialized");
         } else {
@@ -178,7 +137,7 @@ public abstract class AbstractChecker
     protected void reportCoverage(IWorker[] workers)
     {
 		// Without actions (empty spec) there won't be any statistics anyway.
-		if (TLCGlobals.isCoverageEnabled() && this.actions.length > 0)
+		if (TLCGlobals.isCoverageEnabled() && this.tool.getActions().length > 0)
 		{
             CostModelCreator.report(this.tool);
         }

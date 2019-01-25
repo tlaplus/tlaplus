@@ -182,8 +182,40 @@ public interface ITool extends TraceApp {
 
 	String[] getImpliedInitNames();
 
+	/**
+	 * Initial predicate of the liveness property Prop (see impliedActions above).
+	 * Most common used when checking if a Spec implements another one, i.e. ASpec
+	 * => BSpec.
+	 * <p>
+	 * See the following tests:<br>
+	 * tlc2.tool.suite.Test55
+	 * <ul>
+	 * <li>Action line 7, col 1 to line 7, col 41 of module test55</li>
+	 * <li>Action line 7, col 1 to line 7, col 41 of module test55</li>
+	 * </ul>
+	 * tlc2.tool.suite.Test63
+	 * <ul>
+	 * <li>Action line 52, col 1 to line 52, col 21 of module test63</li>
+	 * </ul>
+	 */
 	Action[] getImpliedInits();
 
+	/**
+	 * Checking a liveness property Prop (declared by the PROPERTY keyword in the
+	 * config file) means to verify Spec => Prop. An implied action is the [][A]_x
+	 * (A \/ x' = x) part of Prop where A is an action and x is a variable.
+	 * 
+	 * See the following tests:<br>
+	 * tlc2.tool.suite.Test52
+	 * <ul>
+	 * <li></li>
+	 * <li></li>
+	 * </ul>
+	 * tlc2.tool.suite.Test56
+	 * <ul>
+	 * <li></li>
+	 * </ul>
+	 */
 	Action[] getImpliedActions();
 
 	boolean livenessIsTrue();

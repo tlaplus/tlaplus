@@ -202,7 +202,7 @@ public class ModelChecker extends AbstractChecker
         report("init processed");
         
         // Finished if there is no next state predicate:
-        if (this.actions.length == 0)
+        if (this.tool.getActions().length == 0)
         {
         	if (this.theStateQueue.isEmpty()) {
         		reportSuccess(this.theFPSet, getStatesGenerated());
@@ -388,7 +388,7 @@ public class ModelChecker extends AbstractChecker
         TLCState succState = null;
         try
         {
-            for (int i = 0; i < this.actions.length; i++)
+            for (int i = 0; i < this.tool.getActions().length; i++)
             {
 				//TODO Implement IStateFunctor pattern for getNextStates() too
 				// to reduce memory and runtime overhead of allocating and
@@ -401,7 +401,7 @@ public class ModelChecker extends AbstractChecker
 				// removed, the functor pattern could be applied to doNext too.
 				// Other problems are access to worker and curState. A stateless functor has no
 				// access to curState and worker except when it uses thread local storage.
-				final Action action = this.actions[i];
+				final Action action = this.tool.getActions()[i];
 				final StateVec nextStates = this.tool.getNextStates(action, curState);
 				final int sz = nextStates.size();
 				worker.incrementStatesGenerated(sz);
@@ -490,9 +490,9 @@ public class ModelChecker extends AbstractChecker
         int k = 0;
 		try
         {
-			for (k = 0; k < this.invariants.length; k++)
+			for (k = 0; k < this.tool.getInvariants().length; k++)
             {
-                if (!tool.isValid(this.invariants[k], succState))
+                if (!tool.isValid(this.tool.getInvariants()[k], succState))
                 {
                     // We get here because of invariant violation:
                 	if (TLCGlobals.continuation) {
@@ -521,9 +521,9 @@ public class ModelChecker extends AbstractChecker
 		int k = 0;
         try
         {
-			for (k = 0; k < this.impliedActions.length; k++)
+			for (k = 0; k < this.tool.getImpliedActions().length; k++)
             {
-                if (!tool.isValid(this.impliedActions[k], curState, succState))
+                if (!tool.isValid(this.tool.getImpliedActions()[k], curState, succState))
                 {
                     // We get here because of implied-action violation:
                     if (TLCGlobals.continuation)
@@ -573,7 +573,7 @@ public class ModelChecker extends AbstractChecker
 			if (this.setErrState(curState, succState, false))
 			{
 				final Set<OpDeclNode> unassigned = succState.getUnassigned();
-				if (this.actions.length == 1) {
+				if (this.tool.getActions().length == 1) {
 					MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT,
 							new String[] { unassigned.size() > 1 ? "s are" : " is",
 									unassigned.stream().map(n -> n.getName().toString())
@@ -1068,8 +1068,8 @@ public class ModelChecker extends AbstractChecker
 				}
 				// Check properties of the state:
 				if (!seen || forceChecks) {
-					for (int j = 0; j < invariants.length; j++) {
-						if (!tool.isValid(invariants[j], curState)) {
+					for (int j = 0; j < tool.getInvariants().length; j++) {
+						if (!tool.isValid(tool.getInvariants()[j], curState)) {
 							// We get here because of invariant violation:
 							MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL,
 									new String[] { tool.getInvNames()[j].toString(), curState.toString() });
@@ -1080,8 +1080,8 @@ public class ModelChecker extends AbstractChecker
 							}
 						}
 					}
-					for (int j = 0; j < impliedInits.length; j++) {
-						if (!tool.isValid(impliedInits[j], curState)) {
+					for (int j = 0; j < tool.getImpliedInits().length; j++) {
+						if (!tool.isValid(tool.getImpliedInits()[j], curState)) {
 							// We get here because of implied-inits violation:
 							MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL,
 									new String[] { tool.getImpliedInitNames()[j], curState.toString() });

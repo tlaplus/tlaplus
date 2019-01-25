@@ -116,9 +116,9 @@ public abstract class CheckImpl extends ModelChecker {
       StatePrinter.printState(s1);
       return false;
     }
-    int cnt = this.impliedActions.length;
+    int cnt = this.tool.getImpliedActions().length;
     for (int i = 0; i < cnt; i++) {
-      if (!this.tool.isValid(this.impliedActions[i], s0, s1)) {
+      if (!this.tool.isValid(this.tool.getImpliedActions()[i], s0, s1)) {
 	ToolIO.out.println("Error: Action property " + this.tool.getImpliedActNames()[i] +
 			   " is violated.");
 	StatePrinter.printState(s0);
@@ -141,9 +141,9 @@ public abstract class CheckImpl extends ModelChecker {
       if (!this.theFPSet.contains(fp)) {
       state.uid = this.trace.writeState(this.curState, fp);
 	// Check invariant properties of the state:
-	int cnt = this.invariants.length;
+	int cnt = this.tool.getInvariants().length;
 	for (int j = 0; j < cnt; j++) {
-	  if (!this.tool.isValid(this.invariants[j], state)) {
+	  if (!this.tool.isValid(this.tool.getInvariants()[j], state)) {
 	    // We get here because of invariant violation:
 	    ToolIO.out.println("Error: Invariant " + this.tool.getInvNames()[j] +
 			       " is violated. The behavior up to this point is:");

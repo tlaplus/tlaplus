@@ -101,7 +101,7 @@ public class Tool
     extends Spec
     implements ValueConstants, ToolGlobals, ITool
 {
-  protected Action[] actions;     // the list of TLA actions.
+  protected final Action[] actions;     // the list of TLA actions.
   private CallStack callStack;    // the call stack.
 
   private Vect<Action> actionVec = new Vect<>(10);
@@ -125,11 +125,22 @@ public class Tool
   public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver)
   {
       super(specDir, specFile, configFile, resolver);
-      this.actions = null;
       this.callStack = null;
 
       // Initialize state.
       TLCStateMut.setTool(this);
+      
+		Action next = this.getNextStateSpec();
+		if (next == null) {
+			this.actions = new Action[0];
+		} else {
+			this.getActions(next);
+			int sz = this.actionVec.size();
+			this.actions = new Action[sz];
+			for (int i = 0; i < sz; i++) {
+				this.actions[i] = (Action) this.actionVec.elementAt(i);
+			}
+		}
   }
 
   Tool(Tool other) {
@@ -173,21 +184,7 @@ public class Tool
    * of disjunction and existential quantification.
    */
   @Override
-public final Action[] getActions() {
-    if (this.actions == null) {
-      Action next = this.getNextStateSpec();
-      if (next == null) {
-        this.actions = new Action[0];
-      }
-      else {
-        this.getActions(next);
-        int sz = this.actionVec.size();
-        this.actions = new Action[sz];
-        for (int i = 0; i < sz; i++) {
-          this.actions[i] = (Action)this.actionVec.elementAt(i);
-        }
-      }
-    }
+  public final Action[] getActions() {
     return this.actions;
   }
 
