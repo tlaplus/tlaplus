@@ -34,7 +34,6 @@ import org.openjdk.jmh.annotations.State;
 
 import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.ValueVec;
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntValue;

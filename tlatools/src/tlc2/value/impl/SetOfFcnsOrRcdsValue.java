@@ -30,7 +30,6 @@ import java.math.BigInteger;
 import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueVec;
 
 public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 

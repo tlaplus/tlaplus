@@ -14,11 +14,11 @@ import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueVec;
 import tlc2.value.Values;
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.ValueVec;
 
 public class TransitiveClosure implements ValueConstants
 {

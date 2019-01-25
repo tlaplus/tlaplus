@@ -18,7 +18,6 @@ import tlc2.value.ValueEnumeration;
 import tlc2.value.ValueExcept;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
-import tlc2.value.ValueVec;
 import tlc2.value.Values;
 import util.Assert;
 

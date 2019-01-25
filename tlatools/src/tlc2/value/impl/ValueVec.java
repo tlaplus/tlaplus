@@ -3,12 +3,13 @@
 // Last modified on Tue  1 May 2007 at 13:40:06 PST by lamport
 //      modified on Tue Aug 21 17:02:26 PDT 2001 by yuanyu
 
-package tlc2.value;
+package tlc2.value.impl;
 
 import java.io.Serializable;
 import java.util.Collection;
 
 import tlc2.TLCGlobals;
+import tlc2.value.IValue;
 import util.WrongInvocationException;
 
 public class ValueVec implements Cloneable, Serializable {

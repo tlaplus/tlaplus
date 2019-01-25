@@ -13,13 +13,13 @@ import tlc2.util.Vect;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
-import tlc2.value.ValueVec;
 import tlc2.value.Values;
 import tlc2.value.impl.Applicable;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.ValueVec;
 import util.Assert;
 
 public class Bags implements ValueConstants

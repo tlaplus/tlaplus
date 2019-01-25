@@ -12,7 +12,6 @@ import tlc2.tool.impl.TLARegistry;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
-import tlc2.value.ValueVec;
 import tlc2.value.Values;
 import tlc2.value.impl.Applicable;
 import tlc2.value.impl.BoolValue;
@@ -24,6 +23,7 @@ import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.UserObj;
 import tlc2.value.impl.UserValue;
+import tlc2.value.impl.ValueVec;
 import util.Assert;
 import util.UniqueString;
 
