@@ -12,7 +12,6 @@ import java.util.Enumeration;
 import java.util.List;
 
 import tla2sany.modanalyzer.ParseUnit;
-import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
@@ -21,10 +20,8 @@ import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.LevelConstants;
 import tla2sany.semantic.LevelNode;
-import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
-import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
@@ -108,7 +105,6 @@ public class Tool
   private CallStack callStack;    // the call stack.
 
   private Vect<Action> actionVec = new Vect<>(10);
-  private SpecObj specObj;
 
   /**
    * Creates a new tool handle
@@ -131,37 +127,16 @@ public class Tool
       super(specDir, specFile, configFile, resolver);
       this.actions = null;
       this.callStack = null;
+
+      // Initialize state.
+      TLCStateMut.setTool(this);
   }
 
-  public Tool(Tool other) {
+  Tool(Tool other) {
 	  super(other);
 	  this.actions = other.actions;
 	  this.callStack = other.callStack;
 	  this.actionVec = other.actionVec;
-  }
-
-  /**
-   * Initialization. Any Tool object must call it before doing anything.
-   * @param spec - <code>null</code> or a filled spec object from previous SANY run
-   */
-  @Override
-  public final SpecObj init() {
-      // Parse and process this spec.
-      // It takes care of all overrides.
-      // SZ Feb 20, 2009: added spec reference,
-      // if not null it is just used instead of re-parsing
-      this.specObj = super.processSpec();
-
-      // Initialize state.
-      TLCStateMut.init(this);
-
-      // Pre-evaluate all the definitions in the spec that are constants.
-      this.processConstantDefns();
-
-      // Finally, process the config file.
-      super.processConfig();
-
-      return specObj;
   }
 
 	@Override
@@ -3252,7 +3227,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
 
   /* This method determines if the action predicate is valid in (s0, s1). */
   @Override
-public final boolean isValid(Action act, TLCState s0, TLCState s1) {
+  public final boolean isValid(Action act, TLCState s0, TLCState s1) {
     IValue val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear, act.cm);
     if (!(val instanceof IBoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()});
@@ -3262,18 +3237,18 @@ public final boolean isValid(Action act, TLCState s0, TLCState s1) {
 
   /* Returns true iff the predicate is valid in the state. */
   @Override
-public final boolean isValid(Action act, TLCState state) {
+  public final boolean isValid(Action act, TLCState state) {
     return this.isValid(act, state, TLCState.Empty);
   }
 
   /* Returns true iff the predicate is valid in the state. */
   @Override
-public final boolean isValid(Action act) {
+  public final boolean isValid(Action act) {
     return this.isValid(act, TLCState.Empty, TLCState.Empty);
   }
 
   @Override
-public final boolean isValid(ExprNode expr) {
+  public final boolean isValid(ExprNode expr) {
     IValue val = this.eval(expr, Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
     if (!(val instanceof IBoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
@@ -3335,7 +3310,7 @@ public final boolean isValid(ExprNode expr) {
 	 *         the predecessor.
 	 */
   @Override
-public final TLCStateInfo getState(long fp, TLCStateInfo sinfo) {
+  public final TLCStateInfo getState(long fp, TLCStateInfo sinfo) {
     final TLCStateInfo tlcStateInfo = getState(fp, sinfo.state);
     if (tlcStateInfo == null) {
       throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
@@ -3348,7 +3323,7 @@ public final TLCStateInfo getState(long fp, TLCStateInfo sinfo) {
 
   /* Reconstruct the next state of state s whose fingerprint is fp. */
   @Override
-public final TLCStateInfo getState(long fp, TLCState s) {
+  public final TLCStateInfo getState(long fp, TLCState s) {
 	  IdThread.setCurrentState(s);
     for (int i = 0; i < this.actions.length; i++) {
       Action curAction = this.actions[i];
@@ -3366,7 +3341,7 @@ public final TLCStateInfo getState(long fp, TLCState s) {
 
   /* Reconstruct the info for s1.   */
   @Override
-public final TLCStateInfo getState(TLCState s1, TLCState s) {
+  public final TLCStateInfo getState(TLCState s1, TLCState s) {
 	  IdThread.setCurrentState(s);
     for (int i = 0; i < this.actions.length; i++) {
       Action curAction = this.actions[i];
@@ -3383,10 +3358,10 @@ public final TLCStateInfo getState(TLCState s1, TLCState s) {
 
   /* Return the set of all permutations under the symmetry assumption. */
   @Override
-public final IMVPerm[] getSymmetryPerms() {
+  public final IMVPerm[] getSymmetryPerms() {
     final String name = this.config.getSymmetry();
     if (name.length() == 0) { return null; }
-    final Object symm = this.defns.get(name);
+    final Object symm = this.unprocessedDefns.get(name);
     if (symm == null) {
       Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "symmetry function", name});
     }
@@ -3403,7 +3378,7 @@ public final IMVPerm[] getSymmetryPerms() {
   }
 
   @Override
-public final boolean hasSymmetry() {
+  public final boolean hasSymmetry() {
     if (this.config == null) {
       return false;
     }
@@ -3411,14 +3386,14 @@ public final boolean hasSymmetry() {
     return name.length() > 0;
   }
   @Override
-public final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
+  public final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
           Context c, TLCState s0, TLCState s1,
           final int control) {
 	  return getFcnContext(fcn, args, c, s0, s1, control, CostModel.DO_NOT_RECORD);
   }
 
   @Override
-public final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
+  public final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
                                      Context c, TLCState s0, TLCState s1,
                                      final int control, CostModel cm) {
     Context fcon = fcn.getCon();
@@ -3498,14 +3473,14 @@ public final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
   }
 
   @Override
-public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
+  public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
           TLCState s1, final int control) {
 	  return contexts(appl, c, s0, s1, control, CostModel.DO_NOT_RECORD);
   }
   
   /* A context enumerator for an operator application. */
   @Override
-public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
+  public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
                                           TLCState s1, final int control, CostModel cm) {
     FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
     boolean[] isTuples = appl.isBdedQuantATuple();
@@ -3538,116 +3513,5 @@ public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
       }
     }
     return new ContextEnumerator(vars, enums, c);
-  }
-
-  /**
-   * This method converts every definition that is constant into TLC
-   * value. By doing this, TLC avoids evaluating the same expression
-   * multiple times.
-   *
-   * The method runs for every module in the module tables.
-   *
-   * Modified by LL on 23 July 2013 so it is not run for modules that are
-   * instantiated and have parameters (CONSTANT or VARIABLE declarations)
-   */
-  private void processConstantDefns() {
-      ModuleNode[] mods = this.moduleTbl.getModuleNodes();
-      for (int i = 0; i < mods.length; i++) {
-        if (   (! mods[i].isInstantiated())
-          || (   (mods[i].getConstantDecls().length == 0)
-            && (mods[i].getVariableDecls().length == 0) ) ) {
-            this.processConstantDefns(mods[i]);
-        }
-      }
-  }
-
-  /**
-   * Converts the constant definitions in the corresponding value for the
-   * module -- that is, it "converts" (which seems to mean calling deepNormalize)
-   * the values substituted for the declared constants.  On 17 Mar 2012 it was
-   * modified by LL to evaluate the OpDefNode when a defined operator is substituted
-   * for an ordinary declared constant (not a declared operator constant).  Without this
-   * evaluation, the definition gets re-evaluated every time TLC evaluates the declared
-   * constant.  LL also added a check that an operator substituted for the declared
-   * constant also has the correct arity.
-   *
-   * @param mod the module to run on
-   */
-  private void processConstantDefns(ModuleNode mod) {
-
-    // run for constant definitions
-    OpDeclNode[] consts = mod.getConstantDecls();
-    for (int i = 0; i < consts.length; i++) {
-      Object val = consts[i].getToolObject(toolId);
-      if (val != null && val instanceof IValue) {
-        ((IValue)val).deepNormalize();
-        // System.err.println(consts[i].getName() + ": " + val);
-      } // The following else clause was added by LL on 17 March 2012.
-      else if (val != null && val instanceof OpDefNode) {
-        OpDefNode opDef = (OpDefNode) val;
-        // The following check logically belongs in Spec.processSpec, but it's not there.
-        // So, LL just added it here.  This error cannot occur when running TLC from
-        // the Toolbox.
-        Assert.check(opDef.getArity() == consts[i].getArity(),
-                     EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS,
-                     new String[] {consts[i].getName().toString(), opDef.getName().toString()});
-
-        if (opDef.getArity() == 0) {
-          try {
-            IValue defVal = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
-            defVal.deepNormalize();
-            consts[i].setToolObject(toolId, defVal);
-          } catch (Assert.TLCRuntimeException e) {
-            Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
-                new String[] { consts[i].getName().toString(), opDef.getName().toString() });
-          }
-        }
-      }
-    }
-
-    // run for constant operator definitions
-    OpDefNode[] opDefs = mod.getOpDefs();
-    for (int i = 0; i < opDefs.length; i++) {
-      OpDefNode opDef = opDefs[i];
-
-      // The following variable evaluate and its value added by LL on 24 July 2013
-      // to prevent pre-evaluation of a definition from an EXTENDS of a module that
-      // is also instantiated.
-      ModuleNode moduleNode = opDef.getOriginallyDefinedInModuleNode() ;
-      boolean evaluate =    (moduleNode == null)
-                     || (! moduleNode.isInstantiated())
-                     || (   (moduleNode.getConstantDecls().length == 0)
-                         && (moduleNode.getVariableDecls().length == 0) ) ;
-
-      if (evaluate && opDef.getArity() == 0) {
-        Object realDef = this.lookup(opDef, Context.Empty, false);
-        if (realDef instanceof OpDefNode) {
-          opDef = (OpDefNode)realDef;
-          if (this.getLevelBound(opDef.getBody(), Context.Empty) == 0) {
-            try {
-              UniqueString opName = opDef.getName();
-              // System.err.println(opName);
-              IValue val = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
-              val.deepNormalize();
-              // System.err.println(opName + ": " + val);
-              opDef.setToolObject(toolId, val);
-              Object def = this.defns.get(opName);
-              if (def == opDef) {
-                this.defns.put(opName, val);
-              }
-            }
-            catch (Throwable e) {
-              // Assert.printStack(e);
-            }
-          }
-        }
-      }
-    }
-
-    // run for all inner modules
-    ModuleNode[] imods = mod.getInnerModules();
-    for (int i = 0; i < imods.length; i++) {
-      this.processConstantDefns(imods[i]);
-    }
   }
 }

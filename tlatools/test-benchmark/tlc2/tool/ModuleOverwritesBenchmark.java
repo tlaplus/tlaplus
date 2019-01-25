@@ -63,7 +63,6 @@ public class ModuleOverwritesBenchmark {
 		ToolIO.setUserDir(dir);
 
 		tool = new Tool("", "ModuleOverwrites", "ModuleOverwrites", new SimpleFilenameToStream());
-		tool.init();
 
 		state = (TLCStateMut) tool.getInitStates().elementAt(0);
 	}

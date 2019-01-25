@@ -53,7 +53,6 @@ public class Simulator {
 		// ToolIO.setUserDir(specDir);
 
 		this.tool = new Tool(specDir, specFile, configFile, resolver);
-		this.tool.init(); // parse and process the spec
 
 		this.checkDeadlock = deadlock;
 		this.checkLiveness = !this.tool.livenessIsTrue();

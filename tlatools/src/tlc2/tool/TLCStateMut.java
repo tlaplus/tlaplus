@@ -50,11 +50,26 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
   private static IMVPerm[] perms = null;
 
   private TLCStateMut(IValue[] vals) { this.values = vals; }
+  
+  public static void setVariables(OpDeclNode[] variables) 
+  {
+      vars = variables;
+      IValue[] vals = new IValue[vars.length];
+      Empty = new TLCStateMut(vals);
 
-  public static void init(ITool tool) {
+      // SZ 10.04.2009: since this method is called exactly one from Spec#processSpec
+      // moved the call of UniqueString#setVariables to that place
+      
+      // UniqueString[] varNames = new UniqueString[variables.length];
+      // for (int i = 0; i < varNames.length; i++)
+      // {
+      //  varNames[i] = variables[i].getName();
+      //}
+      //UniqueString.setVariables(varNames);
+  }
+
+  public static void setTool(ITool tool) {
     mytool = tool;
-    IValue[] vals = new IValue[vars.length];
-    Empty = new TLCStateMut(vals);
     viewMap = tool.getViewSpec();
     perms = tool.getSymmetryPerms();
   }

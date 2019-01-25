@@ -61,7 +61,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testSuccessfulRun() throws Exception {
 		Tool tool = new Tool("", "BasicMultiTrace", "MC", new SimpleFilenameToStream());
-		tool.init();
+
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		StateVec initStates = tool.getInitStates();
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -77,7 +77,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testInvariantViolation() throws Exception {
 		Tool tool = new Tool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream());
-		tool.init();
+		
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		StateVec initStates = tool.getInitStates();
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -152,7 +152,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testActionPropertyViolation() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MCActionProp", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -200,7 +200,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testInvariantBadEval() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MCBadInvNonInitState", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -228,7 +228,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testActionPropertyBadEval() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MCActionPropBadEval", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -249,7 +249,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testUnderspecifiedNext() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MCUnderspecNext", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -277,7 +277,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testDeadlock() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MC", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -322,7 +322,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testModelStateConstraint() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MCWithConstraint", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -339,7 +339,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testModelActionConstraint() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MCWithActionConstraint", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -356,7 +356,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testWorkerInterruption() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -385,7 +385,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testTraceDepthObeyed() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
@@ -406,7 +406,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	@Test
 	public void testStateAndTraceGenerationCount() throws Exception {
 		ITool tool = new Tool("", "BasicMultiTrace", "MC", new SimpleFilenameToStream());
-		tool.init();
+		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();

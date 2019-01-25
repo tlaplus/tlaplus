@@ -28,7 +28,6 @@ package tlc2.tool;
 import java.io.File;
 import java.util.List;
 
-import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.OpApplNode;
@@ -45,12 +44,6 @@ import tlc2.value.IValue;
 import util.FilenameToStream;
 
 public interface ITool extends TraceApp {
-
-	/**
-	   * Initialization. Any Tool object must call it before doing anything.
-	   * @param spec - <code>null</code> or a filled spec object from previous SANY run
-	   */
-	SpecObj init();
 
 	void setCallStack();
 

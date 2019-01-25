@@ -66,7 +66,6 @@ public class TLCApp extends DistApp {
 		this.checkDeadlock = deadlock.booleanValue();
 		this.preprocess = true;
 		this.tool = new Tool(specDir, specFile, configFile, fts);
-		this.tool.init();
 
 		this.impliedInits = this.tool.getImpliedInits();
 		this.invariants = this.tool.getInvariants();

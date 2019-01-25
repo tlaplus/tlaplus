@@ -101,7 +101,6 @@ public abstract class AbstractChecker
 	public AbstractChecker(ITool tool, String metadir, final IStateWriter stateWriter,
 			boolean deadlock, String fromChkpt) throws EvalException, IOException {
         this.tool = tool;
-		tool.init();
 		
 		this.checkDeadlock = deadlock;
         this.checkLiveness = !this.tool.livenessIsTrue();
