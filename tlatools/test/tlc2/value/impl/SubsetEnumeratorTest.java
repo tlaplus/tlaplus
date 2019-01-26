@@ -43,28 +43,16 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import tlc2.util.FP64;
-import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.IntervalValue;
-import tlc2.value.impl.ModelValue;
-import tlc2.value.impl.SetEnumValue;
-import tlc2.value.impl.SetOfFcnsValue;
-import tlc2.value.impl.SetOfTuplesValue;
-import tlc2.value.impl.StringValue;
-import tlc2.value.impl.SubsetValue;
-import tlc2.value.impl.UnionValue;
 
 @RunWith(Parameterized.class)
 public class SubsetEnumeratorTest {
 
-	private static final IValue[] getValue(String... strs) {
-		final List<IValue> values = new ArrayList<>(strs.length);
+	private static final Value[] getValue(String... strs) {
+		final List<Value> values = new ArrayList<>(strs.length);
 		for (int i = 0; i < strs.length; i++) {
 			values.add(new StringValue(strs[i]));
 		}
-		return values.toArray(new IValue[values.size()]);
+		return values.toArray(new Value[values.size()]);
 	}
 
 	@Parameters
@@ -91,20 +79,20 @@ public class SubsetEnumeratorTest {
 		
 		// UnionValue
 		params.add(new UnionValue(
-				new SetEnumValue(new IValue[] { new IntervalValue(1, 5), new IntervalValue(5, 11) }, true)));
+				new SetEnumValue(new Value[] { new IntervalValue(1, 5), new IntervalValue(5, 11) }, true)));
 		params.add(new UnionValue(new SetEnumValue())); // empty
 		
 		// SetOfFcnsValue
 		params.add(new SetOfFcnsValue(new IntervalValue(2, 5),
-				new SetEnumValue(new IValue[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true)));
+				new SetEnumValue(new Value[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true)));
 		params.add(new SetOfFcnsValue(new IntervalValue(3, 5), new SetEnumValue())); // empty range
 
 		// SetOfFcnsValue with SubsetValue as range.
 		params.add(new SetOfFcnsValue(
-				new SetEnumValue(new IValue[] { ModelValue.make("m1"), ModelValue.make("m2"), ModelValue.make("m3") },
+				new SetEnumValue(new Value[] { ModelValue.make("m1"), ModelValue.make("m2"), ModelValue.make("m3") },
 						true),
 				new SubsetValue(new SetEnumValue(
-						new IValue[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true))));
+						new Value[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true))));
 
 		// SetOfFcnsValue
 		final SetEnumValue domain = new SetEnumValue(getValue("A1", "A2", "A3"), true);
@@ -113,7 +101,7 @@ public class SubsetEnumeratorTest {
 
 		// SubsetValue
 		params.add(new SubsetValue(new SetEnumValue(
-				new IValue[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true)));
+				new Value[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true)));
 		params.add(new SubsetValue(new SetEnumValue())); // empty
 		
 		// Adding values to Set<Value> requires fingerprinting.
@@ -135,17 +123,17 @@ public class SubsetEnumeratorTest {
 			@Override
 			public void accept(double fraction) {
 				final int k = (int) Math.ceil(enumerable.size() * fraction);
-				final List<IValue> values = enumerable.elements(k).all();
+				final List<Value> values = enumerable.elements(k).all();
 				
 				// Expected size.
 				Assert.assertEquals(String.format("Failed for fraction: %s", fraction), k, values.size());
 
 				// Unique values.
 				Assert.assertEquals(String.format("Failed for fraction: %s", fraction), values.size(),
-						new HashSet<IValue>(values).size());
+						new HashSet<Value>(values).size());
 
 				// Each value is actually a member of enumerable.
-				for (IValue v : values) {
+				for (Value v : values) {
 					Assert.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
 				}
 			}
@@ -164,11 +152,11 @@ public class SubsetEnumeratorTest {
 				// Expected size.
 				assertEquals(String.format("Failed for fraction: %s", fraction), k, enumValue.size());
 
-				final Set<IValue> values = new HashSet<>(enumValue.size());
+				final Set<Value> values = new HashSet<>(enumValue.size());
 				
 				// Each value is actually a member of enumerable.
 				ValueEnumeration elements = enumValue.elements();
-				IValue v = null;
+				Value v = null;
 				while ((v = elements.nextElement()) != null) {
 					Assert.assertTrue(String.format("Failed for fraction: %s", fraction), enumerable.member(v));
 					values.add(v);
@@ -176,7 +164,7 @@ public class SubsetEnumeratorTest {
 
 				// Unique values.
 				Assert.assertEquals(String.format("Failed for fraction: %s", fraction), enumValue.size(),
-						new HashSet<IValue>(values).size());
+						new HashSet<Value>(values).size());
 				
 			}
 		});

@@ -32,25 +32,8 @@ import tlc2.tool.coverage.CostModel;
 
 public interface IValue {
 
-	/**
-	   * This method returns the value kind: an integer that represents
-	   * the kind of this value. See the interface ValueConstants.java.
-	   */
-	byte getKind();
-
-	String getKindString();
-
 	/* This method compares this with val.  */
 	int compareTo(Object val);
-
-	/* This method returns true iff elem is a member of this. */
-	boolean member(IValue elem);
-
-	/* This method returns a new value after taking the except. */
-	IValue takeExcept(ValueExcept ex);
-
-	/* This method returns a new value after taking the excepts. */
-	IValue takeExcept(ValueExcept[] exs);
 
 	void write(ValueOutputStream vos) throws IOException;
 
@@ -69,10 +52,6 @@ public interface IValue {
 	   * the value. It is essential for equality comparison.
 	   */
 	boolean isNormalized();
-
-	IValue normalize();
-
-	boolean isEmpty();
 
 	/* Fully normalize this (composite) value. */
 	void deepNormalize();
@@ -97,39 +76,6 @@ public interface IValue {
 
 	/* This method makes a real deep copy of this.  */
 	IValue deepCopy();
-
-	/* This method returns true iff val can be assigned to this. */
-	boolean assignable(IValue val);
-
-	/* This method returns the hash code of this value. */
-	int hashCode();
-
-	/**
-	   * This method selects the component of this value. The component is
-	   * specified by path.
-	   */
-	IValue select(IValue[] path);
-
-	/* Convert val into a SetEnumValue.  Returns null if not possible. */
-	IValue toSetEnum();
-
-	/*
-	   * This method converts a value to a function value. It returns
-	   * null if the conversion fails.
-	   */
-	IValue toFcnRcd();
-
-	/*
-	   * This method converts a value to a function value. It returns
-	   * null if the conversion fails.
-	   */
-	IValue toRcd();
-
-	/*
-	   * This method converts a value to a tuple value. It returns
-	   * null if the conversion fails.
-	   */
-	IValue toTuple();
 
 	/**
 	   * This abstract method returns a string representation of this

@@ -12,8 +12,6 @@ import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
@@ -64,7 +62,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       if (elem instanceof IntValue) {
         int x = ((IntValue)elem).val;
@@ -84,7 +82,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public IValue isSubsetEq(IValue other) {
+  public Value isSubsetEq(Value other) {
     try {
       if (other instanceof IntervalValue) {
         final IntervalValue iv = (IntervalValue) other;
@@ -118,8 +116,8 @@ implements Enumerable, Reducible {
 	 *         as the inverse to the performance optimization that the IntervalValue
 	 *         actually is.
 	 */
-	final IValue[] asValues() {
-		final IValue[] values = new IValue[size()];
+	final Value[] asValues() {
+		final Value[] values = new Value[size()];
 		for (int i = 0; i < size(); i++) {
 			values[i] = IntValue.gen(this.low + i);
 		}
@@ -127,11 +125,11 @@ implements Enumerable, Reducible {
 	}
   
   /* Return this - val.  */
-  public final IValue diff(IValue val) {
+  public final Value diff(Value val) {
     try {
       ValueVec diffElems = new ValueVec();
       for (int i = this.low; i <= this.high; i++) {
-    	  IValue elem = IntValue.gen(i);
+    	  Value elem = IntValue.gen(i);
         if (!val.member(elem)) diffElems.addElement(elem);
       }
       return new SetEnumValue(diffElems, true, cm);
@@ -143,11 +141,11 @@ implements Enumerable, Reducible {
   }
 
   /* Return this \cap val. */
-  public final IValue cap(IValue val) {
+  public final Value cap(Value val) {
     try {
       ValueVec capElems = new ValueVec();
       for (int i = this.low; i <= this.high; i++) {
-    	  IValue elem = IntValue.gen(i);
+    	  Value elem = IntValue.gen(i);
         if (val.member(elem)) capElems.addElement(elem);
       }
       return new SetEnumValue(capElems, true, cm);
@@ -159,7 +157,7 @@ implements Enumerable, Reducible {
   }
 
   /* Return this \cup val.  */
-  public final IValue cup(IValue set) {
+  public final Value cup(Value set) {
     try {
       if (this.size() == 0) return set;
 
@@ -169,7 +167,7 @@ implements Enumerable, Reducible {
           cupElems.addElement(IntValue.gen(i));
         }
         ValueEnumeration Enum = ((Enumerable)set).elements();
-        IValue elem;
+        Value elem;
         while ((elem = Enum.nextElement()) != null) {
           if (!this.member(elem)) cupElems.addElement(elem);
         }
@@ -183,7 +181,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the interval value " +
@@ -197,7 +195,7 @@ implements Enumerable, Reducible {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the interval value " +
@@ -213,13 +211,13 @@ implements Enumerable, Reducible {
 
   public final boolean isNormalized() { return true; }
 
-  public final IValue normalize() { /*nop*/return this; }
+  public final Value normalize() { /*nop*/return this; }
 
   public final boolean isDefined() { return true; }
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       return ((val instanceof IntervalValue) &&
         this.high == ((IntervalValue)val).high &&
@@ -260,8 +258,8 @@ implements Enumerable, Reducible {
   }
 
   @Override
-  public IValue toSetEnum() {
-	  IValue[] vals = new IValue[size()];
+  public Value toSetEnum() {
+	  Value[] vals = new Value[size()];
       for (int i = 0; i < vals.length; i++) {
         vals[i] = IntValue.gen(i + this.low);
       }
@@ -284,19 +282,19 @@ implements Enumerable, Reducible {
   }
 
     @Override
-	public Enumerable getRandomSubset(final int kOutOfN) {
+	public EnumerableValue getRandomSubset(final int kOutOfN) {
     	final ValueVec vec = new ValueVec(kOutOfN);
     	
     	final ValueEnumeration ve = elements(kOutOfN);
     	
-    	IValue v = null;
+    	Value v = null;
     	while ((v = ve.nextElement()) != null) {
     		vec.addElement(v);
     	}
     	return new SetEnumValue(vec, false, cm);
 	}
 
-	public IValue elementAt(final int idx) {
+	public Value elementAt(final int idx) {
 		if (0 <= idx && idx < size()) {
 			return IntValue.gen(low + idx);
 		}
@@ -320,7 +318,7 @@ implements Enumerable, Reducible {
 
     public final void reset() { this.index = low; }
 
-    public final IValue nextElement() {
+    public final Value nextElement() {
       if (this.index <= high) {
     	  if (coverage) { cm.incSecondary(); }
         return IntValue.gen(this.index++);
@@ -334,7 +332,7 @@ implements Enumerable, Reducible {
 	public ValueEnumeration elements(final int kOutOfN) {
 		return new EnumerableValue.SubsetEnumerator(kOutOfN) {
 			@Override
-			public IValue nextElement() {
+			public Value nextElement() {
 				if (!hasNext()) {
 					return null;
 				}

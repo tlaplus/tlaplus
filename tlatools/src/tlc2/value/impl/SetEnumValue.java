@@ -14,8 +14,6 @@ import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
@@ -25,15 +23,15 @@ public class SetEnumValue extends EnumerableValue
 implements Enumerable, Reducible {
   public ValueVec elems;         // the elements of the set
   private boolean isNorm;        // normalized?
-public final static IValue EmptySet = new SetEnumValue(new ValueVec(0), true);
+public final static SetEnumValue EmptySet = new SetEnumValue(new ValueVec(0), true);
 public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
 
   /* Constructor */
-  public SetEnumValue(IValue[] elems, boolean isNorm) {
+  public SetEnumValue(Value[] elems, boolean isNorm) {
 	  this(new ValueVec(elems), isNorm);
   }
 
-  public SetEnumValue(IValue[] vals, boolean isNorm, CostModel cm) {
+  public SetEnumValue(Value[] vals, boolean isNorm, CostModel cm) {
 	  this(vals, isNorm);
 	  this.cm = cm;
   }
@@ -61,7 +59,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 
   public final int compareTo(Object obj) {
     try {
-      SetEnumValue set = obj instanceof IValue ? (SetEnumValue) ((IValue)obj).toSetEnum() : null;
+      SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
@@ -86,7 +84,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 
   public final boolean equals(Object obj) {
     try {
-      SetEnumValue set = obj instanceof IValue ? (SetEnumValue) ((IValue)obj).toSetEnum() : null;
+      SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -112,7 +110,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       return this.elems.search(elem, this.isNorm);
     }
@@ -124,12 +122,12 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 
   public final boolean isFinite() { return true; }
 
-  public final IValue diff(IValue val) {
+  public final Value diff(Value val) {
     try {
       int sz = this.elems.size();
       ValueVec diffElems = new ValueVec();
       for (int i = 0; i < sz; i++) {
-    	  IValue elem = this.elems.elementAt(i);
+    	  Value elem = this.elems.elementAt(i);
         if (!val.member(elem)) {
           diffElems.addElement(elem);
         }
@@ -142,12 +140,12 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
-  public final IValue cap(IValue val) {
+  public final Value cap(Value val) {
     try {
       int sz = this.elems.size();
       ValueVec capElems = new ValueVec();
       for (int i = 0; i < sz; i++) {
-    	  IValue elem = this.elems.elementAt(i);
+    	  Value elem = this.elems.elementAt(i);
         if (val.member(elem)) {
           capElems.addElement(elem);
         }
@@ -160,7 +158,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
-  public final IValue cup(IValue set) {
+  public final Value cup(Value set) {
     try {
       int sz = this.elems.size();
       if (sz == 0) return set;
@@ -168,11 +166,11 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       if (set instanceof Reducible) {
         ValueVec cupElems = new ValueVec();
         for (int i = 0; i < sz; i++) {
-        	IValue elem = this.elems.elementAt(i);
+        	Value elem = this.elems.elementAt(i);
           cupElems.addElement(elem);
         }
         ValueEnumeration Enum = ((Enumerable)set).elements();
-        IValue elem;
+        Value elem;
         while ((elem = Enum.nextElement()) != null) {
           if (!this.member(elem)) cupElems.addElement(elem);
         }
@@ -186,7 +184,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -199,7 +197,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
@@ -226,7 +224,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   /* This method normalizes (destructively) this set. */
   public final boolean isNormalized() { return this.isNorm; }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       if (!this.isNorm) {
         this.elems.sort(true);   // duplicates eliminated
@@ -255,7 +253,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   }
 
   @Override
-  public final IValue toSetEnum() {
+  public final Value toSetEnum() {
 	  return this;
   }
 
@@ -276,7 +274,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       return this.equals(val);
     }
@@ -310,7 +308,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       fp = FP64.Extend(fp, SETENUMVALUE);
       fp = FP64.Extend(fp, sz);
       for (int i = 0; i < sz; i++) {
-        IValue elem = this.elems.elementAt(i);
+        Value elem = this.elems.elementAt(i);
         fp = elem.fingerPrint(fp);
       }
       return fp;
@@ -324,10 +322,10 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final IValue permute(IMVPerm perm) {
     try {
       int sz = this.elems.size();
-      IValue[] vals = new IValue[sz];
+      Value[] vals = new Value[sz];
       boolean changed = false;
       for (int i = 0; i < sz; i++) {
-        vals[i] = this.elems.elementAt(i).permute(perm);
+        vals[i] = (Value) this.elems.elementAt(i).permute(perm);
         changed = (changed || vals[i] != this.elems.elementAt(i));
       }
       if (changed) {
@@ -380,7 +378,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
-  public final IValue randomElement() {
+  public final Value randomElement() {
      int sz = size();
      int index = (int) Math.floor(RandomEnumerableValues.get().nextDouble() * sz);
      return this.elems.elementAt(index);
@@ -405,7 +403,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 
     public final void reset() { this.index = 0; }
 
-    public final IValue nextElement() {
+    public final Value nextElement() {
     	if (coverage) { cm.incSecondary(); }
       if (this.index < elems.size()) {
         return elems.elementAt(this.index++);
@@ -415,12 +413,12 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   }
 
     @Override
-	public Enumerable getRandomSubset(final int kOutOfN) {
+	public EnumerableValue getRandomSubset(final int kOutOfN) {
     	final ValueVec vec = new ValueVec(kOutOfN);
     	
     	final ValueEnumeration ve = elements(kOutOfN);
     	
-    	IValue v = null;
+    	Value v = null;
     	while ((v = ve.nextElement()) != null) {
     		vec.addElement(v);
     	}
@@ -432,7 +430,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 		normalize();
 		return new EnumerableValue.SubsetEnumerator(k) {
 			@Override
-			public IValue nextElement() {
+			public Value nextElement() {
 				if (!hasNext()) {
 					return null;
 				}
@@ -449,11 +447,11 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 			len = -len;
 			isNorm = false;
 		}
-		final IValue[] elems = new IValue[len];
+		final Value[] elems = new Value[len];
 		for (int i = 0; i < len; i++) {
-			elems[i] = vos.read();
+			elems[i] = (Value) vos.read();
 		}
-		final IValue res = new SetEnumValue(elems, isNorm);
+		final Value res = new SetEnumValue(elems, isNorm);
 		vos.assign(res, index);
 		return res;
 	}

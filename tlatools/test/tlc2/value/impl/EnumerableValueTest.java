@@ -36,8 +36,6 @@ import org.junit.Test;
 
 import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueExcept;
 import tlc2.value.impl.EnumerableValue.SubsetEnumerator;
 
 public class EnumerableValueTest {
@@ -79,7 +77,7 @@ public class EnumerableValueTest {
 		public ValueEnumeration elements(final int k) {
 			return new EnumerableValue.SubsetEnumerator(k) {
 				@Override
-				public IValue nextElement() {
+				public Value nextElement() {
 					return null;
 				}
 			};
@@ -101,17 +99,17 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public boolean member(IValue elem) {
+		public boolean member(Value elem) {
 			return false;
 		}
 
 		@Override
-		public IValue takeExcept(ValueExcept ex) {
+		public Value takeExcept(ValueExcept ex) {
 			return null;
 		}
 
 		@Override
-		public IValue takeExcept(ValueExcept[] exs) {
+		public Value takeExcept(ValueExcept[] exs) {
 			return null;
 		}
 
@@ -121,7 +119,7 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public IValue normalize() {
+		public Value normalize() {
 			return this;
 		}
 
@@ -141,7 +139,7 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public boolean assignable(IValue val) {
+		public boolean assignable(Value val) {
 			return false;
 		}
 

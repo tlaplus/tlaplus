@@ -16,7 +16,6 @@ import tlc2.output.MP;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.Values;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
@@ -75,7 +74,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + elem == null ? "null" : Values.ppr(elem.toString()) +
       "\nis an element of operator " + this.toString());
@@ -99,7 +98,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue apply(IValue arg, int control) {
+  public final Value apply(Value arg, int control) {
     try {
       throw new WrongInvocationException("It is a TLC bug: Should use the other apply method.");
     }
@@ -109,15 +108,15 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue apply(IValue[] args, int control) {
+  public final Value apply(Value[] args, int control) {
     try {
-      IValue res = null;
+      Value res = null;
       try
       {
     	  if (args.length == 0) {
-    		  res = (IValue) this.mh.invokeExact();
+    		  res = (Value) this.mh.invokeExact();
     	  } else {
-    		  res = (IValue) this.mh.invoke(args);
+    		  res = (Value) this.mh.invoke(args);
     	  }
       } catch (Throwable e)
       {
@@ -140,7 +139,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue select(IValue arg) {
+  public final Value select(Value arg) {
     try {
       throw new WrongInvocationException("It is a TLC bug: Attempted to call MethodValue.select().");
     }
@@ -150,7 +149,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
       this.toString() + ".");
@@ -162,7 +161,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       this.toString() + ".");
@@ -174,7 +173,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue getDomain() {
+  public final Value getDomain() {
     try {
       Assert.fail("Attempted to compute the domain of the operator " +
       this.toString() + ".");
@@ -209,7 +208,7 @@ public class MethodValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       throw new WrongInvocationException("It is a TLC bug: Attempted to normalize an operator.");
     }
@@ -223,7 +222,7 @@ public class MethodValue extends OpValue implements Applicable {
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       throw new WrongInvocationException("It is a TLC bug: Attempted to initialize an operator.");
     }

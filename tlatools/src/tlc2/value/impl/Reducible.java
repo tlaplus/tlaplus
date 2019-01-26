@@ -5,16 +5,13 @@
 
 package tlc2.value.impl;
 
-import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
-
 public interface Reducible {
 
   public int size();
-  public boolean member(IValue elem);
-  public IValue diff(IValue val);
-  public IValue cap(IValue val);
-  public IValue cup(IValue val);
+  public boolean member(Value elem);
+  public Value diff(Value val);
+  public Value cap(Value val);
+  public Value cup(Value val);
 
   public ValueEnumeration elements();
 }

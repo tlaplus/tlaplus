@@ -9,7 +9,6 @@ package tlc2.value.impl;
 import tlc2.tool.FingerprintException;
 import tlc2.util.Vect;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.Values;
 import util.Assert;
 import util.WrongInvocationException;
@@ -55,7 +54,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of operator " + Values.ppr(this.toString()));
@@ -82,9 +81,9 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final void addLine(Vect vs) {
     try {
       int len = vs.size();
-      IValue[] args = new IValue[len-2];
+      Value[] args = new Value[len-2];
       for (int i = 0; i < len-2; i++) {
-        args[i] = (IValue)vs.elementAt(i+1);
+        args[i] = (Value)vs.elementAt(i+1);
       }
       this.domain.addElement(args);
       this.values.addElement(vs.elementAt(len-1));
@@ -95,7 +94,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue apply(IValue arg, int control) {
+  public final Value apply(Value arg, int control) {
     try {
       throw new WrongInvocationException("Should use the other apply method.");
     }
@@ -105,11 +104,11 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue apply(IValue[] args, int control) {
+  public final Value apply(Value[] args, int control) {
     try {
       int sz = this.domain.size();
       for (int i = 0; i < sz; i++) {
-        IValue[] vals = (IValue[])this.domain.elementAt(i);
+        Value[] vals = (Value[])this.domain.elementAt(i);
         if (args.length != vals.length) {
           Assert.fail("Attempted to apply the operator " + Values.ppr(this.toString()) +
           "\nwith wrong number of arguments.");
@@ -120,7 +119,7 @@ public class OpRcdValue extends OpValue implements Applicable {
           if (!matched) break;
         }
         if (matched) {
-          return (IValue)this.values.elementAt(i);
+          return (Value)this.values.elementAt(i);
         }
       }
       // Generate the error message:
@@ -139,7 +138,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue select(IValue arg) {
+  public final Value select(Value arg) {
     try {
       Assert.fail("Attempted to call OpRcdValue.select(). This is a TLC bug.");
       return null;   // make compiler happy
@@ -150,7 +149,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
       Values.ppr(this.toString()) + ".");
@@ -162,7 +161,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       Values.ppr(this.toString()) + ".");
@@ -174,7 +173,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue getDomain() {
+  public final Value getDomain() {
     try {
       Assert.fail("Attempted to compute the domain of the operator " +
       Values.ppr(this.toString()) + ".");
@@ -209,7 +208,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       throw new WrongInvocationException("Should not normalize an operator.");
     }
@@ -223,7 +222,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     try {
       boolean defined = true;
       for (int i = 0; i < this.values.size(); i++) {
-        defined = defined && ((IValue)this.values.elementAt(i)).isDefined();
+        defined = defined && ((Value)this.values.elementAt(i)).isDefined();
       }
       return defined;
     }
@@ -235,7 +234,7 @@ public class OpRcdValue extends OpValue implements Applicable {
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       throw new WrongInvocationException("Should not initialize an operator.");
     }
@@ -251,22 +250,22 @@ public class OpRcdValue extends OpValue implements Applicable {
       sb.append("{ ");
       if (this.values.size() != 0) {
         sb.append("<");
-        IValue[] args = (IValue[])this.domain.elementAt(0);
+        Value[] args = (Value[])this.domain.elementAt(0);
         for (int j = 0; j < args.length; j++) {
           sb = args[j].toString(sb, offset);
           sb.append(", ");
         }
-        sb = ((IValue)this.values.elementAt(0)).toString(sb, offset);
+        sb = ((Value)this.values.elementAt(0)).toString(sb, offset);
         sb.append(">");
       }
       for (int i = 1; i < this.values.size(); i++) {
         sb.append(", <");
-        IValue[] args = (IValue[])this.domain.elementAt(i);
+        Value[] args = (Value[])this.domain.elementAt(i);
         for (int j = 0; j < args.length; j++) {
           sb = args[j].toString(sb, offset);
           sb.append(", ");
         }
-        sb = ((IValue)this.values.elementAt(i)).toString(sb, offset);
+        sb = ((Value)this.values.elementAt(i)).toString(sb, offset);
         sb.append(">");
       }
       return sb.append("}");

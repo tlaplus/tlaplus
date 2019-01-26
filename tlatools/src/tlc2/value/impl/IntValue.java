@@ -12,7 +12,6 @@ import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
@@ -100,7 +99,7 @@ public class IntValue extends Value {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of the integer " + Values.ppr(this.toString()));
@@ -124,7 +123,7 @@ public class IntValue extends Value {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to appy EXCEPT construct to the integer " +
@@ -138,7 +137,7 @@ public class IntValue extends Value {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the integer " +
@@ -166,13 +165,13 @@ public class IntValue extends Value {
 
   public final boolean isNormalized() { return true; }
 
-  public final IValue normalize() { /*nop*/return this; }
+  public final Value normalize() { /*nop*/return this; }
 
   public final boolean isDefined() { return true; }
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       return ((val instanceof IntValue) &&
         this.val == ((IntValue)val).val);

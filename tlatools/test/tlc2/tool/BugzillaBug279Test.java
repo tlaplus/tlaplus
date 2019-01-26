@@ -38,7 +38,6 @@ import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.value.Values;
 import tlc2.value.impl.IntervalValue;
-import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.SubsetValue;
 
 /**

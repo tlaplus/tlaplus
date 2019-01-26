@@ -30,16 +30,14 @@ package tlc2.value.impl;
 import java.util.List;
 
 import tlc2.tool.FingerprintException;
-import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.ValueEnumeration;
 
 public abstract class EnumerableValue extends Value implements Enumerable {
 
-  public IValue isSubsetEq(IValue other) {
+  public Value isSubsetEq(Value other) {
     try {
       final ValueEnumeration Enum = this.elements();
-      IValue elem;
+      Value elem;
       while ((elem = Enum.nextElement()) != null) {
         if (!other.member(elem)) {
           return BoolValue.ValFalse;
@@ -54,7 +52,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
   }
   
 	@Override
-	public Enumerable getRandomSubset(final int kOutOfN) {
+	public EnumerableValue getRandomSubset(final int kOutOfN) {
 		// By default, convert all EVs into SetEnumValue and delegate to its
 		// getRandomSubset.
     	return ((SetEnumValue) this.toSetEnum()).getRandomSubset(kOutOfN);
@@ -72,7 +70,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 			// In case a subclass provides a more efficient ValueEnumeration that guarantees
 			// normalized order, the subclass may override this default method. This is
 			// so far done by SubsetValue.
-			final IValue enumerated = this.toSetEnum();
+			final Value enumerated = this.toSetEnum();
 			if (enumerated != null) {
 				return ((Enumerable) enumerated.normalize()).elements();
 			}
@@ -90,10 +88,10 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 		// subclasses can provide a more efficient implementation (e.g. see
 		// IntervalValue and SetEnumValue which return a more efficient subclass
 		// of SubsetEnumerator).
-		final List<IValue> values = elements().all();
+		final List<Value> values = elements().all();
 		return new SubsetEnumerator(k) {
 			@Override
-			public IValue nextElement() {
+			public Value nextElement() {
 				if (!hasNext()) {
 					return null;
 				}
@@ -164,6 +162,6 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 			return index;
 		}
 
-		public abstract IValue nextElement();
+		public abstract Value nextElement();
 	}
 }

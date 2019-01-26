@@ -15,8 +15,6 @@ import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
@@ -24,11 +22,11 @@ import util.UniqueString;
 
 public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final UniqueString[] names;      // The names of the fields.
-  public final IValue[] values;            // The values of the fields.
+  public final Value[] values;            // The values of the fields.
   protected SetEnumValue rcdSet;
 
   /* Constructor */
-  public SetOfRcdsValue(UniqueString[] names, IValue[] values, boolean isNorm) {
+  public SetOfRcdsValue(UniqueString[] names, Value[] values, boolean isNorm) {
 	  assert names.length == values.length; // see tlc2.tool.Tool.evalAppl(OpApplNode, Context, TLCState, TLCState, int) case for OPCODE_sor
     this.names = names;
     this.values = values;
@@ -38,7 +36,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public SetOfRcdsValue(UniqueString[] names, IValue[] values, boolean isNorm, CostModel cm) {
+  public SetOfRcdsValue(UniqueString[] names, Value[] values, boolean isNorm, CostModel cm) {
 	  this(names, values, isNorm);
 	  this.cm = cm;
   }
@@ -85,7 +83,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       RecordValue rcd = (RecordValue) elem.toRcd();
       if (rcd == null) {
@@ -125,7 +123,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set of records:\n" +
@@ -139,7 +137,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set of records:\n" +
@@ -201,7 +199,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
         for (int i = 0; i < this.names.length; i++) {
@@ -249,7 +247,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         UniqueString ts = this.names[0];
         this.names[0] = this.names[i];
         this.names[i] = ts;
-        IValue tv = this.values[0];
+        Value tv = this.values[0];
         this.values[0] = this.values[i];
         this.values[i] = tv;
       }
@@ -257,7 +255,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     for (int i = 2; i < this.names.length; i++) {
       int j = i;
       UniqueString st = this.names[i];
-      IValue val = this.values[i];
+      Value val = this.values[i];
       int cmp;
       while ((cmp = st.compareTo(this.names[j-1])) < 0) {
         this.names[j] = this.names[j-1];
@@ -289,7 +287,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       return this.equals(val);
     }
@@ -341,13 +339,13 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public final IValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.rcdSet != null && this.rcdSet != SetEnumValue.DummyEnum) {
         return this.rcdSet;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
-      IValue elem;
+      Value elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
@@ -380,7 +378,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       catch (Throwable e) { unlazy = false; }
 
       if (unlazy) {
-        IValue val = this.toSetEnum();
+        Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {
@@ -420,12 +418,12 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   final class Enumerator implements ValueEnumeration {
     private ValueEnumeration[] enums;
-    private IValue[] currentElems;
+    private Value[] currentElems;
     private boolean isDone;
 
     public Enumerator() {
       this.enums = new ValueEnumeration[values.length];
-      this.currentElems = new IValue[values.length];
+      this.currentElems = new Value[values.length];
       this.isDone = false;
       for (int i = 0; i < values.length; i++) {
         if (values[i] instanceof Enumerable) {
@@ -455,9 +453,9 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
     }
 
-    public final IValue nextElement() {
+    public final Value nextElement() {
       if (this.isDone) return null;
-      IValue[] elems = new IValue[this.currentElems.length];
+      Value[] elems = new Value[this.currentElems.length];
      if (coverage) { cm.incSecondary(elems.length); }
       for (int i = 0; i < elems.length; i++) {
         elems[i] = this.currentElems[i];
@@ -504,7 +502,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 		protected RecordValue elementAt(final int idx) {
 			assert 0 <= idx && idx < size();
 			
-			final IValue[] val = new IValue[names.length];
+			final Value[] val = new Value[names.length];
 			for (int i = 0; i < val.length; i++) {
 				final SetEnumValue sev = convert[i];
 				final int mod = sev.elems.size();
@@ -546,8 +544,8 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 		}
 
 		@Override
-		protected IValue elementAt(final BigInteger idx) {
-			final IValue[] val = new IValue[names.length];
+		protected Value elementAt(final BigInteger idx) {
+			final Value[] val = new Value[names.length];
 			for (int i = 0; i < val.length; i++) {
 				final SetEnumValue sev = convert[i];
 				final int mod = sev.elems.size();

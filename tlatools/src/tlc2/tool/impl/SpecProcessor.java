@@ -83,6 +83,7 @@ import tlc2.value.impl.MethodValue;
 import tlc2.value.impl.OpRcdValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.StringValue;
+import tlc2.value.impl.Value;
 import util.Assert;
 import util.FilenameToStream;
 import util.ToolIO;
@@ -355,7 +356,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // Add predefined (Boolean and String) in defns.
         this.defns.put("TRUE", BoolValue.ValTrue);
         this.defns.put("FALSE", BoolValue.ValFalse);
-        IValue[] elems = new IValue[2];
+        Value[] elems = new Value[2];
         elems[0] = BoolValue.ValFalse;
         elems[1] = BoolValue.ValTrue;
         this.defns.put("BOOLEAN", new SetEnumValue(elems, true));
@@ -381,7 +382,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 				// synthetic members from being processed.
                 if (!ms[i].isSynthetic()) {
                 	MethodValue mv = new MethodValue(ms[i]);
-                	IValue val = (acnt == 0) ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
+                	IValue val = (acnt == 0) ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
                 	this.defns.put(name, val);
                 }
             }
@@ -486,7 +487,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                         int acnt = mds[j].getParameterTypes().length;
                         MethodValue mv = new MethodValue(mds[j]);
                         boolean isConstant = (acnt == 0) && Modifier.isFinal(mdf);
-                        IValue val = isConstant ? mv.apply(EmptyArgs, EvalControl.Clear) : mv;
+                        IValue val = isConstant ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
                         javaDefs.put(uname, val);
                         
                         if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {

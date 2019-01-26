@@ -25,13 +25,13 @@
  ******************************************************************************/
 package tlc2.value;
 
-import tlc2.value.impl.ModelValue;
+import tlc2.value.IModelValue;
 
 public interface IMVPerm {
 
 	IValue get(IValue value);
 
-	void put(ModelValue dval, ModelValue rval);
+	void put(IModelValue dval, IModelValue rval);
 
 	int size();
 

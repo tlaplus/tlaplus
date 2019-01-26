@@ -41,23 +41,13 @@ import java.util.stream.IntStream;
 import org.junit.Test;
 
 import tlc2.util.FP64;
-import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.FcnRcdValue;
-import tlc2.value.impl.IntervalValue;
-import tlc2.value.impl.ModelValue;
-import tlc2.value.impl.SetEnumValue;
-import tlc2.value.impl.SetOfFcnsValue;
-import tlc2.value.impl.StringValue;
-import tlc2.value.impl.SubsetValue;
 import tlc2.value.impl.SetOfFcnsValue.SubsetEnumerator;
 import util.Assert.TLCRuntimeException;
 
 public class SetOfFcnsValueTest {
 
-	private static final IValue[] getValue(String... strs) {
-		final IValue[] values = new IValue[strs.length];
+	private static final Value[] getValue(String... strs) {
+		final Value[] values = new Value[strs.length];
 		for (int i = 0; i < strs.length; i++) {
 			values[i] = new StringValue(strs[i]);
 		}
@@ -66,43 +56,43 @@ public class SetOfFcnsValueTest {
 
 	@Test
 	public void testRangeSubsetValue() {
-		final IValue[] values = new IValue[] { ModelValue.make("m1"), ModelValue.make("m2"), ModelValue.make("m3") };
+		final Value[] values = new Value[] { ModelValue.make("m1"), ModelValue.make("m2"), ModelValue.make("m3") };
 		final SetOfFcnsValue setOfFcnsValue = new SetOfFcnsValue(new SetEnumValue(values, true),
 				new SubsetValue(new SetEnumValue(
-						new IValue[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true)));
+						new Value[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true)));
 
 		assertEquals(512, setOfFcnsValue.size());
 
 		final SetOfFcnsValue.SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(512);
 		final SetEnumValue emptyset = new SetEnumValue();
 		int i = 0;
-		assertEquals(new FcnRcdValue(values, new IValue[] { emptyset, emptyset, emptyset }, true),
+		assertEquals(new FcnRcdValue(values, new Value[] { emptyset, emptyset, emptyset }, true),
 				enumerator.elementAt(i++));
 		assertEquals(
 				new FcnRcdValue(values,
-						new IValue[] { emptyset, emptyset,
-								new SetEnumValue(new IValue[] { new StringValue("a") }, true) },
+						new Value[] { emptyset, emptyset,
+								new SetEnumValue(new Value[] { new StringValue("a") }, true) },
 						true),
 				enumerator.elementAt(i++));
 		assertEquals(
 				new FcnRcdValue(values,
-						new IValue[] { emptyset, emptyset,
-								new SetEnumValue(new IValue[] { new StringValue("b") }, true) },
+						new Value[] { emptyset, emptyset,
+								new SetEnumValue(new Value[] { new StringValue("b") }, true) },
 						true),
 				enumerator.elementAt(i++));
 		assertEquals(new FcnRcdValue(values,
-				new IValue[] { emptyset, emptyset,
-						new SetEnumValue(new IValue[] { new StringValue("c") }, true) },
+				new Value[] { emptyset, emptyset,
+						new SetEnumValue(new Value[] { new StringValue("c") }, true) },
 				true), enumerator.elementAt(i++));
 		assertEquals(new FcnRcdValue(values,
-				new IValue[] { emptyset, emptyset,
-						new SetEnumValue(new IValue[] { new StringValue("a"), new StringValue("b") }, true) },
+				new Value[] { emptyset, emptyset,
+						new SetEnumValue(new Value[] { new StringValue("a"), new StringValue("b") }, true) },
 				true), enumerator.elementAt(i++));
 
 		// Last element
 		final SetEnumValue setEnumValue = new SetEnumValue(
-				new IValue[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true);
-		assertEquals(new FcnRcdValue(values, new IValue[] { setEnumValue, setEnumValue, setEnumValue }, true),
+				new Value[] { new StringValue("a"), new StringValue("b"), new StringValue("c") }, true);
+		assertEquals(new FcnRcdValue(values, new Value[] { setEnumValue, setEnumValue, setEnumValue }, true),
 				enumerator.elementAt(511));
 	}
 	
@@ -115,14 +105,14 @@ public class SetOfFcnsValueTest {
 		// Non-subset behavior is our prototype.
 		assertEquals(1, setOfFcnsValue.size());
 		final ValueEnumeration elements = setOfFcnsValue.elements();
-		assertEquals(new FcnRcdValue(new IValue[0], new IValue[0], true), elements.nextElement());
+		assertEquals(new FcnRcdValue(new Value[0], new Value[0], true), elements.nextElement());
 		assertNull(elements.nextElement());
 		
 		// Subset behaves similar.		
 		final Enumerable subset = setOfFcnsValue.getRandomSubset(5);
 		final ValueEnumeration subsetElements = subset.elements();
 		assertEquals(1, subset.size());
-		assertEquals(new FcnRcdValue(new IValue[0], new IValue[0], true), subsetElements.nextElement());
+		assertEquals(new FcnRcdValue(new Value[0], new Value[0], true), subsetElements.nextElement());
 		assertNull(subsetElements.nextElement());
 	}
 
@@ -150,20 +140,20 @@ public class SetOfFcnsValueTest {
 		// Non-subset behavior is our prototype.
 		assertEquals(1, setOfFcnsValue.size());
 		final ValueEnumeration elements = setOfFcnsValue.elements();
-		assertEquals(new FcnRcdValue(new IValue[0], new IValue[0], true), elements.nextElement());
+		assertEquals(new FcnRcdValue(new Value[0], new Value[0], true), elements.nextElement());
 		assertNull(elements.nextElement());
 		
 		// Subset behaves similar.		
 		final Enumerable subset = setOfFcnsValue.getRandomSubset(5);
 		final ValueEnumeration subsetElements = subset.elements();
 		assertEquals(1, subset.size());
-		assertEquals(new FcnRcdValue(new IValue[0], new IValue[0], true), subsetElements.nextElement());
+		assertEquals(new FcnRcdValue(new Value[0], new Value[0], true), subsetElements.nextElement());
 		assertNull(subsetElements.nextElement());
 	}
 	
 	@Test
 	public void testRandomSubsetAndValueEnumerator() {
-		final IValue[] domain = new IValue[] { ModelValue.make("m1"), ModelValue.make("m2"), ModelValue.make("m3") };
+		final Value[] domain = new Value[] { ModelValue.make("m1"), ModelValue.make("m2"), ModelValue.make("m3") };
 		final SetOfFcnsValue setOfFcnsValue = new SetOfFcnsValue(new SetEnumValue(domain, true),
 				new SetEnumValue(getValue("a", "b", "c"), true));
 
@@ -199,7 +189,7 @@ public class SetOfFcnsValueTest {
 	
 	@Test
 	public void testDomainModelValue() {
-		final IValue[] domain = new IValue[] { ModelValue.make("m1"), ModelValue.make("m2"), ModelValue.make("m3") };
+		final Value[] domain = new Value[] { ModelValue.make("m1"), ModelValue.make("m2"), ModelValue.make("m3") };
 		final SetOfFcnsValue setOfFcnsValue = new SetOfFcnsValue(new SetEnumValue(domain, true),
 				new SetEnumValue(getValue("a", "b", "c"), true));
 

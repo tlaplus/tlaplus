@@ -6,7 +6,6 @@
 package tlc2.value.impl;
 
 import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
 
 public interface Enumerable extends IValue {
 
@@ -20,7 +19,7 @@ public interface Enumerable extends IValue {
 	}
 	
   public int size();
-  public boolean member(IValue elem);
+  public boolean member(Value elem);
   /**
    * Semantics or Enumerable#elements(Ordering#UNDEFINED) 
    */
@@ -34,7 +33,7 @@ public interface Enumerable extends IValue {
    * this {@link Enumerable}.
    */
   public ValueEnumeration elements(final int k);
-  public Enumerable getRandomSubset(final int k);
-  public IValue isSubsetEq(IValue other);
+  public EnumerableValue getRandomSubset(final int k);
+  public Value isSubsetEq(Value other);
 }
 

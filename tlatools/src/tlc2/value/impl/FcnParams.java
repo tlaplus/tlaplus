@@ -7,17 +7,17 @@ package tlc2.value.impl;
 
 import tla2sany.semantic.FormalParamNode;
 import tlc2.output.EC;
+import tlc2.value.IFcnParams;
 import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
 import util.Assert;
 
-public class FcnParams {
+public class FcnParams implements IFcnParams {
   public FormalParamNode[][] formals;  // array of formal params
   public boolean[] isTuples;      // true iff tuple param
-  public IValue[] domains;         // the bounds of the formals
+  public Value[] domains;         // the bounds of the formals
   public int argLen;              // the number of arguments
   
-  public FcnParams(FormalParamNode[][] formals, boolean[] isTuples, IValue[] domains) {
+  public FcnParams(FormalParamNode[][] formals, boolean[] isTuples, Value[] domains) {
     this.formals = formals;
     this.isTuples = isTuples;
     this.domains = domains;
@@ -101,11 +101,11 @@ public class FcnParams {
 
   final class Enumerator implements ValueEnumeration {
     private ValueEnumeration[] enums;
-    private IValue[] currentElems;
+    private Value[] currentElems;
     
     public Enumerator() {
       this.enums = new ValueEnumeration[argLen];
-      this.currentElems = new IValue[argLen];
+      this.currentElems = new Value[argLen];
       int idx = 0;
       for (int i = 0; i < domains.length; i++) {
 	if (!(domains[i] instanceof Enumerable)) {
@@ -145,9 +145,9 @@ public class FcnParams {
       }
     }
 
-    public final IValue nextElement() {
+    public final Value nextElement() {
       if (this.enums == null) return null;
-      IValue[] elems = new IValue[argLen];
+      Value[] elems = new Value[argLen];
       for (int i = 0; i < argLen; i++) {
 	elems[i] = this.currentElems[i];
       }
@@ -166,5 +166,19 @@ public class FcnParams {
     }
         
   }
-  
+
+	@Override
+	public FormalParamNode[][] getFormals() {
+		return formals;
+	}
+
+	@Override
+	public IValue[] getDomains() {
+		return domains;
+	}
+
+	@Override
+	public boolean[] isTuples() {
+		return isTuples;
+	}
 }

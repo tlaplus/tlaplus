@@ -6,6 +6,7 @@
 package tlc2.value.impl;
 
 import tlc2.value.IMVPerm;
+import tlc2.value.IModelValue;
 import tlc2.value.IValue;
 
 public final class MVPerm implements IMVPerm {
@@ -53,7 +54,9 @@ public final class MVPerm implements IMVPerm {
   }
 
   @Override
-  public final void put(ModelValue k, ModelValue elem) {
+  public final void put(IModelValue m1, IModelValue m2) {
+	  ModelValue k = (ModelValue) m1;
+	  ModelValue elem = (ModelValue) m2;
     if (!k.equals(elem) && this.elems[k.index] == null) {
       this.elems[k.index] = elem;
       this.count++;

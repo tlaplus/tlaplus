@@ -33,10 +33,10 @@ import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.CallStack;
-import tlc2.tool.ContextEnumerator;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.IActionItemList;
+import tlc2.tool.IContextEnumerator;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
@@ -49,14 +49,10 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.IdThread;
 import tlc2.util.Vect;
-import tlc2.value.IBoolValue;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
-import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueExcept;
 import tlc2.value.Values;
 import tlc2.value.impl.Applicable;
 import tlc2.value.impl.BoolValue;
@@ -83,6 +79,9 @@ import tlc2.value.impl.StringValue;
 import tlc2.value.impl.SubsetValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.UnionValue;
+import tlc2.value.impl.Value;
+import tlc2.value.impl.ValueEnumeration;
+import tlc2.value.impl.ValueExcept;
 import tlc2.value.impl.ValueVec;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
@@ -101,6 +100,10 @@ public class Tool
     extends Spec
     implements ValueConstants, ToolGlobals, ITool
 {
+	
+  static final Value[] EmptyArgs = new Value[0];
+
+	
   protected final Action[] actions;     // the list of TLA actions.
   private CallStack callStack;    // the call stack.
 
@@ -335,14 +338,14 @@ public class Tool
    * probably make tools like TLC useless.
    */
   @Override
-public final StateVec getInitStates() {
+  public final StateVec getInitStates() {
 	  final StateVec initStates = new StateVec(0);
 	  getInitStates(initStates);
 	  return initStates;
   }
 
   @Override
-public final void getInitStates(IStateFunctor functor) {
+  public final void getInitStates(IStateFunctor functor) {
 	  Vect<Action> init = this.getInitStateSpec();
 	  ActionItemList acts = ActionItemList.Empty;
       // MAK 09/11/2018: Tail to head iteration order cause the first elem added with
@@ -362,7 +365,7 @@ public final void getInitStates(IStateFunctor functor) {
 
   /* Create the state specified by pred.  */
   @Override
-public final TLCState makeState(SemanticNode pred) {
+  public final TLCState makeState(SemanticNode pred) {
     ActionItemList acts = ActionItemList.Empty;
     TLCState ps = TLCState.Empty.createEmpty();
     StateVec states = new StateVec(0);
@@ -460,8 +463,8 @@ public final TLCState makeState(SemanticNode pred) {
 			// This optimization is especially useful to check inductive invariants which
 			// require TLC to generate a very large set of initial states.
 			while (!acts.isEmpty()) {
-				final IValue bval = this.eval(acts.carPred(), acts.carContext(), ps, TLCState.Empty, EvalControl.Init, acts.cm);
-				if (!(bval instanceof IBoolValue)) {
+				final Value bval = this.eval(acts.carPred(), acts.carContext(), ps, TLCState.Empty, EvalControl.Init, acts.cm);
+				if (!(bval instanceof BoolValue)) {
 					//TODO Choose more fitting error message.
 					Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING,
 							new String[] { "initial states", "boolean", bval.toString(), acts.pred.toString() });
@@ -541,7 +544,7 @@ public final TLCState makeState(SemanticNode pred) {
           else {
             if (val instanceof OpValue) {
               Applicable opVal = (Applicable)val;
-              IValue[] argVals = new IValue[alen];
+              Value[] argVals = new Value[alen];
               // evaluate the actuals:
               for (int i = 0; i < alen; i++) {
 	                argVals[i] = this.eval(args[i], c, ps, TLCState.Empty, EvalControl.Init, cm);
@@ -553,7 +556,7 @@ public final TLCState makeState(SemanticNode pred) {
 
           if (opcode == 0)
           {
-            if (!(bval instanceof IBoolValue))
+            if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "initial states", "boolean",
                         bval.toString(), init.toString() });
@@ -614,8 +617,8 @@ public final TLCState makeState(SemanticNode pred) {
           }
         case OPCODE_ite:    // IfThenElse
           {
-            IValue guard = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
-            if (!(guard instanceof IBoolValue)) {
+            Value guard = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
+            if (!(guard instanceof BoolValue)) {
               Assert.fail("In computing initial states, a non-boolean expression (" +
                           guard.getKindString() + ") was used as the condition " +
                           "of an IF.\n" + init);
@@ -634,8 +637,8 @@ public final TLCState makeState(SemanticNode pred) {
                 other = pairArgs[1];
               }
               else {
-                IValue bval = this.eval(pairArgs[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
-                if (!(bval instanceof IBoolValue)) {
+                Value bval = this.eval(pairArgs[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
+                if (!(bval instanceof BoolValue)) {
                   Assert.fail("In computing initial states, a non-boolean expression (" +
                               bval.getKindString() + ") was used as a guard condition" +
                               " of a CASE.\n" + pairArgs[1]);
@@ -655,7 +658,7 @@ public final TLCState makeState(SemanticNode pred) {
           }
         case OPCODE_fa:     // FcnApply
           {
-            IValue fval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
+            Value fval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
             if (fval instanceof FcnLambdaValue) {
               FcnLambdaValue fcn = (FcnLambdaValue)fval;
               if (fcn.fcnRcd == null) {
@@ -670,9 +673,9 @@ public final TLCState makeState(SemanticNode pred) {
                           fval.getKindString() + ") was applied as a function.\n" + init);
             }
             Applicable fcn = (Applicable) fval;
-            IValue argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
-            IValue bval = fcn.apply(argVal, EvalControl.Init);
-            if (!(bval instanceof IBoolValue))
+            Value argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
+            Value bval = fcn.apply(argVal, EvalControl.Init);
+            if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "initial states", "boolean",
                       init.toString() });
@@ -686,7 +689,7 @@ public final TLCState makeState(SemanticNode pred) {
           {
             SymbolNode var = this.getVar(args[0], c, false);
             if (var == null || var.getName().getVarLoc() < 0) {
-              IValue bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
+              Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
                 return;
               }
@@ -694,7 +697,7 @@ public final TLCState makeState(SemanticNode pred) {
             else {
               UniqueString varName = var.getName();
               IValue lval = ps.lookup(varName);
-              IValue rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
+              Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (lval == null) {
                 ps = ps.bind(varName, rval, init);
                 this.getInitStates(acts, ps, states, cm);
@@ -714,22 +717,22 @@ public final TLCState makeState(SemanticNode pred) {
           {
             SymbolNode var = this.getVar(args[0], c, false);
             if (var == null || var.getName().getVarLoc() < 0) {
-              IValue bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
+              Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
                 return;
               }
             }
             else {
               UniqueString varName = var.getName();
-              IValue lval = ps.lookup(varName);
-              IValue rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
+              Value lval = (Value) ps.lookup(varName);
+              Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (lval == null) {
                 if (!(rval instanceof Enumerable)) {
                   Assert.fail("In computing initial states, the right side of \\IN" +
                               " is not enumerable.\n" + init);
                 }
                 ValueEnumeration Enum = ((Enumerable)rval).elements();
-                IValue elem;
+                Value elem;
                 while ((elem = Enum.nextElement()) != null) {
                   ps.bind(varName, elem, init);
                   this.getInitStates(acts, ps, states, cm);
@@ -748,8 +751,8 @@ public final TLCState makeState(SemanticNode pred) {
           }
         case OPCODE_implies:
           {
-            IValue lval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
-            if (!(lval instanceof IBoolValue)) {
+            Value lval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
+            if (!(lval instanceof BoolValue)) {
               Assert.fail("In computing initial states of a predicate of form" +
                           " P => Q, P was " + lval.getKindString() + "\n." + init);
             }
@@ -770,8 +773,8 @@ public final TLCState makeState(SemanticNode pred) {
         default:
           {
             // For all the other builtin operators, simply evaluate:
-            IValue bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
-            if (!(bval instanceof IBoolValue)) {
+            Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
+            if (!(bval instanceof BoolValue)) {
 
               Assert.fail("In computing initial states, TLC expected a boolean expression," +
                           "\nbut instead found " + bval + ".\n" + init);
@@ -941,8 +944,8 @@ public final StateVec getNextStates(Action action, TLCState state) {
       CostModel cm2 = acts.cm;
 	  while (!acts.isEmpty()) {
 		  if (kind > 0 || kind == -1) {
-			  final IValue bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm2);
-			  if (!(bval instanceof IBoolValue)) {
+			  final Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm2);
+			  if (!(bval instanceof BoolValue)) {
 				  // TODO Choose more fitting error message.
 				  Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING,
 						  new String[] { "next states", "boolean", bval.toString(), acts.pred.toString() });
@@ -1047,7 +1050,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           else {
             if (val instanceof OpValue) {
               Applicable opVal = (Applicable)val;
-             IValue[] argVals = new IValue[alen];
+             Value[] argVals = new Value[alen];
               // evaluate the actuals:
               for (int i = 0; i < alen; i++) {
                 argVals[i] = this.eval(args[i], c, s0, s1, EvalControl.Clear, cm);
@@ -1059,7 +1062,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
 
           if (opcode == 0)
           {
-            if (!(bval instanceof IBoolValue))
+            if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
                       bval.toString(), pred.toString() });
@@ -1125,7 +1128,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           }
         case OPCODE_fa:     // FcnApply
           {
-            IValue fval = this.eval(args[0], c, s0, s1, EvalControl.KeepLazy, cm);
+            Value fval = this.eval(args[0], c, s0, s1, EvalControl.KeepLazy, cm);
             if (fval instanceof FcnLambdaValue) {
               FcnLambdaValue fcn = (FcnLambdaValue)fval;
               if (fcn.fcnRcd == null) {
@@ -1139,9 +1142,9 @@ public final StateVec getNextStates(Action action, TLCState state) {
                           fval.getKindString() + ") was applied as a function.\n" + pred);
             }
             Applicable fcn = (Applicable)fval;
-            IValue argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
-            IValue bval = fcn.apply(argVal, EvalControl.Clear);
-            if (!(bval instanceof IBoolValue)) {
+            Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+            Value bval = fcn.apply(argVal, EvalControl.Clear);
+            if (!(bval instanceof BoolValue)) {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "next states", "boolean",
                       pred.toString() });
             }
@@ -1168,8 +1171,8 @@ public final StateVec getNextStates(Action action, TLCState state) {
           }
         case OPCODE_ite:    // IfThenElse
           {
-            IValue guard = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
-            if (!(guard instanceof IBoolValue)) {
+            Value guard = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
+            if (!(guard instanceof BoolValue)) {
               Assert.fail("In computing next states, a non-boolean expression (" +
                           guard.getKindString() + ") was used as the condition of" +
                           " an IF." + pred);
@@ -1191,8 +1194,8 @@ public final StateVec getNextStates(Action action, TLCState state) {
                 other = pairArgs[1];
               }
               else {
-                IValue bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Clear, coverage ? cm.get(args[i]) : cm);
-                if (!(bval instanceof IBoolValue)) {
+                Value bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Clear, coverage ? cm.get(args[i]) : cm);
+                if (!(bval instanceof BoolValue)) {
                   Assert.fail("In computing next states, a non-boolean expression (" +
                               bval.getKindString() + ") was used as a guard condition" +
                               " of a CASE.\n" + pairArgs[1]);
@@ -1213,7 +1216,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
             SymbolNode var = this.getPrimedVar(args[0], c, false);
             // Assert.check(var.getName().getVarLoc() >= 0);
             if (var == null) {
-              IValue bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
+              Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
               if (!((BoolValue)bval).val) {
                 return resState;
               }
@@ -1221,7 +1224,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
             else {
               UniqueString varName = var.getName();
               IValue lval = s1.lookup(varName);
-              IValue rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+              Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
               if (lval == null) {
                 resState.bind(varName, rval, pred);
                 resState = this.getNextStates(acts, s0, resState, nss, cm);
@@ -1239,22 +1242,22 @@ public final StateVec getNextStates(Action action, TLCState state) {
             SymbolNode var = this.getPrimedVar(args[0], c, false);
             // Assert.check(var.getName().getVarLoc() >= 0);
             if (var == null) {
-              IValue bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
+              Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
               if (!((BoolValue)bval).val) {
                 return resState;
               }
             }
             else {
               UniqueString varName = var.getName();
-              IValue lval = s1.lookup(varName);
-              IValue rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+              Value lval = (Value) s1.lookup(varName);
+              Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
               if (lval == null) {
                 if (!(rval instanceof Enumerable)) {
                   Assert.fail("In computing next states, the right side of \\IN" +
                               " is not enumerable.\n" + pred);
                 }
                 ValueEnumeration Enum = ((Enumerable)rval).elements();
-                IValue elem;
+                Value elem;
                 while ((elem = Enum.nextElement()) != null) {
                   resState.bind(varName, elem, pred);
                   resState = this.getNextStates(acts, s0, resState, nss, cm);
@@ -1270,8 +1273,8 @@ public final StateVec getNextStates(Action action, TLCState state) {
           }
         case OPCODE_implies:
           {
-            IValue bval = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
-            if (!(bval instanceof IBoolValue)) {
+            Value bval = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
+            if (!(bval instanceof BoolValue)) {
               Assert.fail("In computing next states of a predicate of the form" +
                           " P => Q, P was\n" + bval.getKindString() + ".\n" + pred);
             }
@@ -1309,8 +1312,8 @@ public final StateVec getNextStates(Action action, TLCState state) {
         default:
           {
             // We handle all the other builtin operators here.
-            IValue bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
-            if (!(bval instanceof IBoolValue)) {
+            Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
+            if (!(bval instanceof BoolValue)) {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
                       bval.toString(), pred.toString() });
             }
@@ -1373,7 +1376,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
         }
 
         IValue v0 = this.eval(expr, c, s0, cm);
-        IValue v1 = this.eval(expr, c, s1, null, EvalControl.Clear, cm);
+        Value v1 = this.eval(expr, c, s1, null, EvalControl.Clear, cm);
         if (v0.equals(v1)) {
           resState = this.getNextStates(acts, s0, s1, nss, cm);
         }
@@ -1400,7 +1403,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
   }
 
   @Override
-public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
+  public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
 	    return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, CostModel.DO_NOT_RECORD);
 	  }
 
@@ -1450,7 +1453,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
 
   /* Special version of eval for state expressions. */
   @Override
-public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
+  public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
     return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, cm);
   }
   
@@ -1463,8 +1466,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm
    * This method evaluates the expression expr in the given context,
    * current state, and partial next state.
    */
-  @Override
-public final IValue eval(SemanticNode expr, Context c, TLCState s0,
+  public final Value eval(SemanticNode expr, Context c, TLCState s0,
                           TLCState s1, final int control, final CostModel cm) {
 	    if (this.callStack != null) {
 	    	return evalWithCallStack(expr, c, s0, s1, control, cm);
@@ -1472,7 +1474,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
 	    	return evalImpl(expr, c, s0, s1, control, cm);
 	    }
   }
-  private final IValue evalWithCallStack(SemanticNode expr, Context c, TLCState s0,
+  private final Value evalWithCallStack(SemanticNode expr, Context c, TLCState s0,
           TLCState s1, final int control, final CostModel cm) {
 	    this.callStack.push(expr);
 	    try {
@@ -1486,7 +1488,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
 	    }
   }
   
-  private final IValue evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
+  private final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
           final TLCState s1, final int control, CostModel cm) {
     if (coverage) {cm = cm.get(expr);}
         switch (expr.getKind()) {
@@ -1520,11 +1522,11 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case DecimalKind:
         case StringKind:
           {
-            return (IValue) expr.getToolObject(toolId);
+            return (Value) expr.getToolObject(toolId);
           }
         case AtNodeKind:
           {
-            return (IValue)c.lookup(EXCEPT_AT);
+            return (Value)c.lookup(EXCEPT_AT);
           }
         case OpArgKind:
           {
@@ -1539,21 +1541,21 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         }
   }
 
-  private final IValue evalImplLetInKind(LetInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
+  private final Value evalImplLetInKind(LetInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
 	OpDefNode[] letDefs = expr1.getLets();
 	int letLen = letDefs.length;
 	Context c1 = c;
 	for (int i = 0; i < letLen; i++) {
 	  OpDefNode opDef = letDefs[i];
 	  if (opDef.getArity() == 0) {
-	    IValue rhs = new LazyValue(opDef.getBody(), c1, cm);
+	    Value rhs = new LazyValue(opDef.getBody(), c1, cm);
 	    c1 = c1.cons(opDef, rhs);
 	  }
 	}
 	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
 
-  private final IValue evalImplSubstInKind(SubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
+  private final Value evalImplSubstInKind(SubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
   	Subst[] subs = expr1.getSubsts();
   	int slen = subs.length;
   	Context c1 = c;
@@ -1564,7 +1566,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
     
-  private final IValue evalImplApSubstInKind(APSubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
+  private final Value evalImplApSubstInKind(APSubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
   	Subst[] subs = expr1.getSubsts();
   	int slen = subs.length;
   	Context c1 = c;
@@ -1575,18 +1577,18 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
   
-  private final IValue evalImplOpArgKind(OpArgNode expr1, Context c, TLCState s0, TLCState s1, final CostModel cm) {
+  private final Value evalImplOpArgKind(OpArgNode expr1, Context c, TLCState s0, TLCState s1, final CostModel cm) {
   	SymbolNode opNode = expr1.getOp();
   	Object val = this.lookup(opNode, c, false);
   	if (val instanceof OpDefNode) {
   	  return setSource(expr1, new OpLambdaValue((OpDefNode)val, this, c, s0, s1, cm));
   	}
-  	return (IValue)val;
+  	return (Value)val;
   }
   
   /* evalAppl */
   
-  private final IValue evalAppl(final OpApplNode expr, Context c, TLCState s0,
+  private final Value evalAppl(final OpApplNode expr, Context c, TLCState s0,
           TLCState s1, final int control, final CostModel cm) {
 	  if (this.callStack != null) {
 		  return evalApplWithCallStack(expr, c, s0, s1, control, cm);
@@ -1595,7 +1597,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
 	  }
   }
 
-  private final IValue evalApplWithCallStack(final OpApplNode expr, Context c, TLCState s0,
+  private final Value evalApplWithCallStack(final OpApplNode expr, Context c, TLCState s0,
           TLCState s1, final int control, final CostModel cm) {
 	    this.callStack.push(expr);
 	    try {
@@ -1609,7 +1611,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
 	    }
   }
   
-  private final IValue evalApplImpl(final OpApplNode expr, Context c, TLCState s0,
+  private final Value evalApplImpl(final OpApplNode expr, Context c, TLCState s0,
                               TLCState s1, final int control, CostModel cm) {
     if (coverage){
     	cm = cm.get(expr);
@@ -1641,7 +1643,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
 				} else {
 					val = lv.getValue();
 					if (val == null) {
-						final IValue res = this.eval(lv.expr, lv.con, s0, s1, control, lv.getCostModel());
+						final Value res = this.eval(lv.expr, lv.con, s0, s1, control, lv.getCostModel());
 						// This check has been suggested by Yuan Yu on 01/15/2018:
 						//
 						// If init-states are being generated, level has to be <= ConstantLevel for
@@ -1733,7 +1735,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
 
 			}
 
-			IValue res = null;
+			Value res = null;
           if (val instanceof OpDefNode) {
             OpDefNode opDef = (OpDefNode)val;
             opcode = BuiltInOPs.getOpCode(opDef.getName());
@@ -1742,8 +1744,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               res = this.eval(opDef.getBody(), c1, s0, s1, control, cm);
             }
           }
-          else if (val instanceof IValue) {
-            res = (IValue)val;
+          else if (val instanceof Value) {
+            res = (Value)val;
             int alen = args.length;
             if (alen == 0) {
               if (val instanceof MethodValue) {
@@ -1753,7 +1755,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             else {
               if (val instanceof OpValue) {
                 Applicable opVal = (Applicable)val;
-                IValue[] argVals = new IValue[alen];
+                Value[] argVals = new Value[alen];
                 // evaluate the actuals:
                 for (int i = 0; i < alen; i++) {
                   argVals[i] = this.eval(args[i], c, s0, s1, control, cm);
@@ -1792,7 +1794,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           {
             SemanticNode pred = args[0];
             SemanticNode inExpr = expr.getBdedQuantBounds()[0];
-            IValue inVal = this.eval(inExpr, c, s0, s1, control, cm);
+            Value inVal = this.eval(inExpr, c, s0, s1, control, cm);
             if (!(inVal instanceof Enumerable)) {
               Assert.fail("Attempted to compute the value of an expression of\n" +
                           "form CHOOSE x \\in S: P, but S was not enumerable.\n" + expr);
@@ -1835,7 +1837,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             if (isTuple) {
               // Identifier tuple case:
               int cnt = bvars.length;
-              IValue val;
+              Value val;
               while ((val = enumSet.nextElement()) != null) {
                 TupleValue tv = (TupleValue) val.toTuple();
                 if (tv == null || tv.size() != cnt) {
@@ -1847,27 +1849,27 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                 for (int i = 0; i < cnt; i++) {
                   c1 = c1.cons(bvars[i], tv.elems[i]);
                 }
-                IValue bval = this.eval(pred, c1, s0, s1, control, cm);
-                if (!(bval instanceof IBoolValue)) {
+                Value bval = this.eval(pred, c1, s0, s1, control, cm);
+                if (!(bval instanceof BoolValue)) {
                   Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
                 }
                 if (((BoolValue)bval).val) {
-                  return val;
+                  return (Value) val;
                 }
               }
             }
             else {
               // Simple identifier case:
               SymbolNode name = bvars[0];
-              IValue val;
+              Value val;
               while ((val = enumSet.nextElement()) != null) {
                 Context c1 = c.cons(name, val);
-                IValue bval = this.eval(pred, c1, s0, s1, control, cm);
-                if (!(bval instanceof IBoolValue)) {
+                Value bval = this.eval(pred, c1, s0, s1, control, cm);
+                if (!(bval instanceof BoolValue)) {
                   Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
                 }
                 if (((BoolValue)bval).val) {
-                  return val;
+                  return (Value) val;
                 }
               }
             }
@@ -1881,8 +1883,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             SemanticNode body = args[0];
             Context c1;
             while ((c1 = Enum.nextElement()) != null) {
-              IValue bval = this.eval(body, c1, s0, s1, control, cm);
-              if (!(bval instanceof IBoolValue)) {
+              Value bval = this.eval(body, c1, s0, s1, control, cm);
+              if (!(bval instanceof BoolValue)) {
                 Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
               }
               if (((BoolValue)bval).val) {
@@ -1897,8 +1899,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             SemanticNode body = args[0];
             Context c1;
             while ((c1 = Enum.nextElement()) != null) {
-              IValue bval = this.eval(body, c1, s0, s1, control, cm);
-              if (!(bval instanceof IBoolValue)) {
+              Value bval = this.eval(body, c1, s0, s1, control, cm);
+              if (!(bval instanceof BoolValue)) {
                 Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
               }
               if (!((BoolValue)bval).val) {
@@ -1918,8 +1920,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                 other = pairArgs[1];
               }
               else {
-                IValue bval = this.eval(pairArgs[0], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
-                if (!(bval instanceof IBoolValue)) {
+                Value bval = this.eval(pairArgs[0], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
+                if (!(bval instanceof BoolValue)) {
                   Assert.fail("A non-boolean expression (" + bval.getKindString() +
                               ") was used as a condition of a CASE. " + pairArgs[0]);
                 }
@@ -1936,7 +1938,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_cp:     // CartesianProd
           {
             int alen = args.length;
-            IValue[] sets = new IValue[alen];
+            Value[] sets = new Value[alen];
             for (int i = 0; i < alen; i++) {
               sets[i] = this.eval(args[i], c, s0, s1, control, cm);
             }
@@ -1946,8 +1948,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           {
             int alen = args.length;
             for (int i = 0; i < alen; i++) {
-              IValue bval = this.eval(args[i], c, s0, s1, control, cm);
-              if (!(bval instanceof IBoolValue)) {
+              Value bval = this.eval(args[i], c, s0, s1, control, cm);
+              if (!(bval instanceof BoolValue)) {
                 Assert.fail("A non-boolean expression (" + bval.getKindString() +
                             ") was used as a formula in a conjunction.\n" + args[i]);
               }
@@ -1961,8 +1963,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           {
             int alen = args.length;
             for (int i = 0; i < alen; i++) {
-              IValue bval = this.eval(args[i], c, s0, s1, control, cm);
-              if (!(bval instanceof IBoolValue)) {
+              Value bval = this.eval(args[i], c, s0, s1, control, cm);
+              if (!(bval instanceof BoolValue)) {
                 Assert.fail("A non-boolean expression (" + bval.getKindString() +
                             ") was used as a formula in a disjunction.\n" + args[i]);
               }
@@ -1975,49 +1977,49 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_exc:    // Except
           {
             int alen = args.length;
-            IValue result = this.eval(args[0], c, s0, s1, control, cm);
+            Value result = this.eval(args[0], c, s0, s1, control, cm);
             // SZ: variable not used ValueExcept[] expts = new ValueExcept[alen-1];
             for (int i = 1; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pairArgs = pairNode.getArgs();
               SemanticNode[] cmpts = ((OpApplNode)pairArgs[0]).getArgs();
 
-              IValue[] lhs = new IValue[cmpts.length];
+              Value[] lhs = new Value[cmpts.length];
               for (int j = 0; j < lhs.length; j++) {
                 lhs[j] = this.eval(cmpts[j], c, s0, s1, control,  coverage ? cm.get(pairNode).get(pairArgs[0]) : cm);
               }
-              IValue atVal = result.select(lhs);
+              Value atVal = result.select(lhs);
               if (atVal == null) {
                 // Do nothing but warn:
                   MP.printWarning(EC.TLC_EXCEPT_APPLIED_TO_UNKNOWN_FIELD, new String[]{args[0].toString()});
               }
               else {
                 Context c1 = c.cons(EXCEPT_AT, atVal);
-                IValue rhs = this.eval(pairArgs[1], c1, s0, s1, control,  coverage ? cm.get(pairNode) : cm);
+                Value rhs = this.eval(pairArgs[1], c1, s0, s1, control,  coverage ? cm.get(pairNode) : cm);
                 ValueExcept vex = new ValueExcept(lhs, rhs);
-                result = result.takeExcept(vex);
+                result = (Value) result.takeExcept(vex);
               }
             }
             return result;
           }
         case OPCODE_fa:     // FcnApply
           {
-            IValue result = null;
-            IValue fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(control), cm);
+            Value result = null;
+            Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(control), cm);
             if ((fval instanceof FcnRcdValue) ||
                 (fval instanceof FcnLambdaValue)) {
               Applicable fcn = (Applicable)fval;
-              IValue argVal = this.eval(args[1], c, s0, s1, control, cm);
+              Value argVal = this.eval(args[1], c, s0, s1, control, cm);
               result = fcn.apply(argVal, control);
             }
-            else if ((fval instanceof ITupleValue) ||
+            else if ((fval instanceof TupleValue) ||
                      (fval instanceof RecordValue)) {
               Applicable fcn = (Applicable)fval;
               if (args.length != 2) {
                 Assert.fail("Attempted to evaluate an expression of form f[e1, ... , eN]" +
                             "\nwith f a tuple or record and N > 1.\n" + expr);
               }
-              IValue aval = this.eval(args[1], c, s0, s1, control, cm);
+              Value aval = this.eval(args[1], c, s0, s1, control, cm);
               result = fcn.apply(aval, control);
             }
             else {
@@ -2034,7 +2036,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             boolean[] isTuples = expr.isBdedQuantATuple();
             ExprNode[] domains = expr.getBdedQuantBounds();
 
-            IValue[] dvals = new IValue[domains.length];
+            Value[] dvals = new Value[domains.length];
             boolean isFcnRcd = true;
             for (int i = 0; i < dvals.length; i++) {
               dvals[i] = this.eval(domains[i], c, s0, s1, control, cm);
@@ -2050,14 +2052,14 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               isFcnRcd = false;
             }
             if (isFcnRcd && !EvalControl.isKeepLazy(control)) {
-              return fval.toFcnRcd();
+              return (Value) fval.toFcnRcd();
             }
             return fval;
           }
         case OPCODE_ite:    // IfThenElse
           {
-            IValue bval = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(bval instanceof IBoolValue)) {
+            Value bval = this.eval(args[0], c, s0, s1, control, cm);
+            if (!(bval instanceof BoolValue)) {
               Assert.fail("A non-boolean expression (" + bval.getKindString() +
                           ") was used as the condition of an IF.\n" + expr);
             }
@@ -2070,7 +2072,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           {
             int alen = args.length;
             UniqueString[] names = new UniqueString[alen];
-            IValue[] vals = new IValue[alen];
+            Value[] vals = new Value[alen];
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
@@ -2081,10 +2083,10 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_rs:     // RcdSelect
           {
-            IValue rval = this.eval(args[0], c, s0, s1, control, cm);
-            IValue sval = (IValue) args[1].getToolObject(toolId);
+            Value rval = this.eval(args[0], c, s0, s1, control, cm);
+            Value sval = (Value) args[1].getToolObject(toolId);
             if (rval instanceof RecordValue) {
-              IValue result = ((RecordValue)rval).select(sval);
+              Value result = (Value) ((RecordValue)rval).select(sval);
               if (result == null) {
                 Assert.fail("Attempted to select nonexistent field " + sval + " from the" +
                             " record\n" + Values.ppr(rval.toString()) + "\n" + expr);
@@ -2116,7 +2118,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             SemanticNode body = args[0];
             Context c1;
             while ((c1 = Enum.nextElement()) != null) {
-              IValue val = this.eval(body, c1, s0, s1, control, cm);
+              Value val = this.eval(body, c1, s0, s1, control, cm);
               vals.addElement(val);
               // vals.addElement1(val);
             }
@@ -2126,7 +2128,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           {
             int alen = args.length;
             UniqueString names[] = new UniqueString[alen];
-            IValue vals[] = new IValue[alen];
+            Value vals[] = new Value[alen];
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
@@ -2137,30 +2139,30 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_sof:    // SetOfFcns
           {
-            IValue lhs = this.eval(args[0], c, s0, s1, control, cm);
-            IValue rhs = this.eval(args[1], c, s0, s1, control, cm);
+            Value lhs = this.eval(args[0], c, s0, s1, control, cm);
+            Value rhs = this.eval(args[1], c, s0, s1, control, cm);
             return setSource(expr, new SetOfFcnsValue(lhs, rhs, cm));
           }
         case OPCODE_sso:    // SubsetOf
           {
             SemanticNode pred = args[0];
             SemanticNode inExpr = expr.getBdedQuantBounds()[0];
-            IValue inVal = this.eval(inExpr, c, s0, s1, control, cm);
+            Value inVal = this.eval(inExpr, c, s0, s1, control, cm);
             boolean isTuple = expr.isBdedQuantATuple()[0];
             FormalParamNode[] bvars = expr.getBdedQuantSymbolLists()[0];
             if (inVal instanceof Reducible) {
               ValueVec vals = new ValueVec();
               ValueEnumeration enumSet = ((Enumerable)inVal).elements();
-              IValue elem;
+              Value elem;
               if (isTuple) {
                 while ((elem = enumSet.nextElement()) != null) {
                   Context c1 = c;
-                  IValue[] tuple = ((TupleValue)elem).elems;
+                  Value[] tuple = ((TupleValue)elem).elems;
                   for (int i = 0; i < bvars.length; i++) {
                     c1 = c1.cons(bvars[i], tuple[i]);
                   }
-                  IValue bval = this.eval(pred, c1, s0, s1, control, cm);
-                  if (!(bval instanceof IBoolValue)) {
+                  Value bval = this.eval(pred, c1, s0, s1, control, cm);
+                  if (!(bval instanceof BoolValue)) {
                     Assert.fail("Attempted to evaluate an expression of form {x \\in S : P(x)}" +
                                 " when P was " + bval.getKindString() + ".\n" + pred);
                   }
@@ -2173,8 +2175,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                 SymbolNode idName = bvars[0];
                 while ((elem = enumSet.nextElement()) != null) {
                   Context c1 = c.cons(idName, elem);
-                  IValue bval = this.eval(pred, c1, s0, s1, control, cm);
-                  if (!(bval instanceof IBoolValue)) {
+                  Value bval = this.eval(pred, c1, s0, s1, control, cm);
+                  if (!(bval instanceof BoolValue)) {
                     Assert.fail("Attempted to evaluate an expression of form {x \\in S : P(x)}" +
                                 " when P was " + bval.getKindString() + ".\n" + pred);
                   }
@@ -2195,7 +2197,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         case OPCODE_tup:    // Tuple
           {
             int alen = args.length;
-            IValue[] vals = new IValue[alen];
+            Value[] vals = new Value[alen];
             for (int i = 0; i < alen; i++) {
               vals[i] = this.eval(args[i], c, s0, s1, control, cm);
             }
@@ -2224,8 +2226,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_lnot:
           {
-            IValue arg = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg instanceof IBoolValue)) {
+            Value arg = this.eval(args[0], c, s0, s1, control, cm);
+            if (!(arg instanceof BoolValue)) {
               Assert.fail("Attempted to apply the operator ~ to a non-boolean\n(" +
                           arg.getKindString() + ")\n" + expr);
             }
@@ -2233,17 +2235,17 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_subset:
           {
-            IValue arg = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg = this.eval(args[0], c, s0, s1, control, cm);
 			return setSource(expr, new SubsetValue(arg, cm));
           }
         case OPCODE_union:
           {
-            IValue arg = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg = this.eval(args[0], c, s0, s1, control, cm);
             return setSource(expr, UnionValue.union(arg));
           }
         case OPCODE_domain:
           {
-            IValue arg = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg = this.eval(args[0], c, s0, s1, control, cm);
             if (!(arg instanceof Applicable)) {
               Assert.fail("Attempted to apply the operator DOMAIN to a non-function\n(" +
                           arg.getKindString() + ")\n" + expr);
@@ -2259,20 +2261,20 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_eq:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             return (arg1.equals(arg2)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_land:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg1 instanceof IBoolValue)) {
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            if (!(arg1 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P /\\ Q" +
                           " when P was\n" + arg1.getKindString() + ".\n" + expr);
             }
             if (((BoolValue)arg1).val) {
-              IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-              if (!(arg2 instanceof IBoolValue)) {
+              Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
+              if (!(arg2 instanceof BoolValue)) {
                 Assert.fail("Attempted to evaluate an expression of form P /\\ Q" +
                             " when Q was\n" + arg2.getKindString() + ".\n" + expr);
               }
@@ -2282,16 +2284,16 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_lor:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg1 instanceof IBoolValue)) {
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            if (!(arg1 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P \\/ Q" +
                           " when P was\n" + arg1.getKindString() + ".\n" + expr);
             }
             if (((BoolValue)arg1).val) {
               return BoolValue.ValTrue;
             }
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-            if (!(arg2 instanceof IBoolValue)) {
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            if (!(arg2 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P \\/ Q" +
                           " when Q was\n" + arg2.getKindString() + ".\n" + expr);
             }
@@ -2299,14 +2301,14 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_implies:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg1 instanceof IBoolValue)) {
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            if (!(arg1 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P => Q" +
                           " when P was\n" + arg1.getKindString() + ".\n" + expr);
             }
             if (((BoolValue)arg1).val) {
-              IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-              if (!(arg2 instanceof IBoolValue)) {
+              Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
+              if (!(arg2 instanceof BoolValue)) {
                 Assert.fail("Attempted to evaluate an expression of form P => Q" +
                             " when Q was\n" + arg2.getKindString() + ".\n" + expr);
               }
@@ -2316,9 +2318,9 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_equiv:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
-            if (!(arg1 instanceof IBoolValue) || !(arg2 instanceof IBoolValue)) {
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            if (!(arg1 instanceof BoolValue) || !(arg2 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P <=> Q" +
                           " when P or Q was not a boolean.\n" + expr);
             }
@@ -2328,14 +2330,14 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_noteq:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             return arg1.equals(arg2) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
         case OPCODE_subseteq:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             if (!(arg1 instanceof Enumerable)) {
               Assert.fail("Attempted to evaluate an expression of form S \\subseteq T," +
                           " but S was not enumerable.\n" + expr);
@@ -2344,20 +2346,20 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_in:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             return (arg2.member(arg1)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_notin:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             return (arg2.member(arg1)) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
         case OPCODE_setdiff:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             if (arg1 instanceof Reducible) {
               return setSource(expr, ((Reducible)arg1).diff(arg2));
             }
@@ -2365,8 +2367,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_cap:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             if (arg1 instanceof Reducible) {
               return setSource(expr, ((Reducible)arg1).cap(arg2));
             }
@@ -2382,8 +2384,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_cup:
           {
-            IValue arg1 = this.eval(args[0], c, s0, s1, control, cm);
-            IValue arg2 = this.eval(args[1], c, s0, s1, control, cm);
+            Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
+            Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             if (arg1 instanceof Reducible) {
               return setSource(expr, ((Reducible)arg1).cup(arg2));
             }
@@ -2398,36 +2400,36 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_unchanged:
           {
-            IValue v0 = this.eval(args[0], c, s0, TLCState.Empty, control, cm);
-            IValue v1 = this.eval(args[0], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
+            Value v0 = this.eval(args[0], c, s0, TLCState.Empty, control, cm);
+            Value v1 = this.eval(args[0], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
             return (v0.equals(v1)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_aa:     // <A>_e
           {
-            IValue res = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(res instanceof IBoolValue)) {
+            Value res = this.eval(args[0], c, s0, s1, control, cm);
+            if (!(res instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form <A>_e," +
                           " but A was not a boolean.\n" + expr);
             }
             if (!((BoolValue)res).val) {
               return BoolValue.ValFalse;
             }
-            IValue v0 = this.eval(args[1], c, s0, TLCState.Empty, control, cm);
-            IValue v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
+            Value v0 = this.eval(args[1], c, s0, TLCState.Empty, control, cm);
+            Value v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
             return v0.equals(v1) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
         case OPCODE_sa:     // [A]_e
           {
-            IValue res = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(res instanceof IBoolValue)) {
+            Value res = this.eval(args[0], c, s0, s1, control, cm);
+            if (!(res instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form [A]_e," +
                           " but A was not a boolean.\n" + expr);
             }
             if (((BoolValue)res).val) {
               return BoolValue.ValTrue;
             }
-            IValue v0 = this.eval(args[1], c, s0, TLCState.Empty, control, cm);
-            IValue v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
+            Value v0 = this.eval(args[1], c, s0, TLCState.Empty, control, cm);
+            Value v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
             return (v0.equals(v1)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_cdot:
@@ -2494,7 +2496,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         }
   }
 
-  private final IValue setSource(final SemanticNode expr, final IValue value) {
+  private final Value setSource(final SemanticNode expr, final Value value) {
     if (this.callStack != null) {
       value.setSource(expr);
     }
@@ -2517,7 +2519,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
     ExprNode[] constrs = this.getModelConstraints();
     for (int i = 0; i < constrs.length; i++) {
       IValue bval = this.eval(constrs[i], Context.Empty, state, CostModel.DO_NOT_RECORD);
-      if (!(bval instanceof IBoolValue)) {
+      if (!(bval instanceof BoolValue)) {
         Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
       }
       if (!((BoolValue)bval).val) return false;
@@ -2530,8 +2532,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
   public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
     ExprNode[] constrs = this.getActionConstraints();
     for (int i = 0; i < constrs.length; i++) {
-      IValue bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, CostModel.DO_NOT_RECORD);
-      if (!(bval instanceof IBoolValue)) {
+      Value bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, CostModel.DO_NOT_RECORD);
+      if (!(bval instanceof BoolValue)) {
         Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
       }
       if (!((BoolValue)bval).val) return false;
@@ -2600,7 +2602,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             for (int i = 0; i < letDefs.length; i++) {
               OpDefNode opDef = letDefs[i];
               if (opDef.getArity() == 0) {
-                IValue rhs = new LazyValue(opDef.getBody(), c1, cm);
+                Value rhs = new LazyValue(opDef.getBody(), c1, cm);
                 c1 = c1.cons(opDef, rhs);
               }
             }
@@ -2667,11 +2669,11 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
       return res;
     }
 
-    IValue v1 = this.eval(pred, c, s0, TLCState.Empty, EvalControl.Enabled, cm);
+    Value v1 = this.eval(pred, c, s0, TLCState.Empty, EvalControl.Enabled, cm);
 	// We are now in ENABLED and primed state. Second TLCState parameter being null
 	// effectively disables LazyValue in evalAppl (same effect as
 	// EvalControl.setPrimed(EvalControl.Enabled)).
-    IValue v2 = this.eval(pred, c, s1, null, EvalControl.Primed, cm);
+    Value v2 = this.eval(pred, c, s1, null, EvalControl.Primed, cm);
 
     if (v1.equals(v2)) return null;
     TLCState res = this.enabled(acts1, s0, s1, cm);
@@ -2760,7 +2762,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             if (val instanceof OpValue)
             {
               Applicable op = (Applicable) val;
-              IValue[] argVals = new IValue[alen];
+              Value[] argVals = new Value[alen];
               // evaluate the actuals:
               for (int i = 0; i < alen; i++)
               {
@@ -2773,7 +2775,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
 
           if (opcode == 0)
           {
-            if (!(bval instanceof IBoolValue))
+            if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "ENABLED", "boolean",
                       bval.toString(), pred.toString() });
@@ -2835,8 +2837,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                 other = pairArgs[1];
               } else
               {
-                IValue bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Enabled, cm);
-                if (!(bval instanceof IBoolValue))
+                Value bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Enabled, cm);
+                if (!(bval instanceof BoolValue))
                 {
                   Assert.fail("In computing ENABLED, a non-boolean expression(" + bval.getKindString()
                           + ") was used as a guard condition" + " of a CASE.\n" + pairArgs[1]);
@@ -2877,7 +2879,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_fa: // FcnApply
           {
-            IValue fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(EvalControl.Enabled), cm); // KeepLazy does not interfere with EvalControl.Enabled in this.evalAppl
+            Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(EvalControl.Enabled), cm); // KeepLazy does not interfere with EvalControl.Enabled in this.evalAppl
             if (fval instanceof FcnLambdaValue)
             {
               FcnLambdaValue fcn = (FcnLambdaValue) fval;
@@ -2891,9 +2893,9 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             if (fval instanceof Applicable)
             {
               Applicable fcn = (Applicable) fval;
-              IValue argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
-              IValue bval = fcn.apply(argVal, EvalControl.Enabled); // EvalControl.Enabled not taken into account by any subclass of Applicable
-              if (!(bval instanceof IBoolValue))
+              Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
+              Value bval = fcn.apply(argVal, EvalControl.Enabled); // EvalControl.Enabled not taken into account by any subclass of Applicable
+              if (!(bval instanceof BoolValue))
               {
                 Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "ENABLED", "boolean",
                         pred.toString() });
@@ -2910,8 +2912,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_ite: // IfThenElse
           {
-            IValue guard = this.eval(args[0], c, s0, s1, EvalControl.Enabled, cm);
-            if (!(guard instanceof IBoolValue))
+            Value guard = this.eval(args[0], c, s0, s1, EvalControl.Enabled, cm);
+            if (!(guard instanceof BoolValue))
             {
               Assert.fail("In computing ENABLED, a non-boolean expression(" + guard.getKindString()
                       + ") was used as the guard condition" + " of an IF.\n" + pred);
@@ -2980,7 +2982,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             SymbolNode var = this.getPrimedVar(args[0], c, true);
             if (var == null)
             {
-              IValue bval = this.eval(pred, c, s0, s1, EvalControl.Enabled, cm);
+              Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled, cm);
               if (!((BoolValue) bval).val) {
                 return null;
               }
@@ -2988,7 +2990,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             {
               UniqueString varName = var.getName();
               IValue lval = s1.lookup(varName);
-              IValue rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
+              Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               if (lval == null)
               {
                 TLCState s2 = s1.bind(var, rval, pred);
@@ -3004,8 +3006,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         case OPCODE_implies:
           {
-            IValue bval = this.eval(args[0], c, s0, s1, EvalControl.Enabled, cm);
-            if (!(bval instanceof IBoolValue))
+            Value bval = this.eval(args[0], c, s0, s1, EvalControl.Enabled, cm);
+            if (!(bval instanceof BoolValue))
             {
               Assert.fail("While computing ENABLED of an expression of the form" + " P => Q, P was "
                       + bval.getKindString() + ".\n" + pred);
@@ -3047,15 +3049,15 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
             SymbolNode var = this.getPrimedVar(args[0], c, true);
             if (var == null)
             {
-                IValue bval = this.eval(pred, c, s0, s1, EvalControl.Enabled, cm);
+                Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled, cm);
                 if (!((BoolValue) bval).val) {
                   return null;
                 }
             } else
             {
               UniqueString varName = var.getName();
-              IValue lval = s1.lookup(varName);
-              IValue rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
+              Value lval = (Value) s1.lookup(varName);
+              Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               if (lval == null)
               {
                 if (!(rval instanceof Enumerable))
@@ -3063,7 +3065,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                   Assert.fail("The right side of \\IN is not enumerable.\n" + pred);
                 }
                 ValueEnumeration Enum = ((Enumerable) rval).elements();
-                IValue val;
+                Value val;
                 while ((val = Enum.nextElement()) != null)
                 {
                   TLCState s2 = s1.bind(var, val, pred);
@@ -3091,8 +3093,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         default:
           {
             // We handle all the other builtin operators here.
-            IValue bval = this.eval(pred, c, s0, s1, EvalControl.Enabled, cm);
-            if (!(bval instanceof IBoolValue))
+            Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled, cm);
+            if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "ENABLED", "boolean",
                       bval.toString(), pred.toString() });
@@ -3135,7 +3137,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         if (var != null) {
           // a state variable, e.g. UNCHANGED var1
           UniqueString varName = var.getName();
-          IValue v0 = this.eval(expr, c, s0, s1, EvalControl.Enabled, cm);
+          Value v0 = this.eval(expr, c, s0, s1, EvalControl.Enabled, cm);
           IValue v1 = s1.lookup(varName);
           if (v1 == null) {
             s1 = s1.bind(var, v0, expr);
@@ -3187,7 +3189,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
           }
         }
 
-        final IValue v0 = this.eval(expr, c, s0, TLCState.Empty, EvalControl.Enabled, cm);
+        final Value v0 = this.eval(expr, c, s0, TLCState.Empty, EvalControl.Enabled, cm);
         // We are in ENABLED and primed but why pass only primed? This appears to
         // be the only place where we call eval from the ENABLED scope without
         // additionally passing EvalControl.Enabled. Not passing Enabled allows a 
@@ -3215,7 +3217,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
         // If this bug is ever fixed to make TLC accept spec 23, EvalControl.Primed
         // should likely be rewritten to EvalControl.setPrimed(EvalControl.Enabled)
         // to disable reusage of LazyValues on line ~1384 above.
-		final IValue v1 = this.eval(expr, c, s1, TLCState.Empty, EvalControl.Primed, cm);
+		final Value v1 = this.eval(expr, c, s1, TLCState.Empty, EvalControl.Primed, cm);
         if (!v0.equals(v1)) {
           return null;
         }
@@ -3225,8 +3227,8 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
   /* This method determines if the action predicate is valid in (s0, s1). */
   @Override
   public final boolean isValid(Action act, TLCState s0, TLCState s1) {
-    IValue val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear, act.cm);
-    if (!(val instanceof IBoolValue)) {
+    Value val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear, act.cm);
+    if (!(val instanceof BoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()});
     }
     return ((BoolValue)val).val;
@@ -3247,7 +3249,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
   @Override
   public final boolean isValid(ExprNode expr) {
     IValue val = this.eval(expr, Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
-    if (!(val instanceof IBoolValue)) {
+    if (!(val instanceof BoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
     }
     return ((BoolValue)val).val;
@@ -3395,10 +3397,10 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                                      final int control, CostModel cm) {
     Context fcon = fcn.getCon();
     int plen = fcn.getParams().length();
-    FormalParamNode[][] formals = fcn.getParams().formals;
-    IValue[] domains = fcn.getParams().domains;
-    boolean[] isTuples = fcn.getParams().isTuples;
-    IValue argVal = this.eval(args[1], c, s0, s1, control, cm);
+    FormalParamNode[][] formals = fcn.getParams().getFormals();
+    Value[] domains = (Value[]) fcn.getParams().getDomains();
+    boolean[] isTuples = fcn.getParams().isTuples();
+    Value argVal = this.eval(args[1], c, s0, s1, control, cm);
 
     if (plen == 1) {
       if (!domains[0].member(argVal)) {
@@ -3414,7 +3416,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                       ",\nthe argument is:\n" + Values.ppr(argVal.toString()) +
                       "which does not match its formal parameter.\n" + args[0]);
         }
-        IValue[] elems = tv.elems;
+        Value[] elems = tv.elems;
         for (int i = 0; i < ids.length; i++) {
           fcon = fcon.cons(ids[i], elems[i]);
         }
@@ -3430,10 +3432,10 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                     " domain.\n" + args[0]);
       }
       int argn = 0;
-      IValue[] elems = tv.elems;
+      Value[] elems = tv.elems;
       for (int i = 0; i < formals.length; i++) {
         FormalParamNode[] ids = formals[i];
-        IValue domain = domains[i];
+        Value domain = domains[i];
         if (isTuples[i]) {
           if (!domain.member(elems[argn])) {
             Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
@@ -3448,7 +3450,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
                         Values.ppr(elems[argn-1].toString()) +
                         "which does not match its formal parameter.\n" + args[0]);
           }
-          IValue[] avals = tv1.elems;
+          Value[] avals = tv1.elems;
           for (int j = 0; j < ids.length; j++) {
             fcon = fcon.cons(ids[j], avals[j]);
           }
@@ -3470,13 +3472,12 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
   }
 
   @Override
-  public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
+  public final IContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
           TLCState s1, final int control) {
 	  return contexts(appl, c, s0, s1, control, CostModel.DO_NOT_RECORD);
   }
   
   /* A context enumerator for an operator application. */
-  @Override
   public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
                                           TLCState s1, final int control, CostModel cm) {
     FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
@@ -3492,7 +3493,7 @@ public final IValue eval(SemanticNode expr, Context c, TLCState s0,
     ValueEnumeration[] enums = new ValueEnumeration[alen];
     int idx = 0;
     for (int i = 0; i < flen; i++) {
-      IValue boundSet = this.eval(domains[i], c, s0, s1, control, cm);
+      Value boundSet = this.eval(domains[i], c, s0, s1, control, cm);
       if (!(boundSet instanceof Enumerable)) {
         Assert.fail("TLC encountered a non-enumerable quantifier bound\n" +
                     Values.ppr(boundSet.toString()) + ".\n" + domains[i]);

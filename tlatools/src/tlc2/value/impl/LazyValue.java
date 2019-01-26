@@ -16,7 +16,6 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import util.Assert;
 import util.ToolIO;
 
@@ -48,7 +47,7 @@ public class LazyValue extends Value {
 
   public SemanticNode expr;
   public Context con;
-  private IValue val;
+  private Value val;
 
   public LazyValue(SemanticNode expr, Context con, final CostModel cm) {
 	  this(expr, con, true, coverage ? cm.get(expr) : cm);
@@ -68,12 +67,12 @@ public class LazyValue extends Value {
 
   public final boolean isUncachable() { return this.val == UndefValue.ValUndef; }
 
-  public final void setValue(final IValue aValue) {
+  public final void setValue(final Value aValue) {
 	  assert !isUncachable();
 	  this.val = aValue;
   }
 
-  public final IValue getValue() {
+  public final Value getValue() {
 	  // cache hit on (this.val != null && !isUncachable)
       // cache miss on (this.val == null)
 	  return this.val;
@@ -107,7 +106,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to check set membership of lazy values.");
@@ -133,7 +132,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
@@ -146,7 +145,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.");
@@ -173,7 +172,7 @@ public class LazyValue extends Value {
   }
 
   private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-    this.val = (IValue)ois.readObject();
+    this.val = (Value)ois.readObject();
   }
 
   private void writeObject(ObjectOutputStream oos) throws IOException {
@@ -197,7 +196,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to normalize lazy value.");
@@ -224,7 +223,7 @@ public class LazyValue extends Value {
     }
   }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to call assignable on lazy value.");

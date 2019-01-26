@@ -7,25 +7,25 @@ package tlc2.module;
 
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
-import tlc2.value.IValue;
 import tlc2.value.Values;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.UserObj;
 import tlc2.value.impl.UserValue;
+import tlc2.value.impl.Value;
 
 public class Strings extends UserObj
 {
 	public static final long serialVersionUID = 20160822L;
 
-    private static IValue SetString = new UserValue(new Strings());
+    private static Value SetString = new UserValue(new Strings());
 
-    public static IValue STRING()
+    public static Value STRING()
     {
         return SetString;
     }
 
-    public final int compareTo(IValue val)
+    public final int compareTo(Value val)
     {
         if ((val instanceof UserValue) && (((UserValue) val).userObj instanceof Strings))
         {
@@ -36,7 +36,7 @@ public class Strings extends UserObj
         throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "STRING", Values.ppr(val.toString()) });
     }
 
-    public final boolean member(IValue val)
+    public final boolean member(Value val)
     {
         if (val instanceof StringValue)
             return true;

@@ -19,8 +19,8 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
-import tlc2.tool.ContextEnumerator;
 import tlc2.tool.EvalControl;
+import tlc2.tool.IContextEnumerator;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Specs;
@@ -140,7 +140,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		{
 			ExprNode body = (ExprNode) args[0];
 			try {
-				ContextEnumerator Enum = tool.contexts(expr, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
+				IContextEnumerator Enum = tool.contexts(expr, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
 				Context con1;
 				LNDisj res = new LNDisj(0);
 				while ((con1 = Enum.nextElement()) != null) {
@@ -167,7 +167,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		{
 			ExprNode body = (ExprNode) args[0];
 			try {
-				ContextEnumerator Enum = tool.contexts(expr, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
+				IContextEnumerator Enum = tool.contexts(expr, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
 				Context con1;
 				LNConj res = new LNConj(0);
 				while ((con1 = Enum.nextElement()) != null) {
@@ -225,7 +225,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				IValue fval = tool.eval(args[0], con, TLCState.Empty);
 				if (fval instanceof IFcnLambdaValue) {
 					IFcnLambdaValue fcn = (IFcnLambdaValue) fval;
-					if (fcn.getRcd() == null) {
+					if (!fcn.hasRcd()) {
 						// this could be a bug, since con1 is created but not
 						// used
 						// SZ Jul 13, 2009: removed to kill the warning

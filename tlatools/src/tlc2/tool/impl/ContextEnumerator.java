@@ -3,28 +3,29 @@
 // Last modified on Mon 30 Apr 2007 at 15:29:55 PST by lamport
 //      modified on Tue Nov  9 11:06:41 PST 1999 by yuanyu
 
-package tlc2.tool;
+package tlc2.tool.impl;
 
 import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
+import tlc2.tool.IContextEnumerator;
 import tlc2.util.Context;
-import tlc2.value.ITupleValue;
-import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
+import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.Value;
+import tlc2.value.impl.ValueEnumeration;
 import util.Assert;
 
-public final class ContextEnumerator {
+public final class ContextEnumerator implements IContextEnumerator {
   private Context con;
   private Object[] vars;
   private ValueEnumeration[] enums;
-  private IValue[] currentElems;
+  private Value[] currentElems;
   private boolean isDone;
   
   public ContextEnumerator(Object[] vars, ValueEnumeration[] enums, Context con) {
     this.con = con;
     this.vars = vars;
     this.enums = enums;
-    this.currentElems = new IValue[enums.length];
+    this.currentElems = new Value[enums.length];
     this.isDone = false;
     for (int i = 0; i < enums.length; i++) {
       this.currentElems[i] = this.enums[i].nextElement();
@@ -35,6 +36,7 @@ public final class ContextEnumerator {
     }
   }
   
+  @Override
   public final Context nextElement() {
       Context con1 = this.con;
       if (this.isDone) return null;
@@ -44,11 +46,11 @@ public final class ContextEnumerator {
           }
           else {
               SymbolNode[] varList = (SymbolNode[])this.vars[i];
-              IValue argVal = this.currentElems[i];
-              if (!(argVal instanceof ITupleValue)) {
+              Value argVal = this.currentElems[i];
+              if (!(argVal instanceof TupleValue)) {
                   Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
               }
-              IValue[] valList = ((ITupleValue)argVal).getElems();
+              Value[] valList = ((TupleValue)argVal).elems;
               if (varList.length != valList.length) {
                   Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
               }

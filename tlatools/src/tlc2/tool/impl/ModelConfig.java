@@ -25,6 +25,7 @@ import tlc2.value.impl.IntValue;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.StringValue;
+import tlc2.value.impl.Value;
 import tlc2.value.impl.ValueVec;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -415,7 +416,7 @@ public class ModelConfig implements ValueConstants, Serializable
     /**
      * Parses a value (number, string, boolean and set)
      */
-    private IValue parseValue(Token tt, SimpleCharStream scs, TLAplusParserTokenManager tmgr) throws IOException
+    private Value parseValue(Token tt, SimpleCharStream scs, TLAplusParserTokenManager tmgr) throws IOException
     {
         if (tt.kind == TLAplusParserConstants.NUMBER_LITERAL)
         {
@@ -439,7 +440,7 @@ public class ModelConfig implements ValueConstants, Serializable
             {
                 while (true)
                 {
-                	IValue elem = this.parseValue(tt, scs, tmgr);
+                	Value elem = this.parseValue(tt, scs, tmgr);
                     elems.addElement(elem);
                     tt = getNextToken(tmgr);
                     if (!tt.image.equals(","))

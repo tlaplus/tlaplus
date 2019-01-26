@@ -13,25 +13,25 @@ import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
+import tlc2.value.IFcnRcdValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
 
-public class FcnRcdValue extends Value implements Applicable {
-  public final IValue[] domain;
+public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
+  public final Value[] domain;
   public final IntervalValue intv;
-  public final IValue[] values;
+  public final Value[] values;
   private boolean isNorm;
   private int[] indexTbl;  // speed up function application
-public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[0], true);
+  public final static Value EmptyFcn = new FcnRcdValue(new Value[0], new Value[0], true);
 
   /* Constructor */
-  public FcnRcdValue(IValue[] domain, IValue[] values, boolean isNorm) {
+  public FcnRcdValue(Value[] domain, Value[] values, boolean isNorm) {
     this.domain = domain;
     this.values = values;
     this.intv = null;
@@ -39,7 +39,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     this.indexTbl = null;
   }
 
-  public FcnRcdValue(IntervalValue intv, IValue[] values) {
+  public FcnRcdValue(IntervalValue intv, Value[] values) {
     this.intv = intv;
     this.values = values;
     this.domain = null;
@@ -47,12 +47,12 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     this.indexTbl = null;
   }
 
-  public FcnRcdValue(IntervalValue intv, IValue[] values, CostModel cm) {
+  public FcnRcdValue(IntervalValue intv, Value[] values, CostModel cm) {
 	  this(intv, values);
 	  this.cm = cm;
   }
 
-  private FcnRcdValue(FcnRcdValue fcn, IValue[] values) {
+  private FcnRcdValue(FcnRcdValue fcn, Value[] values) {
     this.domain = fcn.domain;
     this.intv = fcn.intv;
     this.values = values;
@@ -60,16 +60,16 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     this.indexTbl = fcn.indexTbl;
   }
 
-  public FcnRcdValue(ValueVec elems, IValue[] values, boolean isNorm) {
+  public FcnRcdValue(ValueVec elems, Value[] values, boolean isNorm) {
 	  this(elems.toArray(), values, isNorm);
   }
 
-  public FcnRcdValue(ValueVec elems, IValue[] values, boolean isNorm, CostModel cm) {
+  public FcnRcdValue(ValueVec elems, Value[] values, boolean isNorm, CostModel cm) {
 	  this(elems, values, isNorm);
 	  this.cm = cm;
   }
 
-  public FcnRcdValue(IValue[] domain, IValue[] values, boolean isNorm, CostModel cm) {
+  public FcnRcdValue(Value[] domain, Value[] values, boolean isNorm, CostModel cm) {
 	  this(domain, values, isNorm);
 	  this.cm = cm;
   }
@@ -98,7 +98,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     }
   }
 
-  private final int lookupIndex(IValue arg) {
+  private final int lookupIndex(Value arg) {
     int len = this.indexTbl.length;
     int loc = (arg.hashCode() & 0x7FFFFFFF) % len;
     while (true) {
@@ -118,7 +118,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   public final int compareTo(Object obj) {
     try {
 
-			final FcnRcdValue fcn = obj instanceof IValue ? (FcnRcdValue) ((IValue) obj).toFcnRcd() : null;
+			final FcnRcdValue fcn = obj instanceof Value ? (FcnRcdValue) ((Value) obj).toFcnRcd() : null;
 			if (fcn == null) {
 				if (obj instanceof ModelValue)
 					return 1;
@@ -150,7 +150,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
 	int result;
 	if (fcn.intv != null) {
 		for (int i = 0; i < this.domain.length; i++) {
-			final IValue dElem = this.domain[i];
+			final Value dElem = this.domain[i];
 			if (!(dElem instanceof IntValue)) {
 				Assert.fail(
 						"Attempted to compare integer with non-integer\n" + Values.ppr(dElem.toString()) + ".");
@@ -194,7 +194,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   		}
   	} else {
   		for (int i = 0; i < fcn.domain.length; i++) {
-  			final IValue dElem = fcn.domain[i];
+  			final Value dElem = fcn.domain[i];
   			if (!(dElem instanceof IntValue)) {
   				Assert.fail(
   						"Attempted to compare integer with non-integer:\n" + Values.ppr(dElem.toString()) + ".");
@@ -215,7 +215,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   public final boolean equals(Object obj) {
     try {
 
-      FcnRcdValue fcn = obj instanceof IValue ? (FcnRcdValue) ((IValue)obj).toFcnRcd() : null;
+      FcnRcdValue fcn = obj instanceof Value ? (FcnRcdValue) ((Value)obj).toFcnRcd() : null;
       if (fcn == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -236,7 +236,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
         else {
           if (fcn.domain.length != this.intv.size()) return false;
           for (int i = 0; i < fcn.domain.length; i++) {
-            IValue dElem = fcn.domain[i];
+            Value dElem = fcn.domain[i];
             if (!(dElem instanceof IntValue)) {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".");
@@ -252,7 +252,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
         if (this.values.length != fcn.values.length) return false;
         if (fcn.intv != null) {
           for (int i = 0; i < this.domain.length; i++) {
-            IValue dElem = this.domain[i];
+            Value dElem = this.domain[i];
             if (!(dElem instanceof IntValue)) {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".");
@@ -281,7 +281,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of the function " + Values.ppr(this.toString()));
@@ -295,9 +295,9 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
 
   public final boolean isFinite() { return true; }
 
-  public final IValue apply(IValue arg, int control) {
+  public final Value apply(Value arg, int control) {
     try {
-    	IValue result = this.select(arg);
+    	Value result = this.select(arg);
       if (result == null) {
         Assert.fail("Attempted to apply function:\n" + Values.ppr(this.toString()) +
         "\nto argument " + Values.ppr(arg.toString()) + ", which is" +
@@ -312,7 +312,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   }
 
   /* This one does not seem to be needed anymore.  */
-  public final IValue apply(IValue[] args, int control) {
+  public final Value apply(Value[] args, int control) {
     try {
       return this.apply(new TupleValue(args), EvalControl.Clear);
     }
@@ -322,7 +322,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     }
   }
 
-  public final IValue select(IValue arg) {
+  public final Value select(Value arg) {
     try {
 
       if (this.intv != null) {
@@ -364,7 +364,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     }
   }
 
-  public final boolean assign(IValue[] args, IValue val) {
+  public final boolean assign(Value[] args, Value val) {
     try {
 
       if (this.intv != null) {
@@ -387,7 +387,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
       }
       else {
         // domain is represented as an array of values:
-        IValue argv = new TupleValue(args);
+        Value argv = new TupleValue(args);
         int len = this.domain.length;
         for (int i = 0; i < len; i++) {
           if (this.domain[i].equals(argv)) {
@@ -410,17 +410,17 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
 
       if (ex.idx >= ex.path.length) return ex.value;
 
       int flen = this.values.length;
-      IValue[] newValues = new IValue[flen];
+      Value[] newValues = new Value[flen];
       for (int i = 0; i < flen; i++) {
         newValues[i] = this.values[i];
       }
-      IValue arg = ex.path[ex.idx];
+      Value arg = ex.path[ex.idx];
 
       if (this.intv != null) {
         // domain is represented as an integer interval:
@@ -440,9 +440,9 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
           if (arg.equals(this.domain[i])) {
             ex.idx++;
             newValues[i] = newValues[i].takeExcept(ex);
-            IValue[] newDomain = this.domain;
+            Value[] newDomain = this.domain;
             if (!this.isNorm) {
-              newDomain = new IValue[flen];
+              newDomain = new Value[flen];
               for (int j = 0; j < flen; j++) {
                 newDomain[j] = this.domain[j];
               }
@@ -460,9 +460,9 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
-      IValue res = this;
+      Value res = this;
       for (int i = 0; i < exs.length; i++) {
         res = res.takeExcept(exs[i]);
       }
@@ -474,7 +474,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     }
   }
 
-  public final IValue getDomain() {
+  public final Value getDomain() {
     try {
       if (this.intv != null) {
         return this.intv;
@@ -492,7 +492,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
    * Returns the domain of this FunctionRecordValue regardless of its internal
    * representation as either Value[] or IntervalValue as Value[].
    */
-  public final IValue[] getDomainAsValues() {
+  public final Value[] getDomainAsValues() {
 	  if (this.intv != null) {
 		  return this.intv.asValues();
 	  } else {
@@ -512,13 +512,13 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   }
 
   @Override
-  public final IValue toTuple() {
+  public final Value toTuple() {
       if (this.intv != null) {
         if (this.intv.low != 1) return null;
         return new TupleValue(this.values);
       }
       int len = this.values.length;
-      IValue[] elems = new IValue[len];
+      Value[] elems = new Value[len];
       for (int i = 0; i < len; i++) {
         if (!(this.domain[i] instanceof IntValue)) return null;
         int idx = ((IntValue)this.domain[i]).val;
@@ -535,7 +535,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   }
 
   @Override
-  public final IValue toRcd() {
+  public final Value toRcd() {
       if (this.domain == null) return null;
       this.normalize();
       UniqueString[] vars = new UniqueString[this.domain.length];
@@ -550,7 +550,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   }
 
   	@Override
-	public final IValue toFcnRcd() {
+	public final Value toFcnRcd() {
 		return this;
 	}
   
@@ -558,7 +558,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   public final boolean isNormalized() { return this.isNorm; }
 
   /* This method normalizes (destructively) this function. */
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
 
       if (!this.isNorm) {
@@ -571,7 +571,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
                   "\noccurs multiple times in the function domain.");
           }
           else if (cmp > 0) {
-        	  IValue tv = this.domain[0];
+        	  Value tv = this.domain[0];
             this.domain[0] = this.domain[i];
             this.domain[i] = tv;
             tv = this.values[0];
@@ -580,8 +580,8 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
           }
         }
         for (int i = 2; i < dlen; i++) {
-        	IValue d = this.domain[i];
-        	IValue v = this.values[i];
+        	Value d = this.domain[i];
+        	Value v = this.values[i];
           int j = i;
           int cmp;
           while ((cmp = d.compareTo(this.domain[j-1])) < 0) {
@@ -643,9 +643,9 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
 
   public final IValue deepCopy() {
     try {
-    	IValue[] vals = new IValue[this.values.length];
+    	Value[] vals = new Value[this.values.length];
       for (int i = 0; i < vals.length; i++) {
-        vals[i] = this.values[i].deepCopy();
+        vals[i] = (Value) this.values[i].deepCopy();
       }
       return new FcnRcdValue(this, vals);
     }
@@ -655,7 +655,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
     }
   }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       boolean canAssign = ((val instanceof FcnRcdValue) &&
         this.values.length == ((FcnRcdValue)val).values.length);
@@ -734,19 +734,19 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
 
       this.normalize();
       int flen = this.domain.length;
-      IValue[] vals = new IValue[flen];
+      Value[] vals = new Value[flen];
 
       boolean vchanged = false;
       for (int i = 0; i < flen; i++) {
-        vals[i] = this.values[i].permute(perm);
+        vals[i] = (Value) this.values[i].permute(perm);
         vchanged = vchanged || (vals[i] != this.values[i]);
       }
 
       if (this.intv == null) {
-    	  IValue[] dom = new IValue[flen];
+    	  Value[] dom = new Value[flen];
         boolean dchanged = false;
         for (int i = 0; i < flen; i++) {
-          dom[i] = this.domain[i].permute(perm);
+          dom[i] = (Value) this.domain[i].permute(perm);
           dchanged = dchanged || (dom[i] != this.domain[i]);
         }
 
@@ -788,7 +788,7 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
   private final boolean isRcd() {
     if (this.intv != null) return false;
     for (int i = 0; i < this.domain.length; i++) {
-      IValue dval = this.domain[i];
+      Value dval = this.domain[i];
       boolean isName = ((dval instanceof StringValue) &&
       isName(((StringValue)dval).val.toString()));
       if (!isName) return false;
@@ -872,21 +872,21 @@ public final static IValue EmptyFcn = new FcnRcdValue(new IValue[0], new IValue[
 		final int index = vos.getIndex();
 		final int len = vos.readNat();
 		final int info = vos.readByte();
-		IValue res;
-		final IValue[] rvals = new IValue[len];
+		Value res;
+		final Value[] rvals = new Value[len];
 		if (info == 0) {
 			final int low = vos.readInt();
 			final int high = vos.readInt();
 			for (int i = 0; i < len; i++) {
-				rvals[i] = vos.read();
+				rvals[i] = (Value) vos.read();
 			}
 			final IntervalValue intv = new IntervalValue(low, high);
 			res = new FcnRcdValue(intv, rvals);
 		} else {
-			final IValue[] dvals = new IValue[len];
+			final Value[] dvals = new Value[len];
 			for (int i = 0; i < len; i++) {
-				dvals[i] = vos.read();
-				rvals[i] = vos.read();
+				dvals[i] = (Value) vos.read();
+				rvals[i] = (Value) vos.read();
 			}
 			res = new FcnRcdValue(dvals, rvals, (info == 1));
 		}

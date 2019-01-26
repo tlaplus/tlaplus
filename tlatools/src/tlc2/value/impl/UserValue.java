@@ -8,7 +8,6 @@ package tlc2.value.impl;
 
 import tlc2.tool.FingerprintException;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.Values;
 import util.Assert;
 
@@ -22,7 +21,7 @@ public class UserValue extends Value {
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof UserValue) {
-        return this.userObj.compareTo((IValue)obj);
+        return this.userObj.compareTo((Value)obj);
       }
       if (!(obj instanceof ModelValue))
         Assert.fail("Attempted to compare overridden value " + Values.ppr(this.toString()) +
@@ -45,7 +44,7 @@ public class UserValue extends Value {
     }
   }
 
-  public final boolean member(IValue val) {
+  public final boolean member(Value val) {
     try {
       return this.userObj.member(val);
     }
@@ -65,7 +64,7 @@ public class UserValue extends Value {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the overridden value " +
@@ -79,7 +78,7 @@ public class UserValue extends Value {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the overridden value " +
@@ -108,13 +107,13 @@ public class UserValue extends Value {
   /* Nothing to normalize. */
   public final boolean isNormalized() { return true; }
 
-  public final IValue normalize() { /*SKIP*/return this; }
+  public final Value normalize() { /*SKIP*/return this; }
 
   public final boolean isDefined() { return true; }
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       return this.equals(val);
     }

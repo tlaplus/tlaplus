@@ -10,7 +10,6 @@ import java.util.Enumeration;
 import tlc2.util.Vect;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
 import util.Assert;
 import util.Set;
 
@@ -22,7 +21,7 @@ public abstract class MVPerms {
     final Set perms = new Set(sz);
     final Vect<IMVPerm> permVec = new Vect<>(sz);
     // Compute the group generators:
-    IValue elem;
+    Value elem;
     while ((elem = Enum.nextElement()) != null) {
       final FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
       if (fcn == null) {

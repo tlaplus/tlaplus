@@ -8,7 +8,6 @@ package tlc2.value.impl;
 
 import tlc2.tool.FingerprintException;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.Values;
 import util.Assert;
 
@@ -16,7 +15,7 @@ public class UndefValue extends Value {
 
   public final static UndefValue ValUndef = new UndefValue();
 
-public UndefValue() { /*SKIP*/ }
+  public UndefValue() { /*SKIP*/ }
 
   public byte getKind() { return UNDEFVALUE; }
 
@@ -40,7 +39,7 @@ public UndefValue() { /*SKIP*/ }
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element " + Values.ppr(this.toString()));
@@ -64,7 +63,7 @@ public UndefValue() { /*SKIP*/ }
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the value " +
@@ -78,7 +77,7 @@ public UndefValue() { /*SKIP*/ }
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the value " +
@@ -106,13 +105,13 @@ public UndefValue() { /*SKIP*/ }
 
   public final boolean isNormalized() { return true; }
 
-  public final IValue normalize() { /*nop*/return this; }
+  public final Value normalize() { /*nop*/return this; }
 
   public final boolean isDefined() { return false; }
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) { return true; }
+  public final boolean assignable(Value val) { return true; }
 
   /* The string representation. */
   public final StringBuffer toString(StringBuffer sb, int offset) {

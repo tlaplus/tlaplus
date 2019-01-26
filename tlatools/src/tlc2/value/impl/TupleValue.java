@@ -17,41 +17,38 @@ import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
 public class TupleValue extends Value implements Applicable, ITupleValue {
-  public final IValue[] elems;          // the elements of this tuple.
-public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
+  public final Value[] elems;          // the elements of this tuple.
+  public final static TupleValue EmptyTuple = new TupleValue(new Value[0]);
 
   /* Constructor */
-  public TupleValue(IValue[] elems) { this.elems = elems; }
+  public TupleValue(Value[] elems) { this.elems = elems; }
 
-  public TupleValue(IValue v) {
-	  this(new IValue[1]);
+  public TupleValue(Value v) {
+	  this(new Value[1]);
     this.elems[0] = v;
   }
 
-  public TupleValue(IValue v1, IValue v2) {
-	  this(new IValue[2]);
+  public TupleValue(Value v1, Value v2) {
+	  this(new Value[2]);
     this.elems[0] = v1;
     this.elems[1] = v2;
   }
 
-  public TupleValue(IValue[] elems, CostModel cm) {
+  public TupleValue(Value[] elems, CostModel cm) {
 	  this(elems);
 	  this.cm = cm;
   }
 
-  @Override
   public IValue getElem(int idx) {
 	  return elems[idx];
   }
   
-  @Override
   public IValue[] getElems() {
 	  return elems;
   }
@@ -60,7 +57,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
 
   public final int compareTo(Object obj) {
     try {
-      TupleValue tv = obj instanceof IValue ? (TupleValue) ((IValue)obj).toTuple() : null;
+      TupleValue tv = obj instanceof Value ? (TupleValue) ((Value)obj).toTuple() : null;
       if (tv == null) {
         // Well, we have to convert this to function and compare.
         return this.toFcnRcd().compareTo(obj);
@@ -83,7 +80,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
 
   public final boolean equals(Object obj) {
     try {
-      TupleValue tv = obj instanceof IValue ? (TupleValue) ((IValue)obj).toTuple() : null;
+      TupleValue tv = obj instanceof Value ? (TupleValue) ((Value)obj).toTuple() : null;
       if (tv == null) {
         // Well, we have to convert this to function and compare.
         return this.toFcnRcd().equals(obj);
@@ -103,7 +100,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check set membership in a tuple value.");
       return false;   // make compiler happy
@@ -116,7 +113,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
 
   public final boolean isFinite() { return true; }
 
-  public final IValue apply(IValue arg, int control) {
+  public final Value apply(Value arg, int control) {
     try {
       if (!(arg instanceof IntValue)) {
         Assert.fail("Attempted to apply tuple to a non-integer argument.");
@@ -126,7 +123,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
         Assert.fail("Attempted to apply tuple\n" + Values.ppr(this.toString()) +
         "\nto integer " + idx + " which is out of domain.");
       }
-      return this.elems[idx-1];
+      return (Value) this.elems[idx-1];
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -134,7 +131,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
     }
   }
 
-  public final IValue apply(IValue[] args, int control) {
+  public final Value apply(Value[] args, int control) {
     try {
       if (args.length != 1) {
         Assert.fail("Attetmpted to apply tuple with wrong number of arguments.");
@@ -147,7 +144,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
     }
   }
 
-  public final IValue select(IValue arg) {
+  public final Value select(Value arg) {
     try {
       if (!(arg instanceof IntValue)) {
         Assert.fail("Attempted to apply tuple to a non-integer argument " +
@@ -155,7 +152,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
       }
       int idx = ((IntValue)arg).val;
       if (idx > 0 && idx <= this.elems.length) {
-        return this.elems[idx-1];
+        return (Value) this.elems[idx-1];
       }
       return null;
     }
@@ -165,12 +162,12 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         int tlen = this.elems.length;
-        IValue[] newElems = new IValue[tlen];
-        IValue arcVal = ex.path[ex.idx];
+        Value[] newElems = new Value[tlen];
+        Value arcVal = ex.path[ex.idx];
         if (arcVal instanceof IntValue) {
           int idx = ((IntValue)arcVal).val - 1;
           if (0 <= idx && idx < tlen) {
@@ -192,9 +189,9 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
-      IValue val = this;
+      Value val = this;
       for (int i = 0; i < exs.length; i++) {
         val = val.takeExcept(exs[i]);
       }
@@ -206,7 +203,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
     }
   }
 
-  public final IValue getDomain() {
+  public final Value getDomain() {
     try {
       return new IntervalValue(1, this.size());
     }
@@ -232,17 +229,17 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
   }
 
   @Override
-  public final IValue toTuple() {
+  public final Value toTuple() {
 	  return this;
   }
   
   @Override
-  public final IValue toRcd() {
+  public final Value toRcd() {
 	  return size() == 0 ? RecordValue.EmptyRcd : super.toRcd();
   }
 
 	@Override
-	public final IValue toFcnRcd() {
+	public final Value toFcnRcd() {
         final IntervalValue intv = new IntervalValue(1, this.elems.length);
         if (coverage) {cm.incSecondary(this.elems.length);}
         return new FcnRcdValue(intv, this.elems, cm);
@@ -251,7 +248,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
   /* The normalization of the value. */
   public final boolean isNormalized() { return true; }
 
-  public final IValue normalize() { /*nop*/return this; }
+  public final Value normalize() { /*nop*/return this; }
 
   public final boolean isDefined() {
     try {
@@ -269,9 +266,9 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
 
   public final IValue deepCopy() {
     try {
-    	IValue[] vals = new IValue[this.elems.length];
+    	Value[] vals = new Value[this.elems.length];
       for (int i = 0; i < this.elems.length; i++) {
-        vals[i] = this.elems[i].deepCopy();
+        vals[i] = (Value) this.elems[i].deepCopy();
       }
       return new TupleValue(vals);
     }
@@ -281,7 +278,7 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
     }
   }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       boolean canAssign = ((val instanceof TupleValue) &&
          (this.elems.length == ((TupleValue)val).elems.length));
@@ -334,10 +331,10 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
 
   public final IValue permute(IMVPerm perm) {
     try {
-    	IValue[] vals = new IValue[this.elems.length];
+    	Value[] vals = new Value[this.elems.length];
       boolean changed = false;
       for (int i = 0; i < vals.length; i++) {
-        vals[i] = this.elems[i].permute(perm);
+        vals[i] = (Value) this.elems[i].permute(perm);
         changed = changed || (vals[i] != this.elems[i]);
       }
       if (changed) {
@@ -375,11 +372,11 @@ public final static ITupleValue EmptyTuple = new TupleValue(new IValue[0]);
 	public static IValue createFrom(final ValueInputStream vos) throws IOException {
 		final int index = vos.getIndex();
 		final int len = vos.readNat();
-		final IValue[] elems = new IValue[len];
+		final Value[] elems = new Value[len];
 		for (int i = 0; i < len; i++) {
-			elems[i] = vos.read();
+			elems[i] = (Value) vos.read();
 		}
-		final IValue res = new TupleValue(elems);
+		final Value res = new TupleValue(elems);
 		vos.assign(res, index);
 		return res;
 	}

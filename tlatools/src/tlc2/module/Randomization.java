@@ -27,31 +27,31 @@ package tlc2.module;
 
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
-import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
-import tlc2.value.impl.Enumerable;
+import tlc2.value.impl.EnumerableValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.SubsetValue;
+import tlc2.value.impl.Value;
 
 public class Randomization implements ValueConstants {
 	
 	public static final long serialVersionUID = 20180618L;
 	
-    public static IValue RandomSubset(final IValue v1, final IValue v2) {
+    public static Value RandomSubset(final Value v1, final Value v2) {
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
 					new String[] { "first", "RandomSubset", "nonnegative integer", Values.ppr(v1.toString()) });
 		}
-        if (!(v2 instanceof Enumerable)) {
+        if (!(v2 instanceof EnumerableValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
 					new String[] { "second", "RandomSubset", "a finite set", Values.ppr(v2.toString()) });
         }
-        return ((Enumerable) v2).getRandomSubset(((IntValue) v1).val);
+        return ((EnumerableValue) v2).getRandomSubset(((IntValue) v1).val);
     }
     
-    public static IValue RandomSetOfSubsets(final IValue v1, final IValue v2, final IValue v3) {
+    public static Value RandomSetOfSubsets(final Value v1, final Value v2, final Value v3) {
 		// first parameter	
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
@@ -73,11 +73,11 @@ public class Randomization implements ValueConstants {
 					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer", Values.ppr(v2.toString()) });
 		}
 		// third parameter	
-        if (!(v3 instanceof Enumerable)) {
+        if (!(v3 instanceof EnumerableValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
 					new String[] { "third", "RandomSetOfSubsets", "finite set", Values.ppr(v3.toString()) });
         }
-        final Enumerable ev = (Enumerable) v3;
+        final EnumerableValue ev = (EnumerableValue) v3;
 		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {
 			// First compare exponents before explicit calculating size of subset. The
 			// calculated value which is the subset's size then won't overflow.
@@ -99,7 +99,7 @@ public class Randomization implements ValueConstants {
 		return new SubsetValue(ev).getRandomSetOfSubsets(numberOfPicks, probability);
     }
     
-    public static IValue RandomSubsetSet(final IValue v1, final IValue v2, final IValue v3) {
+    public static Value RandomSubsetSet(final Value v1, final Value v2, final Value v3) {
 		// first parameter	
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
@@ -128,11 +128,11 @@ public class Randomization implements ValueConstants {
 					new String[] { "second", "RandomSubsetSetProbability", "string literal does not represent a parsable probability", Values.ppr(v2.toString()) });
 		}
 		// third parameter	
-        if (!(v3 instanceof Enumerable)) {
+        if (!(v3 instanceof EnumerableValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
 					new String[] { "third", "RandomSubsetSetProbability", "finite set", Values.ppr(v3.toString()) });
         }
-        final Enumerable ev = (Enumerable) v3;
+        final EnumerableValue ev = (EnumerableValue) v3;
 		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {
 			// First compare exponents before explicit calculating size of subset. The
 			// calculated value which is the subset's size then won't overflow.

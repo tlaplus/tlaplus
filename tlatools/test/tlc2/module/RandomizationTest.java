@@ -35,13 +35,13 @@ import org.junit.Test;
 
 import tlc2.tool.EvalException;
 import tlc2.util.FP64;
-import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.StringValue;
+import tlc2.value.impl.Value;
 
 public class RandomizationTest {
 	
@@ -80,7 +80,7 @@ public class RandomizationTest {
 
 	@Test
 	public void testV1Negative() {
-		final IValue v1 = IntValue.gen(-42);
+		final Value v1 = IntValue.gen(-42);
 		try {
 			Randomization.RandomSetOfSubsets(v1, IntValue.gen(42), new IntervalValue(1, 42));
 		} catch (final EvalException ee) {
@@ -92,7 +92,7 @@ public class RandomizationTest {
 	
 	@Test
 	public void testV1NoIntValue() {
-		final IValue v1 = new StringValue("52");
+		final Value v1 = new StringValue("52");
 		try {
 			Randomization.RandomSetOfSubsets(v1, IntValue.gen(42), new IntervalValue(1, 42));
 		} catch (final EvalException ee) {
@@ -104,7 +104,7 @@ public class RandomizationTest {
 
 	@Test
 	public void testV1Zero() {
-		final IValue v1 = IntValue.gen(0);
+		final Value v1 = IntValue.gen(0);
 		final Enumerable randomSubset = (Enumerable) Randomization.RandomSetOfSubsets(v1, IntValue.gen(42),
 				new IntervalValue(1, 42));
 

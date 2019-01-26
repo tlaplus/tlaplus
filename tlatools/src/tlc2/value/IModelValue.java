@@ -23,24 +23,8 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-
 package tlc2.value;
 
-import tla2sany.semantic.SemanticNode;
-import tlc2.util.Context;
-import tlc2.value.IFcnParams;
-import tlc2.value.IFcnRcdValue;
-
-public interface IFcnLambdaValue {
-
-	SemanticNode getBody();
-
-	IFcnRcdValue getRcd();
-
-	IFcnParams getParams();
-
-	Context getCon();
-
-	boolean hasRcd();
+public interface IModelValue {
 
 }

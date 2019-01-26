@@ -14,7 +14,6 @@ import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.Values;
 import util.Assert;
 import util.WrongInvocationException;
@@ -68,7 +67,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
       "\nis an element of operator " + Values.ppr(this.toString()));
@@ -92,7 +91,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue apply(IValue arg, int control) {
+  public final Value apply(Value arg, int control) {
     try {
       throw new WrongInvocationException("Should use the other apply method.");
     }
@@ -102,7 +101,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue apply(IValue[] args, int control) {
+  public final Value apply(Value[] args, int control) {
     try {
       int alen = this.opDef.getArity();
       if (alen != args.length) {
@@ -114,7 +113,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
       for (int i = 0; i < alen; i++) {
         c1 = c1.cons(formals[i], args[i]);
       }
-      return this.tool.eval(this.opDef.getBody(), c1, this.state, this.pstate,
+      return (Value) this.tool.eval(this.opDef.getBody(), c1, this.state, this.pstate,
           control);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -123,7 +122,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue select(IValue arg) {
+  public final Value select(Value arg) {
     try {
       throw new WrongInvocationException("Error(TLC): attempted to call OpLambdaValue.select().");
     }
@@ -133,7 +132,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
       Values.ppr(this.toString()) + ".");
@@ -145,7 +144,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       Values.ppr(this.toString()) + ".");
@@ -157,7 +156,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue getDomain() {
+  public final Value getDomain() {
     try {
       Assert.fail("Attempted to compute the domain of the operator " +
       Values.ppr(this.toString()) + ".");
@@ -192,7 +191,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
     }
   }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       throw new WrongInvocationException("Should not normalize an operator.");
     }
@@ -206,7 +205,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       throw new WrongInvocationException("Should not initialize an operator.");
     }

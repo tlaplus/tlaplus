@@ -10,14 +10,13 @@ import java.util.Hashtable;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.util.Vect;
-import tlc2.value.ITupleValue;
-import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
-import tlc2.value.ValueEnumeration;
 import tlc2.value.Values;
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.Value;
+import tlc2.value.impl.ValueEnumeration;
 import tlc2.value.impl.ValueVec;
 
 public class TransitiveClosure implements ValueConstants
@@ -25,7 +24,7 @@ public class TransitiveClosure implements ValueConstants
 	public static final long serialVersionUID = 20160822L;
 
     /* Implement the Warshall algorithm for transitive closure. */
-    public static IValue Warshall(IValue rel)
+    public static Value Warshall(Value rel)
     {
         if (!(rel instanceof Enumerable))
         {
@@ -35,19 +34,19 @@ public class TransitiveClosure implements ValueConstants
         int maxLen = 2 * rel.size();
         boolean[][] matrix = new boolean[maxLen][maxLen];
         ValueEnumeration elems = ((Enumerable) rel).elements();
-        Vect<IValue> elemList = new Vect<>();
-        Hashtable<IValue, Integer> fps = new Hashtable<>();
+        Vect<Value> elemList = new Vect<>();
+        Hashtable<Value, Integer> fps = new Hashtable<>();
         int cnt = 0;
-        IValue elem = null;
+        Value elem = null;
         while ((elem = elems.nextElement()) != null)
         {
-            ITupleValue tv = (ITupleValue) elem.toTuple();
+            TupleValue tv = (TupleValue) elem.toTuple();
             if (tv == null || tv.size() != 2)
             {
                 throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Values.ppr(elem.toString()));
             }
-            IValue elem1 = tv.getElem(0);
-            IValue elem2 = tv.getElem(1);
+            Value elem1 = tv.elems[0];
+            Value elem2 = tv.elems[1];
             int num1 = cnt;
             Integer num = (Integer) fps.get(elem1);
             if (num == null)
@@ -95,9 +94,9 @@ public class TransitiveClosure implements ValueConstants
             {
                 if (matrix[i][j])
                 {
-                	IValue elem1 = (IValue) elemList.elementAt(i);
-                	IValue elem2 = (IValue) elemList.elementAt(j);
-                	IValue newElem = new TupleValue(elem1, elem2);
+                	Value elem1 = (Value) elemList.elementAt(i);
+                	Value elem2 = (Value) elemList.elementAt(j);
+                	Value newElem = new TupleValue(elem1, elem2);
                     newElems.addElement(newElem);
                 }
             }

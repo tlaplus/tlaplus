@@ -27,19 +27,17 @@ package tlc2.value.impl;
 
 import java.math.BigInteger;
 
-import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.ValueEnumeration;
 
 public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 
 	@Override
-	public Enumerable getRandomSubset(final int kOutOfN) {
+	public EnumerableValue getRandomSubset(final int kOutOfN) {
 		final ValueVec vec = new ValueVec(kOutOfN);
 
 		final ValueEnumeration ve = elements(kOutOfN);
 
-		IValue v = null;
+		Value v = null;
 		while ((v = ve.nextElement()) != null) {
 			vec.addElement(v);
 		}
@@ -74,14 +72,14 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 		}
 
 		@Override
-		public IValue nextElement() {
+		public Value nextElement() {
 			if (!hasNext()) {
 				return null;
 			}
 			return elementAt(nextIndex());
 		}
 
-		protected abstract IValue elementAt(int nextIndex);
+		protected abstract Value elementAt(int nextIndex);
 	}
 
 	abstract class BigIntegerSubsetEnumerator implements ValueEnumeration {
@@ -122,13 +120,13 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 		}
 
 		@Override
-		public IValue nextElement() {
+		public Value nextElement() {
 			if (!hasNext()) {
 				return null;
 			}
 			return elementAt(nextIndex());
 		}
 
-		protected abstract IValue elementAt(BigInteger nextIndex);
+		protected abstract Value elementAt(BigInteger nextIndex);
 	}
 }

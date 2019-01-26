@@ -37,14 +37,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import tlc2.util.FP64;
-import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.IntervalValue;
-import tlc2.value.impl.RecordValue;
-import tlc2.value.impl.SetEnumValue;
-import tlc2.value.impl.SetOfRcdsValue;
-import tlc2.value.impl.StringValue;
 import tlc2.value.impl.SetOfRcdsValue.SubsetEnumerator;
 import util.UniqueString;
 
@@ -52,23 +44,23 @@ public class SetOfRcrdValueTest {
 
 	private static final int a = 97;
 
-	private static final IValue[] getValue(final int n, String str) {
-		final IValue[] values = new IValue[n];
+	private static final Value[] getValue(final int n, String str) {
+		final Value[] values = new Value[n];
 		for (int i = 0; i < n; i++) {
 			values[i] = new StringValue(str + i);
 		}
 		return values;
 	}
 
-	private static final IValue[] getValue(int n, String... strs) {
-		final IValue[] values = new IValue[strs.length];
+	private static final Value[] getValue(int n, String... strs) {
+		final Value[] values = new Value[strs.length];
 		for (int i = 0; i < values.length; i++) {
 			values[i] = new SetEnumValue(getValue(n, strs[i]), false);
 		}
 		return values;
 	}
 
-	private static final IValue[] getValue(int n, UniqueString[] names) {
+	private static final Value[] getValue(int n, UniqueString[] names) {
 		// a,b,c,d,e,...
 		return getValue(n, IntStream.range(a, a + names.length).mapToObj(ascii -> Character.toString((char) ascii))
 				.toArray(String[]::new));
@@ -91,7 +83,7 @@ public class SetOfRcrdValueTest {
 	public void testSimple() {
 		final UniqueString[] names = getNames(3);
 		
-		final IValue[] values = new IValue[3];
+		final Value[] values = new Value[3];
 		values[0] = new SetEnumValue(getValue(7, "a"), true);
 		values[1] = new IntervalValue(1, 2);
 		values[2] = new IntervalValue(1, 4);
@@ -101,14 +93,14 @@ public class SetOfRcrdValueTest {
 		checkElements(names, values, setOfRcrdValue, (SubsetEnumerator) setOfRcrdValue.elements(setOfRcrdValue.size()));
 	}
 
-	private static void checkElements(final UniqueString[] names, final IValue[] values, final SetOfRcdsValue set,
+	private static void checkElements(final UniqueString[] names, final Value[] values, final SetOfRcdsValue set,
 			final SubsetEnumerator rcds) {
 		for (int i = 0; i < set.size(); i++) {
 			// Check names are stable.
 			final RecordValue rcd = rcds.elementAt(i);
 			assertArrayEquals(names, rcd.names);
 			// Check values are from correct range.
-			final IValue[] rcdValues = rcd.values;
+			final Value[] rcdValues = rcd.values;
 			for (int j = 0; j < rcdValues.length; j++) {
 				assertTrue(values[j].member(rcdValues[j]));
 			}
@@ -120,10 +112,10 @@ public class SetOfRcrdValueTest {
 		final UniqueString[] names = getNames(4);
 		final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(2, names), true);
 
-		final Set<IValue> actual = new HashSet<>(setOfRcrdValue.elements(setOfRcrdValue.size()).all());
+		final Set<Value> actual = new HashSet<>(setOfRcrdValue.elements(setOfRcrdValue.size()).all());
 		assertEquals(setOfRcrdValue.size(), actual.size());
 
-		final Set<IValue> expected = new HashSet<>(setOfRcrdValue.elements().all());
+		final Set<Value> expected = new HashSet<>(setOfRcrdValue.elements().all());
 		assertEquals(expected, actual);
 	}
 

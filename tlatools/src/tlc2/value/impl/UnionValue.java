@@ -13,23 +13,21 @@ import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
 public class UnionValue extends EnumerableValue implements Enumerable {
-  public final IValue set;
+  public final Value set;
   protected SetEnumValue realSet;
 
   /* Constructor */
-  public UnionValue(IValue set) {
+  public UnionValue(Value set) {
     this.set = set;
     this.realSet = null;
   }
 
-  public UnionValue(IValue val, CostModel cm) {
+  public UnionValue(Value val, CostModel cm) {
 	  this(val);
 	  this.cm = cm;
   }
@@ -58,7 +56,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       if (!(this.set instanceof Enumerable)) {
         Assert.fail("Attempted to check if:\n " + Values.ppr(elem.toString()) +
@@ -66,7 +64,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
         Values.ppr(this.toString()));
       }
       ValueEnumeration Enum = ((Enumerable)this.set).elements();
-      IValue val;
+      Value val;
       while ((val = Enum.nextElement()) != null) {
         if (val.member(elem)) return true;
       }
@@ -85,7 +83,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
         "\nis a finite set.");
       }
       ValueEnumeration Enum = ((Enumerable)this.set).elements();
-      IValue val;
+      Value val;
       while ((val = Enum.nextElement()) != null) {
         if (!val.isFinite()) return false;
       }
@@ -97,7 +95,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set:\n" + Values.ppr(this.toString()));
@@ -110,7 +108,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set:\n " + Values.ppr(this.toString()) + ".");
@@ -146,7 +144,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       if (this.realSet != null && this.realSet != SetEnumValue.DummyEnum) {
         this.realSet.normalize();
@@ -187,7 +185,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       return this.equals(val);
     }
@@ -197,7 +195,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public static IValue union(IValue val) {
+  public static Value union(Value val) {
     boolean canCombine = (val instanceof SetEnumValue);
     if (canCombine) {
       ValueVec elems = ((SetEnumValue)val).elems;
@@ -207,11 +205,11 @@ public class UnionValue extends EnumerableValue implements Enumerable {
       }
       if (canCombine) {
         ValueVec resElems = new ValueVec();
-        IValue result = new SetEnumValue(resElems, false, val.getCostModel());
+        Value result = new SetEnumValue(resElems, false, val.getCostModel());
         for (int i = 0; i < elems.size(); i++) {
           ValueVec elems1 = ((SetEnumValue)elems.elementAt(i)).elems;
           for (int j = 0; j < elems1.size(); j++) {
-        	  IValue elem = elems1.elementAt(j);
+        	  Value elem = elems1.elementAt(j);
             if (!result.member(elem)) {
             	resElems.addElement(elem);
             }
@@ -270,13 +268,13 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final IValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.realSet != null && this.realSet != SetEnumValue.DummyEnum) {
         return this.realSet;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
-      IValue elem;
+      Value elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
@@ -288,7 +286,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   public final StringBuffer toString(StringBuffer sb, int offset) {
     try {
       if (TLCGlobals.expand) {
-        IValue val = this.toSetEnum();
+        Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {
@@ -319,7 +317,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 
   final class Enumerator implements ValueEnumeration {
     ValueEnumeration Enum;
-    IValue elemSet;
+    Value elemSet;
     ValueEnumeration elemSetEnum;
 
     public Enumerator() {
@@ -343,9 +341,9 @@ public class UnionValue extends EnumerableValue implements Enumerable {
       this.elemSetEnum = ((Enumerable)this.elemSet).elements();
     }
 
-    public final IValue nextElement() {
+    public final Value nextElement() {
       if (this.elemSet == null) return null;
-      IValue val = this.elemSetEnum.nextElement();
+      Value val = this.elemSetEnum.nextElement();
       if (val == null) {
         this.elemSet = this.Enum.nextElement();
         if (this.elemSet == null) return null;

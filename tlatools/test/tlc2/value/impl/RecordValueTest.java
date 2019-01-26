@@ -30,9 +30,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import tlc2.value.IValue;
-import tlc2.value.impl.RecordValue;
-import tlc2.value.impl.StringValue;
 import util.InternTable;
 import util.UniqueString;
 
@@ -52,11 +49,11 @@ public class RecordValueTest {
 		final UniqueString a = internTable.put("a");
 		final UniqueString b = internTable.put("b");
 		
-		final IValue aVal = new StringValue("aVal");
-		final IValue bVal = new StringValue("bVal");
+		final Value aVal = new StringValue("aVal");
+		final Value bVal = new StringValue("bVal");
 		
 		// Create the source to create a deep copy of
-		final RecordValue orig = new RecordValue(new UniqueString[] {b, a}, new IValue[] {bVal, aVal}, false);
+		final RecordValue orig = new RecordValue(new UniqueString[] {b, a}, new Value[] {bVal, aVal}, false);
 		
 		// Verify the mappings in RecordValue are correct
 		assertTrue(orig.names[0].equals(b));

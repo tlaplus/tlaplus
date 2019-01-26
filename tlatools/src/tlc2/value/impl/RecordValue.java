@@ -17,7 +17,6 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
@@ -26,18 +25,18 @@ import util.UniqueString;
 
 public class RecordValue extends Value implements Applicable {
   public final UniqueString[] names;   // the field names
-  public final IValue[] values;         // the field values
+  public final Value[] values;         // the field values
   private boolean isNorm;
-public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new IValue[0], true);
+public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new Value[0], true);
 
   /* Constructor */
-  public RecordValue(UniqueString[] names, IValue[] values, boolean isNorm) {
+  public RecordValue(UniqueString[] names, Value[] values, boolean isNorm) {
     this.names = names;
     this.values = values;
     this.isNorm = isNorm;
   }
 
-  public RecordValue(UniqueString[] names, IValue[] values, boolean isNorm, CostModel cm) {
+  public RecordValue(UniqueString[] names, Value[] values, boolean isNorm, CostModel cm) {
 	  this(names, values, isNorm);
 	  this.cm = cm;
   }
@@ -46,7 +45,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 
   public final int compareTo(Object obj) {
     try {
-      RecordValue rcd = obj instanceof IValue ? (RecordValue) ((IValue)obj).toRcd() : null;
+      RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare record:\n" + Values.ppr(this.toString()) +
@@ -74,7 +73,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 
   public final boolean equals(Object obj) {
     try {
-      RecordValue rcd = obj instanceof IValue ? (RecordValue) ((IValue)obj).toRcd() : null;
+      RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -98,7 +97,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if element:\n" + Values.ppr(elem.toString()) +
                   "\nis in the record:\n" + Values.ppr(this.toString()));
@@ -112,12 +111,12 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 
   public final boolean isFinite() { return true; }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         int rlen = this.names.length;
-        IValue[] newValues = new IValue[rlen];
-        IValue arcVal = ex.path[ex.idx];
+        Value[] newValues = new Value[rlen];
+        Value arcVal = ex.path[ex.idx];
         if (arcVal instanceof StringValue) {
           UniqueString arc = ((StringValue)arcVal).val;
           for (int i = 0; i < rlen; i++) {
@@ -150,9 +149,9 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
-      IValue res = this;
+      Value res = this;
       for (int i = 0; i < exs.length; i++) {
         res = res.takeExcept(exs[i]);
       }
@@ -165,19 +164,19 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   }
 
   @Override
-  public final IValue toRcd() {
+  public final Value toRcd() {
 	  return this;
   }
   
   @Override
-  public final IValue toTuple() {
+  public final Value toTuple() {
 	  return size() == 0 ? TupleValue.EmptyTuple : super.toTuple();
   }
 
   @Override
-	public final IValue toFcnRcd() {
+	public final Value toFcnRcd() {
         this.normalize();
-        IValue[] dom = new IValue[this.names.length];
+        Value[] dom = new Value[this.names.length];
         for (int i = 0; i < this.names.length; i++) {
           dom[i] = new StringValue(this.names[i], cm);
         }
@@ -195,7 +194,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
-  public final IValue apply(IValue arg, int control) {
+  public final Value apply(Value arg, int control) {
     try {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to apply record to a non-string value " +
@@ -218,7 +217,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
-  public final IValue apply(IValue[] args, int control) {
+  public final Value apply(Value[] args, int control) {
     try {
       if (args.length != 1) {
         Assert.fail("Attempted to apply record to more than one arguments.");
@@ -232,7 +231,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   }
 
   /* This method returns the named component of the record. */
-  public final IValue select(IValue arg) {
+  public final Value select(Value arg) {
     try {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to apply record to a non-string argument " +
@@ -253,9 +252,9 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
-  public final IValue getDomain() {
+  public final Value getDomain() {
     try {
-    	IValue[] dElems = new IValue[this.names.length];
+    	Value[] dElems = new Value[this.names.length];
       for (int i = 0; i < this.names.length; i++) {
         dElems[i] = new StringValue(this.names[i]);
       }
@@ -267,7 +266,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
-  public final boolean assign(UniqueString name, IValue val) {
+  public final boolean assign(UniqueString name, Value val) {
     try {
       for (int i = 0; i < this.names.length; i++) {
         if (name.equals(this.names[i])) {
@@ -290,7 +289,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 
   public final boolean isNormalized() { return this.isNorm; }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       if (!this.isNorm) {
         int len = this.names.length;
@@ -303,7 +302,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
             UniqueString ts = this.names[0];
             this.names[0] = this.names[i];
             this.names[i] = ts;
-            IValue tv = this.values[0];
+            Value tv = this.values[0];
             this.values[0] = this.values[i];
             this.values[i] = tv;
           }
@@ -311,7 +310,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
         for (int i = 2; i < len; i++) {
           int j = i;
           UniqueString st = this.names[i];
-          IValue val = this.values[i];
+          Value val = this.values[i];
           int cmp;
           while ((cmp = st.compareTo(this.names[j-1])) < 0) {
             this.names[j] = this.names[j-1];
@@ -364,9 +363,9 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 
   public final IValue deepCopy() {
     try {
-    	IValue[] vals = new IValue[this.values.length];
+    	Value[] vals = new Value[this.values.length];
       for (int i = 0; i < this.values.length; i++) {
-        vals[i] = this.values[i].deepCopy();
+        vals[i] = (Value) this.values[i].deepCopy();
       }
       // Following code modified 16 June 2015 by adding Arrays.copyOf to fix
       // the following bug that seems to have manifested itself only in TLC.Print and
@@ -383,7 +382,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       boolean canAssign = ((val instanceof RecordValue) &&
         this.names.length == ((RecordValue)val).names.length);
@@ -451,10 +450,10 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     try {
       this.normalize();
       int rlen = this.names.length;
-      IValue[] vals = new IValue[rlen];
+      Value[] vals = new Value[rlen];
       boolean changed = false;
       for (int i = 0; i < rlen; i++) {
-        vals[i] = this.values[i].permute(perm);
+        vals[i] = (Value) this.values[i].permute(perm);
         changed = changed || (vals[i] != this.values[i]);
       }
       if (changed) {
@@ -500,7 +499,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 			isNorm = false;
 		}
 		final UniqueString[] names = new UniqueString[len];
-		final IValue[] vals = new IValue[len];
+		final Value[] vals = new Value[len];
 		for (int i = 0; i < len; i++) {
 			final byte kind1 = vos.readByte();
 			if (kind1 == DUMMYVALUE) {
@@ -511,9 +510,9 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 				names[i] = UniqueString.read(vos.getInputStream());
 				vos.assign(names[i], index1);
 			}
-			vals[i] = vos.read();
+			vals[i] = (Value) vos.read();
 		}
-		final IValue res = new RecordValue(names, vals, isNorm);
+		final Value res = new RecordValue(names, vals, isNorm);
 		vos.assign(res, index);
 		return res;
 	}

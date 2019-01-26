@@ -31,13 +31,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 
 import tlc2.util.FP64;
-import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.IntervalValue;
-import tlc2.value.impl.SetEnumValue;
-import tlc2.value.impl.SubsetValue;
 
 @State(Scope.Benchmark)
 public class EnumerateSubsetBenchmark {
@@ -59,7 +53,7 @@ public class EnumerateSubsetBenchmark {
 
 		final ValueVec vals = new ValueVec(subset.size());
 		final ValueEnumeration Enum = subset.elementsNormalized();
-		IValue elem;
+		Value  elem;
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}
@@ -74,7 +68,7 @@ public class EnumerateSubsetBenchmark {
 		final ValueVec vec = new ValueVec(subset.size());
 		for (int i = 0; i <= inner.size(); i++) {
 			final ValueEnumeration Enum = subset.kElements(i);
-			IValue elem;
+			Value  elem;
 			while ((elem = Enum.nextElement()) != null) {
 				vec.addElement(elem);
 			}
@@ -90,7 +84,7 @@ public class EnumerateSubsetBenchmark {
 		final ValueVec vec = new ValueVec(subset.size());
 		for (int i = 0; i <= inner.size(); i++) {
 			final ValueEnumeration Enum = subset.kElements(i);
-			IValue elem;
+			Value  elem;
 			while ((elem = Enum.nextElement()) != null) {
 				vec.addElement(elem);
 			}
@@ -105,7 +99,7 @@ public class EnumerateSubsetBenchmark {
 		
 		final ValueVec vals = new ValueVec(subset.size());
 		final ValueEnumeration Enum = subset.elementsLexicographic();
-		IValue elem;
+		Value  elem;
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}
@@ -119,7 +113,7 @@ public class EnumerateSubsetBenchmark {
 		
 		final ValueVec vals = new ValueVec(subset.size());
 		final ValueEnumeration Enum = subset.elementsLexicographic();
-		IValue elem;
+		Value  elem;
 		while ((elem = Enum.nextElement()) != null) {
 			vals.addElement(elem);
 		}

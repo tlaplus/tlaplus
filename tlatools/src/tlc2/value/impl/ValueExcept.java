@@ -3,16 +3,16 @@
 // Last modified on Wed  4 Jul 2007 at 17:31:51 PST by lamport
 //      modified on Wed Jul 25 11:04:30 PDT 2001 by yuanyu
 
-package tlc2.value;
+package tlc2.value.impl;
 
 import tla2sany.semantic.FormalParamNode;
 
 public class ValueExcept {
-  public IValue[] path;
-  public IValue value;
+  public Value[] path;
+  public Value value;
   public int idx;
 
-  public ValueExcept(IValue[] lhs, IValue rhs) {
+  public ValueExcept(Value [] lhs, Value  rhs) {
     this.path = lhs;
     this.value = rhs;
     this.idx = 0;
@@ -24,16 +24,16 @@ public class ValueExcept {
     this.idx = idx;
   }
 
-  public final ValueExcept checkArg(IFcnLambdaValue fcn) {
-    IValue argv = this.path[idx];
+  public final ValueExcept checkArg(FcnLambdaValue fcn) {
+    Value  argv = this.path[idx];
     if (fcn.getParams().length() == 1) {
       if (!fcn.getParams().domains[0].member(argv)) return null;
     }
     else {
-      ITupleValue tval = (ITupleValue)argv;
-      IValue[] argList = tval.getElems();
+      TupleValue tval = (TupleValue)argv;
+      Value [] argList = tval.elems;
       FormalParamNode[][] formals = fcn.getParams().formals;
-      IValue[] domains = fcn.getParams().domains;
+      Value [] domains = fcn.getParams().domains;
       int argn = 0;
       for (int i = 0; i < fcn.getParams().formals.length; i++) {
         FormalParamNode[] formal = formals[i];
@@ -45,7 +45,7 @@ public class ValueExcept {
     return this;
   }
 
-  public final IValue current() { return this.path[this.idx]; }
+  public final Value  current() { return this.path[this.idx]; }
 
   public final boolean isLast() {
     return this.idx == (this.path.length - 1);

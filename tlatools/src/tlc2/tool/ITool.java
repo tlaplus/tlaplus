@@ -80,15 +80,8 @@ public interface ITool extends TraceApp {
 
 	IValue eval(SemanticNode expr, Context c, TLCState s0);
 
-	/* Special version of eval for state expressions. */
-	IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm);
-
 	IValue eval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control);
-
-	/*
-	   * This method evaluates the expression expr in the given context,
-	   * current state, and partial next state.
-	   */
+	
 	IValue eval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm);
 
 	/**
@@ -153,10 +146,7 @@ public interface ITool extends TraceApp {
 	Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args, Context c, TLCState s0, TLCState s1, int control,
 			CostModel cm);
 
-	ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0, TLCState s1, int control);
-
-	/* A context enumerator for an operator application. */
-	ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0, TLCState s1, int control, CostModel cm);
+	IContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0, TLCState s1, int control);
 
 	Vect<Action> getInitStateSpec();
 

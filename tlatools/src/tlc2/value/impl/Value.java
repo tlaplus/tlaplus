@@ -58,8 +58,14 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	 * @see See note on performance in CostModelCreator.
 	 */
 	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
+  /**
+   * For each kind of value, we introduce a subclass of Value.
+   * All the subclasses are given in this value package.
+	   * This method returns the value kind: an integer that represents
+	   * the kind of this value. See the interface ValueConstants.java.
+	   */
+	public abstract byte getKind();
 
-  @Override
   public String getKindString() {
     try {
       return ValueImage[this.getKind()];
@@ -69,6 +75,20 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
       else { throw e; }
     }
   }
+
+  /* This method returns true iff elem is a member of this. */
+  public abstract boolean member(Value elem);
+  
+  /* This method returns a new value after taking the except. */
+  public abstract Value takeExcept(ValueExcept ex);
+
+  /* This method returns a new value after taking the excepts. */
+  public abstract Value takeExcept(ValueExcept[] exs);
+
+  /* This method returns true iff val can be assigned to this. */
+  abstract boolean assignable(Value val);
+  
+  public abstract Value normalize();
 
   @Override
   public void write(ValueOutputStream vos) throws IOException {
@@ -110,7 +130,6 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	  return source != null;
   }
 
-  @Override
   public final boolean isEmpty() {
     try {
 
@@ -237,16 +256,15 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
    * This method selects the component of this value. The component is
    * specified by path.
    */
-  @Override
-  public final IValue select(IValue[] path) {
+  public final Value select(Value[] path) {
     try {
-      IValue result = this;
+      Value result = this;
       for (int i = 0; i < path.length; i++) {
         if (!(result instanceof Applicable)) {
           Assert.fail("Attempted to apply EXCEPT construct to the value " +
                 Values.ppr(result.toString()) + ".");
         }
-        IValue elem = path[i];
+        Value elem = path[i];
         result = ((Applicable)result).select(elem);
         if (result == null) return null;
       }
@@ -259,8 +277,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
   }
 
   /* Convert val into a SetEnumValue.  Returns null if not possible. */
-  @Override
-  public IValue toSetEnum() {
+  public Value toSetEnum() {
 	  return null;
   }
 
@@ -268,8 +285,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
    * This method converts a value to a function value. It returns
    * null if the conversion fails.
    */
-  @Override
-  public IValue toFcnRcd() {
+  public Value toFcnRcd() {
 	  return null;
   }
 
@@ -277,8 +293,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
    * This method converts a value to a function value. It returns
    * null if the conversion fails.
    */
-  @Override
-  public IValue toRcd() {
+  public Value toRcd() {
 	  return null;
   }
 
@@ -286,8 +301,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
    * This method converts a value to a tuple value. It returns
    * null if the conversion fails.
    */
-  @Override
-  public IValue toTuple() {
+  public Value toTuple() {
 	  return null;
   }
   

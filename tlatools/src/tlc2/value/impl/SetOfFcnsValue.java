@@ -14,25 +14,23 @@ import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueExcept;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
 public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
-  public final IValue domain;        /* Function domain  */
-  public final IValue range;         /* Function range   */
+  public final Value domain;        /* Function domain  */
+  public final Value range;         /* Function range   */
   protected SetEnumValue fcnSet;
 
   /* Constructor */
-  public SetOfFcnsValue(IValue domain, IValue range) {
+  public SetOfFcnsValue(Value domain, Value range) {
     this.domain = domain;
     this.range = range;
     this.fcnSet = null;
   }
 
-  public SetOfFcnsValue(IValue domain, IValue range, CostModel cm) {
+  public SetOfFcnsValue(Value domain, Value range, CostModel cm) {
 	  this(domain, range);
 	  this.cm = cm;
   }
@@ -66,7 +64,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final boolean member(IValue elem) {
+  public final boolean member(Value elem) {
     try {
       FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
       if (fcn == null) {
@@ -77,7 +75,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
       if (fcn.intv == null) {
         fcn.normalize();
-        IValue fdom = new SetEnumValue(fcn.domain, true);
+        Value fdom = new SetEnumValue(fcn.domain, true);
         if (this.domain.equals(fdom)) {
           for (int i = 0; i < fcn.values.length; i++) {
             if (!this.range.member(fcn.values[i])) {
@@ -113,7 +111,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept ex) {
+  public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set of functions:\n" +
@@ -127,7 +125,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final IValue takeExcept(ValueExcept[] exs) {
+  public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set of functions:\n" +
@@ -188,7 +186,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public final IValue normalize() {
+  public final Value normalize() {
     try {
       if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
         this.domain.normalize();
@@ -235,7 +233,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(IValue val) {
+  public final boolean assignable(Value val) {
     try {
       return this.equals(val);
     }
@@ -287,13 +285,13 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public final IValue toSetEnum() {
+  public final Value toSetEnum() {
       if (this.fcnSet != null && this.fcnSet != SetEnumValue.DummyEnum) {
         return this.fcnSet;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
-      IValue elem;
+      Value elem;
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
@@ -328,7 +326,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       catch (Throwable e) { unlazy = false; }
 
       if (unlazy) {
-        IValue val = this.toSetEnum();
+        Value val = this.toSetEnum();
         return val.toString(sb, offset);
       }
       else {
@@ -360,9 +358,9 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   final class Enumerator implements ValueEnumeration {
-    private IValue[] dom;
+    private Value[] dom;
     private ValueEnumeration[] enums;
-    private IValue[] currentElems;
+    private Value[] currentElems;
     private boolean isDone;
 
     public Enumerator() {
@@ -376,9 +374,9 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       ValueVec elems = domSet.elems;
       int sz = elems.size();
       if (range instanceof Enumerable) {
-        this.dom = new IValue[sz];
+        this.dom = new Value[sz];
         this.enums = new ValueEnumeration[sz];
-        this.currentElems = new IValue[sz];
+        this.currentElems = new Value[sz];
         // SZ Feb 24, 2009: never read locally
         // ValueEnumeration enumeration = ((Enumerable)domSet).elements();
         for (int i = 0; i < sz; i++) {
@@ -409,18 +407,18 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
     }
 
-		public final IValue nextElement() {
+		public final Value nextElement() {
 			if (this.isDone) {
 				return null;
 			}
 			if (this.currentElems.length == 0) {
 		    	  if (coverage) { cm.incSecondary(); }
 				this.isDone = true;
-				return new FcnRcdValue(this.dom, new IValue[this.currentElems.length], true, cm);
+				return new FcnRcdValue(this.dom, new Value[this.currentElems.length], true, cm);
 			} else {
 				// Take and store a snapshot of currentElems as the element to return for
 				// this invocation of nextElement().
-				final IValue[] elems = new IValue[this.currentElems.length];
+				final Value[] elems = new Value[this.currentElems.length];
 				System.arraycopy(this.currentElems, 0, elems, 0, this.currentElems.length);
 
 				// Eagerly generate the next element which is going to be returned the upon next
@@ -466,10 +464,10 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 		}
 
 		@Override
-		protected IValue elementAt(final int idx) {
+		protected Value elementAt(final int idx) {
 			assert 0 <= idx && idx < size();
 
-			final IValue[] range = new IValue[domSet.size()];
+			final Value[] range = new Value[domSet.size()];
 
 			for (int i = 0; i < domSet.size(); i++) {
 				final int elementAt = (int) (Math.floor(idx / Math.pow(mod, i)) % mod);
@@ -505,8 +503,8 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 		}
 
 		@Override
-		protected IValue elementAt(final BigInteger idx) {
-			final IValue[] range = new IValue[domSet.size()];
+		protected Value elementAt(final BigInteger idx) {
+			final Value[] range = new Value[domSet.size()];
 
 			for (int i = 0; i < domSet.size(); i++) {
 				final long scale = (long) Math.pow(mod, i);
