@@ -98,7 +98,7 @@ public class PacketNetCloudTLCInstanceParameters extends CloudTLCInstanceParamet
 	 */
 	@Override
 	public String getIdentity() {
-		final String identity = System.getenv("PACKET_NET_DEFAULT_PROJECT_ID");
+		final String identity = System.getenv("PACKET_NET_PROJECT_ID");
 		Assert.isNotNull(identity);
 		return identity;
 	}
@@ -118,12 +118,12 @@ public class PacketNetCloudTLCInstanceParameters extends CloudTLCInstanceParamet
 	 */
 	@Override
 	public IStatus validateCredentials() {
-		final String credential = System.getenv("PACKET_NET_DEFAULT_PROJECT_ID");
+		final String credential = System.getenv("PACKET_NET_PROJECT_ID");
 		final String identity = System.getenv("PACKET_NET_APIKEY");
 		if (credential == null || identity == null) {
 			return new Status(Status.ERROR, "org.lamport.tla.toolbox.jcloud",
 					"Invalid credentials, please check the environment variables "
-							+ "(PACKET_NET_DEFAULT_PROJECT_ID "
+							+ "(PACKET_NET_PROJECT_ID "
 							+ "and PACKET_NET_APIKEY) are correctly "
 							+ "set up and picked up by the Toolbox."
 							+ "\n\nPlease visit the Toolbox help and read section 4 "
