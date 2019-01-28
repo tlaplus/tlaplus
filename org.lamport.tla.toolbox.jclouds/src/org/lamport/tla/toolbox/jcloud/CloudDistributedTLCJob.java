@@ -198,7 +198,8 @@ public class CloudDistributedTLCJob extends Job {
 			// Choose one of the nodes to be the master and create an
 			// identifying predicate.
 			final NodeMetadata master = Iterables.getLast(createNodesInGroup);
-			final String hostname = Iterables.getOnlyElement(master.getPublicAddresses()); // master.getHostname() only returns internal name
+			// Get first one assuming it is the best (e.g. IPv4 vs. IPv6).
+			final String hostname = Iterables.getFirst(master.getPublicAddresses(), null); // master.getHostname() only returns internal name
 
 			// Copy tlatools.jar to _one_ remote host (do not exhaust upload of
 			// the machine running the toolbox).
