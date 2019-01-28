@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.eclipse.core.runtime.IStatus;
 import org.jclouds.ContextBuilder;
+import org.jclouds.compute.domain.TemplateBuilder;
 import org.jclouds.compute.options.TemplateOptions;
 
 import tlc2.tool.distributed.fp.TLCWorkerAndFPSet;
@@ -169,5 +170,9 @@ public abstract class CloudTLCInstanceParameters {
 
 	public String getExtraPackages() {
 		return ""; // no-op, because concat with && ... && in CDTJ.
+	}
+
+	public void mungeTemplateBuilder(final TemplateBuilder templateBuilder) {
+		// no-op, subclass may override
 	}
 }

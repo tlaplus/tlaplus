@@ -514,6 +514,7 @@ public class CloudDistributedTLCJob extends Job {
             templateBuilder.options(templateOptions);
             templateBuilder.imageId(params.getImageId());
             templateBuilder.hardwareId(params.getHardwareId());
+            params.mungeTemplateBuilder(templateBuilder);
 
             // Everything configured, now launch node
 			monitor.subTask(String.format("Starting %s %s instance%s in region %s.", nodes > 1 ? nodes : "a",
