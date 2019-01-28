@@ -215,7 +215,7 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 
-			final String tlcMasterCommand = " shutdown -c && rm -rf /mnt/tlc/* && " // Cancel and remove any pending shutdown and leftovers from previous runs.
+			final String tlcMasterCommand = " sudo shutdown -c && rm -rf /mnt/tlc/* && " // Cancel and remove any pending shutdown and leftovers from previous runs.
 					+ "cd /mnt/tlc/ && "
 					// Decompress tla2tools.pack.gz
 					+ "unpack200 /tmp/tla2tools.pack.gz /tmp/tla2tools.jar"
@@ -470,7 +470,7 @@ public class CloudDistributedTLCJob extends Job {
 			// https://askubuntu.com/questions/994339/check-if-shutdown-schedule-is-active-and-when-it-is
 			try {
 				final ExecResponse response = compute.runScriptOnNode(id,
-						"busctl call --system org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager CancelScheduledShutdown", 
+						"sudo busctl call --system org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager CancelScheduledShutdown", 
 						TemplateOptions.Builder.overrideLoginCredentials(getLoginForCommandExecution()).runAsRoot(true)
 						.wrapInInitScript(false));
 				if (response.getExitStatus() == 0
