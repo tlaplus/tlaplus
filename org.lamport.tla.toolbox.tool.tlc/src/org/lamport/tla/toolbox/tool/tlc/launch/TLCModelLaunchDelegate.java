@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -76,6 +77,7 @@ import org.osgi.framework.ServiceReference;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
+import tlc2.util.FP64;
 
 /**
  * Represents a launch delegate for TLC<br>
@@ -794,10 +796,18 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 					// The parameters below are the only one currently useful with CloudDistributedTLC
 					final StringBuffer tlcParams = new StringBuffer();
 					
-			        // fp seed offset (decrease by one to map from [1, 64] interval to [0, 63] array address
-			        final int fpSeedOffset = launch.getLaunchConfiguration().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
-			        tlcParams.append("-fp ");
-			        tlcParams.append(String.valueOf(fpSeedOffset - 1));
+			        // fp seed offset (decrease by one to map from [1, 64] interval to [0, 63] array address)
+					if (launch.getLaunchConfiguration().getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT)) {
+						final int fpIndex = new Random().nextInt(FP64.Polys.length);
+						tlcParams.append("-fp");
+			        	tlcParams.append(" ");
+						tlcParams.append(String.valueOf(fpIndex));
+					} else {
+						final int fpSeedOffset = launch.getLaunchConfiguration().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
+						tlcParams.append("-fp");
+			        	tlcParams.append(" ");
+						tlcParams.append(String.valueOf(fpSeedOffset));
+					}
 		        	tlcParams.append(" ");
 			        
 			        // add maxSetSize argument if not equal to the default
