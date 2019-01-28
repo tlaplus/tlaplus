@@ -387,7 +387,7 @@ public class SimulationWorker extends Thread {
 		checkForInterrupt();
 
 		// Check if the current trace satisfies liveness properties.
-		liveCheck.checkTrace(stateTrace);
+		liveCheck.checkTrace(tool, stateTrace);
 		
 
 		// Write the trace out if desired. The trace is printed in the

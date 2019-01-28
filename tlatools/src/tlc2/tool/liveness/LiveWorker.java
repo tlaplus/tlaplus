@@ -19,6 +19,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.StatePrinter;
 import tlc2.tool.EvalException;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCStateInfo;
 import tlc2.util.IdThread;
 import tlc2.util.IntStack;
@@ -65,8 +66,11 @@ public class LiveWorker extends IdThread {
 	 */
 	private final int numWorkers;
 
-	public LiveWorker(int id, int numWorkers, final ILiveCheck liveCheck, final BlockingQueue<ILiveChecker> queue, final boolean finalCheck) {
+	private final ITool tool;
+
+	public LiveWorker(final ITool tool, int id, int numWorkers, final ILiveCheck liveCheck, final BlockingQueue<ILiveChecker> queue, final boolean finalCheck) {
 		super(id);
+		this.tool = tool;
 		this.numWorkers = numWorkers;
 		this.liveCheck = liveCheck;
 		this.queue = queue;
@@ -136,7 +140,7 @@ public class LiveWorker extends IdThread {
 	 * @see http://dx.doi.org/10.1137%2F0201010
 	 * 
 	 */
-	private final void checkSccs() throws IOException, InterruptedException, ExecutionException {
+	private final void checkSccs(final ITool tool) throws IOException, InterruptedException, ExecutionException {
 		// Initialize this.dg:
 		this.dg.makeNodePtrTbl();
 		
@@ -287,7 +291,7 @@ public class LiveWorker extends IdThread {
 						// element (endstate - 1). This goes on until either the
 						// initial state is reached or an intermediate state has
 						// unexplored successors with DFS.
-						final boolean isOK = this.checkComponent(curState, curTidx, comStack);
+						final boolean isOK = this.checkComponent(tool, curState, curTidx, comStack);
 						if (!isOK) {
 							// Found a "bad" cycle of one to comStack.size()
 							// nodes, no point in searching for more SCCs as we
@@ -499,7 +503,7 @@ public class LiveWorker extends IdThread {
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	private boolean checkComponent(final long state, final int tidx, final IntStack comStack) throws IOException, InterruptedException, ExecutionException {
+	private boolean checkComponent(final ITool tool, final long state, final int tidx, final IntStack comStack) throws IOException, InterruptedException, ExecutionException {
 		final long comStackSize = comStack.size();
 		// There is something to pop and each is a well formed tuple <<fp, tidx, loc>> 
 		assert comStackSize >= 5 && comStackSize % 5 == 0; // long + int + long
@@ -732,7 +736,7 @@ public class LiveWorker extends IdThread {
 		// conditions are satisfied. So, print a counter-example (if this thread
 		// is the first one to find a counter-example)!
 		if (setErrFound()) {
-			this.printTrace(state, tidx, com);
+			this.printTrace(tool, state, tidx, com);
 		}
 		return false;
 	}
@@ -791,7 +795,7 @@ public class LiveWorker extends IdThread {
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	private void printTrace(final long state, final int tidx, final TableauNodePtrTable nodeTbl) throws IOException, InterruptedException, ExecutionException {
+	private void printTrace(ITool tool, final long state, final int tidx, final TableauNodePtrTable nodeTbl) throws IOException, InterruptedException, ExecutionException {
 //		writeDotViz(state, tidx, nodeTbl, new java.io.File(liveCheck.getMetaDir() + java.io.File.separator
 //				+ "pSatisfiableSCC_" + System.currentTimeMillis() + ".dot"));
 
@@ -820,7 +824,7 @@ public class LiveWorker extends IdThread {
 				// LongVec with just a single element. This happens when the parameter
 				// state is one of the init states already.
 				long fp = prefix.elementAt(plen - 1);
-				TLCStateInfo sinfo = liveCheck.getTool().getState(fp);
+				TLCStateInfo sinfo = tool.getState(fp);
 				if (sinfo == null) {
 					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
 				}
@@ -836,7 +840,7 @@ public class LiveWorker extends IdThread {
 					// It won't be correct to shorten a path <<fp1,fp2,fp1>> to
 					// <<fp2,fp1>> though.
 					if (curFP != fp) {
-						sinfo = liveCheck.getTool().getState(curFP, sinfo);
+						sinfo = tool.getState(curFP, sinfo);
 						states.add(sinfo);	
 						fp = curFP;
 					}
@@ -910,7 +914,7 @@ public class LiveWorker extends IdThread {
 			// efficiency reason. Regenerating the next state might be
 			// expensive.
 			if (curFP != sinfo.fingerPrint()) {
-				sinfo = liveCheck.getTool().getState(curFP, sinfo);
+				sinfo = tool.getState(curFP, sinfo);
 				StatePrinter.printState(sinfo);
 			}
 		}
@@ -924,7 +928,7 @@ public class LiveWorker extends IdThread {
 		if (sinfo.fingerPrint() == cycleState.fingerPrint()) {
 			StatePrinter.printStutteringState(stateNumber);
 		} else {
-			sinfo = liveCheck.getTool().getState(cycleState.fingerPrint(), sinfo);
+			sinfo = tool.getState(cycleState.fingerPrint(), sinfo);
 			// The print stmts below claim there is a cycle, thus assert that
 			// there is indeed one. Index-based lookup into states array is
 			// reduced by one because cyclePos is human-readable.
@@ -1222,7 +1226,7 @@ public class LiveWorker extends IdThread {
 				for (int i = 0; i < pems.length; i++) {
 					if (!hasErrFound()) {
 						this.pem = pems[i];
-						this.checkSccs();
+						this.checkSccs(tool);
 					}
 				}
 				this.dg.destroyCache();

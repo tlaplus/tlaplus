@@ -121,7 +121,7 @@ public final class Worker extends IdThread implements IWorker {
 		liveNextStates.put(curStateFP, curState);
 		this.tlc.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
 
-		this.tlc.liveCheck.addNextState(curState, curStateFP, liveNextStates);
+		this.tlc.liveCheck.addNextState(tlc.tool, curState, curStateFP, liveNextStates);
 
 		if (liveNextStates.capacity() > (multiplier * INITIAL_CAPACITY)) {
 			// Increase initial size for as long as the set has to grow

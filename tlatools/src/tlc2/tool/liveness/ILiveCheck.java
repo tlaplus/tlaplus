@@ -39,31 +39,31 @@ public interface ILiveCheck {
 	 * This method records that state is an initial state in the behavior graph.
 	 * It is called when a new initial state is generated.
 	 */
-	void addInitState(TLCState state, long stateFP);
+	void addInitState(ITool tool, TLCState state, long stateFP);
 
 	/**
 	 * This method adds new nodes into the behavior graph induced by s0. It is
 	 * called after the successors of s0 are computed.
 	 */
-	void addNextState(TLCState s0, long fp0, SetOfStates nextStates) throws IOException;
+	void addNextState(ITool tool, TLCState s0, long fp0, SetOfStates nextStates) throws IOException;
 	
 	/**
-	 * true iff a call to {@link ILiveCheck#check(boolean)} would indeed result in liveness checking.
+	 * true iff a call to {@link ILiveCheck#check(ITool, boolean)} would indeed result in liveness checking.
 	 */
 	boolean doLiveCheck();
 	
 	/**
 	 * Check liveness properties for the current (potentially partial) state graph. Returns
 	 * true iff it finds no errors.
-	 * 
 	 * @param forceCheck
 	 *            Always checks liveness if true, otherwise heuristics about the
 	 *            partial graph are taken into account if it is worthwhile to
 	 *            check liveness.
+	 * 
 	 * @return true iff it finds no errors or if liveness has not been checked
 	 *         on the partial graph because it was deemed worthless.
 	 */
-	boolean check(boolean forceCheck) throws Exception;
+	boolean check(ITool tool, boolean forceCheck) throws Exception;
 
 	/**
 	 * No states can be added with add*State once finalCheck has been called.
@@ -72,7 +72,7 @@ public interface ILiveCheck {
 	 * @return
 	 * @throws Exception
 	 */
-	boolean finalCheck() throws Exception;
+	boolean finalCheck(ITool tool) throws Exception;
 
 	/* simulation mode */
 	
@@ -89,18 +89,16 @@ public interface ILiveCheck {
 	 * is done as part of checkTrace.
 	 * <p>
 	 * checkTrace can be called multiple times until ILiveCheck has been closed (see close()).
-	 * 
 	 * @param trace
+	 * 
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	void checkTrace(final StateVec trace) throws IOException, InterruptedException;
+	void checkTrace(ITool tool, final StateVec trace) throws IOException, InterruptedException;
 	
 	/* auxiliary methods */
 	
 	String getMetaDir();
-
-	ITool getTool();
 
 	IBucketStatistics getOutDegreeStatistics();
 

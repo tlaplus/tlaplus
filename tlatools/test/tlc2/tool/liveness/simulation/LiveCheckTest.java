@@ -32,6 +32,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.IOException;
 
 import org.easymock.EasyMock;
+import org.junit.Before;
 import org.junit.Test;
 
 import tlc2.tool.ITool;
@@ -48,6 +49,13 @@ import tlc2.util.SetOfStates;
 import tlc2.util.statistics.DummyBucketStatistics;
 
 public class LiveCheckTest {
+
+	private ITool tool;
+	
+	@Before
+	public void createTool() {
+		this.tool = EasyMock.createNiceMock(ITool.class);
+	}
 
 	// Add identical state twice, which can happen in simulation mode when the
 	// trace is: <<100L, 200L, ..., 100L, 200L>> (as in a cycle that is
@@ -79,33 +87,34 @@ public class LiveCheckTest {
 		assertNotNull(diskGraph);
 		
 		final TLCState state = new DummyTLCState();
-		liveCheck.addInitState(state, 100L);
+		liveCheck.addInitState(tool, state, 100L);
 
 		final SetOfStates setOfStates = new SetOfStates(1);
 		setOfStates.put(200L, new DummyTLCState(200L));
 		
 		// Add state 100L the first time, then add its successor
-		liveCheck.addNextState(state, 100L, setOfStates);
-		liveCheck.addNextState(state, 200L, setOfStates);
+		liveCheck.addNextState(tool, state, 100L, setOfStates);
+		liveCheck.addNextState(tool, state, 200L, setOfStates);
 		assertEquals(0, diskGraph.getPtr(100L, tableauId));
 
 		// Add state 100L again and check that it does *not* 
 		// end up in disk graph.
-		liveCheck.addNextState(state, 100L, setOfStates);
+		liveCheck.addNextState(tool, state, 100L, setOfStates);
 		assertEquals(0, diskGraph.getPtr(100L, tableauId));
 	}
 
 	private ILiveCheck getLiveCheck() throws IOException {
+		final ITool tool = EasyMock.createNiceMock(ITool.class);
 		// Configure OOS mock to react to the subsequent invocation. This is
 		// essentially the list of calls being made on OOS during
 		// LiveCheck#addInitState and LiveCheck#addNextState
 		final OrderOfSolution oos = EasyMock.createNiceMock(OrderOfSolution.class);
 		EasyMock.expect(oos.hasTableau()).andReturn(false);
 		EasyMock.expect(oos.getCheckAction()).andReturn(new LiveExprNode[0]).anyTimes();
-		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
+		EasyMock.expect(oos.checkState((ITool) EasyMock.anyObject(), (TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		return new LiveCheck(EasyMock.createNiceMock(ITool.class),
+		return new LiveCheck(tool,
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
 	}
 	
@@ -129,10 +138,10 @@ public class LiveCheckTest {
 		EasyMock.expect(oos.hasTableau()).andReturn(true);
 		EasyMock.expect(oos.getTableau()).andReturn(tbGraph).anyTimes();
 		EasyMock.expect(oos.getCheckAction()).andReturn(new LiveExprNode[0]).anyTimes();
-		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
+		EasyMock.expect(oos.checkState((ITool) EasyMock.anyObject(), (TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		return new LiveCheck(EasyMock.createNiceMock(ITool.class),
+		return new LiveCheck(tool,
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
 	}
 }

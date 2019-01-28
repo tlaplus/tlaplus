@@ -57,10 +57,10 @@ public class AddAndCheckLiveCheck extends LiveCheck {
 	 * @see tlc2.tool.liveness.LiveCheck#addInitState(tlc2.tool.TLCState, long)
 	 */
 	@Override
-	public synchronized void addInitState(TLCState state, long stateFP) {
-		super.addInitState(state, stateFP);
+	public synchronized void addInitState(ITool tool, TLCState state, long stateFP) {
+		super.addInitState(tool, state, stateFP);
 		try {
-			check0(false);
+			check0(tool, false);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -72,10 +72,10 @@ public class AddAndCheckLiveCheck extends LiveCheck {
 	 * @see tlc2.tool.liveness.LiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates)
 	 */
 	@Override
-	public synchronized void addNextState(TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
-		super.addNextState(s0, fp0, nextStates);
+	public synchronized void addNextState(ITool tool, TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
+		super.addNextState(tool, s0, fp0, nextStates);
 		try {
-			check0(false);
+			check0(tool, false);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
