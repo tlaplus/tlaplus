@@ -60,11 +60,13 @@ public class TLAClass
         try
         {
         	try {
-    			final File module = resolver.resolve(name + ".class", false);
-    			if (module != null && module.getAbsoluteFile() != null) {
-    				final URL url = module.getAbsoluteFile().getParentFile().toURI().toURL();
-					cl = new URLClassLoader(new URL[] {url}).loadClass(name);
-    			}
+        		if (resolver != null) {
+        			final File module = resolver.resolve(name + ".class", false);
+        			if (module != null && module.getAbsoluteFile() != null) {
+        				final URL url = module.getAbsoluteFile().getParentFile().toURI().toURL();
+        				cl = new URLClassLoader(new URL[] {url}).loadClass(name);
+        			}
+        		}
         	} catch (Exception ignored1) {
         		/*SKIP*/
         	} finally {
