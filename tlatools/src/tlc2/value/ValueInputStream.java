@@ -133,6 +133,7 @@ public final class ValueInputStream implements ValueConstants {
 		return (UniqueString) this.handles.getValue(idx);
 	}
 
+  // @see ValueOutputStream#put
   private static class HandleTable {
     private Object[] values;
     private int index;

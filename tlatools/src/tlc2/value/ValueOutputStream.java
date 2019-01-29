@@ -99,6 +99,33 @@ public final class ValueOutputStream {
 		return dos;
 	}
 
+	/**
+	 * Check if another TLCState - which is currently also being serialized to the
+	 * same storage (i.e. disk file) - has/contains an identical Value. If yes, do
+	 * not serialize the Value instance again but make this TLCState point to the
+	 * Value instance previously serialized for the other TLCState. In other words,
+	 * this is a custom-tailored compression/de-duplication mechanism for Value
+	 * instances.
+	 * <p>
+	 * This approach only works because both TLCStates are serialized to the same
+	 * storage and thus de-serialized as part of the same operation (same
+	 * Value*Stream instance).
+	 * <p>
+	 * The purpose of this approach appears to be:
+	 * <ul>
+	 * <li>Reduce serialization efforts and storage size</li>
+	 * <li>Reduce the number of Value instances created during de-serialization</li>
+	 * <li>Allow identity comparison on Value instances (AFAICT not used by Value
+	 * explicitly, just UniqueString) to speed up check. Value#equals internally
+	 * likely uses identity comparison as first check.</li>
+	 * </ul>
+	 * <p>
+	 * A disadvantage is the cost of maintaining the internal HandleTable which can
+	 * grow to thousands of elements during serialization/de-serialization (in
+	 * ValueInputStream). Since serialization suspends the DiskStateQueue and thus
+	 * blocks tlc2.tool.Workers from exploring the state space, this might has
+	 * adverse effects.
+	 */
 	public final int put(final Object obj) {
 		return this.handles.put(obj);
 	}
