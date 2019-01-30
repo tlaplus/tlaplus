@@ -139,4 +139,33 @@ public class PacketNetCloudTLCInstanceParameters extends CloudTLCInstanceParamet
 	public void mungeTemplateBuilder(TemplateBuilder templateBuilder) {
         templateBuilder.locationId(getRegion());
 	}
+
+	@Override
+	public String getCloudAPIShutdown() {
+		return super.getCloudAPIShutdown();
+		
+		/*
+			@packethost Can I somehow set (upon creation) servers to be automatically be deleted on an OS shutdown?
+			@lemmster Not at the moment - you can control that from your automation / etc but we're not in the habit (in our API or otherwise) of deleting things on the behalf of clients.  Make sense?
+			@packethost Others (Azure & AWS) do support automatic deletion. Why not make it a flag on instance creation?
+			@lemmster Actually I lied, we do revoke in our spot market. We actually have the ability but always found that the risk (why did you delete my database) was more than the benefit.  Sorry!
+			@packethost Me: Why did you delete my database? You: Because you told us to (by setting the delete-upon-shutdown flag during instance creation)!
+			@lemmster For Ubuntu pass this userdata to create the delete-on-shutdown service for Packet's API. Not quite a flag but works!  gist.github.com/nathangoulding…
+			@NathanGoulding Thanks! Just slightly worried about the security implications of having API token on the instance.
+			@lemmster For sure, best to pull from an envvar or something like Vault vs. embedding (and certainly not passing via https userdata).
+			@NathanGoulding I don't understand how an envvar or a vault - for which I need another secret to unlock, no? - solves the fundamental problem of having the API token on the instance?
+			@lemmster You can limit the blast radius significantly with certs/keys that are single-use, tied to that specific instance, and/or revocable. If you can't trust the instance at all then yes you're stuck.
+			@NathanGoulding Can I generate a single-use API subkey which is possibly even restricted to a specific instance?
+			@NathanGoulding Could even be part of the response to the instance creation API call.
+			@NathanGoulding Generally though, an instance creation flag is both simple and secure.
+			@lemmster Agreed, unfortunately we don't have a hypervisor present to intercept the system shutdown call.
+			@lemmster 'Unfortunately' in this one case at least ;)
+			@NathanGoulding I assume that the same reason why servers show up as running in the admin frontend when shutdown locally?
+			@lemmster Exactly, and I think our API calls them "active" to avoid "on/off" verbiage, but that green circle does look a lot like "on"
+			
+			https://twitter.com/NathanGoulding/status/1089990444287696897
+			
+			https://gist.github.com/nathangoulding/6a69b3fd7023bf3f558acfc7bb9ba645
+		 */
+	}
 }
