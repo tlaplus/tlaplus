@@ -15,7 +15,7 @@ import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
 import tlc2.value.IValue;
-import tlc2.value.ValueInputStream;
+import tlc2.value.IValueInputStream;
 import tlc2.value.ValueOutputStream;
 import util.Assert;
 import util.UniqueString;
@@ -31,7 +31,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   // The state variables.
   protected static OpDeclNode[] vars = null;
 
-  public void read(ValueInputStream vis) throws IOException {
+  public void read(IValueInputStream vis) throws IOException {
 	this.workerId = vis.readShortNat();
 	this.uid = vis.readLongNat();
     this.level = vis.readShortNat();

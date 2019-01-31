@@ -16,7 +16,7 @@ import tlc2.util.FP64;
 import tlc2.value.IFcnRcdValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueInputStream;
+import tlc2.value.IValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
@@ -868,7 +868,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
-	public static IValue createFrom(final ValueInputStream vos) throws IOException {
+	public static IValue createFrom(final IValueInputStream vos) throws IOException {
 		final int index = vos.getIndex();
 		final int len = vos.readNat();
 		final int info = vos.readByte();

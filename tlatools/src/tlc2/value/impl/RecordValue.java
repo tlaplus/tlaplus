@@ -17,7 +17,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueInputStream;
+import tlc2.value.IValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
@@ -490,7 +490,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
-	public static IValue createFrom(final ValueInputStream vos) throws EOFException, IOException {
+	public static IValue createFrom(final IValueInputStream vos) throws EOFException, IOException {
 		final int index = vos.getIndex();
 		boolean isNorm = true;
 		int len = vos.readInt();

@@ -21,7 +21,7 @@ import util.FileUtil;
 import util.UniqueString;
 import util.WrongInvocationException;
 
-public final class ValueInputStream implements ValueConstants {
+public final class ValueInputStream implements ValueConstants, IValueInputStream {
 
   private final BufferedDataInputStream dis;
   private final HandleTable handles;
@@ -37,6 +37,7 @@ public final class ValueInputStream implements ValueConstants {
       this(new File(fname));
   }
 
+	@Override
 	public final IValue read() throws IOException {
 		final byte kind = this.dis.readByte();
 
@@ -77,22 +78,27 @@ public final class ValueInputStream implements ValueConstants {
 		}
 	}
   
+  @Override
   public final int readShort() throws IOException {
 	    return this.dis.readShort();
   }
 
+  @Override
   public final int readInt() throws IOException {
     return this.dis.readInt();
   }
 
+  @Override
   public final long readLong() throws IOException {
     return this.dis.readLong();
   }
   
+  @Override
   public final void close() throws IOException {
     this.dis.close();
   }
 
+  @Override
   public final int readNat() throws IOException {
     int res = this.dis.readShort();
     if (res >= 0) return res;
@@ -100,12 +106,14 @@ public final class ValueInputStream implements ValueConstants {
     return -res;
   }
   
+  @Override
   public final short readShortNat() throws IOException {
 	short res = this.dis.readByte();
 	if (res >= 0) return res;
 	return (short) -((res << 8) | (this.dis.readByte() & 0xFF));
   }
   
+  @Override
   public final long readLongNat() throws IOException {
     long res = this.dis.readInt();
     if (res >= 0) return res;
@@ -113,22 +121,27 @@ public final class ValueInputStream implements ValueConstants {
     return -res;
   }
 
-	public byte readByte() throws EOFException, IOException {
+	@Override
+	public final byte readByte() throws EOFException, IOException {
 		return this.dis.readByte();
 	}
 
+	@Override
 	public final void assign(final Object obj, final int idx) {
 		this.handles.assign(obj, idx);
 	}
 
+	@Override
 	public final int getIndex() {
 		return handles.getIndex();
 	}
 
+	@Override
 	public final BufferedDataInputStream getInputStream() {
 		return dis;
 	}
 
+	@Override
 	public final UniqueString getValue(int idx) {
 		return (UniqueString) this.handles.getValue(idx);
 	}

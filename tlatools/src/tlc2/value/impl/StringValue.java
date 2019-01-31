@@ -13,7 +13,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueInputStream;
+import tlc2.value.IValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
@@ -248,7 +248,7 @@ public class StringValue extends Value {
     }
   }
 
-	public static IValue createFrom(final ValueInputStream vos) throws IOException {
+	public static IValue createFrom(final IValueInputStream vos) throws IOException {
 		final UniqueString str = UniqueString.read(vos.getInputStream());
 		final IValue res = new StringValue(str);
 		final int index = vos.getIndex();

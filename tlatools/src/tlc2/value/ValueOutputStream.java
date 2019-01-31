@@ -10,8 +10,6 @@ import java.util.Arrays;
 import java.util.zip.GZIPOutputStream;
 
 import tlc2.TLCGlobals;
-import tlc2.value.impl.IntValue;
-import tlc2.value.impl.StringValue;
 import util.BufferedDataOutputStream;
 
 public final class ValueOutputStream {
@@ -193,62 +191,5 @@ public final class ValueOutputStream {
 	this.spine[index] = i;
       }
     }
-  }
-
-  public static void main(String[] args) {
-    if (args.length != 1) {
-      System.err.println("Usage: java tlc2.value.ValueOutputStream filename.");
-      System.exit(1);
-    }
-    
-    IntValue[] aa = new IntValue[100];
-    StringValue[] bb = new StringValue[100];
-      
-    for (int i = 0; i < aa.length; i++) {
-      aa[i] = IntValue.gen(88);
-    }
-
-    StringValue sval = new StringValue("ssssssssss");
-    for (int i = 0; i < bb.length; i++) {
-      bb[i] = sval;
-    }
-
-    try {
-      /**
-      BufferedDataOutputStream dos = new BufferedDataOutputStream(args[0]+"_1");
-      for (int i = 0; i < aa.length; i++) {
-	dos.writeInt(88);
-      }
-      dos.close();
-      
-      ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(args[0]+"_2"));
-      for (int i = 0; i < bb.length; i++) {
-	oos.writeObject(bb[i]);
-      }
-      oos.close();
-
-      ValueOutputStream vos = new ValueOutputStream(new File(args[0]+"_3"));
-      for (int i = 0; i < bb.length; i++) {
-	vos.write(bb[i]);
-      }
-      vos.close();
-      **/
-
-      ValueOutputStream vos = new ValueOutputStream(new File(args[0]));
-      long x = 1;
-      for (int i = 0; i < 63; i++) {
-	System.err.println("write " + x);
-	vos.writeLongNat(x);
-	x = x * 2;
-      }
-      vos.close();
-
-      ValueInputStream vis = new ValueInputStream(new File(args[0]));
-      for (int i = 0; i < 63; i++) {
-	System.err.println("read " + vis.readLongNat());
-      }
-      vis.close();      
-    }
-    catch (Exception e) { }
   }
 }

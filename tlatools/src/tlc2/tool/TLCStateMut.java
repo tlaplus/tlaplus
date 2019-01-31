@@ -19,7 +19,7 @@ import tlc2.util.Context;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueInputStream;
+import tlc2.value.IValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.UniqueString;
@@ -295,7 +295,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 		return unassignedVars;
 	}
 
-  public final void read(ValueInputStream vis) throws IOException {
+  public final void read(IValueInputStream vis) throws IOException {
     super.read(vis);
     int len = this.values.length;
     for (int i = 0; i < len; i++) {
