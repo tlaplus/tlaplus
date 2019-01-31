@@ -699,7 +699,7 @@ public class Tool
               IValue lval = ps.lookup(varName);
               Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (lval == null) {
-                ps = ps.bind(varName, rval, init);
+                ps = ps.bind(varName, rval);
                 this.getInitStates(acts, ps, states, cm);
                 ps.unbind(varName);
                 return;
@@ -734,7 +734,7 @@ public class Tool
                 ValueEnumeration Enum = ((Enumerable)rval).elements();
                 Value elem;
                 while ((elem = Enum.nextElement()) != null) {
-                  ps.bind(varName, elem, init);
+                  ps.bind(varName, elem);
                   this.getInitStates(acts, ps, states, cm);
                   ps.unbind(varName);
                 }
@@ -1226,7 +1226,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
               IValue lval = s1.lookup(varName);
               Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
               if (lval == null) {
-                resState.bind(varName, rval, pred);
+                resState.bind(varName, rval);
                 resState = this.getNextStates(acts, s0, resState, nss, cm);
                 resState.unbind(varName);
                 return resState;
@@ -1259,7 +1259,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
                 ValueEnumeration Enum = ((Enumerable)rval).elements();
                 Value elem;
                 while ((elem = Enum.nextElement()) != null) {
-                  resState.bind(varName, elem, pred);
+                  resState.bind(varName, elem);
                   resState = this.getNextStates(acts, s0, resState, nss, cm);
                   resState.unbind(varName);
                 }
@@ -1428,7 +1428,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           final IValue val0 = s0.lookup(varName);
           final IValue val1 = s1.lookup(varName);
           if (val1 == null) {
-		  	resState.bind(varName, val0, expr);
+		  	resState.bind(varName, val0);
             if (coverage) {
             	resState = this.getNextStates(acts, s0, resState, nss, cm);
             } else {
@@ -2993,7 +2993,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
               Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               if (lval == null)
               {
-                TLCState s2 = s1.bind(var, rval, pred);
+                TLCState s2 = s1.bind(var, rval);
                 return this.enabled(acts, s0, s2, cm);
               } else
               {
@@ -3068,7 +3068,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
                 Value val;
                 while ((val = Enum.nextElement()) != null)
                 {
-                  TLCState s2 = s1.bind(var, val, pred);
+                  TLCState s2 = s1.bind(var, val);
                   s2 = this.enabled(acts, s0, s2, cm);
                   if (s2 != null) {
                     return s2;
@@ -3140,7 +3140,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           Value v0 = this.eval(expr, c, s0, s1, EvalControl.Enabled, cm);
           IValue v1 = s1.lookup(varName);
           if (v1 == null) {
-            s1 = s1.bind(var, v0, expr);
+            s1 = s1.bind(var, v0);
             return this.enabled(acts, s0, s1, cm);
           }
           if (v1.equals(v0)) {

@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
-import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.util.Context;
 import tlc2.value.IValue;
@@ -41,11 +40,11 @@ public final class TLCStateFun extends TLCState {
 
   public final TLCState createEmpty() { return Empty; }
 
-  public final TLCState bind(UniqueString name, IValue value, SemanticNode expr) {
+  public final TLCState bind(UniqueString name, IValue value) {
       throw new WrongInvocationException("TLCStateFun.bind: This is a TLC bug.");
   }
 
-  public final TLCState bind(SymbolNode id, IValue value, SemanticNode expr) {
+  public final TLCState bind(SymbolNode id, IValue value) {
     return new TLCStateFun(id, value, this);
   }
   
