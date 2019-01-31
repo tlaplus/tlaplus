@@ -35,7 +35,7 @@ public interface IValue {
 	/* This method compares this with val.  */
 	int compareTo(Object val);
 
-	void write(ValueOutputStream vos) throws IOException;
+	void write(IValueOutputStream vos) throws IOException;
 
 	IValue setCostModel(CostModel cm);
 

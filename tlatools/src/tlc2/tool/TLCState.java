@@ -16,7 +16,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import util.Assert;
 import util.UniqueString;
 
@@ -38,7 +38,7 @@ public abstract class TLCState implements Cloneable, Serializable {
     assert this.level >= 0; // Should never overflow.
   }
   
-	public void write(ValueOutputStream vos) throws IOException {
+	public void write(IValueOutputStream vos) throws IOException {
 		if (this.level > Short.MAX_VALUE) {
 			// The on-disk representation of TLCState limits the diameter/level to
 			// Short.MAX_VALUE whereas the in-memory rep supports int. The underlying

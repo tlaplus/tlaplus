@@ -12,7 +12,7 @@ import java.util.zip.GZIPOutputStream;
 import tlc2.TLCGlobals;
 import util.BufferedDataOutputStream;
 
-public final class ValueOutputStream {
+public final class ValueOutputStream implements IValueOutputStream {
 
   private final BufferedDataOutputStream dos;
   private final HandleTable handles;
@@ -39,23 +39,28 @@ public final class ValueOutputStream {
     this.handles = new HandleTable();
   }
 
+  @Override
   public final void writeShort(short x) throws IOException {
 	  this.dos.writeShort(x);
   }
   
+  @Override
   public final void writeInt(int x) throws IOException {
     this.dos.writeInt(x);
   }
 
+  @Override
   public final void writeLong(long x) throws IOException {
     this.dos.writeLong(x);
   }
   
+  @Override
   public final void close() throws IOException {
     this.dos.close();
   }
   
   /* Precondition: x is a non-negative short. */
+  @Override
   public final void writeShortNat(short x) throws IOException {
     if (x > 0x7f) {
       this.dos.writeShort((short) -x);
@@ -66,6 +71,7 @@ public final class ValueOutputStream {
   }
 
   /* Precondition: x is a non-negative int. */
+  @Override
   public final void writeNat(int x) throws IOException {
     if (x > 0x7fff) {
       this.dos.writeInt(-x);
@@ -76,6 +82,7 @@ public final class ValueOutputStream {
   }
 
   /* Precondition: x is a non-negative long. */
+  @Override
   public final void writeLongNat(long x) throws IOException {
     if (x <= 0x7fffffff) {
       this.dos.writeInt((int)x);
@@ -85,14 +92,17 @@ public final class ValueOutputStream {
     }
   }
 	
+	@Override
 	public final void writeByte(final byte b) throws IOException {
 		this.dos.writeByte(b);
 	}
 
+	@Override
 	public final void writeBoolean(final boolean b) throws IOException {
 		this.dos.writeBoolean(b);
 	}
 
+	@Override
 	public final BufferedDataOutputStream getOutputStream() {
 		return dos;
 	}
@@ -124,6 +134,7 @@ public final class ValueOutputStream {
 	 * blocks tlc2.tool.Workers from exploring the state space, this might has
 	 * adverse effects.
 	 */
+	@Override
 	public final int put(final Object obj) {
 		return this.handles.put(obj);
 	}

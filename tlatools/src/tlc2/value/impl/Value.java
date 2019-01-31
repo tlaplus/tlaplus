@@ -16,8 +16,8 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.ValueConstants;
-import tlc2.value.ValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.WrongInvocationException;
@@ -91,7 +91,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
   public abstract Value normalize();
 
   @Override
-  public void write(ValueOutputStream vos) throws IOException {
+  public void write(IValueOutputStream vos) throws IOException {
 		throw new WrongInvocationException("ValueOutputStream: Can not pickle the value\n" +
 			    Values.ppr(toString()));
   }

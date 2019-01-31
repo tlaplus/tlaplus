@@ -13,7 +13,7 @@ import tlc2.util.FP64;
 import tlc2.value.IBoolValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
@@ -153,7 +153,7 @@ public class BoolValue extends Value implements IBoolValue {
   }
 
 	@Override
-	public void write(ValueOutputStream vos) throws IOException {
+	public void write(IValueOutputStream vos) throws IOException {
 		vos.writeByte(BOOLVALUE);
 		vos.writeBoolean(val);
 	}

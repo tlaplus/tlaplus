@@ -12,7 +12,7 @@ import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
@@ -183,7 +183,7 @@ public class IntValue extends Value {
   }
 
 	@Override
-	public void write(ValueOutputStream vos) throws IOException {
+	public void write(IValueOutputStream vos) throws IOException {
 		vos.writeByte(INTVALUE);
 		vos.writeInt(val);
 	}

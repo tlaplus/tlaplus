@@ -14,7 +14,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.impl.Value;
 import util.UniqueString;
 import util.WrongInvocationException;
@@ -102,7 +102,7 @@ public final class TLCStateFun extends TLCState {
       throw new WrongInvocationException("TLCStateFun.read: This is a TLC bug.");
   }
 
-  public final void write(ValueOutputStream vos) throws IOException {
+  public final void write(IValueOutputStream vos) throws IOException {
       throw new WrongInvocationException("TLCStateFun.write: This is a TLC bug.");
   }
   

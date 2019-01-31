@@ -14,7 +14,7 @@ import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
@@ -300,7 +300,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   @Override
-  public final void write(final ValueOutputStream vos) throws IOException {
+  public final void write(final IValueOutputStream vos) throws IOException {
 	  fcnSet.write(vos);
   }
 

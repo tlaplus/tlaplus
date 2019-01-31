@@ -20,7 +20,7 @@ import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.UniqueString;
 import util.WrongInvocationException;
@@ -303,7 +303,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     }
   }
 
-  public final void write(ValueOutputStream vos) throws IOException {
+  public final void write(IValueOutputStream vos) throws IOException {
     super.write(vos);
     int len = this.values.length;
     for (int i = 0; i < len; i++) {

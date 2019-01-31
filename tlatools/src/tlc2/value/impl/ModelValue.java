@@ -45,7 +45,7 @@ import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IModelValue;
 import tlc2.value.IValue;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
@@ -278,7 +278,7 @@ public class ModelValue extends Value implements IModelValue {
   }
 
 	@Override
-	public void write(ValueOutputStream vos) throws IOException {
+	public void write(IValueOutputStream vos) throws IOException {
 		vos.writeByte(MODELVALUE);
 		vos.writeShort((short) index);
 	}

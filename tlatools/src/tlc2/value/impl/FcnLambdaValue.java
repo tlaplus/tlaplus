@@ -24,7 +24,7 @@ import tlc2.util.Context;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
@@ -706,7 +706,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
   }
 
 	@Override
-	public final void write(final ValueOutputStream vos) throws IOException {
+	public final void write(final IValueOutputStream vos) throws IOException {
 		fcnRcd.write(vos);
 	}
   

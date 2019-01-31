@@ -18,7 +18,7 @@ import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
@@ -401,7 +401,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   }
 
 	@Override
-	public final void write(final ValueOutputStream vos) throws IOException {
+	public final void write(final IValueOutputStream vos) throws IOException {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(RECORDVALUE);

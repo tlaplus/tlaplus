@@ -22,7 +22,7 @@ import tlc2.util.Context;
 import tlc2.value.IBoolValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
@@ -295,7 +295,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public void write(final ValueOutputStream vos) throws IOException {
+  public void write(final IValueOutputStream vos) throws IOException {
 	  inVal.write(vos);
   }
 

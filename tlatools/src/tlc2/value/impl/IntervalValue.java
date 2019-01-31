@@ -12,7 +12,7 @@ import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
@@ -230,7 +230,7 @@ implements Enumerable, Reducible {
   }
 
 	@Override
-	public void write(final ValueOutputStream vos) throws IOException {
+	public void write(final IValueOutputStream vos) throws IOException {
 		vos.writeByte(INTERVALVALUE);
 		vos.writeInt(low);
 		vos.writeInt(high);
