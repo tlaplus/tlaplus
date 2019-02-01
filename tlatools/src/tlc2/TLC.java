@@ -229,6 +229,13 @@ public class TLC
             	tlc.setResolver(new SimpleFilenameToStream());
             }
         }
+        
+		// Setup MailSender *before* calling tlc.process. The MailSender's task it to
+		// write the MC.out file. The MC.out file is e.g. used by CloudTLC to feed
+		// progress back to the Toolbox (see CloudDistributedTLCJob).
+        final MailSender ms = new MailSender();
+        ms.setModelName(tlc.getModelName());
+        ms.setSpecName(tlc.getSpecName());
 
         // Execute TLC.
         //
@@ -242,9 +249,6 @@ public class TLC
         // This is needed when TLC runs on another host and email is
         // the only means for the user to get access to the model
         // checking results.
-        final MailSender ms = new MailSender();
-        ms.setModelName(tlc.getModelName());
-        ms.setSpecName(tlc.getSpecName());
         boolean mailSent = ms.send(tlc.getModuleFiles());
 
         // Treat failure to send mail as a tool failure.

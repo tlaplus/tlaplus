@@ -65,7 +65,7 @@ public final class Worker extends IdThread implements IWorker {
 		TLCState curState = null;
 		try {
 			while (true) {
-				curState = (TLCState) this.squeue.sDequeue();
+				curState = this.squeue.sDequeue();
 				if (curState == null) {
 					synchronized (this.tlc) {
 						this.tlc.setDone();

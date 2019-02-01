@@ -37,6 +37,7 @@ public class CloudTLCJobFactory implements TLCJobFactory {
 
 	private static final String AZURECOMPUTE = "Azure";
 	private static final String AWS_EC2 = "aws-ec2";
+	private static final String PACKET_NET = "PacketNet";
 
 	@Override
 	public Job getTLCJob(String aName, File aModelFolder, int numberOfWorkers, final Properties props, String tlcparams) {
@@ -48,6 +49,9 @@ public class CloudTLCJobFactory implements TLCJobFactory {
 		} else if (AZURECOMPUTE.equalsIgnoreCase(aName)) {
 			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
 					new AzureCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
+		} else if (PACKET_NET.equalsIgnoreCase(aName)) {
+			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
+					new PacketNetCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
 		}
 		throw new IllegalArgumentException(aName + " is an unknown cloud");
 	}

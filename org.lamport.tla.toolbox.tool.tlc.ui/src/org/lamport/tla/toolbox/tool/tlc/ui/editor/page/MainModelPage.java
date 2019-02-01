@@ -329,7 +329,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			}
 		}
 
-		if (cloud.equalsIgnoreCase("aws-ec2") || cloud.equalsIgnoreCase("Azure")) {
+		if (cloud.equalsIgnoreCase("aws-ec2") || cloud.equalsIgnoreCase("Azure") || cloud.equalsIgnoreCase("PacketNet")) {
 			MainModelPage.this.putOnTopOfStack("jclouds", false, false);
 			String email = getModel().getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
 			resultMailAddressText.setText(email);
@@ -1451,7 +1451,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         toolkit.createLabel(distComp, "Run in distributed mode");
         distributedCombo = new Combo(distComp, SWT.READ_ONLY);
-        distributedCombo.setItems(new String[] {"off", "ad hoc", "aws-ec2", "Azure"});
+        distributedCombo.setItems(new String[] {"off", "ad hoc", "aws-ec2", "Azure", "PacketNet"});
         distributedCombo.select(0);
         HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
         distributedCombo.addSelectionListener(howToRunListener);
@@ -1697,7 +1697,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			public void widgetSelected(SelectionEvent e) {
 				int selectionIndex = distributedCombo.getSelectionIndex();
 				String item = distributedCombo.getItem(selectionIndex);
-				if (item.equalsIgnoreCase("aws-ec2") || item.equalsIgnoreCase("Azure")) {
+				if (item.equalsIgnoreCase("aws-ec2") || item.equalsIgnoreCase("Azure") || item.equalsIgnoreCase("PacketNet")) {
 					MainModelPage.this.putOnTopOfStack("jclouds", false, false);
 				} else if(item.equalsIgnoreCase("ad hoc")) {
 					MainModelPage.this.putOnTopOfStack("ad hoc", false, true);

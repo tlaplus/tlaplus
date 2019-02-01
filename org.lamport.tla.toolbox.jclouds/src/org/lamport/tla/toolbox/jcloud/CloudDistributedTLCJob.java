@@ -198,7 +198,8 @@ public class CloudDistributedTLCJob extends Job {
 			// Choose one of the nodes to be the master and create an
 			// identifying predicate.
 			final NodeMetadata master = Iterables.getLast(createNodesInGroup);
-			final String hostname = Iterables.getOnlyElement(master.getPublicAddresses()); // master.getHostname() only returns internal name
+			// Get first one assuming it is the best (e.g. IPv4 vs. IPv6).
+			final String hostname = Iterables.getFirst(master.getPublicAddresses(), null); // master.getHostname() only returns internal name
 
 			// Copy tlatools.jar to _one_ remote host (do not exhaust upload of
 			// the machine running the toolbox).
@@ -214,7 +215,7 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 
-			final String tlcMasterCommand = " shutdown -c && rm -rf /mnt/tlc/* && " // Cancel and remove any pending shutdown and leftovers from previous runs.
+			final String tlcMasterCommand = " sudo shutdown -c && rm -rf /mnt/tlc/* && " // Cancel and remove any pending shutdown and leftovers from previous runs.
 					+ "cd /mnt/tlc/ && "
 					// Decompress tla2tools.pack.gz
 					+ "unpack200 /tmp/tla2tools.pack.gz /tmp/tla2tools.jar"
@@ -469,7 +470,7 @@ public class CloudDistributedTLCJob extends Job {
 			// https://askubuntu.com/questions/994339/check-if-shutdown-schedule-is-active-and-when-it-is
 			try {
 				final ExecResponse response = compute.runScriptOnNode(id,
-						"busctl call --system org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager CancelScheduledShutdown", 
+						"sudo busctl call --system org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager CancelScheduledShutdown", 
 						TemplateOptions.Builder.overrideLoginCredentials(getLoginForCommandExecution()).runAsRoot(true)
 						.wrapInInitScript(false));
 				if (response.getExitStatus() == 0
@@ -513,6 +514,7 @@ public class CloudDistributedTLCJob extends Job {
             templateBuilder.options(templateOptions);
             templateBuilder.imageId(params.getImageId());
             templateBuilder.hardwareId(params.getHardwareId());
+            params.mungeTemplateBuilder(templateBuilder);
 
             // Everything configured, now launch node
 			monitor.subTask(String.format("Starting %s %s instance%s in region %s.", nodes > 1 ? nodes : "a",
