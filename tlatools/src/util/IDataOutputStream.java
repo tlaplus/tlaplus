@@ -23,40 +23,14 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tlc2.value;
+package util;
 
-import java.io.EOFException;
 import java.io.IOException;
 
-import util.BufferedDataInputStream;
-import util.IDataInputStream;
-import util.UniqueString;
+public interface IDataOutputStream {
 
-public interface IValueInputStream {
+	void writeInt(int varLoc) throws IOException;
 
-	IValue read() throws IOException;
+	void writeString(String s) throws IOException;
 
-	int readShort() throws IOException;
-
-	int readInt() throws IOException;
-
-	long readLong() throws IOException;
-
-	void close() throws IOException;
-
-	int readNat() throws IOException;
-
-	short readShortNat() throws IOException;
-
-	long readLongNat() throws IOException;
-
-	byte readByte() throws EOFException, IOException;
-
-	void assign(Object obj, int idx);
-
-	int getIndex();
-
-	IDataInputStream getInputStream();
-
-	UniqueString getValue(int idx);
 }

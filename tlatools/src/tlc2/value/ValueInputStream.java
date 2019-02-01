@@ -18,6 +18,7 @@ import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
 import util.BufferedDataInputStream;
 import util.FileUtil;
+import util.IDataInputStream;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -137,7 +138,7 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 	}
 
 	@Override
-	public final BufferedDataInputStream getInputStream() {
+	public final IDataInputStream getInputStream() {
 		return dis;
 	}
 

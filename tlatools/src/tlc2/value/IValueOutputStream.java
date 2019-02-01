@@ -28,6 +28,7 @@ package tlc2.value;
 import java.io.IOException;
 
 import util.BufferedDataOutputStream;
+import util.IDataOutputStream;
 
 public interface IValueOutputStream {
 
@@ -52,7 +53,7 @@ public interface IValueOutputStream {
 
 	void writeBoolean(boolean b) throws IOException;
 
-	BufferedDataOutputStream getOutputStream();
+	IDataOutputStream getOutputStream();
 
 	/**
 	 * Check if another TLCState - which is currently also being serialized to the
