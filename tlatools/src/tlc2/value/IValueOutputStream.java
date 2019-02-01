@@ -27,7 +27,6 @@ package tlc2.value;
 
 import java.io.IOException;
 
-import util.BufferedDataOutputStream;
 import util.IDataOutputStream;
 
 public interface IValueOutputStream {

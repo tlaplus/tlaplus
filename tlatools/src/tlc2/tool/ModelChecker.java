@@ -25,6 +25,7 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
+import tlc2.tool.queue.DiskByteArrayQueue;
 import tlc2.util.IStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
@@ -96,7 +97,9 @@ public class ModelChecker extends AbstractChecker
         super(tool, metadir, stateWriter, deadlock, fromChkpt);
 
         // SZ Feb 20, 2009: this is a selected alternative
-        this.theStateQueue = new DiskStateQueue(this.metadir);
+		this.theStateQueue = Boolean.getBoolean(ModelChecker.class.getName() + ".rawqueue")
+				? new DiskByteArrayQueue(this.metadir)
+				: new DiskStateQueue(this.metadir);
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         // Finally, initialize the trace file:

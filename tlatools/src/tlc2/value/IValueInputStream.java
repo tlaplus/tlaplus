@@ -28,7 +28,6 @@ package tlc2.value;
 import java.io.EOFException;
 import java.io.IOException;
 
-import util.BufferedDataInputStream;
 import util.IDataInputStream;
 import util.UniqueString;
 
