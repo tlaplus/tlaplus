@@ -255,12 +255,6 @@ public class CloudDistributedTLCJob extends Job {
 						+ params.getTLCParameters() + " "
 						+ (isCLI ? "|& tee /mnt/tlc/MC.out " : "")
 						+ "&& "
-					// Run any cloud specific cleanup tasks.
-					// When CloudDistributedTLCJob runs in synchronous CLI mode (isCLI), it will destroy
-					// the VMs (nodes) via the jclouds API. No need to deallocate nodes
-					// via special logic.
-					+ (isCLI ? "/bin/true" : params.getCloudAPIShutdown())
-					+ " && "
 					// Let the machine power down immediately after
 					// finishing model checking to cut costs. However,
 					// do not shut down (hence "&&") when TLC finished
@@ -383,8 +377,6 @@ public class CloudDistributedTLCJob extends Job {
 								// shut down caused by a violation among the
 								// init states.
 					            // Run any cloud specific cleanup tasks.
-					            + params.getCloudAPIShutdown()
-					            + " && "
 								+ "sudo shutdown -h now"
 								+ "\""), 
 						new TemplateOptions().runAsRoot(false).wrapInInitScript(
@@ -544,6 +536,12 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							// - Turn off NUMA balancing
 							+ "echo 0 > /proc/sys/kernel/numa_balancing"
+							+ " && "
+							// Run any cloud specific cleanup tasks.
+							// When CloudDistributedTLCJob runs in synchronous CLI mode (isCLI), it will destroy
+							// the VMs (nodes) via the jclouds API. No need to deallocate nodes
+							// via special logic.
+							+ (isCLI ? "/bin/true" : params.getCloudAPIShutdown(params.getCredentials()))
 							+ " && "
                             // Don't want dpkg to require user interaction.
 							+ "export DEBIAN_FRONTEND=noninteractive"

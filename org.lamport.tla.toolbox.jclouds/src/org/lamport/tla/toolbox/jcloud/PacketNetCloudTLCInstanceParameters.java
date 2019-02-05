@@ -141,8 +141,27 @@ public class PacketNetCloudTLCInstanceParameters extends CloudTLCInstanceParamet
 	}
 
 	@Override
-	public String getCloudAPIShutdown() {
-		return super.getCloudAPIShutdown();
+	public String getCloudAPIShutdown(final String credentials) {
+		// One might think we could simply invoke curl and terminate the instance right
+		// away. That doesn't work because we want the instance to idle until the
+		// scheduled shutdown call executes in case the Toolbox reuses the instance to
+		// run another model.
+//		return String.format("/usr/bin/curl -X DELETE -H X-Auth-Token:%s https://api.packet.net/devices/%s", credentials, nodeId);
+		return String.format(
+				"printf \"[Unit]\\nDescription=Delete instance via packetnet api on shutdown\\n"
+				+ "Requires=network.target\\n"
+				+ "DefaultDependencies=no\\n"
+				+ "Before=shutdown.target\\n"
+				+ "[Service]\\n"
+				+ "Type=oneshot\\n"
+				+ "RemainAfterExit=true\\n"
+				+ "ExecStart=/bin/true\\n"
+				+ "ExecStop=/usr/bin/curl -X DELETE -H X-Auth-Token:%s https://api.packet.net/devices/$(curl https://metadata.packet.net/metadata 2>/dev/null | jq -r '.id')\\n"
+				+ "[Install]\\n"
+				+ "WantedBy=multi-user.target\\n\" | sudo tee /lib/systemd/system/delete-on-shutdown.service"
+				+ " && sudo chmod +x /lib/systemd/system/delete-on-shutdown.service"
+				+ " && service delete-on-shutdown start",
+				credentials);
 		
 		/*
 			@packethost Can I somehow set (upon creation) servers to be automatically be deleted on an OS shutdown?

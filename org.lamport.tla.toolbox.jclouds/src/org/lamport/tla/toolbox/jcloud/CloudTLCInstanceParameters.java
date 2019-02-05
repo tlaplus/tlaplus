@@ -160,7 +160,7 @@ public abstract class CloudTLCInstanceParameters {
 		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
 	}
 
-	public String getCloudAPIShutdown() {
+	public String getCloudAPIShutdown(final String credentials) {
 		return "/bin/true"; // no-op, because concat with && ... && in CDTJ.
 	}
 
