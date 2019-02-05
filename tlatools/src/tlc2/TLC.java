@@ -859,24 +859,6 @@ public class TLC
                 UniqueString.internTbl.recover(fromChkpt);
             }
             FP64.Init(fpIndex);
-
-            
-    		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
-    		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
-    		final String arch = tlcRuntime.getArchitecture().name();
-    		
-    		final Runtime runtime = Runtime.getRuntime();
-    		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
-    		final String cores = Integer.toString(runtime.availableProcessors());
-
-    		final String vendor = System.getProperty("java.vendor");
-    		final String version = System.getProperty("java.version");
-
-    		final String osName = System.getProperty("os.name");
-    		final String osVersion = System.getProperty("os.version");
-    		final String osArch = System.getProperty("os.arch");
-    		
-    		final long pid = TLCRuntime.getInstance().pid();
     		
     		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
@@ -891,11 +873,7 @@ public class TLC
                 {
                     rng.setSeed(seed, aril);
                 }
-				MP.printMessage(EC.TLC_MODE_SIMU,
-						new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
-								TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
-								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
-								pid == -1 ? "" : String.valueOf(pid) });
+				MP.printMessage(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
                         traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
@@ -907,25 +885,20 @@ public class TLC
 				}
 				RandomEnumerableValues.setSeed(seed);
             	
-				final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
-						TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor, version,
-						arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
-						Long.toString(RandomEnumerableValues.getSeed()), Integer.toString(fpIndex),
-						pid == -1 ? "" : String.valueOf(pid) };
-
+				// Print startup banner before SANY writes its output.
+				MP.printMessage(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex));
+				
             	// model checking
 		        final ITool tool = new Tool(mainFile, configFile, resolver);
 
-                if (TLCGlobals.DFIDMax == -1)
+                if (isBFS())
                 {
-					MP.printMessage(EC.TLC_MODE_MC, parameters);
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
 							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) TLCGlobals.mainChecker, this);
 					TLCGlobals.mainChecker.modelCheck();
                 } else
                 {
-					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
 					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt);
 					TLCGlobals.mainChecker.modelCheck();
                 }
@@ -968,6 +941,58 @@ public class TLC
 			MP.flush();
         }
     }
+
+	private static boolean isBFS() {
+		return TLCGlobals.DFIDMax == -1;
+	}
+
+	private static String[] getSimulationRuntime(final long seed) {
+		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
+		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
+		final String arch = tlcRuntime.getArchitecture().name();
+		
+		final Runtime runtime = Runtime.getRuntime();
+		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
+		final String cores = Integer.toString(runtime.availableProcessors());
+
+		final String vendor = System.getProperty("java.vendor");
+		final String version = System.getProperty("java.version");
+
+		final String osName = System.getProperty("os.name");
+		final String osVersion = System.getProperty("os.version");
+		final String osArch = System.getProperty("os.arch");
+		
+		final long pid = TLCRuntime.getInstance().pid();
+		
+		return new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
+				TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
+				version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
+				pid == -1 ? "" : String.valueOf(pid) };
+	}
+
+	private static String[] getModelCheckingRuntime(final int fpIndex) {
+		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
+		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
+		final String arch = tlcRuntime.getArchitecture().name();
+		
+		final Runtime runtime = Runtime.getRuntime();
+		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
+		final String cores = Integer.toString(runtime.availableProcessors());
+
+		final String vendor = System.getProperty("java.vendor");
+		final String version = System.getProperty("java.version");
+
+		final String osName = System.getProperty("os.name");
+		final String osVersion = System.getProperty("os.version");
+		final String osArch = System.getProperty("os.arch");
+		
+		final long pid = TLCRuntime.getInstance().pid();
+		
+		return new String[] { String.valueOf(TLCGlobals.getNumWorkers()), TLCGlobals.getNumWorkers() == 1 ? "" : "s",
+				cores, osName, osVersion, osArch, vendor, version, arch, Long.toString(heapMemory),
+				Long.toString(offHeapMemory), Long.toString(RandomEnumerableValues.getSeed()),
+				Integer.toString(fpIndex), pid == -1 ? "" : String.valueOf(pid) };
+	}
     
     /**
 	 * @return The given milliseconds runtime converted into human readable form
