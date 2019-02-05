@@ -1862,7 +1862,7 @@ public int levelChecked   = 0 ;
 //         (* I believe this shold be OpDeclNode. (LL, Mar 2007)              *)
 //         (*******************************************************************)
 //       param == op.params
-//   IN  /\ n.level = Max(op.level,
+//   IN  /\ n.level = NumMax(op.level,
 //                        SetMax({arg[i].level : i \in 1..p})
 //            (****************************************************************)
 //            (* For an operator parameter, we assume that the weights of     *)
