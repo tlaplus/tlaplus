@@ -136,6 +136,10 @@ public class CloudDistributedTLCJob extends Job {
 		
 		ComputeServiceContext context = null;
 		try {
+			// Fail fast if files/tla2tools.jar is missing. This happens frequently for me
+			// when I forget to run the maven build in my dev environment.
+			PayloadHelper.checkToolsJar(); // Throws RuntimeException on failure.
+
 			// Tweak tla2tools in a background thread. It takes a couple of seconds to run
 			// pack200 to shrink the files size but we can lookup or launch a cloud instance
 			// in the meantime.
