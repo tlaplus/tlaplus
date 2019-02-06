@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
@@ -891,6 +893,9 @@ public class TLC
             	// model checking
 		        final ITool tool = new Tool(mainFile, configFile, resolver);
 
+		        // Spec has been parsed, schedule termination before model checking starts below.  
+				scheduleTerminationTimer();
+
                 if (isBFS())
                 {
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
@@ -992,6 +997,25 @@ public class TLC
 				cores, osName, osVersion, osArch, vendor, version, arch, Long.toString(heapMemory),
 				Long.toString(offHeapMemory), Long.toString(RandomEnumerableValues.getSeed()),
 				Integer.toString(fpIndex), pid == -1 ? "" : String.valueOf(pid) };
+	}
+
+	private static void scheduleTerminationTimer() {
+		// Stops model checker after the given time in seconds. If model checking
+		// terminates before stopAfter seconds, the timer task will never run.
+		// Contrary to TLCSet("exit",...) this does not require a spec modification. Is
+		// is likely of little use for regular TLC users. In other words, this is meant
+		// to be a developer only feature and thus configured via a system property and
+		// not a regular TLC parameter.
+		final long stopAfter = Long.getLong(TLC.class.getName() + ".stopAfter", -1L);
+		if (stopAfter > 0) {
+			final Timer stopTimer = new Timer("TLCStopAfterTimer");
+			stopTimer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					TLCGlobals.mainChecker.stop();
+				}
+			}, stopAfter * 1000L); // seconds to milliseconds.
+		}
 	}
     
     /**
