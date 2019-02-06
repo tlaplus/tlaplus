@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.5.7.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.5.8.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.lamport.tla.toolbox.product.standalone/images/splash_small.png"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.5.7 of 18 July 2018 and includes:
+This is Version 1.5.8 of Day Month 20?? and includes:
   - SANY Version 2.1 of 23 July 2017
   - TLC Version 2.13 of 18 July 2018
   - PlusCal Version 1.8 of 16 May 2018
@@ -84,7 +84,7 @@ openFile
       <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10" />
       <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
       <plugin id="sts" autoStart="true" startLevel="4" />
-      <property name="eclipse.buildId" value="1.5.7" />
+      <property name="eclipse.buildId" value="1.5.8" />
    </configurations>
 
    <repositories>

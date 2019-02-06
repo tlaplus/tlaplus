@@ -59,7 +59,7 @@
 
             <!-- Use AUT from current build results. [classifier] will be
             automatically replaced according to the current platform -->
-            <explicit>../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.5.7-[platform].zip</explicit>
+            <explicit>../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.5.8-[platform].zip</explicit>
 
             <!-- Or specify a path to AUT folder -->
             <!--
