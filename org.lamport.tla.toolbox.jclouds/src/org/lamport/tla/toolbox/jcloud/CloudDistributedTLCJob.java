@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -444,15 +445,18 @@ public class CloudDistributedTLCJob extends Job {
 		// Filter out those nodes which haven't been created by the Toolbox. We can't be
 		// sure if they are reusable or that we are allowed to reuse them. Also, skip
 		// nodes which are CLI nodes. CLI nodes get destroyed by the Toolbox. Lastly, we
-		// are only interested in RUNNING instances.
-		final Set<? extends ComputeMetadata> runningNodes = compute.listNodesDetailsMatching(
+		// are only interested in RUNNING and SUSPENDED instances.
+		final Set<? extends ComputeMetadata> potentialNodes = compute.listNodesDetailsMatching(
 				node -> node.getName() != null && node.getName().startsWith(providerName.toLowerCase())
-						&& !node.getTags().contains("CLI") && node.getStatus() == NodeMetadata.Status.RUNNING);
+						&& !node.getTags().contains("CLI") && (node.getStatus() == NodeMetadata.Status.RUNNING || node.getStatus() == NodeMetadata.Status.SUSPENDED));
 
 		// TODO what happens if a node terminates before we tried to runScriptOnNode
 		// below? Does runScriptOnNode throw an exception or does the response indicate
 		// it?
 		
+		final Set<ComputeMetadata> runningNodes = potentialNodes.stream().filter(cii -> cii instanceof NodeMetadata)
+				.map(NodeMetadata.class::cast).filter(nm -> nm.getStatus() == NodeMetadata.Status.RUNNING)
+				.collect(Collectors.toSet());
 		for (final ComputeMetadata node : runningNodes) {
 			final String id = node.getId();
 			
@@ -483,6 +487,18 @@ public class CloudDistributedTLCJob extends Job {
 			}
 		}
 		
+		// Fall back to suspended nodes.
+		potentialNodes.removeAll(runningNodes);
+		for (final ComputeMetadata node : potentialNodes) {
+			try {
+				final String id = node.getId();
+				compute.resumeNode(id);
+				return new HashSet<>(Arrays.asList(new WrapperNodeMetadata(compute.getNodeMetadata(id), getLoginForCommandExecution())));
+			} catch (RuntimeException e) {
+				continue;
+			}
+		}
+
 		return new HashSet<>();
 	}
 
