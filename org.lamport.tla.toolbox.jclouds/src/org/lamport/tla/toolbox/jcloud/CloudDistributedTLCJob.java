@@ -399,9 +399,28 @@ public class CloudDistributedTLCJob extends Job {
 			// the output of the TLC process to a user. The SSH connection automatically
 			// terminates when the TLC process finishes.
 			// https://askubuntu.com/questions/509881/tail-reading-an-entire-file-and-then-following			
+			//
+			// For tail... to succeed, the TLC process has to be started with a
+			// MailSender.MAIL_ADDRESS so that MailSender creates /mnt/tlc/MC.out. This is
+			// something which should eventually be refactored out of MailSender and be made
+			// independent of it (e.g. the command-line variant of CloudDistributedTLC does
+			// not necessarily require an email to be sent).
 			ExecChannel execChannel = null;
 			if (!isCLI) {
-				execChannel = sshClient.execChannel("tail -q -f -n +1 /mnt/tlc/MC.out --pid $(pgrep -f \"^java .* -jar /tmp/tla2tools.jar\")");
+				execChannel = sshClient.execChannel(
+					// Wait for the java process to start before tail'ing its MC.out file below.
+					// This obviously open the door to blocking indefinitely if the java/TLC process
+					// terminates before until starts.
+					"until pids=$(pgrep -f \"^java .* -jar /tmp/tla2tools.jar\"); do sleep 1; done"
+					+ " && "
+					// Guarantee the MC.out file exists in case the java process has not written to
+					// it yet. Otherwise tail might terminate immediately. touch is idempotent and
+					// thus does not fail when MC.out already exists.
+					+ "touch /mnt/tlc/MC.out"
+					+ " && "
+					// Read the MC.out file and remain attached for as long as there is a TLC/java
+					// process.
+					+ "tail -q -f -n +1 /mnt/tlc/MC.out --pid $(pgrep -f \"^java .* -jar /tmp/tla2tools.jar\")");
 			}
 			
 			// Communicate result to user
