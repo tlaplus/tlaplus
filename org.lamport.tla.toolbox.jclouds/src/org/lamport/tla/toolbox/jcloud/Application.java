@@ -25,10 +25,13 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.jcloud;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,6 +41,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 
 import tlc2.TLCGlobals;
@@ -112,7 +116,7 @@ public class Application implements IApplication {
 		final CloudDistributedTLCJob job = (CloudDistributedTLCJob) factory.getTLCJob(cloud, new File(modelDirectory), 1, props, tlcParams.toString());
 		job.setIsCLI(true);
 		job.setDoJfr(true);
-		final IStatus status = job.run(new MyProgressMonitor(9));
+		final ITLCJobStatus status = (ITLCJobStatus) job.run(new MyProgressMonitor(9));
 		// Show error message if any such as invalid credentials.
 		if (status.getSeverity() == IStatus.ERROR) {
 			System.err.println(status.getMessage());
@@ -121,6 +125,22 @@ public class Application implements IApplication {
 				System.err.printf("\n###############################\n\n%s\n###############################\n",
 						exception.getMessage());
 			}
+			// Signal unsuccessful execution.
+			return new Integer(1);
+		}
+		
+		// If no error above, read the (remote) TLC process output (stdout, no stderr)
+		// and print it on the local stdout.
+		final InputStream output = status.getOutput();
+		try {
+			final BufferedReader in = new BufferedReader(
+					new InputStreamReader(output));
+			String line;
+			while ((line = in.readLine()) != null) {
+				System.out.println(line);
+			}
+		} catch (IOException e) {
+			System.err.println(status.getMessage());
 			// Signal unsuccessful execution.
 			return new Integer(1);
 		}
