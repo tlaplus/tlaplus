@@ -184,7 +184,9 @@ public class CloudDistributedTLCJob extends Job {
 			}
 
 			//TODO Support instance reuse with Cloud distributed TLC.
-			monitor.subTask("Looking for resusable nodes to quick-start model checking");
+			monitor.subTask(String.format(
+					"Looking for %sresusable node%s to quick-start model checking (expect to see failed connection attempts)",
+					nodes > 1 ? "" : "a ", nodes > 1 ? "s" : ""));
 			final Set<NodeMetadata> createNodesInGroup = nodes > 1 ? new HashSet<>()
 					: findReusableNodes(compute, monitor);
 			monitor.worked(5);

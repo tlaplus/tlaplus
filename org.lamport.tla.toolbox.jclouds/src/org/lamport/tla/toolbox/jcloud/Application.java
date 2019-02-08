@@ -136,6 +136,7 @@ public class Application implements IApplication {
 	 * @see org.eclipse.equinox.app.IApplication#stop()
 	 */
 	public void stop() {
+		// cannot be stopped!
 	}
 	
 	private static class MyProgressMonitor implements IProgressMonitor {
