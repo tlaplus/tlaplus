@@ -613,6 +613,13 @@ public class CloudDistributedTLCJob extends Job {
 //							+ "add-apt-repository ppa:webupd8team/java -y && "
 //							+ "apt-get update && "
 //							+ "apt-get --no-install-recommends install oracle-java8-installer oracle-java8-set-default -y"
+							// Tell sshd not to use PAM user session modules. pam_nologin restricts
+							// subsequent logins to the instance five minutes prior to system halt and
+							// systemd apparently has no way to configure five minutes to e.g. 15 seconds.
+							+ " && "
+							+ "sed -i 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config"
+							+ " && "
+							+ "service ssh restart"
 							// Create /mnt/tlc and change permission to be world writable
 							// Requires package 'apache2' to be already installed. apache2
 							// creates /var/www/html.
