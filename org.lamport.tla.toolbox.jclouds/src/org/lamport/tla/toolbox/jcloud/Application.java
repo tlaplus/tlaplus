@@ -59,6 +59,11 @@ public class Application implements IApplication {
 		final String modelDirectory = args[0];
 		
 		final Properties props = initializeFromFile(modelDirectory);
+		// By default send mail to the root account (might be overwritten below).
+		// Without specifying any email address, MailSender will not set up
+		// /mnt/tlc/MC.out and most of CloudDistributedTLCJob's functionality will not
+		// work (no TLC process output will be received).
+		props.put(TLCJobFactory.MAIL_ADDRESS, "root@localhost");
 		props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
 
 		// Optional parameters
