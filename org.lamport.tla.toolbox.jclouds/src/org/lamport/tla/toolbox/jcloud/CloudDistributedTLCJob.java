@@ -401,7 +401,7 @@ public class CloudDistributedTLCJob extends Job {
 			// https://askubuntu.com/questions/509881/tail-reading-an-entire-file-and-then-following			
 			ExecChannel execChannel = null;
 			if (!isCLI) {
-				execChannel = sshClient.execChannel("tail -q -f -n +1 /mnt/tlc/MC.out --pid $(pgrep -f tla2tools.jar)");
+				execChannel = sshClient.execChannel("tail -q -f -n +1 /mnt/tlc/MC.out --pid $(pgrep -f \"^java .* -jar /tmp/tla2tools.jar\")");
 			}
 			
 			// Communicate result to user
