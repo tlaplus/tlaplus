@@ -32,7 +32,8 @@ openFile
       <programArgsLin>--launcher.GTK_version 2
       </programArgsLin>
       <vmArgs>-XX:+IgnoreUnrecognizedVMOptions
--Xmx1000m
+-Xmx1024m
+-XX:+UseParallelGC
 -Dorg.eclipse.equinox.http.jetty.http.port=10996
 -Dosgi.splashPath=platform:/base/
 -Dosgi.requiredJavaVersion=1.8

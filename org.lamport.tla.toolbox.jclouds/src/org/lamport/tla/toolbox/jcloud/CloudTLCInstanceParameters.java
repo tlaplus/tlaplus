@@ -94,7 +94,7 @@ public abstract class CloudTLCInstanceParameters {
 	
 	protected String getJavaWorkerVMArgs(final String extraWorkerVMArgs) {
 		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
-		return ("--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions "
+		return ("--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -XX:+UseParallelGC "
 				+ extraWorkerVMArgs).trim();
 	}
 
@@ -149,8 +149,7 @@ public abstract class CloudTLCInstanceParameters {
 	}
 	
 	public String getFlightRecording() {
-		return "-XX:+UnlockCommercialFeatures "
-				+ "-XX:+FlightRecorder "
+		return "-XX:StartFlightRecording=settings=default "
 				+ "-XX:+UnlockDiagnosticVMOptions "
 				+ "-XX:+DebugNonSafepoints "
 				+ "-XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/mnt/tlc,dumponexit=true,dumponexitpath=/mnt/tlc/tlc.jfr,maxage=12h";

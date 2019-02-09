@@ -138,6 +138,9 @@ public class TLCProcessJob extends TLCJob
 				vmArgs.add("-D" + FPSetFactory.IMPL_PROPERTY + "=" + clazz);
 			}
 			
+			// specify Java8+ acceptable GC
+			vmArgs.add("-XX:+UseParallelGC");
+			
             // add remaining VM args
             vmArgs.addAll(getAdditionalVMArgs());
 
