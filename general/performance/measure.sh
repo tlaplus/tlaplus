@@ -50,8 +50,7 @@ for i in {1..3}; do
           TLC_OUTPUT_FILE=$REV-$i-$w-tlc.txt
 
           /usr/bin/time --append --output=$TIME_OUTPUT_FILE \
-          java -XX:+UnlockCommercialFeatures \
-           -XX:+FlightRecorder \
+          java -XX:StartFlightRecording=settings=default \
            -XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/tmp,dumponexit=true,dumponexitpath=$JFR_OUTPUT_FILE,maxage=12h,settings=$TLATOOLS_HOME/jfr/tlc.jfc \
            -javaagent:$TLATOOLS_HOME/jfr/jmx2jfr.jar=$TLATOOLS_HOME/jfr/jmxprobes.xml \
            -Xmx$HEAP_MEM -Xms$HEAP_MEM \

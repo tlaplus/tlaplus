@@ -2,8 +2,7 @@ This folder contains all libraries and config files to profile TLC with Java Fli
 
 A default JFR is created with:
 
--XX:+UnlockCommercialFeatures
--XX:+FlightRecorder
+-XX:StartFlightRecording=settings=default
 -XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/tmp,dumponexit=true,dumponexitpath=dump.jfr,maxage=1h,settings=${project_loc:tlatools}/jfr/tlc.jfc
 
 To additionally record JMX data in the flight recording, add:
