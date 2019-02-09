@@ -45,10 +45,18 @@ openFile
 
    <windowImages i16="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_16.png" i32="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_32.png" i48="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_48.png" i64="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_64.png" i128="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_128.png" i256="/org.lamport.tla.toolbox/icons/full/etool16/tla_launch_check_wiz_256.png"/>
 
-
    <launcher name="toolbox">
+      <linux icon="/icons/toolbox_application-256.xpm"/>
+      <macosx icon="/icons/toolbox_application.icns"/>
       <win useIco="false">
-         <bmp/>
+         <bmp
+            winSmallHigh="/icons/toolbox_application-16_32bit.bmp"
+            winSmallLow="/icons/toolbox_application-16_8bit.bmp"
+            winMediumHigh="/icons/toolbox_application-32_32bit.bmp"
+            winMediumLow="/icons/toolbox_application-32_8bit.bmp"
+            winLargeHigh="/icons/toolbox_application-48_32bit.bmp"
+            winLargeLow="/icons/toolbox_application-48_8bit.bmp"
+            winExtraLargeHigh="/icons/toolbox_application-256_32bit.bmp"/>
       </win>
    </launcher>
 
