@@ -47,6 +47,10 @@
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
 <repository location="http://lemmy.github.com/Pdf4Eclipse/"/>
 </location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+<unit id="org.lamport.openjdk.feature.feature.group" version="0.0.0"/>
+<repository location="http://lemmy.github.com/eclipse-jdk-bundles/"/>
+</location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="2.5.201812"/>
 <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.5.201812/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
