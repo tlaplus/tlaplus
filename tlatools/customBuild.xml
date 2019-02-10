@@ -284,118 +284,15 @@
 	<target name="test" unless="test.skip">
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
-		<jacoco:coverage destfile="target/code-coverage.exec" includes="pcal.*:tla2sany.*:tla2tex.*:tlc2.*:util.*:org.lamport.*" excludes="**/Tests.*:**/*Test*">
-			<junit printsummary="yes" haltonfailure="${test.halt}" showoutput="no" haltonerror="${test.halt}"  forkmode="perBatch" fork="yes">
-				<!-- enable all assertions -->
-				<jvmarg value="-ea"/>
-				<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
-				<jvmarg value="-XX:+UseParallelGC"/>
-				<!-- Uncomment to open a debug port in each forked VM to remote attach your Eclipse at port 1044.
-	            <jvmarg value="-Xdebug" />
-		        <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044" />
-				-->
-				<classpath refid="project.classpath" />
-				<classpath>
-					<pathelement location="lib/junit-4.12.jar" />
-					<pathelement location="lib/hamcrest-core-1.3.jar" />
-					<pathelement location="lib/cglib-nodep-3.1.jar" />
-					<pathelement location="lib/objenesis-2.1.jar" />
-					<pathelement location="lib/easymock-3.3.1.jar" />
-					<pathelement location="lib/javax.mail.jar" />
-					<pathelement path="${class.dir}" />
-					<pathelement path="${test.class.dir}" />
-				</classpath>
-				<formatter type="xml" />
-
-				<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
-				<sysproperty key="basedir" value="${basedir}/"/>
-				<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
-				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
-				<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
-				<!-- The tests below can be tricked into running in a single VM by fiddling with the classloader 
-				     to reload and thus initialize all classes for each tests. -->
-				<batchtest fork="yes" todir="${test.reports}">
-					<fileset dir="${test.dir}">
-						<include name="**/*Test*.java" />
-						
-						<!-- Produce bogus crash with Quarantine runner. -->
-						<exclude name="tlc2/tool/distributed/TLCSetTest.java" />
-						<exclude name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
-						<!-- Just fail because of Quarantine runner. -->
-						<exclude name="tlc2/TLCTest.java"/>
-						<exclude name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
-						<exclude name="tlc2/tool/UserModuleOverrideTest.java" />
-						
-						<exclude name="**/PCalTest.java" />
-						<exclude name="**/CommonTestCase.java" />
-						<exclude name="**/ModelCheckerTestCase.java" />
-						<exclude name="**/PCalModelCheckerTestCase.java" />
-						<exclude name="**/SuiteTestCase.java" />
-						<exclude name="**/SuiteETestCase.java" />
-						<exclude name="**/DistributedTLCTestCase.java" />
-						<exclude name="**/TLCServerTestCase.java" />
-						<exclude name="**/SuccessfulSimulationTestCase.java" />
-						<exclude name="**/AbstractExampleTestCase.java" />
-						<exclude name="**/AbstractCoverageTest.java" />
-						<exclude name="**/InitEvalOrderTest.java" />
-						<exclude name="**/TestMPRecorder.java" />
-						<exclude name="**/TestPrintStream.java" />
-						<exclude name="**/BidirectionalTransitions1BTest.java" />
-						<exclude name="**/BidirectionalTransitions2CTest.java" />
-						<exclude name="**/Abstract*Test.java" />
-						<exclude name="**/TestDriver.java" />
-						<exclude name="**/TestDriver2.java" />
-						<exclude name="**/AllTests.java" />
-						<exclude name="util/IsolatedTestCaseRunner.java"/>
-						<!-- Known test failures -->
-						<exclude name="**/pcal/StackTestTest.java" />
-						<exclude name="**/pcal/TestPCandStackTest.java" />
-						<!-- These take too long -->
-						<exclude name="**/MacroQuicksortTest.java" />
-						<exclude name="**/MacroRealQuicksortTest.java" />
-						<exclude name="**/PcalPaxosTest.java" />
-						<exclude name="**/DetlefsTest.java" />
-						<exclude name="**/StarkMutexTest.java" />
-						<exclude name="**/SimpleMultiProcTest.java" />
-					</fileset>
-				</batchtest>
-				<batchtest fork="yes" todir="${test.reports}">
-					<fileset dir="${test.dir}">
-						<include name="tlc2/tool/UserModuleOverrideTest.java" />
-					</fileset>
-				</batchtest>
-				<batchtest fork="yes" todir="${test.reports}">
-					<fileset dir="${test.dir}">
-						<include name="tlc2/tool/distributed/TLCSetTest.java" />
-					</fileset>
-				</batchtest>
-				<batchtest fork="yes" todir="${test.reports}">
-					<fileset dir="${test.dir}">
-						<include name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
-					</fileset>
-				</batchtest>
-				<batchtest fork="yes" todir="${test.reports}">
-					<fileset dir="${test.dir}">
-						<include name="tlc2/TLCTest.java"/>
-						<include name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
-					</fileset>
-				</batchtest>
-			</junit>
-		</jacoco:coverage>
-
-		<!-- remove copied class.dir -->
-		<delete dir="${ws.class.dir}" deleteonexit="true"/>
-	</target>
-
-	<!-- Executes accompining unit tests on jar file -->
-	<target name="test-dist" unless="test.skip">
-		<!-- run junit tests on tlatools.jar -->
-		<mkdir dir="${test.reports}/onJar" />
-		<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}" forkmode="perTest" fork="yes">
+		<junit printsummary="yes" haltonfailure="${test.halt}" showoutput="no" haltonerror="${test.halt}"  forkmode="perBatch" fork="yes">
 			<!-- enable all assertions -->
 			<jvmarg value="-ea"/>
 			<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
 			<jvmarg value="-XX:+UseParallelGC"/>
+			<!-- Uncomment to open a debug port in each forked VM to remote attach your Eclipse at port 1044.
+            <jvmarg value="-Xdebug" />
+	        <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044" />
+			-->
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
@@ -403,17 +300,20 @@
 				<pathelement location="lib/cglib-nodep-3.1.jar" />
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
-				<pathelement location="${dist.file}" />
+				<pathelement location="lib/javax.mail.jar" />
+				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 			</classpath>
-
 			<formatter type="xml" />
-			<sysproperty key="basedir" value="${basedir}/"/>
-			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
-			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
-			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
 
-			<batchtest fork="yes" todir="${test.reports}/onJar">
+			<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
+			<sysproperty key="basedir" value="${basedir}/"/>
+			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
+			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
+			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
+			<!-- The tests below can be tricked into running in a single VM by fiddling with the classloader 
+			     to reload and thus initialize all classes for each tests. -->
+			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="**/*Test*.java" />
 					
@@ -437,10 +337,10 @@
 					<exclude name="**/AbstractExampleTestCase.java" />
 					<exclude name="**/AbstractCoverageTest.java" />
 					<exclude name="**/InitEvalOrderTest.java" />
-					<exclude name="**/BidirectionalTransitions1BTest.java" />
-					<exclude name="**/BidirectionalTransitions2CTest.java" />
 					<exclude name="**/TestMPRecorder.java" />
 					<exclude name="**/TestPrintStream.java" />
+					<exclude name="**/BidirectionalTransitions1BTest.java" />
+					<exclude name="**/BidirectionalTransitions2CTest.java" />
 					<exclude name="**/Abstract*Test.java" />
 					<exclude name="**/TestDriver.java" />
 					<exclude name="**/TestDriver2.java" />
@@ -458,28 +358,128 @@
 					<exclude name="**/SimpleMultiProcTest.java" />
 				</fileset>
 			</batchtest>
-			<batchtest fork="yes" todir="${test.reports}/onJar">
+			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="tlc2/tool/UserModuleOverrideTest.java" />
 				</fileset>
 			</batchtest>
-			<batchtest fork="yes" todir="${test.reports}/onJar">
+			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="tlc2/tool/distributed/TLCSetTest.java" />
 				</fileset>
 			</batchtest>
-			<batchtest fork="yes" todir="${test.reports}/onJar">
+			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
 				</fileset>
 			</batchtest>
-			<batchtest fork="yes" todir="${test.reports}/onJar">
+			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="tlc2/TLCTest.java"/>
 					<include name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
 				</fileset>
 			</batchtest>
 		</junit>
+
+		<!-- remove copied class.dir -->
+		<delete dir="${ws.class.dir}" deleteonexit="true"/>
+	</target>
+
+	<!-- Executes accompining unit tests on jar file -->
+	<target name="test-dist" unless="test.skip">
+		<!-- run junit tests on tlatools.jar -->
+		<mkdir dir="${test.reports}/onJar" />
+		<jacoco:coverage destfile="target/code-coverage.exec" includes="pcal.*:tla2sany.*:tla2tex.*:tlc2.*:util.*:org.lamport.*" excludes="**/Tests.*:**/*Test*">
+			<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}" forkmode="perTest" fork="yes">
+				<!-- enable all assertions -->
+				<jvmarg value="-ea"/>
+				<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
+				<jvmarg value="-XX:+UseParallelGC"/>
+				<classpath refid="project.classpath" />
+				<classpath>
+					<pathelement location="lib/junit-4.12.jar" />
+					<pathelement location="lib/hamcrest-core-1.3.jar" />
+					<pathelement location="lib/cglib-nodep-3.1.jar" />
+					<pathelement location="lib/objenesis-2.1.jar" />
+					<pathelement location="lib/easymock-3.3.1.jar" />
+					<pathelement location="${dist.file}" />
+					<pathelement path="${test.class.dir}" />
+				</classpath>
+	
+				<formatter type="xml" />
+				<sysproperty key="basedir" value="${basedir}/"/>
+				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
+				<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
+				<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
+	
+				<batchtest fork="yes" todir="${test.reports}/onJar">
+					<fileset dir="${test.dir}">
+						<include name="**/*Test*.java" />
+						
+						<!-- Produce bogus crash with Quarantine runner. -->
+						<exclude name="tlc2/tool/distributed/TLCSetTest.java" />
+						<exclude name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
+						<!-- Just fail because of Quarantine runner. -->
+						<exclude name="tlc2/TLCTest.java"/>
+						<exclude name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
+						<exclude name="tlc2/tool/UserModuleOverrideTest.java" />
+						
+						<exclude name="**/PCalTest.java" />
+						<exclude name="**/CommonTestCase.java" />
+						<exclude name="**/ModelCheckerTestCase.java" />
+						<exclude name="**/PCalModelCheckerTestCase.java" />
+						<exclude name="**/SuiteTestCase.java" />
+						<exclude name="**/SuiteETestCase.java" />
+						<exclude name="**/DistributedTLCTestCase.java" />
+						<exclude name="**/TLCServerTestCase.java" />
+						<exclude name="**/SuccessfulSimulationTestCase.java" />
+						<exclude name="**/AbstractExampleTestCase.java" />
+						<exclude name="**/AbstractCoverageTest.java" />
+						<exclude name="**/InitEvalOrderTest.java" />
+						<exclude name="**/BidirectionalTransitions1BTest.java" />
+						<exclude name="**/BidirectionalTransitions2CTest.java" />
+						<exclude name="**/TestMPRecorder.java" />
+						<exclude name="**/TestPrintStream.java" />
+						<exclude name="**/Abstract*Test.java" />
+						<exclude name="**/TestDriver.java" />
+						<exclude name="**/TestDriver2.java" />
+						<exclude name="**/AllTests.java" />
+						<exclude name="util/IsolatedTestCaseRunner.java"/>
+						<!-- Known test failures -->
+						<exclude name="**/pcal/StackTestTest.java" />
+						<exclude name="**/pcal/TestPCandStackTest.java" />
+						<!-- These take too long -->
+						<exclude name="**/MacroQuicksortTest.java" />
+						<exclude name="**/MacroRealQuicksortTest.java" />
+						<exclude name="**/PcalPaxosTest.java" />
+						<exclude name="**/DetlefsTest.java" />
+						<exclude name="**/StarkMutexTest.java" />
+						<exclude name="**/SimpleMultiProcTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}/onJar">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/tool/UserModuleOverrideTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}/onJar">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/tool/distributed/TLCSetTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}/onJar">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}/onJar">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/TLCTest.java"/>
+						<include name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
+					</fileset>
+				</batchtest>
+			</junit>
+		</jacoco:coverage>
 
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
