@@ -27,20 +27,20 @@
 package tlc2.tool;
 
 import tla2sany.semantic.SemanticNode;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 
 public class FingerprintException extends RuntimeException {
 
-  final public Value value;
+  final public IValue value;
   final public FingerprintException next;
 
-  private FingerprintException(Throwable initCauseThrowable, Value value, FingerprintException next) {
+  private FingerprintException(Throwable initCauseThrowable, IValue value, FingerprintException next) {
     initCause(initCauseThrowable);
     this.value = value;
     this.next = next;
   }
 
-  public static FingerprintException getNewHead(Value v, Throwable t){
+  public static FingerprintException getNewHead(IValue v, Throwable t){
     FingerprintException fpe = null;
     if(t instanceof FingerprintException)
       fpe = ((FingerprintException) t).prependNewHead(v);
@@ -49,14 +49,14 @@ public class FingerprintException extends RuntimeException {
     return fpe;
   }
 
-  private static FingerprintException createNewHead(Value value, Throwable initCauseThrowable){
+  private static FingerprintException createNewHead(IValue value, Throwable initCauseThrowable){
     if(value == null || initCauseThrowable == null)
       return null;
     else
       return new FingerprintException(initCauseThrowable, value, null);
   }
 
-  private FingerprintException prependNewHead(Value value){
+  private FingerprintException prependNewHead(IValue value){
     if(value == null)
       return null;
     else

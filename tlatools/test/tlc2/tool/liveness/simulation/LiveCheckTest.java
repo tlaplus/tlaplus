@@ -34,9 +34,8 @@ import java.io.IOException;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
-import tlc2.tool.Action;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.tool.liveness.AbstractDiskGraph;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
@@ -106,13 +105,13 @@ public class LiveCheckTest {
 		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		return new LiveCheck(EasyMock.createNiceMock(Tool.class), new Action[0],
+		return new LiveCheck(EasyMock.createNiceMock(ITool.class),
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
 	}
 	
 	private ILiveCheck getLiveCheckWithTableau() throws IOException {
 		final TBGraphNode node = EasyMock.createMock(TBGraphNode.class);
-		EasyMock.expect(node.isConsistent((TLCState) EasyMock.anyObject(), (Tool) EasyMock.anyObject())).andReturn(true)
+		EasyMock.expect(node.isConsistent((TLCState) EasyMock.anyObject(), (ITool) EasyMock.anyObject())).andReturn(true)
 				.anyTimes();
 		EasyMock.expect(node.nextSize()).andReturn(1).anyTimes();
 		EasyMock.expect(node.nextAt(0)).andReturn(node).anyTimes();
@@ -133,7 +132,7 @@ public class LiveCheckTest {
 		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		return new LiveCheck(EasyMock.createNiceMock(Tool.class), new Action[0],
+		return new LiveCheck(EasyMock.createNiceMock(ITool.class),
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
 	}
 }

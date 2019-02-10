@@ -12,12 +12,11 @@ import java.util.Map;
 import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
-import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
-import tlc2.value.Value;
-import tlc2.value.ValueInputStream;
-import tlc2.value.ValueOutputStream;
+import tlc2.value.IValue;
+import tlc2.value.IValueInputStream;
+import tlc2.value.IValueOutputStream;
 import util.Assert;
 import util.UniqueString;
 
@@ -31,29 +30,15 @@ public abstract class TLCState implements Cloneable, Serializable {
 
   // The state variables.
   protected static OpDeclNode[] vars = null;
-  
-  public static void setVariables(OpDeclNode[] variables) 
-  {
-      vars = variables;
-      // SZ 10.04.2009: since this method is called exactly one from Spec#processSpec
-      // moved the call of UniqueString#setVariables to that place
-      
-      // UniqueString[] varNames = new UniqueString[variables.length];
-      // for (int i = 0; i < varNames.length; i++)
-      // {
-      //  varNames[i] = variables[i].getName();
-      //}
-      //UniqueString.setVariables(varNames);
-  }
 
-  public void read(ValueInputStream vis) throws IOException {
+  public void read(IValueInputStream vis) throws IOException {
 	this.workerId = vis.readShortNat();
 	this.uid = vis.readLongNat();
     this.level = vis.readShortNat();
     assert this.level >= 0; // Should never overflow.
   }
   
-	public void write(ValueOutputStream vos) throws IOException {
+	public void write(IValueOutputStream vos) throws IOException {
 		if (this.level > Short.MAX_VALUE) {
 			// The on-disk representation of TLCState limits the diameter/level to
 			// Short.MAX_VALUE whereas the in-memory rep supports int. The underlying
@@ -68,10 +53,10 @@ public abstract class TLCState implements Cloneable, Serializable {
 		vos.writeShortNat((short) this.level);
 	}
 
-  public abstract TLCState bind(UniqueString name, Value value, SemanticNode expr);
-  public abstract TLCState bind(SymbolNode id, Value value, SemanticNode expr);  
+  public abstract TLCState bind(UniqueString name, IValue value);
+  public abstract TLCState bind(SymbolNode id, IValue value);  
   public abstract TLCState unbind(UniqueString name);
-  public abstract Value lookup(UniqueString var);
+  public abstract IValue lookup(UniqueString var);
   public abstract boolean containsKey(UniqueString var);
   public abstract TLCState copy();
   public abstract TLCState deepCopy();
@@ -85,11 +70,11 @@ public abstract class TLCState implements Cloneable, Serializable {
   /** 
    * Returns a mapping of variable names to their assigned values in this state.
    */ 
-  public final Map<UniqueString, Value> getVals() {
-	final Map<UniqueString, Value> valMap = new HashMap<UniqueString, Value>();
+  public final Map<UniqueString, IValue> getVals() {
+	final Map<UniqueString, IValue> valMap = new HashMap<UniqueString, IValue>();
 	for(int i = 0; i < vars.length; i++) {
         UniqueString key = vars[i].getName();
-        Value val = this.lookup(key);
+        IValue val = this.lookup(key);
         valMap.put(key, val);
     }
     return valMap;

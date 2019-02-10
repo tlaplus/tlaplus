@@ -279,7 +279,7 @@ public final class UniqueString implements Serializable
      * @return
      * @throws IOException
      */
-    public final void write(BufferedDataOutputStream dos) throws IOException
+    public final void write(IDataOutputStream dos) throws IOException
     {
         dos.writeInt(this.tok);
         dos.writeInt(this. getVarLoc()); 
@@ -296,7 +296,7 @@ public final class UniqueString implements Serializable
      * 
      * The method does not change member/class variables
      */
-    public static UniqueString read(BufferedDataInputStream dis) throws IOException
+    public static UniqueString read(IDataInputStream dis) throws IOException
     {
         int tok1 = dis.readInt();
         int loc1 = dis.readInt();

@@ -27,7 +27,7 @@ import util.Assert;
  * with p. 43 fig. 0.15), thus it uses the PART-TAB algorithm (p. 456) for the
  * tableau construction.
  */
-public class TBPar extends Vect {
+public class TBPar extends Vect<LiveExprNode> {
 
 	public TBPar(int i) {
 		super(i);
@@ -109,8 +109,8 @@ public class TBPar extends Vect {
 	 */
 	public TBParVec particleClosure() {
 		TBPar positive_closure = this.positiveClosure();
-		Vect alphas = positive_closure.alphaTriples();
-		Vect betas = positive_closure.betaTriples();
+		Vect<TBTriple> alphas = positive_closure.alphaTriples();
+		Vect<TBTriple> betas = positive_closure.betaTriples();
 		return particleClosure(this, alphas, betas);
 	}
 
@@ -208,8 +208,8 @@ public class TBPar extends Vect {
 	 * closed. All junctions must have been binarified at this stage by
 	 * makeBinary, otherwise it may give the wrong answer and crash.
 	 */
-	public final Vect alphaTriples() {
-		Vect ts = new Vect();
+	public final Vect<TBTriple> alphaTriples() {
+		Vect<TBTriple> ts = new Vect<>();
 		for (int i = 0; i < this.size(); i++) {
 			LiveExprNode ln = this.exprAt(i);
 			if (ln instanceof LNAll) {
@@ -222,8 +222,8 @@ public class TBPar extends Vect {
 		return ts;
 	}
 
-	public final Vect betaTriples() {
-		Vect ts = new Vect();
+	public final Vect<TBTriple> betaTriples() {
+		Vect<TBTriple> ts = new Vect<>();
 		for (int i = 0; i < this.size(); i++) {
 			LiveExprNode ln = this.exprAt(i);
 			if (ln instanceof LNEven) {

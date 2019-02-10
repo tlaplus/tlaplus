@@ -12,7 +12,7 @@ import java.util.zip.GZIPOutputStream;
 import tlc2.TLCGlobals;
 import util.BufferedDataOutputStream;
 
-public final class ValueOutputStream implements ValueConstants {
+public final class ValueOutputStream implements IValueOutputStream {
 
   private final BufferedDataOutputStream dos;
   private final HandleTable handles;
@@ -39,23 +39,28 @@ public final class ValueOutputStream implements ValueConstants {
     this.handles = new HandleTable();
   }
 
+  @Override
   public final void writeShort(short x) throws IOException {
 	  this.dos.writeShort(x);
   }
   
+  @Override
   public final void writeInt(int x) throws IOException {
     this.dos.writeInt(x);
   }
 
+  @Override
   public final void writeLong(long x) throws IOException {
     this.dos.writeLong(x);
   }
   
+  @Override
   public final void close() throws IOException {
     this.dos.close();
   }
   
   /* Precondition: x is a non-negative short. */
+  @Override
   public final void writeShortNat(short x) throws IOException {
     if (x > 0x7f) {
       this.dos.writeShort((short) -x);
@@ -66,6 +71,7 @@ public final class ValueOutputStream implements ValueConstants {
   }
 
   /* Precondition: x is a non-negative int. */
+  @Override
   public final void writeNat(int x) throws IOException {
     if (x > 0x7fff) {
       this.dos.writeInt(-x);
@@ -76,6 +82,7 @@ public final class ValueOutputStream implements ValueConstants {
   }
 
   /* Precondition: x is a non-negative long. */
+  @Override
   public final void writeLongNat(long x) throws IOException {
     if (x <= 0x7fffffff) {
       this.dos.writeInt((int)x);
@@ -85,19 +92,50 @@ public final class ValueOutputStream implements ValueConstants {
     }
   }
 	
+	@Override
 	public final void writeByte(final byte b) throws IOException {
 		this.dos.writeByte(b);
 	}
 
+	@Override
 	public final void writeBoolean(final boolean b) throws IOException {
 		this.dos.writeBoolean(b);
 	}
 
+	@Override
 	public final BufferedDataOutputStream getOutputStream() {
 		return dos;
 	}
 
-	final int put(final Object obj) {
+	/**
+	 * Check if another TLCState - which is currently also being serialized to the
+	 * same storage (i.e. disk file) - has/contains an identical Value. If yes, do
+	 * not serialize the Value instance again but make this TLCState point to the
+	 * Value instance previously serialized for the other TLCState. In other words,
+	 * this is a custom-tailored compression/de-duplication mechanism for Value
+	 * instances.
+	 * <p>
+	 * This approach only works because both TLCStates are serialized to the same
+	 * storage and thus de-serialized as part of the same operation (same
+	 * Value*Stream instance).
+	 * <p>
+	 * The purpose of this approach appears to be:
+	 * <ul>
+	 * <li>Reduce serialization efforts and storage size</li>
+	 * <li>Reduce the number of Value instances created during de-serialization</li>
+	 * <li>Allow identity comparison on Value instances (AFAICT not used by Value
+	 * explicitly, just UniqueString) to speed up check. Value#equals internally
+	 * likely uses identity comparison as first check.</li>
+	 * </ul>
+	 * <p>
+	 * A disadvantage is the cost of maintaining the internal HandleTable which can
+	 * grow to thousands of elements during serialization/de-serialization (in
+	 * ValueInputStream). Since serialization suspends the DiskStateQueue and thus
+	 * blocks tlc2.tool.Workers from exploring the state space, this might has
+	 * adverse effects.
+	 */
+	@Override
+	public final int put(final Object obj) {
 		return this.handles.put(obj);
 	}
   
@@ -164,62 +202,5 @@ public final class ValueOutputStream implements ValueConstants {
 	this.spine[index] = i;
       }
     }
-  }
-
-  public static void main(String[] args) {
-    if (args.length != 1) {
-      System.err.println("Usage: java tlc2.value.ValueOutputStream filename.");
-      System.exit(1);
-    }
-    
-    IntValue[] aa = new IntValue[100];
-    StringValue[] bb = new StringValue[100];
-      
-    for (int i = 0; i < aa.length; i++) {
-      aa[i] = IntValue.gen(88);
-    }
-
-    StringValue sval = new StringValue("ssssssssss");
-    for (int i = 0; i < bb.length; i++) {
-      bb[i] = sval;
-    }
-
-    try {
-      /**
-      BufferedDataOutputStream dos = new BufferedDataOutputStream(args[0]+"_1");
-      for (int i = 0; i < aa.length; i++) {
-	dos.writeInt(88);
-      }
-      dos.close();
-      
-      ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(args[0]+"_2"));
-      for (int i = 0; i < bb.length; i++) {
-	oos.writeObject(bb[i]);
-      }
-      oos.close();
-
-      ValueOutputStream vos = new ValueOutputStream(new File(args[0]+"_3"));
-      for (int i = 0; i < bb.length; i++) {
-	vos.write(bb[i]);
-      }
-      vos.close();
-      **/
-
-      ValueOutputStream vos = new ValueOutputStream(new File(args[0]));
-      long x = 1;
-      for (int i = 0; i < 63; i++) {
-	System.err.println("write " + x);
-	vos.writeLongNat(x);
-	x = x * 2;
-      }
-      vos.close();
-
-      ValueInputStream vis = new ValueInputStream(new File(args[0]));
-      for (int i = 0; i < 63; i++) {
-	System.err.println("read " + vis.readLongNat());
-      }
-      vis.close();      
-    }
-    catch (Exception e) { }
   }
 }

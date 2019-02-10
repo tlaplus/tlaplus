@@ -9,11 +9,10 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.st.TreeNode;
-import tlc2.tool.ActionItemList;
+import tlc2.tool.IActionItemList;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
-import tlc2.tool.Tool;
-import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 
 /**
@@ -42,19 +41,19 @@ class LNStateEnabled extends LNState {
 		this.isBox = isBox;
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		// Note that s2 is useless.
 		if (this.isBox && this.subscript != null) {
 			return true;
 		}
 
-		ActionItemList acts = ActionItemList.Empty;
 		TLCState sfun = TLCStateFun.Empty;
 		Context c1 = Context.branch(getContext());
 		if (this.subscript != null) {
-			acts = acts.cons(this.subscript, c1, CostModel.DO_NOT_RECORD, ActionItemList.CHANGED);
+			sfun = tool.enabled(this.pred, c1, s1, sfun, this.subscript, IActionItemList.CHANGED);
+		} else {
+			sfun = tool.enabled(this.pred, c1, s1, sfun);
 		}
-		sfun = tool.enabled(this.pred, acts, c1, s1, sfun, CostModel.DO_NOT_RECORD);
 		return sfun != null;
 	}
 

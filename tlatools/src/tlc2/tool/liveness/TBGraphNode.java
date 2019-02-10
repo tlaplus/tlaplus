@@ -5,8 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.SetOfLong;
 import tlc2.util.Vect;
 
@@ -19,7 +19,7 @@ public class TBGraphNode {
 	 * if a state-node is consistent with a tableau-node.
 	 */
 	private final TBPar par; // particle
-	public final Vect nexts; // outlinks
+	public final Vect<TBGraphNode> nexts; // outlinks
 	private int index; // unique id for this node
 	private final LiveExprNode[] statePreds; // state predicates in the particle
 
@@ -35,7 +35,7 @@ public class TBGraphNode {
 	public TBGraphNode(TBPar par) {
 		this.par = par;
 		this.index = 0;
-		this.nexts = new Vect();
+		this.nexts = new Vect<>();
 		TBPar preds = new TBPar(par.size());
 		for (int i = 0; i < par.size(); i++) {
 			LiveExprNode ln = par.exprAt(i);
@@ -90,7 +90,7 @@ public class TBGraphNode {
 	 * values according to all state predicates of the tableau node. The state
 	 * predicates are deduced from the particles during tableau construction.
 	 */
-	public boolean isConsistent(TLCState state, Tool tool) {
+	public boolean isConsistent(TLCState state, ITool tool) {
 		for (int j = 0; j < this.statePreds.length; j++) {
 			if (!this.statePreds[j].eval(tool, state, null)) {
 				return false;

@@ -27,13 +27,13 @@ package tlc2.module;
 
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
-import tlc2.value.Enumerable;
-import tlc2.value.EnumerableValue;
-import tlc2.value.IntValue;
-import tlc2.value.StringValue;
-import tlc2.value.SubsetValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
+import tlc2.value.Values;
+import tlc2.value.impl.EnumerableValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.StringValue;
+import tlc2.value.impl.SubsetValue;
+import tlc2.value.impl.Value;
 
 public class Randomization implements ValueConstants {
 	
@@ -42,40 +42,40 @@ public class Randomization implements ValueConstants {
     public static Value RandomSubset(final Value v1, final Value v2) {
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubset", "nonnegative integer", Value.ppr(v1.toString()) });
+					new String[] { "first", "RandomSubset", "nonnegative integer", Values.ppr(v1.toString()) });
 		}
-        if (!(v2 instanceof Enumerable)) {
+        if (!(v2 instanceof EnumerableValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSubset", "a finite set", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSubset", "a finite set", Values.ppr(v2.toString()) });
         }
-        return ((Enumerable) v2).getRandomSubset(((IntValue) v1).val);
+        return ((EnumerableValue) v2).getRandomSubset(((IntValue) v1).val);
     }
     
     public static Value RandomSetOfSubsets(final Value v1, final Value v2, final Value v3) {
 		// first parameter	
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSetOfSubsets", "nonnegative integer", Value.ppr(v1.toString()) });
+					new String[] { "first", "RandomSetOfSubsets", "nonnegative integer", Values.ppr(v1.toString()) });
 		}
 		final int numberOfPicks = ((IntValue) v1).val;
 		if (numberOfPicks < 0) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSetOfSubsets", "nonnegative integer", Value.ppr(v1.toString()) });
+					new String[] { "first", "RandomSetOfSubsets", "nonnegative integer", Values.ppr(v1.toString()) });
 		}
 		// second parameter	
 		if (!(v2 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer", Values.ppr(v2.toString()) });
 		}
 		final int n = ((IntValue) v2).val;
 		if (n < 0) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer", Values.ppr(v2.toString()) });
 		}
 		// third parameter	
-        if (!(v3 instanceof Enumerable)) {
+        if (!(v3 instanceof EnumerableValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "third", "RandomSetOfSubsets", "finite set", Value.ppr(v3.toString()) });
+					new String[] { "third", "RandomSetOfSubsets", "finite set", Values.ppr(v3.toString()) });
         }
         final EnumerableValue ev = (EnumerableValue) v3;
 		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {
@@ -89,12 +89,12 @@ public class Randomization implements ValueConstants {
 		// second parameter (now that we know third is enumerable)
 		if (ev.size() < n) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer in range 0..Cardinality(S)", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer in range 0..Cardinality(S)", Values.ppr(v2.toString()) });
 		}
 		final double probability = (1d * n) / ev.size();
 		if (probability < 0d || 1d < probability) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer in range 0..Cardinality(S)", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSetOfSubsets", "nonnegative integer in range 0..Cardinality(S)", Values.ppr(v2.toString()) });
 		}
 		return new SubsetValue(ev).getRandomSetOfSubsets(numberOfPicks, probability);
     }
@@ -103,17 +103,17 @@ public class Randomization implements ValueConstants {
 		// first parameter	
 		if (!(v1 instanceof IntValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSetProbability", "nonnegative integer", Value.ppr(v1.toString()) });
+					new String[] { "first", "RandomSubsetSetProbability", "nonnegative integer", Values.ppr(v1.toString()) });
 		}
 		final int numberOfPicks = ((IntValue) v1).val;
 		if (numberOfPicks < 0) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "first", "RandomSubsetSetProbability", "nonnegative integer", Value.ppr(v1.toString()) });
+					new String[] { "first", "RandomSubsetSetProbability", "nonnegative integer", Values.ppr(v1.toString()) });
 		}
 		// second parameter	
 		if (!(v2 instanceof StringValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSubsetSetProbability", "string literal representing a probability", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSubsetSetProbability", "string literal representing a probability", Values.ppr(v2.toString()) });
 			
 		}
 		double probability;
@@ -121,16 +121,16 @@ public class Randomization implements ValueConstants {
 			probability = Double.valueOf(((StringValue) v2).getVal().toString());			
 		} catch (NumberFormatException nfe) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSubsetSetProbability", "string literal does not represent a parsable probability", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSubsetSetProbability", "string literal does not represent a parsable probability", Values.ppr(v2.toString()) });
 		}
 		if (probability < 0d || 1d < probability) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "second", "RandomSubsetSetProbability", "string literal does not represent a parsable probability", Value.ppr(v2.toString()) });
+					new String[] { "second", "RandomSubsetSetProbability", "string literal does not represent a parsable probability", Values.ppr(v2.toString()) });
 		}
 		// third parameter	
-        if (!(v3 instanceof Enumerable)) {
+        if (!(v3 instanceof EnumerableValue)) {
 			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-					new String[] { "third", "RandomSubsetSetProbability", "finite set", Value.ppr(v3.toString()) });
+					new String[] { "third", "RandomSubsetSetProbability", "finite set", Values.ppr(v3.toString()) });
         }
         final EnumerableValue ev = (EnumerableValue) v3;
 		if (31 - Integer.numberOfLeadingZeros(numberOfPicks) + 1 > ev.size() && numberOfPicks > (1 << ev.size())) {

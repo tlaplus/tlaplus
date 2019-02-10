@@ -1,6 +1,13 @@
 Introduction
 ===============================================================================
- This document describes the environment setup for development of TLA+ Tools. 
+THIS DOCUMENT IS OBSOLETE - DO NOT USE AS CONSULTATION.
+THIS DOCUMENT IS OBSOLETE - DO NOT USE AS CONSULTATION.
+THIS DOCUMENT IS OBSOLETE - DO NOT USE AS CONSULTATION.
+THIS DOCUMENT IS OBSOLETE - DO NOT USE AS CONSULTATION.
+THIS DOCUMENT IS OBSOLETE - DO NOT USE AS CONSULTATION.
+THIS DOCUMENT IS OBSOLETE - DO NOT USE AS CONSULTATION.
+===============================================================================
+This document describes the environment setup for development of TLA+ Tools. 
  It consists of the following sections:
  - Used versions
  - Environment setup 

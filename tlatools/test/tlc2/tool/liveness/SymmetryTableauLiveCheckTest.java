@@ -40,9 +40,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.tool.Action;
+import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.GraphNode.Transition;
 import tlc2.tool.queue.DummyTLCState;
 import tlc2.util.BitVector;
@@ -117,14 +118,14 @@ public class SymmetryTableauLiveCheckTest {
 	
 	private ILiveCheck getLiveCheckWithTwoNodeTableau() throws IOException {
 		final TBGraphNode node1 = EasyMock.createNiceMock(TBGraphNode.class);
-		EasyMock.expect(node1.isConsistent((TLCState) EasyMock.anyObject(), (Tool) EasyMock.anyObject()))
+		EasyMock.expect(node1.isConsistent((TLCState) EasyMock.anyObject(), (ITool) EasyMock.anyObject()))
 				.andReturn(true).anyTimes();
 		EasyMock.expect(node1.nextSize()).andReturn(0).anyTimes();
 		EasyMock.expect(node1.getIndex()).andReturn(1).anyTimes();
 		EasyMock.replay(node1);
 
 		final TBGraphNode node0 = EasyMock.createMock(TBGraphNode.class);
-		EasyMock.expect(node0.isConsistent((TLCState) EasyMock.anyObject(), (Tool) EasyMock.anyObject()))
+		EasyMock.expect(node0.isConsistent((TLCState) EasyMock.anyObject(), (ITool) EasyMock.anyObject()))
 				.andReturn(true).anyTimes();
 		EasyMock.expect(node0.nextSize()).andReturn(2).anyTimes();
 		EasyMock.expect(node0.nextAt(0)).andReturn(node0).anyTimes();
@@ -148,7 +149,7 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		return new LiveCheck(EasyMock.createNiceMock(Tool.class), new Action[0],
+		return new LiveCheck(EasyMock.createNiceMock(ITool.class),
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics(), null);
 	}
 	
@@ -282,7 +283,7 @@ public class SymmetryTableauLiveCheckTest {
 		final TBGraphNode node2 = EasyMock.createMock(TBGraphNode.class);
 		// consistency
 		final Capture<TLCState> capture = new Capture<TLCState>();
-		EasyMock.expect(node2.isConsistent(EasyMock.capture(capture), (Tool) EasyMock.anyObject())).andAnswer(new IAnswer<Boolean>() {
+		EasyMock.expect(node2.isConsistent(EasyMock.capture(capture), (ITool) EasyMock.anyObject())).andAnswer(new IAnswer<Boolean>() {
 			public Boolean answer() throws Throwable {
 				final TLCState value = capture.getValue();
 				if (value == s) {
@@ -302,7 +303,7 @@ public class SymmetryTableauLiveCheckTest {
 		final TBGraphNode node1 = EasyMock.createMock(TBGraphNode.class);
 		// consistency
 		final Capture<TLCState> capture1 = new Capture<TLCState>();
-		EasyMock.expect(node1.isConsistent(EasyMock.capture(capture1), (Tool) EasyMock.anyObject())).andAnswer(new IAnswer<Boolean>() {
+		EasyMock.expect(node1.isConsistent(EasyMock.capture(capture1), (ITool) EasyMock.anyObject())).andAnswer(new IAnswer<Boolean>() {
 			public Boolean answer() throws Throwable {
 				final TLCState value = capture1.getValue();
 				if (value == sSymmetric) {
@@ -322,7 +323,7 @@ public class SymmetryTableauLiveCheckTest {
 
 		final TBGraphNode node0 = EasyMock.createMock(TBGraphNode.class);
 		// consistency (simpler to node1 and node2)
-		EasyMock.expect(node0.isConsistent((TLCState) EasyMock.anyObject(), (Tool) EasyMock.anyObject())).andReturn(true).anyTimes();
+		EasyMock.expect(node0.isConsistent((TLCState) EasyMock.anyObject(), (ITool) EasyMock.anyObject())).andReturn(true).anyTimes();
 		// index
 		EasyMock.expect(node0.getIndex()).andReturn(0).anyTimes();
 		// nextSize
@@ -349,7 +350,7 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		final Tool tool = EasyMock.createNiceMock(Tool.class);
+		final ITool tool = EasyMock.createNiceMock(ITool.class);
 		EasyMock.expect(tool.hasSymmetry()).andReturn(true);
 		final Capture<TLCState> nextStates = new Capture<TLCState>();
 		EasyMock.expect(tool.getNextStates((Action) EasyMock.anyObject(), EasyMock.capture(nextStates))).andAnswer(new IAnswer<StateVec>() {
@@ -366,7 +367,7 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.expect(tool.isInModel((TLCState) EasyMock.anyObject())).andReturn(true).anyTimes();
 		EasyMock.expect(tool.isInActions((TLCState) EasyMock.anyObject(), (TLCState) EasyMock.anyObject())).andReturn(true).anyTimes();
 		EasyMock.replay(tool);
-		return new LiveCheck(tool, new Action[1],
+		return new LiveCheck(tool,
 				new OrderOfSolution[] { oos }, "states", new DummyBucketStatistics(), null);
 	}
 }

@@ -21,6 +21,7 @@ import tlc2.output.StatePrinter;
 import tlc2.tool.SimulationWorker.SimulationWorkerError;
 import tlc2.tool.SimulationWorker.SimulationWorkerResult;
 import tlc2.tool.coverage.CostModelCreator;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.LiveCheck1;
@@ -28,7 +29,7 @@ import tlc2.tool.liveness.LiveException;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import util.FileUtil;
 import util.FilenameToStream;
 
@@ -38,22 +39,10 @@ public class Simulator {
 			.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
 
 	/* Constructors */
-	/**
-	 * SZ Feb 20, 2009: added the possibility to pass the SpecObject, this is
-	 * compatibility constructor
-	 * 
-	 * @throws IOException
-	 */
-	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
-			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver)
-			throws IOException {
-		// Default to 1 worker thread if not specified.
-		this(specFile, configFile, traceFile, deadlock, traceDepth, traceNum, rng, seed, preprocess, resolver, 1);
-	}
 
 	// SZ Feb 20, 2009: added the possibility to pass the SpecObject
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
-			long traceNum, RandomGenerator rng, long seed, boolean preprocess, FilenameToStream resolver,
+			long traceNum, RandomGenerator rng, long seed, FilenameToStream resolver,
 			int numWorkers) throws IOException {
 		int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
 		String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep + 1);
@@ -64,7 +53,6 @@ public class Simulator {
 		// ToolIO.setUserDir(specDir);
 
 		this.tool = new Tool(specDir, specFile, configFile, resolver);
-		this.tool.init(preprocess, null); // parse and process the spec
 
 		this.checkDeadlock = deadlock;
 		this.checkLiveness = !this.tool.livenessIsTrue();
@@ -87,7 +75,7 @@ public class Simulator {
 		if (this.checkLiveness) {
 			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
 				final String tmpDir = System.getProperty("java.io.tmpdir");
-				liveCheck = new LiveCheck(this.tool, new Action[0], tmpDir, new DummyBucketStatistics());
+				liveCheck = new LiveCheck(this.tool, tmpDir, new DummyBucketStatistics());
 			} else {
 				liveCheck = new LiveCheck1(this.tool);
 			}
@@ -102,7 +90,7 @@ public class Simulator {
 
 	/* Fields */
 	private final ILiveCheck liveCheck;
-	private final Tool tool;
+	private final ITool tool;
 	private final Action[] invariants; // the invariants to be checked
 	private final boolean checkDeadlock; // check deadlock?
 	private final boolean checkLiveness; // check liveness?
@@ -127,7 +115,7 @@ public class Simulator {
 	private final RandomGenerator rng;
 	private final long seed;
 	private long aril;
-	private Value[] localValues = new Value[4];
+	private IValue[] localValues = new IValue[4];
 
 	// The set of all initial states for the given spec. This should be only be
 	// computed once and re-used whenever a new random trace is generated. This
@@ -332,16 +320,16 @@ public class Simulator {
 		this.printSummary();
 	}
 
-	public Value getLocalValue(int idx) {
+	public IValue getLocalValue(int idx) {
 		if (idx < this.localValues.length) {
 			return this.localValues[idx];
 		}
 		return null;
 	}
 
-	public void setLocalValue(int idx, Value val) {
+	public void setLocalValue(int idx, IValue val) {
 		if (idx >= this.localValues.length) {
-			Value[] vals = new Value[idx + 1];
+			IValue[] vals = new IValue[idx + 1];
 			System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
 			this.localValues = vals;
 		}

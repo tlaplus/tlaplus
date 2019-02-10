@@ -18,7 +18,7 @@ import tlc2.output.MP;
 import tlc2.output.StatePrinter;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
-import tlc2.value.EnumerableValue;
+import tlc2.value.RandomEnumerableValues;
 import util.FileUtil;
 
 public class TLCTrace {
@@ -266,7 +266,7 @@ public class TLCTrace {
 		// because the set of initial states is likely to be different.
 		// This is only necessary though, if TLCGlobals.enumFraction was < 1 during
 		// the generation of inits.
-		EnumerableValue.resetRandom();
+		RandomEnumerableValues.reset();
 		
 		// The vector of fingerprints is now being followed forward from the
 		// initial state (which is the last state in the long vector), to the

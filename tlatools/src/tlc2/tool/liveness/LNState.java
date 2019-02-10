@@ -5,8 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.Context;
 
 abstract class LNState extends LiveExprNode {
@@ -25,7 +25,7 @@ abstract class LNState extends LiveExprNode {
 		return false;
 	}
 
-	public final boolean eval(Tool tool, TLCState s) {
+	public final boolean eval(ITool tool, TLCState s) {
 		return this.eval(tool, s, TLCState.Empty);
 	}
 

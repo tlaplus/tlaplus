@@ -22,7 +22,7 @@ import tlc2.output.EC;
     the comments of this class by the specification 
     <TT>REQUIRES LL = SELF</TT>. */
 
-public class BufferedDataInputStream extends FilterInputStream {
+public final class BufferedDataInputStream extends FilterInputStream implements IDataInputStream {
     /* protected by SELF */
     private byte[] buff;    /* buffer of bytes to read */
     private int len;        /* number of valid bytes in "buff" */
@@ -99,7 +99,7 @@ public class BufferedDataInputStream extends FilterInputStream {
     
     /** REQUIRES LL = SELF */
     /** Returns <code>true</code> iff the stream is exhausted. */
-    public boolean atEOF() {
+    public final boolean atEOF() {
         return (this.len < 0);
     }
     
@@ -107,7 +107,7 @@ public class BufferedDataInputStream extends FilterInputStream {
     /** Reads up to <code>b.length</code> bytes into <code>b</code>, 
         and returns the number of bytes read, or -1 if the stream is 
         exhausted on entry. */
-    public int read(byte[] b) throws IOException {
+    public final int read(byte[] b) throws IOException {
         return this.read(b, 0, b.length);
     }
     
@@ -115,7 +115,7 @@ public class BufferedDataInputStream extends FilterInputStream {
     /** Reads up to <code>n</code> bytes into <code>b</code> starting
         at position <code>off</code>, and returns the number of bytes
         read, or -1 if the stream is exhausted on entry. */
-    public int read(byte[] b, int off, int n) throws IOException {
+    public final int read(byte[] b, int off, int n) throws IOException {
         if (this.len < 0) return -1;
         int offInit = off;
         while (n > 0 && this.len > 0) {
@@ -136,7 +136,7 @@ public class BufferedDataInputStream extends FilterInputStream {
     /** Reads <code>b.length</code> bytes into <code>b</code>, or
         throws <code>EOFException</code> if the stream contains fewer
         than <code>b.length</code> bytes. */
-    public void readFully(byte[] b) throws IOException, EOFException {
+    public final void readFully(byte[] b) throws IOException, EOFException {
         this.readFully(b, 0, b.length);
     }
     
@@ -144,7 +144,7 @@ public class BufferedDataInputStream extends FilterInputStream {
     /** Reads <code>n</code> bytes into <code>b</code> starting at
         position <code>off</code>, or throws <code>EOFException</code>
         if the stream contains fewer than <code>n</code> bytes. */
-    public void readFully(byte[] b, int off, int n)
+    public final void readFully(byte[] b, int off, int n)
       throws IOException, EOFException {
         while (n > 0) {
             int numRead = this.read(b, off, n);
@@ -156,7 +156,7 @@ public class BufferedDataInputStream extends FilterInputStream {
     /** REQUIRES LL = SELF */
     /** Reads and returns the next byte of this stream, or throws
         <code>EOFException</code> if the stream is exhausted. */
-    public byte readByte() throws IOException, EOFException {
+    public final byte readByte() throws IOException, EOFException {
         if (this.len < 0) throw new EOFException();
         byte res = this.buff[this.curr++];
         if (this.curr == this.len) {
@@ -173,7 +173,7 @@ public class BufferedDataInputStream extends FilterInputStream {
         encoded in the next byte of this stream, or
         throws <code>EOFException</code> if the stream is
         exhausted. */
-    public boolean readBoolean() throws IOException, EOFException {
+    public final boolean readBoolean() throws IOException, EOFException {
         return (this.readByte() != 0);
     }
     
@@ -182,7 +182,7 @@ public class BufferedDataInputStream extends FilterInputStream {
         encoded in the next two bytes of this stream, or
         throw <code>EOFException</code> if the stream contains
         fewer than two bytes. */
-    public short readShort() throws IOException, EOFException {
+    public final short readShort() throws IOException, EOFException {
         this.readFully(this.temp, 0, 2);
         return (short) ((temp[0] << 8) | (temp[1] & 0xff));
     }
@@ -192,7 +192,7 @@ public class BufferedDataInputStream extends FilterInputStream {
         encoded in the next four bytes of this stream, or
         throws <code>EOFException</code> if the stream contains
         fewer than four bytes. */
-    public int readInt() throws IOException, EOFException {
+    public final int readInt() throws IOException, EOFException {
         this.readFully(this.temp, 0, 4);
         int res = temp[0];
         res <<= 8; res |= (temp[1] & 0xff);
@@ -206,7 +206,7 @@ public class BufferedDataInputStream extends FilterInputStream {
         encoded in the next eight bytes of this stream, or
         throws <code>EOFException</code> if the stream contains
         fewer than eight bytes. */
-    public long readLong() throws IOException, EOFException {
+    public final long readLong() throws IOException, EOFException {
         this.readFully(this.temp, 0, 8);
         long res = temp[0];
         res <<= 8; res |= (temp[1] & 0xff);
@@ -226,7 +226,7 @@ public class BufferedDataInputStream extends FilterInputStream {
         by a carriage return character (<code>'\r'</code>), a newline 
         character (<code>'\n'</code>), a carriage return immediately 
         followed by a newline, or by the end of the stream. */
-    public String readLine() throws IOException {
+    public final String readLine() throws IOException {
         String res = null;
         while (this.len > 0) {
             for (int i = this.curr; i < this.len; i++) {
@@ -262,7 +262,7 @@ public class BufferedDataInputStream extends FilterInputStream {
         return res;
     }
 
-    public String readString(int n) throws IOException {
+    public final String readString(int n) throws IOException {
       char[] b = new char[n];
       int off = 0;
       while (n > 0) {
@@ -291,7 +291,7 @@ public class BufferedDataInputStream extends FilterInputStream {
     /** Skips over the next <code>n</code> bytes in this stream,
         or throws <code>EOFException</code> if it contains fewer
         than <code>n</code> bytes. */
-    public void skip(int n) throws IOException, EOFException {
+    public final void skip(int n) throws IOException, EOFException {
         while (this.len > 0 && this.curr + n >= this.len) {
             n -= (this.len - this.curr);
             // refill buffer from underlying input stream

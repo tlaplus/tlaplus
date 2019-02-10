@@ -34,8 +34,9 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 
-import tlc2.value.FcnRcdValue;
-import tlc2.value.Value;
+import tlc2.tool.impl.Tool;
+import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.Value;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
@@ -53,7 +54,7 @@ public class ModuleOverwritesBenchmark {
 	private static final String BASE_PATH = System
 			.getProperty(ModuleOverwritesBenchmark.class.getName() + ".base");
 
-	private static final Tool tool;
+	private static final ITool tool;
 	private static final TLCStateMut state;
 
 	static {
@@ -62,7 +63,6 @@ public class ModuleOverwritesBenchmark {
 		ToolIO.setUserDir(dir);
 
 		tool = new Tool("", "ModuleOverwrites", "ModuleOverwrites", new SimpleFilenameToStream());
-		tool.init(true, null);
 
 		state = (TLCStateMut) tool.getInitStates().elementAt(0);
 	}

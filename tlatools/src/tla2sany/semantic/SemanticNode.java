@@ -17,8 +17,8 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.XMLExportable;
-import tlc2.value.Value;
-import util.ToolIO;
+import tlc2.value.IValue;
+import tlc2.value.Values;
 
 /**
  * SemanticNode is the (abstract) superclass of all nodes in the
@@ -90,7 +90,6 @@ public abstract class SemanticNode
       this.tools = newTools;
     }
     this.tools[toolId] = obj;
-    ToolIO.registerSemanticNode(this, toolId);
   }
 
   /**
@@ -303,8 +302,8 @@ public abstract class SemanticNode
 	  return getLocation().toString();
   }
   
-  public String toString(final Value aValue) {
-	return Value.ppr(aValue.toString());
+  public String toString(final IValue aValue) {
+	return Values.ppr(aValue.toString());
   }
 
     /**

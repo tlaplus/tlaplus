@@ -47,11 +47,10 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
-import tlc2.tool.Tool;
+import tlc2.tool.ITool;
 import tlc2.tool.coverage.ActionWrapper.Relation;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
@@ -156,18 +155,19 @@ public class CostModelCreator extends ExplorerVisitor {
 	// to sets or maps. E.g. for a test, an OpApplNode instance belonging to
 	// Sequences.tla showed up in coverage output.
 	private final Set<OpApplNodeWrapper> nodes = new HashSet<>();
+	private final ITool tool;
 	
 	private ActionWrapper root;
-	private Tool tool;
 	private Context ctx = Context.Empty;
 	
-	private CostModelCreator(final SemanticNode root) {
+	private CostModelCreator(final SemanticNode root, final ITool tool) {
+		this.tool = tool;
 		this.stack.push(new RecursiveOpApplNodeWrapper());
 		root.walkGraph(new CoverageHashTable(opDefNodes), this);
 	}
 
 	// root cannot be type OpApplNode but has to be SemanticNode (see Test216).
-	private CostModelCreator(final Tool tool) {
+	private CostModelCreator(final ITool tool) {
 		this.tool = tool;
 		// MAK 10/08/2018: Annotate OApplNodes in the semantic tree that correspond to
 		// primed vars. It is unclear why OpApplNodes do not get marked as primed when
@@ -215,12 +215,12 @@ public class CostModelCreator extends ExplorerVisitor {
 			
 			// CONSTANT operators (this is similar to the lookups in Tool#evalAppl on e.g.
 			// line 1442), except that we lookup ToolObject only.
-			final Object val = opApplNode.getOperator().getToolObject(TLCGlobals.ToolId);
+			final Object val = opApplNode.getOperator().getToolObject(tool.getId());
 			if (val instanceof OpDefNode) {
 				final OpDefNode odn = (OpDefNode) val;
 				final ExprNode body = odn.getBody();
 				if (body instanceof OpApplNode) {
-					final CostModelCreator substitution = new CostModelCreator(body);
+					final CostModelCreator substitution = new CostModelCreator(body, tool);
 					oan.addChild((OpApplNodeWrapper) substitution.getModel());
 				}
 			}			
@@ -300,15 +300,15 @@ public class CostModelCreator extends ExplorerVisitor {
 		return this.stack.peek().getRoot();
 	}
 	
-	public static final void create(final Tool tool) {
+	public static final void create(final ITool tool) {
 		final CostModelCreator collector = new CostModelCreator(tool);
 
 		// TODO Start from the ModuleNode similar to how the Explorer works. It is
 		// unclear how to lookup the corresponding subtree in the global CM graph
 		// in getNextState and getInitStates of the model checker.
-		final Vect init = tool.getInitStateSpec();
+		final Vect<Action> init = tool.getInitStateSpec();
 		for (int i = 0; i < init.size(); i++) {
-			final Action initAction = (Action) init.elementAt(i);
+			final Action initAction = init.elementAt(i);
 			initAction.cm = collector.getCM(initAction, Relation.INIT);
 		}
 
@@ -327,11 +327,11 @@ public class CostModelCreator extends ExplorerVisitor {
 		}
 	}
 	
-	public static void report(final Tool tool) {
+	public static void report(final ITool tool) {
         MP.printMessage(EC.TLC_COVERAGE_START);
-    	final Vect init = tool.getInitStateSpec();
+    	final Vect<Action> init = tool.getInitStateSpec();
     	for (int i = 0; i < init.size(); i++) {
-    		final Action initAction = (Action) init.elementAt(i);
+    		final Action initAction = init.elementAt(i);
     		initAction.cm.report();
     	}
 

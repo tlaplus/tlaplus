@@ -16,7 +16,7 @@ import java.io.OutputStream;
     unmonitored. Hence, it is the client's responsibility to lock 
     the stream before using it. */
 
-public class BufferedDataOutputStream extends FilterOutputStream {
+public final class BufferedDataOutputStream extends FilterOutputStream implements IDataOutputStream {
     private byte[] buff; /* buffer of bytes to write */
     private int len;     /* number of valid bytes in "buff" */
     private byte[] temp; /* temporary array used by various methods */
@@ -83,7 +83,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
 
     /** Flush all bytes written to this stream to the underlying
         output stream. */
-    public void flush() throws IOException {
+    public final void flush() throws IOException {
         this.out.write(this.buff, 0, this.len);
         this.out.flush();
         this.len = 0;
@@ -91,26 +91,26 @@ public class BufferedDataOutputStream extends FilterOutputStream {
 
     /** Closes this stream and its underlying stream, after first
         flushing any buffered data. */
-    public void close() throws IOException {
+    public final void close() throws IOException {
         this.flush();
         this.out.close();
         this.out = null;
     }
     
     /** Write <code>b</code> to this stream. */
-    public void write(byte b) throws IOException {
+    public final void write(byte b) throws IOException {
         this.writeByte(b);
     }
     
     /** Write the <code>b.length</code> bytes of <code>b</code> to 
         this stream. */
-    public void write(byte[] b) throws IOException {
+    public final void write(byte[] b) throws IOException {
         this.write(b, 0, b.length);
     }
     
     /** Write <code>n</code> bytes of <code>b</code> starting
         at possition <code>off</code> to this stream. */
-    public void write(byte[] b, int off, int n) throws IOException {
+    public final void write(byte[] b, int off, int n) throws IOException {
         while (n > 0) {
             int toCopy = Math.min(n, this.buff.length - this.len);
             System.arraycopy(b, off, this.buff, this.len, toCopy);
@@ -124,7 +124,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
     }
     
     /** Write the byte <code>b</code> to this stream. */
-    public void writeByte(byte b) throws IOException {
+    public final void writeByte(byte b) throws IOException {
         this.buff[this.len++] = b;
         if (this.buff.length == this.len) {
             // write buffer to underlying stream
@@ -142,7 +142,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
     
     /** Write the short value <code>s</code> to this stream as
         two bytes. */
-    public void writeShort(short s) throws IOException {
+    public final void writeShort(short s) throws IOException {
         this.temp[0] = (byte) ((s >>> 8) & 0xff);
         this.temp[1] = (byte) (s & 0xff);
         this.write(this.temp, 0, 2);
@@ -150,7 +150,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
     
     /** Write the integer value <code>i</code> to this stream as
         four bytes. */
-    public void writeInt(int i) throws IOException {
+    public final void writeInt(int i) throws IOException {
         this.temp[0] = (byte) ((i >>> 24) & 0xff);
         this.temp[1] = (byte) ((i >>> 16) & 0xff);
         this.temp[2] = (byte) ((i >>> 8) & 0xff);
@@ -160,7 +160,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
     
     /** Write the long value <code>l</code> to this stream as
         eight bytes. */
-    public void writeLong(long l) throws IOException {
+    public final void writeLong(long l) throws IOException {
         this.temp[0] = (byte) ((l >>> 56) & 0xff);
         this.temp[1] = (byte) ((l >>> 48) & 0xff);
         this.temp[2] = (byte) ((l >>> 40) & 0xff);
@@ -174,19 +174,19 @@ public class BufferedDataOutputStream extends FilterOutputStream {
     
     /** Write the float value <code>f</code> to this stream as
         four bytes. */
-    public void writeFloat(float f) throws IOException {
+    public final void writeFloat(float f) throws IOException {
 	    this.writeInt(Float.floatToIntBits(f));
     }
     
     /** Write the double value <code>d</code> to this stream as
         eight bytes. */
-    public void writeDouble(double d) throws IOException {
+    public final void writeDouble(double d) throws IOException {
 	    this.writeLong(Double.doubleToLongBits(d));
     }
 
     /** Write the characters of the string <code>s</code> to this
         stream as a sequence of bytes. */
-    public void writeString(String s) throws IOException {
+    public final void writeString(String s) throws IOException {
         int n = s.length();
         int off = 0;
         while (n > 0) {
@@ -203,7 +203,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
     
     /** Write <code>n</code> characters of <code>chars</code> starting 
         at offset <code>off</code> to this stream as a sequence of bytes. */
-    public void writeChars(char[] chars, int off, int n) throws IOException {
+    public final void writeChars(char[] chars, int off, int n) throws IOException {
         int finOff = off + n;
         while (off < finOff) {
             // Copy (part of) chars to this.buff
@@ -223,7 +223,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
         can be read back by <code>BufferedDataInputStream.readAnyString</code>,
         even if <code>s</code> is <code>null</code> or if it contains newline 
         characters. */
-    public void writeAnyString(String s) throws IOException {
+    public final void writeAnyString(String s) throws IOException {
       if (s == null) {
 	this.writeInt(-1);
       }
@@ -235,7 +235,7 @@ public class BufferedDataOutputStream extends FilterOutputStream {
     
     /** Write the characters of the string <code>s</code> to this
         stream as a sequence of bytes, followed by a newline. */
-    public void writeLine(String s) throws IOException {
+    public final void writeLine(String s) throws IOException {
         this.writeString(s);
         this.writeByte((byte) '\n');
     }

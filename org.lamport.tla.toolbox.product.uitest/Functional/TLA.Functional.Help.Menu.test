@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _y2T94AL0EemtrbArmQOOJA
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/18/19 11:23 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 2/2/19 10:15 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -20,37 +20,69 @@ Content-Type: text/ecl
 Entry-Name: .content
 
 OpenTLACreateNew
-try -command {
-get-menu -path "Help/Table of Contents" | click
-get-view Help | get-link Contents | get-property caption | equals Contents | verify-true
-get-menu -path "Help/Dynamic Help" | click
-get-view Help | get-section "About Help" | get-canvas | get-property text 
-    | equals "Click on any workbench part to show related help topics.\r\n" | verify-true
-get-menu -path "Help/Specifying Systems" | click
-get-editor "Specifying Systems" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
-    | verify-true
-get-menu -path "Help/PlusCal User Manual" | click
-get-editor "PlusCal Manual" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
-    | verify-true
-get-menu -path "Help/The TLA+ Cheat Sheet" | click
-get-editor "TLA+ Cheat Sheet" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
-    | verify-true
 
-  wait -ms 500
-  
+let [val checkView [get-by-os -macosx "yes" -default "no"]] {
+	try -command {
+		get-menu -path "Help/Table of Contents" | click
+		get-view Help | get-link Contents | get-property caption | equals Contents | verify-true
+		
+		get-menu -path "Help/Dynamic Help" | click
+		get-view Help | get-section "About Help" | get-canvas | get-property text 
+		    | equals "Click on any workbench part to show related help topics.\r\n" | verify-true
+		    
+		get-menu -path "Help/Specifying Systems" | click
+		if [$checkView | equals "yes"] {
+			get-view "Specifying Systems" | click
+		}
+		-else {
+			get-editor "Specifying Systems" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
+			    | verify-true
+		}
+		
+		get-menu -path "Help/PlusCal User Manual" | click
+		if [$checkView | equals "yes"] {
+			get-view "PlusCal Manual" | click
+		}
+		-else {
+			get-editor "PlusCal Manual" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
+			    | verify-true
+		}
+		    
+		get-menu -path "Help/The TLA+ Cheat Sheet" | click
+		if [$checkView | equals "yes"] {
+			get-view "TLA+ Cheat Sheet" | click
+		}
+		-else {
+			get-editor "TLA+ Cheat Sheet" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
+			    | verify-true
+		}
 
-get-editor "Specifying Systems" | close
-get-editor "PlusCal Manual" | close
-get-view Help | click
-with [get-editor "new.tla"] {
-    click
-    click
+		wait -ms 500
+		  
+		if [$checkView | equals "yes"] {
+			get-view "Specifying Systems" | close
+			get-view "PlusCal Manual" | close
+			get-view "TLA+ Cheat Sheet" | close
+		}
+		-else {
+			get-editor "Specifying Systems" | close
+			get-editor "PlusCal Manual" | close
+			get-editor "TLA+ Cheat Sheet" | close
+		}
+
+		get-view Help | click
+		with [get-editor "new.tla"] {
+		    click
+		    click
+		}
+		
+		get-editor $TLA-File | click
+		
+		get-view Help | close
+	}
+	-finally {
+		DeleteSpecNew
+	}
 }
-get-editor "TLA+ Cheat Sheet" | close
-get-editor $TLA-File | click
-get-view Help | close
 
-} -finally
-//Delete Spec
-{DeleteSpecNew}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

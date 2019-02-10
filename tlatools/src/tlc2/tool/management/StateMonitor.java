@@ -52,8 +52,8 @@ public class StateMonitor {
 		JMXServiceURL url = null;
 		try {
 			final Integer pid = Integer.valueOf(args[0]);
-			@SuppressWarnings("restriction")
-			final String address = sun.management.ConnectorAddressLink.importFrom(pid);
+			//TODO the strong encapsulation is forbidding us from compiling the following line:
+			final String address = "broken"; //jdk.internal.agent.ConnectorAddressLink.importFrom(pid);
 			url = new JMXServiceURL(address);
 			System.out.printf("Connecting to TLC with pid %s running at %s.\n(Hit Ctrl+c to terminate)\n", pid, url);
 		} catch (NumberFormatException nfe) {

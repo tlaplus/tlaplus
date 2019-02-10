@@ -2,12 +2,7 @@ package util;
 
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
-
-import tla2sany.semantic.SemanticNode;
 
 /***************************************************************************
 * SANY and TLC were written to communicate only by calling the             *
@@ -83,12 +78,6 @@ public class ToolIO
 
     // = 1 for testing. Should be set to reasonable value like 1000.
     private static final int InitialMaxLength = 1;
-
-    /**
-     * List of semantic nodes which are used by tools
-     * @see ToolIO#registerSemanticNode() 
-     */
-    private static List<SemanticNode> semanticNodes = new LinkedList<>();
 
     /**
      * The current sequence of messages is messages[0] ...                  
@@ -228,46 +217,6 @@ public class ToolIO
             resolver = new SimpleFilenameToStream();
         }
         ToolIO.defaultResolver = resolver;
-    }
-
-    /**
-     * Registers the semantic node
-     * @param node the node containing tool specific information
-     * @param toolId the id of the tool (currently not used)
-     * 
-     * <br><b>Note:</b><br>
-     * This method is called from {@link SemanticNode#setToolObject(int, Object)} 
-     * and identifies the semantic node that carries tool specific information. 
-     * This information can be deleted using {@link ToolIO#cleanToolObjects(int)} 
-     */
-    public static void registerSemanticNode(SemanticNode node, int toolId)
-    {
-        if (!semanticNodes.contains(node)) 
-        {
-            semanticNodes.add(node);
-        }
-    }
-
-    /**
-     * Sets the tool-specific object for all listed semantic nodes to <code>null</code>
-     * @param toolId the Id of the tool to reset the tool specific information
-     */
-    public static void cleanToolObjects(int toolId)
-    {
-        Iterator<SemanticNode> iter = semanticNodes.iterator();
-        while(iter.hasNext())
-        {
-            SemanticNode node = iter.next();
-            node.setToolObject(toolId, null);
-        }
-    }
-
-    /**
-     * Deletes the information about semantic nodes used with tool-specific information
-     */
-    public static void unregisterSemanticNodes()
-    {
-        semanticNodes = new LinkedList<SemanticNode>();
     }
 
 } // class ToolIO

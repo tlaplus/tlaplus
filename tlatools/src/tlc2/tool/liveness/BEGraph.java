@@ -15,12 +15,12 @@ public class BEGraph {
 	/**
 	 * BEGraph represents the behaviour graph.
 	 */
-	public Vect initNodes;
+	public Vect<BEGraphNode> initNodes;
 	public String metadir;
 	public NodeTable allNodes;
 
 	public BEGraph(String metadir, boolean isBT) {
-		this.initNodes = new Vect();
+		this.initNodes = new Vect<>();
 		this.metadir = metadir;
 		this.allNodes = new NodeTable(127, isBT);
 	}
@@ -95,7 +95,7 @@ public class BEGraph {
 			}
 		}
 		// Get the path following parent pointers:
-		Vect path = new Vect();
+		Vect<BEGraphNode> path = new Vect<>();
 		BEGraphNode curNode = end;
 		while (curNode != null) {
 			path.addElement(curNode);

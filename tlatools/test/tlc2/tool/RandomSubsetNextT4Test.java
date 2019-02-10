@@ -36,8 +36,9 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
-import tlc2.value.IntValue;
-import tlc2.value.Value;
+import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.Value;
 import util.UniqueString;
 
 public class RandomSubsetNextT4Test extends ModelCheckerTestCase {
@@ -60,12 +61,12 @@ public class RandomSubsetNextT4Test extends ModelCheckerTestCase {
 		for (Object r : records) {
 			final Object[] objs = (Object[]) r;
 			final TLCStateInfo info = (TLCStateInfo) objs[0];
-			final Map<UniqueString, Value> vals = info.state.getVals();
+			final Map<UniqueString, IValue> vals = info.state.getVals();
 
-			final Value y = vals.get(UniqueString.uniqueStringOf("y"));
+			final IValue y = vals.get(UniqueString.uniqueStringOf("y"));
 			assertEquals(cnt++, ((IntValue) y).val);
 			
-			final Value x = info.state.getVals().get(UniqueString.uniqueStringOf("x"));
+			final IValue x = info.state.getVals().get(UniqueString.uniqueStringOf("x"));
 			assertTrue(1 <= ((IntValue) x).val && ((IntValue) x).val <= 1000);
 			
 			final int statenum = (int) objs[1];

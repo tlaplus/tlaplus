@@ -12,23 +12,24 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
-import tla2sany.modanalyzer.ParseUnit;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.DFIDModelChecker;
+import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
-import tlc2.tool.Tool;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.DotStateWriter;
@@ -37,8 +38,7 @@ import tlc2.util.IStateWriter;
 import tlc2.util.NoopStateWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.StateWriter;
-import tlc2.value.EnumerableValue;
-import tlc2.value.Value;
+import tlc2.value.RandomEnumerableValues;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -336,7 +336,7 @@ public class TLC
             } else if (args[index].equals("-terse"))
             {
                 index++;
-                Value.expand = false;
+                TLCGlobals.expand = false;
             } else if (args[index].equals("-continue"))
             {
                 index++;
@@ -845,7 +845,6 @@ public class TLC
      */
     public void process()
     {
-        ToolIO.cleanToolObjects(TLCGlobals.ToolId);
         // UniqueString.initialize();
         
         // a JMX wrapper that exposes runtime statistics 
@@ -862,24 +861,6 @@ public class TLC
                 UniqueString.internTbl.recover(fromChkpt);
             }
             FP64.Init(fpIndex);
-
-            
-    		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
-    		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
-    		final String arch = tlcRuntime.getArchitecture().name();
-    		
-    		final Runtime runtime = Runtime.getRuntime();
-    		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
-    		final String cores = Integer.toString(runtime.availableProcessors());
-
-    		final String vendor = System.getProperty("java.vendor");
-    		final String version = System.getProperty("java.version");
-
-    		final String osName = System.getProperty("os.name");
-    		final String osVersion = System.getProperty("os.version");
-    		final String osArch = System.getProperty("os.arch");
-    		
-    		final long pid = TLCRuntime.getInstance().pid();
     		
     		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
@@ -894,13 +875,9 @@ public class TLC
                 {
                     rng.setSeed(seed, aril);
                 }
-				MP.printMessage(EC.TLC_MODE_SIMU,
-						new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
-								TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
-								version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
-								pid == -1 ? "" : String.valueOf(pid) });
+				MP.printMessage(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
-                        traceNum, rng, seed, true, resolver, TLCGlobals.getNumWorkers());
+                        traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
                 simulator.simulate();
             } else
@@ -908,27 +885,25 @@ public class TLC
 				if (noSeed) {
                     seed = rng.nextLong();
 				}
-				EnumerableValue.setRandom(seed);
+				RandomEnumerableValues.setSeed(seed);
             	
-				final String[] parameters = new String[] { String.valueOf(TLCGlobals.getNumWorkers()),
-						TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor, version,
-						arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
-						Long.toString(EnumerableValue.getRandomSeed()), Integer.toString(fpIndex),
-						pid == -1 ? "" : String.valueOf(pid) };
-
+				// Print startup banner before SANY writes its output.
+				MP.printMessage(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex));
+				
             	// model checking
-		        final Tool tool = new Tool(mainFile, configFile, resolver);
+		        final ITool tool = new Tool(mainFile, configFile, resolver);
 
-                if (TLCGlobals.DFIDMax == -1)
+		        // Spec has been parsed, schedule termination before model checking starts below.  
+				scheduleTerminationTimer();
+
+                if (isBFS())
                 {
-					MP.printMessage(EC.TLC_MODE_MC, parameters);
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
 							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) TLCGlobals.mainChecker, this);
 					TLCGlobals.mainChecker.modelCheck();
                 } else
                 {
-					MP.printMessage(EC.TLC_MODE_MC_DFS, parameters);
 					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt);
 					TLCGlobals.mainChecker.modelCheck();
                 }
@@ -971,6 +946,77 @@ public class TLC
 			MP.flush();
         }
     }
+
+	private static boolean isBFS() {
+		return TLCGlobals.DFIDMax == -1;
+	}
+
+	private static String[] getSimulationRuntime(final long seed) {
+		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
+		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
+		final String arch = tlcRuntime.getArchitecture().name();
+		
+		final Runtime runtime = Runtime.getRuntime();
+		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
+		final String cores = Integer.toString(runtime.availableProcessors());
+
+		final String vendor = System.getProperty("java.vendor");
+		final String version = System.getProperty("java.version");
+
+		final String osName = System.getProperty("os.name");
+		final String osVersion = System.getProperty("os.version");
+		final String osArch = System.getProperty("os.arch");
+		
+		final long pid = TLCRuntime.getInstance().pid();
+		
+		return new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
+				TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
+				version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
+				pid == -1 ? "" : String.valueOf(pid) };
+	}
+
+	private static String[] getModelCheckingRuntime(final int fpIndex) {
+		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
+		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
+		final String arch = tlcRuntime.getArchitecture().name();
+		
+		final Runtime runtime = Runtime.getRuntime();
+		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
+		final String cores = Integer.toString(runtime.availableProcessors());
+
+		final String vendor = System.getProperty("java.vendor");
+		final String version = System.getProperty("java.version");
+
+		final String osName = System.getProperty("os.name");
+		final String osVersion = System.getProperty("os.version");
+		final String osArch = System.getProperty("os.arch");
+		
+		final long pid = TLCRuntime.getInstance().pid();
+		
+		return new String[] { String.valueOf(TLCGlobals.getNumWorkers()), TLCGlobals.getNumWorkers() == 1 ? "" : "s",
+				cores, osName, osVersion, osArch, vendor, version, arch, Long.toString(heapMemory),
+				Long.toString(offHeapMemory), Long.toString(RandomEnumerableValues.getSeed()),
+				Integer.toString(fpIndex), pid == -1 ? "" : String.valueOf(pid) };
+	}
+
+	private static void scheduleTerminationTimer() {
+		// Stops model checker after the given time in seconds. If model checking
+		// terminates before stopAfter seconds, the timer task will never run.
+		// Contrary to TLCSet("exit",...) this does not require a spec modification. Is
+		// is likely of little use for regular TLC users. In other words, this is meant
+		// to be a developer only feature and thus configured via a system property and
+		// not a regular TLC parameter.
+		final long stopAfter = Long.getLong(TLC.class.getName() + ".stopAfter", -1L);
+		if (stopAfter > 0) {
+			final Timer stopTimer = new Timer("TLCStopAfterTimer");
+			stopTimer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					TLCGlobals.mainChecker.stop();
+				}
+			}, stopAfter * 1000L); // seconds to milliseconds.
+		}
+	}
     
     /**
 	 * @return The given milliseconds runtime converted into human readable form
@@ -1000,14 +1046,8 @@ public class TLC
     	final List<File> result = new ArrayList<File>();
     	
     	if (TLCGlobals.mainChecker instanceof ModelChecker) {
-    		ModelChecker mc = (ModelChecker) TLCGlobals.mainChecker;
-			final Enumeration<ParseUnit> parseUnitContext = mc.specObj.parseUnitContext
-					.elements();
-    		while (parseUnitContext.hasMoreElements()) {
-    			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
-				File resolve = resolver.resolve(pu.getFileName(), false);
-				result.add(resolve);
-    		}
+    		final ModelChecker mc = (ModelChecker) TLCGlobals.mainChecker;
+    		result.addAll(mc.getModuleFiles(resolver));
     		if (ModelInJar.hasCfg()) {
     			result.add(ModelInJar.getCfg());
     		}

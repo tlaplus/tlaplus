@@ -5,28 +5,28 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.Vect;
 
 class LNConj extends LiveExprNode {
-	private final Vect conjs; // The conjuncts
+	private final Vect<LiveExprNode> conjs; // The conjuncts
 	private int info;
 
 	public LNConj(int size) {
-		this.conjs = new Vect(size);
+		this.conjs = new Vect<>(size);
 		this.info = 0;
 	}
 
 	public LNConj(LiveExprNode n) {
-		this.conjs = new Vect(1);
+		this.conjs = new Vect<>(1);
 		this.conjs.addElement(n);
 		int level = n.getLevel();
 		this.info = n.containAction() ? level + 8 : level;
 	}
 
 	public LNConj(LiveExprNode n1, LiveExprNode n2) {
-		this.conjs = new Vect(2);
+		this.conjs = new Vect<>(2);
 		this.conjs.addElement(n1);
 		this.conjs.addElement(n2);
 		boolean hasAct = n1.containAction() || n2.containAction();
@@ -34,7 +34,7 @@ class LNConj extends LiveExprNode {
 		this.info = hasAct ? level + 8 : level;
 	}
 
-	public LNConj(Vect conjs) {
+	public LNConj(Vect<LiveExprNode> conjs) {
 		this.conjs = conjs;
 		boolean hasAct = false;
 		int level = 0;
@@ -76,7 +76,7 @@ class LNConj extends LiveExprNode {
 		return (this.info & 8) > 0;
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		int sz = this.conjs.size();
 		for (int i = 0; i < sz; i++) {
 			LiveExprNode item = (LiveExprNode) this.conjs.elementAt(i);
@@ -171,7 +171,7 @@ class LNConj extends LiveExprNode {
 		}
 
 		// We now construct the cross product:
-		Vect nes = new Vect(count);
+		Vect<LiveExprNode> nes = new Vect<>(count);
 		int total = 1;
 		for (int i = 0; i < count; i++) {
 			LiveExprNode elem = temp[i];
@@ -194,7 +194,7 @@ class LNConj extends LiveExprNode {
 			return new LNConj(nes);
 		}
 		int nesSize = nes.size();
-		Vect res = new Vect(total);
+		Vect<LiveExprNode> res = new Vect<>(total);
 		for (int i = 0; i < total; i++) {
 			res.addElement(new LNConj(nesSize));
 		}

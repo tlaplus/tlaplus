@@ -19,6 +19,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.impl.Tool;
 import tlc2.util.FP64;
 import util.Assert;
 import util.FileUtil;
@@ -39,7 +40,7 @@ public class CheckImplFile extends CheckImpl
      * to ModelChecker constructor.
      * 
      */
-    public CheckImplFile(Tool tool, String metadir, boolean deadlock, int depth, String fromChkpt,
+    public CheckImplFile(ITool tool, String metadir, boolean deadlock, int depth, String fromChkpt,
             String traceFile, final FPSetConfiguration fpSetConfig) throws IOException
     {
         super(tool, metadir, deadlock, depth, fromChkpt, fpSetConfig);
@@ -311,7 +312,7 @@ public class CheckImplFile extends CheckImpl
       FP64.Init(0);
       
       // Start the checker:
-      final Tool tool = new Tool(mainFile, configFile);
+      final ITool tool = new Tool(mainFile, configFile);
       CheckImplFile checker = new CheckImplFile(tool, metadir, deadlock,
 						depth, fromChkpt, traceFile, new FPSetConfiguration());
       checker.init();

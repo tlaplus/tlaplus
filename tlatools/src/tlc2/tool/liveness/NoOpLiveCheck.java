@@ -28,20 +28,20 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
+import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 
 public class NoOpLiveCheck implements ILiveCheck {
 
-	private final Tool tool;
+	private final ITool tool;
 	private final String metadir;
 	private final IBucketStatistics stats;
 
-	public NoOpLiveCheck(Tool tool, String metadir) {
+	public NoOpLiveCheck(ITool tool, String metadir) {
 		this.tool = tool;
 		this.metadir = metadir;
 		this.stats = new DummyBucketStatistics();
@@ -96,7 +96,7 @@ public class NoOpLiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#getTool()
 	 */
-	public Tool getTool() {
+	public ITool getTool() {
 		return tool;
 	}
 

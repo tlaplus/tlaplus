@@ -7,7 +7,6 @@ import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import tla2sany.semantic.FrontEnd;
 import tlc2.tool.AbstractChecker;
 import tlc2.tool.Simulator;
 
@@ -163,9 +162,6 @@ public class TLCGlobals
     // The flag to control if gzip is applied to Value input/output stream.
     public static boolean useGZIP = false;
 
-    // The tool id number for TLC2.
-    public static int ToolId = FrontEnd.getToolId();
-
     // debugging field
     public static boolean debug = false;
 
@@ -197,4 +193,6 @@ public class TLCGlobals
 		}
 		return null;
 	}
+
+	public static boolean expand = true;
 }

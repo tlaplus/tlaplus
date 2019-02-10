@@ -107,9 +107,10 @@
 
 			<!-- Compile aspects -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <!-- https://github.com/nickwongdev/aspectj-maven-plugin -->
+                <groupId>com.nickwongdev</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.11</version>
+                <version>1.12.1</version>
                 <configuration>
                     <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
                 </configuration>

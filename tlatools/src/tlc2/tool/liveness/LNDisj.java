@@ -5,28 +5,28 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 import tlc2.util.Vect;
 
 class LNDisj extends LiveExprNode {
-	private final Vect disjs; // The disjuncts
+	private final Vect<LiveExprNode> disjs; // The disjuncts
 	private int info;
 
 	public LNDisj(int size) {
-		this.disjs = new Vect(size);
+		this.disjs = new Vect<>(size);
 		this.info = 0;
 	}
 
 	public LNDisj(LiveExprNode n) {
-		this.disjs = new Vect(1);
+		this.disjs = new Vect<>(1);
 		this.disjs.addElement(n);
 		int level = n.getLevel();
 		this.info = n.containAction() ? level + 8 : level;
 	}
 
 	public LNDisj(LiveExprNode n1, LiveExprNode n2) {
-		this.disjs = new Vect(2);
+		this.disjs = new Vect<>(2);
 		this.disjs.addElement(n1);
 		this.disjs.addElement(n2);
 		boolean hasAct = n1.containAction() || n2.containAction();
@@ -34,7 +34,7 @@ class LNDisj extends LiveExprNode {
 		this.info = hasAct ? level + 8 : level;
 	}
 
-	public LNDisj(Vect disjs) {
+	public LNDisj(Vect<LiveExprNode> disjs) {
 		this.disjs = disjs;
 		boolean hasAct = false;
 		int level = 0;
@@ -76,7 +76,7 @@ class LNDisj extends LiveExprNode {
 		return (this.info & 8) > 0;
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		int sz = disjs.size();
 		for (int i = 0; i < sz; i++) {
 			LiveExprNode item = (LiveExprNode) disjs.elementAt(i);

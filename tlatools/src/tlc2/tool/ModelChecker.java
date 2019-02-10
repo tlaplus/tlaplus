@@ -6,7 +6,9 @@
 
 package tlc2.tool;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -23,12 +25,14 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
+import tlc2.tool.queue.DiskByteArrayQueue;
 import tlc2.util.IStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
 import util.Assert;
 import util.DebugPrinter;
 import util.FileUtil;
+import util.FilenameToStream;
 import util.UniqueString;
 
 /** 
@@ -69,16 +73,16 @@ public class ModelChecker extends AbstractChecker
 	private boolean forceLiveCheck = false;
 
     /* Constructors  */
-    public ModelChecker(Tool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
+    public ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
             final Future<FPSet> future) throws EvalException, IOException, InterruptedException, ExecutionException {
     	this(tool, metadir, stateWriter, deadlock, fromChkpt);
     	this.theFPSet = future.get();
     }
     
-    public ModelChecker(Tool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
+    public ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
             final FPSetConfiguration fpSetConfig) throws EvalException, IOException {
     	this(tool, metadir, stateWriter, deadlock, fromChkpt);
-    	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, tool.rootFile);
+    	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, tool.getRootFile());
     }
     
     /**
@@ -87,23 +91,25 @@ public class ModelChecker extends AbstractChecker
      * @param resolver name resolver to be able to load files (specs and configs) from managed environments 
      * @param specObj external SpecObj added to enable to work on existing specification 
      */
-    private ModelChecker(Tool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt) throws EvalException, IOException
+    private ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt) throws EvalException, IOException
     {
         // call the abstract constructor
         super(tool, metadir, stateWriter, deadlock, fromChkpt);
 
         // SZ Feb 20, 2009: this is a selected alternative
-        this.theStateQueue = new DiskStateQueue(this.metadir);
+		this.theStateQueue = Boolean.getBoolean(ModelChecker.class.getName() + ".rawqueue")
+				? new DiskByteArrayQueue(this.metadir)
+				: new DiskStateQueue(this.metadir);
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         // Finally, initialize the trace file:
-        this.trace = new ConcurrentTLCTrace(this.metadir, this.tool.rootFile, this.tool);
+        this.trace = new ConcurrentTLCTrace(this.metadir, this.tool.getRootFile(), this.tool);
 
         // Initialize all the workers:
         this.workers = new Worker[TLCGlobals.getNumWorkers()];
         for (int i = 0; i < this.workers.length; i++)
         {
-            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.rootFile));
+            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootFile()));
         }
     }
 
@@ -199,7 +205,7 @@ public class ModelChecker extends AbstractChecker
         report("init processed");
         
         // Finished if there is no next state predicate:
-        if (this.actions.length == 0)
+        if (this.tool.getActions().length == 0)
         {
         	if (this.theStateQueue.isEmpty()) {
         		reportSuccess(this.theFPSet, getStatesGenerated());
@@ -258,7 +264,7 @@ public class ModelChecker extends AbstractChecker
 					// to rewrite the trace file but to reconstruct actual states referenced by
 					// their fingerprints in the trace.
 					this.doNext(this.predErrState, this.checkLiveness ? new SetOfStates() : null,
-							new Worker(4223, this, this.metadir, specObj.getFileName()));
+							new Worker(4223, this, this.metadir, tool.getRootFile()));
                 } catch (FingerprintException e)
                 {
                     MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
@@ -385,7 +391,7 @@ public class ModelChecker extends AbstractChecker
         TLCState succState = null;
         try
         {
-            for (int i = 0; i < this.actions.length; i++)
+            for (int i = 0; i < this.tool.getActions().length; i++)
             {
 				//TODO Implement IStateFunctor pattern for getNextStates() too
 				// to reduce memory and runtime overhead of allocating and
@@ -398,7 +404,7 @@ public class ModelChecker extends AbstractChecker
 				// removed, the functor pattern could be applied to doNext too.
 				// Other problems are access to worker and curState. A stateless functor has no
 				// access to curState and worker except when it uses thread local storage.
-				final Action action = this.actions[i];
+				final Action action = this.tool.getActions()[i];
 				final StateVec nextStates = this.tool.getNextStates(action, curState);
 				final int sz = nextStates.size();
 				worker.incrementStatesGenerated(sz);
@@ -487,9 +493,9 @@ public class ModelChecker extends AbstractChecker
         int k = 0;
 		try
         {
-			for (k = 0; k < this.invariants.length; k++)
+			for (k = 0; k < this.tool.getInvariants().length; k++)
             {
-                if (!tool.isValid(this.invariants[k], succState))
+                if (!tool.isValid(this.tool.getInvariants()[k], succState))
                 {
                     // We get here because of invariant violation:
                 	if (TLCGlobals.continuation) {
@@ -518,9 +524,9 @@ public class ModelChecker extends AbstractChecker
 		int k = 0;
         try
         {
-			for (k = 0; k < this.impliedActions.length; k++)
+			for (k = 0; k < this.tool.getImpliedActions().length; k++)
             {
-                if (!tool.isValid(this.impliedActions[k], curState, succState))
+                if (!tool.isValid(this.tool.getImpliedActions()[k], curState, succState))
                 {
                     // We get here because of implied-action violation:
                     if (TLCGlobals.continuation)
@@ -570,7 +576,7 @@ public class ModelChecker extends AbstractChecker
 			if (this.setErrState(curState, succState, false))
 			{
 				final Set<OpDeclNode> unassigned = succState.getUnassigned();
-				if (this.actions.length == 1) {
+				if (this.tool.getActions().length == 1) {
 					MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT,
 							new String[] { unassigned.size() > 1 ? "s are" : " is",
 									unassigned.stream().map(n -> n.getName().toString())
@@ -1065,8 +1071,8 @@ public class ModelChecker extends AbstractChecker
 				}
 				// Check properties of the state:
 				if (!seen || forceChecks) {
-					for (int j = 0; j < invariants.length; j++) {
-						if (!tool.isValid(invariants[j], curState)) {
+					for (int j = 0; j < tool.getInvariants().length; j++) {
+						if (!tool.isValid(tool.getInvariants()[j], curState)) {
 							// We get here because of invariant violation:
 							MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL,
 									new String[] { tool.getInvNames()[j].toString(), curState.toString() });
@@ -1077,8 +1083,8 @@ public class ModelChecker extends AbstractChecker
 							}
 						}
 					}
-					for (int j = 0; j < impliedInits.length; j++) {
-						if (!tool.isValid(impliedInits[j], curState)) {
+					for (int j = 0; j < tool.getImpliedInits().length; j++) {
+						if (!tool.isValid(tool.getImpliedInits()[j], curState)) {
 							// We get here because of implied-inits violation:
 							MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL,
 									new String[] { tool.getImpliedInitNames()[j], curState.toString() });
@@ -1106,6 +1112,10 @@ public class ModelChecker extends AbstractChecker
 			}
 			return returnValue;
 		}
+	}
+
+	public List<File> getModuleFiles(FilenameToStream resolver) {
+		return this.tool.getModuleFiles(resolver);
 	}
 }
 	

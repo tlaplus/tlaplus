@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
-import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -19,7 +18,7 @@ import tlc2.util.IdThread;
 import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
-import tlc2.value.Value;
+import tlc2.value.IValue;
 import util.DebugPrinter;
 
 /**
@@ -47,44 +46,7 @@ public abstract class AbstractChecker
     protected final boolean checkLiveness;
     protected final String fromChkpt;
     public final String metadir;
-    public final Tool tool;
-    public final SpecObj specObj;
-    public final Action[] invariants;
-	/**
-	 * Checking a liveness property Prop (declared by the PROPERTY keyword in the
-	 * config file) means to verify Spec => Prop. An implied action is the [][A]_x
-	 * (A \/ x' = x) part of Prop where A is an action and x is a variable.
-	 * 
-	 * See the following tests:<br>
-	 * tlc2.tool.suite.Test52
-	 * <ul>
-	 * <li></li>
-	 * <li></li>
-	 * </ul>
-	 * tlc2.tool.suite.Test56
-	 * <ul>
-	 * <li></li>
-	 * </ul>
-	 */
-    public final Action[] impliedActions;
-	/**
-	 * Initial predicate of the liveness property Prop (see impliedActions above).
-	 * Most common used when checking if a Spec implements another one, i.e. ASpec
-	 * => BSpec.
-	 * <p>
-	 * See the following tests:<br>
-	 * tlc2.tool.suite.Test55
-	 * <ul>
-	 * <li>Action line 7, col 1 to line 7, col 41 of module test55</li>
-	 * <li>Action line 7, col 1 to line 7, col 41 of module test55</li>
-	 * </ul>
-	 * tlc2.tool.suite.Test63
-	 * <ul>
-	 * <li>Action line 52, col 1 to line 52, col 21 of module test63</li>
-	 * </ul>
-	 */
-    public final Action[] impliedInits;
-    public final Action[] actions;
+    public final ITool tool;
     protected final IStateWriter allStateWriter;
     protected IWorker[] workers;
 	protected final ILiveCheck liveCheck;
@@ -100,10 +62,9 @@ public abstract class AbstractChecker
      * @param resolver
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
-	public AbstractChecker(Tool tool, String metadir, final IStateWriter stateWriter,
+	public AbstractChecker(ITool tool, String metadir, final IStateWriter stateWriter,
 			boolean deadlock, String fromChkpt) throws EvalException, IOException {
         this.tool = tool;
-		this.specObj = tool.init();
 		
 		this.checkDeadlock = deadlock;
         this.checkLiveness = !this.tool.livenessIsTrue();
@@ -119,11 +80,6 @@ public abstract class AbstractChecker
         this.fromChkpt = fromChkpt;
         
         this.allStateWriter = stateWriter;
-
-        this.impliedInits = this.tool.getImpliedInits(); // implied-inits to be checked
-        this.invariants = this.tool.getInvariants(); // invariants to be checked
-        this.impliedActions = this.tool.getImpliedActions(); // implied-actions to be checked
-        this.actions = this.tool.getActions(); // the sub-actions
 
         if (TLCGlobals.isCoverageEnabled()) {
         	CostModelCreator.create(this.tool);
@@ -142,9 +98,9 @@ public abstract class AbstractChecker
 						"DiskGraphsOutDegree");
 			}
 			if (LIVENESS_TESTING_IMPLEMENTATION) {
-				this.liveCheck = new AddAndCheckLiveCheck(this.tool, this.actions, this.metadir, stats);
+				this.liveCheck = new AddAndCheckLiveCheck(this.tool, this.metadir, stats);
 			} else {
-				this.liveCheck = new LiveCheck(this.tool, this.actions, this.metadir, stats, stateWriter);
+				this.liveCheck = new LiveCheck(this.tool, this.metadir, stats, stateWriter);
 			}
             report("liveness checking initialized");
         } else {
@@ -181,7 +137,7 @@ public abstract class AbstractChecker
     protected void reportCoverage(IWorker[] workers)
     {
 		// Without actions (empty spec) there won't be any statistics anyway.
-		if (TLCGlobals.isCoverageEnabled() && this.actions.length > 0)
+		if (TLCGlobals.isCoverageEnabled() && this.tool.getActions().length > 0)
 		{
             CostModelCreator.report(this.tool);
         }
@@ -481,13 +437,13 @@ public abstract class AbstractChecker
         return true;
     }
     
-	public final void setAllValues(int idx, Value val) {
+	public final void setAllValues(int idx, IValue val) {
 		for (int i = 0; i < this.workers.length; i++) {
 			workers[i].setLocalValue(idx, val);
 		}
 	}
 
-	public final Value getValue(int i, int idx) {
+	public final IValue getValue(int i, int idx) {
 		return workers[i].getLocalValue(idx);
 	}
 

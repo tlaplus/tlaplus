@@ -5,8 +5,6 @@
 
 package tlc2.value;
 
-import util.UniqueString;
-
 public interface ValueConstants {
 
   /* Type code for values. */
@@ -36,49 +34,6 @@ public interface ValueConstants {
   public final byte INTERVALVALUE    = USERVALUE + 1;
   public final byte UNDEFVALUE       = INTERVALVALUE + 1;
   public final byte LAZYVALUE        = UNDEFVALUE + 1;
-  public final byte DUMMYVALUE       = LAZYVALUE + 1;  
-
-  public final String[] ValueImage = {
-    "a Boolean value",                     // "BoolValue",
-    "an integer",                          // "IntValue",
-    "a real",                              // "RealValue",
-    "a string",                            // "StringValue",
-    "a record",                            // "RecordValue",
-    "a set of the form {e1, ... ,eN}",     // "SetEnumValue",
-    "a set of the form {x \\in S : expr}", // "SetPredValue",
-    "a tuple",                             // "TupleValue",
-    "a function of the form  [x \\in S |-> expr]",           // "FcnLambdaValue",
-    "a function  of the form (d1 :> e1 @@ ... @@ dN :> eN)", // "FcnRcdValue",
-    "an operator",                                // "OpLambdaValue",
-    "a constant operator",                        // "OpRcdValue",
-    "a java method",                              // "MethodValue",    
-    "a set of the form [S -> T]",                 // "SetOfFcnsValue",
-    "a set of the form [d1 : S1, ... , dN : SN]", // "SetOfRcdsValue",
-    "a cartesian product",                        // "SetOfTuplesValue",
-    "a set of the form SUBSET S",                 // "SubsetValue",
-    "a set of the form S \\ T",                   // "SetDiffValue",
-    "a set of the form S \\cap T",                // "SetCapValue",
-    "a set of the form S \\cup T",                // "SetCupValue",
-    "a set of the form UNION  S",                 // "UnionValue",
-    "a model value",                              // "ModelValue",
-    "a special set constant",                     // "UserValue",
-    "a set of the form i..j",                     // "IntervalValue",
-    "an undefined value",                         // "UndefValue",
-    "a value represented in lazy form",           // "LazyValue",
-    "a dummy for not-a-value",                    // "DummyValue",    
-  };
-
-  /* Value constants. */
-  public final BoolValue ValTrue  = new BoolValue(true);
-  public final BoolValue ValFalse = new BoolValue(false);
-  public final IntValue ValZero   = IntValue.gen(0);
-  public final IntValue ValOne    = IntValue.gen(1);
-  public final IntValue ValNegOne = IntValue.gen(-1);
-  public final Value EmptySet = new SetEnumValue(new ValueVec(0), true);
-  public final Value EmptyFcn = new FcnRcdValue(new Value[0], new Value[0], true);
-  public final TupleValue EmptyTuple = new TupleValue(new Value[0]);
-  public final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new Value[0], true);
-  public final UndefValue ValUndef = new UndefValue();
-  public final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
+  public final byte DUMMYVALUE       = LAZYVALUE + 1;
 
 }

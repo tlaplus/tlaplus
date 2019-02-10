@@ -8,20 +8,22 @@ package tlc2.module;
 import tlc2.output.EC;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
-import tlc2.tool.TLARegistry;
-import tlc2.value.Applicable;
-import tlc2.value.BoolValue;
-import tlc2.value.IntValue;
-import tlc2.value.ModelValue;
-import tlc2.value.OpLambdaValue;
-import tlc2.value.OpRcdValue;
-import tlc2.value.StringValue;
-import tlc2.value.TupleValue;
-import tlc2.value.UserObj;
-import tlc2.value.UserValue;
-import tlc2.value.Value;
+import tlc2.tool.impl.TLARegistry;
+import tlc2.value.IBoolValue;
 import tlc2.value.ValueConstants;
-import tlc2.value.ValueVec;
+import tlc2.value.Values;
+import tlc2.value.impl.Applicable;
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.ModelValue;
+import tlc2.value.impl.OpLambdaValue;
+import tlc2.value.impl.OpRcdValue;
+import tlc2.value.impl.StringValue;
+import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.UserObj;
+import tlc2.value.impl.UserValue;
+import tlc2.value.impl.Value;
+import tlc2.value.impl.ValueVec;
 import util.Assert;
 import util.UniqueString;
 
@@ -38,7 +40,7 @@ public class Sequences extends UserObj implements ValueConstants
         this.size = size;
     }
 
-    static
+	static
     {
 		// This entry in TLARegistry defines a mapping from TLA+' infix
 		// operator \o to the Java method tlc2.module.Sequences.Concat(Value, Value)
@@ -60,18 +62,18 @@ public class Sequences extends UserObj implements ValueConstants
             return IntValue.gen(((StringValue) s).length());
         }
 
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq != null)
         {
             return IntValue.gen(seq.size());
         }
         throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b", "Len", "sequence",
-                Value.ppr(s.toString()) });
+                Values.ppr(s.toString()) });
     }
 
     public static Value Head(Value s)
     {
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq != null)
         {
             if (seq.size() == 0)
@@ -81,7 +83,7 @@ public class Sequences extends UserObj implements ValueConstants
             return seq.elems[0];
         }
         throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b", "Head", "sequence",
-                Value.ppr(s.toString()) });
+                Values.ppr(s.toString()) });
     }
 
     public static Value Tail(Value s)
@@ -95,7 +97,7 @@ public class Sequences extends UserObj implements ValueConstants
     		return new StringValue(str.substring(1));
     	}
     	
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq != null)
         {
             if (seq.size() == 0)
@@ -108,16 +110,16 @@ public class Sequences extends UserObj implements ValueConstants
             return new TupleValue(vals);
         }
         throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b", "Tail", "sequence",
-                Value.ppr(s.toString()) });
+                Values.ppr(s.toString()) });
     }
 
     public static Value Cons(Value v, Value s)
     {
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "Cons(v, s)", "sequence",
-                    Value.ppr(s.toString()) });
+                    Values.ppr(s.toString()) });
         }
         int len = seq.size();
         Value[] values = new Value[len + 1];
@@ -128,11 +130,11 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Append(Value s, Value v)
     {
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "Append(v, s)", "sequence",
-                    Value.ppr(s.toString()) });
+                    Values.ppr(s.toString()) });
         }
         int len = seq.size();
         Value[] values = new Value[len + 1];
@@ -148,24 +150,24 @@ public class Sequences extends UserObj implements ValueConstants
             if (!(s2 instanceof StringValue))
             {
                 throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "t \\o s", "string",
-                        Value.ppr(s2.toString()) });
+                        Values.ppr(s2.toString()) });
             }
             UniqueString u1 = ((StringValue) s1).val;
             UniqueString u2 = ((StringValue) s2).val;
             return new StringValue(u1.concat(u2));
         }
 
-        TupleValue seq1 = s1.toTuple();
+        TupleValue seq1 = (TupleValue) s1.toTuple();
         if (seq1 == null)
         {
             throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "s \\o t", "sequence",
-                    Value.ppr(s1.toString()) });
+                    Values.ppr(s1.toString()) });
         }
-        TupleValue seq2 = s2.toTuple();
+        TupleValue seq2 = (TupleValue) s2.toTuple();
         if (seq2 == null)
         {
             throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "t \\o s", "sequence",
-                    Value.ppr(s2.toString()) });
+                    Values.ppr(s2.toString()) });
         }
         int len1 = seq1.size();
         int len2 = seq2.size();
@@ -191,16 +193,16 @@ public class Sequences extends UserObj implements ValueConstants
      */
     public static Value SelectInSeq(Value s, Value test)
     {
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SelectInSeq", "sequence",
-                    Value.ppr(s.toString()) });
+                    Values.ppr(s.toString()) });
         }
         if (!(test instanceof Applicable))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SelectInSeq", "function",
-                    Value.ppr(test.toString()) });
+                    Values.ppr(test.toString()) });
         }
         int len = seq.size();
         Applicable ftest = (Applicable) test;
@@ -209,15 +211,15 @@ public class Sequences extends UserObj implements ValueConstants
         {
             args[0] = seq.elems[i];
             Value val = ftest.apply(args, EvalControl.Clear);
-            if (!(val instanceof BoolValue))
+            if (!(val instanceof IBoolValue))
             {
                 throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SelectInSeq",
-                        "boolean-valued function", Value.ppr(test.toString()) });
+                        "boolean-valued function", Values.ppr(test.toString()) });
             }
             if (((BoolValue) val).val)
                 return IntValue.gen(i + 1);
         }
-        return ValZero;
+        return IntValue.ValZero;
     }
 
     /**  Not in the standard interface.
@@ -268,23 +270,23 @@ public class Sequences extends UserObj implements ValueConstants
     	}
     	
     	if (! isString) {
-          seq = s.toTuple();
+          seq = (TupleValue) s.toTuple();
           if (seq == null)
           {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SubSeq", "sequence",
-                    Value.ppr(s.toString()) });
+                    Values.ppr(s.toString()) });
           }
     	}
     	
         if (!(m instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SubSeq", "natural number",
-                    Value.ppr(m.toString()) });
+                    Values.ppr(m.toString()) });
         }
         if (!(n instanceof IntValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "third", "SubSeq", "natural number",
-                    Value.ppr(n.toString()) });
+                    Values.ppr(n.toString()) });
         }
         int beg = ((IntValue) m).val;
         int end = ((IntValue) n).val;
@@ -293,7 +295,7 @@ public class Sequences extends UserObj implements ValueConstants
         		return new StringValue("") ;
         	} 
         	else {
-              return EmptyTuple;
+              return TupleValue.EmptyTuple;
         	}
         }
         
@@ -303,12 +305,12 @@ public class Sequences extends UserObj implements ValueConstants
         {
 
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN, new String[] { "second", "SubSeq", "first",
-                    Value.ppr(s.toString()), Value.ppr(m.toString()) });
+                    Values.ppr(s.toString()), Values.ppr(m.toString()) });
         }
         if (end < 1 || end > len)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN, new String[] { "third", "SubSeq", "first",
-                    Value.ppr(s.toString()), Value.ppr(n.toString()) });
+                    Values.ppr(s.toString()), Values.ppr(n.toString()) });
         }
         
         if (isString) {
@@ -324,19 +326,19 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value SelectSeq(Value s, Value test)
     {
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SelectSeq", "sequence",
-                    Value.ppr(s.toString()) });
+                    Values.ppr(s.toString()) });
         }
         int len = seq.size();
         if (len == 0)
-            return EmptyTuple;
+            return TupleValue.EmptyTuple;
         if (!(test instanceof OpLambdaValue) && !(test instanceof OpRcdValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SelectSeq", "operator",
-                    Value.ppr(test.toString()) });
+                    Values.ppr(test.toString()) });
         }
         ValueVec vals = new ValueVec();
         Applicable ftest = (Applicable) test;
@@ -345,14 +347,14 @@ public class Sequences extends UserObj implements ValueConstants
         {
             args[0] = seq.elems[i];
             Value val = ftest.apply(args, EvalControl.Clear);
-            if (val instanceof BoolValue)
+            if (val instanceof IBoolValue)
             {
                 if (((BoolValue) val).val)
                     vals.addElement(args[0]);
             } else
             {
                 throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SelectSeq",
-                        "boolean-valued operator", Value.ppr(test.toString()) });
+                        "boolean-valued operator", Values.ppr(test.toString()) });
             }
         }
         Value[] elems = new Value[vals.size()];
@@ -381,19 +383,19 @@ public class Sequences extends UserObj implements ValueConstants
         }
         // SZ Jul 14, 2009:
         // replaced the message with a standard one, thrown by mismatch of compared elements
-        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { Value.ppr(this.toString()),
-                Value.ppr(s.toString()) });
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { Values.ppr(this.toString()),
+                Values.ppr(s.toString()) });
     }
 
     public final boolean member(Value s)
     {
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
             if (s instanceof ModelValue)
                 return ((ModelValue) s).modelValueMember(this);
-            throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Value.ppr(s.toString()),
-                    Value.ppr(this.toString()) });
+            throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Values.ppr(s.toString()),
+                    Values.ppr(this.toString()) });
         }
         int len = seq.size();
         if (len > this.size)
@@ -431,16 +433,16 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Insert(Value s, Value v, Value test)
     {
-        TupleValue seq = s.toTuple();
+        TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "Insert", "sequence",
-                    Value.ppr(s.toString()) });
+                    Values.ppr(s.toString()) });
         }
         if (!(test instanceof Applicable))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SubSeq", "function",
-                    Value.ppr(test.toString()) });
+                    Values.ppr(test.toString()) });
         }
         int len = seq.size();
         Applicable ftest = (Applicable) test;
@@ -452,10 +454,10 @@ public class Sequences extends UserObj implements ValueConstants
         {
             args[1] = seq.elems[idx - 1];
             Value val = ftest.apply(args, EvalControl.Clear);
-            if (!(val instanceof BoolValue))
+            if (!(val instanceof IBoolValue))
             {
                 throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "third", "Insert",
-                        "boolean-valued operator", Value.ppr(test.toString()) });
+                        "boolean-valued operator", Values.ppr(test.toString()) });
             }
             if (((BoolValue) val).val && v.compareTo(args[1]) < 0)
             {

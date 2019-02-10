@@ -21,8 +21,8 @@ public class EvalControl {
    */
   public static final int Enabled = 1 << 2;
   /**
-   * Evaluation in the scope of {@link Tool#getInitStates()} or
-   * {@link Tool#getInitStates(IStateFunctor)}. In other words set during the
+   * Evaluation in the scope of {@link ITool#getInitStates()} or
+   * {@link ITool#getInitStates(IStateFunctor)}. In other words set during the
    * generation of initial states.
    */
   public static final int Init = 1 << 3;

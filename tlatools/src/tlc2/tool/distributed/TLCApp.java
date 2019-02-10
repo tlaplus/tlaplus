@@ -6,26 +6,22 @@ package tlc2.tool.distributed;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
-import tla2sany.modanalyzer.ParseUnit;
-import tla2sany.modanalyzer.SpecObj;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.IStateFunctor;
+import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
-import tlc2.tool.Tool;
 import tlc2.tool.WorkerException;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.impl.Tool;
 import tlc2.util.FP64;
-import tlc2.value.Value;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.ToolIO;
@@ -34,30 +30,29 @@ import util.UniqueString;
 public class TLCApp extends DistApp {
 
 	private String config;
-	private final SpecObj specObj;
 
 	/* Constructors */
 	public TLCApp(String specFile, String configFile, boolean deadlock,
 			String fromChkpt, FPSetConfiguration fpSetConfig) throws IOException {
-		this(specFile, configFile, deadlock, true, null);
+		this(specFile, configFile, deadlock, null);
 
 		this.fromChkpt = fromChkpt;
-		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
+		this.metadir = FileUtil.makeMetaDir(this.tool.getSpecDir(), fromChkpt);
 		this.fpSetConfig = fpSetConfig;
 	}
 	
 	public TLCApp(String specFile, String configFile, boolean deadlock,
 			String fromChkpt, FPSetConfiguration fpSetConfig, FilenameToStream fts) throws IOException {
-		this(specFile, configFile, deadlock, true, fts);
+		this(specFile, configFile, deadlock, fts);
 
 		this.fromChkpt = fromChkpt;
-		this.metadir = FileUtil.makeMetaDir(this.tool.specDir, fromChkpt);
+		this.metadir = FileUtil.makeMetaDir(this.tool.getSpecDir(), fromChkpt);
 		this.fpSetConfig = fpSetConfig;
 	}
 
 	// TODO too many constructors redefinitions, replace with this(..) calls
 	public TLCApp(String specFile, String configFile,
-			Boolean deadlock, Boolean preprocess, FilenameToStream fts) throws IOException {
+			Boolean deadlock, FilenameToStream fts) throws IOException {
 
 		// get the spec dir from the spec file
 		int lastSep = specFile.lastIndexOf(File.separatorChar);
@@ -67,20 +62,11 @@ public class TLCApp extends DistApp {
 		
 		this.config = configFile;
 		
-		// TODO NameResolver
-		this.tool = new Tool(specDir, specFile, configFile, fts);
-		// SZ Feb 24, 2009: setup the user directory
-		if (ToolIO.getUserDir() == null) {
-			// First one to set specDir wins. This should only ever be the case
-			// With DistributedTLCTestCase which runs TLCServer and TLCWorker in
-			// a single VM.
-			ToolIO.setUserDir(specDir);
-		}
-
+		
 		this.checkDeadlock = deadlock.booleanValue();
-		this.preprocess = preprocess.booleanValue();
-		// SZ Feb 20, 2009: added null reference to SpecObj
-		specObj = this.tool.init(this.preprocess, null);
+		this.preprocess = true;
+		this.tool = new Tool(specDir, specFile, configFile, fts);
+
 		this.impliedInits = this.tool.getImpliedInits();
 		this.invariants = this.tool.getInvariants();
 		this.impliedActions = this.tool.getImpliedActions();
@@ -88,13 +74,13 @@ public class TLCApp extends DistApp {
 	}
 
 	/* Fields */
-	public Tool tool;
+	public ITool tool;
 	public Action[] invariants; // the invariants to be checked
 	public Action[] impliedInits; // the implied-inits to be checked
 	public Action[] impliedActions; // the implied-actions to be checked
 	public Action[] actions; // the subactions
 	private boolean checkDeadlock; // check deadlock?
-	private boolean preprocess; // preprocess?
+	private final boolean preprocess; // preprocess?
 	private String fromChkpt = null; // recover from this checkpoint
 	private String metadir = null; // the directory pathname for metadata
 	private FPSetConfiguration fpSetConfig;
@@ -117,14 +103,14 @@ public class TLCApp extends DistApp {
 	 * @see tlc2.tool.distributed.DistApp#getFileName()
 	 */
 	public final String getFileName() {
-		return this.tool.rootFile;
+		return this.tool.getRootFile();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getSpecDir()
 	 */
 	public String getSpecDir() {
-		return this.tool.specDir;
+		return this.tool.getSpecDir();
 	}
 
 	/* (non-Javadoc)
@@ -149,16 +135,7 @@ public class TLCApp extends DistApp {
 	}
 	
 	public List<File> getModuleFiles() {
-		final List<File> result = new ArrayList<File>();
-
-		final Enumeration<ParseUnit> parseUnitContext = this.specObj.parseUnitContext.elements();
-		final FilenameToStream resolver = new InJarFilenameToStream(ModelInJar.PATH);
-		while (parseUnitContext.hasMoreElements()) {
-			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
-			File resolve = resolver.resolve(pu.getFileName(), false);
-			result.add(resolve);
-		}
-		return result;
+		return this.tool.getModuleFiles(new InJarFilenameToStream(ModelInJar.PATH));
     }
 
 	/* (non-Javadoc)
@@ -378,7 +355,7 @@ public class TLCApp extends DistApp {
 				}
 			} else if (args[index].equals("-terse")) {
 				index++;
-				Value.expand = false;
+				TLCGlobals.expand = false;
 			} else if (args[index].equals("-nowarning")) {
 				index++;
 				TLCGlobals.warn = false;

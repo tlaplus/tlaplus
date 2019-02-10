@@ -7,7 +7,6 @@ package tlc2.tool;
 
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.OpDefNode;
-import tlc2.value.Value;
 import util.UniqueString;
 
 public interface ToolGlobals extends ASTConstants {
@@ -15,8 +14,6 @@ public interface ToolGlobals extends ASTConstants {
    * This interface provides useful globals for the implementation
    * of the tools.
    */
-
-  public static final Value[] EmptyArgs = new Value[0];
   // SZ 11.04.2009: changed the method to the equivalent 
   public static final OpDefNode EXCEPT_AT = new OpDefNode(UniqueString.uniqueStringOf("@"));
   

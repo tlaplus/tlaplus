@@ -47,6 +47,12 @@ public class Defns implements ToolGlobals, Serializable
         this.table = new Object[defnIdx + 32];
     }
 
+    Defns(Defns other) {
+    	this.defnIdx = other.defnIdx;
+    	this.table = new Object[other.table.length];
+        System.arraycopy(other.table, 0, this.table, 0, other.table.length);
+    }
+    
     /**
      * Returns the definition of key if its definition exists.
      * Otherwise, returns null.
@@ -110,5 +116,9 @@ public class Defns implements ToolGlobals, Serializable
     public void setDefnCount(int index)
     {
         this.defnIdx = index;
+    }
+    
+    public Defns snapshot() {
+    	return new Defns(this);
     }
 }

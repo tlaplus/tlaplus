@@ -36,10 +36,9 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
-import tlc2.value.IntervalValue;
-import tlc2.value.SetEnumValue;
-import tlc2.value.SubsetValue;
-import tlc2.value.Value;
+import tlc2.value.Values;
+import tlc2.value.impl.IntervalValue;
+import tlc2.value.impl.SubsetValue;
 
 /**
  * TLC bug caused by TLC's not preserving the semantics of CHOOSE
@@ -107,7 +106,7 @@ public class BugzillaBug279Test extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ set = {}\n/\\ pc = 0\n/\\ fun = {}");
 		expectedTrace.add("/\\ set = SUBSET 1..20\n/\\ pc = 1\n/\\ fun = {5}");
 		expectedTrace.add(
-				"/\\ set = " + Value.ppr(new SubsetValue(new IntervalValue(1, 8)).toSetEnum().normalize())
+				"/\\ set = " + Values.ppr(new SubsetValue(new IntervalValue(1, 8)).toSetEnum().normalize())
 						+ "\n/\\ pc = 2\n/\\ fun = {5}");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		

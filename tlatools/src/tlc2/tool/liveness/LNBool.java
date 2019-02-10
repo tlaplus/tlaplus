@@ -5,8 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
 
 class LNBool extends LiveExprNode {
 	public static final LNBool TRUE = new LNBool(true);
@@ -18,7 +18,7 @@ class LNBool extends LiveExprNode {
 		this.b = b;
 	}
 
-	public final boolean eval(Tool tool, TLCState s1, TLCState s2) {
+	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		return this.b;
 	}
 

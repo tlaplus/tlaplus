@@ -71,11 +71,7 @@ public class PayloadHelper {
 		 * The copy of the blueprint will contain the spec & model and 
 		 * additional metadata (properties, amended manifest).
 		 */
-		final Bundle bundle = FrameworkUtil.getBundle(PayloadHelper.class);
-		final URL toolsURL = bundle.getEntry("files/tla2tools.jar");
-		if (toolsURL == null) {
-			throw new RuntimeException("No tlatools.jar and/or spec to deploy");
-		}
+		final URL toolsURL = getToolsURL();
 
 		/* 
 		 * Copy the tla2tools.jar blueprint to a temporary location on
@@ -189,5 +185,18 @@ public class PayloadHelper {
 		}
 
 		return jarPayLoad;
+	}
+
+	private static URL getToolsURL() {
+		final Bundle bundle = FrameworkUtil.getBundle(PayloadHelper.class);
+		final URL toolsURL = bundle.getEntry("files/tla2tools.jar");
+		if (toolsURL == null) {
+			throw new RuntimeException("No tlatools.jar and/or spec to deploy");
+		}
+		return toolsURL;
+	}
+	
+	public static void checkToolsJar() {
+		getToolsURL();
 	}
 }

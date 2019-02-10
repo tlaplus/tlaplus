@@ -98,7 +98,7 @@ public class SimulationWorker extends Thread {
 	private final LongAdder numOfGenStates;
 	private final LongAdder numOfGenTraces;
 
-	private final Tool tool;
+	private final ITool tool;
 	private final ILiveCheck liveCheck;	
 	
 	/**
@@ -183,7 +183,7 @@ public class SimulationWorker extends Thread {
 	}
 	
 
-	public SimulationWorker(int id, Tool tool, StateVec initStates, BlockingQueue<SimulationWorkerResult> resultQueue,
+	public SimulationWorker(int id, ITool tool, StateVec initStates, BlockingQueue<SimulationWorkerResult> resultQueue,
 			long seed, long maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces) {
 		this.id = id;

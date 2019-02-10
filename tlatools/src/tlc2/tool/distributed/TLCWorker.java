@@ -372,8 +372,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 			fts.setTLCServer(server);
 			
 			DistApp work = new TLCApp(server.getSpecFileName(),
-					server.getConfigFileName(), server.getCheckDeadlock(),
-					server.getPreprocess(), fts);
+					server.getConfigFileName(), server.getCheckDeadlock(), fts);
 
 			final IFPSetManager fpSetManager = server.getFPSetManager();
 			

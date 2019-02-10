@@ -16,10 +16,11 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.IStateFunctor;
+import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.tool.Tool;
+import tlc2.tool.impl.Tool;
 import tlc2.util.BitVector;
 import tlc2.util.FP64;
 import tlc2.util.IStateWriter;
@@ -34,26 +35,26 @@ import util.SimpleFilenameToStream;
 public class LiveCheck implements ILiveCheck {
 
 	private final Action[] actions;
-	private final Tool myTool;
+	private final ITool myTool;
 	private final String metadir;
 	private final IBucketStatistics outDegreeGraphStats;
 	private final ILiveChecker[] checker;
 	
-	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics) throws IOException {
-		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, new NoopStateWriter());
+	public LiveCheck(ITool tool, String mdir, IBucketStatistics bucketStatistics) throws IOException {
+		this(tool, Liveness.processLiveness(tool), mdir, bucketStatistics, new NoopStateWriter());
 	}
 	
-	public LiveCheck(Tool tool, Action[] acts, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
-		this(tool, acts, Liveness.processLiveness(tool), mdir, bucketStatistics, stateWriter);
+	public LiveCheck(ITool tool, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
+		this(tool, Liveness.processLiveness(tool), mdir, bucketStatistics, stateWriter);
 	}
 	
-	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics) throws IOException {
-		this(tool, acts, solutions, mdir, bucketStatistics, new NoopLivenessStateWriter());
+	public LiveCheck(ITool tool, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics) throws IOException {
+		this(tool, solutions, mdir, bucketStatistics, new NoopLivenessStateWriter());
 	}
 
-	public LiveCheck(Tool tool, Action[] acts, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
+	public LiveCheck(ITool tool, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
 		myTool = tool;
-		actions = acts;
+		actions = tool.getActions();
 		metadir = mdir;
 		outDegreeGraphStats = bucketStatistics;
 		checker = new ILiveChecker[solutions.length];
@@ -308,7 +309,7 @@ public class LiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#getTool()
 	 */
-	public Tool getTool() {
+	public ITool getTool() {
 		return myTool;
 	}
 
@@ -783,8 +784,7 @@ public class LiveCheck implements ILiveCheck {
 
 			// Re-create the tool to do the init states down below (LiveCheck#init
 			// doesn't really need tool).
-	        final Tool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
-	        tool.init(true, null);
+	        final ITool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
 	        
 			// Initialize tool's actions explicitly. LiveCheck#printTrace is
 			// going to access the actions and fails with a NPE unless

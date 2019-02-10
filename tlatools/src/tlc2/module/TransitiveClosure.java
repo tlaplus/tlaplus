@@ -10,13 +10,14 @@ import java.util.Hashtable;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.util.Vect;
-import tlc2.value.Enumerable;
-import tlc2.value.SetEnumValue;
-import tlc2.value.TupleValue;
-import tlc2.value.Value;
 import tlc2.value.ValueConstants;
-import tlc2.value.ValueEnumeration;
-import tlc2.value.ValueVec;
+import tlc2.value.Values;
+import tlc2.value.impl.Enumerable;
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.Value;
+import tlc2.value.impl.ValueEnumeration;
+import tlc2.value.impl.ValueVec;
 
 public class TransitiveClosure implements ValueConstants
 {
@@ -28,21 +29,21 @@ public class TransitiveClosure implements ValueConstants
         if (!(rel instanceof Enumerable))
         {
             throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "TransitiveClosure",
-                    "an enumerable set", Value.ppr(rel.toString()) });
+                    "an enumerable set", Values.ppr(rel.toString()) });
         }
         int maxLen = 2 * rel.size();
         boolean[][] matrix = new boolean[maxLen][maxLen];
         ValueEnumeration elems = ((Enumerable) rel).elements();
-        Vect elemList = new Vect();
-        Hashtable fps = new Hashtable();
+        Vect<Value> elemList = new Vect<>();
+        Hashtable<Value, Integer> fps = new Hashtable<>();
         int cnt = 0;
         Value elem = null;
         while ((elem = elems.nextElement()) != null)
         {
-            TupleValue tv = elem.toTuple();
+            TupleValue tv = (TupleValue) elem.toTuple();
             if (tv == null || tv.size() != 2)
             {
-                throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Value.ppr(elem.toString()));
+                throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Values.ppr(elem.toString()));
             }
             Value elem1 = tv.elems[0];
             Value elem2 = tv.elems[1];
@@ -93,9 +94,9 @@ public class TransitiveClosure implements ValueConstants
             {
                 if (matrix[i][j])
                 {
-                    Value elem1 = (Value) elemList.elementAt(i);
-                    Value elem2 = (Value) elemList.elementAt(j);
-                    Value newElem = new TupleValue(elem1, elem2);
+                	Value elem1 = (Value) elemList.elementAt(i);
+                	Value elem2 = (Value) elemList.elementAt(j);
+                	Value newElem = new TupleValue(elem1, elem2);
                     newElems.addElement(newElem);
                 }
             }
