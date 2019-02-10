@@ -116,9 +116,9 @@ public class Application implements IApplication {
 		final CloudDistributedTLCJob job = (CloudDistributedTLCJob) factory.getTLCJob(cloud, new File(modelDirectory), 1, props, tlcParams.toString());
 		job.setIsCLI(true);
 		job.setDoJfr(true);
-		final ITLCJobStatus status = (ITLCJobStatus) job.run(new MyProgressMonitor(9));
+		final IStatus status = job.run(new MyProgressMonitor(9));
 		// Show error message if any such as invalid credentials.
-		if (status.getSeverity() == IStatus.ERROR) {
+		if (status.getSeverity() == IStatus.ERROR || !(status instanceof ITLCJobStatus)) {
 			System.err.println(status.getMessage());
 			final Throwable exception = status.getException();
 			if (exception instanceof CloudDistributedTLCJob.ScriptException) {
@@ -131,7 +131,7 @@ public class Application implements IApplication {
 		
 		// If no error above, read the (remote) TLC process output (stdout, no stderr)
 		// and print it on the local stdout.
-		final InputStream output = status.getOutput();
+		final InputStream output = ((ITLCJobStatus) status).getOutput();
 		try {
 			final BufferedReader in = new BufferedReader(
 					new InputStreamReader(output));
