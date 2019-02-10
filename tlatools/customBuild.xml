@@ -394,6 +394,7 @@
 		<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}" forkmode="perTest" fork="yes">
 			<!-- enable all assertions -->
 			<jvmarg value="-ea"/>
+			<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
 			<jvmarg value="-XX:+UseParallelGC"/>
 			<classpath refid="project.classpath" />
 			<classpath>
@@ -409,6 +410,8 @@
 			<formatter type="xml" />
 			<sysproperty key="basedir" value="${basedir}/"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
+			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
+			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
 
 			<batchtest fork="yes" todir="${test.reports}/onJar">
 				<fileset dir="${test.dir}">
