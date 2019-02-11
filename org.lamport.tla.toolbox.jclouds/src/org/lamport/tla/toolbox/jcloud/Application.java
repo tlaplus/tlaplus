@@ -66,8 +66,9 @@ public class Application implements IApplication {
 		// By default send mail to the root account (might be overwritten below).
 		// Without specifying any email address, MailSender will not set up
 		// /mnt/tlc/MC.out and most of CloudDistributedTLCJob's functionality will not
-		// work (no TLC process output will be received).
-		props.put(TLCJobFactory.MAIL_ADDRESS, "root@localhost");
+		// work (no TLC process output will be received).  Do not add if cloud.properties
+		// file has defined it already.
+		props.putIfAbsent(TLCJobFactory.MAIL_ADDRESS, "root@localhost");
 		props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
 
 		// Optional parameters
