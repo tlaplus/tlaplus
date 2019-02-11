@@ -182,7 +182,7 @@ public class CloudDistributedTLCJob extends Job {
 
 			//TODO Support instance reuse with Cloud distributed TLC.
 			monitor.subTask(String.format(
-					"Looking for %sresusable node%s to quick-start model checking (expect to see failed connection attempts)",
+					"Looking for %sresusable node%s to quick-start model checking (output might show failed connection attempts)",
 					nodes > 1 ? "" : "a ", nodes > 1 ? "s" : ""));
 			final Set<NodeMetadata> createNodesInGroup = nodes > 1 ? new HashSet<>()
 					: findReusableNodes(compute, monitor);
@@ -196,6 +196,7 @@ public class CloudDistributedTLCJob extends Job {
 				}
 			} else {
 				// skipped provisionNodes(...) which takes 35 steps.
+				((Application.MyProgressMonitor) monitor).incSteps(3);
 				monitor.worked(35);
 			}
 
@@ -510,7 +511,7 @@ public class CloudDistributedTLCJob extends Job {
             params.mungeTemplateBuilder(templateBuilder);
 
             // Everything configured, now launch node
-			monitor.subTask(String.format("Starting %s %s instance%s in region %s.", nodes > 1 ? nodes : "a",
+			monitor.subTask(String.format("Starting new %s %s instance%s in region %s.", nodes > 1 ? nodes : "a",
 					params.getHardwareId(), nodes > 1 ? "s" : "", params.getRegion()));
 			final Set<? extends NodeMetadata> createNodesInGroup = compute.createNodesInGroup(groupNameUUID,
 					nodes, templateBuilder.build());

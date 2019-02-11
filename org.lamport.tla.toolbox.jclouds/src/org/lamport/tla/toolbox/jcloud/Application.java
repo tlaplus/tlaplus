@@ -164,7 +164,7 @@ public class Application implements IApplication {
 		// cannot be stopped!
 	}
 	
-	private static class MyProgressMonitor implements IProgressMonitor {
+	static class MyProgressMonitor implements IProgressMonitor {
 		private final DateFormat formatter = new SimpleDateFormat( "YYYY-MM-dd HH:mm:ss.SSS" );
 		private final int totalSteps;
 		private int steps = 1;
@@ -194,5 +194,9 @@ public class Application implements IApplication {
 		public void setTaskName(String name) {}
 
 		public void worked(int work) {}
+
+		public void incSteps(int steps) {
+			this.steps += steps;
+		}
 	}
 }
