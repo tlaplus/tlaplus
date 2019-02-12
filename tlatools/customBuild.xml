@@ -284,7 +284,11 @@
 	<target name="test" unless="test.skip">
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
-		<junit printsummary="yes" haltonfailure="${test.halt}" showoutput="no" haltonerror="${test.halt}"  forkmode="perBatch" fork="yes">
+		<!-- forkmode used to be "perBatch" on Java 1.8 using the util.IsolatedTestCaseRunner.  
+		     This concept broken with Java11 for unknown reasons which is why forkmode has been
+		     changed to perTest to run each test in a separate VM.  This is slower compared to
+		     running all tests in a single VM. -->
+		<junit printsummary="yes" haltonfailure="${test.halt}" showoutput="no" haltonerror="${test.halt}"  forkmode="perTest" fork="yes">
 			<!-- enable all assertions -->
 			<jvmarg value="-ea"/>
 			<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
