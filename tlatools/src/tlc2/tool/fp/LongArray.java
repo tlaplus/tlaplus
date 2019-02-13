@@ -12,7 +12,25 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import sun.misc.Unsafe;
+/*
+ * On Java 11 (probably starting with 9) sun.misc.Unsafe is implemented on top
+ * of jdk.internal.misc.Unsafe which provides a similar though not quiet
+ * identical API.  While sun.misc.Unsafe remains available to client code such
+ * as LongArray in Java 11, parts of its API have already been dissolved
+ * (see e.g. https://bugs.openjdk.java.net/browse/JDK-8202999).  This does not
+ * affect LongArray yet, but will probably affect LongArray in the future. 
+ * Refactoring LongArray to replace sun.misc.Unsafe with jdk.internal.misc.Unsafe
+ * requires the following changes:
+ * - Replace sun.misc.Unsafe with jdk.internal.misc.Unsafe
+ * - Change Unsafe#compareAndSwapLong with Unsafe#compareAndSetLong in LongArray#trySet
+ * - Run LongArray on Java 11 with "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED"
+ *   to configure Java's module system (Jigsaw) to expose jdk.internal.misc.Unsafe
+ *   to LongArray.
+ * The last requirement is visible to TLA+ users who run tla2tools.jar on the
+ * command-line.  As we do not want to expose JVM parameters to them, we keep
+ * sun.misc.Unsafe for now.
+ */
+import sun.misc.Unsafe; // jdk.internal.misc.Unsafe;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLCRuntime;
