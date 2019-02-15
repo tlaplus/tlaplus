@@ -97,7 +97,7 @@ public class ModelChecker extends AbstractChecker
         super(tool, metadir, stateWriter, deadlock, fromChkpt);
 
         // SZ Feb 20, 2009: this is a selected alternative
-		this.theStateQueue = Boolean.getBoolean(ModelChecker.class.getName() + ".rawqueue")
+		this.theStateQueue = Boolean.getBoolean(ModelChecker.class.getName() + ".BAQueue")
 				? new DiskByteArrayQueue(this.metadir)
 				: new DiskStateQueue(this.metadir);
         // this.theStateQueue = new MemStateQueue(this.metadir);
