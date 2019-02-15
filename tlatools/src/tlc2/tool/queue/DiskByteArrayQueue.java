@@ -33,6 +33,7 @@ import util.BufferedDataOutputStream;
 import util.FileUtil;
 import util.IDataInputStream;
 import util.IDataOutputStream;
+import util.ToolIO;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -72,7 +73,7 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 
 	/* Constructors */
 	public DiskByteArrayQueue(String diskdir) {
-		System.err.printf("Loaded %s\n", DiskByteArrayQueue.class.getName());
+		ToolIO.out.printf("Loaded %s\n", DiskByteArrayQueue.class.getName());
 		this.deqBuf = new byte[BufSize][];
 		this.enqBuf = new byte[BufSize][];
 		this.deqIndex = BufSize;
