@@ -811,7 +811,7 @@ public class MP
             if (!"".equals(parameters[13])) {
             	b.append(" [pid: %14%]");
             }
-            b.append(" (%4% %5% %6%, %7% %8% %9%, %15%).");
+            b.append(" (%4% %5% %6%, %7% %8% %9%, %15%, %16%).");
             break;
         case EC.TLC_MODE_MC_DFS:
             b.append("Running depth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory");

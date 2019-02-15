@@ -1000,10 +1000,14 @@ public class TLC
 		final String fpSetClassSimpleName = fpSetConfig.getImplementation()
 				.substring(fpSetConfig.getImplementation().lastIndexOf(".") + 1);
 		
+		final String stateQueueClassSimpleName = ModelChecker.getStateQueueName();
+		
+		//  fpSetClassSimpleName and stateQueueClassSimpleName ignored in DFS mode.
 		return new String[] { String.valueOf(TLCGlobals.getNumWorkers()), TLCGlobals.getNumWorkers() == 1 ? "" : "s",
 				cores, osName, osVersion, osArch, vendor, version, arch, Long.toString(heapMemory),
 				Long.toString(offHeapMemory), Long.toString(RandomEnumerableValues.getSeed()),
-				Integer.toString(fpIndex), pid == -1 ? "" : String.valueOf(pid), fpSetClassSimpleName };
+				Integer.toString(fpIndex), pid == -1 ? "" : String.valueOf(pid), fpSetClassSimpleName,
+				stateQueueClassSimpleName };
 	}
 
 	private static void scheduleTerminationTimer() {
