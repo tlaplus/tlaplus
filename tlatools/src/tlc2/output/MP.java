@@ -810,6 +810,12 @@ public class MP
             b.append("Running breadth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory");
             if (!"".equals(parameters[13])) {
             	b.append(" [pid: %14%]");
+            } else {
+				// Make sure subsequent parameters, %15%... are processed below in the
+				// replaceString method. replaceString terminates if a string is not present,
+				// thus we replace %14% with the zero-length string to not change the output but
+				// to make replaceString happy.
+            	b.append("%14%");
             }
             b.append(" (%4% %5% %6%, %7% %8% %9%, %15%, %16%).");
             break;
@@ -817,6 +823,9 @@ public class MP
             b.append("Running depth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory");
             if (!"".equals(parameters[13])) {
             	b.append(" [pid: %14%]");
+            } else {
+            	// see TLC_MODE_MC above.
+            	b.append("%14%");
             }
      		b.append(" (%4% %5% %6%, %7% %8% %9%).");
             break;
@@ -824,6 +833,9 @@ public class MP
             b.append("Running Random Simulation with seed %1% with %2% worker%3% on %4% cores with %11%MB heap and %12%MB offheap memory");
             if (!"".equals(parameters[12])) {
             	b.append(" [pid: %13%]");
+            } else {
+            	// see TLC_MODE_MC above.
+            	b.append("%13%");
             }
             b.append(" (%5% %6% %7%, %8% %9% %10%).");
             break;
