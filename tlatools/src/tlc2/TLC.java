@@ -888,7 +888,7 @@ public class TLC
 				RandomEnumerableValues.setSeed(seed);
             	
 				// Print startup banner before SANY writes its output.
-				MP.printMessage(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex));
+				MP.printMessage(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
 		        final ITool tool = new Tool(mainFile, configFile, resolver);
@@ -975,7 +975,7 @@ public class TLC
 				pid == -1 ? "" : String.valueOf(pid) };
 	}
 
-	private static String[] getModelCheckingRuntime(final int fpIndex) {
+	private static String[] getModelCheckingRuntime(final int fpIndex, final FPSetConfiguration fpSetConfig) {
 		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
 		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
 		final String arch = tlcRuntime.getArchitecture().name();
@@ -993,10 +993,17 @@ public class TLC
 		
 		final long pid = TLCRuntime.getInstance().pid();
 		
+		// TODO Better to use Class#getSimpleName provided we would have access to the
+		// Class instance instead of just its name. However, loading the class here is
+		// overkill and might interfere if other parts of TLC pull off class-loading
+		// tricks.
+		final String fpSetClassSimpleName = fpSetConfig.getImplementation()
+				.substring(fpSetConfig.getImplementation().lastIndexOf(".") + 1);
+		
 		return new String[] { String.valueOf(TLCGlobals.getNumWorkers()), TLCGlobals.getNumWorkers() == 1 ? "" : "s",
 				cores, osName, osVersion, osArch, vendor, version, arch, Long.toString(heapMemory),
 				Long.toString(offHeapMemory), Long.toString(RandomEnumerableValues.getSeed()),
-				Integer.toString(fpIndex), pid == -1 ? "" : String.valueOf(pid) };
+				Integer.toString(fpIndex), pid == -1 ? "" : String.valueOf(pid), fpSetClassSimpleName };
 	}
 
 	private static void scheduleTerminationTimer() {
