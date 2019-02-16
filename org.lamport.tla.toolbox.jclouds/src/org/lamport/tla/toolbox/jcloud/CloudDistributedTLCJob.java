@@ -550,15 +550,9 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							+ params.getHostnameSetup()
 							+ " && "
-							// Oracle Java 8
-							+ (doJfr ? "add-apt-repository ppa:webupd8team/java -y && " : "/bin/true && ")
-							// Accept license before apt (dpkg) tries to present it to us (which fails due to 'noninteractive' mode below)
-							// see http://stackoverflow.com/a/19391042
-							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections && "
-							+ "echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections && "
 							// http://repos.azulsystems.com/
-//                            + "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x219BD9C9 && "
-//                            + "apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main' && "
+                            + "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0x219BD9C9 && "
+                            + "apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main' && "
 							+ params.getExtraRepositories()
 							+ " && "
 							// Update Ubuntu's package index. The public/remote
@@ -602,21 +596,12 @@ public class CloudDistributedTLCJob extends Job {
 							+ "apt-get install --no-install-recommends mdadm e2fsprogs screen zip unattended-upgrades "
 									+ params.getExtraPackages() + " -y"
 							+ " && "
-							+ (doJfr ? "apt-get install --no-install-recommends oracle-java8-installer oracle-java8-set-default -y"
-									 : "/bin/true")
-//									 : "apt-get install --no-install-recommends zulu-8 -y") // Azul Zulu seems to beat Oracle but doesn't have support for JFR. Also, it adds another external dependency, ie repos.azulsystems.com
+							// Azul goes the extra mile and provides Zulu - its build of OpenJDK - as a
+							// debian repo. This unfortunately adds a dependency to Azul's systems.
+							+ "apt-get install --no-install-recommends zulu-11 -y"
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
 							+ params.getOSFilesystemTuning()
-							// Install Oracle Java8. It supports Java Mission
-							// Control, an honest profiler. But first,
-							// automatically accept the Oracle license because
-							// installation will fail otherwise.
-//							+ " && "
-//							+ "echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && "
-//							+ "add-apt-repository ppa:webupd8team/java -y && "
-//							+ "apt-get update && "
-//							+ "apt-get --no-install-recommends install oracle-java8-installer oracle-java8-set-default -y"
 							// Tell sshd not to use PAM user session modules. pam_nologin restricts
 							// subsequent logins to the instance five minutes prior to system halt and
 							// systemd apparently has no way to configure five minutes to e.g. 15 seconds.
