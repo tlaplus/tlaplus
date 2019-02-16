@@ -133,7 +133,7 @@
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
 			<classpath>
-				<pathelement location="lib/javax.mail.jar" />
+				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
 			</classpath>
 		</javac>
 
@@ -196,12 +196,53 @@
 		<!-- of TLC to a given email address. -->
 		<!-- The javax.mail dependency as well as javax.activation is also depended upon -->
 		<!-- by the tla2tools OSGi bundle and is expected to be the same version. -->
-		<unzip src="lib/javax.mail.jar" dest="${class.dir}"/>
+		<unzip src="lib/javax.mail/mailapi-1.6.3.jar" dest="${class.dir}">
+			<patternset>
+			    <include name="**/*.class"/>
+			    <include name="META-INF/LICENSE.txt"/>
+			    <include name="META-INF/mailcap"/>
+			    <include name="META-INF/javamail.charset.map"/>
+				<exclude name="javax/mail/search/**"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/javax.mail/smtp-1.6.3.jar" dest="${class.dir}">
+			<patternset>
+		        <include name="**/*.class"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/javax.mail/javax.activation_1.1.0.v201211130549.jar" dest="${class.dir}">
+			<patternset>
+		        <include name="**/*.class"/>
+				<exclude name="org/**"/>
+			</patternset>
+		</unzip>
+		<touch file="${class.dir}/META-INF/javamail.default.address.map"/>
 
 		<!-- Extract javax.mail to maven classes folder. This script is triggered by -->
 		<!-- maven. However, maven compiles the code again to target/classes from -->
 		<!-- where it creates the plugin -->
-		<unzip src="lib/javax.mail.jar" dest="target/classes"/>
+		<unzip src="lib/javax.mail/mailapi-1.6.3.jar" dest="target/classes">
+			<patternset>
+			    <include name="**/*.class"/>
+			    <include name="META-INF/LICENSE.txt"/>
+			    <include name="META-INF/mailcap"/>
+			    <include name="META-INF/javamail.charset.map"/>
+				<exclude name="javax/mail/search/**"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/javax.mail/smtp-1.6.3.jar" dest="target/classes">
+			<patternset>
+		        <include name="**/*.class"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/javax.mail/javax.activation_1.1.0.v201211130549.jar" dest="target/classes">
+			<patternset>
+		        <include name="**/*.class"/>
+				<exclude name="org/**"/>
+			</patternset>
+		</unzip>
+		<touch file="target/classes/META-INF/javamail.default.address.map"/>
+
 
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
@@ -304,7 +345,7 @@
 				<pathelement location="lib/cglib-nodep-3.1.jar" />
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
-				<pathelement location="lib/javax.mail.jar" />
+				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 			</classpath>
