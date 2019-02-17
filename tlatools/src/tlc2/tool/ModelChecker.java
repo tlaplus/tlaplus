@@ -23,9 +23,9 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.liveness.LiveCheck;
+import tlc2.tool.queue.DiskByteArrayQueue;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
-import tlc2.tool.queue.DiskByteArrayQueue;
 import tlc2.util.IStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
@@ -96,8 +96,7 @@ public class ModelChecker extends AbstractChecker
         // call the abstract constructor
         super(tool, metadir, stateWriter, deadlock, fromChkpt);
 
-        // SZ Feb 20, 2009: this is a selected alternative
-		this.theStateQueue = Boolean.getBoolean(ModelChecker.class.getName() + ".rawqueue")
+		this.theStateQueue = useByteArrayQueue()
 				? new DiskByteArrayQueue(this.metadir)
 				: new DiskStateQueue(this.metadir);
         // this.theStateQueue = new MemStateQueue(this.metadir);
@@ -242,7 +241,7 @@ public class ModelChecker extends AbstractChecker
                             String.valueOf(this.theStateQueue.size()) });
                 	
                     report("checking liveness");
-                    success = liveCheck.finalCheck();
+                    success = liveCheck.finalCheck(tool);
                     report("liveness check complete");
                     if (!success)
                     {
@@ -668,7 +667,7 @@ public class ModelChecker extends AbstractChecker
             if (this.checkLiveness && (runtimeRatio < TLCGlobals.livenessRatio || forceLiveCheck))
             {
         		final long preLivenessChecking = System.currentTimeMillis();
-                if (!liveCheck.check(forceLiveCheck)) {
+                if (!liveCheck.check(tool, forceLiveCheck)) {
                 	return false;
                 }
                 forceLiveCheck = false;
@@ -769,7 +768,7 @@ public class ModelChecker extends AbstractChecker
 				// https://github.com/tlaplus/tlaplus/issues/22
             	this.tool.getInitStates(new IStateFunctor() {
 					public Object addElement(TLCState state) {
-						liveCheck.addInitState(state, state.fingerPrint());
+						liveCheck.addInitState(tool, state, state.fingerPrint());
 						return true;
 					}
 				});
@@ -942,6 +941,16 @@ public class ModelChecker extends AbstractChecker
     {
         DebugPrinter.print(e);
     }
+    
+	private static boolean useByteArrayQueue() {
+		return Boolean.getBoolean(ModelChecker.class.getName() + ".BAQueue");
+	}
+
+	public static String getStateQueueName() {
+		// Ideally, this wouldn't hard-code the simple name of the classes but we don't
+		// have access to the class file yet.
+		return useByteArrayQueue() ? "DiskByteArrayQueue" : "DiskStateQueue";
+	}
 
     public long getStatesGenerated() {
     	long sum = numberOfInitialStates;
@@ -1065,7 +1074,7 @@ public class ModelChecker extends AbstractChecker
 
 						// build behavior graph for liveness checking
 						if (checkLiveness) {
-							liveCheck.addInitState(curState, fp);
+							liveCheck.addInitState(tool, curState, fp);
 						}
 					}
 				}

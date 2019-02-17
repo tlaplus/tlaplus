@@ -50,13 +50,13 @@ public class NoOpLiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#addInitState(tlc2.tool.TLCState, long)
 	 */
-	public void addInitState(TLCState state, long stateFP) {
+	public void addInitState(ITool tool, TLCState state, long stateFP) {
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates)
 	 */
-	public void addNextState(TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
+	public void addNextState(ITool tool, TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
 	}
 
 	/* (non-Javadoc)
@@ -69,21 +69,21 @@ public class NoOpLiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#check(boolean)
 	 */
-	public boolean check(boolean forceCheck) throws Exception {
+	public boolean check(ITool tool, boolean forceCheck) throws Exception {
 		return true;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
 	 */
-	public boolean finalCheck() throws Exception {
+	public boolean finalCheck(ITool tool) throws Exception {
 		return true;
 	}
 	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#checkTrace(tlc2.tool.StateVec)
 	 */
-	public void checkTrace(StateVec trace) throws IOException, InterruptedException {
+	public void checkTrace(ITool tool, StateVec trace) throws IOException, InterruptedException {
 	}
 
 	/* (non-Javadoc)

@@ -36,7 +36,7 @@ openFile
 -XX:+UseParallelGC
 -Dorg.eclipse.equinox.http.jetty.http.port=10996
 -Dosgi.splashPath=platform:/base/
--Dosgi.requiredJavaVersion=1.8
+-Dosgi.requiredJavaVersion=11.0
 -Dosgi.instance.area.default=@user.home/.tlaplus/
 -Dosgi.clean=true
       </vmArgs>
@@ -64,9 +64,9 @@ openFile
    <intro introId="org.lamport.tla.toolbox.product.standalone.intro"/>
 
    <vm>
-      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8</linux>
-      <macos include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8</macos>
-      <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8</windows>
+      <linux include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11</linux>
+      <macos include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11</macos>
+      <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11</windows>
    </vm>
 
    <plugins>

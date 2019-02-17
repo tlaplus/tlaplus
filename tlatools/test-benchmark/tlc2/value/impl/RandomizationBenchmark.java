@@ -33,7 +33,6 @@ import tlc2.TLCGlobals;
 import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SetEnumValue;

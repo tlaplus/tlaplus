@@ -30,6 +30,7 @@ import java.io.IOException;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.ITool;
 import tlc2.util.LongVec;
 import tlc2.util.MemIntQueue;
 import tlc2.util.statistics.IBucketStatistics;
@@ -69,7 +70,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 * long as it has been recorded with recordNode().
 	 * <p>
 	 * A node is logically undone when it's an initial state and added via
-	 * {@link LiveCheck#addInitState(tlc2.tool.TLCState, long)} but not yet
+	 * {@link LiveCheck#addInitState(ITool, tlc2.tool.TLCState, long)} but not yet
 	 * added via
 	 * {@link LiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.tool.StateVec, LongVec)}
 	 * . A second case is when a successor node in the behavior graph is added

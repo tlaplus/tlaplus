@@ -83,7 +83,7 @@ public abstract class CloudTLCInstanceParameters {
 			return getJavaWorkerVMArgs();
 		}
 		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
-		return ("--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions "
+		return ("-XX:+IgnoreUnrecognizedVMOptions "
 				+ "-XX:+UseParallelGC " // Java > 1.8 has switched to a low-latency GC which isn't optimized for
 										// throughput anymore. Obviously, we are not interested in latency but primarily
 										// in throughput.
@@ -94,7 +94,7 @@ public abstract class CloudTLCInstanceParameters {
 	
 	protected String getJavaWorkerVMArgs(final String extraWorkerVMArgs) {
 		// See org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob.getAdditionalVMArgs()
-		return ("--add-modules=java.activation -XX:+IgnoreUnrecognizedVMOptions -XX:+UseParallelGC "
+		return ("-XX:+IgnoreUnrecognizedVMOptions -XX:+UseParallelGC "
 				+ extraWorkerVMArgs).trim();
 	}
 
@@ -149,10 +149,9 @@ public abstract class CloudTLCInstanceParameters {
 	}
 	
 	public String getFlightRecording() {
-		return "-XX:StartFlightRecording=settings=default "
+		return "-XX:StartFlightRecording=settings=default,disk=true,dumponexit=true,maxage=12h,filename=/mnt/tlc/tlc.jfr "
 				+ "-XX:+UnlockDiagnosticVMOptions "
-				+ "-XX:+DebugNonSafepoints "
-				+ "-XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/mnt/tlc,dumponexit=true,dumponexitpath=/mnt/tlc/tlc.jfr,maxage=12h";
+				+ "-XX:+DebugNonSafepoints";
 	}
 
 	public String getHostnameSetup() {

@@ -53,7 +53,11 @@ public class StateMonitor {
 		try {
 			final Integer pid = Integer.valueOf(args[0]);
 			//TODO the strong encapsulation is forbidding us from compiling the following line:
-			final String address = "broken"; //jdk.internal.agent.ConnectorAddressLink.importFrom(pid);
+			// On Java9+ switch to com.sun.tools.attach.VirtualMachine whose list() method
+			// returns all locally running JVMs from which we can pick TLC's pid.
+			// VirtualMachine.attach(pid) connects to the TLC VM and returns a vm instance on
+			// which vm.startLocalManagementAgent() gives us the JMX address.
+			final String address = "broken"; //sun.management.ConnectorAddressLink.importFrom(pid);
 			url = new JMXServiceURL(address);
 			System.out.printf("Connecting to TLC with pid %s running at %s.\n(Hit Ctrl+c to terminate)\n", pid, url);
 		} catch (NumberFormatException nfe) {

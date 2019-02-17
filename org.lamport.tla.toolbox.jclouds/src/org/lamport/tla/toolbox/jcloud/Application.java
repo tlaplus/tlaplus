@@ -66,8 +66,9 @@ public class Application implements IApplication {
 		// By default send mail to the root account (might be overwritten below).
 		// Without specifying any email address, MailSender will not set up
 		// /mnt/tlc/MC.out and most of CloudDistributedTLCJob's functionality will not
-		// work (no TLC process output will be received).
-		props.put(TLCJobFactory.MAIL_ADDRESS, "root@localhost");
+		// work (no TLC process output will be received).  Do not add if cloud.properties
+		// file has defined it already.
+		props.putIfAbsent(TLCJobFactory.MAIL_ADDRESS, "root@localhost");
 		props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
 
 		// Optional parameters
@@ -115,10 +116,10 @@ public class Application implements IApplication {
 		final TLCJobFactory factory = new CloudTLCJobFactory();
 		final CloudDistributedTLCJob job = (CloudDistributedTLCJob) factory.getTLCJob(cloud, new File(modelDirectory), 1, props, tlcParams.toString());
 		job.setIsCLI(true);
-		job.setDoJfr(true);
-		final ITLCJobStatus status = (ITLCJobStatus) job.run(new MyProgressMonitor(9));
+//		job.setDoJfr(true); //Todo Reactivate once CloudTLC copies the JFR dump file to the local machine.
+		final IStatus status = job.run(new MyProgressMonitor(9));
 		// Show error message if any such as invalid credentials.
-		if (status.getSeverity() == IStatus.ERROR) {
+		if (status.getSeverity() == IStatus.ERROR || !(status instanceof ITLCJobStatus)) {
 			System.err.println(status.getMessage());
 			final Throwable exception = status.getException();
 			if (exception instanceof CloudDistributedTLCJob.ScriptException) {
@@ -131,7 +132,7 @@ public class Application implements IApplication {
 		
 		// If no error above, read the (remote) TLC process output (stdout, no stderr)
 		// and print it on the local stdout.
-		final InputStream output = status.getOutput();
+		final InputStream output = ((ITLCJobStatus) status).getOutput();
 		try {
 			final BufferedReader in = new BufferedReader(
 					new InputStreamReader(output));
@@ -164,7 +165,7 @@ public class Application implements IApplication {
 		// cannot be stopped!
 	}
 	
-	private static class MyProgressMonitor implements IProgressMonitor {
+	static class MyProgressMonitor implements IProgressMonitor {
 		private final DateFormat formatter = new SimpleDateFormat( "YYYY-MM-dd HH:mm:ss.SSS" );
 		private final int totalSteps;
 		private int steps = 1;
@@ -194,5 +195,9 @@ public class Application implements IApplication {
 		public void setTaskName(String name) {}
 
 		public void worked(int work) {}
+
+		public void incSteps(int steps) {
+			this.steps += steps;
+		}
 	}
 }

@@ -49,16 +49,20 @@ public class MailSender {
 		
 		// https://javaee.github.io/javamail/docs/api/com/sun/mail/smtp/package-summary.html
 		final Properties properties = System.getProperties();
-		// Prefer email to be delivered encrypted (assumes to lower likelihood of SMTP
-		// rejection or classification as spam too). Falls back to plain text if SMTP
-		// server does not support starttls.
-		properties.put("mail.smtp.starttls.enable", "true");
 		//properties.put("mail.debug", "true");
 		
 		if (!to.getAddress().contains("@")) {
 			// no domain, no MX record to lookup
 			return false;
+		} else if (!to.getAddress().endsWith("localhost")) {
+			// Prefer email to be delivered encrypted (assumes to lower likelihood of SMTP
+			// rejection or classification as spam too). Falls back to plain text if SMTP
+			// server does not support starttls. Only activate unless sending to localhost
+			// which is the (postfix) SMTP running locally which only has a self-signed
+			// certificate which gets rejected by java mail.
+			properties.put("mail.smtp.starttls.enable", "true");
 		}
+		
 		List<MXRecord> mailhosts;
 		try {
 			mailhosts = getMXForDomain(to.getAddress().split("@")[1]);

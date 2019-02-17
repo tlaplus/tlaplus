@@ -36,6 +36,7 @@ import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -43,7 +44,6 @@ import tlc2.tool.Action;
 import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.GraphNode.Transition;
 import tlc2.tool.queue.DummyTLCState;
 import tlc2.util.BitVector;
@@ -51,6 +51,13 @@ import tlc2.util.SetOfStates;
 import tlc2.util.statistics.DummyBucketStatistics;
 
 public class SymmetryTableauLiveCheckTest {
+
+	private ITool tool;
+	
+	@Before
+	public void createTool() {
+		this.tool = EasyMock.createNiceMock(ITool.class);
+	}
 
 	@Test
 	@Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
@@ -62,7 +69,7 @@ public class SymmetryTableauLiveCheckTest {
 		
 		// Add init state v
 		final TLCState v = new DummyTLCState(100L);
-		lc.addInitState(v, v.fingerPrint());
+		lc.addInitState(tool, v, v.fingerPrint());
 		
 		// one init node (two elements in LongVec)
 		assertEquals(1, diskGraph.getInitNodes().size() / 2);
@@ -70,7 +77,7 @@ public class SymmetryTableauLiveCheckTest {
 		// Add v > s
 		final TLCState s = new DummyTLCState(200L);
 		nexts.put(s);
-		lc.addNextState(v, v.fingerPrint(), nexts);
+		lc.addNextState(null, v, v.fingerPrint(), nexts);
 		
 		assertEquals(2, diskGraph.getNode(v.fingerPrint(), 0).succSize());
 		assertEquals(0, diskGraph.getNode(v.fingerPrint(), 1).succSize()); // only tidx0 is an init node
@@ -82,7 +89,7 @@ public class SymmetryTableauLiveCheckTest {
 		nexts.clear();
 		final TLCState t = new DummyTLCState(300L);
 		nexts.put(t);
-		lc.addNextState(s, s.fingerPrint(), nexts);
+		lc.addNextState(null, s, s.fingerPrint(), nexts);
 		
 		assertEquals(2, diskGraph.getNode(v.fingerPrint(), 0).succSize());
 		assertEquals(0, diskGraph.getNode(v.fingerPrint(), 1).succSize());
@@ -97,7 +104,7 @@ public class SymmetryTableauLiveCheckTest {
 		nexts.clear();
 		final TLCState u = new DummyTLCState(400L);
 		nexts.put(u);
-		lc.addNextState(s, s.fingerPrint(), nexts);
+		lc.addNextState(null, s, s.fingerPrint(), nexts);
 		
 		Assert.fail("finish incomplete test! Assertions below are partially bogus.");
 		
@@ -146,10 +153,10 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.expect(oos.getTableau()).andReturn(tbGraph).anyTimes();
 		EasyMock.expect(oos.getCheckAction()).andReturn(new LiveExprNode[0]).anyTimes();
 		EasyMock.expect(oos.getCheckState()).andReturn(new LiveExprNode[0]).anyTimes();
-		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
+		EasyMock.expect(oos.checkState(null, (TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
-		return new LiveCheck(EasyMock.createNiceMock(ITool.class),
+		return new LiveCheck(tool,
 				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics(), null);
 	}
 	
@@ -167,14 +174,14 @@ public class SymmetryTableauLiveCheckTest {
 		
 		// Add init state v
 		final TLCState v = new DummyTLCState(100L);
-		lc.addInitState(v, v.fingerPrint());
+		lc.addInitState(tool, v, v.fingerPrint());
 		
 		// one init node (two elements in LongVec)
 		assertEquals(1, diskGraph.getInitNodes().size() / 2);
 
 		// Add v > s
 		nexts.put(s);
-		lc.addNextState(v, v.fingerPrint(), nexts);
+		lc.addNextState(null, v, v.fingerPrint(), nexts);
 		
 		GraphNode vgn = diskGraph.getNode(v.fingerPrint(), 0);
 		assertEquals(2, vgn.succSize()); // s is consistent with tidx0 and tidx1, but not with tidx2
@@ -191,7 +198,7 @@ public class SymmetryTableauLiveCheckTest {
 		// Add s > t
 		nexts.clear();
 		nexts.put(t);
-		lc.addNextState(s, s.fingerPrint(), nexts);
+		lc.addNextState(null, s, s.fingerPrint(), nexts);
 		
 		assertEquals(2, diskGraph.getNode(v.fingerPrint(), 0).succSize());
 		assertEquals(0, diskGraph.getNode(v.fingerPrint(), 1).succSize());
@@ -211,7 +218,7 @@ public class SymmetryTableauLiveCheckTest {
 
 		// Add additional init state u
 		final TLCState u = new DummyTLCState(400L);
-		lc.addInitState(u, u.fingerPrint());
+		lc.addInitState(tool, u, u.fingerPrint());
 		
 		// two init nodes now (four elements in LongVec)
 		assertEquals(2, diskGraph.getInitNodes().size() / 2);
@@ -235,7 +242,7 @@ public class SymmetryTableauLiveCheckTest {
 		// add a symmetric s1 (same fingerprint as s)
 		nexts.clear();
 		nexts.put(s1);
-		lc.addNextState(u, u.fingerPrint(), nexts);
+		lc.addNextState(null, u, u.fingerPrint(), nexts);
 		
 		assertEquals(2, diskGraph.getNode(v.fingerPrint(), 0).succSize());
 		assertEquals(0, diskGraph.getNode(v.fingerPrint(), 1).succSize());
@@ -347,7 +354,7 @@ public class SymmetryTableauLiveCheckTest {
 		EasyMock.expect(oos.getTableau()).andReturn(tbGraph).anyTimes();
 		EasyMock.expect(oos.getCheckAction()).andReturn(new LiveExprNode[0]).anyTimes();
 		EasyMock.expect(oos.getCheckState()).andReturn(new LiveExprNode[0]).anyTimes();
-		EasyMock.expect(oos.checkState((TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
+		EasyMock.expect(oos.checkState(null, (TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
 		EasyMock.replay(oos);
 		
 		final ITool tool = EasyMock.createNiceMock(ITool.class);

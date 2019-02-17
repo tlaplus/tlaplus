@@ -430,7 +430,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * <i>fairness</i> formulae where check1, check2, ... are the actual
 	 * <i>liveness properties</i> to be checked.
 	 */
-	public static OrderOfSolution[] processLiveness(ITool tool) {
+	public static OrderOfSolution[] processLiveness(final ITool tool) {
 		LiveExprNode lexpr = parseLiveness(tool);
 
 		if (lexpr == null) {
@@ -514,12 +514,12 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			final LiveExprNode tf = tfbin.exprAt(i);
 
 			if (tf == null) {
-				oss[i] = new OrderOfSolution(new LNEven[0], tool);
+				oss[i] = new OrderOfSolution(new LNEven[0]);
 			} else {
 				final LiveExprNode tf1 = tf.makeBinary();
 				final TBPar promises = new TBPar(10);
 				tf1.extractPromises(promises);
-				oss[i] = new OrderOfSolution(new TBGraph(tf1), new LNEven[promises.size()], tool);
+				oss[i] = new OrderOfSolution(new TBGraph(tf1), new LNEven[promises.size()]);
 				for (int j = 0; j < promises.size(); j++) {
 					oss[i].getPromises()[j] = (LNEven) promises.exprAt(j);
 				}

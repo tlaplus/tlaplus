@@ -58,7 +58,7 @@ public class PacketNetCloudTLCInstanceParameters extends CloudTLCInstanceParamet
 	 */
 	@Override
 	public String getTLCParameters() {
-		return System.getProperty("packetnet.tlcparams", super.getTLCParameters(16));
+		return System.getProperty("packetnet.tlcparams", super.getTLCParameters(4));
 	}
 
 	/* (non-Javadoc)

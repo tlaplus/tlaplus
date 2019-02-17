@@ -87,9 +87,20 @@ public class AzureCloudTLCInstanceParameters extends CloudTLCInstanceParameters 
 	 */
 	@Override
 	public String getImageId() {
-		// 'azure vm image list eastus canonical' (manually lookup image release date from output)
+		// 'azure vm image list eastus canonical' (manually lookup image release date
+		// from output, note the extra digit after the date YYYYMMDD (below separated by
+		// a dot) which appears to be a sequence number for the images on the given
+		// date).
 		// With azure-cli v2 (based on Python) extract date from 'az vm image list --all --publisher Canonical'.
-		return System.getProperty("azure.image", "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-18_04-LTS-amd64-server-20180426.2-en-us-30GB");
+		//   ... {
+		// "offer": "UbuntuServer",
+		// "publisher": "Canonical",
+		// "sku": "18.04-LTS",
+		// "urn": "Canonical:UbuntuServer:18.04-LTS:18.04.201902121",
+		// "version": "18.04.201902121"
+		// 	  }, ...
+		// 
+		return System.getProperty("azure.image", "b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-18_04-LTS-amd64-server-20190212.1-en-us-30GB");
 	}
 
 	/* (non-Javadoc)

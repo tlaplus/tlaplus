@@ -34,8 +34,6 @@ import util.SimpleFilenameToStream;
 
 public class LiveCheck implements ILiveCheck {
 
-	private final Action[] actions;
-	private final ITool myTool;
 	private final String metadir;
 	private final IBucketStatistics outDegreeGraphStats;
 	private final ILiveChecker[] checker;
@@ -53,8 +51,6 @@ public class LiveCheck implements ILiveCheck {
 	}
 
 	public LiveCheck(ITool tool, OrderOfSolution[] solutions, String mdir, IBucketStatistics bucketStatistics, IStateWriter stateWriter) throws IOException {
-		myTool = tool;
-		actions = tool.getActions();
 		metadir = mdir;
 		outDegreeGraphStats = bucketStatistics;
 		checker = new ILiveChecker[solutions.length];
@@ -73,16 +69,16 @@ public class LiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#addInitState(tlc2.tool.TLCState, long)
 	 */
-	public void addInitState(TLCState state, long stateFP) {
+	public void addInitState(ITool tool, TLCState state, long stateFP) {
 		for (int i = 0; i < checker.length; i++) {
-			checker[i].addInitState(state, stateFP);
+			checker[i].addInitState(tool, state, stateFP);
 		}
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates)
 	 */
-	public void addNextState(TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
+	public void addNextState(ITool tool, TLCState s0, long fp0, SetOfStates nextStates) throws IOException {
 		for (int i = 0; i < checker.length; i++) {
 			final ILiveChecker check = checker[i];
 			final OrderOfSolution oos = check.getSolution();
@@ -108,10 +104,10 @@ public class LiveCheck implements ILiveCheck {
 			final BitVector checkActionResults = new BitVector(alen * nextStates.size());
 			for (int sidx = 0; sidx < nextStates.size(); sidx++) {
 				final TLCState s1 = nextStates.next();
-				oos.checkAction(s0, s1, checkActionResults, alen * sidx);
+				oos.checkAction(tool, s0, s1, checkActionResults, alen * sidx);
 			}
 			nextStates.resetNext();
-			check.addNextState(s0, fp0, nextStates, checkActionResults, oos.checkState(s0));
+			check.addNextState(tool, s0, fp0, nextStates, checkActionResults, oos.checkState(tool, s0));
 			
 			// Write the content of the current graph to a file in GraphViz
 			// format. Useful when debugging!
@@ -157,9 +153,9 @@ public class LiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#check(boolean)
 	 */
-	public boolean check(boolean forceCheck) throws Exception {
+	public boolean check(ITool tool, boolean forceCheck) throws Exception {
 		if (forceCheck) {
-			return check0(false);
+			return check0(tool, false);
 		}
 		if (!TLCGlobals.doLiveness()) {
 			// The user requested to only check liveness once, on the complete
@@ -173,7 +169,7 @@ public class LiveCheck implements ILiveCheck {
 			final long sizeCurrently = diskGraph.size();
 			final double delta = (sizeCurrently - sizeAtLastCheck) / (sizeAtLastCheck * 1.d);
 			if (delta > TLCGlobals.livenessThreshold) {
-				return check0(false);
+				return check0(tool, false);
 			}
 		}
 		return true;
@@ -182,10 +178,10 @@ public class LiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
 	 */
-	public boolean finalCheck() throws InterruptedException, IOException {
+	public boolean finalCheck(ITool tool) throws InterruptedException, IOException {
 		// Do *not* re-create the nodePtrTable after the check which takes a
 		// while for larger disk graphs.
-		return check0(true);
+		return check0(tool, true);
 	}
 	
 	/**
@@ -194,7 +190,7 @@ public class LiveCheck implements ILiveCheck {
 	 *            liveness check. If this is the final/last check, it's pointless
 	 *            to re-create the nodePtrTable.
 	 */
-	protected boolean check0(final boolean finalCheck) throws InterruptedException, IOException {
+	protected boolean check0(final ITool tool, final boolean finalCheck) throws InterruptedException, IOException {
 		final long startTime = System.currentTimeMillis();
 		
 		// Sum up the number of nodes in all disk graphs to indicate the amount
@@ -227,12 +223,12 @@ public class LiveCheck implements ILiveCheck {
 		int wNum = Math.min(slen, TLCGlobals.getNumWorkers());
 
 		if (wNum == 1) {
-			LiveWorker worker = new LiveWorker(0, 1, this, queue, finalCheck);
+			LiveWorker worker = new LiveWorker(tool, 0, 1, this, queue, finalCheck);
 			worker.run();
 		} else {
 			final LiveWorker[] workers = new LiveWorker[wNum];
 			for (int i = 0; i < wNum; i++) {
-				workers[i] = new LiveWorker(i, wNum, this, queue, finalCheck);
+				workers[i] = new LiveWorker(tool, i, wNum, this, queue, finalCheck);
 				workers[i].start();
 			}
 			for (int i = 0; i < wNum; i++) {
@@ -259,9 +255,9 @@ public class LiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#checkTrace(tlc2.tool.StateVec)
 	 */
-	public void checkTrace(final StateVec stateTrace) throws InterruptedException, IOException {
+	public void checkTrace(ITool tool, final StateVec stateTrace) throws InterruptedException, IOException {
 		// Add the first state to the LiveCheck as the current init state
-		addInitState(stateTrace.elementAt(0), stateTrace.elementAt(0).fingerPrint());
+		addInitState(tool, stateTrace.elementAt(0), stateTrace.elementAt(0).fingerPrint());
 		
 		// Add the remaining states...
 		final SetOfStates successors = new SetOfStates(stateTrace.size() * 2);
@@ -282,15 +278,15 @@ public class LiveCheck implements ILiveCheck {
 			// Add the successor in the trace
 			final TLCState successor = stateTrace.elementAt(i + 1);
 			successors.put(successor);
-			addNextState(tlcState, fingerPrint, successors);
+			addNextState(tool, tlcState, fingerPrint, successors);
 		}
 		
 		// Add last state in trace for which *no* successors have been generated
 		final TLCState lastState = stateTrace.elementAt(stateTrace.size() - 1);
-		addNextState(lastState, lastState.fingerPrint(), new SetOfStates(0));
+		addNextState(tool, lastState, lastState.fingerPrint(), new SetOfStates(0));
 		
 		// Do *not* re-create the nodePtrTbl when it is thrown away anyway.
-		if (!check0(true)) {
+		if (!check0(tool, true)) {
 			throw new LiveException();
 		}
 		
@@ -304,13 +300,6 @@ public class LiveCheck implements ILiveCheck {
 	 */
 	public String getMetaDir() {
 		return metadir;
-	}
-
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#getTool()
-	 */
-	public ITool getTool() {
-		return myTool;
 	}
 
 	/* (non-Javadoc)
@@ -446,7 +435,7 @@ public class LiveCheck implements ILiveCheck {
 		/* (non-Javadoc)
 		 * @see tlc2.tool.liveness.LiveCheck.ILiveChecker#addInitState(tlc2.tool.TLCState, long)
 		 */
-		public void addInitState(TLCState state, long stateFP) {
+		public void addInitState(ITool tool, TLCState state, long stateFP) {
 			dgraph.addInitNode(stateFP, -1);
 			writer.writeState(state);
 		}
@@ -454,8 +443,8 @@ public class LiveCheck implements ILiveCheck {
 		/* (non-Javadoc)
 		 * @see tlc2.tool.liveness.ILiveChecker#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates, tlc2.util.BitVector, boolean[])
 		 */
-		public void addNextState(final TLCState s0, final long fp0, final SetOfStates nextStates,
-				final BitVector checkActionResults, final boolean[] checkStateResults) throws IOException {
+		public void addNextState(ITool tool, final TLCState s0, final long fp0,
+				final SetOfStates nextStates, final BitVector checkActionResults, final boolean[] checkStateResults) throws IOException {
 			int cnt = 0;
 			// if there is no tableau ...
 			final int succCnt = nextStates.size();
@@ -540,13 +529,13 @@ public class LiveCheck implements ILiveCheck {
 		/* (non-Javadoc)
 		 * @see tlc2.tool.liveness.LiveChecker#addInitState(tlc2.tool.TLCState, long)
 		 */
-		public void addInitState(final TLCState state, final long stateFP) {
+		public void addInitState(final ITool tool, final TLCState state, final long stateFP) {
 			// (state, tnode) is a root node if tnode is an initial tableau
 			// node and tnode is consistent with state.
 			int initCnt = oos.getTableau().getInitCnt();
 			for (int i = 0; i < initCnt; i++) {
 				TBGraphNode tnode = oos.getTableau().getNode(i);
-				if (tnode.isConsistent(state, myTool)) {
+				if (tnode.isConsistent(state, tool)) {
 					dgraph.addInitNode(stateFP, tnode.getIndex());
 					dgraph.recordNode(stateFP, tnode.getIndex());
 					writer.writeState(state, tnode);
@@ -557,8 +546,8 @@ public class LiveCheck implements ILiveCheck {
 		/* (non-Javadoc)
 		 * @see tlc2.tool.liveness.ILiveChecker#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates, tlc2.util.BitVector, boolean[])
 		 */
-		public void addNextState(final TLCState s0, final long fp0, final SetOfStates nextStates,
-				final BitVector checkActionResults, final boolean[] checkStateResults) throws IOException {
+		public void addNextState(final ITool tool, final TLCState s0, final long fp0,
+				final SetOfStates nextStates, final BitVector checkActionResults, final boolean[] checkStateResults) throws IOException {
 			int cnt = 0;
 			final int succCnt = nextStates.size();
 			
@@ -570,13 +559,12 @@ public class LiveCheck implements ILiveCheck {
 			// trades speed for additional memory usage (BitVector).
 			final TBGraph tableau = oos.getTableau();
 			final BitVector consistency = new BitVector(tableau.size() * succCnt);
-			@SuppressWarnings("unchecked")
 			final Enumeration<TBGraphNode> elements = tableau.elements();
 			while(elements.hasMoreElements()) {
 				final TBGraphNode tableauNode = elements.nextElement();
 				for (int sidx = 0; sidx < succCnt; sidx++) {
 					final TLCState s1 = nextStates.next();
-					if(tableauNode.isConsistent(s1, myTool)) {
+					if(tableauNode.isConsistent(s1, tool)) {
 						// BitVector is divided into a segment for each
 						// tableau node. Inside each segment, addressing is done
 						// via each state. Use identical addressing below
@@ -640,7 +628,7 @@ public class LiveCheck implements ILiveCheck {
 								if (ptr1 == -1) {
 									dgraph.recordNode(successor, tnode1.getIndex());
 									if (isDone) {
-										addNextState(s1, successor, tnode1, oos, dgraph);
+										addNextState(tool, s1, successor, tnode1, oos, dgraph);
 									}
 								}
 							}
@@ -678,9 +666,9 @@ public class LiveCheck implements ILiveCheck {
 		 * Hopefully, this case does not occur very frequently because it
 		 * generates successor nodes.
 		 */
-		private void addNextState(final TLCState s, final long fp, final TBGraphNode tnode, final OrderOfSolution oos, final TableauDiskGraph dgraph)
+		private void addNextState(final ITool tool, final TLCState s, final long fp, final TBGraphNode tnode, final OrderOfSolution oos, final TableauDiskGraph dgraph)
 				throws IOException {
-			final boolean[] checkStateRes = oos.checkState(s);
+			final boolean[] checkStateRes = oos.checkState(tool, s);
 			final int slen = checkStateRes.length;
 			final int alen = oos.getCheckAction().length;
 			final GraphNode node = dgraph.getNode(fp, tnode.getIndex());
@@ -693,16 +681,16 @@ public class LiveCheck implements ILiveCheck {
 			// Add edges induced by s -> s (self-loop) coming from the tableau
 			// graph:
 			final int nextSize = tnode.nextSize();
-			final BitVector checkActionResults = nextSize > 0 ? oos.checkAction(s, s, new BitVector(alen), 0) : null;
+			final BitVector checkActionResults = nextSize > 0 ? oos.checkAction(tool, s, s, new BitVector(alen), 0) : null;
 			for (int i = 0; i < nextSize; i++) {
 				final TBGraphNode tnode1 = tnode.nextAt(i);
 				final int tidx1 = tnode1.getIndex();
 				final long ptr1 = dgraph.getPtr(fp, tidx1);
-				if (tnode1.isConsistent(s, myTool) && (ptr1 == -1 || !node.transExists(fp, tidx1))) {
+				if (tnode1.isConsistent(s, tool) && (ptr1 == -1 || !node.transExists(fp, tidx1))) {
 					node.addTransition(fp, tidx1, slen, alen, checkActionResults, 0, (nextSize - cnt));
 					if (ptr1 == -1) {
 						dgraph.recordNode(fp, tnode1.getIndex());
-						addNextState(s, fp, tnode1, oos, dgraph);
+						addNextState(tool, s, fp, tnode1, oos, dgraph);
 					}
 				}
 				cnt++;
@@ -711,21 +699,22 @@ public class LiveCheck implements ILiveCheck {
 			// Add edges induced by s -> s1 (where s1 is a successor of s in the
 			// state graph):
 			cnt = 0;
+			final Action[] actions = tool.getActions();
 			for (int i = 0; i < actions.length; i++) {
-				final StateVec nextStates = myTool.getNextStates(actions[i], s);
+				final StateVec nextStates = tool.getNextStates(actions[i], s);
 				final int nextCnt = nextStates.size();
 				for (int j = 0; j < nextCnt; j++) {
 					final TLCState s1 = nextStates.elementAt(j);
-					if (myTool.isInModel(s1) && myTool.isInActions(s, s1)) {
+					if (tool.isInModel(s1) && tool.isInActions(s, s1)) {
 						final long fp1 = s1.fingerPrint();
-						final BitVector checkActionRes = oos.checkAction(s, s1, new BitVector(alen), 0);
+						final BitVector checkActionRes = oos.checkAction(tool, s, s1, new BitVector(alen), 0);
 						boolean isDone = dgraph.isDone(fp1);
 						for (int k = 0; k < tnode.nextSize(); k++) {
 							final TBGraphNode tnode1 = tnode.nextAt(k);
 							final int tidx1 = tnode1.getIndex();
 							long ptr1 = dgraph.getPtr(fp1, tidx1);
 							final int total = actions.length * nextCnt * tnode.nextSize();
-							if (tnode1.isConsistent(s1, myTool) && (ptr1 == -1 || !node.transExists(fp1, tidx1))) {
+							if (tnode1.isConsistent(s1, tool) && (ptr1 == -1 || !node.transExists(fp1, tidx1))) {
 								node.addTransition(fp1, tidx1, slen, alen, checkActionRes, 0, (total - cnt));
 								writer.writeState(s, tnode, s1, tnode1, checkActionRes, 0, alen, false, Visualization.DOTTED);
 								// Record that we have seen <fp1, tnode1>. If
@@ -734,7 +723,7 @@ public class LiveCheck implements ILiveCheck {
 								if (ptr1 == -1) {
 									dgraph.recordNode(fp1, tidx1);
 									if (isDone) {
-										addNextState(s1, fp1, tnode1, oos, dgraph);
+										addNextState(tool, s1, fp1, tnode1, oos, dgraph);
 									}
 								}
 							}
@@ -805,7 +794,7 @@ public class LiveCheck implements ILiveCheck {
 				 * @see tlc2.tool.IStateFunctor#addElement(tlc2.tool.TLCState)
 				 */
 				public Object addElement(TLCState state) {
-					liveCheck.addInitState(state, state.fingerPrint());
+					liveCheck.addInitState(tool, state, state.fingerPrint());
 					return true;
 				}
 			});

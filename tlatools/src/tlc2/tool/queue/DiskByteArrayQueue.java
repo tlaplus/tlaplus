@@ -72,7 +72,6 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 
 	/* Constructors */
 	public DiskByteArrayQueue(String diskdir) {
-		System.err.printf("Loaded %s\n", DiskByteArrayQueue.class.getName());
 		this.deqBuf = new byte[BufSize][];
 		this.enqBuf = new byte[BufSize][];
 		this.deqIndex = BufSize;
@@ -458,9 +457,9 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 		    }
 		    else if (this.poolFile != null) {
 		  	  final BufferedDataInputStream vis = new BufferedDataInputStream(this.poolFile);
-		  	  for (int i = 0; i < this.buf.length; i++) {
-		      	  this.buf[i] = new byte[vis.readInt()];
-		      	  vis.read(this.buf[i]);
+		  	  for (int i = 0; i < deqBuf.length; i++) {
+		      	  deqBuf[i] = new byte[vis.readInt()];
+		      	  vis.read(deqBuf[i]);
 		  	  }
 		      vis.close();
 		      this.poolFile = file;     // <file, false>
@@ -470,9 +469,9 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 		    }
 		    else {
 		  	  final BufferedDataInputStream vis = new BufferedDataInputStream(this.poolFile);
-		  	  for (int i = 0; i < this.buf.length; i++) {
-		      	  this.buf[i] = new byte[vis.readInt()];
-		      	  vis.read(this.buf[i]);
+		  	  for (int i = 0; i < deqBuf.length; i++) {
+		  		  deqBuf[i] = new byte[vis.readInt()];
+		      	  vis.read(deqBuf[i]);
 		  	  }
 		      vis.close();              // <null, false>
 		      return deqBuf;
@@ -496,9 +495,9 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 		    else if (this.poolFile != null && this.canRead) {
 		      // this should seldom occur.
 		  	  final BufferedDataInputStream vis = new BufferedDataInputStream(this.poolFile);
-		  	  for (int i = 0; i < this.buf.length; i++) {
-		      	  this.buf[i] = new byte[vis.readInt()];
-		      	  vis.read(this.buf[i]);
+		  	  for (int i = 0; i < deqBuf.length; i++) {
+		  		  deqBuf[i] = new byte[vis.readInt()];
+		      	  vis.read(deqBuf[i]);
 		      }
 		      vis.close();
 		      // this.poolFile.delete();

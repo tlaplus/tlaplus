@@ -146,7 +146,7 @@ public class DFIDModelChecker extends AbstractChecker
 									String.valueOf(this.numOfGenStates), String.valueOf(theFPSet.size()) });
                             // SZ Jul 10, 2009: what for?
                             // ToolIO.out.flush();
-                            success = liveCheck.finalCheck();
+                            success = liveCheck.finalCheck(tool);
                             if (!success)
                                 return;
                         }
@@ -284,7 +284,7 @@ public class DFIDModelChecker extends AbstractChecker
                         // build behavior graph for liveness checking
                         if (this.checkLiveness)
                         {
-                            liveCheck.addInitState(curState, fp);
+                            liveCheck.addInitState(tool, curState, fp);
                         }
                     }
                 }
@@ -546,7 +546,7 @@ public class DFIDModelChecker extends AbstractChecker
                 liveNextStates.put(curStateFP, curState);
             	this.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
                 // Add curState to the behavior graph:
-                liveCheck.addNextState(curState, curStateFP, liveNextStates);
+                liveCheck.addNextState(tool, curState, curStateFP, liveNextStates);
 
 				// Poor man's version of a controller. If necessary, try e.g.
 				// PID controller instead.
@@ -644,7 +644,7 @@ public class DFIDModelChecker extends AbstractChecker
             // Run liveness checking, if needed:
             if (this.checkLiveness)
             {
-                if (!liveCheck.check(false))
+                if (!liveCheck.check(tool, false))
                 {
                     return false;
                 }
