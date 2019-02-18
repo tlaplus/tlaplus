@@ -36,6 +36,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
 import tlc2.tool.TLCState;
+import tlc2.tool.TLCStates;
 
 @State(Scope.Group)
 public class StateQueueBenachmark {
@@ -64,7 +65,7 @@ public class StateQueueBenachmark {
     	// balance off the costs for creating the TLCState[].
     	final TLCState[] batch = new TLCState[size];
     	for (int i = 0; i < batch.length; i++) {
-			batch[i] = new DummyTLCState();
+			batch[i] = TLCStates.createDummyState();
 		}
     	this.s.sEnqueue(batch[batch.length - 1]);
     }
@@ -85,7 +86,7 @@ public class StateQueueBenachmark {
     public void producerBatch() {
     	final TLCState[] batch = new TLCState[size];
     	for (int i = 0; i < batch.length; i++) {
-			batch[i] = new DummyTLCState();
+			batch[i] = TLCStates.createDummyState();
 		}
     	this.s.sEnqueue(batch[batch.length - 1]);
     }
@@ -106,7 +107,7 @@ public class StateQueueBenachmark {
     public void producerBatchSym() {
     	final TLCState[] batch = new TLCState[size];
     	for (int i = 0; i < batch.length; i++) {
-			batch[i] = new DummyTLCState();
+			batch[i] = TLCStates.createDummyState();
 		}
     	this.s.sEnqueue(batch[batch.length - 1]);
     }
