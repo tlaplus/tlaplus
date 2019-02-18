@@ -446,7 +446,7 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 		  public final synchronized byte[][] doWork(byte[][] deqBuf, File file)
 		  throws IOException, ClassNotFoundException {
 		    if (this.isFull) {
-		      Assert.check(this.poolFile == null, EC.SYSTEM_FILE_NULL);
+		      assert this.poolFile == null : EC.SYSTEM_FILE_NULL;
 		      byte[][] res = this.buf;
 		      this.buf = deqBuf;
 		      this.poolFile = file;
@@ -484,7 +484,7 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 		  public final synchronized byte[][] getCache(byte[][] deqBuf, File file)
 		  throws IOException, ClassNotFoundException {
 		    if (this.isFull) {
-		      Assert.check(this.poolFile == null, EC.SYSTEM_FILE_NULL);
+		      assert this.poolFile == null : EC.SYSTEM_FILE_NULL;
 		      byte[][] res = this.buf;
 		      this.buf = deqBuf;
 		      this.poolFile = file;
