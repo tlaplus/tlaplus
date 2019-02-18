@@ -46,28 +46,37 @@ public class StateQueueBenachmark {
 	
 	private IStateQueue s;
 
+	private TLCState[] batch;
+
     @Setup
     public void up() throws IOException {
-        s = new MemStateQueue();
+        s = new DiskStateQueue();
+        
+    	// balance off the costs for creating the TLCState[].
+    	this.batch = new TLCState[size];
+    	for (int i = 0; i < batch.length; i++) {
+			batch[i] = TLCStates.createDummyState();
+		}
     }
     
     @Benchmark
     @Group("single")
     @GroupThreads(2)
-    public TLCState consumerSingle() {
-        return this.s.sDequeue();
+    public TLCState[] consumerSingle() {
+    	final TLCState[] res = new TLCState[batch.length];
+    	for (int i = 0; i < batch.length; i++) {
+    		res[i] = this.s.sDequeue();
+    	}
+        return res;
     }
 
     @Benchmark
     @Group("single")
     @GroupThreads(2)
     public void producerSingle() {
-    	// balance off the costs for creating the TLCState[].
-    	final TLCState[] batch = new TLCState[size];
     	for (int i = 0; i < batch.length; i++) {
-			batch[i] = TLCStates.createDummyState();
+    		this.s.sEnqueue(batch[i]);
 		}
-    	this.s.sEnqueue(batch[batch.length - 1]);
     }
 
     
@@ -77,18 +86,18 @@ public class StateQueueBenachmark {
     @Group("batchasym")
     @GroupThreads(2)
     public TLCState[] consumerBatch() {
-        return new TLCState[] {this.s.sDequeue()};
+    	final TLCState[] res = new TLCState[batch.length];
+    	for (int i = 0; i < batch.length; i++) {
+    		res[i] = this.s.sDequeue();
+    	}
+        return res;
     }
 
     @Benchmark
     @Group("batchasym")
     @GroupThreads(2)
     public void producerBatch() {
-    	final TLCState[] batch = new TLCState[size];
-    	for (int i = 0; i < batch.length; i++) {
-			batch[i] = TLCStates.createDummyState();
-		}
-    	this.s.sEnqueue(batch[batch.length - 1]);
+    	this.s.sEnqueue(batch);
     }
 
     
@@ -105,10 +114,6 @@ public class StateQueueBenachmark {
     @Group("batchsym")
     @GroupThreads(2)
     public void producerBatchSym() {
-    	final TLCState[] batch = new TLCState[size];
-    	for (int i = 0; i < batch.length; i++) {
-			batch[i] = TLCStates.createDummyState();
-		}
-    	this.s.sEnqueue(batch[batch.length - 1]);
+    	this.s.sEnqueue(batch);
     }
 }
