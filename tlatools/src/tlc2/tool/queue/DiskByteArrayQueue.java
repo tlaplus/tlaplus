@@ -41,7 +41,7 @@ import util.WrongInvocationException;
  * A {@link DiskByteArrayQueue} uses the local hard disc as a backing store for
  * states. An in-memory buffer of size {@link DiskByteArrayQueue}{@link #BufSize}
  */
-public class DiskByteArrayQueue extends ByteAraryQueue {
+public class DiskByteArrayQueue extends ByteArrayQueue {
 	// TODO dynamic bufsize based on current VM parameters?
 	private final static int BufSize = Integer.getInteger(DiskStateQueue.class.getName() + ".BufSize", 8192);
 

@@ -19,7 +19,7 @@ import tlc2.tool.Worker;
  * on byte[] whereas StateQueue's internal data is TLCStates. In other words,
  * serialization of TLCState to a byte[] occurs outside the critical section.
  */
-public abstract class ByteAraryQueue implements IStateQueue {
+public abstract class ByteArrayQueue implements IStateQueue {
 	/**
 	 * In model checking, this is the sequence of states waiting to be explored
 	 * further. When the queue is empty, the checking is completed.
