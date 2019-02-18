@@ -7,6 +7,7 @@ package tlc2.tool.queue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import tlc2.output.EC;
 import tlc2.tool.TLCState;
@@ -23,6 +24,13 @@ public final class MemStateQueue extends StateQueue {
   private int start = 0;
   private String diskdir;
     
+  /**
+   * TESTING ONLY!
+   */
+  MemStateQueue() throws IOException {
+	  this(Files.createTempDirectory("MemStateQueue").toFile().toString());
+  }
+  
   public MemStateQueue(String metadir) {
     this.states = new TLCState[InitialSize];
     this.start = 0;

@@ -7,6 +7,7 @@ package tlc2.tool.queue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -50,6 +51,11 @@ public class DiskStateQueue extends StateQueue {
 	protected final StatePoolCleaner cleaner;
 	private int loPool, hiPool, lastLoPool, newLastLoPool;
 	private File loFile;
+
+	// TESTING ONLY!
+	DiskStateQueue() throws IOException {
+		this(Files.createTempDirectory("DiskStateQueue").toFile().toString());
+	}
 
 	/* Constructors */
 	public DiskStateQueue(String diskdir) {

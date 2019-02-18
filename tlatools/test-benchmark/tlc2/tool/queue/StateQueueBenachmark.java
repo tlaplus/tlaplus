@@ -25,6 +25,8 @@
  ******************************************************************************/
 package tlc2.tool.queue;
 
+import java.io.IOException;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Group;
 import org.openjdk.jmh.annotations.GroupThreads;
@@ -44,9 +46,8 @@ public class StateQueueBenachmark {
 	private IStateQueue s;
 
     @Setup
-    public void up() {
-        s = new MemStateQueue("");
-
+    public void up() throws IOException {
+        s = new MemStateQueue();
     }
     
     @Benchmark

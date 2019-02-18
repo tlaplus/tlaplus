@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 
 import tlc2.output.EC;
@@ -69,6 +70,11 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 	protected final StatePoolCleaner cleaner;
 	private int loPool, hiPool, lastLoPool, newLastLoPool;
 	private File loFile;
+	
+	// TESTING ONLY!
+	DiskByteArrayQueue() throws IOException {
+		this(Files.createTempDirectory("DiskByteArrayQueue").toFile().toString());
+	}
 
 	/* Constructors */
 	public DiskByteArrayQueue(String diskdir) {
