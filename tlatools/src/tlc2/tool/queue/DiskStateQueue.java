@@ -286,4 +286,13 @@ public class DiskStateQueue extends StateQueue {
 			}
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#delete()
+	 */
+	@Override
+	public void delete() {
+		finishAll();
+		new File(this.filePrefix).delete();
+	}
 }

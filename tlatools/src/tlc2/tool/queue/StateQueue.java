@@ -368,4 +368,9 @@ public abstract class StateQueue implements IStateQueue {
 	 * @see tlc2.tool.queue.IStateQueue#recover()
 	 */
 	public abstract void recover() throws IOException;
+	
+	@Override
+	public void delete() throws IOException {
+		// no-op
+	}
 }

@@ -34,6 +34,7 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStates;
@@ -59,6 +60,11 @@ public class StateQueueBenachmark {
 		}
     }
     
+    @TearDown
+    public void down() throws IOException {
+    	this.s.delete();
+    }
+  
     @Benchmark
     @Group("single")
     @GroupThreads(2)
