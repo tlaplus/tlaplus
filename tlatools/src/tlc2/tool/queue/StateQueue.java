@@ -13,7 +13,6 @@ import tlc2.output.MP;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
-import util.Assert;
 
 /**
  * 
@@ -117,7 +116,7 @@ public abstract class StateQueue implements IStateQueue {
 		if (this.isAvail()) {
 			final TLCState state = this.dequeueInner();
 			// LL modified error message on 7 April 2012
-			Assert.check(state != null, "Null state found on queue");
+			assert state != null : "Null state found on queue";
 			this.len--;
 			return state;
 		}
@@ -128,7 +127,7 @@ public abstract class StateQueue implements IStateQueue {
 	 * @see tlc2.tool.queue.IStateQueue#sDequeue(int)
 	 */
 	public final synchronized TLCState[] sDequeue(int cnt) {
-		Assert.check(cnt > 0, "Nonpositive number of states requested.");
+		assert cnt > 0 : "Nonpositive number of states requested.";
 		if (this.isAvail()) {
 			if (cnt > len) {
 				// in this case, casting len to int is safe 
@@ -369,4 +368,9 @@ public abstract class StateQueue implements IStateQueue {
 	 * @see tlc2.tool.queue.IStateQueue#recover()
 	 */
 	public abstract void recover() throws IOException;
+	
+	@Override
+	public void delete() throws IOException {
+		// no-op
+	}
 }

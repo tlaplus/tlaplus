@@ -85,4 +85,10 @@ public interface IStateQueue {
 	public abstract void recover() throws IOException;
 
 	public abstract boolean isEmpty();
+
+	/**
+	 * TESTING ONLY!
+	 * Delete disk files if any.
+	 */
+	abstract void delete() throws IOException;
 }

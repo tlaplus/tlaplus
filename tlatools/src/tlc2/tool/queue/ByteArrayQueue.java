@@ -13,14 +13,13 @@ import tlc2.output.MP;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
-import util.Assert;
 
 /*
  * This class is identical to StateQueue except that it internally works
  * on byte[] whereas StateQueue's internal data is TLCStates. In other words,
  * serialization of TLCState to a byte[] occurs outside the critical section.
  */
-public abstract class ByteAraryQueue implements IStateQueue {
+public abstract class ByteArrayQueue implements IStateQueue {
 	/**
 	 * In model checking, this is the sequence of states waiting to be explored
 	 * further. When the queue is empty, the checking is completed.
@@ -204,8 +203,7 @@ public abstract class ByteAraryQueue implements IStateQueue {
 	private final synchronized byte[] sDequeueRaw() {
 		if (this.isAvail()) {
 			final byte[] state = this.dequeueInner();
-			// LL modified error message on 7 April 2012
-			Assert.check(state != null, "Null state found on queue");
+			assert state != null : "Null state found on queue";
 			this.len--;
 			return state;
 		}
@@ -226,7 +224,7 @@ public abstract class ByteAraryQueue implements IStateQueue {
 	}
 
 	private final synchronized byte[][] sDequeueRaw(int cnt) {
-		Assert.check(cnt > 0, "Nonpositive number of states requested.");
+		assert cnt > 0 : "Nonpositive number of states requested.";
 		if (this.isAvail()) {
 			if (cnt > len) {
 				// in this case, casting len to int is safe 

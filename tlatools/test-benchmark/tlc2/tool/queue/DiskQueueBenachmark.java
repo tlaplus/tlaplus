@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Microsoft Research. All rights reserved.
+ * Copyright (c) 2019 Microsoft Research. All rights reserved.
  *
  * The MIT License (MIT)
  *
@@ -28,8 +28,10 @@ package tlc2.tool.queue;
 import java.io.IOException;
 
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Group;
 import org.openjdk.jmh.annotations.GroupThreads;
+import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
@@ -40,86 +42,93 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStates;
 
 @State(Scope.Group)
-public class StateQueueBenachmark {
-
-	@Param({"1", "2", "4", "8", "16", "32", "64"})
-	public int size;
+@BenchmarkMode(Mode.Throughput)
+public class DiskQueueBenachmark {
 	
-	private IStateQueue s;
+	@Param({"1", "2", "4", "8", "16", "32", "64"})
+	public int vars;
 
-	private TLCState[] batch;
+	@Param({"DiskByteArrayQueue", "DiskStateQueue"})
+	public String impl;
+	
+	private IStateQueue dsq;
 
+	private TLCState state;
+	
     @Setup
     public void up() throws IOException {
-        s = new DiskStateQueue();
-        
-    	// balance off the costs for creating the TLCState[].
-    	this.batch = new TLCState[size];
-    	for (int i = 0; i < batch.length; i++) {
-			batch[i] = TLCStates.createDummyState();
+		if (impl.equals("DiskByteArrayQueue")) {
+			this.dsq = new DiskByteArrayQueue();
+			System.out.println("Running setup for test with DiskByteArrayQueue");
+		} else {
+			this.dsq = new DiskStateQueue();
+			System.out.println("Running setup for test with DiskStateQueue");
 		}
+
+		this.state = TLCStates.createDummyState(vars);
     }
     
     @TearDown
     public void down() throws IOException {
-    	this.s.delete();
+    	this.dsq.delete();
     }
-  
+    
     @Benchmark
-    @Group("single")
-    @GroupThreads(2)
-    public TLCState[] consumerSingle() {
-    	final TLCState[] res = new TLCState[batch.length];
-    	for (int i = 0; i < batch.length; i++) {
-    		res[i] = this.s.sDequeue();
-    	}
-        return res;
+    @Group("g02")
+    @GroupThreads(1)
+    public TLCState consumer1() {
+        return this.dsq.sDequeue();
     }
 
     @Benchmark
-    @Group("single")
+    @Group("g02")
+    @GroupThreads(1)
+    public void producer1() {
+    	this.dsq.sEnqueue(this.state);
+    }
+    
+    
+    @Benchmark
+    @Group("g04")
     @GroupThreads(2)
-    public void producerSingle() {
-    	for (int i = 0; i < batch.length; i++) {
-    		this.s.sEnqueue(batch[i]);
-		}
+    public TLCState consumer2() {
+        return this.dsq.sDequeue();
+    }
+
+    @Benchmark
+    @Group("g04")
+    @GroupThreads(2)
+    public void producer2() {
+    	this.dsq.sEnqueue(this.state);
     }
 
     
-    /* Batches of enqueue only */
-    
     @Benchmark
-    @Group("batchasym")
-    @GroupThreads(2)
-    public TLCState[] consumerBatch() {
-    	final TLCState[] res = new TLCState[batch.length];
-    	for (int i = 0; i < batch.length; i++) {
-    		res[i] = this.s.sDequeue();
-    	}
-        return res;
+    @Group("g08")
+    @GroupThreads(4)
+    public TLCState consumer4() {
+        return this.dsq.sDequeue();
     }
 
     @Benchmark
-    @Group("batchasym")
-    @GroupThreads(2)
-    public void producerBatch() {
-    	this.s.sEnqueue(batch);
+    @Group("g08")
+    @GroupThreads(4)
+    public void producer4() {
+    	this.dsq.sEnqueue(this.state);
     }
 
     
-    /* Batches of dequeue & enqueue */
-    
     @Benchmark
-    @Group("batchsym")
-    @GroupThreads(2)
-    public TLCState[] consumerBatchSym() {
-        return this.s.sDequeue(size);
+    @Group("g16")
+    @GroupThreads(8)
+    public TLCState consumer8() {
+        return this.dsq.sDequeue();
     }
 
     @Benchmark
-    @Group("batchsym")
-    @GroupThreads(2)
-    public void producerBatchSym() {
-    	this.s.sEnqueue(batch);
+    @Group("g16")
+    @GroupThreads(8)
+    public void producer8() {
+    	this.dsq.sEnqueue(this.state);
     }
 }

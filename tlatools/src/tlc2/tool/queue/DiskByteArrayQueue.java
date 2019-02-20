@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 
 import tlc2.output.EC;
@@ -40,7 +41,7 @@ import util.WrongInvocationException;
  * A {@link DiskByteArrayQueue} uses the local hard disc as a backing store for
  * states. An in-memory buffer of size {@link DiskByteArrayQueue}{@link #BufSize}
  */
-public class DiskByteArrayQueue extends ByteAraryQueue {
+public class DiskByteArrayQueue extends ByteArrayQueue {
 	// TODO dynamic bufsize based on current VM parameters?
 	private final static int BufSize = Integer.getInteger(DiskStateQueue.class.getName() + ".BufSize", 8192);
 
@@ -69,6 +70,11 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 	protected final StatePoolCleaner cleaner;
 	private int loPool, hiPool, lastLoPool, newLastLoPool;
 	private File loFile;
+	
+	// TESTING ONLY!
+	DiskByteArrayQueue() throws IOException {
+		this(Files.createTempDirectory("DiskByteArrayQueue").toFile().toString());
+	}
 
 	/* Constructors */
 	public DiskByteArrayQueue(String diskdir) {
@@ -446,7 +452,7 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 		  public final synchronized byte[][] doWork(byte[][] deqBuf, File file)
 		  throws IOException, ClassNotFoundException {
 		    if (this.isFull) {
-		      Assert.check(this.poolFile == null, EC.SYSTEM_FILE_NULL);
+		      assert this.poolFile == null : EC.SYSTEM_FILE_NULL;
 		      byte[][] res = this.buf;
 		      this.buf = deqBuf;
 		      this.poolFile = file;
@@ -484,7 +490,7 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 		  public final synchronized byte[][] getCache(byte[][] deqBuf, File file)
 		  throws IOException, ClassNotFoundException {
 		    if (this.isFull) {
-		      Assert.check(this.poolFile == null, EC.SYSTEM_FILE_NULL);
+		      assert this.poolFile == null : EC.SYSTEM_FILE_NULL;
 		      byte[][] res = this.buf;
 		      this.buf = deqBuf;
 		      this.poolFile = file;
@@ -926,5 +932,14 @@ public class DiskByteArrayQueue extends ByteAraryQueue {
 			}
 			return new String(s);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.queue.IStateQueue#delete()
+	 */
+	@Override
+	public void delete() {
+		finishAll();
+		new File(this.filePrefix).delete();
 	}
 }

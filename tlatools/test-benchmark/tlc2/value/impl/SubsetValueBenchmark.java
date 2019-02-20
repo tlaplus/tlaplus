@@ -307,9 +307,9 @@ public class SubsetValueBenchmark {
  * better) Mode.SampleTime: Calculate how long does it take for a method to run
  * (including percentiles). Mode.SingleShotTime: Just run a method once (useful
  * for cold-testing mode). Or more than once if you have specified a batch size
- * for your iterations (see @Measurement annotation below) – in this case JMH
+ * for your iterations (see @Measurement annotation below) - in this case JMH
  * will calculate the batch running time (total time for all invocations in a
- * batch). Any set of these modes You can specify any set of these modes – the
+ * batch). Any set of these modes You can specify any set of these modes - the
  * test will be run several times (depending on number of requested modes).
  * Mode.All: All these modes one after another.
  */

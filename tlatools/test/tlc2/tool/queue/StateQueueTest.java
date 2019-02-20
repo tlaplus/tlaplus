@@ -113,7 +113,7 @@ public class StateQueueTest {
 	private void expectRuntimeException(IStateQueue aQueue, int size)  {
 		try {
 			aQueue.sDequeue(size);
-		} catch(RuntimeException e) {
+		} catch(RuntimeException|AssertionError e) {
 			return;
 		}
 		fail("expected to throw RuntimeException with <= input");
