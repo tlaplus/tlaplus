@@ -37,7 +37,12 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import net.nicoulaj.jmh.profilers.FlightRecorderProfiler;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStates;
 
@@ -130,5 +135,14 @@ public class DiskQueueBenachmark {
     @GroupThreads(8)
     public void producer8() {
     	this.dsq.sEnqueue(this.state);
+    }
+    
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()
+                .include(DiskQueueBenachmark.class.getSimpleName() + ".g02")
+                .addProfiler(FlightRecorderProfiler.class, "jfr")
+                .build();
+
+        new Runner(opt).run();
     }
 }

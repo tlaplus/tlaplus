@@ -12,7 +12,7 @@ Run JMH benchmarks from ant (customBuilds.xml):
 ant -f customBuild.xml compile compile-test benchmark &&
 java -jar target/benchmarks.jar -wi 1 -i1 -f1 \
 -rf json \
--rff DiskStateQueueBenachmark-$(date +%s)-$(git rev-parse --short HEAD).json \
+-rff DiskQueueBenachmark-$(date +%s)-$(git rev-parse --short HEAD).json \
 -jvmArgsPrepend "-ea -Xms8192m -Xmx8192m" \
--jvmArgsAppend "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model"
-tlc2.tool.queue.DiskStateQueueBenachmark \
+-jvmArgsAppend "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model" \
+tlc2.tool.queue.DiskQueueBenachmark
