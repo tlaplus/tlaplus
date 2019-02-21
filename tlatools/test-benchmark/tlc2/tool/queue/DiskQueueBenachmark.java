@@ -42,9 +42,9 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import net.nicoulaj.jmh.profilers.FlightRecorderProfiler;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStates;
+import tlc2.util.FlightRecorderProfiler;
 
 @State(Scope.Group)
 @BenchmarkMode(Mode.Throughput)
@@ -64,10 +64,8 @@ public class DiskQueueBenachmark {
     public void up() throws IOException {
 		if (impl.equals("DiskByteArrayQueue")) {
 			this.dsq = new DiskByteArrayQueue();
-			System.out.println("Running setup for test with DiskByteArrayQueue");
 		} else {
 			this.dsq = new DiskStateQueue();
-			System.out.println("Running setup for test with DiskStateQueue");
 		}
 
 		this.state = TLCStates.createDummyState(vars);
@@ -139,8 +137,8 @@ public class DiskQueueBenachmark {
     
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(DiskQueueBenachmark.class.getSimpleName() + ".g02")
-                .addProfiler(FlightRecorderProfiler.class, "jfr")
+                .include(DiskQueueBenachmark.class.getSimpleName())
+                .addProfiler(FlightRecorderProfiler.class)
                 .build();
 
         new Runner(opt).run();
