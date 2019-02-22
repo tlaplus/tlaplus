@@ -258,7 +258,7 @@ public final class Configuration implements ConfigurationConstants {
 
   static private boolean                  jj_initialized_once = false;
   static public ConfigurationTokenManager token_source;
-  static ASCII_CharStream                 jj_input_stream;
+  static SimpleCharStream                 jj_input_stream;
   static public Token                     token, jj_nt;
   static private int                      jj_ntk;
   static private int                      jj_gen;
@@ -275,7 +275,7 @@ public final class Configuration implements ConfigurationConstants {
       throw new Error();
     }
     jj_initialized_once = true;
-    jj_input_stream = new ASCII_CharStream(stream, 1, 1);
+    jj_input_stream = new SimpleCharStream(stream, 1, 1);
     token_source = new ConfigurationTokenManager(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -301,7 +301,7 @@ public final class Configuration implements ConfigurationConstants {
       throw new Error();
     }
     jj_initialized_once = true;
-    jj_input_stream = new ASCII_CharStream(stream, 1, 1);
+    jj_input_stream = new SimpleCharStream(stream, 1, 1);
     token_source = new ConfigurationTokenManager(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
