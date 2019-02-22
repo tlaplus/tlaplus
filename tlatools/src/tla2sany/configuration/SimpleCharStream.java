@@ -183,13 +183,17 @@ public class SimpleCharStream
      if (inBuf > 0)
      {
         --inBuf;
-        return (char)((char)0xff & buffer[(bufpos == bufsize - 1) ? (bufpos = 0) : ++bufpos]);
+
+        if (++bufpos == bufsize)
+           bufpos = 0;
+
+        return buffer[bufpos];
      }
 
      if (++bufpos >= maxNextCharInd)
         FillBuff();
 
-     char c = (char)((char)0xff & buffer[bufpos]);
+     char c = buffer[bufpos];
 
      UpdateLineColumn(c);
      return (c);
