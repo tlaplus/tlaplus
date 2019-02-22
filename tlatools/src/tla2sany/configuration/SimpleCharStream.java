@@ -254,7 +254,7 @@ public class SimpleCharStream
   }
 
   public SimpleCharStream(java.io.Reader dstream, int startline,
-                                                           int startcolumn)
+                          int startcolumn)
   {
      this(dstream, startline, startcolumn, 4096);
   }
@@ -281,7 +281,7 @@ public class SimpleCharStream
   }
 
   static public void ReInit(java.io.Reader dstream, int startline,
-                                                           int startcolumn)
+                     int startcolumn)
   {
      ReInit(dstream, startline, startcolumn, 4096);
   }
@@ -293,7 +293,7 @@ public class SimpleCharStream
   }
 
   public SimpleCharStream(java.io.InputStream dstream, int startline,
-                                                           int startcolumn)
+                          int startcolumn)
   {
      this(dstream, startline, startcolumn, 4096);
   }
@@ -343,7 +343,7 @@ public class SimpleCharStream
   }
 
   /**
-   * Method to adjust line and column numbers for the start of a token.<BR>
+   * Method to adjust line and column numbers for the start of a token.
    */
   static public void adjustBeginLineColumn(int newLine, int newCol)
   {
