@@ -56,7 +56,7 @@ public class StateSpaceInformationItem
 	}
 	
 	private StateSpaceInformationItem(Date time, long foundStates, long distinctStates) {
-		this(time, 0, foundStates, distinctStates, distinctStates, 0, 0);
+		this(time, 0, foundStates, distinctStates, -1, 0, 0);
 	}
 
 	private StateSpaceInformationItem(Date time, long distinctStates) {
@@ -64,7 +64,7 @@ public class StateSpaceInformationItem
 	}
 	
 	private StateSpaceInformationItem(long foundStates, long distinctStates) {
-		this(new Date(), 0, foundStates, distinctStates, distinctStates, 0, 0);
+		this(new Date(), 0, foundStates, distinctStates, -1, 0, 0);
 	}
 
 	private StateSpaceInformationItem(long distinctStates) {
