@@ -8462,7 +8462,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
  * (******************************************************************) temp :=
  * ArgNum(ops[idx], opNode.arity) ; if temp = -1 then Error("Nonexistent operand
  * specified") else curNode := Node[curNode.operands[temp]] end if elsif
- * opNode.kind = BuiltInKind then \* See configuration/ConfigConstants for a
+ * opNode.kind = BuiltInKind then \* See configuration/ConfigurationConstants for a
  * list of all \* BuiltInKind operators. if opNode.name \in {"$RcdConstructor",
  * "$SetOfRcds"} then
  * (*****************************************************************) (*

@@ -3,13 +3,13 @@
 /***************************************************************************
 * This file was originally created by running javacc the grammar file      *
 * config.jj that specifies the parsing of the string                       *
-* ConfigConstants.defaultConfig.  The current file has since been          *
+* ConfigurationConstants.defaultConfig.  The current file has since been   *
 * modified by DRJ (David Jefferson).                                       *
 ***************************************************************************/
 
 package tla2sany.configuration;
 
-public class ConfigurationTokenManager implements ConfigConstants
+public class ConfigurationTokenManager implements ConfigurationConstants
 {
 static private final int jjStopAtPos(int pos, int kind)
 {

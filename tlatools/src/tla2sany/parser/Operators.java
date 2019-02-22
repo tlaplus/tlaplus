@@ -33,7 +33,7 @@ public class Operators {
   static Hashtable DefinitionTable = new Hashtable();
     /***********************************************************************
     * Contains the Operator objects for all operators.  It is constructed  *
-    * from the data in ConfigConstants.defaultConfig.                      *
+    * from the data in ConfigurationConstants.defaultConfig.                      *
     ***********************************************************************/
   static Hashtable BuiltinTable = new Hashtable();
     /***********************************************************************

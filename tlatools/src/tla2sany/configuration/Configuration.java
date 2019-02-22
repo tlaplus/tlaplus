@@ -4,7 +4,7 @@
 /***************************************************************************
 * This file was originally created by running javacc on the grammar file   *
 * config.jj that specifies the parsing of the string                       *
-* ConfigConstants.defaultConfig.  The current file has since been          *
+* ConfigurationConstants.defaultConfig.  The current file has since been   *
 * modified by DRJ (David Jefferson).                                       *
 *                                                                          *
 * This file was modified by LL on 13 May 2008 to replace calls to          *
@@ -29,7 +29,7 @@ import tla2sany.st.Location;
 import util.ToolIO;
 import util.UniqueString;
 
-public final class Configuration implements ConfigConstants {
+public final class Configuration implements ConfigurationConstants {
 
   private static Errors         errors;
   private static java.io.Reader input;
