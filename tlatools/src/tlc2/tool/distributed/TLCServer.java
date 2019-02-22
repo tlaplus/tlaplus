@@ -528,9 +528,13 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					distinctStatesPerMinute = (long) ((fpSetSize - oldFPSetSize) / factor);
 			        
 					// print to system.out
-					MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(trace.getLevelForReporting()),
-			                String.valueOf(numOfGenStates), String.valueOf(fpSetSize),
-			                String.valueOf(getNewStates()), String.valueOf(statesPerMinute), String.valueOf(distinctStatesPerMinute) });
+					MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] {
+							String.valueOf(trace.getLevelForReporting()),
+							MP.getDf().format(numOfGenStates),
+							MP.getDf().format(fpSetSize),
+							MP.getDf().format(getNewStates()),
+							MP.getDf().format(statesPerMinute),
+							MP.getDf().format(distinctStatesPerMinute) });
 					
 					// Make the TLCServer main thread sleep for one report interval
 					wait(REPORT_INTERVAL);
@@ -677,9 +681,12 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
     public static final void printSummary(int level, long statesGenerated, long statesLeftInQueue, long distinctStates, boolean success) throws IOException
     {
 		if (TLCGlobals.tool) {
-            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(level),
-                    String.valueOf(statesGenerated), String.valueOf(distinctStates),
-                    String.valueOf(statesLeftInQueue), "0", "0" });
+            MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] {
+                    String.valueOf(level),
+                    MP.getDf().format(statesGenerated),
+                    MP.getDf().format(distinctStates),
+                    MP.getDf().format(statesLeftInQueue),
+                    "0", "0" });
         }
 
         MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(statesGenerated),

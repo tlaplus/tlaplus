@@ -177,21 +177,20 @@ public class StateSpaceInformationItem
 					i[1] + AT.length(), i[2]));
 
 			final NumberFormat nf = NumberFormat.getNumberInstance();
-			
-			final long diameter = Long.parseLong(outputMessage.substring(i[0]
-					+ OB.length(), i[1]));
-			final long foundStates = Long.parseLong(outputMessage.substring(
-					i[2] + COLON.length(), i[3]));
-			final long statesPerMinute = nf.parse(outputMessage
-					.substring(i[3] + GENERATED.length(), i[4]).replace(",", "")).longValue();
+			final long diameter = nf.parse(
+				outputMessage.substring(i[0] + OB.length(), i[1])).longValue();
+			final long foundStates = nf.parse(
+				outputMessage.substring(i[2] + COLON.length(), i[3])).longValue();
+			final long statesPerMinute = nf.parse(
+				outputMessage.substring(i[3] + GENERATED.length(), i[4])).longValue();
 
-			final long distinctStates = Long.parseLong(outputMessage.substring(
-					i[4] + SPM.length(), i[5]));
-			final long distinctStatesPerMinute = nf.parse(outputMessage
-					.substring(i[5] + DISTINCT.length(), i[6]).replace(",", "")).longValue();
+			final long distinctStates = nf.parse(
+				outputMessage.substring(i[4] + SPM.length(), i[5])).longValue();
+			final long distinctStatesPerMinute = nf.parse(
+				outputMessage.substring(i[5] + DISTINCT.length(), i[6])).longValue();
 
-			final long leftStates = Long.parseLong(outputMessage.substring(i[6]
-					+ DISTINCT_SPM.length(), i[7]));
+			final long leftStates = nf.parse(
+				outputMessage.substring(i[6] + DISTINCT_SPM.length(), i[7])).longValue();
 
 			return new StateSpaceInformationItem(time, diameter, foundStates,
 					distinctStates, leftStates, statesPerMinute,
