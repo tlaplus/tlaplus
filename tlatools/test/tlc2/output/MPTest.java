@@ -1,17 +1,14 @@
 package tlc2.output;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import util.ToolIO;
 
-/**
- * @author Simon Zambrovski
- * @version $Id$
- */
-public class ErrorPrinterTest
+public class MPTest
 {
 
     /* (non-Javadoc)
@@ -62,5 +59,19 @@ public class ErrorPrinterTest
         assertEquals("Error: [" + parameters[0] + "][" + parameters[1] + "]", allMessages[0]);
     }
 
-
+    @Test
+    public void testPrintProgressStats() {
+        String[] parameters = new String[] {
+                "this.trace.getLevelForReporting()",
+                MP.getDf().format(3000000),
+                MP.getDf().format(5000),
+                MP.getDf().format(1222333444),
+                MP.getDf().format(10000),
+                MP.getDf().format(1234)
+        };
+        MP.printMessage(EC.TLC_PROGRESS_STATS, parameters);
+        String[] allMessages = ToolIO.getAllMessages();
+        assertEquals(1, allMessages.length);
+        assertTrue(allMessages[0].contains("3,000,000 states generated (10,000 s/min), 5,000 distinct states found (1,234 ds/min), 1,222,333,444 states left on queue."));
+    }
 }

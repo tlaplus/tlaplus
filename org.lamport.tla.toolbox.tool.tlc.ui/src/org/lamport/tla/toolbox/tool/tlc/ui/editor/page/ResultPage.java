@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -1042,6 +1043,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
          */
         public String getColumnText(Object element, int columnIndex)
         {
+        	NumberFormat nf = NumberFormat.getIntegerInstance();
             if (element instanceof StateSpaceInformationItem)
             {
                 // the "N/A" values are used for simulation mode
@@ -1052,17 +1054,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 case COL_DIAMETER:
                     if (item.getDiameter() >= 0)
                     {
-                        return String.valueOf(item.getDiameter());
+                        return nf.format(item.getDiameter());
                     } else
                     {
                         return "--";
                     }
                 case COL_FOUND:
-                    return String.valueOf(item.getFoundStates());
+                    return nf.format(item.getFoundStates());
                 case COL_DISTINCT:
                     if (item.getDistinctStates() >= 0)
                     {
-                        return String.valueOf(item.getDistinctStates());
+                        return nf.format(item.getDistinctStates());
                     } else
                     {
                         return "--";
@@ -1071,7 +1073,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 case COL_LEFT:
                     if (item.getLeftStates() >= 0)
                     {
-                        return String.valueOf(item.getLeftStates());
+                        return nf.format(item.getLeftStates());
                     } else
                     {
                         return "--";
