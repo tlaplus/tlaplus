@@ -168,7 +168,7 @@ public class SimpleCharStream
            break;
         case '\t' :
            column--;
-           column += (8 - (column & 07));
+           column += (tabSize - (column % tabSize));
            break;
         default :
            break;
