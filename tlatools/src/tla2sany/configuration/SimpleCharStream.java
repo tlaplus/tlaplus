@@ -7,29 +7,34 @@ package tla2sany.configuration;
  * contain only ASCII characters (without unicode processing).
  */
 
-public final class SimpleCharStream
+public class SimpleCharStream
 {
   public static final boolean staticFlag = true;
   static int bufsize;
   static int available;
   static int tokenBegin;
   static public int bufpos = -1;
-  static private int bufline[];
-  static private int bufcolumn[];
+  static protected int bufline[];
+  static protected int bufcolumn[];
 
-  static private int column = 0;
-  static private int line = 1;
+  static protected int column = 0;
+  static protected int line = 1;
 
-  static private boolean prevCharIsCR = false;
-  static private boolean prevCharIsLF = false;
+  static protected boolean prevCharIsCR = false;
+  static protected boolean prevCharIsLF = false;
 
-  static private java.io.Reader inputStream;
+  static protected java.io.Reader inputStream;
 
-  static private char[] buffer;
-  static private int maxNextCharInd = 0;
-  static private int inBuf = 0;
+  static protected char[] buffer;
+  static protected int maxNextCharInd = 0;
+  static protected int inBuf = 0;
+  static protected int tabSize = 8;
 
-  static private final void ExpandBuff(boolean wrapAround)
+  static protected void setTabSize(int i) { tabSize = i; }
+  static protected int getTabSize(int i) { return tabSize; }
+
+
+  static protected void ExpandBuff(boolean wrapAround)
   {
      char[] newbuffer = new char[bufsize + 2048];
      int newbufline[] = new int[bufsize + 2048];
@@ -79,7 +84,7 @@ public final class SimpleCharStream
      tokenBegin = 0;
   }
 
-  static private final void FillBuff() throws java.io.IOException
+  static protected void FillBuff() throws java.io.IOException
   {
      if (maxNextCharInd == available)
      {
@@ -124,7 +129,7 @@ public final class SimpleCharStream
      }
   }
 
-  static public final char BeginToken() throws java.io.IOException
+  static public char BeginToken() throws java.io.IOException
   {
      tokenBegin = -1;
      char c = readChar();
@@ -133,7 +138,7 @@ public final class SimpleCharStream
      return c;
   }
 
-  static private final void UpdateLineColumn(char c)
+  static protected void UpdateLineColumn(char c)
   {
      column++;
 
@@ -173,7 +178,7 @@ public final class SimpleCharStream
      bufcolumn[bufpos] = column;
   }
 
-  static public final char readChar() throws java.io.IOException
+  static public char readChar() throws java.io.IOException
   {
      if (inBuf > 0)
      {
@@ -195,7 +200,7 @@ public final class SimpleCharStream
    * @see #getEndColumn
    */
 
-  static public final int getColumn() {
+  static public int getColumn() {
      return bufcolumn[bufpos];
   }
 
@@ -204,27 +209,27 @@ public final class SimpleCharStream
    * @see #getEndLine
    */
 
-  static public final int getLine() {
+  static public int getLine() {
      return bufline[bufpos];
   }
 
-  static public final int getEndColumn() {
+  static public int getEndColumn() {
      return bufcolumn[bufpos];
   }
 
-  static public final int getEndLine() {
+  static public int getEndLine() {
      return bufline[bufpos];
   }
 
-  static public final int getBeginColumn() {
+  static public int getBeginColumn() {
      return bufcolumn[tokenBegin];
   }
 
-  static public final int getBeginLine() {
+  static public int getBeginLine() {
      return bufline[tokenBegin];
   }
 
-  static public final void backup(int amount) {
+  static public void backup(int amount) {
 
     inBuf += amount;
     if ((bufpos -= amount) < 0)
@@ -305,7 +310,7 @@ public final class SimpleCharStream
      ReInit(dstream, startline, startcolumn, 4096);
   }
 
-  static public final String GetImage()
+  static public String GetImage()
   {
      if (bufpos >= tokenBegin)
         return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
@@ -314,7 +319,7 @@ public final class SimpleCharStream
                               new String(buffer, 0, bufpos + 1);
   }
 
-  static public final char[] GetSuffix(int len)
+  static public char[] GetSuffix(int len)
   {
      char[] ret = new char[len];
 
