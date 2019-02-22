@@ -11,15 +11,6 @@
 package tla2sany.configuration;
 
 interface ConfigConstants {
-  int nada = 0;
-  int infixOP = 1;
-  int prefixOP = 2;
-  int postfixOP = 3;
-  int preINfixOP = 4;
-
-  int leftAssoc = 10;
-  int rightAssoc = 11;
-  int noAssoc = 12;
 
   int EOF = 0;
   int SINGLE_LINE = 4;
@@ -143,7 +134,7 @@ interface ConfigConstants {
     "operator && 130 130 Left infix\n" +
     "operator & 130 130 Left infix\n" +
     "operator $$ 90 130 Left infix\n" +
-    "operator $ 90 130 Left infix\n" +  
+    "operator $ 90 130 Left infix\n" +
     "operator ?? 90 130 Left infix\n" +
     //"operator ? 90 130 Left infix\n" +  // Removed requested by Leslie (16 Feb. 01)
     "operator %% 100 110 Left infix\n" +
@@ -265,7 +256,7 @@ interface ConfigConstants {
     "builtin $SetEnumerate            $$_null  -1\n" +
     "builtin $SetOfAll                $$_null  -1\n" +
     "builtin $SetOfFcns               $$_null  -1\n" +
-    "builtin $SetOfRcds               $$_null  -1\n" + // Added by DRJ 1 Oct '00 
+    "builtin $SetOfRcds               $$_null  -1\n" + // Added by DRJ 1 Oct '00
     "builtin $SF                      $$_null   2\n" +
     "builtin $SquareAct               $$_null   2\n" +
     "builtin $SubsetOf                $$_null   1\n" +
@@ -288,7 +279,7 @@ interface ConfigConstants {
     /***********************************************************************
     * $Suffices added by LL 16 Feb 2009.                                   *
     ***********************************************************************/
-    "builtin $Suffices                $$_null   1\n"   
+    "builtin $Suffices                $$_null   1\n"
 
   ;
 }
