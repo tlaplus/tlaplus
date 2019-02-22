@@ -1027,6 +1027,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             for (int i = 0; i < columnTitles.length; i++)
             {
                 TableColumn column = new TableColumn(stateTable, SWT.NULL);
+                column.setAlignment(SWT.RIGHT);
                 column.setWidth(columnWidths[i]);
                 column.setText(columnTitles[i]);
 
