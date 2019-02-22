@@ -10,7 +10,7 @@
 
 package tla2sany.configuration;
 
-interface ConfigurationConstants {
+public interface ConfigurationConstants {
 
   int EOF = 0;
   int SINGLE_LINE = 4;
