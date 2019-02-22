@@ -11,39 +11,8 @@ package tla2sany.configuration;
 
 public class ConfigurationTokenManager implements ConfigurationConstants
 {
-static private final int jjStopAtPos(int pos, int kind)
-{
-   jjmatchedKind = kind;
-   jjmatchedPos = pos;
-   return pos + 1;
-}
-static private final int jjMoveStringLiteralDfa0_1()
-{
-   switch(curChar)
-   {
-      case 42:
-         return jjMoveStringLiteralDfa1_1(0x20L);
-      default :
-         return 1;
-   }
-}
-static private final int jjMoveStringLiteralDfa1_1(long active0)
-{
-   try { curChar = input_stream.readChar(); }
-   catch(java.io.IOException e) {
-      return 1;
-   }
-   switch(curChar)
-   {
-      case 41:
-         if ((active0 & 0x20L) != 0L)
-            return jjStopAtPos(1, 5);
-         break;
-      default :
-         return 2;
-   }
-   return 2;
-}
+  public static  java.io.PrintStream debugStream = System.out;
+  public static  void setDebugStream(java.io.PrintStream ds) { debugStream = ds; }
 private static final int jjStopStringLiteralDfa_0(int pos, long active0)
 {
    switch (pos)
@@ -62,6 +31,12 @@ private static final int jjStopStringLiteralDfa_0(int pos, long active0)
 private static final int jjStartNfa_0(int pos, long active0)
 {
    return jjMoveNfa_0(jjStopStringLiteralDfa_0(pos, active0), pos + 1);
+}
+static private final int jjStopAtPos(int pos, int kind)
+{
+   jjmatchedKind = kind;
+   jjmatchedPos = pos;
+   return pos + 1;
 }
 static private final int jjStartNfaWithStates_0(int pos, int kind, int state)
 {
@@ -148,14 +123,6 @@ static private final int jjMoveNfa_0(int startState, int curPos)
          {
             switch(jjstateSet[--i])
             {
-               case 61:
-               case 56:
-                  if ((0xf400fffa00000000L & l) == 0L)
-                     break;
-                  if (kind > 21)
-                     kind = 21;
-                  jjCheckNAdd(56);
-                  break;
                case 7:
                   if ((0xf400fffa00000000L & l) != 0L)
                   {
@@ -182,6 +149,14 @@ static private final int jjMoveNfa_0(int startState, int curPos)
                      jjstateSet[jjnewStateCnt++] = 61;
                   if (curChar == 36)
                      jjstateSet[jjnewStateCnt++] = 64;
+                  break;
+               case 61:
+               case 56:
+                  if ((0xf400fffa00000000L & l) == 0L)
+                     break;
+                  if (kind > 21)
+                     kind = 21;
+                  jjCheckNAdd(56);
                   break;
                case 59:
                   if (curChar == 41 && kind > 21)
@@ -240,16 +215,6 @@ static private final int jjMoveNfa_0(int startState, int curPos)
          {
             switch(jjstateSet[--i])
             {
-               case 61:
-                  if ((0x78000000f8000001L & l) != 0L)
-                  {
-                     if (kind > 21)
-                        kind = 21;
-                     jjCheckNAdd(56);
-                  }
-                  if (curChar == 92)
-                     jjstateSet[jjnewStateCnt++] = 60;
-                  break;
                case 7:
                   if ((0x7fffffe07fffffeL & l) != 0L)
                   {
@@ -301,6 +266,16 @@ static private final int jjMoveNfa_0(int startState, int curPos)
                      jjstateSet[jjnewStateCnt++] = 14;
                   else if (curChar == 67)
                      jjstateSet[jjnewStateCnt++] = 6;
+                  break;
+               case 61:
+                  if ((0x78000000f8000001L & l) != 0L)
+                  {
+                     if (kind > 21)
+                        kind = 21;
+                     jjCheckNAdd(56);
+                  }
+                  if (curChar == 92)
+                     jjstateSet[jjnewStateCnt++] = 60;
                   break;
                case 0:
                   if (curChar == 84 && kind > 7)
@@ -976,6 +951,33 @@ static private final int jjMoveNfa_0(int startState, int curPos)
       catch(java.io.IOException e) { return curPos; }
    }
 }
+static private final int jjMoveStringLiteralDfa0_1()
+{
+   switch(curChar)
+   {
+      case 42:
+         return jjMoveStringLiteralDfa1_1(0x20L);
+      default :
+         return 1;
+   }
+}
+static private final int jjMoveStringLiteralDfa1_1(long active0)
+{
+   try { curChar = input_stream.readChar(); }
+   catch(java.io.IOException e) {
+      return 1;
+   }
+   switch(curChar)
+   {
+      case 41:
+         if ((active0 & 0x20L) != 0L)
+            return jjStopAtPos(1, 5);
+         break;
+      default :
+         return 2;
+   }
+   return 2;
+}
 static final int[] jjnextStates = {
    165, 171, 173, 145, 148, 150, 155, 158, 161, 136, 141, 124, 129, 116, 117, 107, 
    108, 97, 99, 90, 93, 79, 85, 
@@ -1002,21 +1004,19 @@ static final long[] jjtoSpecial = {
 static final long[] jjtoMore = {
    0x50L, 
 };
-static private SimpleCharStream input_stream;
+static protected SimpleCharStream input_stream;
 static private final int[] jjrounds = new int[174];
 static private final int[] jjstateSet = new int[348];
 static StringBuffer image;
 static int jjimageLen;
 static int lengthOfMatch;
 static protected char curChar;
-public ConfigurationTokenManager(SimpleCharStream stream)
-{
+public ConfigurationTokenManager(SimpleCharStream stream){
    if (input_stream != null)
       throw new TokenMgrError("ERROR: Second call to constructor of static lexer. You must use ReInit() to initialize the static variables.", TokenMgrError.STATIC_LEXER_ERROR);
    input_stream = stream;
 }
-public ConfigurationTokenManager(SimpleCharStream stream, int lexState)
-{
+public ConfigurationTokenManager(SimpleCharStream stream, int lexState){
    this(stream);
    SwitchTo(lexState);
 }
@@ -1049,7 +1049,7 @@ static public void SwitchTo(int lexState)
       curLexState = lexState;
 }
 
-static private final Token jjFillToken()
+static protected Token jjFillToken()
 {
    Token t = Token.newToken(jjmatchedKind);
    t.kind = jjmatchedKind;
@@ -1069,7 +1069,7 @@ static int jjround;
 static int jjmatchedPos;
 static int jjmatchedKind;
 
-public static final Token getNextToken() 
+public static Token getNextToken() 
 {
   int kind;
   Token specialToken = null;
@@ -1098,7 +1098,7 @@ public static final Token getNextToken()
      switch(curLexState)
      {
        case 0:
-         try { 
+         try { input_stream.backup(0);
             while (curChar <= 32 && (0x100000600L & (1L << curChar)) != 0L)
                curChar = input_stream.BeginToken();
          }
@@ -1184,7 +1184,7 @@ public static final Token getNextToken()
   }
 }
 
-static final void SkipLexicalActions(Token matchedToken)
+static void SkipLexicalActions(Token matchedToken)
 {
    switch(jjmatchedKind)
    {
