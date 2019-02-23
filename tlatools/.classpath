@@ -19,5 +19,11 @@
 	<classpathentry kind="lib" path="lib/javax.mail/mailapi-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/jpf.jar"/>
 	<classpathentry kind="lib" path="lib/jmh/jmh-core-1.21.jar"/>
+	<classpathentry kind="lib" path="lib/jmh/commons-math3-3.2.jar"/>
+	<classpathentry kind="src" path=".apt_generated">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="class"/>
 </classpath>

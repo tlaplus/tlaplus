@@ -1,6 +1,7 @@
 bin/
 class/
 test-class/
+.apt_generated/
 dist/
 test-bin/
 */screenshots
