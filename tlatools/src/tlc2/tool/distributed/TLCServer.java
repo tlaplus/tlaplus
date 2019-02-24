@@ -530,11 +530,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					// print to system.out
 					MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] {
 							String.valueOf(trace.getLevelForReporting()),
-							MP.getDf().format(numOfGenStates),
-							MP.getDf().format(fpSetSize),
-							MP.getDf().format(getNewStates()),
-							MP.getDf().format(statesPerMinute),
-							MP.getDf().format(distinctStatesPerMinute) });
+							MP.format(numOfGenStates),
+							MP.format(fpSetSize),
+							MP.format(getNewStates()),
+							MP.format(statesPerMinute),
+							MP.format(distinctStatesPerMinute) });
 					
 					// Make the TLCServer main thread sleep for one report interval
 					wait(REPORT_INTERVAL);
@@ -683,9 +683,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		if (TLCGlobals.tool) {
             MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] {
                     String.valueOf(level),
-                    MP.getDf().format(statesGenerated),
-                    MP.getDf().format(distinctStates),
-                    MP.getDf().format(statesLeftInQueue),
+                    MP.format(statesGenerated),
+                    MP.format(distinctStates),
+                    MP.format(statesLeftInQueue),
                     "0", "0" });
         }
 

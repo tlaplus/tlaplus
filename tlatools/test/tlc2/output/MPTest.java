@@ -63,11 +63,11 @@ public class MPTest
     public void testPrintProgressStats() {
         String[] parameters = new String[] {
                 "this.trace.getLevelForReporting()",
-                MP.getDf().format(3000000),
-                MP.getDf().format(5000),
-                MP.getDf().format(1222333444),
-                MP.getDf().format(10000),
-                MP.getDf().format(1234)
+                MP.format(3000000),
+                MP.format(5000),
+                MP.format(1222333444),
+                MP.format(10000),
+                MP.format(1234)
         };
         MP.printMessage(EC.TLC_PROGRESS_STATS, parameters);
         String[] allMessages = ToolIO.getAllMessages();

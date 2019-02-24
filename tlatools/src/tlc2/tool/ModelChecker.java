@@ -238,9 +238,9 @@ public class ModelChecker extends AbstractChecker
 					// checking is.
             		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] {
                             String.valueOf(this.trace.getLevelForReporting()),
-                            MP.getDf().format(getStatesGenerated()),
-                            MP.getDf().format(theFPSet.size()),
-                            MP.getDf().format(this.theStateQueue.size()) });
+                            MP.format(getStatesGenerated()),
+                            MP.format(theFPSet.size()),
+                            MP.format(this.theStateQueue.size()) });
                 	
                     report("checking liveness");
                     success = liveCheck.finalCheck(tool);
@@ -855,11 +855,11 @@ public class ModelChecker extends AbstractChecker
         
 		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] {
                 String.valueOf(this.trace.getLevelForReporting()),
-                MP.getDf().format(l),
-                MP.getDf().format(fpSetSize),
-                MP.getDf().format(this.theStateQueue.size()),
-                MP.getDf().format(statesPerMinute),
-                MP.getDf().format(distinctStatesPerMinute) });
+                MP.format(l),
+                MP.format(fpSetSize),
+                MP.format(this.theStateQueue.size()),
+                MP.format(statesPerMinute),
+                MP.format(distinctStatesPerMinute) });
     }
 
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException

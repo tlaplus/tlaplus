@@ -1600,7 +1600,7 @@ public class MP
 		recorder = aRecorder;
 	}
 
-	public static DecimalFormat getDf() {
-        return df;
-    }
+	public static String format(final long l) {
+		return df.format(l);
+	}
 }
