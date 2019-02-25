@@ -56,6 +56,8 @@ public class StateSpaceInformationItem
 	}
 	
 	private StateSpaceInformationItem(Date time, long foundStates, long distinctStates) {
+		// Set leftStates to distinctStates: If we found 10 initial states, those 10
+		// states go into the queue.
 		this(time, 0, foundStates, distinctStates, distinctStates, 0, 0);
 	}
 
