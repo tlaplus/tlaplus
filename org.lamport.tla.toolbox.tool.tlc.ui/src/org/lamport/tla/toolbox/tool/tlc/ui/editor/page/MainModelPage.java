@@ -11,7 +11,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.function.Consumer;
@@ -99,6 +101,25 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     public static final String ID = "MainModelPage";
     public static final String TITLE = "Model Overview";
 
+	private static final String[] TLC_PROFILE_DISPLAY_NAMES;
+	private static final Map<String, TLCConsumptionProfile> TLC_PROFILE_MAP;
+
+	static {
+		final TLCConsumptionProfile[] profiles = TLCConsumptionProfile.values();
+		final int size = profiles.length;
+
+		TLC_PROFILE_DISPLAY_NAMES = new String[size];
+		TLC_PROFILE_MAP = new HashMap<>();
+
+		for (int i = 0; i < size; i++) {
+			final TLCConsumptionProfile profile = profiles[i];
+
+			TLC_PROFILE_DISPLAY_NAMES[i] = profile.getDisplayName();
+			TLC_PROFILE_MAP.put(profile.getDisplayName(), profile);
+		}
+	}
+
+	
     private Button noSpecRadio; // re-added on 10 Sep 2009
     private Button closedFormulaRadio;
     private Button initNextFairnessRadio;
@@ -108,14 +129,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     // private SourceViewer fairnessFormulaSource;
     private SourceViewer specSource;
     private Button checkDeadlockButton;
+    
+    private Combo tlcProfileCombo;
     private Spinner workers;
+    private Scale maxHeapSize;
+    
     /**
 	 * Spinner to set the number of (expected) distributed FPSets.
 	 */
     private Spinner distributedFPSetCountSpinner;
     private Spinner distributedNodesCountSpinner;
     private Combo networkInterfaceCombo;
-    private Scale maxHeapSize;
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
     private TableViewer constantTable;
@@ -260,7 +284,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // this.fairnessFormulaSource.setDocument(fairnessDoc);
 
         // number of workers
-        workers.setSelection(getModel().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
+		workers.setSelection(
+				getModel().getAttribute(LAUNCH_NUMBER_OF_WORKERS, TLCConsumptionProfile.LAZY.getWorkerThreads()));
 
         // max JVM heap size
         final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
@@ -942,11 +967,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
 
+        GridLayout gl;
         GridData gd;
         TableWrapData twd;
 
         Section section;
-        GridLayout layout;
 
         /*
          * Comments/notes section spanning two columns
@@ -1004,9 +1029,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         section.setLayoutData(gd);
 
         Composite behaviorArea = (Composite) section.getClient();
-        layout = new GridLayout();
-        layout.numColumns = 2;
-        behaviorArea.setLayout(layout);
+        gl = new GridLayout();
+        gl.numColumns = 2;
+        behaviorArea.setLayout(gl);
 
         ValidateableSectionPart behaviorPart = new ValidateableSectionPart(section, this, SEC_WHAT_IS_THE_SPEC);
         managedForm.addPart(behaviorPart);
@@ -1093,9 +1118,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         section.setLayoutData(gd);
 
         Composite toBeCheckedArea = (Composite) section.getClient();
-        layout = new GridLayout();
-        layout.numColumns = 1;
-        toBeCheckedArea.setLayout(layout);
+        gl = new GridLayout();
+        gl.numColumns = 1;
+        toBeCheckedArea.setLayout(gl);
 
         checkDeadlockButton = toolkit.createButton(toBeCheckedArea, "Deadlock", SWT.CHECK);
 
@@ -1189,19 +1214,37 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // run tab
         section = FormHelper.createSectionComposite(right, "How to run?", "TLC Parameters", toolkit, sectionFlags,
                 getExpansionListener());
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        section.setLayoutData(gd);
+        section.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Composite howToRunArea = (Composite) section.getClient();
         group = new HyperlinkGroup(howToRunArea.getDisplay());
-        layout = new GridLayout(2, true);
-        howToRunArea.setLayout(layout);
+        gl = new GridLayout(2, false);
+        howToRunArea.setLayout(gl);
 
-        ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
+        final ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
         managedForm.addPart(howToRunPart);
 
-        DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
+        final DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
 
+        toolkit.createLabel(howToRunArea, "System resources dedicated to TLC:");
+        
+		tlcProfileCombo = new Combo(howToRunArea, SWT.READ_ONLY);
+		tlcProfileCombo.setItems(TLC_PROFILE_DISPLAY_NAMES);
+		tlcProfileCombo.select(TLC_PROFILE_DISPLAY_NAMES.length - 1);
+		tlcProfileCombo.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(final SelectionEvent se) {
+				final TLCConsumptionProfile profile = TLC_PROFILE_MAP.get(tlcProfileCombo.getText());
+
+				workers.setSelection(profile.getWorkerThreads());
+				maxHeapSize.setSelection(profile.getMemoryPercentage());
+			}
+
+			public void widgetDefaultSelected(final SelectionEvent se) { }
+        });
+        gd = new GridData();
+        gd.horizontalIndent = 30;
+        tlcProfileCombo.setLayoutData(gd);
+        
         /*
          * Workers Spinner
          */
@@ -1214,7 +1257,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers.addSelectionListener(howToRunListener);
         workers.addFocusListener(focusListener);
         gd = new GridData();
-        gd.horizontalIndent = 10;
+        gd.horizontalIndent = 40;
         gd.widthHint = 40;
         workers.setLayoutData(gd);
         
@@ -1236,8 +1279,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// section grid layout to fit the scale and the maxHeapSizeFraction
 		// label into a single row.
         final Composite maxHeapScale = new Composite(howToRunArea, SWT.NONE);
-        layout = new GridLayout(2, false);
-        maxHeapScale.setLayout(layout);
+        gl = new GridLayout(2, false);
+        maxHeapScale.setLayout(gl);
 
         // field max heap size
         int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
@@ -1246,7 +1289,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapSize.addSelectionListener(howToRunListener);
         maxHeapSize.addFocusListener(focusListener);
         gd = new GridData();
-        gd.horizontalIndent = 0;
+        gd.horizontalIndent = 30;
         gd.widthHint = 250;
         maxHeapSize.setLayoutData(gd);
         maxHeapSize.setMaximum(99);
@@ -1261,7 +1304,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		final TLCRuntime instance = TLCRuntime.getInstance();
 		long memory = instance.getAbsolutePhysicalSystemMemory(defaultMaxHeapSize / 100d);
 		final Label maxHeapSizeFraction = toolkit.createLabel(maxHeapScale,
-				defaultMaxHeapSize + "%" + " (" + memory + " mb)");
+				defaultMaxHeapSize + "%" + " (" + memory + " mb)  ");
         maxHeapSize.addPaintListener(new PaintListener() {
 			/* (non-Javadoc)
 			 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
@@ -1274,8 +1317,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				maxHeapSizeFraction.setText(value + "%" + " (" + memory + " mb)");
 			}
 		});
-
         
+        Label hr = toolkit.createSeparator(howToRunArea, SWT.HORIZONTAL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        hr.setLayoutData(gd);
+
 //        // label workers
 //        toolkit.createLabel(howToRunArea, "Number of worker threads:");
 //
@@ -1294,8 +1341,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          * Distribution.  Help button added by LL on 17 Jan 2013
          */
         Composite distComp = new Composite(howToRunArea, SWT.NONE) ;
-        layout = new GridLayout(3, true);
-        distComp.setLayout(layout);
+        gl = new GridLayout(3, true);
+        distComp.setLayout(gl);
         
         gd = new GridData();
         gd.horizontalSpan = 2;
@@ -1327,8 +1374,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Composite wrapping number of distributed FPSet and iface when ad hoc selected
 		 */
         final Composite builtInOptions = new Composite(distributedOptions, SWT.NONE);
-        layout = new GridLayout(2, true);
-        builtInOptions.setLayout(layout);
+        gl = new GridLayout(2, true);
+        builtInOptions.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
         builtInOptions.setLayoutData(gd);
@@ -1339,8 +1386,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 */
 		// composite
         final Composite networkInterface = new Composite(builtInOptions, SWT.NONE) ;
-        layout = new GridLayout(2, true);
-        networkInterface.setLayout(layout);
+        gl = new GridLayout(2, true);
+        networkInterface.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
         networkInterface.setLayoutData(gd);
@@ -1423,8 +1470,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		// composite
         final Composite distributedFPSetCount = new Composite(builtInOptions, SWT.NONE);
-        layout = new GridLayout(2, false);
-        distributedFPSetCount.setLayout(layout);
+        gl = new GridLayout(2, false);
+        distributedFPSetCount.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
         distributedFPSetCount.setLayoutData(gd);
@@ -1454,8 +1501,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Composite wrapping all widgets related to jclouds
 		 */
         final Composite jcloudsOptions = new Composite(distributedOptions, SWT.NONE);
-        layout = new GridLayout(2, true);
-        jcloudsOptions.setLayout(layout);
+        gl = new GridLayout(2, true);
+        jcloudsOptions.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
         jcloudsOptions.setLayoutData(gd);
@@ -1466,8 +1513,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
  		// composite
          final Composite distributedNodesCount = new Composite(jcloudsOptions, SWT.NONE);
-         layout = new GridLayout(2, false);
-         distributedNodesCount.setLayout(layout);
+         gl = new GridLayout(2, false);
+         distributedNodesCount.setLayout(gl);
          gd = new GridData();
          gd.horizontalSpan = 2;
          distributedNodesCount.setLayoutData(gd);
@@ -1498,8 +1545,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Result mail address input
 		 */
         final Composite resultAddress = new Composite(jcloudsOptions, SWT.NONE) ;
-        layout = new GridLayout(2, true);
-        resultAddress.setLayout(layout);
+        gl = new GridLayout(2, true);
+        resultAddress.setLayout(gl);
 		final String resultAddressTooltip = "A list (comma-separated) of one to N email addresses to send the model checking result to.";
         resultAddress.setToolTipText(resultAddressTooltip);
         
