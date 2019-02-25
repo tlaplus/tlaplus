@@ -62,6 +62,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -77,7 +78,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
@@ -517,6 +517,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			disposeLock.unlock();
 		}
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+	protected Layout getBodyLayout() {
+		return FormHelper.createFormTableWrapLayout(true, 1);
+	}
 
     /**
      * Draw the fields
@@ -534,11 +542,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION;
         final int expressionFieldFlags = textFieldFlags | SWT.WRAP;
 
-        FormToolkit toolkit = managedForm.getToolkit();
-        Composite body = managedForm.getForm().getBody();
-        TableWrapLayout layout = new TableWrapLayout();
-        layout.numColumns = 1;
-        body.setLayout(layout);
+        final FormToolkit toolkit = managedForm.getToolkit();
+        final Composite body = managedForm.getForm().getBody();
 
         TableWrapData twd;
         Section section;
@@ -559,12 +564,15 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         section.setLayoutData(twd);
 
-        Composite generalArea = (Composite) section.getClient();
+        final Composite generalArea = (Composite) section.getClient();
         generalArea.setLayout(new GridLayout());
 
         // ------------ status composite ------------
-        Composite statusComposite = toolkit.createComposite(generalArea);
+        final Composite statusComposite = toolkit.createComposite(generalArea);
         statusComposite.setLayout(new GridLayout(2, false));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        statusComposite.setLayoutData(gd);
 
         // start
         this.startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
