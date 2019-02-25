@@ -5,7 +5,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -13,6 +16,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -42,7 +46,9 @@ import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
+import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.IHelpConstants;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -76,6 +82,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Text simuDepthText;
     private Text simuSeedText;
     private Text simuArilText;
+    
+    // The widgets to display the checkpoint size and the delete button.
+    private Button checkpointButton;
+    private Text checkpointIdText;
+    private Label checkpointSizeLabel;
+    private Text checkpointSizeText;
+    private Button checkpointDeleteButton;
+    
     /**
      * Offset for the -fp parameter passed to TLC process to select the hash seed 
      */
@@ -114,6 +128,15 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         this.helpId = IHelpConstants.ADVANCED_MODEL_PAGE;
         this.imagePath = "icons/full/choice_sc_obj.gif";
     }
+    
+    /**
+     * On a refresh, the checkpoint information is re-read 
+     */
+    @Override
+	public void refresh() {
+		super.refresh();
+		updateCheckpoints();
+	}
 
     /**
      * Loads data from the model
@@ -183,6 +206,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         
         // Defer Liveness
         deferLiveness.setSelection(getModel().getAttribute(LAUNCH_DEFER_LIVENESS, LAUNCH_DEFER_LIVENESS_DEFAULT));
+
+        // recover from the checkpoint
+        boolean recover = getModel().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
+        checkpointButton.setSelection(recover);
         
         // fp index
         final boolean randomly = getModel().getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT);
@@ -252,6 +279,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // Defer Liveness
         getModel().setAttribute(LAUNCH_DEFER_LIVENESS, deferLiveness.getSelection());
+
+        // recover from deadlock
+        getModel().setAttribute(LAUNCH_RECOVER, checkpointButton.getSelection());
         
         // FP Seed choose randomly
 		getModel().setAttribute(LAUNCH_FP_INDEX_RANDOM, fpIndexRandomly.getSelection());
@@ -418,11 +448,26 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
         
         // get data binding manager
-        DataBindingManager dm = getDataBindingManager();
+        final DataBindingManager dm = getDataBindingManager();
+
+        // fill the checkpoints
+        updateCheckpoints();
+
+        // recover from checkpoint
+        if (checkpointButton.getSelection())
+        {
+            if (EMPTY_STRING.equals(checkpointIdText.getText()))
+            {
+                modelEditor.addErrorMessage("noChckpoint", "No checkpoint data found", this.getId(),
+                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
+                setComplete(false);
+                expandSection(SEC_HOW_TO_RUN);
+            }
+        }
 
         // check the model values
-        TypedSet modelValuesSet = TypedSet.parseSet(FormHelper
-                .trimTrailingSpaces(modelValuesSource.getDocument().get()));
+		final TypedSet modelValuesSet
+							= TypedSet.parseSet(FormHelper.trimTrailingSpaces(modelValuesSource.getDocument().get()));
         if (modelValuesSet.getValueCount() > 0)
         {
             // there were values defined
@@ -603,6 +648,43 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 //        }
         
         super.validatePage(switchToErrorPage);
+    }
+	
+    /**
+     * Checks if checkpoint information changed 
+     */
+    private void updateCheckpoints()
+    {
+        IResource[] checkpoints = null;
+        try
+        {
+            // checkpoint id
+            checkpoints = getModel().getCheckpoints(false);
+        } catch (CoreException e)
+        {
+            TLCUIActivator.getDefault().logError("Error checking chekpoint data", e);
+        }
+
+        if (checkpoints != null && checkpoints.length > 0)
+        {
+            checkpointIdText.setText(checkpoints[0].getName());
+        } else
+        {
+            checkpointIdText.setText(EMPTY_STRING);
+        }
+
+        if ((checkpoints == null) || (checkpoints.length == 0))
+        {
+            checkpointSizeText.setVisible(false);
+            checkpointSizeLabel.setVisible(false);
+            checkpointDeleteButton.setVisible(false);
+        } else
+        {
+            checkpointSizeText.setText(String.valueOf(ResourceHelper.getSizeOfJavaFileResource(checkpoints[0]) / 1000));
+            checkpointSizeText.setVisible(true);
+            checkpointSizeLabel.setVisible(true);
+            checkpointDeleteButton.setVisible(true);
+        }
     }
 
     /**
@@ -816,6 +898,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      */
     private Section createAdvancedLaunchSection(FormToolkit toolkit, Composite parent, int sectionFlags)
     {
+        GridLayout gl;
         GridData gd;
 
         // advanced section
@@ -933,10 +1016,75 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simuArilText.addFocusListener(focusListener);
 
         // add horizontal divider that makes the separation clear
-        toolkit.createSeparator(area, SWT.HORIZONTAL);
-        // add empty composite to make the two column grid layout happy
-        toolkit.createComposite(area);
+        Label hr = toolkit.createSeparator(area, SWT.HORIZONTAL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        hr.setLayoutData(gd);
 
+        /*
+         * run from the checkpoint.  Checkpoint help button added by LL on 17 Jan 2013
+         */
+        Composite checkpointComposite = new Composite(area, SWT.NONE) ;
+        gl = new GridLayout(2, true);
+        checkpointComposite.setLayout(gl);
+
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 20;
+        checkpointComposite.setLayoutData(gd);
+
+        checkpointButton = toolkit.createButton(checkpointComposite, "Recover from checkpoint", SWT.CHECK);
+        checkpointButton.addFocusListener(focusListener);
+        HelpButton.helpButton(checkpointComposite, "model/overview-page.html#checkpoint") ;
+
+        toolkit.createLabel(area, "Checkpoint ID:");
+
+        checkpointIdText = toolkit.createText(area, "");
+        checkpointIdText.setEditable(false);
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 100;
+        checkpointIdText.setLayoutData(gd);
+
+        checkpointSizeLabel = toolkit.createLabel(area, "Checkpoint size (kbytes):");
+        checkpointSizeText = toolkit.createText(area, "");
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        gd.widthHint = 100;
+        checkpointSizeText.setLayoutData(gd);
+        checkpointDeleteButton = toolkit.createButton(area, "Delete Checkpoint", SWT.PUSH);
+        checkpointDeleteButton.addSelectionListener(new SelectionListener() {
+            /*
+             * (non-Javadoc)
+             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+             */
+			public void widgetSelected(SelectionEvent e) {
+				final IResource[] checkpoints;
+				try {
+					checkpoints = getModel().getCheckpoints(false);
+
+					if ((checkpoints != null) && checkpoints.length > 0) {
+						ResourcesPlugin.getWorkspace().run((monitor) -> {
+							checkpoints[0].delete(true, new SubProgressMonitor(monitor, 1));
+						}, null);
+					}
+				} catch (CoreException e1) {
+					return;
+				}
+			}
+
+			/*
+			 * (non-Javadoc)
+			 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+			 */
+			public void widgetDefaultSelected(SelectionEvent e) { }
+        });
+        checkpointDeleteButton.addFocusListener(focusListener);
+
+        hr = toolkit.createSeparator(area, SWT.HORIZONTAL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        hr.setLayoutData(gd);
         // label deferred liveness checking
 		final String deferLivenessHelp = "Defer verification of temporal properties (liveness) to the end of model checking"
 				+ " to reduce overall model checking time. Liveness violations will be found late compared to invariant "

@@ -16,12 +16,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.function.Consumer;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -83,7 +78,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.IHelpConstants;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
@@ -162,8 +156,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             expandSection(sectionId);
         }
     };
-    private Button checkpointButton;
-    private Text checkpointIdText;
 
     /*
      * Checkbox and input box for distributed model checking
@@ -174,12 +166,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     private Combo distributedCombo;
     private Text resultMailAddressText;
-    
-    // The widgets to display the checkpoint size and
-    // the delete button.
-    private Label chkpointSizeLabel;
-    private Text checkpointSizeText;
-    private Button chkptDeleteButton;
     
 	/**
 	 * Used to interpolate y-values for memory scale
@@ -301,10 +287,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         if (!savedConstants.isEmpty()) {
         	expandSection(SEC_WHAT_IS_THE_MODEL);
         }
-
-        // recover from the checkpoint
-        boolean recover = getModel().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
-        this.checkpointButton.setSelection(recover);
         
         /*
          * Distributed mode
@@ -387,7 +369,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getLookupHelper().resetModelNames(this);
 
         // constants in the table
-        @SuppressWarnings("unchecked")
 		List<Assignment> constants = getConstants();
         // merge constants with currently defined in the specobj, if any
         if (rootModuleNode != null)
@@ -628,21 +609,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 					this.getId(), IMessageProvider.WARNING, networkInterfaceCombo);
 			expandSection(SEC_HOW_TO_RUN);
 		}
-		
-        // fill the checkpoints
-        updateCheckpoints();
-
-        // recover from checkpoint
-        if (checkpointButton.getSelection())
-        {
-            if (EMPTY_STRING.equals(checkpointIdText.getText()))
-            {
-                modelEditor.addErrorMessage("noChckpoint", "No checkpoint data found", this.getId(),
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
-                setComplete(false);
-                expandSection(SEC_HOW_TO_RUN);
-            }
-        }
         
         // The following code added by LL and DR on 10 Sep 2009.
         // Reset the enabling and selection of spec type depending on the number number
@@ -904,10 +870,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapSizeValue = maxHeapSize.getSelection();
         getModel().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeValue);
 
-        // recover from deadlock
-        boolean recover = this.checkpointButton.getSelection();
-        getModel().setAttribute(LAUNCH_RECOVER, recover);
-
         // check deadlock
         boolean checkDeadlock = this.checkDeadlockButton.getSelection();
         getModel().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
@@ -961,43 +923,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	public List<Assignment> getConstants() {
 		return (List<Assignment>) constantTable.getInput();
 	}
-	
-    /**
-     * Checks if checkpoint information changed 
-     */
-    private void updateCheckpoints()
-    {
-        IResource[] checkpoints = null;
-        try
-        {
-            // checkpoint id
-            checkpoints = getModel().getCheckpoints(false);
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error checking chekpoint data", e);
-        }
-
-        if (checkpoints != null && checkpoints.length > 0)
-        {
-            this.checkpointIdText.setText(checkpoints[0].getName());
-        } else
-        {
-            this.checkpointIdText.setText(EMPTY_STRING);
-        }
-
-        if ((checkpoints == null) || (checkpoints.length == 0))
-        {
-            checkpointSizeText.setVisible(false);
-            chkpointSizeLabel.setVisible(false);
-            chkptDeleteButton.setVisible(false);
-        } else
-        {
-            checkpointSizeText.setText(String.valueOf(ResourceHelper.getSizeOfJavaFileResource(checkpoints[0]) / 1000));
-            checkpointSizeText.setVisible(true);
-            chkpointSizeLabel.setVisible(true);
-            chkptDeleteButton.setVisible(true);
-        }
-    }
 
     /**
      * Creates the UI
@@ -1364,80 +1289,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 //        workers.setLayoutData(gd);
 //
 //        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
-        
-        /*
-         * run from the checkpoint.  Checkpoint help button added by LL on 17 Jan 2013
-         */
-        Composite ckptComp = new Composite(howToRunArea, SWT.NONE) ;
-        layout = new GridLayout(2, true);
-        ckptComp.setLayout(layout);
-        
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 20;
-        ckptComp.setLayoutData(gd);
-
-        checkpointButton = toolkit.createButton(ckptComp, "Recover from checkpoint", SWT.CHECK);
-        checkpointButton.addSelectionListener(howToRunListener);
-        checkpointButton.addFocusListener(focusListener);
-        HelpButton.helpButton(ckptComp, "model/overview-page.html#checkpoint") ;
-
-        toolkit.createLabel(howToRunArea, "Checkpoint ID:");
-
-        checkpointIdText = toolkit.createText(howToRunArea, "");
-        checkpointIdText.setEditable(false);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 100;
-        checkpointIdText.setLayoutData(gd);
-        dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, howToRunPart);
-
-        chkpointSizeLabel = toolkit.createLabel(howToRunArea, "Checkpoint size (kbytes):");
-        checkpointSizeText = toolkit.createText(howToRunArea, "");
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 100;
-        checkpointSizeText.setLayoutData(gd);
-        chkptDeleteButton = toolkit.createButton(howToRunArea, "Delete Checkpoint", SWT.PUSH);
-        chkptDeleteButton.addSelectionListener(new SelectionListener() {
-
-            /* (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
-             */
-            public void widgetSelected(SelectionEvent e)
-            {
-                final IResource[] checkpoints;
-                try
-                {
-                    checkpoints = getModel().getCheckpoints(false);
-
-                    if ((checkpoints != null) && checkpoints.length > 0)
-                    {
-                        ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-
-                            public void run(IProgressMonitor monitor) throws CoreException
-                            {
-                                checkpoints[0].delete(true, new SubProgressMonitor(monitor, 1));
-
-                            }
-                        }, null);
-                    }
-                } catch (CoreException e1)
-                {
-                    return;
-                }
-
-            }
-
-            /* (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-             */
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        });
-        chkptDeleteButton.addFocusListener(focusListener);
-        
+                
         /*
          * Distribution.  Help button added by LL on 17 Jan 2013
          */
@@ -1761,15 +1613,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		final StackLayout stackLayout = (StackLayout) distributedOptions.getLayout();
 		stackLayout.topControl = composite;
 		distributedOptions.layout();
-    }
-
-    /**
-     * On a refresh, the checkpoint information is re-read 
-     */
-    public void refresh()
-    {
-        super.refresh();
-        updateCheckpoints();
     }
     
     /**
