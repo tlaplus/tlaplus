@@ -1024,9 +1024,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // init
         toolkit.createLabel(behaviorArea, "Init:");
-        initFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        initFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.MULTI | SWT.V_SCROLL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 18;
+        gd.heightHint = 48;
         initFormulaSource.getTextWidget().setLayoutData(gd);
         initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
@@ -1035,9 +1035,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // next
         toolkit.createLabel(behaviorArea, "Next:");
-        nextFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
+        nextFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.MULTI | SWT.V_SCROLL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 18;
+        gd.heightHint = 48;
         nextFormulaSource.getTextWidget().setLayoutData(gd);
         nextFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
         nextFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
