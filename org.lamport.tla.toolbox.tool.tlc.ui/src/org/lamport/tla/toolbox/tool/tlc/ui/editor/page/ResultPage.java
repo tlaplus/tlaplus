@@ -57,11 +57,11 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -606,14 +606,18 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         twd.colspan = 1;
         section.setLayoutData(twd);
         Composite statArea = (Composite) section.getClient();
-        RowLayout rowLayout = new RowLayout(SWT.HORIZONTAL);
-        // rowLayout.numColumns = 2;
-        statArea.setLayout(rowLayout);
+        statArea.setLayout(new GridLayout(2, false));
 
         // progress stats
-        createAndSetupStateSpace("State space progress (click column header for graph)", statArea, toolkit);
+        Composite c = createAndSetupStateSpace("State space progress (click column header for graph)", statArea, toolkit);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        c.setLayoutData(gd);
         // coverage stats
-        createAndSetupCoverage("Coverage at", statArea, toolkit);
+        c = createAndSetupCoverage("Coverage at", statArea, toolkit);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        c.setLayoutData(gd);
 
         // -------------------------------------------------------------------
         // Calculator section
@@ -858,14 +862,20 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     private Composite createAndSetupStateSpace(String label, Composite parent, FormToolkit toolkit)
     {
-        Composite statespaceComposite = toolkit.createComposite(parent, SWT.WRAP);
+        final Composite statespaceComposite = toolkit.createComposite(parent, SWT.WRAP);
         statespaceComposite.setLayout(new GridLayout(1, false));
 
-        toolkit.createLabel(statespaceComposite, label);
-
-        Table stateTable = toolkit.createTable(statespaceComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
-                | SWT.BORDER);
-        GridData gd = new GridData(StateSpaceLabelProvider.MIN_WIDTH, 100);
+        final Label title = toolkit.createLabel(statespaceComposite, label);
+        GridData gd = new GridData();
+        gd.heightHint = 22;
+        title.setLayoutData(gd);
+        
+		Table stateTable = toolkit.createTable(statespaceComposite,
+				SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
+        gd = new GridData();
+        gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
+        gd.heightHint = 100;
+        gd.grabExcessHorizontalSpace = true;
         stateTable.setLayoutData(gd);
 
         stateTable.setHeaderVisible(true);
@@ -910,10 +920,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     private Composite createAndSetupCoverage(String label, Composite parent, FormToolkit toolkit)
     {
-        Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
+        final Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
         coverageComposite.setLayout(new GridLayout(2, false));
+        
+        final Label title = toolkit.createLabel(coverageComposite, label);
         GridData gd = new GridData();
-        toolkit.createLabel(coverageComposite, label);
+        gd.heightHint = 22;
+        gd.verticalAlignment = SWT.BOTTOM;
+        title.setLayoutData(gd);
 
         this.coverageTimestampText = toolkit.createText(coverageComposite, "", SWT.FLAT);
         this.coverageTimestampText.setEditable(false);
@@ -922,20 +936,23 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.grabExcessHorizontalSpace = true;
         this.coverageTimestampText.setLayoutData(gd);
 
-        final Table stateTable = toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
+        final Table coverageTable = toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
                 | SWT.BORDER | SWT.VIRTUAL);
-        gd = new GridData(CoverageLabelProvider.MIN_WIDTH, 100);
+        gd = new GridData();
         gd.horizontalSpan = 2;
-        stateTable.setLayoutData(gd);
+        gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
+        gd.heightHint = 100;
+        gd.grabExcessHorizontalSpace = true;
+        coverageTable.setLayoutData(gd);
 
-        stateTable.setHeaderVisible(true);
-        stateTable.setLinesVisible(true);
-        stateTable.setToolTipText(TOOLTIP);
+        coverageTable.setHeaderVisible(true);
+        coverageTable.setLinesVisible(true);
+        coverageTable.setToolTipText(TOOLTIP);
 
-        CoverageLabelProvider.createTableColumns(stateTable);
+        CoverageLabelProvider.createTableColumns(coverageTable);
 
         // create the viewer
-        this.coverage = new TableViewer(stateTable);
+        this.coverage = new TableViewer(coverageTable);
 
         coverage.getTable().addMouseListener(new ActionClickListener(this.coverage));
 
