@@ -284,7 +284,7 @@ public final class ASCII_CharStream
   public ASCII_CharStream(java.io.InputStream dstream, int startline,
   int startcolumn, int buffersize)
   {
-     this(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
+     this(new java.io.InputStreamReader(dstream), startline, startcolumn, buffersize);
   }
 
   public ASCII_CharStream(java.io.InputStream dstream, int startline,
@@ -296,7 +296,7 @@ public final class ASCII_CharStream
   static public void ReInit(java.io.InputStream dstream, int startline,
   int startcolumn, int buffersize)
   {
-     ReInit(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
+     ReInit(new java.io.InputStreamReader(dstream), startline, startcolumn, buffersize);
   }
 
   static public void ReInit(java.io.InputStream dstream, int startline,

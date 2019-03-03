@@ -68,14 +68,14 @@ public class ByteUtils {
    * The Java Language Specification.
    */
   public static long byteArrayToLong(byte[] b) {
-    long i0 = (b[0] & 0xFF) << 56;
-    long i1 = (b[1] & 0xFF) << 48;
-    long i2 = (b[2] & 0xFF) << 40;
-    long i3 = (b[3] & 0xFF) << 32;
-    long i4 = (b[4] & 0xFF) << 24;
-    long i5 = (b[5] & 0xFF) << 16;
-    long i6 = (b[6] & 0xFF) << 8;
-    long i7 = (b[7] & 0xFF);
+    long i0 = (long) (b[0] & 0xFF) << 56;
+    long i1 = (long) (b[1] & 0xFF) << 48;
+    long i2 = (long) (b[2] & 0xFF) << 40;
+    long i3 = (long) (b[3] & 0xFF) << 32;
+    long i4 = (long) (b[4] & 0xFF) << 24;
+    long i5 = (long) (b[5] & 0xFF) << 16;
+    long i6 = (long) (b[6] & 0xFF) << 8;
+    long i7 = (long) (b[7] & 0xFF);
     return (i0 | i1 | i2 | i3 | i4 | i5 | i6 | i7);
   }
 
