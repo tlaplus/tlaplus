@@ -31,14 +31,14 @@ import util.UniqueString;
 
 public final class Configuration implements ConfigurationConstants {
 
-  private static Errors         errors;
+  private static Errors errors;
   private static java.io.Reader input;
 
   public static void displayDefinitions() {
     ToolIO.out.println( defaultConfig );
   }
 
-  public static void load (Errors errs ) throws AbortException {
+  public static void load(Errors errs) throws AbortException {
     /***********************************************************************
     * Called from drivers/SANY.java                                        *
     ***********************************************************************/
@@ -62,16 +62,14 @@ public final class Configuration implements ConfigurationConstants {
         Parser.ConfigurationUnit();
 //      Operators.printTable();
       } catch (ParseException e) {
-        errors.addAbort(Location.nullLoc,"\nConfiguration Parser:  Encountered errors during parse.  " 
+        errors.addAbort(Location.nullLoc,"\nConfiguration Parser:  Encountered errors during parse.  "
                         + e.getMessage(),true );
       }
 
     } catch (java.io.FileNotFoundException e) {
       errors.addAbort(Location.nullLoc,"File not found.\n" + e,true);
     }
-  } // end load()
-
-
+  }
 
   static final public void ConfigurationUnit() throws ParseException, AbortException {
     label_1:
@@ -89,7 +87,6 @@ public final class Configuration implements ConfigurationConstants {
       OpDefinition();
     }
   }
-
 
   static final public void OpDefinition() throws ParseException, AbortException {
   Token t;
@@ -124,7 +121,7 @@ public final class Configuration implements ConfigurationConstants {
     }
   }
 
- static final public void OpBody(String s) throws ParseException {
+  static final public void OpBody(String s) throws ParseException {
  Token t;
  int kind, assoc;
  int low, high;
@@ -195,7 +192,7 @@ public final class Configuration implements ConfigurationConstants {
     jj_consume_token(SYNONYM);
     t1 = jj_consume_token(OPID);
     t2 = jj_consume_token(OPID);
-    Operators.addSynonym( UniqueString.uniqueStringOf(t1.image), 
+    Operators.addSynonym( UniqueString.uniqueStringOf(t1.image),
                           UniqueString.uniqueStringOf(t2.image) );
   }
 
@@ -210,32 +207,33 @@ public final class Configuration implements ConfigurationConstants {
   UniqueString us;
     jj_consume_token(BUILTIN);
     t = jj_consume_token(OPID);
-    external = t.image; us = UniqueString.uniqueStringOf( external );
+    external = t.image;
+    us = UniqueString.uniqueStringOf( external );
     t = jj_consume_token(RESTRICTED);
     internal = t.image;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INFIX:
       jj_consume_token(INFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 2,
-                        new FormalParamNode[2], false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 2,
+                        new FormalParamNode[2], false, null, null, null, new SyntaxTreeNode(us)),
                         errors);
       break;
     case PREFIX:
       jj_consume_token(PREFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
-                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
+                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode(us)),
                         errors);
       break;
     case POSTFIX:
       jj_consume_token(POSTFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
-                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
+                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode(us)),
                         errors);
       break;
     case CONSTANT:
       jj_consume_token(CONSTANT);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 0,
-                        new FormalParamNode[0], false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 0,
+                        new FormalParamNode[0], false, null, null, null, new SyntaxTreeNode(us)),
                         errors);
       break;
     case NUMBER:
@@ -243,10 +241,10 @@ public final class Configuration implements ConfigurationConstants {
       int n = Integer.parseInt( t.image );
       FormalParamNode fpn[] = null;
       if ( n != -1 ) fpn = new FormalParamNode[ n ];
-      Context.addGlobalSymbol( us, 
-                        new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, n,
-                                       fpn, false, null, null, null, new SyntaxTreeNode( us ) ),
-                                       errors);
+      Context.addGlobalSymbol(us,
+                        new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, n,
+                                      fpn, false, null, null, null, new SyntaxTreeNode(us)),
+                                      errors);
       break;
     default:
       jj_la1[6] = jj_gen;
@@ -256,16 +254,20 @@ public final class Configuration implements ConfigurationConstants {
 
   }
 
-  static private boolean                  jj_initialized_once = false;
+  static private boolean jj_initialized_once = false;
   static public ConfigurationTokenManager token_source;
-  static SimpleCharStream                 jj_input_stream;
-  static public Token                     token, jj_nt;
-  static private int                      jj_ntk;
-  static private int                      jj_gen;
-  static final private int[]              jj_la1 = new int[7];
-  static final private int[]              jj_la1_0 = 
-                                            {0x44100,0x402000,0x44100,0x38000,
-                                             0x1e00,0x200000,0x400e80,};
+  static SimpleCharStream jj_input_stream;
+  static public Token token, jj_nt;
+  static private int jj_ntk;
+  static private int jj_gen;
+  static final private int[] jj_la1 = new int[7];
+  static private int[] jj_la1_0;
+  static {
+      jj_la1_0();
+   }
+   private static void jj_la1_0() {
+      jj_la1_0 = new int[] {0x44100,0x402000,0x44100,0x38000,0x1e00,0x200000,0x400e80,};
+   }
 
   public Configuration(java.io.InputStream stream) {
     if (jj_initialized_once) {
@@ -396,7 +398,7 @@ public final class Configuration implements ConfigurationConstants {
   static private int[] jj_expentry;
   static private int jj_kind = -1;
 
-  static final public ParseException generateParseException() {
+  static public ParseException generateParseException() {
     jj_expentries.removeAllElements();
     boolean[] la1tokens = new boolean[24];
     for (int i = 0; i < 24; i++) {
