@@ -67,7 +67,7 @@ public final class Configuration {
       String origin;
 
       if ( source.exists() ) {
-//        java.io.OutputStream output;
+//      java.io.OutputStream output;
         input = new java.io.FileReader( source );
         origin = " from local config.src file.";
       } else {
@@ -78,7 +78,7 @@ public final class Configuration {
 
       try {
         Parser.ConfigurationUnit();
-//        Operators.printTable();
+//      Operators.printTable();
       } catch (ParseException e) {
         errors.addAbort(Location.nullLoc,"\nConfiguration Parser:  Encountered errors during parse.  "
                         + e.getMessage(),true );
@@ -173,13 +173,15 @@ OpBody( String s ) : {
 void
 OpSynonym() : {
   Token t1, t2; }{
-  <SYNONYM> t1 = <OPID> t2 = <OPID>
-  { Operators.addSynonym( UniqueString.uniqueStringOf(t1.image), UniqueString.uniqueStringOf(t2.image) ); }
+  <SYNONYM> t1 = <OPID> t2 = <OPID> {
+    Operators.addSynonym( UniqueString.uniqueStringOf(t1.image),
+                          UniqueString.uniqueStringOf(t2.image) );
+ }
 }
 
 void
 OpNull( String s ) : {
- Token t; }{
+    Token t; }{
   <NOTOP>
 }
 
@@ -191,8 +193,13 @@ OpBuiltin() throws AbortException : {
 //  Signature sig;
 }{
   <BUILTIN>
-  t = <OPID> { external = t.image; us = UniqueString.uniqueStringOf( external ); }
-  t = <RESTRICTED> { internal = t.image; }
+  t = <OPID> {
+    external = t.image;
+    us = UniqueString.uniqueStringOf( external );
+  }
+  t = <RESTRICTED> {
+    internal = t.image;
+  }
 //  sig = Signature()
  (    <INFIX> {
       Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 2,
