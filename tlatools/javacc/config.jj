@@ -55,7 +55,7 @@ public final class Configuration {
     ToolIO.out.println( defaultConfig );
   }
 
-  public static void load(Errors errs) {
+  public static void load(Errors errs) throws AbortException {
     /***********************************************************************
     * Called from drivers/SANY.java                                        *
     ***********************************************************************/
@@ -130,12 +130,12 @@ TOKEN : {
 }
 
 void
-ConfigurationUnit() : { }{
+ConfigurationUnit() throws AbortException : { }{
   (OpDefinition()) *
 }
 
 void
-OpDefinition() : {
+OpDefinition() throws AbortException : {
   Token t; }{
   ( <OPERATOR> (t = <OPID>) { /* ToolIO.out.println( t.image ); */ } ( OpBody(t.image) | OpNull(t.image) ) )
   | OpSynonym()
@@ -184,7 +184,7 @@ OpNull( String s ) : {
 }
 
 void
-OpBuiltin() : {
+OpBuiltin() throws AbortException : {
   Token t;
   String external, internal;
   UniqueString us;
