@@ -50,6 +50,7 @@ import util.UniqueString;
 public final class Configuration {
 
   private static Errors errors;
+  private static java.io.Reader input;
 
   public static void displayDefinitions() {
     ToolIO.out.println( defaultConfig );
@@ -63,15 +64,14 @@ public final class Configuration {
     try {
       errors = errs;
       File source = new File( "config.src" );
-      java.io.InputStream input;
       String origin;
 
       if ( source.exists() ) {
 //        java.io.OutputStream output;
-        input = new java.io.FileInputStream( source );
+        input = new java.io.FileReader( source );
         origin = " from local config.src file.";
       } else {
-        input = new java.io.StringBufferInputStream( defaultConfig );
+        input = new java.io.StringReader( defaultConfig );
         origin = " from defaults.";
       }
       Parser = new Configuration( input );
