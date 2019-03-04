@@ -47,16 +47,21 @@ import tla2sany.st.Location;
 import util.ToolIO;
 import util.UniqueString;
 
-
 public final class Configuration {
+
+  private static Errors errors;
 
   public static void displayDefinitions() {
     System.out.println( defaultConfig );
   }
 
-  public static void load ( ) {
+  public static void load(Errors errs) {
+    /***********************************************************************
+    * Called from drivers/SANY.java                                        *
+    ***********************************************************************/
     Configuration Parser;
     try {
+      errors = errs;
       File source = new File( "config.src" );
       java.io.InputStream input;
       String origin;
@@ -191,15 +196,34 @@ OpBuiltin() : {
   t = <OPID> { external = t.image; us = UniqueString.uniqueStringOf( external ); }
   t = <RESTRICTED> { internal = t.image; }
 //  sig = Signature()
- (    <INFIX> {Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, new FormalParamNode[2], false, null, null, new SyntaxTreeNode( us ) ));}
- |   <PREFIX> {Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, new FormalParamNode[1], false, null, null, new SyntaxTreeNode( us ) ));}
- |  <POSTFIX> {Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, new FormalParamNode[1], false, null, null, new SyntaxTreeNode( us ) ));}
- | <CONSTANT> {Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, new FormalParamNode[0], false, null, null, new SyntaxTreeNode( us ) ));}
+ (    <INFIX> {
+      Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 2,
+                        new FormalParamNode[2], false, null, null, null, new SyntaxTreeNode(us)),
+                        errors);
+     }
+ |    <PREFIX> {
+      Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
+                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode(us)),
+                        errors);
+    }
+ |    <POSTFIX> {
+      Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
+                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode(us)),
+                        errors);
+   }
+ | <CONSTANT> {
+      Context.addGlobalSymbol(us, new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, 0,
+                        new FormalParamNode[0], false, null, null, null, new SyntaxTreeNode(us)),
+                        errors);
+   }
  | t = <NUMBER> {
-     int n = Integer.parseInt( t.image );
-     FormalParamNode fpn[] = null;
-     if ( n != -1 ) fpn = new FormalParamNode[ n ];
-     Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, fpn, false, null, null, new SyntaxTreeNode( us ) ));
+      int n = Integer.parseInt( t.image );
+      FormalParamNode fpn[] = null;
+      if ( n != -1 ) fpn = new FormalParamNode[ n ];
+      Context.addGlobalSymbol(us,
+                        new OpDefNode(us, tla2sany.semantic.ASTConstants.BuiltInKind, n,
+                                      fpn, false, null, null, null, new SyntaxTreeNode(us)),
+                                      errors);
    }
  )
   { }
