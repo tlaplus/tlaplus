@@ -2,7 +2,7 @@
             LOOKAHEAD              (default 1)
             CHOICE_AMBIGUITY_CHECK (default 2)
             OTHER_AMBIGUITY_CHECK  (default 1)
- 
+
             STATIC                 (default true)
             DEBUG_PARSER           (default true)
             DEBUG_LOOKAHEAD        (default false)
@@ -31,61 +31,66 @@ options {
 
 PARSER_BEGIN(Configuration)
 
-package tlatk.configuration;
+package tla2sany.configuration;
+
 import java.io.File;
-import tlatk.parser.Operator;
-import tlatk.parser.Operators;
-import tlatk.parser.SyntaxTreeNode;
 
-import tlatk.utilities.UniqueString;
+import tla2sany.parser.Operator;
+import tla2sany.parser.Operators;
+import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.semantic.AbortException;
+import tla2sany.semantic.Context;
+import tla2sany.semantic.Errors;
+import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.OpDefNode;
+import tla2sany.st.Location;
+import util.ToolIO;
+import util.UniqueString;
 
-import tlatk.semantic.OpDefNode;
-import tlatk.semantic.FormalParamNode;
-import tlatk.semantic.Context;
 
-public final class Configuration implements ConfigConstants {
+public final class Configuration {
 
-public static void displayDefinitions() {
-  System.out.println( defaultConfig );
-}
+  public static void displayDefinitions() {
+    System.out.println( defaultConfig );
+  }
 
-public static void load ( ) {
-  Configuration Parser;
-  try {
-    File source = new File( "config.src" );
-    java.io.InputStream input;
-    String origin;
-
-    if ( source.exists() ) {
-//      java.io.OutputStream output;
-      input = new java.io.FileInputStream( source );
-      origin = " from local config.src file.";
-    } else {
-      input = new java.io.StringBufferInputStream( defaultConfig );
-      origin = " from defaults.";
-    }
-    Parser = new Configuration( input );
-
+  public static void load ( ) {
+    Configuration Parser;
     try {
-      Parser.ConfigurationUnit();
-//      Operators.printTable();
-    } catch (ParseException e) {
-      System.err.println(e.getMessage());
-      System.err.println("Configuration Parser:  Encountered errors during parse.");
+      File source = new File( "config.src" );
+      java.io.InputStream input;
+      String origin;
+
+      if ( source.exists() ) {
+//        java.io.OutputStream output;
+        input = new java.io.FileInputStream( source );
+        origin = " from local config.src file.";
+      } else {
+        input = new java.io.StringBufferInputStream( defaultConfig );
+        origin = " from defaults.";
+      }
+      Parser = new Configuration( input );
+
+      try {
+        Parser.ConfigurationUnit();
+//        Operators.printTable();
+      } catch (ParseException e) {
+        System.err.println(e.getMessage());
+        System.err.println("Configuration Parser:  Encountered errors during parse.");
+        System.exit(0);
+      }
+
+    } catch (java.io.FileNotFoundException e) {
+      System.err.println("File not found.");
       System.exit(0);
     }
-
-  } catch (java.io.FileNotFoundException e) {
-    System.err.println("File not found.");
-    System.exit(0);
   }
-}
 
 }
 PARSER_END(Configuration)
 
 SKIP : { " " | "\t" | "\n" }
- 
+
 MORE : {
   < SINGLE_LINE: "(*" >     : IN_COMMENT
 }
@@ -93,7 +98,7 @@ MORE : {
 <IN_COMMENT> SPECIAL_TOKEN: {
    "*)" : DEFAULT
 }
- 
+
 <IN_COMMENT> MORE: {
   < ~[] >
 }
@@ -186,22 +191,22 @@ OpBuiltin() : {
   t = <OPID> { external = t.image; us = UniqueString.uniqueStringOf( external ); }
   t = <RESTRICTED> { internal = t.image; }
 //  sig = Signature()
- (    <INFIX> {Context.addGlobalSymbol( us, new OpDefNode( tlatk.semantic.ASTConstants.BuiltInKind, new FormalParamNode[2], false, null, null, new SyntaxTreeNode( us ) ));}
- |   <PREFIX> {Context.addGlobalSymbol( us, new OpDefNode( tlatk.semantic.ASTConstants.BuiltInKind, new FormalParamNode[1], false, null, null, new SyntaxTreeNode( us ) ));}
- |  <POSTFIX> {Context.addGlobalSymbol( us, new OpDefNode( tlatk.semantic.ASTConstants.BuiltInKind, new FormalParamNode[1], false, null, null, new SyntaxTreeNode( us ) ));}
- | <CONSTANT> {Context.addGlobalSymbol( us, new OpDefNode( tlatk.semantic.ASTConstants.BuiltInKind, new FormalParamNode[0], false, null, null, new SyntaxTreeNode( us ) ));}
+ (    <INFIX> {Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, new FormalParamNode[2], false, null, null, new SyntaxTreeNode( us ) ));}
+ |   <PREFIX> {Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, new FormalParamNode[1], false, null, null, new SyntaxTreeNode( us ) ));}
+ |  <POSTFIX> {Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, new FormalParamNode[1], false, null, null, new SyntaxTreeNode( us ) ));}
+ | <CONSTANT> {Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, new FormalParamNode[0], false, null, null, new SyntaxTreeNode( us ) ));}
  | t = <NUMBER> {
      int n = Integer.parseInt( t.image );
      FormalParamNode fpn[] = null;
      if ( n != -1 ) fpn = new FormalParamNode[ n ];
-     Context.addGlobalSymbol( us, new OpDefNode( tlatk.semantic.ASTConstants.BuiltInKind, fpn, false, null, null, new SyntaxTreeNode( us ) ));
+     Context.addGlobalSymbol( us, new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, fpn, false, null, null, new SyntaxTreeNode( us ) ));
    }
  )
   { }
 }
 
 /*
-new OpDefNode( tlatk.semantic.ASTConstants.BuiltInKind, {null,null}, false );
+new OpDefNode( tla2sany.semantic.ASTConstants.BuiltInKind, {null,null}, false );
 
 Signature
 Signature() : {
@@ -209,7 +214,7 @@ Signature() : {
   ( ( <OPID> <OPERATOR> { sig.addPar(); sig.addId(); }
       [ <OPID> {sig.addPar(); } ]
     ) |
-    ( <OPERATOR> { sig.addId(); } // op _ op ( _ + ) 
+    ( <OPERATOR> { sig.addId(); } // op _ op ( _ + )
       ( (LOOKAHEAD ( { getToken(1).image.equals("_") } )
           <OPID> { sig.addPar(); }
         ) |
