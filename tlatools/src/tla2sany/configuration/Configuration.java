@@ -270,6 +270,9 @@ public final class Configuration implements ConfigurationConstants {
    }
 
   public Configuration(java.io.InputStream stream) {
+     this(stream, null);
+  }
+  public Configuration(java.io.InputStream stream, String encoding) {
     if (jj_initialized_once) {
       ToolIO.out.println("ERROR: Second call to constructor of static parser.  You must");
       ToolIO.out.println("       either use ReInit() or set the JavaCC option STATIC to false");
@@ -277,7 +280,7 @@ public final class Configuration implements ConfigurationConstants {
       throw new Error();
     }
     jj_initialized_once = true;
-    jj_input_stream = new SimpleCharStream(stream, 1, 1);
+    try { jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new ConfigurationTokenManager(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -286,8 +289,10 @@ public final class Configuration implements ConfigurationConstants {
   }
 
   static public void ReInit(java.io.InputStream stream) {
-    jj_initialized_once = false;
-    jj_input_stream.ReInit(stream, 1, 1);
+     ReInit(stream, null);
+  }
+  static public void ReInit(java.io.InputStream stream, String encoding) {
+    try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -312,7 +317,6 @@ public final class Configuration implements ConfigurationConstants {
   }
 
   static public void ReInit(java.io.Reader stream) {
-    jj_initialized_once = false;
     jj_input_stream.ReInit(stream, 1, 1);
     token_source.ReInit(jj_input_stream);
     token = new Token();
