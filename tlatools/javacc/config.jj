@@ -52,7 +52,7 @@ public final class Configuration {
   private static Errors errors;
 
   public static void displayDefinitions() {
-    System.out.println( defaultConfig );
+    ToolIO.out.println( defaultConfig );
   }
 
   public static void load(Errors errs) {
@@ -80,14 +80,12 @@ public final class Configuration {
         Parser.ConfigurationUnit();
 //        Operators.printTable();
       } catch (ParseException e) {
-        System.err.println(e.getMessage());
-        System.err.println("Configuration Parser:  Encountered errors during parse.");
-        System.exit(0);
+        errors.addAbort(Location.nullLoc,"\nConfiguration Parser:  Encountered errors during parse.  "
+                        + e.getMessage(),true );
       }
 
     } catch (java.io.FileNotFoundException e) {
-      System.err.println("File not found.");
-      System.exit(0);
+      errors.addAbort(Location.nullLoc,"File not found.\n" + e,true);
     }
   }
 
@@ -139,7 +137,7 @@ ConfigurationUnit() : { }{
 void
 OpDefinition() : {
   Token t; }{
-  ( <OPERATOR> (t = <OPID>) { /* System.out.println( t.image ); */ } ( OpBody(t.image) | OpNull(t.image) ) )
+  ( <OPERATOR> (t = <OPID>) { /* ToolIO.out.println( t.image ); */ } ( OpBody(t.image) | OpNull(t.image) ) )
   | OpSynonym()
   | OpBuiltin()
 }
