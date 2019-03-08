@@ -325,18 +325,6 @@ public final class Configuration implements ConfigurationConstants {
     for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
-  // The following method added by DRJ.  It should be in the .jcc version of this file
-  static public void ReInit() {
-    jj_initialized_once = false;
-    jj_input_stream.ReInit(input, 1, 1);
-    token_source.ReInit(jj_input_stream);
-    token = new Token();
-    jj_ntk = -1;
-    jj_gen = 0;
-    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
-  }
-
-
   public Configuration(ConfigurationTokenManager tm) {
     if (jj_initialized_once) {
       ToolIO.out.println("ERROR: Second call to constructor of static parser.  You must");
