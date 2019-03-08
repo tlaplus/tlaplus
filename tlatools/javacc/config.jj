@@ -1,3 +1,20 @@
+/*****************************************************************************
+* This grammar file config.jj specifies the parsing of the string in         *
+* defaultConfig. Alternatively the content of a file named config.src in the *
+* current directory can also be used.                                        *
+*                                                                            *
+* Generating the parser is done by:                                          *
+*   javacc -OUTPUT_DIRECTORY=config config.jj                                *
+*                                                                            *
+* Inserting the parser into the tlatools is done by:                         *
+*   cp -r config/* ../src/tla2sany/configuration/                            *
+*                                                                            *
+* Changes to the generated code should always be done by changing this file, *
+* generating a new parser in a fresh directory and inserting the new parser  *
+* into tlatools. The commit should contain the changes in this file and the  *
+* changes in the tlatoos source code.                                        *
+******************************************************************************/
+
 /*
             LOOKAHEAD              (default 1)
             CHOICE_AMBIGUITY_CHECK (default 2)
@@ -31,6 +48,9 @@ options {
 
 PARSER_BEGIN(Configuration)
 
+/*****************************************************************************
+* WARNING: Do not touch this generated code directly! Refer to config.jj     *
+******************************************************************************/
 package tla2sany.configuration;
 
 import java.io.File;
