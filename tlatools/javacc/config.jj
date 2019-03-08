@@ -43,7 +43,7 @@ options {
   DEBUG_PARSER = false;
   DEBUG_LOOKAHEAD = false;
   DEBUG_TOKEN_MANAGER = false;
-  STATIC = true;
+  STATIC = false;
   JDK_VERSION = "1.8";
 }
 
