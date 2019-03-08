@@ -266,12 +266,10 @@ public class SimpleCharStream
   {
      this(dstream, 1, 1, 4096);
   }
-  static public void ReInit(java.io.Reader dstream, int startline,
+  public void ReInit(java.io.Reader dstream, int startline,
   int startcolumn, int buffersize)
   {
-    // Bug: The following line used to read "inputStream = dstream;" but this bug was
-    // corrected by DRJ.  The correction should be in the .jcc copy, but isn't.
-    inputStream = null;
+    inputStream = dstream;
     line = startline;
     column = startcolumn - 1;
 
@@ -287,7 +285,7 @@ public class SimpleCharStream
     bufpos = -1;
   }
 
-  static public void ReInit(java.io.Reader dstream, int startline,
+  public void ReInit(java.io.Reader dstream, int startline,
                      int startcolumn)
   {
      ReInit(dstream, startline, startcolumn, 4096);
@@ -337,7 +335,7 @@ public class SimpleCharStream
      ReInit(encoding == null ? new java.io.InputStreamReader(dstream) : new java.io.InputStreamReader(dstream, encoding), startline, startcolumn, buffersize);
   }
 
-  static public void ReInit(java.io.InputStream dstream, int startline,
+  public void ReInit(java.io.InputStream dstream, int startline,
                           int startcolumn, int buffersize)
   {
      ReInit(new java.io.InputStreamReader(dstream), startline, startcolumn, buffersize);
