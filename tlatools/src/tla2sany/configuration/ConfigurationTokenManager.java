@@ -1024,9 +1024,7 @@ static public void ReInit(SimpleCharStream stream)
 {
    jjmatchedPos = jjnewStateCnt = 0;
    curLexState = defaultLexState;
-   // Bug: The following line used to read "input_stream = stream; but this bug was corrected
-   // by DRJ.  The bug should also be corrected in the .jcc file, but isn't.
-   input_stream = null;
+   input_stream = stream;
    ReInitRounds();
 }
 static private final void ReInitRounds()
