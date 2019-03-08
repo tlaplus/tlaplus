@@ -122,7 +122,7 @@ public class MailSender {
 					i = i - 1;
 				} else {
 					throttleRetry(String.format(
-							"%s EMail Report: Slowing down due to errors when sending to %s at %s, will continue in 1 minute...",
+							"%s EMail Report: Slowing down due to errors when sending to %s at %s, will continue in %d minute...",
 							new Date(), to.getAddress(), mxRecord.hostname, 1L), 1L);
 				}
 			} catch (AddressException e) {

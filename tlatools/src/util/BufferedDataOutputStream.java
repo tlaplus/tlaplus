@@ -109,7 +109,7 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
     }
     
     /** Write <code>n</code> bytes of <code>b</code> starting
-        at possition <code>off</code> to this stream. */
+        at position <code>off</code> to this stream. */
     public final void write(byte[] b, int off, int n) throws IOException {
         while (n > 0) {
             int toCopy = Math.min(n, this.buff.length - this.len);

@@ -55,11 +55,6 @@ public class Region implements Serializable {
 	}
 	
 	public String toString() {
-//	  return "[begin |-> " + begin.toString() + ", end |-> "
-//			   + end.toString() + "]";
-	  if (this == null) {
-	      return "null";
-	  }
 	  return "[" + begin.toString() + "-" + end.toString() + "]";
 	}
 

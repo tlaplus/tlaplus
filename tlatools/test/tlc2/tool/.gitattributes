@@ -1,0 +1,3 @@
+## Declare DumpAsDotTest.dot to keep unix line endings on checkout even on Windows.
+## With "crlf" DumpAsDotTest fails on Windows.
+DumpAsDotTest.dot text eol=lf

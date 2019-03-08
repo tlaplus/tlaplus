@@ -113,7 +113,10 @@
 		</delete>
 		<!-- Delete leftovers from previous junit invocation -->
 		<delete includeemptydirs="true" failonerror="false">
-			<fileset dir="states/" includes="*/**" />
+			<!-- Delete ALL states folders in the tlatools/ directory -->
+			<!-- A stale states/ folder in src/model/ once caused the -->
+			<!-- Maven build to fail with an OOM in the pack200 task. --> 
+			<fileset dir="${basedir}" includes="**/states/**" />
 		</delete>
 	</target>
 

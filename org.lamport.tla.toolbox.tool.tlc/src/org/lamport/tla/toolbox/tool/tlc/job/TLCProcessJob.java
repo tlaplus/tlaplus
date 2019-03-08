@@ -86,10 +86,12 @@ public class TLCProcessJob extends TLCJob
 			// Add 3rd party libraries to classpath. Star acts as wildcard
 			// picking up all .jar files (added by MAK on 07/31/2012)
 			final String libClasspath = runtimeClasspath + File.separator + "lib" + File.separator + "*";
+			final String libMailClasspath = runtimeClasspath + File.separator + "lib" + File.separator + "javax.mail"
+					+ File.separator + "*";
 			// classpath during toolbox development within Eclipse (will simply not
 			// exist in packaged toolbox)
 			final String devClasspath = runtimeClasspath + File.separator + "class";
-			String[] classPath = new String[] { runtimeClasspath, libClasspath, devClasspath };
+			String[] classPath = new String[] { runtimeClasspath, libClasspath, libMailClasspath, devClasspath };
 
             // arguments
             String[] arguments = constructProgramArguments();

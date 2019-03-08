@@ -915,8 +915,7 @@ public class MP
 						+ "%3% distinct states found, " + "%4% states left on queue.");
         	} else if (parameters.length == 6) {
         		b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated ("
-        				+ df.format(Long.valueOf(parameters[4])) + " s/min), %3% distinct states found ("
-        				+ df.format(Long.valueOf(parameters[5])) + " ds/min), %4% states left on queue.");
+        				+ "%5% s/min), %3% distinct states found (%6% ds/min), %4% states left on queue.");
         	}
             break;
         case EC.TLC_PROGRESS_START_STATS_DFID:
@@ -1599,5 +1598,9 @@ public class MP
 
 	public static void setRecorder(MPRecorder aRecorder) {
 		recorder = aRecorder;
+	}
+
+	public static String format(final long l) {
+		return df.format(l);
 	}
 }

@@ -236,9 +236,11 @@ public class ModelChecker extends AbstractChecker
 					// Liveness checking can take a substantial amount of time
 					// and thus give the user some clues at what stage safety
 					// checking is.
-            		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
-                            String.valueOf(getStatesGenerated()), String.valueOf(theFPSet.size()),
-                            String.valueOf(this.theStateQueue.size()) });
+            		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] {
+                            String.valueOf(this.trace.getLevelForReporting()),
+                            MP.format(getStatesGenerated()),
+                            MP.format(theFPSet.size()),
+                            MP.format(this.theStateQueue.size()) });
                 	
                     report("checking liveness");
                     success = liveCheck.finalCheck(tool);
@@ -851,9 +853,13 @@ public class ModelChecker extends AbstractChecker
         distinctStatesPerMinute = (long) ((fpSetSize - oldFPSetSize) / factor);
         oldFPSetSize = fpSetSize;
         
-		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] { String.valueOf(this.trace.getLevelForReporting()),
-                String.valueOf(l), String.valueOf(fpSetSize),
-                String.valueOf(this.theStateQueue.size()), String.valueOf(statesPerMinute), String.valueOf(distinctStatesPerMinute) });
+		MP.printMessage(EC.TLC_PROGRESS_STATS, new String[] {
+                String.valueOf(this.trace.getLevelForReporting()),
+                MP.format(l),
+                MP.format(fpSetSize),
+                MP.format(this.theStateQueue.size()),
+                MP.format(statesPerMinute),
+                MP.format(distinctStatesPerMinute) });
     }
 
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
