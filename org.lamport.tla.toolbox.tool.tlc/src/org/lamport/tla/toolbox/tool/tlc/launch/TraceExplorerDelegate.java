@@ -53,6 +53,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.LongFormDialog;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
@@ -491,16 +492,15 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
              * to locations to module TE with the string from that location.
              */
             final StringBuffer errorMessage = new StringBuffer();
-            Iterator<TLAMarkerInformationHolder> it = parseResult.getDetectedErrors().iterator();
-            while (it.hasNext())
-            {
-                TLAMarkerInformationHolder errorInfo = it.next();
+            for (final TLAMarkerInformationHolder errorInfo : parseResult.getDetectedErrors()) {
                 errorMessage.append(errorInfo.getMessage() + "\n");
             }
             UIHelper.runUIAsync(new Runnable() {
 				public void run() {
-					MessageDialog.openError(UIHelper.getShellProvider().getShell(),
-							"Parsing error when running trace explorer", errorMessage.toString());
+					final LongFormDialog dialog = new LongFormDialog("Parsing error when running trace explorer",
+							errorMessage.toString());
+					
+					dialog.open();
 				}
 			});
             return false;
