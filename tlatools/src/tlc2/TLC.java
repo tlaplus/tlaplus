@@ -745,7 +745,7 @@ public class TLC
                 }
                 mainFile = args[index++];
                 int len = mainFile.length();
-                if (mainFile.startsWith(".tla", len - 4))
+                if (mainFile.endsWith(".tla"))
                 {
                     mainFile = mainFile.substring(0, len - 4);
                 }
