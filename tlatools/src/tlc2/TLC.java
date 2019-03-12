@@ -745,7 +745,7 @@ public class TLC
                 }
                 mainFile = args[index++];
                 int len = mainFile.length();
-                if (mainFile.startsWith(".tla", len - 4))
+                if (mainFile.endsWith(".tla"))
                 {
                     mainFile = mainFile.substring(0, len - 4);
                 }
@@ -768,6 +768,22 @@ public class TLC
 				return false;
 			}
         }
+        
+		// The functionality to start TLC from an (absolute) path /path/to/spec/file.tla
+		// seems to have eroded over the years which is why this block of code is a
+		// clutch.  It essentially massages the variable values for mainFile, specDir and
+        // the user dir to make the code below - as well as the FilenameToStream resolver -
+        // work. Original issues was https://github.com/tlaplus/tlaplus/issues/24.
+        final File f = new File(mainFile);
+        String specDir = "";
+        if (f.isAbsolute()) {
+        	specDir = f.getParent() + FileUtil.separator;
+        	mainFile = f.getName();
+        	// Not setting user dir causes a ConfigFileException when the resolver
+        	// tries to read the .cfg file later in the game.
+        	ToolIO.setUserDir(specDir);
+        }
+        
         if (configFile == null)
         {
             configFile = mainFile;
@@ -785,8 +801,7 @@ public class TLC
 		// absolute, the parent gets used as TLC's meta directory (where it stores
 		// states...). Otherwise, no meta dir is set causing states etc. to be stored in
 		// the current directory.
-        final File f = new File(mainFile);
-    	metadir = FileUtil.makeMetaDir(new Date(startTime), f.isAbsolute() ? f.getParent() : "", fromChkpt);
+    	metadir = FileUtil.makeMetaDir(new Date(startTime), specDir, fromChkpt);
     	
         if (dumpFile != null) {
         	if (dumpFile.startsWith("${metadir}")) {
