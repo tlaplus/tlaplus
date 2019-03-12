@@ -842,6 +842,20 @@ Console Facory
                value="Microsoft Sans Serif-regular-10">
          </fontValue>
       </fontDefinition>
+      <fontDefinition
+            id="org.lamport.tla.toolbox.tool.tlc.ui.tlcErrorTraceFont"
+            isEditable="true"
+            label="Error Trace"
+            value="DejaVu Sans-regular-12">
+         <fontValue
+               os="win32"
+               value="Arial-regular-12">
+         </fontValue>
+         <fontValue
+               os="macosx"
+               value="Helvetica Neue-regular-12">
+         </fontValue>
+      </fontDefinition>
    </extension>
    <extension point="org.eclipse.ui.bindings">
      <key
