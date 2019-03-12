@@ -763,48 +763,48 @@ public class MP
         /*------------------------------------------- */
         // TLC distributed 
         case EC.TLC_DISTRIBUTED_SERVER_RUNNING:
-            b.append("TLC server at %1% is ready (").append(SDF.format(new Date())).append(")");
+            b.append("TLC server at %1% is ready (").append(now()).append(")");
             break;
         case EC.TLC_DISTRIBUTED_WORKER_REGISTERED:
-            b.append("Registration for worker at %1% completed (").append(SDF.format(new Date())).append(")");
+            b.append("Registration for worker at %1% completed (").append(now()).append(")");
             break;
         case EC.TLC_DISTRIBUTED_WORKER_DEREGISTERED:
-            b.append("TLC worker %1% disconnected (").append(SDF.format(new Date())).append(")");
+            b.append("TLC worker %1% disconnected (").append(now()).append(")");
             break;
         case EC.TLC_DISTRIBUTED_WORKER_STATS:
         	//new Date() + " Worker: " + name + " Sent: " + sentStates + " Rcvd: " + receivedStates
-			b.append("Worker: %1% Sent: %2% Rcvd: %3% CacheRatio: %4% (").append(SDF.format(new Date())).append(")");
+			b.append("Worker: %1% Sent: %2% Rcvd: %3% CacheRatio: %4% (").append(now()).append(")");
             break;
         case EC.TLC_DISTRIBUTED_SERVER_NOT_RUNNING:
-            b.append("TLCServer is gone due to %1%, exiting worker... (").append(SDF.format(new Date())).append(")");
+            b.append("TLCServer is gone due to %1%, exiting worker... (").append(now()).append(")");
             break;
         case EC.TLC_DISTRIBUTED_SERVER_FINISHED:
-            b.append("TLCServer has finished, exiting worker... (").append(SDF.format(new Date())).append(")");
+            b.append("TLCServer has finished, exiting worker... (").append(now()).append(")");
             break;
 		case EC.TLC_DISTRIBUTED_VM_VERSION:
 			b.append(
 					"VM does not allow to get the UnicastRef port.\nWorker will be identified with port 0 in output (")
-					.append(SDF.format(new Date())).append(")");
+					.append(now()).append(")");
 			break;
 		case EC.TLC_DISTRIBUTED_WORKER_LOST:
-			b.append("TLC worker connection lost %1% (").append(SDF.format(new Date())).append(")");
+			b.append("TLC worker connection lost %1% (").append(now()).append(")");
 			break;
 		case EC.TLC_DISTRIBUTED_EXCEED_BLOCKSIZE:
-			b.append("Trying to limit max block size (to recover from transport failure): %1% (").append(SDF.format(new Date())).append(")");
+			b.append("Trying to limit max block size (to recover from transport failure): %1% (").append(now()).append(")");
 			break;
 		case EC.TLC_DISTRIBUTED_SERVER_FPSET_REGISTERED:
-			b.append("%1% out of %2% FPSet server(s) registered (").append(SDF.format(new Date())).append(")");
+			b.append("%1% out of %2% FPSet server(s) registered (").append(now()).append(")");
 			break;
 		case EC.TLC_DISTRIBUTED_SERVER_FPSET_WAITING:
-			b.append("Waiting for %1% FPSet server(s) to register (").append(SDF.format(new Date())).append(")");
+			b.append("Waiting for %1% FPSet server(s) to register (").append(now()).append(")");
 			break;
             
         /*------------------------------------------- */
         case EC.TLC_STARTING:
-            b.append("Starting... (").append(SDF.format(new Date())).append(")");
+            b.append("Starting... (").append(now()).append(")");
             break;
         case EC.TLC_FINISHED:
-            b.append("Finished in %1% at (").append(SDF.format(new Date())).append(")");
+            b.append("Finished in %1% at (").append(now()).append(")");
             break;
         case EC.TLC_MODE_MC:
             b.append("Running breadth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory");
@@ -847,26 +847,26 @@ public class MP
             break;
         case EC.TLC_INIT_GENERATED1:
 			b.append("Finished computing initial states: %1% distinct state%2% generated at ")
-					.append(SDF.format(new Date())).append(".");
+					.append(now()).append(".");
             break;
         case EC.TLC_INIT_GENERATED2:
 			b.append("Finished computing initial states: %1% state%2% generated, with %3% of them distinct at ")
-					.append(SDF.format(new Date())).append(".");
+					.append(now()).append(".");
             break;
         case EC.TLC_INIT_GENERATED3:
 			b.append("Finished computing initial states: %1% states generated.\n"
 					+ "Because TLC recovers from a previous checkpoint, only %2% of them require further exploration at ")
-					.append(SDF.format(new Date())).append(".");
+					.append(now()).append(".");
             break;
         case EC.TLC_INIT_GENERATED4:
             b.append("Finished computing initial states: %1% states generated, with %2% of them distinct.");
             break;
         case EC.TLC_CHECKING_TEMPORAL_PROPS:
 			b.append("Checking %3%temporal properties for the %1% state space with %2% total distinct states at (")
-					.append(SDF.format(new Date())).append(")");
+					.append(now()).append(")");
             break;
 		case EC.TLC_CHECKING_TEMPORAL_PROPS_END:
-			b.append("Finished checking temporal properties in %1% at " + SDF.format(new Date()));
+			b.append("Finished checking temporal properties in %1% at " + now());
 	        break;
         case EC.TLC_SUCCESS:
             b.append("Model checking completed. No error has been found.\n"
@@ -888,7 +888,7 @@ public class MP
             b.append("Checkpointing of run %1%");
             break;
         case EC.TLC_CHECKPOINT_END:
-            b.append("Checkpointing completed at (").append(SDF.format(new Date())).append(")");
+            b.append("Checkpointing completed at (").append(now()).append(")");
             break;
         case EC.TLC_CHECKPOINT_RECOVER_START:
             b.append("Starting recovery from checkpoint %1%");
@@ -911,10 +911,10 @@ public class MP
             break;
         case EC.TLC_PROGRESS_STATS:
         	if (parameters.length == 4) {
-				b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated, "
+				b.append("Progress(%1%) at " + now() + ": %2% states generated, "
 						+ "%3% distinct states found, " + "%4% states left on queue.");
         	} else if (parameters.length == 6) {
-        		b.append("Progress(%1%) at " + SDF.format(new Date()) + ": %2% states generated ("
+        		b.append("Progress(%1%) at " + now() + ": %2% states generated ("
         				+ "%5% s/min), %3% distinct states found (%6% ds/min), %4% states left on queue.");
         	}
             break;
@@ -925,7 +925,7 @@ public class MP
             if (TLCGlobals.tool)
             {
                 // same format as model checking progress reporting for easier parsing by the toolbox
-                b.append("Progress(" + NOT_APPLICABLE_VAL + ") at " + SDF.format(new Date())
+                b.append("Progress(" + NOT_APPLICABLE_VAL + ") at " + now()
                         + ": %1% states generated, %2% distinct states found, " + NOT_APPLICABLE_VAL
                         + " states left on queue.");
             } else
@@ -937,7 +937,7 @@ public class MP
             if (TLCGlobals.tool)
             {
                 // same format as model checking progress reporting for easier parsing by the toolbox
-                b.append("Progress(" + NOT_APPLICABLE_VAL + ") at " + SDF.format(new Date())
+                b.append("Progress(" + NOT_APPLICABLE_VAL + ") at " + now()
                         + ": %1% states generated, " + NOT_APPLICABLE_VAL + " distinct states found, "
                         + NOT_APPLICABLE_VAL + " states left on queue.");
             } else
@@ -947,7 +947,7 @@ public class MP
             break;
 
         case EC.TLC_COVERAGE_START:
-            b.append("The coverage statistics at " + SDF.format(new Date()));
+            b.append("The coverage statistics at " + now());
             break;
         case EC.TLC_COVERAGE_VALUE:
             b.append("  %1%: %2%");
@@ -1598,6 +1598,16 @@ public class MP
 
 	public static void setRecorder(MPRecorder aRecorder) {
 		recorder = aRecorder;
+	}
+
+    private static String now() {
+    	if (Boolean.getBoolean(MP.class.getName() + ".noTimestamps")) {
+			// Return NOW if requested by setting -Dtlc2.output.MP.noTimestamps=true on the
+			// command-line. Can be useful if one wants to compare TLC's output from
+			// multiple executions.
+    		return "NOW";
+    	}
+		return SDF.format(new Date());
 	}
 
 	public static String format(final long l) {
