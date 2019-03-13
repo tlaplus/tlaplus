@@ -1373,6 +1373,12 @@
             uri="https://groups.google.com/forum/feed/tlaplus-announce/msgs/rss_v2_0.xml"
             pollingInterval="1440">
       </feed>
+      <feed
+            id="org.lamport.tla.tooblox.discussion.feed"
+            name="TLA+ User Discussions"
+            uri="https://groups.google.com/forum/feed/tlaplus/msgs/rss_v2_0.xml"
+            pollingInterval="1440">
+      </feed>
    </extension>
    
    <!--                       -->
