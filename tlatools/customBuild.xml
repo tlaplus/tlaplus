@@ -147,6 +147,10 @@
 				<exclude name="**/*.java" />
 				<exclude name="**/*.~*" />
 				<exclude name="**/*##*" />
+				<exclude name="**/*.09-09-07" />
+				<exclude name="**/*.09-07-02" />
+				<exclude name="**/*.11-02-10" />
+				<exclude name="**/*.jpg" />
 			</fileset>
 		</copy>
 	</target>
