@@ -382,7 +382,11 @@ public class LibraryPathComposite {
 		if (prevLocation != null) {
 			dialog.setFilterPath(prevLocation);
 		}
-		return dialog.open() + File.separator;
+		final String open = dialog.open();
+		if (open != null) {
+			return open + File.separator;
+		}
+		return null;
 	}
 
 	/**
