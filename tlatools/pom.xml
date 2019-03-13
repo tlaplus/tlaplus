@@ -20,7 +20,7 @@
     <!-- which gets invoked from maven. Unfortunately, it means that the tasks which are executed        -->
     <!-- by ant are not visible to maven. In this case it results in sonar not finding necessary         -->
     <!-- data to include coverage information. The properties below make sure that sonar finds the data. -->
-	<sonar.sources>src,src-gen,src-aj</sonar.sources>
+	<sonar.sources>src,src-aj</sonar.sources>
 	<sonar.tests>test,test-verify,test-long,test-concurrent</sonar.tests>
 
 	<sonar.java.binaries>class</sonar.java.binaries>
