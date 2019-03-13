@@ -33,9 +33,6 @@
 	<sonar.surefire.reportsPath>target/surefire-reports</sonar.surefire.reportsPath>
 	<sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
 	<sonar.jacoco.reportPaths>target/code-coverage.exec</sonar.jacoco.reportPaths>
-
-    <!-- I have no idea why those two are special and have to be excluded. -->
-    <sonar.exclusions>src-gen/tla2sany/parser/TLAplusParser.java,src/tlc2/value/FcnParams.java</sonar.exclusions>
   </properties>
 
 
