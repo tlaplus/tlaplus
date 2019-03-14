@@ -3,8 +3,7 @@
 /***************************************************************************
 * This file was originally created by running javacc the grammar file      *
 * config.jj that specifies the parsing of the string                       *
-* ConfigConstants.defaultConfig.  The current file has since been          *
-* modified by DRJ (David Jefferson).                                       *
+* ConfigConstants.defaultConfig.                                           *
 ***************************************************************************/
 
 package tla2sany.configuration;
@@ -1024,9 +1023,7 @@ static public void ReInit(ASCII_CharStream stream)
 {
    jjmatchedPos = jjnewStateCnt = 0;
    curLexState = defaultLexState;
-   // Bug: The following line used to read "input_stream = stream; but this bug was corrected
-   // by DRJ.  The bug should also be corrected in the .jcc file, but isn't.
-   input_stream = null;
+   input_stream = stream;
    ReInitRounds();
 }
 static private final void ReInitRounds()

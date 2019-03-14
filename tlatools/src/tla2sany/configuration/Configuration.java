@@ -4,8 +4,7 @@
 /***************************************************************************
 * This file was originally created by running javacc on the grammar file   *
 * config.jj that specifies the parsing of the string                       *
-* ConfigConstants.defaultConfig.  The current file has since been          *
-* modified by DRJ (David Jefferson).                                       *
+* ConfigConstants.defaultConfig.                                           *
 *                                                                          *
 * This file was modified by LL on 13 May 2008 to replace calls to          *
 * System.out and System.err by calls to ToolIO.out and ToolIO.err.         *
@@ -42,7 +41,7 @@ public final class Configuration implements ConfigConstants {
     /***********************************************************************
     * Called from drivers/SANY.java                                        *
     ***********************************************************************/
-    Configuration Parser;
+
     try {
       errors = errs;
       File source = new File( "config.src" );
@@ -56,10 +55,10 @@ public final class Configuration implements ConfigConstants {
         input = new java.io.StringReader( defaultConfig );
         origin = " from defaults.";
       }
-      Parser = new Configuration( input );
+     Configuration.ReInit(input);
 
       try {
-        Parser.ConfigurationUnit();
+        Configuration.ConfigurationUnit();
 //      Operators.printTable();
       } catch (ParseException e) {
         errors.addAbort(Location.nullLoc,"\nConfiguration Parser:  Encountered errors during parse.  " 
@@ -318,18 +317,6 @@ public final class Configuration implements ConfigConstants {
     jj_gen = 0;
     for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
-
-  // The following method added by DRJ.  It should be in the .jcc version of this file
-  static public void ReInit() {
-    jj_initialized_once = false;
-    jj_input_stream.ReInit(input, 1, 1);
-    token_source.ReInit(jj_input_stream);
-    token = new Token();
-    jj_ntk = -1;
-    jj_gen = 0;
-    for (int i = 0; i < 7; i++) jj_la1[i] = -1;
-  }
-
 
   public Configuration(ConfigurationTokenManager tm) {
     if (jj_initialized_once) {

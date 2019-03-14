@@ -257,9 +257,7 @@ public final class ASCII_CharStream
   static public void ReInit(java.io.Reader dstream, int startline,
   int startcolumn, int buffersize)
   {
-    // Bug: The following line used to read "inputStream = dstream;" but this bug was
-    // corrected by DRJ.  The correction should be in the .jcc copy, but isn't.
-    inputStream = null;
+    inputStream = dstream;
     line = startline;
     column = startcolumn - 1;
 
