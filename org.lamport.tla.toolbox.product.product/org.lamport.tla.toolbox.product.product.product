@@ -97,7 +97,7 @@ openFile
    </configurations>
 
    <repositories>
-      <repository location="http://lamport.org/tlatoolbox/toolboxUpdate/" enabled="true" />
+      <repository location="http://lamport.org/tlatoolbox/branches/1.5.8/toolboxUpdate/" enabled="true" />
       <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
    </repositories>
 
