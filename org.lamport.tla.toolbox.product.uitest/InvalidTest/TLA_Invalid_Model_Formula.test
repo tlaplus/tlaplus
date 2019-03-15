@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _N4SlcAJQEemDc-4PKyNT9w
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/15/19 11:35 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 3/15/19, 1:39 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -31,41 +31,39 @@ Entry-Name: .content
 
 //Create Spec
 OpenTLACreateNew
+
 try -command {
-with [get-editor $TLA-File | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "VARIABLE y"
-    key-type Enter -times 2
-    type-text "Init == x = 1"
-    key-type Enter -times 2
-    type-text "Next == x' = x * 1 + y"
-     key-type "M1+s"
-    }
-    wait -ms 500
-
-get-menu -path "TLC Model Checker/Run model" | click
-get-menu -path "TLC Model Checker/New Model..." | click
-get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-    | equals "Please input the name of the model to create" | verify-true
-get-window "New model..." | get-button OK | click
-get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-get-editor "Model_1" | get-button "Runs TLC on the model." -index 1 | click
-
-wait-run
-
-get-view "TLC Errors" | get-editbox -after [get-label "Model_1"] | get-property text 
-    | equals "current state is not a legal state\n"
-    + "While working on the initial state:\n"
-    + "/\\ x = 1\n"
-    + "/\\ y = null" | verify-true
-get-view "TLC Errors" | get-section "Error-Trace Exploration" | click
-
-
-} -finally
-//Delete Spec
-{DeleteSpecNew}
+	with [get-editor $TLA-File | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 1
+	    type-text "VARIABLE y"
+	    key-type Enter -times 2
+	    type-text "Init == x = 1"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x * 1 + y"
+	    key-type "M1+s"
+	}
+	wait -ms 500
+	get-menu -path "TLC Model Checker/Run model" | get-property enablement | equals false | verify-true
+	get-menu -path "TLC Model Checker/New Model..." | click
+	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+	    | equals "Please input the name of the model to create" | verify-true
+	get-window "New model..." | get-button OK | click
+	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+	get-editor "Model_1" | get-button "Runs TLC on the model." -index 1 | click
+	
+	wait-run
+	
+	get-view "TLC Errors" | get-editbox -after [get-label "Model_1"] | get-property text 
+	    | equals "current state is not a legal state\n"
+	    + "While working on the initial state:\n"
+	    + "/\\ x = 1\n"
+	    + "/\\ y = null" | verify-true
+	get-view "TLC Errors" | get-section "Error-Trace Exploration" | click
+} -finally {
+	DeleteSpecNew
+}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

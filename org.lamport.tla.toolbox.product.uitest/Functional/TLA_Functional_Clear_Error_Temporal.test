@@ -5,66 +5,64 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _gOLvABUlEemG79v6PBILBA
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/15/19 11:19 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 3/15/19, 1:42 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
 Content-Type: text/ecl
 Entry-Name: .content
 
+//Create Spec
 OpenTLACreateNew
 
-
 try -command {
-with [get-editor $TLA-File | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "Init == x = 1"
-    key-type Enter -times 2
-    type-text "Next == x' = x * 1"
-     key-type "M1+s"
-    }
-    wait -ms 500
-
-    get-menu -path "TLC Model Checker/Run model" | click
-get-menu -path "TLC Model Checker/New Model..." | click
-get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-    | equals "Please input the name of the model to create" | verify-true
-get-window "New model..." | get-button OK | click
-get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-
-
-
-with [get-editor "Model_1"] {
-    with [get-section "What is the behavior spec?"] {
-        get-button "Temporal formula" | click
-        get-text-viewer -after [get-label "Next:"] -index 1 | type-text "x  == 1"
-    }
-    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
-    with [get-section "What is the behavior spec?" | get-text-viewer -after [get-label "Next:"] -index 1] {
-        set-caret-pos 1 8
-        key-type BackSpace -times 6
-        type-text "=2"
-    }
-    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
-    get-section "What is the behavior spec?" | get-text-viewer -after [get-label "Next:"] -index 1 | type-text ";y=1"
-    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	with [get-editor $TLA-File | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 1
+	    type-text "Init == x = 1"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x * 1"
+	    key-type "M1+s"
+	}
+	wait -ms 500
+	get-menu -path "TLC Model Checker/Run model" | get-property enablement | equals false | verify-true
+	get-menu -path "TLC Model Checker/New Model..." | click
+	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+	    | equals "Please input the name of the model to create" | verify-true
+	get-window "New model..." | get-button OK | click
+	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+	
+	
+	with [get-editor "Model_1"] {
+	    with [get-section "What is the behavior spec?"] {
+	        get-button "Temporal formula" | click
+	        get-text-viewer -after [get-label "Next:"] -index 1 | type-text "x  == 1"
+	    }
+	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    with [get-section "What is the behavior spec?" | get-text-viewer -after [get-label "Next:"] -index 1] {
+	        set-caret-pos 1 8
+	        key-type BackSpace -times 6
+	        type-text "=2"
+	    }
+	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    get-section "What is the behavior spec?" | get-text-viewer -after [get-label "Next:"] -index 1 | type-text ";y=1"
+	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	}
+	get-editor "Model_1" | get-link "1 error detected" | get-property caption | equals "1 error detected" | verify-true
+	with [get-editor "Model_1"] {
+	    with [get-section "What is the behavior spec?" | get-text-viewer -after [get-label "Next:"] -index 1] {
+	        set-caret-pos 1 8
+	        key-type BackSpace -times 4
+	    }
+	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	}
+	
+	get-editor "Model_1" | get-link  | get-property caption | equals "1 error detected" | verify-false
+} -finally {
+	DeleteSpecNew
 }
-get-editor "Model_1" | get-link "1 error detected" | get-property caption | equals "1 error detected" | verify-true
-with [get-editor "Model_1"] {
-    with [get-section "What is the behavior spec?" | get-text-viewer -after [get-label "Next:"] -index 1] {
-        set-caret-pos 1 8
-        key-type BackSpace -times 4
-    }
-    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
-}
-
-get-editor "Model_1" | get-link  | get-property caption | equals "1 error detected" | verify-false
-} -finally
-//Delete Spec
-{DeleteSpecNew}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
