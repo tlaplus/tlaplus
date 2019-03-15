@@ -5,13 +5,16 @@ import java.util.Map;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -33,7 +36,22 @@ public class StartLaunchHandler extends AbstractHandler {
 	 * The last launched model editor or null if no previous launch has happened
 	 */
 	private ModelEditor lastModelEditor;
+	
+	private boolean m_isEnabled = false;
 
+	@Override
+	public void setEnabled(Object evaluationContext) {
+		final ModelEditor modelEditor = getModelEditor((IEvaluationContext)evaluationContext);
+
+		m_isEnabled = (modelEditor != null);
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return m_isEnabled;
+	}
+	
+	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		ModelEditor modelEditor = getModelEditor(event);
 		
@@ -116,12 +134,22 @@ public class StartLaunchHandler extends AbstractHandler {
 		}
 		return null;
 	}
-
+	
 	private ModelEditor getModelEditor(final ExecutionEvent event) {
+		return getModelEditor((IEvaluationContext)event.getApplicationContext());
+	}
+
+	private ModelEditor getModelEditor(final IEvaluationContext context) {
 		// is current editor a model editor?
-		final String activeEditorId = HandlerUtil.getActiveEditorId(event);
-		if (activeEditorId != null && activeEditorId.startsWith(ModelEditor.ID)) {
-			lastModelEditor = (ModelEditor) HandlerUtil.getActiveEditor(event);
+		Object variable = context.getVariable(ISources.ACTIVE_EDITOR_ID_NAME);
+		final String id = (variable != IEvaluationContext.UNDEFINED_VARIABLE) ? (String)variable : null;
+		
+		if ((id != null) && (id.startsWith(ModelEditor.ID))) {
+			variable = context.getVariable(ISources.ACTIVE_EDITOR_NAME);
+			
+			if (variable instanceof IEditorPart) {
+				lastModelEditor = (ModelEditor)variable;
+			}
 		}
 		// If lastModelEditor is still null, it means we haven't run the model
 		// checker yet AND the model editor view is *not* active. Lets search
@@ -139,11 +167,11 @@ public class StartLaunchHandler extends AbstractHandler {
 		// editors are open ("Model_1" and "Model_2"). It would launch Model_1,
 		// even though Model_2 might be what the user wants.
 		if (lastModelEditor == null) {
-			final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-			final IWorkbenchPage[] pages = workbenchWindow.getPages();
-			for (final IWorkbenchPage page : pages) {
-				final IEditorReference[] editorReferences = page.getEditorReferences();
-				for (final IEditorReference editorRefs: editorReferences) {
+			final IWorkbenchWindow workbenchWindow = (IWorkbenchWindow) context
+					.getVariable(ISources.ACTIVE_WORKBENCH_WINDOW_NAME);
+
+			for (final IWorkbenchPage page : workbenchWindow.getPages()) {
+				for (final IEditorReference editorRefs : page.getEditorReferences()) {
 					if (editorRefs.getId().equals(ModelEditor.ID)) {
 						lastModelEditor = (ModelEditor) editorRefs.getEditor(true);
 						break;
@@ -155,7 +183,7 @@ public class StartLaunchHandler extends AbstractHandler {
 		// open spec. E.g. lastModelEditor might still be around from when
 		// the user ran a it on spec X, but has switched to spec Y in the
 		// meantime. Closing the spec nulls the ModelEditor
-		if (lastModelEditor != null && lastModelEditor.isDisposed()) {
+		if ((lastModelEditor != null) && lastModelEditor.isDisposed()) {
 			lastModelEditor = null;
 		}
 		

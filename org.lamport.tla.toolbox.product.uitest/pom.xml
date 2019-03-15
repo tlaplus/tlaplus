@@ -41,7 +41,9 @@
     <!-- Version copy & pasted from https://repo.eclipse.org/content/repositories/rcptt-snapshots/org/eclipse/rcptt/rcptt-maven-plugin/2.4.0-SNAPSHOT/ --> 
     <rcptt-maven-version>2.4.0-20190301.000339-243</rcptt-maven-version>
     <!-- Version from https://repo.eclipse.org/content/repositories/rcptt-snapshots/org/eclipse/rcptt/runner/rcptt.runner/2.4.0-SNAPSHOT/ -->
-    <rcptt-runner-version>2.4.0-20190301.013105-245</rcptt-runner-version>
+    <!-- ...-237 is the last version which does not fail on macOS where newer version append a redundant "/Contents/Eclipse" to the "-aut" -->
+    <!-- parameter of the /bin/sh launching the Toolbox (filed https://bugs.eclipse.org/545329). -->
+    <rcptt-runner-version>2.4.0-20190219.012014-237</rcptt-runner-version>
   </properties>
 
   <!-- The main part of RCPTT Maven plugin -->

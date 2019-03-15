@@ -147,6 +147,10 @@
 				<exclude name="**/*.java" />
 				<exclude name="**/*.~*" />
 				<exclude name="**/*##*" />
+				<exclude name="**/*.09-09-07" />
+				<exclude name="**/*.09-07-02" />
+				<exclude name="**/*.11-02-10" />
+				<exclude name="**/*.jpg" />
 			</fileset>
 		</copy>
 	</target>
@@ -437,7 +441,7 @@
 	<target name="test-dist" unless="test.skip">
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJar" />
-		<jacoco:coverage destfile="target/code-coverage.exec" includes="pcal.*:tla2sany.*:tla2tex.*:tlc2.*:util.*:org.lamport.*" excludes="**/Tests.*:**/*Test*">
+		<jacoco:coverage destfile="target/code-coverage.exec" includes="pcal.*:tla2sany.*:tla2tex.*:tlc2.*:util.*:org.lamport.*" excludes="com.sun.*:javax.*:**/Tests.*:**/*Test*">
 			<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}" forkmode="perTest" fork="yes">
 				<!-- enable all assertions -->
 				<jvmarg value="-ea"/>
