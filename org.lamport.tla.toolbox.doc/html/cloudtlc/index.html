@@ -119,45 +119,23 @@ export AWS_SECRET_ACCESS_KEY=6FDASAIG7DAS976TYDKHCGQAS5D\FA77
 </pre>
               </div>
             </li>
-
-            <li>Alternatively for Azure, first create a certificate
-            (the command below uses keytool which is part of the
-            Java installation to create the azure.p12 file):
-
-<!-- "https://web.archive.org/web/20150321180025/http://azure.microsoft.com/en-us/documentation/articles/java-create-azure-website-using-java-sdk/#create-a-certificate" -->
-
-              <div class="listing">
-                <pre class="listing">
-/absolute/path/to/Java/installation/bin/keytool -genkey -alias TLAToolbox
- -keystore /absolute/path/to/the/azure.p12 -storepass ThePasswordUsedForTheCertificate
- -validity 3650 -keyalg RSA -keysize 2048 -storetype pkcs12
- -dname "CN=TLAToolbox"
-</pre>
-              </div>Next, create the azure.cer file from the
-              azure.p12 file.
-
-              <div class="listing">
-                <pre class="listing">
-/absolute/path/to/Java/installation/bin/keytool -export -alias TLAToolbox
- -storetype pkcs12 -keystore /absolute/path/to/the/azure.p12
- -storepass ThePasswordUsedForTheCertificate -rfc -file /absolute/path/to/the/azure.cer
-</pre>
-              </div>
-            </li>
-            
-            <li>
-				Upload azure.cer to <a href="portal.azure.com">portal.azure.com</a> as described in <a href="https://docs.microsoft.com/en-us/azure/azure-api-management-certs">Upload an Azure Management API Management Certificate</a>.
-            </li>
+            <hr>
+          <li>Alternatively for Azure (assuming you already have an Azure subscription), please follow <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal">Use the portal to create an Azure AD application and service principal that can access resources</a>.
+            <br>As <i>Sign-on URL</i> you can choose the TLA+ GitHub URL: <i>https://github.com/tlaplus/tlaplus</i>
 
             <li>
 				Finally configure the Azure specific environment variables as shown below for Command Prompt and PowerShell.
               <div class="listing">
                 <pre class="listing">
-export AZURE_COMPUTE_CREDENTIALS=ThePasswordUsedForTheCertificate   (The "password" supplied during certificate creation)
-export AZURE_COMPUTE_IDENTITY=/absolute/path/to/the/azure.p12
-export AZURE_COMPUTE_SUBSCRIPTION=YourAzureSubscriptionId   (Extract the ID from the <a class="URL"
-href=
-"https://ms.portal.azure.com/#blade/Microsoft_Azure_Billing/SubscriptionsBlade">Azure portal under "Subscriptions"</a>)
+## Called "Application ID" in the Azure manual
+export AZURE_COMPUTE_SERVICE_PRINCIPAL=TheAzureApplicationID
+## Called "Value" in the Azure manual
+export AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD=TheAzureApplicationKeyValue
+## Called "Directory ID" in the Azure manual
+export AZURE_COMPUTE_TENANT=TheAzureDirectoryId
+
+## The "Subscription ID" shown in the overview section of <a href="https://ms.portal.azure.com/#blade/Microsoft_Azure_Billing/ModernBillingMenuBlade/Overview">"Cost Management + Billing"</a> in Azure Portal
+export AZURE_COMPUTE_SUBSCRIPTION=YourAzureSubscriptionId
         
 </pre>
               </div>
@@ -166,13 +144,15 @@ href=
             <li>On Windows in the Command Prompt, set the
             environment variable with:
               <pre class="listing">
-set AZURE_COMPUTE_CREDENTIALS=ThePasswordUsedForTheCertificate
-set AZURE_COMPUTE_IDENTITY=C:\absolute\path\to\the\azure.p12
+set AZURE_COMPUTE_SERVICE_PRINCIPAL=TheAzureApplicationID
+set AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD=TheAzureApplicationKey
+set AZURE_COMPUTE_TENANT=TheAzureDirectoryId
 set AZURE_COMPUTE_SUBSCRIPTION=YourAzureSubscriptionId
 </pre>If you prefer PowerShell, do (notice the quotes):
               <pre class="listing">
-$env:AZURE_COMPUTE_CREDENTIALS="ThePasswordUsedForTheCertificate"
-$env:AZURE_COMPUTE_IDENTITY="C:\absolute\path\to\the\azure.p12"
+$env:AZURE_COMPUTE_SERVICE_PRINCIPAL="ThePasswordUsedForTheCertificate"
+$env:AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD="TheAzureApplicationKey"
+$env:AZURE_COMPUTE_TENANT="TheAzureDirectoryId"
 $env:AZURE_COMPUTE_SUBSCRIPTION="YourAzureSubscriptionId"
                 
 </pre>To set the variables permanently, use the
@@ -182,6 +162,18 @@ $env:AZURE_COMPUTE_SUBSCRIPTION="YourAzureSubscriptionId"
               <p>DO NOT use Cygwin shell to set the environment
               variables and launch the Toolbox. It will lead to
               obscure exceptions at runtime.</p>
+            </li>
+            <hr>
+            <li>
+              Besides AWS and Azure, <a href="https://www.packet.com/cloud/servers/t1-small/">packet.net's</a> t1.small.x86 baremetal instances provide a budget environment to run Cloud TLC.
+              <div class="listing">
+                <pre class="listing">
+## Called "API Key" in app.packet.net
+export PACKET_NET_APIKEY=YourPacketNetAPIKey
+## Called "Organization ID" in app.packet.net
+export PACKET_NET_PROJECT_ID=YourOrganizationId
+				</pre>
+              </div>
             </li>
           </ul>
         </div>

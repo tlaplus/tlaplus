@@ -48,7 +48,7 @@ public class CloudTLCJobFactory implements TLCJobFactory {
 					new EC2CloudTLCInstanceParameters(tlcparams, numberOfWorkers));
 		} else if (AZURECOMPUTE.equalsIgnoreCase(aName)) {
 			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
-					new AzureCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
+					new AzureARMCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
 		} else if (PACKET_NET.equalsIgnoreCase(aName)) {
 			return new CloudDistributedTLCJob(aName, aModelFolder, numberOfWorkers, props,
 					new PacketNetCloudTLCInstanceParameters(tlcparams, numberOfWorkers));
