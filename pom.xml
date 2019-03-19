@@ -127,8 +127,10 @@
 
 		<!-- This is used in org.lamport.tla.toolbox.product.uitest but
 			has been placed at the top level should it need be referenced
-			in other POMs -->
-		<jdk-bundle-plugin-version>11.0.2.12</jdk-bundle-plugin-version>
+			in other POMs. This property is only referenced during the AUT
+			unpacking if it is occurring on mac - the AUT unpacks out of
+			the ZIP ok on Linux and Windows-->
+		<jdk-bundle-plugin-version>11.0.2.9</jdk-bundle-plugin-version>
 	</properties>
 
 	<build>
