@@ -158,4 +158,25 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 		// (similar to EC2CloudTLCInstanceParameters#getHostnameSetup.
 		return "hostname \"$(hostname).cloudapp.net\" && echo \"$(curl -s ifconfig.co) $(hostname)\" >> /etc/hosts";
 	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getExtraRepositories()
+	 */
+	@Override
+	public String getExtraRepositories() {
+		// https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest
+		return "echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list"
+				+ " && "
+				+ "apt-key adv --keyserver packages.microsoft.com --recv-keys BC528686B50D79E339D3721CEB3E94ADBE1229CF";
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getExtraPackages()
+	 */
+	@Override
+	public String getExtraPackages() {
+		// https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest#install-on-debianubuntu-with-apt-get
+		// see getExtraRepositories too.
+		return "azure-cli";
+	}
 }
