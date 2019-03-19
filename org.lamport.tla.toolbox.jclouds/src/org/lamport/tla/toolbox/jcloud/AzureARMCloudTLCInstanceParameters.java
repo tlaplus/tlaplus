@@ -36,6 +36,11 @@ import org.jclouds.location.reference.LocationConstants;
 
 public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstanceParameters {
 
+	private static final String AZURE_COMPUTE_SUBSCRIPTION = "AZURE_COMPUTE_SUBSCRIPTION";
+	private static final String AZURE_COMPUTE_SERVICE_PRINCIPAL = "AZURE_COMPUTE_SERVICE_PRINCIPAL";
+	private static final String AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD = "AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD";
+	private static final String AZURE_COMPUTE_TENANT = "AZURE_COMPUTE_TENANT";
+
 	public AzureARMCloudTLCInstanceParameters(final String tlcParams, int numberOfWorkers) {
         super(tlcParams.trim(), numberOfWorkers);
 	}
@@ -78,7 +83,7 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 	 */
 	@Override
 	public String getIdentity() {
-		final String identity = System.getenv("AZURE_COMPUTE_SERVICE_PRINCIPAL");
+		final String identity = System.getenv(AZURE_COMPUTE_SERVICE_PRINCIPAL);
 		Assert.isNotNull(identity);
 		return identity;
 	}
@@ -88,13 +93,13 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 	 */
 	@Override
 	public String getCredentials() {
-		final String credential = System.getenv("AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD");
+		final String credential = System.getenv(AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD);
 		Assert.isNotNull(credential);
 		return credential;
 	}
 
 	private String getSubscriptionId() {
-		final String subscription = System.getenv("AZURE_COMPUTE_SUBSCRIPTION");
+		final String subscription = System.getenv(AZURE_COMPUTE_SUBSCRIPTION);
 		Assert.isNotNull(subscription);
 		return subscription;
 	}
@@ -104,15 +109,15 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 	 */
 	@Override
 	public IStatus validateCredentials() {
-		final String credential = System.getenv("AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD");
-		final String identity = System.getenv("AZURE_COMPUTE_SERVICE_PRINCIPAL");
-		final String subscription = System.getenv("AZURE_COMPUTE_SUBSCRIPTION");
-		final String tenantId = System.getenv("AZURE_COMPUTE_TENANT");
+		final String credential = System.getenv(AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD);
+		final String identity = System.getenv(AZURE_COMPUTE_SERVICE_PRINCIPAL);
+		final String subscription = System.getenv(AZURE_COMPUTE_SUBSCRIPTION);
+		final String tenantId = System.getenv(AZURE_COMPUTE_TENANT);
 		if (credential == null || identity == null || subscription == null || tenantId == null) {
 			return new Status(Status.ERROR, "org.lamport.tla.toolbox.jcloud",
 					"Invalid credentials, please check the environment variables "
-							+ "(AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD & AZURE_COMPUTE_SERVICE_PRINCIPAL "
-							+ "& AZURE_COMPUTE_TENANT and AZURE_COMPUTE_SUBSCRIPTION) are correctly "
+							+ "(" + AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD + " & " + AZURE_COMPUTE_SERVICE_PRINCIPAL + " "
+							+ "& " + AZURE_COMPUTE_TENANT + " and " + AZURE_COMPUTE_SUBSCRIPTION + ") are correctly "
 							+ "set up and picked up by the Toolbox."
 							+ "\n\nPlease visit the Toolbox help and read section 4 "
 							+ "of \"Cloud based distributed TLC\" on how to setup authentication.");
@@ -125,7 +130,7 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 	 */
 	@Override
 	public void mungeProperties(final Properties properties) {
-        properties.setProperty("azurecompute-arm.tenantId", System.getenv("AZURE_COMPUTE_TENANT"));
+        properties.setProperty("azurecompute-arm.tenantId", System.getenv(AZURE_COMPUTE_TENANT));
 		// Minimize back and forth with Azure API by limiting images to those provided
 		// by Canoncial. Also only talk to Azure in US east. Both properties reduce
 		// startup time.
