@@ -516,8 +516,8 @@ public class CloudDistributedTLCJob extends Job {
             params.mungeTemplateBuilder(templateBuilder);
 
             // Everything configured, now launch node
-			monitor.subTask(String.format("Starting new %s %s instance%s in region %s.", nodes > 1 ? nodes : "a",
-					params.getHardwareId(), nodes > 1 ? "s" : "", params.getRegion()));
+			monitor.subTask(String.format("Starting %s new %s instance%s in region %s.", (nodes > 1 ? nodes : "a"),
+					params.getHardwareId(), (nodes > 1 ? "s" : ""), params.getRegion()));
 			final Set<? extends NodeMetadata> createNodesInGroup = compute.createNodesInGroup(groupNameUUID,
 					nodes, templateBuilder.build());
 			monitor.worked(20);
