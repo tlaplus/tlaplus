@@ -49,42 +49,47 @@ import util.UniqueString;
 
 public final class Configuration implements ConfigConstants {
 
-public static void displayDefinitions() {
-  System.out.println( defaultConfig );
-}
+  private static Errors         errors;
+  private static java.io.Reader input;
 
-public static void load ( ) {
-  Configuration Parser;
-  try {
-    File source = new File( "config.src" );
-    java.io.InputStream input;
-    String origin;
-
-    if ( source.exists() ) {
-//      java.io.OutputStream output;
-      input = new java.io.FileInputStream( source );
-      origin = " from local config.src file.";
-    } else {
-      input = new java.io.StringBufferInputStream( defaultConfig );
-      origin = " from defaults.";
-    }
-    Parser = new Configuration( input );
-
-    try {
-      Parser.ConfigurationUnit();
-//      Operators.printTable();
-    } catch (ParseException e) {
-      System.err.println(e.getMessage());
-      System.err.println("Configuration Parser:  Encountered errors during parse.");
-      System.exit(0);
-    }
-
-  } catch (java.io.FileNotFoundException e) {
-    System.err.println("File not found.");
-    System.exit(0);
+  public static void displayDefinitions() {
+    ToolIO.out.println( defaultConfig );
   }
-}
 
+  public static void load (Errors errs ) throws AbortException {
+    /***********************************************************************
+    * Called from drivers/SANY.java                                        *
+    ***********************************************************************/
+    Configuration Parser;
+    try {
+      errors = errs;
+      File source = new File( "config.src" );
+      String origin;
+
+      if ( source.exists() ) {
+//      java.io.OutputStream output;
+        input = new java.io.FileReader( source );
+        origin = " from local config.src file.";
+      } else {
+        input = new java.io.StringReader( defaultConfig );
+        origin = " from defaults.";
+      }
+      Parser = new Configuration( input );
+
+      try {
+        Parser.ConfigurationUnit();
+//      Operators.printTable();
+      } catch (ParseException e) {
+        errors.addAbort(Location.nullLoc,"\nConfiguration Parser:  Encountered errors during parse.  "
+                        + e.getMessage(),true );
+      }
+
+    } catch (java.io.FileNotFoundException e) {
+      errors.addAbort(Location.nullLoc,"File not found.\n" + e,true);
+    }
+
+
+  }
 }
 PARSER_END(Configuration)
 
