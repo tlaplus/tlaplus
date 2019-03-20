@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _myVagAP4EemwBd2liJ-qvA
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/9/19 2:03 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 3/20/19, 2:48 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -20,111 +20,110 @@ Functional: Verify Model Defaults
 Content-Type: text/ecl
 Entry-Name: .content
 
+//Create Spec
 OpenTLACreateNew
+
 try -command {
+	with [get-editor $TLA-File | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 1
+	    type-text "Init == x = 999999999999999999999999999999999999999"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x * 999999999999999999999999999999"
+	     key-type "M1+s"
+	    }
+	    wait -ms 1000
+	get-menu -path "TLC Model Checker/New Model..." | click
+	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+	    | equals "Please input the name of the model to create" | verify-true
+	get-window "New model..." | get-button OK | click
 
-with [get-editor $TLA-File | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "Init == x = 999999999999999999999999999999999999999"
-    key-type Enter -times 2
-    type-text "Next == x' = x * 999999999999999999999999999999"
-     key-type "M1+s"
-    }
-    wait -ms 1000
-get-menu -path "TLC Model Checker/New Model..." | click
-get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-    | equals "Please input the name of the model to create" | verify-true
-get-window "New model..." | get-button OK | click
-
-get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-with [get-editor "Model_1"] {
-    get-section "What is the model?" | click
-    get-section "How to run?" | click
+	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+	with [get-editor "Model_1"] {
+	    get-section "What is the model?" | click
+	    get-section "How to run?" | click
+	}
+	with [get-editor "Model_1"] {
+	    with [get-section "What is the behavior spec?"] {
+	        get-text-viewer | get-property text | equals Init | verify-true
+	        get-text-viewer -after [get-label "Next:"] | get-property text | equals Next | verify-true
+	        get-button "Initial predicate and next-state relation" | get-property selected | equals true | verify-true
+	        get-button "Temporal formula" | get-property selected | equals false | verify-true
+	        get-button "No Behavior Spec" | get-property selected | equals false | verify-true
+	    }
+	}
+	
+	get-editor "Model_1" | get-tab-folder | get-tab-item "Advanced Options" | click
+	get-editor "Model_1" | get-label "Advanced Options" | get-property caption | equals "Advanced Options" | verify-true
+	with [get-editor "Model_1"] {
+	    get-section "Additional Definitions" | click
+	    get-section "State Constraint" | click
+	    get-section "Model Values" | click
+	    get-section "Definition Override" | click
+	    get-section "Action Constraint" | click
+	    get-section "TLC Options" | click
+	    get-section "Additional Definitions" | click
+	    get-section "Definition Override" | click
+	    get-section "Model Values" | click
+	    get-section "State Constraint" | click
+	}
+	with [get-editor "Model_1"] {
+	    get-section "Action Constraint" | get-text-viewer | get-property text | equals "" | verify-true
+	    with [get-section "TLC Options"] {
+	        get-button "Model-checking mode" | get-property selected | equals true | verify-true
+	        get-text-viewer | get-property text | equals "" | verify-true
+	        get-button "Depth-first" | get-property selected | equals false | verify-true
+	        get-editbox -after [get-label "Depth:"] | get-property text | equals 100 | verify-true
+	        get-editbox -after [get-label "Maximum length of the trace:"] | get-property text | equals 100 | verify-true
+	        get-button "Simulation mode" | get-property selected | equals false | verify-true
+	        get-editbox -after [get-label "Seed:"] | get-property text | equals "" | verify-true
+	        get-editbox -after [get-label "Aril:"] | get-property text | equals "" | verify-true
+	        get-button "Recover from checkpoint" | get-property selected | equals false | verify-true
+	        get-editbox -after [get-label "Checkpoint ID:"] | get-property text | equals "" | verify-true
+	        get-button "Defer verification of temporal properties (liveness) to the end of model checking to reduce overall model checking time. Liveness violations will be found late compared to invariant violations. In other words check liveness only once on the complete state space." 
+	            | get-property selected | equals false | verify-true
+	        get-button "Select randomly" | get-property selected | equals true | verify-true
+	        get-editbox -after [get-label "Fingerprint seed index:"] | get-property text | equals "0.0" | verify-true
+	        get-editbox -after [get-label "Log base 2 of number of disk storage files:"] | get-property text | equals "1.0" 
+	            | verify-true
+	        get-editbox -after [get-label "Cardinality of largest enumerable set:"] | get-property text 
+	            | equals "1000000.0" | verify-true
+	        get-button "Draw the state graph after completion of model checking provided the state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking)." 
+	            | get-property selected | equals false | verify-true
+	        get-editbox -after [get-label "JVM arguments:"] | get-property text | equals "" | verify-true
+	        get-editbox -after [get-label "TLC command line parameters:"] | get-property text | equals "" | verify-true
+	    }
+	}
+	
+	get-editor "Model_1" | get-tab-folder | get-tab-item "Model Checking Results" | click
+	with [get-editor "Model_1"] {
+	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
+	    with [get-section General] {
+	        get-editbox -after [get-label "Current status:"] | get-property text | equals "Not running" | verify-true
+	        get-link "No errors" | get-property caption | equals "No errors" | verify-true
+	        get-editbox -after [get-label "Start time:"] | get-property text | equals "" | verify-true
+	        get-editbox -after [get-label "End time:"] | get-property text | equals "" | verify-true
+	        get-editbox -after [get-label "TLC mode:"] | get-property text | equals "" | verify-true
+	        get-editbox -after [get-label "Last checkpoint time:"] | get-property text | equals "" | verify-true
+	        get-editbox -after [get-label "Fingerprint collision probability:"] | get-property text | equals "" 
+	            | verify-true
+	    }
+	    get-section Statistics | get-editbox -after [get-label "Coverage at"] | get-property text | equals "" | verify-true
+	    get-section "Evaluate Constant Expression" | get-editbox -after [get-label "Expression:"] | get-property text 
+	        | equals "" | verify-true
+	    get-section "User Output" | get-text-viewer | get-property text | equals "No user output is available" | verify-true
+	}
+	with [get-editor "Model_1"] {
+	    get-section Statistics | click
+	    get-section "Evaluate Constant Expression" | click
+	    get-section "User Output" | click
+	    get-section General | click
+	    get-section "Progress Output" | click
+	}
+} -finally {
+	DeleteSpecNew
 }
-with [get-editor "Model_1"] {
-    with [get-section "What is the behavior spec?"] {
-        get-text-viewer | get-property text | equals Init | verify-true
-        get-text-viewer -after [get-label "Next:"] | get-property text | equals Next | verify-true
-        get-button "Initial predicate and next-state relation" | get-property selected | equals true | verify-true
-        get-button "Temporal formula" | get-property selected | equals false | verify-true
-        get-button "No Behavior Spec" | get-property selected | equals false | verify-true
-    }
-    with [get-section "How to run?"] {
-        get-button "Recover from checkpoint" | get-property selected | equals false | verify-true
-        get-editbox -after [get-label "Checkpoint ID:"] | get-property text | equals "" | verify-true
-        get-combo -after [get-label "Run in distributed mode"] | get-property selection | equals off | verify-true
-    }
-}
-get-editor "Model_1" | get-tab-folder | get-tab-item "Advanced Options" | click
-get-editor "Model_1" | get-label "Advanced Options" | get-property caption | equals "Advanced Options" | verify-true
-with [get-editor "Model_1"] {
-    get-section "Additional Definitions" | click
-    get-section "State Constraint" | click
-    get-section "Model Values" | click
-    get-section "Definition Override" | click
-    get-section "Action Constraint" | click
-    get-section "TLC Options" | click
-    get-section "Additional Definitions" | click
-    get-section "Definition Override" | click
-    get-section "Model Values" | click
-    get-section "State Constraint" | click
-}
-with [get-editor "Model_1"] {
-    get-section "Action Constraint" | get-text-viewer | get-property text | equals "" | verify-true
-    with [get-section "TLC Options"] {
-        get-button "Model-checking mode" | get-property selected | equals true | verify-true
-        get-text-viewer | get-property text | equals "" | verify-true
-        get-button "Depth-first" | get-property selected | equals false | verify-true
-        get-editbox -after [get-label "Depth:"] | get-property text | equals 100 | verify-true
-        get-editbox -after [get-label "Maximum length of the trace:"] | get-property text | equals 100 | verify-true
-        get-button "Simulation mode" | get-property selected | equals false | verify-true
-        get-editbox -after [get-label "Seed:"] | get-property text | equals "" | verify-true
-        get-editbox -after [get-label "Aril:"] | get-property text | equals "" | verify-true
-        get-button "Defer verification of temporal properties (liveness) to the end of model checking to reduce overall model checking time. Liveness violations will be found late compared to invariant violations. In other words check liveness only once on the complete state space." 
-            | get-property selected | equals false | verify-true
-        get-button "Select randomly" | get-property selected | equals true | verify-true
-        get-editbox -after [get-label "Fingerprint seed index:"] | get-property text | equals "0.0" | verify-true
-        get-editbox -after [get-label "Log base 2 of number of disk storage files:"] | get-property text | equals "1.0" 
-            | verify-true
-        get-editbox -after [get-label "Cardinality of largest enumerable set:"] | get-property text 
-            | equals "1000000.0" | verify-true
-        get-button "Draw the state graph after completion of model checking provided the state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking)." 
-            | get-property selected | equals false | verify-true
-        get-editbox -after [get-label "JVM arguments:"] | get-property text | equals "" | verify-true
-        get-editbox -after [get-label "TLC command line parameters:"] | get-property text | equals "" | verify-true
-    }
-}
-get-editor "Model_1" | get-tab-folder | get-tab-item "Model Checking Results" | click
-with [get-editor "Model_1"] {
-    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
-    with [get-section General] {
-        get-editbox -after [get-label "Current status:"] | get-property text | equals "Not running" | verify-true
-        get-link "No errors" | get-property caption | equals "No errors" | verify-true
-        get-editbox -after [get-label "Start time:"] | get-property text | equals "" | verify-true
-        get-editbox -after [get-label "End time:"] | get-property text | equals "" | verify-true
-        get-editbox -after [get-label "TLC mode:"] | get-property text | equals "" | verify-true
-        get-editbox -after [get-label "Last checkpoint time:"] | get-property text | equals "" | verify-true
-        get-editbox -after [get-label "Fingerprint collision probability:"] | get-property text | equals "" 
-            | verify-true
-    }
-    get-section Statistics | get-editbox -after [get-label "Coverage at"] | get-property text | equals "" | verify-true
-    get-section "Evaluate Constant Expression" | get-editbox -after [get-label "Expression:"] | get-property text 
-        | equals "" | verify-true
-    get-section "User Output" | get-text-viewer | get-property text | equals "No user output is available" | verify-true
-}
-with [get-editor "Model_1"] {
-    get-section Statistics | click
-    get-section "Evaluate Constant Expression" | click
-    get-section "User Output" | click
-    get-section General | click
-    get-section "Progress Output" | click
-}
-
-} -finally
-//Delete Spec
-{DeleteSpecNew}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

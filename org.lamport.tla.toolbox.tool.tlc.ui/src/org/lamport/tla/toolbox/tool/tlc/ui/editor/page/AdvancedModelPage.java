@@ -461,7 +461,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
                 modelEditor.addErrorMessage("noChckpoint", "No checkpoint data found", this.getId(),
                         IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
                 setComplete(false);
-                expandSection(SEC_HOW_TO_RUN);
+                expandSection(SEC_LAUNCHING_SETUP);
             }
         }
 
@@ -864,6 +864,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         managedForm.addPart(launchPart);
         DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
         dm.bindAttribute(MODEL_PARAMETER_VIEW, viewSource, launchPart);
+        dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, launchPart);   
         
         // dirty listeners
         simuArilText.addModifyListener(launchListener);
@@ -878,6 +879,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         deferLiveness.addSelectionListener(launchListener);
         dfidOption.addSelectionListener(launchListener);
         mcOption.addSelectionListener(launchListener);
+        checkpointButton.addSelectionListener(launchListener);
         viewSource.addTextListener(launchListener);
         visualizeStateGraph.addSelectionListener(launchListener);
         extraTLCParametersText.addModifyListener(launchListener);

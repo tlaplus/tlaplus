@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _Jm-wcBB2EemUS_ZdBJsvQg
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/14/19 3:40 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 3/20/19, 3:36 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -27,89 +27,89 @@ Run, Interrup, verify then delete
 Content-Type: text/ecl
 Entry-Name: .content
 
+//Create Spec
 OpenTLACreateNew
 
-
 try -command {
-with [get-editor $TLA-File | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "Init == x = 11"
-    key-type Enter -times 2
-    type-text "Next == x' = x + 1"
-    key-type Enter -times 1
-    type-text "Spec == Init /\ [][Next]_x"
-    key-type Enter -times 1
-     key-type "M1+s"
-    }
+	with [get-editor $TLA-File | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 1
+	    type-text "Init == x = 11"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x + 1"
+	    key-type Enter -times 1
+	    type-text "Spec == Init /\ [][Next]_x"
+	    key-type Enter -times 1
+	    key-type "M1+s"
+	}
     
     get-menu -path "TLC Model Checker/New Model..." | click
-get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-    | equals "Please input the name of the model to create" | verify-true
-get-window "New model..." | get-button OK | click
-get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-with [get-editor "Model_1" | get-section "What to check?"] {
-    get-button Deadlock | uncheck
-    with [get-section Invariants] {
-        click
-        get-button Add | click
-    }
-}
-with [get-window -class WizardDialog] {
-    get-text-viewer | type-text "x<9"
-    get-button Finish | click
-}
+	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+	    | equals "Please input the name of the model to create" | verify-true
+	get-window "New model..." | get-button OK | click
+	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+	with [get-editor "Model_1" | get-section "What to check?"] {
+	    get-button Deadlock | uncheck
+	    with [get-section Invariants] {
+	        click
+	        get-button Add | click
+	    }
+	}
+	with [get-window -class WizardDialog] {
+	    get-text-viewer | type-text "x<9"
+	    get-button Finish | click
+	}
 
+	with [get-editor "Model_1"] {
+	    get-section "Model description" | get-text-viewer | type-text "This is a text of end to end"
+	    get-section "What is the model?" | click
+	    with [get-section "How to run?"] {
+	        click
+	        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
+	    }
+		get-editor "Model_1" | get-tab-folder | get-tab-item "Advanced Options" | click
+	    with [get-section "TLC Options"] {
+	        click
+	        get-button "Recover from checkpoint" | check
+	    }
+	}
+	get-editor "Model_1" | get-link "1 error detected" | get-property caption | equals "1 error detected" | verify-true
+	with [get-editor "Model_1"] {
+	    get-section "TLC Options" | get-button "Recover from checkpoint" | uncheck
+	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	}
 
-with [get-editor "Model_1"] {
-    get-section "Model description" | get-text-viewer | type-text "This is a text of end to end"
-    get-section "What is the model?" | click
-    with [get-section "How to run?"] {
-        click
-        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
-        get-button "Recover from checkpoint" | check
-    }
-}
-get-editor "Model_1" | get-link "1 error detected" | get-property caption | equals "1 error detected" | verify-true
-with [get-editor "Model_1"] {
-    get-section "How to run?" | get-button "Recover from checkpoint" | uncheck
-    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
-}
-
-wait -ms 1000
-
-get-editor "Model_1" | get-section "How to run?" | get-button "Recover from checkpoint" | get-property selected 
-    | equals false | verify-true
-with [get-editor "Model_1"] {
-    with [get-tab-folder] {
-        get-tab-item "Advanced Options" | click
-        get-tab-item "Model Checking Results" | click
-    }
-    //get-button "Runs TLC on the model." -index 1 | click
-    get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
-}
-
+	wait -ms 1000
+	
+	get-editor "Model_1" | get-section "TLC Options" | get-button "Recover from checkpoint" | get-property selected 
+	    | equals false | verify-true
+	with [get-editor "Model_1"] {
+	    with [get-tab-folder] {
+	        get-tab-item "Advanced Options" | click
+	        get-tab-item "Model Checking Results" | click
+	    }
+	    //get-button "Runs TLC on the model." -index 1 | click
+	    get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	}
 
     wait -ms 1000
 
-with [get-editor "Model_1"] {
-    get-tab-folder | get-tab-item "Model Overview" | click
-    with [get-section "What to check?" | get-section Invariants] {
-        get-table | select "x<9"
-        get-button Remove | click
-    }
-get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	with [get-editor "Model_1"] {
+	    get-tab-folder | get-tab-item "Model Overview" | click
+	    with [get-section "What to check?" | get-section Invariants] {
+	        get-table | select "x<9"
+	        get-button Remove | click
+	    }
+		get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	}
+	
+	wait -ms 1000
 
+	get-editor "Model_1" | get-tab-folder | get-tab-item "Model Overview" | click
+} -finally {
+	DeleteSpecNew
 }
-
-wait -ms 1000
-
-get-editor "Model_1" | get-tab-folder | get-tab-item "Model Overview" | click
-
-} -finally
-//Delete Spec
-{DeleteSpecNew}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
