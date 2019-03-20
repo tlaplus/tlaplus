@@ -158,6 +158,7 @@ public class PacketNetCloudTLCInstanceParameters extends CloudTLCInstanceParamet
 				+ " && "
 				+ "printf \"[Unit]\\nDescription=Delete instance via packetnet api on shutdown\\n"
 				+ "Requires=network.target\\n"
+				+ "After=network.target\\n"
 				+ "DefaultDependencies=no\\n"
 				+ "Before=shutdown.target\\n"
 				+ "[Service]\\n"
