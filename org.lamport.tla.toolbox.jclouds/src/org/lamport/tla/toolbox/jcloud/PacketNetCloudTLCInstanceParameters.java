@@ -141,7 +141,7 @@ public class PacketNetCloudTLCInstanceParameters extends CloudTLCInstanceParamet
 	}
 
 	@Override
-	public String getCloudAPIShutdown(final String credentials) {
+	public String getCloudAPIShutdown(final String credentials, String groupName) {
 		// One might think we could simply invoke curl and terminate the instance right
 		// away. That doesn't work because we want the instance to idle until the
 		// scheduled shutdown call executes in case the Toolbox reuses the instance to

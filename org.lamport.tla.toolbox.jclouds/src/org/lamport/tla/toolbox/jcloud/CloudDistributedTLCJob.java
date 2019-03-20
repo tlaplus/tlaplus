@@ -543,9 +543,6 @@ public class CloudDistributedTLCJob extends Job {
 							// - Turn off NUMA balancing
 							+ "echo 0 > /proc/sys/kernel/numa_balancing"
 							+ " && "
-							// Run any cloud specific cleanup tasks.
-							+ params.getCloudAPIShutdown(params.getCredentials())
-							+ " && "
                             // Don't want dpkg to require user interaction.
 							+ "export DEBIAN_FRONTEND=noninteractive"
 							+ " && "
@@ -603,10 +600,14 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
 							+ params.getOSFilesystemTuning()
+							+ " && "
+							// Run any cloud specific cleanup tasks after additional packages have been
+							// installed (cloud shutdown might rely on those pkgs).
+							+ params.getCloudAPIShutdown(params.getCredentials(), groupNameUUID)
+							+ " && "
 							// Tell sshd not to use PAM user session modules. pam_nologin restricts
 							// subsequent logins to the instance five minutes prior to system halt and
 							// systemd apparently has no way to configure five minutes to e.g. 15 seconds.
-							+ " && "
 							+ "sed -i 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config"
 							+ " && "
 							+ "service ssh restart"
