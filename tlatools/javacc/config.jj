@@ -27,6 +27,7 @@ options {
   DEBUG_LOOKAHEAD = false;
   DEBUG_TOKEN_MANAGER = false;
   STATIC = true;
+  JDK_VERSION = "1.8";
 }
 
 PARSER_BEGIN(Configuration)
