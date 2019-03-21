@@ -709,12 +709,16 @@ public class EditorUtil
         IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 
         // check if editor's file is currently parsed.
-        IFile file = ((FileEditorInput) editor.getEditorInput()).getFile();
-        String moduleName = ResourceHelper.getModuleName(file);
-
-        ParseResult parseResult = ResourceHelper.getValidParseResult(file);
-
-        return ResourceHelper.getTheoremNodeWithCaret(parseResult, moduleName, textSelection, document);
+        
+        if (editor.getEditorInput() instanceof FileEditorInput) {
+        	IFile file = ((FileEditorInput) editor.getEditorInput()).getFile();
+        	String moduleName = ResourceHelper.getModuleName(file);
+        	
+        	ParseResult parseResult = ResourceHelper.getValidParseResult(file);
+        	
+        	return ResourceHelper.getTheoremNodeWithCaret(parseResult, moduleName, textSelection, document);
+        }
+        return null;
     }
 
     /**
