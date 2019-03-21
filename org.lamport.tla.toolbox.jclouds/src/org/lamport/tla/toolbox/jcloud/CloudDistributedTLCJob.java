@@ -200,6 +200,7 @@ public class CloudDistributedTLCJob extends Job {
 			monitor.subTask(String.format(
 					"Looking for %sresusable node%s to quick-start model checking (output might show failed connection attempts)",
 					nodes > 1 ? "" : "a ", nodes > 1 ? "s" : ""));
+			boolean isReconnect = false;
 			final Set<NodeMetadata> createNodesInGroup = nodes > 1 ? new HashSet<>()
 					: findReusableNodes(compute, monitor);
 			monitor.worked(5);
@@ -211,6 +212,7 @@ public class CloudDistributedTLCJob extends Job {
 					return Status.CANCEL_STATUS;
 				}
 			} else {
+				isReconnect = true;
 				monitor.subTask(String.format(
 						"Lookup succeeded thus skipping provisioning steps 5 to 7",
 						nodes > 1 ? "" : "a ", nodes > 1 ? "s" : ""));
@@ -415,7 +417,7 @@ public class CloudDistributedTLCJob extends Job {
 									+ "Expect to receive an email at %s with the model checking result eventually.",
 							hostname,
 							props.get("result.mail.address")), null, new URL(
-							"http://" + hostname + "/munin/"), execChannel == null ? null : execChannel.getOutput(), sshClient);
+							"http://" + hostname + "/munin/"), execChannel == null ? null : execChannel.getOutput(), sshClient, isReconnect);
 		} catch (ExecutionException|InterruptedException|RunNodesException|IOException|RunScriptOnNodesException|NoSuchElementException|AuthorizationException|SshException e) {
 			e.printStackTrace();
 			if (context != null) {
@@ -719,13 +721,15 @@ public class CloudDistributedTLCJob extends Job {
 		private final URL url;
 		private final InputStream output;
 		private final SshClient sshClient;
+		private final boolean isReconnect;
 
 		public CloudStatus(int severity, String pluginId, int code,
-				String message, Throwable exception, URL url, InputStream output, SshClient sshClient) {
+				String message, Throwable exception, URL url, InputStream output, SshClient sshClient, boolean isReconnect) {
 			super(severity, pluginId, code, message, exception);
 			this.url = url;
 			this.output = output;
 			this.sshClient = sshClient;
+			this.isReconnect = isReconnect;
 		}
 
 		@Override
@@ -742,6 +746,11 @@ public class CloudDistributedTLCJob extends Job {
 			// For some reason shutdown has to be called before kill (shrugs).
 			sshClient.execChannel(
 					String.format("sudo shutdown -h +%s && kill $(pgrep -f tla2tools.jar)", SHUTDOWN_AFTER));
+		}
+
+		@Override
+		public boolean isReconnect() {
+			return isReconnect;
 		}
 	}
 
