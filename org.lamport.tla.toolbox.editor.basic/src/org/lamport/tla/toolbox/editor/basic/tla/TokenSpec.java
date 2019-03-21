@@ -91,6 +91,9 @@ public class TokenSpec
             return null;
         }
         String moduleName = editor.getModuleName();
+        if (moduleName == null) {
+        	return null;
+        }
         ModuleNode moduleNode = ResourceHelper.getModuleNode(moduleName);
         if (moduleNode == null)
         {

@@ -628,6 +628,9 @@ public class ResourceHelper
         {
             return null;
         }
+        if (resource.getLocation() == null) {
+        	return null;
+        }
         return getModuleName(resource.getLocation().toOSString());
     }
 
