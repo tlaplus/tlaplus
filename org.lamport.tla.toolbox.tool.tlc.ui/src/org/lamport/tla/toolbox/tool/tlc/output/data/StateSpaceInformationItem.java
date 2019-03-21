@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -141,6 +140,16 @@ public class StateSpaceInformationItem
 		return distinctSPM;
 	}
 
+	private static long localizedNum2Long(final String number) {
+		// Strip all locale-specific delimiters from input. This assumes number is
+		// rounded to zero decimal places which should be the case for
+		// StateSpaceInfomrationItems. So far we haven't seen fractions of TLA+ state.
+		// States appear to be atomic. Per-minutes states are also reported without
+		// decimal places.
+		final String justDigits = number.replaceAll("[^0-9]", "");
+		return Long.parseLong(justDigits);
+	}
+	
 	/**
 	 * @param outputMessage
 	 * @return
@@ -166,6 +175,10 @@ public class StateSpaceInformationItem
 
 		for (int j = 0; j < i.length; j++) {
 			if (i[j] == -1) {
+				// Old does not only mean previously written MC.out files.  Current TLC still emits old format through:
+				// tlc2.tool.distributed.TLCServer.modelCheck()
+				// tlc2.tool.distributed.TLCServer.printSummary(int, long, long, long, boolean)
+				// tlc2.tool.ModelChecker.modelCheck() <- Liveness checking
 				return parseOld(outputMessage);
 			}
 		}
@@ -176,21 +189,20 @@ public class StateSpaceInformationItem
 			final Date time = SDF.parse(outputMessage.substring(
 					i[1] + AT.length(), i[2]));
 
-			final NumberFormat nf = NumberFormat.getNumberInstance();
-			final long diameter = nf.parse(
-				outputMessage.substring(i[0] + OB.length(), i[1])).longValue();
-			final long foundStates = nf.parse(
-				outputMessage.substring(i[2] + COLON.length(), i[3])).longValue();
-			final long statesPerMinute = nf.parse(
-				outputMessage.substring(i[3] + GENERATED.length(), i[4])).longValue();
+			final long diameter = localizedNum2Long(
+				outputMessage.substring(i[0] + OB.length(), i[1]));
+			final long foundStates = localizedNum2Long(
+				outputMessage.substring(i[2] + COLON.length(), i[3]));
+			final long statesPerMinute = localizedNum2Long(
+				outputMessage.substring(i[3] + GENERATED.length(), i[4]));
 
-			final long distinctStates = nf.parse(
-				outputMessage.substring(i[4] + SPM.length(), i[5])).longValue();
-			final long distinctStatesPerMinute = nf.parse(
-				outputMessage.substring(i[5] + DISTINCT.length(), i[6])).longValue();
+			final long distinctStates = localizedNum2Long(
+				outputMessage.substring(i[4] + SPM.length(), i[5]));
+			final long distinctStatesPerMinute = localizedNum2Long(
+				outputMessage.substring(i[5] + DISTINCT.length(), i[6]));
 
-			final long leftStates = nf.parse(
-				outputMessage.substring(i[6] + DISTINCT_SPM.length(), i[7])).longValue();
+			final long leftStates = localizedNum2Long(
+				outputMessage.substring(i[6] + DISTINCT_SPM.length(), i[7]));
 
 			return new StateSpaceInformationItem(time, diameter, foundStates,
 					distinctStates, leftStates, statesPerMinute,
@@ -283,15 +295,11 @@ public class StateSpaceInformationItem
 		}
 
 		try {
-			return new StateSpaceInformationItem(SDF.parse(outputMessage
-					.substring(i[1] + AT.length(), i[2])),
-					Long.parseLong(outputMessage.substring(i[0] + OB.length(),
-							i[1])), Long.parseLong(outputMessage.substring(i[2]
-							+ COLON.length(), i[3])),
-					Long.parseLong(outputMessage.substring(
-							i[3] + GENERATED.length(), i[4])),
-					Long.parseLong(outputMessage.substring(
-							i[4] + DISTINCT.length(), i[5])), 0, 0);
+			return new StateSpaceInformationItem(SDF.parse(outputMessage.substring(i[1] + AT.length(), i[2])),
+					localizedNum2Long(outputMessage.substring(i[0] + OB.length(), i[1])),
+					localizedNum2Long(outputMessage.substring(i[2] + COLON.length(), i[3])),
+					localizedNum2Long(outputMessage.substring(i[3] + GENERATED.length(), i[4])),
+					localizedNum2Long(outputMessage.substring(i[4] + DISTINCT.length(), i[5])), 0, 0);
 		} catch (NumberFormatException e) {
 			TLCUIActivator.getDefault().logError("Error reading progress information", e);
 		} catch (ParseException e) {
