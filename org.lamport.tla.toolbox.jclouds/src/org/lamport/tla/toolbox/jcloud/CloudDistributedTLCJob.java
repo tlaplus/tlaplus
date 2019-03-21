@@ -199,7 +199,8 @@ public class CloudDistributedTLCJob extends Job {
 						"Lookup succeeded thus skipping provisioning steps 5 to 7",
 						nodes > 1 ? "" : "a ", nodes > 1 ? "s" : ""));
 				// skipped provisionNodes(...) which takes 35 steps.
-				((Application.MyProgressMonitor) monitor).incSteps(2);
+				monitor.subTask("(skipped)");
+				monitor.subTask("(skipped)");
 				monitor.worked(35);
 			}
 
@@ -514,8 +515,8 @@ public class CloudDistributedTLCJob extends Job {
             params.mungeTemplateBuilder(templateBuilder);
 
             // Everything configured, now launch node
-			monitor.subTask(String.format("Starting new %s %s instance%s in region %s.", nodes > 1 ? nodes : "a",
-					params.getHardwareId(), nodes > 1 ? "s" : "", params.getRegion()));
+			monitor.subTask(String.format("Starting %s new %s instance%s in region %s.", (nodes > 1 ? nodes : "a"),
+					params.getHardwareId(), (nodes > 1 ? "s" : ""), params.getRegion()));
 			final Set<? extends NodeMetadata> createNodesInGroup = compute.createNodesInGroup(groupNameUUID,
 					nodes, templateBuilder.build());
 			monitor.worked(20);
@@ -541,9 +542,6 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							// - Turn off NUMA balancing
 							+ "echo 0 > /proc/sys/kernel/numa_balancing"
-							+ " && "
-							// Run any cloud specific cleanup tasks.
-							+ params.getCloudAPIShutdown(params.getCredentials())
 							+ " && "
                             // Don't want dpkg to require user interaction.
 							+ "export DEBIAN_FRONTEND=noninteractive"
@@ -602,10 +600,14 @@ public class CloudDistributedTLCJob extends Job {
 							+ " && "
 							// Delegate file system tuning to cloud specific code.
 							+ params.getOSFilesystemTuning()
+							+ " && "
+							// Run any cloud specific cleanup tasks after additional packages have been
+							// installed (cloud shutdown might rely on those pkgs).
+							+ params.getCloudAPIShutdown(params.getCredentials(), groupNameUUID)
+							+ " && "
 							// Tell sshd not to use PAM user session modules. pam_nologin restricts
 							// subsequent logins to the instance five minutes prior to system halt and
 							// systemd apparently has no way to configure five minutes to e.g. 15 seconds.
-							+ " && "
 							+ "sed -i 's/UsePAM yes/UsePAM no/g' /etc/ssh/sshd_config"
 							+ " && "
 							+ "service ssh restart"

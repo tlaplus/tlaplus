@@ -44,11 +44,122 @@
     <!-- ...-237 is the last version which does not fail on macOS where newer version append a redundant "/Contents/Eclipse" to the "-aut" -->
     <!-- parameter of the /bin/sh launching the Toolbox (filed https://bugs.eclipse.org/545329). -->
     <rcptt-runner-version>2.4.0-20190219.012014-237</rcptt-runner-version>
+    <aut-unpack-directory>target/unpack-for-aut/</aut-unpack-directory>
+<!-- 
+    <jdk-bundle-plugin-prefix>st.theori.openjdk.</jdk-bundle-plugin-prefix>
+ -->
+    <jdk-bundle-plugin-prefix>org.lamport.openjdk.</jdk-bundle-plugin-prefix>
   </properties>
 
-  <!-- The main part of RCPTT Maven plugin -->
+  <!-- ordering here is important since macos matches the family 'unix' -->
+  <profiles>
+    <profile>
+      <id>linux</id>
+      <activation>
+        <os>
+          <family>unix</family>
+        </os>
+      </activation>
+      <properties>
+        <os-ws-arch>linux.gtk.x86_64</os-ws-arch>
+        <product-path>linux/gtk/x86_64/</product-path>
+      </properties>
+    </profile>
+    <profile>
+      <id>macos</id>
+      <activation>
+        <os>
+          <name>mac os x</name>
+        </os>
+      </activation>
+      <properties>
+        <os-ws-arch>macosx.cocoa.x86_64</os-ws-arch>
+        <product-path>macosx/cocoa/x86_64</product-path>
+      </properties>
+    </profile>
+    <profile>
+      <id>win32</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <os-ws-arch>win32.win32.x86_64</os-ws-arch>
+        <product-path>win32/win32/x86_64</product-path>
+      </properties>
+    </profile>
+  </profiles>
+
+
   <build>
     <plugins>
+      <!-- 
+          Something has a bug on macos where it does not preserve the executable
+            perms on unpacked files; this bites us as RCPTT attempts to run the java binary
+            that has been zipped up in our JDK wrapping feature. We will unpack the ZIP using a
+            different route which allows us to chmod too.
+
+              https://github.com/mojohaus/truezip/issues/8
+
+          Would you believe that ant's unzip on macOS also doesn't preserve the execution bit? what in the world...
+        -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <skip>${maven.test.skip}</skip>
+              <target>
+                <property name="toolbox_version" value="${toolbox.version}"/>
+                <property name="os_ws_arch" value="${os-ws-arch}"/>
+                <property name="unpack_dir" value="${aut-unpack-directory}"/>
+                <property name="plugin_prefix" value="${jdk-bundle-plugin-prefix}"/>
+                <property name="plugin_version" value="${jdk-bundle-plugin-version}"/>
+
+                <mkdir dir="${unpack_dir}" />
+                <unzip
+                  src="../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-${toolbox_version}-${os_ws_arch}.zip"
+                  dest="${unpack_dir}" />
+                <chmod dir="${unpack_dir}" perm="ugo+x" includes="**/bin/*,**/Contents/Home/lib/jspawnhelper"/>
+                
+                <ac:if xmlns:ac="antlib:net.sf.antcontrib">
+                	<ac:equals arg1="${os_ws_arch}" arg2="macosx.cocoa.x86_64"/>
+                	<ac:then>
+                		<echo message="Performing additional repairs to the macOS JDK bundle..."/>
+						<delete file="${unpack_dir}/TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/MacOS/libjli.dylib"/>
+						<symlink
+						  link="${basedir}/${unpack_dir}/TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/MacOS/libjli.dylib"
+						  resource="${basedir}/${unpack_dir}TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/Home/lib/jli/libjli.dylib"/>
+                	</ac:then>
+                </ac:if>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+		<dependencies>
+		  <dependency>
+			<groupId>ant-contrib</groupId>
+			<artifactId>ant-contrib</artifactId>
+			<version>1.0b3</version>
+			<exclusions>
+			  <exclusion>
+				<groupId>ant</groupId>
+				<artifactId>ant</artifactId>
+			  </exclusion>
+			</exclusions>
+		  </dependency>
+		</dependencies>
+      </plugin>
+
+
+	  <!-- The main part of RCPTT Maven plugin -->
       <plugin>
         <groupId>org.eclipse.rcptt</groupId>
         <artifactId>rcptt-maven-plugin</artifactId>
@@ -63,8 +174,14 @@
             -->
 
             <!-- Use AUT from current build results. [classifier] will be
-            automatically replaced according to the current platform -->
+            automatically replaced according to the current platform
+
+              DO NOT USE - see above comment WRT truezip
+
             <explicit>../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.5.8-[platform].zip</explicit>
+            -->
+            
+            <explicit>${aut-unpack-directory}</explicit>
 
             <!-- Or specify a path to AUT folder -->
             <!--
@@ -133,7 +250,9 @@
 		   <vmArgs>
 			 <vmArg>-Xmx768m</vmArg>
 			 <vmArg>-XX:MaxPermSize=256m</vmArg>
-		   </vmArgs>
+           	<vmArg>-Xdebug</vmArg>
+           	<vmArg>-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8989</vmArg>
+           </vmArgs>
            -->
           </aut>
 

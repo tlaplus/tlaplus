@@ -1,4 +1,22 @@
 /**
+ * BUG DISCOVERED in March 2019 by LL, who unsuccessfully attempted to fix it on 16-18 Mar 2019:
+ *   If an INSTANCE statement implicitly instantiates a module parameter with the identifier
+ *   of the same name (by not specifying an instantiation for it), the Decompose Proof command
+ *   expands definitions from the instantiated module by replacing the parameter by
+ *   the text of the INSTANCE statement.  The problem is manifest in a bad argument
+ *   passed to substInNodeToInstanceSub, and that manifestation is explained in comments
+ *   starting around line 5325, comments containing and explaining an unsuccessful attempt
+ *   to fix the problem.
+ * 
+ * CHANGE MADE BY LL on 18 March 2019
+ *   At some point, this class was modified by first creating a new version called
+ *   NewDecomposeProofHandler and then renaming it to be the current version.  A lot
+ *   of references to NewDecomposeProofHandler remained, including ones pointing to
+ *   an error at a certain line number of NewDecomposeProofHandler.  I changed almost
+ *   all mentions of NewDecompose... to Decompose..., and updated the line numbers of
+ *   the error.  I left a couple of NewDecompose... in comments that seemed to accompany
+ *   commented-out code from that file.
+ *     
  * IN MIDDLE OF
  * Fixing bug on line 428 of Test.tla.  Will try the approach of adding
  * a global Renaming to the decomposition state to keep track of all renaming in
@@ -511,6 +529,7 @@ import org.lamport.tla.toolbox.util.StringSet;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.parser.Token;   // added by LL 18 March 2019
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AssumeProveNode;
 import tla2sany.semantic.DefStepNode;
@@ -534,6 +553,7 @@ import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
+import tla2sany.st.TreeNode;  // added by LL 18 March 2019
 import util.UniqueString;
 
 public class DecomposeProofHandler extends AbstractHandler implements
@@ -698,7 +718,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
      * element containing data for the i-th assumption. This is done to make it
      * easy to replace one assumption by several. Other objects contain pointers
      * to these vectors, so once the vectors are constructed by
-     * NewDecomposeProofHandler.execute, they can be modified but must not be
+     * DecomposeProofHandler.execute, they can be modified but must not be
      * replaced by new vectors.
      *************************************************************************/
 
@@ -1666,7 +1686,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
                     "An error that should not happen has occurred in "
-                            + "line 1479 of NewDecomposeProofHandler.");
+                            + "line 1678 of DecomposeProofHandler.");
             return null;
         }
 
@@ -1686,7 +1706,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                             "Decompose Proof Command",
                             "An error that should not happen has occurred in "
-                                    + "line 1544 of NewDecomposeProofHandler.");
+                                    + "line 1698 of DecomposeProofHandler.");
                     return null;
                 }
                 NodeRepresentation nodeRep = contextStepRep.subNodeRep(contextAssumptions.elementAt(i),
@@ -1737,7 +1757,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
                     "An error that should not happen has occurred in "
-                            + "line 1583 of NewDecomposeProofHandler.");
+                            + "line 1749 of DecomposeProofHandler.");
             return null;
         }
            state.goalRep = goalStepRep.subNodeRep(goal, null, null, null, null, false);
@@ -1833,7 +1853,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
      * This method is called when the user issues a the Decompose Proof command.
      * It launches a synchronous task that calls realExecute() to do most of the
      * work. However, before doing that, it sets various fields of the
-     * NewDecomposeProofHandler object that can't be set from the separate
+     * DecomposeProofHandler object that can't be set from the separate
      * thread.
      * 
      * This running of a separate task was done to allow the command to ask the
@@ -3273,7 +3293,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                    MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                            "Decompose Proof Command",
                            "Something unexpected is going on at "
-                                   + "line 3247 of NewDecomposeProofHandler.");
+                                   + "line 3285 of DecomposeProofHandler.");
                }
 
            }
@@ -3289,7 +3309,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
                     "Sanity check failed at "
-                            + "line 3255 of NewDecomposeProofHandler.");
+                            + "line 3301 of DecomposeProofHandler.");
         }
         
         
@@ -3346,7 +3366,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "An error that should not happen has occurred in "
-                                + "line 3275 of NewDecomposeProofHandler.");
+                                + "line 3358 of DecomposeProofHandler.");
                 e.printStackTrace();
             }
             proofBY = new StringSet();
@@ -3833,7 +3853,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
                     "An error that should not happen has occurred in "
-                            + "line 1465 of NewDecomposeProofHandler.");
+                            + "line 3845 of DecomposeProofHandler.");
             e.printStackTrace();
         }
 
@@ -4140,7 +4160,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
                             "An error that should not happen has occurred in "
-                                    + "line 2534 of NewDecomposeProofHandler.");
+                                    + "line 4152 of DecomposeProofHandler.");
                 }
             } catch (BadLocationException e) {
                 // TODO Auto-generated catch block
@@ -4148,7 +4168,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "An error that should not happen has occurred in "
-                                + "line 2714 of NewDecomposeProofHandler.");
+                                + "line 4160 of DecomposeProofHandler.");
                 return null;
             }
             // We now perform the substitutions in result
@@ -4227,7 +4247,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "An error that should not happen has occurred in "
-                                + "line 2737 of NewDecomposeProofHandler.");
+                                + "line 4239 of DecomposeProofHandler.");
             }
             result = moduleFileDocProvider.getDocument(fileEditorInput);
         }
@@ -4301,7 +4321,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                             "Decompose Proof Command",
                             "Something unexpected is going on at "
-                                    + "line 4178 of NewDecomposeProofHandler.");
+                                    + "line 4313 of DecomposeProofHandler.");
                     return null;
                 }
                 OpApplNode oan = (OpApplNode) nodeRepArg.semanticNode;
@@ -4378,7 +4398,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "An error that should not happen has occurred in "
-                                + "line 4336 of NewDecomposeProofHandler.");
+                                + "line 4390 of DecomposeProofHandler.");
                 return null;
             }
         }
@@ -4466,7 +4486,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             } else {
                 // nodeRep is the current goal and so the NEW assumptions
                 // will become top-level assumptions and rep.parentVector
-                // should be set to the NewDecomposeProofHandler's assumeRep
+                // should be set to the DecomposeProofHandler's assumeRep
                 // vector.
                 rep.setParentVector(this.state.assumeReps);
             }
@@ -4738,7 +4758,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
                             "An error that should not happen has occurred in "
-                                    + "line 2842 of NewDecomposeProofHandler.");
+                                    + "line 4750 of DecomposeProofHandler.");
                     return result;
                 }
                 // Note: the following code outside the if (mayNeedParens) has
@@ -4925,11 +4945,12 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 mayNeedParens = true;
             }
             for (int j = 0; j < uses.length; j++) {
-                if (!(uses[j] instanceof OpApplNode)) {
+            	// "|| (uses[j] instanceof OpArgNode" added by LL 18 March 2019
+                if (!((uses[j] instanceof OpApplNode) || (uses[j] instanceof OpArgNode))) {
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
                             "An error that should not happen has occurred in "
-                                    + "line 2842 of NewDecomposeProofHandler.");
+                                    + "line 4941 of DecomposeProofHandler.");
                     return result;
                 }
                 // Note: the following code outside the if (mayNeedParens) has
@@ -5086,7 +5107,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                         MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                                 "Decompose Proof Command",
                                 "Something that should not happen has occurred in "
-                                        + "line 5008 of NewDecomposeProofHandler.");
+                                        + "line 5099 of DecomposeProofHandler.");
                         errorFound = true ;
                     }
                 }
@@ -5109,7 +5130,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                             "Decompose Proof Command",
                             "Something that should not happen has occurred in "
-                                    + "line 5028 of NewDecomposeProofHandler.");
+                                    + "line 5122 of DecomposeProofHandler.");
                     errorFound = true ;
                 }
             }             
@@ -5300,12 +5321,73 @@ public class DecomposeProofHandler extends AbstractHandler implements
             result.params.add(subst.getOp()) ;
             NodeRepresentation nodeRep ;
             try {
+/*
+ * Comments added by LL on 18 March 2019:
+ * 
+ * The following code was an attempt to fix the bug in the Decompose Proof command that causes it 
+ * to replace implicitly instantiated module parameters with the text of the INSTANCE statement.
+ * There seem to be two problems that need fixing.  The first is that when the current method is
+ * called, the i-th module parameter is instantiated with a parameter of the current module,
+ * then subIn.substs[i].expr is an ExprOrOpDefNode with its op field identifying that parameter,
+ * but with its stn field pointing to the text of the INSTANCE statement.  Except, if that
+ * parameter comes from an EXTENDed module, that stn field points to the parameter's 
+ * declaration in the instantiated module.  In the first case, the text of the instantiated
+ * parameter is replaced by the text of the INSTANCE statement.  In the second case, it
+ * is replaced by the text from the current module that's at the location of the parameter's
+ * declaration in the EXTENDed module.
+ * 
+ * Another bug whose effect I don't understand in the current code is that if the
+ * current module instantiates module A, which instantiates module B, if a parameter P in
+ * module B is implicitly instantiated by a parameter in module A, the instantiation
+ * of parameter P in module A is marked as implicit in subIn.substs[...].implicit.
+ * 
+ * In the following code, if subIn.substs[i].implicit is true, subIn.substs[i].expr.stn is
+ * effectively changed to point to the declaration of the parameter in the instantiated
+ * module.  However, that doesn't work because, as in the exceptional case above, the
+ * parameter gets replaced by the text in the current module at the location of the parameter's
+ * declaration in the instantiated module.
+ * 
+ * To fix the bug, one must first understand the complete method of performing substitutions
+ * in expanding a definition.  This will take more time than I have.
+ * 
+ * 
+ */  	
+//            	ExprOrOpArgNode substExpr = subst.getExpr() ;            	
+//            	if (subst.isImplicit()) {
+//            		// set subst.expr.stn to a clone of its current value
+//            		// except with its location set to a location whose beginning
+//            		// is the location of subst.op.stn and its ending location
+//            		// is that location with its column equal to
+//            		// its starting column + length(subst.op.name) - 1
+//            		// (That's so it doesn't include the "(...)" that's
+//            		// included if this is an operator with arguments.
+//                	OpDeclNode substOp = subst.getOp() ;
+//                	Location opLocation = substOp.getLocation() ;
+//                	String substOpName = substOp.getName().toString() ;
+//                	String opLocationSourceString = opLocation.source() ;
+//                	UniqueString opLocationSource = UniqueString.uniqueStringOf(opLocationSourceString)  ;
+//           		    Location exprLocation = substExpr.stn.getLocation() ;
+//           		    Token t = Token.newToken(substExpr.stn.getKind()) ;
+//           		    t.image = substExpr.stn.getImage() ;
+//           		    t.beginLine = opLocation.beginLine() ;
+//           		    t.endLine = opLocation.endLine() ;
+//           		    t.beginColumn = opLocation.beginColumn() ;
+//           		    t.endColumn = t.beginColumn + substOpName.length() - 1 ;
+//           		    substExpr.stn = new SyntaxTreeNode(
+//           		    		UniqueString.uniqueStringOf(substOp.stn.getFilename()),
+//           		    		   substExpr.stn.getKind(), t) ;
+//            	}
+//            	nodeRep = new NodeRepresentation(doc, substExpr) ;
+//                 /*
+//                  * END OF FIX.  The following line is the old code being
+//                  * replaced by the fix.
+//                  */
                  nodeRep = new NodeRepresentation(doc, subst.getExpr()) ;
             } catch (BadLocationException e) {
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "Something unexpected is going on at "
-                                + "line 5277 of NewDecomposeProofHandler.");
+                                + "line 5356 of DecomposeProofHandler.");
                 return null ;
             }
             
@@ -5324,7 +5406,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
            if (ntRep == null) {
                return null ;
            }
-           result.substs.add(ntRep.nodeText[0]) ;
+           result.substs.add(ntRep.nodeText[0]) ;      	
         }      
         return result ;
     }
@@ -5435,7 +5517,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
          * element containing data for the i-th assumption. This is done to make
          * it easy to replace one assumption by several. Other objects contain
          * pointers to these vectors, so once the vectors are constructed by
-         * NewDecomposeProofHandler.execute, they can be modified but must not
+         * DecomposeProofHandler.execute, they can be modified but must not
          * be replaced by new vectors.
          *************************************************************************/
         /**
@@ -5745,7 +5827,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
          * 
          * - The node is either an element of state.assumeReps. In that case, it
          * equals h.state.assumeReps.elementAt(j) for the
-         * NewDecomposeProofHandler object h, and parentVector =
+         * DecomposeProofHandler object h, and parentVector =
          * state.assumeReps.
          * 
          * - the node is state.goalRep and parentVector = null .
@@ -5763,7 +5845,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
 
         /**
          * The two methods NodeRepresentation.nodeRepPath and
-         * NewDecomposeProofHandler.pathToNodeRep() provide a means of
+         * DecomposeProofHandler.pathToNodeRep() provide a means of
          * describing a NodeRepresentation object that identifies the "same"
          * object described by a DecompositionState or by a clone of it. They
          * are defined as follows:
@@ -5787,7 +5869,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
          * ns.nodeRepPath(), then pathToNodeRep(V) = ns.
          * 
          * nodeRepPath is defined below. pathToNodeRep is a method in the outer
-         * NewDecomposeProofHandler class.
+         * DecomposeProofHandler class.
          * 
          * @return
          */
@@ -5814,7 +5896,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider()
                             .getShell(), "Decompose Proof Command",
                             "An error that should not happen has occurred in "
-                                    + "line 5208 of NewDecomposeProofHandler.");
+                                    + "line 5865 of DecomposeProofHandler.");
                     return null;
                 }
 
@@ -6296,7 +6378,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                             MessageDialog.openError(UIHelper.getShellProvider()
                                     .getShell(), "Decompose Proof Command",
                                     "An error that should not happen has occurred in "
-                                            + "line 4310 of NewDecomposeProofHandler.");
+                                            + "line 6347 of DecomposeProofHandler.");
                         }
                     }
                 }
@@ -6566,7 +6648,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
                     "Something unexpected is going on at "
-                            + "line 6509 of NewDecomposeProofHandler.");
+                            + "line 6617 of NDecomposeProofHandler.");
             return null ;
         }
         
@@ -6575,7 +6657,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                     "Decompose Proof Command",
                     "Something unexpected is going on at "
-                            + "line 6518 of NewDecomposeProofHandler.");
+                            + "line 6626 of DecomposeProofHandler.");
             return null ;
         }
         
@@ -6622,7 +6704,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
               MessageDialog.openError(UIHelper.getShellProvider() .getShell(), 
                       "Decompose Proof Command",
                        "Something unexpected is going on at "
-                           + "line 6477 of NewDecomposeProofHandler.");
+                           + "line 6673 of DecomposeProofHandler.");
                return null ;  
             }
             Location firstArgLoc = oaArgs[0].getLocation() ;
@@ -6650,7 +6732,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     MessageDialog.openError(UIHelper.getShellProvider() .getShell(), 
                             "Decompose Proof Command",
                              "Something unexpected is going on at "
-                                 + "line 6506 of NewDecomposeProofHandler.");
+                                 + "line 6701 of DecomposeProofHandler.");
                      return null ; 
                 }
             }
@@ -7120,7 +7202,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 addDeclaredSymbols(result, node.parentNode);
             } else {
                 System.out
-                        .println("Bug found in NewDecomposeProofHandler.addDeclaredSymbols.");
+                        .println("Bug found in DecomposeProofHandler.addDeclaredSymbols.");
             }
         }
     }

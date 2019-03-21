@@ -78,7 +78,7 @@ openFile
 
    <configurations>
       <plugin id="aws-ec2" autoStart="true" startLevel="4" />
-      <plugin id="azurecompute" autoStart="true" startLevel="4" />
+      <plugin id="azurecompute-arm" autoStart="true" startLevel="4" />
       <plugin id="com.jcraft.jsch" autoStart="true" startLevel="4" />
       <plugin id="ec2" autoStart="true" startLevel="4" />
       <plugin id="packet" autoStart="true" startLevel="4" />

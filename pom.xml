@@ -119,6 +119,18 @@
 		<!-- Report into the tlaplus organization at SonarQube. -->
 		<!-- Organizations support reporting different branches. -->
 		<sonar.organization>tlaplus</sonar.organization>
+		
+		<!-- Align toolbox.version with the version in 
+			 org.lamport.tla.toolbox.product.product.product
+			 product.version. -->
+		<toolbox.version>1.5.8</toolbox.version>
+
+		<!-- This is used in org.lamport.tla.toolbox.product.uitest but
+			has been placed at the top level should it need be referenced
+			in other POMs. This property is only referenced during the AUT
+			unpacking if it is occurring on mac - the AUT unpacks out of
+			the ZIP ok on Linux and Windows-->
+		<jdk-bundle-plugin-version>11.0.2.9</jdk-bundle-plugin-version>
 	</properties>
 
 	<build>
