@@ -126,6 +126,22 @@ public class CloudDistributedTLCJob extends Job {
 
 	@Override
 	protected IStatus run(final IProgressMonitor monitor) {
+		final String sshAuthSock = System.getenv("SSH_AUTH_SOCK");
+		if (sshAuthSock != null && !(new File(sshAuthSock).exists())) {
+			//TODO Wire this up to the IProgressMonitor such that the warning is shown in the Toolbox.
+			System.err.printf(
+					"--------------------------------------------------------------------------------\n"
+					+ "WARNING: SSH_AUTH_SOCK environment variable is set to %s\n"
+					+ "but the socket file does not exist. Please make sure SSH_AUTH_SOCK points to a\n"
+					+ "valid socket file.\n"
+					+ "An invalid socket will result in a bogus ArrayIndexOutOfBoundsException related\n"
+					+ "to reading past the end of a 1024 element buffer during ssh-agent setup (for\n"
+					+ "technical details please see: \n"
+					+ "https://github.com/ymnk/jsch-agent-proxy/issues/29#issuecomment-475787685)" + ".\n"
+					+ "--------------------------------------------------------------------------------\n",
+					sshAuthSock);
+		}
+		
 		monitor.beginTask("Starting TLC model checker in the cloud", 90 + (nodes > 1 ? 20 : 0));
 		// Validate credentials and fail fast if null or syntactically incorrect
 		if (!params.validateCredentials().equals(Status.OK_STATUS)) {
@@ -743,6 +759,7 @@ public class CloudDistributedTLCJob extends Job {
 	
 	//TODO Does this work on Mac and Windows?
 	private static LoginCredentials getLoginForCommandExecution() throws IOException {
+		//TODO Lookup user in ~/.ssh/config in case there exists a user-defined mapping for this host. 
 		final String user = System.getProperty("user.name");
 		final String privateKey = Files.toString(new File(System.getProperty("user.home") + "/.ssh/id_rsa"),
 				Charsets.UTF_8);
