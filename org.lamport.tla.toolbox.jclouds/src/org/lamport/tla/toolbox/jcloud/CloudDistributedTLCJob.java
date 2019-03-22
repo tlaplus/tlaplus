@@ -199,8 +199,8 @@ public class CloudDistributedTLCJob extends Job {
 						"Lookup succeeded thus skipping provisioning steps 5 to 7",
 						nodes > 1 ? "" : "a ", nodes > 1 ? "s" : ""));
 				// skipped provisionNodes(...) which takes 35 steps.
-				monitor.subTask("(skipped)");
-				monitor.subTask("(skipped)");
+				monitor.subTask("--- skipped ---");
+				monitor.subTask("--- skipped ---");
 				monitor.worked(35);
 			}
 
