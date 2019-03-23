@@ -23,6 +23,7 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceAnimatorDelegate;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
@@ -97,12 +98,15 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         Assert.isNotNull(this.launchDir, "Error accessing the model folder " + modelName);
 
         this.launch = launch;
-
         if (launch.getLaunchMode().equals(TraceExplorerDelegate.MODE_TRACE_EXPLORE))
         {
             this.rootModule = this.launchDir.getFile(ModelHelper.TE_FILE_TLA);
             this.cfgFile = this.launchDir.getFile(ModelHelper.TE_FILE_CFG);
             this.outFile = this.launchDir.getFile(ModelHelper.TE_FILE_OUT);
+        } else if(launch.getLaunchMode().equals(TraceAnimatorDelegate.MODE_TRACE_ANIMATE)){
+            this.rootModule = this.launchDir.getFile(ModelHelper.TA_FILE_TLA);
+            this.cfgFile = this.launchDir.getFile(ModelHelper.TA_FILE_CFG);
+            this.outFile = this.launchDir.getFile(ModelHelper.TA_FILE_OUT);
         } else
         {
             this.rootModule = this.launchDir.getFile(ModelHelper.FILE_TLA);

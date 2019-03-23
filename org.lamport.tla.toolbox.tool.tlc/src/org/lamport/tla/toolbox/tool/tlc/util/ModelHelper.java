@@ -120,6 +120,11 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     public static final String TE_FILE_TLA = TE_MODEL_NAME + FILE_TLA_EXTENSION;
     public static final String TE_FILE_CFG = TE_MODEL_NAME + ".cfg";
     public static final String TE_FILE_OUT = TE_MODEL_NAME + ".out";
+    // trace animator file names
+    public static final String TA_MODEL_NAME = "TA";
+    public static final String TA_FILE_TLA = TA_MODEL_NAME + FILE_TLA_EXTENSION;
+    public static final String TA_FILE_CFG = TA_MODEL_NAME + ".cfg";
+    public static final String TA_FILE_OUT = TA_MODEL_NAME + ".out";
     // the file to which TLC's output is written so
     // that the trace explorer can retrieve the trace when it is run
     public static final String TE_TRACE_SOURCE = "MC_TE.out";

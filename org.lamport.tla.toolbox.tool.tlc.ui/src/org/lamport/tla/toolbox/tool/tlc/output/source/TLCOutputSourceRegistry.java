@@ -17,9 +17,11 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.LogFileReader;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TraceAnimatorDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TraceExplorerDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
@@ -61,6 +63,8 @@ public class TLCOutputSourceRegistry
     private static TLCOutputSourceRegistry modelCheckInstance;
     // instance for output sources from trace exploration
     private static TLCOutputSourceRegistry traceExploreInstance;
+    // instance for output sources from trace animation
+    private static TLCOutputSourceRegistry traceAnimateInstance;
     // container for sources, hashed by the source name
     private Map<Model, ITLCOutputSource> sources;
     // container for data providers, hashed by the process name
@@ -68,6 +72,9 @@ public class TLCOutputSourceRegistry
     // flag indicating if this is a trace explorer instance
     // true indicates that this is a trace explorer instance
     private boolean isTraceExploreInstance;
+    // flag indicating if this is a trace animator instance
+    // true indicates that this is a trace animator instance
+    private boolean isTraceAnimateInstance;
 
     /**
      * Adds a source. If the source with the same identity is already present,
@@ -84,7 +91,7 @@ public class TLCOutputSourceRegistry
         // TLCUIActivator.getDefault().logDebug("adding source " + source.getSourceName() + " " + source.getSourcePrio());
 
         ITLCOutputSource existingSource = this.sources.get(source.getModel());
-
+        
         // a new source for a given name arrives which has a higher priority
         // re-register the listeners
         if (existingSource != null && source.getSourcePrio() >= existingSource.getSourcePrio())
@@ -161,7 +168,14 @@ public class TLCOutputSourceRegistry
 				// the Toolbox.
             	return false;
             }
-            IFile logFile = model.getOutputLogFile(isTraceExploreInstance);
+            
+            // Don't try to re-load data for a trace animation instance.
+            if(isTraceAnimateInstance) {
+            	return false;
+            }
+            
+            int kind  = isTraceExploreInstance ? IProcessOutputSink.TYPE_TRACE_EXPLORE : 0;
+            IFile logFile = model.getOutputLogFile(kind);
             // log file found
             if (logFile != null && logFile.exists())
             {
@@ -243,6 +257,8 @@ public class TLCOutputSourceRegistry
             if (isTraceExploreInstance)
             {
                 provider = new TraceExplorerDataProvider(model);
+            } else if(isTraceAnimateInstance){
+            	provider = new TraceAnimatorDataProvider(model);
             } else
             {
                 provider = new TLCModelLaunchDataProvider(model);
@@ -277,6 +293,7 @@ public class TLCOutputSourceRegistry
         {
             modelCheckInstance = new TLCOutputSourceRegistry();
             modelCheckInstance.isTraceExploreInstance = false;
+            modelCheckInstance.isTraceAnimateInstance = false;
         }
         return modelCheckInstance;
     }
@@ -290,8 +307,23 @@ public class TLCOutputSourceRegistry
         {
             traceExploreInstance = new TLCOutputSourceRegistry();
             traceExploreInstance.isTraceExploreInstance = true;
+            traceExploreInstance.isTraceAnimateInstance = false;
         }
         return traceExploreInstance;
+    }
+    
+    /**
+     * Access method for trace animation source registry instance
+     */
+    public static TLCOutputSourceRegistry getTraceAnimateSourceRegistry()
+    {
+        if (traceAnimateInstance == null)
+        {
+        	traceAnimateInstance = new TLCOutputSourceRegistry();
+        	traceAnimateInstance.isTraceAnimateInstance = true;
+        	traceAnimateInstance.isTraceExploreInstance = false;
+        }
+        return traceAnimateInstance;
     }
 
     /**

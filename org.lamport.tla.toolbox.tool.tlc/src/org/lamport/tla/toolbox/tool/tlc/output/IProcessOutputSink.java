@@ -25,6 +25,10 @@ public interface IProcessOutputSink
      */
     public final static int TYPE_TRACE_EXPLORE = 3;
     /**
+     * Trace animator output stream
+     */
+    public final static int TYPE_TRACE_ANIMATE = 4;
+    /**
      * Extension point, the interface is used in
      */
     public static final String EXTENSION_ID = "org.lamport.tla.toolbox.tlc.processOutputSink";

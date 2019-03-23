@@ -22,6 +22,7 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceAnimatorDelegate;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
@@ -213,13 +214,20 @@ public class TLCProcessJob extends TLCJob
                  * BroadcastStreamListener (second argument) is IProcessOutputSink.TYPE_OUT.
                  * If TLC is being run for trace exploration, then it is
                  * IProcessOutputSink.TYPE_TRACE_EXPLORE.
+                 * If TLC is being run for trace animation, then it is
+                 * IProcessOutputSink.TYPE_TRACE_ANIMATE.
                  */
 
                 int kind = IProcessOutputSink.TYPE_OUT;
+                
 
                 if (launch.getLaunchMode().equals(TraceExplorerDelegate.MODE_TRACE_EXPLORE))
                 {
                     kind = IProcessOutputSink.TYPE_TRACE_EXPLORE;
+                }
+                if(launch.getLaunchMode().equals(TraceAnimatorDelegate.MODE_TRACE_ANIMATE)) 
+                {
+                	kind = IProcessOutputSink.TYPE_TRACE_ANIMATE;
                 }
 
                 listener = new BroadcastStreamListener(model, kind);

@@ -81,6 +81,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
+import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -808,23 +809,37 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	public IFile getTEFile() {
 		return getFile(ModelHelper.TE_FILE_TLA);
 	}
+	
+	/**
+	 * Retrieves the TA file that is being used by the trace animator.
+	 * 
+	 * @param config
+	 *            configuration representing the model
+	 * @return a file handle or <code>null</code>
+	 */
+	public IFile getTAFile() {
+	    return getFile(ModelHelper.TA_FILE_TLA);
+	}
 
 	public IFile getOutputLogFile() {
-		return getOutputLogFile(false);
+		return getOutputLogFile(IProcessOutputSink.TYPE_OUT);
 	}
 	
     /**
-     * Retrieves a file where the log of the TLC run is written. If isTraceExploration is true, this
-     * will return the log file for trace exploration. If that flag is false, this will return the log file
-     * for normal model checking.
-     * 
-     * @param config configuration representing the model
-     * @param getTraceExplorerOutput flag indicating if the log file for trace exploration is to be returned
-     * @return the file handle, or null
-     */
-	public IFile getOutputLogFile(boolean getTraceExplorerOutput) {
-		if (getTraceExplorerOutput) {
-			return getFile(ModelHelper.TE_FILE_OUT);
+	 * Retrieves a file where the log of the TLC run is written. Will return the log
+	 * file used for trace exploration, animation, or normal model checking
+	 * depending on the value of 'sinkType'.
+	 * 
+	 * @param config   configuration representing the model
+	 * @param sinkType argument indicating which log file to send output to
+	 * @return the file handle, or null
+	 */
+	public IFile getOutputLogFile(int sinkType) {
+		
+		if(sinkType == IProcessOutputSink.TYPE_TRACE_EXPLORE) {
+			 return getFile(ModelHelper.TE_FILE_OUT);
+		} else if (sinkType == IProcessOutputSink.TYPE_TRACE_ANIMATE) {
+			return getFile(ModelHelper.TA_FILE_OUT);
 		} else {
 			return getFile(ModelHelper.FILE_OUT);
 		}
@@ -835,7 +850,15 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      * @return a file handle or <code>null</code>
      */
 	public IFile getTraceExplorerTLAFile() {
-		return getFile(ModelHelper.TE_FILE_TLA);
+		 return getFile(ModelHelper.TE_FILE_TLA);
+	}
+
+	/**
+	 * Retrieves the TLA file used by the trace animator
+	 * @return a file handle or <code>null</code>
+	 */
+	public IFile getTraceAnimatorTLAFile() {
+	    return getFile(ModelHelper.TA_FILE_TLA);
 	}
 	
 	private IFile getFile(final String id) {

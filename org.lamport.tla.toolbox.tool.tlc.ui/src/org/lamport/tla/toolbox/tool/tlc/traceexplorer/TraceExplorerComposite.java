@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -76,6 +77,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceAnimatorDelegate;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.TraceExpressionModelWriter;
@@ -122,6 +124,7 @@ public class TraceExplorerComposite
     private Button buttonEdit;
     private Button buttonRemove;
     private Button buttonExplore;
+    private Button buttonAnimate;
     private Button buttonRestore;
     private Section section;
     private TLCErrorView view;
@@ -146,7 +149,10 @@ public class TraceExplorerComposite
                 doEdit();
             } else if (source == buttonExplore)
             {
-                doExplore();
+                doExplore(TraceExplorerDelegate.MODE_TRACE_EXPLORE);
+            } else if (source == buttonAnimate)
+            {
+                doExplore(TraceAnimatorDelegate.MODE_TRACE_ANIMATE);
             } else if (source == buttonRestore)
             {
                 doRestore();
@@ -227,9 +233,9 @@ public class TraceExplorerComposite
         gd.grabExcessHorizontalSpace = true;
         gd.grabExcessVerticalSpace = true;
         // span for the buttons
-        // there are currently 5 buttons, each occupying one
-        // cell, so the table must span 5 vertical cells
-        gd.verticalSpan = 5;
+        // there are currently 6 buttons, each occupying one
+        // cell, so the table must span 6 vertical cells
+        gd.verticalSpan = 6;
         table.setLayoutData(gd);
         
         table.setToolTipText("Drag formulae to reorder.");
@@ -471,6 +477,11 @@ public class TraceExplorerComposite
         buttonExplore.addSelectionListener(fSelectionListener);
         buttonExplore.setLayoutData(GridDataFactory.copyData(gd));
 
+        // animate button
+        buttonAnimate = toolkit.createButton(sectionArea, "Animate", SWT.PUSH);
+        buttonAnimate.addSelectionListener(fSelectionListener);
+        buttonAnimate.setLayoutData(gd);
+        
         // restore button
         buttonRestore = toolkit.createButton(sectionArea, "Restore", SWT.PUSH);
         buttonRestore.addSelectionListener(fSelectionListener);
@@ -573,11 +584,17 @@ public class TraceExplorerComposite
     }
 
     /**
-     * Runs the trace explorer with the expressions
-     * that are in the table.
+     * Runs a trace explorer job.
+     * 
+     * Can be used for either trace exploration or animation. The 'mode' argument should be either 
+     * MODE_TRACE_ANIMATE or MODE_TRACE_EXPLORE, depending on which functionality is desired.
      */
-    private void doExplore()
+    private void doExplore(String mode)
     {
+        Assert.isTrue(
+                mode == TraceExplorerDelegate.MODE_TRACE_EXPLORE || mode == TraceAnimatorDelegate.MODE_TRACE_ANIMATE,
+                "Unsupported mode for trace exploration: " + mode);
+
         /*
          * Check for module TE in spec.
          * Cannot run trace explorer if the spec contains a module named TE.
@@ -651,7 +668,7 @@ public class TraceExplorerComposite
         	
         	final Job job = new WorkspaceJob("Exploring the trace...") {
 				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
-					view.getModel().save(monitor).launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, monitor, true);
+					view.getModel().save(monitor).launch(mode, monitor, true);
 					return Status.OK_STATUS;
 				}
 			};

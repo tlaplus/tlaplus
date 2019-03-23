@@ -52,6 +52,14 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     // to the expression.
     private Hashtable<String, TraceExpressionInformationHolder> traceExpressionDataTable;
     private static String TE_ERROR_HEADER = "Error(s) from running the Trace Explorer:\n";
+    
+    /**
+     * Returns the output file to read from when processing the trace explorer output. Can be overridden
+     * by subclasses that want to read from a different file.
+     */
+    protected IFile getTraceFile() {
+    	return getModel().getTraceExplorerTLAFile();
+    }
 
     public TraceExplorerDataProvider(Model model)
     {
@@ -69,23 +77,30 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     {
         TLCOutputSourceRegistry.getTraceExploreSourceRegistry().connect(this);
     }
+    
+	/**
+	 * This method is called after all the processing of the TLC trace necessary for
+	 * trace exploration is complete. This can be overridden by subclasses if they
+	 * want to take different actions with the processed trace info.
+	 */
+	protected void postProcess() {
+		UIHelper.runUIAsync(new Runnable() {
 
-    public void onDone()
-    {
-        super.onDone();
+			public void run() {
+				TLCErrorView.updateErrorView(getModel());
+			}
+		});
+	}
 
-        getTraceExpressionsInformation();
+	public void onDone() {
+		super.onDone();
 
-        processTraceForTraceExplorer();
+		getTraceExpressionsInformation();
 
-        UIHelper.runUIAsync(new Runnable() {
+		processTraceForTraceExplorer();
 
-            public void run()
-            {
-                TLCErrorView.updateErrorView(getModel());
-            }
-        });
-    }
+		postProcess();
+	}
 
     /**
      * Collects and stores trace expression information for later use.
@@ -109,7 +124,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
          * provider in the finally block for this try block in order to avoid
          * a memory leak.
          */
-        IFile teFile = getModel().getTraceExplorerTLAFile();
+        IFile teFile = getTraceFile();
         FileEditorInput teFileEditorInput = new FileEditorInput((IFile) teFile);
 		// Use LegacyFileDocumentProvider to fix race condition which causes Trace
 		// Explorer Exploration to label the expression as __trace_var_XXXXXXXX instead

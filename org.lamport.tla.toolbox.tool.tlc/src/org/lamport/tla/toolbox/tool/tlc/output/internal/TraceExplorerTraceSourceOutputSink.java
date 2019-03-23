@@ -17,6 +17,7 @@ public class TraceExplorerTraceSourceOutputSink extends FileProcessOutputSink
 {
 
     private boolean isTraceExplorerOutput;
+    private boolean isTraceAnimatorOutput;
     private boolean clearFile;
 
     /* (non-Javadoc)
@@ -24,8 +25,8 @@ public class TraceExplorerTraceSourceOutputSink extends FileProcessOutputSink
      */
     public synchronized void appendText(final String text)
     {
-        // we dont want to do anything if this is a run of the trace explorer
-        if (isTraceExplorerOutput)
+        // we dont want to do anything if this is a run of the trace explorer or animator.
+        if (isTraceExplorerOutput || isTraceAnimatorOutput)
         {
             return;
         }
@@ -59,6 +60,8 @@ public class TraceExplorerTraceSourceOutputSink extends FileProcessOutputSink
     public void initializeSink(Model model, int sinkType)
     {
         this.isTraceExplorerOutput = sinkType == IProcessOutputSink.TYPE_TRACE_EXPLORE;
+        this.isTraceAnimatorOutput = sinkType == IProcessOutputSink.TYPE_TRACE_ANIMATE;
+
         this.outFile = model.getTraceSourceFile();
         this.rule = ResourceHelper.getModifyRule(outFile);
 

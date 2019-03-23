@@ -318,15 +318,20 @@ public class TagBasedTLCOutputIncrementalParser
 
     /**
      * Constructs the parser
-     * @param name
      * @param prio
      * @param isTraceExplorer TODO
+     * @param isTraceAnimation TODO
+     * @param name
      */
     public TagBasedTLCOutputIncrementalParser(Model model, int prio, boolean isTraceExplorer) {
-    	this(model, prio, isTraceExplorer, Mode.INCREMENTAL, LargeTextStoreDocument.SIZE_UNKNOWN);
+    	this(model, prio, isTraceExplorer, false, Mode.INCREMENTAL, LargeTextStoreDocument.SIZE_UNKNOWN);
     }
     
-    public TagBasedTLCOutputIncrementalParser(Model model, int prio, boolean isTraceExplorer, Mode mode, final long size)
+    public TagBasedTLCOutputIncrementalParser(Model model, int prio, boolean isTraceExplorer, boolean isTraceAnimation) {
+    	this(model, prio, isTraceExplorer, isTraceAnimation, Mode.INCREMENTAL, LargeTextStoreDocument.SIZE_UNKNOWN);
+    }
+    
+    public TagBasedTLCOutputIncrementalParser(Model model, int prio, boolean isTraceExplorer, boolean isTraceAnimation, Mode mode, final long size)
     {
 		// create the document
         document = new LargeTextStoreDocument(size);
@@ -345,15 +350,23 @@ public class TagBasedTLCOutputIncrementalParser
         document.addDocumentPartitioningListener(new TLCOutputPartitionChangeListener(mode));
 
         /*
-         *  Register the process source
-         *  
-         *  There are two different source registries, one for trace exploration
-         *  and one for model checking. The source must be added to the
-         *  appropriate registry.
+         * Register the process source
+         * 
+         * There different source registries, one for trace exploration, one for trace
+         * animation, and one for model checking. The source must be added to the
+         * appropriate registry.
+         * 
          */
+
+        // We should never be registering for both trace exploration and animation at the same time.
+        Assert.isTrue(!(isTraceExplorer && isTraceAnimation));
+
         if (isTraceExplorer)
         {
             TLCOutputSourceRegistry.getTraceExploreSourceRegistry().addTLCOutputSource(this.source);
+        } else if(isTraceAnimation)
+        {
+            TLCOutputSourceRegistry.getTraceAnimateSourceRegistry().addTLCOutputSource(this.source);
         } else
         {
         	if (mode == Mode.BATCH) {

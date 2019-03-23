@@ -827,6 +827,15 @@ Console Facory
             name="TLC Errors"
             restorable="true">
       </view>
+      <!-- TODO: Add a custom icon for the TraceAnimationView. -->
+      <view
+            allowMultiple="true"
+            category="org.lamport.tla.toolbox.category"
+            class="org.lamport.tla.toolbox.tool.tlc.ui.view.TraceAnimationView"
+            id="toolbox.tool.tlc.view.TraceAnimationView"
+            name="Trace Animation"
+            restorable="true">
+      </view>
    </extension>
    <extension
          point="org.eclipse.help.contexts">

@@ -61,6 +61,7 @@ import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TraceExplorerJob;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
@@ -117,6 +118,50 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     private List<SimpleTLCState> trace;
     private String initId;
     private String nextId;
+    
+    /**
+     * The methods below return the file names to use for the run of the trace
+     * explorer. They can be overridden by subclasses that want to use different file names. 
+     * If a subclass chooses to override one of these methods, it is most sensible 
+     * to override all of them.
+     */
+
+    protected String getTlaFileName() {
+        return ModelHelper.TE_FILE_TLA;
+    }
+
+    protected String getCfgFileName() {
+        return ModelHelper.TE_FILE_CFG;
+    }
+
+    protected String getOutFileName() {
+        return ModelHelper.TE_FILE_OUT;
+    }
+
+    protected String getModelName() {
+        return ModelHelper.TE_MODEL_NAME;
+    }
+
+    protected IFile getRootModule(Model model) {
+        return model.getTEFile();
+    }
+
+    /**
+     * Returns the mode of this trace explorer delegate. Can be overridden by
+     * subclasses that have a different mode.
+     */
+    protected String getMode() {
+        return MODE_TRACE_EXPLORE;
+    }
+
+    /**
+     * Returns the list of formulas for the trace explorer to evaluate during its
+     * run. Can be overridden by subclasses to evaluate a custom list of formulas.
+     */
+    protected List<Formula> getFormulaList(ILaunchConfiguration config) throws CoreException {
+        return ModelHelper.deserializeFormulaList(
+                config.getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>()));
+    }
 
     /**
      * Writes data to TE.tla so that SANY can be run on that module in the next
@@ -282,9 +327,9 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
 
         // create the handles: TE.tla, TE.cfg and TE.out
-        tlaFile = project.getFile(targetFolderPath.append(ModelHelper.TE_FILE_TLA));
-        cfgFile = project.getFile(targetFolderPath.append(ModelHelper.TE_FILE_CFG));
-        outFile = project.getFile(targetFolderPath.append(ModelHelper.TE_FILE_OUT));
+        tlaFile = project.getFile(targetFolderPath.append(getTlaFileName()));
+        cfgFile = project.getFile(targetFolderPath.append(getCfgFileName()));
+        outFile = project.getFile(targetFolderPath.append(getOutFileName()));
 
         TLCActivator.logDebug("Writing files to: " + targetFolderPath.toOSString());
 
@@ -417,7 +462,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         final TraceExpressionModelWriter writer = new TraceExpressionModelWriter();
 
         // add extend primer
-        writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
+        writer.addPrimer(getModelName(), ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
 
         writeModelInfo(config, writer);
         
@@ -440,9 +485,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          * of each expression. This is done in finalLaunchCheck() using the ParseResult
          * object returned by SANY.
          */
-        traceExpressionData = writer.createAndAddVariablesAndDefinitions(ModelHelper.deserializeFormulaList(config
-                .getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>())),
-                TRACE_EXPLORE_EXPRESSIONS);
+		traceExpressionData = writer.createAndAddVariablesAndDefinitions(getFormulaList(config),
+				TRACE_EXPLORE_EXPRESSIONS);
 
         // add the initial state predicate and next state action without
         // the trace exploration expressions in order to determine if they parse
@@ -475,7 +519,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         monitor.beginTask("Verifying model files", 4);
 
     	final Model model = configuration.getAdapter(Model.class);
-    	final IFile rootModule = model.getTEFile();
+    	final IFile rootModule = getRootModule(model);
 
         monitor.worked(1);
         // parse the TE.tla file
@@ -623,7 +667,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addInfoComments(traceExpressionData);
 
         // add extend primer
-        writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
+        writer.addPrimer(getModelName(), ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
 
         // write constants, model values, new definitions, definition overrides
         writeModelInfo(configuration, writer);
@@ -674,7 +718,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     {
     	TLCActivator.logDebug("launch called");
         // check the modes
-        if (!MODE_TRACE_EXPLORE.equals(mode))
+        if (!getMode().equals(mode))
         {
             throw new CoreException(
                     new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Unsupported launch mode " + mode));

@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.output;
 import org.eclipse.jface.text.BadLocationException;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.source.ITLCOutputSource;
+import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TagBasedTLCOutputIncrementalParser;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 
@@ -58,8 +59,16 @@ public class ParsingTLCOutputSink implements IProcessOutputSink
     public void initializeSink(Model model, int sinkType)
     {
         boolean isTraceExploration = sinkType == IProcessOutputSink.TYPE_TRACE_EXPLORE;
+        boolean isTraceAnimation = sinkType == IProcessOutputSink.TYPE_TRACE_ANIMATE;
         // parser = new TLCOutputIncrementalParser(processName, ITLCOutputSource.PRIO_HIGH);
-        parser = new TagBasedTLCOutputIncrementalParser(model, ITLCOutputSource.PRIO_HIGH, isTraceExploration);
+        if(isTraceAnimation) {
+        	// Adding this line constructs a new TraceAnimatorDataProvider and registers in the map of providers in
+        	// the source registry. Adding it appears to fix the issue where the TraceAnimatorDataProvider was not getting alerted
+        	// when the TraceExplorerJob completed.
+        	TLCOutputSourceRegistry.getTraceAnimateSourceRegistry().getProvider(model);
+        }
+        
+        parser = new TagBasedTLCOutputIncrementalParser(model, ITLCOutputSource.PRIO_LOW, isTraceExploration, isTraceAnimation);
     }
 
     /* (non-Javadoc)

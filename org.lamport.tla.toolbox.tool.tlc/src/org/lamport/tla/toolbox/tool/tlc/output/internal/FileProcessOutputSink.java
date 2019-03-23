@@ -59,10 +59,8 @@ public class FileProcessOutputSink implements IProcessOutputSink
      */
     public void initializeSink(Model model, int sinkType)
     {
-        boolean isTraceExplore = sinkType == TYPE_TRACE_EXPLORE;
-
         this.model = model;
-        this.outFile = model.getOutputLogFile(isTraceExplore);
+        this.outFile = model.getOutputLogFile(sinkType);
         this.rule = ResourceHelper.getModifyRule(outFile);
     }
 

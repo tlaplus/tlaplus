@@ -31,6 +31,10 @@
             label="Explore Trace"
             mode="exploreTrace">
       </launchMode>
+            <launchMode
+            label="Animate Trace"
+            mode="animateTrace">
+      </launchMode>
    </extension>
    <extension
          id="org.lamport.tla.toolbox.tlc.modelMarker"
@@ -149,6 +153,12 @@
             delegate="org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate"
             id="org.lamport.tla.toolbox.tool.tlc.TraceExplorerDelegate"
             modes="exploreTrace"
+            type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
+      </launchDelegate>
+      <launchDelegate
+            delegate="org.lamport.tla.toolbox.tool.tlc.launch.TraceAnimatorDelegate"
+            id="org.lamport.tla.toolbox.tool.tlc.TraceAnimatorDelegate"
+            modes="animateTrace"
             type="org.lamport.tla.toolbox.tool.tlc.modelCheck">
       </launchDelegate>
    </extension>

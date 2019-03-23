@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui;
 
+import org.lamport.tla.toolbox.tool.tlc.launch.TraceAnimatorDelegate;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.result.IResultPresenter;
@@ -18,6 +19,13 @@ public class ResultPresenter implements IResultPresenter
 
     public void showResults(Model model)
     {
+    	/*
+    	 * Don't do anything after trace animation.
+    	 */
+    	if(model.getLastLaunch().getLaunchMode().equals(TraceAnimatorDelegate.MODE_TRACE_ANIMATE)) {
+    		return;
+    	}
+    	
         /*
          * For trace exploration, just update the error view with the data
          * from the run of TLC for trace exploration. For model checking, open

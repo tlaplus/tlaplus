@@ -54,7 +54,7 @@ public class LogFileReader {
 	public LogFileReader(Model model, IFile aLogFile, boolean isTraceExplorerLogFile) {
 		this.logFile = new File(aLogFile.getLocation().toOSString());
 		this.parser = new TagBasedTLCOutputIncrementalParser(model, ITLCOutputSource.PRIO_LOW, isTraceExplorerLogFile,
-				TagBasedTLCOutputIncrementalParser.Mode.BATCH, this.logFile.length());
+				false /* isTraceAnimation */, TagBasedTLCOutputIncrementalParser.Mode.BATCH, this.logFile.length());
 	}
 
     /**
