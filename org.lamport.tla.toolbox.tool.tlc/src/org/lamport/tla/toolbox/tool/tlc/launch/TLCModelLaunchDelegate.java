@@ -952,6 +952,13 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 			final String message = status.getMessage();
 			if (status instanceof ITLCJobStatus) {
 				final ITLCJobStatus result = (ITLCJobStatus) status;
+				
+				if (result.isReconnect()) {
+					// Do not open modal dialog if this is just a reconnect. In other words, no
+					// dialog if user is running cloud TLC repeatedly.
+					return;
+				}
+				
 				final URL url = result.getURL();
 				Display.getDefault().asyncExec(new Runnable() {
 					public void run() {

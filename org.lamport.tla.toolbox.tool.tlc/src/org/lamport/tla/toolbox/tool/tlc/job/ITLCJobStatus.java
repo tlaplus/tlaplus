@@ -12,4 +12,6 @@ public interface ITLCJobStatus extends IStatus {
 	InputStream getOutput();
 	
 	void killTLC();
+
+	boolean isReconnect();
 }
