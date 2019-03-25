@@ -9,9 +9,9 @@ import util.TLCRuntime;
  */
 public enum TLCConsumptionProfile {
 
-	LOCAL_MOST("Local Most", 0.7, 0.8, null, "local most"),
-	LOCAL_NORMAL("Local Medium", 0.5, 0.4, null, "local nomal"),
-	LOCAL_MINIMAL("Local Minimal", 0.2, ((double)TLCProcessJob.HEAP_SIZE_DEFAULT / 100.0), null, "local minimal"),
+	LOCAL_MOST("Most", 0.7, 0.8, null, "local most"),
+	LOCAL_NORMAL("Medium", 0.5, 0.4, null, "local nomal"),
+	LOCAL_MINIMAL("Minimal", 0.2, ((double)TLCProcessJob.HEAP_SIZE_DEFAULT / 100.0), null, "local minimal"),
 	REMOTE_AD_HOC("Ad Hoc", 0, 0.3, "ad hoc", "ad hoc"),
 	REMOTE_AWS("Amazon", 0, 0, MainModelPage.CLOUD_CONFIGURATION_KEY, "aws-ec2"),
 	REMOTE_AZURE("Azure", 0, 0, MainModelPage.CLOUD_CONFIGURATION_KEY, "Azure"),

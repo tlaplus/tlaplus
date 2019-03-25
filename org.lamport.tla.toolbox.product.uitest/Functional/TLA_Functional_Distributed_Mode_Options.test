@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _Gvi30BUtEemG79v6PBILBA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/24/19, 2:46 PM
+Save-Time: 3/25/19, 2:00 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -68,13 +68,19 @@ try -command {
 	        get-property enablement | equals true | verify-true
 	        get-property caption | equals "Result mailto addresses:" | verify-true
 	    }
+	    
+	    get-combo -after [get-label "System resources dedicated to TLC:"] | select "Azure"
+	    get-combo -after [get-label "System resources dedicated to TLC:"] | get-property selection | equals "Azure" | verify-true
+	    
+	    get-combo -after [get-label "System resources dedicated to TLC:"] | select "\u2014\u2014 Local \u2014\u2014"
+	    get-combo -after [get-label "System resources dedicated to TLC:"] | get-property selection | equals "Azure" | verify-true
+	    
+	    get-combo -after [get-label "System resources dedicated to TLC:"] | select "\u2014\u2014 Remote \u2014\u2014"
+	    get-combo -after [get-label "System resources dedicated to TLC:"] | get-property selection | equals "Azure" | verify-true
 	}
-	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"]
-		| select "Azure"
-	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"] 
-	    | get-property selection | equals "Azure" | verify-true
+
 	with [get-editor "Model_1"] {
-	    get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"] | select "Local Medium"
+	    get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"] | select "Medium"
 	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
 	}
 } -finally {

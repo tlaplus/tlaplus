@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -109,7 +111,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
     static final String CLOUD_CONFIGURATION_KEY = "jclouds";
 
-    private static final String CUSTOM_TLC_PROFILE_DISPLAY_NAME = "Local Custom";
+    private static final String TLC_PROFILE_LOCAL_SEPARATOR = "\u2014\u2014 Local \u2014\u2014";
+    private static final String TLC_PROFILE_REMOTE_SEPARATOR = "\u2014\u2014 Remote \u2014\u2014";
+    private static final String CUSTOM_TLC_PROFILE_DISPLAY_NAME = "Custom";
     private static final String CUSTOM_TLC_PROFILE_PREFERENCE_VALUE = "local custom";
     
 	private static final String[] TLC_PROFILE_DISPLAY_NAMES;
@@ -118,9 +122,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		final TLCConsumptionProfile[] profiles = TLCConsumptionProfile.values();
 		final int size = profiles.length;
 
-		TLC_PROFILE_DISPLAY_NAMES = new String[size];		
+		TLC_PROFILE_DISPLAY_NAMES = new String[size + 2];
+		TLC_PROFILE_DISPLAY_NAMES[0] = TLC_PROFILE_LOCAL_SEPARATOR;
+		int indexIncrement = 1;
+		boolean haveStartedRemoteProfiles = false;
 		for (int i = 0; i < size; i++) {
-			TLC_PROFILE_DISPLAY_NAMES[i] = profiles[i].getDisplayName();
+			if (profiles[i].profileIsForRemoteWorkers() && !haveStartedRemoteProfiles) {
+				TLC_PROFILE_DISPLAY_NAMES[i + indexIncrement] = TLC_PROFILE_REMOTE_SEPARATOR;
+				haveStartedRemoteProfiles = true;
+				indexIncrement++;
+			}
+			
+			TLC_PROFILE_DISPLAY_NAMES[i + indexIncrement] = profiles[i].getDisplayName();
 		}
 	}
 
@@ -134,6 +147,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private Button checkDeadlockButton;
     
     private Combo tlcProfileCombo;
+    private AtomicInteger lastSelectedTLCProfileIndex;
     // We cache this since want to reference it frequently on heap slider drag
     private AtomicBoolean currentProfileIsAdHoc;
     private Spinner workers;
@@ -1318,43 +1332,51 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
 		tlcProfileCombo = new Combo(howToRunArea, SWT.READ_ONLY);
 		tlcProfileCombo.setItems(TLC_PROFILE_DISPLAY_NAMES);
-		tlcProfileCombo.select(TLC_PROFILE_DISPLAY_NAMES.length - 1);
 		tlcProfileCombo.addSelectionListener(howToRunListener);
 		tlcProfileCombo.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(final SelectionEvent se) {
-				final TLCConsumptionProfile profile = getSelectedTLCProfile();
+				final String selectedText = tlcProfileCombo.getText();
+				final boolean needReset = TLC_PROFILE_LOCAL_SEPARATOR.equals(selectedText)
+						|| TLC_PROFILE_REMOTE_SEPARATOR.equals(selectedText);
+				
+				if (needReset) {
+					tlcProfileCombo.select(lastSelectedTLCProfileIndex.get());
+				} else {
+					Logger.getAnonymousLogger().severe("handling selection");
+					final TLCConsumptionProfile profile = TLCConsumptionProfile.getProfileWithDisplayName(selectedText);
+					
+					lastSelectedTLCProfileIndex.set(tlcProfileCombo.getSelectionIndex());
 
-				programmaticallySettingWorkerParameters.set(true);
-				currentProfileIsAdHoc.set(false);
-				try {
-					if (profile != null) {
-						workers.setSelection(profile.getWorkerThreads());
-						maxHeapSize.setSelection(profile.getMemoryPercentage());
+					programmaticallySettingWorkerParameters.set(true);
+					currentProfileIsAdHoc.set(false);
+					try {
+						if (profile != null) {
+							workers.setSelection(profile.getWorkerThreads());
+							maxHeapSize.setSelection(profile.getMemoryPercentage());
 
-						if (tlcProfileCombo.getItem(0).equals(CUSTOM_TLC_PROFILE_DISPLAY_NAME)) {
-							tlcProfileCombo.remove(0);
-						}
+							removeCustomTLCProfileComboItemIfPresent();
 
-						if (profile.profileIsForRemoteWorkers()) {
-							final String configuration = profile.getConfigurationKey();
-							final boolean isAdHoc = configuration
-									.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+							if (profile.profileIsForRemoteWorkers()) {
+								final String configuration = profile.getConfigurationKey();
+								final boolean isAdHoc = configuration
+										.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
 
-							moveToTopOfDistributedOptionsStack(configuration, false, isAdHoc);
-							if (isAdHoc) {
-								currentProfileIsAdHoc.set(true);
+								moveToTopOfDistributedOptionsStack(configuration, false, isAdHoc);
+								if (isAdHoc) {
+									currentProfileIsAdHoc.set(true);
+									clearEmailErrors();
+								}
+							} else {
+								moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
 								clearEmailErrors();
 							}
 						} else {
 							moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
 							clearEmailErrors();
 						}
-					} else {
-						moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
-						clearEmailErrors();
+					} finally {
+						programmaticallySettingWorkerParameters.set(false);
 					}
-				} finally {
-					programmaticallySettingWorkerParameters.set(false);
 				}
 			}
 
@@ -1363,6 +1385,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd = new GridData();
         gd.horizontalIndent = 30;
         tlcProfileCombo.setLayoutData(gd);
+        lastSelectedTLCProfileIndex = new AtomicInteger(tlcProfileCombo.getSelectionIndex());
         
         /*
          * Workers Spinner
@@ -1769,10 +1792,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     	
     	if (index != -1) {
     		tlcProfileCombo.select(index);
-    	} else {
-    		tlcProfileCombo.add(displayName, 0);
-    		tlcProfileCombo.select(0);
+    		if (!CUSTOM_TLC_PROFILE_DISPLAY_NAME.equals(displayName)) {
+    			removeCustomTLCProfileComboItemIfPresent();
+    		}
+    	} else if (CUSTOM_TLC_PROFILE_DISPLAY_NAME.equals(displayName)) {
+    		tlcProfileCombo.add(displayName, 1);
+    		tlcProfileCombo.select(1);
     	}
+    	
+    	lastSelectedTLCProfileIndex.set(tlcProfileCombo.getSelectionIndex());
+    }
+    
+    private void removeCustomTLCProfileComboItemIfPresent() {
+		if (tlcProfileCombo.getItem(1).equals(CUSTOM_TLC_PROFILE_DISPLAY_NAME)) {
+			tlcProfileCombo.remove(1);
+		}
     }
     
     private String generateMemoryDisplayText(final int percentage, final long megabytes) {
