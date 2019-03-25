@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _CTEKoBUbEemG79v6PBILBA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/15/19, 1:42 PM
+Save-Time: 3/25/19, 11:47 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -62,7 +62,7 @@ try -command {
 	    get-tab-folder | get-tab-item "Model Overview" | click
 	    get-section "What is the model?" | get-button Edit | click
 	    get-section "How to run?" | get-link "Validate model" | click
-	    get-section "What is the behavior spec?" | get-button "No Behavior Spec" | click
+	    get-section "What is the behavior spec?" | get-combo | select "No Behavior Spec"
 	    get-section "How to run?" | get-link "Validate model" | click
 	    get-section "What is the model?" | get-link "State constraints," | click
 	}

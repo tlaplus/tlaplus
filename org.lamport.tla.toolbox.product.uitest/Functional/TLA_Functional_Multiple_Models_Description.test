@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _DliAUAMNEemtrbArmQOOJA
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/14/19 6:45 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 3/25/19, 11:46 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -39,7 +39,7 @@ with [get-editor $TLA-File | get-text-viewer] {
 }
 
 //Create 10 Models
-CreateNewModel
+CreateTenNewModels
 wait -ms 1200
 //new \\[ new.tla \\]/models
 
