@@ -54,6 +54,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -847,6 +848,8 @@ public class UIHelper {
 		} else if (control instanceof Button) {
 			return (Control) control;
 		} else if (control instanceof Spinner) {
+			return (Control) control;
+		} else if (control instanceof Combo) {
 			return (Control) control;
 		} else if (control instanceof Control) {
 			// why not return the control when object is instanceof control?
