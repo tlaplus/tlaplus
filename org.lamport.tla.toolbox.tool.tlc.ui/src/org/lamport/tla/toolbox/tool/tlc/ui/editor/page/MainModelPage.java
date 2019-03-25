@@ -11,12 +11,14 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -65,6 +67,7 @@ import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
@@ -101,21 +104,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     public static final String ID = "MainModelPage";
     public static final String TITLE = "Model Overview";
 
+    static final String CLOUD_CONFIGURATION_KEY = "jclouds";
+
+    private static final String CUSTOM_TLC_PROFILE_DISPLAY_NAME = "Local Custom";
+    private static final String CUSTOM_TLC_PROFILE_PREFERENCE_VALUE = "local custom";
+    
 	private static final String[] TLC_PROFILE_DISPLAY_NAMES;
-	private static final Map<String, TLCConsumptionProfile> TLC_PROFILE_MAP;
 
 	static {
 		final TLCConsumptionProfile[] profiles = TLCConsumptionProfile.values();
 		final int size = profiles.length;
 
-		TLC_PROFILE_DISPLAY_NAMES = new String[size];
-		TLC_PROFILE_MAP = new HashMap<>();
-
+		TLC_PROFILE_DISPLAY_NAMES = new String[size];		
 		for (int i = 0; i < size; i++) {
-			final TLCConsumptionProfile profile = profiles[i];
-
-			TLC_PROFILE_DISPLAY_NAMES[i] = profile.getDisplayName();
-			TLC_PROFILE_MAP.put(profile.getDisplayName(), profile);
+			TLC_PROFILE_DISPLAY_NAMES[i] = profiles[i].getDisplayName();
 		}
 	}
 
@@ -131,15 +133,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private Button checkDeadlockButton;
     
     private Combo tlcProfileCombo;
+    // We cache this since want to reference it frequently on heap slider drag
+    private AtomicBoolean currentProfileIsAdHoc;
     private Spinner workers;
     private Scale maxHeapSize;
+    private AtomicBoolean programmaticallySettingWorkerParameters;
     
     /**
-	 * Spinner to set the number of (expected) distributed FPSets.
+	 * Widgets related to distributed mode configuration
 	 */
     private Spinner distributedFPSetCountSpinner;
     private Spinner distributedNodesCountSpinner;
+    private Text resultMailAddressText;
     private Combo networkInterfaceCombo;
+
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
     private TableViewer constantTable;
@@ -180,16 +187,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             expandSection(sectionId);
         }
     };
-
-    /*
-     * Checkbox and input box for distributed model checking
-     * 
-     * combo: choose distribution and cloud to run on
-     * text: additional vm arguments (e.g. -Djava.rmi...) 
-     * text: pre-flight script
-     */
-    private Combo distributedCombo;
-    private Text resultMailAddressText;
     
 	/**
 	 * Used to interpolate y-values for memory scale
@@ -249,111 +246,169 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		y[s] = 0d;
 		
 		linearInterpolator = new Interpolator(x, y);
-}
+		
+		currentProfileIsAdHoc = new AtomicBoolean(false);
+		programmaticallySettingWorkerParameters = new AtomicBoolean(false);
+    }
 
     /**
      * @see BasicFormPage#loadData()
      */
     protected void loadData() throws CoreException
     {
-        int specType = getModel().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+    	final Model model = getModel();
+        final int specType = model.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
 
         // set up the radio buttons
         setSpecSelection(specType);
 
         // closed spec
-        String modelSpecification = getModel().getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
+        String modelSpecification = model.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
         Document closedDoc = new Document(modelSpecification);
         this.specSource.setDocument(closedDoc);
 
         // init
-        String modelInit = getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
+        String modelInit = model.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
         Document initDoc = new Document(modelInit);
         this.initFormulaSource.setDocument(initDoc);
 
         // next
-        String modelNext = getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
+        String modelNext = model.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
         Document nextDoc = new Document(modelNext);
         this.nextFormulaSource.setDocument(nextDoc);
 
         // fairness
         // String modelFairness =
-        // getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // model.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
         // EMPTY_STRING);
         // Document fairnessDoc = new Document(modelFairness);
         // this.fairnessFormulaSource.setDocument(fairnessDoc);
-
-        // number of workers
-		workers.setSelection(
-				getModel().getAttribute(LAUNCH_NUMBER_OF_WORKERS, TLCConsumptionProfile.LAZY.getWorkerThreads()));
-
-        // max JVM heap size
-        final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        final int maxHeapSizeValue = getModel().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
-        maxHeapSize.setSelection(maxHeapSizeValue);
         
         // check deadlock
-        boolean checkDeadlock = getModel().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
+        boolean checkDeadlock = model.getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
                 MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
         this.checkDeadlockButton.setSelection(checkDeadlock);
 
         // invariants
-        List<String> serializedList = getModel().getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
+        List<String> serializedList = model.getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
         FormHelper.setSerializedInput(invariantsTable, serializedList);
 
         // properties
-        serializedList = getModel().getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
+        serializedList = model.getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
         FormHelper.setSerializedInput(propertiesTable, serializedList);
 
         // constants from the model
-        List<String> savedConstants = getModel().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector<String>());
+        List<String> savedConstants = model.getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector<String>());
         FormHelper.setSerializedInput(constantTable, savedConstants);
         if (!savedConstants.isEmpty()) {
         	expandSection(SEC_WHAT_IS_THE_MODEL);
         }
-        
-        /*
-         * Distributed mode
-         */
-        String cloud = "off";
-        try {
-			cloud = getModel().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
-        } catch (CoreException e) {
-        	// LAUNCH_DISTRIBUTED might still be stored in a legacy format. The user is
-        	// opening an old model.
-        	boolean distributed = getModel().getAttribute(LAUNCH_DISTRIBUTED, false);
-        	if (distributed) {
-        		cloud = "ad hoc";
+
+		final int threadCount;
+		final int memoryPercentage;
+		currentProfileIsAdHoc.set(false);
+        if (model.hasAttribute(TLC_RESOURCES_PROFILE)) {
+        	final String tlcProfile = model.getAttribute(TLC_RESOURCES_PROFILE, (String)null);
+        	
+        	if (tlcProfile.equals(CUSTOM_TLC_PROFILE_PREFERENCE_VALUE)) {
+				threadCount = model.getAttribute(LAUNCH_NUMBER_OF_WORKERS,
+						TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
+				final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
+						.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+				memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+
+        		setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+        	} else {
+        		final TLCConsumptionProfile profile = TLCConsumptionProfile.getProfileWithPreferenceValue(tlcProfile);
+
+        		setTLCProfileComboSelection(profile.getDisplayName());
+        		
+        		if (profile.profileIsForRemoteWorkers()) {
+        			final String configuration = profile.getConfigurationKey(); // currentProfileIsAdHoc
+					final boolean isAdHoc = configuration
+							.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+        			
+					currentProfileIsAdHoc.set(isAdHoc);
+        			putOnTopOfStack(configuration, false, isAdHoc);
+        			
+        			if (configuration.equals(CLOUD_CONFIGURATION_KEY)) {
+						final String email = model.getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS,
+								LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
+						resultMailAddressText.setText(email);
+        			}
+        		} else {
+        			putOnTopOfStack(LAUNCH_DISTRIBUTED_NO, true, true);
+        		}
+        		
+        		threadCount = profile.getWorkerThreads();
+				memoryPercentage = currentProfileIsAdHoc.get()
+						? model.getAttribute(LAUNCH_MAX_HEAP_SIZE, profile.getMemoryPercentage())
+						: profile.getMemoryPercentage();
+        	}
+        } else {	// for pre-1.5.8 models...
+        	String remoteWorkers = LAUNCH_DISTRIBUTED_NO;
+        	
+        	try {
+        		remoteWorkers = model.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        	} catch(CoreException e) {	// for very old models
+        		if (model.getAttribute(LAUNCH_DISTRIBUTED, false)) {
+        			remoteWorkers = TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey();
+        			currentProfileIsAdHoc.set(true);
+        		}
+        	}
+        	
+        	if (remoteWorkers.equals(LAUNCH_DISTRIBUTED_NO)) {
+    			putOnTopOfStack(LAUNCH_DISTRIBUTED_NO, true, true);
+				threadCount = model.getAttribute(LAUNCH_NUMBER_OF_WORKERS,
+						TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
+				final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
+						.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+				memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+				
+        		setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+        	} else {
+				final TLCConsumptionProfile profile = TLCConsumptionProfile
+						.getProfileWithPreferenceValue(remoteWorkers);
+    			final String configuration = profile.getConfigurationKey();
+				final boolean isAdHoc = configuration
+						.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+
+				currentProfileIsAdHoc.set(isAdHoc);
+        		putOnTopOfStack(configuration, false, isAdHoc);
+    			
+				if (configuration.equals(CLOUD_CONFIGURATION_KEY)) {
+					final String email = model.getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS,
+							LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
+					resultMailAddressText.setText(email);
+				}
+				
+				threadCount = 0;
+
+				if (isAdHoc) {
+					final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
+							.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+					memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+				} else {
+					memoryPercentage = 0;
+				}
+				
+        		setTLCProfileComboSelection(profile.getDisplayName());
         	}
         }
-        final String[] items = distributedCombo.getItems();
-        for (int i = 0; i < items.length; i++) {
-			final String string = items[i];
-			if (cloud.equals(string)) {
-				distributedCombo.select(i);
-				break;
-			}
-		}
-
-		if (cloud.equalsIgnoreCase("aws-ec2") || cloud.equalsIgnoreCase("Azure") || cloud.equalsIgnoreCase("PacketNet")) {
-			MainModelPage.this.putOnTopOfStack("jclouds", false, false);
-			String email = getModel().getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
-			resultMailAddressText.setText(email);
-		} else if(cloud.equalsIgnoreCase("ad hoc")) {
-			MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
-		} else {
-			MainModelPage.this.putOnTopOfStack("off", true, true);
-		}
         
+        programmaticallySettingWorkerParameters.set(true);
+		workers.setSelection(threadCount);
+        maxHeapSize.setSelection(memoryPercentage);
+        programmaticallySettingWorkerParameters.set(false);
+                
         // distribute FPSet count
-        distributedFPSetCountSpinner.setSelection(getModel().getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
+        distributedFPSetCountSpinner.setSelection(model.getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
 
         // distribute FPSet count
-        distributedNodesCountSpinner.setSelection(getModel().getAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT));
+        distributedNodesCountSpinner.setSelection(model.getAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT));
         
         // comments/description/notes
-        String commentsStr = getModel().getAttribute(MODEL_COMMENTS, EMPTY_STRING);
+        String commentsStr = model.getAttribute(MODEL_COMMENTS, EMPTY_STRING);
         commentsSource.setDocument(new Document(commentsStr));
         if (!EMPTY_STRING.equals(commentsStr)) {
         	expandSection(SEC_COMMENTS);
@@ -609,8 +664,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				expandSection(SEC_HOW_TO_RUN);
 			}
 		} catch (CoreException e) {
-			TLCUIActivator.getDefault().logWarning("Faild to read heap value",
-					e);
+			TLCUIActivator.getDefault().logWarning("Faild to read heap value", e);
 		}
         
         // max heap size
@@ -618,8 +672,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         int maxHeapSizeValue = maxHeapSize.getSelection();
 		double x = maxHeapSizeValue / 100d;
 		float y = (float) linearInterpolator.interpolate(x);
-		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(
-				120 * y, 1 - y, 1f)));
+		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(120 * y, 1 - y, 1f)));
 
 		// IP/network address correct?
 		final int networkAddressIndex = this.networkInterfaceCombo.getSelectionIndex();
@@ -766,28 +819,32 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
 
+        final Control emails = UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS));
+        modelEditor.removeErrorMessage("email address invalid", emails);
+        modelEditor.removeErrorMessage("email address missing", emails);
 		// Verify that the user provided email address is valid and can be used to send
 		// the model checking result to.
-		if (this.distributedCombo.getSelectionIndex() > 1) {
+        final TLCConsumptionProfile profile = getSelectedTLCProfile();
+		if ((profile != null) && CLOUD_CONFIGURATION_KEY.equals(profile.getConfigurationKey())) {
 			final String text = resultMailAddressText.getText();
+			
 			try {
-				javax.mail.internet.InternetAddress.parse(text, true);
-			} catch (javax.mail.internet.AddressException exp) {
+				InternetAddress.parse(text, true);
+			} catch (AddressException exp) {
 				modelEditor.addErrorMessage("email address invalid",
 						"For Cloud TLC to work please enter a valid email address.", this.getId(),
-						IMessageProvider.ERROR,
-						UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS)));
+						IMessageProvider.ERROR, emails);
 				setComplete(false);
 				expandSection(SEC_HOW_TO_RUN);
 			}
 			if ("".equals(text.trim())) {
 				modelEditor.addErrorMessage("email address missing",
 						"For Cloud TLC to work please enter an email address.", this.getId(), IMessageProvider.ERROR,
-						UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS)));
+						emails);
 				setComplete(false);
 				expandSection(SEC_HOW_TO_RUN);
 			}
-		}
+        }
         
         mm.setAutoUpdate(true);
 
@@ -847,26 +904,27 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
 	public void commit(boolean onSave)
     {
+		final Model model = getModel();
 		final String comments = FormHelper.trimTrailingSpaces(commentsSource.getDocument().get());
-		getModel().setAttribute(MODEL_COMMENTS, comments);
+		model.setAttribute(MODEL_COMMENTS, comments);
         
         // TLCUIActivator.getDefault().logDebug("Main page commit");
         // closed formula
         String closedFormula = FormHelper.trimTrailingSpaces(this.specSource.getDocument().get());
-        getModel().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
+        model.setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
 
         // init formula
         String initFormula = FormHelper.trimTrailingSpaces(this.initFormulaSource.getDocument().get());
-        getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
+        model.setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
 
         // next formula
         String nextFormula = FormHelper.trimTrailingSpaces(this.nextFormulaSource.getDocument().get());
-        getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
+        model.setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
 
         // fairness formula
         // String fairnessFormula =
         // FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
-        // getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // model.setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
         // fairnessFormula);
 
         // mode
@@ -885,32 +943,37 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             specType = MODEL_BEHAVIOR_TYPE_DEFAULT;
         }
 
-        getModel().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
-
-        // number of workers
-        getModel().setAttribute(LAUNCH_NUMBER_OF_WORKERS, workers.getSelection());
-
-        int maxHeapSizeValue = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        maxHeapSizeValue = maxHeapSize.getSelection();
-        getModel().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeValue);
+        model.setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
 
         // check deadlock
         boolean checkDeadlock = this.checkDeadlockButton.getSelection();
-        getModel().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
+        model.setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
+
+        final TLCConsumptionProfile profile = getSelectedTLCProfile();
+		final String profileValue = (profile != null) ? profile.getPreferenceValue()
+				: CUSTOM_TLC_PROFILE_PREFERENCE_VALUE;
+        
+		model.setAttribute(TLC_RESOURCES_PROFILE, profileValue);
+		
+        // number of workers & memory guidance
+        model.setAttribute(LAUNCH_NUMBER_OF_WORKERS, workers.getSelection());
+        model.setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize.getSelection());
 
         // run in distributed mode
-        String distributed = this.distributedCombo.getItem(this.distributedCombo.getSelectionIndex());
-        getModel().setAttribute(LAUNCH_DISTRIBUTED, distributed);
+        if ((profile != null) && profile.profileIsForRemoteWorkers()) {
+            model.setAttribute(LAUNCH_DISTRIBUTED, profile.getPreferenceValue());
+        } else {
+            model.setAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_NO);
+        }
         
         String resultMailAddress = this.resultMailAddressText.getText();
-        getModel().setAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddress);
+        model.setAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddress);
         
         // distributed FPSet count
-        getModel().setAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner.getSelection());
+        model.setAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner.getSelection());
 
         // distributed FPSet count
-        getModel().setAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner.getSelection());
+        model.setAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner.getSelection());
         
         // network interface
         String iface = "";
@@ -923,23 +986,23 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         } else {
         	iface = this.networkInterfaceCombo.getItem(index);
         }
-        getModel().setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
+        model.setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
 
         // invariants
         List<String> serializedList = FormHelper.getSerializedInput(invariantsTable);
-        getModel().setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
+        model.setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
 
         // properties
         serializedList = FormHelper.getSerializedInput(propertiesTable);
-        getModel().setAttribute(MODEL_CORRECTNESS_PROPERTIES, serializedList);
+        model.setAttribute(MODEL_CORRECTNESS_PROPERTIES, serializedList);
 
         // constants
         List<String> constants = FormHelper.getSerializedInput(constantTable);
-        getModel().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
+        model.setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
 
         // variables
         String variables = ModelHelper.createVariableList(SemanticHelper.getRootModuleNode());
-        getModel().setAttribute(MODEL_BEHAVIOR_VARS, variables);
+        model.setAttribute(MODEL_BEHAVIOR_VARS, variables);
 
         super.commit(onSave);
     }
@@ -1231,12 +1294,43 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		tlcProfileCombo = new Combo(howToRunArea, SWT.READ_ONLY);
 		tlcProfileCombo.setItems(TLC_PROFILE_DISPLAY_NAMES);
 		tlcProfileCombo.select(TLC_PROFILE_DISPLAY_NAMES.length - 1);
+		tlcProfileCombo.addSelectionListener(howToRunListener);
 		tlcProfileCombo.addSelectionListener(new SelectionListener() {
 			public void widgetSelected(final SelectionEvent se) {
-				final TLCConsumptionProfile profile = TLC_PROFILE_MAP.get(tlcProfileCombo.getText());
+				final TLCConsumptionProfile profile = getSelectedTLCProfile();
 
-				workers.setSelection(profile.getWorkerThreads());
-				maxHeapSize.setSelection(profile.getMemoryPercentage());
+				programmaticallySettingWorkerParameters.set(true);
+				currentProfileIsAdHoc.set(false);
+				try {
+					if (profile != null) {
+						workers.setSelection(profile.getWorkerThreads());
+						maxHeapSize.setSelection(profile.getMemoryPercentage());
+
+						if (tlcProfileCombo.getItem(0).equals(CUSTOM_TLC_PROFILE_DISPLAY_NAME)) {
+							tlcProfileCombo.remove(0);
+						}
+
+						if (profile.profileIsForRemoteWorkers()) {
+							final String configuration = profile.getConfigurationKey();
+							final boolean isAdHoc = configuration
+									.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+
+							putOnTopOfStack(configuration, false, isAdHoc);
+							if (isAdHoc) {
+								currentProfileIsAdHoc.set(true);
+								clearEmailErrors();
+							}
+						} else {
+							putOnTopOfStack(LAUNCH_DISTRIBUTED_NO, true, true);
+							clearEmailErrors();
+						}
+					} else {
+						putOnTopOfStack(LAUNCH_DISTRIBUTED_NO, true, true);
+						clearEmailErrors();
+					}
+				} finally {
+					programmaticallySettingWorkerParameters.set(false);
+				}
 			}
 
 			public void widgetDefaultSelected(final SelectionEvent se) { }
@@ -1256,6 +1350,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers = new Spinner(howToRunArea, SWT.NONE);
         workers.addSelectionListener(howToRunListener);
         workers.addFocusListener(focusListener);
+        workers.addListener(SWT.Verify, (e) -> {
+			if (!programmaticallySettingWorkerParameters.get()) {
+				setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+			}
+        });
         gd = new GridData();
         gd.horizontalIndent = 40;
         gd.widthHint = 40;
@@ -1264,7 +1363,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers.setMinimum(1);
         workers.setPageIncrement(1);
         workers.setToolTipText("Determines how many threads will be spawned working on the next state relation.");
-        workers.setSelection(IConfigurationDefaults.LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
+        workers.setSelection(TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
 
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
         
@@ -1288,6 +1387,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapSize = new Scale(maxHeapScale, SWT.NONE);
         maxHeapSize.addSelectionListener(howToRunListener);
         maxHeapSize.addFocusListener(focusListener);
+        maxHeapSize.addListener(SWT.Selection, (e) -> {
+			if (!programmaticallySettingWorkerParameters.get() && !currentProfileIsAdHoc.get()) {
+				setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+			}
+        });
         gd = new GridData();
         gd.horizontalIndent = 30;
         gd.widthHint = 250;
@@ -1317,46 +1421,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				maxHeapSizeFraction.setText(value + "%" + " (" + memory + " mb)");
 			}
 		});
-        
-        Label hr = toolkit.createSeparator(howToRunArea, SWT.HORIZONTAL);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        hr.setLayoutData(gd);
-
-//        // label workers
-//        toolkit.createLabel(howToRunArea, "Number of worker threads:");
-//
-//        // field workers
-//        workers = toolkit.createText(howToRunArea, "1");
-//        workers.addModifyListener(howToRunListener);
-//        workers.addFocusListener(focusListener);
-//        gd = new GridData();
-//        gd.horizontalIndent = 10;
-//        gd.widthHint = 40;
-//        workers.setLayoutData(gd);
-//
-//        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
-                
+                        
         /*
          * Distribution.  Help button added by LL on 17 Jan 2013
          */
-        Composite distComp = new Composite(howToRunArea, SWT.NONE) ;
-        gl = new GridLayout(3, true);
-        distComp.setLayout(gl);
-        
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        distComp.setLayoutData(gd);
-        
-        toolkit.createLabel(distComp, "Run in distributed mode");
-        distributedCombo = new Combo(distComp, SWT.READ_ONLY);
-        distributedCombo.setItems(new String[] {"off", "ad hoc", "aws-ec2", "Azure", "PacketNet"});
-        distributedCombo.select(0);
-        HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
-        distributedCombo.addSelectionListener(howToRunListener);
-		distributedCombo.setToolTipText("If other than 'off' selected, state computation will be performed by (remote) workers.");
-		distributedCombo.addFocusListener(focusListener);
-		
 		distributedOptions = new Composite(howToRunArea, SWT.NONE);
 		final StackLayout stackLayout = new StackLayout();
 		distributedOptions.setLayout(stackLayout);
@@ -1367,25 +1435,30 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
 		// No distribution has no options
 		final Composite offComposite = new Composite(distributedOptions, SWT.NONE);
-		distributedOptions.setData("off", offComposite);
+		distributedOptions.setData(LAUNCH_DISTRIBUTED_NO, offComposite);
 		stackLayout.topControl = offComposite;
 		
 		/*
 		 * Composite wrapping number of distributed FPSet and iface when ad hoc selected
 		 */
-        final Composite builtInOptions = new Composite(distributedOptions, SWT.NONE);
+        final Composite adHocOptions = new Composite(distributedOptions, SWT.NONE);
         gl = new GridLayout(2, true);
-        builtInOptions.setLayout(gl);
+        adHocOptions.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
-        builtInOptions.setLayoutData(gd);
-		distributedOptions.setData("ad hoc", builtInOptions);
+        adHocOptions.setLayoutData(gd);
+		distributedOptions.setData(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey(), adHocOptions);
 		
+        Button helpButton = HelpButton.helpButton(adHocOptions, "model/distributed-mode.html") ;
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.horizontalAlignment = SWT.END;
+        helpButton.setLayoutData(gd);
 		/*
-		 * Server interface/hostname (This text shows the hostname detected by the Toolbox under which TLCServer will listen
+		 * Server interface/hostname (This text shows the hostname detected by the Toolbox under which TLCServer
+		 * will listen)
 		 */
-		// composite
-        final Composite networkInterface = new Composite(builtInOptions, SWT.NONE) ;
+        final Composite networkInterface = new Composite(adHocOptions, SWT.NONE) ;
         gl = new GridLayout(2, true);
         networkInterface.setLayout(gl);
         gd = new GridData();
@@ -1469,7 +1542,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 */
 
 		// composite
-        final Composite distributedFPSetCount = new Composite(builtInOptions, SWT.NONE);
+        final Composite distributedFPSetCount = new Composite(adHocOptions, SWT.NONE);
         gl = new GridLayout(2, false);
         distributedFPSetCount.setLayout(gl);
         gd = new GridData();
@@ -1511,6 +1584,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
  		 * Distributed nodes count
  		 */
 
+        helpButton = HelpButton.helpButton(jcloudsOptions, "model/distributed-mode.html") ;
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.horizontalAlignment = SWT.END;
+        helpButton.setLayoutData(gd);
+        
  		// composite
          final Composite distributedNodesCount = new Composite(jcloudsOptions, SWT.NONE);
          gl = new GridLayout(2, false);
@@ -1559,7 +1638,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		resultMailAddressText.setMessage("my-name@my-domain.org,alternative-name@alternative-domain.org"); // hint
 		resultMailAddressText.setToolTipText(resultAddressTooltip);
 		resultMailAddressText.addKeyListener(new KeyAdapter() {
-			
 			private final ModelEditor modelEditor = (ModelEditor) getEditor();
 
 			@Override
@@ -1572,14 +1650,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				super.keyReleased(e);
 				try {
 					final String text = resultMailAddressText.getText();
-					javax.mail.internet.InternetAddress.parse(text, true);
-				} catch (javax.mail.internet.AddressException exp) {
+					InternetAddress.parse(text, true);
+				} catch (AddressException exp) {
 					modelEditor.addErrorMessage("emailAddressInvalid",
 							"Invalid email address", getId(),
 							IMessageProvider.ERROR, resultMailAddressText);
 					return;
 				}
-				modelEditor.removeErrorMessage("emailAddressInvalid", resultMailAddressText);
+				clearEmailErrors();
 			}
 		});
         gd = new GridData();
@@ -1590,24 +1668,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         resultMailAddressText.addModifyListener(howToRunListener);
         dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
 		
-		distributedOptions.setData("jclouds", jcloudsOptions);
-
-        distributedCombo.addSelectionListener(new SelectionListener() {
-			public void widgetSelected(SelectionEvent e) {
-				int selectionIndex = distributedCombo.getSelectionIndex();
-				String item = distributedCombo.getItem(selectionIndex);
-				if (item.equalsIgnoreCase("aws-ec2") || item.equalsIgnoreCase("Azure") || item.equalsIgnoreCase("PacketNet")) {
-					MainModelPage.this.putOnTopOfStack("jclouds", false, false);
-				} else if(item.equalsIgnoreCase("ad hoc")) {
-					MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
-				} else {
-					MainModelPage.this.putOnTopOfStack("off", true, true);
-				}
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-        });
+		distributedOptions.setData(CLOUD_CONFIGURATION_KEY, jcloudsOptions);
 
         /*
          * run link
@@ -1652,15 +1713,37 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dirtyPartListeners.add(howToRunListener);
     }
 
-    private void putOnTopOfStack(final String id, boolean enableWorker, boolean enableMaxHeap) {
-		workers.setEnabled(enableWorker);
-		maxHeapSize.setEnabled(enableMaxHeap);
+    private void putOnTopOfStack(final String id, final boolean enableWorker, final boolean enableMaxHeap) {
+    	workers.getDisplay().asyncExec(() -> {
+    		workers.setEnabled(enableWorker);
+    		maxHeapSize.setEnabled(enableMaxHeap);
+    	});
 		
 		final Composite composite = (Composite) distributedOptions.getData(id);
 		final StackLayout stackLayout = (StackLayout) distributedOptions.getLayout();
 		stackLayout.topControl = composite;
 		distributedOptions.layout();
     }
+    
+    private TLCConsumptionProfile getSelectedTLCProfile() {
+    	return TLCConsumptionProfile.getProfileWithDisplayName(tlcProfileCombo.getText());
+    }
+    
+    private void clearEmailErrors() {
+		((ModelEditor)getEditor()).removeErrorMessage("emailAddressInvalid", resultMailAddressText);
+    }
+    
+    private void setTLCProfileComboSelection(final String displayName) {
+    	final int index = tlcProfileCombo.indexOf(displayName);
+    	
+    	if (index != -1) {
+    		tlcProfileCombo.select(index);
+    	} else {
+    		tlcProfileCombo.add(displayName, 0);
+    		tlcProfileCombo.select(0);
+    	}
+    }
+
     
     /**
      * Interpolates based on LinearInterpolation

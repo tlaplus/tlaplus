@@ -17,6 +17,8 @@ public interface IConfigurationDefaults
      * Default number of workers.  Was set by Simon to be is 2.
      * Modified by LL on 11 October 2009 to be half the number of available processors.
      * Fixed by LL on 20 Oct 2009 to equal 1, not 0, if there is only 1 available processor.
+     * 
+     * 20190302 - this will be deprecated in the future once TLCConsumptionProfile is fully adopted.
      */
     public static final int LAUNCH_NUMBER_OF_WORKERS_DEFAULT = (Runtime.getRuntime().availableProcessors() > 1) ? (Runtime
             .getRuntime().availableProcessors() / 2)
@@ -24,8 +26,12 @@ public interface IConfigurationDefaults
 
 	/**
 	 * Run in distributed mode?
+	 * 
+	 * We need two, because in some places we especially want to specify "do not launch remote workers" and will be
+	 * 	shafted should some future developer change the default value.
 	 */
-	public static final String LAUNCH_DISTRIBUTED_DEFAULT = "off";
+    public static final String LAUNCH_DISTRIBUTED_NO = "off";
+	public static final String LAUNCH_DISTRIBUTED_DEFAULT = LAUNCH_DISTRIBUTED_NO;
 	
     /**
      * Launch distributed version of TLC and send result to this address

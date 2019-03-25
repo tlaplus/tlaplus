@@ -616,8 +616,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         if (!FPSet.isValid(fpBits.getSelection()))
         {
             modelEditor.addErrorMessage("wrongNumber3", "fpbits must be a positive integer number smaller than 31", this
-                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
-                    .getAttributeControl(LAUNCH_FPBITS)));
+					.getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_FPBITS)));
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
@@ -633,9 +632,8 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // maxSetSize
         if (!TLCGlobals.isValidSetSize(maxSetSize.getSelection()))
         {
-            modelEditor.addErrorMessage("wrongNumber3", "maxSetSize must be a positive integer number", this
-                    .getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm
-                    .getAttributeControl(LAUNCH_MAXSETSIZE)));
+            modelEditor.addErrorMessage("wrongNumber3", "maxSetSize must be a positive integer number", this.getId(),
+            		IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAXSETSIZE)));
             setComplete(false);
             expandSection(SEC_HOW_TO_RUN);
         }
@@ -699,7 +697,6 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      */
     protected void createBodyContent(IManagedForm managedForm)
     {
-
         DataBindingManager dm = getDataBindingManager();
         int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
 
@@ -954,6 +951,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         gd.grabExcessHorizontalSpace = true;
         gd.heightHint = 60;
         gd.widthHint = 200;
+
         viewSource.getTextWidget().setLayoutData(gd);
 
         dfidOption = toolkit.createButton(area, "Depth-first", SWT.CHECK);

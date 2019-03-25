@@ -1142,6 +1142,10 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
 	}
 
+	public boolean hasAttribute(final String key) throws CoreException {
+		return this.launchConfig.hasAttribute(key);
+	}
+	
 	public int getAttribute(String key, int defaultValue) throws CoreException {
 		// TODO Replace this generic lookup method with real getters for the
 		// various keys. E.g. see getEvalExpression/unsavedSetEvalExpression

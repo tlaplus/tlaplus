@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _Gvi30BUtEemG79v6PBILBA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/15/19, 1:42 PM
+Save-Time: 3/24/19, 2:46 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -46,18 +46,20 @@ try -command {
 	
 	
 	get-editor "Model_1" | get-section "How to run?" | click
-	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "Run in distributed mode"] 
-	    | get-property selection | equals off | verify-true
-	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "Run in distributed mode"] 
-	    | select "ad hoc"
+	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"] 
+	    | select "Ad Hoc"
 	with [get-editor "Model_1" | get-section "How to run?"] {
-	    get-combo -after [get-label "Run in distributed mode"] | get-property selection | equals "ad hoc" | verify-true
+	    get-combo -after [get-label "System resources dedicated to TLC:"] | get-property selection | equals "Ad Hoc" | verify-true
+	    // TODO: unable to use ECL to get a spinner presently
+//	    get-control -kind "Spinner" -after [get-label "Number of worker threads:"] | get-property enablement | equals false | verify-true
+	    // TODO: unable to use ECL to get a scale presently
+//	    get-control -kind "Scale" -after [get-label "Fraction of physical memory allocated to TLC:"] | get-property enablement | equals true | verify-true
 	    get-combo -after [get-label "Master's network address:"] | get-property enablement | equals true | verify-true
 	}
-	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "Run in distributed mode"] 
-	    | select "aws-ec2"
+	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"] 
+	    | select "Amazon"
 	with [get-editor "Model_1" | get-section "How to run?"] {
-	    get-combo -after [get-label "Run in distributed mode"] | get-property selection | equals "aws-ec2" | verify-true
+	    get-combo -after [get-label "System resources dedicated to TLC:"] | get-property selection | equals "Amazon" | verify-true
 	    with [get-editbox -after [get-label "Result mailto addresses:"]] {
 	        get-property className | equals "org.eclipse.swt.widgets.Text" | verify-true
 	        get-property enablement | equals true | verify-true
@@ -67,11 +69,12 @@ try -command {
 	        get-property caption | equals "Result mailto addresses:" | verify-true
 	    }
 	}
-	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "Run in distributed mode"] | select Azure
-	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "Run in distributed mode"] 
-	    | get-property selection | equals Azure | verify-true
+	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"]
+		| select "Azure"
+	get-editor "Model_1" | get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"] 
+	    | get-property selection | equals "Azure" | verify-true
 	with [get-editor "Model_1"] {
-	    get-section "How to run?" | get-combo -after [get-label "Run in distributed mode"] | select off
+	    get-section "How to run?" | get-combo -after [get-label "System resources dedicated to TLC:"] | select "Local Medium"
 	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
 	}
 } -finally {

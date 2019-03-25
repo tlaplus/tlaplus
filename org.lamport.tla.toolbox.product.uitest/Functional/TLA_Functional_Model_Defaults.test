@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _myVagAP4EemwBd2liJ-qvA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/20/19, 2:48 PM
+Save-Time: 3/24/19, 2:47 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -114,7 +114,7 @@ try -command {
 	    get-section Statistics | get-editbox -after [get-label "Coverage at"] | get-property text | equals "" | verify-true
 	    get-section "Evaluate Constant Expression" | get-editbox -after [get-label "Expression:"] | get-property text 
 	        | equals "" | verify-true
-	    get-section "User Output" | get-text-viewer | get-property text | equals "No user output is available" | verify-true
+	    get-section "User Output" | get-text-viewer | get-property text | equals "No output is available" | verify-true
 	}
 	with [get-editor "Model_1"] {
 	    get-section Statistics | click
