@@ -454,12 +454,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         updateCheckpoints();
 
         // recover from checkpoint
+        final Control checkpointRecover = UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER));
+        modelEditor.removeErrorMessage("noCheckpoint", checkpointRecover);
         if (checkpointButton.getSelection())
         {
             if (EMPTY_STRING.equals(checkpointIdText.getText()))
             {
-                modelEditor.addErrorMessage("noChckpoint", "No checkpoint data found", this.getId(),
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
+                modelEditor.addErrorMessage("noCheckpoint", "No checkpoint data found", this.getId(),
+                        IMessageProvider.ERROR, checkpointRecover);
                 setComplete(false);
                 expandSection(SEC_LAUNCHING_SETUP);
             }
@@ -939,7 +941,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         mcOption.setLayoutData(gd);
 
         // label view
-        Label viewLabel = toolkit.createLabel(area, "View:");
+        final Label viewLabel = toolkit.createLabel(area, "View:");
         gd = new GridData();
         gd.verticalAlignment = SWT.BEGINNING;
         gd.horizontalIndent = 10;
@@ -967,7 +969,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // field depth
         dfidDepthText = toolkit.createText(area, "100");
         gd = new GridData();
-        gd.widthHint = 100;
+        gd.minimumWidth = 100;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         dfidDepthText.setLayoutData(gd);
         dfidDepthText.addFocusListener(focusListener);
 
@@ -978,19 +982,21 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         simulationOption.addFocusListener(focusListener);
 
         // label depth
-        Label depthLabel = toolkit.createLabel(area, "Maximum length of the trace:");
+        final Label depthLabel = toolkit.createLabel(area, "Maximum length of the trace:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         depthLabel.setLayoutData(gd);
         // field depth
         simuDepthText = toolkit.createText(area, "100");
         gd = new GridData();
-        gd.widthHint = 100;
+        gd.minimumWidth = 100;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         simuDepthText.setLayoutData(gd);
         simuDepthText.addFocusListener(focusListener);
 
         // label seed
-        Label seedLabel = toolkit.createLabel(area, "Seed:");
+        final Label seedLabel = toolkit.createLabel(area, "Seed:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         seedLabel.setLayoutData(gd);
@@ -998,12 +1004,14 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // field seed
         simuSeedText = toolkit.createText(area, "");
         gd = new GridData();
-        gd.widthHint = 200;
+        gd.minimumWidth = 200;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         simuSeedText.setLayoutData(gd);
         simuSeedText.addFocusListener(focusListener);
 
         // label seed
-        Label arilLabel = toolkit.createLabel(area, "Aril:");
+        final Label arilLabel = toolkit.createLabel(area, "Aril:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         arilLabel.setLayoutData(gd);
@@ -1011,7 +1019,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // field seed
         simuArilText = toolkit.createText(area, "");
         gd = new GridData();
-        gd.widthHint = 200;
+        gd.minimumWidth = 200;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         simuArilText.setLayoutData(gd);
         simuArilText.addFocusListener(focusListener);
 
@@ -1019,6 +1029,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         Label hr = toolkit.createSeparator(area, SWT.HORIZONTAL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
+        gd.verticalIndent = 6;
         hr.setLayoutData(gd);
 
         /*
@@ -1030,7 +1041,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         gd = new GridData();
         gd.horizontalSpan = 2;
-        gd.verticalIndent = 20;
+        gd.verticalIndent = 6;
         checkpointComposite.setLayoutData(gd);
 
         checkpointButton = toolkit.createButton(checkpointComposite, "Recover from checkpoint", SWT.CHECK);
@@ -1042,15 +1053,17 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         checkpointIdText = toolkit.createText(area, "");
         checkpointIdText.setEditable(false);
         gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 100;
+        gd.minimumWidth = 100;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         checkpointIdText.setLayoutData(gd);
 
         checkpointSizeLabel = toolkit.createLabel(area, "Checkpoint size (kbytes):");
         checkpointSizeText = toolkit.createText(area, "");
         gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 100;
+        gd.minimumWidth = 100;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         checkpointSizeText.setLayoutData(gd);
         checkpointDeleteButton = toolkit.createButton(area, "Delete Checkpoint", SWT.PUSH);
         checkpointDeleteButton.addSelectionListener(new SelectionListener() {
@@ -1084,30 +1097,23 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         hr = toolkit.createSeparator(area, SWT.HORIZONTAL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
+        gd.verticalIndent = 6;
         hr.setLayoutData(gd);
         // label deferred liveness checking
 		final String deferLivenessHelp = "Defer verification of temporal properties (liveness) to the end of model checking"
 				+ " to reduce overall model checking time. Liveness violations will be found late compared to invariant "
 				+ "violations. In other words check liveness only once on the complete state space.";
-        Label deferLivenessLabel = toolkit.createLabel(area, "Verify temporal properties upon termination only:");
-        gd = new GridData();
-        gd.horizontalIndent = 0;
-        deferLivenessLabel.setLayoutData(gd);
+        final Label deferLivenessLabel = toolkit.createLabel(area, "Verify temporal properties upon termination only:");
+        deferLivenessLabel.setLayoutData(new GridData());
 		deferLivenessLabel.setToolTipText(deferLivenessHelp);
 
         deferLiveness = toolkit.createButton(area, "", SWT.CHECK);
-        gd = new GridData();
-        gd.widthHint = 200;
-        gd.verticalIndent = 20;
-        gd.horizontalIndent = 0;
         deferLiveness.addFocusListener(focusListener);
         deferLiveness.setToolTipText(deferLivenessHelp);
        
         // label fp
-        Label fpLabel = toolkit.createLabel(area, "Fingerprint seed index:");
-        gd = new GridData();
-        gd.horizontalIndent = 0;
-        fpLabel.setLayoutData(gd);
+        final Label fpLabel = toolkit.createLabel(area, "Fingerprint seed index:");
+        fpLabel.setLayoutData(new GridData());
       
         final Composite fpIndex = toolkit.createComposite(area);
         fpIndex.setLayout(new GridLayout(2, false));
@@ -1129,7 +1135,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // field fpIndex
         fpIndexSpinner = new Spinner(fpIndex, SWT.NONE);
         fpIndexSpinner.setEnabled(false);
-        fpIndexSpinner.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
+        fpIndexSpinner.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER);
 		fpIndexSpinner.setToolTipText(
 				"Index of irreducible polynominal used as a seed for fingerprint hashing (corresponds to \"-fp value\"). Set to the irreducible polynomial used for the previous run if \"Select randomly\" checked.");
         gd = new GridData();
@@ -1144,64 +1150,61 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         
         // fpbits label
         Label fpBitsLabel = toolkit.createLabel(area, "Log base 2 of number of disk storage files:");
-        gd = new GridData();
-        gd.horizontalIndent = 0;
-        fpBitsLabel.setLayoutData(gd);
+        fpBitsLabel.setLayoutData(new GridData());
 
         // fpbits spinner
         fpBits = new Spinner(area, SWT.NONE);
         fpBits.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
         fpBits.addFocusListener(focusListener);
         gd = new GridData();
-        gd.widthHint = 200;
         gd.verticalIndent = 20;
-        gd.horizontalIndent = 0;
+        gd.minimumWidth = 200;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         fpBits.setLayoutData(gd);
 
         fpBits.setMinimum(MultiFPSet.MIN_FPBITS);
         fpBits.setMaximum(MultiFPSet.MAX_FPBITS);
 
-        int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+        final int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
         		ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
         fpBits.setSelection(defaultFPBits);
         
         // maxSetSize label
-        Label maxSetSizeLabel = toolkit.createLabel(area, "Cardinality of largest enumerable set:");
-        gd = new GridData();
-        gd.horizontalIndent = 0;
-        maxSetSizeLabel.setLayoutData(gd);
+        final Label maxSetSizeLabel = toolkit.createLabel(area, "Cardinality of largest enumerable set:");
+        maxSetSizeLabel.setLayoutData(new GridData());
         
         // maxSetSize spinner
         maxSetSize = new Spinner(area, SWT.NONE);
         maxSetSize.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
         maxSetSize.addFocusListener(focusListener);
         gd = new GridData();
-        gd.widthHint = 200;
         gd.verticalIndent = 20;
-        gd.horizontalIndent = 0;
+        gd.minimumWidth = 200;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         maxSetSize.setLayoutData(gd);
 
         maxSetSize.setMinimum(1);
         maxSetSize.setMaximum(Integer.MAX_VALUE);
 
-        int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+        final int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
         		ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
         maxSetSize.setSelection(defaultMaxSetSize);
         
         // Visualize State Graph with GraphViz (dot)
 		final String visualizeStateGraphHelp = "Draw the state graph after completion of model checking provided the "
 				+ "state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking).";
-        Label visualizeStateGraphLabel = toolkit.createLabel(area, "Visualize state graph after completion of model checking:");
+        final Label visualizeStateGraphLabel = toolkit.createLabel(area, "Visualize state graph after completion of model checking:");
         gd = new GridData();
-        gd.horizontalIndent = 0;
+        gd.verticalIndent = 9;
         visualizeStateGraphLabel.setLayoutData(gd);
         visualizeStateGraphLabel.setToolTipText(visualizeStateGraphHelp);
 
         visualizeStateGraph = toolkit.createButton(area, "", SWT.CHECK);
         gd = new GridData();
-        gd.widthHint = 200;
-        gd.verticalIndent = 20;
-        gd.horizontalIndent = 0;
+        gd.verticalIndent = 9;
+        visualizeStateGraph.setLayoutData(gd);
         visualizeStateGraph.addFocusListener(focusListener);
         visualizeStateGraph.setToolTipText(visualizeStateGraphHelp);
     
@@ -1214,10 +1217,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         .setToolTipText("Optionally pass additional JVM arguments to TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
         extraVMArgumentsText.addFocusListener(focusListener);
         gd = new GridData();
-        gd.horizontalIndent = 0;
         gd.verticalIndent = 20;
-        gd.widthHint = 300;
         gd.heightHint = 40;
+        gd.minimumWidth = 300;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         extraVMArgumentsText.setLayoutData(gd);
 
 		// Extra/Additional TLC arguments
@@ -1229,10 +1233,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         .setToolTipText("Optionally pass additional TLC process parameters (e.g. -Dcheckpoint 0)");
         extraTLCParametersText.addFocusListener(focusListener);
         gd = new GridData();
-        gd.horizontalIndent = 0;
         gd.verticalIndent = 20;
-        gd.widthHint = 300;
         gd.heightHint = 40;
+        gd.minimumWidth = 300;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         extraTLCParametersText.setLayoutData(gd);
         
         return advancedSection;
