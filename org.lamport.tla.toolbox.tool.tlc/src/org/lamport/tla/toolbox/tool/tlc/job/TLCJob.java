@@ -240,7 +240,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
 
         // Should not add a coverage option only if TLC is being run
         // without a spec. This change added 10 Sep 2009 by LL & DR
-        if (config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT) != MODEL_BEHAVIOR_TYPE_NO_SPEC)
+        if (collectCoverage())
         {
         	// coverage 0.1 hour
         	arguments.add("-coverage");
@@ -275,8 +275,14 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         return (String[]) arguments.toArray(new String[arguments.size()]);
     }
     
+
 	// Allow subclasses to veto command line parameters if needed.
 
+    protected boolean collectCoverage() throws CoreException {
+		return launch.getLaunchConfiguration().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
+				MODEL_BEHAVIOR_TYPE_DEFAULT) != MODEL_BEHAVIOR_TYPE_NO_SPEC;
+    }
+    
 	protected boolean recover() throws CoreException {
 		return launch.getLaunchConfiguration().getAttribute(IModelConfigurationConstants.LAUNCH_RECOVER,
 				IModelConfigurationDefaults.LAUNCH_RECOVER_DEFAULT);

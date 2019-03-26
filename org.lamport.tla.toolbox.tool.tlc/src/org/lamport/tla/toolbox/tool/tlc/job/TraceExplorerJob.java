@@ -107,4 +107,13 @@ public class TraceExplorerJob extends TLCProcessJob
 		// exploration. A trace is just a txt file with a sequence of states.
 		return false;
 	}
+	
+    /* (non-Javadoc)
+     * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#collectCoverage()
+     */
+	@Override
+    protected boolean collectCoverage() throws CoreException {
+		// No need for coverage statistics when running error trace exploration.
+    	return false;
+    }
 }
