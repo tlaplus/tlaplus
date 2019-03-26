@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _ntQ8oBB4EemUS_ZdBJsvQg
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/25/19, 11:35 AM
+Save-Time: 3/26/19, 11:50 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -76,7 +76,7 @@ try -command {
 	            | equals "\"What is the behavior spec?\" automatically set to \"No Behavior Spec\" because spec has no declared variables." 
 	            | verify-true
 	    }
-	    get-button "Stops the current TLC model checker run." -index 1 | get-property enablement | equals false 
+	    get-button "Stops the current TLC model checker run." | get-property enablement | equals false 
 	        | verify-true
 	}
 

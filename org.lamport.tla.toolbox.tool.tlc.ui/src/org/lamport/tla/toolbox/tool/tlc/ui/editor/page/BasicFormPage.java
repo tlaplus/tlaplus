@@ -247,18 +247,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         FormToolkit toolkit = managedForm.getToolkit();
         toolkit.decorateFormHeading(formWidget.getForm());
 
-        // head construction ---------------------
-        IToolBarManager toolbarManager = formWidget.getForm().getToolBarManager();
-
-        // run button
-        toolbarManager.add(new DynamicContributionItem(new RunAction()));
-        toolbarManager.add(new DynamicContributionItem(new GenerateAction()));
-        // stop button
-        toolbarManager.add(new DynamicContributionItem(new StopAction()));
-
-        // refresh the tool-bar
-        toolbarManager.update(true);
-
         /*
          * The head client is the second row of the header section,
          * below the title. There should be the same buttons as in the

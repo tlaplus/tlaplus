@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _Jm-wcBB2EemUS_ZdBJsvQg
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/20/19, 3:36 PM
+Save-Time: 3/26/19, 11:23 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -79,7 +79,7 @@ try -command {
 	get-editor "Model_1" | get-link "1 error detected" | get-property caption | equals "1 error detected" | verify-true
 	with [get-editor "Model_1"] {
 	    get-section "TLC Options" | get-button "Recover from checkpoint" | uncheck
-	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 
 	wait -ms 1000
@@ -91,8 +91,8 @@ try -command {
 	        get-tab-item "Advanced Options" | click
 	        get-tab-item "Model Checking Results" | click
 	    }
-	    //get-button "Runs TLC on the model." -index 1 | click
-	    get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    //get-button "Runs TLC on the model." | click
+	    get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 
     wait -ms 1000
@@ -103,7 +103,7 @@ try -command {
 	        get-table | select "x<9"
 	        get-button Remove | click
 	    }
-		get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+		get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 	
 	wait -ms 1000

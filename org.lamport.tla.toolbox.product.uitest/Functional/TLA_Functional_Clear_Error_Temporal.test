@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _gOLvABUlEemG79v6PBILBA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/25/19, 11:41 AM
+Save-Time: 3/26/19, 11:31 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -42,15 +42,15 @@ try -command {
 	    	get-combo | select "Temporal formula"
 	        get-text-viewer | type-text "x  == 1"
 	    }
-	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    get-button "Checks the model for errors but does not run TLC on it." | click
 	    with [get-section "What is the behavior spec?" | get-text-viewer ] {
 	        set-caret-pos 1 8
 	        key-type BackSpace -times 6
 	        type-text "=2"
 	    }
-	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    get-button "Checks the model for errors but does not run TLC on it." | click
 	    get-section "What is the behavior spec?" | get-text-viewer | type-text ";y=1"
-	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 	get-editor "Model_1" | get-link "1 error detected" | get-property caption | equals "1 error detected" | verify-true
 	with [get-editor "Model_1"] {
@@ -58,7 +58,7 @@ try -command {
 	        set-caret-pos 1 8
 	        key-type BackSpace -times 4
 	    }
-	    get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 	
 	get-editor "Model_1" | get-link  | get-property caption | equals "1 error detected" | verify-false

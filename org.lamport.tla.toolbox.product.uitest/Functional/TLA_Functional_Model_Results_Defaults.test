@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _s4DEYBXnEemrGZBXFuwIoA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/24/19, 3:32 PM
+Save-Time: 3/26/19, 11:47 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -72,7 +72,7 @@ try -command {
 	}
 	get-editor "Model_1" | get-section "Progress Output" | get-text-viewer | get-property text 
 	    | equals "No output is available" | verify-true
-	get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." | click
 } -finally {
 	DeleteSpecNew
 }

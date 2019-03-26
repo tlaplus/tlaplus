@@ -58,7 +58,6 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
-import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
@@ -165,9 +164,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
     private TableViewer constantTable;
-
-    private ImageHyperlink runLink;
-    private ImageHyperlink generateLink;
 
     /**
      * section expanding adapter
@@ -1712,43 +1708,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		
 		distributedOptions.setData(CLOUD_CONFIGURATION_KEY, jcloudsOptions);
 
-        /*
-         * run link
-         */
-        runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
-        runLink.setImage(createRegisteredImage("icons/full/lrun_obj.gif"));
-        runLink.addHyperlinkListener(new HyperlinkAdapter() {
-            public void linkActivated(HyperlinkEvent e)
-            {
-                doRun();
-            }
-        });
-        runLink.setText("Run TLC");
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.widthHint = 200;
-        gd.verticalIndent = 20;
-        runLink.setLayoutData(gd);
-        group.add(runLink);
-
-        generateLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
-        generateLink.setImage(createRegisteredImage("icons/full/debugt_obj.gif"));
-        generateLink.addHyperlinkListener(new HyperlinkAdapter() {
-            public void linkActivated(HyperlinkEvent e)
-            {
-                doGenerate();
-            }
-        });
-        generateLink.setText("Validate model");
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.widthHint = 200;
-        generateLink.setLayoutData(gd);
-        group.add(generateLink);
-
         // add listeners propagating the changes of the elements to the changes
-        // of the
-        // parts to the list to be activated after the values has been loaded
+        // of the parts to the list to be activated after the values has been loaded
         dirtyPartListeners.add(commentsListener);
         dirtyPartListeners.add(whatIsTheSpecListener);
         dirtyPartListeners.add(whatToCheckListener);
