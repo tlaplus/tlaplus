@@ -57,11 +57,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -517,6 +518,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			disposeLock.unlock();
 		}
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+	protected Layout getBodyLayout() {
+		return FormHelper.createFormTableWrapLayout(true, 1);
+	}
 
     /**
      * Draw the fields
@@ -534,11 +543,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION;
         final int expressionFieldFlags = textFieldFlags | SWT.WRAP;
 
-        FormToolkit toolkit = managedForm.getToolkit();
-        Composite body = managedForm.getForm().getBody();
-        TableWrapLayout layout = new TableWrapLayout();
-        layout.numColumns = 1;
-        body.setLayout(layout);
+        final FormToolkit toolkit = managedForm.getToolkit();
+        final Composite body = managedForm.getForm().getBody();
 
         TableWrapData twd;
         Section section;
@@ -559,12 +565,15 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         section.setLayoutData(twd);
 
-        Composite generalArea = (Composite) section.getClient();
+        final Composite generalArea = (Composite) section.getClient();
         generalArea.setLayout(new GridLayout());
 
         // ------------ status composite ------------
-        Composite statusComposite = toolkit.createComposite(generalArea);
+        final Composite statusComposite = toolkit.createComposite(generalArea);
         statusComposite.setLayout(new GridLayout(2, false));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        statusComposite.setLayoutData(gd);
 
         // start
         this.startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
@@ -606,14 +615,18 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         twd.colspan = 1;
         section.setLayoutData(twd);
         Composite statArea = (Composite) section.getClient();
-        RowLayout rowLayout = new RowLayout(SWT.HORIZONTAL);
-        // rowLayout.numColumns = 2;
-        statArea.setLayout(rowLayout);
+        statArea.setLayout(new GridLayout(2, false));
 
         // progress stats
-        createAndSetupStateSpace("State space progress (click column header for graph)", statArea, toolkit);
+        Composite c = createAndSetupStateSpace("State space progress (click column header for graph)", statArea, toolkit);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        c.setLayoutData(gd);
         // coverage stats
-        createAndSetupCoverage("Coverage at", statArea, toolkit);
+        c = createAndSetupCoverage("Coverage at", statArea, toolkit);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        c.setLayoutData(gd);
 
         // -------------------------------------------------------------------
         // Calculator section
@@ -621,8 +634,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // necessary to eliminate that bit in the style flags that
         // are passed in. If the bit were not changed to 0, an
         // extra empty line would appear below the title.
-        section = FormHelper.createSectionComposite(body, "Evaluate Constant Expression", "", toolkit, sectionFlags
-                & ~Section.DESCRIPTION, getExpansionListener());
+		section = FormHelper.createSectionComposite(body, "Evaluate Constant Expression", "",
+				toolkit, sectionFlags & ~Section.DESCRIPTION, getExpansionListener());
         sections.put(SEC_EXPRESSION, section);
 
         Composite resultArea = (Composite) section.getClient();
@@ -630,8 +643,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gLayout.marginHeight = 0;
         resultArea.setLayout(gLayout);
 
-        Composite expressionComposite = toolkit.createComposite(resultArea);
-        expressionComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+        final Composite expressionComposite = toolkit.createComposite(resultArea);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd.minimumWidth = 360;
+        expressionComposite.setLayoutData(gd);
         gLayout = new GridLayout(1, false);
         gLayout.marginHeight = 0;
         gLayout.marginBottom = 5;
@@ -665,7 +680,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		
         // We want the value section to get larger as the window
         // gets larger but not the expression section.
-        Composite valueComposite = toolkit.createComposite(resultArea);
+		final Composite valueComposite = toolkit.createComposite(resultArea);
         valueComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
         valueComposite.setLayout(gLayout);
         toolkit.createLabel(valueComposite, "Value: ");
@@ -675,8 +690,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // vertical space because then in some cases
         // this causes the text box to be extremely
         // tall instead of having a scroll bar.
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        gd.widthHint = 500;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.heightHint = 80;
         expressionEvalResult.getTextWidget().setLayoutData(gd);
         // The expression section should not grab excess horizontal
@@ -685,8 +699,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // then when the model is run, the expression text box
         // will get wide enough to fit the entire expression on
         // one line instead of wrapping the text.
-        gd = new GridData(SWT.FILL, SWT.FILL, false, false);
-        gd.widthHint = 500;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.heightHint = 80;
         expressionEvalInput.getTextWidget().setLayoutData(gd);
         // We want this font to be the same as the input.
@@ -696,7 +709,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         expressionEvalInput.getTextWidget().setFont(JFaceResources.getTextFont());
         // This is required to paint the borders of the text boxes
         // it must be called on the direct parent of the widget
-        // with a border. There is a call of this methon in
+        // with a border. There is a call of this method in
         // FormHelper.createSectionComposite, but that is called
         // on the section which is not a direct parent of the
         // text box widget.
@@ -714,24 +727,21 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         getDataBindingManager().bindAttribute(Model.MODEL_EXPRESSION_EVAL, expressionEvalInput, calculatorSectionPart);
         getDataBindingManager().bindSection(calculatorSectionPart, SEC_EXPRESSION, getId());
 
+                
         // -------------------------------------------------------------------
         // output section
         section = FormHelper.createSectionComposite(body, "User Output",
                 "TLC output generated by evaluating Print and PrintT expressions.", toolkit, sectionFlags,
                 getExpansionListener());
         sections.put(SEC_OUTPUT, section);
-        Composite outputArea = (Composite) section.getClient();
+        final Composite outputArea = (Composite) section.getClient();
         outputArea.setLayout(new GridLayout());
         // output viewer
         userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags | SWT.WRAP);
 
-        // We dont want this item to fill excess
-        // vertical space because then in some cases
-        // this causes the text box to be extremely
-        // tall instead of having a scroll bar.
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
-        gd.heightHint = 300;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 300;
+        gd.minimumHeight = 300;
         userOutput.getControl().setLayoutData(gd);
         userOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
@@ -741,23 +751,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // necessary to eliminate that bit in the style flags that
         // are passed in. If the bit were not changed to 0, an
         // extra empty line would appear below the title.
-        section = FormHelper.createSectionComposite(body, "Progress Output", "",
-       /* "The current progress of model-checking",*/
-        toolkit, sectionFlags & ~Section.DESCRIPTION, getExpansionListener());
+        section = FormHelper.createSectionComposite(body, "Progress Output", "  ", toolkit,
+				(sectionFlags & ~Section.EXPANDED), getExpansionListener());
         sections.put(SEC_PROGRESS, section);
-        section.setExpanded(false);
         Composite progressArea = (Composite) section.getClient();
         progressArea = (Composite) section.getClient();
         progressArea.setLayout(new GridLayout());
 
         progressOutput = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
-        // We dont want this item to fill excess
-        // vertical space because then in some cases
-        // this causes the text box to be extremely
-        // tall instead of having a scroll bar.
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
-        gd.heightHint = 300;
-        gd.minimumWidth = 300;
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.minimumHeight = 300;
         progressOutput.getControl().setLayoutData(gd);
         progressOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
@@ -858,14 +861,20 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     private Composite createAndSetupStateSpace(String label, Composite parent, FormToolkit toolkit)
     {
-        Composite statespaceComposite = toolkit.createComposite(parent, SWT.WRAP);
+        final Composite statespaceComposite = toolkit.createComposite(parent, SWT.WRAP);
         statespaceComposite.setLayout(new GridLayout(1, false));
 
-        toolkit.createLabel(statespaceComposite, label);
-
-        Table stateTable = toolkit.createTable(statespaceComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
-                | SWT.BORDER);
-        GridData gd = new GridData(StateSpaceLabelProvider.MIN_WIDTH, 100);
+        final Label title = toolkit.createLabel(statespaceComposite, label);
+        GridData gd = new GridData();
+        gd.heightHint = 22;
+        title.setLayoutData(gd);
+        
+		Table stateTable = toolkit.createTable(statespaceComposite,
+				SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
+        gd = new GridData();
+        gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
+        gd.heightHint = 100;
+        gd.grabExcessHorizontalSpace = true;
         stateTable.setLayoutData(gd);
 
         stateTable.setHeaderVisible(true);
@@ -910,10 +919,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     private Composite createAndSetupCoverage(String label, Composite parent, FormToolkit toolkit)
     {
-        Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
+        final Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
         coverageComposite.setLayout(new GridLayout(2, false));
+        
+        final Label title = toolkit.createLabel(coverageComposite, label);
         GridData gd = new GridData();
-        toolkit.createLabel(coverageComposite, label);
+        gd.heightHint = 22;
+        gd.verticalAlignment = SWT.BOTTOM;
+        title.setLayoutData(gd);
 
         this.coverageTimestampText = toolkit.createText(coverageComposite, "", SWT.FLAT);
         this.coverageTimestampText.setEditable(false);
@@ -922,20 +935,23 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.grabExcessHorizontalSpace = true;
         this.coverageTimestampText.setLayoutData(gd);
 
-        final Table stateTable = toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
+        final Table coverageTable = toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
                 | SWT.BORDER | SWT.VIRTUAL);
-        gd = new GridData(CoverageLabelProvider.MIN_WIDTH, 100);
+        gd = new GridData();
         gd.horizontalSpan = 2;
-        stateTable.setLayoutData(gd);
+        gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
+        gd.heightHint = 100;
+        gd.grabExcessHorizontalSpace = true;
+        coverageTable.setLayoutData(gd);
 
-        stateTable.setHeaderVisible(true);
-        stateTable.setLinesVisible(true);
-        stateTable.setToolTipText(TOOLTIP);
+        coverageTable.setHeaderVisible(true);
+        coverageTable.setLinesVisible(true);
+        coverageTable.setToolTipText(TOOLTIP);
 
-        CoverageLabelProvider.createTableColumns(stateTable);
+        CoverageLabelProvider.createTableColumns(coverageTable);
 
         // create the viewer
-        this.coverage = new TableViewer(stateTable);
+        this.coverage = new TableViewer(coverageTable);
 
         coverage.getTable().addMouseListener(new ActionClickListener(this.coverage));
 
@@ -993,17 +1009,30 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     static class StateSpaceLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider, ITableColorProvider
     {
-        public final static String[] columnTitles = new String[] { "Time", "Diameter", "States Found",
+        public final static String[] COLUMN_TITLES = new String[] { "Time", "Diameter", "States Found",
                 "Distinct States", "Queue Size" };
-        public final static int[] columnWidths = { 120, 60, 80, 100, 80 };
-        public static final int MIN_WIDTH = columnWidths[0] + columnWidths[1] + columnWidths[2] + columnWidths[3]
-                + columnWidths[4];
+        public final static int[] COLUMN_WIDTHS;
+        public static final int MIN_WIDTH;
         public final static int COL_TIME = 0;
         public final static int COL_DIAMETER = 1;
         public final static int COL_FOUND = 2;
         public final static int COL_DISTINCT = 3;
         public final static int COL_LEFT = 4;
+        
+        static {
+        	final double scale = 1.0;   // future functionality: UIHelper.getDisplayScaleFactor();
+        	
+        	COLUMN_WIDTHS = new int[5];
+        	COLUMN_WIDTHS[0] = (int)(120.0 * scale);
+        	COLUMN_WIDTHS[1] = (int)(60.0 * scale);
+        	COLUMN_WIDTHS[2] = (int)(80.0 * scale);
+        	COLUMN_WIDTHS[3] = (int)(100.0 * scale);
+        	COLUMN_WIDTHS[4] = (int)(80.0 * scale);
+        	
+        	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2] + COLUMN_WIDTHS[3] + COLUMN_WIDTHS[4];
+        }
 
+        
 		private boolean doHighlight = false;
 		private final ResultPage resultPage;
 
@@ -1025,11 +1054,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         public static void createTableColumns(Table stateTable, ResultPage page)
         {
             // create table headers
-            for (int i = 0; i < columnTitles.length; i++)
+            for (int i = 0; i < COLUMN_TITLES.length; i++)
             {
                 TableColumn column = new TableColumn(stateTable, SWT.NULL);
-                column.setWidth(columnWidths[i]);
-                column.setText(columnTitles[i]);
+                column.setWidth(COLUMN_WIDTHS[i]);
+                column.setText(COLUMN_TITLES[i]);
 
                 // The following statement attaches a listener to the column
                 // header. See the ResultPageColumnListener comments.
@@ -1126,12 +1155,24 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     static class CoverageLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider
     {
-        public final static String[] columnTitles = new String[] { "Module", "Location", "Count" };
-        public final static int[] columnWidths = { 80, 200, 80 };
-        public static final int MIN_WIDTH = columnWidths[0] + columnWidths[1] + columnWidths[2];
+        public final static String[] COLUMN_TITLES = new String[] { "Module", "Location", "Count" };
+        public final static int[] COLUMN_WIDTHS;
+        public static final int MIN_WIDTH;
         public final static int COL_MODULE = 0;
         public final static int COL_LOCATION = 1;
         public final static int COL_COUNT = 2;
+        
+        static {
+        	final double scale = 1.0;	// future functionality: UIHelper.getDisplayScaleFactor();
+        	
+        	COLUMN_WIDTHS = new int[3];
+        	COLUMN_WIDTHS[0] = (int)(80.0 * scale);
+        	COLUMN_WIDTHS[1] = (int)(200.0 * scale);
+        	COLUMN_WIDTHS[2] = (int)(80.0 * scale);
+        	
+        	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2];
+        }
+        
 
         /* (non-Javadoc)
          * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
@@ -1147,11 +1188,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         public static void createTableColumns(Table stateTable)
         {
             // create table headers
-            for (int i = 0; i < columnTitles.length; i++)
+            for (int i = 0; i < COLUMN_TITLES.length; i++)
             {
                 TableColumn column = new TableColumn(stateTable, SWT.NULL);
-                column.setWidth(columnWidths[i]);
-                column.setText(columnTitles[i]);
+                column.setWidth(COLUMN_WIDTHS[i]);
+                column.setText(COLUMN_TITLES[i]);
                 column.setToolTipText(TOOLTIP);
             }
         }
@@ -1455,7 +1496,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
     private static String getGraphTitle(int columnNumber, ResultPage resultPage)
     {
-        String title = StateSpaceLabelProvider.columnTitles[columnNumber];
+        String title = StateSpaceLabelProvider.COLUMN_TITLES[columnNumber];
         if (columnNumber == StateSpaceLabelProvider.COL_TIME)
         {
             title = "Number of Progress Reports";

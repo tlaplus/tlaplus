@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _ntQ8oBB4EemUS_ZdBJsvQg
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/15/19, 12:13 PM
+Save-Time: 3/26/19, 11:50 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -49,10 +49,7 @@ try -command {
 	
 	with [get-editor "Model_1"] {
 	    with [get-section "What is the behavior spec?"] {
-	        get-button "Initial predicate and next-state relation" | get-property enablement | equals false | verify-true
-	        get-editbox -after [get-label "Init:"] | get-property text | equals "" | verify-true
-	        get-editbox -after [get-label "Next:"] | get-property text | equals "" | verify-true
-	        get-button "Temporal formula" | get-property enablement | equals false | verify-true
+	    	get-combo | get-combo-items | to-list | length | equals 1 | verify-true
 	    }
 	    get-section "What to check? (\"What is the behavior spec?\" above has no behavior spec)" 
 	        | get-label "What to check? (\"What is the behavior spec?\" above has no behavior spec)" 
@@ -76,10 +73,10 @@ try -command {
 	    with [get-link "1 message detected"] {
 	        get-property caption | equals "1 message detected" | verify-true
 	        get-property toltip 
-	            | equals ": \"What is the behavior spec?\" automatically set to \"No Behavior Spec\" because spec has no declared variables." 
+	            | equals "\"What is the behavior spec?\" automatically set to \"No Behavior Spec\" because spec has no declared variables." 
 	            | verify-true
 	    }
-	    get-button "Stops the current TLC model checker run." -index 1 | get-property enablement | equals false 
+	    get-button "Stops the current TLC model checker run." | get-property enablement | equals false 
 	        | verify-true
 	}
 

@@ -369,16 +369,14 @@ public class FormHelper
      */
     public static Hyperlink createHyperlinkLeft(String title, Composite parent, FormToolkit toolkit)
     {
-        Label createLabel = toolkit.createLabel(parent, title);
+        final Label createLabel = toolkit.createLabel(parent, title);
         GridData gd = new GridData();
+        gd.verticalAlignment = SWT.TOP;
         createLabel.setLayoutData(gd);
-        gd.verticalAlignment = SWT.TOP;
 
-        Hyperlink hyperlink = toolkit.createHyperlink(parent, "", SWT.RIGHT);
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
+        final Hyperlink hyperlink = toolkit.createHyperlink(parent, "", SWT.RIGHT);
+        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
         gd.horizontalIndent = 30;
-        gd.verticalAlignment = SWT.TOP;
-        gd.horizontalAlignment = SWT.RIGHT;
         gd.minimumWidth = 300;
         hyperlink.setLayoutData(gd);
         
@@ -394,16 +392,14 @@ public class FormHelper
      */
     public static Text createTextLeft(String title, Composite parent, FormToolkit toolkit)
     {
-        Label createLabel = toolkit.createLabel(parent, title);
+        final Label createLabel = toolkit.createLabel(parent, title);
         GridData gd = new GridData();
+        gd.verticalAlignment = SWT.TOP;
         createLabel.setLayoutData(gd);
-        gd.verticalAlignment = SWT.TOP;
         
-        Text text = toolkit.createText(parent, "");
-        gd = new GridData(SWT.FILL, SWT.LEFT, true, false);
+        final Text text = toolkit.createText(parent, "");
+        gd = new GridData(SWT.FILL, SWT.TOP, true, false);
         gd.horizontalIndent = 30;
-        gd.verticalAlignment = SWT.TOP;
-        gd.horizontalAlignment = SWT.RIGHT;
         gd.minimumWidth = 400;
         text.setLayoutData(gd);
 

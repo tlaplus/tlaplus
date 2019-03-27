@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _g-dKoAPoEemwBd2liJ-qvA
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/14/19 7:49 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 3/26/19, 11:17 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -23,63 +23,60 @@ Result: Incomplete
 Content-Type: text/ecl
 Entry-Name: .content
 
+//Create Spec
 OpenTLACreateNew
+
 try -command {
-with [get-editor $TLA-File | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "Init == x = 1"
-    key-type Enter -times 2
-    type-text "Next == x' = x * 1"
-     key-type "M1+s"
+	with [get-editor $TLA-File | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 1
+	    type-text "Init == x = 1"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x * 1"
+	    key-type "M1+s"
     }
     wait -ms 1000
 
-
-
-
-get-menu -path "TLC Model Checker/New Model..." | click
-get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-    | equals "Please input the name of the model to create" | verify-true
-with [get-window "New model..."] {
-    get-editbox -after [get-label "Please input the name of the model to create"] 
-        | set-text $TLA-Long-Model-Name
-    get-button OK | click
+	get-menu -path "TLC Model Checker/New Model..." | click
+	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+	    | equals "Please input the name of the model to create" | verify-true
+	with [get-window "New model..."] {
+	    get-editbox -after [get-label "Please input the name of the model to create"] 
+	        | set-text $TLA-Long-Model-Name
+	    get-button OK | click
+	}
+	with [get-editor $TLA-Long-Model-Name] {
+	    get-section "Model description" | get-text-viewer | type-text tlatlatla
+	    with [get-section "What to check?"] {
+	        get-button Deadlock | uncheck
+	        get-section Invariants | click
+	        get-section Properties | click
+	    }
+	}
+	
+	with [get-editor $TLA-Long-Model-Name] {
+	    with [get-section "What is the behavior spec?"] {
+	        get-combo | select "Temporal formula"
+	        get-text-viewer | type-text "x=2"
+	    }
+	    with [get-section "How to run?"] {
+	        click
+	        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
+	    }
+	    get-button "Checks the model for errors but does not run TLC on it." | click
+	    get-button "Runs TLC on the model." | click
+	    wait -ms 3000
+	}
+	with [get-editor $TLA-Long-Model-Name] {
+	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
+	    get-link "State space exploration incomplete" | get-property caption | equals "State space exploration incomplete" 
+	        | verify-true
+	}
+	get-editor $TLA-Long-Model-Name | get-tab-folder | get-tab-item "Model Overview" | click
+} -finally {
+	DeleteSpecNew
 }
-with [get-editor $TLA-Long-Model-Name] {
-    get-section "Model description" | get-text-viewer | type-text tlatlatla
-    with [get-section "What to check?"] {
-        get-button Deadlock | uncheck
-        get-section Invariants | click
-        get-section Properties | click
-    }
-     }   
-    
-
-with [get-editor $TLA-Long-Model-Name] {
-    with [get-section "What is the behavior spec?"] {
-        get-button "Temporal formula" | click
-        get-text-viewer -after [get-label "Next:"] -index 1 | type-text "x=2"
-    }
-    with [get-section "How to run?"] {
-        click
-        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
-        get-link "Validate model" | click
-    }
-    get-button "Runs TLC on the model." -index 1 | click
-    wait -ms 25000
-}
-with [get-editor $TLA-Long-Model-Name] {
-    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
-    get-link "State space exploration incomplete" | get-property caption | equals "State space exploration incomplete" 
-        | verify-true
-}
-get-editor $TLA-Long-Model-Name | get-tab-folder | get-tab-item "Model Overview" | click
-
-} -finally
-//Delete Spec
-{DeleteSpecNew}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

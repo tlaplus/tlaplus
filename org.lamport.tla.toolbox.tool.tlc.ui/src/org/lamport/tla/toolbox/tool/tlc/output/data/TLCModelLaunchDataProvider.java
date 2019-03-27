@@ -77,7 +77,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 {
 	public static final String STATESORTORDER = "STATESORTORDER";
 
-    public static final String NO_OUTPUT_AVAILABLE = "No user output is available";
+    public static final String NO_OUTPUT_AVAILABLE = "No output is available";
 
     public static final String NO_ERRORS = "No errors";
     // strings for current status reporting

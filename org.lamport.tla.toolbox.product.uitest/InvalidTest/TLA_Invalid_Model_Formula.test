@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _N4SlcAJQEemDc-4PKyNT9w
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/15/19, 1:39 PM
+Save-Time: 3/26/19, 11:55 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -53,7 +53,7 @@ try -command {
 	    | equals "Please input the name of the model to create" | verify-true
 	get-window "New model..." | get-button OK | click
 	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-	get-editor "Model_1" | get-button "Runs TLC on the model." -index 1 | click
+	get-editor "Model_1" | get-button "Runs TLC on the model." | click
 	
 	wait-run
 	

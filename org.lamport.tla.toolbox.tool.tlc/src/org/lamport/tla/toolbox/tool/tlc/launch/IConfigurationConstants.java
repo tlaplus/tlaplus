@@ -22,6 +22,10 @@ public interface IConfigurationConstants
      */
     public static final String MODEL_NAME = "configurationName";
     /**
+     * Which profile to use for TLC configuration
+     */
+    public static final String TLC_RESOURCES_PROFILE = "tlcResourcesProfile";
+    /**
      * Number of workers to use during TLC launch
      */
     public static final String LAUNCH_NUMBER_OF_WORKERS = "numberOfWorkers";

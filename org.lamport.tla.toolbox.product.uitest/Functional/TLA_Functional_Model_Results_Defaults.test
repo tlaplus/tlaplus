@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _s4DEYBXnEemrGZBXFuwIoA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/15/19, 1:42 PM
+Save-Time: 3/26/19, 11:47 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -51,7 +51,7 @@ try -command {
 	    }
 	}
 	with [get-editor "Model_1"] {
-	    with [get-section General] {
+	    with [get-section "General"] {
 	        get-editbox -after [get-label "Start time:"] | get-property text | equals "" | verify-true
 	        get-editbox -after [get-label "End time:"] | get-property text | equals "" | verify-true
 	        get-editbox -after [get-label "TLC mode:"] | get-property text | equals "" | verify-true
@@ -62,17 +62,17 @@ try -command {
 	    }
 	    get-section "Evaluate Constant Expression" | get-editbox -after [get-label "Expression:"] | get-property text 
 	        | equals "" | verify-true
-	    get-section "User Output" | get-text-viewer | get-property text | equals "No user output is available" | verify-true
+	    get-section "User Output" | get-text-viewer | get-property text | equals "No output is available" | verify-true
 	}
 	with [get-editor "Model_1"] {
-	    get-section Statistics | click
+	    get-section "Statistics" | click
 	    get-section "Evaluate Constant Expression" | click
 	    get-section "User Output" | click
 	    get-section "Progress Output" | click
 	}
 	get-editor "Model_1" | get-section "Progress Output" | get-text-viewer | get-property text 
-	    | equals "No user output is available" | verify-true
-	get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." -index 1 | click
+	    | equals "No output is available" | verify-true
+	get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." | click
 } -finally {
 	DeleteSpecNew
 }

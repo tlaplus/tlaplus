@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _1OLRMAlXEem_pLt0eVfQIQ
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/14/19 6:13 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 3/26/19, 11:03 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -30,74 +30,72 @@ Invariant: x<10
 Content-Type: text/ecl
 Entry-Name: .content
 
+//Create Spec
 OpenTLACreateNew
 
 try -command {
-with [get-editor $TLA-File | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "Init == x = 0"
-    key-type Enter -times 2
-    type-text "Next == x' = x + 1"
-    key-type Enter -times 1
-    type-text "Spec == Init /\ [][Next]_x"
-    key-type Enter -times 1
-     key-type "M1+s"
+	with [get-editor $TLA-File | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 1
+	    type-text "Init == x = 0"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x + 1"
+	    key-type Enter -times 1
+	    type-text "Spec == Init /\ [][Next]_x"
+	    key-type Enter -times 1
+	    key-type "M1+s"
     }
     
     get-menu -path "TLC Model Checker/New Model..." | click
-get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-    | equals "Please input the name of the model to create" | verify-true
-get-window "New model..." | get-button OK | click
-get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-with [get-editor "Model_1" | get-section "What to check?"] {
-    get-button Deadlock | uncheck
-    with [get-section Invariants] {
-        click
-        get-button Add | click
-    }
-}
-with [get-window -class WizardDialog] {
-    get-text-viewer | type-text "x<10"
-    get-button Finish | click
-}
-with [get-editor "Model_1" | get-section "How to run?"] {
-    click
-    get-editbox -after [get-label "Number of worker threads:"] | set-text 2
-    get-link "Run TLC" | click
-}
+	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+	    | equals "Please input the name of the model to create" | verify-true
+	get-window "New model..." | get-button OK | click
+	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+	with [get-editor "Model_1" | get-section "What to check?"] {
+	    get-button "Deadlock" | uncheck
+	    with [get-section Invariants] {
+	        click
+	        get-button "Add" | click
+	    }
+	}
+	with [get-window -class WizardDialog] {
+	    get-text-viewer | type-text "x<10"
+	    get-button Finish | click
+	}
+	with [get-editor "Model_1" | get-section "How to run?"] {
+	    click
+	    get-editbox -after [get-label "Number of worker threads:"] | set-text 2
+	}
+	get-editor "Model_1" | get-button "Runs TLC on the model." | click
 
-
-wait-run    
-    
-get-editor "Model_1" | get-section General | get-link "1 Error" | get-property caption | equals "1 Error" | verify-true
-with [get-view "TLC Errors"] {
-    get-text-viewer | get-property text | equals "Invariant x<10 is violated." | verify-true
-    get-section "Error-Trace" | get-property "getText()" | equals "Error-Trace" | verify-true
+	wait-run    
+	    
+	get-editor "Model_1" | get-section General | get-link "1 Error" | get-property caption | equals "1 Error" | verify-true
+	with [get-view "TLC Errors"] {
+	    get-text-viewer | get-property text | equals "Invariant x<10 is violated." | verify-true
+	    get-section "Error-Trace" | get-property "getText()" | equals "Error-Trace" | verify-true
+	}
+	
+	with [get-view "TLC Errors" | get-section "Error-Trace" | get-tree] {
+	    get-item -path " <Initial predicate>" | expand
+	    get-cell 2 0 | click
+	}
+	
+	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 2 0 | click
+	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals "/\\ x = 1" 
+	    | verify-true
+	with [get-view "TLC Errors" | get-section "Error-Trace" | get-tree] {
+	    get-item -path " <Next line 6, col 9 to line 6, col 18 of module new>" | expand
+	    get-cell 3 0 | click
+	}
+	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals 1 | verify-true
+	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 4 0 | click
+	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals "/\\ x = 2" 
+	    | verify-true
+} -finally {
+	DeleteSpecNew
 }
-
-with [get-view "TLC Errors" | get-section "Error-Trace" | get-tree] {
-    get-item -path " <Initial predicate>" | expand
-    get-cell 2 0 | click
-}
-
-get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 2 0 | click
-get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals "/\\ x = 1" 
-    | verify-true
-with [get-view "TLC Errors" | get-section "Error-Trace" | get-tree] {
-    get-item -path " <Next line 6, col 9 to line 6, col 18 of module new>" | expand
-    get-cell 3 0 | click
-}
-get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals 1 | verify-true
-get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 4 0 | click
-get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals "/\\ x = 2" 
-    | verify-true
-    
-} -finally
-//Delete Spec
-{DeleteSpecNew}
-
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

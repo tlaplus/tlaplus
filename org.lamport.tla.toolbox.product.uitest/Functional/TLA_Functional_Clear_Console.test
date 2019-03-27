@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _I-Xj0APqEemwBd2liJ-qvA
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/14/19 6:33 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 3/26/19, 11:29 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -24,43 +24,45 @@ Verify that Console is Clear
 Content-Type: text/ecl
 Entry-Name: .content
 
+//Create Spec
 OpenTLACreateNew
 
 try -command {
-with [get-editor $TLA-File | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "Init == x = 0"
-    key-type Enter -times 2
-    type-text "Next == x' = x - 1"
-     key-type "M1+s"
+	with [get-editor $TLA-File | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 1
+	    type-text "Init == x = 0"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x - 1"
+	    key-type "M1+s"
     }
     
-get-menu -path "TLC Model Checker/TLC Console" | click
-
-get-menu -path "TLC Model Checker/New Model..." | click
-get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-    | equals "Please input the name of the model to create" | verify-true
-get-window "New model..." | get-button OK | click
-get-editor "Model_1" | get-button "Runs TLC on the model." -index 1 | click
-	wait -ms 1000
-//TODO
-get-editor "Model_1" | get-button "Stops the current TLC model checker run." -index 1 | click
-wait-run    
+	get-menu -path "TLC Model Checker/TLC Console" | click
 	
-get-editor "Model_1" | get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" 
-    | verify-true
-with [get-view Console | get-text-viewer] {
-    set-caret-pos 4 13
-    get-menu -path Clear | click
-    set-caret-pos 1 1
-}
-get-view Console | get-text-viewer | get-property text | equals "" | verify-true
+	get-menu -path "TLC Model Checker/New Model..." | click
+	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
+	    | equals "Please input the name of the model to create" | verify-true
+	get-window "New model..." | get-button OK | click
+	get-editor "Model_1" | get-button "Runs TLC on the model." | click
 
-} -finally
-//Delete Spec
-{DeleteSpecNew}
+	wait -ms 1000
+	//TODO
+	get-editor "Model_1" | get-button "Stops the current TLC model checker run." | click
+
+	wait-run    
+		
+	get-editor "Model_1" | get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" 
+	    | verify-true
+	with [get-view Console | get-text-viewer] {
+	    set-caret-pos 4 13
+	    get-menu -path Clear | click
+	    set-caret-pos 1 1
+	}
+	get-view Console | get-text-viewer | get-property text | equals "" | verify-true
+} -finally {
+	DeleteSpecNew
+}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

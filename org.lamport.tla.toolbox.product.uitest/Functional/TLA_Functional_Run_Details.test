@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _8o7w0APsEemwBd2liJ-qvA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/15/19, 1:41 PM
+Save-Time: 3/26/19, 11:54 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -41,14 +41,14 @@ try -command {
 	    key-type "M1+s"
 	}
 	wait -ms 500
+	
 	get-menu -path "TLC Model Checker/New Model..." | click
 	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
 	    | equals "Please input the name of the model to create" | verify-true
 	with [get-window "New model..."] {
 	    get-editbox -after [get-label "Please input the name of the model to create"] | set-text saved
-	    get-button OK | click
+	    get-button "OK" | click
 	}
-	   
 	
 	get-editor $TLA-File | click
 	get-menu -path "TLC Model Checker/Run model" | click

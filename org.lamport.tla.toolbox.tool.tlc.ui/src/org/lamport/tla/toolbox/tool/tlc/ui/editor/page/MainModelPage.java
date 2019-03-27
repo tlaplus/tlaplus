@@ -14,14 +14,15 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -31,10 +32,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -61,13 +58,13 @@ import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
-import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
@@ -83,7 +80,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.IHelpConstants;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.ModuleNode;
@@ -105,47 +101,69 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     public static final String ID = "MainModelPage";
     public static final String TITLE = "Model Overview";
 
-    private Button noSpecRadio; // re-added on 10 Sep 2009
-    private Button closedFormulaRadio;
-    private Button initNextFairnessRadio;
+    private static final String INIT_NEXT_COMBO_LABEL = "Initial predicate and next-state";
+    private static final String TEMPORAL_FORMULA_COMBO_LABEL = "Temporal formula";
+    private static final String NO_SPEC_COMBO_LABEL = "No behavior spec";
+	private static final String[] VARIABLE_BEHAVIOR_COMBO_ITEMS = { INIT_NEXT_COMBO_LABEL, TEMPORAL_FORMULA_COMBO_LABEL,
+			NO_SPEC_COMBO_LABEL };
+	private static final String[] NO_VARIABLE_BEHAVIOR_COMBO_ITEMS = { NO_SPEC_COMBO_LABEL };
+
+    static final String CLOUD_CONFIGURATION_KEY = "jclouds";
+
+    private static final String TLC_PROFILE_LOCAL_SEPARATOR = "\u2014\u2014 Local \u2014\u2014";
+    private static final String TLC_PROFILE_REMOTE_SEPARATOR = "\u2014\u2014 Remote \u2014\u2014";
+    private static final String CUSTOM_TLC_PROFILE_DISPLAY_NAME = "Custom";
+    private static final String CUSTOM_TLC_PROFILE_PREFERENCE_VALUE = "local custom";
+    
+	private static final String[] TLC_PROFILE_DISPLAY_NAMES;
+
+	static {
+		final TLCConsumptionProfile[] profiles = TLCConsumptionProfile.values();
+		final int size = profiles.length;
+
+		TLC_PROFILE_DISPLAY_NAMES = new String[size + 2];
+		TLC_PROFILE_DISPLAY_NAMES[0] = TLC_PROFILE_LOCAL_SEPARATOR;
+		int indexIncrement = 1;
+		boolean haveStartedRemoteProfiles = false;
+		for (int i = 0; i < size; i++) {
+			if (profiles[i].profileIsForRemoteWorkers() && !haveStartedRemoteProfiles) {
+				TLC_PROFILE_DISPLAY_NAMES[i + indexIncrement] = TLC_PROFILE_REMOTE_SEPARATOR;
+				haveStartedRemoteProfiles = true;
+				indexIncrement++;
+			}
+			
+			TLC_PROFILE_DISPLAY_NAMES[i + indexIncrement] = profiles[i].getDisplayName();
+		}
+	}
+
+	
+	private Combo behaviorCombo;
 	private SourceViewer commentsSource;
     private SourceViewer initFormulaSource;
     private SourceViewer nextFormulaSource;
     // private SourceViewer fairnessFormulaSource;
     private SourceViewer specSource;
     private Button checkDeadlockButton;
+    
+    private Combo tlcProfileCombo;
+    private AtomicInteger lastSelectedTLCProfileIndex;
+    // We cache this since want to reference it frequently on heap slider drag
+    private AtomicBoolean currentProfileIsAdHoc;
     private Spinner workers;
+    private Scale maxHeapSize;
+    private AtomicBoolean programmaticallySettingWorkerParameters;
+    
     /**
-	 * Spinner to set the number of (expected) distributed FPSets.
+	 * Widgets related to distributed mode configuration
 	 */
     private Spinner distributedFPSetCountSpinner;
     private Spinner distributedNodesCountSpinner;
+    private Text resultMailAddressText;
     private Combo networkInterfaceCombo;
-    private Scale maxHeapSize;
+
     private TableViewer invariantsTable;
     private TableViewer propertiesTable;
     private TableViewer constantTable;
-    private ModifyListener widgetActivatingListener = new ModifyListener() {
-        // select the section (radio button) the text field belong to
-        public void modifyText(ModifyEvent e)
-        {
-            if (e.widget == specSource.getControl())
-            {
-                noSpecRadio.setSelection(false);
-                closedFormulaRadio.setSelection(true);
-                initNextFairnessRadio.setSelection(false);
-            } else if (e.widget == initFormulaSource.getControl() || e.widget == nextFormulaSource.getControl()
-            /* || e.widget == fairnessFormulaSource.getControl() */)
-            {
-                noSpecRadio.setSelection(false);
-                closedFormulaRadio.setSelection(false);
-                initNextFairnessRadio.setSelection(true);
-            }
-        }
-    };
-
-    private ImageHyperlink runLink;
-    private ImageHyperlink generateLink;
 
     /**
      * section expanding adapter
@@ -162,30 +180,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             expandSection(sectionId);
         }
     };
-    private Button checkpointButton;
-    private Text checkpointIdText;
 
-    /*
-     * Checkbox and input box for distributed model checking
-     * 
-     * combo: choose distribution and cloud to run on
-     * text: additional vm arguments (e.g. -Djava.rmi...) 
-     * text: pre-flight script
-     */
-    private Combo distributedCombo;
-    private Text resultMailAddressText;
-    
-    // The widgets to display the checkpoint size and
-    // the delete button.
-    private Label chkpointSizeLabel;
-    private Text checkpointSizeText;
-    private Button chkptDeleteButton;
-    
 	/**
 	 * Used to interpolate y-values for memory scale
 	 */
 	private final Interpolator linearInterpolator;
+	
+	/**
+	 * Stacked composites for displaying options based on user selection in combo boxes
+	 */
+	private Composite behaviorOptions;
 	private Composite distributedOptions;
+
 	
     /**
      * constructs the main model page 
@@ -239,114 +245,169 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		y[s] = 0d;
 		
 		linearInterpolator = new Interpolator(x, y);
-}
+		
+		currentProfileIsAdHoc = new AtomicBoolean(false);
+		programmaticallySettingWorkerParameters = new AtomicBoolean(false);
+    }
 
     /**
      * @see BasicFormPage#loadData()
      */
     protected void loadData() throws CoreException
     {
-        int specType = getModel().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+    	final Model model = getModel();
+        final int specType = model.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
 
         // set up the radio buttons
         setSpecSelection(specType);
 
         // closed spec
-        String modelSpecification = getModel().getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
+        String modelSpecification = model.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
         Document closedDoc = new Document(modelSpecification);
         this.specSource.setDocument(closedDoc);
 
         // init
-        String modelInit = getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
+        String modelInit = model.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
         Document initDoc = new Document(modelInit);
         this.initFormulaSource.setDocument(initDoc);
 
         // next
-        String modelNext = getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
+        String modelNext = model.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
         Document nextDoc = new Document(modelNext);
         this.nextFormulaSource.setDocument(nextDoc);
 
         // fairness
         // String modelFairness =
-        // getModel().getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // model.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
         // EMPTY_STRING);
         // Document fairnessDoc = new Document(modelFairness);
         // this.fairnessFormulaSource.setDocument(fairnessDoc);
-
-        // number of workers
-        workers.setSelection(getModel().getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT));
-
-        // max JVM heap size
-        final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        final int maxHeapSizeValue = getModel().getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
-        maxHeapSize.setSelection(maxHeapSizeValue);
         
         // check deadlock
-        boolean checkDeadlock = getModel().getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
+        boolean checkDeadlock = model.getAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK,
                 MODEL_CORRECTNESS_CHECK_DEADLOCK_DEFAULT);
         this.checkDeadlockButton.setSelection(checkDeadlock);
 
         // invariants
-        List<String> serializedList = getModel().getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
+        List<String> serializedList = model.getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
         FormHelper.setSerializedInput(invariantsTable, serializedList);
 
         // properties
-        serializedList = getModel().getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
+        serializedList = model.getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
         FormHelper.setSerializedInput(propertiesTable, serializedList);
 
         // constants from the model
-        List<String> savedConstants = getModel().getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector<String>());
+        List<String> savedConstants = model.getAttribute(MODEL_PARAMETER_CONSTANTS, new Vector<String>());
         FormHelper.setSerializedInput(constantTable, savedConstants);
         if (!savedConstants.isEmpty()) {
         	expandSection(SEC_WHAT_IS_THE_MODEL);
         }
 
-        // recover from the checkpoint
-        boolean recover = getModel().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
-        this.checkpointButton.setSelection(recover);
-        
-        /*
-         * Distributed mode
-         */
-        String cloud = "off";
-        try {
-			cloud = getModel().getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
-        } catch (CoreException e) {
-        	// LAUNCH_DISTRIBUTED might still be stored in a legacy format. The user is
-        	// opening an old model.
-        	boolean distributed = getModel().getAttribute(LAUNCH_DISTRIBUTED, false);
-        	if (distributed) {
-        		cloud = "ad hoc";
+		final int threadCount;
+		final int memoryPercentage;
+		currentProfileIsAdHoc.set(false);
+        if (model.hasAttribute(TLC_RESOURCES_PROFILE)) {
+        	final String tlcProfile = model.getAttribute(TLC_RESOURCES_PROFILE, (String)null);
+        	
+        	if (tlcProfile.equals(CUSTOM_TLC_PROFILE_PREFERENCE_VALUE)) {
+				threadCount = model.getAttribute(LAUNCH_NUMBER_OF_WORKERS,
+						TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
+				final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
+						.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+				memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+
+        		setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+        	} else {
+        		final TLCConsumptionProfile profile = TLCConsumptionProfile.getProfileWithPreferenceValue(tlcProfile);
+
+        		setTLCProfileComboSelection(profile.getDisplayName());
+        		
+        		if (profile.profileIsForRemoteWorkers()) {
+        			final String configuration = profile.getConfigurationKey(); // currentProfileIsAdHoc
+					final boolean isAdHoc = configuration
+							.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+        			
+					currentProfileIsAdHoc.set(isAdHoc);
+        			moveToTopOfDistributedOptionsStack(configuration, false, isAdHoc);
+        			
+        			if (configuration.equals(CLOUD_CONFIGURATION_KEY)) {
+						final String email = model.getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS,
+								LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
+						resultMailAddressText.setText(email);
+        			}
+        		} else {
+        			moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
+        		}
+        		
+        		threadCount = profile.getWorkerThreads();
+				memoryPercentage = currentProfileIsAdHoc.get()
+						? model.getAttribute(LAUNCH_MAX_HEAP_SIZE, profile.getMemoryPercentage())
+						: profile.getMemoryPercentage();
+        	}
+        } else {	// for pre-1.5.8 models...
+        	String remoteWorkers = LAUNCH_DISTRIBUTED_NO;
+        	
+        	try {
+        		remoteWorkers = model.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        	} catch(CoreException e) {	// for very old models
+        		if (model.getAttribute(LAUNCH_DISTRIBUTED, false)) {
+        			remoteWorkers = TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey();
+        			currentProfileIsAdHoc.set(true);
+        		}
+        	}
+        	
+        	if (remoteWorkers.equals(LAUNCH_DISTRIBUTED_NO)) {
+    			moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
+				threadCount = model.getAttribute(LAUNCH_NUMBER_OF_WORKERS,
+						TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
+				final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
+						.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+				memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+				
+        		setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+        	} else {
+				final TLCConsumptionProfile profile = TLCConsumptionProfile
+						.getProfileWithPreferenceValue(remoteWorkers);
+    			final String configuration = profile.getConfigurationKey();
+				final boolean isAdHoc = configuration
+						.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+
+				currentProfileIsAdHoc.set(isAdHoc);
+        		moveToTopOfDistributedOptionsStack(configuration, false, isAdHoc);
+    			
+				if (configuration.equals(CLOUD_CONFIGURATION_KEY)) {
+					final String email = model.getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS,
+							LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
+					resultMailAddressText.setText(email);
+				}
+				
+				threadCount = 0;
+
+				if (isAdHoc) {
+					final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
+							.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+					memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+				} else {
+					memoryPercentage = 0;
+				}
+				
+        		setTLCProfileComboSelection(profile.getDisplayName());
         	}
         }
-        final String[] items = distributedCombo.getItems();
-        for (int i = 0; i < items.length; i++) {
-			final String string = items[i];
-			if (cloud.equals(string)) {
-				distributedCombo.select(i);
-				break;
-			}
-		}
-
-		if (cloud.equalsIgnoreCase("aws-ec2") || cloud.equalsIgnoreCase("Azure") || cloud.equalsIgnoreCase("PacketNet")) {
-			MainModelPage.this.putOnTopOfStack("jclouds", false, false);
-			String email = getModel().getAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS_DEFAULT);
-			resultMailAddressText.setText(email);
-		} else if(cloud.equalsIgnoreCase("ad hoc")) {
-			MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
-		} else {
-			MainModelPage.this.putOnTopOfStack("off", true, true);
-		}
         
+        programmaticallySettingWorkerParameters.set(true);
+		workers.setSelection(threadCount);
+        maxHeapSize.setSelection(memoryPercentage);
+        programmaticallySettingWorkerParameters.set(false);
+                
         // distribute FPSet count
-        distributedFPSetCountSpinner.setSelection(getModel().getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
+        distributedFPSetCountSpinner.setSelection(model.getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
 
         // distribute FPSet count
-        distributedNodesCountSpinner.setSelection(getModel().getAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT));
+        distributedNodesCountSpinner.setSelection(model.getAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT));
         
         // comments/description/notes
-        String commentsStr = getModel().getAttribute(MODEL_COMMENTS, EMPTY_STRING);
+        String commentsStr = model.getAttribute(MODEL_COMMENTS, EMPTY_STRING);
         commentsSource.setDocument(new Document(commentsStr));
         if (!EMPTY_STRING.equals(commentsStr)) {
         	expandSection(SEC_COMMENTS);
@@ -387,7 +448,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         getLookupHelper().resetModelNames(this);
 
         // constants in the table
-        @SuppressWarnings("unchecked")
 		List<Assignment> constants = getConstants();
         // merge constants with currently defined in the specobj, if any
         if (rootModuleNode != null)
@@ -603,8 +663,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				expandSection(SEC_HOW_TO_RUN);
 			}
 		} catch (CoreException e) {
-			TLCUIActivator.getDefault().logWarning("Faild to read heap value",
-					e);
+			TLCUIActivator.getDefault().logWarning("Faild to read heap value", e);
 		}
         
         // max heap size
@@ -612,8 +671,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         int maxHeapSizeValue = maxHeapSize.getSelection();
 		double x = maxHeapSizeValue / 100d;
 		float y = (float) linearInterpolator.interpolate(x);
-		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(
-				120 * y, 1 - y, 1f)));
+		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(120 * y, 1 - y, 1f)));
 
 		// IP/network address correct?
 		final int networkAddressIndex = this.networkInterfaceCombo.getSelectionIndex();
@@ -628,21 +686,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 					this.getId(), IMessageProvider.WARNING, networkInterfaceCombo);
 			expandSection(SEC_HOW_TO_RUN);
 		}
-		
-        // fill the checkpoints
-        updateCheckpoints();
-
-        // recover from checkpoint
-        if (checkpointButton.getSelection())
-        {
-            if (EMPTY_STRING.equals(checkpointIdText.getText()))
-            {
-                modelEditor.addErrorMessage("noChckpoint", "No checkpoint data found", this.getId(),
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER)));
-                setComplete(false);
-                expandSection(SEC_HOW_TO_RUN);
-            }
-        }
         
         // The following code added by LL and DR on 10 Sep 2009.
         // Reset the enabling and selection of spec type depending on the number number
@@ -661,8 +704,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 						IMessageProvider.INFORMATION, errorMsgControl);
 
                 // set selection to the NO SPEC field
-                if (!noSpecRadio.getSelection())
-                {
+				if (!NO_SPEC_COMBO_LABEL.equals(behaviorCombo.getText())) {
                     // mark dirty so that changes must be written to config file
                     setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);
                     dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_NO_SPEC)).markDirty();
@@ -693,11 +735,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // This must occur after the preceeding code in case
         // that code changes the selection.
         final Section whatToCheckSection = dm.getSection(SEC_WHAT_TO_CHECK).getSection();
-		final Set<Section> resultPageSections = ((ResultPage) modelEditor.findPage(ResultPage.ID)).getSections(SEC_GENERAL, SEC_STATISTICS);
+		final Set<Section> resultPageSections = ((ResultPage) modelEditor.findPage(ResultPage.ID))
+				.getSections(SEC_GENERAL, SEC_STATISTICS);
 		
 		final String hint = " (\"What is the behavior spec?\" above has no behavior spec)";
 		final String hintResults = " (\"What is the behavior spec?\" on \"Model Overview\" page has no behavior spec)";
-		if (noSpecRadio.getSelection()) {
+		if (NO_SPEC_COMBO_LABEL.equals(behaviorCombo.getText())) {
 			whatToCheckSection
 					.setText(!whatToCheckSection.getText().endsWith(hint) ? whatToCheckSection.getText() + hint
 							: whatToCheckSection.getText());
@@ -746,57 +789,62 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // }
 
         // check if the selected fields are filled
-        if (closedFormulaRadio.getSelection() && specSource.getDocument().get().trim().equals(""))
-        {
+        final Control initTA = UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT));
+        final Control nextTA = UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
+        final Control specTA = UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
+        modelEditor.removeErrorMessage("noInit", initTA);
+        modelEditor.removeErrorMessage("noNext", nextTA);
+        modelEditor.removeErrorMessage("noSpec", specTA);
+		if (TEMPORAL_FORMULA_COMBO_LABEL.equals(behaviorCombo.getText())
+				&& (specSource.getDocument().get().trim().length() == 0)) {
             modelEditor.addErrorMessage("noSpec", "The formula must be provided", this.getId(), IMessageProvider.ERROR,
-                    UIHelper.getWidget(dm.getAttributeControl(MODEL_BEHAVIOR_CLOSED_SPECIFICATION)));
+            		specTA);
             setComplete(false);
             expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION));
-        } else if (initNextFairnessRadio.getSelection())
-        {
-            String init = initFormulaSource.getDocument().get().trim();
-            String next = nextFormulaSource.getDocument().get().trim();
+        } else if (INIT_NEXT_COMBO_LABEL.equals(behaviorCombo.getText())) {
+            final String init = initFormulaSource.getDocument().get().trim();
+            final String next = nextFormulaSource.getDocument().get().trim();
 
-            if (init.equals(""))
-            {
+            if (init.length() == 0) {
                 modelEditor.addErrorMessage("noInit", "The Init formula must be provided", this.getId(),
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm
-                                .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT)));
+                        IMessageProvider.ERROR, initTA);
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT));
             }
-            if (next.equals(""))
-            {
+            if (next.length() == 0) {
                 modelEditor.addErrorMessage("noNext", "The Next formula must be provided", this.getId(),
-                        IMessageProvider.ERROR, UIHelper.getWidget(dm
-                                .getAttributeControl(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT)));
+                        IMessageProvider.ERROR, nextTA);
                 setComplete(false);
                 expandSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT));
             }
         }
 
+        final Control emails = UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS));
+        modelEditor.removeErrorMessage("email address invalid", emails);
+        modelEditor.removeErrorMessage("email address missing", emails);
 		// Verify that the user provided email address is valid and can be used to send
 		// the model checking result to.
-		if (this.distributedCombo.getSelectionIndex() > 1) {
+        final TLCConsumptionProfile profile = getSelectedTLCProfile();
+		if ((profile != null) && CLOUD_CONFIGURATION_KEY.equals(profile.getConfigurationKey())) {
 			final String text = resultMailAddressText.getText();
+			
 			try {
-				javax.mail.internet.InternetAddress.parse(text, true);
-			} catch (javax.mail.internet.AddressException exp) {
+				InternetAddress.parse(text, true);
+			} catch (AddressException exp) {
 				modelEditor.addErrorMessage("email address invalid",
 						"For Cloud TLC to work please enter a valid email address.", this.getId(),
-						IMessageProvider.ERROR,
-						UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS)));
+						IMessageProvider.ERROR, emails);
 				setComplete(false);
 				expandSection(SEC_HOW_TO_RUN);
 			}
 			if ("".equals(text.trim())) {
 				modelEditor.addErrorMessage("email address missing",
 						"For Cloud TLC to work please enter an email address.", this.getId(), IMessageProvider.ERROR,
-						UIHelper.getWidget(dm.getAttributeControl(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS)));
+						emails);
 				setComplete(false);
 				expandSection(SEC_HOW_TO_RUN);
 			}
-		}
+        }
         
         mm.setAutoUpdate(true);
 
@@ -808,19 +856,30 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * has variables. 
      * @param hasVariables true if the spec contains variables
      */
-    private void setHasVariables(boolean hasVariables)
-    {
+	private void setHasVariables(final boolean hasVariables) {
+    	String[] newItems = null;
 
-        // the no spec option can be selected if there
-        // are variables or no variables
-        // this.noSpecRadio.setEnabled(!hasVariables);
-        this.closedFormulaRadio.setEnabled(hasVariables);
-        this.initNextFairnessRadio.setEnabled(hasVariables);
-
-        // the input fields are enabled only if there are variables
-        this.initFormulaSource.getControl().setEnabled(hasVariables);
-        this.nextFormulaSource.getControl().setEnabled(hasVariables);
-        this.specSource.getControl().setEnabled(hasVariables);
+    	if (hasVariables) {
+    		if (behaviorCombo.indexOf(INIT_NEXT_COMBO_LABEL) == -1) {
+    			newItems = VARIABLE_BEHAVIOR_COMBO_ITEMS;
+    		}
+    	} else {
+    		if (behaviorCombo.indexOf(INIT_NEXT_COMBO_LABEL) != -1) {
+    			newItems = NO_VARIABLE_BEHAVIOR_COMBO_ITEMS;
+    		}
+    	}
+    	
+    	if (newItems != null) {
+        	final String currentSelection = behaviorCombo.getText();
+    		
+        	behaviorCombo.removeAll();
+        	behaviorCombo.setItems(newItems);
+        	
+        	final int index = behaviorCombo.indexOf(currentSelection);
+        	if (index != -1) {
+        		behaviorCombo.select(index);
+        	}
+    	}
     }
 
     /**
@@ -829,26 +888,27 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     private void setSpecSelection(int specType)
     {
-        switch (specType) {
-        case MODEL_BEHAVIOR_TYPE_NO_SPEC:
-            this.noSpecRadio.setSelection(true);
-            this.initNextFairnessRadio.setSelection(false);
-            this.closedFormulaRadio.setSelection(false);
-            break;
-        case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
-            this.noSpecRadio.setSelection(false);
-            this.initNextFairnessRadio.setSelection(false);
-            this.closedFormulaRadio.setSelection(true);
-            break;
-        case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
-            this.noSpecRadio.setSelection(false);
-            this.initNextFairnessRadio.setSelection(true);
-            this.closedFormulaRadio.setSelection(false);
-            break;
-        default:
-            throw new IllegalArgumentException("Wrong spec type, this is a bug");
-        }
-
+    	int index = -1;
+    	
+		switch (specType) {
+			case MODEL_BEHAVIOR_TYPE_NO_SPEC:
+				
+				index = behaviorCombo.indexOf(NO_SPEC_COMBO_LABEL);
+				break;
+			case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
+				index = behaviorCombo.indexOf(TEMPORAL_FORMULA_COMBO_LABEL);
+				break;
+			case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
+				index = behaviorCombo.indexOf(INIT_NEXT_COMBO_LABEL);
+				break;
+			default:
+				throw new IllegalArgumentException("Wrong spec type, this is a bug");
+		}
+		
+		if (index != -1) {
+			behaviorCombo.select(index);
+			moveToTopOfBehaviorOptionsStack(behaviorCombo.getText());
+		}
     }
 
     /**
@@ -856,74 +916,73 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
 	public void commit(boolean onSave)
     {
+		final Model model = getModel();
 		final String comments = FormHelper.trimTrailingSpaces(commentsSource.getDocument().get());
-		getModel().setAttribute(MODEL_COMMENTS, comments);
+		model.setAttribute(MODEL_COMMENTS, comments);
         
         // TLCUIActivator.getDefault().logDebug("Main page commit");
         // closed formula
         String closedFormula = FormHelper.trimTrailingSpaces(this.specSource.getDocument().get());
-        getModel().setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
+        model.setAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, closedFormula);
 
         // init formula
         String initFormula = FormHelper.trimTrailingSpaces(this.initFormulaSource.getDocument().get());
-        getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
+        model.setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormula);
 
         // next formula
         String nextFormula = FormHelper.trimTrailingSpaces(this.nextFormulaSource.getDocument().get());
-        getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
+        model.setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormula);
 
         // fairness formula
         // String fairnessFormula =
         // FormHelper.trimTrailingSpaces(this.fairnessFormulaSource.getDocument().get());
-        // getModel().setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
+        // model.setAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_FAIRNESS,
         // fairnessFormula);
 
         // mode
+        final String selectedBehavior = behaviorCombo.getText();
         int specType;
-        if (this.closedFormulaRadio.getSelection())
-        {
-            specType = MODEL_BEHAVIOR_TYPE_SPEC_CLOSED;
-        } else if (this.initNextFairnessRadio.getSelection())
-        {
-            specType = MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT;
-        } else if (this.noSpecRadio.getSelection())
-        {
-            specType = MODEL_BEHAVIOR_TYPE_NO_SPEC;
-        } else
-        {
-            specType = MODEL_BEHAVIOR_TYPE_DEFAULT;
-        }
+		if (TEMPORAL_FORMULA_COMBO_LABEL.equals(selectedBehavior)) {
+			specType = MODEL_BEHAVIOR_TYPE_SPEC_CLOSED;
+		} else if (INIT_NEXT_COMBO_LABEL.equals(selectedBehavior)) {
+			specType = MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT;
+		} else if (NO_SPEC_COMBO_LABEL.equals(selectedBehavior)) {
+			specType = MODEL_BEHAVIOR_TYPE_NO_SPEC;
+		} else {
+			specType = MODEL_BEHAVIOR_TYPE_DEFAULT;
+		}
 
-        getModel().setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
-
-        // number of workers
-        getModel().setAttribute(LAUNCH_NUMBER_OF_WORKERS, workers.getSelection());
-
-        int maxHeapSizeValue = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        maxHeapSizeValue = maxHeapSize.getSelection();
-        getModel().setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSizeValue);
-
-        // recover from deadlock
-        boolean recover = this.checkpointButton.getSelection();
-        getModel().setAttribute(LAUNCH_RECOVER, recover);
+        model.setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
 
         // check deadlock
         boolean checkDeadlock = this.checkDeadlockButton.getSelection();
-        getModel().setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
+        model.setAttribute(MODEL_CORRECTNESS_CHECK_DEADLOCK, checkDeadlock);
+
+        final TLCConsumptionProfile profile = getSelectedTLCProfile();
+		final String profileValue = (profile != null) ? profile.getPreferenceValue()
+				: CUSTOM_TLC_PROFILE_PREFERENCE_VALUE;
+        
+		model.setAttribute(TLC_RESOURCES_PROFILE, profileValue);
+		
+        // number of workers & memory guidance
+        model.setAttribute(LAUNCH_NUMBER_OF_WORKERS, workers.getSelection());
+        model.setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize.getSelection());
 
         // run in distributed mode
-        String distributed = this.distributedCombo.getItem(this.distributedCombo.getSelectionIndex());
-        getModel().setAttribute(LAUNCH_DISTRIBUTED, distributed);
+        if ((profile != null) && profile.profileIsForRemoteWorkers()) {
+            model.setAttribute(LAUNCH_DISTRIBUTED, profile.getPreferenceValue());
+        } else {
+            model.setAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_NO);
+        }
         
         String resultMailAddress = this.resultMailAddressText.getText();
-        getModel().setAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddress);
+        model.setAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddress);
         
         // distributed FPSet count
-        getModel().setAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner.getSelection());
+        model.setAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, distributedFPSetCountSpinner.getSelection());
 
         // distributed FPSet count
-        getModel().setAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner.getSelection());
+        model.setAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner.getSelection());
         
         // network interface
         String iface = "";
@@ -936,23 +995,23 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         } else {
         	iface = this.networkInterfaceCombo.getItem(index);
         }
-        getModel().setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
+        model.setAttribute(LAUNCH_DISTRIBUTED_INTERFACE, iface);
 
         // invariants
         List<String> serializedList = FormHelper.getSerializedInput(invariantsTable);
-        getModel().setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
+        model.setAttribute(MODEL_CORRECTNESS_INVARIANTS, serializedList);
 
         // properties
         serializedList = FormHelper.getSerializedInput(propertiesTable);
-        getModel().setAttribute(MODEL_CORRECTNESS_PROPERTIES, serializedList);
+        model.setAttribute(MODEL_CORRECTNESS_PROPERTIES, serializedList);
 
         // constants
         List<String> constants = FormHelper.getSerializedInput(constantTable);
-        getModel().setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
+        model.setAttribute(MODEL_PARAMETER_CONSTANTS, constants);
 
         // variables
         String variables = ModelHelper.createVariableList(SemanticHelper.getRootModuleNode());
-        getModel().setAttribute(MODEL_BEHAVIOR_VARS, variables);
+        model.setAttribute(MODEL_BEHAVIOR_VARS, variables);
 
         super.commit(onSave);
     }
@@ -961,43 +1020,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	public List<Assignment> getConstants() {
 		return (List<Assignment>) constantTable.getInput();
 	}
-	
-    /**
-     * Checks if checkpoint information changed 
-     */
-    private void updateCheckpoints()
-    {
-        IResource[] checkpoints = null;
-        try
-        {
-            // checkpoint id
-            checkpoints = getModel().getCheckpoints(false);
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error checking chekpoint data", e);
-        }
-
-        if (checkpoints != null && checkpoints.length > 0)
-        {
-            this.checkpointIdText.setText(checkpoints[0].getName());
-        } else
-        {
-            this.checkpointIdText.setText(EMPTY_STRING);
-        }
-
-        if ((checkpoints == null) || (checkpoints.length == 0))
-        {
-            checkpointSizeText.setVisible(false);
-            chkpointSizeLabel.setVisible(false);
-            chkptDeleteButton.setVisible(false);
-        } else
-        {
-            checkpointSizeText.setText(String.valueOf(ResourceHelper.getSizeOfJavaFileResource(checkpoints[0]) / 1000));
-            checkpointSizeText.setVisible(true);
-            chkpointSizeLabel.setVisible(true);
-            chkptDeleteButton.setVisible(true);
-        }
-    }
 
     /**
      * Creates the UI
@@ -1017,11 +1039,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
 
+        GridLayout gl;
         GridData gd;
         TableWrapData twd;
 
         Section section;
-        GridLayout layout;
 
         /*
          * Comments/notes section spanning two columns
@@ -1078,44 +1100,77 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd = new GridData(GridData.FILL_HORIZONTAL);
         section.setLayoutData(gd);
 
-        Composite behaviorArea = (Composite) section.getClient();
-        layout = new GridLayout();
-        layout.numColumns = 2;
-        behaviorArea.setLayout(layout);
+        Composite behaviorArea = (Composite)section.getClient();
+        gl = new GridLayout();
+        gl.numColumns = 1;
+        behaviorArea.setLayout(gl);
 
         ValidateableSectionPart behaviorPart = new ValidateableSectionPart(section, this, SEC_WHAT_IS_THE_SPEC);
         managedForm.addPart(behaviorPart);
         DirtyMarkingListener whatIsTheSpecListener = new DirtyMarkingListener(behaviorPart, true);
-        // split formula option
-        initNextFairnessRadio = toolkit.createButton(behaviorArea, "Initial predicate and next-state relation",
-                SWT.RADIO);
-        initNextFairnessRadio.addFocusListener(focusListener);
+        
+        behaviorCombo = new Combo(behaviorArea, SWT.READ_ONLY);
+        behaviorCombo.setItems(VARIABLE_BEHAVIOR_COMBO_ITEMS);
+        behaviorCombo.addFocusListener(focusListener);
+        behaviorCombo.addSelectionListener(whatIsTheSpecListener);
+        behaviorCombo.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(final SelectionEvent se) {
+				moveToTopOfBehaviorOptionsStack(behaviorCombo.getText());
+			}
 
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        initNextFairnessRadio.setLayoutData(gd);
-        initNextFairnessRadio.addSelectionListener(whatIsTheSpecListener);
-        initNextFairnessRadio.addFocusListener(focusListener);
+			public void widgetDefaultSelected(final SelectionEvent se) { }
+        });
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        behaviorCombo.setLayoutData(gd);
+        dm.bindAttribute(MODEL_BEHAVIOR_NO_SPEC, behaviorCombo, behaviorPart);
+        
+        behaviorOptions = new Composite(behaviorArea, SWT.NONE);
+		StackLayout stackLayout = new StackLayout();
+		behaviorOptions.setLayout(stackLayout);
+        
+		final Composite noSpecComposite = new Composite(behaviorOptions, SWT.NONE);
+		behaviorOptions.setData(NO_SPEC_COMBO_LABEL, noSpecComposite);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.minimumHeight = 1;
+        behaviorOptions.setLayoutData(gd);
+		stackLayout.topControl = noSpecComposite;
+
+        // split formula option
+		final Composite initNextComposite = new Composite(behaviorOptions, SWT.NONE);
+		behaviorOptions.setData(INIT_NEXT_COMBO_LABEL, initNextComposite);
+        initNextComposite.setLayout(new GridLayout(2, false));
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        initNextComposite.setLayoutData(gd);
 
         // init
-        toolkit.createLabel(behaviorArea, "Init:");
-        initFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 18;
+        toolkit.createLabel(initNextComposite, "Init:");
+		initFormulaSource = FormHelper.createFormsSourceViewer(toolkit, initNextComposite,
+				SWT.NONE | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.heightHint = 48;
         initFormulaSource.getTextWidget().setLayoutData(gd);
         initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-        initFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
         initFormulaSource.getTextWidget().addFocusListener(focusListener);
         dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormulaSource, behaviorPart);
 
         // next
-        toolkit.createLabel(behaviorArea, "Next:");
-        nextFormulaSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.NONE | SWT.SINGLE);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 18;
+        toolkit.createLabel(initNextComposite, "Next:");
+		nextFormulaSource = FormHelper.createFormsSourceViewer(toolkit, initNextComposite,
+				SWT.NONE | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.heightHint = 48;
         nextFormulaSource.getTextWidget().setLayoutData(gd);
         nextFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-        nextFormulaSource.getTextWidget().addModifyListener(widgetActivatingListener);
         nextFormulaSource.getTextWidget().addFocusListener(focusListener);
         dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormulaSource, behaviorPart);
 
@@ -1132,33 +1187,26 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // fairnessFormulaSource, behaviorPart);
 
         // closed formula option
-        closedFormulaRadio = toolkit.createButton(behaviorArea, "Temporal formula", SWT.RADIO);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        closedFormulaRadio.setLayoutData(gd);
-        closedFormulaRadio.addSelectionListener(whatIsTheSpecListener);
-
-        // spec
-        Label specLabel = toolkit.createLabel(behaviorArea, "");
-        // changed from "Spec:" 10 Sep 09
+		final Composite temporalFormulaComposite = new Composite(behaviorOptions, SWT.NONE);
+		behaviorOptions.setData(TEMPORAL_FORMULA_COMBO_LABEL, temporalFormulaComposite);
+        temporalFormulaComposite.setLayout(new GridLayout(1, true));
         gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        specLabel.setLayoutData(gd);
-        specSource = FormHelper.createFormsSourceViewer(toolkit, behaviorArea, SWT.V_SCROLL);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.heightHint = 55;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        temporalFormulaComposite.setLayoutData(gd);
+
+        specSource = FormHelper.createFormsSourceViewer(toolkit, temporalFormulaComposite, SWT.V_SCROLL | SWT.BORDER);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        gd.minimumHeight = 55;
         specSource.getTextWidget().setLayoutData(gd);
         specSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-        specSource.getTextWidget().addModifyListener(widgetActivatingListener);
         dm.bindAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, specSource, behaviorPart);
 
-        noSpecRadio = toolkit.createButton(behaviorArea, "No Behavior Spec", SWT.RADIO);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        noSpecRadio.setLayoutData(gd);
-        noSpecRadio.addSelectionListener(whatIsTheSpecListener);
-        dm.bindAttribute(MODEL_BEHAVIOR_NO_SPEC, noSpecRadio, behaviorPart);
-
+        
         // ------------------------------------------
         // what to check
         section = FormHelper.createSectionComposite(left, "What to check?", "", toolkit, sectionFlags
@@ -1168,9 +1216,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         section.setLayoutData(gd);
 
         Composite toBeCheckedArea = (Composite) section.getClient();
-        layout = new GridLayout();
-        layout.numColumns = 1;
-        toBeCheckedArea.setLayout(layout);
+        gl = new GridLayout();
+        gl.numColumns = 1;
+        toBeCheckedArea.setLayout(gl);
 
         checkDeadlockButton = toolkit.createButton(toBeCheckedArea, "Deadlock", SWT.CHECK);
 
@@ -1264,19 +1312,77 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         // run tab
         section = FormHelper.createSectionComposite(right, "How to run?", "TLC Parameters", toolkit, sectionFlags,
                 getExpansionListener());
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        section.setLayoutData(gd);
+        section.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Composite howToRunArea = (Composite) section.getClient();
         group = new HyperlinkGroup(howToRunArea.getDisplay());
-        layout = new GridLayout(2, true);
-        howToRunArea.setLayout(layout);
+        gl = new GridLayout(2, false);
+        howToRunArea.setLayout(gl);
 
-        ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
+        final ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
         managedForm.addPart(howToRunPart);
 
-        DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
+        final DirtyMarkingListener howToRunListener = new DirtyMarkingListener(howToRunPart, true);
 
+        toolkit.createLabel(howToRunArea, "System resources dedicated to TLC:");
+        
+		tlcProfileCombo = new Combo(howToRunArea, SWT.READ_ONLY);
+		tlcProfileCombo.setItems(TLC_PROFILE_DISPLAY_NAMES);
+		tlcProfileCombo.addSelectionListener(howToRunListener);
+		tlcProfileCombo.addSelectionListener(new SelectionListener() {
+			public void widgetSelected(final SelectionEvent se) {
+				final String selectedText = tlcProfileCombo.getText();
+				final boolean needReset = TLC_PROFILE_LOCAL_SEPARATOR.equals(selectedText)
+						|| TLC_PROFILE_REMOTE_SEPARATOR.equals(selectedText);
+				
+				if (needReset) {
+					tlcProfileCombo.select(lastSelectedTLCProfileIndex.get());
+				} else {
+					Logger.getAnonymousLogger().severe("handling selection");
+					final TLCConsumptionProfile profile = TLCConsumptionProfile.getProfileWithDisplayName(selectedText);
+					
+					lastSelectedTLCProfileIndex.set(tlcProfileCombo.getSelectionIndex());
+
+					programmaticallySettingWorkerParameters.set(true);
+					currentProfileIsAdHoc.set(false);
+					try {
+						if (profile != null) {
+							workers.setSelection(profile.getWorkerThreads());
+							maxHeapSize.setSelection(profile.getMemoryPercentage());
+
+							removeCustomTLCProfileComboItemIfPresent();
+
+							if (profile.profileIsForRemoteWorkers()) {
+								final String configuration = profile.getConfigurationKey();
+								final boolean isAdHoc = configuration
+										.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+
+								moveToTopOfDistributedOptionsStack(configuration, false, isAdHoc);
+								if (isAdHoc) {
+									currentProfileIsAdHoc.set(true);
+									clearEmailErrors();
+								}
+							} else {
+								moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
+								clearEmailErrors();
+							}
+						} else {
+							moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
+							clearEmailErrors();
+						}
+					} finally {
+						programmaticallySettingWorkerParameters.set(false);
+					}
+				}
+			}
+
+			public void widgetDefaultSelected(final SelectionEvent se) { }
+        });
+        gd = new GridData();
+        gd.horizontalIndent = 30;
+        tlcProfileCombo.setLayoutData(gd);
+        lastSelectedTLCProfileIndex = new AtomicInteger(tlcProfileCombo.getSelectionIndex());
+        
         /*
          * Workers Spinner
          */
@@ -1288,15 +1394,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         workers = new Spinner(howToRunArea, SWT.NONE);
         workers.addSelectionListener(howToRunListener);
         workers.addFocusListener(focusListener);
+        workers.addListener(SWT.Verify, (e) -> {
+			if (!programmaticallySettingWorkerParameters.get()) {
+				setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+			}
+        });
         gd = new GridData();
-        gd.horizontalIndent = 10;
+        gd.horizontalIndent = 40;
         gd.widthHint = 40;
         workers.setLayoutData(gd);
         
         workers.setMinimum(1);
         workers.setPageIncrement(1);
         workers.setToolTipText("Determines how many threads will be spawned working on the next state relation.");
-        workers.setSelection(IConfigurationDefaults.LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
+        workers.setSelection(TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
 
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
         
@@ -1311,8 +1422,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// section grid layout to fit the scale and the maxHeapSizeFraction
 		// label into a single row.
         final Composite maxHeapScale = new Composite(howToRunArea, SWT.NONE);
-        layout = new GridLayout(2, false);
-        maxHeapScale.setLayout(layout);
+        gl = new GridLayout(2, false);
+        maxHeapScale.setLayout(gl);
 
         // field max heap size
         int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
@@ -1320,8 +1431,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         maxHeapSize = new Scale(maxHeapScale, SWT.NONE);
         maxHeapSize.addSelectionListener(howToRunListener);
         maxHeapSize.addFocusListener(focusListener);
+        maxHeapSize.addListener(SWT.Selection, (e) -> {
+			if (!programmaticallySettingWorkerParameters.get() && !currentProfileIsAdHoc.get()) {
+				setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+			}
+        });
         gd = new GridData();
-        gd.horizontalIndent = 0;
+        gd.horizontalIndent = 30;
         gd.widthHint = 250;
         maxHeapSize.setLayoutData(gd);
         maxHeapSize.setMaximum(99);
@@ -1336,130 +1452,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		final TLCRuntime instance = TLCRuntime.getInstance();
 		long memory = instance.getAbsolutePhysicalSystemMemory(defaultMaxHeapSize / 100d);
 		final Label maxHeapSizeFraction = toolkit.createLabel(maxHeapScale,
-				defaultMaxHeapSize + "%" + " (" + memory + " mb)");
-        maxHeapSize.addPaintListener(new PaintListener() {
-			/* (non-Javadoc)
-			 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
-			 */
-			public void paintControl(PaintEvent e) {
-				// update the label
-				int value = ((Scale) e.getSource()).getSelection();
-				final TLCRuntime instance = TLCRuntime.getInstance();
-				long memory = instance.getAbsolutePhysicalSystemMemory(value / 100d);
-				maxHeapSizeFraction.setText(value + "%" + " (" + memory + " mb)");
-			}
+				generateMemoryDisplayText(defaultMaxHeapSize, memory));
+		maxHeapSize.addPaintListener((pe) -> {
+			int percentage = ((Scale) pe.getSource()).getSelection();
+			long megabytes = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(percentage / 100d);
+			maxHeapSizeFraction.setText(generateMemoryDisplayText(percentage, megabytes));
 		});
-
-        
-//        // label workers
-//        toolkit.createLabel(howToRunArea, "Number of worker threads:");
-//
-//        // field workers
-//        workers = toolkit.createText(howToRunArea, "1");
-//        workers.addModifyListener(howToRunListener);
-//        workers.addFocusListener(focusListener);
-//        gd = new GridData();
-//        gd.horizontalIndent = 10;
-//        gd.widthHint = 40;
-//        workers.setLayoutData(gd);
-//
-//        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
-        
-        /*
-         * run from the checkpoint.  Checkpoint help button added by LL on 17 Jan 2013
-         */
-        Composite ckptComp = new Composite(howToRunArea, SWT.NONE) ;
-        layout = new GridLayout(2, true);
-        ckptComp.setLayout(layout);
-        
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 20;
-        ckptComp.setLayoutData(gd);
-
-        checkpointButton = toolkit.createButton(ckptComp, "Recover from checkpoint", SWT.CHECK);
-        checkpointButton.addSelectionListener(howToRunListener);
-        checkpointButton.addFocusListener(focusListener);
-        HelpButton.helpButton(ckptComp, "model/overview-page.html#checkpoint") ;
-
-        toolkit.createLabel(howToRunArea, "Checkpoint ID:");
-
-        checkpointIdText = toolkit.createText(howToRunArea, "");
-        checkpointIdText.setEditable(false);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 100;
-        checkpointIdText.setLayoutData(gd);
-        dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, howToRunPart);
-
-        chkpointSizeLabel = toolkit.createLabel(howToRunArea, "Checkpoint size (kbytes):");
-        checkpointSizeText = toolkit.createText(howToRunArea, "");
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        gd.widthHint = 100;
-        checkpointSizeText.setLayoutData(gd);
-        chkptDeleteButton = toolkit.createButton(howToRunArea, "Delete Checkpoint", SWT.PUSH);
-        chkptDeleteButton.addSelectionListener(new SelectionListener() {
-
-            /* (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
-             */
-            public void widgetSelected(SelectionEvent e)
-            {
-                final IResource[] checkpoints;
-                try
-                {
-                    checkpoints = getModel().getCheckpoints(false);
-
-                    if ((checkpoints != null) && checkpoints.length > 0)
-                    {
-                        ResourcesPlugin.getWorkspace().run(new IWorkspaceRunnable() {
-
-                            public void run(IProgressMonitor monitor) throws CoreException
-                            {
-                                checkpoints[0].delete(true, new SubProgressMonitor(monitor, 1));
-
-                            }
-                        }, null);
-                    }
-                } catch (CoreException e1)
-                {
-                    return;
-                }
-
-            }
-
-            /* (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-             */
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        });
-        chkptDeleteButton.addFocusListener(focusListener);
         
         /*
          * Distribution.  Help button added by LL on 17 Jan 2013
          */
-        Composite distComp = new Composite(howToRunArea, SWT.NONE) ;
-        layout = new GridLayout(3, true);
-        distComp.setLayout(layout);
-        
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        distComp.setLayoutData(gd);
-        
-        toolkit.createLabel(distComp, "Run in distributed mode");
-        distributedCombo = new Combo(distComp, SWT.READ_ONLY);
-        distributedCombo.setItems(new String[] {"off", "ad hoc", "aws-ec2", "Azure", "PacketNet"});
-        distributedCombo.select(0);
-        HelpButton.helpButton(distComp, "model/distributed-mode.html") ;
-        distributedCombo.addSelectionListener(howToRunListener);
-		distributedCombo.setToolTipText("If other than 'off' selected, state computation will be performed by (remote) workers.");
-		distributedCombo.addFocusListener(focusListener);
-		
 		distributedOptions = new Composite(howToRunArea, SWT.NONE);
-		final StackLayout stackLayout = new StackLayout();
+		stackLayout = new StackLayout();
 		distributedOptions.setLayout(stackLayout);
 		
         gd = new GridData();
@@ -1468,27 +1472,32 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
 		// No distribution has no options
 		final Composite offComposite = new Composite(distributedOptions, SWT.NONE);
-		distributedOptions.setData("off", offComposite);
+		distributedOptions.setData(LAUNCH_DISTRIBUTED_NO, offComposite);
 		stackLayout.topControl = offComposite;
 		
 		/*
 		 * Composite wrapping number of distributed FPSet and iface when ad hoc selected
 		 */
-        final Composite builtInOptions = new Composite(distributedOptions, SWT.NONE);
-        layout = new GridLayout(2, true);
-        builtInOptions.setLayout(layout);
+        final Composite adHocOptions = new Composite(distributedOptions, SWT.NONE);
+        gl = new GridLayout(2, true);
+        adHocOptions.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
-        builtInOptions.setLayoutData(gd);
-		distributedOptions.setData("ad hoc", builtInOptions);
+        adHocOptions.setLayoutData(gd);
+		distributedOptions.setData(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey(), adHocOptions);
 		
+        Button helpButton = HelpButton.helpButton(adHocOptions, "model/distributed-mode.html") ;
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.horizontalAlignment = SWT.END;
+        helpButton.setLayoutData(gd);
 		/*
-		 * Server interface/hostname (This text shows the hostname detected by the Toolbox under which TLCServer will listen
+		 * Server interface/hostname (This text shows the hostname detected by the Toolbox under which TLCServer
+		 * will listen)
 		 */
-		// composite
-        final Composite networkInterface = new Composite(builtInOptions, SWT.NONE) ;
-        layout = new GridLayout(2, true);
-        networkInterface.setLayout(layout);
+        final Composite networkInterface = new Composite(adHocOptions, SWT.NONE) ;
+        gl = new GridLayout(2, true);
+        networkInterface.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
         networkInterface.setLayoutData(gd);
@@ -1570,9 +1579,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 */
 
 		// composite
-        final Composite distributedFPSetCount = new Composite(builtInOptions, SWT.NONE);
-        layout = new GridLayout(2, false);
-        distributedFPSetCount.setLayout(layout);
+        final Composite distributedFPSetCount = new Composite(adHocOptions, SWT.NONE);
+        gl = new GridLayout(2, false);
+        distributedFPSetCount.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
         distributedFPSetCount.setLayoutData(gd);
@@ -1602,8 +1611,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Composite wrapping all widgets related to jclouds
 		 */
         final Composite jcloudsOptions = new Composite(distributedOptions, SWT.NONE);
-        layout = new GridLayout(2, true);
-        jcloudsOptions.setLayout(layout);
+        gl = new GridLayout(2, true);
+        jcloudsOptions.setLayout(gl);
         gd = new GridData();
         gd.horizontalSpan = 2;
         jcloudsOptions.setLayoutData(gd);
@@ -1612,42 +1621,48 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
  		 * Distributed nodes count
  		 */
 
+        helpButton = HelpButton.helpButton(jcloudsOptions, "model/distributed-mode.html") ;
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.horizontalAlignment = SWT.END;
+        helpButton.setLayoutData(gd);
+        
  		// composite
-         final Composite distributedNodesCount = new Composite(jcloudsOptions, SWT.NONE);
-         layout = new GridLayout(2, false);
-         distributedNodesCount.setLayout(layout);
-         gd = new GridData();
-         gd.horizontalSpan = 2;
-         distributedNodesCount.setLayoutData(gd);
- 		
-         // label
-         toolkit.createLabel(distributedNodesCount, "Number of compute nodes to use:");
+		final Composite distributedNodesCount = new Composite(jcloudsOptions, SWT.NONE);
+		gl = new GridLayout(2, false);
+		distributedNodesCount.setLayout(gl);
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		distributedNodesCount.setLayoutData(gd);
 
-         // field
-         distributedNodesCountSpinner = new Spinner(distributedNodesCount, SWT.NONE);
-         distributedNodesCountSpinner.addSelectionListener(howToRunListener);
-         distributedNodesCountSpinner.addFocusListener(focusListener);
-         gd = new GridData();
-         gd.grabExcessHorizontalSpace = true;
-         gd.horizontalIndent = 10;
-         gd.widthHint = 40;
-         distributedNodesCountSpinner.setLayoutData(gd);
-         
-         distributedNodesCountSpinner.setMinimum(1);
-         distributedNodesCountSpinner.setMaximum(64); // Haven't really tested this many distributed fpsets
-         distributedNodesCountSpinner.setPageIncrement(1);
-		 distributedNodesCountSpinner.setToolTipText(
+		// label
+		toolkit.createLabel(distributedNodesCount, "Number of compute nodes to use:");
+
+		// field
+		distributedNodesCountSpinner = new Spinner(distributedNodesCount, SWT.NONE);
+		distributedNodesCountSpinner.addSelectionListener(howToRunListener);
+		distributedNodesCountSpinner.addFocusListener(focusListener);
+		gd = new GridData();
+		gd.grabExcessHorizontalSpace = true;
+		gd.horizontalIndent = 10;
+		gd.widthHint = 40;
+		distributedNodesCountSpinner.setLayoutData(gd);
+
+		distributedNodesCountSpinner.setMinimum(1);
+		distributedNodesCountSpinner.setMaximum(64); // Haven't really tested this many distributed fpsets
+		distributedNodesCountSpinner.setPageIncrement(1);
+		distributedNodesCountSpinner.setToolTipText(
 				"Determines how many compute nodes/VMs will be launched. More VMs means faster results and higher costs.");
-         distributedNodesCountSpinner.setSelection(IConfigurationDefaults.LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT);
+		distributedNodesCountSpinner.setSelection(IConfigurationDefaults.LAUNCH_DISTRIBUTED_NODES_COUNT_DEFAULT);
 
-         dm.bindAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner, howToRunPart);
+		dm.bindAttribute(LAUNCH_DISTRIBUTED_NODES_COUNT, distributedNodesCountSpinner, howToRunPart);
 		
 		/*
 		 * Result mail address input
 		 */
         final Composite resultAddress = new Composite(jcloudsOptions, SWT.NONE) ;
-        layout = new GridLayout(2, true);
-        resultAddress.setLayout(layout);
+        gl = new GridLayout(2, false);
+        resultAddress.setLayout(gl);
 		final String resultAddressTooltip = "A list (comma-separated) of one to N email addresses to send the model checking result to.";
         resultAddress.setToolTipText(resultAddressTooltip);
         
@@ -1660,7 +1675,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		resultMailAddressText.setMessage("my-name@my-domain.org,alternative-name@alternative-domain.org"); // hint
 		resultMailAddressText.setToolTipText(resultAddressTooltip);
 		resultMailAddressText.addKeyListener(new KeyAdapter() {
-			
 			private final ModelEditor modelEditor = (ModelEditor) getEditor();
 
 			@Override
@@ -1673,104 +1687,93 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				super.keyReleased(e);
 				try {
 					final String text = resultMailAddressText.getText();
-					javax.mail.internet.InternetAddress.parse(text, true);
-				} catch (javax.mail.internet.AddressException exp) {
+					InternetAddress.parse(text, true);
+				} catch (AddressException exp) {
 					modelEditor.addErrorMessage("emailAddressInvalid",
 							"Invalid email address", getId(),
 							IMessageProvider.ERROR, resultMailAddressText);
 					return;
 				}
-				modelEditor.removeErrorMessage("emailAddressInvalid", resultMailAddressText);
+				clearEmailErrors();
 			}
 		});
         gd = new GridData();
+        gd.horizontalAlignment = SWT.LEFT;
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalIndent = 10;
-        gd.widthHint = 400;
+        gd.minimumWidth = 400;
         resultMailAddressText.setLayoutData(gd);
         resultMailAddressText.addModifyListener(howToRunListener);
         dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
 		
-		distributedOptions.setData("jclouds", jcloudsOptions);
-
-        distributedCombo.addSelectionListener(new SelectionListener() {
-			public void widgetSelected(SelectionEvent e) {
-				int selectionIndex = distributedCombo.getSelectionIndex();
-				String item = distributedCombo.getItem(selectionIndex);
-				if (item.equalsIgnoreCase("aws-ec2") || item.equalsIgnoreCase("Azure") || item.equalsIgnoreCase("PacketNet")) {
-					MainModelPage.this.putOnTopOfStack("jclouds", false, false);
-				} else if(item.equalsIgnoreCase("ad hoc")) {
-					MainModelPage.this.putOnTopOfStack("ad hoc", false, true);
-				} else {
-					MainModelPage.this.putOnTopOfStack("off", true, true);
-				}
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-        });
-
-        /*
-         * run link
-         */
-        runLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
-        runLink.setImage(createRegisteredImage("icons/full/lrun_obj.gif"));
-        runLink.addHyperlinkListener(new HyperlinkAdapter() {
-            public void linkActivated(HyperlinkEvent e)
-            {
-                doRun();
-            }
-        });
-        runLink.setText("Run TLC");
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.widthHint = 200;
-        gd.verticalIndent = 20;
-        runLink.setLayoutData(gd);
-        group.add(runLink);
-
-        generateLink = toolkit.createImageHyperlink(howToRunArea, SWT.NONE);
-        generateLink.setImage(createRegisteredImage("icons/full/debugt_obj.gif"));
-        generateLink.addHyperlinkListener(new HyperlinkAdapter() {
-            public void linkActivated(HyperlinkEvent e)
-            {
-                doGenerate();
-            }
-        });
-        generateLink.setText("Validate model");
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.widthHint = 200;
-        generateLink.setLayoutData(gd);
-        group.add(generateLink);
+		distributedOptions.setData(CLOUD_CONFIGURATION_KEY, jcloudsOptions);
 
         // add listeners propagating the changes of the elements to the changes
-        // of the
-        // parts to the list to be activated after the values has been loaded
+        // of the parts to the list to be activated after the values has been loaded
         dirtyPartListeners.add(commentsListener);
         dirtyPartListeners.add(whatIsTheSpecListener);
         dirtyPartListeners.add(whatToCheckListener);
         dirtyPartListeners.add(howToRunListener);
     }
 
-    private void putOnTopOfStack(final String id, boolean enableWorker, boolean enableMaxHeap) {
-		workers.setEnabled(enableWorker);
-		maxHeapSize.setEnabled(enableMaxHeap);
+	private void moveToTopOfDistributedOptionsStack(final String id, final boolean enableWorker,
+			final boolean enableMaxHeap) {
+    	workers.getDisplay().asyncExec(() -> {
+    		workers.setEnabled(enableWorker);
+    		maxHeapSize.setEnabled(enableMaxHeap);
+    	});
 		
-		final Composite composite = (Composite) distributedOptions.getData(id);
-		final StackLayout stackLayout = (StackLayout) distributedOptions.getLayout();
+    	moveCompositeWithIdToTopOfStack(id, distributedOptions);
+    	
+    	distributedOptions.getParent().getParent().layout();
+    }
+	
+	private void moveToTopOfBehaviorOptionsStack(final String id) {
+		moveCompositeWithIdToTopOfStack(id, behaviorOptions);
+	}
+	
+    private void moveCompositeWithIdToTopOfStack(final String id, final Composite parent) {
+		final Composite composite = (Composite)parent.getData(id);
+		final StackLayout stackLayout = (StackLayout)parent.getLayout();
+		
 		stackLayout.topControl = composite;
-		distributedOptions.layout();
+		parent.layout();
+    }
+    
+    private TLCConsumptionProfile getSelectedTLCProfile() {
+    	return TLCConsumptionProfile.getProfileWithDisplayName(tlcProfileCombo.getText());
+    }
+    
+    private void clearEmailErrors() {
+		((ModelEditor)getEditor()).removeErrorMessage("emailAddressInvalid", resultMailAddressText);
+    }
+    
+    private void setTLCProfileComboSelection(final String displayName) {
+    	final int index = tlcProfileCombo.indexOf(displayName);
+    	
+    	if (index != -1) {
+    		tlcProfileCombo.select(index);
+    		if (!CUSTOM_TLC_PROFILE_DISPLAY_NAME.equals(displayName)) {
+    			removeCustomTLCProfileComboItemIfPresent();
+    		}
+    	} else if (CUSTOM_TLC_PROFILE_DISPLAY_NAME.equals(displayName)) {
+    		tlcProfileCombo.add(displayName, 1);
+    		tlcProfileCombo.select(1);
+    	}
+    	
+    	lastSelectedTLCProfileIndex.set(tlcProfileCombo.getSelectionIndex());
+    }
+    
+    private void removeCustomTLCProfileComboItemIfPresent() {
+		if (tlcProfileCombo.getItem(1).equals(CUSTOM_TLC_PROFILE_DISPLAY_NAME)) {
+			tlcProfileCombo.remove(1);
+		}
+    }
+    
+    private String generateMemoryDisplayText(final int percentage, final long megabytes) {
+    	return percentage + "%" + " (" + megabytes + " mb)  ";
     }
 
-    /**
-     * On a refresh, the checkpoint information is re-read 
-     */
-    public void refresh()
-    {
-        super.refresh();
-        updateCheckpoints();
-    }
     
     /**
      * Interpolates based on LinearInterpolation
