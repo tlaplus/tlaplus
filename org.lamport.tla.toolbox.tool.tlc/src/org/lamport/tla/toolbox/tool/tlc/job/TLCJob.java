@@ -192,8 +192,7 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         }
         
         // Defer liveness checking
-        final boolean deferLiveness = launch.getLaunchConfiguration().getAttribute(LAUNCH_DEFER_LIVENESS, false);
-        if (deferLiveness) {
+        if (deferLiveness()) {
         	arguments.add("-lncheck");
         	arguments.add("final");
         }
@@ -277,6 +276,10 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     
 
 	// Allow subclasses to veto command line parameters if needed.
+    
+    protected boolean deferLiveness() throws CoreException {
+        return launch.getLaunchConfiguration().getAttribute(LAUNCH_DEFER_LIVENESS, false);
+    }
 
     protected boolean collectCoverage() throws CoreException {
 		return launch.getLaunchConfiguration().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE,

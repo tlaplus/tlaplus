@@ -116,4 +116,14 @@ public class TraceExplorerJob extends TLCProcessJob
 		// No need for coverage statistics when running error trace exploration.
     	return false;
     }
+	
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCJob#deferLiveness()
+	 */
+	@Override
+    protected boolean deferLiveness() throws CoreException {
+		// As a performance improvement, always defer liveness until the end of model
+		// checking in trace exploration.
+        return true;
+    }
 }
