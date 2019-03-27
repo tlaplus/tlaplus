@@ -4,6 +4,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.swt.widgets.Display;
 
+import tlc2.tool.fp.FPSetFactory;
+
 /**
  * Extends {@link TLCProcessJob}.
  * 
@@ -126,4 +128,16 @@ public class TraceExplorerJob extends TLCProcessJob
 		// checking in trace exploration.
         return true;
     }
+	
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getOptimalFPsetImpl()
+	 */
+	@Override
+	protected String getOptimalFPsetImpl() throws CoreException {
+		// A trace is a single behavior of usually about a dozen states and sometimes a
+		// few thousand. This range is easily handled by the default FPSet
+		// implementation which is faster to initialize compared to the optimized
+		// OffHeapDiskFPSet. This should make the trace explorer a lot snappier.
+		return FPSetFactory.getImplementationDefault();
+	}
 }
