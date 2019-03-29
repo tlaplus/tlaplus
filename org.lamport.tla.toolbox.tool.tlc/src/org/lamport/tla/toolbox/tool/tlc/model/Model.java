@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1075,6 +1076,22 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 			return defaultValue;
 		}
+	}
+
+	public List<Formula> getTraceExplorerExpressionsAsFormula() {
+		final List<String> traceExplorerExpressions = getTraceExplorerExpressions();
+		return ModelHelper.deserializeFormulaList(traceExplorerExpressions);
+	}
+	
+	public Map<String, Formula> getNamedTraceExplorerExpressionsAsFormula() {
+		final List<Formula> traceExplorerExpressionsAsFormula = getTraceExplorerExpressionsAsFormula();
+		final Map<String, Formula> result = new HashMap<>();
+		for (Formula formula : traceExplorerExpressionsAsFormula) {
+			if (formula.isNamed()) {
+				result.put(formula.getLeftHandSide(), formula);
+			}
+		}
+		return result;
 	}
 
 	public void setTraceExplorerExpression(List<String> serializedInput) {
