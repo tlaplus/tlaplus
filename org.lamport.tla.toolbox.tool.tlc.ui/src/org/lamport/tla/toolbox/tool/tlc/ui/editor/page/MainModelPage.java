@@ -29,6 +29,7 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -45,6 +46,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
@@ -1019,7 +1021,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	public List<Assignment> getConstants() {
 		return (List<Assignment>) constantTable.getInput();
 	}
-
+	
     /**
      * Creates the UI
      * This method is called to create the widgets and arrange them on the page
@@ -1037,13 +1039,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
-
+        
         GridLayout gl;
         GridData gd;
         TableWrapData twd;
 
         Section section;
 
+        installTopMargin(body);
+        
         /*
          * Comments/notes section spanning two columns
          */
@@ -1770,6 +1774,24 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private String generateMemoryDisplayText(final int percentage, final long megabytes) {
     	return percentage + "%" + " (" + megabytes + " mb)  ";
     }
+
+	private void installTopMargin(final Composite body) {
+        Composite c = body;
+        CTabFolder tabFolder = (c instanceof CTabFolder) ? (CTabFolder)c : null;
+
+        while ((tabFolder == null) && (c.getParent() != null)) {
+        	c = c.getParent();
+        	tabFolder = (c instanceof CTabFolder) ? (CTabFolder)c : null;
+        }
+        
+        if (tabFolder != null) {
+        	final Layout l = tabFolder.getParent().getLayout();
+        	if (l instanceof FillLayout) {
+        		final FillLayout fl = (FillLayout)l;
+        		fl.marginHeight = 6;
+        	}
+        }
+	}
 
     
     /**
