@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _1OLRMAlXEem_pLt0eVfQIQ
 Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 11:57 AM
+Save-Time: 4/3/19, 10:11 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -36,7 +36,7 @@ OpenTLACreateNew
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
 	    key-type Down
-	    type-text "EXTENDS Naturals"
+	    type-text "EXTENDS Naturals, Sequences"
 	    key-type Enter
 	    type-text "VARIABLE x"
 	    key-type Enter -times 1
@@ -111,13 +111,27 @@ try -command {
 	    get-text-viewer | type-text "42 # 23"
 	    get-button Finish | click
 	}
+	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
+        get-button "Add" | click
+	}
+	with [get-window -class WizardDialog] {
+	    get-text-viewer | type-text "stateNum == IF TLCGet(\"level\") + 1 > Len(TETrace) THEN Len(TETrace) ELSE TLCGet(\"level\") + 1"
+	    get-button Finish | click
+	}
+	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
+        get-button "Add" | click
+	}
+	with [get-window -class WizardDialog] {
+	    get-text-viewer | type-text "sum == LET s[i \in DOMAIN TETrace] == IF i = 1 THEN 1 ELSE s[i-1] + 1 IN s[stateNum]"
+	    get-button Finish | click
+	}
 
 	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
 	    get-button "Explore" | click
 	}
-
-	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 4 0 | click
-	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals "/\\ 42 # 23 = TRUE\n/\\  foo = TRUE\n/\\  x = 1" 
+   
+	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 6 0 | click
+	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals "/\\ 42 # 23 = TRUE\n/\\  foo = TRUE\n/\\  stateNum = 2\n/\\  sum = 2\n/\\  x = 1" 
 	    | verify-true
 
 	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
@@ -133,7 +147,7 @@ try -command {
 	}
 	with [get-window "Parsing error when running trace explorer"] {
     with [get-editbox] {
-        get-property text | equals "***Parse Error***\nWas expecting \"Expression or Instance\"\nEncountered \"Beginning of definition\"  in Error-Trace Exploration expression at line 3 and token \"==\" \n\nResidual stack trace follows:\nDefinition starting at line 19, column 1.\nModule body starting at line 5, column 1.\nModule definition starting at line 1, column 1.\n" 
+        get-property text | equals "***Parse Error***\nWas expecting \"Expression or Instance\"\nEncountered \"Beginning of definition\"  in Error-Trace Exploration expression at line 5 and token \"==\" \n\nResidual stack trace follows:\nDefinition starting at line 45, column 1.\nModule body starting at line 5, column 1.\nModule definition starting at line 1, column 1.\n" 
 	    | verify-true
     }
     get-button OK | click
