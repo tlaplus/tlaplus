@@ -580,6 +580,19 @@ public class ModelEditor extends FormEditor
         // TLCUIActivator.getDefault().logDebug("leaving ModelEditor#addPages()");
     }
     
+    /**
+     * For some reason, the superclass comments out the setPageImage(...) code.
+     * 
+     * {@inheritDoc}
+     */
+    @Override
+	protected void configurePage(final int index, final IFormPage page)
+			throws PartInitException {
+		setPageImage(index, page.getTitleImage());
+    	
+    	super.configurePage(index, page);
+	}
+    
 	public void addOrUpdateStateGraphEditor(final IFile stateGraphDotDump) throws CoreException {
 		// For historical reasons this preference is found in the tlatex bundle. Thus,
 		// we read the value from there, but don't refer to the corresponding string

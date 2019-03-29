@@ -198,9 +198,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      */
     public MainModelPage(FormEditor editor)
     {
-        super(editor, MainModelPage.ID, MainModelPage.TITLE);
+        super(editor, MainModelPage.ID, MainModelPage.TITLE,
+        		"icons/full/model_options_" + IMAGE_TEMPLATE_TOKEN + ".png");
         this.helpId = IHelpConstants.MAIN_MODEL_PAGE;
-        this.imagePath = "icons/full/choice_sc_obj.gif";
 
 		// available system memory
 		final long phySysMem = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(1.0d);
