@@ -13,6 +13,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
+import tlc2.tool.TLCState;
 import tlc2.tool.impl.TLARegistry;
 import tlc2.util.IdThread;
 import tlc2.value.IBoolValue;
@@ -194,6 +195,18 @@ public class TLC implements ValueConstants
 			} catch (ArithmeticException e) {
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(((System.currentTimeMillis() - startTime) / 1000L)));
+			}
+		} else if (UniqueString.uniqueStringOf("level") == sv.val) {
+			// Contrary to "diameter", "level" is not monotonically increasing. "diameter" is
+			// because it calls tlc2.tool.TLCTrace.getLevelForReporting(). "level" is the height
+			// stores as part of the state that is currently explored.
+			final TLCState currentState = IdThread.getCurrentState();
+			if (currentState != null) {
+				return IntValue.gen(currentState.getLevel());
+			} else {
+				// Not an IdThread implies that TLCGet("level") is part of the initial predicate
+				// where the level is 0.
+				return IntValue.gen(0);
 			}
 		}
 		throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
