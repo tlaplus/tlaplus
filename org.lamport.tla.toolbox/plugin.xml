@@ -795,7 +795,7 @@
       <menuContribution
             locationURI="popup:toolbox.explorer.popup?after=group.properties">
          <command
-               commandId="org.eclipse.ui.file.properties"
+               commandId="toolbox.command.spec.props"
                id="toolbox.popupmenu.props"
                label="Properties"
                mnemonic="I"
@@ -985,30 +985,7 @@
 	</handler>
       <handler
             class="org.lamport.tla.toolbox.ui.handler.PropertiesHandler"
-            commandId="toolbox.command.spec.props">
-         <activeWhen>
-            <with
-                  variable="selection">
-               <iterate
-                     operator="or">
-                  <instanceof
-                        value="org.lamport.tla.toolbox.spec.Spec">
-                  </instanceof>
-               </iterate>
-            </with>
-         </activeWhen>
-         <enabledWhen>
-            <with
-                  variable="selection">
-               <iterate
-                     operator="or">
-                  <instanceof
-                        value="org.lamport.tla.toolbox.spec.Spec">
-                  </instanceof>
-               </iterate>
-            </with>
-         </enabledWhen>
-      </handler>
+            commandId="toolbox.command.spec.props" />
       <handler
             class="org.lamport.tla.toolbox.ui.handler.ForgetSpecHandler"
             commandId="org.lamport.tla.toolbox.forget">
