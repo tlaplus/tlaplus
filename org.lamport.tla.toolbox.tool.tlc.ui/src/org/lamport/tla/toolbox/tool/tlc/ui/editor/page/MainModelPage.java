@@ -48,7 +48,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.forms.HyperlinkGroup;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
@@ -1253,7 +1252,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         constantTable = constantsPart.getTableViewer();
         dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable, constantsPart);
         Composite parametersArea = (Composite) constantsPart.getSection().getClient();
-        HyperlinkGroup group = new HyperlinkGroup(parametersArea.getDisplay());
 
         // TESTING XXXXXX
         // managedForm.removePart(constantsPart);
@@ -1315,7 +1313,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         section.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Composite howToRunArea = (Composite) section.getClient();
-        group = new HyperlinkGroup(howToRunArea.getDisplay());
         gl = new GridLayout(2, false);
         howToRunArea.setLayout(gl);
 
@@ -1621,7 +1618,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
  		 * Distributed nodes count
  		 */
 
-        helpButton = HelpButton.helpButton(jcloudsOptions, "model/distributed-mode.html") ;
+        helpButton = HelpButton.helpButton(jcloudsOptions, "cloudtlc/index.html") ;
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.horizontalAlignment = SWT.END;
