@@ -179,7 +179,7 @@ public class TLC
      *    stored in the class FP64.
      *  o -view: apply VIEW (if provided) when printing out states.
      *  o -gzip: control if gzip is applied to value input/output stream.
-     *    Defaults to use gzip.
+     *    Defaults to off if not specified
      *  o -debug: debbuging information (non-production use)
      *  o -tool: tool mode (put output codes on console)
      *  o -checkpoint num: interval for check pointing (in minutes)
