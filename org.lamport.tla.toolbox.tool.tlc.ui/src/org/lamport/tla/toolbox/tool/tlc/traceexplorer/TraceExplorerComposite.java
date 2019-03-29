@@ -472,6 +472,15 @@ public class TraceExplorerComposite
 			job.setRule(ResourcesPlugin.getWorkspace().getRoot());
 			job.setUser(true);
 			job.schedule();
+			
+	        tableViewer.getTable().setEnabled(false);
+	        
+	        buttonExplore.setEnabled(false);
+	        buttonAdd.setEnabled(false);
+	        buttonEdit.setEnabled(false);
+	        buttonRemove.setEnabled(false);
+	        
+	        buttonRestore.setEnabled(true);
         }
     }
 
@@ -485,6 +494,15 @@ public class TraceExplorerComposite
 
         // update the error view with this provider
         view.updateErrorView();
+        
+        tableViewer.getTable().setEnabled(true);
+        
+        buttonExplore.setEnabled(true);
+        buttonAdd.setEnabled(true);
+        buttonEdit.setEnabled(true);
+        buttonRemove.setEnabled(true);
+        
+        buttonRestore.setEnabled(false);
     }
 
     /**
@@ -494,6 +512,9 @@ public class TraceExplorerComposite
     protected void changeButtonEnablement()
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+        if (!tableViewer.getTable().isEnabled()) {
+        	return;
+        }
 
         if (buttonRemove != null)
         {

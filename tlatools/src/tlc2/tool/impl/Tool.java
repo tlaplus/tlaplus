@@ -2396,6 +2396,20 @@ public final StateVec getNextStates(Action action, TLCState state) {
           }
         case OPCODE_prime:
           {
+        	  // MAK 03/2019:  Cannot reproduce this but without this check the nested evaluation
+        	  // fails with a NullPointerException which subsequently is swallowed. This makes it 
+        	  // impossible for a user to diagnose what is going on.  Since I cannot reproduce the
+        	  // actual expression, I leave this commented for.  I recall an expression along the
+        	  // lines of:
+        	  //    ...
+        	  //    TLCSet(23, CHOOSE p \in pc: pc[p] # pc[p]')
+        	  //    ...
+        	  // The fail statement below is obviously too generic to be useful and needs to be
+        	  // clarified if the actual cause has been identified.
+//        	  if (s1 == null) {
+//                  Assert.fail("Attempted to evaluate the following expression," +
+//                          " but expression failed to evaluate.\n" + expr);
+//        	  }
             return this.eval(args[0], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
           }
         case OPCODE_unchanged:

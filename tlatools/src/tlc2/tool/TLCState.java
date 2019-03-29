@@ -56,6 +56,12 @@ public abstract class TLCState implements Cloneable, Serializable {
   public abstract TLCState bind(UniqueString name, IValue value);
   public abstract TLCState bind(SymbolNode id, IValue value);  
   public abstract TLCState unbind(UniqueString name);
+  /**
+   * Convenience method when performance doesn't matter.
+   */
+  public IValue lookup(String var) {
+	  return lookup(UniqueString.uniqueStringOf(var));
+  }
   public abstract IValue lookup(UniqueString var);
   public abstract boolean containsKey(UniqueString var);
   public abstract TLCState copy();

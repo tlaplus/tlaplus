@@ -890,7 +890,17 @@ public class LiveWorker extends IdThread {
 		// Wait for the prefix-path to be searched/generated and fully printed.
 		// get() is a blocking call that makes this thread wait for the executor
 		// to finish its job of searching and printing the prefix-path.
-		final List<TLCStateInfo> states = future.get();
+		List<TLCStateInfo> states = new ArrayList<>(0);
+		try {
+			states = future.get();
+		} catch (ExecutionException ee) {
+			// Do not "leak" ExecutionException to user if root cause is actually an
+			// EvalException.
+			if (ee.getCause() instanceof EvalException) {
+				throw (EvalException) ee.getCause();
+			}
+			throw ee;
+		}
 		
 		/*
 		 * At this point everything from the initial state up to the start state

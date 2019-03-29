@@ -233,8 +233,7 @@ public class TLCErrorView extends ViewPart
             /*
              * determine if trace has changed. this is important for really long
              * traces because resetting the trace input locks up the toolbox for a few
-             * seconds in these cases, so it is important to not reset the trace
-             * if it is not necessary
+             * seconds, so it is important to not reset the trace if it is not necessary.
              */
             TLCError oldTrace = (TLCError) variableViewer.getInput();
             boolean isNewTrace = trace != null && oldTrace != null && !(trace == oldTrace);

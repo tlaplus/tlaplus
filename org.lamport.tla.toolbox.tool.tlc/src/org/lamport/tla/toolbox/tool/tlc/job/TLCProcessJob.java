@@ -108,7 +108,7 @@ public class TLCProcessJob extends TLCJob
 			// TLC's default set.
 			// If the user happened to select OffHeapDiskFPSet, the -XX:MaxDirectMemorySize
 			// is set by getVMArguments.
-			String clazz = launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL, (String) null);
+			String clazz = getOptimalFPsetImpl();
 			if (!hasSpec(launch.getLaunchConfiguration())) {
 				// If a spec has no behaviors, TLC won't need a fingerprint set. Thus, use the
 				// NoopFPSet whose initialization cost is next to nothing. Real fpsets on the
@@ -325,6 +325,10 @@ public class TLCProcessJob extends TLCJob
             monitor.done();
         }
     }
+
+	protected String getOptimalFPsetImpl() throws CoreException {
+		return launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL, (String) null);
+	}
 
 	/**
 	 * @return A list of additional vm arguments

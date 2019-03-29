@@ -70,12 +70,20 @@ public class TraceExpressionModelWriter extends ModelWriter {
 	    int position = 0;
 	    while (it.hasNext())
 	    {
-	        String expression = it.next().getFormula();
+	        final Formula formula = it.next();
+			final String expression = formula.getFormula();
 	
 	        if (expression != null && expression.length() > 0)
 	        {
-	            expressionData[position] = new TraceExpressionInformationHolder(expression,
-	                    getValidIdentifier(TRACE_EXPR_DEF_SCHEME), getValidIdentifier(TRACE_EXPR_VAR_SCHEME));
+	        	final String identifier = getValidIdentifier(TRACE_EXPR_DEF_SCHEME);
+	        	if (formula.isNamed()) {
+	        		final String varname = formula.getLeftHandSide();
+	        		String rightHandSide = formula.getRightHandSide();
+					expressionData[position] = new TraceExpressionInformationHolder(rightHandSide, identifier, varname);
+	        	} else  {
+	        		final String varname = getValidIdentifier(TRACE_EXPR_VAR_SCHEME);
+	        		expressionData[position] = new TraceExpressionInformationHolder(expression, identifier, varname);
+	        	}
 	        }
 	
 	        position++;
