@@ -47,7 +47,7 @@ public class Formula
 	// but I don't have time to look into it.
     
     public boolean isNamed()  {
-    	return !getLeftHandSide().equals("");
+    	return !getLeftHandSide().equals(getFormula());
     }
     
     // DOTALL to match beyond line endings.
@@ -58,7 +58,7 @@ public class Formula
 		if (matcher.find()) {
 			return matcher.group(1).trim();
 		}
-		return "";
+		return getFormula();
     }
     
     public String getRightHandSide() {
@@ -66,6 +66,6 @@ public class Formula
 		if (matcher.find()) {
 			return matcher.group(2).trim();
 		}
-		return "";
+		return getFormula();
     }
 }
