@@ -6,6 +6,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
@@ -19,6 +20,7 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
+import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Length;
@@ -313,6 +315,8 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
          */
         TLCError successfulTEError = null;
 
+        final Map<String, Formula> traceExplorerExpressions = getModel().getNamedTraceExplorerExpressionsAsFormula();
+        
         // retrieve the original trace
         // this is necessary for items (3) and (5) from the list in the
         // documentation for this method
@@ -460,6 +464,11 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                             // flag this as a variable representing a trace explorer expression
                             currentStateNewTraceVariables[i].setTraceExplorerVar(true);
 
+                            continue;
+                        }
+                        
+                        if (traceExplorerExpressions.containsKey(variableName.trim())) {
+                        	currentStateNewTraceVariables[i].setTraceExplorerVar(true);
                         }
                     }
 

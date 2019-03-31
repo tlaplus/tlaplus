@@ -3345,6 +3345,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
         TLCState state = nextStates.elementAt(j);
         long nfp = state.fingerPrint();
         if (fp == nfp) {
+        	state.setPredecessor(s);
           return new TLCStateInfo(state, curAction.getLocation());
         }
       }
@@ -3362,6 +3363,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
       for (int j = 0; j < nextStates.size(); j++) {
         TLCState state = nextStates.elementAt(j);
         if (s1.equals(state)) {
+        	state.setPredecessor(s);
           return new TLCStateInfo(state, curAction.getLocation());
         }
       }

@@ -124,9 +124,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      */
     public AdvancedModelPage(FormEditor editor)
     {
-        super(editor, AdvancedModelPage.ID, "Advanced Options");
+        super(editor, AdvancedModelPage.ID, "Advanced Options",
+        		"icons/full/advanced_model_options_" + IMAGE_TEMPLATE_TOKEN + ".png");
         this.helpId = IHelpConstants.ADVANCED_MODEL_PAGE;
-        this.imagePath = "icons/full/choice_sc_obj.gif";
     }
     
     /**

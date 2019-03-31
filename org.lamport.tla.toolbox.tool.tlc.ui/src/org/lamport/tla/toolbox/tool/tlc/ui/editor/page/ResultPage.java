@@ -78,7 +78,6 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
@@ -172,9 +171,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     public ResultPage(FormEditor editor)
     {
-        super(editor, ID, "Model Checking Results");
+        super(editor, ID, "Model Checking Results",
+        		"icons/full/results_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
         this.helpId = IHelpConstants.RESULT_MODEL_PAGE;
-        this.imagePath = "icons/full/choice_sc_obj.gif";
     }
 
     /**

@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -88,6 +87,8 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 {
     public static final String CRASHED_TITLE = " ( model checking has crashed )";
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
+    public static final String IMAGE_TEMPLATE_TOKEN = "[XXXXX]";
+    
     private static final String TLC_ERROR_STRING = "TLC Error";
 
     /** 
@@ -103,9 +104,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     protected String helpId = null;
     /**
-     * Image used in the heading of the page
+     * Image path template used in the heading of the page
      */
-    protected String imagePath = null;
+    private String imagePathTemplate;
+    
     /**
      * Fomr rebuilding listener responsible for page reflow
      */
@@ -218,16 +220,31 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     };
 
     /**
-     * Creates the main editor page
-     * @param editor
-     * @param id
-     * @param title
-     */
-    public BasicFormPage(FormEditor editor, String id, String title)
-    {
+	 * Creates the main editor page
+	 * 
+	 * @param editor
+	 * @param id
+	 * @param title
+	 * @param pageImagePathTemplate should contain <code>IMAGE_TEMPLATE_TOKEN</code>
+	 *                              which will be replaced with 16 or 24 depending
+	 *                              on the application; images of such naming are
+	 *                              assumed to exist on the filesystem.
+	 */
+	public BasicFormPage(final FormEditor editor, final String id, final String title,
+			final String pageImagePathTemplate) {
         super(editor, id, title);
+        
+        imagePathTemplate = pageImagePathTemplate;
     }
-
+    
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public Image getTitleImage() {
+		return createRegisteredImage(16);
+	}
+	
     /**
      * Called during FormPage life cycle and delegates the form creation
      * to three methods {@link BasicFormPage#createBodyContent(IManagedForm)}, 
@@ -237,9 +254,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     {
         ScrolledForm formWidget = managedForm.getForm();
         formWidget.setText(getTitle());
-        if (imagePath != null)
+        if (imagePathTemplate != null)
         {
-            formWidget.setImage(createRegisteredImage(imagePath));
+            formWidget.setImage(createRegisteredImage(24));
         }
 
         Composite body = formWidget.getBody();
@@ -397,19 +414,20 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
 
     /**
      * Retrieves the image and remember it for later reuse / dispose
-     * @param imageName
+     * @param size the pixel dimension of the image desired
      * @return
      */
-    protected Image createRegisteredImage(String imageName)
+    protected Image createRegisteredImage(final int size)
     {
-        Image image = (Image) images.get(imageName);
+    	final String imagePath = imagePathTemplate.replace(IMAGE_TEMPLATE_TOKEN, Integer.toString(size));
+        Image image = (Image) images.get(imagePath);
         if (image == null)
         {
-            ImageDescriptor descr = TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, imageName);
-            if (descr != null)
+            final ImageDescriptor id = TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, imagePath);
+            if (id != null)
             {
-                image = descr.createImage();
-                images.put(imageName, image);
+                image = id.createImage();
+                images.put(imagePath, image);
             }
         }
 
@@ -524,11 +542,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     public void dispose()
     {
-        Enumeration<Image> elements = images.elements();
-        while (elements.hasMoreElements())
-        {
-            elements.nextElement().dispose();
-        }
+    	for (final Image i : images.values()) {
+    		i.dispose();
+    	}
         super.dispose();
     }
 
