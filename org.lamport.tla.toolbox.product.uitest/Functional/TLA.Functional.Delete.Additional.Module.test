@@ -1,0 +1,100 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Delete.Additional.Module
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _b7FWkFSpEemyiKKvW3h83Q
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 4/1/19, 12:51 PM
+Testcase-Type: ecl
+
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
+Content-Type: text/plain
+Entry-Name: .description
+
+New Spec
+Default module specified as
+ type-text "EXTENDS Naturals"
+    "VARIABLE x"
+    "Init == x = 0"
+    "Next == x' = x + 1"
+
+Create additional module "Bla"
+Add content:
+ type-text "EXTENDS Naturals"
+    "VARIABLE x"
+    "Init == x = 0"
+    "Next == x' = x + 1"
+Don't save
+Attempt to delete additional module
+Cancel out of dirty save modal
+Verify that the module still exists in the tree and the editor is still open
+Save module
+Attempt to delete additional module
+Verify that the module no longer exists in the tree and that no editor exists
+Delete Spec
+------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa--
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+//Create Spec
+OpenTLACreateNew
+
+try -command {
+	with [get-editor $TLA-File | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 2
+	    type-text "Init == x = 0"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x + 1"
+	    key-type "M1+s"
+	}
+
+	AddModule
+	
+	with [get-editor $TLA-ADDITIONAL-MODULE-NAME-FILE | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE w"
+	    key-type Enter -times 2
+	    type-text "Init == w = 8"
+	    key-type Enter -times 2
+	    type-text "Next == w' = (w + 3) % 11"
+	}
+	
+	let [val treePath [concat $TLA-TREE-NAME "/modules/" $TLA-ADDITIONAL-MODULE-NAME]] {
+		get-view "Spec Explorer" | get-tree | get-item $treePath | select-item | get-menu -path "Delete" | click
+		get-window "Save Resource" | get-button "Cancel" | click
+		
+		if [editor-exists $TLA-ADDITIONAL-MODULE-NAME-FILE] {
+		} -else {
+			throw-error "Additional module's editor pane is prematurely gone."
+		}
+		
+		with [get-editor $TLA-ADDITIONAL-MODULE-NAME-FILE | get-text-viewer] {
+		    key-type "M1+s"
+		}
+		
+		with [get-view "Spec Explorer"] {
+			get-tree | get-item $treePath | select-item | get-menu -path "Delete" | click
+		}
+		
+		if [get-tree | has-item $treePath] {
+			throw-error "Additional module still exists in the tree."
+		}
+		
+		if [editor-exists $TLA-ADDITIONAL-MODULE-NAME-FILE] {
+			throw-error "Additional module's editor pane is still displayed."
+		}
+	}
+} -finally {
+	DeleteSpecNew
+}
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

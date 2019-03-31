@@ -987,6 +987,9 @@
             class="org.lamport.tla.toolbox.ui.handler.PropertiesHandler"
             commandId="toolbox.command.spec.props" />
       <handler
+            class="org.lamport.tla.toolbox.ui.handler.DeleteModuleHandler"
+            commandId="org.eclipse.ui.edit.delete" />
+      <handler
             class="org.lamport.tla.toolbox.ui.handler.ForgetSpecHandler"
             commandId="org.lamport.tla.toolbox.forget">
          <enabledWhen>
