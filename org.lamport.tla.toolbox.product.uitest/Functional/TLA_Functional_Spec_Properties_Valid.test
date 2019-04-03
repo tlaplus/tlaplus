@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _6Vm88APkEemwBd2liJ-qvA
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 1/15/19 11:33 AM
+Runtime-Version: 2.4.0.201902090011
+Save-Time: 4/3/19, 9:13 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -23,7 +23,7 @@ Entry-Name: .content
 
 OpenTLACreateNew
 try -command {
-with [get-editor $TLA-File | get-text-viewer] {
+with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
     key-type Down
     type-text "EXTENDS Naturals"
     key-type Enter

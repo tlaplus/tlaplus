@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _gPS3MAPrEemwBd2liJ-qvA
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/26/19, 11:51 AM
+Runtime-Version: 2.4.0.201902090011
+Save-Time: 4/3/19, 9:13 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -27,7 +27,7 @@ Entry-Name: .content
 OpenTLACreateNew
 
 try -command {
-	with [get-editor $TLA-File | get-text-viewer] {
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
 	    key-type Down
 	    type-text "EXTENDS Naturals"
 	    key-type Enter
@@ -46,7 +46,7 @@ try -command {
 	    get-editbox -after [get-label "Please input the name of the model to create"] | set-text saved
 	    get-button OK | click
 	}
-	get-editor $TLA-File | click
+	get-editor $TLA-SPEC-NAME | click
 	get-editor saved | close
 	get-menu -path "TLC Model Checker/Open Model/saved" | click
 	

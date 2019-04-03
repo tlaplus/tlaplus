@@ -34,7 +34,7 @@ Entry-Name: .content
 OpenTLACreateNew
 
 try -command {
-	with [get-editor $TLA-File | get-text-viewer] {
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
 	    key-type Down
 	    type-text "EXTENDS Naturals"
 	    key-type Enter
