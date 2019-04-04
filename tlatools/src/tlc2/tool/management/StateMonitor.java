@@ -27,7 +27,10 @@ package tlc2.tool.management;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
+import java.util.Scanner;
 
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerInvocationHandler;
@@ -37,29 +40,72 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import com.sun.tools.attach.AttachNotSupportedException;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
+
 import tlc2.tool.distributed.management.TLCStatisticsMXBean;
 
+/*
+ * This class does not compile in the Eclipse IDE on Ubuntu 18.04 with JaveSE1.8 linked to the
+ * 8u201-1~webupd8~1 JVM installed from webupd8 and probably fails to compile elsewhere too,
+ * because Eclipse fails to find the com.sun.tools.attach classes.  The fix is to add the JDK's
+ * tools.jar to the Java installation.  On Java 11 this doesn't seem to be an issue.
+ */
 public class StateMonitor {
 
 	private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
 
-	public static void main(String[] args) throws IOException, MalformedObjectNameException, InterruptedException {
+	public static void main(String[] args) throws IOException, MalformedObjectNameException, InterruptedException, AttachNotSupportedException {
 		int interval = 10; // 10sec interval by default
-		if (args.length == 2) {
-			interval = Integer.valueOf(args[1]);
+		if (args.length == 1) {
+			interval = Integer.valueOf(args[0]);
 		}
 		
 		JMXServiceURL url = null;
 		try {
-			final Integer pid = Integer.valueOf(args[0]);
-			//TODO the strong encapsulation is forbidding us from compiling the following line:
-			// On Java9+ switch to com.sun.tools.attach.VirtualMachine whose list() method
-			// returns all locally running JVMs from which we can pick TLC's pid.
-			// VirtualMachine.attach(pid) connects to the TLC VM and returns a vm instance on
-			// which vm.startLocalManagementAgent() gives us the JMX address.
-			final String address = "broken"; //sun.management.ConnectorAddressLink.importFrom(pid);
+			final List<VirtualMachineDescriptor> vmds = com.sun.tools.attach.VirtualMachine.list();
+			vmds.sort(new Comparator<VirtualMachineDescriptor>() {
+				@Override
+				public int compare(VirtualMachineDescriptor o1, VirtualMachineDescriptor o2) {
+					// Sort those vms higher whose display name contains TLC.
+					final boolean c1 = o1.displayName().contains("TLC");
+					final boolean c2 = o2.displayName().contains("TLC");
+					if (c1 ^ c2) {
+						if (c1) {
+							return -1;
+						}
+						return 1;
+					}
+					return 0;
+				}
+			});
+			
+			int index = 1;
+			try (Scanner scanner = new Scanner(System.in)) {
+				rd: while (true) {
+					index = 1;
+					System.out.printf("============\n");
+					for (VirtualMachineDescriptor vmd : vmds) {
+						System.out.printf("[%s]: pid=%s, name=%s\n", index++, vmd.id(), vmd.displayName());
+					}
+					System.out.printf("Please select the number of the Java VM running TLC to connect to:\n");
+					if (scanner.hasNextInt()) {
+						index = scanner.nextInt();
+						
+						// Check index is within bounds.
+						if (index >= 1 && index <= vmds.size()) {
+							break rd;
+						}
+					}
+					System.err.printf("Invalid selection %s\n", index);
+				}
+			}
+			final VirtualMachineDescriptor tlcVMD = vmds.get(index - 1);
+			final VirtualMachine vm = tlcVMD.provider().attachVirtualMachine(tlcVMD);
+			final String address = vm.startLocalManagementAgent();
 			url = new JMXServiceURL(address);
-			System.out.printf("Connecting to TLC with pid %s running at %s.\n(Hit Ctrl+c to terminate)\n", pid, url);
+			System.out.printf("Connecting to TLC running at %s.\n(Hit Ctrl+c to terminate)\n", url);
 		} catch (NumberFormatException nfe) {
 			// If monitored VM has been launched with explicit port, use service url instead
 			// of CAL:
