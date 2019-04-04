@@ -537,6 +537,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     /**
      * Using the supplied findReplaceAdapter finds the name of the attribute 
      * (saved in the comment, previous to the region in which the error has been detected) 
+     * @param rootModule 
      * 
      * @param document the document of the file containing the generated model .tla file
      * @param searchAdapter the search adapter on the document
@@ -556,8 +557,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * </ul> 
      * @throws CoreException if something goes wrong
      */
-    public static Hashtable<String, Object> createMarkerDescription(IDocument document,
-            FindReplaceDocumentAdapter searchAdapter, String message, int severity, int[] coordinates)
+	public static Hashtable<String, Object> createMarkerDescription(final IFile rootModule, final IDocument document,
+			final FindReplaceDocumentAdapter searchAdapter, String message, final int severity, final int[] coordinates)
             throws CoreException
     {
         String attributeName;
@@ -566,23 +567,23 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         try
         {
             // find the line in the document
-            IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
+            final IRegion lineRegion = document.getLineInformation(coordinates[0] - 1);
             if (lineRegion != null)
             {
-                int errorLineOffset = lineRegion.getOffset();
+                final int errorLineOffset = lineRegion.getOffset();
 
                 // find the previous comment
-                IRegion commentRegion = searchAdapter.find(errorLineOffset, ModelWriter.COMMENT, false, false, false,
+                final IRegion commentRegion = searchAdapter.find(errorLineOffset, ModelWriter.COMMENT, false, false, false,
                         false);
 
                 // find the next separator
-                IRegion separatorRegion = searchAdapter.find(errorLineOffset, ModelWriter.SEP, true, false, false,
+                final IRegion separatorRegion = searchAdapter.find(errorLineOffset, ModelWriter.SEP, true, false, false,
                         false);
                 if (separatorRegion != null && commentRegion != null)
                 {
                     // find the first attribute inside of the
                     // comment
-                    IRegion attributeRegion = searchAdapter.find(commentRegion.getOffset(), ModelWriter.ATTRIBUTE
+                    final IRegion attributeRegion = searchAdapter.find(commentRegion.getOffset(), ModelWriter.ATTRIBUTE
                             + "[a-z]*[A-Z]*", true, false, false, true);
                     if (attributeRegion != null)
                     {
@@ -592,18 +593,18 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                                 .substring(ModelWriter.ATTRIBUTE.length());
 
                         // find the index
-                        IRegion indexRegion = searchAdapter.find(attributeRegion.getOffset()
+                        final IRegion indexRegion = searchAdapter.find(attributeRegion.getOffset()
                                 + attributeRegion.getLength(), ModelWriter.INDEX + "[0-9]+", true, false, false, true);
                         if (indexRegion != null && indexRegion.getOffset() < separatorRegion.getOffset())
                         {
                             // index value found
-                            String indexString = document.get(indexRegion.getOffset(), indexRegion.getLength());
+                            final String indexString = document.get(indexRegion.getOffset(), indexRegion.getLength());
                             if (indexString != null && indexString.length() > 1)
                             {
                                 try
                                 {
                                     attributeIndex = Integer.parseInt(indexString.substring(1));
-                                } catch (NumberFormatException e)
+                                } catch (final NumberFormatException e)
                                 {
                                     throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
                                             "Error during detection of the error position in MC.tla."
@@ -618,7 +619,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                         // the first character of the next line
                         // after the comment
 
-                        IRegion firstBlockLine = document.getLineInformation(document.getLineOfOffset(commentRegion
+                        final IRegion firstBlockLine = document.getLineInformation(document.getLineOfOffset(commentRegion
                                 .getOffset()) + 1);
                         int beginBlockOffset = firstBlockLine.getOffset();
                         // get the user input
@@ -653,7 +654,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                         {
                             // equals to the begin line
                             // mark the actual error region
-                            int length = coordinates[3] - coordinates[1];
+                            final int length = coordinates[3] - coordinates[1];
 
                             errorRegion = new Region(errorLineOffset + coordinates[1] - beginBlockOffset,
                                     (length == 0) ? 1 : length);
@@ -666,7 +667,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                             // iterate over all full lines
                             for (int l = coordinates[0] + 1; l < coordinates[2]; l++)
                             {
-                                IRegion line = document.getLineInformation(l - 1);
+                                final IRegion line = document.getLineInformation(l - 1);
                                 summedLength = summedLength + line.getLength();
                             }
                             // the part of the last line to the
@@ -701,7 +702,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                         "Error during detection of the error position in MC.tla."
                                 + "Could not data on specified location. " + message));
             }
-        } catch (BadLocationException e)
+        } catch (final BadLocationException e)
         {
             throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
                     "Error during detection of the error position in MC.tla." + "Accessing MC.tla file failed. "
@@ -710,7 +711,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
         // If the message refers to module MC, this should be replaced with
         // the location in the model.
-        message = getMessageWithoutMC(message, attributeName, attributeIndex);
+        message = getMessageWithoutFile(rootModule, message, attributeName, attributeIndex);
 
         // create the return object
         Hashtable<String, Object> props = new Hashtable<String, Object>();
@@ -727,9 +728,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
 
     /**
      * This method takes an error message generated by SANY for the
-     * MC.tla file and attempts to remove the mention of the MC file and insert
+     * MC.tla or TE.tla file and attempts to remove the mention of the MC or TE file and insert
      * the name of the model attribute and location within that attribute
-     * where the parse error occured.
+     * where the parse error occurred.
      * 
      * For example, the location in the message returned by SANY that says
      * "at line 25, column 2 in module MC" will be replaced with something
@@ -737,27 +738,29 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * 
      * It is definitely possible that the set of expressions searched for by this method
      * is not exhaustive, so some messages will remain the same even if they mention the
-     * MC file.
+     * MC or TE file.
+     * @param rootModule 
      * 
-     * @param message the SANY error message for the MC file
-     * @param attributeName the name of the model attribute where the error occured
+     * @param message the SANY error message for the MC or TE file
+     * @param attributeName the name of the model attribute where the error occurred
      * @param attributeIndex the 0-based index of the error within the model attribute.
      * For example, if the second definition override caused an error, the attributeIndex
      * should be 1. It can be -1 if no index is found, in which case no information about
      * the location within the model attribute will be included in the message.
      * @return the message without MC location information and with model location information
      */
-    private static String getMessageWithoutMC(String message, String attributeName, int attributeIndex)
+    private static String getMessageWithoutFile(IFile rootModule, String message, String attributeName, int attributeIndex)
     {
-        if (message.indexOf("in module MC") != -1 || message.indexOf("of module MC") != -1)
+        String module = rootModule.getName().replace(".tla", "");
+		if (message.indexOf("in module " + module) != -1 || message.indexOf("of module " + module) != -1)
         {
             // first possible expression
-            String[] splitMessage = message.split("at line [0-9]{1,}, column [0-9]{1,} in module MC", 2);
+            String[] splitMessage = message.split("at line [0-9]{1,}, column [0-9]{1,} in module " + module, 2);
             if (splitMessage.length != 2)
             {
                 // split around other possibility
                 splitMessage = message.split(
-                        "line [0-9]{1,}, col [0-9]{1,} to line [0-9]{1,}, col [0-9]{1,} of module MC", 2);
+                        "line [0-9]{1,}, col [0-9]{1,} to line [0-9]{1,}, col [0-9]{1,} of module " + module, 2);
             }
             if (splitMessage.length == 2)
             {
@@ -828,6 +831,8 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } else if (attributeName.equals(Model.MODEL_EXPRESSION_EVAL))
         {
             return "Expression";
+        } else if (attributeName.equals(TRACE_EXPLORE_EXPRESSIONS)) {
+        	return "Error-Trace Exploration expression";
         }
         return attributeName;
     }

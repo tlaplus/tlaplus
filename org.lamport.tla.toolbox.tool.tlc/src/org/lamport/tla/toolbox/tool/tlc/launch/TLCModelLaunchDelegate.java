@@ -8,8 +8,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
@@ -616,8 +618,26 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             TLCActivator.logDebug("Errors in model file found " + rootModule.getLocation());
         }
 
-        FileEditorInput fileEditorInput = new FileEditorInput((IFile) rootModule);
+		final Map<TLAMarkerInformationHolder, Hashtable<String, Object>> props = sany2ToolboxErrors(monitor, rootModule,
+				detectedErrors);
+		props.values().forEach(marker -> model.setMarker(marker, Model.TLC_MODEL_ERROR_MARKER_SANY));
+
+        if (MODE_GENERATE.equals(mode))
+        {
+            // generation is done
+            // nothing to do more
+            return false;
+        } else
+        {
+            return status;
+        }
+    }
+
+	protected Map<TLAMarkerInformationHolder, Hashtable<String, Object>> sany2ToolboxErrors(final IProgressMonitor monitor, final IFile rootModule,
+			final Vector<TLAMarkerInformationHolder> detectedErrors) throws CoreException {
+		FileEditorInput fileEditorInput = new FileEditorInput(rootModule);
         FileDocumentProvider fileDocumentProvider = new FileDocumentProvider();
+        final Map<TLAMarkerInformationHolder, Hashtable<String, Object>> result = new HashMap<>();
         try
         {
 
@@ -644,13 +664,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 
                         // find the error cause and install the error marker on the corresponding
                         // field
-                        Hashtable<String, Object> props = ModelHelper.createMarkerDescription(document, searchAdapter,
-                                message, severity, coordinates);
-                        if (props != null)
-                        {
-                        	model.setMarker(props, Model.TLC_MODEL_ERROR_MARKER_SANY);
-                        }
-
+                        result.put(markerHolder, ModelHelper.createMarkerDescription(rootModule, document, searchAdapter,
+                                message, severity, coordinates));
                     } else
                     {
                     	// see getLaunch(...) above
@@ -687,17 +702,8 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             fileDocumentProvider.disconnect(fileEditorInput);
             monitor.done();
         }
-
-        if (MODE_GENERATE.equals(mode))
-        {
-            // generation is done
-            // nothing to do more
-            return false;
-        } else
-        {
-            return status;
-        }
-    }
+        return result;
+	}
 
     /**
      * 5. method called on launch

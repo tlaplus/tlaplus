@@ -246,6 +246,7 @@ public class NewSpecWizardPage extends WizardPage
             		tmpdir = File.separator + "private" + tmpdir;
             	}
 				final String rndTmpDir = tmpdir + File.separator + UUID.randomUUID().toString();
+				System.setProperty("tla.rcptt.spec.dir", rndTmpDir);
 				this.fileText.setText(rootfilePath.replace("${rnd.tmp.dir}", rndTmpDir));
             	return;
             } else if (new File(rootfilePath).isDirectory())

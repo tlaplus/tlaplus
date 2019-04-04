@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _y2T94AL0EemtrbArmQOOJA
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 2/2/19 10:15 AM
+Runtime-Version: 2.4.0.201902090011
+Save-Time: 4/3/19, 11:53 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -71,12 +71,12 @@ let [val checkView [get-by-os -macosx "yes" -default "no"]] {
 		}
 
 		get-view Help | click
-		with [get-editor "new.tla"] {
+		with [get-editor $TLA-SPEC-NAME] {
 		    click
 		    click
 		}
 		
-		get-editor $TLA-File | click
+		get-editor $TLA-SPEC-NAME | click
 		
 		get-view Help | close
 	}

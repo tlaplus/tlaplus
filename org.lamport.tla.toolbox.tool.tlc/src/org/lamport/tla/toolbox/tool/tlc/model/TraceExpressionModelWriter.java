@@ -146,7 +146,7 @@ public class TraceExpressionModelWriter extends ModelWriter {
 	            // expression
 	            // ----
 	            definitions.append(COMMENT).append("TRACE EXPLORER identifier definition ").append(ATTRIBUTE).append(
-	                    attributeName).append(CR);
+	                    attributeName).append(INDEX).append(i).append(CR);
 	            definitions.append(expressionInfo.getIdentifier()).append(DEFINES_CR).append(
 	                    expressionInfo.getExpression()).append(CR);
 	            definitions.append(SEP).append(CR).append(CR);

@@ -28,10 +28,12 @@ package org.lamport.tla.toolbox.tool.tlc.launch;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -484,8 +486,11 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         /***********************************************************************************
          * Check for parsing errors first.                                                 *
          ***********************************************************************************/
-        if (parseResult.getDetectedErrors().size() > 0)
+        final Vector<TLAMarkerInformationHolder> detectedErrors = parseResult.getDetectedErrors();
+		if (detectedErrors.size() > 0)
         {
+			final Map<TLAMarkerInformationHolder, Hashtable<String, Object>> props = sany2ToolboxErrors(monitor, rootModule, detectedErrors);
+        	
             /*
              * This displays the parse errors to the user in an error
              * dialog. It attempts to replace messages containing references
@@ -493,7 +498,11 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
              */
             final StringBuffer errorMessage = new StringBuffer();
             for (final TLAMarkerInformationHolder errorInfo : parseResult.getDetectedErrors()) {
-                errorMessage.append(errorInfo.getMessage() + "\n");
+            	if (props.containsKey(errorInfo)) {
+            		errorMessage.append(props.get(errorInfo).get(IMarker.MESSAGE));
+            	} else {
+            		errorMessage.append(errorInfo.getMessage() + "\n");
+            	}
             }
             UIHelper.runUIAsync(new Runnable() {
 				public void run() {

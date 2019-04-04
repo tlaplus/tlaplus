@@ -99,12 +99,19 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
             FileEditorInput finput = (FileEditorInput) input;
             if (finput != null)
             {
-                if (ResourceHelper.isModule(finput.getFile()))
+                final IFile file = finput.getFile();
+				if (ResourceHelper.isModule(file))
                 {
-                    this.setPartName(finput.getFile().getName());
+					// MAK 04/2019: Strip off filename extension to align with Toolbox's Spec
+					// Explorer which doesn't show the extension either.  The Toolbox only has
+					// two editors (TLA+ specs and TLC models).  Showing the extension thus
+					// provides little value to users.  Aslo the editor description shows the
+					// full path to the actual file on disk right below where the part name
+					// is shown.
+                    this.setPartName(file.getName().replaceFirst(".tla$", ""));
                 }
 
-                if (ResourceHelper.isRoot(finput.getFile()))
+                if (ResourceHelper.isRoot(file))
                 {
                     setTitleImage(rootImage);
                 }

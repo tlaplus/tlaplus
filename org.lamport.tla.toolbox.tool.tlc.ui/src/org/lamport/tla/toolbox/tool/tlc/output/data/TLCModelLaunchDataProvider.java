@@ -661,7 +661,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                      * a memory leak.
                      */
                     IFile mcFile = getModel().getTLAFile();
-                    FileEditorInput mcFileEditorInput = new FileEditorInput((IFile) mcFile);
+                    FileEditorInput mcFileEditorInput = new FileEditorInput(mcFile);
                     FileDocumentProvider mcFileDocumentProvider = new FileDocumentProvider();
 
                     try
@@ -708,7 +708,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                             // create the error properties for this id
                             // this method find the corresponding attribute and
                             // create the map with attributes, required to create a marker
-                            props[j] = ModelHelper.createMarkerDescription(mcDocument, mcSearcher,
+                            props[j] = ModelHelper.createMarkerDescription(mcFile, mcDocument, mcSearcher,
                                     errorMessage, IMarker.SEVERITY_ERROR, coordinates);
 
                             // read the attribute name

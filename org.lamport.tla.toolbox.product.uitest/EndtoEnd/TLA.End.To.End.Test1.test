@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _1OLRMAlXEem_pLt0eVfQIQ
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/26/19, 11:03 AM
+Runtime-Version: 2.4.0.201902090011
+Save-Time: 4/3/19, 11:57 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -34,7 +34,7 @@ Entry-Name: .content
 OpenTLACreateNew
 
 try -command {
-	with [get-editor $TLA-File | get-text-viewer] {
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
 	    key-type Down
 	    type-text "EXTENDS Naturals"
 	    key-type Enter
@@ -95,6 +95,50 @@ try -command {
 	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 4 0 | click
 	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals "/\\ x = 2" 
 	    | verify-true
+
+	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
+        click
+        get-button "Add" | click
+	}
+	with [get-window -class WizardDialog] {
+	    get-text-viewer | type-text "foo == x \in Nat"
+	    get-button Finish | click
+	}
+	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
+        get-button "Add" | click
+	}
+	with [get-window -class WizardDialog] {
+	    get-text-viewer | type-text "42 # 23"
+	    get-button Finish | click
+	}
+
+	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
+	    get-button "Explore" | click
+	}
+
+	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 4 0 | click
+	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | equals "/\\ 42 # 23 = TRUE\n/\\  foo = TRUE\n/\\  x = 1" 
+	    | verify-true
+
+	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
+        get-button "Restore" | click
+        get-button "Add" | click
+	}
+	with [get-window -class WizardDialog] {
+	    get-text-viewer | type-text "bar(n) == x \in Nat"
+	    get-button Finish | click
+	}
+	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
+	    get-button "Explore" | click
+	}
+	with [get-window "Parsing error when running trace explorer"] {
+    with [get-editbox] {
+        get-property text | equals "***Parse Error***\nWas expecting \"Expression or Instance\"\nEncountered \"Beginning of definition\"  in Error-Trace Exploration expression at line 3 and token \"==\" \n\nResidual stack trace follows:\nDefinition starting at line 19, column 1.\nModule body starting at line 5, column 1.\nModule definition starting at line 1, column 1.\n" 
+	    | verify-true
+    }
+    get-button OK | click
+}
+
 } -finally {
 	DeleteSpecNew
 }
