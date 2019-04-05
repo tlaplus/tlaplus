@@ -991,6 +991,20 @@ public class ModelChecker extends AbstractChecker
 			this.notifyAll();
 		}
 	}
+	
+	public void suspend() {
+		synchronized (this) {
+			this.theStateQueue.suspendAll();
+			this.notifyAll();
+		}
+	}
+
+	public void resume() {
+		synchronized (this) {
+			this.theStateQueue.resumeAll();
+			this.notifyAll();
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.AbstractChecker#getStateQueueSize()

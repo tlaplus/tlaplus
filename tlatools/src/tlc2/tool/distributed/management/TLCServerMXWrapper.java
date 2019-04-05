@@ -172,4 +172,24 @@ public class TLCServerMXWrapper extends TLCStandardMBean implements TLCStatistic
 			tlcServer.notifyAll();
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#suspend()
+	 */
+	@Override
+	public void suspend() {
+		synchronized (tlcServer) {
+			tlcServer.stateQueue.suspendAll();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#resume()
+	 */
+	@Override
+	public void resume() {
+		synchronized (tlcServer) {
+			tlcServer.stateQueue.resumeAll();
+		}
+	}
 }
