@@ -13,6 +13,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
+import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.TLARegistry;
 import tlc2.util.IdThread;
@@ -237,6 +238,25 @@ public class TLC implements ValueConstants
         	if (UniqueString.uniqueStringOf("exit") == sv.val) {
         		if (val == BoolValue.ValTrue) {
         			TLCGlobals.mainChecker.stop();
+        		}
+        		return BoolValue.ValTrue;
+        	} else if (UniqueString.uniqueStringOf("pause") == sv.val) {
+				// Provisional TLCSet("pause", TRUE) implementation that suspends BFS model
+				// checking until enter is pressed on system.in.  Either use in spec as:
+        		//   TLCSet("pause", guard)
+        		// but it might be better guarded by IfThenElse for performance reasons:
+        		//   IF guard THEN TLCSet("pause", TRUE) ELSE TRUE
+        		if (val == BoolValue.ValTrue && TLCGlobals.mainChecker instanceof ModelChecker) {
+        			final ModelChecker mc = (ModelChecker) TLCGlobals.mainChecker;
+        			synchronized (mc.theStateQueue) {
+        				ToolIO.out.println("Press enter to resume model checking.");
+        				ToolIO.out.flush();
+						try {
+							System.in.read();
+						} catch (IOException e) {
+							throw new EvalException(EC.GENERAL, e.getMessage());
+						}
+        			}
         		}
         		return BoolValue.ValTrue;
         	}
