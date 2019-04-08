@@ -420,6 +420,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
 
         writeModelInfo(config, writer);
+        
+        writer.addTraceFunction(trace);
 
         /*
          * The following writes variable declarations and identifier definitions
@@ -625,6 +627,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 
         // write constants, model values, new definitions, definition overrides
         writeModelInfo(configuration, writer);
+        
+        writer.addTraceFunction(trace);
 
         // variables declarations for trace explorer expressions
         writer.addVariablesAndDefinitions(traceExpressionData, TRACE_EXPLORE_EXPRESSIONS, false);

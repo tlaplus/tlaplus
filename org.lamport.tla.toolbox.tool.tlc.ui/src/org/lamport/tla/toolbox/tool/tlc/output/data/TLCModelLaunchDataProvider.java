@@ -783,8 +783,16 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                         for (int j = 0; j < locations.length; j++)
                         {
                             // restore the location from the region
-                            String locationString = errorDocument.get(locations[j].getOffset(), locations[j]
-                                    .getLength());
+                        	String locationString = "";
+                        	try {
+								locationString = errorDocument.get(locations[j].getOffset(), locations[j]
+                        				.getLength());
+							} catch (BadLocationException ble) {
+								// Do not break from the loop when the spaghetti code above crashes for a
+								// whatever reason (life is too short). The region (locations!?) might point to
+								// another file which cannot be mapped to errorDocument which will throw the BLE.
+								continue;
+							}
                             Location location = Location.parseLocation(locationString);
                             // look only for location in the MC file
                             if (location.source().equals(

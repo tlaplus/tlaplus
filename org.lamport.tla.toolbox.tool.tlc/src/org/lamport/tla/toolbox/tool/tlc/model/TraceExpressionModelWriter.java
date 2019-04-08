@@ -94,6 +94,43 @@ public class TraceExpressionModelWriter extends ModelWriter {
 	    return expressionData;
 	}
 
+	public void addTraceFunction(final List<SimpleTLCState> input) {
+		// Filter stuttering or back2state instances from trace.
+		final List<SimpleTLCState> trace = input.stream()
+				.filter(state -> !state.isBackToState() && !state.isStuttering())
+				.collect(java.util.stream.Collectors.toList());
+		
+		if (trace.isEmpty()) {
+			return;
+	    }
+		
+	    final StringBuffer traceFunctionDef = new StringBuffer();
+       
+		traceFunctionDef.append(COMMENT).append("TRACE EXPLORER identifier definition ").append(ATTRIBUTE).append("TETrace")
+				.append(CR);
+
+		traceFunctionDef.append("TETrace").append(DEFINES);
+
+		traceFunctionDef.append("<<").append(CR);
+		for (int j = 0; j < trace.size(); j++) {
+			final SimpleTLCState state = trace.get(j);
+
+			traceFunctionDef.append(L_PAREN).append(state.asFunction()).append(R_PAREN);
+			
+			if (j < trace.size() - 1) {
+				traceFunctionDef.append(COMMA).append(CR);
+			}
+		}
+		traceFunctionDef.append(CR).append(">>");
+		
+		traceFunctionDef.append(CR);
+        
+        traceFunctionDef.append(SEP).append(CR).append(CR);
+
+        // append the expression definitions
+        tlaBuffer.append(traceFunctionDef.toString());
+	}
+
 	/**
 	 * This only changes the tla file. This method adds a variable declaration
 	 * for each element of traceExpressionData and, if the flag addDefinitions is true,

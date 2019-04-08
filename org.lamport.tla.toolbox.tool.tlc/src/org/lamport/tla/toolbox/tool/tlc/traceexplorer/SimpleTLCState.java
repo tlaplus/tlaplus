@@ -146,4 +146,21 @@ public class SimpleTLCState
         return (SimpleTLCVariable[]) vars.toArray(new SimpleTLCVariable[vars.size()]);
     }
 
+    public String asFunction() {
+    	final StringBuffer buf = new StringBuffer();
+    	buf.append("[");
+    	for (int i = 0; i < vars.length; i++) {
+    		final SimpleTLCVariable var = vars[i];
+    		
+			buf.append(var.getVarName());
+			buf.append(" |-> ");
+			buf.append(var.getValueAsString());
+    		
+			if (i < vars.length - 1) {
+				buf.append(org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.COMMA);
+			}
+		}
+    	buf.append("]");
+    	return buf.toString();
+    }
 }
