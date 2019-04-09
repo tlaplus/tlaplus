@@ -78,6 +78,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
@@ -539,8 +540,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     protected void createBodyContent(IManagedForm managedForm)
     {
         final int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED | SWT.WRAP;
-        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION;
-        final int expressionFieldFlags = textFieldFlags | SWT.WRAP;
+        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION | SWT.WRAP;
 
         final FormToolkit toolkit = managedForm.getToolkit();
         final Composite body = managedForm.getForm().getBody();
@@ -646,13 +646,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.minimumWidth = 360;
         expressionComposite.setLayoutData(gd);
-        gLayout = new GridLayout(1, false);
-        gLayout.marginHeight = 0;
-        gLayout.marginBottom = 5;
-        expressionComposite.setLayout(gLayout);
+        TableWrapLayout twl = new TableWrapLayout();
+        twl.numColumns = 1;
+        twl.topMargin = 0;
+        twl.bottomMargin = 5;
+        expressionComposite.setLayout(twl);
 
-        toolkit.createLabel(expressionComposite, "Expression: ");
-		expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, expressionFieldFlags,
+        Label l = toolkit.createLabel(expressionComposite, "Expression: ");
+		twd = new TableWrapData();
+		twd.maxWidth = 360;
+		l.setLayoutData(twd);
+		expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, textFieldFlags,
 				new TLASourceViewerConfiguration());
 		expressionEvalInput.getTextWidget().addKeyListener(new KeyListener() {
 			@Override
@@ -673,34 +677,45 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			}
 
 			@Override
-			public void keyReleased(KeyEvent e) {
-			}
+			public void keyReleased(KeyEvent e) { }
 		});
+        
+        // Reminder that this grid data is for this text area within the expression composite within the result area
+		twd = new TableWrapData();
+		twd.align = TableWrapData.FILL;
+		twd.grabHorizontal = true;
+		twd.maxWidth = 360;
+		twd.heightHint = 80;
+		twd.valign = TableWrapData.MIDDLE;
+        expressionEvalInput.getTextWidget().setLayoutData(twd);
 		
         // We want the value section to get larger as the window
         // gets larger but not the expression section.
 		final Composite valueComposite = toolkit.createComposite(resultArea);
-        valueComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        valueComposite.setLayout(gLayout);
-        toolkit.createLabel(valueComposite, "Value: ");
-        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, expressionFieldFlags);
+        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd.minimumWidth = 360;
+        valueComposite.setLayoutData(gd);
+        twl = new TableWrapLayout();
+        twl.numColumns = 1;
+        twl.topMargin = 0;
+        twl.bottomMargin = 5;
+        valueComposite.setLayout(twl);
 
-        // We dont want these items to fill excess
-        // vertical space because then in some cases
-        // this causes the text box to be extremely
-        // tall instead of having a scroll bar.
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 80;
-        expressionEvalResult.getTextWidget().setLayoutData(gd);
-        // The expression section should not grab excess horizontal
-        // space because if this flag is set to true and the length
-        // of the expression causes a vertical scroll bar to appear,
-        // then when the model is run, the expression text box
-        // will get wide enough to fit the entire expression on
-        // one line instead of wrapping the text.
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 80;
-        expressionEvalInput.getTextWidget().setLayoutData(gd);
+        l = toolkit.createLabel(valueComposite, "Value: ");
+		twd = new TableWrapData();
+		twd.maxWidth = 360;
+		l.setLayoutData(twd);
+        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, textFieldFlags);
+
+        // Reminder that this grid data is for this text area within the value composite within the result area
+		twd = new TableWrapData();
+		twd.align = TableWrapData.FILL;
+		twd.grabHorizontal = true;
+		twd.maxWidth = 360;
+		twd.heightHint = 80;
+		twd.valign = TableWrapData.MIDDLE;
+		expressionEvalResult.getTextWidget().setLayoutData(twd);
+
         // We want this font to be the same as the input.
         // If it was not set it would be the same as the font
         // in the module editor.
@@ -734,15 +749,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 getExpansionListener());
         sections.put(SEC_OUTPUT, section);
         final Composite outputArea = (Composite) section.getClient();
-        outputArea.setLayout(new GridLayout());
-        // output viewer
-        userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags | SWT.WRAP);
-
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 300;
-        gd.minimumHeight = 300;
-        userOutput.getControl().setLayoutData(gd);
-        userOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
+        twl = new TableWrapLayout();
+        twl.numColumns = 1;
+        outputArea.setLayout(twl);
+        // output viewer -- see progressOutput comment complaints concerning SWT.WRAP included in the text field flags
+        userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
+        twd = new TableWrapData();
+        twd.maxWidth = 600;
+        twd.maxHeight = 240;
+        twd.grabHorizontal = true;
+        userOutput.getTextWidget().setLayoutData(twd);
+        userOutput.getTextWidget().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
         // -------------------------------------------------------------------
         // progress section
@@ -755,13 +772,22 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         sections.put(SEC_PROGRESS, section);
         Composite progressArea = (Composite) section.getClient();
         progressArea = (Composite) section.getClient();
-        progressArea.setLayout(new GridLayout());
+        twl = new TableWrapLayout();
+        twl.numColumns = 1;
+        progressArea.setLayout(twl);
 
+        // I am regularly stunned by how crappy and quirky SWT is... in this case, if we don't have SWT.WRAP in the,
+        //		flags mask, the below maxWidth is observed on expansion of the text area (which we really don't want)
+        //		but if we turn on WRAP, then the text area expands to fill the entire width but observes width shrinking
+        //		of its parent editor. If we instead use GridLayout (with or without WRAP), width shrinking is 
+        //		completely ignored and the width of the text area is the longest line of text...
         progressOutput = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.minimumHeight = 300;
-        progressOutput.getControl().setLayoutData(gd);
-        progressOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
+        twd = new TableWrapData();
+        twd.maxWidth = 600;
+        twd.maxHeight = 240;
+        twd.grabHorizontal = true;
+        progressOutput.getTextWidget().setLayoutData(twd);
+        progressOutput.getTextWidget().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
         Vector<Control> controls = new Vector<Control>();
         controls.add(userOutput.getControl());
