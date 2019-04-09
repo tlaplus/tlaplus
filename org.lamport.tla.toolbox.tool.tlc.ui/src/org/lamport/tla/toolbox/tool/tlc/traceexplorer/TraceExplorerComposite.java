@@ -62,6 +62,7 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.model.TraceExpressionModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
@@ -548,8 +549,13 @@ public class TraceExplorerComposite
     protected Formula doEditFormula(Formula formula)
     {
         // Create the wizard
-        FormulaWizard wizard = new FormulaWizard(section.getText(), section.getDescription());
-        wizard.setFormula(formula);
+		FormulaWizard wizard = new FormulaWizard(section.getText(),
+				"Enter an expression to be evaluated at each state of the trace.",
+				String.format(
+						"The expression may be named and may include the %s and %s operators (click question mark below for details).",
+						TraceExpressionModelWriter.TRACE, TraceExpressionModelWriter.POSITION),
+				"ErrorTraceExplorerExpression");
+		wizard.setFormula(formula);
 
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);

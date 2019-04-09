@@ -47,5 +47,13 @@
      <description>Click &quot;Getting Started&quot; below</description>
      <topic href="../org.lamport.tla.toolbox.doc/html/gettingstarted/gettingstarted.html" label="Getting Started"/>
   </context>
+  <context id="ErrorTraceExplorerExpression" title="Error-Trace Explorer Expressions">
+     <description>A named expression is syntactically equivalent to a zero-arity operator such that &quot;id == expr&quot; where &quot;id&quot; is an identifier not declared or defined elsewhere.  Subsequent named expressions may refer to named expressions stated above. In other words, named expressions are composable.
+
+The _TEPosition operator is defined for each state to be equivalent to the value shown as &quot;State (num = N)&quot; in the Error-Trace where N is in Nat.
+
+_TETrace is defined to be the sequence of states such that _TETrace[_TEPosition] is equivalent to the state at position _TEPosition.</description>
+     <topic href="../org.lamport.tla.toolbox.doc/html/model/results-page.html" label="Model Checking Results Page"/>
+  </context>
  
 </contexts>
