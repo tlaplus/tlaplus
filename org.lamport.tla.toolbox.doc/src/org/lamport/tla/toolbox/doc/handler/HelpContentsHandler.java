@@ -18,6 +18,7 @@ import org.eclipse.ui.PlatformUI;
 public class HelpContentsHandler extends AbstractHandler implements IHandler {
 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		final String url = event.getParameter("org.lamport.tla.toolbox.doc.contents.param");
 		BusyIndicator.showWhile(null, new Runnable() {
 			public void run() {
 				final IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -28,7 +29,11 @@ public class HelpContentsHandler extends AbstractHandler implements IHandler {
 					final Field f = HelpView.class.getDeclaredField("reusableHelpPart");
 					f.setAccessible(true);
 					final ReusableHelpPart helpPart = (ReusableHelpPart) f.get(helpView);
-					helpPart.showPage(ReusableHelpPart.HV_ALL_TOPICS_PAGE, true);
+					if (url == null) {
+						helpPart.showPage(ReusableHelpPart.HV_ALL_TOPICS_PAGE, true);
+					} else {
+						helpPart.showURL(url, true);
+					}
 				} catch (final NoSuchFieldException e) {
 					e.printStackTrace();
 				} catch (final SecurityException e) {
