@@ -386,7 +386,9 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
 
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);
-        dialog.setHelpAvailable(true);
+		// MAK 04/2019: Commented, because setting to true doesn't magically create help
+		// content. Thus, don't show a no-op help button.
+        //dialog.setHelpAvailable(true); 
 
         // Open the wizard dialog
         if (Window.OK == dialog.open())

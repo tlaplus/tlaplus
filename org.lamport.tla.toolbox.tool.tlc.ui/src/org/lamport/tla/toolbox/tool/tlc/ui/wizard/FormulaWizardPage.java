@@ -14,27 +14,37 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAFastPartitioner;
 import org.lamport.tla.toolbox.editor.basic.TLAPartitionScanner;
 import org.lamport.tla.toolbox.editor.basic.TLASourceViewerConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * A page with a simple field for formula editing
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class FormulaWizardPage extends WizardPage
 {
     private SourceViewer sourceViewer;
     private Document document;
+	private final String extendedDescription;
+	private final String helpId;
 
     public FormulaWizardPage(String action, String description)
+    {
+        this(action, description, null, null);
+    }
+    
+    public FormulaWizardPage(String action, String description, String extendedDescription, String helpId)
     {
         super("FormulaWizardPage");
         setTitle(action);
         setDescription(description);
+        this.extendedDescription = extendedDescription;
+        this.helpId = helpId;
     }
 
     /* (non-Javadoc)
@@ -42,10 +52,15 @@ public class FormulaWizardPage extends WizardPage
      */
     public void createControl(Composite parent)
     {
+    	
         Composite container = new Composite(parent, SWT.NULL);
         GridLayout layout = new GridLayout(1, false);
         container.setLayout(layout);
-
+        
+        if (helpId != null) {
+        	UIHelper.setHelp(container, helpId);
+        }
+        
 		sourceViewer = FormHelper.createSourceViewer(container, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL,
 				new TLASourceViewerConfiguration());
 		sourceViewer.getTextWidget().addKeyListener(new KeyListener() {
@@ -102,6 +117,17 @@ public class FormulaWizardPage extends WizardPage
 		document.setDocumentPartitioner(TLAPartitionScanner.TLA_PARTITIONING, partitioner);
 		partitioner.connect(document);
         sourceViewer.setDocument(this.getDocument());
+
+        
+        // Add extended description below source viewer if given.
+        if (extendedDescription != null) {
+        	final Label extendedLbl = new Label(container, SWT.WRAP);
+        	extendedLbl.setText(extendedDescription);
+			gd = new GridData(GridData.FILL_HORIZONTAL);
+			gd.widthHint = 400; // same width as source viewer
+			extendedLbl.setLayoutData(gd);
+        }
+
         setControl(container);
     }
 

@@ -8,7 +8,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 /**
  * A wizard for entering formulas
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class FormulaWizard extends Wizard
 {
@@ -19,8 +18,13 @@ public class FormulaWizard extends Wizard
      */
     public FormulaWizard(String action, String description)
     {
+    	this(action, description, null, null);
+    }
+    
+    public FormulaWizard(String action, String description, String extendedDescription, String helpId)
+    {
         super();
-        page = new FormulaWizardPage(action, description);
+        page = new FormulaWizardPage(action, description, extendedDescription, helpId);
     }
 
     /*
