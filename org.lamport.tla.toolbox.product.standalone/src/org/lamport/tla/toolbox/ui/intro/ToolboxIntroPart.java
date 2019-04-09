@@ -99,7 +99,7 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		// the outerContainer Composite is disposed.
 		final LocalResourceManager localResourceManager = new LocalResourceManager(JFaceResources.getResources(),
 				outerContainer);
-		final Color backgroundColor = localResourceManager
+		Color backgroundColor = localResourceManager
 				.createColor(ColorDescriptor.createFrom(new RGB(255, 255, 228)));
 		outerContainer.setBackground(backgroundColor);
 
@@ -177,10 +177,11 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 			}
 		});
 		
-		new Label(outerContainer, SWT.NONE);
-		new Label(outerContainer, SWT.NONE);
-		new Label(outerContainer, SWT.NONE);
-		
+		final Label verticalFillUp = new Label(outerContainer, SWT.NONE);
+		verticalFillUp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 2, 1));
+		verticalFillUp.setBackground(backgroundColor);
+
+
 		/* Examples */
 
 		final StyledText styledExamples = new StyledText(outerContainer, SWT.WRAP | SWT.CENTER);
@@ -213,11 +214,14 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		Label lbl = new Label(examples, SWT.NONE);
 		lbl.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
+		backgroundColor = localResourceManager.createColor(ColorDescriptor.createFrom(new RGB(255, 255, 245)));
+		
 		// https://github.com/tlaplus/Examples/tree/master/specifications/MissionariesAndCannibals
 		Button btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+		btnNewButton.setBackground(backgroundColor);
 		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		btnNewButton.setAlignment(SWT.CENTER);
-		btnNewButton.setText("Missionaries and Cannibals\n\n(TLA+)");
+		btnNewButton.setText("Missionaries and Cannibals\n(TLA+)");
 		btnNewButton.setData(specKey, "MissionariesAndCannibals.tla");
 		btnNewButton.setData(zipKey, "examples/MissionariesAndCannibals.zip");
 		btnNewButton.addSelectionListener(selectionAdapter);		
@@ -233,9 +237,10 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		
 		// https://github.com/tlaplus/Examples/tree/master/specifications/N-Queens
 		btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+		btnNewButton.setBackground(backgroundColor);
 		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		btnNewButton.setAlignment(SWT.CENTER);
-		btnNewButton.setText("N Queens\n\n(TLA+)");
+		btnNewButton.setText("N Queens\n(TLA+)");
 		btnNewButton.setData(specKey, "Queens.tla");
 		btnNewButton.setData(zipKey, "examples/Queens.zip");
 		btnNewButton.addSelectionListener(selectionAdapter);		
@@ -249,12 +254,13 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		
 		// https://github.com/tlaplus/Examples/tree/master/specifications/N-Queens
 		btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+		btnNewButton.setBackground(backgroundColor);
 		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		btnNewButton.setAlignment(SWT.CENTER);
 		btnNewButton.setData(specKey, "QueensPluscal.tla");
 		btnNewButton.setData(zipKey, "examples/Queens.zip");
 		btnNewButton.addSelectionListener(selectionAdapter);		
-		btnNewButton.setText("N Queens\n\n(PlusCal)");
+		btnNewButton.setText("N Queens\n(PlusCal)");
 		// Wording adopted from https://en.wikipedia.org/wiki/Eight_queens_puzzle
 		btnNewButton.setToolTipText(
 				"The N queens puzzle is the problem of placing N chess queens on an N×N chessboard so that no two "
@@ -275,9 +281,10 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 //		
 //		// https://github.com/tlaplus/Examples/tree/master/specifications/Prisoners
 //		btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+//		btnNewButton.setBackground(backgroundColor);
 //		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 //		btnNewButton.setAlignment(SWT.CENTER);
-//		btnNewButton.setText("Prisoners\n\n(TLA+, Liveness)");
+//		btnNewButton.setText("Prisoners\n(TLA+, Liveness)");
 //		btnNewButton.setData(specKey, "Prisoners.tla");
 //		btnNewButton.setData(zipKey, "examples/Prisoners.zip");
 //		btnNewButton.addSelectionListener(selectionAdapter);		
@@ -294,12 +301,13 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 //		// https://github.com/tlaplus/Examples/tree/master/specifications/tower_of_hanoi
 //		// Download archive via: https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/tlaplus/Examples/tree/master/specifications/tower_of_hanoi&fileName=Hanoi&rootDirectory=false
 //		btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+//		btnNewButton.setBackground(backgroundColor);
 //		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 //		btnNewButton.setAlignment(SWT.CENTER);
 //		btnNewButton.setData(specKey, "Hanoi.tla");
 //		btnNewButton.setData(zipKey, "examples/Hanoi.zip");
 //		btnNewButton.addSelectionListener(selectionAdapter);		
-//		btnNewButton.setText("Towers of Hanoi\n\n(TLA+)");
+//		btnNewButton.setText("Towers of Hanoi\n(TLA+)");
 //		// From https://en.wikipedia.org/wiki/Tower_of_Hanoi
 //		btnNewButton.setToolTipText(
 //				"The Tower of Hanoi is a mathematical game or puzzle. It consists of three rods and a number of disks of different sizes, which can slide onto any rod. The puzzle starts with the disks in a neat stack in ascending order of size on one rod, the smallest at the top, thus making a conical shape.\n" + 
@@ -317,9 +325,10 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 //		
 //		// https://github.com/tlaplus/Examples/tree/master/specifications/allocator
 //		btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+//		btnNewButton.setBackground(backgroundColor);
 //		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 //		btnNewButton.setAlignment(SWT.CENTER);
-//		btnNewButton.setText("Simple Allocator\n\n(PlusCal)");
+//		btnNewButton.setText("Simple Allocator\n(PlusCal)");
 //		btnNewButton.setData(specKey, "SimpleAllocator.tla");
 //		btnNewButton.setData(zipKey, "examples/SimpleAllocator.zip");
 //		btnNewButton.addSelectionListener(selectionAdapter);		
@@ -343,9 +352,10 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		
 		// https://github.com/tlaplus/Examples/tree/master/specifications/ewd840
 		btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+		btnNewButton.setBackground(backgroundColor);
 		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		btnNewButton.setAlignment(SWT.CENTER);
-		btnNewButton.setText("Termination Detection In A Ring\n\n(TLA+)");
+		btnNewButton.setText("Termination Detection\n(TLA+)");
 		btnNewButton.setData(specKey, "EWD840.tla");
 		btnNewButton.setData(zipKey, "examples/EWD840.zip");
 		btnNewButton.addSelectionListener(selectionAdapter);		
@@ -357,9 +367,10 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		
 		// https://github.com/tlaplus/Examples/tree/master/specifications/ewd840
 		btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+		btnNewButton.setBackground(backgroundColor);
 		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		btnNewButton.setAlignment(SWT.CENTER);
-		btnNewButton.setText("Termination Detection In A Ring (Proof)\n\n(Requires TLAPS)");
+		btnNewButton.setText("Termination Detection\n(TLAPS)");
 		btnNewButton.setData(specKey, "EWD840_proof.tla");
 		btnNewButton.setData(zipKey, "examples/EWD840.zip");
 		btnNewButton.addSelectionListener(selectionAdapter);		
@@ -371,9 +382,10 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		
 		// https://github.com/tlaplus/Examples/tree/master/specifications/dijkstra-mutex
 		btnNewButton = new Button(examples, SWT.WRAP | SWT.FLAT);
+		btnNewButton.setBackground(backgroundColor);
 		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		btnNewButton.setAlignment(SWT.CENTER);
-		btnNewButton.setText("Dijkstra Mutex\n\n(PlusCal)");
+		btnNewButton.setText("Dijkstra Mutex\n(PlusCal)");
 		btnNewButton.setData(specKey, "DijkstraMutex.tla");
 		btnNewButton.setData(zipKey, "examples/DijkstraMutex.zip");
 		btnNewButton.addSelectionListener(selectionAdapter);		
@@ -386,12 +398,12 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		
 		lbl = new Label(examples, SWT.NONE);
 		lbl.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		// a little bit of space.
+		new Label(outerContainer, SWT.NONE);
+		new Label(outerContainer, SWT.NONE);
 		
 		/* Toolbox version */
-		
-		final Label verticalFillUp = new Label(outerContainer, SWT.NONE);
-		verticalFillUp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 2, 1));
-		verticalFillUp.setBackground(backgroundColor);
 
 		final Label horizontalLine = new Label(outerContainer, SWT.SEPARATOR | SWT.HORIZONTAL);
 		horizontalLine.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
