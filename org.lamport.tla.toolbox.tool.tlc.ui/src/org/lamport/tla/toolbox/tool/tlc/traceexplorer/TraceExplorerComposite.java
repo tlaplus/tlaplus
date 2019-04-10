@@ -38,6 +38,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -293,48 +294,34 @@ public class TraceExplorerComposite
      */
     protected void createButtons(Composite sectionArea, FormToolkit toolkit)
     {
-        GridData gd;
+        final GridData gd = new GridData();
+        gd.verticalAlignment = SWT.TOP;
+        gd.horizontalAlignment = SWT.FILL;
 
         // add button
         buttonAdd = toolkit.createButton(sectionArea, "Add", SWT.PUSH);
         buttonAdd.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonAdd.setLayoutData(gd);
+        buttonAdd.setLayoutData(GridDataFactory.copyData(gd));
 
         // edit button
         buttonEdit = toolkit.createButton(sectionArea, "Edit", SWT.PUSH);
         buttonEdit.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonEdit.setLayoutData(gd);
+        buttonEdit.setLayoutData(GridDataFactory.copyData(gd));
 
         // remove button
         buttonRemove = toolkit.createButton(sectionArea, "Remove", SWT.PUSH);
         buttonRemove.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonRemove.setLayoutData(gd);
+        buttonRemove.setLayoutData(GridDataFactory.copyData(gd));
 
         // explore button
         buttonExplore = toolkit.createButton(sectionArea, "Explore", SWT.PUSH);
         buttonExplore.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonExplore.setLayoutData(gd);
+        buttonExplore.setLayoutData(GridDataFactory.copyData(gd));
 
         // restore button
         buttonRestore = toolkit.createButton(sectionArea, "Restore", SWT.PUSH);
         buttonRestore.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonRestore.setLayoutData(gd);
-
+        buttonRestore.setLayoutData(GridDataFactory.copyData(gd));
     }
 
     /**
