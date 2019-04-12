@@ -447,37 +447,14 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
      */
     public final Object lookup(SymbolNode opNode, Context c, TLCState s, boolean cutoff)
     {
-        boolean isVarDecl = (opNode.getKind() == VariableDeclKind);
-        Object result = c.lookup(opNode, cutoff && isVarDecl);
-        if (result != null)
-            return result;
-
-        result = opNode.getToolObject(toolId);
-        if (result != null)
-            return result;
-
-        if (opNode.getKind() == UserDefinedOpKind)
-        {
-            // Changed by LL on 10 Apr 2011 from
-            //
-            //    result = ((OpDefNode) opNode).getBody().getToolObject(toolId);
-            //
-            // to the following
-            ExprNode body = ((OpDefNode) opNode).getBody();
-            result = body.getToolObject(toolId);
-            while ((result == null) && (body.getKind() == SubstInKind)) {
-                body = ((SubstInNode) body).getBody();
-                result = body.getToolObject(toolId);
-            }
-            // end change
-
-            if (result != null)
-                return result;
-        }
-
+    	Object result = lookup(opNode, c, cutoff);
+    	if (result != opNode) {
+    		return result;
+    	}
         result = s.lookup(opNode.getName());
-        if (result != null)
-            return result;
+        if (result != null) {
+        	return result;
+        }
         return opNode;
     }
 
@@ -485,12 +462,14 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
     {
         boolean isVarDecl = (opNode.getKind() == VariableDeclKind);
         Object result = c.lookup(opNode, cutoff && isVarDecl);
-        if (result != null)
-            return result;
+        if (result != null) {
+        	return result;
+        }
 
         result = opNode.getToolObject(toolId);
-        if (result != null)
-            return result;
+        if (result != null) {
+        	return result;
+        }
 
         if (opNode.getKind() == UserDefinedOpKind)
         {
@@ -506,8 +485,10 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
                 result = body.getToolObject(toolId);
             }
             // end change
-            if (result != null)
-                return result;
+
+            if (result != null) {
+            	return result;
+            }
         }
         return opNode;
     }
