@@ -7,11 +7,7 @@
 package tlc2.tool.impl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 
-import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
@@ -154,19 +150,6 @@ public class Tool
   }
 
 	@Override
-	public List<File> getModuleFiles(final FilenameToStream resolver) {
-		final List<File> result = new ArrayList<File>();
-
-		final Enumeration<ParseUnit> parseUnitContext = this.specObj.parseUnitContext.elements();
-		while (parseUnitContext.hasMoreElements()) {
-			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
-			File resolve = resolver.resolve(pu.getFileName(), false);
-			result.add(resolve);
-		}
-		return result;
-	}
-  
-  @Override
   public final void setCallStack()
   {
       this.callStack = new CallStack();

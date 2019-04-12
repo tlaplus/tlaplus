@@ -5,10 +5,15 @@
 
 package tlc2.tool.impl;
 
+import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
@@ -935,4 +940,16 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
     }
 
 	abstract IValue eval(SemanticNode body, Context empty, TLCState empty2, CostModel doNotRecord);
+
+	public List<File> getModuleFiles(final FilenameToStream resolver) {
+		final List<File> result = new ArrayList<File>();
+	
+		final Enumeration<ParseUnit> parseUnitContext = this.specObj.parseUnitContext.elements();
+		while (parseUnitContext.hasMoreElements()) {
+			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
+			File resolve = resolver.resolve(pu.getFileName(), false);
+			result.add(resolve);
+		}
+		return result;
+	}
 }
