@@ -1088,7 +1088,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          * object `body' in this order, `left' is displayed to the left of `right'.
          */
         // left
-        Composite left = toolkit.createComposite(body);
+        final Composite left = toolkit.createComposite(body);
         gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -1098,7 +1098,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         left.setLayoutData(twd);
 
         // right
-        Composite right = toolkit.createComposite(body);
+        final Composite right = toolkit.createComposite(body);
         gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;

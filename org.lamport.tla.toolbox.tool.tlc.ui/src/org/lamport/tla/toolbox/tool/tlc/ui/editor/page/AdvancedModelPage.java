@@ -32,6 +32,7 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
@@ -708,40 +709,51 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         FormToolkit toolkit = managedForm.getToolkit();
         Composite body = managedForm.getForm().getBody();
 
+        GridLayout gl;
         GridData gd;
         TableWrapData twd;
 
+        TableWrapLayout twl = new TableWrapLayout();
+        twl.leftMargin = 0;
+        twl.rightMargin = 0;
+        twl.numColumns = 2;
+        body.setLayout(twl);
+
         // left
-        Composite left = toolkit.createComposite(body);
+        final Composite left = toolkit.createComposite(body);
+        gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        left.setLayout(gl);
         twd = new TableWrapData(TableWrapData.FILL_GRAB);
         twd.grabHorizontal = true;
-        left.setLayout(new GridLayout(1, false));
         left.setLayoutData(twd);
 
         // right
-        Composite right = toolkit.createComposite(body);
+        final Composite right = toolkit.createComposite(body);
+        gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        right.setLayout(gl);
         twd = new TableWrapData(TableWrapData.FILL_GRAB);
         twd.grabHorizontal = true;
         right.setLayoutData(twd);
-        right.setLayout(new GridLayout(1, false));
 
         Section section;
 
         // ---------------------------------------------------------------
         // new definitions
 
-        section = FormHelper
-                .createSectionComposite(
-                        left,
-                        "Additional Definitions",
+        section = FormHelper.createSectionComposite(left, "Additional Definitions",
                         "Definitions required for the model checking, in addition to the definitions in the specification modules.",
                         toolkit, sectionFlags, getExpansionListener());
         ValidateableSectionPart newDefinitionsPart = new ValidateableSectionPart(section, this, SEC_NEW_DEFINITION);
         managedForm.addPart(newDefinitionsPart);
         DirtyMarkingListener newDefinitionsListener = new DirtyMarkingListener(newDefinitionsPart, true);
 
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         section.setLayoutData(gd);
 
         Composite newDefinitionsArea = (Composite) section.getClient();
@@ -780,62 +792,18 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         managedForm.addPart(definitionsPart);
         // layout
-        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         definitionsPart.getSection().setLayoutData(gd);
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 100;
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.minimumWidth = 100;
         gd.verticalSpan = 3;
-        definitionsPart.getTableViewer().getTable().setLayoutData(gd);
         definitionsTable = definitionsPart.getTableViewer();
+        definitionsTable.getTable().setLayoutData(gd);
         dm.bindAttribute(MODEL_PARAMETER_DEFINITIONS, definitionsTable, definitionsPart);
-
-        // ---------------------------------------------------------------
-        // constraint
-        section = FormHelper.createSectionComposite(left, "State Constraint",
-                "A state constraint is a formula restricting the possible states by a state predicate.", toolkit,
-                sectionFlags, getExpansionListener());
-        ValidateableSectionPart constraintPart = new ValidateableSectionPart(section, this, SEC_STATE_CONSTRAINT);
-        managedForm.addPart(constraintPart);
-        DirtyMarkingListener constraintListener = new DirtyMarkingListener(constraintPart, true);
-
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
-        section.setLayoutData(gd);
-
-        Composite constraintArea = (Composite) section.getClient();
-        constraintSource = FormHelper.createFormsSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
-        // layout of the source viewer
-        twd = new TableWrapData(TableWrapData.FILL);
-        twd.heightHint = 60;
-        twd.grabHorizontal = true;
-        constraintSource.getTextWidget().setLayoutData(twd);
-        constraintSource.addTextListener(constraintListener);
-        constraintSource.getTextWidget().addFocusListener(focusListener);
-        dm.bindAttribute(MODEL_PARAMETER_CONSTRAINT, constraintSource, constraintPart);
-
-        // ---------------------------------------------------------------
-        // action constraint
-        section = FormHelper.createSectionComposite(right, "Action Constraint",
-                "An action constraint is a formula restricting the possible transitions.", toolkit, sectionFlags,
-                getExpansionListener());
-        ValidateableSectionPart actionConstraintPart = new ValidateableSectionPart(section, this, SEC_ACTION_CONSTRAINT);
-        managedForm.addPart(actionConstraintPart);
-        DirtyMarkingListener actionConstraintListener = new DirtyMarkingListener(actionConstraintPart, true);
-
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
-        section.setLayoutData(gd);
-
-        Composite actionConstraintArea = (Composite) section.getClient();
-        actionConstraintSource = FormHelper.createFormsSourceViewer(toolkit, actionConstraintArea, SWT.V_SCROLL);
-        // layout of the source viewer
-        twd = new TableWrapData(TableWrapData.FILL);
-        twd.heightHint = 60;
-        twd.grabHorizontal = true;
-        actionConstraintSource.getTextWidget().setLayoutData(twd);
-        actionConstraintSource.addTextListener(actionConstraintListener);
-        actionConstraintSource.getTextWidget().addFocusListener(focusListener);
-        dm.bindAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintSource, actionConstraintPart);
 
         // ---------------------------------------------------------------
         // modelValues
@@ -844,8 +812,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         ValidateableSectionPart modelValuesPart = new ValidateableSectionPart(section, this, SEC_MODEL_VALUES);
         managedForm.addPart(modelValuesPart);
         DirtyMarkingListener modelValuesListener = new DirtyMarkingListener(modelValuesPart, true);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         section.setLayoutData(gd);
 
         Composite modelValueArea = (Composite) section.getClient();
@@ -860,13 +829,71 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         dm.bindAttribute(MODEL_PARAMETER_MODEL_VALUES, modelValuesSource, modelValuesPart);
 
         // ---------------------------------------------------------------
+        // action constraint
+        section = FormHelper.createSectionComposite(right, "Action Constraint",
+                "An action constraint is a formula restricting the possible transitions.", toolkit, sectionFlags,
+                getExpansionListener());
+        ValidateableSectionPart actionConstraintPart = new ValidateableSectionPart(section, this, SEC_ACTION_CONSTRAINT);
+        managedForm.addPart(actionConstraintPart);
+        DirtyMarkingListener actionConstraintListener = new DirtyMarkingListener(actionConstraintPart, true);
+
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        section.setLayoutData(gd);
+
+        Composite actionConstraintArea = (Composite) section.getClient();
+        actionConstraintSource = FormHelper.createFormsSourceViewer(toolkit, actionConstraintArea, SWT.V_SCROLL);
+        // layout of the source viewer
+        twd = new TableWrapData(TableWrapData.FILL);
+        twd.heightHint = 60;
+        twd.grabHorizontal = true;
+        actionConstraintSource.getTextWidget().setLayoutData(twd);
+        actionConstraintSource.addTextListener(actionConstraintListener);
+        actionConstraintSource.getTextWidget().addFocusListener(focusListener);
+        dm.bindAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintSource, actionConstraintPart);
+
+        // ---------------------------------------------------------------
+        // constraint
+        section = FormHelper.createSectionComposite(body, "State Constraint",
+                "A state constraint is a formula restricting the possible states by a state predicate.", toolkit,
+                sectionFlags, getExpansionListener());
+        ValidateableSectionPart constraintPart = new ValidateableSectionPart(section, this, SEC_STATE_CONSTRAINT);
+        managedForm.addPart(constraintPart);
+        DirtyMarkingListener constraintListener = new DirtyMarkingListener(constraintPart, true);
+
+        twd = new TableWrapData();
+        twd.colspan = 2;
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
+        section.setLayoutData(twd);
+
+        Composite constraintArea = (Composite) section.getClient();
+        constraintSource = FormHelper.createFormsSourceViewer(toolkit, constraintArea, SWT.V_SCROLL);
+        // layout of the source viewer
+        twd = new TableWrapData(TableWrapData.FILL);
+        twd.heightHint = 60;
+        twd.grabHorizontal = true;
+        constraintSource.getTextWidget().setLayoutData(twd);
+        constraintSource.addTextListener(constraintListener);
+        constraintSource.getTextWidget().addFocusListener(focusListener);
+        dm.bindAttribute(MODEL_PARAMETER_CONSTRAINT, constraintSource, constraintPart);
+
+        // ---------------------------------------------------------------
         // launch
-        section = createAdvancedLaunchSection(toolkit, right, sectionFlags);
+        section = createAdvancedLaunchSection(toolkit, body, sectionFlags);
         ValidateableSectionPart launchPart = new ValidateableSectionPart(section, this, SEC_LAUNCHING_SETUP);
         managedForm.addPart(launchPart);
         DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
+
+        twd = new TableWrapData();
+        twd.colspan = 2;
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
+        section.setLayoutData(twd);
+
         dm.bindAttribute(MODEL_PARAMETER_VIEW, viewSource, launchPart);
-        dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, launchPart);   
+        dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, launchPart);
         
         // dirty listeners
         simuArilText.addModifyListener(launchListener);
@@ -908,13 +935,11 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // advanced section
         Section advancedSection = FormHelper.createSectionComposite(parent, "TLC Options",
                 "Advanced settings of the TLC model checker", toolkit, sectionFlags, getExpansionListener());
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        advancedSection.setLayoutData(gd);
-
         Composite area = (Composite) advancedSection.getClient();
-        area.setLayout(new GridLayout(2, false));
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        area.setLayout(gl);
         
         // Model checking mode
         mcOption = toolkit.createButton(area, "Model-checking mode", SWT.RADIO);
