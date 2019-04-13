@@ -17,7 +17,6 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -1047,17 +1046,24 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         Section section;
 
         installTopMargin(body);
+
+        TableWrapLayout twl = new TableWrapLayout();
+        twl.leftMargin = 0;
+        twl.rightMargin = 0;
+        twl.numColumns = 2;
+        body.setLayout(twl);
         
         /*
          * Comments/notes section spanning two columns
          */
-        Composite top = toolkit.createComposite(body);
-        top.setLayout(FormHelper.createFormTableWrapLayout(false, 2));
-        twd = new TableWrapData(TableWrapData.FILL_GRAB);
-        twd.colspan = 2;
-        top.setLayoutData(twd);
         
-        section = FormHelper.createSectionComposite(top, "Model description", "", toolkit, sectionFlags, getExpansionListener());
+		section = FormHelper.createSectionComposite(body, "Model description", "", toolkit, sectionFlags,
+				getExpansionListener());
+        twd = new TableWrapData();
+        twd.colspan = 2;
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
+        section.setLayoutData(twd);
         
         final ValidateableSectionPart commentsPart = new ValidateableSectionPart(section, this, SEC_COMMENTS);
         managedForm.addPart(commentsPart);
@@ -1083,30 +1089,39 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
          */
         // left
         Composite left = toolkit.createComposite(body);
+        gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        left.setLayout(gl);
         twd = new TableWrapData(TableWrapData.FILL_GRAB);
         twd.grabHorizontal = true;
-        left.setLayout(new GridLayout(1, false));
         left.setLayoutData(twd);
 
         // right
         Composite right = toolkit.createComposite(body);
+        gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        right.setLayout(gl);
         twd = new TableWrapData(TableWrapData.FILL_GRAB);
         twd.grabHorizontal = true;
         right.setLayoutData(twd);
-        right.setLayout(new GridLayout(1, false));
 
         // ------------------------------------------
         // what is the spec
+        
         section = FormHelper.createSectionComposite(left, "What is the behavior spec?", "", toolkit, sectionFlags
                 | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
-        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
         section.setLayoutData(gd);
 
         Composite behaviorArea = (Composite)section.getClient();
-        gl = new GridLayout();
-        gl.numColumns = 1;
-        behaviorArea.setLayout(gl);
+        behaviorArea.setLayout(new GridLayout(1, false));
 
         ValidateableSectionPart behaviorPart = new ValidateableSectionPart(section, this, SEC_WHAT_IS_THE_SPEC);
         managedForm.addPart(behaviorPart);
@@ -1212,15 +1227,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         // ------------------------------------------
         // what to check
-        section = FormHelper.createSectionComposite(left, "What to check?", "", toolkit, sectionFlags
+        section = FormHelper.createSectionComposite(body, "What to check?", "", toolkit, sectionFlags
                 | Section.EXPANDED, getExpansionListener());
         // only grab horizontal space
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        section.setLayoutData(gd);
+        twd = new TableWrapData();
+        twd.colspan = 2;
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
+        section.setLayoutData(twd);
 
         Composite toBeCheckedArea = (Composite) section.getClient();
-        gl = new GridLayout();
-        gl.numColumns = 1;
+        gl = new GridLayout(1, false);
+        gl.verticalSpacing = 0;
         toBeCheckedArea.setLayout(gl);
 
         checkDeadlockButton = toolkit.createButton(toBeCheckedArea, "Deadlock", SWT.CHECK);
@@ -1252,21 +1270,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         ValidateableConstantSectionPart constantsPart = new ValidateableConstantSectionPart(right,
 				"What is the model?", "Specify the values of declared constants.", toolkit, sectionFlags, this,
 				SEC_WHAT_IS_THE_MODEL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        constantsPart.getSection().setLayoutData(gd);
         managedForm.addPart(constantsPart);
         constantTable = constantsPart.getTableViewer();
         dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable, constantsPart);
         Composite parametersArea = (Composite) constantsPart.getSection().getClient();
-
-        // TESTING XXXXXX
-        // managedForm.removePart(constantsPart);
-        // Control saved = right.getChildren()[0] ;
-        // constantTable.getTable().setSize(1000, 1000);
-        // constantTable.getTable().setVisible(false);
-        //        
-        // System.out.println("GetSize returns " +
-        // constantTable.getTable().getSize().x);
-        // right.getChildren()[0].setVisible(false);
-        // parametersArea.setVisible(false);
 
         // create a composite to put the text into
         Composite linksPanelToAdvancedPage = toolkit.createComposite(parametersArea);
@@ -1312,12 +1323,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         // ------------------------------------------
         // run tab
-        section = FormHelper.createSectionComposite(right, "How to run?", "TLC Parameters", toolkit, sectionFlags,
+        section = FormHelper.createSectionComposite(body, "How to run?", "TLC Parameters", toolkit, sectionFlags,
                 getExpansionListener());
-        section.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        twd = new TableWrapData();
+        twd.colspan = 2;
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
+        section.setLayoutData(twd);
 
         final Composite howToRunArea = (Composite) section.getClient();
         gl = new GridLayout(2, false);
+        gl.marginWidth = 0;
         howToRunArea.setLayout(gl);
 
         final ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
@@ -1339,7 +1355,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				if (needReset) {
 					tlcProfileCombo.select(lastSelectedTLCProfileIndex.get());
 				} else {
-					Logger.getAnonymousLogger().severe("handling selection");
 					final TLCConsumptionProfile profile = TLCConsumptionProfile.getProfileWithDisplayName(selectedText);
 					
 					lastSelectedTLCProfileIndex.set(tlcProfileCombo.getSelectionIndex());
@@ -1381,6 +1396,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         });
         gd = new GridData();
         gd.horizontalIndent = 30;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalAlignment = SWT.FILL;
         tlcProfileCombo.setLayoutData(gd);
         lastSelectedTLCProfileIndex = new AtomicInteger(tlcProfileCombo.getSelectionIndex());
         
@@ -1425,6 +1442,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         final Composite maxHeapScale = new Composite(howToRunArea, SWT.NONE);
         gl = new GridLayout(2, false);
         maxHeapScale.setLayout(gl);
+        gd = new GridData();
+        gd.horizontalIndent = 30;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        maxHeapScale.setLayoutData(gd);
 
         // field max heap size
         int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
@@ -1438,8 +1460,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			}
         });
         gd = new GridData();
-        gd.horizontalIndent = 30;
-        gd.widthHint = 250;
+        gd.minimumWidth = 250;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         maxHeapSize.setLayoutData(gd);
         maxHeapSize.setMaximum(99);
         maxHeapSize.setMinimum(1);
@@ -1469,6 +1492,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		
         gd = new GridData();
         gd.horizontalSpan = 2;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
         distributedOptions.setLayoutData(gd);
         
 		// No distribution has no options
@@ -1480,11 +1505,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Composite wrapping number of distributed FPSet and iface when ad hoc selected
 		 */
         final Composite adHocOptions = new Composite(distributedOptions, SWT.NONE);
-        gl = new GridLayout(2, true);
+        gl = new GridLayout(2, false);
+        gl.marginWidth = 0;
         adHocOptions.setLayout(gl);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        adHocOptions.setLayoutData(gd);
 		distributedOptions.setData(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey(), adHocOptions);
 		
         Button helpButton = HelpButton.helpButton(adHocOptions, "model/distributed-mode.html") ;
@@ -1492,26 +1515,23 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalSpan = 2;
         gd.horizontalAlignment = SWT.END;
         helpButton.setLayoutData(gd);
+        
 		/*
 		 * Server interface/hostname (This text shows the hostname detected by the Toolbox under which TLCServer
 		 * will listen)
 		 */
-        final Composite networkInterface = new Composite(adHocOptions, SWT.NONE) ;
-        gl = new GridLayout(2, true);
-        networkInterface.setLayout(gl);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        networkInterface.setLayoutData(gd);
 		
         // label
-        toolkit.createLabel(networkInterface, "Master's network address:");
+        toolkit.createLabel(adHocOptions, "Master's network address:");
 
         // field
-        networkInterfaceCombo = new Combo(networkInterface, SWT.NONE);
+        networkInterfaceCombo = new Combo(adHocOptions, SWT.NONE);
         networkInterfaceCombo.addSelectionListener(howToRunListener);
         networkInterfaceCombo.addFocusListener(focusListener);
         gd = new GridData();
         gd.horizontalIndent = 10;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalAlignment = SWT.FILL;
         networkInterfaceCombo.setLayoutData(gd);
         
         networkInterfaceCombo.setToolTipText("IP address to which workers (and distributed fingerprint sets) will connect.");
@@ -1579,19 +1599,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Distributed FPSet count
 		 */
 
-		// composite
-        final Composite distributedFPSetCount = new Composite(adHocOptions, SWT.NONE);
-        gl = new GridLayout(2, false);
-        distributedFPSetCount.setLayout(gl);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        distributedFPSetCount.setLayoutData(gd);
-		
         // label
-        toolkit.createLabel(distributedFPSetCount, "Number of distributed fingerprint sets (zero for single built-in set):");
+        toolkit.createLabel(adHocOptions, "Number of distributed fingerprint sets (zero for single built-in set):");
 
         // field
-        distributedFPSetCountSpinner = new Spinner(distributedFPSetCount, SWT.NONE);
+        distributedFPSetCountSpinner = new Spinner(adHocOptions, SWT.NONE);
         distributedFPSetCountSpinner.addSelectionListener(howToRunListener);
         distributedFPSetCountSpinner.addFocusListener(focusListener);
         gd = new GridData();
@@ -1612,11 +1624,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Composite wrapping all widgets related to jclouds
 		 */
         final Composite jcloudsOptions = new Composite(distributedOptions, SWT.NONE);
-        gl = new GridLayout(2, true);
+        gl = new GridLayout(2, false);
+        gl.marginWidth = 0;
         jcloudsOptions.setLayout(gl);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        jcloudsOptions.setLayoutData(gd);
 
  		/*
  		 * Distributed nodes count
@@ -1628,19 +1638,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gd.horizontalAlignment = SWT.END;
         helpButton.setLayoutData(gd);
         
- 		// composite
-		final Composite distributedNodesCount = new Composite(jcloudsOptions, SWT.NONE);
-		gl = new GridLayout(2, false);
-		distributedNodesCount.setLayout(gl);
-		gd = new GridData();
-		gd.horizontalSpan = 2;
-		distributedNodesCount.setLayoutData(gd);
-
 		// label
-		toolkit.createLabel(distributedNodesCount, "Number of compute nodes to use:");
+		toolkit.createLabel(jcloudsOptions, "Number of compute nodes to use:");
 
 		// field
-		distributedNodesCountSpinner = new Spinner(distributedNodesCount, SWT.NONE);
+		distributedNodesCountSpinner = new Spinner(jcloudsOptions, SWT.NONE);
 		distributedNodesCountSpinner.addSelectionListener(howToRunListener);
 		distributedNodesCountSpinner.addFocusListener(focusListener);
 		gd = new GridData();
@@ -1660,20 +1662,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		
 		/*
 		 * Result mail address input
-		 */
-        final Composite resultAddress = new Composite(jcloudsOptions, SWT.NONE) ;
-        gl = new GridLayout(2, false);
-        resultAddress.setLayout(gl);
+		 */        
+		toolkit.createLabel(jcloudsOptions, "Result mailto addresses:");
+		resultMailAddressText = toolkit.createText(jcloudsOptions, "", SWT.BORDER);
+		resultMailAddressText.setMessage("my-name@my-domain.org,alternative-name@alternative-domain.org");
 		final String resultAddressTooltip = "A list (comma-separated) of one to N email addresses to send the model checking result to.";
-        resultAddress.setToolTipText(resultAddressTooltip);
-        
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        resultAddress.setLayoutData(gd);
-        
-		toolkit.createLabel(resultAddress, "Result mailto addresses:");
-		resultMailAddressText = toolkit.createText(resultAddress, "", SWT.BORDER);
-		resultMailAddressText.setMessage("my-name@my-domain.org,alternative-name@alternative-domain.org"); // hint
 		resultMailAddressText.setToolTipText(resultAddressTooltip);
 		resultMailAddressText.addKeyListener(new KeyAdapter() {
 			private final ModelEditor modelEditor = (ModelEditor) getEditor();
@@ -1699,10 +1692,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			}
 		});
         gd = new GridData();
-        gd.horizontalAlignment = SWT.LEFT;
+        gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalIndent = 10;
-        gd.minimumWidth = 400;
+        gd.minimumWidth = 330;
         resultMailAddressText.setLayoutData(gd);
         resultMailAddressText.addModifyListener(howToRunListener);
         dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
