@@ -547,7 +547,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         TableWrapData twd;
         Section section;
+        GridLayout gl;
         GridData gd;
+
+        TableWrapLayout twl = new TableWrapLayout();
+        twl.leftMargin = 0;
+        twl.rightMargin = 0;
+        body.setLayout(twl);
 
         // -------------------------------------------------------------------
         // general section
@@ -559,74 +565,71 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         /* "The current progress of model-checking"*/, toolkit, sectionFlags & ~Section.DESCRIPTION,
                 getExpansionListener());
         sections.put(SEC_GENERAL, section);
-        twd = new TableWrapData(TableWrapData.FILL);
-        twd.colspan = 1;
-
+        twd = new TableWrapData();
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
         section.setLayoutData(twd);
 
         final Composite generalArea = (Composite) section.getClient();
-        generalArea.setLayout(new GridLayout());
-
-        // ------------ status composite ------------
-        final Composite statusComposite = toolkit.createComposite(generalArea);
-        statusComposite.setLayout(new GridLayout(2, false));
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        statusComposite.setLayoutData(gd);
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        generalArea.setLayout(gl);
 
         // start
-        this.startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
+        this.startTimestampText = FormHelper.createTextLeft("Start time:", generalArea, toolkit);
         this.startTimestampText.setEditable(false);
         // elapsed time
-        this.finishTimestampText = FormHelper.createTextLeft("End time:", statusComposite, toolkit);
+        this.finishTimestampText = FormHelper.createTextLeft("End time:", generalArea, toolkit);
         this.finishTimestampText.setEditable(false);
         // elapsed time
-        this.tlcModeText = FormHelper.createTextLeft("TLC mode:", statusComposite, toolkit);
+        this.tlcModeText = FormHelper.createTextLeft("TLC mode:", generalArea, toolkit);
         this.tlcModeText.setEditable(false);
        // last checkpoint time
-        this.lastCheckpointTimeText = FormHelper.createTextLeft("Last checkpoint time:", statusComposite, toolkit);
+        this.lastCheckpointTimeText = FormHelper.createTextLeft("Last checkpoint time:", generalArea, toolkit);
         this.lastCheckpointTimeText.setEditable(false);
         // current status
-        this.currentStatusText = FormHelper.createTextLeft("Current status:", statusComposite, toolkit);
+        this.currentStatusText = FormHelper.createTextLeft("Current status:", generalArea, toolkit);
         this.currentStatusText.setEditable(false);
         this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
         // errors
         // Label createLabel =
         // toolkit.createLabel(statusComposite, "Errors detected:");
         // this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
-        this.errorStatusHyperLink = FormHelper.createHyperlinkLeft("Errors detected:", statusComposite, toolkit);
+        this.errorStatusHyperLink = FormHelper.createHyperlinkLeft("Errors detected:", generalArea, toolkit);
         // fingerprint collision probability
-        this.fingerprintCollisionProbabilityText = FormHelper.createTextLeft("Fingerprint collision probability:", statusComposite, toolkit);
+        this.fingerprintCollisionProbabilityText = FormHelper.createTextLeft("Fingerprint collision probability:", generalArea, toolkit);
         this.fingerprintCollisionProbabilityText.setEditable(false);
         this.fingerprintCollisionProbabilityText.setText("");
 
+        
         // -------------------------------------------------------------------
         // statistics section
         // There is no description line for this section, so it is
         // necessary to eliminate that bit in the style flags that
         // are passed in. If the bit were not changed to 0, an
         // extra empty line would appear below the title.
-        section = FormHelper.createSectionComposite(body, "Statistics", "",
-        /*"The current progress of model-checking",*/
-        toolkit, (sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
+        section = FormHelper.createSectionComposite(body, "Statistics", "", toolkit,
+        		(sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
         sections.put(SEC_STATISTICS, section);
-        twd = new TableWrapData(TableWrapData.FILL);
-        twd.colspan = 1;
+        twd = new TableWrapData();
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
         section.setLayoutData(twd);
-        Composite statArea = (Composite) section.getClient();
-        statArea.setLayout(new GridLayout(2, false));
+        
+        final Composite statArea = (Composite) section.getClient();
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        statArea.setLayout(gl);
 
         // progress stats
-        Composite c = createAndSetupStateSpace("State space progress (click column header for graph)", statArea, toolkit);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        c.setLayoutData(gd);
+        createAndSetupStateSpace(statArea, toolkit);
+        
         // coverage stats
-        c = createAndSetupCoverage("Coverage at", statArea, toolkit);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        c.setLayoutData(gd);
+        createAndSetupCoverage(statArea, toolkit);
 
+        
         // -------------------------------------------------------------------
         // Calculator section
         // There is no description line for this section, so it is
@@ -646,7 +649,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         gd.minimumWidth = 360;
         expressionComposite.setLayoutData(gd);
-        TableWrapLayout twl = new TableWrapLayout();
+        twl = new TableWrapLayout();
         twl.numColumns = 1;
         twl.topMargin = 0;
         twl.bottomMargin = 5;
@@ -879,27 +882,41 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
     /**
      * Creates the state space table (initializes the {@link stateSpace} variable)
-     * @param label
      * @param parent
      * @param toolkit
      * @return the constructed composite
      */
-    private Composite createAndSetupStateSpace(String label, Composite parent, FormToolkit toolkit)
-    {
+    private Composite createAndSetupStateSpace(final Composite parent, final FormToolkit toolkit) {
         final Composite statespaceComposite = toolkit.createComposite(parent, SWT.WRAP);
-        statespaceComposite.setLayout(new GridLayout(1, false));
-
-        final Label title = toolkit.createLabel(statespaceComposite, label);
+        GridLayout gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        statespaceComposite.setLayout(gl);
         GridData gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        statespaceComposite.setLayoutData(gd);
+
+        final Label title
+        	= toolkit.createLabel(statespaceComposite, "State space progress (click column header for graph)");
+        gd = new GridData();
         gd.heightHint = 22;
+        gd.horizontalAlignment = SWT.BEGINNING;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 6;
         title.setLayoutData(gd);
         
-		Table stateTable = toolkit.createTable(statespaceComposite,
-				SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
+		final Table stateTable
+			= toolkit.createTable(statespaceComposite, (SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER));
         gd = new GridData();
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
         gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
         gd.heightHint = 100;
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalAlignment = SWT.FILL;
         stateTable.setLayoutData(gd);
 
         stateTable.setHeaderVisible(true);
@@ -912,18 +929,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // create list-based content provider
         this.stateSpace.setContentProvider(new IStructuredContentProvider() {
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-            {
-            }
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
 
-            public void dispose()
-            {
-            }
+            public void dispose() { }
 
-            public Object[] getElements(Object inputElement)
-            {
-                if (inputElement != null && inputElement instanceof List)
-                {
+            public Object[] getElements(Object inputElement) {
+                if ((inputElement != null) && (inputElement instanceof List)) {
                     return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
                 }
                 return null;
@@ -932,41 +943,71 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         this.stateSpace.setLabelProvider(new StateSpaceLabelProvider(this));
         getSite().setSelectionProvider(this.stateSpace);
+        
         return statespaceComposite;
     }
 
     /**
      * Creates the coverage table (initializes the {@link coverageTimestamp} and {@link coverage} variables)  
-     * @param label
      * @param parent
      * @param toolkit
      * @return returns the containing composite
      */
-    private Composite createAndSetupCoverage(String label, Composite parent, FormToolkit toolkit)
-    {
+    private Composite createAndSetupCoverage(final Composite parent, final FormToolkit toolkit) {
         final Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
-        coverageComposite.setLayout(new GridLayout(2, false));
-        
-        final Label title = toolkit.createLabel(coverageComposite, label);
+        GridLayout gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        coverageComposite.setLayout(gl);
         GridData gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        coverageComposite.setLayoutData(gd);
+        
+        
+        final Composite headerLine = toolkit.createComposite(coverageComposite, SWT.WRAP);
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        headerLine.setLayout(gl);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        headerLine.setLayoutData(gd);
+        
+        final Label title = toolkit.createLabel(headerLine, "Coverage at");
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 6;
         gd.heightHint = 22;
+        gd.horizontalAlignment = SWT.BEGINNING;
         gd.verticalAlignment = SWT.BOTTOM;
         title.setLayoutData(gd);
 
-        this.coverageTimestampText = toolkit.createText(coverageComposite, "", SWT.FLAT);
+        this.coverageTimestampText = toolkit.createText(headerLine, "", SWT.FLAT);
         this.coverageTimestampText.setEditable(false);
         gd = new GridData();
-        gd.minimumWidth = 200;
+        gd.horizontalIndent = 6;
+        gd.verticalIndent = 0;
+        gd.minimumWidth = 150;
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalAlignment = SWT.FILL;
         this.coverageTimestampText.setLayoutData(gd);
+        
 
-        final Table coverageTable = toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
-                | SWT.BORDER | SWT.VIRTUAL);
+        final Table coverageTable
+        	= toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
         gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        gd.minimumWidth = CoverageLabelProvider.MIN_WIDTH;
         gd.heightHint = 100;
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalAlignment = SWT.FILL;
         coverageTable.setLayoutData(gd);
 
         coverageTable.setHeaderVisible(true);
@@ -982,18 +1023,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         // create list-based content provider
         this.coverage.setContentProvider(new IStructuredContentProvider() {
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-            {
-            }
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
 
-            public void dispose()
-            {
-            }
+            public void dispose() { }
 
-            public Object[] getElements(Object inputElement)
-            {
-                if (inputElement != null && inputElement instanceof List)
-                {
+            public Object[] getElements(Object inputElement) {
+                if ((inputElement != null) && (inputElement instanceof List)) {
                     return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
                 } else if (inputElement instanceof CoverageInformation) {
                 	return ((CoverageInformation) inputElement).toArray();
