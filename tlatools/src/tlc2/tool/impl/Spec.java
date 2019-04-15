@@ -502,7 +502,6 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
 
     public final Object getVal(ExprOrOpArgNode expr, Context c, final boolean cachable, CostModel cm)
     {
-    	if (coverage) {cm = cm.get(expr);}
         if (expr instanceof ExprNode)
         {
             return new LazyValue(expr, c, cachable, cm);

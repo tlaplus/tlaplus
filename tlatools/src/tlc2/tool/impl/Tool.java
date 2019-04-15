@@ -816,11 +816,11 @@ public final StateVec getNextStates(Action action, TLCState state) {
   
   private final TLCState getNextStatesImpl(SemanticNode pred, ActionItemList acts, Context c,
               TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
-    if (coverage) {cm = cm.get(pred);}
         switch (pred.getKind()) {
         case OpApplKind:
           {
             OpApplNode pred1 = (OpApplNode)pred;
+            if (coverage) {cm = cm.get(pred);}
             return this.getNextStatesAppl(pred1, acts, c, s0, s1, nss, cm);
           }
         case LetInKind:
@@ -1473,7 +1473,6 @@ public final StateVec getNextStates(Action action, TLCState state) {
   
   private final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
           final TLCState s1, final int control, CostModel cm) {
-    if (coverage) {cm = cm.get(expr);}
         switch (expr.getKind()) {
         /***********************************************************************
         * LabelKind class added by LL on 13 Jun 2007.                          *
@@ -1486,6 +1485,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
         case OpApplKind:
           {
             OpApplNode expr1 = (OpApplNode)expr;
+            if (coverage) {cm = cm.get(expr);}
             return this.evalAppl(expr1, c, s0, s1, control, cm);
           }
         case LetInKind:

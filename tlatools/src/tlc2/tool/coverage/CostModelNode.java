@@ -36,7 +36,7 @@ import tlc2.util.statistics.CounterStatistic;
 public abstract class CostModelNode implements CostModel {
 	
 	// children has to preserve order to later traverse tree in the module location
-	// order. Thus, use LinkedHashMap here.
+	// order when reporting coverage. Thus, use LinkedHashMap here.
 	protected final Map<SemanticNode, CostModelNode> children = new LinkedHashMap<>();
 
 	protected final CounterStatistic stats = CounterStatistic.getInstance(() -> TLCGlobals.isCoverageEnabled());
