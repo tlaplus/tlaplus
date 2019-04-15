@@ -1,9 +1,8 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -16,7 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -38,34 +36,21 @@ import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableColorProvider;
-import org.eclipse.jface.viewers.ITableFontProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
@@ -99,6 +84,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ErrorMessage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
@@ -115,15 +104,25 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * of the model editor).
  * @author Simon Zambrovski
  */
-public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter
-{
-	
+public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter {
 	public static final String RESULT_PAGE_PROBLEM = "ResultPageProblem";
 
     public static final String ID = "resultPage";
 
-    private static final String TOOLTIP = "Click on a row to go to action.";
+    /**
+     * The title of a graph consists of two parts:  the prefix, which
+     * identifies the column, and the suffix, which identifies the model.
+     * When we dispose of the ResultPage, we must dispose of all graph
+     * window (shells) for that model.
+     * 
+     * @param resultPage
+     * @return the graph title suffix
+     */
+	static String getGraphTitleSuffix(ResultPage resultPage) {
+		return "(" + resultPage.getModel().getName() + ")";
+	}
 
+	
     private Hyperlink errorStatusHyperLink;
     /**
      * UI elements
@@ -910,10 +909,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         
 		final Table stateTable
 			= toolkit.createTable(statespaceComposite, (SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER));
+		final StateSpaceLabelProvider sslp = new StateSpaceLabelProvider(this);
         gd = new GridData();
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
-        gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
+        gd.minimumWidth = sslp.getMinimumTotalWidth();
         gd.heightHint = 100;
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalAlignment = SWT.FILL;
@@ -922,13 +922,15 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         stateTable.setHeaderVisible(true);
         stateTable.setLinesVisible(true);
 
-        StateSpaceLabelProvider.createTableColumns(stateTable, this);
+        sslp.createTableColumns(stateTable, this);
 
+        stateTable.addControlListener(new TableResizeListener(sslp));
+        
         // create the viewer
-        this.stateSpace = new TableViewer(stateTable);
+        stateSpace = new TableViewer(stateTable);
 
         // create list-based content provider
-        this.stateSpace.setContentProvider(new IStructuredContentProvider() {
+        stateSpace.setContentProvider(new IStructuredContentProvider() {
             public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
 
             public void dispose() { }
@@ -941,8 +943,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             }
         });
 
-        this.stateSpace.setLabelProvider(new StateSpaceLabelProvider(this));
-        getSite().setSelectionProvider(this.stateSpace);
+        stateSpace.setLabelProvider(sslp);
+        getSite().setSelectionProvider(stateSpace);
         
         return statespaceComposite;
     }
@@ -1001,10 +1003,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         final Table coverageTable
         	= toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
+        final CoverageLabelProvider clp = new CoverageLabelProvider();
         gd = new GridData();
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
-        gd.minimumWidth = CoverageLabelProvider.MIN_WIDTH;
+        gd.minimumWidth = clp.getMinimumTotalWidth();
         gd.heightHint = 100;
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalAlignment = SWT.FILL;
@@ -1012,17 +1015,19 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         coverageTable.setHeaderVisible(true);
         coverageTable.setLinesVisible(true);
-        coverageTable.setToolTipText(TOOLTIP);
+        coverageTable.setToolTipText(CoverageLabelProvider.TOOLTIP);
 
-        CoverageLabelProvider.createTableColumns(coverageTable);
+        clp.createTableColumns(coverageTable);
+
+        coverageTable.addControlListener(new TableResizeListener(clp));
 
         // create the viewer
-        this.coverage = new TableViewer(coverageTable);
+        coverage = new TableViewer(coverageTable);
 
-        coverage.getTable().addMouseListener(new ActionClickListener(this.coverage));
+        coverage.getTable().addMouseListener(new ActionClickListener(coverage));
 
         // create list-based content provider
-        this.coverage.setContentProvider(new IStructuredContentProvider() {
+        coverage.setContentProvider(new IStructuredContentProvider() {
             public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
 
             public void dispose() { }
@@ -1037,13 +1042,21 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             }
         });
 
-        this.coverage.setLabelProvider(new CoverageLabelProvider());
+        coverage.setLabelProvider(clp);
         
-        getSite().setSelectionProvider(this.coverage);
+        getSite().setSelectionProvider(coverage);
         
         return coverageComposite;
     }
 
+    long getStartTimestamp() {
+    	return startTimestamp;
+    }
+    
+    TableViewer getStateSpaceTableViewer() {
+    	return stateSpace;
+    }
+    
     /**
      * Returns the StateSpaceInformationItem objects currently being displayed in 
      * the "State space progress" area, except in temporal order--that is, in the
@@ -1062,506 +1075,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         }
         return result;
 
-    }
-
-    /**
-     * Provides labels for the state space table 
-     */
-    static class StateSpaceLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider, ITableColorProvider
-    {
-        public final static String[] COLUMN_TITLES = new String[] { "Time", "Diameter", "States Found",
-                "Distinct States", "Queue Size" };
-        public final static int[] COLUMN_WIDTHS;
-        public static final int MIN_WIDTH;
-        public final static int COL_TIME = 0;
-        public final static int COL_DIAMETER = 1;
-        public final static int COL_FOUND = 2;
-        public final static int COL_DISTINCT = 3;
-        public final static int COL_LEFT = 4;
-        
-        static {
-        	final double scale = 1.0;   // future functionality: UIHelper.getDisplayScaleFactor();
-        	
-        	COLUMN_WIDTHS = new int[5];
-        	COLUMN_WIDTHS[0] = (int)(120.0 * scale);
-        	COLUMN_WIDTHS[1] = (int)(60.0 * scale);
-        	COLUMN_WIDTHS[2] = (int)(80.0 * scale);
-        	COLUMN_WIDTHS[3] = (int)(100.0 * scale);
-        	COLUMN_WIDTHS[4] = (int)(80.0 * scale);
-        	
-        	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2] + COLUMN_WIDTHS[3] + COLUMN_WIDTHS[4];
-        }
-
-        
-		private boolean doHighlight = false;
-		private final ResultPage resultPage;
-
-        public StateSpaceLabelProvider(ResultPage resultPage) {
-			this.resultPage = resultPage;
-		}
-
-		/* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
-         */
-        public Image getColumnImage(Object element, int columnIndex)
-        {
-            return null;
-        }
-
-		/**
-         * @param stateTable
-         */
-        public static void createTableColumns(Table stateTable, ResultPage page)
-        {
-            // create table headers
-            for (int i = 0; i < COLUMN_TITLES.length; i++)
-            {
-                TableColumn column = new TableColumn(stateTable, SWT.NULL);
-                column.setWidth(COLUMN_WIDTHS[i]);
-                column.setText(COLUMN_TITLES[i]);
-
-                // The following statement attaches a listener to the column
-                // header. See the ResultPageColumnListener comments.
-
-                column.addSelectionListener(new ResultPageColumnListener(i, page));
-            }
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
-         */
-        public String getColumnText(Object element, int columnIndex)
-        {
-        	NumberFormat nf = NumberFormat.getIntegerInstance();
-            if (element instanceof StateSpaceInformationItem)
-            {
-                // the "N/A" values are used for simulation mode
-                StateSpaceInformationItem item = (StateSpaceInformationItem) element;
-                switch (columnIndex) {
-                case COL_TIME:
-                    return formatInterval(resultPage.startTimestamp, item.getTime().getTime());
-                case COL_DIAMETER:
-                    if (item.getDiameter() >= 0)
-                    {
-                        return nf.format(item.getDiameter());
-                    } else
-                    {
-                        return "--";
-                    }
-                case COL_FOUND:
-                    return nf.format(item.getFoundStates());
-                case COL_DISTINCT:
-                    if (item.getDistinctStates() >= 0)
-                    {
-                        return nf.format(item.getDistinctStates());
-                    } else
-                    {
-                        return "--";
-                    }
-
-                case COL_LEFT:
-                    if (item.getLeftStates() >= 0)
-                    {
-                        return nf.format(item.getLeftStates());
-                    } else
-                    {
-                        return "--";
-                    }
-                }
-            }
-            return null;
-        }
-
-		public Color getForeground(Object element, int columnIndex) {
-			return null; // Use default color
-		}
-
-		public Color getBackground(Object element, int columnIndex) {
-			final StateSpaceInformationItem ssii = (StateSpaceInformationItem) element;
-			if (doHighlight && columnIndex == COL_LEFT && ssii.isMostRecent()) {
-				return TLCUIActivator.getColor(SWT.COLOR_RED);
-			}
-			return null;
-		}
-
-		public Font getFont(Object element, int columnIndex) {
-			final StateSpaceInformationItem ssii = (StateSpaceInformationItem) element;
-			if (doHighlight && columnIndex == COL_LEFT && ssii.isMostRecent()) {
-				return JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
-			}
-			return null;
-		}
-
-        public void setHighlightUnexplored() {
-			doHighlight  = true;
-		}
-
-		public void unsetHighlightUnexplored() {
-			doHighlight = false;
-		}
-
-		private static String formatInterval(final long firstTS, final long secondTS) {
-			final long interval = secondTS - firstTS;
-			final long hr = TimeUnit.MILLISECONDS.toHours(interval);
-			final long min = TimeUnit.MILLISECONDS.toMinutes(interval - TimeUnit.HOURS.toMillis(hr));
-			final long sec = TimeUnit.MILLISECONDS
-					.toSeconds(interval - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
-			return String.format("%02d:%02d:%02d", hr, min, sec);
-		}
-   }
-
-    /**
-     * Provides labels for the coverage table 
-     */
-    static class CoverageLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider
-    {
-        public final static String[] COLUMN_TITLES = new String[] { "Module", "Location", "Count" };
-        public final static int[] COLUMN_WIDTHS;
-        public static final int MIN_WIDTH;
-        public final static int COL_MODULE = 0;
-        public final static int COL_LOCATION = 1;
-        public final static int COL_COUNT = 2;
-        
-        static {
-        	final double scale = 1.0;	// future functionality: UIHelper.getDisplayScaleFactor();
-        	
-        	COLUMN_WIDTHS = new int[3];
-        	COLUMN_WIDTHS[0] = (int)(80.0 * scale);
-        	COLUMN_WIDTHS[1] = (int)(200.0 * scale);
-        	COLUMN_WIDTHS[2] = (int)(80.0 * scale);
-        	
-        	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2];
-        }
-        
-
-        /* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
-         */
-        public Image getColumnImage(Object element, int columnIndex)
-        {
-            return null;
-        }
-
-        /**
-         * @param stateTable
-         */
-        public static void createTableColumns(Table stateTable)
-        {
-            // create table headers
-            for (int i = 0; i < COLUMN_TITLES.length; i++)
-            {
-                TableColumn column = new TableColumn(stateTable, SWT.NULL);
-                column.setWidth(COLUMN_WIDTHS[i]);
-                column.setText(COLUMN_TITLES[i]);
-                column.setToolTipText(TOOLTIP);
-            }
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
-         */
-        public String getColumnText(Object element, int columnIndex)
-        {
-            if (element instanceof CoverageInformationItem)
-            {
-                CoverageInformationItem item = (CoverageInformationItem) element;
-                switch (columnIndex) {
-                case COL_MODULE:
-                    return item.getModule();
-                case COL_LOCATION:
-                    return item.getLocation();
-                case COL_COUNT:
-                    return String.valueOf(item.getCount());
-                }
-            }
-            return null;
-        }
-
-		public Color getForeground(Object element, int columnIndex) {
-			return null; // Use default color
-		}
-
-		public Color getBackground(Object element, int columnIndex) {
-			if (element instanceof CoverageInformationItem) {
-				if (((CoverageInformationItem) element).getCount() == 0) {
-					return TLCUIActivator.getColor(SWT.COLOR_YELLOW);
-				}
-			}
-			return null;
-		}
-    }
-
-    /**
-     * A ResultPageColumnListener is a listener that handles clicks on
-     * the column headers of the "State space progress" region of the
-     * Result Page.  The same class is used for all the column
-     * headers, with the column number indicating which column header
-     * was clicked on.
-     * 
-     * @author lamport
-     *
-     */
-    static class ResultPageColumnListener implements SelectionListener
-    {
-
-        private int columnNumber;
-        private ResultPage resultPage;
-
-        public ResultPageColumnListener(int columnNumber, ResultPage resultPage)
-        {
-            super();
-            this.columnNumber = columnNumber;
-            this.resultPage = resultPage;
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-         */
-        public void widgetDefaultSelected(SelectionEvent e)
-        {
-        	// nop
-        }
-
-        /**
-         * This is called when the user clicks on the header of a column
-         * of the "State space progress" region of the ResultsPage.  It 
-         * raises a window with a graph of the specified column.
-         */
-        public void widgetSelected(SelectionEvent e)
-        {
-            UIHelper.runUIAsync(new DataDisplay(resultPage, columnNumber));
-
-        }
-
-    }
-
-    /**
-     * The run method of this class creates a shell (a window) to display
-     * a graph of the appropriate State Space Progress information when the user clicks on
-     * a column heading.  It then adds a PaintListener to that shell, and that 
-     * listener draws the graph initially and whenever the window is resized or
-     * some other event requires it to be redrawn.
-     * 
-     * The constructor is used to pass the arguments needed by the run method to
-     * display the data.
-     * 
-     * Note: The location at which the shells are displayed is fixed in code
-     * buried deeply.  There should probably be some thought given to where to
-     * pop up the window, and perhaps a window should be popped up in the same
-     * place as the last such window was popped--perhaps with a bit of random
-     * variation to prevent them all from piling up.
-     *  
-     * @author lamport
-     *
-     */
-    static class DataDisplay implements Runnable
-    {
-        int columnNumber;
-        ResultPage resultPage;
-
-        /**
-         *  The constructor returns an object with null data and times arrays
-         *  if there are not at least two data points.  
-         *  
-         * @param ssInfo
-         * @param columnNumber
-         */
-        public DataDisplay(ResultPage resultPage, int columnNumber)
-        {
-
-            this.resultPage = resultPage;
-            this.columnNumber = columnNumber;
-        }
-
-        /**
-         * Much of the stuff in this run() method was copied, without much
-         * understanding from Snippet245.java in the Eclipse examples.
-         */
-        public void run()
-        {
-
-            /*
-             * The data and times arrays are set to contain the data items to be displayed
-             * and the elapsed time (in milliseconds) at which each item was posted.
-             * The data is obtained from the appropriate column of the ssInfo items.
-             * For the Time column, the number of reports is graphed.
-             */
-
-            // The following method for getting the current display was
-            // copied without understanding from someplace or other.
-
-            String title = getGraphTitle(columnNumber, resultPage);
-
-            // We check if a shell exists with this title, and use it if
-            // it does. Otherwise, we get a new shell.
-            Display display = UIHelper.getCurrentDisplay();
-            boolean shellExists = false;
-            Shell theShell = null;
-            Shell[] shells = display.getShells();
-            for (int i = 0; i < shells.length; i++)
-            {
-                if (shells[i].getText().equals(title))
-                {
-                    theShell = shells[i];
-                    shellExists = true;
-                    break;
-                }
-            }
-            if (!shellExists)
-            {
-                theShell = new Shell(display, SWT.SHELL_TRIM);
-            }
-            final Shell shell = theShell;
-            shell.setText(title);
-            shell.setActive(); // should cause it to pop up to the top.
-            if (shellExists)
-            {
-                shell.redraw();
-                shell.update();
-            } else
-            {
-                shell.addPaintListener(new PaintListener() {
-                    public void paintControl(PaintEvent event)
-                    {
-                        StateSpaceInformationItem[] ssInfo = resultPage.getStateSpaceInformation();
-                        if (ssInfo.length < 2)
-                        {
-                            return;
-                        }
-
-                        final long[] data = new long[ssInfo.length + 1];
-                        long[] times = new long[ssInfo.length + 1];
-                        data[0] = 0;
-                        times[0] = 0;
-
-                        long startTime = resultPage.startTimestamp;
-                        TLCUIActivator.getDefault().logDebug("first reported time - starttime = "
-                                + (ssInfo[0].getTime().getTime() - startTime));
-                        if (startTime > ssInfo[0].getTime().getTime() - 1000)
-                        {
-                            startTime = ssInfo[0].getTime().getTime() - 1000;
-                        }
-                        for (int i = 1; i < data.length; i++)
-                        {
-                            switch (columnNumber) {
-                            case StateSpaceLabelProvider.COL_TIME:
-                                data[i] = i - 1;
-                                break;
-                            case StateSpaceLabelProvider.COL_DIAMETER:
-                                data[i] = ssInfo[i - 1].getDiameter();
-                                break;
-                            case StateSpaceLabelProvider.COL_FOUND:
-                                data[i] = ssInfo[i - 1].getFoundStates();
-                                break;
-                            case StateSpaceLabelProvider.COL_DISTINCT:
-                                data[i] = ssInfo[i - 1].getDistinctStates();
-                                break;
-                            case StateSpaceLabelProvider.COL_LEFT:
-                                data[i] = ssInfo[i - 1].getLeftStates();
-                                break;
-                            default:
-                                return;
-                            }
-                            times[i] = ssInfo[i - 1].getTime().getTime() - startTime;
-                        }
-
-                        Rectangle rect = shell.getClientArea();
-                        // Set maxData to the largest data value;
-                        long maxData = 0;
-                        for (int i = 0; i < data.length; i++)
-                        {
-                            if (data[i] > maxData)
-                            {
-                                maxData = data[i];
-                            }
-                        }
-                        long maxTime = times[times.length - 1];
-
-                        // event.gc.drawOval(0, 0, rect.width - 1, rect.height - 1);
-                        if (maxTime > 0)
-                        {
-                        	// In case maxData equals 0, we use 1 instead for computing
-                        	// the coordinates of the points.
-                        	// (Added by LL on 6 July 2011 to fix division by zero bug.)
-                        	long maxDataVal = maxData ;
-                        	if (maxDataVal == 0) {
-                        		maxDataVal = 1;
-                        	}
-                            int[] pointArray = new int[2 * data.length];
-                            for (int i = 0; i < data.length; i++)
-                            {
-                                pointArray[2 * i] = (int) ((times[i] * rect.width) / maxTime);
-                                pointArray[(2 * i) + 1] = (int) (rect.height - ((data[i] * rect.height) / maxDataVal));
-                            }
-                            event.gc.drawPolyline(pointArray);
-                        }
-                        String stringTime = "Time: ";
-                        long unreportedTime = maxTime;
-                        long days = maxTime / (1000 * 60 * 60 * 24);
-                        if (days > 0)
-                        {
-                            unreportedTime = unreportedTime - days * (1000 * 60 * 60 * 24);
-                            stringTime = stringTime + days + ((days == 1) ? (" day ") : (" days  "));
-
-                        }
-                        long hours = unreportedTime / (1000 * 60 * 60);
-                        if (hours > 0)
-                        {
-                            unreportedTime = unreportedTime - hours * (1000 * 60 * 60);
-                            stringTime = stringTime + hours + ((hours == 1) ? (" hour ") : (" hours  "));
-                        }
-                        unreportedTime = (unreportedTime + (1000 * 26)) / (1000 * 60);
-                        stringTime = stringTime + unreportedTime
-                                + ((unreportedTime == 1) ? (" minute ") : (" minutes  "));
-                        event.gc.drawString(stringTime, 0, 0);
-                        event.gc.drawString("Current: " + data[data.length - 1], 0, 15);
-                        if (maxData != data[data.length - 1])
-                        {
-                            event.gc.drawString("Maximum: " + maxData, 0, 30);
-                        }
-                    }
-                });
-            }
-            ;
-            if (!shellExists)
-            {
-                shell.setBounds(100 + 30 * columnNumber, 100 + 30 * columnNumber, 400, 300);
-            }
-            shell.open();
-            // The following code from the Eclipse example was eliminated.
-            // It seems to cause the shell to survive after the Toolbox is
-            // killed.
-            //
-            // while (!shell.isDisposed()) {
-            // if (!display.readAndDispatch()) display.sleep();
-            // }
-
-        }
-
-    }
-
-    /**
-     * The title of a graph consists of two parts:  the prefix, which
-     * identifies the column, and the suffix, which identifies the model.
-     * When we dispose of the ResultPage, we must dispose of all graph
-     * window (shells) for that model.
-     * 
-     * @param resultPage
-     * @return
-     */
-    private static String getGraphTitleSuffix(ResultPage resultPage)
-    {
-        return "(" + resultPage.getModel().getName() + ")";
-    }
-
-    private static String getGraphTitle(int columnNumber, ResultPage resultPage)
-    {
-        String title = StateSpaceLabelProvider.COLUMN_TITLES[columnNumber];
-        if (columnNumber == StateSpaceLabelProvider.COL_TIME)
-        {
-            title = "Number of Progress Reports";
-        }
-        return title + " " + getGraphTitleSuffix(resultPage);
     }
 
 	public Set<Section> getSections(String ...sectionIDs) {
