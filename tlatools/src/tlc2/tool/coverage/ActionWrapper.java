@@ -32,7 +32,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
 
-public class ActionWrapper extends CostModelNode {
+public final class ActionWrapper extends CostModelNode {
 
 	public enum Relation {
 		INIT, NEXT, PROP;
@@ -77,7 +77,7 @@ public class ActionWrapper extends CostModelNode {
 	 * @see tlc2.tool.CostModel#get(tla2sany.semantic.SemanticNode)
 	 */
 	@Override
-	public CostModel get(final SemanticNode eon) {
+	public final CostModel get(final SemanticNode eon) {
 		if (eon instanceof SubstInNode) {
 			final SubstInNode sin = (SubstInNode) eon;
 			return this.children.get(sin.getBody());

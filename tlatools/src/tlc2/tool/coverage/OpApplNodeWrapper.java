@@ -147,7 +147,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	}
 	
 	@Override
-	public CostModel get(final SemanticNode eon) {
+	public final CostModelNode get(final SemanticNode eon) {
 		if (eon == this.node || !(eon instanceof OpApplNode)) {
 			return this;
 		}

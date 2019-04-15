@@ -25,7 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.coverage;
 
-public class RecursiveOpApplNodeWrapper extends OpApplNodeWrapper {
+public final class RecursiveOpApplNodeWrapper extends OpApplNodeWrapper {
 
 	RecursiveOpApplNodeWrapper() {
 		super(null, null);
