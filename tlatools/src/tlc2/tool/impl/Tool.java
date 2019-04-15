@@ -1597,8 +1597,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
   private final Value evalApplImpl(final OpApplNode expr, Context c, TLCState s0,
                               TLCState s1, final int control, CostModel cm) {
     if (coverage){
-    	cm = cm.get(expr);
-    	cm.incInvocations();
+    	cm = cm.getAndIncrement(expr);
     }
         ExprOrOpArgNode[] args = expr.getArgs();
         SymbolNode opNode = expr.getOperator();

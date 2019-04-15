@@ -75,6 +75,11 @@ public abstract class CostModelNode implements CostModel {
 	}
 	
 	// -- -- //
+	
+	@Override
+	public final CostModel getAndIncrement(final SemanticNode eon) {
+		return get(eon).incInvocations();
+	}
 
 	@Override
 	public final CostModel incInvocations(long size) {

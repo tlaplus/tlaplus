@@ -70,6 +70,12 @@ public interface CostModel {
 			// no-op
 			return null;
 		}
+
+		@Override
+		public CostModel getAndIncrement(SemanticNode eon) {
+			// no-op
+			return this;
+		}
 	};
 
 	CostModel incInvocations();
@@ -83,6 +89,8 @@ public interface CostModel {
 	CostModel report();
 
 	CostModel get(final SemanticNode sn);
+	
+	CostModel getAndIncrement(final SemanticNode eon);
 	
 	CostModel getRoot();
 }
