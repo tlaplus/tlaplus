@@ -132,24 +132,40 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 		}
 		return out;
 	}
-	
+
+	public List<Coverage> getActionCoverage() {
+		final List<Object> init = getRecordsOrDefault(EC.TLC_COVERAGE_INIT, new ArrayList<>(0));
+		final List<Object> next = getRecordsOrDefault(EC.TLC_COVERAGE_NEXT, new ArrayList<>(0));
+		final List<Object> prop = getRecordsOrDefault(EC.TLC_COVERAGE_PROPERTY, new ArrayList<>(0));
+		init.addAll(next);
+		init.addAll(prop);
+
+		return init.stream().map(o -> (String[]) o).map(a -> new Coverage(a)).filter(Coverage::isAction)
+				.collect(Collectors.toList());
+	}
+
 	public List<Coverage> getZeroCoverage() {
-		return getCoverage((Predicate<? super String[]>) o -> Long.valueOf(((String[]) o)[1]) == 0);
+		return getCoverage(EC.TLC_COVERAGE_VALUE, (Predicate<? super Coverage>) o -> o.isZero());
 	}
 	
 	public List<Coverage> getNonZeroCoverage() {
-		return getCoverage((Predicate<? super String[]>) o -> Long.valueOf(((String[]) o)[1]) > 0);
-	}
-
-	private List<Coverage> getCoverage(Predicate<? super String[]> p) {
-		final List<Object> coverages = getRecordsOrDefault(EC.TLC_COVERAGE_VALUE, new ArrayList<>(0));
-		return coverages.stream().map(o -> (String[]) o).filter(p)
-				.map(a -> new Coverage(a)).collect(Collectors.toList());
+		return getCoverage(EC.TLC_COVERAGE_VALUE, (Predicate<? super Coverage>) o -> !o.isZero());
 	}
 	
+	public List<Coverage> getCostCoverage() {
+		return getCoverage(EC.TLC_COVERAGE_VALUE_COST, (Predicate<? super Coverage>) o -> !o.isZero());
+	}
+
+	private List<Coverage> getCoverage(final int code, Predicate<? super Coverage> p) {
+		final List<Object> coverages = getRecordsOrDefault(code, new ArrayList<>(0));
+		return coverages.stream().map(o -> (String[]) o).map(a -> new Coverage(a)).filter(p)
+				.collect(Collectors.toList());
+	}
+
 	public static class Coverage {
 		private final String line;
 		private final long count;
+		private final long cost;
 		//TODO Take level into account in comparison!
 		private final int level;
 		private final boolean isAction;
@@ -158,7 +174,18 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 			this.isAction = line[0].startsWith("<");
 			this.line = line[0].replace("|", "").trim();
 			this.level = line[0].length() - this.line.length();
-			this.count = Long.valueOf(line[1].trim());
+			if (line.length == 1) {
+				this.count = -1;
+				this.cost = -1;
+			} else if (line.length == 2) {
+				this.count = Long.valueOf(line[1].trim());
+				this.cost = -1;
+			} else if (line.length == 3) {
+				this.count = Long.valueOf(line[1].trim());
+				this.cost = Long.valueOf(line[2].trim());
+			} else {
+				throw new IllegalArgumentException();
+			}
 		}
 		
 		public String getLine() {
@@ -180,10 +207,18 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 		public boolean isCoverage() {
 			return !isAction;
 		}
+		
+		public boolean isCost() {
+			return cost >= 0;
+		}
+		
+		public boolean isAction() {
+			return isAction;
+		}
 
 		@Override
 		public String toString() {
-			return "Coverage [line=" + line + ", count=" + count + "]";
+			return "Coverage [line=" + line + ", count=" + count  + ", cost=" + cost + "]";
 		}
 
 		@Override
@@ -191,6 +226,7 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + (int) (count ^ (count >>> 32));
+			result = prime * result + (int) (cost ^ (cost >>> 32));
 			result = prime * result + ((line == null) ? 0 : line.hashCode());
 			return result;
 		}
@@ -205,6 +241,8 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 				return false;
 			Coverage other = (Coverage) obj;
 			if (count != other.count)
+				return false;
+			if (cost != other.cost)
 				return false;
 			if (line == null) {
 				if (other.line != null)
