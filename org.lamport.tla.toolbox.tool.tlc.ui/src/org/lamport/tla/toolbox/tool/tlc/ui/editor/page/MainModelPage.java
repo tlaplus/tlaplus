@@ -1228,8 +1228,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
         // ------------------------------------------
         // what to check
-        section = FormHelper.createSectionComposite(body, "What to check?", "", toolkit, sectionFlags
-                | Section.EXPANDED, getExpansionListener());
+        section = FormHelper.createSectionComposite(body, "What to check?", "", toolkit,
+        		(sectionFlags & ~Section.DESCRIPTION | Section.EXPANDED), getExpansionListener());
         // only grab horizontal space
         twd = new TableWrapData();
         twd.colspan = 2;
