@@ -30,9 +30,9 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
     	final double scale = 1.0;	// future functionality: UIHelper.getDisplayScaleFactor();
     	
     	COLUMN_WIDTHS = new int[3];
-    	COLUMN_WIDTHS[0] = (int)(80.0 * scale);
-    	COLUMN_WIDTHS[1] = (int)(200.0 * scale);
-    	COLUMN_WIDTHS[2] = (int)(80.0 * scale);
+    	COLUMN_WIDTHS[0] = (int)(40.0 * scale);
+    	COLUMN_WIDTHS[1] = (int)(100.0 * scale);
+    	COLUMN_WIDTHS[2] = (int)(40.0 * scale);
     	
     	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2];
 		
