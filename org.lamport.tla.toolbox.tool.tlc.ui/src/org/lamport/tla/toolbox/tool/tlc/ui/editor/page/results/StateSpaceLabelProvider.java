@@ -94,6 +94,7 @@ class StateSpaceLabelProvider extends AbstractTableLabelProvider {
 	public Image getColumnImage(final Object element, final int columnIndex) {
 		return null;
 	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -136,11 +137,17 @@ class StateSpaceLabelProvider extends AbstractTableLabelProvider {
 		return null;
 	}
 
+    /**
+     * {@inheritDoc}
+     */
 	@Override
 	public Color getForeground(final Object element, final int columnIndex) {
 		return null; // Use default color
 	}
 
+    /**
+     * {@inheritDoc}
+     */
 	@Override
 	public Color getBackground(final Object element, final int columnIndex) {
 		final StateSpaceInformationItem ssii = (StateSpaceInformationItem) element;
@@ -150,14 +157,6 @@ class StateSpaceLabelProvider extends AbstractTableLabelProvider {
 		return null;
 	}
 
-//	Font getFont(final Object element, final int columnIndex) {
-//		final StateSpaceInformationItem ssii = (StateSpaceInformationItem) element;
-//		if (m_doHighlight && (columnIndex == COL_LEFT) && ssii.isMostRecent()) {
-//			return JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
-//		}
-//		return null;
-//	}
-//
 	void setHighlightUnexplored() {
 		m_doHighlight = true;
 	}
