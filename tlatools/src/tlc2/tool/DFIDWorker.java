@@ -2,6 +2,7 @@
 
 package tlc2.tool;
 
+import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -9,6 +10,7 @@ import tlc2.output.StatePrinter;
 import tlc2.tool.fp.dfid.FPIntSet;
 import tlc2.util.IdThread;
 import tlc2.util.LongVec;
+import tlc2.util.ObjLongTable;
 import tlc2.util.RandomGenerator;
 
 public class DFIDWorker extends IdThread implements IWorker {
@@ -28,6 +30,7 @@ public class DFIDWorker extends IdThread implements IWorker {
   private TLCState[] theInitStates;
   private long[] theInitFPs;
   private int initLen;
+  private ObjLongTable<SemanticNode> astCounts;
   private int toLevel;
   private int curLevel;
   private int stopCode;
@@ -53,11 +56,14 @@ public class DFIDWorker extends IdThread implements IWorker {
     this.theInitFPs = new long[this.initLen];
     System.arraycopy(this.tlc.theInitStates, 0, this.theInitStates, 0, this.initLen);
     System.arraycopy(this.tlc.theInitFPs, 0, this.theInitFPs, 0, this.initLen);
+    this.astCounts = new ObjLongTable<SemanticNode>(10);    
     this.toLevel = toLevel;
     this.curLevel = 0;
     this.stopCode = 0;
     this.moreLevel = false;
   }
+
+  public final ObjLongTable<SemanticNode> getCounts() { return this.astCounts; }
 
   public final void setStop(int code) { this.stopCode = code; }
 
@@ -165,6 +171,7 @@ public class DFIDWorker extends IdThread implements IWorker {
 	this.succFPStack[0].reset();
 	boolean isLeaf = this.toLevel < 2;
 	boolean noLeaf = this.tlc.doNext(curState, cfp, isLeaf,
+					 this.astCounts,
 					 this.succStateStack[0],
 					 this.succFPStack[0]);
 	this.moreLevel = this.moreLevel || !noLeaf;
@@ -190,6 +197,7 @@ public class DFIDWorker extends IdThread implements IWorker {
 	    this.succFPStack[this.curLevel].reset();
 	    isLeaf = (this.curLevel >= this.toLevel-1);
 	    noLeaf = this.tlc.doNext(curState, cfp, isLeaf,
+				     this.astCounts,
 				     this.succStateStack[this.curLevel],
 				     this.succFPStack[this.curLevel]);
 	    this.moreLevel = this.moreLevel || !noLeaf;

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
@@ -28,7 +29,7 @@ public class DummyTLCState extends TLCState {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#bind(util.UniqueString, tlc2.value.Value, tla2sany.semantic.SemanticNode)
 	 */
-	public TLCState bind(UniqueString name, IValue value) {
+	public TLCState bind(UniqueString name, IValue value, SemanticNode sm) {
 		return null;
 	}
 

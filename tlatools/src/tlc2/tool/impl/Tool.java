@@ -24,6 +24,7 @@ import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
@@ -40,6 +41,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.TLCStateMut;
+import tlc2.tool.TLCStateMutSource;
 import tlc2.tool.ToolGlobals;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
@@ -127,7 +129,11 @@ public class Tool
       this.callStack = null;
 
       // Initialize state.
-      TLCStateMut.setTool(this);
+      if (TLCGlobals.isLegacyCoverageEnabled()) {
+    	  TLCStateMutSource.setTool(this);
+      } else {
+    	  TLCStateMut.setTool(this);
+      }
       
 		Action next = this.getNextStateSpec();
 		if (next == null) {
@@ -682,7 +688,7 @@ public class Tool
               IValue lval = ps.lookup(varName);
               Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (lval == null) {
-                ps = ps.bind(varName, rval);
+                ps = ps.bind(varName, rval, init);
                 this.getInitStates(acts, ps, states, cm);
                 ps.unbind(varName);
                 return;
@@ -717,7 +723,7 @@ public class Tool
                 ValueEnumeration Enum = ((Enumerable)rval).elements();
                 Value elem;
                 while ((elem = Enum.nextElement()) != null) {
-                  ps.bind(varName, elem);
+                  ps.bind(varName, elem, init);
                   this.getInitStates(acts, ps, states, cm);
                   ps.unbind(varName);
                 }
@@ -1209,7 +1215,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
               IValue lval = s1.lookup(varName);
               Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
               if (lval == null) {
-                resState.bind(varName, rval);
+                resState.bind(varName, rval, pred);
                 resState = this.getNextStates(acts, s0, resState, nss, cm);
                 resState.unbind(varName);
                 return resState;
@@ -1242,7 +1248,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
                 ValueEnumeration Enum = ((Enumerable)rval).elements();
                 Value elem;
                 while ((elem = Enum.nextElement()) != null) {
-                  resState.bind(varName, elem);
+                  resState.bind(varName, elem, pred);
                   resState = this.getNextStates(acts, s0, resState, nss, cm);
                   resState.unbind(varName);
                 }
@@ -1411,7 +1417,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           final IValue val0 = s0.lookup(varName);
           final IValue val1 = s1.lookup(varName);
           if (val1 == null) {
-		  	resState.bind(varName, val0);
+		  	resState.bind(varName, val0, expr);
             if (coverage) {
             	resState = this.getNextStates(acts, s0, resState, nss, cm);
             } else {

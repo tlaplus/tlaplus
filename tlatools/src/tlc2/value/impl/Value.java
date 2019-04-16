@@ -57,7 +57,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	/**
 	 * @see See note on performance in CostModelCreator.
 	 */
-	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
+	protected static final boolean coverage = TLCGlobals.isCoverageEnabled() && TLCGlobals.isNewCoverageEnabled();
   /**
    * For each kind of value, we introduce a subclass of Value.
    * All the subclasses are given in this value package.
