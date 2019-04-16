@@ -483,7 +483,8 @@ public class ModelEditor extends FormEditor
         // // TLCUIActivator.getDefault().logDebug("Focusing " + getConfig().getName() +
         // // " editor");
 
-        super.setFocus();
+    	final IFormPage page = getActivePageInstance();
+    	page.setFocus();
     }
 
     /*

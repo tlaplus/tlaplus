@@ -39,6 +39,7 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Color;
@@ -150,8 +151,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private FontPreferenceChangeListener fontChangeListener;
 
     // hyper link listener activated in case of errors
-    protected IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
-
+    private final IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
         public void linkActivated(HyperlinkEvent e)
         {
             if (getModel() != null)
@@ -169,7 +169,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      * Constructor for the page
      * @param editor
      */
-    public ResultPage(FormEditor editor)
+    public ResultPage(final FormEditor editor)
     {
         super(editor, ID, "Model Checking Results",
         		"icons/full/results_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
@@ -422,11 +422,47 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     }
 
     /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setFocus() {
+		if ((expressionEvalInput != null) && !expressionEvalInput.getTextWidget().isDisposed()
+										  && !expressionEvalInput.getTextWidget().isFocusControl()) {
+			final StyledText st = expressionEvalInput.getTextWidget();
+			final int caretOffset = st.getText().length();
+			
+			st.setFocus();
+			
+			/*
+			 * We get a focus notification at least 3 times after TLC execution finishes, in which none of those times
+			 * 	does the text widget believe itself focused. Further, the text widget gaining focus resets its caret
+			 * 	offset to 0; so, nearly ubiquitously we end up with the caret offset position set invocation never
+			 * 	sticking. We resort to this waiting-out-the-notification-storm ugly hack to get the caret set
+			 *  to stick; were we getting more than 3 notifications, i would use a thread pool to gate proliferation
+			 *  here.
+			 */
+			final Runnable ohSWT = () -> {
+				try {
+					Thread.sleep(75);
+				} catch (Exception e) { }
+				
+				if (!st.isDisposed()) {
+					st.getDisplay().asyncExec(() -> {
+						if (!st.isDisposed()) {
+							st.setCaretOffset(caretOffset);
+						}
+					});
+				}
+			};
+			(new Thread(ohSWT)).start();
+		}
+	}
+    
+    /**
      * Gets the data provider for the current page
      */
-    public void loadData() throws CoreException
-    {
-
+    @Override
+	public void loadData() throws CoreException {
 		TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry.getModelCheckSourceRegistry();
 		TLCModelLaunchDataProvider provider = modelCheckSourceRegistry.getProvider(getModel());
 		if (provider != null) {
