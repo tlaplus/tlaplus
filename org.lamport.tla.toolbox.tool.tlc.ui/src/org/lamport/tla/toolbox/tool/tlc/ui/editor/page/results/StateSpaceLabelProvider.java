@@ -35,11 +35,11 @@ class StateSpaceLabelProvider extends AbstractTableLabelProvider {
 		final double scale = 1.0; // future functionality: UIHelper.getDisplayScaleFactor();
 
 		COLUMN_WIDTHS = new int[5];
-		COLUMN_WIDTHS[0] = (int) (120.0 * scale);
-		COLUMN_WIDTHS[1] = (int) (60.0 * scale);
-		COLUMN_WIDTHS[2] = (int) (80.0 * scale);
-		COLUMN_WIDTHS[3] = (int) (100.0 * scale);
-		COLUMN_WIDTHS[4] = (int) (80.0 * scale);
+		COLUMN_WIDTHS[0] = (int) (100.0 * scale);
+		COLUMN_WIDTHS[1] = (int) (40.0 * scale);
+		COLUMN_WIDTHS[2] = (int) (60.0 * scale);
+		COLUMN_WIDTHS[3] = (int) (80.0 * scale);
+		COLUMN_WIDTHS[4] = (int) (60.0 * scale);
 
 		MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2] + COLUMN_WIDTHS[3] + COLUMN_WIDTHS[4];
 		
