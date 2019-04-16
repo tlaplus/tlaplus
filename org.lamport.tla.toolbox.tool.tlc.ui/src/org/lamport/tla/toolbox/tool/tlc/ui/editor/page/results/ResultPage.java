@@ -637,15 +637,26 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // extra empty line would appear below the title.
 		section = FormHelper.createSectionComposite(body, "Evaluate Constant Expression", "",
 				toolkit, sectionFlags & ~Section.DESCRIPTION, getExpansionListener());
+        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
+        twd.grabHorizontal = true;
+        twd.grabVertical = true;
+        section.setLayoutData(twd);
         sections.put(SEC_EXPRESSION, section);
 
         Composite resultArea = (Composite) section.getClient();
-        GridLayout gLayout = new GridLayout(2, false);
-        gLayout.marginHeight = 0;
-        resultArea.setLayout(gLayout);
+        gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        resultArea.setLayout(gl);
 
         final Composite expressionComposite = toolkit.createComposite(resultArea);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
         gd.minimumWidth = 360;
         expressionComposite.setLayoutData(gd);
         twl = new TableWrapLayout();
@@ -694,7 +705,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // We want the value section to get larger as the window
         // gets larger but not the expression section.
 		final Composite valueComposite = toolkit.createComposite(resultArea);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
         gd.minimumWidth = 360;
         valueComposite.setLayoutData(gd);
         twl = new TableWrapLayout();
