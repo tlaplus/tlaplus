@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
-import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
 import tlc2.value.IValue;
@@ -54,7 +53,7 @@ public abstract class TLCState implements Cloneable, Serializable {
 		vos.writeShortNat((short) this.level);
 	}
 
-  public abstract TLCState bind(UniqueString name, IValue value, SemanticNode expr);
+  public abstract TLCState bind(UniqueString name, IValue value);
   public abstract TLCState bind(SymbolNode id, IValue value);  
   public abstract TLCState unbind(UniqueString name);
   /**

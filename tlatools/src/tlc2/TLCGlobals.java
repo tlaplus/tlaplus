@@ -94,19 +94,9 @@ public class TLCGlobals
     // Enable collecting coverage information
     public static int coverageInterval = -1;
 
-    public static boolean legacyCoverage = false;
-    
     public static final boolean isCoverageEnabled() {
     	return coverageInterval >= 0;
     }
-
-	public static boolean isLegacyCoverageEnabled() {
-		return legacyCoverage && isCoverageEnabled();
-	}
-	
-	public static boolean isNewCoverageEnabled() {
-		return !legacyCoverage && isCoverageEnabled();
-	}
     
     // Depth for depth-first iterative deepening
     public static int DFIDMax = -1;

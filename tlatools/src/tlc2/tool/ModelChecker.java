@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpDeclNode;
-import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -28,7 +27,6 @@ import tlc2.tool.queue.DiskByteArrayQueue;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IStateWriter;
-import tlc2.util.ObjLongTable;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
 import util.Assert;
@@ -48,7 +46,7 @@ import util.UniqueString;
 public class ModelChecker extends AbstractChecker
 {
 
-	protected static final boolean coverage = TLCGlobals.isCoverageEnabled() && TLCGlobals.isNewCoverageEnabled();
+	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
 	/**
 	 * If the state/ dir should be cleaned up after a successful model run
 	 */
@@ -266,7 +264,7 @@ public class ModelChecker extends AbstractChecker
 					// Not adding newly created Worker to trace#addWorker because it is not supposed
 					// to rewrite the trace file but to reconstruct actual states referenced by
 					// their fingerprints in the trace.
-					this.doNext(this.predErrState, new ObjLongTable<SemanticNode>(10), this.checkLiveness ? new SetOfStates() : null,
+					this.doNext(this.predErrState, this.checkLiveness ? new SetOfStates() : null,
 							new Worker(4223, this, this.metadir, tool.getRootFile()));
                 } catch (FingerprintException e)
                 {
@@ -388,7 +386,7 @@ public class ModelChecker extends AbstractChecker
      * 
      * This method is called from the workers on every step
      */
-    public final boolean doNext(TLCState curState, final ObjLongTable<SemanticNode> counts, final SetOfStates liveNextStates, final Worker worker) throws Throwable
+    public final boolean doNext(TLCState curState, final SetOfStates liveNextStates, final Worker worker) throws Throwable
     {
         boolean deadLocked = true;
         TLCState succState = null;
@@ -420,10 +418,6 @@ public class ModelChecker extends AbstractChecker
                     if (!this.tool.isGoodState(succState))
                     {
                     	return doNextSetErr(curState, succState, action);
-					}
-                    if (TLCGlobals.isLegacyCoverageEnabled())
-                    {
-						((TLCStateMutSource) succState).addCounts(counts);
 					}
 
 					final boolean inModel = (this.tool.isInModel(succState) && this.tool.isInActions(curState, succState));

@@ -3,10 +3,7 @@ package tlc2.tool;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.Arrays;
-import java.util.Comparator;
 
-import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -18,7 +15,6 @@ import tlc2.tool.liveness.Liveness;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.IStateWriter;
 import tlc2.util.IdThread;
-import tlc2.util.ObjLongTable;
 import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
@@ -85,7 +81,7 @@ public abstract class AbstractChecker
         
         this.allStateWriter = stateWriter;
 
-        if (TLCGlobals.isNewCoverageEnabled()) {
+        if (TLCGlobals.isCoverageEnabled()) {
         	CostModelCreator.create(this.tool);
         }
         
@@ -140,34 +136,10 @@ public abstract class AbstractChecker
      */
     protected void reportCoverage(IWorker[] workers)
     {
-    	
 		// Without actions (empty spec) there won't be any statistics anyway.
-		if (TLCGlobals.isNewCoverageEnabled() && this.tool.getActions().length > 0)
+		if (TLCGlobals.isCoverageEnabled() && this.tool.getActions().length > 0)
 		{
             CostModelCreator.report(this.tool);
-        } else if (TLCGlobals.isLegacyCoverageEnabled()) {
-    		MP.printMessage(EC.TLC_COVERAGE_START);
-    		// First collecting all counts from all workers:
-    		final ObjLongTable<SemanticNode> counts = this.tool.getPrimedLocs();
-
-    		for (IWorker worker : workers) {
-    			counts.mergeInto(worker.getCounts());
-    		}
-    		// Reporting (sorted by location):
-    		final SemanticNode[] array = counts.toArray(new SemanticNode[0]);
-    		Arrays.sort(array, new Comparator<SemanticNode>() {
-    			@Override
-    			public int compare(SemanticNode arg0, SemanticNode arg1) {
-    				return arg0.getLocation().toString().compareTo(arg1.getLocation().toString());
-    			}
-    		});
-    		for (int i = 0; i < array.length; i++) {
-    			final SemanticNode semanticNode = array[i];
-    			final long val = counts.get(semanticNode);
-    			MP.printMessage(EC.TLC_COVERAGE_VALUE,
-    					new String[] { semanticNode.getLocation().toString(), String.valueOf(val) });
-    		}
-    		MP.printMessage(EC.TLC_COVERAGE_END);
         }
     }
     

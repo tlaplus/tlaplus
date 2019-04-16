@@ -39,8 +39,8 @@ public abstract class CostModelNode implements CostModel {
 	// order when reporting coverage. Thus, use LinkedHashMap here.
 	protected final Map<SemanticNode, CostModelNode> children = new LinkedHashMap<>();
 
-	protected final CounterStatistic stats = CounterStatistic.getInstance(() -> TLCGlobals.isNewCoverageEnabled());
-	protected final CounterStatistic secondary = CounterStatistic.getInstance(() -> TLCGlobals.isNewCoverageEnabled());
+	protected final CounterStatistic stats = CounterStatistic.getInstance(() -> TLCGlobals.isCoverageEnabled());
+	protected final CounterStatistic secondary = CounterStatistic.getInstance(() -> TLCGlobals.isCoverageEnabled());
 	
 	// ---------------- Statistics ---------------- //
 

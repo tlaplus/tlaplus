@@ -97,7 +97,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     return false;
   }
   
-  public final TLCState bind(UniqueString name, IValue value, SemanticNode expr) {
+  public final TLCState bind(UniqueString name, IValue value) {
 	  // Note, tla2sany.semantic.OpApplNode.toString(Value) relies on this ordering.
     int loc = name.getVarLoc();
     this.values[loc] = value;

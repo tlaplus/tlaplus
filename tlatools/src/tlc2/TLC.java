@@ -406,11 +406,8 @@ public class TLC
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
-            } else if (args[index].equals("-coverage") || args[index].equals("-legacycoverage"))
+            } else if (args[index].equals("-coverage"))
             {
-            	if (args[index].equals("-legacycoverage")) {
-            		TLCGlobals.legacyCoverage = true;
-            	}
                 index++;
                 if (index < args.length)
                 {

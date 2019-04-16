@@ -58,7 +58,7 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
 	/**
 	 * @see See note on performance in CostModelCreator.
 	 */
-	protected static final boolean coverage = TLCGlobals.isCoverageEnabled() && TLCGlobals.isNewCoverageEnabled();
+	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
 
 	protected static final int toolId = FrontEnd.getToolId();
 	
