@@ -49,6 +49,7 @@ import util.SimpleFilenameToStream;
 import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
+import util.UsageDataCollector;
 
 /**
  * Main TLC starter class
@@ -1131,6 +1132,33 @@ public class TLC
     
 	private void printStartupBanner(final int mode, final Map<String, String> parameters) {
 		MP.printMessage(mode, parameters.values().toArray(new String[parameters.size()]));
+		
+		final Map<String, String> udc = new LinkedHashMap<>();
+		// First indicate the version (to make parsing forward compatible)
+		udc.put("ver", TLCGlobals.getRevisionOrDev());
+
+		// Simulation, DFS or BFS mode.
+		udc.put("mode", mode2String(mode));
+		
+		parameters.remove("plural"); // damn hack!
+		udc.putAll(parameters);
+		
+		// True if TLC is run from within the Toolbox.
+		udc.put("toolbox", Boolean.toString(TLCGlobals.tool));
+		new UsageDataCollector().collect(udc);
+	}
+	
+	private static String mode2String(final int mode) {
+		switch (mode) {
+		case EC.TLC_MODE_MC:
+			return "bfs";
+		case EC.TLC_MODE_MC_DFS:
+			return "dfs";
+		case EC.TLC_MODE_SIMU:
+			return "simulation";
+		default:
+			return "unknown";
+		}
 	}
     
     /**

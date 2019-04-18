@@ -80,6 +80,7 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
 import tlc2.util.FP64;
+import util.UsageDataCollector;
 
 /**
  * Represents a launch delegate for TLC<br>
@@ -798,6 +799,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
 					}
 					props.put(TLCJobFactory.MAIL_ADDRESS, config.getAttribute(
 							LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, "tlc@localhost"));
+
+					final UsageDataCollector udc = new UsageDataCollector();
+					if (udc.isEnabled()) {
+						props.put(UsageDataCollector.PROP, udc.getIdentifier());
+					}
 					
 					// The parameters below are the only one currently useful with CloudDistributedTLC
 					final StringBuffer tlcParams = new StringBuffer();

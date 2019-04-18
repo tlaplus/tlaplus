@@ -45,6 +45,7 @@ import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 
 import tlc2.TLCGlobals;
+import util.UsageDataCollector;
 
 public class Application implements IApplication {
 
@@ -70,6 +71,11 @@ public class Application implements IApplication {
 		// file has defined it already.
 		props.putIfAbsent(TLCJobFactory.MAIL_ADDRESS, "root@localhost");
 		props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
+		
+		final UsageDataCollector udc = new UsageDataCollector();
+		if (udc.isEnabled()) {
+			props.put(UsageDataCollector.PROP, udc.getIdentifier());
+		}
 
 		// Optional parameters
 		final String cloud = args.length >= 2 ? args[1] : "aws-ec2";
