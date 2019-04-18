@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.Timer;
@@ -890,7 +892,7 @@ public class TLC
                 {
                     rng.setSeed(seed, aril);
                 }
-				MP.printMessage(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
+				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
                         traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
@@ -903,7 +905,7 @@ public class TLC
 				RandomEnumerableValues.setSeed(seed);
             	
 				// Print startup banner before SANY writes its output.
-				MP.printMessage(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
+				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
 		        final ITool tool = new Tool(mainFile, configFile, resolver);
@@ -966,47 +968,38 @@ public class TLC
 		return TLCGlobals.DFIDMax == -1;
 	}
 
-	private static String[] getSimulationRuntime(final long seed) {
-		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
-		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
-		final String arch = tlcRuntime.getArchitecture().name();
-		
+	private static Map<String, String> getSimulationRuntime(final long seed) {
 		final Runtime runtime = Runtime.getRuntime();
 		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
-		final String cores = Integer.toString(runtime.availableProcessors());
-
-		final String vendor = System.getProperty("java.vendor");
-		final String version = System.getProperty("java.version");
-
-		final String osName = System.getProperty("os.name");
-		final String osVersion = System.getProperty("os.version");
-		final String osArch = System.getProperty("os.arch");
 		
-		final long pid = TLCRuntime.getInstance().pid();
+		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
+		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
+		final long pid = tlcRuntime.pid();
 		
-		return new String[] { String.valueOf(seed), String.valueOf(TLCGlobals.getNumWorkers()),
-				TLCGlobals.getNumWorkers() == 1 ? "" : "s", cores, osName, osVersion, osArch, vendor,
-				version, arch, Long.toString(heapMemory), Long.toString(offHeapMemory),
-				pid == -1 ? "" : String.valueOf(pid) };
+		final Map<String, String> result = new LinkedHashMap<>();
+		result.put("seed", String.valueOf(seed));
+		result.put("workers", String.valueOf(TLCGlobals.getNumWorkers()));
+		result.put("plural", TLCGlobals.getNumWorkers() == 1 ? "" : "s");
+		result.put("cores", Integer.toString(runtime.availableProcessors()));
+		result.put("osName", System.getProperty("os.name"));
+		result.put("osVersion", System.getProperty("os.version"));
+		result.put("osArch", System.getProperty("os.arch"));
+		result.put("jvmVendor", System.getProperty("java.vendor"));
+		result.put("jvmVersion", System.getProperty("java.version"));
+		result.put("jvmArch", tlcRuntime.getArchitecture().name());
+		result.put("jvmHeapMem", Long.toString(heapMemory));
+		result.put("jvmOffHeapMem", Long.toString(offHeapMemory));
+		result.put("jvmPid", pid == -1 ? "" : String.valueOf(pid));
+		return result;
 	}
 
-	private static String[] getModelCheckingRuntime(final int fpIndex, final FPSetConfiguration fpSetConfig) {
-		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
-		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
-		final String arch = tlcRuntime.getArchitecture().name();
-		
+	private static Map<String, String> getModelCheckingRuntime(final int fpIndex, final FPSetConfiguration fpSetConfig) {
 		final Runtime runtime = Runtime.getRuntime();
 		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
-		final String cores = Integer.toString(runtime.availableProcessors());
-
-		final String vendor = System.getProperty("java.vendor");
-		final String version = System.getProperty("java.version");
-
-		final String osName = System.getProperty("os.name");
-		final String osVersion = System.getProperty("os.version");
-		final String osArch = System.getProperty("os.arch");
 		
-		final long pid = TLCRuntime.getInstance().pid();
+		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
+		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
+		final long pid = tlcRuntime.pid();
 		
 		// TODO Better to use Class#getSimpleName provided we would have access to the
 		// Class instance instead of just its name. However, loading the class here is
@@ -1018,11 +1011,24 @@ public class TLC
 		final String stateQueueClassSimpleName = ModelChecker.getStateQueueName();
 		
 		//  fpSetClassSimpleName and stateQueueClassSimpleName ignored in DFS mode.
-		return new String[] { String.valueOf(TLCGlobals.getNumWorkers()), TLCGlobals.getNumWorkers() == 1 ? "" : "s",
-				cores, osName, osVersion, osArch, vendor, version, arch, Long.toString(heapMemory),
-				Long.toString(offHeapMemory), Long.toString(RandomEnumerableValues.getSeed()),
-				Integer.toString(fpIndex), pid == -1 ? "" : String.valueOf(pid), fpSetClassSimpleName,
-				stateQueueClassSimpleName };
+		final Map<String, String> result = new LinkedHashMap<>();
+		result.put("workers", String.valueOf(TLCGlobals.getNumWorkers()));
+		result.put("plural", TLCGlobals.getNumWorkers() == 1 ? "" : "s");
+		result.put("cores", Integer.toString(runtime.availableProcessors()));
+		result.put("osName", System.getProperty("os.name"));
+		result.put("osVersion", System.getProperty("os.version"));
+		result.put("osArch", System.getProperty("os.arch"));
+		result.put("jvmVendor", System.getProperty("java.vendor"));
+		result.put("jvmVersion", System.getProperty("java.version"));
+		result.put("jvmArch", tlcRuntime.getArchitecture().name());
+		result.put("jvmHeapMem", Long.toString(heapMemory));
+		result.put("jvmOffHeapMem", Long.toString(offHeapMemory));
+		result.put("seed", Long.toString(RandomEnumerableValues.getSeed()));
+		result.put("fpidx", Integer.toString(fpIndex));
+		result.put("jvmPid", pid == -1 ? "" : String.valueOf(pid));
+		result.put("fpset", fpSetClassSimpleName);
+		result.put("queue", stateQueueClassSimpleName);
+		return result;
 	}
 
 	private static void scheduleTerminationTimer() {
@@ -1122,6 +1128,10 @@ public class TLC
             }
         }
     }
+    
+	private void printStartupBanner(final int mode, final Map<String, String> parameters) {
+		MP.printMessage(mode, parameters.values().toArray(new String[parameters.size()]));
+	}
     
     /**
      * 

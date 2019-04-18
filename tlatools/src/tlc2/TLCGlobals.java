@@ -193,6 +193,10 @@ public class TLCGlobals
 		}
 		return null;
 	}
+	
+	public static String getRevisionOrDev() {
+		return TLCGlobals.getRevision() == null ? "development" : TLCGlobals.getRevision();
+	}
 
 	public static boolean expand = true;
 }
