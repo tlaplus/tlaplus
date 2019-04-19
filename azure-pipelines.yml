@@ -6,6 +6,7 @@
 jobs:
 
 - job: Linux
+  timeoutInMinutes: 0
 
   pool:
     vmImage: 'Ubuntu-16.04'
@@ -25,6 +26,7 @@ jobs:
 
 
 - job: Windows
+  timeoutInMinutes: 0
 
   pool:
     vmImage: 'vs2017-win2016'
@@ -44,6 +46,7 @@ jobs:
 
 
 - job: Mac
+  timeoutInMinutes: 0
 
   pool:
     vmImage: 'macOS-10.13'
