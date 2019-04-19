@@ -39,11 +39,10 @@
   -->
   <properties>
     <!-- Version copy & pasted from https://repo.eclipse.org/content/repositories/rcptt-snapshots/org/eclipse/rcptt/rcptt-maven-plugin/2.4.0-SNAPSHOT/ --> 
-    <rcptt-maven-version>2.4.0-20190301.000339-243</rcptt-maven-version>
-    <!-- Version from https://repo.eclipse.org/content/repositories/rcptt-snapshots/org/eclipse/rcptt/runner/rcptt.runner/2.4.0-SNAPSHOT/ -->
-    <!-- ...-237 is the last version which does not fail on macOS where newer version append a redundant "/Contents/Eclipse" to the "-aut" -->
-    <!-- parameter of the /bin/sh launching the Toolbox (filed https://bugs.eclipse.org/545329). -->
-    <rcptt-runner-version>2.4.0-20190219.012014-237</rcptt-runner-version>
+    <rcptt-maven-version>2.4.2-20190419.052523-19</rcptt-maven-version>
+    <!-- Version from https://repo.eclipse.org/content/repositories/rcptt-snapshots/org/eclipse/rcptt/runner/rcptt.runner/2.4.2-SNAPSHOT/ -->
+    <!-- ...-18 is the last version which does not fail on macOS. -->
+    <rcptt-runner-version>2.4.2-20190419.005632-18</rcptt-runner-version>
     <aut-unpack-directory>target/unpack-for-aut/</aut-unpack-directory>
 <!-- 
     <jdk-bundle-plugin-prefix>st.theori.openjdk.</jdk-bundle-plugin-prefix>
