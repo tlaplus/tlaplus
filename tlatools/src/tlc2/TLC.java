@@ -1141,6 +1141,10 @@ public class TLC
 		udc.put("mode", mode2String(mode));
 		
 		parameters.remove("plural"); // damn hack!
+		// "pid", "seed", and "fpidx" have no relevance for us.
+		parameters.remove("jvmPid");
+		parameters.remove("fpidx");
+		parameters.remove("seed");
 		udc.putAll(parameters);
 		
 		// True if TLC is run from within the Toolbox.
