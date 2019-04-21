@@ -135,6 +135,28 @@
 
 	<build>
 		<plugins>
+			<!-- Fail the build early and with a clear error message if the Java 11 
+				dependency isn't satisfied. https://github.com/tlaplus/tlaplus/issues/278 -->
+		    <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.0.0-M2</version>
+				<executions>
+					<execution>
+						<id>enforce-java</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>11</version>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+		    </plugin>
 			<!-- enable tycho build extension -->
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
