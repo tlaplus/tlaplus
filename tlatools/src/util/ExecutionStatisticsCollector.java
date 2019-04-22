@@ -30,6 +30,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -38,22 +39,42 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class UsageDataCollector {
+public class ExecutionStatisticsCollector {
 
-	public static final String PROP = UsageDataCollector.class.getName() + ".id";
+	static final String RND_ID_STR = "RANDOM_IDENTIFIER";
+	static final String NO_ESC_STR = "NO_STATISTICS";
+	
+	public enum Selection {
+		ON, RANDOM_IDENTIFIER, NO_ESC;
+
+		@Override
+		public String toString() {
+			if (this == ON) {
+				return getRandomIdentifier();
+			} else if (this == RANDOM_IDENTIFIER) {
+				return RND_ID_STR;
+			} else {
+				return NO_ESC_STR;
+			}
+		}
+	}
+	
+	public static final String PATH = System.getProperty("user.home", "") + File.separator + ".tlaplus" + File.separator + "esc.txt";
+
+	public static final String PROP = ExecutionStatisticsCollector.class.getName() + ".id";
 	
 	private final boolean isOptOut;
 	private final String pathname;
 
-	public UsageDataCollector() {
-		this(isOptOut(), System.getProperty("user.home", "") + File.separator + ".tlaplus" + File.separator + "udc.txt");
+	public ExecutionStatisticsCollector() {
+		this(isOptOut(), PATH);
 	}
 	
-	UsageDataCollector(String path) {
+	ExecutionStatisticsCollector(String path) {
 		this(false, path);
 	}
 	
-	UsageDataCollector(final boolean optOut, final String path) {
+	ExecutionStatisticsCollector(final boolean optOut, final String path) {
 		this.isOptOut = optOut;
 		this.pathname = path;
 	}
@@ -75,13 +96,13 @@ public class UsageDataCollector {
 					submit(parameters, dontWaitForCompletion);
 				}
 			}
-		}, "TLC Usage Data Collector");
+		}, "TLC Execution Statistics Collector");
 		thread.setDaemon(dontWaitForCompletion);
 		thread.start();
 	}
 	
 	/*
-	 * file == ~/.tlaplus/udc.txt
+	 * file == ~/.tlaplus/esc.txt
 	 * fl == first line of file interpreted as a string without terminal chars
 	 * in/out == opt-in & opt-out
 	 * y/r/n == data collected with constant id/data collected with random id/data not collected
@@ -104,29 +125,33 @@ public class UsageDataCollector {
 			try (BufferedWriter br = new BufferedWriter(new FileWriter(udcFile))) {
 				br.write(getRandomIdentifier());
 			} catch (Exception e) {
-				// Something went wrong writing to file ~/.tlaplus/udc.txt. Consider UDC failed.
+				// Something went wrong writing to file ~/.tlaplus/esc.txt. Consider ESC failed.
 				return null;
 			}
 		}
 		if (!udcFile.exists()) {
-			// No file ~/.tlaplus/udc.txt.
+			// No file ~/.tlaplus/esc.txt.
 			return null;
 		}
 		try (BufferedReader br = new BufferedReader(new FileReader(udcFile))) {
 			identifier = br.readLine();
 		} catch (Exception e) {
-			// Something went wrong reading file ~/.tlaplus/udc.txt
+			// Something went wrong reading file ~/.tlaplus/esc.txt
 			return null;
 		}
-		if (identifier == null || "NO_UDC".equals(identifier.trim())) {
-			// File is empty or its first line is "NO_UDC".
+		if (identifier == null || NO_ESC_STR.equals(identifier.trim())) {
+			// File is empty or its first line is "NO_STATISTICS".
 			return null;
-		} else if (identifier == null || "RANDOM_IDENTIFIER".equals(identifier.trim())) {
+		} else if (identifier == null || RND_ID_STR.equals(identifier.trim())) {
 			identifier = getRandomIdentifier();
 		}
 		
 		// truncate the identifier no matter what, but first remove leading and trailing whitespaces.
 		return identifier.trim().substring(0, 32);
+	}
+
+	private boolean escFileExists() {
+		return new File(pathname).exists();
 	}
 
 	public boolean isEnabled() {
@@ -142,7 +167,8 @@ public class UsageDataCollector {
 		
 		// Below is a way how we could detect Microsoft corpnet machines: This check is
 		// conservative because we don't identify Microsoft employees but corporate
-		// Microsoft computers.
+		// Microsoft computers. We don't set ESC to opt-out for Microsoft machines yet
+		// but might in the future.
 //		final String userDNSDomain = System.getenv("USERDNSDOMAIN");
 //		return userDNSDomain != null && userDNSDomain.toUpperCase().endsWith(".CORP.MICROSOFT.COM");
 	}
@@ -157,14 +183,14 @@ public class UsageDataCollector {
 			// Opt-out data doesn't report to the opt-in endpoint. The opt-in endpoint is
 			// public data, the opt-out endpoint doesn't get shared with the public.
 			final URL url = new URL(
-					"https://" + (isOptOut() ? "udc02" : "udc01") + ".tlapl.us/?" + encode(parameters));
+					"https://" + (isOptOut() ? "esc02" : "esc01") + ".tlapl.us/?" + encode(parameters));
 
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("HEAD");
 			con.getResponseMessage();
 			con.disconnect();
 		} catch (Exception ignoreCompletely) {
-			// A TLC user doesn't care if usage data collection doesn't work.
+			// A TLC user doesn't care if execution statistics collection doesn't work.
 		}
 	}	
 	
@@ -181,10 +207,25 @@ public class UsageDataCollector {
 		
 		return buf.toString().replaceFirst(",$", "");
 	}
+	
+	public static boolean promptUser() {
+		return !(new ExecutionStatisticsCollector().escFileExists());
+	}
+
+	public static void set(final Selection c) throws IOException {
+		final File udcFile = new File(PATH);
+		udcFile.createNewFile();
+		
+		try (BufferedWriter br = new BufferedWriter(new FileWriter(udcFile))) {
+			br.write(c.toString() + "\n");
+		} catch (IOException e) {
+			throw e;
+		}
+	}
 
 	// for manual testing //
 	
 	public static void main(String[] args) {
-		new UsageDataCollector().collect(new HashMap<>(), false);
+		new ExecutionStatisticsCollector().collect(new HashMap<>(), false);
 	}
 }

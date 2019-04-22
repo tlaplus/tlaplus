@@ -45,7 +45,7 @@ import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 
 import tlc2.TLCGlobals;
-import util.UsageDataCollector;
+import util.ExecutionStatisticsCollector;
 
 public class Application implements IApplication {
 
@@ -72,9 +72,9 @@ public class Application implements IApplication {
 		props.putIfAbsent(TLCJobFactory.MAIL_ADDRESS, "root@localhost");
 		props.put(TLCJobFactory.MAIN_CLASS, tlc2.TLC.class.getName());
 		
-		final UsageDataCollector udc = new UsageDataCollector();
+		final ExecutionStatisticsCollector udc = new ExecutionStatisticsCollector();
 		if (udc.isEnabled()) {
-			props.put(UsageDataCollector.PROP, udc.getIdentifier());
+			props.put(ExecutionStatisticsCollector.PROP, udc.getIdentifier());
 		}
 
 		// Optional parameters

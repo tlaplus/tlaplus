@@ -49,7 +49,7 @@ import util.SimpleFilenameToStream;
 import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
-import util.UsageDataCollector;
+import util.ExecutionStatisticsCollector;
 
 /**
  * Main TLC starter class
@@ -1149,7 +1149,7 @@ public class TLC
 		
 		// True if TLC is run from within the Toolbox.
 		udc.put("toolbox", Boolean.toString(TLCGlobals.tool));
-		new UsageDataCollector().collect(udc);
+		new ExecutionStatisticsCollector().collect(udc);
 	}
 	
 	private static String mode2String(final int mode) {
