@@ -146,4 +146,18 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 	public void stop() {
 		modelChecker.stop();
 	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#suspend()
+	 */
+	public void suspend() {
+		modelChecker.suspend();
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.distributed.management.TLCStatisticsMXBean#resume()
+	 */
+	public void resume() {
+		modelChecker.resume();
+	}
 }

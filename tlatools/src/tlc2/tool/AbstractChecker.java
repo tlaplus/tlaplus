@@ -495,6 +495,14 @@ public abstract class AbstractChecker
 	public void stop() {
 		// Noop
 	}
+	
+	public void suspend() {
+		// Noop
+	}
+	
+	public void resume() {
+		// Noop
+	}
 
 	public long getStateQueueSize() {
 		return -1;

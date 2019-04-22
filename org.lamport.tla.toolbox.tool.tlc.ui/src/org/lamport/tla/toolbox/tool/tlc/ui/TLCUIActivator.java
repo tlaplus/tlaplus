@@ -1,12 +1,21 @@
 package org.lamport.tla.toolbox.tool.tlc.ui;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.AbstractTLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.ExecutionStatisticsDialog;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
+
+import util.ExecutionStatisticsCollector;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -73,6 +82,18 @@ public class TLCUIActivator extends AbstractTLCActivator
         changedColor = new Color(null, 255, 200, 200);
         addedColor = new Color(null, 255, 255, 200);
         deletedColor = new Color(null, 240, 240, 255);
+        
+
+		if (ExecutionStatisticsCollector.promptUser()) {
+			final UIJob j = new UIJob(Display.getCurrent(), "TLA+ execution statistics approval.") {
+				@Override
+				public IStatus runInUIThread(final IProgressMonitor monitor) {
+					new ExecutionStatisticsDialog(PlatformUI.createDisplay().getActiveShell()).open();
+					return Status.OK_STATUS;
+				}
+			};
+			j.schedule(5 * 60 * 1000L);
+		}
     }
 
     public Color getChangedColor()

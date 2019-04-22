@@ -1,5 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -12,6 +15,7 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
@@ -40,9 +44,15 @@ import tla2sany.st.Location;
 public class ActionClickListener implements MouseListener, KeyListener {
 	
 	private final Viewer viewer;
+	private final Set<Class<? extends ITextEditor>> blacklist;
 
 	public ActionClickListener(final Viewer viewer) {
-		this.viewer = viewer;
+		this(viewer, new HashSet<Class<? extends ITextEditor>>());
+	}
+
+	public ActionClickListener(Viewer variableViewer, final Set<Class<? extends ITextEditor>> blacklist) {
+		this.viewer = variableViewer;
+		this.blacklist = blacklist;
 	}
 
 	/* (non-Javadoc)
@@ -108,7 +118,7 @@ public class ActionClickListener implements MouseListener, KeyListener {
 						Model model = ToolboxHandle.getCurrentSpec().getAdapter(TLCSpec.class).getModel(moduleLocatable
 								.getModelName());
 						final boolean jumpedToNested = TLCUIHelper
-								.jumpToSavedLocation(location, model);
+								.jumpToSavedLocation(location, model, blacklist);
 						if (!jumpedToNested) {
 							UIHelper.jumpToLocation(location, jumpToPCal);
 						}

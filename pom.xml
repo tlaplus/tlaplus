@@ -130,11 +130,33 @@
 			in other POMs. This property is only referenced during the AUT
 			unpacking if it is occurring on mac - the AUT unpacks out of
 			the ZIP ok on Linux and Windows-->
-		<jdk-bundle-plugin-version>11.0.2.9</jdk-bundle-plugin-version>
+		<jdk-bundle-plugin-version>11.0.3.1</jdk-bundle-plugin-version>
 	</properties>
 
 	<build>
 		<plugins>
+			<!-- Fail the build early and with a clear error message if the Java 11 
+				dependency isn't satisfied. https://github.com/tlaplus/tlaplus/issues/278 -->
+		    <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.0.0-M2</version>
+				<executions>
+					<execution>
+						<id>enforce-java</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>11</version>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+		    </plugin>
 			<!-- enable tycho build extension -->
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>

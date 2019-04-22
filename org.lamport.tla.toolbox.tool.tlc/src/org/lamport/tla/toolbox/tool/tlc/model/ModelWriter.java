@@ -132,7 +132,7 @@ public class ModelWriter
      */
     public void addPrimer(String moduleFilename, String extendedModuleName)
     {
-        tlaBuffer.append(ResourceHelper.getExtendingModuleContent(moduleFilename, extendedModuleName));
+        tlaBuffer.append(ResourceHelper.getExtendingModuleContent(moduleFilename, new String[] {extendedModuleName, "TLC"}));
     }
 
     /**

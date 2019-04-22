@@ -3,7 +3,6 @@ package org.lamport.tla.toolbox.util;
 /**
  * Constnats for help system
  * @author Simon Zambrovski
- * @version $Id$
  */
 public interface IHelpConstants
 {
@@ -24,6 +23,8 @@ public interface IHelpConstants
     public static final String ADVANCED_MODEL_PAGE = "advancedModelPage";
     public static final String RESULT_MODEL_PAGE = "resultModelPage";
     public static final String TLC_ERROR_VIEW = "TLCErrorView";
+    
+    public static final String TLC_ERROR_VIEW_EXPRESSION = "ErrorTraceExplorerExpression";
     
     /**
      * Menu new spec

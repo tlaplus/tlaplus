@@ -1,7 +1,9 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -160,6 +162,11 @@ public class TLCUIHelper
      */
     public static void openTLCLocationHyperlink(StyledText styledText, MouseEvent trigger, Model model)
     {
+    	openTLCLocationHyperlink(styledText, trigger, model, new HashSet<>());
+    }
+
+	public static void openTLCLocationHyperlink(StyledText styledText, MouseEvent trigger, Model model, Set<Class<? extends ITextEditor>> blacklist)
+    {
         try
         {
             int offset = styledText.getOffsetAtLocation(new Point(trigger.x, trigger.y));
@@ -169,7 +176,7 @@ public class TLCUIHelper
                 Object data = range.data;
                 if (data instanceof Location)
                 {
-                    boolean jumpToSavedModule = jumpToSavedLocation((Location) data, model);
+                    boolean jumpToSavedModule = jumpToSavedLocation((Location) data, model, blacklist);
                     if (!jumpToSavedModule)
                     {
                         UIHelper.jumpToLocation((Location) data, (trigger.stateMask & SWT.CTRL) != 0);
@@ -232,6 +239,12 @@ public class TLCUIHelper
      */
     public static boolean jumpToSavedLocation(Location location, Model model)
     {
+    	return jumpToSavedLocation(location, model, new HashSet<>());
+    }
+    
+    public static boolean jumpToSavedLocation(Location location, Model model,
+			Set<Class<? extends ITextEditor>> blacklist)
+    {
         IEditorPart editor = model.getAdapter(ModelEditor.class);
         if (editor instanceof ModelEditor)
         {
@@ -239,7 +252,7 @@ public class TLCUIHelper
 
             ITextEditor moduleEditor = modelEditor.getSavedModuleEditor(location.source());
 
-            if (moduleEditor != null)
+            if (moduleEditor != null && !blacklist.contains(moduleEditor.getClass()))
             {
                 try
                 {

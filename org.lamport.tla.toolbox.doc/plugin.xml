@@ -30,6 +30,11 @@
             defaultHandler="org.lamport.tla.toolbox.doc.handler.HelpContentsHandler"
             id="org.lamport.tla.toolbox.doc.contents"
             name="Table of Contents">
+         <commandParameter
+               id="org.lamport.tla.toolbox.doc.contents.param"
+               name="name"
+               optional="true">
+         </commandParameter>
       </command>
       <command
             defaultHandler="org.lamport.tla.toolbox.doc.handler.HelpPDFHandler"

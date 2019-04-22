@@ -12,13 +12,17 @@ import org.eclipse.ui.forms.widgets.Section;
 /**
  * Takes care of section on pages, and attributes on sections
  * @author Simon Zambrovski
- * @version $Id$
- */
-/**
- * @author Simon Zambrovski
  */
 public class DataBindingManager implements ISectionConstants
 {
+	/**
+	 * Oh how much time i wasted tracking this down... someone had a famously bad idea of having code that walks an
+	 *  entire page of sections setting all direct children as enabled - regardless of, well, everything. Widgets
+	 *  should be updated to setting this data key if they'd like to left out of that party.
+	 */
+	public static final String WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE = "tla.dbm.enable.sigh";
+	
+	
     private static final String[] EMPTY = new String[0];
 
     // section parts containing the sections
@@ -91,24 +95,19 @@ public class DataBindingManager implements ISectionConstants
     }
 
     /**
-     * Sets the enablement state of a section's composite. More precisely, this
-     * means setting the enablement state of any child of the
-     * composite that is  not a {@link Section}
-     * to enabled.
-     * 
-     * @param composite
-     */
-    private void enableSectionComposite(Composite composite, boolean enable)
-    {
-        Control[] children = composite.getChildren();
-        for (int i = 0; i < children.length; i++)
-        {
-            if (!(children[i] instanceof Section))
-            {
-                children[i].setEnabled(enable);
-            }
-        }
-    }
+	 * Sets the enablement state of a section's composite. More precisely, this
+	 * means setting the enablement state of any child of the composite that is not
+	 * a {@link Section} to enabled.
+	 * 
+	 * @param composite
+	 */
+	private void enableSectionComposite(final Composite composite, final boolean enabled) {
+		for (final Control child : composite.getChildren()) {
+			if (!(child instanceof Section) && (child.getData(WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE) == null)) {
+				child.setEnabled(enabled);
+			}
+		}
+	}
 
     /**
      * retrieves the id of the page the section is on

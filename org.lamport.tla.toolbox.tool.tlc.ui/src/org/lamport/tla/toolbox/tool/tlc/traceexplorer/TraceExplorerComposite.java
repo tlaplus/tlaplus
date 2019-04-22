@@ -36,7 +36,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -49,6 +51,8 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -59,9 +63,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.model.TraceExpressionModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
@@ -96,6 +102,9 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  */
 public class TraceExplorerComposite
 {
+	
+	private static final String EXPANDED_STATE = "EXPANDED_STATE";
+	
     protected CheckboxTableViewer tableViewer;
     private Button buttonAdd;
     private Button buttonEdit;
@@ -163,9 +172,22 @@ public class TraceExplorerComposite
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         section.setLayoutData(gd);
         sectionInitialize(toolkit);
-        // initially, we don't want the section to be expanded
-        // so that the user has more room to look at the trace
-        section.setExpanded(false);
+		// Initially, we want the section to be expanded for users to recognize the
+		// error-trace exploration feature.  If a user collapses the section, it will
+        // remain collapsed.
+        final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+        if (dialogSettings.get(EXPANDED_STATE) != null) {
+        	final boolean expand = dialogSettings.getBoolean(EXPANDED_STATE);
+			section.setExpanded(expand);
+        } else {
+        	section.setExpanded(true);
+        }
+        section.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+		        dialogSettings.put(EXPANDED_STATE, section.isExpanded());
+			}
+        });
     }
 
     /**
@@ -272,48 +294,34 @@ public class TraceExplorerComposite
      */
     protected void createButtons(Composite sectionArea, FormToolkit toolkit)
     {
-        GridData gd;
+        final GridData gd = new GridData();
+        gd.verticalAlignment = SWT.TOP;
+        gd.horizontalAlignment = SWT.FILL;
 
         // add button
         buttonAdd = toolkit.createButton(sectionArea, "Add", SWT.PUSH);
         buttonAdd.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonAdd.setLayoutData(gd);
+        buttonAdd.setLayoutData(GridDataFactory.copyData(gd));
 
         // edit button
         buttonEdit = toolkit.createButton(sectionArea, "Edit", SWT.PUSH);
         buttonEdit.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonEdit.setLayoutData(gd);
+        buttonEdit.setLayoutData(GridDataFactory.copyData(gd));
 
         // remove button
         buttonRemove = toolkit.createButton(sectionArea, "Remove", SWT.PUSH);
         buttonRemove.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonRemove.setLayoutData(gd);
+        buttonRemove.setLayoutData(GridDataFactory.copyData(gd));
 
         // explore button
         buttonExplore = toolkit.createButton(sectionArea, "Explore", SWT.PUSH);
         buttonExplore.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonExplore.setLayoutData(gd);
+        buttonExplore.setLayoutData(GridDataFactory.copyData(gd));
 
         // restore button
         buttonRestore = toolkit.createButton(sectionArea, "Restore", SWT.PUSH);
         buttonRestore.addSelectionListener(fSelectionListener);
-        gd = new GridData();
-        gd.verticalAlignment = SWT.TOP;
-        gd.widthHint = 70;
-        buttonRestore.setLayoutData(gd);
-
+        buttonRestore.setLayoutData(GridDataFactory.copyData(gd));
     }
 
     /**
@@ -548,8 +556,13 @@ public class TraceExplorerComposite
     protected Formula doEditFormula(Formula formula)
     {
         // Create the wizard
-        FormulaWizard wizard = new FormulaWizard(section.getText(), section.getDescription());
-        wizard.setFormula(formula);
+		FormulaWizard wizard = new FormulaWizard(section.getText(),
+				"Enter an expression to be evaluated at each state of the trace.",
+				String.format(
+						"The expression may be named and may include the %s and %s operators (click question mark below for details).",
+						TraceExpressionModelWriter.TRACE, TraceExpressionModelWriter.POSITION),
+				"ErrorTraceExplorerExpression");
+		wizard.setFormula(formula);
 
         // Create the wizard dialog
         WizardDialog dialog = new WizardDialog(getTableViewer().getTable().getShell(), wizard);

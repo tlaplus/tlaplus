@@ -831,7 +831,7 @@ Console Facory
       <fontDefinition
             id="org.lamport.tla.toolbox.tool.tlc.ui.tlcOutputFont"
             isEditable="true"
-            label="TLC Output"
+            label="TLC User, Progress, and Error Output"
             value="Courier New-regular-8">
          <fontValue
                os="win32"
@@ -841,6 +841,9 @@ Console Facory
                os="macosx"
                value="Microsoft Sans Serif-regular-10">
          </fontValue>
+         <description>
+         	The font used on the User and Progress output text areas on the Results page of the Model Editor, as well as the Error Output in the TLC Error view.
+         </description>
       </fontDefinition>
       <fontDefinition
             id="org.lamport.tla.toolbox.tool.tlc.ui.tlcErrorTraceFont"

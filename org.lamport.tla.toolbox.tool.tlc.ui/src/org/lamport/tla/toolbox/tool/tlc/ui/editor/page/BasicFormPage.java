@@ -265,13 +265,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         toolkit.decorateFormHeading(formWidget.getForm());
 
         /*
-         * The head client is the second row of the header section,
-         * below the title. There should be the same buttons as in the
-         * toolbar on the first row, right corner of the header section
-         * because sometimes those buttons are not visible unless
-         * the user scrolls over to them.
+         * The head client is the second row of the header section, below the title; if we don't create this
+         * with 'NO_FOCUS' then the toolbar will always take focus on a form page that gains focus.
          */
-        ToolBar headClientTB = new ToolBar(formWidget.getForm().getHead(), SWT.HORIZONTAL);
+        ToolBar headClientTB = new ToolBar(formWidget.getForm().getHead(), SWT.HORIZONTAL | SWT.NO_FOCUS);
         headClientTBM = new ToolBarManager(headClientTB);
         // run button
         headClientTBM.add(new DynamicContributionItem(new RunAction()));

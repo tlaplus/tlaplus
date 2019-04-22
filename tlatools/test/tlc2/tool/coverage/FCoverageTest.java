@@ -53,7 +53,7 @@ public class FCoverageTest extends AbstractCoverageTest {
 		assertCoverage("<Init line 8, col 1 to line 8, col 4 of module F>: 2\n" + 
 				"  line 8, col 9 to line 8, col 79 of module F: 2\n" + 
 				"  |line 8, col 15 to line 8, col 79 of module F: 1\n" + 
-				"  ||line 6, col 25 to line 6, col 56 of module F: 1\n" + 
+				"  ||line 6, col 25 to line 6, col 56 of module F: 1:3\n" + 
 				"  |||line 6, col 37 to line 6, col 54 of module F: 5\n" + 
 				"  ||||line 6, col 37 to line 6, col 40 of module F: 5\n" + 
 				"  ||||line 6, col 45 to line 6, col 54 of module F: 4\n" + 
@@ -63,7 +63,7 @@ public class FCoverageTest extends AbstractCoverageTest {
 				"  ||||||line 8, col 63 to line 8, col 73 of module F: 4\n" + 
 				"  ||||||line 8, col 78 to line 8, col 78 of module F: 2\n" + 
 				"  |||line 6, col 33 to line 6, col 33 of module F: 1\n" + 
-				"  ||line 8, col 18 to line 8, col 28 of module F: 1\n" + 
+				"  ||line 8, col 18 to line 8, col 28 of module F: 1:6\n" + 
 				"  ||line 8, col 41 to line 8, col 45 of module F: 5\n" + 
 				"  ||line 8, col 63 to line 8, col 78 of module F: 4\n" + 
 				"  |||line 8, col 63 to line 8, col 73 of module F: 4\n" + 

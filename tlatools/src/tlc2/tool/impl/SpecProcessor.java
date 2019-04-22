@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -228,7 +229,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
       // run for constant operator definitions
       OpDefNode[] opDefs = mod.getOpDefs();
-      for (int i = 0; i < opDefs.length; i++) {
+      DEFS: for (int i = 0; i < opDefs.length; i++) {
         OpDefNode opDef = opDefs[i];
 
         // The following variable evaluate and its value added by LL on 24 July 2013
@@ -247,6 +248,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             if (spec.getLevelBound(opDef.getBody(), Context.Empty) == 0) {
               try {
                 UniqueString opName = opDef.getName();
+                if (isVetoed(opName)) {
+                	continue DEFS;
+                }
                 // System.err.println(opName);
                 IValue val = spec.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
                 val.deepNormalize();
@@ -271,6 +275,15 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         this.processConstantDefns(imods[i]);
       }
     }
+
+	public static final String LAZY_CONSTANT_OPERATORS = SpecProcessor.class.getName() + ".vetoed";
+
+	private static final Set<String> vetos = new HashSet<String>(
+			Arrays.asList(System.getProperty(LAZY_CONSTANT_OPERATORS, "")));
+
+	private boolean isVetoed(final UniqueString us) {
+		return vetos.contains(us.toString());
+	}
 
     /**
      * Processes the specification and collects information to be used

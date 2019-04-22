@@ -26,6 +26,7 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.ZipUtil;
 
 /**
  * A wizard page input of the specification name and the location of the root file
@@ -42,7 +43,7 @@ public class NewSpecWizardPage extends WizardPage
     private boolean specNameDirty = false;
     private boolean fileTextDirty = false;
 
-    public static final String[] ACCEPTED_EXTENSIONS = { "*.tla", "*.*" };
+    public static final String[] ACCEPTED_EXTENSIONS = { "*.tla", "*.zip", "*.*" };
 
     /**
      * Holds the path to the most recently browsed
@@ -208,7 +209,7 @@ public class NewSpecWizardPage extends WizardPage
         openFileDialog.setFilterPath(rootPath);
 
         openFileDialog.setFilterExtensions(ACCEPTED_EXTENSIONS);
-        openFileDialog.setFilterNames(new String[]{"TLA+ files", "All files"});
+        openFileDialog.setFilterNames(new String[]{"TLA+ files", "Zip Archive", "All files"});
         String selected = openFileDialog.open();
         if (selected != null)
         {
@@ -253,6 +254,22 @@ public class NewSpecWizardPage extends WizardPage
             {
                 reportError("Root file should be a TLA file and not a directory");
                 return;
+            } else if (ZipUtil.isArchive(rootfilePath)) {
+            	try {
+            		// Expect the root module's name to be aligned with the archive's name (except for file extension).
+            		final File zip = new File(rootfilePath);
+            		
+            		//TODO If the zip is large, this will block the main/UI thread.
+					final File destDir = ZipUtil.unzip(zip, new File(zip.getAbsolutePath().replaceFirst(".zip$", "")), true);
+					
+					// recursively trigger dialogChanged with now extracted spec.
+					this.fileText.setText(
+							destDir.getAbsolutePath() + File.separator + zip.getName().replaceFirst(".zip$", ".tla"));
+					return;
+				} catch (IOException e) {
+					reportError(String.format("Failed to unzip zip archive %s with error %s", rootfilePath,
+							e.getMessage()));
+				}
             } else if (!rootfilePath.endsWith(".tla"))
             {
                 reportError("Root file name should have a file-system path and extension .tla");

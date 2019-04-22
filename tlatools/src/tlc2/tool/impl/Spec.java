@@ -5,10 +5,15 @@
 
 package tlc2.tool.impl;
 
+import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
@@ -442,37 +447,14 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
      */
     public final Object lookup(SymbolNode opNode, Context c, TLCState s, boolean cutoff)
     {
-        boolean isVarDecl = (opNode.getKind() == VariableDeclKind);
-        Object result = c.lookup(opNode, cutoff && isVarDecl);
-        if (result != null)
-            return result;
-
-        result = opNode.getToolObject(toolId);
-        if (result != null)
-            return result;
-
-        if (opNode.getKind() == UserDefinedOpKind)
-        {
-            // Changed by LL on 10 Apr 2011 from
-            //
-            //    result = ((OpDefNode) opNode).getBody().getToolObject(toolId);
-            //
-            // to the following
-            ExprNode body = ((OpDefNode) opNode).getBody();
-            result = body.getToolObject(toolId);
-            while ((result == null) && (body.getKind() == SubstInKind)) {
-                body = ((SubstInNode) body).getBody();
-                result = body.getToolObject(toolId);
-            }
-            // end change
-
-            if (result != null)
-                return result;
-        }
-
+    	Object result = lookup(opNode, c, cutoff);
+    	if (result != opNode) {
+    		return result;
+    	}
         result = s.lookup(opNode.getName());
-        if (result != null)
-            return result;
+        if (result != null) {
+        	return result;
+        }
         return opNode;
     }
 
@@ -480,12 +462,14 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
     {
         boolean isVarDecl = (opNode.getKind() == VariableDeclKind);
         Object result = c.lookup(opNode, cutoff && isVarDecl);
-        if (result != null)
-            return result;
+        if (result != null) {
+        	return result;
+        }
 
         result = opNode.getToolObject(toolId);
-        if (result != null)
-            return result;
+        if (result != null) {
+        	return result;
+        }
 
         if (opNode.getKind() == UserDefinedOpKind)
         {
@@ -501,8 +485,10 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
                 result = body.getToolObject(toolId);
             }
             // end change
-            if (result != null)
-                return result;
+
+            if (result != null) {
+            	return result;
+            }
         }
         return opNode;
     }
@@ -516,7 +502,6 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
 
     public final Object getVal(ExprOrOpArgNode expr, Context c, final boolean cachable, CostModel cm)
     {
-    	if (coverage) {cm = cm.get(expr);}
         if (expr instanceof ExprNode)
         {
             return new LazyValue(expr, c, cachable, cm);
@@ -935,4 +920,16 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
     }
 
 	abstract IValue eval(SemanticNode body, Context empty, TLCState empty2, CostModel doNotRecord);
+
+	public List<File> getModuleFiles(final FilenameToStream resolver) {
+		final List<File> result = new ArrayList<File>();
+	
+		final Enumeration<ParseUnit> parseUnitContext = this.specObj.parseUnitContext.elements();
+		while (parseUnitContext.hasMoreElements()) {
+			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
+			File resolve = resolver.resolve(pu.getFileName(), false);
+			result.add(resolve);
+		}
+		return result;
+	}
 }

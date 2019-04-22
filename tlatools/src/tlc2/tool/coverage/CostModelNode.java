@@ -36,7 +36,7 @@ import tlc2.util.statistics.CounterStatistic;
 public abstract class CostModelNode implements CostModel {
 	
 	// children has to preserve order to later traverse tree in the module location
-	// order. Thus, use LinkedHashMap here.
+	// order when reporting coverage. Thus, use LinkedHashMap here.
 	protected final Map<SemanticNode, CostModelNode> children = new LinkedHashMap<>();
 
 	protected final CounterStatistic stats = CounterStatistic.getInstance(() -> TLCGlobals.isCoverageEnabled());
@@ -75,26 +75,31 @@ public abstract class CostModelNode implements CostModel {
 	}
 	
 	// -- -- //
+	
+	@Override
+	public final CostModel getAndIncrement(final SemanticNode eon) {
+		return get(eon).incInvocations();
+	}
 
 	@Override
-	public CostModel incInvocations(long size) {
+	public final CostModel incInvocations(long size) {
 		this.stats.add(size);
 		return this;
 	}
 
 	@Override
-	public CostModel incInvocations() {
+	public final CostModel incInvocations() {
 		this.stats.increment();
 		return this;
 	}
 
-	public CostModel incSecondary() {
+	public final CostModel incSecondary() {
 		this.secondary.increment();
 		return this;
 	}
 
 	@Override
-	public CostModel incSecondary(final long value) {
+	public final CostModel incSecondary(final long value) {
 		this.secondary.add(value);
 		return this;
 	}

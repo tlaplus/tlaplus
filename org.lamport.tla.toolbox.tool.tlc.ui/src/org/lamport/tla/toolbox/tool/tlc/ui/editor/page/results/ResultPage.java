@@ -1,9 +1,8 @@
-package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
+package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -16,7 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -38,34 +36,22 @@ import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableColorProvider;
-import org.eclipse.jface.viewers.ITableFontProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
@@ -78,6 +64,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
@@ -98,6 +85,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ErrorMessage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
@@ -114,15 +105,25 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * of the model editor).
  * @author Simon Zambrovski
  */
-public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter
-{
-	
+public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter {
 	public static final String RESULT_PAGE_PROBLEM = "ResultPageProblem";
 
     public static final String ID = "resultPage";
 
-    private static final String TOOLTIP = "Click on a row to go to action.";
+    /**
+     * The title of a graph consists of two parts:  the prefix, which
+     * identifies the column, and the suffix, which identifies the model.
+     * When we dispose of the ResultPage, we must dispose of all graph
+     * window (shells) for that model.
+     * 
+     * @param resultPage
+     * @return the graph title suffix
+     */
+	static String getGraphTitleSuffix(ResultPage resultPage) {
+		return "(" + resultPage.getModel().getName() + ")";
+	}
 
+	
     private Hyperlink errorStatusHyperLink;
     /**
      * UI elements
@@ -150,8 +151,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private FontPreferenceChangeListener fontChangeListener;
 
     // hyper link listener activated in case of errors
-    protected IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
-
+    private final IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
         public void linkActivated(HyperlinkEvent e)
         {
             if (getModel() != null)
@@ -169,7 +169,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      * Constructor for the page
      * @param editor
      */
-    public ResultPage(FormEditor editor)
+    public ResultPage(final FormEditor editor)
     {
         super(editor, ID, "Model Checking Results",
         		"icons/full/results_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
@@ -422,11 +422,47 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     }
 
     /**
+     * {@inheritDoc}
+     */
+	@Override
+	public void setFocus() {
+		if ((expressionEvalInput != null) && !expressionEvalInput.getTextWidget().isDisposed()
+										  && !expressionEvalInput.getTextWidget().isFocusControl()) {
+			final StyledText st = expressionEvalInput.getTextWidget();
+			final int caretOffset = st.getText().length();
+			
+			st.setFocus();
+			
+			/*
+			 * We get a focus notification at least 3 times after TLC execution finishes, in which none of those times
+			 * 	does the text widget believe itself focused. Further, the text widget gaining focus resets its caret
+			 * 	offset to 0; so, nearly ubiquitously we end up with the caret offset position set invocation never
+			 * 	sticking. We resort to this waiting-out-the-notification-storm ugly hack to get the caret set
+			 *  to stick; were we getting more than 3 notifications, i would use a thread pool to gate proliferation
+			 *  here.
+			 */
+			final Runnable ohSWT = () -> {
+				try {
+					Thread.sleep(75);
+				} catch (Exception e) { }
+				
+				if (!st.isDisposed()) {
+					st.getDisplay().asyncExec(() -> {
+						if (!st.isDisposed()) {
+							st.setCaretOffset(caretOffset);
+						}
+					});
+				}
+			};
+			(new Thread(ohSWT)).start();
+		}
+	}
+    
+    /**
      * Gets the data provider for the current page
      */
-    public void loadData() throws CoreException
-    {
-
+    @Override
+	public void loadData() throws CoreException {
 		TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry.getModelCheckSourceRegistry();
 		TLCModelLaunchDataProvider provider = modelCheckSourceRegistry.getProvider(getModel());
 		if (provider != null) {
@@ -539,15 +575,20 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     protected void createBodyContent(IManagedForm managedForm)
     {
         final int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED | SWT.WRAP;
-        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION;
-        final int expressionFieldFlags = textFieldFlags | SWT.WRAP;
+        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION | SWT.WRAP;
 
         final FormToolkit toolkit = managedForm.getToolkit();
         final Composite body = managedForm.getForm().getBody();
 
         TableWrapData twd;
         Section section;
+        GridLayout gl;
         GridData gd;
+
+        TableWrapLayout twl = new TableWrapLayout();
+        twl.leftMargin = 0;
+        twl.rightMargin = 0;
+        body.setLayout(twl);
 
         // -------------------------------------------------------------------
         // general section
@@ -559,74 +600,71 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         /* "The current progress of model-checking"*/, toolkit, sectionFlags & ~Section.DESCRIPTION,
                 getExpansionListener());
         sections.put(SEC_GENERAL, section);
-        twd = new TableWrapData(TableWrapData.FILL);
-        twd.colspan = 1;
-
+        twd = new TableWrapData();
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
         section.setLayoutData(twd);
 
         final Composite generalArea = (Composite) section.getClient();
-        generalArea.setLayout(new GridLayout());
-
-        // ------------ status composite ------------
-        final Composite statusComposite = toolkit.createComposite(generalArea);
-        statusComposite.setLayout(new GridLayout(2, false));
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        statusComposite.setLayoutData(gd);
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        generalArea.setLayout(gl);
 
         // start
-        this.startTimestampText = FormHelper.createTextLeft("Start time:", statusComposite, toolkit);
+        this.startTimestampText = FormHelper.createTextLeft("Start time:", generalArea, toolkit);
         this.startTimestampText.setEditable(false);
         // elapsed time
-        this.finishTimestampText = FormHelper.createTextLeft("End time:", statusComposite, toolkit);
+        this.finishTimestampText = FormHelper.createTextLeft("End time:", generalArea, toolkit);
         this.finishTimestampText.setEditable(false);
         // elapsed time
-        this.tlcModeText = FormHelper.createTextLeft("TLC mode:", statusComposite, toolkit);
+        this.tlcModeText = FormHelper.createTextLeft("TLC mode:", generalArea, toolkit);
         this.tlcModeText.setEditable(false);
        // last checkpoint time
-        this.lastCheckpointTimeText = FormHelper.createTextLeft("Last checkpoint time:", statusComposite, toolkit);
+        this.lastCheckpointTimeText = FormHelper.createTextLeft("Last checkpoint time:", generalArea, toolkit);
         this.lastCheckpointTimeText.setEditable(false);
         // current status
-        this.currentStatusText = FormHelper.createTextLeft("Current status:", statusComposite, toolkit);
+        this.currentStatusText = FormHelper.createTextLeft("Current status:", generalArea, toolkit);
         this.currentStatusText.setEditable(false);
         this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
         // errors
         // Label createLabel =
         // toolkit.createLabel(statusComposite, "Errors detected:");
         // this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
-        this.errorStatusHyperLink = FormHelper.createHyperlinkLeft("Errors detected:", statusComposite, toolkit);
+        this.errorStatusHyperLink = FormHelper.createHyperlinkLeft("Errors detected:", generalArea, toolkit);
         // fingerprint collision probability
-        this.fingerprintCollisionProbabilityText = FormHelper.createTextLeft("Fingerprint collision probability:", statusComposite, toolkit);
+        this.fingerprintCollisionProbabilityText = FormHelper.createTextLeft("Fingerprint collision probability:", generalArea, toolkit);
         this.fingerprintCollisionProbabilityText.setEditable(false);
         this.fingerprintCollisionProbabilityText.setText("");
 
+        
         // -------------------------------------------------------------------
         // statistics section
         // There is no description line for this section, so it is
         // necessary to eliminate that bit in the style flags that
         // are passed in. If the bit were not changed to 0, an
         // extra empty line would appear below the title.
-        section = FormHelper.createSectionComposite(body, "Statistics", "",
-        /*"The current progress of model-checking",*/
-        toolkit, (sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
+        section = FormHelper.createSectionComposite(body, "Statistics", "", toolkit,
+        		(sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
         sections.put(SEC_STATISTICS, section);
-        twd = new TableWrapData(TableWrapData.FILL);
-        twd.colspan = 1;
+        twd = new TableWrapData();
+        twd.grabHorizontal = true;
+        twd.align = TableWrapData.FILL;
         section.setLayoutData(twd);
-        Composite statArea = (Composite) section.getClient();
-        statArea.setLayout(new GridLayout(2, false));
+        
+        final Composite statArea = (Composite) section.getClient();
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        statArea.setLayout(gl);
 
         // progress stats
-        Composite c = createAndSetupStateSpace("State space progress (click column header for graph)", statArea, toolkit);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        c.setLayoutData(gd);
+        createAndSetupStateSpace(statArea, toolkit);
+        
         // coverage stats
-        c = createAndSetupCoverage("Coverage at", statArea, toolkit);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        c.setLayoutData(gd);
+        createAndSetupCoverage(statArea, toolkit);
 
+        
         // -------------------------------------------------------------------
         // Calculator section
         // There is no description line for this section, so it is
@@ -635,24 +673,39 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // extra empty line would appear below the title.
 		section = FormHelper.createSectionComposite(body, "Evaluate Constant Expression", "",
 				toolkit, sectionFlags & ~Section.DESCRIPTION, getExpansionListener());
+        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
+        twd.grabHorizontal = true;
+        twd.grabVertical = true;
+        section.setLayoutData(twd);
         sections.put(SEC_EXPRESSION, section);
 
         Composite resultArea = (Composite) section.getClient();
-        GridLayout gLayout = new GridLayout(2, false);
-        gLayout.marginHeight = 0;
-        resultArea.setLayout(gLayout);
+        gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        resultArea.setLayout(gl);
 
         final Composite expressionComposite = toolkit.createComposite(resultArea);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
         gd.minimumWidth = 360;
         expressionComposite.setLayoutData(gd);
-        gLayout = new GridLayout(1, false);
-        gLayout.marginHeight = 0;
-        gLayout.marginBottom = 5;
-        expressionComposite.setLayout(gLayout);
+        twl = new TableWrapLayout();
+        twl.numColumns = 1;
+        twl.topMargin = 0;
+        twl.bottomMargin = 5;
+        expressionComposite.setLayout(twl);
 
-        toolkit.createLabel(expressionComposite, "Expression: ");
-		expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, expressionFieldFlags,
+        Label l = toolkit.createLabel(expressionComposite, "Expression: ");
+		twd = new TableWrapData();
+		twd.maxWidth = 360;
+		l.setLayoutData(twd);
+		expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, textFieldFlags,
 				new TLASourceViewerConfiguration());
 		expressionEvalInput.getTextWidget().addKeyListener(new KeyListener() {
 			@Override
@@ -673,34 +726,51 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			}
 
 			@Override
-			public void keyReleased(KeyEvent e) {
-			}
+			public void keyReleased(KeyEvent e) { }
 		});
+        
+        // Reminder that this grid data is for this text area within the expression composite within the result area
+		twd = new TableWrapData();
+		twd.align = TableWrapData.FILL;
+		twd.grabHorizontal = true;
+		twd.maxWidth = 360;
+		twd.heightHint = 80;
+		twd.valign = TableWrapData.MIDDLE;
+        expressionEvalInput.getTextWidget().setLayoutData(twd);
 		
         // We want the value section to get larger as the window
         // gets larger but not the expression section.
 		final Composite valueComposite = toolkit.createComposite(resultArea);
-        valueComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        valueComposite.setLayout(gLayout);
-        toolkit.createLabel(valueComposite, "Value: ");
-        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, expressionFieldFlags);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        gd.minimumWidth = 360;
+        valueComposite.setLayoutData(gd);
+        twl = new TableWrapLayout();
+        twl.numColumns = 1;
+        twl.topMargin = 0;
+        twl.bottomMargin = 5;
+        valueComposite.setLayout(twl);
 
-        // We dont want these items to fill excess
-        // vertical space because then in some cases
-        // this causes the text box to be extremely
-        // tall instead of having a scroll bar.
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 80;
-        expressionEvalResult.getTextWidget().setLayoutData(gd);
-        // The expression section should not grab excess horizontal
-        // space because if this flag is set to true and the length
-        // of the expression causes a vertical scroll bar to appear,
-        // then when the model is run, the expression text box
-        // will get wide enough to fit the entire expression on
-        // one line instead of wrapping the text.
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.heightHint = 80;
-        expressionEvalInput.getTextWidget().setLayoutData(gd);
+        l = toolkit.createLabel(valueComposite, "Value: ");
+		twd = new TableWrapData();
+		twd.maxWidth = 360;
+		l.setLayoutData(twd);
+        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, textFieldFlags);
+
+        // Reminder that this grid data is for this text area within the value composite within the result area
+		twd = new TableWrapData();
+		twd.align = TableWrapData.FILL;
+		twd.grabHorizontal = true;
+		twd.maxWidth = 360;
+		twd.heightHint = 80;
+		twd.valign = TableWrapData.MIDDLE;
+		expressionEvalResult.getTextWidget().setLayoutData(twd);
+
         // We want this font to be the same as the input.
         // If it was not set it would be the same as the font
         // in the module editor.
@@ -734,15 +804,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 getExpansionListener());
         sections.put(SEC_OUTPUT, section);
         final Composite outputArea = (Composite) section.getClient();
-        outputArea.setLayout(new GridLayout());
-        // output viewer
-        userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags | SWT.WRAP);
-
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.widthHint = 300;
-        gd.minimumHeight = 300;
-        userOutput.getControl().setLayoutData(gd);
-        userOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
+        twl = new TableWrapLayout();
+        twl.numColumns = 1;
+        outputArea.setLayout(twl);
+        // output viewer -- see progressOutput comment complaints concerning SWT.WRAP included in the text field flags
+        userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
+        twd = new TableWrapData();
+        twd.maxWidth = 600;
+        twd.maxHeight = 240;
+        twd.grabHorizontal = true;
+        userOutput.getTextWidget().setLayoutData(twd);
+        userOutput.getTextWidget().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
         // -------------------------------------------------------------------
         // progress section
@@ -755,13 +827,22 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         sections.put(SEC_PROGRESS, section);
         Composite progressArea = (Composite) section.getClient();
         progressArea = (Composite) section.getClient();
-        progressArea.setLayout(new GridLayout());
+        twl = new TableWrapLayout();
+        twl.numColumns = 1;
+        progressArea.setLayout(twl);
 
+        // I am regularly stunned by how crappy and quirky SWT is... in this case, if we don't have SWT.WRAP in the,
+        //		flags mask, the below maxWidth is observed on expansion of the text area (which we really don't want)
+        //		but if we turn on WRAP, then the text area expands to fill the entire width but observes width shrinking
+        //		of its parent editor. If we instead use GridLayout (with or without WRAP), width shrinking is 
+        //		completely ignored and the width of the text area is the longest line of text...
         progressOutput = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
-        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.minimumHeight = 300;
-        progressOutput.getControl().setLayoutData(gd);
-        progressOutput.getControl().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
+        twd = new TableWrapData();
+        twd.maxWidth = 600;
+        twd.maxHeight = 240;
+        twd.grabHorizontal = true;
+        progressOutput.getTextWidget().setLayoutData(twd);
+        progressOutput.getTextWidget().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
         Vector<Control> controls = new Vector<Control>();
         controls.add(userOutput.getControl());
@@ -853,121 +934,159 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
     /**
      * Creates the state space table (initializes the {@link stateSpace} variable)
-     * @param label
      * @param parent
      * @param toolkit
      * @return the constructed composite
      */
-    private Composite createAndSetupStateSpace(String label, Composite parent, FormToolkit toolkit)
-    {
+    private Composite createAndSetupStateSpace(final Composite parent, final FormToolkit toolkit) {
         final Composite statespaceComposite = toolkit.createComposite(parent, SWT.WRAP);
-        statespaceComposite.setLayout(new GridLayout(1, false));
-
-        final Label title = toolkit.createLabel(statespaceComposite, label);
+        GridLayout gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        statespaceComposite.setLayout(gl);
         GridData gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        statespaceComposite.setLayoutData(gd);
+
+        final Label title
+        	= toolkit.createLabel(statespaceComposite, "State space progress (click column header for graph)");
+        gd = new GridData();
         gd.heightHint = 22;
+        gd.horizontalAlignment = SWT.BEGINNING;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 6;
         title.setLayoutData(gd);
         
-		Table stateTable = toolkit.createTable(statespaceComposite,
-				SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
+		final Table stateTable
+			= toolkit.createTable(statespaceComposite, (SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER));
+		final StateSpaceLabelProvider sslp = new StateSpaceLabelProvider(this);
         gd = new GridData();
-        gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        gd.minimumWidth = sslp.getMinimumTotalWidth();
         gd.heightHint = 100;
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalAlignment = SWT.FILL;
         stateTable.setLayoutData(gd);
 
         stateTable.setHeaderVisible(true);
         stateTable.setLinesVisible(true);
 
-        StateSpaceLabelProvider.createTableColumns(stateTable, this);
+        sslp.createTableColumns(stateTable, this);
 
+        stateTable.addControlListener(new TableResizeListener(sslp));
+        
         // create the viewer
-        this.stateSpace = new TableViewer(stateTable);
+        stateSpace = new TableViewer(stateTable);
 
         // create list-based content provider
-        this.stateSpace.setContentProvider(new IStructuredContentProvider() {
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-            {
-            }
+        stateSpace.setContentProvider(new IStructuredContentProvider() {
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
 
-            public void dispose()
-            {
-            }
+            public void dispose() { }
 
-            public Object[] getElements(Object inputElement)
-            {
-                if (inputElement != null && inputElement instanceof List)
-                {
+            public Object[] getElements(Object inputElement) {
+                if ((inputElement != null) && (inputElement instanceof List)) {
                     return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
                 }
                 return null;
             }
         });
 
-        this.stateSpace.setLabelProvider(new StateSpaceLabelProvider(this));
-        getSite().setSelectionProvider(this.stateSpace);
+        stateSpace.setLabelProvider(sslp);
+        getSite().setSelectionProvider(stateSpace);
+        
         return statespaceComposite;
     }
 
     /**
      * Creates the coverage table (initializes the {@link coverageTimestamp} and {@link coverage} variables)  
-     * @param label
      * @param parent
      * @param toolkit
      * @return returns the containing composite
      */
-    private Composite createAndSetupCoverage(String label, Composite parent, FormToolkit toolkit)
-    {
+    private Composite createAndSetupCoverage(final Composite parent, final FormToolkit toolkit) {
         final Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
-        coverageComposite.setLayout(new GridLayout(2, false));
-        
-        final Label title = toolkit.createLabel(coverageComposite, label);
+        GridLayout gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        coverageComposite.setLayout(gl);
         GridData gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        coverageComposite.setLayoutData(gd);
+        
+        
+        final Composite headerLine = toolkit.createComposite(coverageComposite, SWT.WRAP);
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        headerLine.setLayout(gl);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        headerLine.setLayoutData(gd);
+        
+        final Label title = toolkit.createLabel(headerLine, "Coverage at");
+        gd = new GridData();
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 6;
         gd.heightHint = 22;
+        gd.horizontalAlignment = SWT.BEGINNING;
         gd.verticalAlignment = SWT.BOTTOM;
         title.setLayoutData(gd);
 
-        this.coverageTimestampText = toolkit.createText(coverageComposite, "", SWT.FLAT);
+        this.coverageTimestampText = toolkit.createText(headerLine, "", SWT.FLAT);
         this.coverageTimestampText.setEditable(false);
         gd = new GridData();
-        gd.minimumWidth = 200;
+        gd.horizontalIndent = 6;
+        gd.verticalIndent = 0;
+        gd.minimumWidth = 150;
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalAlignment = SWT.FILL;
         this.coverageTimestampText.setLayoutData(gd);
+        
 
-        final Table coverageTable = toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL
-                | SWT.BORDER | SWT.VIRTUAL);
+        final Table coverageTable
+        	= toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
+        final CoverageLabelProvider clp = new CoverageLabelProvider();
         gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.minimumWidth = StateSpaceLabelProvider.MIN_WIDTH;
+        gd.horizontalIndent = 0;
+        gd.verticalIndent = 0;
+        gd.minimumWidth = clp.getMinimumTotalWidth();
         gd.heightHint = 100;
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalAlignment = SWT.FILL;
         coverageTable.setLayoutData(gd);
 
         coverageTable.setHeaderVisible(true);
         coverageTable.setLinesVisible(true);
-        coverageTable.setToolTipText(TOOLTIP);
+        coverageTable.setToolTipText(CoverageLabelProvider.TOOLTIP);
 
-        CoverageLabelProvider.createTableColumns(coverageTable);
+        clp.createTableColumns(coverageTable);
+
+        coverageTable.addControlListener(new TableResizeListener(clp));
 
         // create the viewer
-        this.coverage = new TableViewer(coverageTable);
+        coverage = new TableViewer(coverageTable);
 
-        coverage.getTable().addMouseListener(new ActionClickListener(this.coverage));
+        coverage.getTable().addMouseListener(new ActionClickListener(coverage));
 
         // create list-based content provider
-        this.coverage.setContentProvider(new IStructuredContentProvider() {
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-            {
-            }
+        coverage.setContentProvider(new IStructuredContentProvider() {
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput) { }
 
-            public void dispose()
-            {
-            }
+            public void dispose() { }
 
-            public Object[] getElements(Object inputElement)
-            {
-                if (inputElement != null && inputElement instanceof List)
-                {
+            public Object[] getElements(Object inputElement) {
+                if ((inputElement != null) && (inputElement instanceof List)) {
                     return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
                 } else if (inputElement instanceof CoverageInformation) {
                 	return ((CoverageInformation) inputElement).toArray();
@@ -976,13 +1095,21 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             }
         });
 
-        this.coverage.setLabelProvider(new CoverageLabelProvider());
+        coverage.setLabelProvider(clp);
         
-        getSite().setSelectionProvider(this.coverage);
+        getSite().setSelectionProvider(coverage);
         
         return coverageComposite;
     }
 
+    long getStartTimestamp() {
+    	return startTimestamp;
+    }
+    
+    TableViewer getStateSpaceTableViewer() {
+    	return stateSpace;
+    }
+    
     /**
      * Returns the StateSpaceInformationItem objects currently being displayed in 
      * the "State space progress" area, except in temporal order--that is, in the
@@ -1001,506 +1128,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         }
         return result;
 
-    }
-
-    /**
-     * Provides labels for the state space table 
-     */
-    static class StateSpaceLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider, ITableColorProvider
-    {
-        public final static String[] COLUMN_TITLES = new String[] { "Time", "Diameter", "States Found",
-                "Distinct States", "Queue Size" };
-        public final static int[] COLUMN_WIDTHS;
-        public static final int MIN_WIDTH;
-        public final static int COL_TIME = 0;
-        public final static int COL_DIAMETER = 1;
-        public final static int COL_FOUND = 2;
-        public final static int COL_DISTINCT = 3;
-        public final static int COL_LEFT = 4;
-        
-        static {
-        	final double scale = 1.0;   // future functionality: UIHelper.getDisplayScaleFactor();
-        	
-        	COLUMN_WIDTHS = new int[5];
-        	COLUMN_WIDTHS[0] = (int)(120.0 * scale);
-        	COLUMN_WIDTHS[1] = (int)(60.0 * scale);
-        	COLUMN_WIDTHS[2] = (int)(80.0 * scale);
-        	COLUMN_WIDTHS[3] = (int)(100.0 * scale);
-        	COLUMN_WIDTHS[4] = (int)(80.0 * scale);
-        	
-        	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2] + COLUMN_WIDTHS[3] + COLUMN_WIDTHS[4];
-        }
-
-        
-		private boolean doHighlight = false;
-		private final ResultPage resultPage;
-
-        public StateSpaceLabelProvider(ResultPage resultPage) {
-			this.resultPage = resultPage;
-		}
-
-		/* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
-         */
-        public Image getColumnImage(Object element, int columnIndex)
-        {
-            return null;
-        }
-
-		/**
-         * @param stateTable
-         */
-        public static void createTableColumns(Table stateTable, ResultPage page)
-        {
-            // create table headers
-            for (int i = 0; i < COLUMN_TITLES.length; i++)
-            {
-                TableColumn column = new TableColumn(stateTable, SWT.NULL);
-                column.setWidth(COLUMN_WIDTHS[i]);
-                column.setText(COLUMN_TITLES[i]);
-
-                // The following statement attaches a listener to the column
-                // header. See the ResultPageColumnListener comments.
-
-                column.addSelectionListener(new ResultPageColumnListener(i, page));
-            }
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
-         */
-        public String getColumnText(Object element, int columnIndex)
-        {
-        	NumberFormat nf = NumberFormat.getIntegerInstance();
-            if (element instanceof StateSpaceInformationItem)
-            {
-                // the "N/A" values are used for simulation mode
-                StateSpaceInformationItem item = (StateSpaceInformationItem) element;
-                switch (columnIndex) {
-                case COL_TIME:
-                    return formatInterval(resultPage.startTimestamp, item.getTime().getTime());
-                case COL_DIAMETER:
-                    if (item.getDiameter() >= 0)
-                    {
-                        return nf.format(item.getDiameter());
-                    } else
-                    {
-                        return "--";
-                    }
-                case COL_FOUND:
-                    return nf.format(item.getFoundStates());
-                case COL_DISTINCT:
-                    if (item.getDistinctStates() >= 0)
-                    {
-                        return nf.format(item.getDistinctStates());
-                    } else
-                    {
-                        return "--";
-                    }
-
-                case COL_LEFT:
-                    if (item.getLeftStates() >= 0)
-                    {
-                        return nf.format(item.getLeftStates());
-                    } else
-                    {
-                        return "--";
-                    }
-                }
-            }
-            return null;
-        }
-
-		public Color getForeground(Object element, int columnIndex) {
-			return null; // Use default color
-		}
-
-		public Color getBackground(Object element, int columnIndex) {
-			final StateSpaceInformationItem ssii = (StateSpaceInformationItem) element;
-			if (doHighlight && columnIndex == COL_LEFT && ssii.isMostRecent()) {
-				return TLCUIActivator.getColor(SWT.COLOR_RED);
-			}
-			return null;
-		}
-
-		public Font getFont(Object element, int columnIndex) {
-			final StateSpaceInformationItem ssii = (StateSpaceInformationItem) element;
-			if (doHighlight && columnIndex == COL_LEFT && ssii.isMostRecent()) {
-				return JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
-			}
-			return null;
-		}
-
-        public void setHighlightUnexplored() {
-			doHighlight  = true;
-		}
-
-		public void unsetHighlightUnexplored() {
-			doHighlight = false;
-		}
-
-		private static String formatInterval(final long firstTS, final long secondTS) {
-			final long interval = secondTS - firstTS;
-			final long hr = TimeUnit.MILLISECONDS.toHours(interval);
-			final long min = TimeUnit.MILLISECONDS.toMinutes(interval - TimeUnit.HOURS.toMillis(hr));
-			final long sec = TimeUnit.MILLISECONDS
-					.toSeconds(interval - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
-			return String.format("%02d:%02d:%02d", hr, min, sec);
-		}
-   }
-
-    /**
-     * Provides labels for the coverage table 
-     */
-    static class CoverageLabelProvider extends LabelProvider implements ITableLabelProvider, ITableColorProvider
-    {
-        public final static String[] COLUMN_TITLES = new String[] { "Module", "Location", "Count" };
-        public final static int[] COLUMN_WIDTHS;
-        public static final int MIN_WIDTH;
-        public final static int COL_MODULE = 0;
-        public final static int COL_LOCATION = 1;
-        public final static int COL_COUNT = 2;
-        
-        static {
-        	final double scale = 1.0;	// future functionality: UIHelper.getDisplayScaleFactor();
-        	
-        	COLUMN_WIDTHS = new int[3];
-        	COLUMN_WIDTHS[0] = (int)(80.0 * scale);
-        	COLUMN_WIDTHS[1] = (int)(200.0 * scale);
-        	COLUMN_WIDTHS[2] = (int)(80.0 * scale);
-        	
-        	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2];
-        }
-        
-
-        /* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnImage(java.lang.Object, int)
-         */
-        public Image getColumnImage(Object element, int columnIndex)
-        {
-            return null;
-        }
-
-        /**
-         * @param stateTable
-         */
-        public static void createTableColumns(Table stateTable)
-        {
-            // create table headers
-            for (int i = 0; i < COLUMN_TITLES.length; i++)
-            {
-                TableColumn column = new TableColumn(stateTable, SWT.NULL);
-                column.setWidth(COLUMN_WIDTHS[i]);
-                column.setText(COLUMN_TITLES[i]);
-                column.setToolTipText(TOOLTIP);
-            }
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ITableLabelProvider#getColumnText(java.lang.Object, int)
-         */
-        public String getColumnText(Object element, int columnIndex)
-        {
-            if (element instanceof CoverageInformationItem)
-            {
-                CoverageInformationItem item = (CoverageInformationItem) element;
-                switch (columnIndex) {
-                case COL_MODULE:
-                    return item.getModule();
-                case COL_LOCATION:
-                    return item.getLocation();
-                case COL_COUNT:
-                    return String.valueOf(item.getCount());
-                }
-            }
-            return null;
-        }
-
-		public Color getForeground(Object element, int columnIndex) {
-			return null; // Use default color
-		}
-
-		public Color getBackground(Object element, int columnIndex) {
-			if (element instanceof CoverageInformationItem) {
-				if (((CoverageInformationItem) element).getCount() == 0) {
-					return TLCUIActivator.getColor(SWT.COLOR_YELLOW);
-				}
-			}
-			return null;
-		}
-    }
-
-    /**
-     * A ResultPageColumnListener is a listener that handles clicks on
-     * the column headers of the "State space progress" region of the
-     * Result Page.  The same class is used for all the column
-     * headers, with the column number indicating which column header
-     * was clicked on.
-     * 
-     * @author lamport
-     *
-     */
-    static class ResultPageColumnListener implements SelectionListener
-    {
-
-        private int columnNumber;
-        private ResultPage resultPage;
-
-        public ResultPageColumnListener(int columnNumber, ResultPage resultPage)
-        {
-            super();
-            this.columnNumber = columnNumber;
-            this.resultPage = resultPage;
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-         */
-        public void widgetDefaultSelected(SelectionEvent e)
-        {
-        	// nop
-        }
-
-        /**
-         * This is called when the user clicks on the header of a column
-         * of the "State space progress" region of the ResultsPage.  It 
-         * raises a window with a graph of the specified column.
-         */
-        public void widgetSelected(SelectionEvent e)
-        {
-            UIHelper.runUIAsync(new DataDisplay(resultPage, columnNumber));
-
-        }
-
-    }
-
-    /**
-     * The run method of this class creates a shell (a window) to display
-     * a graph of the appropriate State Space Progress information when the user clicks on
-     * a column heading.  It then adds a PaintListener to that shell, and that 
-     * listener draws the graph initially and whenever the window is resized or
-     * some other event requires it to be redrawn.
-     * 
-     * The constructor is used to pass the arguments needed by the run method to
-     * display the data.
-     * 
-     * Note: The location at which the shells are displayed is fixed in code
-     * buried deeply.  There should probably be some thought given to where to
-     * pop up the window, and perhaps a window should be popped up in the same
-     * place as the last such window was popped--perhaps with a bit of random
-     * variation to prevent them all from piling up.
-     *  
-     * @author lamport
-     *
-     */
-    static class DataDisplay implements Runnable
-    {
-        int columnNumber;
-        ResultPage resultPage;
-
-        /**
-         *  The constructor returns an object with null data and times arrays
-         *  if there are not at least two data points.  
-         *  
-         * @param ssInfo
-         * @param columnNumber
-         */
-        public DataDisplay(ResultPage resultPage, int columnNumber)
-        {
-
-            this.resultPage = resultPage;
-            this.columnNumber = columnNumber;
-        }
-
-        /**
-         * Much of the stuff in this run() method was copied, without much
-         * understanding from Snippet245.java in the Eclipse examples.
-         */
-        public void run()
-        {
-
-            /*
-             * The data and times arrays are set to contain the data items to be displayed
-             * and the elapsed time (in milliseconds) at which each item was posted.
-             * The data is obtained from the appropriate column of the ssInfo items.
-             * For the Time column, the number of reports is graphed.
-             */
-
-            // The following method for getting the current display was
-            // copied without understanding from someplace or other.
-
-            String title = getGraphTitle(columnNumber, resultPage);
-
-            // We check if a shell exists with this title, and use it if
-            // it does. Otherwise, we get a new shell.
-            Display display = UIHelper.getCurrentDisplay();
-            boolean shellExists = false;
-            Shell theShell = null;
-            Shell[] shells = display.getShells();
-            for (int i = 0; i < shells.length; i++)
-            {
-                if (shells[i].getText().equals(title))
-                {
-                    theShell = shells[i];
-                    shellExists = true;
-                    break;
-                }
-            }
-            if (!shellExists)
-            {
-                theShell = new Shell(display, SWT.SHELL_TRIM);
-            }
-            final Shell shell = theShell;
-            shell.setText(title);
-            shell.setActive(); // should cause it to pop up to the top.
-            if (shellExists)
-            {
-                shell.redraw();
-                shell.update();
-            } else
-            {
-                shell.addPaintListener(new PaintListener() {
-                    public void paintControl(PaintEvent event)
-                    {
-                        StateSpaceInformationItem[] ssInfo = resultPage.getStateSpaceInformation();
-                        if (ssInfo.length < 2)
-                        {
-                            return;
-                        }
-
-                        final long[] data = new long[ssInfo.length + 1];
-                        long[] times = new long[ssInfo.length + 1];
-                        data[0] = 0;
-                        times[0] = 0;
-
-                        long startTime = resultPage.startTimestamp;
-                        TLCUIActivator.getDefault().logDebug("first reported time - starttime = "
-                                + (ssInfo[0].getTime().getTime() - startTime));
-                        if (startTime > ssInfo[0].getTime().getTime() - 1000)
-                        {
-                            startTime = ssInfo[0].getTime().getTime() - 1000;
-                        }
-                        for (int i = 1; i < data.length; i++)
-                        {
-                            switch (columnNumber) {
-                            case StateSpaceLabelProvider.COL_TIME:
-                                data[i] = i - 1;
-                                break;
-                            case StateSpaceLabelProvider.COL_DIAMETER:
-                                data[i] = ssInfo[i - 1].getDiameter();
-                                break;
-                            case StateSpaceLabelProvider.COL_FOUND:
-                                data[i] = ssInfo[i - 1].getFoundStates();
-                                break;
-                            case StateSpaceLabelProvider.COL_DISTINCT:
-                                data[i] = ssInfo[i - 1].getDistinctStates();
-                                break;
-                            case StateSpaceLabelProvider.COL_LEFT:
-                                data[i] = ssInfo[i - 1].getLeftStates();
-                                break;
-                            default:
-                                return;
-                            }
-                            times[i] = ssInfo[i - 1].getTime().getTime() - startTime;
-                        }
-
-                        Rectangle rect = shell.getClientArea();
-                        // Set maxData to the largest data value;
-                        long maxData = 0;
-                        for (int i = 0; i < data.length; i++)
-                        {
-                            if (data[i] > maxData)
-                            {
-                                maxData = data[i];
-                            }
-                        }
-                        long maxTime = times[times.length - 1];
-
-                        // event.gc.drawOval(0, 0, rect.width - 1, rect.height - 1);
-                        if (maxTime > 0)
-                        {
-                        	// In case maxData equals 0, we use 1 instead for computing
-                        	// the coordinates of the points.
-                        	// (Added by LL on 6 July 2011 to fix division by zero bug.)
-                        	long maxDataVal = maxData ;
-                        	if (maxDataVal == 0) {
-                        		maxDataVal = 1;
-                        	}
-                            int[] pointArray = new int[2 * data.length];
-                            for (int i = 0; i < data.length; i++)
-                            {
-                                pointArray[2 * i] = (int) ((times[i] * rect.width) / maxTime);
-                                pointArray[(2 * i) + 1] = (int) (rect.height - ((data[i] * rect.height) / maxDataVal));
-                            }
-                            event.gc.drawPolyline(pointArray);
-                        }
-                        String stringTime = "Time: ";
-                        long unreportedTime = maxTime;
-                        long days = maxTime / (1000 * 60 * 60 * 24);
-                        if (days > 0)
-                        {
-                            unreportedTime = unreportedTime - days * (1000 * 60 * 60 * 24);
-                            stringTime = stringTime + days + ((days == 1) ? (" day ") : (" days  "));
-
-                        }
-                        long hours = unreportedTime / (1000 * 60 * 60);
-                        if (hours > 0)
-                        {
-                            unreportedTime = unreportedTime - hours * (1000 * 60 * 60);
-                            stringTime = stringTime + hours + ((hours == 1) ? (" hour ") : (" hours  "));
-                        }
-                        unreportedTime = (unreportedTime + (1000 * 26)) / (1000 * 60);
-                        stringTime = stringTime + unreportedTime
-                                + ((unreportedTime == 1) ? (" minute ") : (" minutes  "));
-                        event.gc.drawString(stringTime, 0, 0);
-                        event.gc.drawString("Current: " + data[data.length - 1], 0, 15);
-                        if (maxData != data[data.length - 1])
-                        {
-                            event.gc.drawString("Maximum: " + maxData, 0, 30);
-                        }
-                    }
-                });
-            }
-            ;
-            if (!shellExists)
-            {
-                shell.setBounds(100 + 30 * columnNumber, 100 + 30 * columnNumber, 400, 300);
-            }
-            shell.open();
-            // The following code from the Eclipse example was eliminated.
-            // It seems to cause the shell to survive after the Toolbox is
-            // killed.
-            //
-            // while (!shell.isDisposed()) {
-            // if (!display.readAndDispatch()) display.sleep();
-            // }
-
-        }
-
-    }
-
-    /**
-     * The title of a graph consists of two parts:  the prefix, which
-     * identifies the column, and the suffix, which identifies the model.
-     * When we dispose of the ResultPage, we must dispose of all graph
-     * window (shells) for that model.
-     * 
-     * @param resultPage
-     * @return
-     */
-    private static String getGraphTitleSuffix(ResultPage resultPage)
-    {
-        return "(" + resultPage.getModel().getName() + ")";
-    }
-
-    private static String getGraphTitle(int columnNumber, ResultPage resultPage)
-    {
-        String title = StateSpaceLabelProvider.COLUMN_TITLES[columnNumber];
-        if (columnNumber == StateSpaceLabelProvider.COL_TIME)
-        {
-            title = "Number of Progress Reports";
-        }
-        return title + " " + getGraphTitleSuffix(resultPage);
     }
 
 	public Set<Section> getSections(String ...sectionIDs) {

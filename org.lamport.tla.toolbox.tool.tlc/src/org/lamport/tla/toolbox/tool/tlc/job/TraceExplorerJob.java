@@ -1,10 +1,14 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.util.List;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.swt.widgets.Display;
+import org.lamport.tla.toolbox.tool.tlc.model.TraceExpressionModelWriter;
 
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.impl.SpecProcessor;
 
 /**
  * Extends {@link TLCProcessJob}.
@@ -57,6 +61,17 @@ public class TraceExplorerJob extends TLCProcessJob
 	protected boolean recover() throws CoreException {
 		// There is nothing that trace exploration could recover from.
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob#getAdditionalVMArgs()
+	 */
+	@Override
+	protected List<String> getAdditionalVMArgs() throws CoreException {
+		final List<String> additionalVMArgs = super.getAdditionalVMArgs();
+		additionalVMArgs.add(
+				String.format("-D%s=%s", SpecProcessor.LAZY_CONSTANT_OPERATORS, TraceExpressionModelWriter.POSITION));
+		return additionalVMArgs;
 	}
 
 	/* (non-Javadoc)

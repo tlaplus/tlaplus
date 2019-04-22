@@ -147,7 +147,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	}
 	
 	@Override
-	public CostModel get(final SemanticNode eon) {
+	public final CostModelNode get(final SemanticNode eon) {
 		if (eon == this.node || !(eon instanceof OpApplNode)) {
 			return this;
 		}
@@ -209,9 +209,6 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	}
 
 	protected void print(int level, final Calculate fresh) {
-		if(getLocation().beginLine() == 577) {
-			System.out.println();
-		}
 		final Set<Long> collectedEvalCounts = new HashSet<>();
 		this.collectChildren(collectedEvalCounts, fresh);
 		if (collectedEvalCounts.isEmpty()) {

@@ -97,4 +97,15 @@ public interface TLCStatisticsMXBean {
 	 * Force TLC to stop model checking.
 	 */
 	void stop();
+	
+	/**
+	 * Suspend model checking until resume is called.
+	 */
+	void suspend();
+	
+	/**
+	 * Resumes model checking after a suspend. Do not resume an running model checker.
+	 * It could interfere with model checking.
+	 */
+	void resume();
 }

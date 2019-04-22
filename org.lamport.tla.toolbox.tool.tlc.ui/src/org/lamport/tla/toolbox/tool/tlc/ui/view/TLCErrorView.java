@@ -3,8 +3,10 @@ package org.lamport.tla.toolbox.tool.tlc.ui.view;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -65,6 +67,7 @@ import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
@@ -84,6 +87,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener.LoaderTLCState;
@@ -338,7 +342,9 @@ public class TLCErrorView extends ViewPart
 
             public void mouseDown(MouseEvent e)
             {
-                TLCUIHelper.openTLCLocationHyperlink(text, e, model);
+                final Set<Class<? extends ITextEditor>> blacklist = new HashSet<>();
+                blacklist.add(TLACoverageEditor.class);
+                TLCUIHelper.openTLCLocationHyperlink(text, e, model, blacklist);
             }
 
             public void mouseDoubleClick(MouseEvent e)
@@ -374,7 +380,7 @@ public class TLCErrorView extends ViewPart
         belowErrorViewerComposite.setLayout(layout);
 
         traceExplorerComposite = new TraceExplorerComposite(belowErrorViewerComposite, "Error-Trace Exploration",
-                "Enter expressions to be evaluated at each state of the trace", toolkit, this);
+                "Enter expressions to be evaluated at each state of the trace.", toolkit, this);
 
         // A group can be used to organize and provide a title for the inner sash form
         // but right now I think the section looks better because it looks the same
@@ -490,8 +496,11 @@ public class TLCErrorView extends ViewPart
         // to use.
         resizer.column[0].addListener(SWT.Resize, resizer);
 
-        variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer));
-        variableViewer.getTree().addKeyListener(new ActionClickListener(variableViewer));
+        
+        final Set<Class<? extends ITextEditor>> blacklist = new HashSet<>();
+        blacklist.add(TLACoverageEditor.class);
+		variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer, blacklist));
+        variableViewer.getTree().addKeyListener(new ActionClickListener(variableViewer, blacklist));
 
         
         // Make it possible to expand and collapse the error trace with the push of a button.
