@@ -163,6 +163,13 @@
             id="org.lamport.tla.toolbox.openElementSelection"
             name="Filtered open element selection dialog">
       </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            defaultHandler="org.lamport.tla.toolbox.tool.tlc.ui.util.ExecutionStatisticsHandler"
+            description="Opt-in or opt-out of TLA+ Execution Statistics collection"
+            id="org.lamport.tla.toolbox.tool.tlc.ui.executionstatistics"
+            name="&amp;Opt In/Out Execution Statistics">
+      </command>
    </extension>
    
    
@@ -368,6 +375,17 @@
                </with>
             </visibleWhen>
          </command -->
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:toolbox.menu.help?after=toolbox.command.about">
+         <command
+               commandId="org.lamport.tla.toolbox.tool.tlc.ui.executionstatistics"
+               label="Opt In/Out Execution Statistics"
+               mnemonic="O"
+               mode="FORCE_TEXT"
+               style="push"
+               tooltip="Opt-in or opt-out of TLA+ Execution Statistics collection">
+         </command>
       </menuContribution>
    </extension>
    

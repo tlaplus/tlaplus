@@ -59,7 +59,7 @@ public class ExecutionStatisticsCollector {
 		}
 	}
 	
-	public static final String PATH = System.getProperty("user.home", "") + File.separator + ".tlaplus" + File.separator + "esc.txt";
+	private static final String PATH = System.getProperty("user.home", "") + File.separator + ".tlaplus" + File.separator + "esc.txt";
 
 	public static final String PROP = ExecutionStatisticsCollector.class.getName() + ".id";
 	

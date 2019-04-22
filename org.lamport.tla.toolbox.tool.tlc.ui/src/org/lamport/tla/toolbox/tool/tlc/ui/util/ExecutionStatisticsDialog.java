@@ -102,14 +102,14 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 				+ "• If TLC has been launched from the TLA Toolbox\n"
 				+ "• Name, version, and architecture of your operating system\n"
 				+ "• Vendor, version, and architecture of your Java virtual machine\n"
-				+ "• The current date\n"
+				+ "• The current date and time\n"
 				+ "• An installation identifier which allows us to group execution statistics\n\n"
 				+ "TLC will report execution statistics in the background during startup. It will not\n"
 				+ "slow down model checking.\n\n"
 				+ "The execution statistics do not contain personal information. If you wish to revoke\n"
-				+ "your consent to share execution statistics, please delete the file\n"
-				+ "\t" + ExecutionStatisticsCollector.PATH + "\n"
-				+ "and chose “Never Share Execution Statistics” during the next Toolbox start.");
+				+ "your consent to share execution statistics at a later point, please chose \n"
+				+ "\"Never Share Execution Statistics\" below by re-opening this dialog via\n"
+				+ "Help > Opt In/Out Execution Statistics accessible from the Toolbox's main menu.");
 		
 		final StyledText st = new StyledText(c, SWT.SHADOW_NONE | SWT.WRAP);
 		st.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -118,7 +118,7 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 		st.setEditable(false);
 		st.setText(txt);
 		
-		final StyleRange[] ranges = new StyleRange[3];
+		final StyleRange[] ranges = new StyleRange[2];
 		ranges[0] = new StyleRange(txt.indexOf("(TLC) execution statistics"), "(TLC) execution statistics".length(), null, null);
 		ranges[0].underline = true;
 		ranges[0].underlineStyle = SWT.UNDERLINE_LINK;
@@ -128,10 +128,6 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 		ranges[1].underline = true;
 		ranges[1].underlineStyle = SWT.UNDERLINE_LINK;
 		ranges[1].data = "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects";
-
-		ranges[2] = new StyleRange(txt.indexOf(ExecutionStatisticsCollector.PATH), ExecutionStatisticsCollector.PATH.length(), null, null);
-		ranges[2].underline = true;
-		ranges[2].underlineStyle = SWT.UNDERLINE_SINGLE;
 
 		st.setStyleRanges(ranges);
 		st.addMouseListener(new MouseAdapter() {
