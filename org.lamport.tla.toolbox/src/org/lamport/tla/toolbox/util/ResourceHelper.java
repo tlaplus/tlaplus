@@ -764,11 +764,13 @@ public class ResourceHelper
      * @param moduleFileName, name of the file 
      * @return the stream with content
      */
-    public static StringBuffer getExtendingModuleContent(String moduleFilename, String extendedModuleName)
+    public static StringBuffer getExtendingModuleContent(String moduleFilename, String... extendedModuleName)
     {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false)).append(
-                " ----\n").append("EXTENDS ").append(extendedModuleName).append(", TLC").append("\n\n");
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false))
+				.append(" ----\n").append("EXTENDS ");
+		buffer.append(String.join(", ", extendedModuleName));
+		buffer.append("\n\n");
         return buffer;
     }
 

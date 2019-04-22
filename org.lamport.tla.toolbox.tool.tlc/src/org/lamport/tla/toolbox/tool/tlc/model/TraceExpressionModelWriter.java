@@ -33,6 +33,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCVariable;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 
 public class TraceExpressionModelWriter extends ModelWriter {
 
@@ -95,6 +96,12 @@ public class TraceExpressionModelWriter extends ModelWriter {
 	    addVariablesAndDefinitions(expressionData, attributeName, true);
 	
 	    return expressionData;
+	}
+	
+	public void addPrimer(final String moduleFilename, final String extendedModuleName) {
+		// A TE spec has to extend Integers because of the _TEPosition operator.
+		tlaBuffer.append(ResourceHelper.getExtendingModuleContent(moduleFilename,
+				new String[] { extendedModuleName, "TLC", "Integers" }));
 	}
 
 	public void addTraceFunction(final List<SimpleTLCState> input) {
