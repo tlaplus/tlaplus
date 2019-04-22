@@ -423,7 +423,16 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public boolean isSnapshot() {
-		return getName().matches(".*" + SNAPSHOT_REGEXP);
+		final String name = getName();
+		if (name == null) {
+			// When deleting a set of model and snapshots from the spec explorer, the spec
+			// explorer internally might access one of the already deleted models. A deleted
+			// model however has no name (name is null) causing a NullPointerException here.
+			// For the sake of simplicity, we define a model without a name to not be a
+			// snapshot.
+			return false;
+		}
+		return name.matches(".*" + SNAPSHOT_REGEXP);
 	}
 
 	public boolean hasSnapshots() {
