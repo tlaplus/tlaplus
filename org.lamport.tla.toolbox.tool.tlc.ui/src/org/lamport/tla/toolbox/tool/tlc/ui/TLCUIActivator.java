@@ -84,7 +84,7 @@ public class TLCUIActivator extends AbstractTLCActivator
         deletedColor = new Color(null, 240, 240, 255);
         
 
-		if (ExecutionStatisticsCollector.promptUser()) {
+		if (Display.getCurrent() != null && ExecutionStatisticsCollector.promptUser()) { // Display is null during unit test execution.
 			final UIJob j = new UIJob(Display.getCurrent(), "TLA+ execution statistics approval.") {
 				@Override
 				public IStatus runInUIThread(final IProgressMonitor monitor) {
