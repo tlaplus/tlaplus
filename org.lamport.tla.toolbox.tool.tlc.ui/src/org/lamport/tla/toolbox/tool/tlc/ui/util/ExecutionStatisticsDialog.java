@@ -57,6 +57,8 @@ import util.ExecutionStatisticsCollector.Selection;
 public class ExecutionStatisticsDialog extends MessageDialog {
 
 	private static final String KEY = "BUTTON_KEY";
+	
+	private final ExecutionStatisticsCollector esc = new ExecutionStatisticsCollector();
 
 	public ExecutionStatisticsDialog(final Shell parentShell) {
 		super(parentShell, "TLA+ execution statistics", (Image) null, "The TLA+ project needs your help!",
@@ -71,7 +73,7 @@ public class ExecutionStatisticsDialog extends MessageDialog {
      * @see org.eclipse.jface.dialogs.MessageDialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
      */
     @Override
-	protected void createButtonsForButtonBar(Composite parent) {
+	protected void createButtonsForButtonBar(final Composite parent) {
         final Button[] buttons = new Button[3];
         buttons[0] = createButton(parent, 0, "&Always Share\nExecution Statistics", false);
         buttons[0].setData(KEY, ExecutionStatisticsCollector.Selection.ON);
@@ -80,6 +82,20 @@ public class ExecutionStatisticsDialog extends MessageDialog {
         buttons[2] = createButton(parent, 2, "&Never Share\nExecution Statistics", false);
         buttons[2].setData(KEY, ExecutionStatisticsCollector.Selection.NO_ESC);
         buttons[2].setFocus();
+        
+        // Disable the button for the currently active selection. 
+        final Selection selection = esc.get();
+        switch (selection) {
+		case ON:
+			buttons[0].setEnabled(false);
+			break;
+		case RANDOM_IDENTIFIER:
+			buttons[1].setEnabled(false);
+			break;
+		case NO_ESC:
+			buttons[2].setEnabled(false);
+		}
+        
         setButtons(buttons);
     }
 
@@ -90,10 +106,9 @@ public class ExecutionStatisticsDialog extends MessageDialog {
     protected Control createCustomArea(Composite parent) {
 		final Composite c = new Composite(parent, SWT.BORDER);
 		c.setLayout(new GridLayout());
-
-		final String txt = ("Please opt-in and share (TLC) execution statistics to help us make informed decisions\n"
-				+ "about future research and development directions. Execution statistics contain the\n"
-				+ "following information:\n\n"
+		
+//		final Selection selection = esc.get();
+		final String txt = String.format("%s"
 				+ "• Total number of cores and cores assigned to TLC\n"
 				+ "• Heap and off-heap memory allocated to TLC\n"
 				+ "• TLC's version (git commit SHA)\n"
@@ -104,12 +119,10 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 				+ "• Vendor, version, and architecture of your Java virtual machine\n"
 				+ "• The current date and time\n"
 				+ "• An installation identifier which allows us to group execution statistics\n\n"
-				+ "TLC will report execution statistics in the background during startup. It will not\n"
-				+ "slow down model checking.\n\n"
 				+ "The execution statistics do not contain personal information. If you wish to revoke\n"
 				+ "your consent to share execution statistics at a later point, please chose \n"
 				+ "\"Never Share Execution Statistics\" below by re-opening this dialog via\n"
-				+ "Help > Opt In/Out Execution Statistics accessible from the Toolbox's main menu.");
+				+ "Help > Opt In/Out Execution Statistics accessible from the Toolbox's main menu.", prettyPrintSelection2(esc));
 		
 		final StyledText st = new StyledText(c, SWT.SHADOW_NONE | SWT.WRAP);
 		st.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
@@ -133,7 +146,11 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 		st.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseUp(final MouseEvent event) {
-                final StyleRange style = st.getStyleRangeAtOffset(st.getOffsetAtPoint(new Point (event.x, event.y)));
+                final int offset = st.getOffsetAtPoint(new Point(event.x, event.y));
+                if (offset < 0 || offset >= st.getCharCount()) {
+                	return;
+                }
+				final StyleRange style = st.getStyleRangeAtOffset(offset);
                 if (style != null && style.underline && style.underlineStyle == SWT.UNDERLINE_LINK && style.data instanceof String) {
                     try {
 						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL((String) style.data));
@@ -143,9 +160,21 @@ public class ExecutionStatisticsDialog extends MessageDialog {
                 }
 			}
 		});
-		
+	
         return c;
     }
+
+	private static String prettyPrintSelection2(final ExecutionStatisticsCollector esc) {
+		switch (esc.get()) {
+		case ON:
+			return String.format(
+					"Thank you for sharing (TLC) execution statistics with installation identifier\n%s.\n\nExecution Statistics help us make informed decisions about future research and\ndevelopment directions. Execution statistics contain the following information:\n\n",
+					esc.getIdentifier());
+		case RANDOM_IDENTIFIER:
+			return "Thank you for sharing (TLC) execution statistics. Execution Statistics help us\nmake informed decisions about future research anddevelopment directions.\nExecution statistics contain the following information:\n\n";
+		}
+		return "Please opt-in and share (TLC) execution statistics. Execution statistics contain\nthe following information:\n\n";
+	}
 
 	@Override
 	protected void buttonPressed(final int buttonId) {
@@ -154,7 +183,7 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					ExecutionStatisticsCollector.set(col);
+					esc.set(col);
 				} catch (IOException e) {
 					return new Status(ERROR, TLCUIActivator.PLUGIN_ID, e.getMessage(), e);
 				}

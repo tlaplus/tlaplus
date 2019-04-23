@@ -157,7 +157,37 @@ public class ExecutionStatisticsCollector {
 	public boolean isEnabled() {
 		return getIdentifier() != null;
 	}
+
+	public void set(final Selection c) throws IOException {
+		final File udcFile = new File(PATH);
+		udcFile.createNewFile();
+		
+		try (BufferedWriter br = new BufferedWriter(new FileWriter(udcFile))) {
+			br.write(c.toString() + "\n");
+		} catch (IOException e) {
+			throw e;
+		}
+	}
 	
+	public Selection get() {
+		if (isEnabled()) {
+			try (BufferedReader br = new BufferedReader(new FileReader(new File(pathname)))) {
+				String line = br.readLine();
+				if (RND_ID_STR.equals(line)) {
+					return Selection.RANDOM_IDENTIFIER;
+				} else {
+					return Selection.ON;
+				}
+			} catch (Exception e) {
+			}
+		}
+		return Selection.NO_ESC;
+	}
+	
+	public static boolean promptUser() {
+		return !(new ExecutionStatisticsCollector().escFileExists());
+	}
+
 	private static String getRandomIdentifier() {
 		return UUID.randomUUID().toString().replaceAll("-", "");
 	}
@@ -206,21 +236,6 @@ public class ExecutionStatisticsCollector {
 		}
 		
 		return buf.toString().replaceFirst(",$", "");
-	}
-	
-	public static boolean promptUser() {
-		return !(new ExecutionStatisticsCollector().escFileExists());
-	}
-
-	public static void set(final Selection c) throws IOException {
-		final File udcFile = new File(PATH);
-		udcFile.createNewFile();
-		
-		try (BufferedWriter br = new BufferedWriter(new FileWriter(udcFile))) {
-			br.write(c.toString() + "\n");
-		} catch (IOException e) {
-			throw e;
-		}
 	}
 
 	// for manual testing //
