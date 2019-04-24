@@ -934,12 +934,12 @@ public class TLC
                 if (isBFS())
                 {
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
-							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
+							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile), startTime);
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) TLCGlobals.mainChecker, this);
 					TLCGlobals.mainChecker.modelCheck();
                 } else
                 {
-					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt);
+					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
 					TLCGlobals.mainChecker.modelCheck();
                 }
             }

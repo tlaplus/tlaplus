@@ -49,12 +49,13 @@ public class DFIDModelChecker extends AbstractChecker
 
     /** 
      * Constructor for running DFID   
+     * @param startTime 
      * @param resolver 
      */
 	public DFIDModelChecker(ITool tool, String metadir, final IStateWriter stateWriter,
-			boolean deadlock, String fromChkpt) throws EvalException, IOException {
+			boolean deadlock, String fromChkpt, long startTime) throws EvalException, IOException {
         // call the abstract constructor
-        super(tool, metadir, stateWriter, deadlock, fromChkpt);
+        super(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
 
         this.theInitStates = null;
         this.theInitFPs = null;
@@ -637,6 +638,7 @@ public class DFIDModelChecker extends AbstractChecker
      * Checkpoint: checkpoint three data structures: the state set, the
      *             state queue, and the state trace.
      */
+    @Override
     public final boolean doPeriodicWork() throws Exception
     {
         synchronized (this.theFPSet)
