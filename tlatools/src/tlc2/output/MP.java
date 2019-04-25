@@ -1078,6 +1078,10 @@ public class MP
         case EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE:
             b.append("TLC encountered a temporal formula (%1%) when evaluating" + " a predicate or action.\n%2%");
             break;
+        case EC.TLC_ENVIRONMENT_JVM_GC:
+			b.append(
+					"Please run the Java VM which executes TLC with a throughput optimized garbage collector by passing the \"-XX:+UseParallelGC\" property.");
+            break;
 
         /* ************************************************************************ */
         // state printing

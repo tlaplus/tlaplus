@@ -271,4 +271,6 @@ public interface EC
     
     public static final int TLC_INTEGER_TOO_BIG = 2265;
     public static final int TLC_TRACE_TOO_LONG = 2282;
+    
+    public static final int TLC_ENVIRONMENT_JVM_GC = 2401;
 }
