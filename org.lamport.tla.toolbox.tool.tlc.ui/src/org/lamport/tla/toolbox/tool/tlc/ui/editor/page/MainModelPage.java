@@ -1019,7 +1019,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 	@SuppressWarnings("unchecked")
 	public List<Assignment> getConstants() {
-		return (List<Assignment>) constantTable.getInput();
+		final List<Assignment> constants = (List<Assignment>) constantTable.getInput();
+		if (constants == null) {
+			return new ArrayList<>();
+		}
+		return constants;
 	}
 	
     /**

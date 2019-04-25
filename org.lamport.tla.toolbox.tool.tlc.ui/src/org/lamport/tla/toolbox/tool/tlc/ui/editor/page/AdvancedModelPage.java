@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
@@ -472,50 +473,52 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         }
 
         // check the model values
-		final TypedSet modelValuesSet
-							= TypedSet.parseSet(FormHelper.trimTrailingSpaces(modelValuesSource.getDocument().get()));
-        if (modelValuesSet.getValueCount() > 0)
-        {
-            // there were values defined
-
-            // check if those are numbers?
-            /*
-             * if (modelValuesSet.hasANumberOnlyValue()) {
-             * mm.addMessage("modelValues1",
-             * "A model value can not be an number", modelValuesSet,
-             * IMessageProvider.ERROR, modelValuesSource.getControl());
-             * setComplete(false); }
-             */
-            List<String> values = modelValuesSet.getValuesAsList();
-            // check list of model values if these are already used
-            validateUsage(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value",
-                    "Advanced Model Values", true);
-            // check whether the model values are valid ids
-            validateId(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value");
-
-            // get widget for model values
-            Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_MODEL_VALUES));
-
-            // check if model values are config file keywords
-            for (int j = 0; j < values.size(); j++)
-            {
-                String value = (String) values.get(j);
-                if (SemanticHelper.isConfigFileKeyword(value))
-                {
-                    modelEditor.addErrorMessage(value, "The toolbox cannot handle the model value " + value + ".", this
-                            .getId(), IMessageProvider.ERROR, widget);
-                    setComplete(false);
-                } 
+		final IDocument document = modelValuesSource.getDocument();
+		if (document != null) {
+			final TypedSet modelValuesSet = TypedSet.parseSet(FormHelper.trimTrailingSpaces(document.get()));
+			if (modelValuesSet.getValueCount() > 0)
+			{
+				// there were values defined
+				
+				// check if those are numbers?
+				/*
+				 * if (modelValuesSet.hasANumberOnlyValue()) {
+				 * mm.addMessage("modelValues1",
+				 * "A model value can not be an number", modelValuesSet,
+				 * IMessageProvider.ERROR, modelValuesSource.getControl());
+				 * setComplete(false); }
+				 */
+				List<String> values = modelValuesSet.getValuesAsList();
+				// check list of model values if these are already used
+				validateUsage(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value",
+						"Advanced Model Values", true);
+				// check whether the model values are valid ids
+				validateId(MODEL_PARAMETER_MODEL_VALUES, values, "modelValues2_", "A model value");
+				
+				// get widget for model values
+				Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_MODEL_VALUES));
+				
+				// check if model values are config file keywords
+				for (int j = 0; j < values.size(); j++)
+				{
+					String value = (String) values.get(j);
+					if (SemanticHelper.isConfigFileKeyword(value))
+					{
+						modelEditor.addErrorMessage(value, "The toolbox cannot handle the model value " + value + ".", this
+								.getId(), IMessageProvider.ERROR, widget);
+						setComplete(false);
+					} 
 //                else {
 //                   // Call of removeErrorMessage added by LL on 21 Mar 2013
 //                   // However, it did nothing because the value argument is a string
-                     // currently in the field, which is not going to be the one that
-                     // caused any existing error message.
+					// currently in the field, which is not going to be the one that
+					// caused any existing error message.
 //                   modelEditor.removeErrorMessage(value, widget);
 //                }
-            }
-
-        }
+				}
+				
+			}
+		}
 
         // opDefNodes necessary for determining if a definition in definition
         // overrides is still in the specification
@@ -541,77 +544,81 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         // check the definition overrides
         @SuppressWarnings("unchecked")
 		List<Assignment> definitions = (List<Assignment>) definitionsTable.getInput();
-
-        for (int i = 0; i < definitions.size(); i++)
-        {
-            Assignment definition = definitions.get(i);
-            List<String> values = Arrays.asList(definition.getParams());
-            // check list of parameters
-            validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides",
-                    false);
-            // check whether the parameters are valid ids
-            validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
-
-            // The following if test was added by LL on 11 Nov 2009 to prevent an unparsed
-            // file from producing bogus error messages saying that overridden definitions
-            // have been removed from the spec.
-            if (opDefNodes != null)
+        if (definitions != null) {
+            for (int i = 0; i < definitions.size(); i++)
             {
-                // Note added by LL on 21 Mar 2013:  We do not remove error messages
-                // for overridden definitions that are set by this code because doing so 
-                // may remove error messages set for these definitions by checks elsewhere
-                // in the code.
+                Assignment definition = definitions.get(i);
+                List<String> values = Arrays.asList(definition.getParams());
+                // check list of parameters
+                validateUsage(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name", "Definition Overrides",
+                        false);
+                // check whether the parameters are valid ids
+                validateId(MODEL_PARAMETER_DEFINITIONS, values, "param1_", "A parameter name");
 
-                // check if definition still appears in root module
-                if (!nodeTable.containsKey(definition.getLabel()))
+                // The following if test was added by LL on 11 Nov 2009 to prevent an unparsed
+                // file from producing bogus error messages saying that overridden definitions
+                // have been removed from the spec.
+                if (opDefNodes != null)
                 {
-                    // the following would remove
-                    // the definition override from the table
-                    // right now, an error message appears instead
-                    // definitions.remove(i);
-                    // definitionsTable.setInput(definitions);
-                    // dm.getSection(DEF_OVERRIDES_PART).markDirty();
-                    modelEditor.addErrorMessage(definition.getLabel(), "The defined symbol "
-                            + definition.getLabel().substring(definition.getLabel().lastIndexOf("!") + 1)
-                            + " has been removed from the specification."
-                            + " It must be removed from the list of definition overrides.", this.getId(),
-                            IMessageProvider.ERROR, widget);
-                    setComplete(false);
-                } else
-                {
-                    // add error message if the number of parameters has changed
-                    OpDefNode opDefNode = (OpDefNode) nodeTable.get(definition.getLabel());
-                    if (opDefNode.getSource().getNumberOfArgs() != definition.getParams().length)
+                    // Note added by LL on 21 Mar 2013:  We do not remove error messages
+                    // for overridden definitions that are set by this code because doing so 
+                    // may remove error messages set for these definitions by checks elsewhere
+                    // in the code.
+
+                    // check if definition still appears in root module
+                    if (!nodeTable.containsKey(definition.getLabel()))
                     {
-                        modelEditor.addErrorMessage(definition.getLabel(), "Edit the definition override for "
-                                + opDefNode.getSource().getName() + " to match the correct number of arguments.", this
-                                .getId(), IMessageProvider.ERROR, widget);
+                        // the following would remove
+                        // the definition override from the table
+                        // right now, an error message appears instead
+                        // definitions.remove(i);
+                        // definitionsTable.setInput(definitions);
+                        // dm.getSection(DEF_OVERRIDES_PART).markDirty();
+                        modelEditor.addErrorMessage(definition.getLabel(), "The defined symbol "
+                                + definition.getLabel().substring(definition.getLabel().lastIndexOf("!") + 1)
+                                + " has been removed from the specification."
+                                + " It must be removed from the list of definition overrides.", this.getId(),
+                                IMessageProvider.ERROR, widget);
                         setComplete(false);
+                    } else
+                    {
+                        // add error message if the number of parameters has changed
+                        OpDefNode opDefNode = (OpDefNode) nodeTable.get(definition.getLabel());
+                        if (opDefNode.getSource().getNumberOfArgs() != definition.getParams().length)
+                        {
+                            modelEditor.addErrorMessage(definition.getLabel(), "Edit the definition override for "
+                                    + opDefNode.getSource().getName() + " to match the correct number of arguments.", this
+                                    .getId(), IMessageProvider.ERROR, widget);
+                            setComplete(false);
+                        }
                     }
                 }
             }
-        }
-        for (int j = 0; j < definitions.size(); j++)
-        {
-            Assignment definition = (Assignment) definitions.get(j);
-            String label = definition.getLabel();
-            if (SemanticHelper.isConfigFileKeyword(label))
+            for (int j = 0; j < definitions.size(); j++)
             {
-                modelEditor.addErrorMessage(label, "The toolbox cannot override the definition of " + label
-                        + " because it is a configuration file keyword.", this.getId(), IMessageProvider.ERROR, widget);
-                setComplete(false);
+                Assignment definition = (Assignment) definitions.get(j);
+                String label = definition.getLabel();
+                if (SemanticHelper.isConfigFileKeyword(label))
+                {
+                    modelEditor.addErrorMessage(label, "The toolbox cannot override the definition of " + label
+                            + " because it is a configuration file keyword.", this.getId(), IMessageProvider.ERROR, widget);
+                    setComplete(false);
+                }
             }
         }
 
         // check if the view field contains a cfg file keyword
         Control viewWidget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_VIEW));
-        String viewString = FormHelper.trimTrailingSpaces(viewSource.getDocument().get());
-        if (SemanticHelper.containsConfigFileKeyword(viewString))
-        {
-            modelEditor.addErrorMessage(viewString, "The toolbox cannot handle the string " + viewString
-                    + " because it contains a configuration file keyword.", this.getId(), IMessageProvider.ERROR,
-                    viewWidget);
-            setComplete(false);
+        final IDocument viewerDocument = viewSource.getDocument();
+        if (viewerDocument != null) {
+        	String viewString = FormHelper.trimTrailingSpaces(viewerDocument.get());
+        	if (SemanticHelper.containsConfigFileKeyword(viewString))
+        	{
+        		modelEditor.addErrorMessage(viewString, "The toolbox cannot handle the string " + viewString
+        				+ " because it contains a configuration file keyword.", this.getId(), IMessageProvider.ERROR,
+        				viewWidget);
+        		setComplete(false);
+        	}
         }
 
         mm.setAutoUpdate(true);
