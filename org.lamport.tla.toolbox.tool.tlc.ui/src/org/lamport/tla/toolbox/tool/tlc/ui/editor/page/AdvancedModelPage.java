@@ -92,6 +92,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
     private Text checkpointSizeText;
     private Button checkpointDeleteButton;
     
+    // Widgets to enable/disable coverage
+    private Button collectCoverage;
+    
     /**
      * Offset for the -fp parameter passed to TLC process to select the hash seed 
      */
@@ -214,6 +217,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         boolean recover = getModel().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
         checkpointButton.setSelection(recover);
         
+        // coverage
+        collectCoverage.setSelection(getModel().getAttribute(LAUNCH_COVERAGE, LAUNCH_COVERAGE_DEFAULT));
+        
         // fp index
         final boolean randomly = getModel().getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT);
 		fpIndexRandomly.setSelection(randomly);
@@ -301,7 +307,10 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // Visualize State Graph
         getModel().setAttribute(LAUNCH_VISUALIZE_STATEGRAPH, visualizeStateGraph.getSelection());
-        
+
+        // Collect Coverage
+        getModel().setAttribute(LAUNCH_COVERAGE, collectCoverage.getSelection());
+       
         // definitions
         List<String> definitions = FormHelper.getSerializedInput(definitionsTable);
         getModel().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
@@ -918,6 +927,7 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         checkpointButton.addSelectionListener(launchListener);
         viewSource.addTextListener(launchListener);
         visualizeStateGraph.addSelectionListener(launchListener);
+        collectCoverage.addSelectionListener(launchListener);
         extraTLCParametersText.addModifyListener(launchListener);
         extraVMArgumentsText.addModifyListener(launchListener);
 
@@ -1147,7 +1157,27 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 			public void widgetDefaultSelected(SelectionEvent e) { }
         });
         checkpointDeleteButton.addFocusListener(focusListener);
+        new Label(area, SWT.NONE); // use up last cell.
 
+        // Collect Coverage
+		final String collectCoverageHelp = "Coverage helps identify problems with the specification such as action which are "
+				+ "never enabled. Cost statistics allow to diagnose expensive expressions to evaluate and state space "
+				+ "explosion. Both statistics negatively impact model checking performance and should thus be disabled while "
+				+ "checking large models.";
+		final Label collectCoverageLabel = toolkit.createLabel(area,
+				"Collect coverage and cost statistics during model checking:");
+        gd = new GridData();
+        gd.verticalIndent = 9;
+        collectCoverageLabel.setLayoutData(gd);
+        collectCoverageLabel.setToolTipText(collectCoverageHelp);
+
+        collectCoverage = toolkit.createButton(area, "", SWT.CHECK);
+        gd = new GridData();
+        gd.verticalIndent = 9;
+        collectCoverage.setLayoutData(gd);
+        collectCoverage.addFocusListener(focusListener);
+        collectCoverage.setToolTipText(collectCoverageHelp);
+        
         hr = toolkit.createSeparator(area, SWT.HORIZONTAL);
         gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;

@@ -282,8 +282,13 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
     }
 
     protected boolean collectCoverage() throws CoreException {
-		return launch.getLaunchConfiguration().getAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
-				MODEL_BEHAVIOR_TYPE_DEFAULT) != MODEL_BEHAVIOR_TYPE_NO_SPEC;
+		final ILaunchConfiguration launchConfiguration = launch.getLaunchConfiguration();
+		if (launchConfiguration.getAttribute(LAUNCH_COVERAGE, LAUNCH_COVERAGE_DEFAULT)) {
+			return launchConfiguration.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE,
+					MODEL_BEHAVIOR_TYPE_DEFAULT) != MODEL_BEHAVIOR_TYPE_NO_SPEC;
+		} else {
+			return false;
+		}
     }
     
 	protected boolean recover() throws CoreException {
