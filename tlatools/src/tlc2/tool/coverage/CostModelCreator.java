@@ -327,7 +327,7 @@ public class CostModelCreator extends ExplorerVisitor {
 		}
 	}
 	
-	public static void report(final ITool tool) {
+	public static void report(final ITool tool, final long startTime) {
         MP.printMessage(EC.TLC_COVERAGE_START);
     	final Vect<Action> init = tool.getInitStateSpec();
     	for (int i = 0; i < init.size(); i++) {
@@ -355,6 +355,17 @@ public class CostModelCreator extends ExplorerVisitor {
         	//TODO Might have to be ordered similar to next-state actions above.
         	invariant.cm.report();
 		}
-        MP.printMessage(EC.TLC_COVERAGE_END);
+        
+		// Notify users about the performance overhead related to coverage collection
+		// after N minutes of model checking. The assumption is that a user has little
+		// interest in coverage for a large (long-running) model anyway.  In the future
+        // it is hopefully possible to switch from profiling to sampling to relax the
+        // performance overhead of coverage and cost statistics.
+		final long l = System.currentTimeMillis() - startTime;
+		if (l > (5L * 60L * 1000L)) {
+			MP.printMessage(EC.TLC_COVERAGE_END_OVERHEAD);
+		} else {
+			MP.printMessage(EC.TLC_COVERAGE_END);
+		}
 	}
 }

@@ -972,6 +972,10 @@ public class MP
         case EC.TLC_COVERAGE_END:
             b.append("End of statistics.");
             break;
+		case EC.TLC_COVERAGE_END_OVERHEAD:
+			b.append("End of statistics (please note that for performance reasons large models\n"
+					+ "are best checked with coverage and cost statistics disabled).");
+            break;
 
         /* ************************************************************************ */
         // errors evaluating the config file and the MC file

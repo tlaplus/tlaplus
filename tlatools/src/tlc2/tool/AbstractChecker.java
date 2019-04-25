@@ -145,7 +145,7 @@ public abstract class AbstractChecker
 		// Without actions (empty spec) there won't be any statistics anyway.
 		if (TLCGlobals.isCoverageEnabled() && this.tool.getActions().length > 0)
 		{
-            CostModelCreator.report(this.tool);
+            CostModelCreator.report(this.tool, this.startTime);
         }
     }
     
