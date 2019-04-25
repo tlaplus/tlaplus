@@ -251,6 +251,11 @@ public class TLCOutputSourceRegistry
         }
         return provider;
     }
+    
+    public synchronized boolean hasProvider(Model model)
+    {
+    	return providers.containsKey(model);
+    }
 
     /**
      * Clients should not invoke this constructor directly, but use {@link TLCOutputSourceRegistry#getModelCheckSourceRegistry()}

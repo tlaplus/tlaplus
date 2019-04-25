@@ -541,10 +541,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 			JFaceResources.getFontRegistry().removeListener(fontChangeListener);
 
-			TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry()
-					.getProvider(getModel());
-			if (provider != null) {
-				provider.setPresenter(null);
+			final TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry
+					.getModelCheckSourceRegistry();
+			
+			final Model model = getModel();
+			// Do not initialize provider in dispose if it hasn't been initialized yet.
+			if (modelCheckSourceRegistry.hasProvider(model)) {
+				final TLCModelLaunchDataProvider provider = modelCheckSourceRegistry.getProvider(model);
+				if (provider != null) {
+					provider.setPresenter(null);
+				}
 			}
 			super.dispose();
 		} catch (CoreException e) {
