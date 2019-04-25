@@ -904,4 +904,19 @@ Console Facory
          </adapter>
       </factory>
    </extension>
+   <extension
+         point="org.eclipse.mylyn.commons.notifications.ui.notifications">
+      <category
+            id="org.lamport.tla.toolbox.tool.tlc.ui.notification.category"
+            label="CategoryLabel">
+      </category>
+      <event
+            categoryId="org.lamport.tla.toolbox.tool.tlc.ui.notification.category"
+            id="org.lamport.tla.toolbox.tool.tlc.ui.notification.event"
+            label="EventLabel">
+         <defaultHandler
+               sinkId="org.eclipse.mylyn.commons.notifications.sink.Popup">
+         </defaultHandler>
+      </event>
+   </extension>
 </plugin>

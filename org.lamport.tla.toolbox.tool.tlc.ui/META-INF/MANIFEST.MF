@@ -19,7 +19,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions;bundle-version="3.4.100",
  javax.mail;bundle-version="1.4.0",
  com.abstratt.graphviz;bundle-version="2.1.201501",
- com.abstratt.graphviz.ui;bundle-version="2.1.201501"
+ com.abstratt.graphviz.ui;bundle-version="2.1.201501",
+ org.eclipse.mylyn.commons.notifications.core;bundle-version="1.16.0",
+ org.eclipse.mylyn.commons.notifications.ui;bundle-version="1.16.0",
+ org.eclipse.mylyn.commons.ui;bundle-version="3.24.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: org.lamport.tla.toolbox.editor.basic

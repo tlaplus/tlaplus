@@ -481,6 +481,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
                 case EC.TLC_COVERAGE_END_OVERHEAD:
+                	if (isTLCStarted) {
+                		informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_END_OVERHEAD);
+                		break;
+                	}
                 case EC.TLC_COVERAGE_END:
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_END);
                     break;

@@ -14,7 +14,8 @@ public interface ITLCModelLaunchDataPresenter
 	public final static int COVERAGE_TIME = END_TIME << 1;
 	public final static int COVERAGE = COVERAGE_TIME << 1;
 	public final static int COVERAGE_END = COVERAGE << 1;
-	public final static int PROGRESS = COVERAGE_END << 1;
+	public final static int COVERAGE_END_OVERHEAD = COVERAGE_END << 1;
+	public final static int PROGRESS = COVERAGE_END_OVERHEAD << 1;
 	public final static int ERRORS = PROGRESS << 1;
 	public final static int LAST_CHECKPOINT_TIME = ERRORS << 1;
 	public final static int CURRENT_STATUS = LAST_CHECKPOINT_TIME << 1;
