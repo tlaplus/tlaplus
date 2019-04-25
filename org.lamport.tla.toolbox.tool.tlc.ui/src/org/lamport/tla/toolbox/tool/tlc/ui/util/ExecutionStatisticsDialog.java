@@ -106,8 +106,8 @@ public class ExecutionStatisticsDialog extends MessageDialog {
     protected Control createCustomArea(Composite parent) {
 		final Composite c = new Composite(parent, SWT.BORDER);
 		c.setLayout(new GridLayout());
+		c.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-//		final Selection selection = esc.get();
 		final String txt = String.format("%s"
 				+ "* Total number of cores and cores assigned to TLC\n"
 				+ "* Heap and off-heap memory allocated to TLC\n"
@@ -125,7 +125,7 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 				+ "Help > Opt In/Out Execution Statistics accessible from the Toolbox's main menu.", prettyPrintSelection2(esc));
 		
 		final StyledText st = new StyledText(c, SWT.SHADOW_NONE | SWT.WRAP);
-		st.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+		st.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		st.setEnabled(true);
 		st.setEditable(false);
