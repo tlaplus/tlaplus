@@ -25,6 +25,8 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
+import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -34,6 +36,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -81,7 +84,6 @@ public class ExecutionStatisticsDialog extends MessageDialog {
         buttons[1].setData(KEY, ExecutionStatisticsCollector.Selection.RANDOM_IDENTIFIER);
         buttons[2] = createButton(parent, 2, "&Never Share\nExecution Statistics", false);
         buttons[2].setData(KEY, ExecutionStatisticsCollector.Selection.NO_ESC);
-        buttons[2].setFocus();
         
         // Disable the button for the currently active selection. 
         final Selection selection = esc.get();
@@ -98,6 +100,27 @@ public class ExecutionStatisticsDialog extends MessageDialog {
         
         setButtons(buttons);
     }
+    
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.dialogs.MessageDialog#createButton(org.eclipse.swt.widgets.Composite, int, java.lang.String, boolean)
+	 */
+	protected Button createButton(Composite parent, int id, String label, boolean defaultButton) {
+		// increment the number of columns in the button bar
+		((GridLayout) parent.getLayout()).numColumns++;
+		Button button = new Button(parent, SWT.PUSH | SWT.WRAP); // Need wrap here contrary to Dialog#createButton to wrap button label on Windows and macOS(?).
+		button.setText(label);
+		button.setFont(JFaceResources.getDialogFont());
+		button.setData(Integer.valueOf(id));
+		button.addSelectionListener(widgetSelectedAdapter(event -> buttonPressed(((Integer) event.widget.getData()).intValue())));
+		if (defaultButton) {
+			Shell shell = parent.getShell();
+			if (shell != null) {
+				shell.setDefaultButton(button);
+			}
+		}
+		setButtonLayoutData(button);
+		return button;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.dialogs.MessageDialog#createCustomArea(org.eclipse.swt.widgets.Composite)
