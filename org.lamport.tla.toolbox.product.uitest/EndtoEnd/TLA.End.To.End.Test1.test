@@ -114,14 +114,14 @@ try -command {
         get-button "Add" | click
 	}
 	with [get-window -class WizardDialog] {
-	    get-text-viewer | type-text "stateNum == IF TLCGet(\"level\") + 1 > Len(TETrace) THEN Len(TETrace) ELSE TLCGet(\"level\") + 1"
+	    get-text-viewer | type-text "stateNum == _TEPosition"
 	    get-button Finish | click
 	}
 	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
         get-button "Add" | click
 	}
 	with [get-window -class WizardDialog] {
-	    get-text-viewer | type-text "sum == LET s[i \in DOMAIN TETrace] == IF i = 1 THEN 1 ELSE s[i-1] + 1 IN s[stateNum]"
+	    get-text-viewer | type-text "sum == LET s[i \in DOMAIN _TETrace] == IF i = 1 THEN 1 ELSE s[i-1] + 1 IN s[stateNum]"
 	    get-button Finish | click
 	}
 
@@ -146,7 +146,7 @@ try -command {
 	}
 	with [get-window "Parsing error when running trace explorer"] {
     with [get-editbox] {
-        get-property text | equals "***Parse Error***\nWas expecting \"Expression or Instance\"\nEncountered \"Beginning of definition\"  in Error-Trace Exploration expression at line 5 and token \"==\" \n\nResidual stack trace follows:\nDefinition starting at line 45, column 1.\nModule body starting at line 5, column 1.\nModule definition starting at line 1, column 1.\n" 
+        get-property text | equals "***Parse Error***\nWas expecting \"Expression or Instance\"\nEncountered \"Beginning of definition\"  in Error-Trace Exploration expression at line 5 and token \"==\" \n\nResidual stack trace follows:\nDefinition starting at line 51, column 1.\nModule body starting at line 5, column 1.\nModule definition starting at line 1, column 1.\n" 
 	    | verify-true
     }
     get-button OK | click
