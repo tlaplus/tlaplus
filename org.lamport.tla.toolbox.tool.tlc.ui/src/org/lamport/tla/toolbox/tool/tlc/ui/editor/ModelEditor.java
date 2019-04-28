@@ -484,7 +484,9 @@ public class ModelEditor extends FormEditor
         // // " editor");
 
     	final IFormPage page = getActivePageInstance();
-    	page.setFocus();
+    	if (page != null) {
+    		page.setFocus();
+    	}
     }
 
     /*

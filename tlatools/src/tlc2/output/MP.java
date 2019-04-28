@@ -972,6 +972,10 @@ public class MP
         case EC.TLC_COVERAGE_END:
             b.append("End of statistics.");
             break;
+		case EC.TLC_COVERAGE_END_OVERHEAD:
+			b.append("End of statistics (please note that for performance reasons large models\n"
+					+ "are best checked with coverage and cost statistics disabled).");
+            break;
 
         /* ************************************************************************ */
         // errors evaluating the config file and the MC file
@@ -1077,6 +1081,10 @@ public class MP
             break;
         case EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE:
             b.append("TLC encountered a temporal formula (%1%) when evaluating" + " a predicate or action.\n%2%");
+            break;
+        case EC.TLC_ENVIRONMENT_JVM_GC:
+			b.append(
+					"Please run the Java VM which executes TLC with a throughput optimized garbage collector by passing the \"-XX:+UseParallelGC\" property.");
             break;
 
         /* ************************************************************************ */

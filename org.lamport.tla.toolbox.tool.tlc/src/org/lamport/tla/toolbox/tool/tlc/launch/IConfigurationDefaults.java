@@ -112,7 +112,11 @@ public interface IConfigurationDefaults
      */
     public static final boolean LAUNCH_VISUALIZE_STATEGRAPH_DEFAULT = false;
     /**
-     * Do not recover from checkpoints by defualt
+     * Do not recover from checkpoints by default
      */
     public static final boolean LAUNCH_RECOVER_DEFAULT = false;
+    /**
+     * Collect covearge and cost statistics by default
+     */
+    public static final boolean LAUNCH_COVERAGE_DEFAULT = true;
 }

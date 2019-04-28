@@ -125,6 +125,11 @@ public class Simulator {
 
 	// Each simulation worker pushes their results onto this shared queue.
 	private BlockingQueue<SimulationWorkerResult> workerResultQueue = new LinkedBlockingQueue<>();
+	
+    /**
+     * Timestamp of when simulation started.
+     */
+	private final long startTime = System.currentTimeMillis();
 		 
 	 /**
 	 * Returns whether a given error code is considered "continuable". That is, if
@@ -359,7 +364,7 @@ public class Simulator {
 	 */
 	public final void reportCoverage() {
 		if (TLCGlobals.isCoverageEnabled()) {
-            CostModelCreator.report(this.tool);
+            CostModelCreator.report(this.tool, this.startTime );
 		}
 	}
 

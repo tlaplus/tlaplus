@@ -240,7 +240,7 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		btnNewButton.setBackground(backgroundColor);
 		btnNewButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		btnNewButton.setAlignment(SWT.CENTER);
-		btnNewButton.setText("N Queens\n(TLA+)");
+		btnNewButton.setText("N Queens\n(TLA+)");
 		btnNewButton.setData(specKey, "Queens.tla");
 		btnNewButton.setData(zipKey, "examples/Queens.zip");
 		btnNewButton.addSelectionListener(selectionAdapter);		
@@ -260,7 +260,7 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		btnNewButton.setData(specKey, "QueensPluscal.tla");
 		btnNewButton.setData(zipKey, "examples/Queens.zip");
 		btnNewButton.addSelectionListener(selectionAdapter);		
-		btnNewButton.setText("N Queens\n(PlusCal)");
+		btnNewButton.setText("N Queens\n(PlusCal)");
 		// Wording adopted from https://en.wikipedia.org/wiki/Eight_queens_puzzle
 		btnNewButton.setToolTipText(
 				"The N queens puzzle is the problem of placing N chess queens on an N×N chessboard so that no two "

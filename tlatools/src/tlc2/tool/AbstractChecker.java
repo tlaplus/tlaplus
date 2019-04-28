@@ -50,6 +50,10 @@ public abstract class AbstractChecker
     protected final IStateWriter allStateWriter;
     protected IWorker[] workers;
 	protected final ILiveCheck liveCheck;
+    /**
+     * Timestamp of when model checking started.
+     */
+	protected final long startTime;
 
     /**
      * Constructor of the abstract model checker
@@ -63,7 +67,7 @@ public abstract class AbstractChecker
      * @param spec - pre-built specification object (e.G. from calling SANY from the tool previously)
      */
 	public AbstractChecker(ITool tool, String metadir, final IStateWriter stateWriter,
-			boolean deadlock, String fromChkpt) throws EvalException, IOException {
+			boolean deadlock, String fromChkpt, final long startTime) throws EvalException, IOException {
         this.tool = tool;
 		
 		this.checkDeadlock = deadlock;
@@ -80,6 +84,8 @@ public abstract class AbstractChecker
         this.fromChkpt = fromChkpt;
         
         this.allStateWriter = stateWriter;
+        
+        this.startTime = startTime;
 
         if (TLCGlobals.isCoverageEnabled()) {
         	CostModelCreator.create(this.tool);
@@ -139,7 +145,7 @@ public abstract class AbstractChecker
 		// Without actions (empty spec) there won't be any statistics anyway.
 		if (TLCGlobals.isCoverageEnabled() && this.tool.getActions().length > 0)
 		{
-            CostModelCreator.report(this.tool);
+            CostModelCreator.report(this.tool, this.startTime);
         }
     }
     

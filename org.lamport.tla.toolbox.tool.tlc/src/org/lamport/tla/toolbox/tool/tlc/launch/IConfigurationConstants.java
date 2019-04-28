@@ -108,6 +108,10 @@ public interface IConfigurationConstants
 	 */
     public static final String LAUNCH_VISUALIZE_STATEGRAPH = "visualizeStateGraph";
     /**
+	 * Collect coverage statistics
+	 */
+    public static final String LAUNCH_COVERAGE = "collectCoverage";
+    /**
      * Run from the checkpoint
      */
     public static final String LAUNCH_RECOVER = "recover";

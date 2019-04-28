@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +39,8 @@ import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.mylyn.commons.notifications.core.INotificationService;
+import org.eclipse.mylyn.commons.notifications.ui.NotificationsUi;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
@@ -76,6 +79,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformation;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
+import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageUINotification;
 import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
@@ -105,6 +109,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * of the model editor).
  * @author Simon Zambrovski
  */
+@SuppressWarnings("restriction")
 public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter {
 	public static final String RESULT_PAGE_PROBLEM = "ResultPageProblem";
 
@@ -164,6 +169,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 	private IMarker incompleteStateExploration;
 	private IMarker zeroCoverage;
+	
+	private final INotificationService ns;
 
     /**
      * Constructor for the page
@@ -174,6 +181,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         super(editor, ID, "Model Checking Results",
         		"icons/full/results_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
         this.helpId = IHelpConstants.RESULT_MODEL_PAGE;
+        
+        this.ns = NotificationsUi.getService();
     }
 
     /**
@@ -275,6 +284,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							}
 						}
 	                    break;
+	                case COVERAGE_END_OVERHEAD:
+						ns.notify(Collections.singletonList(new CoverageUINotification(getModelEditor())));
+	                	// Continue with COVERAGE_END...
 	                case COVERAGE_END:
 	                	final CoverageInformation ci = dataProvider.getCoverageInfo();
 	                	if (ci.isEmpty() || ci.isLegacy()) {
@@ -541,10 +553,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 			JFaceResources.getFontRegistry().removeListener(fontChangeListener);
 
-			TLCModelLaunchDataProvider provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry()
-					.getProvider(getModel());
-			if (provider != null) {
-				provider.setPresenter(null);
+			final TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry
+					.getModelCheckSourceRegistry();
+			
+			final Model model = getModel();
+			// Do not initialize provider in dispose if it hasn't been initialized yet.
+			if (modelCheckSourceRegistry.hasProvider(model)) {
+				final TLCModelLaunchDataProvider provider = modelCheckSourceRegistry.getProvider(model);
+				if (provider != null) {
+					provider.setPresenter(null);
+				}
 			}
 			super.dispose();
 		} catch (CoreException e) {
@@ -1045,6 +1063,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         this.coverageTimestampText = toolkit.createText(headerLine, "", SWT.FLAT);
         this.coverageTimestampText.setEditable(false);
+        this.coverageTimestampText.setMessage("No coverage information collected. Has coverage been enabled?");
         gd = new GridData();
         gd.horizontalIndent = 6;
         gd.verticalIndent = 0;

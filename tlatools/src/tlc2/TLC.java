@@ -211,6 +211,10 @@ public class TLC
             // This makes handleParameters a function we can test.
             System.exit(1);
         }
+        
+        if (!tlc.checkEnvironment()) {
+            System.exit(1);
+        }
 
         // Setup how spec files will be resolved in the filesystem.
         if (MODEL_PART_OF_JAR) {
@@ -268,6 +272,19 @@ public class TLC
         System.exit(0);
     }
     
+	// false if the environment (JVM, OS, ...) makes model checking impossible.
+	// Might also result in warnings.
+	private boolean checkEnvironment() {
+		// Not a reasons to refuse startup but warn about non-ideal garbage collector.
+		// See https://twitter.com/lemmster/status/1089656514892070912 for actual
+		// performance penalty.
+		if (!TLCRuntime.getInstance().isThroughputOptimizedGC()) {
+			MP.printWarning(EC.TLC_ENVIRONMENT_JVM_GC);
+		}
+		
+		return true;
+	}
+
 	public static void setTraceNum(int aTraceNum) {
 		traceNum = aTraceNum;
 	}
@@ -917,12 +934,12 @@ public class TLC
                 if (isBFS())
                 {
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
-							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile));
+							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile), startTime);
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) TLCGlobals.mainChecker, this);
 					TLCGlobals.mainChecker.modelCheck();
                 } else
                 {
-					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt);
+					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
 					TLCGlobals.mainChecker.modelCheck();
                 }
             }

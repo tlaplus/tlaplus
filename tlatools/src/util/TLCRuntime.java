@@ -2,6 +2,7 @@
 
 package util;
 
+import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.List;
@@ -182,5 +183,16 @@ public class TLCRuntime {
 	    } catch (Exception e) {
 			return -1;
 		}
+	}
+
+	public boolean isThroughputOptimizedGC() {
+		final List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
+		for (GarbageCollectorMXBean gc : gcs) {
+			// This might not be a reliable way to identify the currently active GC.
+			if ("PS Scavenge".equals(gc.getName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

@@ -37,6 +37,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.junit.Assert;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
@@ -88,7 +89,17 @@ public class SpecTest extends TestCase {
 		// Create...
 		final Path tempDirectory = Files.createTempDirectory("ReadOnlyDirectory" + System.currentTimeMillis());
 		final File tempFile = Files.createTempFile(tempDirectory, "TestCreateSpecInReadOnlyDirectory", ".tla").toFile();
-		tempDirectory.toFile().setReadOnly();
+
+//		Assume.assumeTrue(tempDirectory.toFile().setReadOnly());
+		if (!tempDirectory.toFile().setReadOnly()) {
+			// Setting the test-file to read-only doesn't appear to work on Windows.
+			// Normally, this case can be handled with Assume.assumeTrue(tempDirectory...)
+			// but this test runs as an Eclipse Plug-in test whose Junit runner doesn't
+			// appear to correctly handle JUunit's AssumptionViolationException.
+			assertTrue(Platform.OS_WIN32.equals(Platform.getOS()));
+			return;
+		}
+		
 		try {
 			Spec.createNewSpec("TestCreateSpecInReadOnlyDirectory", tempFile.getAbsolutePath(), false, new NullProgressMonitor());
 		} catch (CoreException e) {
