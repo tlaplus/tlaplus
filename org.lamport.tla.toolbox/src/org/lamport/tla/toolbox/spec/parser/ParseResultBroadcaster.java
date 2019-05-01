@@ -2,9 +2,9 @@ package org.lamport.tla.toolbox.spec.parser;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
@@ -44,7 +44,7 @@ public class ParseResultBroadcaster
 {
 
     private static ParseResultBroadcaster instance;
-    private List<IParseResultListener> listeners;
+    private final List<IParseResultListener> listeners;
     /**
      * Map from {@link IPath} to the most recent
      * {@link ParseResult} containing that module that
@@ -59,7 +59,7 @@ public class ParseResultBroadcaster
      */
     private ParseResultBroadcaster()
     {
-        listeners = new LinkedList<IParseResultListener>();
+        listeners = new CopyOnWriteArrayList<IParseResultListener>();
         parseResults = new HashMap<IPath, ParseResult>();
         Activator.getSpecManager().addSpecLifecycleParticipant(new SpecLifecycleParticipant() {
 			/* (non-Javadoc)
