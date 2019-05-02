@@ -102,10 +102,11 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  */
 public class TraceExplorerComposite
 {
-	
 	private static final String EXPANDED_STATE = "EXPANDED_STATE";
+
 	
     protected CheckboxTableViewer tableViewer;
+    
     private Button buttonAdd;
     private Button buttonEdit;
     private Button buttonRemove;
@@ -322,6 +323,7 @@ public class TraceExplorerComposite
         buttonRestore = toolkit.createButton(sectionArea, "Restore", SWT.PUSH);
         buttonRestore.addSelectionListener(fSelectionListener);
         buttonRestore.setLayoutData(GridDataFactory.copyData(gd));
+        buttonRestore.setEnabled(false);
     }
 
     /**
