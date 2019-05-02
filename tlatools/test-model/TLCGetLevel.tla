@@ -3,6 +3,8 @@ EXTENDS Integers, TLC
 
 VARIABLES x, y
 
+ASSUME(TLCGet("level") = 0)
+
 Init == /\ x = 0
         /\ y = TLCGet("level")
 

@@ -176,7 +176,7 @@ public abstract class AbstractChecker
 		// shown as 'observed' in Toolbox
 		final BigDecimal actualProb = BigDecimal.valueOf(1d).divide(BigDecimal.valueOf(actualDistance),
 				new MathContext(2));
-		final String actualProbStr = "val = " + actualProb.toString();
+		final String actualProbStr = "val = " + ProbabilityToString(actualProb.doubleValue(), 2);
 		MP.printMessage(EC.TLC_SUCCESS, new String[] { optimisticProbStr, actualProbStr });
 	}
     

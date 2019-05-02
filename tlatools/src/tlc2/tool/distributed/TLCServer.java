@@ -54,6 +54,7 @@ import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.FP64;
 import util.Assert;
+import util.Assert.TLCRuntimeException;
 import util.FileUtil;
 import util.MailSender;
 import util.UniqueString;
@@ -453,7 +454,8 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				if (e instanceof EvalException
 						&& ((EvalException) e).getErrorCode() == EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE
 						&& (((EvalException) e).getMessage().contains("tlc2.module.TLC.TLCSet")
-								|| ((EvalException) e).getMessage().contains("tlc2.module.TLC.TLCGet"))) {
+								|| ((EvalException) e).getMessage().contains("tlc2.module.TLC.TLCGet"))
+						|| (e instanceof TLCRuntimeException && ((TLCRuntimeException) e).errorCode == 2154)) {
 					MP.printError(EC.TLC_FEATURE_UNSUPPORTED,
 							"TLCSet & TLCGet operators not supported by distributed TLC.");
 				} else {

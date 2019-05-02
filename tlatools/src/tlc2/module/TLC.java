@@ -174,6 +174,11 @@ public class TLC implements ValueConstants
 			} catch (ArithmeticException e) {
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(TLCGlobals.mainChecker.getProgress()));
+			} catch (NullPointerException npe) {
+				// TLCGlobals.mainChecker is null while the spec is parsed. A constant
+				// expression referencing one of the named values here would thus result in an
+				// NPE.
+				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
 		} else if (UniqueString.uniqueStringOf("distinct") == sv.val) {
 			try {
@@ -181,6 +186,8 @@ public class TLC implements ValueConstants
 			} catch (ArithmeticException e) {
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
+			} catch (NullPointerException npe) {
+				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
 		} else if (UniqueString.uniqueStringOf("queue") == sv.val) {
 			try {
@@ -188,6 +195,8 @@ public class TLC implements ValueConstants
 			} catch (ArithmeticException e) {
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(TLCGlobals.mainChecker.getStateQueueSize()));
+			} catch (NullPointerException npe) {
+				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
 		} else if (UniqueString.uniqueStringOf("duration") == sv.val) {
 			try {
@@ -205,6 +214,11 @@ public class TLC implements ValueConstants
 			if (currentState != null) {
 				return IntValue.gen(currentState.getLevel());
 			} else {
+				if (TLCGlobals.mainChecker == null) {
+					// Be consistent with TLCGet("diameter") when TLCGet("level") appears as
+					// constant substitution.
+					throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
+				}
 				// Not an IdThread implies that TLCGet("level") is part of the initial predicate
 				// where the level is 0.
 				return IntValue.gen(0);
