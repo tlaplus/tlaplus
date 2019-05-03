@@ -39,14 +39,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -144,14 +139,11 @@ public class TraceExplorerComposite
     // a listener reacting on selection in the table viewer
     // this calls the method that changes button enablement
     // depending on whether a formula is selected or not
-    protected ISelectionChangedListener fSelectionChangedListener = new ISelectionChangedListener() {
-        public void selectionChanged(SelectionChangedEvent event)
+    protected ISelectionChangedListener fSelectionChangedListener = (event) -> {
+        final Object source = event.getSource();
+        if ((source != null) && (source == tableViewer))
         {
-            Object source = event.getSource();
-            if (source != null && source == tableViewer)
-            {
-                changeButtonEnablement();
-            }
+            changeButtonEnablement();
         }
     };
 
@@ -238,32 +230,25 @@ public class TraceExplorerComposite
      * @param table
      * @return
      */
-    protected CheckboxTableViewer createTableViewer(Table table)
-    {
+	protected CheckboxTableViewer createTableViewer(Table table) {
         // create
-        CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
+        final CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
         // represent formulas in the view
         tableViewer.setContentProvider(new FormulaContentProvider());
         // on changed selection change button enablement
         tableViewer.addSelectionChangedListener(fSelectionChangedListener);
         // edit on double-click on a formula
-        tableViewer.addDoubleClickListener(new IDoubleClickListener() {
-            public void doubleClick(DoubleClickEvent event)
-            {
-                doEdit();
-            }
-        });
+		tableViewer.addDoubleClickListener((event) -> {
+			doEdit();
+		});
 
         // save the input when an element is checked or unchecked
-        tableViewer.addCheckStateListener(new ICheckStateListener() {
+		tableViewer.addCheckStateListener((event) -> {
+			view.getModel().save(new NullProgressMonitor());
+		});
 
-            public void checkStateChanged(CheckStateChangedEvent event)
-            {
-                view.getModel().save(new NullProgressMonitor());
-            }
-        });
-
-        tableViewer.setInput(new Vector<>());
+        tableViewer.setInput(new Vector<Formula>());
+        
         return tableViewer;
     }
 
@@ -334,13 +319,6 @@ public class TraceExplorerComposite
     {
         return tableViewer;
     }
-    
-    /**
-     * @return the number of checked elements in the table view
-     */
-    public int getEnabledExpressionCount() {
-    	return tableViewer.getCheckedElements().length;
-    }
 
     /**
      * Remove the selected formulas
@@ -385,22 +363,24 @@ public class TraceExplorerComposite
     /**
      * Edit selected formula 
      */
-    protected void doEdit()
-    {
-        IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-        Formula formula = (Formula) selection.getFirstElement();
-        Formula editedFormula = doEditFormula(formula);
-        if (editedFormula != null)
-        {
-            formula.setFormula(editedFormula.getFormula());
-            if (tableViewer instanceof CheckboxTableViewer)
-            {
-                ((CheckboxTableViewer) tableViewer).setChecked(formula, true);
+	protected void doEdit() {
+        final IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+        final Formula formula;
+        
+        if (selection.size() == 1) {
+        	formula = (Formula) selection.getFirstElement();
+        } else {
+        	formula = (Formula) tableViewer.getElementAt(0);
+        }
+        
+        final Formula editedFormula = doEditFormula(formula);
+		if (editedFormula != null) {
+			formula.setFormula(editedFormula.getFormula());
+			if (tableViewer instanceof CheckboxTableViewer) {
+				((CheckboxTableViewer) tableViewer).setChecked(formula, true);
             }
             tableViewer.refresh();
         }
-
-        changeButtonEnablement();
 
         view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
     }
@@ -517,17 +497,21 @@ public class TraceExplorerComposite
         buttonExplore.setEnabled(true);
         buttonAdd.setEnabled(true);
         buttonEdit.setEnabled(true);
-        buttonRemove.setEnabled(true);
+        buttonRemove.setEnabled(!((IStructuredSelection)tableViewer.getSelection()).isEmpty());
         
         buttonRestore.setEnabled(false);
     }
 
     /**
-     * If a formula in the table is selected, then enable the 
-     * Remove and Edit buttons, else disable them.
-     */
-    protected void changeButtonEnablement()
-    {
+	 * If a formula in the table is selected, then enable the Remove and Edit
+	 * buttons, else disable the Remove button, and the Edit button iff there are 0
+	 * or many formulas in the table.
+	 */
+	public void changeButtonEnablement() {
+    	if (tableViewer == null) {
+    		return;
+    	}
+    	
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
         if (!tableViewer.getTable().isEnabled()) {
         	return;
@@ -537,24 +521,17 @@ public class TraceExplorerComposite
         {
             buttonRemove.setEnabled(!selection.isEmpty());
         }
+
         if (buttonEdit != null)
         {
-            buttonEdit.setEnabled(selection.size() == 1);
+            buttonEdit.setEnabled((selection.size() == 1) || (tableViewer.getTable().getItemCount() == 1));
         }
+        
         if (buttonExplore != null)
         {
             buttonExplore.setEnabled((view.getTrace() != null) && !view.getTrace().isTraceEmpty()
-                    && (getEnabledExpressionCount() > 0));
+                    && (tableViewer.getCheckedElements().length> 0));
         }
-    }
-
-    /**
-     * Sets the explore button enablement status to isTrace.
-     * @param isTrace
-     */
-    public void changeExploreEnablement(boolean isTrace)
-    {
-        buttonExplore.setEnabled(isTrace);
     }
 
     /**

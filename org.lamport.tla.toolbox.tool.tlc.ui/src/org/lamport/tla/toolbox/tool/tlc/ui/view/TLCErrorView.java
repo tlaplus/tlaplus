@@ -170,8 +170,7 @@ public class TLCErrorView extends ViewPart
     {
         errorViewer.setDocument(EMPTY_DOCUMENT());
         setTraceInput(new TLCError());
-        traceExplorerComposite.getTableViewer().setInput(new Vector<TLCState>());
-        traceExplorerComposite.changeExploreEnablement(false);
+        traceExplorerComposite.getTableViewer().setInput(new Vector<Formula>());
         valueViewer.setInput(EMPTY_DOCUMENT());
     }
 
@@ -245,7 +244,6 @@ public class TLCErrorView extends ViewPart
             if (isNewTrace)
             {
                 this.setTraceInput(trace);
-                traceExplorerComposite.changeExploreEnablement(traceExplorerComposite.getEnabledExpressionCount() > 0);
             }
             if (model.isSnapshot()) {
             	final String date = sdf.format(model.getSnapshotTimeStamp());
@@ -259,6 +257,8 @@ public class TLCErrorView extends ViewPart
             clear();
         }
         // TODO Check if a run of the trace explorer produced no errors. This would be a bug.
+        
+        traceExplorerComposite.changeButtonEnablement();
     }
 
     /**
