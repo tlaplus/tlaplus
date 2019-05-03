@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!-- This is file org.lamport.tla.toobox.doc/html/model/executing-tlc.html  -->
 
- 
+
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -22,16 +22,16 @@ Contents
   <a href="#crash">If Something Crashes</a>
   <a href="#MC">How TLC is Run</a>
   <a href="#console">The TLC Console View</a>
-  
+
 </pre>
- <P> 
-You run the TLC model checker by clicking on the <IMG SRC="run-icon.gif" Align="bottom"/> button.&nbsp;  
+ <P>
+You run the TLC model checker by clicking on the <IMG SRC="run-icon.gif" Align="bottom"/> button.&nbsp;
 This button
-appears at the top of each model editor page.&nbsp;   
+appears at the top of each model editor page.&nbsp;
 You can also run it from the <em>TLC Model Checker</em> menu or by pressing the
 F11 key.&nbsp;
 Before running TLC on the model,
-the Toolbox first <em>validates</em> the model, checking it for errors.&nbsp;  
+the Toolbox first <em>validates</em> the model, checking it for errors.&nbsp;
 Clicking on the <IMG SRC="validate-icon.gif" Align="bottom"/> button causes the Toobox
 to validate the model without
 running TLC on it.
@@ -51,9 +51,9 @@ by placing error balloons  like this
  messages for the page.
 </p>
 
-<p> 
+<p>
 The Toolbox might report some model errors as being parsing errors in a
-module named&nbsp; <code>MC</code>&nbsp;.&nbsp;  See the section 
+module named&nbsp; <code>MC</code>&nbsp;.&nbsp;  See the section
 <em><a href="#MC">How TLC is Run</a></em> below to find out how to interpret
 such an error message.
 </p>
@@ -70,13 +70,13 @@ dialog while TLC is running:
    <IMG SRC="running-tlc.gif" Align="bottom"/>
 </blockquote>
 <p>
-You can view the progress of the run on the model 
+You can view the progress of the run on the model
 editor's <em><a href="results-page.html">Model Checking Results Page</a></em>.&nbsp;
 That page is automatically displayed when TLC starts running.
 </p>
 
-<p>Note: If you check <i>Always run in background</i> on the dialog shown above, 
-that dialog will stop popping up when you run TLC.&nbsp;  
+<p>Note: If you check <i>Always run in background</i> on the dialog shown above,
+that dialog will stop popping up when you run TLC.&nbsp;
 
 To get it back, go to <code>File/Preferences/General</code> and uncheck the
 <i>Always run in background</i> preference.</p>
@@ -95,19 +95,19 @@ If TLC finds an error, it stops and the Toolbox raises the <em>TLC Errors View</
 (If you close the view, you can reopen it from the <em>TLC Model Checker</em> menu.)&nbsp;
 This view consists of the following two sections.&nbsp;  (The relative sizes of those
 two sections can be changed by moving the cursor between them until it changes to
-an up-and-down arrow, 
+an up-and-down arrow,
 and then clicking and dragging.)
 </p>
 <h4><a name="error-view">The Error View</a></h4>
 
-This view displays the error message that TLC reports.&nbsp; 
+This view displays the error message that TLC reports.&nbsp;
 
 If an invariant or property is violated, the Toolbox will also put
 this warning icon <IMG SRC="warning.gif" Align="bottom"/> near the
 part of the model containing that invariant or property.&nbsp;
 
 Otherwise, the error probably occurred because TLC could not evaluate
-an expression.&nbsp; 
+an expression.&nbsp;
 
 If you're lucky, the error message will contain the location of that
 expression--or a list of locations indicating the hierarchy of
@@ -117,7 +117,7 @@ Clicking on a location jumps to the appropriate point in the spec,
 where that location is highlighted.&nbsp;
 
 If you are model-checking a PlusCal algorithm, control-clicking on
-the location will try to take you to the source of the error in 
+the location will try to take you to the source of the error in
 the PlusCal code.&nbsp;
 
 
@@ -135,25 +135,42 @@ Run</a></em> below.
 <h4>The Trace View</h4>
 
 <p>
-This section contains three subsections: an error-trace explorer,  an error-trace viewer,
+This section contains three subsections: the Error-Trace Explorer,  the Error-Trace viewer,
  and an expression view box.&nbsp;
-The error-trace explorer can be opened or closed with the&nbsp; <samp>+</samp>&nbsp; 
-and&nbsp; <samp>-</samp>&nbsp; symbols; the relative sizes of these subsections can also be changed by dragging the boundary
+The error-trace explorer can be opened or closed with the&nbsp; <samp>+</samp>&nbsp;
+and&nbsp; <samp>-</samp>&nbsp; symbols. The relative sizes of these subsections can also be changed by dragging the boundary
 between them.&nbsp;  You can drag the entire TLC Errors view out of the Toolbox window and make it a separate window, which
 you can enlarge if you want to see more of the error trace at once.
 </p>
 
 <p>
-The error-trace viewer shows a structured view of the error trace
-produced by TLC.&nbsp;  The view box shows the TLA+ version of the expression selected in 
-the error trace.&nbsp;  (It is ordinary text that can be copied and pasted elsewhere.)  
+The Error-Trace Explorer allows the user to add expressions which will be evaluated at each state, and whose result will be
+included in the output seen in the Error-Trace viewer in bold text. Expressions can be:
+<ul>
+  <li>added by clicking the "Add" button</li>
+  <li>edited by highlighting it in the list and then clicking the "Edit" button</li>
+  <li>removed by highlighting it in the list and then clicking the "Remove" button</li>
+  <li>enabled and disabled via the checkbox next to expression in the list</li>
+</ul>
+If at least one expression is enabled, the "Explore" button will be enabled; clicking this button will run the model checking including the
+evaluation of the enabled expressions.<br/>
+After a checking has been run including evaluated expressions, the list of expressions and "Add," "Edit," and "Remove," will
+be disabled until the user clicks on the "Restore" button.
 </p>
 
-<p> 
-The error trace consists of a sequence of states, where a state is a TLA+ expression 
+<img src="ete_add_edit_explore.gif" style="max-width: 100%; height: auto;" />
+
+<p>
+The Error-Trace viewer shows a structured view of the error trace
+produced by TLC.&nbsp;  The view box shows the TLA+ version of the expression selected in
+the error trace.&nbsp;  (It is ordinary text that can be copied and pasted elsewhere.)
+</p>
+
+<p>
+The error trace consists of a sequence of states, where a state is a TLA+ expression
 that describes the values of the variables.&nbsp;  The trace viewer provides a tree-structured
-view of the state, allowing you to examine the value of each variable and of each 
-subexpression of that value.&nbsp;  (Left-click on the&nbsp; <samp>+</samp>&nbsp; 
+view of the state, allowing you to examine the value of each variable and of each
+subexpression of that value.&nbsp;  (Left-click on the&nbsp; <samp>+</samp>&nbsp;
 and&nbsp; <samp>-</samp>&nbsp; symbols to expand and hide subexpressions.)&nbsp;
 This is helpful in viewing complex values.
 </p>
@@ -180,7 +197,7 @@ the values of their subexpressions from one state to the next.&nbsp;  The color 
 <p>
 The top line of a state's display in the error trace gives the location of the sub-action of the next-state
 relation that generated the state (except for the first state, which is generated by the
-initial predicate).&nbsp; 
+initial predicate).&nbsp;
 Double-clicking on that line takes you to the indicated location.
 </p>
 
@@ -188,8 +205,8 @@ Double-clicking on that line takes you to the indicated location.
 The error-trace explorer allows you to view the values of expressions in each step
 of the trace.&nbsp;  You just enter one or more expressions, which can contain
 primed as well as unprimed variables, and click on <samp>Explore</samp>.&nbsp;  The values
-of the expressions will then be shown in the error trace.&nbsp;  Clicking on 
-<samp>Restore</samp> restores the original error trace.  
+of the expressions will then be shown in the error trace.&nbsp;  Clicking on
+<samp>Restore</samp> restores the original error trace.
 </p>
 
 <p>
@@ -210,7 +227,7 @@ allows you to select the following:
 <h3>Always pop up TLC errors view</h3>
 <p>
 Controls whether or not the <a href="#error-reports">TLC Errors View</a> is automatically
-popped up when running TLC produces an error.&nbsp;  You will almost certainly want to 
+popped up when running TLC produces an error.&nbsp;  You will almost certainly want to
 use the default, which is to pop up the view.
 </p>
 
@@ -227,7 +244,7 @@ probably have no reason to save it explicitly.
 <h3>Number of model snapshots to keep</h3>
 <p>
 Re-running a model erases the corresponding model checking results if any. With snapshots
-activate, the Toolbox maintains a history of the N most recent model runs. The value N is defined 
+activate, the Toolbox maintains a history of the N most recent model runs. The value N is defined
 by <samp>Number of model snapshots to keep</samp> where zero disables snapshots completely.
 The history allows one to trace back the evolution of the specification and corresponding model.
 </p>
@@ -246,12 +263,12 @@ model editor's Overview Page help page.
 <p>
 
 The maximum number of states of a trace that is displayed in the Trace Explorer when
-TLC reports an error.&nbsp; 
+TLC reports an error.&nbsp;
 If the trace has more states, only the last ones are shown.&nbsp;
 Double-clicking at the beginning of the trace displays additional states.&nbsp;
 The default value is 10000.&nbsp;
 
-</p> 
+</p>
 <h2><a name="crash">If Something Crashes</a></h2>
 
 <!--
@@ -260,8 +277,8 @@ If TLC crashes (a very rare occurrence), or if  the Toolbox or your computer cra
 you restart the Toolbox, you could find the Toolbox in a state in which it says that
 TLC has crashed.&nbsp;  In that case, you will see a <em>Repair</em> button at the top right
 of the model editor.&nbsp;  Click on it.&nbsp;  Instead of saying that TLC has crashed,
-the Toolbox might say that 
-TLC is still running even though it's not.&nbsp;  If that happens, open the 
+the Toolbox might say that
+TLC is still running even though it's not.&nbsp;  If that happens, open the
 <a href="../spec/opening-closing.html"><em>Spec Explorer</em></a>,
 click on the&nbsp; <code>+</code>&nbsp; next to the open spec, right-click on the model in question, and
 select the&nbsp; <code>Repair</code>&nbsp; option.&nbsp; This should fix the problem.
@@ -271,8 +288,8 @@ select the&nbsp; <code>Repair</code>&nbsp; option.&nbsp; This should fix the pro
 If you stop the Toolbox in some abnormal way while it is running TLC--for example,
 by using an operating system tool to kill its process--you may leave TLC running
 as a disembodied process.&nbsp;  In that case, you should kill the TLC process.&nbsp;
-Otherwise, strange things will happen if you restart 
-the Toolbox and try to run TLC from it on the model.   
+Otherwise, strange things will happen if you restart
+the Toolbox and try to run TLC from it on the model.
 </p>
 
 <h2><a name="MC">How TLC is Run</a></h2>
@@ -288,9 +305,9 @@ files are written in the subfolder&nbsp; <code>SpecName.toolbox/ModName</code>&n
 
 <p>
 At the same time that it writes those files, the Toolbox also writes into the same
-folder a copy of each of the spec's module files.&nbsp;  
+folder a copy of each of the spec's module files.&nbsp;
 These allow you to see the version
-of the spec on which TLC was run, even after you have modified the spec.&nbsp;  
+of the spec on which TLC was run, even after you have modified the spec.&nbsp;
 You can view that version of the spec by selecting (any page of) the model,
 clicking on the <code>TLC Model Checker</code> menu at the top of the Toolbox window,
 and then clicking on <code>Open Saved Module</code>.
@@ -300,12 +317,12 @@ and then clicking on <code>Open Saved Module</code>.
 <p>
 It is a sad fact of life that most computer programs, including the Toolbox, have bugs.&nbsp;
 A Toolbox bug may cause TLC to stop running without either indicating that
-it succeeded or reporting an error.&nbsp;  (You know that the TLC run succeeded 
+it succeeded or reporting an error.&nbsp;  (You know that the TLC run succeeded
 if the <em>General</em>
 section of the
 <a href="results-page.html"><em>Model Checking Results Page</em></a> says that
-TLC is not running and the top entry of its <em>Statistics</em> section's 
-<em>State space progress</em> table shows a queue size of 0.)&nbsp;  
+TLC is not running and the top entry of its <em>Statistics</em> section's
+<em>State space progress</em> table shows a queue size of 0.)&nbsp;
 If that page's <em>Progress Output</em> section doesn't explain what happened,
 the place to look next is the Toolbox's <em>TLC Console View</em>.&nbsp;
 You can open that view from the Toolbox's <em>TLC Model Checker</em> menu.
@@ -313,7 +330,7 @@ You can open that view from the Toolbox's <em>TLC Model Checker</em> menu.
 
 <p>
 The TLC Console View contains all the output that TLC has produced when running this
-model.&nbsp;  (You can clear the console with the view's 
+model.&nbsp;  (You can clear the console with the view's
 <IMG SRC="clear-icon.gif" Align="bottom"/> botton.)&nbsp;  However, each TLC output message
 appears between pairs of lines such as:
 <pre>
@@ -325,20 +342,20 @@ appears between pairs of lines such as:
 
 <p>
 We hope that Toolbox bugs will soon become sufficiently rare that there will be
-no need for the TLC Console View.&nbsp; 
+no need for the TLC Console View.&nbsp;
 You can help make that happen by <a href="../trouble/trouble.html#reporting">reporting problems</a>.
 </p>
-<hr> 
-<!-- delete rest of line to comment out 
+<hr>
+<!-- delete rest of line to comment out
 <dl>
 <dt><b><font color=#0000c0>Subtopics</font></b></dt>
 <dd> <A href=""> TOPIC </A></dd>
 <dd> <A href=""> TOPIC </A></dd>
 </dl>
- --> 
-<!-- delete rest of line to comment out -->  
+ -->
+<!-- delete rest of line to comment out -->
 <a href = "model.html">&uarr; Model Checking</a>
-<!-- --> 
+<!-- -->
 </hr>
 
 </body>

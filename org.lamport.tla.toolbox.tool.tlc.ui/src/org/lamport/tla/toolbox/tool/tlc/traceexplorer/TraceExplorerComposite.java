@@ -102,10 +102,11 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
  */
 public class TraceExplorerComposite
 {
-	
 	private static final String EXPANDED_STATE = "EXPANDED_STATE";
+
 	
     protected CheckboxTableViewer tableViewer;
+    
     private Button buttonAdd;
     private Button buttonEdit;
     private Button buttonRemove;
@@ -262,7 +263,7 @@ public class TraceExplorerComposite
             }
         });
 
-        tableViewer.setInput(new Vector());
+        tableViewer.setInput(new Vector<>());
         return tableViewer;
     }
 
@@ -322,6 +323,7 @@ public class TraceExplorerComposite
         buttonRestore = toolkit.createButton(sectionArea, "Restore", SWT.PUSH);
         buttonRestore.addSelectionListener(fSelectionListener);
         buttonRestore.setLayoutData(GridDataFactory.copyData(gd));
+        buttonRestore.setEnabled(false);
     }
 
     /**
@@ -332,6 +334,13 @@ public class TraceExplorerComposite
     {
         return tableViewer;
     }
+    
+    /**
+     * @return the number of checked elements in the table view
+     */
+    public int getEnabledExpressionCount() {
+    	return tableViewer.getCheckedElements().length;
+    }
 
     /**
      * Remove the selected formulas
@@ -339,7 +348,7 @@ public class TraceExplorerComposite
     protected void doRemove()
     {
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-        Vector input = (Vector) tableViewer.getInput();
+        Vector<?> input = (Vector<?>)tableViewer.getInput();
         input.removeAll(selection.toList());
         tableViewer.setInput(input);
 
@@ -534,8 +543,8 @@ public class TraceExplorerComposite
         }
         if (buttonExplore != null)
         {
-            buttonExplore.setEnabled(view.getTrace() != null && !view.getTrace().isTraceEmpty()
-                    && tableViewer.getCheckedElements().length > 0);
+            buttonExplore.setEnabled((view.getTrace() != null) && !view.getTrace().isTraceEmpty()
+                    && (getEnabledExpressionCount() > 0));
         }
     }
 

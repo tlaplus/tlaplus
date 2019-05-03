@@ -3129,6 +3129,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
   
   private final TLCState enabledUnchangedImpl(SemanticNode expr, ActionItemList acts,
             Context c, TLCState s0, TLCState s1, CostModel cm) {
+	    if (coverage) {cm = cm.get(expr);}
         SymbolNode var = this.getVar(expr, c, true);
         if (var != null) {
           // a state variable, e.g. UNCHANGED var1

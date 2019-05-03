@@ -245,7 +245,7 @@ public class TLCErrorView extends ViewPart
             if (isNewTrace)
             {
                 this.setTraceInput(trace);
-                traceExplorerComposite.changeExploreEnablement(true);
+                traceExplorerComposite.changeExploreEnablement(traceExplorerComposite.getEnabledExpressionCount() > 0);
             }
             if (model.isSnapshot()) {
             	final String date = sdf.format(model.getSnapshotTimeStamp());
