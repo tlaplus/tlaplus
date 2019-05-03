@@ -325,14 +325,25 @@ public class TraceExplorerComposite
      */
     protected void doRemove()
     {
-        IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-        Vector<?> input = (Vector<?>)tableViewer.getInput();
+        final IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+        final Vector<?> input = (Vector<?>)tableViewer.getInput();
+        
         input.removeAll(selection.toList());
         tableViewer.setInput(input);
 
         changeButtonEnablement();
 
         view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
+        
+    	final Job job = new WorkspaceJob("Saving updated model...") {
+			public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
+				view.getModel().save(monitor);
+				return Status.OK_STATUS;
+			}
+		};
+		job.setRule(ResourcesPlugin.getWorkspace().getRoot());
+		job.setUser(true);
+		job.schedule();
     }
 
     /**
@@ -449,8 +460,7 @@ public class TraceExplorerComposite
 
         // save the launch configuration
         // if the trace is empty, then do nothing
-        if (!view.getTrace().isTraceEmpty())
-        {
+		if (!view.getTrace().isTraceEmpty()) {
             // TraceExplorerHelper.serializeTrace(modelConfig);
         	
         	// Wrap the launch in a WorkspaceJob to guarantee that the
@@ -461,7 +471,7 @@ public class TraceExplorerComposite
         	// run the SANY parser and SANY does not support concurrent execution.
         	
         	final Job job = new WorkspaceJob("Exploring the trace...") {
-				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
 					view.getModel().save(monitor).launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, monitor, true);
 					return Status.OK_STATUS;
 				}
