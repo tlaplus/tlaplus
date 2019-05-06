@@ -381,6 +381,11 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 };
 
                 // found an error with a trace
+                
+        		if (error.getSortOrder() != originalErrorWithTrace.getSortOrder()) {
+        			// Align sort order of both traces.
+        			originalErrorWithTrace.reverseTrace();
+        		}
 
                 // this is the trace produced by the run
                 // of TLC for the trace explorer
