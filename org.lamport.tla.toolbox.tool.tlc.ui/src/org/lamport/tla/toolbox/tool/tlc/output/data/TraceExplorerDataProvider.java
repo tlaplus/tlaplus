@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
@@ -19,6 +20,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
@@ -568,12 +570,12 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 } else if (finalStateOriginalTrace.isBackToState())
                 {
 					error.addState(TLCState.BACK_TO_STATE(finalStateOriginalTrace.getStateNumber(),
-							getModel().getName()), stateSortDirection);
+							getModel().getName()));
                 } else
                 {
                     // stuttering trace
 					error.addState(TLCState.STUTTERING_STATE(finalStateOriginalTrace.getStateNumber(),
-							getModel().getName()), stateSortDirection);
+							getModel().getName()));
                 }
 
             } else
@@ -627,7 +629,9 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
     protected TLCError createError(TLCRegion tlcRegion, String message)
     {
         // the root of the error trace
-        TLCError topError = new TLCError();
+		final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+        final boolean stateSortOrder = dialogSettings.getBoolean(STATESORTORDER);
+		final TLCError topError = new TLCError(stateSortOrder);
 
         if (tlcRegion instanceof TLCRegionContainer)
         {

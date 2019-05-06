@@ -133,11 +133,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     protected Document userOutput;
     // calc output
     protected String constantExprEvalOutput;
-    /**
-     * Sort order in which states are sorted in the variable viewer
-     */
-    protected boolean stateSortDirection;
-
     // the model, which is represented by the current launch data provider
     private final Model model;
     // flag indicating that TLC has started
@@ -190,9 +185,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
         constantExprEvalOutput = "";
         isSymmetryWithLiveness = false;
-
-		final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
-		stateSortDirection = dialogSettings.getBoolean(STATESORTORDER);
     }
 
     /**
@@ -282,7 +274,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             case MP.STATE:
                 Assert.isNotNull(this.lastDetectedError,
                         "The state encountered without the error describing the reason for it. This is a bug.");
-                this.lastDetectedError.addState(TLCState.parseState(outputMessage, getModelName()), stateSortDirection);
+                this.lastDetectedError.addState(TLCState.parseState(outputMessage, getModelName()));
                 break;
             case MP.ERROR:
             case MP.TLCBUG:
@@ -634,7 +626,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     protected TLCError createError(TLCRegion tlcRegion, String message)
     {
         // the root of the error trace
-        TLCError topError = new TLCError();
+		final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+        final boolean stateSortOrder = dialogSettings.getBoolean(STATESORTORDER);
+		final TLCError topError = new TLCError(stateSortOrder);
 
         if (tlcRegion instanceof TLCRegionContainer)
         {

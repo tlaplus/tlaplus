@@ -45,12 +45,24 @@ public class TLCError
     private TLCError cause;
     private int errorCode;
 	private int numberOfStatesToShow = Integer.MAX_VALUE; // no restriction by default
+    /**
+     * Sort order in which states are sorted in the variable viewer
+     */
+	private boolean stateSortDirection;
 
+	public TLCError() {
+		this(false);
+	}
+	
+	public TLCError(boolean stateSortDirection) {
+		this.stateSortDirection = stateSortDirection;
+	}
+	
     /**
      * Add a state to a trace
      * @param state state to add
      */
-    public void addState(TLCState state, boolean stateSortDirection)
+    public void addState(TLCState state)
     {
         if (stateSortDirection) {
         	states.addFirst(state);
@@ -188,6 +200,11 @@ public class TLCError
     }
     
 	public void reverseTrace() {
+		stateSortDirection = !stateSortDirection;
 		Collections.reverse(states);
+	}
+
+	public boolean getSortOrder() {
+		return stateSortDirection;
 	}
 }
