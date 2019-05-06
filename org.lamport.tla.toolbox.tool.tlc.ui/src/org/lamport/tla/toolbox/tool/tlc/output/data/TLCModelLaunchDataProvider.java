@@ -57,6 +57,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Order;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
@@ -628,7 +629,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         // the root of the error trace
 		final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
         final boolean stateSortOrder = dialogSettings.getBoolean(STATESORTORDER);
-		final TLCError topError = new TLCError(stateSortOrder);
+		final TLCError topError = new TLCError(Order.valueOf(stateSortOrder));
 
         if (tlcRegion instanceof TLCRegionContainer)
         {

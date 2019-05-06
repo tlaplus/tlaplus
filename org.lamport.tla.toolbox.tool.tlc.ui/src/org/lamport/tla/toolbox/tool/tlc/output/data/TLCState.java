@@ -29,7 +29,10 @@ package org.lamport.tla.toolbox.tool.tlc.output.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IModuleLocatable;
 
@@ -345,6 +348,21 @@ public class TLCState implements IModuleLocatable
 			final TLCVariableValue secondValue = secondVariables.get(i).getValue();
 			firstValue.diff(secondValue);
 		}
+	}
+	
+	public Map<String, TLCVariable> getDiff(final TLCState other) {
+		final Map<String, TLCVariable> map = new HashMap<>();
+
+		NEXT: for (TLCVariable v1 : variables) {
+			for (TLCVariable v2 : other.variables) {
+				if (v1.getName().equals(v2.getName()) && v1.getValue().toString().equals(v2.getValue().toString())) {
+					continue NEXT;
+				}
+			}
+			map.put(v1.getName(), v1);
+		}
+		
+		return map;
 	}
 
 	public int getVariableCount(int level) {
