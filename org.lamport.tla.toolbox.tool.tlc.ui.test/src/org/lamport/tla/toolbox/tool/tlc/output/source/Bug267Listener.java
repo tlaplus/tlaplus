@@ -1,8 +1,13 @@
 // Copyright (c) Feb 6, 2012 Microsoft Corporation.  All rights reserved.
 package org.lamport.tla.toolbox.tool.tlc.output.source;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
+import org.easymock.EasyMock;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.text.Document;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
@@ -15,7 +20,7 @@ public class Bug267Listener extends TLCModelLaunchDataProvider implements
 		ITLCOutputListener {
 	
 	public Bug267Listener() {
-		super(null);
+		super(new DummyModel());
 	}
 
 	/* (non-Javadoc)
@@ -66,5 +71,22 @@ public class Bug267Listener extends TLCModelLaunchDataProvider implements
 	 */
 	public void connectToSourceRegistry() {
 		// intentionally noop
+	}
+	
+	private static class DummyModel extends Model {
+
+		DummyModel() {
+			super(EasyMock.createNiceMock(ILaunchConfiguration.class));
+		}
+
+		public String getName() {
+			// Stop super from delegating to ILC
+			return "Bug267Listener";
+		}
+
+		@Override
+		public List<IFile> getSavedTLAFiles() {
+			return new ArrayList<IFile>();
+		}
 	}
 }
