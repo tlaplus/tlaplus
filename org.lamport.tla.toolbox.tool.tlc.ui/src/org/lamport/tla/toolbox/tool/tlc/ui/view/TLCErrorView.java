@@ -391,7 +391,7 @@ public class TLCErrorView extends ViewPart
         middleSashForm.setLayoutData(gd);
 
         traceExplorerComposite = new TraceExplorerComposite(middleSashForm, "Error-Trace Exploration",
-                "Enter expressions to be evaluated at each state of the trace.", toolkit, this);
+                "Expressions to be evaluated at each state of the trace - drag to re-order.", toolkit, this);
 
         // A group can be used to organize and provide a title for the inner sash form
         // but right now I think the section looks better because it looks the same

@@ -228,6 +228,8 @@ public class TraceExplorerComposite
         // cell, so the table must span 5 vertical cells
         gd.verticalSpan = 5;
         table.setLayoutData(gd);
+        
+        table.setToolTipText("Drag formulae to reorder.");
 
         // create the table viewer
         tableViewer = createTableViewer(table);
