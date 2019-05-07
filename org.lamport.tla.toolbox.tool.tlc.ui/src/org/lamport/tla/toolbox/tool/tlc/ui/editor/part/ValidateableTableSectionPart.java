@@ -246,7 +246,7 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
             buttonAdd.addSelectionListener(fSelectionListener);
             gd = new GridData();
             gd.verticalAlignment = SWT.TOP;
-            gd.widthHint = 70;
+            gd.horizontalAlignment = SWT.FILL;
             buttonAdd.setLayoutData(gd);
             added++;
         }
@@ -258,7 +258,7 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
             buttonEdit.addSelectionListener(fSelectionListener);
             gd = new GridData();
             gd.verticalAlignment = SWT.TOP;
-            gd.widthHint = 70;
+            gd.horizontalAlignment = SWT.FILL;
             buttonEdit.setLayoutData(gd);
             added++;
         }
@@ -270,7 +270,7 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
             buttonRemove.addSelectionListener(fSelectionListener);
             gd = new GridData();
             gd.verticalAlignment = SWT.TOP;
-            gd.widthHint = 70;
+            gd.horizontalAlignment = SWT.FILL;
             buttonRemove.setLayoutData(gd);
             added++;
         }
@@ -281,7 +281,7 @@ public class ValidateableTableSectionPart extends SectionPart implements IValida
             gd = new GridData();
             gd.verticalSpan = 3 - added;
             gd.verticalAlignment = SWT.TOP;
-            gd.widthHint = 70;
+            gd.horizontalAlignment = SWT.FILL;
             span.setLayoutData(gd);
         }
     }
