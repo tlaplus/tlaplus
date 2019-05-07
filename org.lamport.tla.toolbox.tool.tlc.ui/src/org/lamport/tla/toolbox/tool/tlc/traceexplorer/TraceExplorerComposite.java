@@ -155,8 +155,9 @@ public class TraceExplorerComposite
     // a listener reacting on selection in the table viewer
     // this calls the method that changes button enablement
     // depending on whether a formula is selected or not
-    protected ISelectionChangedListener fSelectionChangedListener = (event) -> {
+    protected ISelectionChangedListener m_formulaEnablementListener = (event) -> {
         final Object source = event.getSource();
+        
 		if ((source != null) && (source == tableViewer)) {
 			changeButtonEnablement();
 		}
@@ -253,7 +254,7 @@ public class TraceExplorerComposite
         // represent formulas in the view
         tableViewer.setContentProvider(new FormulaContentProvider());
         // on changed selection change button enablement
-        tableViewer.addSelectionChangedListener(fSelectionChangedListener);
+        tableViewer.addSelectionChangedListener(m_formulaEnablementListener);
         // edit on double-click on a formula
 		tableViewer.addDoubleClickListener((event) -> {
 			doEdit();
@@ -411,7 +412,6 @@ public class TraceExplorerComposite
 
 						changeButtonEnablement();
 						
-				        view.getModel().setTraceExplorerExpression(serializedOriginalModel);
 						saveModel();
 					}
 				}
@@ -493,8 +493,6 @@ public class TraceExplorerComposite
 
         changeButtonEnablement();
 
-        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
-        
         saveModel();
     }
 
@@ -517,8 +515,6 @@ public class TraceExplorerComposite
 
             changeButtonEnablement();
 
-            view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
-            
             saveModel();
         }
     }
@@ -545,12 +541,12 @@ public class TraceExplorerComposite
             tableViewer.refresh();
         }
 
-        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
-        
         saveModel();
     }
     
     private void saveModel() {
+        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
+        
     	final Job job = new WorkspaceJob("Saving updated model...") {
 			public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
 				view.getModel().save(monitor);
@@ -617,6 +613,9 @@ public class TraceExplorerComposite
             return;
         }
 
+        // If we don't do this, the selection of formulas will not be carried to the execution
+        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
+        
         // Save model without validating.
         // Validating would erase MC.out, which we dont want
         // the trace explorer to do.
