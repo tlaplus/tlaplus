@@ -124,6 +124,11 @@ public class ModelChecker extends AbstractChecker
         if (!recovered)
         {
 
+			if (this.checkLiveness && liveCheck.getNumChecker() == 0) {
+				MP.printError(EC.TLC_LIVE_FORMULA_TAUTOLOGY);
+				return;
+			}
+        	
             // We start from scratch. Initialize the state queue and the
             // state set to contain all the initial states.
             if (!this.checkAssumptions())

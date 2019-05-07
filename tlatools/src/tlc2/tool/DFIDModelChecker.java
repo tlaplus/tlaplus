@@ -76,10 +76,16 @@ public class DFIDModelChecker extends AbstractChecker
         boolean recovered = this.recover();
         try
         {
-            if (!this.checkAssumptions())
+			if (this.checkLiveness && liveCheck.getNumChecker() == 0) {
+				MP.printError(EC.TLC_LIVE_FORMULA_TAUTOLOGY);
+				return;
+			}
+            if (!this.checkAssumptions()) {
                 return;
-            if (!this.doInit(false))
+            }
+            if (!this.doInit(false)) {
                 return;
+            }
         } catch (Throwable e)
         {
             // Initial state computation fails with an exception:
