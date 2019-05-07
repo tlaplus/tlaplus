@@ -154,6 +154,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 	
     public TLCModelLaunchDataProvider(Model model)
     {
+    	Assert.isNotNull(model);
         this.model = model;
 
         // init provider, but not connect it to the source!

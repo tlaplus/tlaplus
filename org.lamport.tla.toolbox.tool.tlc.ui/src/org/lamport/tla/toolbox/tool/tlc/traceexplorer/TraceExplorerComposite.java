@@ -26,6 +26,9 @@
 
 package org.lamport.tla.toolbox.tool.tlc.traceexplorer;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -39,28 +42,34 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
+import org.eclipse.swt.dnd.DragSourceAdapter;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.Activator;
@@ -115,13 +124,15 @@ public class TraceExplorerComposite
     private Section section;
     private TLCErrorView view;
 
+	private int m_tableIndexOfLastDragStart;
+	
     // a listener reacting on button clicks
     // this calls the appropriate method when a user
     // clicks a button next to the table
     protected SelectionListener fSelectionListener = new SelectionAdapter() {
         public void widgetSelected(SelectionEvent e)
         {
-            Object source = e.getSource();
+            final Object source = e.getSource();
             if (source == buttonAdd)
             {
                 doAdd();
@@ -144,15 +155,11 @@ public class TraceExplorerComposite
     // a listener reacting on selection in the table viewer
     // this calls the method that changes button enablement
     // depending on whether a formula is selected or not
-    protected ISelectionChangedListener fSelectionChangedListener = new ISelectionChangedListener() {
-        public void selectionChanged(SelectionChangedEvent event)
-        {
-            Object source = event.getSource();
-            if (source != null && source == tableViewer)
-            {
-                changeButtonEnablement();
-            }
-        }
+    protected ISelectionChangedListener fSelectionChangedListener = (event) -> {
+        final Object source = event.getSource();
+		if ((source != null) && (source == tableViewer)) {
+			changeButtonEnablement();
+		}
     };
 
     public TraceExplorerComposite(Composite parent, String title, String description, FormToolkit toolkit,
@@ -238,32 +245,25 @@ public class TraceExplorerComposite
      * @param table
      * @return
      */
-    protected CheckboxTableViewer createTableViewer(Table table)
-    {
+	protected CheckboxTableViewer createTableViewer(Table table) {
         // create
-        CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
+        final CheckboxTableViewer tableViewer = new CheckboxTableViewer(table);
         // represent formulas in the view
         tableViewer.setContentProvider(new FormulaContentProvider());
         // on changed selection change button enablement
         tableViewer.addSelectionChangedListener(fSelectionChangedListener);
         // edit on double-click on a formula
-        tableViewer.addDoubleClickListener(new IDoubleClickListener() {
-            public void doubleClick(DoubleClickEvent event)
-            {
-                doEdit();
-            }
-        });
+		tableViewer.addDoubleClickListener((event) -> {
+			doEdit();
+		});
 
         // save the input when an element is checked or unchecked
-        tableViewer.addCheckStateListener(new ICheckStateListener() {
+		tableViewer.addCheckStateListener((event) -> {
+			view.getModel().save(new NullProgressMonitor());
+		});
 
-            public void checkStateChanged(CheckStateChangedEvent event)
-            {
-                view.getModel().save(new NullProgressMonitor());
-            }
-        });
-
-        tableViewer.setInput(new Vector<>());
+        tableViewer.setInput(new Vector<Formula>());
+        
         return tableViewer;
     }
 
@@ -274,12 +274,148 @@ public class TraceExplorerComposite
      * @param sectionArea
      * @return
      */
-    protected Table createTable(Composite sectionArea, FormToolkit toolkit)
-    {
-        Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL
+	protected Table createTable(Composite sectionArea, FormToolkit toolkit) {
+        final Table table = toolkit.createTable(sectionArea, SWT.MULTI | SWT.CHECK | SWT.V_SCROLL | SWT.H_SCROLL
                 | SWT.FULL_SELECTION);
+        
         table.setLinesVisible(false);
         table.setHeaderVisible(false);
+
+		final Transfer[] types = new Transfer[] { LocalSelectionTransfer.getTransfer() };
+		final DragSource source = new DragSource(table, DND.DROP_MOVE);
+		source.setTransfer(types);
+		source.addDragListener(new DragSourceAdapter() {
+			@Override
+			public void dragStart(final DragSourceEvent event) {
+				final Table table = tableViewer.getTable();
+				TableItem ti = (TableItem) table.getItem(new Point(event.x, event.y));
+
+				if (ti != null) {
+					m_tableIndexOfLastDragStart = table.indexOf(ti);
+				} else {
+					m_tableIndexOfLastDragStart = -1;
+				}
+			}
+			
+			@Override
+			public void dragSetData(final DragSourceEvent event) {
+				final IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+
+				LocalSelectionTransfer.getTransfer().setSelection(selection);
+			}
+		});
+
+		// Create the drop target
+		final DropTarget target = new DropTarget(table, DND.DROP_MOVE);
+		target.setTransfer(types);
+		target.addDropListener(new DropTargetAdapter() {
+			public void dragOver(final DropTargetEvent event) {
+		        event.feedback = DND.FEEDBACK_INSERT_BEFORE | DND.FEEDBACK_SCROLL;
+				super.dragOver(event);
+			}
+
+			public void drop(final DropTargetEvent event) {
+				final Object data = event.data;
+				
+				if (data instanceof IStructuredSelection) {
+					final IStructuredSelection selection = (IStructuredSelection) data;
+					if ((selection.size() > 0) && (selection.getFirstElement() instanceof Formula)) {
+						final TableItem ti = (TableItem) event.item;
+						final DropTarget target = (DropTarget) event.widget;
+						final Table table = (Table) target.getControl();
+						final int dropIndex = (ti == null) ? table.getItemCount() : table.indexOf(ti);
+						@SuppressWarnings("unchecked")
+						final Vector<Formula> model = (Vector<Formula>) tableViewer.getInput();
+						final Iterator<?> it = selection.iterator();
+						final int[] selectionIndices = new int[selection.size()];
+
+						int counter = 0;
+						while (it.hasNext()) {
+							final Formula f = (Formula) it.next();
+
+							selectionIndices[counter] = model.indexOf(f);
+							counter++;
+						}
+						Arrays.sort(selectionIndices);
+						
+						final int dragDelta;
+						if (m_tableIndexOfLastDragStart == -1) {
+							dragDelta = dropIndex - selectionIndices[0];
+						} else {
+							dragDelta = dropIndex - m_tableIndexOfLastDragStart;
+						}
+						if (dragDelta == 0) {
+							return;
+						}
+						
+						final List<String> serializedOriginalModel = FormHelper.getSerializedInput(tableViewer);
+						final int itemCount = serializedOriginalModel.size();
+						final String[] movingItems = new String[selectionIndices.length];
+						for (int i = 0; i < selectionIndices.length; i++) {
+							movingItems[i] = serializedOriginalModel.get(selectionIndices[i]);
+						}
+						if (dragDelta > 0) {
+							counter = selectionIndices.length - 1;
+							for (int i = (itemCount - 1); i > -1; i--) {
+								if (selectionIndices[counter] == i) {
+									final String toMove = movingItems[counter];
+									// i tried all manner of working solely with the selectionIndices but could get no
+									//		obvious global solution more moving multiple contiguous and moving multiple
+									//		disjoint items - so i ended up with this indexOf lookup
+									final int adjustedMoveIndex = serializedOriginalModel.indexOf(toMove);
+									int newIndex = i + dragDelta;
+									
+									if (newIndex > itemCount) {
+										newIndex = itemCount;
+									}
+									
+									serializedOriginalModel.add(newIndex, toMove);
+									serializedOriginalModel.remove(adjustedMoveIndex);
+
+									counter--;
+									if (counter < 0) {
+										break;
+									}
+								}
+							}
+						} else {
+							counter = 0;
+							for (int i = 0; i < itemCount; i++) {
+								if (selectionIndices[counter] == i) {
+									final String toMove = movingItems[counter];
+									// i tried all manner of working solely with the selectionIndices but could get no
+									//		obvious global solution more moving multiple contiguous and moving multiple
+									//		disjoint items - so i ended up with this indexOf lookup
+									final int adjustedMoveIndex = serializedOriginalModel.indexOf(toMove);
+									int newIndex = i + dragDelta;
+									
+									if (newIndex < 0) {
+										newIndex = 0;
+									}
+									
+									serializedOriginalModel.remove(adjustedMoveIndex);
+									serializedOriginalModel.add(newIndex, toMove);
+
+									counter++;
+									if (counter == selectionIndices.length) {
+										break;
+									}
+								}
+							}
+						}
+
+						tableViewer.setInput(new Vector<Formula>());
+						FormHelper.setSerializedInput(tableViewer, serializedOriginalModel);
+
+						changeButtonEnablement();
+						
+				        view.getModel().setTraceExplorerExpression(serializedOriginalModel);
+						saveModel();
+					}
+				}
+			}
+		});
+        
         return table;
     }
 
@@ -334,27 +470,23 @@ public class TraceExplorerComposite
     {
         return tableViewer;
     }
-    
-    /**
-     * @return the number of checked elements in the table view
-     */
-    public int getEnabledExpressionCount() {
-    	return tableViewer.getCheckedElements().length;
-    }
 
     /**
      * Remove the selected formulas
      */
     protected void doRemove()
     {
-        IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-        Vector<?> input = (Vector<?>)tableViewer.getInput();
+        final IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+        final Vector<?> input = (Vector<?>)tableViewer.getInput();
+        
         input.removeAll(selection.toList());
         tableViewer.setInput(input);
 
         changeButtonEnablement();
 
         view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
+        
+        saveModel();
     }
 
     /**
@@ -365,44 +497,60 @@ public class TraceExplorerComposite
         Formula formula = doEditFormula(null);
 
         // add a formula
-        if (formula != null)
-        {
+		if (formula != null) {
             @SuppressWarnings("unchecked")
 			Vector<Formula> input = ((Vector<Formula>) tableViewer.getInput());
             input.add(formula);
             tableViewer.setInput(input);
-            if (tableViewer instanceof CheckboxTableViewer)
-            {
+			if (tableViewer instanceof CheckboxTableViewer) {
                 ((CheckboxTableViewer) tableViewer).setChecked(formula, true);
             }
 
             changeButtonEnablement();
 
             view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
+            
+            saveModel();
         }
     }
 
     /**
      * Edit selected formula 
      */
-    protected void doEdit()
-    {
-        IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-        Formula formula = (Formula) selection.getFirstElement();
-        Formula editedFormula = doEditFormula(formula);
-        if (editedFormula != null)
-        {
-            formula.setFormula(editedFormula.getFormula());
-            if (tableViewer instanceof CheckboxTableViewer)
-            {
-                ((CheckboxTableViewer) tableViewer).setChecked(formula, true);
+	protected void doEdit() {
+        final IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+        final Formula formula;
+        
+        if (selection.size() == 1) {
+        	formula = (Formula) selection.getFirstElement();
+        } else {
+        	formula = (Formula) tableViewer.getElementAt(0);
+        }
+        
+        final Formula editedFormula = doEditFormula(formula);
+		if (editedFormula != null) {
+			formula.setFormula(editedFormula.getFormula());
+			if (tableViewer instanceof CheckboxTableViewer) {
+				((CheckboxTableViewer) tableViewer).setChecked(formula, true);
             }
             tableViewer.refresh();
         }
 
-        changeButtonEnablement();
-
         view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
+        
+        saveModel();
+    }
+    
+    private void saveModel() {
+    	final Job job = new WorkspaceJob("Saving updated model...") {
+			public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
+				view.getModel().save(monitor);
+				return Status.OK_STATUS;
+			}
+		};
+		job.setRule(ResourcesPlugin.getWorkspace().getRoot());
+		job.setUser(true);
+		job.schedule();
     }
 
     /**
@@ -469,8 +617,7 @@ public class TraceExplorerComposite
 
         // save the launch configuration
         // if the trace is empty, then do nothing
-        if (!view.getTrace().isTraceEmpty())
-        {
+		if (!view.getTrace().isTraceEmpty()) {
             // TraceExplorerHelper.serializeTrace(modelConfig);
         	
         	// Wrap the launch in a WorkspaceJob to guarantee that the
@@ -481,7 +628,7 @@ public class TraceExplorerComposite
         	// run the SANY parser and SANY does not support concurrent execution.
         	
         	final Job job = new WorkspaceJob("Exploring the trace...") {
-				public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+				public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
 					view.getModel().save(monitor).launch(TraceExplorerDelegate.MODE_TRACE_EXPLORE, monitor, true);
 					return Status.OK_STATUS;
 				}
@@ -517,17 +664,21 @@ public class TraceExplorerComposite
         buttonExplore.setEnabled(true);
         buttonAdd.setEnabled(true);
         buttonEdit.setEnabled(true);
-        buttonRemove.setEnabled(true);
+        buttonRemove.setEnabled(!((IStructuredSelection)tableViewer.getSelection()).isEmpty());
         
         buttonRestore.setEnabled(false);
     }
 
     /**
-     * If a formula in the table is selected, then enable the 
-     * Remove and Edit buttons, else disable them.
-     */
-    protected void changeButtonEnablement()
-    {
+	 * If a formula in the table is selected, then enable the Remove and Edit
+	 * buttons, else disable the Remove button, and the Edit button iff there are 0
+	 * or many formulas in the table.
+	 */
+	public void changeButtonEnablement() {
+    	if (tableViewer == null) {
+    		return;
+    	}
+    	
         IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
         if (!tableViewer.getTable().isEnabled()) {
         	return;
@@ -537,24 +688,17 @@ public class TraceExplorerComposite
         {
             buttonRemove.setEnabled(!selection.isEmpty());
         }
+
         if (buttonEdit != null)
         {
-            buttonEdit.setEnabled(selection.size() == 1);
+            buttonEdit.setEnabled((selection.size() == 1) || (tableViewer.getTable().getItemCount() == 1));
         }
+        
         if (buttonExplore != null)
         {
             buttonExplore.setEnabled((view.getTrace() != null) && !view.getTrace().isTraceEmpty()
-                    && (getEnabledExpressionCount() > 0));
+                    && (tableViewer.getCheckedElements().length> 0));
         }
-    }
-
-    /**
-     * Sets the explore button enablement status to isTrace.
-     * @param isTrace
-     */
-    public void changeExploreEnablement(boolean isTrace)
-    {
-        buttonExplore.setEnabled(isTrace);
     }
 
     /**

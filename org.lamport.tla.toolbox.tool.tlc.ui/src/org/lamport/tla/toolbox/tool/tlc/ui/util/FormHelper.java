@@ -1,6 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -17,6 +17,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.IExpansionListener;
@@ -230,49 +231,28 @@ public class FormHelper
      * @param source - viewer containing the formulas/assignments
      * @return
      */
-    public static List<String> getSerializedInput(TableViewer table)
-    {
-        if (table instanceof CheckboxTableViewer)
-        {
-            CheckboxTableViewer source = (CheckboxTableViewer) table;
-            @SuppressWarnings("unchecked")
-			List<Formula> formulas = (List<Formula>) source.getInput();
-            Object[] checkedArray = source.getCheckedElements();
-
-            if (formulas == null)
-            {
-                return null;
-            }
-
-            Vector<String> result = new Vector<String>(formulas.size());
-            List<Object> checked = Arrays.asList(checkedArray);
-
-            Iterator<Formula> formulaIterator = formulas.iterator();
-
-            Formula formula;
-            String entry;
-            while (formulaIterator.hasNext())
-            {
-                formula = formulaIterator.next();
-                entry = ((checked.contains(formula)) ? "1" : "0") + formula.toString();
-                result.add(entry);
-            }
+	public static List<String> getSerializedInput(final TableViewer tableViewer) {
+		if (tableViewer instanceof CheckboxTableViewer) {
+			final ArrayList<String> result = new ArrayList<>();
+			final TableItem[] tableItems = tableViewer.getTable().getItems();
+			final int itemCount = tableItems.length;
+			for (int i = 0; i < itemCount; i++) {
+				final TableItem item = tableItems[i];
+				final String serialized = (item.getChecked() ? "1" : "0") + item.getText();
+				
+				result.add(serialized);
+			}
 
             return result;
-
-        } else
-        {
+		} else {
             @SuppressWarnings("unchecked")
-			List<Assignment> assignments = (List<Assignment>) table.getInput();
-            if (assignments == null)
-            {
-                return null;
-            }
+			List<Assignment> assignments = (List<Assignment>) tableViewer.getInput();
+			if (assignments == null) {
+				return null;
+			}
 
             return ModelHelper.serializeAssignmentList(assignments);
-
         }
-
     }
 
     /**
