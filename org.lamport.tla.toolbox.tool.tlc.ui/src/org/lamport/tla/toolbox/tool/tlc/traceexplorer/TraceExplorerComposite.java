@@ -470,6 +470,13 @@ public class TraceExplorerComposite
     {
         return tableViewer;
     }
+    
+    /**
+     * @return the <code>Section</code> instance for this composite.
+     */
+    public Section getSection() {
+    	return section;
+    }
 
     /**
      * Remove the selected formulas

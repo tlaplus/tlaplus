@@ -91,6 +91,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener.LoaderTLCState;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.ExpandableSpaceReclaimer;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -147,6 +148,9 @@ public class TLCErrorView extends ViewPart
     private SourceViewer valueViewer;
     private Model model;
     private TraceExplorerComposite traceExplorerComposite;
+    
+    @SuppressWarnings("unused")  // help onto for a nicer object graph
+	private ExpandableSpaceReclaimer spaceReclaimer;
 
     // listener on changes to the tlc output font preference
     private FontPreferenceChangeListener outputFontChangeListener;
@@ -378,8 +382,15 @@ public class TLCErrorView extends ViewPart
          */
         layout.marginWidth = 0;
         belowErrorViewerComposite.setLayout(layout);
+        
+        final SashForm middleSashForm = new SashForm(belowErrorViewerComposite, SWT.VERTICAL);
+        toolkit.adapt(middleSashForm);
 
-        traceExplorerComposite = new TraceExplorerComposite(belowErrorViewerComposite, "Error-Trace Exploration",
+        gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+
+        middleSashForm.setLayoutData(gd);
+
+        traceExplorerComposite = new TraceExplorerComposite(middleSashForm, "Error-Trace Exploration",
                 "Enter expressions to be evaluated at each state of the trace.", toolkit, this);
 
         // A group can be used to organize and provide a title for the inner sash form
@@ -399,7 +410,7 @@ public class TLCErrorView extends ViewPart
          * There is no reason to make it possible to not have this in the expanded form, so the
          * only style bit is for the title bar.
          */
-        Section errorTraceSection = toolkit.createSection(belowErrorViewerComposite, Section.TITLE_BAR);
+        Section errorTraceSection = toolkit.createSection(middleSashForm, Section.TITLE_BAR);
         errorTraceSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         errorTraceSection.setLayout(new GridLayout(1, true));
         errorTraceSection.setText("Error-Trace");
@@ -409,10 +420,11 @@ public class TLCErrorView extends ViewPart
         errorTraceSectionClientArea.setLayout(new GridLayout(1, true));
         errorTraceSection.setClient(errorTraceSectionClientArea);
 
-        // Modified on 30 Aug 2009 as part of putting error viewer inside a
-        // sash.
-        // SashForm sashForm = new SashForm(body, SWT.VERTICAL); //
-        final SashForm sashForm = new SashForm(errorTraceSectionClientArea/*belowErrorViewerComposite*/, SWT.VERTICAL);
+        middleSashForm.setWeights(new int[] {30, 70});
+        
+        spaceReclaimer = new ExpandableSpaceReclaimer(traceExplorerComposite.getSection(), middleSashForm);
+        
+        final SashForm sashForm = new SashForm(errorTraceSectionClientArea, SWT.VERTICAL);
         toolkit.adapt(sashForm);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
