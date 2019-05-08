@@ -60,6 +60,8 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -283,6 +285,18 @@ public class TraceExplorerComposite
         
         table.setLinesVisible(false);
         table.setHeaderVisible(false);
+        
+        table.addKeyListener(new KeyListener() {
+			@Override
+			public void keyPressed(final KeyEvent ke) { }
+
+			@Override
+			public void keyReleased(final KeyEvent ke) {
+				if ((ke.keyCode == SWT.BS) || (ke.keyCode == SWT.DEL)) {
+					doRemove();
+				}
+			}
+        });
 
 		final Transfer[] types = new Transfer[] { LocalSelectionTransfer.getTransfer() };
 		final DragSource source = new DragSource(table, DND.DROP_MOVE);
