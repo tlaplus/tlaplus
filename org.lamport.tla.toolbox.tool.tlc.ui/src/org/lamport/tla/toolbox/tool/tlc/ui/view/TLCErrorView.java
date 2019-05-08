@@ -511,8 +511,8 @@ public class TLCErrorView extends ViewPart
         
         final Set<Class<? extends ITextEditor>> blacklist = new HashSet<>();
         blacklist.add(TLACoverageEditor.class);
-		variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer, blacklist));
-        variableViewer.getTree().addKeyListener(new ActionClickListener(variableViewer, blacklist));
+		variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer, blacklist, this));
+        variableViewer.getTree().addKeyListener(new ActionClickListener(variableViewer, blacklist, this));
 
         
         // Make it possible to expand and collapse the error trace with the push of a button.
