@@ -880,7 +880,7 @@ public class UIHelper {
 	 * @see UIHelper#jumpToLocation(Location, boolean)
 	 */
 	public static void jumpToLocation(final Location location) {
-		jumpToLocation(location, false);
+		jumpToLocation(location, false, null);
 	}
 
 	/**
@@ -888,8 +888,11 @@ public class UIHelper {
 	 * editor on the module if an editor is not already open on it.
 	 * 
 	 * @param location
+	 * @param jumpToPCal
+	 * @param workbenchPart if non-null, this part will be given focus on the workbench after selecting the document
+	 * 							location.
 	 */
-	public static void jumpToLocation(Location location, final boolean jumpToPCal) {
+	public static void jumpToLocation(Location location, final boolean jumpToPCal, final IWorkbenchPart workbenchPart) {
 		if (location != null) {
 			// the source of a location is the module name
 			IResource moduleResource = ResourceHelper.getResourceByModuleName(location.source());
@@ -996,7 +999,7 @@ public class UIHelper {
 										}
 									}
 								}
-
+								
 								if (textEditor != null) {
 									// the text editor may not be active, so set
 									// it active
@@ -1023,6 +1026,14 @@ public class UIHelper {
 					 * is not necessary in this context.
 					 */
 					fileDocumentProvider.disconnect(fileEditorInput);
+					
+					if (workbenchPart != null) {
+						final IWorkbenchPage activePage = getActivePage();
+						
+						if (activePage != null) {
+							activePage.activate(workbenchPart);
+						}
+					}
 				}
 			}
 		}

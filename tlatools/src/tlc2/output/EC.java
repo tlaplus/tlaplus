@@ -214,6 +214,7 @@ public interface EC
     public static final int TLC_LIVE_STATE_PREDICATE_NON_BOOL = 2250;
     public static final int TLC_LIVE_CANNOT_EVAL_FORMULA = 2251;
     public static final int TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE = 2252;
+    public static final int TLC_LIVE_FORMULA_TAUTOLOGY = 2253;
 
     
     public static final int TLC_EXPECTED_VALUE = 2215;

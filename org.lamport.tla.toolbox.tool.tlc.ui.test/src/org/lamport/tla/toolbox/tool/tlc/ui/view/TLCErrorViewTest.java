@@ -49,6 +49,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Order;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -93,13 +94,13 @@ public class TLCErrorViewTest  {
 		final List<TLCError> errors = new ArrayList<TLCError>();
 		provider.setErrors(errors);
 
-		final TLCError error = new TLCError();
+		final TLCError error = new TLCError(Order.NToOne);
 		errors.add(error);
 
 		for (int i = 1; i <= 10000; i++) {
 			final TLCState state = TLCState.parseState(
 					i + ": <Action line 1, col 1 to line 1, col 2 of module testLargeNumberOfStates>\nx = " + i, name);
-			error.addState(state, true);
+			error.addState(state);
 		}
 
 		// show all states
@@ -148,7 +149,6 @@ public class TLCErrorViewTest  {
 		 * Create dummy error trace
 		 */
 		final TLCError error = new TLCError();
-		final boolean sortOrder = false;
 
 		String str = "1: <Initial predicate>\n" +
 				"/\\ sq = <<>>\n" +
@@ -158,7 +158,7 @@ public class TLCErrorViewTest  {
 				"/\\ x = (a :> 0 @@ b :> 0 @@ c :> 0)\n" +
 				"/\\ y = <<0, 0, 0>>\n" +
 				"/\\ z = [a |-> 0, b |-> 0, c |-> 0]";
-		error.addState(TLCState.parseState(str, "testColoring"), sortOrder);
+		error.addState(TLCState.parseState(str, "testColoring"));
 
 		str = "2: <Action line 22, col 12 to line 29, col 33 of module TraceExplorerColoring>\n" +
 				"/\\ sq = <<1>>\n" +
@@ -168,7 +168,7 @@ public class TLCErrorViewTest  {
 				"/\\ x = (a :> 42 @@ b :> 0 @@ c :> 0)\n" +
 				"/\\ y = <<42, 0, 0>>\n" +
 				"/\\ z = [a |-> 42, b |-> 0, c |-> 0]";
-		error.addState(TLCState.parseState(str, "testColoring"), sortOrder);
+		error.addState(TLCState.parseState(str, "testColoring"));
 
 		str = "3: <Action line 22, col 12 to line 29, col 33 of module TraceExplorerColoring>\n" +
 				"/\\ sq = <<1, 2>>\n" +
@@ -178,7 +178,7 @@ public class TLCErrorViewTest  {
 				"/\\ x = (a :> 42 @@ b :> 42 @@ c :> 0)\n" +
 				"/\\ y = <<42, 42, 0>>\n" +
 				"/\\ z = [a |-> 42, b |-> 42, c |-> 0]";
-		error.addState(TLCState.parseState(str, "testColoring"), sortOrder);
+		error.addState(TLCState.parseState(str, "testColoring"));
 
 		str = "4: <Action line 22, col 12 to line 29, col 33 of module TraceExplorerColoring>\n" +
 				"/\\ sq = <<1, 2, 3>>\n" +
@@ -188,7 +188,7 @@ public class TLCErrorViewTest  {
 				"/\\ x = (a :> 42 @@ b :> 42 @@ c :> 42)\n" +
 				"/\\ y = <<42, 42, 42>>\n" +
 				"/\\ z = [a |-> 42, b |-> 42, c |-> 42]";
-		error.addState(TLCState.parseState(str, "testColoring"), sortOrder);
+		error.addState(TLCState.parseState(str, "testColoring"));
 
 		str = "5: <Action line 30, col 12 to line 37, col 29 of module TraceExplorerColoring>\n" +
 				"/\\ sq = <<2, 3>>\n" +
@@ -198,7 +198,7 @@ public class TLCErrorViewTest  {
 				"/\\ x = (a :> 42 @@ b :> 42 @@ c :> 42)\n" +
 				"/\\ y = <<42, 42, 42>>\n" +
 				"/\\ z = [a |-> 42, b |-> 42, c |-> 42]";
-		error.addState(TLCState.parseState(str, "testColoring"), sortOrder);
+		error.addState(TLCState.parseState(str, "testColoring"));
 		
 		/*
 		 * Feed error trace to view.

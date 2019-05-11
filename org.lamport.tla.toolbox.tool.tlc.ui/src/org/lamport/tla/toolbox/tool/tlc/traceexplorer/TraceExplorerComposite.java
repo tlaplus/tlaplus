@@ -60,6 +60,8 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -155,8 +157,9 @@ public class TraceExplorerComposite
     // a listener reacting on selection in the table viewer
     // this calls the method that changes button enablement
     // depending on whether a formula is selected or not
-    protected ISelectionChangedListener fSelectionChangedListener = (event) -> {
+    protected ISelectionChangedListener m_formulaEnablementListener = (event) -> {
         final Object source = event.getSource();
+        
 		if ((source != null) && (source == tableViewer)) {
 			changeButtonEnablement();
 		}
@@ -228,6 +231,8 @@ public class TraceExplorerComposite
         // cell, so the table must span 5 vertical cells
         gd.verticalSpan = 5;
         table.setLayoutData(gd);
+        
+        table.setToolTipText("Drag formulae to reorder.");
 
         // create the table viewer
         tableViewer = createTableViewer(table);
@@ -251,7 +256,7 @@ public class TraceExplorerComposite
         // represent formulas in the view
         tableViewer.setContentProvider(new FormulaContentProvider());
         // on changed selection change button enablement
-        tableViewer.addSelectionChangedListener(fSelectionChangedListener);
+        tableViewer.addSelectionChangedListener(m_formulaEnablementListener);
         // edit on double-click on a formula
 		tableViewer.addDoubleClickListener((event) -> {
 			doEdit();
@@ -280,6 +285,18 @@ public class TraceExplorerComposite
         
         table.setLinesVisible(false);
         table.setHeaderVisible(false);
+        
+        table.addKeyListener(new KeyListener() {
+			@Override
+			public void keyPressed(final KeyEvent ke) { }
+
+			@Override
+			public void keyReleased(final KeyEvent ke) {
+				if ((ke.keyCode == SWT.BS) || (ke.keyCode == SWT.DEL)) {
+					doRemove();
+				}
+			}
+        });
 
 		final Transfer[] types = new Transfer[] { LocalSelectionTransfer.getTransfer() };
 		final DragSource source = new DragSource(table, DND.DROP_MOVE);
@@ -409,7 +426,6 @@ public class TraceExplorerComposite
 
 						changeButtonEnablement();
 						
-				        view.getModel().setTraceExplorerExpression(serializedOriginalModel);
 						saveModel();
 					}
 				}
@@ -470,6 +486,13 @@ public class TraceExplorerComposite
     {
         return tableViewer;
     }
+    
+    /**
+     * @return the <code>Section</code> instance for this composite.
+     */
+    public Section getSection() {
+    	return section;
+    }
 
     /**
      * Remove the selected formulas
@@ -484,8 +507,6 @@ public class TraceExplorerComposite
 
         changeButtonEnablement();
 
-        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
-        
         saveModel();
     }
 
@@ -508,8 +529,6 @@ public class TraceExplorerComposite
 
             changeButtonEnablement();
 
-            view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
-            
             saveModel();
         }
     }
@@ -536,12 +555,12 @@ public class TraceExplorerComposite
             tableViewer.refresh();
         }
 
-        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
-        
         saveModel();
     }
     
     private void saveModel() {
+        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
+        
     	final Job job = new WorkspaceJob("Saving updated model...") {
 			public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
 				view.getModel().save(monitor);
@@ -608,6 +627,9 @@ public class TraceExplorerComposite
             return;
         }
 
+        // If we don't do this, the selection of formulas will not be carried to the execution
+        view.getModel().setTraceExplorerExpression(FormHelper.getSerializedInput(tableViewer));
+        
         // Save model without validating.
         // Validating would erase MC.out, which we dont want
         // the trace explorer to do.

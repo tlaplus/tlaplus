@@ -15,6 +15,7 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
@@ -38,54 +39,70 @@ import tla2sany.st.Location;
  * {@link org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem}
  * implement that interface.
  * 
- * @author Daniel Ricketts
+ * TODO this also support listening for keyboard events too, now. We should refactor this renaming sensibly.
  * 
+ * @author Daniel Ricketts
  */
 public class ActionClickListener implements MouseListener, KeyListener {
 	
 	private final Viewer viewer;
 	private final Set<Class<? extends ITextEditor>> blacklist;
+	private final IWorkbenchPart m_partToRefocus;
 
 	public ActionClickListener(final Viewer viewer) {
 		this(viewer, new HashSet<Class<? extends ITextEditor>>());
 	}
 
-	public ActionClickListener(Viewer variableViewer, final Set<Class<? extends ITextEditor>> blacklist) {
-		this.viewer = variableViewer;
-		this.blacklist = blacklist;
+	public ActionClickListener(final Viewer variableViewer, final Set<Class<? extends ITextEditor>> editorBlacklist) {
+		this(variableViewer, editorBlacklist, null);
+	}
+
+	/**
+	 * @param workbenchPart if this is non-null, then the potential part focus change which may occur due to Location-based
+	 * 			viewing will be followed with first a focus on to this, followed by a focus to the
+	 * 			<code>variableViewer</code>'s control.
+	 */
+	public ActionClickListener(final Viewer variableViewer, final Set<Class<? extends ITextEditor>> editorBlacklist,
+			final IWorkbenchPart workbenchPart) {
+		viewer = variableViewer;
+		blacklist = editorBlacklist;
+		m_partToRefocus = workbenchPart;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt.events.MouseEvent)
 	 */
-	public void mouseDoubleClick(MouseEvent event) {
+	public void mouseDoubleClick(final MouseEvent event) {
 		goToAction(viewer.getSelection(), (event.stateMask & SWT.CTRL) != 0);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.MouseListener#mouseDown(org.eclipse.swt.events.MouseEvent)
 	 */
-	public void mouseDown(MouseEvent e) {}
+	public void mouseDown(final MouseEvent event) {}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.MouseListener#mouseUp(org.eclipse.swt.events.MouseEvent)
 	 */
-	public void mouseUp(MouseEvent e) {}
+	public void mouseUp(final MouseEvent event) {}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.KeyListener#keyPressed(org.eclipse.swt.events.KeyEvent)
 	 */
-	public void keyPressed(KeyEvent e) {}
+	public void keyPressed(final KeyEvent event) {}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.KeyListener#keyReleased(org.eclipse.swt.events.KeyEvent)
 	 */
 	public void keyReleased(final KeyEvent event) {
-		if (event.keyCode == SWT.CR) {
+		final int code = event.keyCode;
+		
+		if (code == SWT.CR) {
 			goToAction(viewer.getSelection(), (event.stateMask & SWT.CTRL) != 0);
-		} else if (event.keyCode == SWT.KEYPAD_DIVIDE && (event.stateMask & SWT.ALT) != 0
-				&& this.viewer instanceof TreeViewer) {
-			((TreeViewer) this.viewer).collapseAll();
+		} else if ((code == SWT.KEYPAD_DIVIDE) && ((event.stateMask & SWT.ALT) != 0) && (viewer instanceof TreeViewer)) {
+			((TreeViewer) viewer).collapseAll();
+		} else if (((code == SWT.ARROW_UP) || (code == SWT.ARROW_DOWN)) && (viewer instanceof TreeViewer)) {
+			goToAction(viewer.getSelection(), false);
 		}
 	}
 	
@@ -117,10 +134,14 @@ public class ActionClickListener implements MouseListener, KeyListener {
 						 */
 						Model model = ToolboxHandle.getCurrentSpec().getAdapter(TLCSpec.class).getModel(moduleLocatable
 								.getModelName());
-						final boolean jumpedToNested = TLCUIHelper
-								.jumpToSavedLocation(location, model, blacklist);
-						if (!jumpedToNested) {
-							UIHelper.jumpToLocation(location, jumpToPCal);
+						if (!TLCUIHelper.jumpToSavedLocation(location, model, blacklist)) {
+							UIHelper.jumpToLocation(location, jumpToPCal, m_partToRefocus);
+							
+							if (m_partToRefocus != null) {
+								viewer.getControl().getDisplay().asyncExec(() -> {
+									viewer.getControl().forceFocus();
+								});
+							}
 						}
 					}
 				} else if (!Platform.getWS().equals(Platform.WS_WIN32) && viewer instanceof TreeViewer) {

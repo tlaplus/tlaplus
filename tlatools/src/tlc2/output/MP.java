@@ -711,6 +711,9 @@ public class MP
         case EC.TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE:
             b.append("Encountered an action predicate that's not a boolean.");
             break;
+        case EC.TLC_LIVE_FORMULA_TAUTOLOGY:
+            b.append("Temporal formula is a tautology (its negation is unsatisfiable).");
+            break;
 
         case EC.TLC_EXPECTED_VALUE:
             b.append("TLC expected a %1% value, but did not find one. %2%");
