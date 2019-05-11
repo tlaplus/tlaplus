@@ -43,8 +43,6 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -119,6 +117,7 @@ public class TLCErrorView extends ViewPart
 
 	private static final String INNER_WEIGHTS_KEY = "INNER_WEIGHTS_KEY";
 	private static final String OUTER_WEIGHTS_KEY = "OUTER_WEIGHTS_KEY";
+	private static final String MID_WEIGHTS_KEY = "MID_WEIGHTS_KEY";
 
     /**
      * This is the pattern of an error message resulting from evaluating the constant
@@ -419,8 +418,6 @@ public class TLCErrorView extends ViewPart
         Composite errorTraceSectionClientArea = toolkit.createComposite(errorTraceSection);
         errorTraceSectionClientArea.setLayout(new GridLayout(1, true));
         errorTraceSection.setClient(errorTraceSectionClientArea);
-
-        middleSashForm.setWeights(new int[] {30, 70});
         
         spaceReclaimer = new ExpandableSpaceReclaimer(traceExplorerComposite.getSection(), middleSashForm);
         
@@ -630,18 +627,32 @@ public class TLCErrorView extends ViewPart
         } else {
         	outerSashForm.setWeights(new int[] {1,4});
         }
+        final String midWeights = dialogSettings.get(MID_WEIGHTS_KEY);
+        if (midWeights != null) {
+        	middleSashForm.setWeights(stringToIntArray(midWeights));
+        } else {
+        	final int[] weights;
+        	
+        	if (traceExplorerComposite.getSection().isExpanded()) {
+        		weights = new int[] {3, 7};
+        	} else {
+        		weights = new int[] {1, 9};
+        	}
+        	
+            middleSashForm.setWeights(weights);
+        }
 
-        sashForm.addDisposeListener(new DisposeListener() {
-			public void widgetDisposed(DisposeEvent e) {
-				final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
-		        dialogSettings.put(INNER_WEIGHTS_KEY, Arrays.toString(sashForm.getWeights()));
-			}
-		});
-        outerSashForm.addDisposeListener(new DisposeListener() {
-			public void widgetDisposed(DisposeEvent e) {
-				final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
-		        dialogSettings.put(OUTER_WEIGHTS_KEY, Arrays.toString(outerSashForm.getWeights()));
-			}
+        sashForm.addDisposeListener((event) -> {
+			final IDialogSettings ids = Activator.getDefault().getDialogSettings();
+			ids.put(INNER_WEIGHTS_KEY, Arrays.toString(sashForm.getWeights()));
+        });
+        outerSashForm.addDisposeListener((event) -> {
+			final IDialogSettings ids = Activator.getDefault().getDialogSettings();
+			ids.put(OUTER_WEIGHTS_KEY, Arrays.toString(outerSashForm.getWeights()));
+        });
+        middleSashForm.addDisposeListener((event) -> {
+			final IDialogSettings ids = Activator.getDefault().getDialogSettings();
+			ids.put(MID_WEIGHTS_KEY, Arrays.toString(middleSashForm.getWeights()));
         });
         
         form.getToolBarManager().add(new HelpAction());
