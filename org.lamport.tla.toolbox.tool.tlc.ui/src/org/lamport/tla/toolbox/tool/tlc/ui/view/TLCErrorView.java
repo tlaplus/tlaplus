@@ -61,6 +61,8 @@ import org.eclipse.swt.widgets.Scrollable;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
@@ -118,6 +120,7 @@ public class TLCErrorView extends ViewPart
 	private static final String INNER_WEIGHTS_KEY = "INNER_WEIGHTS_KEY";
 	private static final String OUTER_WEIGHTS_KEY = "OUTER_WEIGHTS_KEY";
 	private static final String MID_WEIGHTS_KEY = "MID_WEIGHTS_KEY";
+	private static final String SYNCED_TRAVERSAL_KEY = "SYNCED_TRAVERSAL_KEY";
 
     /**
      * This is the pattern of an error message resulting from evaluating the constant
@@ -144,6 +147,8 @@ public class TLCErrorView extends ViewPart
 
     private SourceViewer errorViewer;
     private TreeViewer variableViewer;
+    private ActionClickListener stackTraceActionListener;
+    private SyncStackTraversal syncStackTraversalAction;
     private SourceViewer valueViewer;
     private Model model;
     private TraceExplorerComposite traceExplorerComposite;
@@ -508,9 +513,14 @@ public class TLCErrorView extends ViewPart
         
         final Set<Class<? extends ITextEditor>> blacklist = new HashSet<>();
         blacklist.add(TLACoverageEditor.class);
-		variableViewer.getTree().addMouseListener(new ActionClickListener(variableViewer, blacklist, this));
-        variableViewer.getTree().addKeyListener(new ActionClickListener(variableViewer, blacklist, this));
-
+		stackTraceActionListener = new ActionClickListener(variableViewer, blacklist, this);
+		stackTraceActionListener.setObserveArrowKeyEvents(false);
+		variableViewer.getTree().addMouseListener(stackTraceActionListener);
+        variableViewer.getTree().addKeyListener(stackTraceActionListener);
+        variableViewer.getTree().addDisposeListener((event) -> {
+			final IDialogSettings ids = Activator.getDefault().getDialogSettings();
+			ids.put(SYNCED_TRAVERSAL_KEY, syncStackTraversalAction.isChecked());
+        });
         
         // Make it possible to expand and collapse the error trace with the push of a button.
 		final ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
@@ -519,7 +529,7 @@ public class TLCErrorView extends ViewPart
 				"Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)",
 				TLCUIActivator.getImageDescriptor("icons/elcl16/toggle_expand_state.png")) {
 			@Override
-			public void runWithKey(final boolean pressed) {
+			void runWithKey(final boolean pressed) {
 				if (pressed) {
 					// expandAll() followed by expandToLevel(2) requires us
 					// to collapse the viewer first.
@@ -538,6 +548,8 @@ public class TLCErrorView extends ViewPart
 		parent.getDisplay().addFilter(SWT.KeyDown, action);
 		parent.getDisplay().addFilter(SWT.KeyUp, action);
 		toolBarManager.add(action);
+		syncStackTraversalAction = new SyncStackTraversal();
+		toolBarManager.add(syncStackTraversalAction);
 		toolBarManager.update(true);
 		errorTraceSection.setTextClient(toolbar);
 // This is working but now redundant to the buttons on the section (see above).
@@ -1429,8 +1441,32 @@ public class TLCErrorView extends ViewPart
 		return variableViewer;
 	}
 	
-	public class ShiftClickAction extends Action implements Listener {
+	
+	private class SyncStackTraversal extends Action {
+		SyncStackTraversal() {
+			super("Sync traversing of the stack trace by arrow keys to the editor.", AS_CHECK_BOX);
+			
+			final ImageDescriptor id = PlatformUI.getWorkbench().getSharedImages()
+					.getImageDescriptor(ISharedImages.IMG_ELCL_SYNCED);
+			setImageDescriptor(id);
+			
+	        final boolean enabled = Activator.getDefault().getDialogSettings().getBoolean(SYNCED_TRAVERSAL_KEY);
+	        setChecked(enabled);
+	        
+	        run();
+		}
 
+	    /**
+	     * {@inheritDoc}
+	     */
+		@Override
+		public void run() {
+			stackTraceActionListener.setObserveArrowKeyEvents(isChecked());
+		}
+	}
+	
+	
+	private static abstract class ShiftClickAction extends Action implements Listener {
 		private boolean holdDown = false;
 
 		public ShiftClickAction(final String text, final ImageDescriptor imageDescriptor) {
@@ -1442,10 +1478,7 @@ public class TLCErrorView extends ViewPart
 			runWithKey(holdDown);
 		}
 
-		public void runWithKey(boolean shiftPressed) {
-			// Override by subclass
-			run();
-		}
+		abstract void runWithKey(boolean shiftPressed);
 
 		@Override
 		public void handleEvent(Event event) {
@@ -1459,9 +1492,10 @@ public class TLCErrorView extends ViewPart
 		}
 	}
 	
+	
 	// we don't have the same use case as the output font listener because we need to install the font
 	//		in the font registry so that we can later get a bold version of it.
-	static private class ErrorTraceFontChangeListener implements IPropertyChangeListener {
+	private static class ErrorTraceFontChangeListener implements IPropertyChangeListener {
 		@Override
 		public void propertyChange(final PropertyChangeEvent event) {
 			final Font f = JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_ERROR_TRACE_FONT);

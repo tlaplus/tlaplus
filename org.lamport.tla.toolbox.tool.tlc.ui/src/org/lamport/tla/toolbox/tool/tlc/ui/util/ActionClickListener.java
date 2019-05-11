@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.util;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
@@ -39,7 +40,8 @@ import tla2sany.st.Location;
  * {@link org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem}
  * implement that interface.
  * 
- * TODO this also support listening for keyboard events too, now. We should refactor this renaming sensibly.
+ * TODO this also support listening for keyboard events too, now. We should refactor this, renaming sensibly to reflect both that
+ * 			and what we really mean by "Action".
  * 
  * @author Daniel Ricketts
  */
@@ -48,6 +50,7 @@ public class ActionClickListener implements MouseListener, KeyListener {
 	private final Viewer viewer;
 	private final Set<Class<? extends ITextEditor>> blacklist;
 	private final IWorkbenchPart m_partToRefocus;
+	private final AtomicBoolean m_observeArrowKeyEvents;
 
 	public ActionClickListener(final Viewer viewer) {
 		this(viewer, new HashSet<Class<? extends ITextEditor>>());
@@ -67,6 +70,11 @@ public class ActionClickListener implements MouseListener, KeyListener {
 		viewer = variableViewer;
 		blacklist = editorBlacklist;
 		m_partToRefocus = workbenchPart;
+		m_observeArrowKeyEvents = new AtomicBoolean(true);
+	}
+	
+	public void setObserveArrowKeyEvents(final boolean shouldObserve) {
+		m_observeArrowKeyEvents.set(shouldObserve);
 	}
 
 	/* (non-Javadoc)
@@ -101,7 +109,8 @@ public class ActionClickListener implements MouseListener, KeyListener {
 			goToAction(viewer.getSelection(), (event.stateMask & SWT.CTRL) != 0);
 		} else if ((code == SWT.KEYPAD_DIVIDE) && ((event.stateMask & SWT.ALT) != 0) && (viewer instanceof TreeViewer)) {
 			((TreeViewer) viewer).collapseAll();
-		} else if (((code == SWT.ARROW_UP) || (code == SWT.ARROW_DOWN)) && (viewer instanceof TreeViewer)) {
+		} else if (m_observeArrowKeyEvents.get() && ((code == SWT.ARROW_UP) || (code == SWT.ARROW_DOWN))
+				&& (viewer instanceof TreeViewer)) {
 			goToAction(viewer.getSelection(), false);
 		}
 	}
