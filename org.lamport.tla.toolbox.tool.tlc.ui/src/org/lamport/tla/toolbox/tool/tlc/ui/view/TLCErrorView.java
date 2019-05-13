@@ -514,7 +514,6 @@ public class TLCErrorView extends ViewPart
         final Set<Class<? extends ITextEditor>> blacklist = new HashSet<>();
         blacklist.add(TLACoverageEditor.class);
 		stackTraceActionListener = new ActionClickListener(variableViewer, blacklist, this);
-		stackTraceActionListener.setObserveArrowKeyEvents(false);
 		variableViewer.getTree().addMouseListener(stackTraceActionListener);
         variableViewer.getTree().addKeyListener(stackTraceActionListener);
         variableViewer.getTree().addDisposeListener((event) -> {
@@ -1461,7 +1460,11 @@ public class TLCErrorView extends ViewPart
 	     */
 		@Override
 		public void run() {
-			stackTraceActionListener.setObserveArrowKeyEvents(isChecked());
+			final int value = isChecked()
+					? (ActionClickListener.OBSERVE_ARROW_KEY | ActionClickListener.OBSERVE_SINGLE_CLICK)
+					: ActionClickListener.OBSERVE_DEFAULT;
+
+			stackTraceActionListener.setNonDefaultObservables(value);
 		}
 	}
 	

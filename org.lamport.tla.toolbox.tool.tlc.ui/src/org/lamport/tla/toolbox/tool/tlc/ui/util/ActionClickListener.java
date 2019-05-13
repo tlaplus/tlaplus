@@ -46,11 +46,20 @@ import tla2sany.st.Location;
  * @author Daniel Ricketts
  */
 public class ActionClickListener implements MouseListener, KeyListener {
+	/**
+	 * @see #setNonDefaultObservables(int)
+	 */
+	public static final int OBSERVE_DEFAULT = 0;
+	public static final int OBSERVE_ARROW_KEY = 1 << 1;
+	public static final int OBSERVE_SINGLE_CLICK = 1 << 2;
+	
 	
 	private final Viewer viewer;
 	private final Set<Class<? extends ITextEditor>> blacklist;
 	private final IWorkbenchPart m_partToRefocus;
+	
 	private final AtomicBoolean m_observeArrowKeyEvents;
+	private final AtomicBoolean m_observeSingleClickEvents;
 
 	public ActionClickListener(final Viewer viewer) {
 		this(viewer, new HashSet<Class<? extends ITextEditor>>());
@@ -70,11 +79,18 @@ public class ActionClickListener implements MouseListener, KeyListener {
 		viewer = variableViewer;
 		blacklist = editorBlacklist;
 		m_partToRefocus = workbenchPart;
-		m_observeArrowKeyEvents = new AtomicBoolean(true);
+		m_observeArrowKeyEvents = new AtomicBoolean(false);
+		m_observeSingleClickEvents = new AtomicBoolean(false);
 	}
 	
-	public void setObserveArrowKeyEvents(final boolean shouldObserve) {
-		m_observeArrowKeyEvents.set(shouldObserve);
+	/**
+	 * @param observablesMask either OBSERVE_DEFAULT (turning off any changes in
+	 *                        default behavior or a bitwise-OR'd combination of the
+	 *                        OBSERVE_* constants
+	 */
+	public void setNonDefaultObservables(final int observablesMask) {
+		m_observeArrowKeyEvents.set((observablesMask & OBSERVE_ARROW_KEY) == OBSERVE_ARROW_KEY);
+		m_observeSingleClickEvents.set((observablesMask & OBSERVE_SINGLE_CLICK) == OBSERVE_SINGLE_CLICK);
 	}
 
 	/* (non-Javadoc)
@@ -92,7 +108,11 @@ public class ActionClickListener implements MouseListener, KeyListener {
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.MouseListener#mouseUp(org.eclipse.swt.events.MouseEvent)
 	 */
-	public void mouseUp(final MouseEvent event) {}
+	public void mouseUp(final MouseEvent event) {
+		if (m_observeSingleClickEvents.get()) {
+			goToAction(viewer.getSelection(), (event.stateMask & SWT.CTRL) != 0);
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.KeyListener#keyPressed(org.eclipse.swt.events.KeyEvent)
