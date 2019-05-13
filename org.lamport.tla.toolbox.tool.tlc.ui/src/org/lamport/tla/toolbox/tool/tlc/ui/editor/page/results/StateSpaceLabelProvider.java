@@ -3,6 +3,8 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results;
 import java.text.NumberFormat;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jface.layout.TableColumnLayout;
+import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -73,12 +75,15 @@ class StateSpaceLabelProvider extends AbstractTableLabelProvider {
 	/**
 	 * @param stateTable
 	 */
-	void createTableColumns(final Table stateTable, final ResultPage page) {
+	void createTableColumns(final Table stateTable, final ResultPage page, final TableColumnLayout layout) {
 		for (int i = 0; i < COLUMN_TITLES.length; i++) {
 			final TableColumn column = new TableColumn(stateTable, SWT.NULL);
 			column.setWidth(COLUMN_WIDTHS[i]);
 			column.setText(COLUMN_TITLES[i]);
 
+			final int weight = (int)(100.0 * COLUMN_WIDTH_PERCENTAGES[i]);
+			layout.setColumnData(column, new ColumnWeightData(weight, COLUMN_WIDTHS[i], true));
+			
 			// The following statement attaches a listener to the column header.
 			//	See the ResultPageColumnListener comments.
 			column.addSelectionListener(new ResultPageColumnListener(i, page));

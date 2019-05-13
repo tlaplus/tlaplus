@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocumentPartitioner;
@@ -46,6 +47,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -978,8 +980,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.verticalIndent = 6;
         title.setLayoutData(gd);
         
+        final Composite tableComposite = new Composite(statespaceComposite, SWT.NONE);
+        final TableColumnLayout tableColumnLayout = new TableColumnLayout();
+        tableComposite.setLayout(tableColumnLayout);
 		final Table stateTable
-			= toolkit.createTable(statespaceComposite, (SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER));
+			= toolkit.createTable(tableComposite, (SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER));
 		final StateSpaceLabelProvider sslp = new StateSpaceLabelProvider(this);
         gd = new GridData();
         gd.horizontalIndent = 0;
@@ -988,14 +993,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.heightHint = 100;
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalAlignment = SWT.FILL;
-        stateTable.setLayoutData(gd);
+        tableComposite.setLayoutData(gd);
 
         stateTable.setHeaderVisible(true);
         stateTable.setLinesVisible(true);
 
-        sslp.createTableColumns(stateTable, this);
-
-        stateTable.addControlListener(new TableResizeListener(sslp));
+        sslp.createTableColumns(stateTable, this, tableColumnLayout);
         
         // create the viewer
         stateSpace = new TableViewer(stateTable);
@@ -1073,8 +1076,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         this.coverageTimestampText.setLayoutData(gd);
         
 
+        final Composite tableComposite = new Composite(coverageComposite, SWT.NONE);
+        final TableColumnLayout tableColumnLayout = new TableColumnLayout();
+        tableComposite.setLayout(tableColumnLayout);
         final Table coverageTable
-        	= toolkit.createTable(coverageComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
+        	= toolkit.createTable(tableComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
         final CoverageLabelProvider clp = new CoverageLabelProvider();
         gd = new GridData();
         gd.horizontalIndent = 0;
@@ -1083,15 +1089,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.heightHint = 100;
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalAlignment = SWT.FILL;
-        coverageTable.setLayoutData(gd);
+        tableComposite.setLayoutData(gd);
 
         coverageTable.setHeaderVisible(true);
         coverageTable.setLinesVisible(true);
         coverageTable.setToolTipText(CoverageLabelProvider.TOOLTIP);
 
-        clp.createTableColumns(coverageTable);
-
-        coverageTable.addControlListener(new TableResizeListener(clp));
+        clp.createTableColumns(coverageTable, tableColumnLayout);
 
         // create the viewer
         coverage = new TableViewer(coverageTable);

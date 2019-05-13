@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results;
 
+import org.eclipse.jface.layout.TableColumnLayout;
+import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -50,12 +52,15 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
 	/**
 	 * @param stateTable
 	 */
-	void createTableColumns(final Table stateTable) {
+	void createTableColumns(final Table stateTable, final TableColumnLayout layout) {
 		for (int i = 0; i < COLUMN_TITLES.length; i++) {
 			final TableColumn column = new TableColumn(stateTable, SWT.NULL);
 			column.setWidth(COLUMN_WIDTHS[i]);
 			column.setText(COLUMN_TITLES[i]);
 			column.setToolTipText(TOOLTIP);
+
+			final int weight = (int)(100.0 * COLUMN_WIDTH_PERCENTAGES[i]);
+			layout.setColumnData(column, new ColumnWeightData(weight, COLUMN_WIDTHS[i], true));
 		}
 	}
 	
