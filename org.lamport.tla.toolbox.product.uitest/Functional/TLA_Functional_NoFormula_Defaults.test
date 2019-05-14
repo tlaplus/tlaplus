@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _ntQ8oBB4EemUS_ZdBJsvQg
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 3/26/19, 11:50 AM
+Save-Time: 5/20/19, 1:44 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -59,13 +59,14 @@ try -command {
 	with [get-editor "Model_1"] {
 	    get-section "What is the model?" | click
 	    get-section "How to run?" | click
-	    get-tab-folder | get-tab-item "Advanced Options" | click
+		get-link "Advanced model options" | click
 	    get-section "Additional Definitions" | click
 	    get-section "State Constraint" | click
 	    get-section "Model Values" | click
 	    get-section "Definition Override" | click
 	    get-section "Action Constraint" | click
-	    get-section "TLC Options" | click
+		get-tab-folder | get-tab-item "Model Overview" | click
+		get-link "Advanced TLC execution options" | click
 	    get-link "1 message detected" | click
 	}
 	

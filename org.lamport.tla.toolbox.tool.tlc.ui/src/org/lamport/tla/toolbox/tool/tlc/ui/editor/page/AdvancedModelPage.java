@@ -1,32 +1,23 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -35,91 +26,35 @@ import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
-import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
-import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableOverridesSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
-import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
-import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.IHelpConstants;
-import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.OpDefNode;
-import tlc2.TLCGlobals;
-import tlc2.tool.fp.FPSet;
-import tlc2.tool.fp.MultiFPSet;
-import tlc2.util.FP64;
 
 /**
- * Represent all advanced model elements
+ * Where we are sticking "advanced" model options, not including those related to TLC execution.
  * 
  * @author Simon Zambrovski
  */
-public class AdvancedModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
-{
-
+public class AdvancedModelPage extends BasicFormPage implements Closeable {
     public static final String ID = "advancedModelPage";
 
+    
     private SourceViewer constraintSource;
     private SourceViewer actionConstraintSource;
     private SourceViewer newDefinitionsSource;
-    private SourceViewer viewSource;
     private SourceViewer modelValuesSource;
-    private Button dfidOption;
-    private Button mcOption;
-    private Button simulationOption;
-    private Button deferLiveness;
-    private Button visualizeStateGraph;
-    private Text dfidDepthText;
-    private Text simuDepthText;
-    private Text simuSeedText;
-    private Text simuArilText;
-    
-    // The widgets to display the checkpoint size and the delete button.
-    private Button checkpointButton;
-    private Text checkpointIdText;
-    private Label checkpointSizeLabel;
-    private Text checkpointSizeText;
-    private Button checkpointDeleteButton;
-    
-    // Widgets to enable/disable coverage
-    private Button collectCoverage;
-    
-    /**
-     * Offset for the -fp parameter passed to TLC process to select the hash seed 
-     */
-    private Spinner fpIndexSpinner;
-    private Button fpIndexRandomly;
-	/**
-	 * -fpbits parameter designed to select how many fp bits are used for hash
-	 * lookup
-	 */
-    private Spinner fpBits;
-    /**
-     * -maxSetSize input to set the upper bound of the TLA set
-     * @see Bug #264 in general/bugzilla/index.html
-     */
-    private Spinner maxSetSize;
-    /**
-	 * Text box to pass additional/extra JVM arguments/system properties to
-	 * nested TLC java process.
-	 */
-    private Text extraVMArgumentsText;
-    /**
-	 * Text box to pass additional/extra parameters to nested process.
-	 */
-    private Text extraTLCParametersText;
-    
+        
     private TableViewer definitionsTable;
 
     /**
@@ -127,27 +62,17 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      * 
      * @param editor
      */
-    public AdvancedModelPage(FormEditor editor)
-    {
-        super(editor, AdvancedModelPage.ID, "Advanced Options",
+	public AdvancedModelPage(final FormEditor editor) {
+        super(editor, ID, "Advanced Options",
         		"icons/full/advanced_model_options_" + IMAGE_TEMPLATE_TOKEN + ".png");
-        this.helpId = IHelpConstants.ADVANCED_MODEL_PAGE;
+        helpId = IHelpConstants.ADVANCED_MODEL_PAGE;
     }
-    
-    /**
-     * On a refresh, the checkpoint information is re-read 
-     */
-    @Override
-	public void refresh() {
-		super.refresh();
-		updateCheckpoints();
-	}
 
     /**
      * Loads data from the model
      */
-    protected void loadData() throws CoreException
-    {
+	@Override
+	protected void loadData() throws CoreException {
         // definition overrides
         List<String> definitions = getModel().getAttribute(MODEL_PARAMETER_DEFINITIONS, new Vector<String>());
         FormHelper.setSerializedInput(definitionsTable, definitions);
@@ -164,153 +89,16 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         String constraint = getModel().getAttribute(MODEL_PARAMETER_CONSTRAINT, EMPTY_STRING);
         constraintSource.setDocument(new Document(constraint));
 
-        // view
-        String view = getModel().getAttribute(LAUNCH_VIEW, EMPTY_STRING);
-        viewSource.setDocument(new Document(view));
-
         // action constraint
         String actionConstraint = getModel().getAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, EMPTY_STRING);
         actionConstraintSource.setDocument(new Document(actionConstraint));
-
-        // run mode mode
-        boolean isMCMode = getModel().getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);
-        mcOption.setSelection(isMCMode);
-        simulationOption.setSelection(!isMCMode);
-
-        // DFID depth
-        int dfidDepth = getModel().getAttribute(LAUNCH_DFID_DEPTH, LAUNCH_DFID_DEPTH_DEFAULT);
-        dfidDepthText.setText("" + dfidDepth);
-
-        // DFID mode
-        boolean isDFIDMode = getModel().getAttribute(LAUNCH_DFID_MODE, LAUNCH_DFID_MODE_DEFAULT);
-        dfidOption.setSelection(isDFIDMode);
-        dfidDepthText.setEnabled(isDFIDMode);
-
-        // simulation depth
-        int simuDepth = getModel().getAttribute(LAUNCH_SIMU_DEPTH, LAUNCH_SIMU_DEPTH_DEFAULT);
-        simuDepthText.setText("" + simuDepth);
-
-        // simulation aril
-        int simuAril = getModel().getAttribute(LAUNCH_SIMU_SEED, LAUNCH_SIMU_ARIL_DEFAULT);
-        if (LAUNCH_SIMU_ARIL_DEFAULT != simuAril)
-        {
-            simuArilText.setText("" + simuAril);
-        } else
-        {
-            simuArilText.setText("");
-        }
-
-        // simulation seed
-        int simuSeed = getModel().getAttribute(LAUNCH_SIMU_ARIL, LAUNCH_SIMU_SEED_DEFAULT);
-        if (LAUNCH_SIMU_SEED_DEFAULT != simuSeed)
-        {
-            simuSeedText.setText("" + simuSeed);
-        } else
-        {
-            simuSeedText.setText("");
-        }
-        
-        // Defer Liveness
-        deferLiveness.setSelection(getModel().getAttribute(LAUNCH_DEFER_LIVENESS, LAUNCH_DEFER_LIVENESS_DEFAULT));
-
-        // recover from the checkpoint
-        boolean recover = getModel().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
-        checkpointButton.setSelection(recover);
-        
-        // coverage
-        collectCoverage.setSelection(getModel().getAttribute(LAUNCH_COVERAGE, LAUNCH_COVERAGE_DEFAULT));
-        
-        // fp index
-        final boolean randomly = getModel().getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT);
-		fpIndexRandomly.setSelection(randomly);
-        final int fpIndex = getModel().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
-        fpIndexSpinner.setSelection(fpIndex);
-        fpIndexSpinner.setEnabled(!randomly);
-
-        // fpBits
-        int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
-        fpBits.setSelection(getModel().getAttribute(LAUNCH_FPBITS, defaultFPBits));
-
-        // maxSetSize
-        int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
-        maxSetSize.setSelection(getModel().getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
-        
-        // visualize state graph
-        visualizeStateGraph.setSelection(getModel().getAttribute(LAUNCH_VISUALIZE_STATEGRAPH, LAUNCH_VISUALIZE_STATEGRAPH_DEFAULT));
-        
-        // Extra JVM arguments and system properties
-        final String vmArgs = getModel().getAttribute(LAUNCH_JVM_ARGS, LAUNCH_JVM_ARGS_DEFAULT);
-        this.extraVMArgumentsText.setText(vmArgs);
-
-        // Extra JVM arguments and system properties
-        final String tlcParameters = getModel().getAttribute(LAUNCH_TLC_PARAMETERS, LAUNCH_TLC_PARAMETERS_DEFAULT);
-        this.extraTLCParametersText.setText(tlcParameters);
-        
-        updateEnabledStatesForAdvancedLaunchRadioSelection();
     }
 
     /**
      * Save data back to config
      */
-    public void commit(boolean onSave)
-    {
-        // TLCUIActivator.getDefault().logDebug("Advanced page commit");
-
-        boolean isMCMode = mcOption.getSelection();
-        getModel().setAttribute(LAUNCH_MC_MODE, isMCMode);
-
-        // DFID mode
-        boolean isDFIDMode = dfidOption.getSelection();
-        getModel().setAttribute(LAUNCH_DFID_MODE, isDFIDMode);
-        int dfidDepth = Integer.parseInt(dfidDepthText.getText());
-        
-        int simuDepth = Integer.parseInt(simuDepthText.getText());
-        int simuAril = LAUNCH_SIMU_ARIL_DEFAULT;
-        int simuSeed = LAUNCH_SIMU_SEED_DEFAULT;
-
-        if (!"".equals(simuArilText.getText()))
-        {
-            simuAril = Integer.parseInt(simuArilText.getText());
-        }
-        if (!"".equals(simuSeedText.getText()))
-        {
-            simuSeed = Integer.parseInt(simuSeedText.getText());
-        }
-
-        // DFID depth
-        getModel().setAttribute(LAUNCH_DFID_DEPTH, dfidDepth);
-        // simulation depth
-        getModel().setAttribute(LAUNCH_SIMU_DEPTH, simuDepth);
-        // simulation aril
-        getModel().setAttribute(LAUNCH_SIMU_SEED, simuSeed);
-        // simulation seed
-        getModel().setAttribute(LAUNCH_SIMU_ARIL, simuAril);
-
-        // Defer Liveness
-        getModel().setAttribute(LAUNCH_DEFER_LIVENESS, deferLiveness.getSelection());
-
-        // recover from deadlock
-        getModel().setAttribute(LAUNCH_RECOVER, checkpointButton.getSelection());
-        
-        // FP Seed choose randomly
-		getModel().setAttribute(LAUNCH_FP_INDEX_RANDOM, fpIndexRandomly.getSelection());
-		// FP Seed index
-		getModel().setAttribute(LAUNCH_FP_INDEX, fpIndexSpinner.getSelection());
-
-        // fpBits
-        getModel().setAttribute(LAUNCH_FPBITS, fpBits.getSelection());
-
-        // fpBits
-        getModel().setAttribute(LAUNCH_MAXSETSIZE, maxSetSize.getSelection());
-
-        // Visualize State Graph
-        getModel().setAttribute(LAUNCH_VISUALIZE_STATEGRAPH, visualizeStateGraph.getSelection());
-
-        // Collect Coverage
-        getModel().setAttribute(LAUNCH_COVERAGE, collectCoverage.getSelection());
-       
+	@Override
+	public void commit(final boolean onSave) {
         // definitions
         List<String> definitions = FormHelper.getSerializedInput(definitionsTable);
         getModel().setAttribute(MODEL_PARAMETER_DEFINITIONS, definitions);
@@ -328,31 +116,18 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         String constraintFormula = FormHelper.trimTrailingSpaces(constraintSource.getDocument().get());
         getModel().setAttribute(MODEL_PARAMETER_CONSTRAINT, constraintFormula);
 
-        // view
-        String viewFormula = FormHelper.trimTrailingSpaces(viewSource.getDocument().get());
-        getModel().setAttribute(LAUNCH_VIEW, viewFormula);
-
         // action constraint formula
         String actionConstraintFormula = FormHelper.trimTrailingSpaces(actionConstraintSource.getDocument().get());
         getModel().setAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, actionConstraintFormula);
-
-		// extra vm arguments (replace newlines which otherwise cause the
-		// process to ignore all args except the first one)
-        final String vmArgs = this.extraVMArgumentsText.getText().replace("\r\n", " ").replace("\n", " ");
-        getModel().setAttribute(LAUNCH_JVM_ARGS, vmArgs);
-
-        // extra tlc parameters
-        final String tlcParameters = this.extraTLCParametersText.getText();
-        getModel().setAttribute(LAUNCH_TLC_PARAMETERS, tlcParameters);
       
         super.commit(onSave);
     }
 
     /**
-     * 
+     * Validate the page's state.
      */
-    public void validatePage(boolean switchToErrorPage)
-    {
+	@Override
+	public void validatePage(final boolean switchToErrorPage) {
         if (getManagedForm() == null)
         {
             return;
@@ -371,115 +146,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
 
         // setup the names from the current page
         getLookupHelper().resetModelNames(this);
-
-        try
-        {
-            int dfidDepth = Integer.parseInt(dfidDepthText.getText());
-            if (dfidDepth <= 0)
-            {
-                modelEditor.addErrorMessage("dfid1", "Depth of DFID launch must be a positive integer", this.getId(),
-                        IMessageProvider.ERROR, dfidDepthText);
-                setComplete(false);
-                expandSection(SEC_LAUNCHING_SETUP);
-            } 
-            else {
-              // Call of removeErrorMessage added by LL on 21 Mar 2013
-              modelEditor.removeErrorMessage("dfid1", dfidDepthText);
-            }
-            // Call of removeErrorMessage added by LL on 21 Mar 2013
-            modelEditor.removeErrorMessage("dfid2", dfidDepthText);
-        } catch (NumberFormatException e)
-        {
-            modelEditor.addErrorMessage("dfid2", "Depth of DFID launch must be a positive integer", this.getId(),
-                    IMessageProvider.ERROR, dfidDepthText);
-            setComplete(false);
-            expandSection(SEC_LAUNCHING_SETUP);
-        }
-        try
-        {
-            int simuDepth = Integer.parseInt(simuDepthText.getText());
-            if (simuDepth <= 0)
-            {
-                modelEditor.addErrorMessage("simuDepth1", "Length of the simulation tracemust be a positive integer",
-                        this.getId(), IMessageProvider.ERROR, simuDepthText);
-                setComplete(false);
-                expandSection(SEC_LAUNCHING_SETUP);
-            } 
-            else {
-                // Call of removeErrorMessage added by LL on 21 Mar 2013
-                modelEditor.removeErrorMessage("simuDepth1", simuDepthText);
-            }
-            // Call of removeErrorMessage added by LL on 21 Mar 2013
-            modelEditor.removeErrorMessage("simuDepth2", simuDepthText);
-        } catch (NumberFormatException e)
-        {
-            modelEditor.addErrorMessage("simuDepth2", "Length of the simulation trace must be a positive integer", this
-                    .getId(), IMessageProvider.ERROR, simuDepthText);
-            setComplete(false);
-            expandSection(SEC_LAUNCHING_SETUP);
-        }
-        if (!EMPTY_STRING.equals(simuArilText.getText()))
-        {
-            try
-            {
-                long simuAril = Long.parseLong(simuArilText.getText());
-                if (simuAril <= 0)
-                {
-                    modelEditor.addErrorMessage("simuAril1", "The simulation aril must be a positive integer", this
-                            .getId(), IMessageProvider.ERROR, simuArilText);
-                    setComplete(false);
-                }
-                else {
-                    // Call of removeErrorMessage added by LL on 21 Mar 2013
-                    modelEditor.removeErrorMessage("simuAril1", simuArilText);
-                }
-                // Call of removeErrorMessage added by LL on 21 Mar 2013
-                modelEditor.removeErrorMessage("simuAril2", simuArilText);
-            } catch (NumberFormatException e)
-            {
-                modelEditor.addErrorMessage("simuAril2", "The simulation aril must be a positive integer",
-                        this.getId(), IMessageProvider.ERROR, simuArilText);
-                setComplete(false);
-                expandSection(SEC_LAUNCHING_SETUP);
-            }
-        }
-        if (!EMPTY_STRING.equals(simuSeedText.getText()))
-        {
-            try
-            {
-                // long simuSeed =
-                Long.parseLong(simuSeedText.getText());
-               // Call of removeErrorMessage added by LL on 21 Mar 2013
-                modelEditor.removeErrorMessage("simuSeed1", simuSeedText);
-
-            } catch (NumberFormatException e)
-            {
-                modelEditor.addErrorMessage("simuSeed1", "The simulation aril must be a positive integer",
-                        this.getId(), IMessageProvider.ERROR, simuSeedText);
-                expandSection(SEC_LAUNCHING_SETUP);
-                setComplete(false);
-            }
-        }
         
         // get data binding manager
         final DataBindingManager dm = getDataBindingManager();
-
-        // fill the checkpoints
-        updateCheckpoints();
-
-        // recover from checkpoint
-        final Control checkpointRecover = UIHelper.getWidget(dm.getAttributeControl(LAUNCH_RECOVER));
-        modelEditor.removeErrorMessage("noCheckpoint", checkpointRecover);
-        if (checkpointButton.getSelection())
-        {
-            if (EMPTY_STRING.equals(checkpointIdText.getText()))
-            {
-                modelEditor.addErrorMessage("noCheckpoint", "No checkpoint data found", this.getId(),
-                        IMessageProvider.ERROR, checkpointRecover);
-                setComplete(false);
-                expandSection(SEC_LAUNCHING_SETUP);
-            }
-        }
 
         // check the model values
 		final IDocument document = modelValuesSource.getDocument();
@@ -616,95 +285,9 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
             }
         }
 
-        // check if the view field contains a cfg file keyword
-        Control viewWidget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_VIEW));
-        final IDocument viewerDocument = viewSource.getDocument();
-        if (viewerDocument != null) {
-        	String viewString = FormHelper.trimTrailingSpaces(viewerDocument.get());
-        	if (SemanticHelper.containsConfigFileKeyword(viewString))
-        	{
-        		modelEditor.addErrorMessage(viewString, "The toolbox cannot handle the string " + viewString
-        				+ " because it contains a configuration file keyword.", this.getId(), IMessageProvider.ERROR,
-        				viewWidget);
-        		setComplete(false);
-        	}
-        }
-
         mm.setAutoUpdate(true);
-
-        
-        
-        // fpBits
-        if (!FPSet.isValid(fpBits.getSelection()))
-        {
-            modelEditor.addErrorMessage("wrongNumber3", "fpbits must be a positive integer number smaller than 31", this
-					.getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_FPBITS)));
-            setComplete(false);
-            expandSection(SEC_HOW_TO_RUN);
-        }
-//        else {
-//            // Call of removeErrorMessage added by LL on 21 Mar 2013
-//            // However, it seems to be a no-op because you can't enter an illegal
-//            // value into the widget.  I've commented this out in case it has some
-//            // unknown evil side effects.
-//            modelEditor.removeErrorMessage("wrongNumber3", 
-//                                            UIHelper.getWidget(dm.getAttributeControl(LAUNCH_FPBITS)));
-//          }
-        
-        // maxSetSize
-        if (!TLCGlobals.isValidSetSize(maxSetSize.getSelection()))
-        {
-            modelEditor.addErrorMessage("wrongNumber3", "maxSetSize must be a positive integer number", this.getId(),
-            		IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAXSETSIZE)));
-            setComplete(false);
-            expandSection(SEC_HOW_TO_RUN);
-        }
-//        else {
-//        // Call of removeErrorMessage added by LL on 21 Mar 2013
-//        // However, it seems to be a no-op because you can't enter an illegal
-//        // value into the widget, so this was all commented out.
-//        modelEditor.removeErrorMessage("wrongNumber3", 
-//                                        UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAXSETSIZE)));
-//        }
         
         super.validatePage(switchToErrorPage);
-    }
-	
-    /**
-     * Checks if checkpoint information changed 
-     */
-    private void updateCheckpoints()
-    {
-        IResource[] checkpoints = null;
-        try
-        {
-            // checkpoint id
-            checkpoints = getModel().getCheckpoints(false);
-        } catch (CoreException e)
-        {
-            TLCUIActivator.getDefault().logError("Error checking chekpoint data", e);
-        }
-
-        if (checkpoints != null && checkpoints.length > 0)
-        {
-            checkpointIdText.setText(checkpoints[0].getName());
-        } else
-        {
-            checkpointIdText.setText(EMPTY_STRING);
-        }
-
-        if ((checkpoints == null) || (checkpoints.length == 0))
-        {
-            checkpointSizeText.setVisible(false);
-            checkpointSizeLabel.setVisible(false);
-            checkpointDeleteButton.setVisible(false);
-        } else
-        {
-            checkpointSizeText.setText(String.valueOf(ResourceHelper.getSizeOfJavaFileResource(checkpoints[0]) / 1000));
-            checkpointSizeText.setVisible(true);
-            checkpointSizeLabel.setVisible(true);
-            checkpointDeleteButton.setVisible(true);
-        }
     }
 
     /**
@@ -717,13 +300,13 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
      * A good explanation of layouts is given in the article
      * http://www.eclipse.org/articles/article.php?file=Article-Understanding-Layouts/index.html
      */
-    protected void createBodyContent(IManagedForm managedForm)
-    {
-        DataBindingManager dm = getDataBindingManager();
-        int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
+	@Override
+	protected void createBodyContent(final IManagedForm managedForm) {
+        final DataBindingManager dm = getDataBindingManager();
+        final int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED;
 
-        FormToolkit toolkit = managedForm.getToolkit();
-        Composite body = managedForm.getForm().getBody();
+        final FormToolkit toolkit = managedForm.getToolkit();
+        final Composite body = managedForm.getForm().getBody();
 
         GridLayout gl;
         GridData gd;
@@ -895,481 +478,15 @@ public class AdvancedModelPage extends BasicFormPage implements IConfigurationCo
         constraintSource.getTextWidget().addFocusListener(focusListener);
         dm.bindAttribute(MODEL_PARAMETER_CONSTRAINT, constraintSource, constraintPart);
 
-        // ---------------------------------------------------------------
-        // launch
-        section = createAdvancedLaunchSection(toolkit, body, sectionFlags);
-        ValidateableSectionPart launchPart = new ValidateableSectionPart(section, this, SEC_LAUNCHING_SETUP);
-        managedForm.addPart(launchPart);
-        DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
-
-        twd = new TableWrapData();
-        twd.colspan = 2;
-        twd.grabHorizontal = true;
-        twd.align = TableWrapData.FILL;
-        section.setLayoutData(twd);
-
-        dm.bindAttribute(MODEL_PARAMETER_VIEW, viewSource, launchPart);
-        dm.bindAttribute(LAUNCH_RECOVER, checkpointButton, launchPart);
-        
-        // dirty listeners
-        simuArilText.addModifyListener(launchListener);
-        simuSeedText.addModifyListener(launchListener);
-        simuDepthText.addModifyListener(launchListener);
-        fpIndexSpinner.addModifyListener(launchListener);
-        fpIndexRandomly.addSelectionListener(launchListener);
-        fpBits.addModifyListener(launchListener);
-        maxSetSize.addModifyListener(launchListener);
-        dfidDepthText.addModifyListener(launchListener);
-        simulationOption.addSelectionListener(launchListener);
-        deferLiveness.addSelectionListener(launchListener);
-        dfidOption.addSelectionListener(launchListener);
-        mcOption.addSelectionListener(launchListener);
-        checkpointButton.addSelectionListener(launchListener);
-        viewSource.addTextListener(launchListener);
-        visualizeStateGraph.addSelectionListener(launchListener);
-        collectCoverage.addSelectionListener(launchListener);
-        extraTLCParametersText.addModifyListener(launchListener);
-        extraVMArgumentsText.addModifyListener(launchListener);
-
         // add section ignoring listeners
         dirtyPartListeners.add(newDefinitionsListener);
         dirtyPartListeners.add(actionConstraintListener);
         dirtyPartListeners.add(modelValuesListener);
         dirtyPartListeners.add(constraintListener);
-        dirtyPartListeners.add(launchListener);
     }
 
-    /**
-     * @param toolkit
-     * @param parent
-     * @param flags
-     */
-    private Section createAdvancedLaunchSection(FormToolkit toolkit, Composite parent, int sectionFlags)
-    {
-        GridLayout gl;
-        GridData gd;
-
-        // advanced section
-        Section advancedSection = FormHelper.createSectionComposite(parent, "TLC Options",
-                "Advanced settings of the TLC model checker", toolkit, sectionFlags, getExpansionListener());
-        Composite area = (Composite) advancedSection.getClient();
-        gl = new GridLayout(2, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        area.setLayout(gl);
-        
-        // Model checking mode
-        mcOption = toolkit.createButton(area, "Model-checking mode", SWT.RADIO);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        mcOption.setLayoutData(gd);
-        mcOption.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				updateEnabledStatesForAdvancedLaunchRadioSelection();
-			}
-		});
-
-        // label view
-        final Label viewLabel = toolkit.createLabel(area, "View:");
-        gd = new GridData();
-        gd.verticalAlignment = SWT.BEGINNING;
-        gd.horizontalIndent = 10;
-        viewLabel.setLayoutData(gd);
-        // field view
-        viewSource = FormHelper.createFormsSourceViewer(toolkit, area, SWT.V_SCROLL);
-        // layout of the source viewer
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        gd.heightHint = 60;
-        gd.minimumWidth = 200;
-        viewSource.getTextWidget().setLayoutData(gd);
-        viewSource.getTextWidget().setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
-
-        dfidOption = toolkit.createButton(area, "Depth-first", SWT.CHECK);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.horizontalIndent = 10;
-        dfidOption.setLayoutData(gd);
-        dfidOption.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				dfidDepthText.setEnabled(dfidOption.getSelection());
-			}
-		});
-        dfidOption.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
-
-        // label depth
-        Label dfidDepthLabel = toolkit.createLabel(area, "Depth:");
-        gd = new GridData();
-        gd.horizontalIndent = 36;
-        dfidDepthLabel.setLayoutData(gd);
-        // field depth
-        dfidDepthText = toolkit.createText(area, "100");
-        gd = new GridData();
-        gd.minimumWidth = 100;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        dfidDepthText.setLayoutData(gd);
-        dfidDepthText.addFocusListener(focusListener);
-        dfidDepthText.setEnabled(false);
-        dfidDepthText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
-
-        simulationOption = toolkit.createButton(area, "Simulation mode", SWT.RADIO);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        simulationOption.setLayoutData(gd);
-        simulationOption.addFocusListener(focusListener);
-        simulationOption.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				updateEnabledStatesForAdvancedLaunchRadioSelection();
-			}
-		});
-
-        // label depth
-        final Label depthLabel = toolkit.createLabel(area, "Maximum length of the trace:");
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        depthLabel.setLayoutData(gd);
-        // field depth
-        simuDepthText = toolkit.createText(area, "100");
-        gd = new GridData();
-        gd.minimumWidth = 100;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        simuDepthText.setLayoutData(gd);
-        simuDepthText.addFocusListener(focusListener);
-        simuDepthText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
-
-        // label seed
-        final Label seedLabel = toolkit.createLabel(area, "Seed:");
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        seedLabel.setLayoutData(gd);
-
-        // field seed
-        simuSeedText = toolkit.createText(area, "");
-        gd = new GridData();
-        gd.minimumWidth = 200;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        simuSeedText.setLayoutData(gd);
-        simuSeedText.addFocusListener(focusListener);
-        simuSeedText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
-
-        // label seed
-        final Label arilLabel = toolkit.createLabel(area, "Aril:");
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        arilLabel.setLayoutData(gd);
-
-        // field seed
-        simuArilText = toolkit.createText(area, "");
-        gd = new GridData();
-        gd.minimumWidth = 200;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        simuArilText.setLayoutData(gd);
-        simuArilText.addFocusListener(focusListener);
-        simuArilText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
-
-        // add horizontal divider that makes the separation clear
-        Label hr = toolkit.createSeparator(area, SWT.HORIZONTAL);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 6;
-        hr.setLayoutData(gd);
-
-        /*
-         * run from the checkpoint.  Checkpoint help button added by LL on 17 Jan 2013
-         */
-        Composite checkpointComposite = new Composite(area, SWT.NONE) ;
-        gl = new GridLayout(2, false);
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        checkpointComposite.setLayout(gl);
-
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 6;
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalAlignment = SWT.FILL;
-        checkpointComposite.setLayoutData(gd);
-
-        checkpointButton = toolkit.createButton(checkpointComposite, "Recover from checkpoint", SWT.CHECK);
-        checkpointButton.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.BEGINNING;
-        checkpointButton.setLayoutData(gd);
-        
-        final Button b = HelpButton.helpButton(checkpointComposite, "model/overview-page.html#checkpoint") ;
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.END;
-        gd.grabExcessHorizontalSpace = true;
-        b.setLayoutData(gd);
-
-        toolkit.createLabel(area, "Checkpoint ID:");
-
-        checkpointIdText = toolkit.createText(area, "");
-        checkpointIdText.setEditable(false);
-        gd = new GridData();
-        gd.minimumWidth = 100;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        checkpointIdText.setLayoutData(gd);
-
-        checkpointSizeLabel = toolkit.createLabel(area, "Checkpoint size (kbytes):");
-        checkpointSizeText = toolkit.createText(area, "");
-        gd = new GridData();
-        gd.minimumWidth = 100;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        checkpointSizeText.setLayoutData(gd);
-        checkpointDeleteButton = toolkit.createButton(area, "Delete Checkpoint", SWT.PUSH);
-        checkpointDeleteButton.addSelectionListener(new SelectionListener() {
-            /*
-             * (non-Javadoc)
-             * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
-             */
-			public void widgetSelected(SelectionEvent e) {
-				final IResource[] checkpoints;
-				try {
-					checkpoints = getModel().getCheckpoints(false);
-
-					if ((checkpoints != null) && checkpoints.length > 0) {
-						ResourcesPlugin.getWorkspace().run((monitor) -> {
-							checkpoints[0].delete(true, new SubProgressMonitor(monitor, 1));
-						}, null);
-					}
-				} catch (CoreException e1) {
-					return;
-				}
-			}
-
-			/*
-			 * (non-Javadoc)
-			 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
-			 */
-			public void widgetDefaultSelected(SelectionEvent e) { }
-        });
-        checkpointDeleteButton.addFocusListener(focusListener);
-        new Label(area, SWT.NONE); // use up last cell.
-
-        // Collect Coverage
-		final String collectCoverageHelp = "Coverage helps identify problems with the specification such as action which are "
-				+ "never enabled. Cost statistics allow to diagnose expensive expressions to evaluate and state space "
-				+ "explosion. Both statistics negatively impact model checking performance and should thus be disabled while "
-				+ "checking large models.";
-		final Label collectCoverageLabel = toolkit.createLabel(area,
-				"Collect coverage and cost statistics during model checking:");
-        gd = new GridData();
-        gd.verticalIndent = 9;
-        collectCoverageLabel.setLayoutData(gd);
-        collectCoverageLabel.setToolTipText(collectCoverageHelp);
-
-        collectCoverage = toolkit.createButton(area, "", SWT.CHECK);
-        gd = new GridData();
-        gd.verticalIndent = 9;
-        collectCoverage.setLayoutData(gd);
-        collectCoverage.addFocusListener(focusListener);
-        collectCoverage.setToolTipText(collectCoverageHelp);
-        
-        hr = toolkit.createSeparator(area, SWT.HORIZONTAL);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 6;
-        hr.setLayoutData(gd);
-        
-        // label deferred liveness checking
-		final String deferLivenessHelp = "Defer verification of temporal properties (liveness) to the end of model checking"
-				+ " to reduce overall model checking time. Liveness violations will be found late compared to invariant "
-				+ "violations. In other words check liveness only once on the complete state space.";
-        final Label deferLivenessLabel = toolkit.createLabel(area, "Verify temporal properties upon termination only:");
-        gd = new GridData();
-        gd.verticalIndent = 6;
-        deferLivenessLabel.setLayoutData(gd);
-		deferLivenessLabel.setToolTipText(deferLivenessHelp);
-
-        deferLiveness = toolkit.createButton(area, "", SWT.CHECK);
-        deferLiveness.addFocusListener(focusListener);
-        deferLiveness.setToolTipText(deferLivenessHelp);
-        gd = new GridData();
-        gd.verticalIndent = 6;
-        deferLiveness.setLayoutData(gd);
-       
-        // label fp
-        toolkit.createLabel(area, "Fingerprint seed index:");
-      
-        final Composite fpIndex = toolkit.createComposite(area);
-        gl = new GridLayout(2, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        fpIndex.setLayout(gl);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        fpIndex.setLayoutData(gd);
-        
-        fpIndexRandomly = toolkit.createButton(fpIndex, "Select randomly", SWT.CHECK);
-		fpIndexRandomly.setToolTipText(
-				"Let TLC randomly choose the irreducible polynomial at startup. The actual value will be shon in TLC's startup banner.");
-        fpIndexRandomly.setSelection(true);
-        fpIndexRandomly.addFocusListener(focusListener);
-        fpIndexRandomly.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				fpIndexSpinner.setEnabled(!fpIndexRandomly.getSelection());
-			}
-		});
-        
-        // field fpIndex
-        fpIndexSpinner = new Spinner(fpIndex, SWT.NONE);
-        fpIndexSpinner.setEnabled(false);
-		fpIndexSpinner.setToolTipText(
-				"Index of irreducible polynominal used as a seed for fingerprint hashing (corresponds to \"-fp value\"). Set to the irreducible polynomial used for the previous run if \"Select randomly\" checked.");
-        gd = new GridData();
-        gd.horizontalIndent = 15;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        fpIndexSpinner.setLayoutData(gd);
-        
-        // validation for fpIndex spinner
-        fpIndexSpinner.setMinimum(0);
-        fpIndexSpinner.setMaximum(FP64.Polys.length - 1);
-        
-        fpIndexSpinner.addFocusListener(focusListener);
-        
-        // fpbits label
-        toolkit.createLabel(area, "Log base 2 of number of disk storage files:");
-
-        // fpbits spinner
-        fpBits = new Spinner(area, SWT.NONE);
-        fpBits.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER);
-        fpBits.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.verticalIndent = 20;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        fpBits.setLayoutData(gd);
-
-        fpBits.setMinimum(MultiFPSet.MIN_FPBITS);
-        fpBits.setMaximum(MultiFPSet.MAX_FPBITS);
-
-        final int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-        		ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
-        fpBits.setSelection(defaultFPBits);
-        
-        // maxSetSize label
-        toolkit.createLabel(area, "Cardinality of largest enumerable set:");
-        
-        // maxSetSize spinner
-        maxSetSize = new Spinner(area, SWT.NONE);
-        maxSetSize.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
-        maxSetSize.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.verticalIndent = 20;
-        gd.minimumWidth = 100;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        maxSetSize.setLayoutData(gd);
-
-        maxSetSize.setMinimum(1);
-        maxSetSize.setMaximum(Integer.MAX_VALUE);
-
-        final int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-        		ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
-        maxSetSize.setSelection(defaultMaxSetSize);
-        
-        // Visualize State Graph with GraphViz (dot)
-		final String visualizeStateGraphHelp = "Draw the state graph after completion of model checking provided the "
-				+ "state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking).";
-        final Label visualizeStateGraphLabel = toolkit.createLabel(area, "Visualize state graph after completion of model checking:");
-        gd = new GridData();
-        gd.verticalIndent = 9;
-        visualizeStateGraphLabel.setLayoutData(gd);
-        visualizeStateGraphLabel.setToolTipText(visualizeStateGraphHelp);
-
-        visualizeStateGraph = toolkit.createButton(area, "", SWT.CHECK);
-        gd = new GridData();
-        gd.verticalIndent = 9;
-        visualizeStateGraph.setLayoutData(gd);
-        visualizeStateGraph.addFocusListener(focusListener);
-        visualizeStateGraph.setToolTipText(visualizeStateGraphHelp);
-    
-		// Extra/Additional VM arguments and system properties
-        toolkit.createLabel(area, "JVM arguments:");
-
-        extraVMArgumentsText = toolkit.createText(area, "", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-        extraVMArgumentsText.setEditable(true);
-        extraVMArgumentsText
-        .setToolTipText("Optionally pass additional JVM arguments to TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
-        extraVMArgumentsText.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.verticalIndent = 20;
-        gd.heightHint = 40;
-        gd.minimumWidth = 300;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        extraVMArgumentsText.setLayoutData(gd);
-
-		// Extra/Additional TLC arguments
-        toolkit.createLabel(area, "TLC command line parameters:");
-
-        extraTLCParametersText = toolkit.createText(area, "", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-        extraTLCParametersText.setEditable(true);
-        extraTLCParametersText
-        .setToolTipText("Optionally pass additional TLC process parameters (e.g. -Dcheckpoint 0)");
-        extraTLCParametersText.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.verticalIndent = 20;
-        gd.heightHint = 40;
-        gd.minimumWidth = 300;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        extraTLCParametersText.setLayoutData(gd);
-        
-        updateEnabledStatesForAdvancedLaunchRadioSelection();
-
-        return advancedSection;
-    }
-    
-    private void updateEnabledStatesForAdvancedLaunchRadioSelection () {
-    	final boolean simulationMode = simulationOption.getSelection();
-    	
-    	viewSource.getTextWidget().setEnabled(!simulationMode);
-    	dfidOption.setEnabled(!simulationMode);
-    	if (simulationMode) {
-    		dfidDepthText.setEnabled(false);
-    	} else {
-    		dfidDepthText.setEnabled(dfidOption.getSelection());
-    	}
-    	
-    	simuDepthText.setEnabled(simulationMode);
-    	simuSeedText.setEnabled(simulationMode);
-    	simuArilText.setEnabled(simulationMode);
-    }
-
-	public void setFpIndex(final int fpIndex) {
-		if (this.fpIndexSpinner.getSelection() == fpIndex) {
-			return;
-		}
-		// Temporarily disable all modify listeners to prevent the model from becoming
-		// dirty. We don't want the model to become dirty as a result of model checking.
-		final Listener[] listeners = this.fpIndexSpinner.getListeners(SWT.Modify);
-		for (Listener listener : listeners) {
-			this.fpIndexSpinner.removeListener(SWT.Modify, listener);
-		}
-		
-		this.fpIndexSpinner.setSelection(fpIndex);
-		
-		for (Listener listener : listeners) {
-			this.fpIndexSpinner.addListener(SWT.Modify, listener);
-		}
+	@Override
+	public void close() throws IOException {
+		// TODO 
 	}
 }

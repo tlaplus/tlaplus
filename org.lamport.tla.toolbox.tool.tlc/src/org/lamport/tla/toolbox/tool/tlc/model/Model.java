@@ -1142,7 +1142,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 				TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 			}
 		}
-		TLCActivator.logDebug("Trying to save a clean Model.");
+//		TLCActivator.logDebug("Trying to save a clean Model.");
 		
 		// Fluent
 		return this;

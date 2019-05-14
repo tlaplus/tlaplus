@@ -47,7 +47,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -62,6 +61,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IHyperlinkListener;
@@ -91,10 +91,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ErrorMessage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
@@ -246,7 +246,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    break;
 	                case TLC_MODE:
 	                	ResultPage.this.tlcModeText.setText(dataProvider.getTLCMode());
-	                	((AdvancedModelPage) getEditor().findPage(AdvancedModelPage.ID)).setFpIndex(dataProvider.getFPIndex());
+	                	
+	                	final IFormPage iep = getEditor().findPage(AdvancedTLCOptionsPage.ID);
+	                	if (iep != null) {
+	                		((AdvancedTLCOptionsPage)iep).setFpIndex(dataProvider.getFPIndex());
+	                	} else {
+	                		// The tab isn't open so set the value into the model and the tab, should it open, will
+	                		//		load it out of the model.
+	                		getModel().setAttribute(LAUNCH_FP_INDEX, dataProvider.getFPIndex());
+	                		saveModel();
+	                	}
 	                case LAST_CHECKPOINT_TIME:
 	                    long lastCheckpointTimeStamp = dataProvider.getLastCheckpointTimeStamp();
 	                    if(lastCheckpointTimeStamp > 0) {

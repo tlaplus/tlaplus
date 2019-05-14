@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _Jm-wcBB2EemUS_ZdBJsvQg
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:11 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 5/20/19, 1:37 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -70,25 +70,21 @@ try -command {
 	        click
 	        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
 	    }
-		get-editor "Model_1" | get-tab-folder | get-tab-item "Advanced Options" | click
-	    with [get-section "TLC Options"] {
-	        click
-	        get-button "Recover from checkpoint" | check
-	    }
+		get-link "Advanced TLC execution options" | click
+        get-button "Recover from checkpoint" | check
 	}
 	get-editor "Model_1" | get-link "1 error detected" | get-property caption | equals "1 error detected" | verify-true
 	with [get-editor "Model_1"] {
-	    get-section "TLC Options" | get-button "Recover from checkpoint" | uncheck
+	    get-button "Recover from checkpoint" | uncheck
 	    get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 
 	wait -ms 1000
 	
-	get-editor "Model_1" | get-section "TLC Options" | get-button "Recover from checkpoint" | get-property selected 
+	get-editor "Model_1" | get-button "Recover from checkpoint" | get-property selected 
 	    | equals false | verify-true
 	with [get-editor "Model_1"] {
 	    with [get-tab-folder] {
-	        get-tab-item "Advanced Options" | click
 	        get-tab-item "Model Checking Results" | click
 	    }
 	    //get-button "Runs TLC on the model." | click

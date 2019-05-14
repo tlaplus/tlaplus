@@ -1,9 +1,13 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -64,7 +68,6 @@ import org.lamport.tla.toolbox.tool.tlc.model.TLCModelFactory;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ErrorMessage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
@@ -268,7 +271,7 @@ public class ModelEditor extends FormEditor
     public ModelEditor()
     {
         helper = new SemanticHelper();
-        pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new AdvancedModelPage(this), new ResultPage(this) };
+        pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new ResultPage(this) };
     }
 
     /**
@@ -961,15 +964,6 @@ public class ModelEditor extends FormEditor
             IMarker[] modelProblemMarkers = model.getMarkers();
             DataBindingManager dm = getDataBindingManager();
 
-			// The loop is going to update the page's messages for potentially
-			// each marker (nested loop). Thus, turn auto update off during the
-			// loop for all pages (we don't yet know which marker gets displayed
-			// on which page).
-            for (int i = 0; i < this.pagesToAdd.length; i++) {
-				IMessageManager mm = this.pagesToAdd[i].getManagedForm().getMessageManager();
-            	mm.setAutoUpdate(false);
-            }
-            
             for (int j = 0; j < getPageCount(); j++)
             {
                 /*
@@ -983,7 +977,13 @@ public class ModelEditor extends FormEditor
                     // get the current page
                     BasicFormPage page = (BasicFormPage) pages.get(j);
                     Assert.isNotNull(page.getManagedForm(), "Page not initialized, this is a bug.");
-
+                    
+        			// The loop is going to update the page's messages for potentially
+        			// each marker (nested loop). Thus, turn auto update off during the
+        			// loop for all pages (we don't yet know which marker gets displayed
+        			// on which page).
+    				page.getManagedForm().getMessageManager().setAutoUpdate(false);
+                    
                     for (int i = 0; i < modelProblemMarkers.length; i++)
                     {
                         String attributeName = modelProblemMarkers[i].getAttribute(
@@ -1020,8 +1020,14 @@ public class ModelEditor extends FormEditor
 								// incomplete state space exploration.
 								this.pagesToAdd[pageId].addGlobalTLCErrorMessage(ResultPage.RESULT_PAGE_PROBLEM, message);
 							} else if (bubbleType == IMessageProvider.WARNING) {
-								this.pagesToAdd[0].addGlobalTLCErrorMessage("modelProblem_" + i);
-								this.pagesToAdd[1].addGlobalTLCErrorMessage("modelProblem_" + i);
+								final PageIterator iterator = new PageIterator();		
+								while (iterator.hasNext()) {
+									final BasicFormPage bfp = iterator.next();
+									
+									if (!bfp.getId().equals(ResultPage.ID)) {
+										bfp.addGlobalTLCErrorMessage("modelProblem_" + i);
+									}
+								}
 							} else {
 								// else install as with other messages
 								IMessageManager mm = this.pagesToAdd[0].getManagedForm().getMessageManager();
@@ -1073,10 +1079,11 @@ public class ModelEditor extends FormEditor
             }
             
             // Once all markers have been processed, re-enable auto update again.
-            for (int i = 0; i < this.pagesToAdd.length; i++) {
-				final IMessageManager mm = this.pagesToAdd[i].getManagedForm().getMessageManager();
-            	mm.setAutoUpdate(true);
-            }
+			final PageIterator iterator = new PageIterator();
+			while (iterator.hasNext()) {
+				final IMessageManager mm = iterator.next().getManagedForm().getMessageManager();
+				mm.setAutoUpdate(true);
+			}
             
             if (switchToErrorPage && errorPageIndex != -1 && currentPageIndex != errorPageIndex)
             {
@@ -1176,9 +1183,9 @@ public class ModelEditor extends FormEditor
 	 * Expands the given sections on the model editor pages. 
 	 */
 	public void expandSections(final String[] sections) {
-		for (int i = 0; i < pagesToAdd.length; i++) {
-			final BasicFormPage basicFormPage = pagesToAdd[i];
-			basicFormPage.expandSections(sections);
+		final PageIterator iterator = new PageIterator();		
+		while (iterator.hasNext()) {
+			iterator.next().expandSections(sections);
 		}
 	}
 	
@@ -1188,8 +1195,9 @@ public class ModelEditor extends FormEditor
 	}
 
 	public BasicFormPage getFormPage(final String id) {
-		for (int i = 0; i < pagesToAdd.length; i++) {
-			final BasicFormPage basicFormPage = pagesToAdd[i];
+		final PageIterator iterator = new PageIterator();		
+		while (iterator.hasNext()) {
+			final BasicFormPage basicFormPage = iterator.next();
 			if (basicFormPage.getId().equals(id)) {
 				return basicFormPage;
 			}
@@ -1218,13 +1226,11 @@ public class ModelEditor extends FormEditor
      * @param type the message type
      * @param control the control to associate the message with
      */
-    public void addErrorMessage(Object key, String messageText, String pageId, int type, Control control)
-    {
-        if (control != null)
-        {
-            for (int i = 0; i < pagesToAdd.length; i++)
-            {
-                pagesToAdd[i].getManagedForm().getMessageManager().addMessage(key, messageText, pageId, type, control);
+	public void addErrorMessage(Object key, String messageText, String pageId, int type, Control control) {
+		if (control != null) {
+			final PageIterator iterator = new PageIterator();		
+			while (iterator.hasNext()) {
+                iterator.next().getManagedForm().getMessageManager().addMessage(key, messageText, pageId, type, control);
             }
         }
     }
@@ -1264,13 +1270,11 @@ public class ModelEditor extends FormEditor
      * @param key the unique message key
      * @param control the control to associate the message with
      */
-    public void removeErrorMessage(Object key, Control control)
-    {
-        if (control != null)
-        {
-            for (int i = 0; i < pagesToAdd.length; i++)
-            {
-                pagesToAdd[i].getManagedForm().getMessageManager().removeMessage(key, control);
+	public void removeErrorMessage(Object key, Control control) {
+		if (control != null) {
+			final PageIterator iterator = new PageIterator();		
+			while (iterator.hasNext()) {
+                iterator.next().getManagedForm().getMessageManager().removeMessage(key, control);
             }
         }
     }
@@ -1308,9 +1312,8 @@ public class ModelEditor extends FormEditor
          * 
          * 2.) Set the page to be closeable.
          */
-        if (input instanceof FileEditorInput
-                && ((FileEditorInput) input).getFile().getFileExtension().equals(ResourceHelper.TLA_EXTENSION))
-        {
+		if (input instanceof FileEditorInput
+				&& ((FileEditorInput) input).getFile().getFileExtension().equals(ResourceHelper.TLA_EXTENSION)) {
             setPageText(index, input.getName());
             /*
              * When I implemented this method, getContainer()
@@ -1318,14 +1321,14 @@ public class ModelEditor extends FormEditor
              * being the case, then I do not know how to set
              * the tla file pages to be closeable.
              */
-            if (getContainer() instanceof CTabFolder)
-            {
-                ((CTabFolder) getContainer()).getItem(index).setShowClose(true);
-
-            }
+			if (getContainer() instanceof CTabFolder) {
+				((CTabFolder) getContainer()).getItem(index).setShowClose(true);
+			}
             // setPageImage(pageIndex, image);
 		} else if (input instanceof FileEditorInput && "pdf".equals(((FileEditorInput) input).getFile().getFileExtension())) {
 			setPageText(index, "State Graph");
+		} else if ((editor instanceof Closeable) && (getContainer() instanceof CTabFolder)) {
+            ((CTabFolder) getContainer()).getItem(index).setShowClose(true);
 		}
     }
 
@@ -1358,4 +1361,54 @@ public class ModelEditor extends FormEditor
             removePage(item.getParent().indexOf(item));
         }
     }
+	
+	
+	/**
+	 * We were, for some reason, only looping over the initially added page array at many places in this class; this
+	 *	way of doing things became insufficient when we started having optionally open pages.
+	 */
+	private class PageIterator implements Iterator<BasicFormPage> {
+
+		private final List<Object> m_pages;
+		private int m_counter;
+		
+		private BasicFormPage m_nextPage;
+		
+		PageIterator() {
+			m_pages = new ArrayList<>(pages);
+			m_counter = 0;
+			
+			m_nextPage = findNextPage();
+		}
+		
+		private BasicFormPage findNextPage() {
+			BasicFormPage page = null;
+			
+			while ((page == null) && (m_counter < m_pages.size())) {
+				final Object o = m_pages.get(m_counter);
+				
+				if (o instanceof BasicFormPage) {
+					page = (BasicFormPage)o;
+				}
+				
+				m_counter++;
+			}
+			
+			return page;
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return (m_nextPage != null);
+		}
+
+		@Override
+		public BasicFormPage next() {
+			final BasicFormPage next = m_nextPage;
+			
+			m_nextPage = findNextPage();
+
+			return next;
+		}
+	}
 }

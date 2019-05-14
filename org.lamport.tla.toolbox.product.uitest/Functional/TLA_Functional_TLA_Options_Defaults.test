@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _HJaIUBU4EemG79v6PBILBA
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:13 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 5/20/19, 1:48 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -43,10 +43,12 @@ try -command {
 	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
 	
 	
-	get-editor "Model_1" | get-tab-folder | get-tab-item "Advanced Options" | click
-	get-editor "Model_1" | get-label "Advanced Options" | get-property caption | equals "Advanced Options" | verify-true
-	get-editor "Model_1" | get-section "TLC Options" | click
-	with [get-editor "Model_1" | get-section "TLC Options"] {
+	with [get-editor "Model_1"] {
+		get-link "Advanced model options" | click
+		get-label "Advanced Options" | get-property caption | equals "Advanced Options" | verify-true
+		get-tab-folder | get-tab-item "Model Overview" | click
+		get-section "How to run?" | click
+		get-link "Advanced TLC execution options" | click
 	    with [get-button "Model-checking mode"] {
 	        get-property caption | equals "Model-checking mode" | verify-true
 	        get-property selected | equals true | verify-true

@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _s4DEYBXnEemrGZBXFuwIoA
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:13 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 5/20/19, 1:41 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -46,7 +46,6 @@ try -command {
 	with [get-editor "Model_1"] {
 	    get-section "Model description" | get-text-viewer | type-text "this is a test"
 	    with [get-tab-folder] {
-	        get-tab-item "Advanced Options" | click
 	        get-tab-item "Model Checking Results" | click
 	    }
 	}

@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _myVagAP4EemwBd2liJ-qvA
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:13 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 5/20/19, 3:13 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -54,46 +54,46 @@ try -command {
 	    }
 	}
 	
-	get-editor "Model_1" | get-tab-folder | get-tab-item "Advanced Options" | click
-	get-editor "Model_1" | get-label "Advanced Options" | get-property caption | equals "Advanced Options" | verify-true
 	with [get-editor "Model_1"] {
+	    get-tab-folder | get-tab-item "Model Overview" | click
+		get-link "Advanced model options" | click
+		get-label "Advanced Options" | get-property caption | equals "Advanced Options" | verify-true
 	    get-section "Additional Definitions" | click
 	    get-section "State Constraint" | click
 	    get-section "Model Values" | click
 	    get-section "Definition Override" | click
 	    get-section "Action Constraint" | click
-	    get-section "TLC Options" | click
 	    get-section "Additional Definitions" | click
 	    get-section "Definition Override" | click
 	    get-section "Model Values" | click
 	    get-section "State Constraint" | click
+	    get-section "Action Constraint" | click | get-text-viewer | get-property text | equals "" | verify-true
 	}
 	with [get-editor "Model_1"] {
-	    get-section "Action Constraint" | get-text-viewer | get-property text | equals "" | verify-true
-	    with [get-section "TLC Options"] {
-	        get-button "Model-checking mode" | get-property selected | equals true | verify-true
-	        get-text-viewer | get-property text | equals "" | verify-true
-	        get-button "Depth-first" | get-property selected | equals false | verify-true
-	        get-editbox -after [get-label "Depth:"] | get-property text | equals 100 | verify-true
-	        get-editbox -after [get-label "Maximum length of the trace:"] | get-property text | equals 100 | verify-true
-	        get-button "Simulation mode" | get-property selected | equals false | verify-true
-	        get-editbox -after [get-label "Seed:"] | get-property text | equals "" | verify-true
-	        get-editbox -after [get-label "Aril:"] | get-property text | equals "" | verify-true
-	        get-button "Recover from checkpoint" | get-property selected | equals false | verify-true
-	        get-editbox -after [get-label "Checkpoint ID:"] | get-property text | equals "" | verify-true
-	        get-button "Defer verification of temporal properties (liveness) to the end of model checking to reduce overall model checking time. Liveness violations will be found late compared to invariant violations. In other words check liveness only once on the complete state space." 
-	            | get-property selected | equals false | verify-true
-	        get-button "Select randomly" | get-property selected | equals true | verify-true
-	        get-editbox -after [get-label "Fingerprint seed index:"] | get-property text | equals "0.0" | verify-true
-	        get-editbox -after [get-label "Log base 2 of number of disk storage files:"] | get-property text | equals "1.0" 
-	            | verify-true
-	        get-editbox -after [get-label "Cardinality of largest enumerable set:"] | get-property text 
-	            | equals "1000000.0" | verify-true
-	        get-button "Draw the state graph after completion of model checking provided the state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking)." 
-	            | get-property selected | equals false | verify-true
-	        get-editbox -after [get-label "JVM arguments:"] | get-property text | equals "" | verify-true
-	        get-editbox -after [get-label "TLC command line parameters:"] | get-property text | equals "" | verify-true
-	    }
+	    get-tab-folder | get-tab-item "Model Overview" | click
+		get-link "Advanced TLC execution options" | click
+        get-button "Model-checking mode" | get-property selected | equals true | verify-true
+        get-text-viewer | get-property text | equals "" | verify-true
+        get-button "Depth-first" | get-property selected | equals false | verify-true
+        get-editbox -after [get-label "Depth:"] | get-property text | equals 100 | verify-true
+        get-editbox -after [get-label "Maximum length of the trace:"] | get-property text | equals 100 | verify-true
+        get-button "Simulation mode" | get-property selected | equals false | verify-true
+        get-editbox -after [get-label "Seed:"] | get-property text | equals "" | verify-true
+        get-editbox -after [get-label "Aril:"] | get-property text | equals "" | verify-true
+        get-button "Recover from checkpoint" | get-property selected | equals false | verify-true
+        get-editbox -after [get-label "Checkpoint ID:"] | get-property text | equals "" | verify-true
+        get-button "Defer verification of temporal properties (liveness) to the end of model checking to reduce overall model checking time. Liveness violations will be found late compared to invariant violations. In other words check liveness only once on the complete state space." 
+            | get-property selected | equals false | verify-true
+        get-button "Select randomly" | get-property selected | equals true | verify-true
+        get-editbox -after [get-label "Fingerprint seed index:"] | get-property text | equals "0.0" | verify-true
+        get-editbox -after [get-label "Log base 2 of number of disk storage files:"] | get-property text | equals "1.0" 
+            | verify-true
+        get-editbox -after [get-label "Cardinality of largest enumerable set:"] | get-property text 
+            | equals "1000000.0" | verify-true
+        get-button "Draw the state graph after completion of model checking provided the state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking)." 
+            | get-property selected | equals false | verify-true
+        get-editbox -after [get-label "JVM arguments:"] | get-property text | equals "" | verify-true
+        get-editbox -after [get-label "TLC command line parameters:"] | get-property text | equals "" | verify-true
 	}
 	
 	get-editor "Model_1" | get-tab-folder | get-tab-item "Model Checking Results" | click

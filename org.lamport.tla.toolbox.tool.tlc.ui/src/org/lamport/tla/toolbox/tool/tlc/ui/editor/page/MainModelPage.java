@@ -17,6 +17,8 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -55,7 +57,6 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
@@ -69,6 +70,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
@@ -100,7 +102,8 @@ import util.TLCRuntime;
 public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
     public static final String ID = "MainModelPage";
-    public static final String TITLE = "Model Overview";
+    
+    private static final String TITLE = "Model Overview";
 
     private static final String INIT_NEXT_COMBO_LABEL = "Initial predicate and next-state";
     private static final String TEMPORAL_FORMULA_COMBO_LABEL = "Temporal formula";
@@ -166,19 +169,34 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     private TableViewer propertiesTable;
     private TableViewer constantTable;
 
-    /**
-     * section expanding adapter
-     * {@link Hyperlink#getHref()} must deliver the section id as described in {@link DataBindingManager#bindSection(ExpandableComposite, String, String)}
-     */
-    protected HyperlinkAdapter sectionExpandingAdapter = new HyperlinkAdapter() {
-        public void linkActivated(HyperlinkEvent e)
-        {
-            String sectionId = (String) e.getHref();
-            // first switch to the page (and construct it if not yet
-            // constructed)
-            getEditor().setActivePage(AdvancedModelPage.ID);
-            // then expand the section
-            expandSection(sectionId);
+    protected HyperlinkAdapter advancedModelOptionsOpener = new HyperlinkAdapter() {
+        public void linkActivated(final HyperlinkEvent he) {
+        	final FormEditor editor = getEditor();
+        	
+            if (editor.setActivePage(AdvancedModelPage.ID) == null) {
+            	try {
+            		editor.addPage(1, new AdvancedModelPage(editor), getEditorInput());
+            		editor.setActivePage(AdvancedModelPage.ID);
+            	} catch (Exception e) {
+					Logger.getLogger(MainModelPage.class.getName()).log(Level.SEVERE,
+							"Could not add advanced model options page", e);
+            	}
+            }
+        }
+    };
+    protected HyperlinkAdapter advancedTLCOptionsOpener = new HyperlinkAdapter() {
+        public void linkActivated(final HyperlinkEvent he) {
+        	final FormEditor editor = getEditor();
+        	
+            if (editor.setActivePage(AdvancedTLCOptionsPage.ID) == null) {
+            	try {
+            		editor.addPage(1, new AdvancedTLCOptionsPage(editor), getEditorInput());
+            		editor.setActivePage(AdvancedTLCOptionsPage.ID);
+            	} catch (Exception e) {
+					Logger.getLogger(MainModelPage.class.getName()).log(Level.SEVERE,
+							"Could not add advanced TLC options page", e);
+            	}
+            }
         }
     };
 
@@ -1282,49 +1300,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         managedForm.addPart(constantsPart);
         constantTable = constantsPart.getTableViewer();
         dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable, constantsPart);
-        Composite parametersArea = (Composite) constantsPart.getSection().getClient();
-
-        // create a composite to put the text into
-        Composite linksPanelToAdvancedPage = toolkit.createComposite(parametersArea);
-        gd = new GridData();
-        gd.horizontalSpan = 2;
-
-        linksPanelToAdvancedPage.setLayoutData(gd);
-        linksPanelToAdvancedPage.setLayout(new FillLayout(SWT.VERTICAL));
-
-        // first line with hyperlinks
-        Composite elementLine = toolkit.createComposite(linksPanelToAdvancedPage);
-        elementLine.setLayout(new FillLayout(SWT.HORIZONTAL));
-
-        // the text
-        toolkit.createLabel(elementLine, "Advanced parts of the model:");
-
-        // the hyperlinks
-        Hyperlink hyper;
-
-        hyper = toolkit.createHyperlink(elementLine, "Additional definitions,", SWT.NONE);
-        hyper.setHref(SEC_NEW_DEFINITION);
-        hyper.addHyperlinkListener(sectionExpandingAdapter);
-
-        hyper = toolkit.createHyperlink(elementLine, "Definition override,", SWT.NONE);
-        hyper.setHref(SEC_DEFINITION_OVERRIDE);
-        hyper.addHyperlinkListener(sectionExpandingAdapter);
-
-        // second line with hyperlinks
-        Composite elementLine2 = toolkit.createComposite(linksPanelToAdvancedPage);
-        elementLine2.setLayout(new FillLayout(SWT.HORIZONTAL));
-
-        hyper = toolkit.createHyperlink(elementLine2, "State constraints,", SWT.NONE);
-        hyper.setHref(SEC_STATE_CONSTRAINT);
-        hyper.addHyperlinkListener(sectionExpandingAdapter);
-
-        hyper = toolkit.createHyperlink(elementLine2, "Action constraints,", SWT.NONE);
-        hyper.setHref(SEC_ACTION_CONSTRAINT);
-        hyper.addHyperlinkListener(sectionExpandingAdapter);
-
-        hyper = toolkit.createHyperlink(elementLine2, "Additional model values.", SWT.NONE);
-        hyper.setHref(SEC_MODEL_VALUES);
-        hyper.addHyperlinkListener(sectionExpandingAdapter);
 
         // ------------------------------------------
         // run tab
@@ -1341,6 +1316,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gl.marginWidth = 0;
         howToRunArea.setLayout(gl);
 
+        
+        Composite advancedLinkLine = new Composite(howToRunArea, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.horizontalAlignment = SWT.END;
+        advancedLinkLine.setLayoutData(gd);
+        gl = new GridLayout(1, false);
+        gl.marginWidth = 0;
+        gl.horizontalSpacing = 0;
+        advancedLinkLine.setLayout(gl);
+        Hyperlink hyper = toolkit.createHyperlink(advancedLinkLine, "Advanced TLC execution options", SWT.NONE);
+        hyper.addHyperlinkListener(advancedTLCOptionsOpener);
+
+        
         final ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
         managedForm.addPart(howToRunPart);
 
@@ -1706,6 +1695,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
 		
 		distributedOptions.setData(CLOUD_CONFIGURATION_KEY, jcloudsOptions);
+		
+
+        advancedLinkLine = new Composite(body, SWT.NONE);
+        twd = new TableWrapData();
+        twd.colspan = 2;
+        twd.align = TableWrapData.RIGHT;
+        advancedLinkLine.setLayoutData(twd);
+        gl = new GridLayout(1, false);
+        gl.marginWidth = 0;
+        gl.horizontalSpacing = 0;
+        advancedLinkLine.setLayout(gl);
+        advancedLinkLine.setBackground(body.getBackground());
+        hyper = toolkit.createHyperlink(advancedLinkLine, "Advanced model options", SWT.NONE);
+        hyper.addHyperlinkListener(advancedModelOptionsOpener);
+
 
         // add listeners propagating the changes of the elements to the changes
         // of the parts to the list to be activated after the values has been loaded

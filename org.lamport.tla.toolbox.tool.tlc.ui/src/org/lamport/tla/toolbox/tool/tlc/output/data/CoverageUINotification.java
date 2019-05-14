@@ -25,15 +25,13 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
-import java.util.Collections;
 import java.util.Date;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.AdvancedModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUINotification;
 
 public class CoverageUINotification extends TLCUINotification {
@@ -51,7 +49,7 @@ public class CoverageUINotification extends TLCUINotification {
 				+ "negatively impact performance.\n"
 				+ "For this reason, please consider\n"
 				+ "turning statistics off on\n"
-				+ "the advanced options page and\n"
+				+ "the advanced TLC options page and\n"
 				+ "re-run model checking without it.",
 				new Date());
 		this.editor = editor;
@@ -62,7 +60,6 @@ public class CoverageUINotification extends TLCUINotification {
 
 	@Override
 	public void open() {
-		editor.setActivePage(editor.findPage(AdvancedModelPage.ID).getIndex());
-		editor.expandSections(AdvancedModelPage.ID, Collections.singletonList(ISectionConstants.SEC_LAUNCHING_SETUP));
+		editor.setActivePage(editor.findPage(MainModelPage.ID).getIndex());
 	}
 }

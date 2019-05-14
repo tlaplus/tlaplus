@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _44K9cAJWEemDc-4PKyNT9w
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:13 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 5/20/19, 9:48 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -28,25 +28,62 @@ try -command {
 	    type-text "Next == x' = x * 1"
 	    key-type "M1+s"
 	}
-	wait -ms 500
+
 	get-menu -path "TLC Model Checker/Run model" | get-property enablement | equals false | verify-true
 	get-menu -path "TLC Model Checker/New Model..." | click
 	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
 	    | equals "Please input the name of the model to create" | verify-true
 	get-window "New model..." | get-button OK | click
-	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-	get-editor "Model_1" | get-button "Runs TLC on the model." | click
+	with [get-editor "Model_1"] {
+		get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+		get-link "Advanced model options" | click
+		get-tab-folder | get-tab-item "Model Overview" | click
+		get-section "How to run?" | click
+		get-link "Advanced TLC execution options" | click
+		get-tab-folder | get-tab-item "Model Overview" | click
+		get-button "Runs TLC on the model." | click
+	}
 	
 	wait-run
 	
-	
-	get-editor "Model_1" | get-section General | get-link "No errors" | get-property caption | equals "No errors" 
+	get-editor "Model_1" | get-section "General" | get-link "No errors" | get-property caption | equals "No errors" 
 	    | verify-true
 	with [get-editor "Model_1" | get-tab-folder] {
 	    get-tab-item "Model Overview" | click
 	    get-tab-item "Advanced Options" | click
+	    get-tab-item "Advanced TLC Options" | click
 	    get-tab-item "Model Checking Results" | click
 	}
+	get-editor "Model_1" | close	
+	
+	// Test the state-saving of open close-able tabs in the model editor:
+	
+	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/Model_1"] | get-menu -path "Open" | click
+	with [get-editor "Model_1" | get-tab-folder] {
+	    get-tab-item "Model Overview" | click
+	    get-tab-item "Advanced Options" | click
+	    get-tab-item "Advanced TLC Options" | click
+	    get-tab-item "Advanced Options" | close
+	}
+	get-editor "Model_1" | close	
+
+	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/Model_1"] | get-menu -path "Open" | click
+	with [get-editor "Model_1" | get-tab-folder] {
+	    get-tab-item "Model Overview" | click
+	    get-tab-item "Advanced TLC Options" | click
+	    verify-error { get-tab-item "Advanced Options" }
+	    get-tab-item "Advanced TLC Options" | close
+	    get-tab-item "Model Checking Results" | click
+	}
+	get-editor "Model_1" | close	
+
+	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/Model_1"] | get-menu -path "Open" | click
+	with [get-editor "Model_1" | get-tab-folder] {
+	    get-tab-item "Model Overview" | click
+	    verify-error { get-tab-item "Advanced TLC Options" }
+	    get-tab-item "Model Checking Results" | click
+	}
+	get-editor "Model_1" | close	
 } -finally {
 	DeleteSpecNew
 }
