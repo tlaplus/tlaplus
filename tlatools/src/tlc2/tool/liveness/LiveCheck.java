@@ -150,17 +150,15 @@ public class LiveCheck implements ILiveCheck {
 		return false;
 	}
 	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#check(boolean)
-	 */
-	public boolean check(ITool tool, boolean forceCheck) throws Exception {
+	@Override
+	public int check(ITool tool, boolean forceCheck) throws Exception {
 		if (forceCheck) {
 			return check0(tool, false);
 		}
 		if (!TLCGlobals.doLiveness()) {
 			// The user requested to only check liveness once, on the complete
 			// state graph.
-			return true;
+			return EC.NO_ERROR;
 		}
 		for (int i = 0; i < checker.length; i++) {
 			// see note in doLiveCheck() above!
@@ -172,13 +170,11 @@ public class LiveCheck implements ILiveCheck {
 				return check0(tool, false);
 			}
 		}
-		return true;
+		return EC.NO_ERROR;
 	}
 	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
-	 */
-	public boolean finalCheck(ITool tool) throws InterruptedException, IOException {
+	@Override
+	public int finalCheck(ITool tool) throws InterruptedException, IOException {
 		// Do *not* re-create the nodePtrTable after the check which takes a
 		// while for larger disk graphs.
 		return check0(tool, true);
@@ -190,7 +186,7 @@ public class LiveCheck implements ILiveCheck {
 	 *            liveness check. If this is the final/last check, it's pointless
 	 *            to re-create the nodePtrTable.
 	 */
-	protected boolean check0(final ITool tool, final boolean finalCheck) throws InterruptedException, IOException {
+	protected int check0(final ITool tool, final boolean finalCheck) throws InterruptedException, IOException {
 		final long startTime = System.currentTimeMillis();
 		
 		// Sum up the number of nodes in all disk graphs to indicate the amount
@@ -238,7 +234,10 @@ public class LiveCheck implements ILiveCheck {
 
 		if (LiveWorker.hasErrFound()) {
 			MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS_END, TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
-			return false;
+			// TODO This isn't really an appropriate error code but
+			// 1) LiveWorker currently doesn't provide an error code
+			// 2) So long as we don't return EC.NO_ERROR this only affect the tlc exit status
+			return EC.GENERAL;
 		}
 		
 		// Reset after checking unless it's the final check:
@@ -249,7 +248,7 @@ public class LiveCheck implements ILiveCheck {
 		}
 		MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS_END, TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
 		
-		return true;
+		return EC.NO_ERROR;
 	}
 	
 	/* (non-Javadoc)
@@ -286,8 +285,9 @@ public class LiveCheck implements ILiveCheck {
 		addNextState(tool, lastState, lastState.fingerPrint(), new SetOfStates(0));
 		
 		// Do *not* re-create the nodePtrTbl when it is thrown away anyway.
-		if (!check0(tool, true)) {
-			throw new LiveException();
+		final int result = check0(tool, true);
+		if (result != EC.NO_ERROR) {
+			throw new LiveException(result);
 		}
 		
 		// We are done with the current subsequence of the behavior. Reset LiveCheck

@@ -43,6 +43,7 @@ public abstract class AbstractChecker
 	
     protected TLCState predErrState;
     protected TLCState errState;
+    protected int errorCode;
     protected boolean done;
     protected boolean keepCallStack;
     protected final boolean checkDeadlock;
@@ -82,6 +83,7 @@ public abstract class AbstractChecker
         this.errState = null;
         this.predErrState = null;
         this.done = false;
+        this.errorCode = EC.NO_ERROR;
         this.keepCallStack = false;
 
         this.fromChkpt = fromChkpt;
@@ -133,7 +135,7 @@ public abstract class AbstractChecker
      * Set the error state. 
      * <strong>Note:</note> this method must be protected by lock 
      */
-    public boolean setErrState(TLCState curState, TLCState succState, boolean keep)
+    public boolean setErrState(TLCState curState, TLCState succState, boolean keep, int errorCode)
     {
        assert Thread.holdsLock(this) : "Caller thread has to hold monitor!";
        if (!TLCGlobals.continuation && this.done)
@@ -141,6 +143,7 @@ public abstract class AbstractChecker
         IdThread.resetCurrentState();
         this.predErrState = curState;
         this.errState = (succState == null) ? curState : succState;
+        this.errorCode = errorCode;
         this.done = true;
         this.keepCallStack = keep;
         return true;
@@ -363,10 +366,10 @@ public abstract class AbstractChecker
 
     /**
      * Initialize the model checker
-     * @return
+     * @return an error code, or <code>EC.NO_ERROR</code> on success
      * @throws Throwable
      */
-    public abstract boolean doInit(boolean ignoreCancel) throws Throwable;
+    public abstract int doInit(boolean ignoreCancel) throws Throwable;
 
     /**
      * I believe this method is called after the initial states are computed
@@ -375,11 +378,11 @@ public abstract class AbstractChecker
      * Create the partial state space for given starting state up
      * to the given depth or the number of states.
      */
-    public final boolean runTLC(int depth) throws Exception
+    public final int runTLC(int depth) throws Exception
     {
         if (depth < 2)
         {
-            return true;
+            return EC.NO_ERROR;
         }
 
         workers = startWorkers(this, depth);
@@ -419,11 +422,13 @@ public abstract class AbstractChecker
         // SZ Feb 23, 2009: exit if canceled
         // added condition to run in the cycle
         // while (true) {
+        int result = EC.NO_ERROR;
         while (true)
         {
-            if (!this.doPeriodicWork())
+            result = this.doPeriodicWork();
+            if (result != EC.NO_ERROR)
             {
-                return false;
+                return result;
             }
             synchronized (this)
             {
@@ -450,7 +455,7 @@ public abstract class AbstractChecker
         {
             workers[i].join();
         }
-        return true;
+        return EC.NO_ERROR;
     }
     
 	public final void setAllValues(int idx, IValue val) {
@@ -485,10 +490,10 @@ public abstract class AbstractChecker
      * Check liveness: check liveness properties on the partial state graph.
      * Checkpoint: checkpoint three data structures: the state set, the
      *             state queue, and the state trace.
-     * @return
+     * @return an error code, or <code>EC.NO_ERROR</code> on success
      * @throws Exception
      */
-    public abstract boolean doPeriodicWork() throws Exception;
+    public abstract int doPeriodicWork() throws Exception;
 
     /**
      * Method called from the main worker loop
@@ -500,9 +505,15 @@ public abstract class AbstractChecker
 
     /**
      * Main method of the model checker
+     * @return an error code, or <code>EC.NO_ERROR</code> on success
      * @throws Exception
      */
-    public abstract void modelCheck() throws Exception;
+    final public int modelCheck() throws Exception {
+        final int result = modelCheckImpl();
+        return (result != EC.NO_ERROR) ? result : errorCode;
+    }
+
+    protected abstract int modelCheckImpl() throws Exception;
 
 	public int getProgress() {
 		return -1;

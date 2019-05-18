@@ -1262,9 +1262,9 @@ public class MP
      * Prints the error for a given error code
      * @param errorCode
      */
-    public static void printError(int errorCode)
+    public static int printError(int errorCode)
     {
-        printError(errorCode, EMPTY_PARAMS);
+        return printError(errorCode, EMPTY_PARAMS);
     }
 
     /**
@@ -1272,9 +1272,9 @@ public class MP
      * @param errorCode
      * @param parameter
      */
-    public static void printError(int errorCode, String parameter)
+    public static int printError(int errorCode, String parameter)
     {
-        printError(errorCode, new String[] { parameter });
+        return printError(errorCode, new String[] { parameter });
     }
 
     /**
@@ -1283,13 +1283,14 @@ public class MP
      * @param parameters a list of string parameters to be inserted into the message, by replacing 
      * %i% with the i-th parameter in the array
      */
-    public static void printError(int errorCode, String[] parameters)
+    public static int printError(int errorCode, String[] parameters)
     {
     	recorder.record(errorCode, (Object[]) parameters);
         // write the output
         DebugPrinter.print("entering printError(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         ToolIO.out.println(getMessage(ERROR, errorCode, parameters));
         DebugPrinter.print("leaving printError(int, String[])"); //$NON-NLS-1$
+        return errorCode;
     }
 
     /**
@@ -1414,13 +1415,14 @@ public class MP
      * @param errorCode
      * @param cause
      */
-    public static void printError(int errorCode, Throwable cause)
+    public static int printError(int errorCode, Throwable cause)
     {
         if (errorCode == EC.GENERAL) {
             printError(errorCode, "", cause);
         } else {
             printError(errorCode, cause.getMessage(), cause, true);
         }
+        return errorCode;
     }
 
     /**

@@ -169,8 +169,10 @@ public class Simulator {
 	 * This method does random simulation on a TLA+ spec.
 	 * 
 	 * It runs until en error is encountered or we have generated the maximum number of traces.
+	 * 
+   * @return an error code, or <code>EC.NO_ERROR</code> on success
 	 */
-	public void simulate() throws Exception {
+	public int simulate() throws Exception {
 		TLCState curState = null;
 
 		//
@@ -195,31 +197,29 @@ public class Simulator {
 					for (int j = 0; j < this.invariants.length; j++) {
 						if (!this.tool.isValid(this.invariants[j], curState)) {
 							// We get here because of invariant violation.
-							MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL,
+							return MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL,
 									new String[] { this.tool.getInvNames()[j], curState.toString() });
-							return;
 						}
 					}
 				} else {
-					MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_INITIAL, curState.toString());
-					return;
+					return MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_INITIAL, curState.toString());
 				}
 			}
 		} catch (Exception e) {
+			final int errorCode;
 			if (curState != null) {
-				MP.printError(EC.TLC_INITIAL_STATE,
+				errorCode = MP.printError(EC.TLC_INITIAL_STATE,
 						new String[] { (e.getMessage() == null) ? e.toString() : e.getMessage(), curState.toString() });
 			} else {
-				MP.printError(EC.GENERAL, e); // LL changed call 7 April 2012
+				errorCode = MP.printError(EC.GENERAL, e); // LL changed call 7 April 2012
 			}
 
 			this.printSummary();
-			return;
+			return errorCode;
 		}
 
 		if (this.numOfGenStates.longValue() == 0) {
-			MP.printError(EC.TLC_NO_STATES_SATISFYING_INIT);
-			return;
+			return MP.printError(EC.TLC_NO_STATES_SATISFYING_INIT);
 		}
 
 		// It appears deepNormalize brings the states into a canonical form to
@@ -248,6 +248,8 @@ public class Simulator {
 			workers.add(worker);
 			runningWorkers.add(i);
 		}
+
+		int errorCode = EC.NO_ERROR;
 		
 		// Continuously consume results from all worker threads.
 		while (true) {
@@ -265,9 +267,11 @@ public class Simulator {
 						// In case of a liveness error, there is no need to print out
 						// the behavior since the liveness checker should take care of that itself.
 						this.printSummary();
+						errorCode = ((LiveException)error.exception).errorCode;
 					} else {
 						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) }, error.state,
 								error.stateTrace);
+						errorCode = EC.GENERAL;
 					}
 					break;
 				}
@@ -278,6 +282,7 @@ public class Simulator {
 				// For certain, "fatal" errors, we shut down all workers and terminate,
 				// regardless of the "continue" parameter, since these errors likely indicate a bug in the spec.
 				if (isNonContinuableError(error.errorCode)) {
+					errorCode = error.errorCode;
 					break;
 				}
 				
@@ -285,9 +290,15 @@ public class Simulator {
 				// first error, shutting down all workers. Otherwise, we continue receiving
 				// results from the worker threads.
 				if (!TLCGlobals.continuation) {
+					errorCode = error.errorCode;
 					break;
 				}
-			} 
+
+				if (errorCode == EC.NO_ERROR)
+				{
+					errorCode = EC.GENERAL;
+				}
+			}
 			// If the result is OK, this indicates that the worker has terminated, so we
 			// make note of this. If all of the workers have terminated, there is no need to
 			// continue waiting for results, so we should terminate.
@@ -309,6 +320,8 @@ public class Simulator {
 		}
 		// Wait for the progress reporter thread to finish.
 		report.join();
+
+		return errorCode;
 	}
 
 	public final void printBehavior(SimulationWorkerError error) {

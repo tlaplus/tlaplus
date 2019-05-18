@@ -5,13 +5,27 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.output.EC;
+
 public class LiveException extends RuntimeException {
 
+	public final int errorCode;
+
 	public LiveException() {
-		super();
+		this(EC.GENERAL);
 	}
 
 	public LiveException(String msg) {
+		this(EC.GENERAL, msg);
+	}
+
+	public LiveException(int errorCode) {
+		super();
+		this.errorCode = errorCode;
+	}
+
+	public LiveException(int errorCode, String msg) {
 		super(msg);
+		this.errorCode = errorCode;
 	}
 }

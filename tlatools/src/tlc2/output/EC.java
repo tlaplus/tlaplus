@@ -8,6 +8,9 @@ package tlc2.output;
  */
 public interface EC
 {
+    // This is reserved so that an optional error code can be safely represented in a single int
+    public static final int NO_ERROR = 0;
+
     // Check and CheckImpl
     // check if the TLC option is the same for params
     public static final int CHECK_FAILED_TO_CHECK = 3000;
