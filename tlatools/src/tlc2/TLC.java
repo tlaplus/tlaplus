@@ -243,11 +243,7 @@ public class TLC
         ms.setSpecName(tlc.getSpecName());
 
         // Execute TLC.
-        //
-        // FIXME: process should return a success or failure status,
-        // catching all exceptions thrown by its callees. This makes
-        // process a function we can test.
-        tlc.process();
+        final int errorCode = tlc.process();
 
         // Send logged output by email.
         //
@@ -267,7 +263,7 @@ public class TLC
         }
 
         // Be explicit about tool success.
-        System.exit(0);
+        System.exit(EC.exitStatus(errorCode));
     }
     
 	// false if the environment (JVM, OS, ...) makes model checking impossible.
@@ -876,7 +872,7 @@ public class TLC
 	/**
      * The processing method
      */
-    public void process()
+    public int process()
     {
         // UniqueString.initialize();
         
@@ -897,6 +893,7 @@ public class TLC
     		
     		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
+            final int result;
             if (isSimulate)
             {
                 // random simulation
@@ -913,7 +910,7 @@ public class TLC
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
                         traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
-                simulator.simulate();
+                result = simulator.simulate();
             } else
             {
 				if (noSeed) {
@@ -932,32 +929,33 @@ public class TLC
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
 							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, mainFile), startTime);
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) TLCGlobals.mainChecker, this);
-					TLCGlobals.mainChecker.modelCheck();
+					result = TLCGlobals.mainChecker.modelCheck();
                 } else
                 {
 					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
-					TLCGlobals.mainChecker.modelCheck();
+					result = TLCGlobals.mainChecker.modelCheck();
                 }
             }
+            return result;
         } catch (Throwable e)
         {
             if (e instanceof StackOverflowError)
             {
                 System.gc();
-                MP.printError(EC.SYSTEM_STACK_OVERFLOW, e);
+                return MP.printError(EC.SYSTEM_STACK_OVERFLOW, e);
             } else if (e instanceof OutOfMemoryError)
             {
                 System.gc();
-                MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
+                return MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
             } else if (e instanceof RuntimeException) 
             {
                 // SZ 29.07.2009 
                 // printing the stack trace of the runtime exceptions
-                MP.printError(EC.GENERAL, e);
+                return MP.printError(EC.GENERAL, e);
                 // e.printStackTrace();
             } else
             {
-                MP.printError(EC.GENERAL, e);
+                return MP.printError(EC.GENERAL, e);
             }
         } finally 
         {

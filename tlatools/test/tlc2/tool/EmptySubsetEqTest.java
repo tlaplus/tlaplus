@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -55,7 +56,8 @@ public class EmptySubsetEqTest extends ModelCheckerTestCase {
 				+ "for clues to what happened.\nThe exception was a "
 				+ "java.lang.RuntimeException\n: Attempted to check if the value:\n"
 				+ "{}\nis in the integer interval 1..4"));
-		
+		assertEquals(getExitStatus(), 1);
+
 		// Expect an error trace consisting of a single state.
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(4);

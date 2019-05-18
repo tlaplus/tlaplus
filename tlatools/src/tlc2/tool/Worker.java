@@ -99,9 +99,8 @@ public final class Worker extends IdThread implements IWorker {
 			// Assert.printStack(e);
 			resetCurrentState();
 			synchronized (this.tlc) {
-				if (this.tlc.setErrState(curState, null, true)) {
-					MP.printError(EC.GENERAL, e); // LL changed call 7 April
-													// 2012
+				if (this.tlc.setErrState(curState, null, true, EC.GENERAL)) {
+					MP.printError(EC.GENERAL, e); // LL changed call 7 April 2012
 				}
 				this.squeue.finishAll();
 				this.tlc.notify();

@@ -65,6 +65,7 @@ public class IncompleteNextTest extends ModelCheckerTestCase {
 		assertEquals(" is", ((String[]) records.get(0))[0]);
 		assertEquals("y", ((String[]) records.get(0))[1]);
 
+		assertEquals(getExitStatus(), 1);
 		assertZeroUncovered();
 	}
 }

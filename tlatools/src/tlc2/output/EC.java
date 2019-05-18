@@ -8,6 +8,18 @@ package tlc2.output;
  */
 public interface EC
 {
+    /**
+     * Returns an exit status for an error code.
+     */
+    static int exitStatus(int ec) {
+        // TODO Allocate a range of exit status to indicate classes of errors.
+        // For a great example of potential classes see: https://github.com/tlaplus/tlaplus/pull/308#discussion_r285840112
+        return ec == NO_ERROR ? 0 : 1;
+    }
+
+    // This is reserved so that an optional error code can be safely represented in a single int
+    public static final int NO_ERROR = 0;
+
     // Check and CheckImpl
     // check if the TLC option is the same for params
     public static final int CHECK_FAILED_TO_CHECK = 3000;

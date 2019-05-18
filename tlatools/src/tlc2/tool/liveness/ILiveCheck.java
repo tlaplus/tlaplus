@@ -60,19 +60,19 @@ public interface ILiveCheck {
 	 *            partial graph are taken into account if it is worthwhile to
 	 *            check liveness.
 	 * 
-	 * @return true iff it finds no errors or if liveness has not been checked
-	 *         on the partial graph because it was deemed worthless.
+	 * @return <code>EC.NO_ERROR</code> iff it finds no errors or if liveness has not been checked
+	 *         on the partial graph because it was deemed worthless. Otherwise an EC.
 	 */
-	boolean check(ITool tool, boolean forceCheck) throws Exception;
+	int check(ITool tool, boolean forceCheck) throws Exception;
 
 	/**
 	 * No states can be added with add*State once finalCheck has been called.
 	 * 
 	 * @see ILiveCheck#check()
-	 * @return
+   * @return an error code, or <code>EC.NO_ERROR</code> on success
 	 * @throws Exception
 	 */
-	boolean finalCheck(ITool tool) throws Exception;
+	int finalCheck(ITool tool) throws Exception;
 
 	/* simulation mode */
 	

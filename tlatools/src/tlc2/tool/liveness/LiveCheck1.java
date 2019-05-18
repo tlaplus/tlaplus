@@ -450,10 +450,11 @@ public class LiveCheck1 implements ILiveCheck {
 	 * "bad" cycle. A "bad" cycle gives rise to a violation of liveness
 	 * property.
 	 */
-	public synchronized boolean check(ITool tool, boolean forceCheck) {
+	@Override
+	public synchronized int check(ITool tool, boolean forceCheck) {
 		int slen = solutions.length;
 		if (slen == 0) {
-			return true;
+			return EC.NO_ERROR;
 		}
 
 		for (int soln = 0; soln < slen; soln++) {
@@ -477,7 +478,7 @@ public class LiveCheck1 implements ILiveCheck {
 		}
 		// Previous for loop with throw LivenessException anyway, thus no harm
 		// returning true regardless.
-		return true;
+		return EC.NO_ERROR;
 	}
 
 	/**
@@ -914,10 +915,8 @@ public class LiveCheck1 implements ILiveCheck {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
-	 */
-	public boolean finalCheck(ITool tool) throws Exception {
+	@Override
+	public int finalCheck(ITool tool) throws Exception {
 		return check(tool, true);
 	}
 

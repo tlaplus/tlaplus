@@ -203,7 +203,7 @@ public class DFIDWorker extends IdThread implements IWorker {
       // Assert.printStack(e);
       this.tlc.setStop(2);
       synchronized(this.tlc) {
-	if (this.tlc.setErrState(curState, null, true)) {
+	if (this.tlc.setErrState(curState, null, true, EC.GENERAL)) {
           MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
 	}
 	this.tlc.setDone();

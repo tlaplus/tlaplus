@@ -114,34 +114,37 @@ public class ModelChecker extends AbstractChecker
      * next states have not been explored are stored in the variable
      * theStateQueue.
      */
-    public void modelCheck() throws Exception
+	@Override
+    protected int modelCheckImpl() throws Exception
     {
+		int result = EC.NO_ERROR;
         report("entering modelCheck()");
         
         // needed to calculate state/minute in final progress report
 
-        boolean recovered = this.recover();
+		boolean recovered = this.recover();
         if (!recovered)
         {
 
 			if (this.checkLiveness && liveCheck.getNumChecker() == 0) {
-				MP.printError(EC.TLC_LIVE_FORMULA_TAUTOLOGY);
-				return;
+				return MP.printError(EC.TLC_LIVE_FORMULA_TAUTOLOGY);
 			}
         	
             // We start from scratch. Initialize the state queue and the
-            // state set to contain all the initial states.
-            if (!this.checkAssumptions())
-                return;
+			// state set to contain all the initial states.
+			result = this.checkAssumptions();
+            if (result != EC.NO_ERROR)
+                return result;
             try
             {
                 report("doInit(false)");
                 MP.printMessage(EC.TLC_COMPUTING_INIT);
-                // SZ Feb 23, 2009: do not ignore cancel on creation of the init states
-                if (!this.doInit(false))
+				// SZ Feb 23, 2009: do not ignore cancel on creation of the init states
+				result = this.doInit(false);
+                if (result != EC.NO_ERROR)
                 {
                     report("exiting, because init failed");
-                    return;
+                    return result;
                 }
             } catch (Throwable e)
             {
@@ -179,15 +182,15 @@ public class ModelChecker extends AbstractChecker
                     // SZ Feb 23, 2009: ignore cancel on error reporting
                     this.doInit(true);
                 } catch (FingerprintException fe){
-                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fe.getTrace(), fe.getRootCause().getMessage()});
+                    result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fe.getTrace(), fe.getRootCause().getMessage()});
                 } catch (Throwable e1) {
                     // Assert.printStack(e);
-                    MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
+                    result = MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
                 }
                 this.printSummary(false, startTime);
                 this.cleanup(false);
                 report("exiting, because init failed with exception");
-                return;
+                return result;
             }
 
             long statesGenerated = getStatesGenerated();
@@ -211,22 +214,22 @@ public class ModelChecker extends AbstractChecker
         		reportSuccess(this.theFPSet, getStatesGenerated());
         		this.printSummary(true, startTime);
         	} else {
-        		MP.printError(EC.TLC_STATES_AND_NO_NEXT_ACTION);
+        		result = MP.printError(EC.TLC_STATES_AND_NO_NEXT_ACTION);
         	}
             this.cleanup(true);
             report("exiting with actions.length == 0");
-            return;
+            return result;
         }
 
-        boolean success = false;
+        result = EC.GENERAL;
         try
         {
             report("running TLC");
-            success = this.runTLC(Integer.MAX_VALUE);
-            if (!success)
+            result = this.runTLC(Integer.MAX_VALUE);
+            if (result != EC.NO_ERROR)
             {
                 report("TLC terminated with error");
-                return;
+                return result;
             }
             if (this.errState == null)
             {
@@ -244,17 +247,17 @@ public class ModelChecker extends AbstractChecker
                             MP.format(this.theStateQueue.size()) });
                 	
                     report("checking liveness");
-                    success = liveCheck.finalCheck(tool);
+                    result = liveCheck.finalCheck(tool);
                     report("liveness check complete");
-                    if (!success)
+                    if (result != EC.NO_ERROR)
                     {
                         report("exiting error status on liveness check");
-                        return;
+                        return result;
                     }
                 }
 
                 // We get here because the checking has been completed.
-                success = true;
+                result = EC.NO_ERROR;
                 reportSuccess(this.theFPSet, getStatesGenerated());
             } else if (this.keepCallStack)
             {
@@ -269,22 +272,21 @@ public class ModelChecker extends AbstractChecker
 							new Worker(4223, this, this.metadir, tool.getRootFile()));
                 } catch (FingerprintException e)
                 {
-                    MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
+                    result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
                 } catch (Throwable e)
                 {
                     // Assert.printStack(e);
-                    MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
+                    result = MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
                 }
             }
         } catch (Exception e)
         {
             report("TLC terminated with error");
             // Assert.printStack(e);
-            success = false;
-            MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
+            result = MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
         } finally
         {
-        	
+        	final boolean success = result == EC.NO_ERROR;
         	this.printSummary(success, startTime);
 
         	if (this.checkLiveness) {
@@ -300,15 +302,17 @@ public class ModelChecker extends AbstractChecker
         	}
 
             this.cleanup(success);
-        }
 
-        report("exiting modelCheck()");
+			report("exiting modelCheck()");
+		}
+
+		return result;
     }
 
     /** 
      * Check the assumptions.  
      */
-    public boolean checkAssumptions()
+    public int checkAssumptions()
     {
         ExprNode[] assumps = this.tool.getAssumptions();
         boolean[] isAxiom = this.tool.getAssumptionIsAxiom();
@@ -318,18 +322,16 @@ public class ModelChecker extends AbstractChecker
             {
                 if ((!isAxiom[i]) && !this.tool.isValid(assumps[i]))
                 {
-                    MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
-                    return false;
+                    return MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
                 }
             } catch (Exception e)
             {
                 // Assert.printStack(e);
-                MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
+                return MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
                         new String[] { assumps[i].toString(), e.getMessage() });
-                return false;
             }
         }
-        return true;
+        return EC.NO_ERROR;
     }
 
     /**
@@ -337,7 +339,7 @@ public class ModelChecker extends AbstractChecker
      * @return status, if false, the processing should be stopped
      * @throws Throwable
      */
-    public final boolean doInit(boolean ignoreCancel) throws Throwable
+    public final int doInit(boolean ignoreCancel) throws Throwable
     {
 		// Generate the initial states.
         //
@@ -558,7 +560,7 @@ public class ModelChecker extends AbstractChecker
 	private final boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
 		synchronized (this)
 		{
-		    if (this.setErrState(curState, succState, keep))
+		    if (this.setErrState(curState, succState, keep, ec))
 		    {
 		    	if (param == null) {
 		    		MP.printError(ec);
@@ -575,16 +577,17 @@ public class ModelChecker extends AbstractChecker
 
 	private final boolean doNextSetErr(TLCState curState, TLCState succState, Action action) throws IOException, WorkerException {
 		synchronized (this) {
-			if (this.setErrState(curState, succState, false))
+			final int errorCode = EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT;
+			if (this.setErrState(curState, succState, false, errorCode))
 			{
 				final Set<OpDeclNode> unassigned = succState.getUnassigned();
 				if (this.tool.getActions().length == 1) {
-					MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT,
+					MP.printError(errorCode,
 							new String[] { unassigned.size() > 1 ? "s are" : " is",
 									unassigned.stream().map(n -> n.getName().toString())
 											.collect(Collectors.joining(", ")) });
 				} else {
-					MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT,
+					MP.printError(errorCode,
 							new String[] { action.getName().toString(),
 									unassigned.size() > 1 ? "s are" : " is",
 									unassigned.stream().map(n -> n.getName().toString())
@@ -601,7 +604,7 @@ public class ModelChecker extends AbstractChecker
 	private final void doNextEvalFailed(TLCState curState, TLCState succState, int ec, String param, Exception e)
 			throws IOException, WorkerException, Exception {
 		synchronized (this) {
-		    if (this.setErrState(curState, succState, true))
+		    if (this.setErrState(curState, succState, true, ec))
 		    {
 				MP.printError(ec, new String[] { param, (e.getMessage() == null) ? e.toString() : e.getMessage() });
 				this.trace.printTrace(curState, succState);
@@ -619,21 +622,27 @@ public class ModelChecker extends AbstractChecker
 		        || (e instanceof AssertionError));
 		synchronized (this)
 		{
-		    if (this.setErrState(curState, succState, !keep))
+			final int ec;
+			if (e instanceof StackOverflowError)
+			{
+				ec = EC.SYSTEM_STACK_OVERFLOW;
+			} else if (e instanceof OutOfMemoryError)
+			{
+				ec = EC.SYSTEM_OUT_OF_MEMORY;
+			} else if (e instanceof AssertionError)
+			{
+				ec = EC.TLC_BUG;
+			} else
+			{
+				ec = EC.GENERAL;
+			}
+
+			if (this.setErrState(curState, succState, !keep, ec))
 		    {
-		        if (e instanceof StackOverflowError)
+				if (!(ec == EC.GENERAL && e.getMessage() == null))
 		        {
-					MP.printError(EC.SYSTEM_STACK_OVERFLOW, e);
-		        } else if (e instanceof OutOfMemoryError)
-		        {
-					MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
-		        } else if (e instanceof AssertionError)
-		        {
-					MP.printError(EC.TLC_BUG, e);
-		        } else if (e.getMessage() != null)
-		        {
-		            MP.printError(EC.GENERAL, e);  // LL changed call 7 April 2012
-				}
+					MP.printError(ec, e);
+		        }
 				this.trace.printTrace(curState, succState);
 				this.theStateQueue.finishAll();
 				this.notify();
@@ -648,7 +657,7 @@ public class ModelChecker extends AbstractChecker
      *                    the state queue, and the state trace.
      */
     @Override
-    public final boolean doPeriodicWork() throws Exception
+    public final int doPeriodicWork() throws Exception
     {
 		// Remember if checkpointing should be run. doCheckPoint() when called
 		// internally diffs the time expired since its last invocation which is
@@ -660,7 +669,7 @@ public class ModelChecker extends AbstractChecker
 			// Do not suspend the state queue if neither check-pointing nor
 			// liveness-checking is going to happen. Suspending is expensive.
 			// It stops all workers.
-			return true;
+			return EC.NO_ERROR;
 		}
    	
         if (this.theStateQueue.suspendAll())
@@ -670,9 +679,11 @@ public class ModelChecker extends AbstractChecker
 			// runtime dedicated to liveness checking.
             if (this.checkLiveness && (runtimeRatio < TLCGlobals.livenessRatio || forceLiveCheck))
             {
-        		final long preLivenessChecking = System.currentTimeMillis();
-                if (!liveCheck.check(tool, forceLiveCheck)) {
-                	return false;
+				final long preLivenessChecking = System.currentTimeMillis();
+				final int result = liveCheck.check(tool, forceLiveCheck);
+                if (result != EC.NO_ERROR)
+                {
+                    return result;
                 }
                 forceLiveCheck = false;
                 updateRuntimeRatio(System.currentTimeMillis() - preLivenessChecking);
@@ -688,7 +699,7 @@ public class ModelChecker extends AbstractChecker
             	this.theStateQueue.resumeAll();
             }
         }
-        return true;
+        return EC.NO_ERROR;
     }
 
 	protected void checkpoint() throws IOException {
@@ -1058,7 +1069,7 @@ public class ModelChecker extends AbstractChecker
 		 * know the actual outcome when all init states have been processed.
 		 * This outcome is stored as returnValue.
 		 */
-		private boolean returnValue = true;
+		private int returnValue = EC.NO_ERROR;
 		
 		private final boolean forceChecks;
 		
@@ -1085,7 +1096,8 @@ public class ModelChecker extends AbstractChecker
 			// states have been generated. Thus, the functor simply ignores
 			// subsequent states once a violation has been recorded.
 			if (errState != null) {
-				returnValue = false;
+				if (returnValue == EC.NO_ERROR)
+				  returnValue = EC.TLC_INITIAL_STATE;
 				return returnValue;
 			}
 			
@@ -1094,7 +1106,7 @@ public class ModelChecker extends AbstractChecker
 				if (!tool.isGoodState(curState)) {
 					MP.printError(EC.TLC_INITIAL_STATE, new String[]{ "current state is not a legal state", curState.toString() });
 					this.errState = curState;
-					returnValue = false;
+					returnValue = EC.TLC_INITIAL_STATE;
 					throw new InvariantViolatedException();
 				}
 				boolean inModel = tool.isInModel(curState);
@@ -1122,7 +1134,7 @@ public class ModelChecker extends AbstractChecker
 									new String[] { tool.getInvNames()[j].toString(), curState.toString() });
 							if (!TLCGlobals.continuation) {
 								this.errState = curState;
-								returnValue = false;
+								returnValue = EC.TLC_INVARIANT_VIOLATED_INITIAL;
 								throw new InvariantViolatedException();
 							}
 						}
@@ -1133,7 +1145,7 @@ public class ModelChecker extends AbstractChecker
 							MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL,
 									new String[] { tool.getImpliedInitNames()[j], curState.toString() });
 							this.errState = curState;
-							returnValue = false;
+							returnValue = EC.TLC_PROPERTY_VIOLATED_INITIAL;
 							throw new InvariantViolatedException();
 						}
 					}
@@ -1147,7 +1159,7 @@ public class ModelChecker extends AbstractChecker
 				throw e;
 			} catch (OutOfMemoryError e) {
 				MP.printError(EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT);
-				returnValue = false;
+				returnValue = EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT;
 				return returnValue;
 			} catch (Throwable e) {
 				// Assert.printStack(e);

@@ -28,6 +28,7 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
+import tlc2.output.EC;
 import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
@@ -66,18 +67,14 @@ public class NoOpLiveCheck implements ILiveCheck {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#check(boolean)
-	 */
-	public boolean check(ITool tool, boolean forceCheck) throws Exception {
-		return true;
+	@Override
+	public int check(ITool tool, boolean forceCheck) throws Exception {
+		return EC.NO_ERROR;
 	}
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ILiveCheck#finalCheck()
-	 */
-	public boolean finalCheck(ITool tool) throws Exception {
-		return true;
+	@Override
+	public int finalCheck(ITool tool) throws Exception {
+		return EC.NO_ERROR;
 	}
 	
 	/* (non-Javadoc)

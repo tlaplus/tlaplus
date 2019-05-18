@@ -6,6 +6,7 @@ package tlc2.tool;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
 import tlc2.output.StatePrinter;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
@@ -69,10 +70,11 @@ public abstract class CheckImpl extends ModelChecker {
       this.doInit(false);
     }
     ToolIO.out.println("Creating a partial state space of depth " +
-		       this.depth + " ... ");
-    if (!this.runTLC(this.depth)) {
+           this.depth + " ... ");
+    final int result = this.runTLC(this.depth);
+    if (result != EC.NO_ERROR) {
       ToolIO.out.println("\nExit: failed to create the partial state space.");
-      System.exit(1);
+      System.exit(EC.exitStatus(result));
     }
     ToolIO.out.println("completed.");
     this.lastTraceTime = System.currentTimeMillis();
@@ -93,8 +95,9 @@ public abstract class CheckImpl extends ModelChecker {
     int depth1= this.trace.getLevel(st.uid) + depth;
     this.theStateQueue = new DiskStateQueue(this.metadir);
     this.theStateQueue.enqueue(st);
-    if (!this.runTLC(depth1)) {
-      System.exit(1);
+    final int result = this.runTLC(depth1);
+    if (result != EC.NO_ERROR) {
+      System.exit(EC.exitStatus(result));
     }
   }
   
