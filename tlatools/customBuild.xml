@@ -48,11 +48,11 @@
 	</target>
 	
 	<target name="info" description="Prints information" depends="git-revision">
-		<echo message="ANT_HOME     : ${env.ANT_HOME}" />
-		<echo message="Ant Version  : ${ant.version}" />
-		<echo message="Java Version : ${ant.java.version}" />
+		<echo message="ANT_HOME       : ${env.ANT_HOME}" />
+		<echo message="Ant Version    : ${ant.version}" />
+		<echo message="Java Version   : ${ant.java.version}" />
 		<echo message="Skipping Tests : ${test.skip}" />
-		<echo message="With AspectJ: ${withaj}" />
+		<echo message="With AspectJ   : ${withaj}" />
 		<echo message="Git BuildNumber: ${git.branch}_${git.tag}_${git.shortRevision}" />
 	</target>
 
