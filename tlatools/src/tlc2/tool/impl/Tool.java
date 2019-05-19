@@ -1019,7 +1019,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           if (val instanceof LazyValue) {
             LazyValue lv = (LazyValue)val;
             if (lv.getValue() == null || lv.isUncachable()) {
-              return this.getNextStates(lv.expr, acts, lv.con, s0, s1, nss, cm);
+              return this.getNextStates(lv.expr, acts, lv.con, s0, s1, nss, lv.cm);
             }
             val = lv.getValue();
           }
