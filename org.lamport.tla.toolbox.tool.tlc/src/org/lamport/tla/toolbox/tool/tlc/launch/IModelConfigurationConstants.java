@@ -2,7 +2,6 @@ package org.lamport.tla.toolbox.tool.tlc.launch;
 
 /**
  * @author Simon Zambrovski
- * @version $Id$
  */
 public interface IModelConfigurationConstants extends IConfigurationConstants
 {
@@ -105,4 +104,16 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      */
     public static final String TRACE_EXPLORE_EXPRESSIONS = "traceExploreExpressions";
     
+    /**
+     * a bitwise OR'd value representing which of the closeable tabs should be open on a model editor opening
+     */
+    public static final String EDITOR_OPEN_TABS = "modelEditorOpenTabs";
+    
+    /**
+     * values to use with the {@link #EDITOR_OPEN_TABS} attribute
+     */
+	public static final int EDITOR_OPEN_TAB_NONE = 0;
+	public static final int EDITOR_OPEN_TAB_ADVANCED_MODEL = 1 << 1;
+	public static final int EDITOR_OPEN_TAB_ADVANCED_TLC = 1 << 2;
+
 }

@@ -29,6 +29,7 @@ import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
@@ -930,6 +931,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-		// TODO
+		final int openTabState = getModel().getOpenTabsValue();
+		updateOpenTabsState(openTabState & ~IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC);
 	}
 }

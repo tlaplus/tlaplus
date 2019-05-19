@@ -64,12 +64,14 @@ import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
@@ -177,6 +179,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             	try {
             		editor.addPage(1, new AdvancedModelPage(editor), getEditorInput());
             		editor.setActivePage(AdvancedModelPage.ID);
+            		
+            		final int openTabState = getModel().getOpenTabsValue();
+            		updateOpenTabsState(openTabState | IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL);
             	} catch (Exception e) {
 					Logger.getLogger(MainModelPage.class.getName()).log(Level.SEVERE,
 							"Could not add advanced model options page", e);
@@ -186,12 +191,22 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     };
     protected HyperlinkAdapter advancedTLCOptionsOpener = new HyperlinkAdapter() {
         public void linkActivated(final HyperlinkEvent he) {
-        	final FormEditor editor = getEditor();
+        	final ModelEditor editor = getModelEditor();
         	
             if (editor.setActivePage(AdvancedTLCOptionsPage.ID) == null) {
             	try {
-            		editor.addPage(1, new AdvancedTLCOptionsPage(editor), getEditorInput());
+            		int pageIndex = 1;
+            		final String id = editor.getIdForEditorAtIndex(1);
+
+            		if (AdvancedModelPage.ID.equals(id)) {
+            			pageIndex++;
+            		}
+
+            		editor.addPage(pageIndex, new AdvancedTLCOptionsPage(editor), getEditorInput());
             		editor.setActivePage(AdvancedTLCOptionsPage.ID);
+            		
+            		final int openTabState = getModel().getOpenTabsValue();
+            		updateOpenTabsState(openTabState | IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC);
             	} catch (Exception e) {
 					Logger.getLogger(MainModelPage.class.getName()).log(Level.SEVERE,
 							"Could not add advanced TLC options page", e);
