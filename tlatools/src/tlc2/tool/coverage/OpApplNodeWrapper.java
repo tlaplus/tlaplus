@@ -146,6 +146,8 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		return this.root;
 	}
 	
+	private final Set<Integer> seen = new HashSet<>();
+	
 	@Override
 	public final CostModelNode get(final SemanticNode eon) {
 		if (eon == this.node || !(eon instanceof OpApplNode)) {
@@ -166,7 +168,10 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		
 		// TODO Not all places in Tool lookup the correct CM yet. This should only be an
 		// engineering effort though.
-		MP.printMessage(EC.TLC_COVERAGE_MISMATCH, new String[] { eon.toString(), this.toString() });
+		if (seen.add(eon.myUID)) {
+			//...only report it once to not spam the Toolbox console.
+			MP.printMessage(EC.TLC_COVERAGE_MISMATCH, new String[] { eon.toString(), this.toString() });
+		}
 		return this;
 	}
 

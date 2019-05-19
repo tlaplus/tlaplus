@@ -969,8 +969,7 @@ public class MP
             break;
         case EC.TLC_COVERAGE_MISMATCH:
 			b.append(
-					"CostModel lookup failed for expression <%1%>. Reporting costs into <%2%> instead.\n"
-					+ "Safety and Liveness checking unaffected. Please report a bug.");
+					"CostModel lookup failed for expression <%1%>. Reporting costs into <%2%> instead (Safety and Liveness checking is unaffected. Please report a bug.)");
         	break;
         case EC.TLC_COVERAGE_END:
             b.append("End of statistics.");
