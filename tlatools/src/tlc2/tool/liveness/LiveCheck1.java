@@ -178,7 +178,7 @@ public class LiveCheck1 implements ILiveCheck {
 				Vect<BEGraphNode> destNodes = new Vect<>();
 				TLCState destState = stateTrace.elementAt(i);
 				long destStateFP = destState.fingerPrint();
-				checkStateRes = os.checkState(null, destState);
+				checkStateRes = os.checkState(myTool, destState);
 				checkActionRes = os.checkAction(tool, srcState, destState);
 				for (int j = 0; j < srcNodes.size(); j++) {
 					BEGraphNode srcNode = (BEGraphNode) srcNodes.elementAt(j);
