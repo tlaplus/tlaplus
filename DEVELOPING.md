@@ -8,12 +8,11 @@ help the next potential contributor
 (or even yourself a few months down the track once you've forgotten everything).
 
 
-Also make sure that you're using Java 11+.
-If you're using a lower version you'll see compilation errors.
-
-
 Building TLC / `tlatools.jar`
 =============================
+
+Firstly, make sure that you're using Java 11+.
+If you're using a lower version you'll see compilation errors.
 
 All of the commands below assume you're in the `tlatools` directory
 so begin with:
@@ -33,6 +32,7 @@ To watch for, and recompile changes (install `entr` if you haven't already), the
 ```sh
 find src | entr -ac ant -f customBuild.xml compile
 ```
+
 
 Building the Toolbox
 ====================
