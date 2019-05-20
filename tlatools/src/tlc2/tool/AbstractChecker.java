@@ -3,7 +3,10 @@ package tlc2.tool;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -112,6 +115,13 @@ public abstract class AbstractChecker
         } else {
         	this.liveCheck = new NoOpLiveCheck(this.tool, this.metadir);
         }
+        
+        scheduleTermination(new TimerTask() {
+			@Override
+			public void run() {
+				AbstractChecker.this.stop();
+			}
+		});
     }
 
     public final void setDone()
@@ -508,6 +518,20 @@ public abstract class AbstractChecker
 	
 	public void resume() {
 		throw new UnsupportedOperationException("resume not implemented");
+	}
+	
+	static void scheduleTermination(final TimerTask tt) {
+		// Stops model checker after the given time in seconds. If model checking
+		// terminates before stopAfter seconds, the timer task will never run.
+		// Contrary to TLCSet("exit",...) this does not require a spec modification. Is
+		// is likely of little use for regular TLC users. In other words, this is meant
+		// to be a developer only feature and thus configured via a system property and
+		// not a regular TLC parameter.
+		final long stopAfter = Long.getLong(TLC.class.getName() + ".stopAfter", -1L);
+		if (stopAfter > 0) {
+			final Timer stopTimer = new Timer("TLCStopAfterTimer");
+			stopTimer.schedule(tt, stopAfter * 1000L); // seconds to milliseconds.
+		}
 	}
 
 	public long getStateQueueSize() {

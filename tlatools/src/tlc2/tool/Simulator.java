@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.LongAdder;
@@ -71,6 +72,7 @@ public class Simulator {
 		this.seed = seed;
 		this.aril = 0;
 		this.numWorkers = numWorkers;
+		this.workers = new ArrayList<>(numWorkers);
 		// Initialization for liveness checking
 		if (this.checkLiveness) {
 			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
@@ -86,6 +88,14 @@ public class Simulator {
 		if (TLCGlobals.isCoverageEnabled()) {
         	CostModelCreator.create(this.tool);
         }
+		
+		//TODO Eventually derive Simulator from AbstractChecker.
+		AbstractChecker.scheduleTermination(new TimerTask() {
+			@Override
+			public void run() {
+				Simulator.this.stop();
+			}
+		});
 	}
 
 	/* Fields */
@@ -130,6 +140,8 @@ public class Simulator {
      * Timestamp of when simulation started.
      */
 	private final long startTime = System.currentTimeMillis();
+	
+	private final List<SimulationWorker> workers;
 		 
 	 /**
 	 * Returns whether a given error code is considered "continuable". That is, if
@@ -226,7 +238,6 @@ public class Simulator {
 		this.aril = rng.getAril();
 		
 		// Start up multiple simulation worker threads, each with their own unique seed.
-		final List<SimulationWorker> workers = new ArrayList<>();
 		final Set<Integer> runningWorkers = new HashSet<>();
 		for (int i = 0; i < this.numWorkers; i++) {			
 			final SimulationWorker worker = new SimulationWorker(i, this.tool, initStates, this.workerResultQueue,
@@ -394,6 +405,12 @@ public class Simulator {
 				// SZ Jul 10, 2009: changed from error to bug
 				MP.printTLCBug(EC.TLC_REPORTER_DIED, null);
 			}
+		}
+	}
+
+	public void stop() {
+		for (SimulationWorker worker : workers) {
+			worker.interrupt();
 		}
 	}
 }

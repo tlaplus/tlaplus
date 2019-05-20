@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
@@ -42,6 +40,7 @@ import tlc2.util.RandomGenerator;
 import tlc2.util.StateWriter;
 import tlc2.value.RandomEnumerableValues;
 import util.DebugPrinter;
+import util.ExecutionStatisticsCollector;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.MailSender;
@@ -49,7 +48,6 @@ import util.SimpleFilenameToStream;
 import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
-import util.ExecutionStatisticsCollector;
 
 /**
  * Main TLC starter class
@@ -911,6 +909,7 @@ public class TLC
                     rng.setSeed(seed, aril);
                 }
 				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
+				
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
                         traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
@@ -927,9 +926,6 @@ public class TLC
 				
             	// model checking
 		        final ITool tool = new Tool(mainFile, configFile, resolver);
-
-		        // Spec has been parsed, schedule termination before model checking starts below.  
-				scheduleTerminationTimer();
 
                 if (isBFS())
                 {
@@ -1047,25 +1043,6 @@ public class TLC
 		result.put("fpset", fpSetClassSimpleName);
 		result.put("queue", stateQueueClassSimpleName);
 		return result;
-	}
-
-	private static void scheduleTerminationTimer() {
-		// Stops model checker after the given time in seconds. If model checking
-		// terminates before stopAfter seconds, the timer task will never run.
-		// Contrary to TLCSet("exit",...) this does not require a spec modification. Is
-		// is likely of little use for regular TLC users. In other words, this is meant
-		// to be a developer only feature and thus configured via a system property and
-		// not a regular TLC parameter.
-		final long stopAfter = Long.getLong(TLC.class.getName() + ".stopAfter", -1L);
-		if (stopAfter > 0) {
-			final Timer stopTimer = new Timer("TLCStopAfterTimer");
-			stopTimer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					TLCGlobals.mainChecker.stop();
-				}
-			}, stopAfter * 1000L); // seconds to milliseconds.
-		}
 	}
     
     /**
