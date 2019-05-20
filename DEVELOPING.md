@@ -27,7 +27,8 @@ To build, test, and create `tlatools.jar`:
 ant -f customBuild.xml
 ```
 
-To watch for, and recompile changes (install `entr` if you haven't already), then run:
+If you're using Linux or OSX, you can install `entr`,
+then run the following to watch for and automatically recompile changes:
 
 ```sh
 find src | entr -ac ant -f customBuild.xml compile
