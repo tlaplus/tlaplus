@@ -120,6 +120,7 @@ public class TLCErrorView extends ViewPart
 	private static final String INNER_WEIGHTS_KEY = "INNER_WEIGHTS_KEY";
 	private static final String OUTER_WEIGHTS_KEY = "OUTER_WEIGHTS_KEY";
 	private static final String MID_WEIGHTS_KEY = "MID_WEIGHTS_KEY";
+  
 	private static final String SYNCED_TRAVERSAL_KEY = "SYNCED_TRAVERSAL_KEY";
 
     /**
