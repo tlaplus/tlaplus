@@ -499,15 +499,15 @@ public abstract class AbstractChecker
 	}
 	
 	public void stop() {
-		// Noop
+		throw new UnsupportedOperationException("stop not implemented");
 	}
 	
 	public void suspend() {
-		// Noop
+		throw new UnsupportedOperationException("suspend not implemented");
 	}
 	
 	public void resume() {
-		// Noop
+		throw new UnsupportedOperationException("resume not implemented");
 	}
 
 	public long getStateQueueSize() {
