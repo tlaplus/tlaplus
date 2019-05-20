@@ -122,7 +122,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			// Never create checkpoints. They distort performance tests and are
 			// of no use anyway.
 			args.add("-checkpoint");
-			args.add("0");
+			args.add(Integer.toString(doCheckpoint()));
 			
 			// Always print the state graph in dot file notation.
 			if (doDump()) {
@@ -153,6 +153,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	
 	protected boolean doDump() {
 		return true;
+	}
+
+	protected int doCheckpoint() {
+		return 0;
 	}
 
 	/**

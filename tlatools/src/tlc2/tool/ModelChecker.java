@@ -682,28 +682,7 @@ public class ModelChecker extends AbstractChecker
 
             if (createCheckPoint) {
             	// Checkpoint:
-            	MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
-            	
-            	// start checkpointing:
-            	this.theStateQueue.beginChkpt();
-            	this.trace.beginChkpt();
-            	this.theFPSet.beginChkpt();
-            	this.theStateQueue.resumeAll();
-            	UniqueString.internTbl.beginChkpt(this.metadir);
-            	if (this.checkLiveness)
-            	{
-            		liveCheck.beginChkpt();
-            	}
-            	// commit checkpoint:
-            	this.theStateQueue.commitChkpt();
-            	this.trace.commitChkpt();
-            	this.theFPSet.commitChkpt();
-            	UniqueString.internTbl.commitChkpt(this.metadir);
-            	if (this.checkLiveness)
-            	{
-            		liveCheck.commitChkpt();
-            	}
-            	MP.printMessage(EC.TLC_CHECKPOINT_END);
+            	checkpoint();
             } else {
 				// Just resume worker threads when checkpointing is skipped
             	this.theStateQueue.resumeAll();
@@ -711,6 +690,30 @@ public class ModelChecker extends AbstractChecker
         }
         return true;
     }
+
+	protected void checkpoint() throws IOException {
+		// start checkpointing:
+       	MP.printMessage(EC.TLC_CHECKPOINT_START, this.metadir);
+		this.theStateQueue.beginChkpt();
+		this.trace.beginChkpt();
+		this.theFPSet.beginChkpt();
+		this.theStateQueue.resumeAll();
+		UniqueString.internTbl.beginChkpt(this.metadir);
+		if (this.checkLiveness)
+		{
+			liveCheck.beginChkpt();
+		}
+		// commit checkpoint:
+		this.theStateQueue.commitChkpt();
+		this.trace.commitChkpt();
+		this.theFPSet.commitChkpt();
+		UniqueString.internTbl.commitChkpt(this.metadir);
+		if (this.checkLiveness)
+		{
+			liveCheck.commitChkpt();
+		}
+    	MP.printMessage(EC.TLC_CHECKPOINT_END);
+	}
 
 	public void forceLiveCheck() {
 		forceLiveCheck = true;
@@ -789,13 +792,23 @@ public class ModelChecker extends AbstractChecker
 
     private final void cleanup(boolean success) throws IOException
     {
+    	boolean vetoCleanup = VETO_CLEANUP;
+    	
+		// If model checking is not done, checkpoints are enabled, and either and error
+		// has been found or time-bound model checking is enabled, take a snapshot to
+    	// allow users to continue model checking if needed.
+		if (TLCGlobals.chkptDuration > 0 && !theStateQueue.isEmpty() && (this.errState != null || isTimeBound())) {
+			checkpoint();
+			vetoCleanup = true;
+		}
+    	
         this.theFPSet.close();
         this.trace.close();
         if (this.checkLiveness) {
         	liveCheck.close();
         }
         this.allStateWriter.close();
-    	if (!VETO_CLEANUP) {
+    	if (!vetoCleanup) {
     		FileUtil.deleteDir(this.metadir, success);
     	}
 	}

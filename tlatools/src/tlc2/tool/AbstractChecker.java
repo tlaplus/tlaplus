@@ -533,6 +533,10 @@ public abstract class AbstractChecker
 			stopTimer.schedule(tt, stopAfter * 1000L); // seconds to milliseconds.
 		}
 	}
+	
+	protected boolean isTimeBound() {
+		return Long.getLong(TLC.class.getName() + ".stopAfter", -1L) != -1;
+	}
 
 	public long getStateQueueSize() {
 		return -1;
