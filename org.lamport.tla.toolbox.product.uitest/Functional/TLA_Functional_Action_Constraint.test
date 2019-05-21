@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _TZC_4BU2EemG79v6PBILBA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/20/19, 2:02 PM
+Save-Time: 5/21/19, 11:02 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -44,7 +44,8 @@ try -command {
 	wait -ms 1000
 	
 	with [get-editor "Model_1"] {
-		get-link "Advanced model options" | click
+		get-section "What is the model?" | click
+		get-section "What is the model?" | get-link "Advanced model options" | click
 	    with [get-section "Action Constraint"] {
 	        get-text-viewer | type-text "x=1+5"
 	    }

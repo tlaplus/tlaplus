@@ -1315,6 +1315,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         managedForm.addPart(constantsPart);
         constantTable = constantsPart.getTableViewer();
         dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable, constantsPart);
+		
+        Composite advancedLinkLine = new Composite((Composite)constantsPart.getSection().getClient(), SWT.NONE);
+        gd = new GridData();
+        gd.horizontalSpan = 2;
+        gd.horizontalAlignment = SWT.END;
+        advancedLinkLine.setLayoutData(gd);
+        gl = new GridLayout(1, false);
+        gl.marginWidth = 0;
+        gl.horizontalSpacing = 0;
+        advancedLinkLine.setLayout(gl);
+        Hyperlink hyper = toolkit.createHyperlink(advancedLinkLine, "Advanced model options", SWT.NONE);
+        hyper.addHyperlinkListener(advancedModelOptionsOpener);
 
         // ------------------------------------------
         // run tab
@@ -1332,7 +1344,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         howToRunArea.setLayout(gl);
 
         
-        Composite advancedLinkLine = new Composite(howToRunArea, SWT.NONE);
+        advancedLinkLine = new Composite(howToRunArea, SWT.NONE);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.horizontalAlignment = SWT.END;
@@ -1341,7 +1353,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         gl.marginWidth = 0;
         gl.horizontalSpacing = 0;
         advancedLinkLine.setLayout(gl);
-        Hyperlink hyper = toolkit.createHyperlink(advancedLinkLine, "Advanced TLC execution options", SWT.NONE);
+        hyper = toolkit.createHyperlink(advancedLinkLine, "Advanced TLC execution options", SWT.NONE);
         hyper.addHyperlinkListener(advancedTLCOptionsOpener);
 
         
@@ -1710,20 +1722,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         dm.bindAttribute(LAUNCH_DISTRIBUTED_RESULT_MAIL_ADDRESS, resultMailAddressText, howToRunPart);
 		
 		distributedOptions.setData(CLOUD_CONFIGURATION_KEY, jcloudsOptions);
-		
-
-        advancedLinkLine = new Composite(body, SWT.NONE);
-        twd = new TableWrapData();
-        twd.colspan = 2;
-        twd.align = TableWrapData.RIGHT;
-        advancedLinkLine.setLayoutData(twd);
-        gl = new GridLayout(1, false);
-        gl.marginWidth = 0;
-        gl.horizontalSpacing = 0;
-        advancedLinkLine.setLayout(gl);
-        advancedLinkLine.setBackground(body.getBackground());
-        hyper = toolkit.createHyperlink(advancedLinkLine, "Advanced model options", SWT.NONE);
-        hyper.addHyperlinkListener(advancedModelOptionsOpener);
 
 
         // add listeners propagating the changes of the elements to the changes

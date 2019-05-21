@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _44K9cAJWEemDc-4PKyNT9w
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/20/19, 9:48 AM
+Save-Time: 5/21/19, 10:58 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -36,7 +36,8 @@ try -command {
 	get-window "New model..." | get-button OK | click
 	with [get-editor "Model_1"] {
 		get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-		get-link "Advanced model options" | click
+		get-section "What is the model?" | click
+		get-section "What is the model?" | get-link "Advanced model options" | click
 		get-tab-folder | get-tab-item "Model Overview" | click
 		get-section "How to run?" | click
 		get-link "Advanced TLC execution options" | click
