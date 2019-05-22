@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _qD9ogAPmEemwBd2liJ-qvA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/20/19, 2:09 PM
+Save-Time: 5/22/19, 10:46 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -46,20 +46,21 @@ try -command {
 	with [get-window "New model..."] {
 	    get-editbox -after [get-label "Please input the name of the model to create"] 
 	        | set-text $TLA-Long-Model-Name
-	    get-button OK | click
+	    get-button "OK" | click
 	}
 	with [get-editor $TLA-Long-Model-Name] {
 	    get-section "Model description" | get-text-viewer | type-text tlatlatla
 	    with [get-section "What to check?"] {
-	        get-button Deadlock | uncheck
-	        get-section Invariants | click
-	        get-section Properties | click
+	        get-button "Deadlock" | uncheck
+	        get-section "Invariants" | click
+	        get-section "Properties" | click
 	    }
 	    get-section "What is the model?" | click
 	    with [get-section "How to run?"] {
 	        click
-	        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
+			get-link "Advanced TLC execution options" | click
 	    }
+        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
 	    get-button "Runs TLC on the model." | click
 	}
 	

@@ -2,6 +2,9 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -15,13 +18,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
@@ -30,12 +37,16 @@ import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.TLCConsumptionProfile;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
+import org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferenceInitializer;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -48,6 +59,7 @@ import tlc2.TLCGlobals;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.MultiFPSet;
 import tlc2.util.FP64;
+import util.TLCRuntime;
 
 public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     public static final String ID = "AdvancedTLCOptionsPage";
@@ -55,6 +67,11 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     private static final String TITLE = "Advanced TLC Options";
     
     
+    private Spinner workers;
+    private Scale maxHeapSize;
+    private Label maxHeapSizeFraction;
+    private AtomicBoolean programmaticallySettingWorkerParameters;
+
     private SourceViewer m_viewSource;
 
     private Button m_depthFirstOptionCheckbox;
@@ -102,10 +119,62 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 	 */
     private Text m_extraTLCParametersText;
 
+	/**
+	 * Used to interpolate y-values for memory scale
+	 */
+	private final Interpolator linearInterpolator;
+	
+	private MainModelPage mainModelPage;
+
     public AdvancedTLCOptionsPage(final FormEditor editor) {
         super(editor, ID, TITLE, "icons/full/advanced_tlc_options_" + IMAGE_TEMPLATE_TOKEN + ".png");
         
         helpId = IHelpConstants.ADVANCED_TLC_OPTIONS_PAGE;
+
+		// available system memory
+		final long phySysMem = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(1.0d);
+		
+		// 0.) Create LinearInterpolator with two additional points 0,0 and 1,0 which
+		int s = 0;
+		double[] x = new double[6];
+		double[] y = new double[x.length];
+		
+		// base point
+		y[s] = 0d;
+		x[s++] = 0d;
+
+		// 1.) Minumum TLC requirements 
+		// Use hard-coded minfpmemsize value * 4 * 10 regardless of how big the
+		// model is. *4 because .25 mem is used for FPs
+		double lowerLimit = ( (TLCRuntime.MinFpMemSize / 1024 / 1024 * 4d) / phySysMem) / 2;
+		x[s] = lowerLimit;
+		y[s++] = 0d;
+		
+		// a.)
+		// Current bloat in software is assumed to grow according to Moore's law => 
+		// 2^((Year-1993)/ 2)+2)
+		// (1993 as base results from a statistic of windows OS memory requirements)
+		final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+		double estimateSoftwareBloatInMBytes = Math.pow(2, ((currentYear - 1993) / 3) + 3.5);
+		
+		// 2.) Optimal range 
+		x[s] = lowerLimit * 2d;
+		y[s++] = 1.0d;
+		x[s] = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem);
+		y[s++] = 1.0d;
+		
+		// 3.) Calculate OS reserve
+		double upperLimit = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem) / 2;
+		x[s] = upperLimit;
+		y[s++] = 0d;
+		
+		// base point
+		x[s] = 1d;
+		y[s] = 0d;
+		
+		linearInterpolator = new Interpolator(x, y);
+        
+		programmaticallySettingWorkerParameters = new AtomicBoolean(false);
     }
     
     /**
@@ -126,6 +195,9 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         GridLayout gl;
         GridData gd;
 
+        mainModelPage = (MainModelPage)getEditor().findPage(MainModelPage.ID);
+        programmaticallySettingWorkerParameters.set(true);
+
         final Section section = FormHelper.createSectionComposite(formBody, "TLC Configuration", "",
                 toolkit, (Section.TITLE_BAR | Section.TREE_NODE | Section.EXPANDED), getExpansionListener());
         final ValidateableSectionPart launchPart = new ValidateableSectionPart(section, this, SEC_LAUNCHING_SETUP);
@@ -136,6 +208,100 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         body.setLayout(gl);
+        
+        /*
+         * Workers Spinner
+         */
+        
+        // label workers
+        toolkit.createLabel(body, "Number of worker threads:");
+
+        // field workers
+        workers = new Spinner(body, SWT.NONE);
+        workers.addSelectionListener(launchListener);
+        workers.addFocusListener(focusListener);
+        workers.addListener(SWT.Verify, (e) -> {
+			if (!programmaticallySettingWorkerParameters.get()) {
+				mainModelPage.setWorkerCount(workers.getSelection());
+			}
+        });
+        gd = new GridData();
+        gd.horizontalIndent = 40;
+        gd.widthHint = 40;
+        workers.setLayoutData(gd);
+        
+        workers.setMinimum(1);
+        workers.setPageIncrement(1);
+        workers.setToolTipText("Determines how many threads will be spawned working on the next state relation.");
+        workers.setSelection(TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
+        workers.setEnabled(false);
+
+        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, launchPart);
+        
+        /*
+         * MapHeap Scale
+         */
+        
+        // max heap size label
+        toolkit.createLabel(body, "Fraction of physical memory allocated to TLC:");
+
+		// Create a composite inside the right "cell" of the "how to run"
+		// section grid layout to fit the scale and the maxHeapSizeFraction
+		// label into a single row.
+        final Composite maxHeapScale = new Composite(body, SWT.NONE);
+        gl = new GridLayout(2, false);
+        maxHeapScale.setLayout(gl);
+        gd = new GridData();
+        gd.horizontalIndent = 30;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        maxHeapScale.setLayoutData(gd);
+
+        // field max heap size
+        int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+        maxHeapSize = new Scale(maxHeapScale, SWT.NONE);
+        maxHeapSize.addSelectionListener(launchListener);
+        maxHeapSize.addFocusListener(focusListener);
+        maxHeapSize.addListener(SWT.Selection, (e) -> {
+			if (!programmaticallySettingWorkerParameters.get()) {
+				mainModelPage.setHeapPercentage(maxHeapSize.getSelection());
+			}
+        });
+        gd = new GridData();
+        gd.minimumWidth = 250;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        maxHeapSize.setLayoutData(gd);
+        maxHeapSize.setMaximum(99);
+        maxHeapSize.setMinimum(1);
+        maxHeapSize.setPageIncrement(5);
+        maxHeapSize.setSelection(defaultMaxHeapSize);
+        maxHeapSize.setToolTipText("Specifies the heap size of the Java VM that runs TLC.");
+
+        dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, launchPart);
+        
+        // label next to the scale showing the current fraction selected
+		final TLCRuntime instance = TLCRuntime.getInstance();
+		final long memory = instance.getAbsolutePhysicalSystemMemory(defaultMaxHeapSize / 100d);
+		maxHeapSizeFraction = toolkit.createLabel(maxHeapScale,
+				MainModelPage.generateMemoryDisplayText(defaultMaxHeapSize, memory));
+		maxHeapSize.addPaintListener((pe) -> {
+			maxHeapSizeFraction.setText(generateMemoryDisplayText());
+			maxHeapScale.layout();
+		});
+        maxHeapSize.setEnabled(false);
+		
+
+        // add horizontal divider that makes the separation clear
+        Label hr = toolkit.createSeparator(body, SWT.HORIZONTAL);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 6;
+        hr.setLayoutData(gd);
+
         
         // Model checking mode
         m_modelCheckModeOption = toolkit.createButton(body, "Model-checking mode", SWT.RADIO);
@@ -255,7 +421,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_simulationArilText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
 
         // add horizontal divider that makes the separation clear
-        Label hr = toolkit.createSeparator(body, SWT.HORIZONTAL);
+        hr = toolkit.createSeparator(body, SWT.HORIZONTAL);
         gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
@@ -547,30 +713,32 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
      */
     @Override
 	protected void loadData() throws CoreException {
-        // view
-        final String view = getModel().getAttribute(LAUNCH_VIEW, EMPTY_STRING);
+    	final Model model = getModel();
+
+    	// view
+        final String view = model.getAttribute(LAUNCH_VIEW, EMPTY_STRING);
         m_viewSource.setDocument(new Document(view));
 
         // run mode mode
-        final boolean isMCMode = getModel().getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);
+        final boolean isMCMode = model.getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);
         m_modelCheckModeOption.setSelection(isMCMode);
         m_simulationModeOption.setSelection(!isMCMode);
 
         // DFID depth
-        final int dfidDepth = getModel().getAttribute(LAUNCH_DFID_DEPTH, LAUNCH_DFID_DEPTH_DEFAULT);
+        final int dfidDepth = model.getAttribute(LAUNCH_DFID_DEPTH, LAUNCH_DFID_DEPTH_DEFAULT);
         m_depthText.setText("" + dfidDepth);
 
         // DFID mode
-        final boolean isDFIDMode = getModel().getAttribute(LAUNCH_DFID_MODE, LAUNCH_DFID_MODE_DEFAULT);
+        final boolean isDFIDMode = model.getAttribute(LAUNCH_DFID_MODE, LAUNCH_DFID_MODE_DEFAULT);
         m_depthFirstOptionCheckbox.setSelection(isDFIDMode);
         m_depthText.setEnabled(isDFIDMode);
 
         // simulation depth
-        final int simuDepth = getModel().getAttribute(LAUNCH_SIMU_DEPTH, LAUNCH_SIMU_DEPTH_DEFAULT);
+        final int simuDepth = model.getAttribute(LAUNCH_SIMU_DEPTH, LAUNCH_SIMU_DEPTH_DEFAULT);
         m_simulationDepthText.setText("" + simuDepth);
 
         // simulation aril
-		final int simuAril = getModel().getAttribute(LAUNCH_SIMU_SEED, LAUNCH_SIMU_ARIL_DEFAULT);
+		final int simuAril = model.getAttribute(LAUNCH_SIMU_SEED, LAUNCH_SIMU_ARIL_DEFAULT);
 		if (LAUNCH_SIMU_ARIL_DEFAULT != simuAril) {
 			m_simulationArilText.setText("" + simuAril);
 		} else {
@@ -578,7 +746,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		}
 
         // simulation seed
-		final int simuSeed = getModel().getAttribute(LAUNCH_SIMU_ARIL, LAUNCH_SIMU_SEED_DEFAULT);
+		final int simuSeed = model.getAttribute(LAUNCH_SIMU_ARIL, LAUNCH_SIMU_SEED_DEFAULT);
 		if (LAUNCH_SIMU_SEED_DEFAULT != simuSeed) {
 			m_simulationSeedText.setText("" + simuSeed);
 		} else {
@@ -586,42 +754,49 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		}
         
         // Defer Liveness
-		m_deferLivenessCheckbox.setSelection(getModel().getAttribute(LAUNCH_DEFER_LIVENESS, LAUNCH_DEFER_LIVENESS_DEFAULT));
+		m_deferLivenessCheckbox.setSelection(model.getAttribute(LAUNCH_DEFER_LIVENESS, LAUNCH_DEFER_LIVENESS_DEFAULT));
 
         // recover from the checkpoint
-        final boolean recover = getModel().getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
+        final boolean recover = model.getAttribute(LAUNCH_RECOVER, LAUNCH_RECOVER_DEFAULT);
         m_checkpointRecoverCheckbox.setSelection(recover);
         
         // coverage
-        m_collectCoverageCheckbox.setSelection(getModel().getAttribute(LAUNCH_COVERAGE, LAUNCH_COVERAGE_DEFAULT));
+        m_collectCoverageCheckbox.setSelection(model.getAttribute(LAUNCH_COVERAGE, LAUNCH_COVERAGE_DEFAULT));
         
         // fp index
-        final boolean randomly = getModel().getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT);
+        final boolean randomly = model.getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT);
         m_randomFingerprintCheckbox.setSelection(randomly);
-        final int fpIndex = getModel().getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
+        final int fpIndex = model.getAttribute(LAUNCH_FP_INDEX, LAUNCH_FP_INDEX_DEFAULT);
         m_fingerprintSeedIndex.setSelection(fpIndex);
         m_fingerprintSeedIndex.setEnabled(!randomly);
 
         // fpBits
         final int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
-        m_fingerprintBits.setSelection(getModel().getAttribute(LAUNCH_FPBITS, defaultFPBits));
+        m_fingerprintBits.setSelection(model.getAttribute(LAUNCH_FPBITS, defaultFPBits));
 
         // maxSetSize
         final int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
-        m_maxSetSize.setSelection(getModel().getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
+        m_maxSetSize.setSelection(model.getAttribute(LAUNCH_MAXSETSIZE, defaultMaxSetSize));
         
         // visualize state graph
-        m_visualizeStateGraphCheckbox.setSelection(getModel().getAttribute(LAUNCH_VISUALIZE_STATEGRAPH, LAUNCH_VISUALIZE_STATEGRAPH_DEFAULT));
+        m_visualizeStateGraphCheckbox.setSelection(model.getAttribute(LAUNCH_VISUALIZE_STATEGRAPH, LAUNCH_VISUALIZE_STATEGRAPH_DEFAULT));
         
         // Extra JVM arguments and system properties
-        final String vmArgs = getModel().getAttribute(LAUNCH_JVM_ARGS, LAUNCH_JVM_ARGS_DEFAULT);
+        final String vmArgs = model.getAttribute(LAUNCH_JVM_ARGS, LAUNCH_JVM_ARGS_DEFAULT);
         m_extraVMArgumentsText.setText(vmArgs);
 
         // Extra JVM arguments and system properties
-        final String tlcParameters = getModel().getAttribute(LAUNCH_TLC_PARAMETERS, LAUNCH_TLC_PARAMETERS_DEFAULT);
+        final String tlcParameters = model.getAttribute(LAUNCH_TLC_PARAMETERS, LAUNCH_TLC_PARAMETERS_DEFAULT);
         m_extraTLCParametersText.setText(tlcParameters);
+        
+        // it should still be true here from the body content creation invocation, but in case not:
+        programmaticallySettingWorkerParameters.set(true);
+		workers.setSelection(mainModelPage.getWorkerCount());
+        maxHeapSize.setSelection(mainModelPage.getHeapPercentage());
+        programmaticallySettingWorkerParameters.set(false);
+        setWorkerAndMemoryEnable(mainModelPage.workerCountCanBeModified(), mainModelPage.heapPercentageCanBeModified());
         
         updateEnabledStatesForAdvancedLaunchRadioSelection();
     }
@@ -631,12 +806,14 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
      */
     @Override
 	public void commit(final boolean onSave) {
+    	final Model model = getModel();
+		
         final boolean isMCMode = m_modelCheckModeOption.getSelection();
-        getModel().setAttribute(LAUNCH_MC_MODE, isMCMode);
+        model.setAttribute(LAUNCH_MC_MODE, isMCMode);
 
         // DFID mode
         final boolean isDFIDMode = m_depthFirstOptionCheckbox.getSelection();
-        getModel().setAttribute(LAUNCH_DFID_MODE, isDFIDMode);
+        model.setAttribute(LAUNCH_DFID_MODE, isDFIDMode);
         final int dfidDepth = Integer.parseInt(m_simulationDepthText.getText());
         
         final int simuDepth = Integer.parseInt(m_simulationDepthText.getText());
@@ -651,49 +828,49 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		}
 
         // DFID depth
-        getModel().setAttribute(LAUNCH_DFID_DEPTH, dfidDepth);
+		model.setAttribute(LAUNCH_DFID_DEPTH, dfidDepth);
         // simulation depth
-        getModel().setAttribute(LAUNCH_SIMU_DEPTH, simuDepth);
+		model.setAttribute(LAUNCH_SIMU_DEPTH, simuDepth);
         // simulation aril
-        getModel().setAttribute(LAUNCH_SIMU_SEED, simuSeed);
+		model.setAttribute(LAUNCH_SIMU_SEED, simuSeed);
         // simulation seed
-        getModel().setAttribute(LAUNCH_SIMU_ARIL, simuAril);
+		model.setAttribute(LAUNCH_SIMU_ARIL, simuAril);
 
         // Defer Liveness
-        getModel().setAttribute(LAUNCH_DEFER_LIVENESS, m_deferLivenessCheckbox.getSelection());
+		model.setAttribute(LAUNCH_DEFER_LIVENESS, m_deferLivenessCheckbox.getSelection());
 
         // recover from deadlock
-        getModel().setAttribute(LAUNCH_RECOVER, m_checkpointRecoverCheckbox.getSelection());
+		model.setAttribute(LAUNCH_RECOVER, m_checkpointRecoverCheckbox.getSelection());
         
         // FP Seed choose randomly
-		getModel().setAttribute(LAUNCH_FP_INDEX_RANDOM, m_randomFingerprintCheckbox.getSelection());
+		model.setAttribute(LAUNCH_FP_INDEX_RANDOM, m_randomFingerprintCheckbox.getSelection());
 		// FP Seed index
-		getModel().setAttribute(LAUNCH_FP_INDEX, m_fingerprintSeedIndex.getSelection());
+		model.setAttribute(LAUNCH_FP_INDEX, m_fingerprintSeedIndex.getSelection());
 
         // fpBits
-        getModel().setAttribute(LAUNCH_FPBITS, m_fingerprintBits.getSelection());
+		model.setAttribute(LAUNCH_FPBITS, m_fingerprintBits.getSelection());
 
         // fpBits
-        getModel().setAttribute(LAUNCH_MAXSETSIZE, m_maxSetSize.getSelection());
+		model.setAttribute(LAUNCH_MAXSETSIZE, m_maxSetSize.getSelection());
 
         // Visualize State Graph
-        getModel().setAttribute(LAUNCH_VISUALIZE_STATEGRAPH, m_visualizeStateGraphCheckbox.getSelection());
+		model.setAttribute(LAUNCH_VISUALIZE_STATEGRAPH, m_visualizeStateGraphCheckbox.getSelection());
 
         // Collect Coverage
-        getModel().setAttribute(LAUNCH_COVERAGE, m_collectCoverageCheckbox.getSelection());
+		model.setAttribute(LAUNCH_COVERAGE, m_collectCoverageCheckbox.getSelection());
        
         // view
         String viewFormula = FormHelper.trimTrailingSpaces(m_viewSource.getDocument().get());
-        getModel().setAttribute(LAUNCH_VIEW, viewFormula);
+        model.setAttribute(LAUNCH_VIEW, viewFormula);
 
 		// extra vm arguments (replace newlines which otherwise cause the
 		// process to ignore all args except the first one)
         final String vmArgs = m_extraVMArgumentsText.getText().replace("\r\n", " ").replace("\n", " ");
-        getModel().setAttribute(LAUNCH_JVM_ARGS, vmArgs);
+        model.setAttribute(LAUNCH_JVM_ARGS, vmArgs);
 
         // extra tlc parameters
         final String tlcParameters = m_extraTLCParametersText.getText();
-        getModel().setAttribute(LAUNCH_TLC_PARAMETERS, tlcParameters);
+        model.setAttribute(LAUNCH_TLC_PARAMETERS, tlcParameters);
       
         super.commit(onSave);
     }
@@ -707,6 +884,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			return;
 		}
 		
+        final DataBindingManager dm = getDataBindingManager();
         final IMessageManager mm = getManagedForm().getMessageManager();
         mm.setAutoUpdate(false);
 
@@ -721,6 +899,59 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 
         // setup the names from the current page
         getLookupHelper().resetModelNames(this);
+
+        // number of workers
+    	int number = workers.getSelection();
+        if (number > Runtime.getRuntime().availableProcessors())
+        {
+            modelEditor.addErrorMessage("strangeNumber1", "Specified number of workers is " + number
+                    + ". The number of processors available on the system is "
+                    + Runtime.getRuntime().availableProcessors()
+                    + ".\n The number of workers should not exceed the number of processors.",
+                    this.getId(), IMessageProvider.WARNING, UIHelper.getWidget(dm
+					        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+            expandSection(SEC_HOW_TO_RUN);
+        } else {
+        	modelEditor.removeErrorMessage("strangeNumber1", UIHelper.getWidget(dm
+			        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
+        }
+        
+		// legacy value?
+		// better handle legacy models
+		try {
+			final int defaultMaxHeapSize = TLCUIActivator
+					.getDefault()
+					.getPreferenceStore()
+					.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+			final int legacyValue = getModel().getAttribute(
+					LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
+			// old default, silently convert to new default
+			if (legacyValue == 500) {
+				getModel().setAttribute(
+						LAUNCH_MAX_HEAP_SIZE, TLCPreferenceInitializer.MAX_HEAP_SIZE_DEFAULT);
+				maxHeapSize.setSelection(TLCPreferenceInitializer.MAX_HEAP_SIZE_DEFAULT);
+			} else if (legacyValue >= 100) {
+				modelEditor
+						.addErrorMessage(
+								"strangeNumber1",
+								"Found legacy value for physically memory of ("
+										+ legacyValue
+										+ "mb) that needs manual conversion. 25% is a safe setting on most computers.",
+								this.getId(), IMessageProvider.WARNING,
+								maxHeapSize);
+				setComplete(false);
+				expandSection(SEC_HOW_TO_RUN);
+			}
+		} catch (CoreException e) {
+			TLCUIActivator.getDefault().logWarning("Faild to read heap value", e);
+		}
+        
+        // max heap size
+		// color the scale according to OS and TLC requirements
+        int maxHeapSizeValue = maxHeapSize.getSelection();
+		double x = maxHeapSizeValue / 100d;
+		float y = (float) linearInterpolator.interpolate(x);
+		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(120 * y, 1 - y, 1f)));
 
 		try {
 			int dfidDepth = Integer.parseInt(m_depthText.getText());
@@ -793,9 +1024,6 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				setComplete(false);
 			}
 		}
-        
-        // get data binding manager
-        final DataBindingManager dm = getDataBindingManager();
 
         // fill the checkpoints
         updateCheckpoints();
@@ -910,6 +1138,22 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     	m_simulationSeedText.setEnabled(simulationMode);
     	m_simulationArilText.setEnabled(simulationMode);
     }
+    
+    public void updateWorkersAndMemory(final int workerCount, final int memoryPercentage) {
+		programmaticallySettingWorkerParameters.set(true);
+
+		workers.setSelection(workerCount);
+		maxHeapSize.setSelection(memoryPercentage);
+    	
+		programmaticallySettingWorkerParameters.set(false);
+    }
+    
+	public void setWorkerAndMemoryEnable(final boolean enableWorker, final boolean enableMaxHeap) {
+    	workers.getDisplay().asyncExec(() -> {
+    		workers.setEnabled(enableWorker);
+    		maxHeapSize.setEnabled(enableMaxHeap);
+    	});
+    }
 
 	public void setFpIndex(final int fpIndex) {
 		if (m_fingerprintSeedIndex.getSelection() == fpIndex) {
@@ -934,4 +1178,35 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		final int openTabState = getModel().getOpenTabsValue();
 		updateOpenTabsState(openTabState & ~IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC);
 	}
+    
+    private String generateMemoryDisplayText () {
+		final int percentage = maxHeapSize.getSelection();
+		final long megabytes = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(percentage / 100d);
+
+		return MainModelPage.generateMemoryDisplayText(percentage, megabytes);
+    }
+
+    
+    /**
+     * Interpolates based on LinearInterpolation
+     */
+    private class Interpolator {
+
+    	private final double[] yCoords, xCoords;
+
+    	public Interpolator(double[] x, double[] y) {
+    		this.xCoords = x;
+    		this.yCoords = y;
+    	}
+
+		public double interpolate(double x) {
+			for (int i = 1; i < xCoords.length; i++) {
+				if (x < xCoords[i]) {
+					return yCoords[i] - (yCoords[i] - yCoords[i - 1])
+							* (xCoords[i] - x) / (xCoords[i] - xCoords[i - 1]);
+				}
+			}
+			return 0d;
+		}
+    }
 }

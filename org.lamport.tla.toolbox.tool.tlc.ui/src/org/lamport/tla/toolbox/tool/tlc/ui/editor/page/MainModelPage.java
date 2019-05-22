@@ -5,9 +5,9 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -25,6 +25,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -36,8 +37,6 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -45,16 +44,15 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
-import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.widgets.FormToolkit;
@@ -78,7 +76,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSecti
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableTableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
-import org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferenceInitializer;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -104,6 +101,9 @@ import util.TLCRuntime;
 public class MainModelPage extends BasicFormPage implements IConfigurationConstants, IConfigurationDefaults
 {
     public static final String ID = "MainModelPage";
+    public static final String CUSTOM_TLC_PROFILE_PREFERENCE_VALUE = "local custom";
+
+    static final String CLOUD_CONFIGURATION_KEY = "jclouds";
     
     private static final String TITLE = "Model Overview";
 
@@ -114,14 +114,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			NO_SPEC_COMBO_LABEL };
 	private static final String[] NO_VARIABLE_BEHAVIOR_COMBO_ITEMS = { NO_SPEC_COMBO_LABEL };
 
-    static final String CLOUD_CONFIGURATION_KEY = "jclouds";
-
     private static final String TLC_PROFILE_LOCAL_SEPARATOR = "\u2014\u2014 Local \u2014\u2014";
     private static final String TLC_PROFILE_REMOTE_SEPARATOR = "\u2014\u2014 Remote \u2014\u2014";
     private static final String CUSTOM_TLC_PROFILE_DISPLAY_NAME = "Custom";
-    private static final String CUSTOM_TLC_PROFILE_PREFERENCE_VALUE = "local custom";
     
 	private static final String[] TLC_PROFILE_DISPLAY_NAMES;
+	
+	private static final DecimalFormat MEMORY_FORMAT = new DecimalFormat("#,###");
 
 	static {
 		final TLCConsumptionProfile[] profiles = TLCConsumptionProfile.values();
@@ -141,6 +140,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			TLC_PROFILE_DISPLAY_NAMES[i + indexIncrement] = profiles[i].getDisplayName();
 		}
 	}
+    
+    static public String generateMemoryDisplayText(final int percentage, final long megabytes) {
+    	return percentage + "%" + " (" + MEMORY_FORMAT.format(megabytes) + " mb)";
+    }
 
 	
 	private Combo behaviorCombo;
@@ -153,11 +156,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
     
     private Combo tlcProfileCombo;
     private AtomicInteger lastSelectedTLCProfileIndex;
+    private Label tlcResourceSummaryLabel;
     // We cache this since want to reference it frequently on heap slider drag
     private AtomicBoolean currentProfileIsAdHoc;
-    private Spinner workers;
-    private Scale maxHeapSize;
-    private AtomicBoolean programmaticallySettingWorkerParameters;
+    
+    // We keep certain items of UI state derived from the model here and reference it from the loadData of pages
+    //		which need not necessarily be open, and should they be opened after the model editor's state has been
+    //		modified but not saved, would get incorrect data.
+    private AtomicInteger workerThreadCount;
+    private AtomicInteger heapPercentage;
+    private AtomicBoolean workerValueCanBeModified;
+    private AtomicBoolean heapPercentageCanBeModified;
     
     /**
 	 * Widgets related to distributed mode configuration
@@ -214,11 +223,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
             }
         }
     };
-
-	/**
-	 * Used to interpolate y-values for memory scale
-	 */
-	private final Interpolator linearInterpolator;
 	
 	/**
 	 * Stacked composites for displaying options based on user selection in combo boxes
@@ -231,64 +235,21 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
      * constructs the main model page 
      * @param editor
      */
-    public MainModelPage(FormEditor editor)
-    {
+	public MainModelPage(final FormEditor editor) {
         super(editor, MainModelPage.ID, MainModelPage.TITLE,
         		"icons/full/model_options_" + IMAGE_TEMPLATE_TOKEN + ".png");
-        this.helpId = IHelpConstants.MAIN_MODEL_PAGE;
-
-		// available system memory
-		final long phySysMem = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(1.0d);
-		
-		// 0.) Create LinearInterpolator with two additional points 0,0 and 1,0 which
-		int s = 0;
-		double[] x = new double[6];
-		double[] y = new double[x.length];
-		
-		// base point
-		y[s] = 0d;
-		x[s++] = 0d;
-
-		// 1.) Minumum TLC requirements 
-		// Use hard-coded minfpmemsize value * 4 * 10 regardless of how big the
-		// model is. *4 because .25 mem is used for FPs
-		double lowerLimit = ( (TLCRuntime.MinFpMemSize / 1024 / 1024 * 4d) / phySysMem) / 2;
-		x[s] = lowerLimit;
-		y[s++] = 0d;
-		
-		// a.)
-		// Current bloat in software is assumed to grow according to Moore's law => 
-		// 2^((Year-1993)/ 2)+2)
-		// (1993 as base results from a statistic of windows OS memory requirements)
-		final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-		double estimateSoftwareBloatInMBytes = Math.pow(2, ((currentYear - 1993) / 3) + 3.5);
-		
-		// 2.) Optimal range 
-		x[s] = lowerLimit * 2d;
-		y[s++] = 1.0d;
-		x[s] = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem);
-		y[s++] = 1.0d;
-		
-		// 3.) Calculate OS reserve
-		double upperLimit = 1.0d - (estimateSoftwareBloatInMBytes / phySysMem) / 2;
-		x[s] = upperLimit;
-		y[s++] = 0d;
-		
-		// base point
-		x[s] = 1d;
-		y[s] = 0d;
-		
-		linearInterpolator = new Interpolator(x, y);
+        helpId = IHelpConstants.MAIN_MODEL_PAGE;
 		
 		currentProfileIsAdHoc = new AtomicBoolean(false);
-		programmaticallySettingWorkerParameters = new AtomicBoolean(false);
+	    workerValueCanBeModified = new AtomicBoolean(true);
+	    heapPercentageCanBeModified = new AtomicBoolean(true);
     }
 
     /**
      * @see BasicFormPage#loadData()
      */
-    protected void loadData() throws CoreException
-    {
+    @Override
+	protected void loadData() throws CoreException {
     	final Model model = getModel();
         final int specType = model.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
 
@@ -428,12 +389,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         		setTLCProfileComboSelection(profile.getDisplayName());
         	}
         }
-        
-        programmaticallySettingWorkerParameters.set(true);
-		workers.setSelection(threadCount);
-        maxHeapSize.setSelection(memoryPercentage);
-        programmaticallySettingWorkerParameters.set(false);
-                
+        workerThreadCount = new AtomicInteger(threadCount);
+        heapPercentage = new AtomicInteger(memoryPercentage);        
+                 
         // distribute FPSet count
         distributedFPSetCountSpinner.setSelection(model.getAttribute(LAUNCH_DISTRIBUTED_FPSET_COUNT, LAUNCH_DISTRIBUTED_FPSET_COUNT_DEFAULT));
 
@@ -446,18 +404,20 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         if (!EMPTY_STRING.equals(commentsStr)) {
         	expandSection(SEC_COMMENTS);
         }
+        
+        updateTLCResourcesLabel();
     }
 
-    public void validatePage(boolean switchToErrorPage)
-    {
+    @Override
+	public void validatePage(boolean switchToErrorPage) {
         if (getManagedForm() == null)
         {
             return;
         }
 
-        DataBindingManager dm = getDataBindingManager();
-        IMessageManager mm = getManagedForm().getMessageManager();
-        ModelEditor modelEditor = (ModelEditor) getEditor();
+        final DataBindingManager dm = getDataBindingManager();
+        final IMessageManager mm = getManagedForm().getMessageManager();
+        final ModelEditor modelEditor = (ModelEditor) getEditor();
 
         // The following comment was apparently written by Simon:
            // delete the messages
@@ -654,59 +614,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
                     false);
         }
 
-        // number of workers
-    	int number = workers.getSelection();
-        if (number > Runtime.getRuntime().availableProcessors())
-        {
-            modelEditor.addErrorMessage("strangeNumber1", "Specified number of workers is " + number
-                    + ". The number of processors available on the system is "
-                    + Runtime.getRuntime().availableProcessors()
-                    + ".\n The number of workers should not exceed the number of processors.",
-                    this.getId(), IMessageProvider.WARNING, UIHelper.getWidget(dm
-					        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
-            expandSection(SEC_HOW_TO_RUN);
-        } else {
-        	modelEditor.removeErrorMessage("strangeNumber1", UIHelper.getWidget(dm
-			        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
-        }
-        
-		// legacy value?
-		// better handle legacy models
-		try {
-			final int defaultMaxHeapSize = TLCUIActivator
-					.getDefault()
-					.getPreferenceStore()
-					.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-			final int legacyValue = getModel().getAttribute(
-					LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
-			// old default, silently convert to new default
-			if (legacyValue == 500) {
-				getModel().setAttribute(
-						LAUNCH_MAX_HEAP_SIZE, TLCPreferenceInitializer.MAX_HEAP_SIZE_DEFAULT);
-				maxHeapSize.setSelection(TLCPreferenceInitializer.MAX_HEAP_SIZE_DEFAULT);
-			} else if (legacyValue >= 100) {
-				modelEditor
-						.addErrorMessage(
-								"strangeNumber1",
-								"Found legacy value for physically memory of ("
-										+ legacyValue
-										+ "mb) that needs manual conversion. 25% is a safe setting on most computers.",
-								this.getId(), IMessageProvider.WARNING,
-								maxHeapSize);
-				setComplete(false);
-				expandSection(SEC_HOW_TO_RUN);
-			}
-		} catch (CoreException e) {
-			TLCUIActivator.getDefault().logWarning("Faild to read heap value", e);
-		}
-        
-        // max heap size
-		// color the scale according to OS and TLC requirements
-        int maxHeapSizeValue = maxHeapSize.getSelection();
-		double x = maxHeapSizeValue / 100d;
-		float y = (float) linearInterpolator.interpolate(x);
-		maxHeapSize.setBackground(new Color(Display.getDefault(), new RGB(120 * y, 1 - y, 1f)));
-
 		// IP/network address correct?
 		final int networkAddressIndex = this.networkInterfaceCombo.getSelectionIndex();
 		if (networkAddressIndex < 0) {
@@ -884,6 +791,40 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
         super.validatePage(switchToErrorPage);
     }
+    
+    public boolean workerCountCanBeModified() {
+    	return workerValueCanBeModified.get();
+    }
+    
+    public int getWorkerCount() {
+    	return workerThreadCount.get();
+    }
+    
+    public void setWorkerCount(final int count) {
+    	workerThreadCount.set(count);
+    	
+		setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+		
+		updateTLCResourcesLabel();
+    }
+    
+    public boolean heapPercentageCanBeModified() {
+    	return heapPercentageCanBeModified.get();
+    }
+    
+    public int getHeapPercentage() {
+    	return heapPercentage.get();
+    }
+    
+    public void setHeapPercentage(final int percentage) {
+    	heapPercentage.set(percentage);
+    	
+		if (!currentProfileIsAdHoc.get()) {
+			setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
+		}
+		
+		updateTLCResourcesLabel();
+    }
 
     /**
      * This method is used to enable and disable UI widgets depending on the fact if the specification 
@@ -998,9 +939,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         
 		model.setAttribute(TLC_RESOURCES_PROFILE, profileValue);
 		
-        // number of workers & memory guidance
-        model.setAttribute(LAUNCH_NUMBER_OF_WORKERS, workers.getSelection());
-        model.setAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize.getSelection());
+        model.setAttribute(LAUNCH_NUMBER_OF_WORKERS, workerThreadCount.get());
+        model.setAttribute(LAUNCH_MAX_HEAP_SIZE, heapPercentage.get());
 
         // run in distributed mode
         if ((profile != null) && profile.profileIsForRemoteWorkers()) {
@@ -1380,37 +1320,40 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 					
 					lastSelectedTLCProfileIndex.set(tlcProfileCombo.getSelectionIndex());
 
-					programmaticallySettingWorkerParameters.set(true);
 					currentProfileIsAdHoc.set(false);
-					try {
-						if (profile != null) {
-							workers.setSelection(profile.getWorkerThreads());
-							maxHeapSize.setSelection(profile.getMemoryPercentage());
+					if (profile != null) {
+                        workerThreadCount.set(profile.getWorkerThreads());
+                        heapPercentage.set(profile.getMemoryPercentage());
 
-							removeCustomTLCProfileComboItemIfPresent();
+                        final IFormPage iep = getEditor().findPage(AdvancedTLCOptionsPage.ID);
+	                	if (iep != null) {
+							((AdvancedTLCOptionsPage) iep).updateWorkersAndMemory(profile.getWorkerThreads(),
+									profile.getMemoryPercentage());
+	                	}
 
-							if (profile.profileIsForRemoteWorkers()) {
-								final String configuration = profile.getConfigurationKey();
-								final boolean isAdHoc = configuration
-										.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+						removeCustomTLCProfileComboItemIfPresent();
 
-								moveToTopOfDistributedOptionsStack(configuration, false, isAdHoc);
-								if (isAdHoc) {
-									currentProfileIsAdHoc.set(true);
-									clearEmailErrors();
-								}
-							} else {
-								moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
+						if (profile.profileIsForRemoteWorkers()) {
+							final String configuration = profile.getConfigurationKey();
+							final boolean isAdHoc = configuration
+									.equals(TLCConsumptionProfile.REMOTE_AD_HOC.getConfigurationKey());
+
+							moveToTopOfDistributedOptionsStack(configuration, false, isAdHoc);
+							if (isAdHoc) {
+								currentProfileIsAdHoc.set(true);
 								clearEmailErrors();
 							}
 						} else {
 							moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
 							clearEmailErrors();
 						}
-					} finally {
-						programmaticallySettingWorkerParameters.set(false);
+					} else {
+						moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
+						clearEmailErrors();
 					}
 				}
+				
+				updateTLCResourcesLabel();
 			}
 
 			public void widgetDefaultSelected(final SelectionEvent se) { }
@@ -1422,88 +1365,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         tlcProfileCombo.setLayoutData(gd);
         lastSelectedTLCProfileIndex = new AtomicInteger(tlcProfileCombo.getSelectionIndex());
         
-        /*
-         * Workers Spinner
-         */
-        
-        // label workers
-        toolkit.createLabel(howToRunArea, "Number of worker threads:");
-
-        // field workers
-        workers = new Spinner(howToRunArea, SWT.NONE);
-        workers.addSelectionListener(howToRunListener);
-        workers.addFocusListener(focusListener);
-        workers.addListener(SWT.Verify, (e) -> {
-			if (!programmaticallySettingWorkerParameters.get()) {
-				setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
-			}
-        });
+        tlcResourceSummaryLabel = toolkit.createLabel(howToRunArea, "");
+        tlcResourceSummaryLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
         gd = new GridData();
-        gd.horizontalIndent = 40;
-        gd.widthHint = 40;
-        workers.setLayoutData(gd);
-        
-        workers.setMinimum(1);
-        workers.setPageIncrement(1);
-        workers.setToolTipText("Determines how many threads will be spawned working on the next state relation.");
-        workers.setSelection(TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
-
-        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, howToRunPart);
-        
-        /*
-         * MapHeap Scale
-         */
-        
-        // max heap size label
-        toolkit.createLabel(howToRunArea, "Fraction of physical memory allocated to TLC:");
-
-		// Create a composite inside the right "cell" of the "how to run"
-		// section grid layout to fit the scale and the maxHeapSizeFraction
-		// label into a single row.
-        final Composite maxHeapScale = new Composite(howToRunArea, SWT.NONE);
-        gl = new GridLayout(2, false);
-        maxHeapScale.setLayout(gl);
-        gd = new GridData();
-        gd.horizontalIndent = 30;
-        gd.horizontalAlignment = SWT.FILL;
+        gd.horizontalSpan = 2;
         gd.grabExcessHorizontalSpace = true;
-        maxHeapScale.setLayoutData(gd);
-
-        // field max heap size
-        int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-                ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
-        maxHeapSize = new Scale(maxHeapScale, SWT.NONE);
-        maxHeapSize.addSelectionListener(howToRunListener);
-        maxHeapSize.addFocusListener(focusListener);
-        maxHeapSize.addListener(SWT.Selection, (e) -> {
-			if (!programmaticallySettingWorkerParameters.get() && !currentProfileIsAdHoc.get()) {
-				setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
-			}
-        });
-        gd = new GridData();
-        gd.minimumWidth = 250;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        maxHeapSize.setLayoutData(gd);
-        maxHeapSize.setMaximum(99);
-        maxHeapSize.setMinimum(1);
-        maxHeapSize.setPageIncrement(5);
-        maxHeapSize.setSelection(defaultMaxHeapSize);
-        maxHeapSize.setToolTipText("Specifies the heap size of the Java VM that runs TLC.");
-
-        dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, howToRunPart);
-        
-        // label next to the scale showing the current fraction selected
-		final TLCRuntime instance = TLCRuntime.getInstance();
-		long memory = instance.getAbsolutePhysicalSystemMemory(defaultMaxHeapSize / 100d);
-		final Label maxHeapSizeFraction = toolkit.createLabel(maxHeapScale,
-				generateMemoryDisplayText(defaultMaxHeapSize, memory));
-		maxHeapSize.addPaintListener((pe) -> {
-			int percentage = ((Scale) pe.getSource()).getSelection();
-			long megabytes = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(percentage / 100d);
-			maxHeapSizeFraction.setText(generateMemoryDisplayText(percentage, megabytes));
-		});
-        
+        gd.horizontalAlignment = SWT.CENTER;
+        tlcResourceSummaryLabel.setLayoutData(gd);
+                
         /*
          * Distribution.  Help button added by LL on 17 Jan 2013
          */
@@ -1734,10 +1603,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 	private void moveToTopOfDistributedOptionsStack(final String id, final boolean enableWorker,
 			final boolean enableMaxHeap) {
-    	workers.getDisplay().asyncExec(() -> {
-    		workers.setEnabled(enableWorker);
-    		maxHeapSize.setEnabled(enableMaxHeap);
-    	});
+	    workerValueCanBeModified.set(enableWorker);
+	    heapPercentageCanBeModified.set(enableMaxHeap);
+
+    	final IFormPage iep = getEditor().findPage(AdvancedTLCOptionsPage.ID);
+    	if (iep != null) {
+			((AdvancedTLCOptionsPage) iep).setWorkerAndMemoryEnable(enableWorker, enableMaxHeap);
+    	}
 		
     	moveCompositeWithIdToTopOfStack(id, distributedOptions);
     	
@@ -1785,9 +1657,36 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			tlcProfileCombo.remove(1);
 		}
     }
+	
+	private void updateTLCResourcesLabel() {
+		final TLCConsumptionProfile profile = getSelectedTLCProfile();
+		final StringBuilder sb = new StringBuilder();
+
+		if ((profile == null) || !profile.profileIsForRemoteWorkers() || TLCConsumptionProfile.REMOTE_AD_HOC.equals(profile)) {
+			if ((profile != null) && profile.profileIsForRemoteWorkers()) {
+				sb.append("Allocating ");
+			} else {
+				final int workerCount = workerThreadCount.get();
+				
+				sb.append(workerCount).append(" worker");
+				if (workerCount > 1) {
+					sb.append('s');
+				}
+
+				sb.append(" allocated ");
+			}
+			
+			sb.append(generateMemoryDisplayText()).append(" of system memory.");
+		}
+		
+		tlcResourceSummaryLabel.setText(sb.toString());
+	}
     
-    private String generateMemoryDisplayText(final int percentage, final long megabytes) {
-    	return percentage + "%" + " (" + megabytes + " mb)  ";
+    private String generateMemoryDisplayText () {
+		final int percentage = heapPercentage.get();
+		final long megabytes = TLCRuntime.getInstance().getAbsolutePhysicalSystemMemory(percentage / 100d);
+
+		return generateMemoryDisplayText(percentage, megabytes);
     }
 
 	private void installTopMargin(final Composite body) {
@@ -1807,28 +1706,4 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
         	}
         }
 	}
-
-    
-    /**
-     * Interpolates based on LinearInterpolation
-     */
-    private class Interpolator {
-
-    	private final double[] yCoords, xCoords;
-
-    	public Interpolator(double[] x, double[] y) {
-    		this.xCoords = x;
-    		this.yCoords = y;
-    	}
-
-		public double interpolate(double x) {
-			for (int i = 1; i < xCoords.length; i++) {
-				if (x < xCoords[i]) {
-					return yCoords[i] - (yCoords[i] - yCoords[i - 1])
-							* (xCoords[i] - x) / (xCoords[i] - xCoords[i - 1]);
-				}
-			}
-			return 0d;
-		}
-    }
 }

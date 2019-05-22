@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _1OLRMAlXEem_pLt0eVfQIQ
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/25/19, 8:17 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 5/22/19, 10:30 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -67,8 +67,9 @@ try -command {
 	}
 	with [get-editor "Model_1" | get-section "How to run?"] {
 	    click
-	    get-editbox -after [get-label "Number of worker threads:"] | set-text 2
+		get-link "Advanced TLC execution options" | click
 	}
+	get-editbox -after [get-label "Number of worker threads:"] | set-text 2
 	get-editor "Model_1" | get-button "Runs TLC on the model." | click
 
 	wait-run    

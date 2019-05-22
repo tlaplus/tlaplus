@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _Jm-wcBB2EemUS_ZdBJsvQg
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/20/19, 1:37 PM
+Save-Time: 5/22/19, 10:45 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -55,12 +55,12 @@ try -command {
 	    get-button Deadlock | uncheck
 	    with [get-section Invariants] {
 	        click
-	        get-button Add | click
+	        get-button "Add" | click
 	    }
 	}
 	with [get-window -class WizardDialog] {
 	    get-text-viewer | type-text "x<9"
-	    get-button Finish | click
+	    get-button "Finish" | click
 	}
 
 	with [get-editor "Model_1"] {
@@ -68,9 +68,9 @@ try -command {
 	    get-section "What is the model?" | click
 	    with [get-section "How to run?"] {
 	        click
-	        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
+			get-link "Advanced TLC execution options" | click
 	    }
-		get-link "Advanced TLC execution options" | click
+        get-editbox -after [get-label "Number of worker threads:"] | set-text 2
         get-button "Recover from checkpoint" | check
 	}
 	get-editor "Model_1" | get-link "1 error detected" | get-property caption | equals "1 error detected" | verify-true
@@ -79,7 +79,7 @@ try -command {
 	    get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 
-	wait -ms 1000
+	wait -ms 500
 	
 	get-editor "Model_1" | get-button "Recover from checkpoint" | get-property selected 
 	    | equals false | verify-true
@@ -91,7 +91,7 @@ try -command {
 	    get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 
-    wait -ms 1000
+    wait -ms 500
 
 	with [get-editor "Model_1"] {
 	    get-tab-folder | get-tab-item "Model Overview" | click
@@ -102,7 +102,7 @@ try -command {
 		get-editor "Model_1" | get-button "Checks the model for errors but does not run TLC on it." | click
 	}
 	
-	wait -ms 1000
+	wait -ms 500
 
 	get-editor "Model_1" | get-tab-folder | get-tab-item "Model Overview" | click
 } -finally {
