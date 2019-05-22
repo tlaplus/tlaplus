@@ -138,8 +138,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private final Model model;
     // flag indicating that TLC has started
     // currently this is used to indicate
-    // that tlc output not surrounded by message tags
-    // should be put in the user output widget
+	// that tlc output not surrounded by message tags
+	// should be put in the user output widget. This does not indicate the state of
+	// the TLC process. Instead it only indicates that the TLC process is past
+	// the spec parsing stage with SANY.
     protected boolean isTLCStarted = false;
 
     protected int numWorkers = 0;
@@ -475,7 +477,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
                 case EC.TLC_COVERAGE_END_OVERHEAD:
-                	if (isTLCStarted) {
+                	if (getModel().isRunning()) {
                 		informPresenter(ITLCModelLaunchDataPresenter.COVERAGE_END_OVERHEAD);
                 		break;
                 	}
