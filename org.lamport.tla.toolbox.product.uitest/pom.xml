@@ -19,7 +19,7 @@
       <name>RCPTT Maven repository</name>
       <url>https://repo.eclipse.org/content/repositories/rcptt-releases/</url>
     </pluginRepository>
-    <!-- Need RCPTT 2.4 because the Toolbox's target platform is on 2018-09 and https://bugs.eclipse.org/538719 -->
+    <!--
     <pluginRepository>
       <id>rcptt-snapshots</id>
       <name>RCPTT Maven Snapshots repository</name>
@@ -28,6 +28,7 @@
       </snapshots>
       <url>https://repo.eclipse.org/content/repositories/rcptt-snapshots/</url>
     </pluginRepository>
+    -->
   </pluginRepositories>
 
   <!-- 
@@ -38,11 +39,8 @@
        http://maven.xored.com/nexus/content/repositories/ci4rcptt-releases/org/eclipse/sdk/
   -->
   <properties>
-    <!-- Version copy & pasted from https://repo.eclipse.org/content/repositories/rcptt-snapshots/org/eclipse/rcptt/rcptt-maven-plugin/2.4.0-SNAPSHOT/ --> 
-    <rcptt-maven-version>2.4.2-20190419.052523-19</rcptt-maven-version>
-    <!-- Version from https://repo.eclipse.org/content/repositories/rcptt-snapshots/org/eclipse/rcptt/runner/rcptt.runner/2.4.2-SNAPSHOT/ -->
-    <!-- ...-18 is the last version which does not fail on macOS. -->
-    <rcptt-runner-version>2.4.2-20190419.005632-18</rcptt-runner-version>
+    <rcptt-maven-version>2.4.2</rcptt-maven-version>
+    <rcptt-runner-version>2.4.2</rcptt-runner-version>
     <aut-unpack-directory>target/unpack-for-aut/</aut-unpack-directory>
 <!-- 
     <jdk-bundle-plugin-prefix>st.theori.openjdk.</jdk-bundle-plugin-prefix>
