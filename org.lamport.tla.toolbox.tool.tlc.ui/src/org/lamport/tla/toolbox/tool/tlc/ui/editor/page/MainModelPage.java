@@ -22,8 +22,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
@@ -60,17 +58,14 @@ import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
-import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
-import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
@@ -145,6 +140,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 	private Combo behaviorCombo;
 	private SourceViewer commentsSource;
+
 	private SourceViewer initFormulaSource;
 	private SourceViewer nextFormulaSource;
 	// private SourceViewer fairnessFormulaSource;
@@ -178,48 +174,15 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	private TableViewer invariantsTable;
 	private TableViewer propertiesTable;
 	private TableViewer constantTable;
-
-	protected HyperlinkAdapter advancedModelOptionsOpener = new HyperlinkAdapter() {
-		public void linkActivated(final HyperlinkEvent he) {
-			final FormEditor editor = getEditor();
-
-			if (editor.setActivePage(AdvancedModelPage.ID) == null) {
-				try {
-					editor.addPage(1, new AdvancedModelPage(editor), getEditorInput());
-					editor.setActivePage(AdvancedModelPage.ID);
-
-					final int openTabState = getModel().getOpenTabsValue();
-					updateOpenTabsState(openTabState | IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL);
-				} catch (Exception e) {
-					TLCActivator.getDefault().getLog().log(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-							"Could not add advanced model options page", e));
-				}
-			}
-		}
-	};
+	
+    protected HyperlinkAdapter advancedModelOptionsOpener = new HyperlinkAdapter() {
+        public void linkActivated(final HyperlinkEvent he) {
+        	getModelEditor().addOrShowAdvancedModelPage();
+        }
+    };
 	protected HyperlinkAdapter advancedTLCOptionsOpener = new HyperlinkAdapter() {
 		public void linkActivated(final HyperlinkEvent he) {
-			final ModelEditor editor = getModelEditor();
-
-			if (editor.setActivePage(AdvancedTLCOptionsPage.ID) == null) {
-				try {
-					int pageIndex = 1;
-					final String id = editor.getIdForEditorAtIndex(1);
-
-					if (AdvancedModelPage.ID.equals(id)) {
-						pageIndex++;
-					}
-
-					editor.addPage(pageIndex, new AdvancedTLCOptionsPage(editor), getEditorInput());
-					editor.setActivePage(AdvancedTLCOptionsPage.ID);
-
-					final int openTabState = getModel().getOpenTabsValue();
-					updateOpenTabsState(openTabState | IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC);
-				} catch (Exception e) {
-					TLCActivator.getDefault().getLog().log(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-							"Could not add advanced TLC options page", e));
-				}
-			}
+			getModelEditor().addOrShowAdvancedTLCOptionsPage();
 		}
 	};
 

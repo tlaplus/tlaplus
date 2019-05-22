@@ -254,7 +254,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                		// The tab isn't open so set the value into the model and the tab, should it open, will
 	                		//		load it out of the model.
 	                		getModel().setAttribute(LAUNCH_FP_INDEX, dataProvider.getFPIndex());
-	                		saveModel();
+	                		getModelEditor().saveModel();
 	                	}
 	                case LAST_CHECKPOINT_TIME:
 	                    long lastCheckpointTimeStamp = dataProvider.getLastCheckpointTimeStamp();

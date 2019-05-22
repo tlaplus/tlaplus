@@ -490,6 +490,6 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
 	@Override
 	public void close() throws IOException {
 		final int openTabState = getModel().getOpenTabsValue();
-		updateOpenTabsState(openTabState & ~IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL);
+		getModelEditor().updateOpenTabsState(openTabState & ~IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL);
 	}
 }

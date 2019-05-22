@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUINotification;
 
 public class CoverageUINotification extends TLCUINotification {
@@ -60,6 +59,6 @@ public class CoverageUINotification extends TLCUINotification {
 
 	@Override
 	public void open() {
-		editor.setActivePage(editor.findPage(MainModelPage.ID).getIndex());
+		editor.addOrShowAdvancedTLCOptionsPage();
 	}
 }

@@ -367,33 +367,6 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
-     * Invoke this to save the model.
-     */
-    protected void saveModel() {
-    	final Job job = new WorkspaceJob("Saving updated model...") {
-			public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
-				getModel().save(monitor);
-				return Status.OK_STATUS;
-			}
-		};
-		job.setRule(ResourcesPlugin.getWorkspace().getRoot());
-		job.setUser(true);
-		job.schedule();
-    }
-    
-    /**
-     * This updates the approprirate model attribute and saves the model.
-     * 
-     * @param newValue the new value representing currently open close-able tabs.
-     * @see IModelConfigurationConstants#EDITOR_OPEN_TABS
-     */
-    protected void updateOpenTabsState(final int newValue) {
-        getModel().setOpenTabsValue(newValue);
-
-        saveModel();
-    }
-
-    /**
      * Is called to create the body content of the form.
      * Subclasses should override this method 
      * 

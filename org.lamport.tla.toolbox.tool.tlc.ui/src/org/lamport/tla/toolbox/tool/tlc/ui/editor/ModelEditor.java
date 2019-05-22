@@ -1341,6 +1341,70 @@ public class ModelEditor extends FormEditor {
     {
         return validateRunable;
     }
+    
+    /**
+     * This updates the appropriate model attribute and saves the model.
+     * 
+     * @param newValue the new value representing currently open close-able tabs.
+     * @see IModelConfigurationConstants#EDITOR_OPEN_TABS
+     */
+    public void updateOpenTabsState(final int newValue) {
+        getModel().setOpenTabsValue(newValue);
+
+        saveModel();
+    }
+
+    /**
+     * Invoke this to save the model.
+     */
+    public void saveModel() {
+    	final Job job = new WorkspaceJob("Saving updated model...") {
+			public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
+				getModel().save(monitor);
+				return Status.OK_STATUS;
+			}
+		};
+		job.setRule(ResourcesPlugin.getWorkspace().getRoot());
+		job.setUser(true);
+		job.schedule();
+    }
+ 
+    public void addOrShowAdvancedModelPage() {
+        if (setActivePage(AdvancedModelPage.ID) == null) {
+        	try {
+        		addPage(1, new AdvancedModelPage(this), getEditorInput());
+        		setActivePage(AdvancedModelPage.ID);
+        		
+        		final int openTabState = getModel().getOpenTabsValue();
+        		updateOpenTabsState(openTabState | IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL);
+        	} catch (Exception e) {
+				TLCActivator.getDefault().getLog().log(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+						"Could not add advanced model options page", e));
+        	}
+        }
+    }
+    
+    public void addOrShowAdvancedTLCOptionsPage() {
+        if (setActivePage(AdvancedTLCOptionsPage.ID) == null) {
+        	try {
+        		int pageIndex = 1;
+        		final String id = getIdForEditorAtIndex(1);
+
+        		if (AdvancedModelPage.ID.equals(id)) {
+        			pageIndex++;
+        		}
+
+        		addPage(pageIndex, new AdvancedTLCOptionsPage(this), getEditorInput());
+        		setActivePage(AdvancedTLCOptionsPage.ID);
+        		
+        		final int openTabState = getModel().getOpenTabsValue();
+        		updateOpenTabsState(openTabState | IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC);
+        	} catch (Exception e) {
+				TLCActivator.getDefault().getLog().log(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+						"Could not add advanced TLC options page", e));
+        	}
+        }
+    }
 
     /**
      * Overrides the method in {@link FormEditor}. Calls this method in the superclass
