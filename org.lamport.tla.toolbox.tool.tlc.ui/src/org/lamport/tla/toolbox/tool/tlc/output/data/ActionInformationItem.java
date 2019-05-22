@@ -177,23 +177,34 @@ public class ActionInformationItem extends CoverageInformationItem {
 
 	@Override
 	Color colorItem(TreeSet<Long> counts, final Representation ignored) {
-		return colorItem(counts);
+		// This shouldn't be called because the second parameter is bogus. I don't think
+		// it is called but decided to better leave it in.
+		return colorItem(counts, counts);
 	}
 
-	Color colorItem(TreeSet<Long> counts) {
-		final int hue = ModuleCoverageInformation.getHue(getUnseen(), counts);
+	Color colorItem(final TreeSet<Long> distinctStateCounts, final TreeSet<Long> stateCounts) {
+		// Distinct states colors...
+		for (Representation rep : Representation.values()) {
+			// Always use the same representation (also for the unrelated representations
+			// Inv, Cost, InvCost to avoid NPEs).
+			representations.put(rep, createColors(distinctStateCounts, getUnseen()));
+		}
+		
+		// For non-distinct states calculate a dedicated color mapping and replace the
+		// incorrect color mapping from the previous for loop with the correct one.
+		representations.put(Representation.STATES, createColors(stateCounts, getCount()));
+		
+		// Return one of the colors (should be ignored anyway).
+		return representations.get(Representation.STATES)[0];
+	}
+
+	private Color[] createColors(final TreeSet<Long> counts, long count) {
+		final int hue = ModuleCoverageInformation.getHue(count, counts);
 		final String key = Integer.toString(hue);
 		if (!JFaceResources.getColorRegistry().hasValueFor(key)) {
 			JFaceResources.getColorRegistry().put(key, new RGB(hue, .25f, 1f));
 		}
-		
-		for (Representation rep : Representation.values()) {
-			// always the same representation.
-			representations.put(rep, new Color[] { JFaceResources.getColorRegistry().get(key),
-					JFaceResources.getColorRegistry().get(key) });
-		}
-		
-		return JFaceResources.getColorRegistry().get(key);
+		return new Color[] { JFaceResources.getColorRegistry().get(key), JFaceResources.getColorRegistry().get(key) };
 	}
 
 	public String getHover() {
