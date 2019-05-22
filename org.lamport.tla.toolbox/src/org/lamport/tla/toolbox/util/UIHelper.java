@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionException;
@@ -25,8 +24,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
@@ -1470,8 +1471,8 @@ public class UIHelper {
 					final Frame f = SWT_AWT.new_Frame(c);
 					DISPLAY_SCALE = f.getGraphicsConfiguration().getDefaultTransform().getScaleX();
 				} catch (Exception e) {
-					Logger.getLogger(UIHelper.class.getName()).severe("Exception caught: " + e.getMessage());
-					e.printStackTrace();
+					Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+							"Exception fetching Linux display scale.", e));
 					
 					DISPLAY_SCALE = 1.0;
 				} finally {

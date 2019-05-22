@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
