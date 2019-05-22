@@ -26,8 +26,10 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.Assert;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TraceAnimationView;
@@ -84,18 +86,73 @@ public class TraceAnimatorDataProvider extends TraceExplorerDataProvider {
             }
         });
     }
+    
+    /**
+     * Convert a given TLC value into an SVG animation frame. Expects that the given
+     * TLC value comes from a view expression, which means that it should be a TLA+
+     * record type with the fields 'name', 'attrs', and 'children'.
+     */
+    private String svgElemToString(TLCVariableValue v) {
+        String svgElemName = "";
+        String attrsStr = "";
+        String svgChildrenStr = "";
+
+        Assert.isTrue(v instanceof TLCRecordVariableValue);
+
+        TLCRecordVariableValue record = (TLCRecordVariableValue) v;
+        for (TLCNamedVariableValue el : record.getPairs()) {
+
+            // Extract the name of the SVG element.
+            if (el.getName().equals("name")) {
+                // Remove quotes from the string value.
+                svgElemName = el.getValue().toString().replace("\"", "");
+            }
+
+            // Extract the SVG element attributes.
+            if (el.getName().equals("attrs")) {
+                if (el.getValue() instanceof TLCSequenceVariableValue) {
+                    // Empty attrs.
+                    continue;
+                }
+                TLCRecordVariableValue attrs = (TLCRecordVariableValue) el.getValue();
+                for (TLCNamedVariableValue attr : attrs.getPairs()) {
+                    String key = attr.getName();
+                    String val = attr.getValue().toString();
+
+                    attrsStr += key;
+                    attrsStr += "=";
+                    attrsStr += val;
+                    attrsStr += " ";
+                }
+            }
+
+            // Extract and construct all the children of this SVG element, if there are any.
+            if (el.getName().equals("children")) {
+                TLCSequenceVariableValue children = (TLCSequenceVariableValue) el.getValue();
+                for (TLCVariableValue child : children.asList()) {
+                    svgChildrenStr += svgElemToString(child);
+                }
+            }
+        }
+
+        // Construct the SVG element string.
+        return String.format("<%s %s>%s</%s>", svgElemName, attrsStr, svgChildrenStr, svgElemName);
+    }
 
     /**
      * Processes the trace from the TLC run and extracts the evaluated 'View'
      * expression from each state and compiles it into a sequence of SVG frames.
      */
-    public ArrayList<String> constructTraceAnimation() {
+    private ArrayList<String> constructTraceAnimation() {
         ArrayList<String> svgStates = new ArrayList<String>();
         for (TLCError e : getErrors()) {
             for (TLCState s : e.getStates()) {
                 for (TLCVariable v : s.getVariablesAsList()) {
-                    if (v.getName().equals("View")) {
-                        svgStates.add(v.getValue().toString());
+                    
+                    // Extract the 'View' expression.
+                    if(v.getName().equals("View")) {
+                        String svgFrameStr = svgElemToString(v.getValue());
+                        svgStates.add(svgFrameStr);
                     }
                 }
             }

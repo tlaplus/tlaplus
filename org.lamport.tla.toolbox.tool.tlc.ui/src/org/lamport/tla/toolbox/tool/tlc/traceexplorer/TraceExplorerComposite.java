@@ -676,14 +676,18 @@ public class TraceExplorerComposite
 			job.setUser(true);
 			job.schedule();
 			
-	        tableViewer.getTable().setEnabled(false);
-	        
-	        buttonExplore.setEnabled(false);
-	        buttonAdd.setEnabled(false);
-	        buttonEdit.setEnabled(false);
-	        buttonRemove.setEnabled(false);
-	        
-	        buttonRestore.setEnabled(true);
+            // After kicking off trace animation, we don't need to disable any buttons.
+            if (mode == TraceExplorerDelegate.MODE_TRACE_EXPLORE) {
+                tableViewer.getTable().setEnabled(false);
+            
+                buttonExplore.setEnabled(false);
+                buttonAdd.setEnabled(false);
+                buttonEdit.setEnabled(false);
+                buttonRemove.setEnabled(false);
+            
+                buttonRestore.setEnabled(true);
+            }
+
         }
     }
 

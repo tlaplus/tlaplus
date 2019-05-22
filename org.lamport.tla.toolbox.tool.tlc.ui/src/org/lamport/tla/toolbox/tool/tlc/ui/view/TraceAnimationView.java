@@ -34,7 +34,13 @@ import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
@@ -53,6 +59,7 @@ public class TraceAnimationView extends ViewPart {
     private Model model;
     private List<String> svgAnimationFrames = new ArrayList<String>();
     private int currStateIndex = 0;
+    private Text frameCounter;
     Browser browser;
 
     public TraceAnimationView() {
@@ -71,6 +78,13 @@ public class TraceAnimationView extends ViewPart {
             loadFrame(currStateIndex);
         }
     }
+    
+    /**
+     * Produces the text to be displayed by the frame counter for a given frame index.
+     */
+    private String frameCounterText(int frame) {
+        return "State " + frame + " | Total States: " + svgAnimationFrames.size();
+    }
 
     /**
      * Loads the frame at the specified index.
@@ -81,6 +95,26 @@ public class TraceAnimationView extends ViewPart {
         Assert.isTrue(frameIndex < svgAnimationFrames.size(), "Tried to access frame index " + frameIndex
                 + " even though there are only " + svgAnimationFrames.size() + " frames.");
         browser.setText(makeHTMLFrame(svgAnimationFrames.get(frameIndex)));
+        frameCounter.setText(frameCounterText(frameIndex + 1));
+        frameCounter.pack();
+    }
+    
+    /**
+     * Step forward or backward a single frame, depending on the value of 'dir', which can 1 or -1.
+     */
+    private void stepFrame(int inc) {
+        
+        // Move to the proper frame.
+        currStateIndex += inc;
+
+        // Don't step past the last frame.
+        currStateIndex = Math.min(currStateIndex, svgAnimationFrames.size() - 1);
+
+        // Don't step behind the first frame.
+        currStateIndex = Math.max(0, currStateIndex);
+
+        // Load the new frame.
+        loadFrame(currStateIndex);
     }
 
     /**
@@ -134,18 +168,9 @@ public class TraceAnimationView extends ViewPart {
 
             // We have pressed one of the left/right arrow keys.
             keyDown = true;
-
-            // Advance the frame.
-            currStateIndex += inc;
-
-            // Don't step past the last frame.
-            currStateIndex = Math.min(currStateIndex, svgAnimationFrames.size() - 1);
-
-            // Don't step behind the first frame.
-            currStateIndex = Math.max(0, currStateIndex);
-
-            // Load the new frame.
-            loadFrame(currStateIndex);
+            
+            // Move to the appropriate frame.
+            stepFrame(inc);
         }
 
         @Override
@@ -161,10 +186,17 @@ public class TraceAnimationView extends ViewPart {
      * Creates the HTML browser component.
      */
     public void createPartControl(Composite parent) {
+        
+        GridLayout gridLayout = new GridLayout();
+        gridLayout.numColumns = 2;
+        parent.setLayout(gridLayout);
+        
+        //
+        // Create the browser for viewing the SVG animation frames.
+        //
+        
         try {
-            browser = new Browser(parent, SWT.RESIZE);
-            browser.setBounds(0, 0, 2000, 2000);
-            browser.setSize(700, 900);
+           browser = new Browser(parent, SWT.NONE);
         } catch (SWTError e) {
             System.out.println("Could not instantiate Browser: " + e.getMessage());
             return;
@@ -172,6 +204,55 @@ public class TraceAnimationView extends ViewPart {
 
         browser.setText("<html></html>");
         browser.addKeyListener(new ArrowKeyListener());
+        
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gridData.horizontalSpan = 2;
+        browser.setLayoutData(gridData);
+        
+        //
+        // Create the frame counter text object.
+        //
+        
+        Text frameCounterText = new Text(parent, SWT.NONE);
+        GridData gridDataText = new GridData(SWT.CENTER, SWT.FILL, true, false);
+        gridDataText.horizontalSpan = 2;
+        frameCounterText.setLayoutData(gridDataText);
+        frameCounterText.setText(frameCounterText(1));
+        frameCounterText.pack();
+        frameCounter = frameCounterText;
+
+        //
+        // Create the buttons for stepping forward and backwards through the trace.
+        //
+        
+        final int buttonHeight = 35;
+        final Button buttonPrev = new Button(parent, SWT.NONE);
+        buttonPrev.setText("Prev State");
+        GridData gridDataPrev = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        gridDataPrev.heightHint = buttonHeight;
+        buttonPrev.setLayoutData(gridDataPrev);
+        buttonPrev.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                // Step back a frame.
+                stepFrame(-1);
+            }
+         });
+        
+        
+        final Button buttonNext = new Button(parent, SWT.NONE);
+        buttonNext.setText("Next State");    
+        GridData gridDataNext = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        gridDataNext.heightHint = buttonHeight;
+        buttonNext.setLayoutData(gridDataNext);
+        buttonNext.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                // Advance the frame.
+                stepFrame(1);
+            }
+         });
+        
     }
 
     public void setFocus() {
