@@ -423,7 +423,12 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 				            return super.getText(element);
 				        }
 				    });
-				    viewer.setInput(Representation.values());
+				    
+					// Do not allow users to set the legend to states or distinct states if the
+					// module does not have values for these two representations. Otherwise, update
+					// legend will hide the legend (because legend is empty) without means to switch
+					// back (the buttons are hidden).
+					viewer.setInput(coverage.hasStates() ? Representation.values() : Representation.valuesNoStates());
 				    viewer.setSelection(new StructuredSelection(currentRepresentation));
 				    viewer.addSelectionChangedListener(event -> {
 					    final IStructuredSelection selection = (IStructuredSelection) event.getSelection();

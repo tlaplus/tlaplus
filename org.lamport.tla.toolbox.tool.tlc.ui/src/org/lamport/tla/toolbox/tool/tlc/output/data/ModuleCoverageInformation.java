@@ -184,6 +184,12 @@ public class ModuleCoverageInformation {
 		}
 	}
 	
+	// false if a module has no actions (e.g. standard modules).
+	public boolean hasStates() {
+		return this.allItems.stream().filter(i -> i.isInFile(this.file) && i instanceof ActionInformationItem)
+				.count() > 0L;
+	}
+
 	public CoverageInformationItem getRoot() {
 		if (this.root == null) {
 			// Create the tree out of the flat list of items (the tree might span multiple

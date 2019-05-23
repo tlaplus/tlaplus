@@ -34,6 +34,14 @@ public enum Representation {
 	
 	INV, COST, INVCOST, STATES, STATES_DISTINCT;
 
+	public static Object valuesNoStates() {
+		final Representation[] values = new Representation[3];
+		values[0] = INV;
+		values[1] = COST;
+		values[2] = INVCOST;
+		return values;
+	}
+
 	public enum Grouping {
 		INDIVIDUAL, COMBINED;
 	}
