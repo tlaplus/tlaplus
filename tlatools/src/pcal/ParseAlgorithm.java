@@ -314,7 +314,8 @@ public class ParseAlgorithm
      * should be set to the position of the PcalParams.BeginAlg string by  *
      * whatever method finds that string and calls GetAlgorithm.           *
      **********************************************************************/
-     { Init(charR) ;
+     { try {
+	   Init(charR) ;
        if (fairAlgorithm) {
     	   String nextToken = GetAlgToken() ;
     	   if (!nextToken.equals(PcalParams.BeginFairAlg2)) {
@@ -545,6 +546,14 @@ public class ParseAlgorithm
                              GetLastLocationEnd())) ;
            return uniproc ;
          }
+       } catch (final RuntimeException e) {
+			// Catch generic/unhandled errors (ArrayIndexOutOfbounds/NullPointers/...) that
+			// the nested code might throw at us. Not converting them into a
+			// ParseAlgorithmException means the Toolbox silently fails to translate an
+			// algorithm (see Github issue at https://github.com/tlaplus/tlaplus/issues/313)
+	    	ParsingError("Unknown error at or before");
+    	    return null;
+       }
      }
 
    /**
