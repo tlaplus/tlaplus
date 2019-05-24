@@ -134,6 +134,12 @@
 						<symlink
 						  link="${basedir}/${unpack_dir}/TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/MacOS/libjli.dylib"
 						  resource="${basedir}/${unpack_dir}TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/Home/lib/jli/libjli.dylib"/>
+						<!-- Rename Toolbox directory to remove "+ " in path ".../TLA+ Toolbox/..." to make RCPTT not crash with
+						         java.net.URISyntaxException: Illegal character in path at index 104: ...
+						   (see https://bugs.eclipse.org/547632) -->
+						<move todir="${unpack_dir}/TLAToolbox.app">
+							<fileset dir="${unpack_dir}/TLA+ Toolbox.app/"/>
+						</move>
                 	</ac:then>
                 </ac:if>
               </target>
