@@ -31,8 +31,10 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 
 import tla2sany.drivers.FrontEndException;
@@ -482,10 +484,19 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // Apply module overrides:
         for (int i = 0; i < mods.length; i++)
         {
+        	
             UniqueString modName = mods[i].getName();
             Class userModule = this.tlaClass.loadClass(modName.toString());
             if (userModule != null)
             {
+            	final Map<UniqueString, Integer> opname2arity = new HashMap<>();
+            	if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
+            		for (OpDefNode opDefNode : rootOpDefs) {
+            			if (opDefNode.getOriginallyDefinedInModuleNode().getName().equals(modName)) {
+            				opname2arity.put(opDefNode.getName(), opDefNode.getArity());
+            			}
+            		}
+            	}
                 // Override with a user defined Java class for the TLA+ module.
                 // Collects new definitions:
                 Hashtable<UniqueString, IValue> javaDefs = new Hashtable<UniqueString, IValue>();
@@ -501,11 +512,21 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                         MethodValue mv = new MethodValue(mds[j]);
                         boolean isConstant = (acnt == 0) && Modifier.isFinal(mdf);
                         IValue val = isConstant ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
-                        javaDefs.put(uname, val);
                         
                         if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
-            			   final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
-                           MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED, new String[] {uname.toString(), resource.toExternalForm(), mv.toString()});
+							final Integer arity = opname2arity.get(uname);
+							if (arity == null || arity != acnt) {
+								final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
+								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
+										new String[] { uname.toString(), resource.toExternalForm(), mv.toString() });
+							} else {
+		                        javaDefs.put(uname, val);
+								final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
+								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+										new String[] { uname.toString(), resource.toExternalForm(), mv.toString() });
+							}
+                        } else {
+                            javaDefs.put(uname, val);
                         }
                     }
                 }

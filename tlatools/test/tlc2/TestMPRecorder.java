@@ -60,6 +60,16 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 	public int getRecordAsInt(int code) {
 		return Integer.parseInt(((String[]) records.get(code).get(0))[0]);
 	}
+
+	public List<String[]> getRecordAsStringArray(int code) {
+		final List<Object> l = records.get(code);
+		
+		final List<String[]> strs = new ArrayList<>(l.size());
+		for (Object o : l) {
+			strs.add((String[]) o);
+		}
+		return strs;
+	}
 	
 	// This is a best effort implementation that only checks the first
 	// elements of the nested records and contained arrays

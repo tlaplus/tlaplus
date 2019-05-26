@@ -673,7 +673,10 @@ public class MP
         case EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED:
             b.append("Loading %1% operator override from %2% with signature: %3%.");
             break;
-        case EC.TLC_FEATURE_UNSUPPORTED:
+        case EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH:
+            b.append("Failed to match %1% operator override from %2% with signature: %3%.");
+            break;
+       case EC.TLC_FEATURE_UNSUPPORTED:
             b.append("%1%");
             break;
         case EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY:
