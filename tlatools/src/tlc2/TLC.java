@@ -21,7 +21,6 @@ import java.util.TimeZone;
 import model.InJarFilenameToStream;
 import model.ModelInJar;
 import tlc2.output.EC;
-import tlc2.output.ExitStatus;
 import tlc2.output.MP;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ITool;
@@ -264,7 +263,7 @@ public class TLC
         }
 
         // Be explicit about tool success.
-        System.exit(ExitStatus.fromErrorCode(errorCode));
+        System.exit(EC.exitStatus(errorCode));
     }
     
 	// false if the environment (JVM, OS, ...) makes model checking impossible.

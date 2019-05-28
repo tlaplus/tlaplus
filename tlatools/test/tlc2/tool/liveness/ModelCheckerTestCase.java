@@ -37,6 +37,7 @@ import org.junit.Before;
 import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
+import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.CommonTestCase;
 import tlc2.tool.ModelChecker;
@@ -50,6 +51,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	protected String spec;
 	protected String[] extraArguments = new String[0];
 	protected TLC tlc;
+	protected int exitStatus = -1;
 
 	public ModelCheckerTestCase(String spec) {
 		super(new TestMPRecorder());
@@ -137,7 +139,8 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			tlc.handleParameters(args.toArray(new String[args.size()]));
 			
 			// Run the ModelChecker
-			tlc.process();
+			final int errorCode = tlc.process();
+			exitStatus = EC.exitStatus(errorCode);
 			
 		} catch (Exception e) {
 			fail(e.getMessage());
@@ -164,6 +167,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	 */
 	protected int getNumberOfThreads() {
 		return 1;
+	}
+
+	protected int getExitStatus() {
+		return exitStatus;
 	}
 	
 	/**
