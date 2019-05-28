@@ -216,6 +216,8 @@ public interface ITool extends TraceApp {
 
 	Object lookup(SymbolNode opNode, Context con, boolean b);
 
+	Object lookup(SymbolNode operator);
+
 	Object getVal(ExprOrOpArgNode expr, Context con, boolean b);
 
 	Action getNextStateSpec();

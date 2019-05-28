@@ -213,10 +213,10 @@ public class CostModelCreator extends ExplorerVisitor {
 				oan.setPrimed();
 			}
 			
-			// CONSTANT operators (this is similar to the lookups in Tool#evalAppl on e.g.
-			// line 1442), except that we lookup ToolObject only.
-			final Object val = opApplNode.getOperator().getToolObject(tool.getId());
-			if (val instanceof OpDefNode) {
+			// CONSTANT operators (including definition overrides...)
+			final SymbolNode operator = opApplNode.getOperator();
+			final Object val = tool.lookup(operator);
+			if (val instanceof OpDefNode && operator != val) { // second conjunct bc lookup returns operator when nothing else found.
 				final OpDefNode odn = (OpDefNode) val;
 				final ExprNode body = odn.getBody();
 				if (body instanceof OpApplNode) {
@@ -226,7 +226,6 @@ public class CostModelCreator extends ExplorerVisitor {
 			}			
 			
 			// RECURSIVE
-			final SymbolNode operator = opApplNode.getOperator();
 			if (operator instanceof OpDefNode) {
 				final OpDefNode odn = (OpDefNode) operator;
 				if (odn.getInRecursive()) {
