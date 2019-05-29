@@ -81,7 +81,7 @@ public interface IValue {
 	   * This abstract method returns a string representation of this
 	   * value. Each subclass must provide its own implementation.
 	   */
-	StringBuffer toString(StringBuffer sb, int offset);
+	StringBuffer toString(StringBuffer sb, int offset, boolean swallow);
 
 	/* The string representation of this value */
 	String toString();

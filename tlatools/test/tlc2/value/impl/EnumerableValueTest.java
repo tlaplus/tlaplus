@@ -144,8 +144,8 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public StringBuffer toString(StringBuffer sb, int offset) {
-			return null;
+		public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
+			return toString(sb, offset, swallow);
 		}
 	}
 }

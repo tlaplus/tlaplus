@@ -308,27 +308,32 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
   /* The string representation of this value */
   @Override
   public final String toString() {
-    try {
-      StringBuffer sb = new StringBuffer();
-      return this.toString(sb, 0).toString();
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
+	  return toStringImpl("", true);
+  }
+  
+  /* Same as toString except that nested exceptions won't be silently discarded */
+  public final String toStringUnchecked() {
+	  return toStringImpl("", false);
   }
 
   @Override
-  public final String toString(String delim) {
+  public final String toString(final String delim) {
+	  return toStringImpl(delim, true);
+  }
+
+  public final String toStringUnchecked(final String delim) {
+	  return toStringImpl(delim, false);
+  }
+  
+  private final String toStringImpl(final String delim, final boolean checked) {
     try {
-      StringBuffer sb = new StringBuffer();
-      sb = this.toString(sb, 0);
-      sb.append(delim);
-      return sb.toString();
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
+        final StringBuffer sb = this.toString(new StringBuffer(), 0, checked);
+        sb.append(delim);
+        return sb.toString();
+      }
+      catch (RuntimeException | OutOfMemoryError e) {
+        if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+        else { throw e; }
+      }
   }
 }

@@ -735,11 +735,16 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
 
   /* The string representation of this function.  */
   public final StringBuffer toString(StringBuffer sb, int offset) {
+	return toString(sb, offset, true);
+}
+
+/* The string representation of this function.  */
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       if (TLCGlobals.expand || this.params == null) {
         try {
           Value  val = this.toFcnRcd();
-          return val.toString(sb, offset);
+          return val.toString(sb, offset, true);
         }
         catch (Throwable e) { /*SKIP*/ }
       }

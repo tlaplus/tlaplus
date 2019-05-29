@@ -242,19 +242,19 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   }
 
   /* String representation of the value. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       try {
         if (TLCGlobals.expand) {
           Value val = this.toSetEnum();
-          return val.toString(sb, offset);
+          return val.toString(sb, offset, swallow);
         }
       }
-      catch (Throwable e) { /*SKIP*/ }
+      catch (Throwable e) { if (!swallow) throw e; }
 
-      sb = this.set1.toString(sb, offset);
+      sb = this.set1.toString(sb, offset, swallow);
       sb = sb.append(" \\cup ");
-      sb = this.set2.toString(sb, offset);
+      sb = this.set2.toString(sb, offset, swallow);
       return sb;
     }
     catch (RuntimeException | OutOfMemoryError e) {

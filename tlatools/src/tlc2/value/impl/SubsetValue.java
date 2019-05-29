@@ -294,7 +294,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   /* The string representation  */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       boolean unlazy = TLCGlobals.expand;
       try {
@@ -302,15 +302,15 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
           unlazy = this.set.size() < 7;
         }
       }
-      catch (Throwable e) { unlazy = false; }
+      catch (Throwable e) { if (swallow) unlazy = false; else throw e; }
 
       if (unlazy) {
         Value  val = this.toSetEnum();
-        return val.toString(sb, offset);
+        return val.toString(sb, offset, swallow);
       }
       else {
         sb = sb.append("SUBSET ");
-        sb = this.set.toString(sb, offset);
+        sb = this.set.toString(sb, offset, swallow);
         return sb;
       }
     }

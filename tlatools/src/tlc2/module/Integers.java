@@ -243,7 +243,7 @@ public class Integers extends UserObj implements ValueConstants
         return false;
     }
 
-    public final StringBuffer toString(StringBuffer sb, int offset)
+    public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
         return sb.append("Int");
     }

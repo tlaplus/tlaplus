@@ -245,27 +245,27 @@ public class OpRcdValue extends OpValue implements Applicable {
   }
 
   /* Pretty-printing  */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       sb.append("{ ");
       if (this.values.size() != 0) {
         sb.append("<");
         Value[] args = (Value[])this.domain.elementAt(0);
         for (int j = 0; j < args.length; j++) {
-          sb = args[j].toString(sb, offset);
+          sb = args[j].toString(sb, offset, swallow);
           sb.append(", ");
         }
-        sb = ((Value)this.values.elementAt(0)).toString(sb, offset);
+        sb = ((Value)this.values.elementAt(0)).toString(sb, offset, swallow);
         sb.append(">");
       }
       for (int i = 1; i < this.values.size(); i++) {
         sb.append(", <");
         Value[] args = (Value[])this.domain.elementAt(i);
         for (int j = 0; j < args.length; j++) {
-          sb = args[j].toString(sb, offset);
+          sb = args[j].toString(sb, offset, swallow);
           sb.append(", ");
         }
-        sb = ((Value)this.values.elementAt(i)).toString(sb, offset);
+        sb = ((Value)this.values.elementAt(i)).toString(sb, offset, swallow);
         sb.append(">");
       }
       return sb.append("}");

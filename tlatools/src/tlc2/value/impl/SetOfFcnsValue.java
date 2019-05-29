@@ -305,7 +305,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   /* The string representation of the value. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       boolean unlazy = TLCGlobals.expand;
       try {
@@ -323,17 +323,17 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
           unlazy = sz < TLCGlobals.enumBound;
         }
       }
-      catch (Throwable e) { unlazy = false; }
+      catch (Throwable e) { if (swallow) unlazy = false; else throw e; }
 
       if (unlazy) {
         Value val = this.toSetEnum();
-        return val.toString(sb, offset);
+        return val.toString(sb, offset, swallow);
       }
       else {
         sb.append("[");
-        this.domain.toString(sb, offset);
+        this.domain.toString(sb, offset, swallow);
         sb.append(" -> ");
-        this.range.toString(sb, offset);
+        this.range.toString(sb, offset, swallow);
         sb.append("]");
         return sb;
       }

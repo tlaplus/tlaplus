@@ -268,7 +268,7 @@ implements Enumerable, Reducible {
   }
 
   /* The string representation */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, final boolean ignored) {
     try {
       if (this.low <= this.high) {
         return sb.append(this.low).append("..").append(this.high);

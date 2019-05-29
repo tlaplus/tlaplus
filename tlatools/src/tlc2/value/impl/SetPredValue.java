@@ -300,15 +300,15 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   /* The string representation of the value. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       try {
         if (TLCGlobals.expand) {
           Value  val = this.toSetEnum();
-          return val.toString(sb, offset);
+          return val.toString(sb, offset, swallow);
         }
       }
-      catch (Throwable e) { /*SKIP*/ }
+      catch (Throwable e) { if (!swallow) throw e; }
 
       sb.append("{");
       if (this.vars instanceof FormalParamNode) {

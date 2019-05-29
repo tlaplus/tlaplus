@@ -202,7 +202,7 @@ public class IntValue extends Value {
   public final IValue permute(IMVPerm perm) { return this; }
 
   /* The string representation. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean ignored) {
     try {
       return sb.append(this.val);
     }

@@ -349,16 +349,16 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   }
 
   /* The string representation of this value. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       sb.append("<<");
       int len = this.elems.length;
       if (len > 0) {
-        sb = this.elems[0].toString(sb, offset);
+        sb = this.elems[0].toString(sb, offset, swallow);
       }
       for (int i = 1; i < len; i++) {
         sb = sb.append(", ");
-        sb = this.elems[i].toString(sb, offset);
+        sb = this.elems[i].toString(sb, offset, swallow);
       }
       sb.append(">>");
       return sb;

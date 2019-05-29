@@ -114,7 +114,7 @@ public class UndefValue extends Value {
   public final boolean assignable(Value val) { return true; }
 
   /* The string representation. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       return sb.append("UNDEF");
     }

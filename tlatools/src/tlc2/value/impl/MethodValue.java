@@ -233,7 +233,7 @@ public class MethodValue extends OpValue implements Applicable {
   }
 
   /* String representation of the value.  */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean ignored) {
     try {
       return sb.append("<Java Method: " + this.md + ">");
     }

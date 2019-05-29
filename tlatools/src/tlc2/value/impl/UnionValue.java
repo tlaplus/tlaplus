@@ -283,15 +283,15 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   }
 
   /* String representation of this value. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       if (TLCGlobals.expand) {
         Value val = this.toSetEnum();
-        return val.toString(sb, offset);
+        return val.toString(sb, offset, swallow);
       }
       else {
         sb = sb.append("UNION(");
-        sb = this.set.toString(sb, offset);
+        sb = this.set.toString(sb, offset, swallow);
         sb.append(")");
         return sb;
       }

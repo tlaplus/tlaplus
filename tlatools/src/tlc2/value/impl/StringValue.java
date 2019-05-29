@@ -238,7 +238,7 @@ public class StringValue extends Value {
 
 
   /* The string representation of the value. */
-  public StringBuffer toString(StringBuffer sb, int offset) {
+  public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       return sb.append("\"" + PrintVersion(this.val.toString()) + "\"");
     }

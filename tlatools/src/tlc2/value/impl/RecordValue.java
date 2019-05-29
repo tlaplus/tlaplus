@@ -468,19 +468,19 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   }
 
   /* The string representation */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       int len = this.names.length;
 
       sb.append("[");
       if (len > 0) {
         sb.append(this.names[0] + " |-> ");
-        sb = this.values[0].toString(sb, offset);
+        sb = this.values[0].toString(sb, offset, swallow);
       }
       for (int i = 1; i < len; i++) {
         sb.append(", ");
         sb.append(this.names[i] + " |-> ");
-        sb = this.values[i].toString(sb, offset);
+        sb = this.values[i].toString(sb, offset, swallow);
       }
       return sb.append("]");
     }

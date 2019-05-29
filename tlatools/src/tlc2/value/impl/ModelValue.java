@@ -307,7 +307,7 @@ public class ModelValue extends Value implements IModelValue {
   }
 
   /* The string representation. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean ignored) {
     try {
       return sb.append(this.val);
     }

@@ -50,7 +50,7 @@ public class Strings extends UserObj
         return false;
     }
 
-    public final StringBuffer toString(StringBuffer sb, int offset)
+    public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
         return sb.append("STRING");
     }

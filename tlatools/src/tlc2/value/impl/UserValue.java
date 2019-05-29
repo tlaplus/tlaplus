@@ -124,9 +124,9 @@ public class UserValue extends Value {
   }
 
   /* The string representation. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
-      return this.userObj.toString(sb, offset);
+      return this.userObj.toString(sb, offset, swallow);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

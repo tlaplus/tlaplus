@@ -72,10 +72,10 @@ public class TLC implements ValueConstants
         v1c.deepNormalize();
         v2c.deepNormalize();
         if (OUTPUT == null) {
-        	ToolIO.out.println(Values.ppr(v1c.toString()) + "  " + Values.ppr(v2c.toString()));
+        	ToolIO.out.println(Values.ppr(v1c.toStringUnchecked()) + "  " + Values.ppr(v2c.toStringUnchecked()));
         } else {
         	try {
-        		OUTPUT.write(Values.ppr(v1c.toString()) + "  " + Values.ppr(v2c.toString()) + "\n");
+        		OUTPUT.write(Values.ppr(v1c.toStringUnchecked()) + "  " + Values.ppr(v2c.toStringUnchecked()) + "\n");
         	} catch (IOException e) {
         		MP.printError(EC.GENERAL, e);
         	}
@@ -93,11 +93,11 @@ public class TLC implements ValueConstants
         Value v1c = (Value) v1.deepCopy();
         v1c.deepNormalize();   
         if (OUTPUT == null) {
-        	String ppr = Values.ppr(v1c.toString());
+        	String ppr = Values.ppr(v1c.toStringUnchecked());
         	ToolIO.out.println(ppr);
         } else {
         	try {
-        		OUTPUT.write(Values.ppr(v1c.toString("\n")));
+        		OUTPUT.write(Values.ppr(v1c.toStringUnchecked("\n")));
         	} catch (IOException e) {
         		MP.printError(EC.GENERAL, e);
         	}
@@ -108,7 +108,7 @@ public class TLC implements ValueConstants
     /* Returns the string value of the string representation of v. */
     public static Value ToString(Value v)
     {
-        return new StringValue(v.toString());
+        return new StringValue(v.toStringUnchecked());
     }
 
     /**

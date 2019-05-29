@@ -413,17 +413,17 @@ public class Sequences extends UserObj implements ValueConstants
         return this.size != Integer.MAX_VALUE;
     }
 
-    public final StringBuffer toString(StringBuffer sb, int offset)
+    public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
         if (this.size == Integer.MAX_VALUE)
         {
             sb = sb.append("Seq(");
-            sb = this.range.toString(sb, offset);
+            sb = this.range.toString(sb, offset, swallow);
             sb = sb.append(")");
         } else
         {
             sb = sb.append("BSeq(");
-            sb = this.range.toString(sb, offset);
+            sb = this.range.toString(sb, offset, swallow);
             sb = sb.append(", ");
             sb = sb.append(this.size);
             sb = sb.append(")");

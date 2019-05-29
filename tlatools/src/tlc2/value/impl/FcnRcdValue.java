@@ -815,7 +815,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   }
 
   /* The string representation of the value.  */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
 
       int len = this.values.length;
@@ -825,37 +825,37 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       else if (this.isRcd()) {
         sb.append("[");
         sb.append(((StringValue)this.domain[0]).val + " |-> ");
-        sb = this.values[0].toString(sb, offset);
+        sb = this.values[0].toString(sb, offset, swallow);
 
         for (int i = 1; i < len; i++) {
           sb.append(", ");
           sb.append(((StringValue)this.domain[i]).val + " |-> ");
-          sb = this.values[i].toString(sb, offset);
+          sb = this.values[i].toString(sb, offset, swallow);
         }
         sb.append("]");
       }
       else if (this.isTuple()) {
         // It is actually a sequence:
         sb = sb.append("<<");
-        sb = this.values[0].toString(sb, offset);
+        sb = this.values[0].toString(sb, offset, swallow);
 
         for (int i = 1; i < len; i++) {
           sb.append(", ");
-          sb = this.values[i].toString(sb, offset);
+          sb = this.values[i].toString(sb, offset, swallow);
         }
         sb.append(">>");
       }
       else {
         sb = sb.append("(");
-        sb = this.domain[0].toString(sb, offset);
+        sb = this.domain[0].toString(sb, offset, swallow);
         sb.append(" :> ");
-        sb = this.values[0].toString(sb, offset);
+        sb = this.values[0].toString(sb, offset, swallow);
 
         for (int i = 1; i < len; i++) {
           sb.append(" @@ ");
-          sb = this.domain[i].toString(sb, offset);
+          sb = this.domain[i].toString(sb, offset, swallow);
           sb.append(" :> ");
-          sb = this.values[i].toString(sb, offset);
+          sb = this.values[i].toString(sb, offset, swallow);
         }
         sb.append(")");
       }

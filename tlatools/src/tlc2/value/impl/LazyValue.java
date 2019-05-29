@@ -264,12 +264,12 @@ public class LazyValue extends Value {
   }
 
   /* The string representation of the value. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
         return sb.append("<LAZY " + this.expr + ">");
       }
-      return this.val.toString(sb, offset);
+      return this.val.toString(sb, offset, swallow);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

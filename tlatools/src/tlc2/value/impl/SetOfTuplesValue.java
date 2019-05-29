@@ -322,7 +322,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   }
 
   /* The string representation of the value. */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       boolean unlazy = TLCGlobals.expand;
       try {
@@ -338,20 +338,20 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
           unlazy = sz < TLCGlobals.enumBound;
         }
       }
-      catch (Throwable e) { unlazy = false; }
+      catch (Throwable e) { if (swallow) unlazy = false; else throw e; }
 
       if (unlazy) {
         Value val = this.toSetEnum();
-        return val.toString(sb, offset);
+        return val.toString(sb, offset, swallow);
       }
       else {
         if (this.sets.length > 0) {
           sb.append("(");
-          this.sets[0].toString(sb, offset);
+          this.sets[0].toString(sb, offset, swallow);
         }
         for (int i = 1; i < this.sets.length; i++) {
           sb.append(" \\X ");
-          this.sets[i].toString(sb, offset);
+          this.sets[i].toString(sb, offset, swallow);
         }
         if (this.sets.length > 0) {
           sb.append(")");

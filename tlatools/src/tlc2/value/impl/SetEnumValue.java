@@ -340,7 +340,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   }
 
   /* The string representation */
-  public final StringBuffer toString(StringBuffer sb, int offset) {
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       // If this SetEnumValue object is created by a union, at least one of
       // whose elements is a Cartesian product, then this can be an unnormalized
@@ -363,11 +363,11 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       int len = this.elems.size();
       sb = sb.append("{");
       if (len > 0) {
-        this.elems.elementAt(0).toString(sb, offset);
+        this.elems.elementAt(0).toString(sb, offset, swallow);
       }
       for (int i = 1; i < len; i++) {
         sb.append(", ");
-        this.elems.elementAt(i).toString(sb, offset);
+        this.elems.elementAt(i).toString(sb, offset, swallow);
       }
       sb.append("}");
       return sb;

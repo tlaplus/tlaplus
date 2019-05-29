@@ -175,6 +175,11 @@ public class BoolValue extends Value implements IBoolValue {
 
   /* The string representation */
   public final StringBuffer toString(StringBuffer sb, int offset) {
+	return toString(sb, offset, true);
+}
+
+/* The string representation */
+  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       return sb.append((this.val) ? "TRUE" : "FALSE");
     }
