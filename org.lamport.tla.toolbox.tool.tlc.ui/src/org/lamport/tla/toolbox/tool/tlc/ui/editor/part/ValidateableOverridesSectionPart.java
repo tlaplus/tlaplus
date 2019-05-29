@@ -155,7 +155,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
         // if the label is M!N!Foo, this will return Foo as the label. If ! is not used,
         // it will do nothing. If the definition override is a model value
         // then the right side will be equal to the label without any !.
-        // For example if M!N!Foo is overriden as a model value,
+        // For example if M!N!Foo is overridden as a model value,
         // the right side of the assignment used to generate the string
         // in this method will be Foo.
         tableViewer.setLabelProvider(new LabelProvider() {
@@ -166,6 +166,17 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
                     Assignment assign = (Assignment) element;
                     String label = assign.getLabel();
                     String noBangLabel = label.substring(label.lastIndexOf("!") + 1);
+            		
+					// This is upside-down because early in the call stack we had the node instance
+					// but dropped it and instead serialized parts of it into Assignment. Now we
+					// have to reconstruct the actual OpDefNode because need to know its module.
+					// Since this is the standard idiom throughout this part of the model editor,
+					// I'm not going to rewrite it.
+                    OpDefNode node = ModelHelper.getOpDefNode(label);
+            		if (node != null && node.getSource() != node) {
+            			noBangLabel += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+            		}
+            		
                     String rightSide = null;
                     if (assign.isModelValue())
                     {
