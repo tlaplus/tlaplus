@@ -1,6 +1,8 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.dialog;
 
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -16,6 +18,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
@@ -44,7 +47,18 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
     // the names of all operators that have already been overridden.
     // These are the names by which they are known to the root module, such
     // as "frob!bar!id".
-    private String[] names;
+    private final Set<String> names = new HashSet<>();
+
+	private static String toString(OpDefNode node) {
+		// strip off leading F!B!... prefix and attach suffix [ModuleName] in case
+		// definition comes from foreign module.
+		String name = node.getName().toString();
+		if (node.getSource() != node) {
+			name = name.substring(name.lastIndexOf("!") + 1);
+			name += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+		}
+		return name;
+	}
 
     /**
      * Constructs new dialog instance
@@ -62,7 +76,11 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
         setListLabelProvider(getListLabelProvider());
         setDetailsLabelProvider(getDetailLabelProvider());
         setSelectionHistory(new DefinitionHistory());
-        this.names = names;
+        
+        for (String name : names) {
+        	OpDefNode opDefNode = ModelHelper.getOpDefNode(specObj, name);
+			this.names.add(toString(opDefNode));
+        }
     }
 
     /**
@@ -165,32 +183,29 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
             return;
         }
         OpDefNode[] opDefs = specObj.getExternalModuleTable().getRootModule().getOpDefs();
-        progressMonitor.beginTask("Looking up for definitions...", opDefs.length);
 
+        final Set<String> dupes = new HashSet<>(opDefs.length); 
+        
+        progressMonitor.beginTask("Looking up definitions...", opDefs.length);
         for (int i = 0; i < opDefs.length; i++)
         {
-            if (isNotInArray(opDefs[i].getName().toString(), this.names)) {
-            contentProvider.add(opDefs[i], itemsFilter);
-            progressMonitor.worked(1);
-            }
+        	final OpDefNode opDefNode = opDefs[i];
+        	final String string = toString(opDefNode);
+        	
+        	// a) Skip those nodes that are already shown in the table.
+        	// b) Skip duplicate nodes (duplicate means e.g. F!Next and G!Next if F and G
+        	// both instantiated the same module).
+			// The comment for getElementName below also relates to duplicates but I'm not
+			// sure it is about the same type of dupes.
+			if (names.contains(string) || dupes.contains(string)) {
+        		continue;
+        	}
+			dupes.add(string);
+        	
+			contentProvider.add(opDefNode, itemsFilter);
+			progressMonitor.worked(1);
         }
         progressMonitor.done();
-    }
-    
-    /**
-     * Returns true iff str is not an element of array.
-     * 
-     * @param str
-     * @param array
-     * @return
-     */
-    private boolean isNotInArray(String str, String[] array) {
-        for (int i = 0; i < array.length; i++) {
-            if (str.equals(array[i])) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /* (non-Javadoc)
