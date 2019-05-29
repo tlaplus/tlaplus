@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
@@ -105,7 +104,15 @@ public class AssignmentWizardPage extends WizardPage
         GridData gd;
 
 		final Assignment assignment = getAssignment();
-		paramComposite = new LabeledListComposite(container, assignment.getLocalLabel(), assignment.getParams());
+		String localLabel = assignment.getLocalLabel();
+		
+        // display source name and originally defined in module
+		OpDefNode node = ModelHelper.getOpDefNode(assignment.getLabel());
+		if (node != null && node.getSource() != node) {
+			localLabel += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+		}
+		
+		paramComposite = new LabeledListComposite(container, localLabel, assignment.getParams());
         gd = new GridData(SWT.LEFT, SWT.TOP, false, true);
         paramComposite.setLayoutData(gd);
 
@@ -132,18 +139,6 @@ public class AssignmentWizardPage extends WizardPage
         gd.minimumWidth = 500;
         gd.minimumHeight = 100;
         styledText.setLayoutData(gd);
-
-        // display source name and originally defined in module
-        OpDefNode node = ModelHelper.getOpDefNode(assignment.getLabel());
-        if (node != null && node.getSource() != node)
-        {
-            GridData labelGridData = new GridData();
-            labelGridData.horizontalSpan = 2;
-            Label moduleNameLabel = new Label(container, SWT.NONE);
-            moduleNameLabel.setText("From module "
-                    + node.getSource().getOriginallyDefinedInModuleNode().getName().toString());
-            moduleNameLabel.setLayoutData(labelGridData);
-        }
 
         // constant, no parameters
         if (!paramComposite.hasParameters())
