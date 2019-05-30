@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _g-dKoAPoEemwBd2liJ-qvA
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/22/19, 10:38 AM
+Runtime-Version: 2.4.2.201905122359
+Save-Time: 5/29/19, 9:02 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -69,8 +69,10 @@ try -command {
 	    get-editbox -after [get-label "Number of worker threads:"] | set-text 2
 	    get-button "Checks the model for errors but does not run TLC on it." | click
 	    get-button "Runs TLC on the model." | click
-	    wait -ms 3000
 	}
+	
+	wait-run
+	
 	with [get-editor $TLA-Long-Model-Name] {
 	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
 	    get-link "State space exploration incomplete" | get-property caption | equals "State space exploration incomplete" 
