@@ -1,53 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <meta name="generator" content=
-  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org" />
+  "HTML Tidy for HTML5 for Linux version 5.2.0" />
   <meta http-equiv="Content-Type" content=
-  "text/html; charset=us-ascii" />
+  "text/html; charset=utf-8" />
   <meta name="generator" content="http://www.nongnu.org/elyxer/" />
   <meta name="create-date" content="2014-07-18" />
   <link href="../style.css" rel="stylesheet" type="text/css" />
-
   <title>Cloud based distributed TLC</title>
 </head>
-
 <body>
   <div id="globalWrapper">
     <h1 class="title">Cloud based distributed TLC</h1>
-
     <h1 class="Section"><a class="toc" name="toc-Section-1" id=
     "toc-Section-1">1</a> Motivation</h1>
-
     <ul>
       <li>Move long running model checking off local machine into
       the cloud (Short running models not ideal because instance
       spin-up time is approximately five minutes)</li>
-
       <li>Maximize cloud instance resource utilization by providing
       fine-tuned TLC parameter pre-sets optimized for the given
       cloud instance type</li>
-
       <li>Minimizes costs by terminating cloud instances
       immediately after TLC model checking has ended
-
         <ul>
           <li>Unless email delivery of model checking result fails
           (n this case the machine remains running for the user to
           pick up the result manually)</li>
-
           <li>User then has to terminate the instance
           manually!</li>
         </ul>
       </li>
     </ul>
-
     <h1 class="Section"><a class="toc" name="toc-Section-2" id=
     "toc-Section-2">2</a> Warning</h1>
-
     <div class="Unindented">
       Using cloud based TLC launches compute instances at your
       cloud provider which may incur costs. While the cloud based
@@ -55,16 +44,13 @@
       instances as soon as possible, do not rely on it. Always
       check if cloud instances have been correctly terminated.
     </div>
-
     <h1 class="Section"><a class="toc" name="toc-Section-3" id=
     "toc-Section-3">3</a> Limitation</h1>
-
     <ul>
       <li>Only supports two cloud providers (<a class="URL" href=
       "http://aws.amazon.com/ec2/">Amazon EC2</a> and <a class=
       "URL" href="https://azure.microsoft.com/en-us/">Microsoft
       Azure</a>) as of now
-
         <ul>
           <li>On Azure, the VM instances just stoppes but does not
           <a class="URL" href=
@@ -74,24 +60,19 @@
           finishes.</li>
         </ul>
       </li>
-
       <li>Runs TLC in non-distributed mode on a single cloud
       instance only as of now</li>
-
       <li>Only a single instance type per cloud (<a class="URL"
       href=
       "http://en.wikipedia.org/wiki/Amazon_Elastic_Compute_Cloud#Instance_types">m4.2xlarge</a>
       and <a class="URL" href=
       "https://azure.microsoft.com/en-us/pricing/details/virtual-machines/">
       D14</a>) supported as of now</li>
-
       <li>Cloud based distributed TLC cannot recover from a
       checkpoint</li>
     </ul>
-
     <h1 class="Section"><a class="toc" name="toc-Section-4" id=
     "toc-Section-4">4</a> Usage</h1>
-
     <div align="left">
       <div align="center" style=
       "width:500px;height:45px;border:1px solid #000;">
@@ -100,7 +81,6 @@
         introductory video</a> online</em>.
       </div>
     </div>
-
     <ol>
       <li>Set <a class="URL" href=
       "http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html">
@@ -108,7 +88,6 @@
         "http://en.wikipedia.org/wiki/Environment_variable">environment
         variables</a> prior to launching the Toolbox. See the
         example with dummy keys below.
-
         <div style="margin-left: 2em">
           <ul>
             <li style="list-style: none; display: inline">
@@ -119,12 +98,19 @@ export AWS_SECRET_ACCESS_KEY=6FDASAIG7DAS976TYDKHCGQAS5D\FA77
 </pre>
               </div>
             </li>
-            <hr>
-          <li>Alternatively for Azure (assuming you already have an Azure subscription), please follow <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal">Use the portal to create an Azure AD application and service principal that can access resources</a>.
-            <br>As <i>Sign-on URL</i> you can choose the TLA+ GitHub URL: <i>https://github.com/tlaplus/tlaplus</i>
-
-            <li>
-				Finally configure the Azure specific environment variables as shown below for Command Prompt and PowerShell.
+            <li style="list-style: none; display: inline">
+              <hr />
+            </li>
+            <li>Alternatively for Azure (assuming you already have
+            an Azure subscription), please follow <a href=
+            "https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal">
+            Use the portal to create an Azure AD application and
+            service principal that can access resources</a>.<br />
+            As <i>Sign-on URL</i> you can choose the TLA+ GitHub
+            URL: <i>https://github.com/tlaplus/tlaplus</i></li>
+            <li>Finally configure the Azure specific environment
+            variables as shown below for Command Prompt and
+            PowerShell.
               <div class="listing">
                 <pre class="listing">
 ## Called "Application ID" in the Azure manual
@@ -134,13 +120,13 @@ export AZURE_COMPUTE_SERVICE_PRINCIPAL_PASSWORD=TheAzureApplicationKeyValue
 ## Called "Directory ID" in the Azure manual
 export AZURE_COMPUTE_TENANT=TheAzureDirectoryId
 
-## The "Subscription ID" shown in the overview section of <a href="https://ms.portal.azure.com/#blade/Microsoft_Azure_Billing/ModernBillingMenuBlade/Overview">"Cost Management + Billing"</a> in Azure Portal
+## The "Subscription ID" shown in the overview section of <a href=
+"https://ms.portal.azure.com/#blade/Microsoft_Azure_Billing/ModernBillingMenuBlade/Overview">"Cost Management + Billing"</a> in Azure Portal
 export AZURE_COMPUTE_SUBSCRIPTION=YourAzureSubscriptionId
         
 </pre>
               </div>
             </li>
-
             <li>On Windows in the Command Prompt, set the
             environment variable with:
               <pre class="listing">
@@ -158,136 +144,112 @@ $env:AZURE_COMPUTE_SUBSCRIPTION="YourAzureSubscriptionId"
 </pre>To set the variables permanently, use the
               <a href="https://technet.microsoft.com/en-us/library/cc755104(v=ws.11).aspx">
               setx</a> command.
-
               <p>DO NOT use Cygwin shell to set the environment
               variables and launch the Toolbox. It will lead to
               obscure exceptions at runtime.</p>
             </li>
-            <hr>
-            <li>
-              Besides AWS and Azure, <a href="https://www.packet.com/cloud/servers/t1-small/">packet.net's</a> t1.small.x86 baremetal instances provide a budget environment to run Cloud TLC.
+            <li style="list-style: none; display: inline">
+              <hr />
+            </li>
+            <li>Besides AWS and Azure, <a href=
+            "https://www.packet.com/cloud/servers/t1-small/">packet.net's</a>
+            t1.small.x86 baremetal instances provide a budget
+            environment to run Cloud TLC.
               <div class="listing">
                 <pre class="listing">
 ## Called "API Key" in app.packet.net
 export PACKET_NET_APIKEY=YourPacketNetAPIKey
 ## Called "Organization ID" in app.packet.net
 export PACKET_NET_PROJECT_ID=YourOrganizationId
-				</pre>
+                                </pre>
               </div>
             </li>
           </ul>
         </div>
       </li>
-
       <li>Create a specification and a model</li>
-
       <li>Open your model in the model editor
-
         <div class="float">
           <a class="Label" name="Figure-1" id="Figure-1"></a>
-
           <div class="figure" style="max-width: 100%;">
             <img class="figure" src="ModelEditorA.png" alt=
             "figure ModelEditorA.png" style=
             "max-width: 800px; max-height: 600px;" />
-
             <div class="caption">
               Figure 1 Model Editor
             </div>
           </div>
         </div>
       </li>
-
-      <li>Expand the &ldquo;How to run&rdquo; section of the
-      &ldquo;Model Overview&rdquo; page
-
+      <li>Expand the “How to run” section of the “Model Overview”
+      page
         <div class="float">
           <a class="Label" name="Figure-2" id="Figure-2"></a>
-
           <div class="figure" style="max-width: 100%;">
             <img class="figure" src="ModelEditorB.png" alt=
             "figure ModelEditorB.png" style=
             "max-width: 800px; max-height: 600px;" />
-
             <div class="caption">
               Figure 2 How to run section
             </div>
           </div>
         </div>
       </li>
-
-      <li>Select &ldquo;aws-ec2&rdquo; from the &ldquo;Run in
-      distributed mode&rdquo; drop down
-
+      <li>Select “aws-ec2” from the “Run in distributed mode” drop
+      down
         <div class="float">
           <a class="Label" name="Figure-3" id="Figure-3"></a>
-
           <div class="figure" style="max-width: 100%;">
             <img class="figure" src="ModelEditorC.png" alt=
             "figure ModelEditorC.png" style=
             "max-width: 800px; max-height: 600px;" />
-
             <div class="caption">
               Figure 3 Select your cloud provider
             </div>
           </div>
         </div>
       </li>
-
-      <li>Enter an email address into &ldquo;Result mailto
-      address&rdquo; at which you want to receive the model
-      checking result
-
+      <li>Enter an email address into “Result mailto address” at
+      which you want to receive the model checking result
         <div class="float">
           <a class="Label" name="Figure-4" id="Figure-4"></a>
-
           <div class="figure" style="max-width: 100%;">
             <img class="figure" src="ModelEditorD.png" alt=
             "figure ModelEditorD.png" style=
             "max-width: 800px; max-height: 600px;" />
-
             <div class="caption">
               Figure 4 Enter your email address
             </div>
           </div>
         </div>
       </li>
-
-      <li>Click &ldquo;Run TLC&rdquo; to start model checking in
-      the cloud and wait for the start-up to finish (it takes
-      approximately five minutes to set-up the cloud instance)
-
+      <li>Click “Run TLC” to start model checking in the cloud and
+      wait for the start-up to finish (it takes approximately five
+      minutes to set-up the cloud instance)
         <ol>
-          <li>The Toolbox switches to the &ldquo;Model checking
-          results&rdquo; page and opens a progress dialog
-          indicating the state of cloud instance provisioning
-
+          <li>The Toolbox switches to the “Model checking results”
+          page and opens a progress dialog indicating the state of
+          cloud instance provisioning
             <div class="float">
               <a class="Label" name="Figure-5" id="Figure-5"></a>
-
               <div class="figure" style="max-width: 100%;">
                 <img class="figure" src="ProgressBar.png" alt=
                 "figure ProgressBar.png" style=
                 "max-width: 800px; max-height: 600px;" />
-
                 <div class="caption">
                   Figure 5 Progress Dialog
                 </div>
               </div>
             </div>
           </li>
-
           <li>After provisioning the cloud instance, the Toolbox
           prompts the user to open a website in a browser.
-
             <div class="float">
               <a class="Label" name="Figure-6" id="Figure-6"></a>
-
               <div class="figure" style="max-width: 100%;">
                 <img class="figure" src="ProgressBarFinal.png" alt=
                 "figure ProgressBarFinal.png" style=
                 "max-width: 800px; max-height: 600px;" />
-
                 <div class="caption">
                   Figure 6 Progress Dialog Final
                 </div>
@@ -295,95 +257,72 @@ export PACKET_NET_PROJECT_ID=YourOrganizationId
             </div>This website is hosted on the cloud instance and
             shows the TLC process output as well as runtime
             statistics similar to Toolbox stats
-
             <div class="float">
               <a class="Label" name="Figure-7" id="Figure-7"></a>
-
               <div class="figure" style="max-width: 100%;">
                 <img class="figure" src="MCoutInBrowser.png" alt=
                 "figure MCoutInBrowser.png" style=
                 "max-width: 800px; max-height: 600px;" />
-
                 <div class="caption">
-                  Figure 7 TLC runtime statistics
-                  in your browser
+                  Figure 7 TLC runtime statistics in your browser
                 </div>
               </div>
             </div>
           </li>
         </ol>
       </li>
-
       <li>Walk out and enjoy the weekend while TLC is busy
       checking</li>
-
       <li>On Monday expect to find an email in your inbox
-
         <div class="float">
           <a class="Label" name="Figure-8" id="Figure-8"></a>
-
           <div class="figure" style="max-width: 100%;">
             <img class="figure" src="EMailResult.png" alt=
             "figure EMailResult.png" style=
             "max-width: 800px; max-height: 600px;" />
-
             <div class="caption">
               Figure 8 Email Result
             </div>
           </div>
         </div>
       </li>
-
       <li>Save MC.out file somewhere to disc</li>
-
       <li>Switch back to the Toolbox and open the model editor</li>
-
-      <li>Open the &ldquo;Model Checking Results&rdquo; page
-
+      <li>Open the “Model Checking Results” page
         <div class="float">
           <a class="Label" name="Figure-9" id="Figure-9"></a>
-
           <div class="figure" style="max-width: 100%;">
             <img class="figure" src="LoadResultIntoToolbox.png"
             alt="figure LoadResultIntoToolbox.png" style=
             "max-width: 800px; max-height: 600px;" />
-
             <div class="caption">
               Figure 9 Load result into Toolbox
             </div>
           </div>
         </div>
       </li>
-
       <li>
         <a class="Label" name="enu:Import-the-MC.out" id=
         "enu:Import-the-MC.out"></a>Import the MC.out from disc
-
         <div class="float">
           <a class="Label" name="Figure-10" id="Figure-10"></a>
-
           <div class="figure" style="max-width: 100%;">
             <img class="figure" src="LoadIntoResultPageB.png" alt=
             "figure LoadIntoResultPageB.png" style=
             "max-width: 1073px; max-height: 791px;" />
-
             <div class="caption">
               Figure 10 Load into results page
             </div>
           </div>
         </div>
       </li>
-
-      <li>Voil&Atilde;&iexcl;
-
+      <li>VoilÃ¡
         <div class="float">
           <a class="Label" name="Figure-11" id="Figure-11"></a>
-
           <div class="figure" style="max-width: 100%;">
             <img class="figure" src="FinalResultLoaded.png" alt=
             "figure FinalResultLoaded.png" style=
             "max-width: 1074px; max-height: 789px;" />
-
             <div class="caption">
               Figure 11 Final result loaded
             </div>
@@ -391,25 +330,19 @@ export PACKET_NET_PROJECT_ID=YourOrganizationId
         </div>
       </li>
     </ol>
-
     <h1 class="Section"><a class="toc" name="toc-Section-5" id=
     "toc-Section-5">5</a> Common problems</h1>
-
     <ul>
       <li>The Toolbox fails to start the cloud instance
-
         <ul>
           <li>Re-check your credentials</li>
-
           <li>If your credentials are correct, please turn on debug
-          logging (start the Toolbox executable with
-          "toolbox -console
-          -consolelog") and send us the output. You
-          might have encountered a bug in cloud based distributed
+          logging (start the Toolbox executable with "toolbox
+          -console -consolelog") and send us the output. You might
+          have encountered a bug in cloud based distributed
           TLC.</li>
         </ul>
       </li>
-
       <li>The cloud instance sends "system notification" emails
       warning that the remaining disc space is at a critical level:
         <pre class="listing">
@@ -417,7 +350,6 @@ export PACKET_NET_PROJECT_ID=YourOrganizationId
                                 CRITICALs: / is 92.23..."</i>
                         
 </pre>
-
         <ul>
           <li>A long running TLC process writes unexplored states
           to the system disk for later exploration. With very large
@@ -428,12 +360,10 @@ export PACKET_NET_PROJECT_ID=YourOrganizationId
           "http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-add-volume-to-instance.html">
             attach a larger disk to your VM</a> and continue TLC by
             recovering from the checkpoint.
-
             <ul>
               <li><a class="URL" href=
               "http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-connect-to-instance-linux.html#using-putty">
               Connect to the cloud instance with ssh</a></li>
-
               <li>
                 <pre class="listing">
 # Download a jmx commandline client
@@ -441,7 +371,6 @@ wget http://crawler.archive.org/cmdline-jmxclient/cmdline-jmxclient-0.10.3.jar
                                                         
 </pre>
               </li>
-
               <li>
                 <pre class="listing">
 # Connect to the locally running TLC and have it create a checkpoint
@@ -449,10 +378,8 @@ java -jar cmdline-jmxclient-0.10.3.jar - localhost:5400 tlc2.tool:type=ModelChec
                                                         
 </pre>
               </li>
-
               <li>Re-attach to the screen session running TLC and
               terminate TLC wth CTRL^C</li>
-
               <li>
                 <pre class="listing">
 # Restart TLC and have it recover from the checkpoint created
@@ -464,36 +391,29 @@ java -jar tla2tools.jar -recover /path/to/states/15-12-16-12-16-04/
           </li>
         </ul>
       </li>
-
       <li style="list-style: none; display: inline">
         <ul>
           <li>The cloud instance sends "system notification" email
           warnings directly after startup.
-
             <ul>
               <li>Ignore these emails :-).</li>
-
               <li>This happens primarily on Azure when the
               monitoring runs too earlier before the cloud instance
               is fully started.</li>
             </ul>
           </li>
-
           <li>The runtime statistics (web browser) indicate that
           TLC has finished model checking, but no result is sent
           via email.
-
             <ul>
               <li>Check your email spam folder if the model
               checking result has incorrectly been classified as
               spam</li>
-
               <li>Another reason why mail delivery might fail, are
               too strict spam counter measures at the mail server
               level. You might want to try to use a different email
               address (domain part) in the future. For Azure, it
               works best to use an Outlook.com email address.</li>
-
               <li style="list-style: none; display: inline">
                 <ul>
                   <li>Copy &amp; paste the MC.out content from the
