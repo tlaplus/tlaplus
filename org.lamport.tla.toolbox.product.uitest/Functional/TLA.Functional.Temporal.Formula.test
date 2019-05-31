@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _g-dKoAPoEemwBd2liJ-qvA
-Runtime-Version: 2.4.2.201905122359
-Save-Time: 5/29/19, 9:02 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 5/30/19, 8:16 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -62,10 +62,7 @@ try -command {
 	        get-combo | select "Temporal formula"
 	        get-text-viewer | type-text "x=2"
 	    }
-	    with [get-section "How to run?"] {
-	        click
-			get-link "Advanced TLC execution options" | click
-	    }
+	    get-link "Advanced TLC execution options" | click
 	    get-editbox -after [get-label "Number of worker threads:"] | set-text 2
 	    get-button "Checks the model for errors but does not run TLC on it." | click
 	    get-button "Runs TLC on the model." | click

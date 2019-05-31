@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _LxG3gAJFEemDc-4PKyNT9w
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/21/19, 11:01 AM
+Save-Time: 5/30/19, 8:14 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -60,7 +60,7 @@ try -command {
 	with [get-editor "Model_1"] {
 	    get-tab-folder | get-tab-item "Model Overview" | click
 		get-section "What is the model?" | click
-		get-section "What is the model?" | get-link "Advanced model options" | click
+		get-link "Advanced model options" | click
 	    get-section "Additional Definitions" | click
 	    get-section "State Constraint" | click
 	    get-section "Model Values" | click
