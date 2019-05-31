@@ -35,6 +35,8 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -150,6 +152,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	private Combo tlcProfileCombo;
 	private AtomicInteger lastSelectedTLCProfileIndex;
 	private Label tlcResourceSummaryLabel;
+	private Hyperlink tlcTuneHyperlink;
 	// We cache this since want to reference it frequently on heap slider drag
 	private AtomicBoolean currentProfileIsAdHoc;
 
@@ -1240,6 +1243,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		final Composite howToRunArea = (Composite) section.getClient();
 		gl = new GridLayout(2, false);
 		gl.marginWidth = 0;
+		gl.verticalSpacing = 2;
 		howToRunArea.setLayout(gl);
 
 		final ValidateableSectionPart howToRunPart = new ValidateableSectionPart(section, this, SEC_HOW_TO_RUN);
@@ -1318,6 +1322,24 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		gd.grabExcessHorizontalSpace = true;
 		gd.horizontalAlignment = SWT.CENTER;
 		tlcResourceSummaryLabel.setLayoutData(gd);
+
+		advancedLinkLine = new Composite(howToRunArea, SWT.NONE);
+		gd = new GridData();
+		gd.horizontalSpan = 2;
+		gd.grabExcessHorizontalSpace = true;
+		gd.horizontalAlignment = SWT.CENTER;
+		advancedLinkLine.setLayoutData(gd);
+		gl = new GridLayout(1, false);
+		gl.marginWidth = 0;
+		gl.horizontalSpacing = 0;
+		advancedLinkLine.setLayout(gl);
+		tlcTuneHyperlink = toolkit.createHyperlink(advancedLinkLine, "Tune these parameters", SWT.NONE);
+		tlcTuneHyperlink.addHyperlinkListener(advancedTLCOptionsOpener);
+		final Font baseFont = JFaceResources.getFont(JFaceResources.DIALOG_FONT);
+		final FontData[] baseFD = baseFont.getFontData();
+		final FontData smaller = new FontData(baseFD[0].getName(), baseFD[0].getHeight() - 2, baseFD[0].getStyle());
+		tlcTuneHyperlink.setFont(new Font(body.getDisplay(), smaller));
+
 
 		/*
 		 * Distribution. Help button added by LL on 17 Jan 2013
@@ -1628,6 +1650,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		}
 
 		tlcResourceSummaryLabel.setText(sb.toString());
+		tlcTuneHyperlink.setVisible(sb.toString().length() > 0);
 	}
 
 	private String generateMemoryDisplayText() {
