@@ -35,7 +35,7 @@ public class ETest7 extends SuiteETestCase {
 
 	@Test
 	public void testSpec() {
-		assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL,
-				"The configuration file substitutes constant C with non-constant Foo."));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
+				"C", "Foo"));
 	}
 }

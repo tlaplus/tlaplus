@@ -39,6 +39,7 @@ import tlc2.util.NoopStateWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.StateWriter;
 import tlc2.value.RandomEnumerableValues;
+import util.Assert.TLCRuntimeException;
 import util.DebugPrinter;
 import util.ExecutionStatisticsCollector;
 import util.FileUtil;
@@ -947,6 +948,8 @@ public class TLC
             {
                 System.gc();
                 return MP.printError(EC.SYSTEM_OUT_OF_MEMORY, e);
+            } else if (e instanceof TLCRuntimeException) {
+            	return MP.printTLCRuntimeException((TLCRuntimeException) e);
             } else if (e instanceof RuntimeException) 
             {
                 // SZ 29.07.2009 

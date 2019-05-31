@@ -25,8 +25,6 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -35,7 +33,6 @@ public class ETest1 extends SuiteETestCase {
 
 	@Test
 	public void testSpec() {
-		assertTrue(recorder.recorded(EC.GENERAL));
 		assertSubstring("*** Errors: 1\n\n" + "line 18, col 12 to line 18, col 17 of module etest1\n\n"
 				+ "The operator Foo requires 1 arguments.");
 	}

@@ -43,8 +43,7 @@ public class TestInvalidInvariant extends ModelCheckerTestCase {
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_VIOLATED_LEVEL, "Invariant"));
-		assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL,
-				"The invariant Invariant is not a state predicate (one with no primes or temporal operators)."));
+		assertFalse(recorder.recorded(EC.GENERAL));
 		// See LevelNode.java line 590ff and tlc2.tool.Spec.processConfigInvariants().
 		assertFalse(recorder.recordedWithSubStringValue(EC.GENERAL,
 				"Note that a bug can cause TLC to incorrectly report this error."));

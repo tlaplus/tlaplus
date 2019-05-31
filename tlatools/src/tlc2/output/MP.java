@@ -16,6 +16,7 @@ import util.Assert;
 import util.DebugPrinter;
 import util.Set;
 import util.ToolIO;
+import util.Assert.TLCRuntimeException;
 
 /**
  * This class is used in the following way to support the replacements of the
@@ -1459,6 +1460,15 @@ public class MP
         DebugPrinter.print("leaving printError(int, String[]) with errorCode "); //$NON-NLS-1$
     }
 
+    public static int printTLCRuntimeException(TLCRuntimeException tre) {
+    	recorder.record(tre.errorCode, (Object[]) new Object[] {tre});
+        DebugPrinter.print("entering printTLCRuntimeException(TLCRuntimeException) with errorCode " + tre.errorCode); //$NON-NLS-1$
+        // write the output
+        ToolIO.out.println(tre.getMessage());
+        DebugPrinter.print("leaving printTLCRuntimeException(TLCRuntimeException) with errorCode "); //$NON-NLS-1$
+        return tre.errorCode;
+    }
+    
     /** 
      * Prints the state
      * @param parameters

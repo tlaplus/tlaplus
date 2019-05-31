@@ -43,6 +43,5 @@ public class TLCGetNamedUndefinedTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recorded(EC.TLC_MODULE_TLCGET_UNDEFINED));
 		assertTrue(recorder.recorded(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT));
-		assertTrue(recorder.recorded(EC.GENERAL));
 	}
 }

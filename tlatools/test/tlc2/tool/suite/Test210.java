@@ -25,7 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -34,8 +34,61 @@ import tlc2.output.EC;
 public class Test210 extends SuiteETestCase {
 	@Test
 	public void testSpec() {
-		assertTrue(recorder.recorded(EC.GENERAL));
-		assertSubstring("*** Errors: 9\n\n" + "line 33, col 16 to line 33, col 19 of module test210\n\n"
-				+ "Accessing subexpression labeled `laby' of ASSUME/PROVE clause within the scope of a declaration");
+		assertFalse(recorder.recorded(EC.GENERAL));
+		assertSubstring("Semantic errors:\n" + 
+				"\n" + 
+				"*** Errors: 9\n" + 
+				"\n" + 
+				"line 33, col 16 to line 33, col 19 of module test210\n" + 
+				"\n" + 
+				"Accessing subexpression labeled `laby' of ASSUME/PROVE clause within the scope of a declaration\n" + 
+				" from outside that declaration's scope.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 35, col 16 to line 35, col 16 of module test210\n" + 
+				"\n" + 
+				"Accessing ASSUME/PROVE clause within the scope of a declaration\n" + 
+				" from outside that declaration's scope.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 42, col 41 to line 42, col 55 of module test210\n" + 
+				"\n" + 
+				"Label not allowed within scope of declaration in nested ASSUME/PROVE.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 43, col 30 to line 43, col 44 of module test210\n" + 
+				"\n" + 
+				"Label not allowed within scope of declaration in nested ASSUME/PROVE.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 55, col 16 to line 55, col 16 of module test210\n" + 
+				"\n" + 
+				"Accessing non-existent subexpression of a SUFFICES\n" + 
+				"\n" + 
+				"\n" + 
+				"line 62, col 15 to line 62, col 18 of module test210\n" + 
+				"\n" + 
+				"Accessing subexpression labeled `laby' of ASSUME/PROVE clause within the scope of a declaration\n" + 
+				" from outside that declaration's scope.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 63, col 15 to line 63, col 18 of module test210\n" + 
+				"\n" + 
+				"Accessing subexpression labeled `labi' of ASSUME/PROVE clause within the scope of a declaration\n" + 
+				" from outside that declaration's scope.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 64, col 15 to line 64, col 18 of module test210\n" + 
+				"\n" + 
+				"Accessing subexpression labeled `labu' of ASSUME/PROVE clause within the scope of a declaration\n" + 
+				" from outside that declaration's scope.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 65, col 15 to line 65, col 15 of module test210\n" + 
+				"\n" + 
+				"Accessing ASSUME/PROVE clause within the scope of a declaration\n" + 
+				" from outside that declaration's scope.\n" + 
+				"\n" + 
+				"\n");
 	}
 }

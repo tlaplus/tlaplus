@@ -25,7 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -34,9 +34,40 @@ import tlc2.output.EC;
 public class Test213 extends SuiteETestCase {
 	@Test
 	public void testSpec() {
-		assertTrue(recorder.recorded(EC.GENERAL));
-		assertSubstring("*** Errors: 5\n\n" 
-		        + "line 13, col 1 to line 13, col 52 of module test213\n\n"
-				+ "Level error in instantiating module 'test213b':");
+		assertFalse(recorder.recorded(EC.GENERAL));
+		assertSubstring("Semantic errors:\n" + 
+				"\n" + 
+				"*** Errors: 5\n" + 
+				"\n" + 
+				"line 13, col 1 to line 13, col 52 of module test213\n" + 
+				"\n" + 
+				"Level error in instantiating module 'test213b':\n" + 
+				"The level of the expression or operator substituted for 'C' \n" + 
+				"must be at most 2.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 14, col 1 to line 14, col 52 of module test213\n" + 
+				"\n" + 
+				"Level error in instantiating module 'test213b':\n" + 
+				"The level of the expression or operator substituted for 'D' \n" + 
+				"must be at most 2.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 29, col 8 to line 29, col 15 of module test213\n" + 
+				"\n" + 
+				"Non-constant CASE for temporal goal.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 31, col 8 to line 31, col 15 of module test213\n" + 
+				"\n" + 
+				"Non-constant TAKE, WITNESS, or HAVE for temporal goal.\n" + 
+				"\n" + 
+				"\n" + 
+				"line 33, col 8 to line 33, col 22 of module test213\n" + 
+				"\n" + 
+				"Non-constant TAKE, WITNESS, or HAVE for temporal goal.\n" + 
+				"\n" + 
+				"\n" + 
+				"");
 	}
 }
