@@ -31,6 +31,7 @@ import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.IValue;
+import util.Assert.TLCRuntimeException;
 import util.FileUtil;
 import util.FilenameToStream;
 
@@ -268,6 +269,10 @@ public class Simulator {
 						// the behavior since the liveness checker should take care of that itself.
 						this.printSummary();
 						errorCode = ((LiveException)error.exception).errorCode;
+					} else if (error.exception instanceof TLCRuntimeException) {
+						final TLCRuntimeException exception = (TLCRuntimeException)error.exception;
+						printBehavior(exception, error.state, error.stateTrace);
+						errorCode = exception.errorCode;
 					} else {
 						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) }, error.state,
 								error.stateTrace);
@@ -324,6 +329,12 @@ public class Simulator {
 		return errorCode;
 	}
 
+
+	public final void printBehavior(final TLCRuntimeException exception, final TLCState state, final StateVec stateTrace) {
+		MP.printTLCRuntimeException(exception);
+		printBehavior(state, stateTrace);
+	}
+
 	public final void printBehavior(SimulationWorkerError error) {
 		printBehavior(error.errorCode, error.parameters, error.state, error.stateTrace);
 	}
@@ -334,6 +345,11 @@ public class Simulator {
 	 */
 	public final void printBehavior(final int errorCode, final String[] parameters, final TLCState state, final StateVec stateTrace) {
 		MP.printError(errorCode, parameters);
+		printBehavior(state, stateTrace);
+		this.printSummary();
+	}
+	
+	public final void printBehavior(final TLCState state, final StateVec stateTrace) {
 		if (this.traceDepth == Long.MAX_VALUE) {
 			MP.printMessage(EC.TLC_ERROR_STATE);
 			StatePrinter.printState(state);
@@ -346,7 +362,6 @@ public class Simulator {
 			}
 			StatePrinter.printState(state, null, stateTrace.size() + 1);
 		}
-		this.printSummary();
 	}
 
 	public IValue getLocalValue(int idx) {
