@@ -68,6 +68,7 @@ import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
 import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
 import tlc2.tool.Specs;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateMut;
@@ -221,7 +222,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
               IValue defVal = spec.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
               defVal.deepNormalize();
               consts[i].setToolObject(toolId, defVal);
-            } catch (Assert.TLCRuntimeException e) {
+            } catch (Assert.TLCRuntimeException | EvalException e) {
               Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
                   new String[] { consts[i].getName().toString(), opDef.getName().toString() });
             }

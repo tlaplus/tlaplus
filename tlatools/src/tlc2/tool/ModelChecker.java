@@ -1138,7 +1138,7 @@ public class ModelChecker extends AbstractChecker
 						}
 					}
 				}
-			} catch (InvariantViolatedException | Assert.TLCRuntimeException e) {
+			} catch (InvariantViolatedException | Assert.TLCRuntimeException | EvalException e) {
 				// IVE gets thrown above when an Invariant is violated. TLCRuntimeException gets
 				// thrown when Tool fails to evaluate a statement because of e.g. too large sets
 				// or type errors such as in DoInitFunctorInvariantMinimalErrorStackTest test.

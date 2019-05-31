@@ -25,7 +25,6 @@
  ******************************************************************************/
 package tlc2.tool.doinitfunctor;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -43,12 +42,9 @@ public class DoInitFunctorInvariantMinimalErrorStackTest extends ModelCheckerTes
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1", "1", "1"));
-		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE,
-				"public static tlc2.value.IBoolValue tlc2.module.Naturals.GEQ(tlc2.value.impl.Value,tlc2.value.impl.Value)",
-				"The first argument of > should be an integer, but instead it is:\n" + 
-				"<<1, 1>>"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_MODULE_ARGUMENT_ERROR_AN,
+				"first", ">", "integer", "<<1, 1>>"));
 
 		String errorStack = "0. Line 8, column 3 to line 9, column 13 in DoInitFunctorMinimalErrorStack\n"
 				+ "1. Line 8, column 6 to line 8, column 25 in DoInitFunctorMinimalErrorStack\n"
