@@ -35,6 +35,7 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
@@ -42,7 +43,7 @@ import tlc2.output.EC;
 public class CodePlexBug08Test extends ModelCheckerTestCase {
 
 	public CodePlexBug08Test() {
-		super("MC", "CodePlexBug08");
+		super("MC", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

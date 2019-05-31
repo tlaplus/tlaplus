@@ -32,11 +32,12 @@ import java.io.IOException;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class EmptyOrderOfSolutionsTest extends ModelCheckerTestCase {
 
 	public EmptyOrderOfSolutionsTest() {
-		super("EmptyOrderOfSolutions");
+		super("EmptyOrderOfSolutions", ExitStatus.FAILURE_LIVENESS_EVAL);
 	}
 
 	@Test

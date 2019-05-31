@@ -27,9 +27,13 @@ package tlc2.tool.suite;
 
 import org.junit.Test;
 
-import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class ETest16 extends SuiteETestCase {
+
+	public ETest16() {
+		super(ExitStatus.ERROR_SPEC_PARSE);
+	}
 
 	@Test
 	public void testSpec() {

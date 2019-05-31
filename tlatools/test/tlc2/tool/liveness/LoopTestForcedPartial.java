@@ -35,6 +35,7 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.AbstractChecker;
 
 /**
@@ -49,7 +50,7 @@ public class LoopTestForcedPartial extends ModelCheckerTestCase {
 	}
 	
 	public LoopTestForcedPartial() {
-		super("SystemLoop", "Loop");
+		super("SystemLoop", "Loop", ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

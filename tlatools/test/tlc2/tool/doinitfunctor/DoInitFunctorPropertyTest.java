@@ -32,12 +32,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class DoInitFunctorPropertyTest extends ModelCheckerTestCase {
 	
 	public DoInitFunctorPropertyTest() {
-		super("DoInitFunctorProperty", "DoInitFunctor");
+		super("DoInitFunctorProperty", "DoInitFunctor", ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

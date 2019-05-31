@@ -31,11 +31,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class ETest8 extends SuiteETestCase {
 
 	public ETest8() {
-		super(new String[]{"-simulate"});
+		super(new String[]{"-simulate"}, ExitStatus.ERROR /*ExitStatus.VIOLATION_ASSERT*/); //TODO Simulator doesn't report correct exit status.
 	}
 	
 	/* (non-Javadoc)

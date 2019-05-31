@@ -32,12 +32,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class DoInitFunctorInvariantNoContinueTest extends ModelCheckerTestCase {
 	
 	public DoInitFunctorInvariantNoContinueTest() {
-		super("DoInitFunctorInvariantContinue", "DoInitFunctor");
+		super("DoInitFunctorInvariantContinue", "DoInitFunctor", ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

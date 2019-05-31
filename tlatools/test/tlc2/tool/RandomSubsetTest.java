@@ -35,6 +35,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
@@ -45,7 +46,7 @@ import util.UniqueString;
 public class RandomSubsetTest extends ModelCheckerTestCase {
 
 	public RandomSubsetTest() {
-		super("RandomSubset");
+		super("RandomSubset", ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

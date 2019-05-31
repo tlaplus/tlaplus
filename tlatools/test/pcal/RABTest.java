@@ -39,7 +39,7 @@ import tlc2.output.EC;
 public class RABTest extends PCalModelCheckerTestCase {
 
 	public RABTest() {
-		super("RAB", "pcal");
+		super("RAB", "pcal", EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

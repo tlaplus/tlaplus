@@ -35,6 +35,7 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 /**
  * System LOOP as described by Manna & Pneuli on page 423ff
@@ -42,7 +43,7 @@ import tlc2.output.EC;
 public class LoopTest extends ModelCheckerTestCase {
 	
 	public LoopTest() {
-		super("SystemLoop", "Loop");
+		super("SystemLoop", "Loop", ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
@@ -79,6 +80,6 @@ public class LoopTest extends ModelCheckerTestCase {
 		// If liveness is (forcefully) triggered after the initial state, stuttering
 		// after the initial state is correctly detected.
 
-	assertZeroUncovered();
+		assertZeroUncovered();
 	}
 }

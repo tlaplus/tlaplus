@@ -31,12 +31,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class ASTest extends ModelCheckerTestCase {
 
 	public ASTest() {
-		super("AS", "AS");
+		super("AS", "AS", ExitStatus.FAILURE_SPEC_EVAL);
 	}
 
 	@Test

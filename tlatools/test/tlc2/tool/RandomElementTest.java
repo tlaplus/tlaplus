@@ -34,12 +34,13 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class RandomElementTest extends ModelCheckerTestCase {
 
 	public RandomElementTest() {
-		super("RandomElement", new String[] {"-seed", Long.toString(8006803340504660123L)});
+		super("RandomElement", new String[] {"-seed", Long.toString(8006803340504660123L)}, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

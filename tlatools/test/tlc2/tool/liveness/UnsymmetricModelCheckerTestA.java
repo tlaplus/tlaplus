@@ -35,11 +35,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class UnsymmetricModelCheckerTestA extends ModelCheckerTestCase {
 
 	public UnsymmetricModelCheckerTestA() {
-		super("UnsymmetricMCA", "symmetry");
+		super("UnsymmetricMCA", "symmetry", ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

@@ -30,8 +30,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class ETest14 extends SuiteETestCase {
+
+	public ETest14() {
+		super(ExitStatus.VIOLATION_ASSUMPTION);
+	}
 
 	@Test
 	public void testSpec() {

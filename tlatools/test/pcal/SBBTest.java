@@ -35,11 +35,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class SBBTest extends PCalModelCheckerTestCase {
 
 	public SBBTest() {
-		super("SBB", "pcal");
+		super("SBB", "pcal", ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

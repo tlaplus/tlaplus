@@ -35,6 +35,7 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.value.Values;
 import tlc2.value.impl.IntervalValue;
@@ -77,7 +78,7 @@ import tlc2.value.impl.SubsetValue;
 public class BugzillaBug279Test extends ModelCheckerTestCase {
 
 	public BugzillaBug279Test() {
-		super("InitStateBug", "Bug279");
+		super("InitStateBug", "Bug279", ExitStatus.VIOLATION_DEADLOCK);
 	}
 	
 	@Override

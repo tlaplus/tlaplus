@@ -30,8 +30,14 @@ import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class Test213 extends SuiteETestCase {
+
+	public Test213() {
+		super(ExitStatus.ERROR_SPEC_PARSE);
+	}
+	
 	@Test
 	public void testSpec() {
 		assertFalse(recorder.recorded(EC.GENERAL));

@@ -74,7 +74,7 @@ public abstract class CheckImpl extends ModelChecker {
     final int result = this.runTLC(this.depth);
     if (result != EC.NO_ERROR) {
       ToolIO.out.println("\nExit: failed to create the partial state space.");
-      System.exit(EC.exitStatus(result));
+      System.exit(EC.ExitStatus.errorConstantToExitStatus(result));
     }
     ToolIO.out.println("completed.");
     this.lastTraceTime = System.currentTimeMillis();
@@ -97,7 +97,7 @@ public abstract class CheckImpl extends ModelChecker {
     this.theStateQueue.enqueue(st);
     final int result = this.runTLC(depth1);
     if (result != EC.NO_ERROR) {
-      System.exit(EC.exitStatus(result));
+      System.exit(EC.ExitStatus.errorConstantToExitStatus(result));
     }
   }
   

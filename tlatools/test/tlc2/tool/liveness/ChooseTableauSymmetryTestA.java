@@ -35,11 +35,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class ChooseTableauSymmetryTestA extends ModelCheckerTestCase {
 
 	public ChooseTableauSymmetryTestA() {
-		super("ChooseTableauSymmetryMCa", "symmetry");
+		super("ChooseTableauSymmetryMCa", "symmetry", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

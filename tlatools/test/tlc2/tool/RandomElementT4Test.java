@@ -35,16 +35,16 @@ import java.util.Map;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.value.IValue;
 import tlc2.value.impl.IntValue;
-import tlc2.value.impl.Value;
 import util.UniqueString;
 
 public class RandomElementT4Test extends ModelCheckerTestCase {
 
 	public RandomElementT4Test() {
-		super("RandomElement", new String[] {"-seed", Long.toString(15041980L)});
+		super("RandomElement", new String[] {"-seed", Long.toString(15041980L)}, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

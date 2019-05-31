@@ -5,19 +5,9 @@
 
 package tlc2.tool.liveness;
 
-import tlc2.output.EC;
-
 public class LiveException extends RuntimeException {
 
 	public final int errorCode;
-
-	public LiveException() {
-		this(EC.GENERAL);
-	}
-
-	public LiveException(String msg) {
-		this(EC.GENERAL, msg);
-	}
 
 	public LiveException(int errorCode) {
 		super();

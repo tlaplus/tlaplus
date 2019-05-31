@@ -32,6 +32,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import util.ToolIO;
 
@@ -40,11 +41,19 @@ public abstract class SuiteETestCase extends ModelCheckerTestCase {
 	private TestPrintStream testPrintStream = new TestPrintStream();
 
 	public SuiteETestCase() {
-		super("setBySetUp", "suite");
+		this(ExitStatus.SUCCESS);
+	}
+
+	public SuiteETestCase(int exitStatus) {
+		super("setBySetUp", "suite", exitStatus);
 	}
 	
 	public SuiteETestCase(String[] params) {
-		super("setBySetUp", "suite", params);
+		this(params, ExitStatus.SUCCESS);
+	}
+
+	public SuiteETestCase(String[] params, int exitStatus) {
+		super("setBySetUp", "suite", params, exitStatus);
 	}
 
 	/* (non-Javadoc)

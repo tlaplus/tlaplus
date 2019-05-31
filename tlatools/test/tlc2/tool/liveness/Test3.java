@@ -35,11 +35,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class Test3 extends ModelCheckerTestCase {
 
 	public Test3() {
-		super("Test3");
+		super("Test3", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

@@ -36,6 +36,7 @@ import java.util.List;
 
 import org.junit.Before;
 
+import tlc2.output.EC;
 import tlc2.tool.CommonTestCase;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import util.ToolIO;
@@ -45,15 +46,19 @@ public abstract class PCalModelCheckerTestCase extends ModelCheckerTestCase {
 	private final List<String> pcalArgs = new ArrayList<String>();
 
 	public PCalModelCheckerTestCase(final String spec, final String path) {
-		super(spec, path);
-		this.pcalArgs.add("-unixEOL");
+		this(spec, path, EC.ExitStatus.SUCCESS);
 	}
 	
 	public PCalModelCheckerTestCase(final String spec, final String path, final String[] extraPcalArgs) {
-		this(spec, path);
+		this(spec, path, EC.ExitStatus.SUCCESS);
 		this.pcalArgs.addAll(Arrays.asList(extraPcalArgs));
 	}
 	
+	public PCalModelCheckerTestCase(final String spec, final String path, final int exitStatus) {
+		super(spec, path, exitStatus);
+		this.pcalArgs.add("-unixEOL");
+	}
+
 	@Before
 	@Override
 	public void setUp() {

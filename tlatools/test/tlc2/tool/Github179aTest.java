@@ -30,12 +30,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class Github179aTest extends ModelCheckerTestCase {
 
 	public Github179aTest() {
-		super("Github179a");
+		super("Github179a", ExitStatus.VIOLATION_ASSUMPTION);
 	}
 
 	@Test

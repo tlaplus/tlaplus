@@ -42,6 +42,7 @@ import java.util.zip.ZipFile;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
@@ -49,7 +50,7 @@ import tlc2.output.EC;
 public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCase {
 
 	public CodePlexBug08EWD840FL2FromCheckpointTest() {
-		super("EWD840MC2", "CodePlexBug08", new String[] {"-gzip", "-recover", BASE_DIR + TEST_MODEL + "CodePlexBug08" + File.separator + "checkpoint"});
+		super("EWD840MC2", "CodePlexBug08", new String[] {"-gzip", "-recover", BASE_DIR + TEST_MODEL + "CodePlexBug08" + File.separator + "checkpoint"}, ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	

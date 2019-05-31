@@ -32,12 +32,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class StutteringTest extends ModelCheckerTestCase {
 
 	public StutteringTest() {
-		super("MC", "CodePlexBug08", new String[] { "-simulate" });
+		super("MC", "CodePlexBug08", new String[] { "-simulate" }, ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

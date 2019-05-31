@@ -27,10 +27,14 @@ package tlc2.tool.suite;
 
 import org.junit.Test;
 
-import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class ETest1 extends SuiteETestCase {
 
+	public ETest1() {
+		super(ExitStatus.ERROR_SPEC_PARSE);
+	}
+	
 	@Test
 	public void testSpec() {
 		assertSubstring("*** Errors: 1\n\n" + "line 18, col 12 to line 18, col 17 of module etest1\n\n"

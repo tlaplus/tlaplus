@@ -34,12 +34,13 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class TraceWithLargeSetOfInitialStatesTest extends ModelCheckerTestCase {
 
 	public TraceWithLargeSetOfInitialStatesTest() {
-		super("TraceWithLargeSetOfInitialStatesTest", new String[] { "-maxSetSize", "10" });
+		super("TraceWithLargeSetOfInitialStatesTest", new String[] { "-maxSetSize", "10" }, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

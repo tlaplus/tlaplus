@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
@@ -32,12 +33,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 
 import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.output.MP;
 import tlc2.tool.CommonTestCase;
 import tlc2.tool.ModelChecker;
@@ -51,27 +54,45 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	protected String spec;
 	protected String[] extraArguments = new String[0];
 	protected TLC tlc;
-	protected int exitStatus = -1;
+	protected int actualExitStatus = -1;
+	protected int expectedExitStatus = ExitStatus.SUCCESS;
 
 	public ModelCheckerTestCase(String spec) {
-		super(new TestMPRecorder());
-		this.spec = spec;
+		this(spec, ExitStatus.SUCCESS);
+	}
+
+	public ModelCheckerTestCase(String spec, final int exitStatus) {
+		this(spec, "", exitStatus);
 	}
 
 	public ModelCheckerTestCase(String spec, String path) {
-		this(spec);
-		this.path = path;
+		this(spec, path, ExitStatus.SUCCESS);
 	}
 	
 	public ModelCheckerTestCase(String spec, String[] extraArguments) {
-		this(spec, "", extraArguments);
+		this(spec, "", extraArguments, ExitStatus.SUCCESS);
+	}
+	
+	public ModelCheckerTestCase(String spec, String[] extraArguments, final int exitStatus) {
+		this(spec, "", extraArguments, exitStatus);
 	}
 	
 	public ModelCheckerTestCase(String spec, String path, String[] extraArguments) {
-		this(spec, path);
+		this(spec, path, extraArguments, ExitStatus.SUCCESS);
+	}
+	
+	public ModelCheckerTestCase(String spec, String path, String[] extraArguments, final int exitStatus) {
+		this(spec, path, exitStatus);
 		this.extraArguments  = extraArguments; 
 	}
 	
+	public ModelCheckerTestCase(final String spec, final String path, final int exitStatus) {
+		super(new TestMPRecorder());
+		this.spec = spec;
+		this.path = path;
+		this.expectedExitStatus = exitStatus;
+	}
+
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
@@ -140,11 +161,16 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			
 			// Run the ModelChecker
 			final int errorCode = tlc.process();
-			exitStatus = EC.exitStatus(errorCode);
+			actualExitStatus = EC.ExitStatus.errorConstantToExitStatus(errorCode);
 			
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
+	}
+	
+	@After
+	public void assertExitStatus() {
+		assertEquals(expectedExitStatus, actualExitStatus);
 	}
 
 	/**
@@ -168,9 +194,9 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	protected int getNumberOfThreads() {
 		return 1;
 	}
-
-	protected int getExitStatus() {
-		return exitStatus;
+	
+	protected void setExitStatus(final int exitStatus) {
+		this.expectedExitStatus = exitStatus;
 	}
 	
 	/**

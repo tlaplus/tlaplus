@@ -775,7 +775,7 @@ public class LiveCheck1 implements ILiveCheck {
 			// April
 			// 2012
 		}
-		throw new LiveException("LiveCheck: Found error trace.");
+		throw new LiveException(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "LiveCheck: Found error trace.");
 	}
 
 	/**

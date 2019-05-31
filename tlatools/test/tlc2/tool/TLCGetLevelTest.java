@@ -34,12 +34,13 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class TLCGetLevelTest extends ModelCheckerTestCase {
 
 	public TLCGetLevelTest() {
-		super("TLCGetLevel");
+		super("TLCGetLevel", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

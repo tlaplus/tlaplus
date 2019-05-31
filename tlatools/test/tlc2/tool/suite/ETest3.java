@@ -31,9 +31,14 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class ETest3 extends SuiteETestCase {
 
+	public ETest3() {
+		super(ExitStatus.VIOLATION_DEADLOCK);
+	}
+	
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ModelCheckerTestCase#checkDeadLock()
 	 */

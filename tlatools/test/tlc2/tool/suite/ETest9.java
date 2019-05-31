@@ -30,8 +30,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class ETest9 extends SuiteETestCase {
+
+	public ETest9() {
+		super(ExitStatus.FAILURE_SPEC_EVAL);
+	}
 
 	@Test
 	public void testSpec() {

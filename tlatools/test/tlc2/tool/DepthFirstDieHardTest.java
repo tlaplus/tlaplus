@@ -35,12 +35,13 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class DepthFirstDieHardTest extends ModelCheckerTestCase {
 
 	public DepthFirstDieHardTest() {
-		super("DieHard", "", new String[] {"-dfid", "7"});
+		super("DieHard", "", new String[] {"-dfid", "7"}, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

@@ -34,11 +34,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public abstract class BidirectionalTransitions2CTest extends ModelCheckerTestCase {
 
 	public BidirectionalTransitions2CTest(final String config) {
-		super("BidirectionalTransitions", new String[] {"-config", config});
+		super("BidirectionalTransitions", new String[] { "-config", config }, ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

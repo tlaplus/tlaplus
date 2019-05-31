@@ -34,12 +34,13 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class RandomSubsetNextTest extends ModelCheckerTestCase {
 
 	public RandomSubsetNextTest() {
-		super("RandomSubsetNext", new String[] {"-seed", Long.toString(15041980L)});
+		super("RandomSubsetNext", new String[] {"-seed", Long.toString(15041980L)}, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

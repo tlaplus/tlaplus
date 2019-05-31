@@ -36,11 +36,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 
 	public OneBitMutexNoSymmetryTest() {
-		super("OneBitMutexNoSymmetryMC", "symmetry" + File.separator + "OneBitMutex");
+		super("OneBitMutexNoSymmetryMC", "symmetry" + File.separator + "OneBitMutex", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

@@ -25,7 +25,6 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -34,6 +33,7 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class EmptySubsetEqTest extends ModelCheckerTestCase {
@@ -42,7 +42,7 @@ public class EmptySubsetEqTest extends ModelCheckerTestCase {
 	// incorrectly reduce the expression SUBSET (1..3) \subseteq (1..4). The
 	// empty subset {} is not a subset of (1..4).
 	public EmptySubsetEqTest() {
-		super("EmptySubsetEq");
+		super("EmptySubsetEq", ExitStatus.FAILURE_SPEC_EVAL);
 	}
 
 	@Test
@@ -56,7 +56,6 @@ public class EmptySubsetEqTest extends ModelCheckerTestCase {
 				+ "for clues to what happened.\nThe exception was a "
 				+ "java.lang.RuntimeException\n: Attempted to check if the value:\n"
 				+ "{}\nis in the integer interval 1..4"));
-		assertEquals(getExitStatus(), 1);
 
 		// Expect an error trace consisting of a single state.
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

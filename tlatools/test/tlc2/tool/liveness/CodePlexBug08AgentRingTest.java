@@ -35,6 +35,7 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
@@ -42,7 +43,7 @@ import tlc2.output.EC;
 public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 
 	public CodePlexBug08AgentRingTest() {
-		super("AgentRingMC", "CodePlexBug08");
+		super("AgentRingMC", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

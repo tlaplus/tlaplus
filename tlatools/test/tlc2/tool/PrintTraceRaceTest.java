@@ -35,12 +35,13 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class PrintTraceRaceTest extends ModelCheckerTestCase {
 
 	public PrintTraceRaceTest() {
-		super("MC", "PrintTraceRace");
+		super("MC", "PrintTraceRace", ExitStatus.FAILURE_SAFETY_EVAL);
 	}
 	
 	@Test

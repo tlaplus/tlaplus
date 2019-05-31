@@ -264,7 +264,7 @@ public class TLC
         }
 
         // Be explicit about tool success.
-        System.exit(EC.exitStatus(errorCode));
+        System.exit(EC.ExitStatus.errorConstantToExitStatus(errorCode));
     }
     
 	// false if the environment (JVM, OS, ...) makes model checking impossible.

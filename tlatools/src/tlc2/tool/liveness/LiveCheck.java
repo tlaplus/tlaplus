@@ -234,10 +234,7 @@ public class LiveCheck implements ILiveCheck {
 
 		if (LiveWorker.hasErrFound()) {
 			MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS_END, TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
-			// TODO This isn't really an appropriate error code but
-			// 1) LiveWorker currently doesn't provide an error code
-			// 2) So long as we don't return EC.NO_ERROR this only affect the tlc exit status
-			return EC.GENERAL;
+			return EC.TLC_TEMPORAL_PROPERTY_VIOLATED;
 		}
 		
 		// Reset after checking unless it's the final check:
