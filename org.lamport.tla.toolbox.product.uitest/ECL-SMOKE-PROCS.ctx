@@ -5,8 +5,8 @@ Element-Name: ECL-SMOKE-PROCS
 Element-Type: context
 Element-Version: 2.0
 Id: _DSUP8P5YEeilFekyyVb9lA
-Runtime-Version: 2.4.2.201905122359
-Save-Time: 5/29/19, 9:01 PM
+Runtime-Version: 2.4.0.201902270059
+Save-Time: 5/31/19, 7:42 PM
 
 ------=_.ecl.context-718f04b4-ed39-33e3-af62-0995e4561998
 Content-Type: text/ecl
@@ -19,6 +19,7 @@ Entry-Name: .ecl.context
  proc "OpenTLACreateNew"
  {
 	try -command {
+		SetUpAppWindow
 		with [get-view "Spec Explorer" | get-tree] {
  			collapse-all
  			get-items | foreach {
@@ -42,6 +43,20 @@ Entry-Name: .ecl.context
 			 }
 		}
 	 	get-window -class WizardDialog | get-button Finish | click
+	}
+}
+
+// set up main window
+proc "SetUpAppWindow"
+{
+	get-eclipse-window | get-object | invoke setSize 1400 1024
+	try {
+		get-view "Spec Explorer"
+	} -catch {
+		// couldn't get the view because it was in a minimzed couplet - close the errant open second welcome view
+		try {
+			get-view "Welcome View" | close
+		} -catch { }
 	}
 }
 
@@ -102,6 +117,7 @@ proc "DeleteSpecNew"
 proc "CreateInvalidSpec"
 {
 	try -command {
+		SetUpAppWindow
 		get-menu -path "File/Open Spec/Add New Spec..." | click
 		get-window -class WizardDialog | get-editbox -after [get-label "New TLA+ Specification"] | get-property text 
 		    | equals "Creates a new TLA+ specification\n"
@@ -122,6 +138,7 @@ proc "CreateInvalidSpec"
 // Create a new spec with a long name
 proc "OpenTLACreateNewLongName"
 {
+	SetUpAppWindow
 	get-menu -path "File/Open Spec/Add New Spec..." | click
 	//get-window -class WizardDialog | get-editbox -after [get-label "Root-module file:"] | set-text [concat "${rnd.tmp.dir}" "\\" $TLA-File-Long]
 	get-window -class WizardDialog | get-editbox -after [get-label "Root-module file:"] | set-text [concat "${rnd.tmp.dir}" [get-java-property "file.separator"] $TLA-File-Long]
