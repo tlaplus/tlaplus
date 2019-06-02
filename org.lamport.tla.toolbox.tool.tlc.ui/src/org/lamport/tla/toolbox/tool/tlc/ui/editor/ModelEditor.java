@@ -30,7 +30,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IPageChangedListener;
@@ -767,13 +767,12 @@ public class ModelEditor extends FormEditor {
 	 * Launch TLC or SANY
 	 * 
 	 * @param mode
-	 * @param userPased
-	 *            true, if the action is performed on behalf of the user action
-	 *            (explicit click on the launch button)
+	 * @param userInvoked true, if the action is performed on behalf of the user
+	 *                    action (explicit click on the launch button)
 	 * @throws CoreException
 	 */
-	public void launchModel(final String mode, final boolean userPased, final IProgressMonitor monitor) {
-		if (userPased && model.isSnapshot()) {
+	public void launchModel(final String mode, final boolean userInvoked, final IProgressMonitor monitor) {
+		if (userInvoked && model.isSnapshot()) {
 			final boolean launchSnapshot = MessageDialog.openConfirm(getSite().getShell(), "Model is a snapshot",
 					"The model which is about to launch is a snapshot of another model. "
 					+ "Beware that no snapshots of snapshots are taken. "
@@ -812,7 +811,7 @@ public class ModelEditor extends FormEditor {
 										.openError(getSite().getShell(), "Model checking not allowed",
 												"The spec status is not \"parsed\". The status must be \"parsed\" before model checking is allowed.");
 							} else if (mode == TLCModelLaunchDelegate.MODE_GENERATE) {
-								if (userPased) {
+								if (userInvoked) {
 									MessageDialog
 											.openError(getSite().getShell(), "Revalidation not allowed",
 													"The spec status is not \"parsed\". The status must be \"parsed\" before model revalidation is allowed.");
@@ -834,14 +833,14 @@ public class ModelEditor extends FormEditor {
 								MessageDialog.openError(getSite().getShell(), "Illegal module name",
 										"Model validation and checking is not allowed on a spec containing a module named "
 												+ ModelHelper.MC_MODEL_NAME + "."
-												+ (userPased ? "" : " However, the model can still be saved."));
+												+ (userInvoked ? "" : " However, the model can still be saved."));
 								return;
 							}
 							if (ModelHelper.containsTraceExplorerModuleConflict(rootModuleName)) {
 								MessageDialog.openError(getSite().getShell(), "Illegal module name",
 										"Model validation and checking is not allowed on a spec containing a module named "
 												+ ModelHelper.TE_MODEL_NAME + "."
-												+ (userPased ? "" : " However, the model can still be saved."));
+												+ (userInvoked ? "" : " However, the model can still be saved."));
 								return;
 							}
 						}
@@ -894,19 +893,19 @@ public class ModelEditor extends FormEditor {
 					// save the model editor if not saved
 					if (isDirty()) {
 						// TODO decouple from ui thread
-						doSave(new SubProgressMonitor(monitor, 1));
+						doSave(SubMonitor.convert(monitor, 1));
 					}
 
 					if (!isComplete()) {
 						// user clicked launch
-						if (userPased) {
+						if (userInvoked) {
 							MessageDialog.openError(getSite().getShell(), "Model processing not allowed",
 									"The model contains errors, which should be corrected before further processing");
 							return;
 						}
 					} else {
 						// launching the config
-						model.launch(mode, new SubProgressMonitor(monitor, 1), true);
+						model.launch(mode, SubMonitor.convert(monitor, 1), true);
 						
 						/*
 						 * Close any tabs in this editor containing read-only versions of modules. They
@@ -1258,17 +1257,6 @@ public class ModelEditor extends FormEditor {
 		}
 		return null;
 	}
-	
-    // TODO remove
-    public void setUpPage(BasicFormPage newPage, int index)
-    {
-        if (newPage.getPartControl() == null)
-        {
-            newPage.createPartControl(getContainer());
-            setControl(index, newPage.getPartControl());
-            newPage.getPartControl().setMenu(getContainer().getMenu());
-        }
-    }
 
     /**
      * This adds error messages to all pages for the given control.

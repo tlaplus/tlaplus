@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
@@ -486,7 +486,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 
 					if ((checkpoints != null) && checkpoints.length > 0) {
 						ResourcesPlugin.getWorkspace().run((monitor) -> {
-							checkpoints[0].delete(true, new SubProgressMonitor(monitor, 1));
+							checkpoints[0].delete(true, SubMonitor.convert(monitor, 1));
 						}, null);
 					}
 				} catch (CoreException e1) {
