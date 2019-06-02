@@ -221,6 +221,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
 
         // get widget for definition overrides
         Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_DEFINITIONS));
+        mm.removeMessages(widget);
         // check the definition overrides
         @SuppressWarnings("unchecked")
 		List<Assignment> definitions = (List<Assignment>) definitionsTable.getInput();
@@ -387,7 +388,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
             // Just ignore this since I have no idea what an exception might mean.
         }
         
-        ValidateableOverridesSectionPart definitionsPart = new ValidateableOverridesSectionPart(right,
+        final ValidateableOverridesSectionPart definitionsPart = new ValidateableOverridesSectionPart(right,
                 "Definition Override", "Directs TLC to use alternate definitions for operators.", toolkit,
                 sectionFlags | expand, this);
 
@@ -397,13 +398,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
         definitionsPart.getSection().setLayoutData(gd);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        gd.minimumWidth = 100;
-        gd.verticalSpan = 3;
         definitionsTable = definitionsPart.getTableViewer();
-        definitionsTable.getTable().setLayoutData(gd);
         dm.bindAttribute(MODEL_PARAMETER_DEFINITIONS, definitionsTable, definitionsPart);
 
         // ---------------------------------------------------------------
