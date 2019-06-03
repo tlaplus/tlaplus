@@ -92,6 +92,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public static final String SERVER_RUNNING = "Master waiting for workers";
     public static final String SINGLE_WORKER_REGISTERED = " worker registered";
     public static final String MULTIPLE_WORKERS_REGISTERED = " workers registered";
+    // strings for the types of searches
+    public static final String BREADTH_FIRST_SEARCH = "Breadth-first search";
+    public static final String DEPTH_FIRST_SEARCH = "Depth-first search";
+    // string for simulation mode
+    public static final String SIMULATION_MODE = "Simulation";
 
     // pattern for the output of evaluating constant expressions
     public static final Pattern CONSTANT_EXPRESSION_OUTPUT_PATTERN = Pattern.compile("(?s)" + ModelWriter.BEGIN_TUPLE
@@ -99,6 +104,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
             + "(.*)"/*calc output group*/
             + ModelWriter.END_TUPLE);
 
+    
+    
     // presenter for the current process
     protected ITLCModelLaunchDataPresenter presenter;
     // list of errors
@@ -349,19 +356,19 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_MODE_MC:
-                    this.tlcMode = "Breadth-first search";
+                    this.tlcMode = BREADTH_FIRST_SEARCH;
 					this.fpIndex = getFPIndex(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.TLC_MODE);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_MODE_MC_DFS:
-                    this.tlcMode = "Depth-first search";
+                    this.tlcMode = DEPTH_FIRST_SEARCH;
 					this.fpIndex = getFPIndex(outputMessage);
                     informPresenter(ITLCModelLaunchDataPresenter.TLC_MODE);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;
                 case EC.TLC_MODE_SIMU:
-                    this.tlcMode = "Simulation";
+                    this.tlcMode = SIMULATION_MODE;
                     informPresenter(ITLCModelLaunchDataPresenter.TLC_MODE);
                     setDocumentText(this.progressOutput, outputMessage, true);
                     break;

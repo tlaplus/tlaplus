@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _44K9cAJWEemDc-4PKyNT9w
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/30/19, 8:19 PM
+Save-Time: 6/3/19, 12:14 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -47,8 +47,8 @@ try -command {
 	
 	wait-run
 	
-	get-editor "Model_1" | get-section "General" | get-link "No errors" | get-property caption | equals "No errors" 
-	    | verify-true
+	// The error link should not be visible because there are no errors.
+	verify-error {get-editor $TLA-MODEL-ONE | get-section General | get-link "No errors" }
 	with [get-editor "Model_1" | get-tab-folder] {
 	    get-tab-item "Model Overview" | click
 	    get-tab-item "Advanced Options" | click

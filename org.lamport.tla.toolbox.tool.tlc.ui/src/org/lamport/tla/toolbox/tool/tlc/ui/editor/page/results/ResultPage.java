@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IWorkspace;
@@ -59,6 +59,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
@@ -130,8 +131,11 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		return "(" + resultPage.getModel().getName() + ")";
 	}
 
+	private static final Color ERROR_PANE_BACKGROUND = new Color(PlatformUI.getWorkbench().getDisplay(), 255, 241, 237);
+	private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("HH:mm:ss '('MMM d')'");
+	private static final String ZERO_COVERAGE_WARNING = "Coverage is zero for one or more modules.";
 	
-    private Hyperlink errorStatusHyperLink;
+	
     /**
      * UI elements
      */
@@ -139,16 +143,21 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private SourceViewer progressOutput;
     private SourceViewer expressionEvalResult;
     private SourceViewer expressionEvalInput;
-    private long startTimestamp;
-    private Text startTimestampText;
-    // startTime is provided by the TLCModelLaunchDataProvider's getStartTime()
-    // method.
-    private Text finishTimestampText;
-    private Text tlcModeText;
-    private Text lastCheckpointTimeText;
+    private long m_startTimestamp;
+    private Composite m_generalTopPane;
+    private Label m_startLabel;
+    private Label m_lastCheckpointLabel;
+    private Label m_finishLabel;
+    private Label m_tlcSimulationLabel;    
+    private Label m_tlcSearchModeLabel;
+    private Label m_tlcStatusLabel;
+
+    private Composite m_generalErrorPane;
+    private Hyperlink m_errorStatusHyperLink;
+    private Label m_fingerprintCollisionLabel;
+    private Label m_zeroCoverageLabel;
+
     private Text coverageTimestampText;
-    private Text currentStatusText;
-    private Text fingerprintCollisionProbabilityText;
     private TableViewer coverage;
     private TableViewer stateSpace;
 	private final Map<String, Section> sections = new HashMap<String, Section>();
@@ -158,7 +167,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private FontPreferenceChangeListener fontChangeListener;
 
     // hyper link listener activated in case of errors
-    private final IHyperlinkListener errorHyperLinkListener = new HyperlinkAdapter() {
+    private final IHyperlinkListener m_errorHyperLinkListener = new HyperlinkAdapter() {
         public void linkActivated(HyperlinkEvent e)
         {
             if (getModel() != null)
@@ -218,34 +227,18 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
 	                    break;
 	                case START_TIME:
-	                    ResultPage.this.startTimestamp = dataProvider.getStartTimestamp();
-	                    if (ResultPage.this.startTimestamp < 0) {
-							// Leave the starttime text empty on a negative
-							// timestamp. A negative one indicates that the
-							// model has never been checked. See Long.MIN_VALUE in
-	                    	// org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider.initialize()
-	                    	ResultPage.this.startTimestampText.setText("");
-	                    	break;
-	                    }
-						ResultPage.this.startTimestampText.setText(new Date(ResultPage.this.startTimestamp).toString());
+	                	setStartTime(dataProvider.getStartTimestamp());
 	                    break;
 	                case END_TIME:
-	                    long finishTimestamp = dataProvider.getFinishTimestamp();
-	                    if(finishTimestamp < 0) {
-	                    	ResultPage.this.finishTimestampText.setText("");
-	                    	break;
-	                    }
-	                    ResultPage.this.finishTimestampText.setText(new Date(finishTimestamp).toString());
+	                	setEndTime(dataProvider.getFinishTimestamp());
 	                    
-	                    // calc elapsed time and set as Tooltip
-	                    final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-	                    sdf.setTimeZone(TimeZone.getTimeZone("GMT")); // explicitly set TZ to handle local offset
-	                    long elapsedTime = finishTimestamp - dataProvider.getStartTimestamp();
-	                    ResultPage.this.finishTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
-	                    ResultPage.this.startTimestampText.setToolTipText(sdf.format(new Date(elapsedTime)));
+	                	final long delta = dataProvider.getFinishTimestamp() - dataProvider.getStartTimestamp();
+	                	final String duration = DurationFormatUtils.formatDuration(delta, "HH'hrs' mm'mins' ss'sec'");
+	                	m_startLabel.setToolTipText(duration);
+	                	m_finishLabel.setToolTipText(duration);
 	                    break;
 	                case TLC_MODE:
-	                	ResultPage.this.tlcModeText.setText(dataProvider.getTLCMode());
+	                	setSearchMode(dataProvider.getTLCMode());
 	                	
 	                	final IFormPage iep = getEditor().findPage(AdvancedTLCOptionsPage.ID);
 	                	if (iep != null) {
@@ -256,19 +249,25 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                		getModel().setAttribute(LAUNCH_FP_INDEX, dataProvider.getFPIndex());
 	                		getModelEditor().saveModel();
 	                	}
+	                	break;
 	                case LAST_CHECKPOINT_TIME:
-	                    long lastCheckpointTimeStamp = dataProvider.getLastCheckpointTimeStamp();
-	                    if(lastCheckpointTimeStamp > 0) {
-	                    	ResultPage.this.lastCheckpointTimeText.setText(new Date(lastCheckpointTimeStamp).toString());
-	                    	break;
-	                    }
-	                   	ResultPage.this.lastCheckpointTimeText.setText("");
+	                	setCheckpoint(dataProvider.getLastCheckpointTimeStamp());
 	                   	break;
 	                case CURRENT_STATUS:
-	                    ResultPage.this.currentStatusText.setText(dataProvider.getCurrentStatus());
+	                	m_tlcStatusLabel.setText(dataProvider.getCurrentStatus());
+	                	m_generalTopPane.layout(true, true);
 	                    break;
 	                case FINGERPRINT_COLLISION_PROBABILITY:
-	                    ResultPage.this.fingerprintCollisionProbabilityText.setText(dataProvider.getFingerprintCollisionProbability());
+	                	final String collisionText = dataProvider.getFingerprintCollisionProbability().trim();
+	                	
+	                	if (collisionText.length() == 0) {
+							m_fingerprintCollisionLabel.setVisible(false);
+							setErrorPaneVisible(m_zeroCoverageLabel.isVisible() || m_errorStatusHyperLink.isVisible());
+	                	} else {
+							m_fingerprintCollisionLabel.setText("Fingerprint collision chance: " + collisionText);
+							m_fingerprintCollisionLabel.setVisible(true);
+							setErrorPaneVisible(true);
+	                	}
 	                    break;
 	                case COVERAGE_TIME:
 	                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
@@ -280,15 +279,19 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							if (dataProvider.hasZeroCoverage()) {
 								if (zeroCoverage == null) {
 									final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
-											"Coverage is zero for one or more modules.", IMarker.SEVERITY_WARNING);
+											ZERO_COVERAGE_WARNING, IMarker.SEVERITY_WARNING);
 									marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
 									zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+									m_zeroCoverageLabel.setVisible(true);
+									setErrorPaneVisible(true);
 								}
 							} else if (zeroCoverage != null) {
 								try {
 									zeroCoverage.delete();
-									ResultPage.this.resetMessage(RESULT_PAGE_PROBLEM);
+									resetMessage(RESULT_PAGE_PROBLEM);
 									zeroCoverage = null;
+									m_zeroCoverageLabel.setVisible(false);
+									setErrorPaneVisible(m_errorStatusHyperLink.isVisible() || m_fingerprintCollisionLabel.isVisible());
 								} catch (CoreException e) {
 									TLCUIActivator.getDefault().logError(e.getMessage(), e);
 								}
@@ -367,32 +370,36 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						}
 						break;
 	                case ERRORS:
-	                    String text;
-	                    Color color;
-	                    int errorCount = dataProvider.getErrors().size();
+	                    final String text;
+	                    final Color color;
+	                    final boolean visible;
+	                    final int errorCount = dataProvider.getErrors().size();
 	                    switch (errorCount) {
-	                    case 0:
-	                        text = TLCModelLaunchDataProvider.NO_ERRORS;
-	                        color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
-	                        ResultPage.this.errorStatusHyperLink
-	                                .removeHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-	                        break;
-	                    case 1:
-	                        text = "1 Error";
-	                        ResultPage.this.errorStatusHyperLink
-	                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-	                        color = TLCUIActivator.getColor(SWT.COLOR_RED);
-	                        break;
-	                    default:
-	                        text = String.valueOf(errorCount) + " Errors";
-	                        ResultPage.this.errorStatusHyperLink
-	                                .addHyperlinkListener(ResultPage.this.errorHyperLinkListener);
-	                        color = TLCUIActivator.getColor(SWT.COLOR_RED);
-	                        break;
-	                    }
+							case 0:
+								text = TLCModelLaunchDataProvider.NO_ERRORS;
+								color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
+								m_errorStatusHyperLink.removeHyperlinkListener(m_errorHyperLinkListener);
+								visible = false;
+								break;
+							case 1:
+								text = "1 Error";
+								m_errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
+								color = TLCUIActivator.getColor(SWT.COLOR_RED);
+								visible = true;
+								break;
+							default:
+								text = String.valueOf(errorCount) + " Errors";
+								m_errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
+								color = TLCUIActivator.getColor(SWT.COLOR_RED);
+								visible = true;
+								break;
+		                }
 	
-	                    ResultPage.this.errorStatusHyperLink.setText(text);
-	                    ResultPage.this.errorStatusHyperLink.setForeground(color);
+	                    m_errorStatusHyperLink.setText(text);
+	                    m_errorStatusHyperLink.setForeground(color);
+						m_errorStatusHyperLink.setVisible(visible);
+						setErrorPaneVisible(visible || m_zeroCoverageLabel.isVisible()
+													|| m_fingerprintCollisionLabel.isVisible());
 						
 	                    // update the error view
 	                    TLCErrorView.updateErrorView(dataProvider.getModel());
@@ -514,20 +521,29 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     	disposeLock.lock();
     	try {
     		if (getPartControl().isDisposed()) {
-    			// Cannot access widgets past their disposal
     			return;
     		}
-    		this.startTimestampText.setText("");
-    		this.startTimestamp = 0;
-    		this.finishTimestampText.setText("");
-    		this.tlcModeText.setText("");
-    		this.lastCheckpointTimeText.setText("");
-    		this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
-    		this.errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
-    		this.coverage.setInput(new Vector<CoverageInformationItem>());
-    		this.stateSpace.setInput(new Vector<StateSpaceInformationItem>());
-    		this.progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
-    		this.userOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+    		
+    		m_startTimestamp = 0;
+    		m_startLabel.setText("");
+    		m_lastCheckpointLabel.setText("");
+    		m_finishLabel.setText("");
+    		m_tlcSimulationLabel.setVisible(false);
+    		m_tlcSearchModeLabel.setText("");
+    		m_tlcStatusLabel.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
+    		m_errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
+            m_errorStatusHyperLink.setVisible(false);
+            m_fingerprintCollisionLabel.setText("");
+            m_fingerprintCollisionLabel.setVisible(false);
+            m_zeroCoverageLabel.setVisible(false);
+    		coverage.setInput(new Vector<CoverageInformationItem>());
+    		stateSpace.setInput(new Vector<StateSpaceInformationItem>());
+    		progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+    		userOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
+
+    		setErrorPaneVisible(false);
+        	
+        	m_generalTopPane.layout(true, true);
     	} finally {
     		disposeLock.unlock();
     	}
@@ -635,38 +651,93 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         section.setLayoutData(twd);
 
         final Composite generalArea = (Composite) section.getClient();
-        gl = new GridLayout(2, false);
+        gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
+        gl.marginBottom = 6;
         generalArea.setLayout(gl);
+        
+        m_generalTopPane = new Composite(generalArea, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        m_generalTopPane.setLayoutData(gd);
+        gl = new GridLayout(6, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        gl.horizontalSpacing = 12;
+        m_generalTopPane.setLayout(gl);
+        
+        m_startLabel = new Label(m_generalTopPane, SWT.NONE);
+        m_startLabel.setLayoutData(new GridData());
+        m_startLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        m_lastCheckpointLabel = new Label(m_generalTopPane, SWT.NONE);
+        m_lastCheckpointLabel.setLayoutData(new GridData());
+        m_finishLabel = new Label(m_generalTopPane, SWT.NONE);
+        m_finishLabel.setLayoutData(new GridData());
+        m_finishLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        m_tlcSimulationLabel = new Label(m_generalTopPane, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.CENTER;
+        m_tlcSimulationLabel.setLayoutData(gd);
+        m_tlcSimulationLabel.setText("Simulation mode");
+        m_tlcSimulationLabel.setVisible(false);
+        m_tlcSimulationLabel.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DIALOG_FONT));
+        m_tlcSearchModeLabel = new Label(m_generalTopPane, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.RIGHT;
+        gd.grabExcessHorizontalSpace = true;
+        m_tlcSearchModeLabel.setLayoutData(gd);
+        m_tlcStatusLabel = new Label(m_generalTopPane, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.RIGHT;
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 18;
+        m_tlcStatusLabel.setLayoutData(gd);
+        m_tlcStatusLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        
+        m_generalErrorPane = new Composite(generalArea, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.verticalIndent = 9;
+        m_generalErrorPane.setLayoutData(gd);
+        gl = new GridLayout(3, false);
+        gl.marginHeight = 6;
+        gl.marginWidth = 0;
+        gl.horizontalSpacing = 6;
+        m_generalErrorPane.setLayout(gl);
+        m_generalErrorPane.setBackground(ERROR_PANE_BACKGROUND);
 
-        // start
-        this.startTimestampText = FormHelper.createTextLeft("Start time:", generalArea, toolkit);
-        this.startTimestampText.setEditable(false);
-        // elapsed time
-        this.finishTimestampText = FormHelper.createTextLeft("End time:", generalArea, toolkit);
-        this.finishTimestampText.setEditable(false);
-        // elapsed time
-        this.tlcModeText = FormHelper.createTextLeft("TLC mode:", generalArea, toolkit);
-        this.tlcModeText.setEditable(false);
-       // last checkpoint time
-        this.lastCheckpointTimeText = FormHelper.createTextLeft("Last checkpoint time:", generalArea, toolkit);
-        this.lastCheckpointTimeText.setEditable(false);
-        // current status
-        this.currentStatusText = FormHelper.createTextLeft("Current status:", generalArea, toolkit);
-        this.currentStatusText.setEditable(false);
-        this.currentStatusText.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
         // errors
         // Label createLabel =
         // toolkit.createLabel(statusComposite, "Errors detected:");
         // this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
-        this.errorStatusHyperLink = FormHelper.createHyperlinkLeft("Errors detected:", generalArea, toolkit);
-        // fingerprint collision probability
-        this.fingerprintCollisionProbabilityText = FormHelper.createTextLeft("Fingerprint collision probability:", generalArea, toolkit);
-        this.fingerprintCollisionProbabilityText.setEditable(false);
-        this.fingerprintCollisionProbabilityText.setText("");
-
+        m_errorStatusHyperLink = toolkit.createHyperlink(m_generalErrorPane, "", SWT.NONE);
+        m_errorStatusHyperLink.setBackground(m_generalErrorPane.getBackground());
+        m_errorStatusHyperLink.setVisible(false);
         
+        // fingerprint collision probability
+        m_fingerprintCollisionLabel = new Label(m_generalErrorPane, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.CENTER;
+        m_fingerprintCollisionLabel.setLayoutData(gd);
+        m_fingerprintCollisionLabel.setVisible(false);
+        
+        // zero coverage label
+        m_zeroCoverageLabel = new Label(m_generalErrorPane, SWT.NONE);
+        m_zeroCoverageLabel.setText(ZERO_COVERAGE_WARNING);
+        m_zeroCoverageLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        m_zeroCoverageLabel.setVisible(false);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.RIGHT;
+        gd.grabExcessHorizontalSpace = true;
+        gd.verticalAlignment = SWT.BOTTOM;
+        m_zeroCoverageLabel.setLayoutData(gd);
+        
+		setErrorPaneVisible(false);
+
+	
         // -------------------------------------------------------------------
         // statistics section
         // There is no description line for this section, so it is
@@ -961,6 +1032,65 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         super.commit(onSave);
     }
 
+    private void setStartTime(final long msTime) {
+    	m_startTimestamp = msTime;
+    	
+    	if (msTime < 0) {
+			// Leave the starttime text empty on a negative timestamp. A negative one indicates that the
+			// model has never been checked
+    		// See Long.MIN_VALUE in org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider.initialize()
+    		m_startLabel.setText("Awaiting first run...");
+		} else {
+			m_startLabel.setText("Start: " + DATE_FORMATTER.format(new Date(msTime)));
+		}
+    	
+    	m_generalTopPane.layout(true, true);
+    }
+    
+    private void setEndTime(final long msTime) {
+    	if (msTime < 0) {
+    		m_finishLabel.setVisible(false);
+		} else {
+			m_finishLabel.setText("End: " + DATE_FORMATTER.format(new Date(msTime)));
+    		m_finishLabel.setVisible(true);
+		}
+    	
+    	m_generalTopPane.layout(true, true);
+    }
+    
+    private void setCheckpoint(final long msTime) {
+    	if (msTime < 0) {
+        	m_lastCheckpointLabel.setVisible(false);
+		} else {
+        	m_lastCheckpointLabel.setText("Last checkpoint: " + DATE_FORMATTER.format(new Date(msTime)));
+        	m_lastCheckpointLabel.setVisible(true);
+		}
+    	
+    	m_generalTopPane.layout(true, true);
+    }
+    
+    private void setSearchMode(final String mode) {
+    	if (TLCModelLaunchDataProvider.DEPTH_FIRST_SEARCH.equals(mode)) {
+    		m_tlcSearchModeLabel.setText(TLCModelLaunchDataProvider.DEPTH_FIRST_SEARCH);
+    		m_tlcSearchModeLabel.setVisible(true);
+    		m_tlcSimulationLabel.setVisible(false);
+    	} else {
+    		m_tlcSearchModeLabel.setVisible(false);
+			m_tlcSimulationLabel.setVisible(TLCModelLaunchDataProvider.SIMULATION_MODE.equals(mode));
+    	}
+    	
+    	m_generalTopPane.layout(true, true);
+    }
+    
+    private void setErrorPaneVisible(final boolean visible) {
+    	final GridData gd = (GridData)m_generalErrorPane.getLayoutData();
+    	
+    	gd.exclude = !visible;
+    	m_generalErrorPane.setLayoutData(gd);
+    	
+    	m_generalErrorPane.setVisible(visible);
+    }
+    
     /**
      * Creates the state space table (initializes the {@link stateSpace} variable)
      * @param parent
@@ -1135,7 +1265,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     }
 
     long getStartTimestamp() {
-    	return startTimestamp;
+    	return m_startTimestamp;
     }
     
     TableViewer getStateSpaceTableViewer() {

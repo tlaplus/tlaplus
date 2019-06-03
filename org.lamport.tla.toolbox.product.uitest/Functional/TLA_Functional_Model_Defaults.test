@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _myVagAP4EemwBd2liJ-qvA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/20/19, 3:13 PM
+Save-Time: 6/3/19, 12:36 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -94,32 +94,6 @@ try -command {
             | get-property selected | equals false | verify-true
         get-editbox -after [get-label "JVM arguments:"] | get-property text | equals "" | verify-true
         get-editbox -after [get-label "TLC command line parameters:"] | get-property text | equals "" | verify-true
-	}
-	
-	get-editor "Model_1" | get-tab-folder | get-tab-item "Model Checking Results" | click
-	with [get-editor "Model_1"] {
-	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
-	    with [get-section General] {
-	        get-editbox -after [get-label "Current status:"] | get-property text | equals "Not running" | verify-true
-	        get-link "No errors" | get-property caption | equals "No errors" | verify-true
-	        get-editbox -after [get-label "Start time:"] | get-property text | equals "" | verify-true
-	        get-editbox -after [get-label "End time:"] | get-property text | equals "" | verify-true
-	        get-editbox -after [get-label "TLC mode:"] | get-property text | equals "" | verify-true
-	        get-editbox -after [get-label "Last checkpoint time:"] | get-property text | equals "" | verify-true
-	        get-editbox -after [get-label "Fingerprint collision probability:"] | get-property text | equals "" 
-	            | verify-true
-	    }
-	    get-section Statistics | get-editbox -after [get-label "Coverage at"] | get-property text | equals "" | verify-true
-	    get-section "Evaluate Constant Expression" | get-editbox -after [get-label "Expression:"] | get-property text 
-	        | equals "" | verify-true
-	    get-section "User Output" | get-text-viewer | get-property text | equals "No output is available" | verify-true
-	}
-	with [get-editor "Model_1"] {
-	    get-section Statistics | click
-	    get-section "Evaluate Constant Expression" | click
-	    get-section "User Output" | click
-	    get-section General | click
-	    get-section "Progress Output" | click
 	}
 } -finally {
 	DeleteSpecNew

@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _dOXZwAJfEemDc-4PKyNT9w
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:13 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 6/3/19, 12:28 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -39,9 +39,8 @@ try -command {
 	wait-run    
 	        
 	with [get-editor "Model_1" | get-section General] {
-	    get-editbox -after [get-label "Fingerprint collision probability:"] | get-property text 
-	        | equals "calculated: 5.4E-20" | verify-true
-	    get-link "No errors" | get-property caption | equals "No errors" | verify-true
+	    get-label "Fingerprint collision chance: calculated: 5.4E-20"
+	    verify-error {get-link "No errors"}
 	}
 } -finally {
 	DeleteSpecNew
