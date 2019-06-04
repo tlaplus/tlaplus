@@ -30,7 +30,7 @@ import java.io.IOException;
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.coverage.CostModel;
 
-public interface IValue {
+public interface IValue extends Comparable<Object> {
 
 	/* This method compares this with val.  */
 	int compareTo(Object val);
