@@ -162,7 +162,7 @@ public class TLC implements ValueConstants
         } else if (vidx instanceof StringValue) {
 			return TLCGetStringValue(vidx);
         }
-        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b" /* delete the space*/, "TLCGet",
+        throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR, new String[] { "TLCGet",
                 "nonnegative integer", Values.ppr(vidx.toString()) });
     }
 

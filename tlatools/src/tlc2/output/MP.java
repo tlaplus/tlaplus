@@ -615,6 +615,10 @@ public class MP
             b.append("Overflow when computing %1%");
             break;
 
+        case EC.TLC_MODULE_ONE_ARGUMENT_ERROR:
+            b.append("The argument of %1% should be a %2%, but instead it is:\n%3%");
+            break;
+
         case EC.TLC_MODULE_ARGUMENT_ERROR:
             b.append("The %1% argument of %2% should be a %3%, but instead it is:\n%4%");
             break;

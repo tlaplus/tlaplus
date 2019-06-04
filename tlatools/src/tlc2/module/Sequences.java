@@ -67,7 +67,7 @@ public class Sequences extends UserObj implements ValueConstants
         {
             return IntValue.gen(seq.size());
         }
-        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b", "Len", "sequence",
+        throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR, new String[] { "Len", "sequence",
                 Values.ppr(s.toString()) });
     }
 
@@ -82,7 +82,7 @@ public class Sequences extends UserObj implements ValueConstants
             }
             return seq.elems[0];
         }
-        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b", "Head", "sequence",
+        throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR, new String[] { "Head", "sequence",
                 Values.ppr(s.toString()) });
     }
 
@@ -109,7 +109,7 @@ public class Sequences extends UserObj implements ValueConstants
             System.arraycopy(seq.elems, 1, vals, 0, vals.length);
             return new TupleValue(vals);
         }
-        throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "\b", "Tail", "sequence",
+        throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR, new String[] { "Tail", "sequence",
                 Values.ppr(s.toString()) });
     }
 
