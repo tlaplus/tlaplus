@@ -2,6 +2,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.page;
 
 import java.util.Hashtable;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ListenerList;
@@ -14,6 +15,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
@@ -89,8 +91,15 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     public static final String RUNNING_TITLE = " ( model checking is in progress )";
     public static final String IMAGE_TEMPLATE_TOKEN = "[XXXXX]";
     
+    /**
+     * If a section has a data with this key, the returned object is assumed to be an implementor of Consumer<Boolean>
+     * 	which will be invoked during {@link #compensateForExpandableCompositesPoorDesign(Section, boolean)} with
+     *  the boolean value being true if the section is expanding.
+     */
+    protected static final String SECTION_EXPANSION_LISTENER = "_why_oh_why_..._sigh";
+    
     private static final String TLC_ERROR_STRING = "TLC Error";
-
+    
     /** 
      * a list of dirty part listeners, which marks parts as dirty on input and cause the re-validation of the input
      */
@@ -411,6 +420,28 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             };
         }
         return this.formRebuildingListener;
+    }
+    
+	// There is no way to exaggerate how poorly designed SWT and SWT-adjacent Eclipse code is... the ExpandableComposite
+	//		does not fire an expansion listener notification on setExpanded and there is no way to get to the
+	//		listeners to do it ourselves... i mean the whole thing is so absurdly bad.
+    // .. and the only reason we have to worry about the listeners being notified is because the form page won't
+    //		layout correct unless we turn the section's grid layout data's vertical grab on and off...
+    // It is disabled turtles all the way down over at eclipse.org...
+	@SuppressWarnings("unchecked") // generic casting
+    protected void compensateForExpandableCompositesPoorDesign(final Section section, final boolean expand) {
+    	section.setExpanded(expand);
+    	
+		if (section.getData(FormHelper.SECTION_IS_NOT_SPACE_GRABBING) == null) {
+			final GridData gd = (GridData) section.getLayoutData();
+			gd.grabExcessVerticalSpace = expand;
+			section.setLayoutData(gd);
+		}
+		
+		final Object o = section.getData(SECTION_EXPANSION_LISTENER);
+		if (o != null) {
+			((Consumer<Boolean>)o).accept(Boolean.valueOf(expand));
+		}
     }
 
     /**

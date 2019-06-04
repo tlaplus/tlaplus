@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -35,7 +36,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.PageChangedEvent;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabFolder2Adapter;
@@ -76,6 +78,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ErrorMessage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.EvaluateConstantExpressionPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ModelEditorPartListener;
@@ -93,7 +96,11 @@ import com.abstratt.graphviz.GraphViz;
 import tla2sany.semantic.ModuleNode;
 
 /**
- * Editor for the model
+ * Editor for the model.
+ * 
+ * TODO this class should be cleaned up - there's no consistent grouping of static v instance methods; nor scoped
+ * 		instance methods; nor ...
+ * 
  * @author Simon Zambrovski
  */
 public class ModelEditor extends FormEditor {
@@ -111,9 +118,12 @@ public class ModelEditor extends FormEditor {
     // helper to resolve semantic matches of words
     private SemanticHelper helper;
     private final Model.StateChangeListener modelStateListener = new Model.StateChangeListener() {
+    	private State m_lastState = State.NOT_RUNNING;
+    	
 		@Override
 		public boolean handleChange(final ChangeEvent event) {
 			if (event.getState().in(State.NOT_RUNNING, State.RUNNING)) {
+				final State lastStateCopy = m_lastState;
 				UIHelper.runUIAsync(new Runnable() {
 					public void run() {
 						for (int i = 0; i < getPageCount(); i++) {
@@ -126,15 +136,29 @@ public class ModelEditor extends FormEditor {
 						if (event.getState().in(State.RUNNING)) {
 							// Switch to Result Page (put on top) of model editor stack. A user wants to see
 							// the status of a model run she has just started.
-							ModelEditor.this.showResultPage();
-						}
-						if (event.getState().in(State.NOT_RUNNING)) {
+							final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+							final boolean eceInItsOwnTab = ips.getBoolean(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB);
+
+							if (!eceInItsOwnTab || !modelIsConfiguredWithNoBehaviorSpec()) {
+								showResultPage();
+							}
+						} else if (event.getState().in(State.NOT_RUNNING)) {
 							// Model checking finished, lets open state graph if any.
 							if (event.getModel().hasStateGraphDump()) {
 								try {
-									ModelEditor.this.addOrUpdateStateGraphEditor(event.getModel().getStateGraphDump());
+									addOrUpdateStateGraphEditor(event.getModel().getStateGraphDump());
 								} catch (CoreException e) {
 									TLCUIActivator.getDefault().logError("Error initializing editor", e);
+								}
+							}
+							
+							if (lastStateCopy.in(State.RUNNING, State.REMOTE_RUNNING)) {
+								final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+								final boolean eceInItsOwnTab = ips
+										.getBoolean(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB);
+								
+								if (eceInItsOwnTab && modelIsConfiguredWithNoBehaviorSpec()) {
+									setActivePage(EvaluateConstantExpressionPage.ID);
 								}
 							}
 							
@@ -156,6 +180,9 @@ public class ModelEditor extends FormEditor {
 					}
 				});
 			}
+			
+			m_lastState = event.getState();
+			
 			return false;
 		}
 	};
@@ -170,9 +197,10 @@ public class ModelEditor extends FormEditor {
      */
     private final ValidateRunnable validateRunable = new ValidateRunnable();
 
-    private class ValidateRunnable implements Runnable
-    {
-
+    // TODO this is pretty poor design - there is one instance of this inner class per instance of ModelEditor; the 
+    //			code below tweaks the switchToErrorPage ivar and then hands it off to a run async method, i guess just
+    //			hoping that the flag isn't tweaked again before the async method does what was originally intended...
+	private class ValidateRunnable implements Runnable {
         private boolean switchToErrorPage = false;
 
         public void run()
@@ -262,15 +290,46 @@ public class ModelEditor extends FormEditor {
 	 * selection. However, if the user does not click into the page effectively
 	 * changing the selection, the FocusListener isn't triggered.
 	 */
-	private final IPageChangedListener pageChangedListener = new IPageChangedListener() {
-		/* (non-Javadoc)
-		 * @see org.eclipse.jface.dialogs.IPageChangedListener#pageChanged(org.eclipse.jface.dialogs.PageChangedEvent)
-		 */
-		public void pageChanged(final PageChangedEvent event) {
-			final INavigationHistory navigationHistory = getSite().getPage()
-					.getNavigationHistory();
-			navigationHistory.markLocation((IEditorPart) event
-					.getSelectedPage());
+	private final IPageChangedListener pageChangedListener = (event) -> {
+		final INavigationHistory navigationHistory = getSite().getPage().getNavigationHistory();
+		navigationHistory.markLocation((IEditorPart) event.getSelectedPage());
+	};
+	
+	private final IPropertyChangeListener m_preferenceChangeListener = (event) -> {
+		if (ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB.equals(event.getProperty())) {
+			final boolean eceAsTab = ((Boolean) event.getNewValue()).booleanValue();
+			final Pair<Integer, FormPage> pair = getLastFormPage();
+			final String id = pair.getRight().getId();
+
+			if (eceAsTab) {
+				if (!EvaluateConstantExpressionPage.ID.equals(id)) {
+					try {
+						final EvaluateConstantExpressionPage ecePage = new EvaluateConstantExpressionPage(this);
+						addPage((pair.getLeft().intValue() + 1), ecePage, getEditorInput());
+						
+						final ResultPage rp = (ResultPage) findPage(ResultPage.ID);
+						final EvaluateConstantExpressionPage.State eceState = rp.getECEContent();
+						ecePage.setECEContent(eceState);
+						rp.pageShouldDisplayEvaluateConstantUI(false);
+					} catch (final Exception e) {
+						TLCUIActivator.getDefault().logError("Error attempting to open ECE page.", e);
+					}
+				}
+			} else {
+				if (EvaluateConstantExpressionPage.ID.equals(id)) {
+					try {
+						final EvaluateConstantExpressionPage ecePage = (EvaluateConstantExpressionPage)pair.getRight();
+						final EvaluateConstantExpressionPage.State eceState = ecePage.getECEContent();
+						final ResultPage rp = (ResultPage) findPage(ResultPage.ID);
+						rp.pageShouldDisplayEvaluateConstantUI(true);
+						rp.setECEContent(eceState);
+						
+						removePage(pair.getLeft().intValue());
+					} catch (final Exception e) {
+						TLCUIActivator.getDefault().logError("Error attempting to close ECE page.", e);
+					}
+				}
+			}
 		}
 	};
 
@@ -319,12 +378,18 @@ public class ModelEditor extends FormEditor {
         
         int openTabsValue = 0;
         try {
-			openTabsValue = model.getLaunchConfiguration()
-					.getAttribute(IModelConfigurationConstants.EDITOR_OPEN_TABS, 0);
+			openTabsValue = model.getLaunchConfiguration().getAttribute(IModelConfigurationConstants.EDITOR_OPEN_TABS, 0);
         } catch (CoreException e) { }
         
+		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+		final boolean eceInItsOwnTab = ips.getBoolean(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB);
+
         if (openTabsValue == IModelConfigurationConstants.EDITOR_OPEN_TAB_NONE) {
-            pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new ResultPage(this) };
+        	if (eceInItsOwnTab) {
+				pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new ResultPage(this), new EvaluateConstantExpressionPage(this) };
+			} else {
+				pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new ResultPage(this) };
+			}
         } else {
         	ArrayList<BasicFormPage> pages = new ArrayList<>();
         	
@@ -338,9 +403,14 @@ public class ModelEditor extends FormEditor {
 				pages.add(new AdvancedTLCOptionsPage(this));
         	}
         	pages.add(new ResultPage(this));
+        	if (eceInItsOwnTab) {
+        		pages.add(new EvaluateConstantExpressionPage(this));
+        	}
 
             pagesToAdd = pages.toArray(new BasicFormPage[pages.size()]);
         }
+        
+        ips.addPropertyChangeListener(m_preferenceChangeListener);
         
         
         // setContentDescription(path.toString());
@@ -402,6 +472,9 @@ public class ModelEditor extends FormEditor {
     @Override
 	public void dispose() {
 		removePageChangedListener(pageChangedListener);
+		
+		TLCUIActivator.getDefault().getPreferenceStore().removePropertyChangeListener(m_preferenceChangeListener);
+		
         // TLCUIActivator.getDefault().logDebug("entering ModelEditor#dispose()");
         // remove the listeners
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceResourceChangeListener);
@@ -433,7 +506,7 @@ public class ModelEditor extends FormEditor {
         // remove existing markers
         model.removeMarkers(Model.TLC_MODEL_ERROR_MARKER_SANY);
 
-        boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore().getBoolean(
+        final boolean revalidate = TLCUIActivator.getDefault().getPreferenceStore().getBoolean(
                 ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY);
         if (revalidate)
         {
@@ -619,10 +692,9 @@ public class ModelEditor extends FormEditor {
             UIHelper.runUIAsync(validateRunable);
 
             
-            ModuleNode rootModule = SemanticHelper.getRootModuleNode();
-            if (rootModule != null && rootModule.getVariableDecls().length == 0
-            		&& rootModule.getConstantDecls().length == 0)
-            {
+            final ModuleNode rootModule = SemanticHelper.getRootModuleNode();
+			if ((rootModule != null) && (rootModule.getVariableDecls().length == 0)
+					&& (rootModule.getConstantDecls().length == 0)) {
             	showResultPage();
             }
             
@@ -781,6 +853,37 @@ public class ModelEditor extends FormEditor {
 			return in.substring(0, 1024) + "... (" + (in.length() - 1024) + " chars omitted)";
 		}
 		return in;
+	}
+	
+	private Pair<Integer, FormPage> getLastFormPage() {
+		int index = getPageCount() - 1;
+		
+		while (index >= 0) {
+			final IEditorPart iep = getEditor(index);
+			
+			if (iep instanceof FormPage) {
+				return Pair.of(new Integer(index), (FormPage)iep);
+			}
+			
+			index--;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @return true if the model is currently configured with no behavior spec
+	 */
+	public boolean modelIsConfiguredWithNoBehaviorSpec() {
+		try {
+			return (IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_NO_SPEC == model
+					.getAttribute(IModelConfigurationConstants.MODEL_BEHAVIOR_SPEC_TYPE, Integer.MIN_VALUE));
+		} catch (final CoreException ce) {
+			TLCUIActivator.getDefault()
+					.logError("Encountered error attempting to determine previous run configuration.", ce);
+		}
+		
+		return false;
 	}
 	
     /* --------------------------------------------------------------------- */
@@ -1347,15 +1450,6 @@ public class ModelEditor extends FormEditor {
                 iterator.next().getManagedForm().getMessageManager().removeMessage(key, control);
             }
         }
-    }
-    /**
-     * Returns the validateRunnable so that the pages
-     * can be validated by code outside of this class.
-     * @return
-     */
-    public ValidateRunnable getValidateRunnable()
-    {
-        return validateRunable;
     }
     
     /**

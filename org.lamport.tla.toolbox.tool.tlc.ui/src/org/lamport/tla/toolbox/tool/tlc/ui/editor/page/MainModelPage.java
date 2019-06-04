@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -69,6 +68,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.EvaluateConstantExpressionPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.ResultPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableConstantSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
@@ -375,6 +375,22 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		updateTLCResourcesLabel();
 	}
 
+	/**
+	 * @param noSpec if false, the spec choice at index 0 of the combobox will be
+	 *               chosen; in the case of the spec having no variables defined,
+	 *               this will again be a no-behavior-spec
+	 */
+	public void setNoBehaviorSpec(final boolean noSpec) {
+		if (noSpec) {
+			setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);			
+		} else {
+			behaviorCombo.select(0);
+			moveToTopOfBehaviorOptionsStack(behaviorCombo.getText());
+		}
+		
+		validatePage(false);
+	}
+	
 	@Override
 	public void validatePage(boolean switchToErrorPage) {
 		if (getManagedForm() == null) {
@@ -620,8 +636,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// This must occur after the preceeding code in case
 		// that code changes the selection.
 		final Section whatToCheckSection = dm.getSection(SEC_WHAT_TO_CHECK).getSection();
-		final Set<Section> resultPageSections = ((ResultPage) modelEditor.findPage(ResultPage.ID))
-				.getSections(SEC_GENERAL, SEC_STATISTICS);
+		final ResultPage rp = (ResultPage) modelEditor.findPage(ResultPage.ID);
+		final EvaluateConstantExpressionPage ecep = (EvaluateConstantExpressionPage) modelEditor
+				.findPage(EvaluateConstantExpressionPage.ID);
+
+		final Set<Section> resultPageSections = rp.getSections(SEC_GENERAL, SEC_STATISTICS);
 
 		final String hint = " (\"What is the behavior spec?\" above has no behavior spec)";
 		final String hintResults = " (\"What is the behavior spec?\" on \"Model Overview\" page has no behavior spec)";
@@ -632,27 +651,33 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			whatToCheckSection.setExpanded(false);
 			whatToCheckSection.setEnabled(false);
 
-			resultPageSections.forEach(new Consumer<Section>() {
-				@Override
-				public void accept(Section sec) {
-					sec.setText(!sec.getText().endsWith(hintResults) ? sec.getText() + hintResults : sec.getText());
-					sec.setEnabled(false);
-					sec.setExpanded(false);
-				}
+			resultPageSections.forEach((section) -> {
+				section.setText(!section.getText().endsWith(hintResults) ? section.getText() + hintResults : section.getText());
+				section.setEnabled(false);
+				compensateForExpandableCompositesPoorDesign(section, false);
 			});
+			
+			if (ecep != null) {
+				ecep.setNoBehaviorSpecToggleState(true);
+			} else {
+				rp.setNoBehaviorSpecToggleState(true);
+			}
 		} else {
 			whatToCheckSection.setText(whatToCheckSection.getText().replace(hint, ""));
 			whatToCheckSection.setExpanded(true);
 			whatToCheckSection.setEnabled(true);
 
-			resultPageSections.forEach(new Consumer<Section>() {
-				@Override
-				public void accept(Section sec) {
-					sec.setText(sec.getText().replace(hintResults, ""));
-					sec.setEnabled(true);
-					sec.setExpanded(true);
-				}
+			resultPageSections.forEach((section) -> {
+				section.setText(section.getText().replace(hintResults, ""));
+				section.setEnabled(true);
+				compensateForExpandableCompositesPoorDesign(section, true);
 			});
+			
+			if (ecep != null) {
+				ecep.setNoBehaviorSpecToggleState(false);
+			} else {
+				rp.setNoBehaviorSpecToggleState(false);
+			}
 		}
 
 		// The following code is not needed now because we automatically change
@@ -812,7 +837,6 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		switch (specType) {
 			case MODEL_BEHAVIOR_TYPE_NO_SPEC:
-
 				index = behaviorCombo.indexOf(NO_SPEC_COMBO_LABEL);
 				break;
 			case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
@@ -824,11 +848,28 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			default:
 				throw new IllegalArgumentException("Wrong spec type, this is a bug");
 		}
-
+		
 		if (index != -1) {
 			behaviorCombo.select(index);
 			moveToTopOfBehaviorOptionsStack(behaviorCombo.getText());
 		}
+	}
+	
+	private int getModelConstantForSpecSelection() {
+		final String selectedBehavior = behaviorCombo.getText();
+		final int specType;
+		
+		if (TEMPORAL_FORMULA_COMBO_LABEL.equals(selectedBehavior)) {
+			specType = MODEL_BEHAVIOR_TYPE_SPEC_CLOSED;
+		} else if (INIT_NEXT_COMBO_LABEL.equals(selectedBehavior)) {
+			specType = MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT;
+		} else if (NO_SPEC_COMBO_LABEL.equals(selectedBehavior)) {
+			specType = MODEL_BEHAVIOR_TYPE_NO_SPEC;
+		} else {
+			specType = MODEL_BEHAVIOR_TYPE_DEFAULT;
+		}
+		
+		return specType;
 	}
 
 	/**
@@ -859,19 +900,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// fairnessFormula);
 
 		// mode
-		final String selectedBehavior = behaviorCombo.getText();
-		int specType;
-		if (TEMPORAL_FORMULA_COMBO_LABEL.equals(selectedBehavior)) {
-			specType = MODEL_BEHAVIOR_TYPE_SPEC_CLOSED;
-		} else if (INIT_NEXT_COMBO_LABEL.equals(selectedBehavior)) {
-			specType = MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT;
-		} else if (NO_SPEC_COMBO_LABEL.equals(selectedBehavior)) {
-			specType = MODEL_BEHAVIOR_TYPE_NO_SPEC;
-		} else {
-			specType = MODEL_BEHAVIOR_TYPE_DEFAULT;
-		}
-
-		model.setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, specType);
+		model.setAttribute(MODEL_BEHAVIOR_SPEC_TYPE, getModelConstantForSpecSelection());
 
 		// check deadlock
 		boolean checkDeadlock = this.checkDeadlockButton.getSelection();
@@ -1080,8 +1109,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				moveToTopOfBehaviorOptionsStack(behaviorCombo.getText());
 			}
 
-			public void widgetDefaultSelected(final SelectionEvent se) {
-			}
+			public void widgetDefaultSelected(final SelectionEvent se) { }
 		});
 		gd = new GridData();
 		gd.horizontalAlignment = SWT.FILL;

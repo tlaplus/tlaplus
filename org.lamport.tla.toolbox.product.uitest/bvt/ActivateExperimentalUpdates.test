@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _rtcgcP9UEeiWgvGqW2E8Fg
-Runtime-Version: 2.4.0.201902270059
-Save-Time: 5/31/19, 3:59 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 6/10/19, 3:55 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -16,9 +16,11 @@ Entry-Name: .content
 SetUpAppWindow
 
 get-preferences-menu | click
-with [get-window Preferences] {
-    get-button "Receive experimental features for the TLA Toolbox." | check
+with [get-window Preferences ] {
+	get-tree | select "Automatic Update" 
+    get-checkbox -text "Receive experimental features for the TLA Toolbox." | check
     
     get-button "Apply and Close" | click
 }
+
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

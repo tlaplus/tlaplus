@@ -20,11 +20,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
@@ -44,6 +45,9 @@ public class FormHelper
     public static final int FORM_BODY_MARGIN_RIGHT = 6;
     public static final int FORM_BODY_HORIZONTAL_SPACING = 20;
     public static final int FORM_BODY_VERTICAL_SPACING = 17;
+    
+    /** Sections created by this class will have this data key if they should not be altered on collapse expand for resizing. **/
+    public static final String SECTION_IS_NOT_SPACE_GRABBING = "_no_space_grab";
 
     /**
      * Create TableWrapLayout for the whole page 
@@ -110,11 +114,9 @@ public class FormHelper
     public static Section createSectionComposite(Composite parent, String title, String description,
             FormToolkit toolkit, int sectionFlags, IExpansionListener expansionListener)
     {
-        Section section = toolkit.createSection(parent, sectionFlags);
+        final Section section = toolkit.createSection(parent, sectionFlags);
 
-        TableWrapData td = new TableWrapData(TableWrapData.FILL_GRAB);
-        td.grabHorizontal = true;
-        section.setLayoutData(td);
+        section.setData(SECTION_IS_NOT_SPACE_GRABBING, new Object());
         section.setText(title);
         section.setDescription(description);
 
@@ -132,6 +134,56 @@ public class FormHelper
 
         // draw flat borders
         toolkit.paintBordersFor(sectionClient);
+        return section;
+    }
+    
+    /**
+     * This creates a section composite which does its best to result in neighboring sections grabbing available
+     * 		space when the section collapses.
+     * 
+     * @param parent
+     * @param title
+     * @param description
+     * @param toolkit
+     * @param sectionFlags
+     * @param expansionListener
+     * @return
+     */
+    public static Section createSpaceGrabbingSectionComposite(final Composite parent, final String title, final String description,
+			final FormToolkit toolkit, final int sectionFlags, final IExpansionListener expansionListener) {
+        final Section section = toolkit.createSection(parent, sectionFlags);
+
+        section.setText(title);
+        section.setDescription(description);
+        
+        section.addExpansionListener(new ExpansionAdapter() {
+            public void expansionStateChanged(final ExpansionEvent e) {
+            	final GridData gd = (GridData)section.getLayoutData();
+            	
+            	gd.grabExcessVerticalSpace = e.getState();
+
+            	section.setLayoutData(gd);
+            	
+            	if (e.getState()) {
+            		((Composite)section.getClient()).layout(true, true);
+            	}
+            }
+        });
+
+		if (expansionListener != null) {
+			section.addExpansionListener(expansionListener);
+        }
+
+        // create section client
+        final Composite sectionClient = toolkit.createComposite(section);
+        final TableWrapLayout layout = new TableWrapLayout();
+        layout.numColumns = 1;
+        sectionClient.setLayout(layout);
+        section.setClient(sectionClient);
+
+        // draw flat borders
+        toolkit.paintBordersFor(sectionClient);
+        
         return section;
     }
 
@@ -160,7 +212,7 @@ public class FormHelper
         SourceViewer sourceViewer = createSourceViewer(parent, flags, config);
         sourceViewer.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
 
-        sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
+        sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER);
         toolkit.adapt(sourceViewer.getTextWidget(), true, true);
 
         return sourceViewer;
@@ -178,7 +230,7 @@ public class FormHelper
         SourceViewer sourceViewer = createOutputViewer(parent, flags);
         sourceViewer.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
 
-        sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TREE_BORDER);
+        sourceViewer.getTextWidget().setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER);
         toolkit.adapt(sourceViewer.getTextWidget(), true, true);
 
         return sourceViewer;

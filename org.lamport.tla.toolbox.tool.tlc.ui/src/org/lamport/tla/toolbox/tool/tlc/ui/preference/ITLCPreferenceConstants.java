@@ -8,30 +8,22 @@ import tlc2.tool.fp.FPSet;
  * TLC preferences
  * @author Simon Zambrovski
  */
-public interface ITLCPreferenceConstants
-{
+public interface ITLCPreferenceConstants {
     /** 
-     * Maximum number of states to show in {@link TLCErrorView}
-     */
-    public static final String I_TLC_TRACE_MAX_SHOW_ERRORS = "traceMaxShowErrors";
-    /** 
+     * TODO this is not TLC - this is model editor
+     * 
      * Popup on TLC errors
      */
     public static final String I_TLC_POPUP_ERRORS = "popupOnMCErrors";
     /**
+     * TODO this is not TLC - this is model editor
+     * 
      * Re-validate model on save
      */
     public static final String I_TLC_REVALIDATE_ON_MODIFY = "revalidateOnModify";
-    // /**
-    // * Delete data (.st files and unused checkpoints) from the previous run)
-    // */
-    // public static final String I_TLC_DELETE_PREVIOUS_FILES = "deleteUnusedMCData";
-    public static final String I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT = "maxHeapSizeDefault";
-
-    public static final String I_TLC_FPBITS_DEFAULT = "fpBitsDefault";
-    
-    public static final String I_TLC_MAXSETSIZE_DEFAULT = "maxSetSizeDefault";
     /**
+     * TODO this is not TLC - this is model editor
+     * 
 	 * Font used for text in the error viewer at the top of the TLC error view, the
 	 * User Output field on the results page, and the Progress Output on the results
 	 * page.
@@ -42,6 +34,8 @@ public interface ITLCPreferenceConstants
 	 */
     public static final String I_TLC_OUTPUT_FONT = "org.lamport.tla.toolbox.tool.tlc.ui.tlcOutputFont";
     /**
+     * TODO this is not TLC - this is model editor
+     * 
 	 * Font used for text in the error trace viewer in the TLC error view.
 	 * 
 	 * Note: this preference appears in the preference page General > Appearance >
@@ -50,13 +44,38 @@ public interface ITLCPreferenceConstants
 	 */
     public static final String I_TLC_ERROR_TRACE_FONT = "org.lamport.tla.toolbox.tool.tlc.ui.tlcErrorTraceFont";
 	/**
-	 * Implementation of {@link FPSet} to use during model checking
-	 */
-	public static final String I_TLC_FPSETIMPL_DEFAULT = "fpSetImpl";
-	/**
+     * TODO this is not TLC - this is model editor
+     * 
 	 * If set, the Toolbox will open a modal progress dialog to indicate TLC
 	 * startup. A user can opt to subsequently suppress the dialog. This returns the
 	 * old behavior prior to the change in https://bugs.eclipse.org/146205#c10.
 	 */
 	public static final String I_TLC_SHOW_MODAL_PROGRESS = "showModalProgress";
+	/**
+     * TODO this is not TLC - this is model editor
+     * 
+	 * If set, the Evaluate Constant Expressions section of the Results page will be shown in its own model editor tab.
+	 */
+	public static final String I_TLC_SHOW_ECE_AS_TAB = "showECEAsTab";
+    // /**
+    // * Delete data (.st files and unused checkpoints) from the previous run)
+    // */
+    // public static final String I_TLC_DELETE_PREVIOUS_FILES = "deleteUnusedMCData";
+    
+    
+    /** 
+     * Maximum number of states to show in {@link TLCErrorView}
+     */
+    public static final String I_TLC_TRACE_MAX_SHOW_ERRORS = "traceMaxShowErrors";
+
+    public static final String I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT = "maxHeapSizeDefault";
+
+    public static final String I_TLC_FPBITS_DEFAULT = "fpBitsDefault";
+    
+    public static final String I_TLC_MAXSETSIZE_DEFAULT = "maxSetSizeDefault";
+
+	/**
+	 * Implementation of {@link FPSet} to use during model checking
+	 */
+	public static final String I_TLC_FPSETIMPL_DEFAULT = "fpSetImpl";
 }

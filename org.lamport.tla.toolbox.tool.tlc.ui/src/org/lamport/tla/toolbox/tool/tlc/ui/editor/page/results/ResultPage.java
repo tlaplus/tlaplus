@@ -18,6 +18,7 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -33,10 +34,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.layout.TableColumnLayout;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -45,11 +46,11 @@ import org.eclipse.mylyn.commons.notifications.core.INotificationService;
 import org.eclipse.mylyn.commons.notifications.ui.NotificationsUi;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
@@ -64,20 +65,19 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Hyperlink;
 import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAFastPartitioner;
 import org.lamport.tla.toolbox.editor.basic.TLAPartitionScanner;
-import org.lamport.tla.toolbox.editor.basic.TLASourceViewerConfiguration;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
@@ -109,8 +109,7 @@ import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
- * A page to display results of model checking (the "third tab"
- * of the model editor).
+ * A page to display results of model checking.
  * @author Simon Zambrovski
  */
 @SuppressWarnings("restriction")
@@ -142,9 +141,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     private SourceViewer userOutput;
     private SourceViewer progressOutput;
+    
+    private Composite m_calculatorSection;
     private SourceViewer expressionEvalResult;
     private SourceViewer expressionEvalInput;
-    private long m_startTimestamp;
+	private ValidateableSectionPart m_validateableCalculatorSection;
+	private Button m_noBehaviorModeToggleButton;
+
+	private Section m_generalSection;
+	private int m_collapsedSectionHeight = 20;		// We should be able to calculate this before we need; this is the 'just in case' value
+	private long m_startTimestamp;
     private Composite m_generalTopPane;
     private Label m_startLabel;
     private Label m_lastCheckpointLabel;
@@ -183,7 +189,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	private IMarker zeroCoverage;
 	
 	private final INotificationService ns;
-
+	
 	private final ErrorPaneViewState m_errorPaneViewState;
 
     /**
@@ -193,9 +199,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	public ResultPage(final FormEditor editor) {
         super(editor, ID, "Model Checking Results", "icons/full/results_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
         this.helpId = IHelpConstants.RESULT_MODEL_PAGE;
-
+        
         this.ns = NotificationsUi.getService();
-
+        
         m_errorPaneViewState = new ErrorPaneViewState();
     }
 
@@ -214,258 +220,255 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     /**
      * Will be called by the provider on data changes
      */
-    public void modelChanged(final TLCModelLaunchDataProvider dataProvider, final int fieldId)
-    {
-        UIHelper.runUIAsync(new Runnable() {
-			public void run() {
-				// Acquire dispose lock prior to widget access. Using a single
-				// lock just to serialize dispose and modelChange seems
-				// overkill, but the wait-for graph becomes tricky with all the
-				// background jobs going on (at least too tricky to get it
-				// solved within an hour).
-            	disposeLock.lock();
-            	try {
-                	if (getPartControl().isDisposed()) {
-            			// Don't update the widgets if the underlying SWT control has
-            			// already been disposed. Otherwise it results in an
-            			// "SWTException: Widget is disposed".
-                		return;
+	public void modelChanged(final TLCModelLaunchDataProvider dataProvider, final int fieldId) {
+        UIHelper.runUIAsync(() -> {
+			// Acquire dispose lock prior to widget access. Using a single
+			// lock just to serialize dispose and modelChange seems
+			// overkill, but the wait-for graph becomes tricky with all the
+			// background jobs going on (at least too tricky to get it
+			// solved within an hour).
+        	disposeLock.lock();
+        	try {
+            	if (getPartControl().isDisposed()) {
+        			// Don't update the widgets if the underlying SWT control has
+        			// already been disposed. Otherwise it results in an
+        			// "SWTException: Widget is disposed".
+            		return;
+            	}
+				switch (fieldId) {
+                case USER_OUTPUT:
+                    userOutput.setDocument(dataProvider.getUserOutput());
+                    break;
+                case PROGRESS_OUTPUT:
+                    progressOutput.setDocument(dataProvider.getProgressOutput());
+                    break;
+                case CONST_EXPR_EVAL_OUTPUT:
+                	if (expressionEvalResult != null) {
+                		expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
                 	}
-					switch (fieldId) {
-	                case USER_OUTPUT:
-	                    ResultPage.this.userOutput.setDocument(dataProvider.getUserOutput());
-	                    break;
-	                case PROGRESS_OUTPUT:
-	                    ResultPage.this.progressOutput.setDocument(dataProvider.getProgressOutput());
-	                    break;
-	                case CONST_EXPR_EVAL_OUTPUT:
-	                    ResultPage.this.expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
-	                    break;
-	                case START_TIME:
-	                	setStartTime(dataProvider.getStartTimestamp());
-	                    break;
-	                case END_TIME:
-	                	setEndTime(dataProvider.getFinishTimestamp());
-	                    
-	                	final long delta = dataProvider.getFinishTimestamp() - dataProvider.getStartTimestamp();
-	                	final String duration = DurationFormatUtils.formatDuration(delta, "HH'hrs' mm'mins' ss'sec'");
-	                	m_startLabel.setToolTipText(duration);
-	                	m_finishLabel.setToolTipText(duration);
-	                    break;
-	                case TLC_MODE:
-	                	setSearchMode(dataProvider.getTLCMode());
-	                	
-	                	final IFormPage iep = getEditor().findPage(AdvancedTLCOptionsPage.ID);
-	                	if (iep != null) {
-	                		((AdvancedTLCOptionsPage)iep).setFpIndex(dataProvider.getFPIndex());
-	                	} else {
-	                		// The tab isn't open so set the value into the model and the tab, should it open, will
-	                		//		load it out of the model.
-	                		getModel().setAttribute(LAUNCH_FP_INDEX, dataProvider.getFPIndex());
-	                		getModelEditor().saveModel();
-	                	}
-	                	break;
-	                case LAST_CHECKPOINT_TIME:
-	                	setCheckpoint(dataProvider.getLastCheckpointTimeStamp());
-	                   	break;
-	                case CURRENT_STATUS:
-	                	m_tlcStatusLabel.setText(dataProvider.getCurrentStatus());
-	                	m_generalTopPane.layout(true, true);
-	                    break;
-	                case FINGERPRINT_COLLISION_PROBABILITY:
-	                	final String collisionText = dataProvider.getFingerprintCollisionProbability().trim();
-	                	
-	                	if (collisionText.length() == 0) {
-							m_fingerprintCollisionLabel.setVisible(false);
-							m_errorPaneViewState.setFingerprintDisplay(false);
-							setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
-	                	} else {
-							m_fingerprintCollisionLabel.setText("Fingerprint collision chance: " + collisionText);
-							m_fingerprintCollisionLabel.setVisible(true);
-							m_errorPaneViewState.setFingerprintDisplay(true);
-							setErrorPaneVisible(true);
-	                	}
-	                    break;
-	                case COVERAGE_TIME:
-	                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
-	                    break;
-	                case COVERAGE:
-	                	final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();
-	                	ResultPage.this.coverage.setInput(coverageInfo);
-						if (dataProvider.isDone() && !coverageInfo.isEmpty()) {
-							if (dataProvider.hasZeroCoverage()) {
-								if (zeroCoverage == null) {
-									final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
-											ZERO_COVERAGE_WARNING, IMarker.SEVERITY_WARNING);
-									marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
-									zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
-									m_zeroCoverageLabel.setVisible(true);
-									m_errorPaneViewState.setZeroCountDisplay(true);
-									setErrorPaneVisible(true);
+                    break;
+                case START_TIME:
+                	setStartTime(dataProvider.getStartTimestamp());
+                    break;
+                case END_TIME:
+                	setEndTime(dataProvider.getFinishTimestamp());
+                    
+                	final long delta = dataProvider.getFinishTimestamp() - dataProvider.getStartTimestamp();
+                	final String duration = DurationFormatUtils.formatDuration(delta, "HH'hrs' mm'mins' ss'sec'");
+                	m_startLabel.setToolTipText(duration);
+                	m_finishLabel.setToolTipText(duration);
+                    break;
+                case TLC_MODE:
+                	setSearchMode(dataProvider.getTLCMode());
+                	
+                	final IFormPage iep = getEditor().findPage(AdvancedTLCOptionsPage.ID);
+                	if (iep != null) {
+                		((AdvancedTLCOptionsPage)iep).setFpIndex(dataProvider.getFPIndex());
+                	} else {
+                		// The tab isn't open so set the value into the model and the tab, should it open, will
+                		//		load it out of the model.
+                		getModel().setAttribute(LAUNCH_FP_INDEX, dataProvider.getFPIndex());
+                		getModelEditor().saveModel();
+                	}
+                	break;
+                case LAST_CHECKPOINT_TIME:
+                	setCheckpoint(dataProvider.getLastCheckpointTimeStamp());
+                   	break;
+                case CURRENT_STATUS:
+                	m_tlcStatusLabel.setText(dataProvider.getCurrentStatus());
+                	m_generalTopPane.layout(true, true);
+                    break;
+                case FINGERPRINT_COLLISION_PROBABILITY:
+                	final String collisionText = dataProvider.getFingerprintCollisionProbability().trim();
+                	
+                	if (collisionText.length() == 0) {
+						m_fingerprintCollisionLabel.setVisible(false);
+						m_errorPaneViewState.setFingerprintDisplay(false);
+						setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
+                	} else {
+						m_fingerprintCollisionLabel.setText("Fingerprint collision chance: " + collisionText);
+						m_fingerprintCollisionLabel.setVisible(true);
+						m_errorPaneViewState.setFingerprintDisplay(true);
+						setErrorPaneVisible(true);
+                	}
+                    break;
+                case COVERAGE_TIME:
+                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
+                    break;
+                case COVERAGE:
+                	final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();
+                	ResultPage.this.coverage.setInput(coverageInfo);
+					if (dataProvider.isDone() && !coverageInfo.isEmpty()) {
+						if (dataProvider.hasZeroCoverage()) {
+							if (zeroCoverage == null) {
+								final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
+										ZERO_COVERAGE_WARNING, IMarker.SEVERITY_WARNING);
+								marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
+								zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+								m_zeroCoverageLabel.setVisible(true);
+								m_errorPaneViewState.setZeroCountDisplay(true);
+								setErrorPaneVisible(true);
+							}
+						} else if (zeroCoverage != null) {
+							try {
+								zeroCoverage.delete();
+								resetMessage(RESULT_PAGE_PROBLEM);
+								m_zeroCoverageLabel.setVisible(false);
+								m_errorPaneViewState.setZeroCountDisplay(false);
+								setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
+								zeroCoverage = null;
+							} catch (CoreException e) {
+								TLCUIActivator.getDefault().logError(e.getMessage(), e);
+							}
+						}
+					}
+                    break;
+                case COVERAGE_END_OVERHEAD:
+					ns.notify(Collections.singletonList(new CoverageUINotification(getModelEditor())));
+                	// Continue with COVERAGE_END...
+                case COVERAGE_END:
+                	final CoverageInformation ci = dataProvider.getCoverageInfo();
+                	if (ci.isEmpty() || ci.isLegacy()) {
+						// Cannot show coverage information without (non-legacy) coverage data.
+                		break;
+                	}
+					final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
+					
+					final List<IFile> savedTLAFiles = modelEditor.getModel().getSavedTLAFiles();
+					for (IFile iFile : savedTLAFiles) {
+						if (!ci.has(iFile)) {
+							continue;
+						}
+						// Open the files as pages of the current model editor.
+						final FileEditorInput input = new FileEditorInput(iFile);
+						final IEditorPart[] findEditors = modelEditor.findEditors(input);
+						try {
+							if (findEditors.length == 0) {
+								modelEditor.addPage(new TLACoverageEditor(ci.projectionFor(iFile)), input);
+							} else {
+								if (findEditors[0] instanceof TLACoverageEditor) {
+									final TLACoverageEditor coverageEditor = (TLACoverageEditor) findEditors[0];
+									coverageEditor.resetInput(ci.projectionFor(iFile));
 								}
-							} else if (zeroCoverage != null) {
+							}
+						} catch (PartInitException e) {
+							TLCUIActivator.getDefault().logError(e.getMessage(), e);
+						}
+					}
+                	break;
+                case PROGRESS:
+                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
+
+                    // The following code finds all the graph windows (shells) for this
+                    // model and calls redraw() and update() on them, which apparently is the
+                    // magic incantation to cause its listener to be called to issue the
+                    // necessary commands to redraw the data and then displays the result.
+                    String suffix = getGraphTitleSuffix(ResultPage.this);
+                    Shell[] shells = UIHelper.getCurrentDisplay().getShells();
+                    for (int i = 0; i < shells.length; i++)
+                    {
+                        if (shells[i].getText().endsWith(suffix))
+                        {
+                            shells[i].redraw();
+                            shells[i].update();
+                            // The following was commented out by LL on 6 Jul 2012 because it was filling
+                            // up the Console log with useless stuff.
+                            // TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" + i);
+                        }
+                    }
+                    break;
+                case WARNINGS:
+					if (dataProvider.isSymmetryWithLiveness()) {
+						final MainModelPage mmp = (MainModelPage) getModelEditor().getFormPage(MainModelPage.ID);
+						final Optional<Assignment> possibleSymmetrySet = mmp.getConstants().stream()
+								.filter(c -> c.isSymmetricalSet()).findFirst();
+						if (possibleSymmetrySet.isPresent()) {
+							final Assignment symmetrySet = possibleSymmetrySet.get();
+							getModelEditor().addErrorMessage(new ErrorMessage(String.format("%s %s",
+									symmetrySet.getLabel(),
+									"declared to be symmetric. Liveness checking under symmetry might fail to find a violation."),
+									symmetrySet.getLabel(), MainModelPage.ID,
+									Arrays.asList(ISectionConstants.SEC_WHAT_IS_THE_MODEL,
+											ISectionConstants.SEC_WHAT_TO_CHECK_PROPERTIES),
+									IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS));
+						}
+					}
+					break;
+                case ERRORS:
+                    final String text;
+                    final Color color;
+                    final boolean visible;
+                    final int errorCount = dataProvider.getErrors().size();
+                    switch (errorCount) {
+						case 0:
+							text = TLCModelLaunchDataProvider.NO_ERRORS;
+							color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
+							m_errorStatusHyperLink.removeHyperlinkListener(m_errorHyperLinkListener);
+							visible = false;
+							break;
+						case 1:
+							text = "1 Error";
+							m_errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
+							color = TLCUIActivator.getColor(SWT.COLOR_RED);
+							visible = true;
+							break;
+						default:
+							text = String.valueOf(errorCount) + " Errors";
+							m_errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
+							color = TLCUIActivator.getColor(SWT.COLOR_RED);
+							visible = true;
+							break;
+	                }
+
+                    m_errorStatusHyperLink.setText(text);
+                    m_errorStatusHyperLink.setForeground(color);
+					m_errorStatusHyperLink.setVisible(visible);
+					m_errorPaneViewState.setErrorLinkDisplay(visible);
+					setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
+					
+                    // update the error view
+                    TLCErrorView.updateErrorView(dataProvider.getModel());
+                    break;
+                default:
+                    break;
+                }
+				
+				// Set label provider to highlight unexplored states if
+				// TLC is done but not all states are explored.
+				if (ResultPage.this.stateSpace.getLabelProvider() instanceof StateSpaceLabelProvider) {
+					final StateSpaceLabelProvider sslp = (StateSpaceLabelProvider) ResultPage.this.stateSpace
+							.getLabelProvider();
+					if (dataProvider.isDone() && dataProvider.getProgressInformation().size() > 0) {
+						final long statesLeft = dataProvider.getProgressInformation().get(0).getLeftStates();
+						if (statesLeft > 0) {
+							sslp.setHighlightUnexplored();
+							// Create a problem marker which gets displayed by
+							// BasicFormPage/ModelEditor as a warning on the
+							// result page.
+							if (incompleteStateExploration == null) {
+								final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
+										"State space exploration incomplete", IMarker.SEVERITY_WARNING);
+								marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
+								incompleteStateExploration = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+							}
+						} else {
+							if (incompleteStateExploration != null) {
 								try {
-									zeroCoverage.delete();
-									resetMessage(RESULT_PAGE_PROBLEM);
-									m_zeroCoverageLabel.setVisible(false);
-									m_errorPaneViewState.setZeroCountDisplay(false);
-									setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
-									zeroCoverage = null;
+									incompleteStateExploration.delete();
+									ResultPage.this.resetMessage(RESULT_PAGE_PROBLEM);
+									incompleteStateExploration = null;
 								} catch (CoreException e) {
 									TLCUIActivator.getDefault().logError(e.getMessage(), e);
 								}
 							}
+							sslp.unsetHighlightUnexplored();
 						}
-	                    break;
-	                case COVERAGE_END_OVERHEAD:
-						ns.notify(Collections.singletonList(new CoverageUINotification(getModelEditor())));
-	                	// Continue with COVERAGE_END...
-	                case COVERAGE_END:
-	                	final CoverageInformation ci = dataProvider.getCoverageInfo();
-	                	if (ci.isEmpty() || ci.isLegacy()) {
-							// Cannot show coverage information without (non-legacy) coverage data.
-	                		break;
-	                	}
-						final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
-						
-						final List<IFile> savedTLAFiles = modelEditor.getModel().getSavedTLAFiles();
-						for (IFile iFile : savedTLAFiles) {
-							if (!ci.has(iFile)) {
-								continue;
-							}
-							// Open the files as pages of the current model editor.
-							final FileEditorInput input = new FileEditorInput(iFile);
-							final IEditorPart[] findEditors = modelEditor.findEditors(input);
-							try {
-								if (findEditors.length == 0) {
-									modelEditor.addPage(new TLACoverageEditor(ci.projectionFor(iFile)), input);
-								} else {
-									if (findEditors[0] instanceof TLACoverageEditor) {
-										final TLACoverageEditor coverageEditor = (TLACoverageEditor) findEditors[0];
-										coverageEditor.resetInput(ci.projectionFor(iFile));
-									}
-								}
-							} catch (PartInitException e) {
-								TLCUIActivator.getDefault().logError(e.getMessage(), e);
-							}
-						}
-	                	break;
-	                case PROGRESS:
-	                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
-	
-	                    // The following code finds all the graph windows (shells) for this
-	                    // model and calls redraw() and update() on them, which apparently is the
-	                    // magic incantation to cause its listener to be called to issue the
-	                    // necessary commands to redraw the data and then displays the result.
-	                    String suffix = getGraphTitleSuffix(ResultPage.this);
-	                    Shell[] shells = UIHelper.getCurrentDisplay().getShells();
-	                    for (int i = 0; i < shells.length; i++)
-	                    {
-	                        if (shells[i].getText().endsWith(suffix))
-	                        {
-	                            shells[i].redraw();
-	                            shells[i].update();
-	                            // The following was commented out by LL on 6 Jul 2012 because it was filling
-	                            // up the Console log with useless stuff.
-	                            // TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" + i);
-	                        }
-	                    }
-	                    break;
-	                case WARNINGS:
-						if (dataProvider.isSymmetryWithLiveness()) {
-							final MainModelPage mmp = (MainModelPage) getModelEditor().getFormPage(MainModelPage.ID);
-							final Optional<Assignment> possibleSymmetrySet = mmp.getConstants().stream()
-									.filter(c -> c.isSymmetricalSet()).findFirst();
-							if (possibleSymmetrySet.isPresent()) {
-								final Assignment symmetrySet = possibleSymmetrySet.get();
-								getModelEditor().addErrorMessage(new ErrorMessage(String.format("%s %s",
-										symmetrySet.getLabel(),
-										"declared to be symmetric. Liveness checking under symmetry might fail to find a violation."),
-										symmetrySet.getLabel(), MainModelPage.ID,
-										Arrays.asList(ISectionConstants.SEC_WHAT_IS_THE_MODEL,
-												ISectionConstants.SEC_WHAT_TO_CHECK_PROPERTIES),
-										IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS));
-							}
-						}
-						break;
-	                case ERRORS:
-	                    final String text;
-	                    final Color color;
-	                    final boolean visible;
-	                    final int errorCount = dataProvider.getErrors().size();
-	                    switch (errorCount) {
-							case 0:
-								text = TLCModelLaunchDataProvider.NO_ERRORS;
-								color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
-								m_errorStatusHyperLink.removeHyperlinkListener(m_errorHyperLinkListener);
-								visible = false;
-								break;
-							case 1:
-								text = "1 Error";
-								m_errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
-								color = TLCUIActivator.getColor(SWT.COLOR_RED);
-								visible = true;
-								break;
-							default:
-								text = String.valueOf(errorCount) + " Errors";
-								m_errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
-								color = TLCUIActivator.getColor(SWT.COLOR_RED);
-								visible = true;
-								break;
-		                }
-	
-	                    m_errorStatusHyperLink.setText(text);
-	                    m_errorStatusHyperLink.setForeground(color);
-						m_errorStatusHyperLink.setVisible(visible);
-						m_errorPaneViewState.setErrorLinkDisplay(visible);
-						setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
-						
-	                    // update the error view
-	                    TLCErrorView.updateErrorView(dataProvider.getModel());
-	                    break;
-	                default:
-	                    break;
-	                }
-					
-					// Set label provider to highlight unexplored states if
-					// TLC is done but not all states are explored.
-					if (ResultPage.this.stateSpace.getLabelProvider() instanceof StateSpaceLabelProvider) {
-						final StateSpaceLabelProvider sslp = (StateSpaceLabelProvider) ResultPage.this.stateSpace
-								.getLabelProvider();
-						if (dataProvider.isDone() && dataProvider.getProgressInformation().size() > 0) {
-							final long statesLeft = dataProvider.getProgressInformation().get(0).getLeftStates();
-							if (statesLeft > 0) {
-								sslp.setHighlightUnexplored();
-								// Create a problem marker which gets displayed by
-								// BasicFormPage/ModelEditor as a warning on the
-								// result page.
-								if (incompleteStateExploration == null) {
-									final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
-											"State space exploration incomplete", IMarker.SEVERITY_WARNING);
-									marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
-									incompleteStateExploration = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
-								}
-							} else {
-								if (incompleteStateExploration != null) {
-									try {
-										incompleteStateExploration.delete();
-										ResultPage.this.resetMessage(RESULT_PAGE_PROBLEM);
-										incompleteStateExploration = null;
-									} catch (CoreException e) {
-										TLCUIActivator.getDefault().logError(e.getMessage(), e);
-									}
-								}
-								sslp.unsetHighlightUnexplored();
-							}
-						}
-						ResultPage.this.stateSpace.refresh();
 					}
-					
-
-            	} finally {
-            		disposeLock.unlock();
-            	}
-            }
+					ResultPage.this.stateSpace.refresh();
+				}
+        	} finally {
+        		disposeLock.unlock();
+        	}
         });
 
     }
@@ -512,10 +515,10 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      */
     @Override
 	public void loadData() throws CoreException {
-		TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry.getModelCheckSourceRegistry();
-		TLCModelLaunchDataProvider provider = modelCheckSourceRegistry.getProvider(getModel());
+    	final TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry.getModelCheckSourceRegistry();
+    	final TLCModelLaunchDataProvider provider = modelCheckSourceRegistry.getProvider(getModel());
 		if (provider != null) {
-			provider.setPresenter(this);
+			provider.addDataPresenter(this);
 		} else {
 			// no data provider
 			reinit();
@@ -527,7 +530,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 				TLAEditorActivator.getDefault().getTLAPartitionScanner(), TLAPartitionScanner.TLA_PARTITION_TYPES);
 		document.setDocumentPartitioner(TLAPartitionScanner.TLA_PARTITIONING, partitioner);
 		partitioner.connect(document);
-		expressionEvalInput.setDocument(document);
+		if (expressionEvalInput != null) {
+			expressionEvalInput.setDocument(document);
+		}
 	}
 
     /**
@@ -599,15 +604,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 			JFaceResources.getFontRegistry().removeListener(fontChangeListener);
 
-			final TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry
-					.getModelCheckSourceRegistry();
-			
 			final Model model = getModel();
+			final TLCOutputSourceRegistry modelCheckSourceRegistry = TLCOutputSourceRegistry.getModelCheckSourceRegistry();
 			// Do not initialize provider in dispose if it hasn't been initialized yet.
 			if (modelCheckSourceRegistry.hasProvider(model)) {
 				final TLCModelLaunchDataProvider provider = modelCheckSourceRegistry.getProvider(model);
 				if (provider != null) {
-					provider.setPresenter(null);
+					provider.removeDataPresenter(this);
 				}
 			}
 			super.dispose();
@@ -636,23 +639,21 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      * A good explanation of layouts is given in the article
      * http://www.eclipse.org/articles/article.php?file=Article-Understanding-Layouts/index.html
      */
-    protected void createBodyContent(IManagedForm managedForm)
-    {
+	protected void createBodyContent(IManagedForm managedForm) {
         final int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE | Section.EXPANDED | SWT.WRAP;
-        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION | SWT.WRAP;
+        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY | SWT.WRAP | SWT.FULL_SELECTION;
 
         final FormToolkit toolkit = managedForm.getToolkit();
         final Composite body = managedForm.getForm().getBody();
 
-        TableWrapData twd;
         Section section;
         GridLayout gl;
         GridData gd;
 
-        TableWrapLayout twl = new TableWrapLayout();
-        twl.leftMargin = 0;
-        twl.rightMargin = 0;
-        body.setLayout(twl);
+        gl = new GridLayout();
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        body.setLayout(gl);
 
         // -------------------------------------------------------------------
         // general section
@@ -660,16 +661,19 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // necessary to eliminate that bit in the style flags that
         // are passed in. If the bit were not changed to 0, an
         // extra empty line would appear below the title.
-        section = FormHelper.createSectionComposite(body, "General", ""
-        /* "The current progress of model-checking"*/, toolkit, sectionFlags & ~Section.DESCRIPTION,
-                getExpansionListener());
-        sections.put(SEC_GENERAL, section);
-        twd = new TableWrapData();
-        twd.grabHorizontal = true;
-        twd.align = TableWrapData.FILL;
-        section.setLayoutData(twd);
-
-        final Composite generalArea = (Composite) section.getClient();
+        m_generalSection = FormHelper.createSectionComposite(body, "General", "", toolkit, sectionFlags & ~Section.DESCRIPTION,
+                null); //getExpansionListener());
+        sections.put(SEC_GENERAL, m_generalSection);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.verticalAlignment = SWT.TOP;
+        m_generalSection.setLayoutData(gd);
+        final GeneralSectionExpansionHoopJumper absurdListener = new GeneralSectionExpansionHoopJumper();
+        m_generalSection.addExpansionListener(absurdListener);
+        m_generalSection.setData(SECTION_EXPANSION_LISTENER, absurdListener);
+        
+        final Composite generalArea = (Composite) m_generalSection.getClient();
         gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -680,6 +684,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
+        gd.verticalAlignment = SWT.TOP;
         m_generalTopPane.setLayoutData(gd);
         gl = new GridLayout(6, false);
         gl.marginHeight = 0;
@@ -720,6 +725,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
         gd.verticalIndent = 9;
+        gd.verticalAlignment = SWT.TOP;
         m_generalErrorPane.setLayoutData(gd);
         gl = new GridLayout(3, false);
         gl.marginHeight = 6;
@@ -763,13 +769,15 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // necessary to eliminate that bit in the style flags that
         // are passed in. If the bit were not changed to 0, an
         // extra empty line would appear below the title.
-        section = FormHelper.createSectionComposite(body, "Statistics", "", toolkit,
+        section = FormHelper.createSpaceGrabbingSectionComposite(body, "Statistics", "", toolkit,
         		(sectionFlags | Section.COMPACT) & ~Section.DESCRIPTION, getExpansionListener());
         sections.put(SEC_STATISTICS, section);
-        twd = new TableWrapData();
-        twd.grabHorizontal = true;
-        twd.align = TableWrapData.FILL;
-        section.setLayoutData(twd);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        section.setLayoutData(gd);
         
         final Composite statArea = (Composite) section.getClient();
         gl = new GridLayout(2, false);
@@ -777,163 +785,66 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gl.marginWidth = 0;
         statArea.setLayout(gl);
 
+        final int heightGuidance = getHeightGuidanceForLabelTextFieldLine(statArea, toolkit);
+        
         // progress stats
-        createAndSetupStateSpace(statArea, toolkit);
+        createAndSetupStateSpace(statArea, toolkit, heightGuidance);
         
         // coverage stats
-        createAndSetupCoverage(statArea, toolkit);
+        createAndSetupCoverage(statArea, toolkit, heightGuidance);
 
         
         // -------------------------------------------------------------------
         // Calculator section
-        // There is no description line for this section, so it is
-        // necessary to eliminate that bit in the style flags that
-        // are passed in. If the bit were not changed to 0, an
-        // extra empty line would appear below the title.
-		section = FormHelper.createSectionComposite(body, "Evaluate Constant Expression", "",
-				toolkit, sectionFlags & ~Section.DESCRIPTION, getExpansionListener());
-        twd = new TableWrapData(TableWrapData.FILL_GRAB, TableWrapData.FILL_GRAB);
-        twd.grabHorizontal = true;
-        twd.grabVertical = true;
-        section.setLayoutData(twd);
-        sections.put(SEC_EXPRESSION, section);
+		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+		final boolean eceInItsOwnTab = ips.getBoolean(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB);
 
-        Composite resultArea = (Composite) section.getClient();
-        gl = new GridLayout(1, false);
+		m_calculatorSection = new Composite(body, SWT.NONE);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = !eceInItsOwnTab;
+        m_calculatorSection.setLayoutData(gd);
+        gl = new GridLayout();
         gl.marginHeight = 0;
         gl.marginWidth = 0;
-        resultArea.setLayout(gl);
-
-        final Composite expressionComposite = toolkit.createComposite(resultArea);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.verticalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        gd.grabExcessVerticalSpace = true;
-        gd.horizontalIndent = 0;
-        gd.verticalIndent = 0;
-        gd.minimumWidth = 360;
-        expressionComposite.setLayoutData(gd);
-        twl = new TableWrapLayout();
-        twl.numColumns = 1;
-        twl.topMargin = 0;
-        twl.bottomMargin = 5;
-        expressionComposite.setLayout(twl);
-
-        Label l = toolkit.createLabel(expressionComposite, "Expression: ");
-		twd = new TableWrapData();
-		twd.maxWidth = 360;
-		l.setLayoutData(twd);
-		expressionEvalInput = FormHelper.createFormsSourceViewer(toolkit, expressionComposite, textFieldFlags,
-				new TLASourceViewerConfiguration());
-		expressionEvalInput.getTextWidget().addKeyListener(new KeyListener() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (isUndoKeyPress(e)) {
-					expressionEvalInput.doOperation(ITextOperationTarget.UNDO);
-				} else if (isRedoKeyPress(e)) {
-					expressionEvalInput.doOperation(ITextOperationTarget.REDO);
-				}
-			}
-
-			private boolean isRedoKeyPress(KeyEvent e) {
-				return ((e.stateMask & SWT.CONTROL) > 0) && ((e.keyCode == 'y') || (e.keyCode == 'Y'));
-			}
-
-			private boolean isUndoKeyPress(KeyEvent e) {
-				return ((e.stateMask & SWT.CONTROL) > 0) && ((e.keyCode == 'z') || (e.keyCode =='Z'));
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) { }
-		});
+        m_calculatorSection.setLayout(gl);
+        m_calculatorSection.setBackground(m_calculatorSection.getDisplay().getSystemColor(SWT.COLOR_WHITE));
         
-        // Reminder that this grid data is for this text area within the expression composite within the result area
-		twd = new TableWrapData();
-		twd.align = TableWrapData.FILL;
-		twd.grabHorizontal = true;
-		twd.maxWidth = 360;
-		twd.heightHint = 80;
-		twd.valign = TableWrapData.MIDDLE;
-        expressionEvalInput.getTextWidget().setLayoutData(twd);
-		
-        // We want the value section to get larger as the window
-        // gets larger but not the expression section.
-		final Composite valueComposite = toolkit.createComposite(resultArea);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.verticalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        gd.grabExcessVerticalSpace = true;
-        gd.horizontalIndent = 0;
-        gd.verticalIndent = 0;
-        gd.minimumWidth = 360;
-        valueComposite.setLayoutData(gd);
-        twl = new TableWrapLayout();
-        twl.numColumns = 1;
-        twl.topMargin = 0;
-        twl.bottomMargin = 5;
-        valueComposite.setLayout(twl);
-
-        l = toolkit.createLabel(valueComposite, "Value: ");
-		twd = new TableWrapData();
-		twd.maxWidth = 360;
-		l.setLayoutData(twd);
-        expressionEvalResult = FormHelper.createFormsOutputViewer(toolkit, valueComposite, textFieldFlags);
-
-        // Reminder that this grid data is for this text area within the value composite within the result area
-		twd = new TableWrapData();
-		twd.align = TableWrapData.FILL;
-		twd.grabHorizontal = true;
-		twd.maxWidth = 360;
-		twd.heightHint = 80;
-		twd.valign = TableWrapData.MIDDLE;
-		expressionEvalResult.getTextWidget().setLayoutData(twd);
-
-        // We want this font to be the same as the input.
-        // If it was not set it would be the same as the font
-        // in the module editor.
-        expressionEvalResult.getTextWidget().setFont(JFaceResources.getTextFont());
-        expressionEvalInput.getTextWidget().setFont(JFaceResources.getTextFont());
-        // This is required to paint the borders of the text boxes
-        // it must be called on the direct parent of the widget
-        // with a border. There is a call of this method in
-        // FormHelper.createSectionComposite, but that is called
-        // on the section which is not a direct parent of the
-        // text box widget.
-        toolkit.paintBordersFor(expressionComposite);
-        toolkit.paintBordersFor(valueComposite);
-
-        ValidateableSectionPart calculatorSectionPart = new ValidateableSectionPart(section, this, SEC_EXPRESSION);
-        // This ensures that when the part is made dirty, the model
-        // appears unsaved.
-        managedForm.addPart(calculatorSectionPart);
-
-        // This makes the widget unsaved when text is entered.
-        expressionEvalInput.getTextWidget().addModifyListener(new DirtyMarkingListener(calculatorSectionPart, false));
-
-        getDataBindingManager().bindAttribute(Model.MODEL_EXPRESSION_EVAL, expressionEvalInput, calculatorSectionPart);
-        getDataBindingManager().bindSection(calculatorSectionPart, SEC_EXPRESSION, getId());
-
-                
+		if (!eceInItsOwnTab) {
+			pageShouldDisplayEvaluateConstantUI(true);
+		}
+        
         // -------------------------------------------------------------------
         // output section
-        section = FormHelper.createSectionComposite(body, "User Output",
+        section = FormHelper.createSpaceGrabbingSectionComposite(body, "User Output",
                 "TLC output generated by evaluating Print and PrintT expressions.", toolkit, sectionFlags,
                 getExpansionListener());
         sections.put(SEC_OUTPUT, section);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        section.setLayoutData(gd);
         final Composite outputArea = (Composite) section.getClient();
-        twl = new TableWrapLayout();
-        twl.numColumns = 1;
-        outputArea.setLayout(twl);
+        outputArea.setLayout(new GridLayout(1, false));
         // output viewer -- see progressOutput comment complaints concerning SWT.WRAP included in the text field flags
         userOutput = FormHelper.createFormsOutputViewer(toolkit, outputArea, textFieldFlags);
-        twd = new TableWrapData();
-        twd.maxWidth = 600;
-        twd.maxHeight = 240;
-        twd.grabHorizontal = true;
-        userOutput.getTextWidget().setLayoutData(twd);
-        userOutput.getTextWidget().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
+		gd = new GridData();
+		gd.horizontalAlignment = SWT.FILL;
+		gd.verticalAlignment = SWT.FILL;
+		gd.grabExcessHorizontalSpace = true;
+		gd.grabExcessVerticalSpace = true;
+		gd.minimumWidth = 360;
+		gd.minimumHeight = 120;
+		// while the rational person would say this width hint is pointless and gets ignored, the Eclipse architect
+		//		would say "hey - no, we use this behind the scenes to influence word wrap on the text component, 
+		//		of course"
+		gd.widthHint = 400;
+		userOutput.getTextWidget().setLayoutData(gd);
+		userOutput.getTextWidget().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
         // -------------------------------------------------------------------
         // progress section
@@ -941,14 +852,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // necessary to eliminate that bit in the style flags that
         // are passed in. If the bit were not changed to 0, an
         // extra empty line would appear below the title.
-        section = FormHelper.createSectionComposite(body, "Progress Output", "  ", toolkit,
+        section = FormHelper.createSpaceGrabbingSectionComposite(body, "Progress Output", "  ", toolkit,
 				(sectionFlags & ~Section.EXPANDED), getExpansionListener());
         sections.put(SEC_PROGRESS, section);
-        Composite progressArea = (Composite) section.getClient();
-        progressArea = (Composite) section.getClient();
-        twl = new TableWrapLayout();
-        twl.numColumns = 1;
-        progressArea.setLayout(twl);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        // we don't want to set gd.grabExcessVerticalSpace = true; because we are initially collapsed
+        section.setLayoutData(gd);
+        final Composite progressArea = (Composite) section.getClient();
+        progressArea.setLayout(new GridLayout(1, false));
 
         // I am regularly stunned by how crappy and quirky SWT is... in this case, if we don't have SWT.WRAP in the,
         //		flags mask, the below maxWidth is observed on expansion of the text area (which we really don't want)
@@ -956,11 +870,18 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         //		of its parent editor. If we instead use GridLayout (with or without WRAP), width shrinking is 
         //		completely ignored and the width of the text area is the longest line of text...
         progressOutput = FormHelper.createFormsOutputViewer(toolkit, progressArea, textFieldFlags);
-        twd = new TableWrapData();
-        twd.maxWidth = 600;
-        twd.maxHeight = 240;
-        twd.grabHorizontal = true;
-        progressOutput.getTextWidget().setLayoutData(twd);
+		gd = new GridData();
+		gd.horizontalAlignment = SWT.FILL;
+		gd.verticalAlignment = SWT.FILL;
+		gd.grabExcessHorizontalSpace = true;
+		gd.grabExcessVerticalSpace = true;
+		gd.minimumWidth = 360;
+		gd.minimumHeight = 120;
+		// while the rational person would say this width hint is pointless and gets ignored, the Eclipse architect
+		//		would say "hey - no, we use this behind the scenes to influence word wrap on the text component, 
+		//		of course"
+		gd.widthHint = 400;
+        progressOutput.getTextWidget().setLayoutData(gd);
         progressOutput.getTextWidget().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
         Vector<Control> controls = new Vector<Control>();
@@ -1039,14 +960,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		}
 	}
 
-
     /**
      * Save data back to model
      */
-    public void commit(boolean onSave)
-    {
-        String expression = this.expressionEvalInput.getDocument().get();
-        getModel().unsavedSetEvalExpression(expression);
+	public void commit(boolean onSave) {
+    	if (expressionEvalInput != null) {
+            final String expression = expressionEvalInput.getDocument().get();
+            getModel().unsavedSetEvalExpression(expression);
+    	}
 
         super.commit(onSave);
     }
@@ -1110,29 +1031,48 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     	m_generalErrorPane.setVisible(visible);
     }
     
+    private int getHeightGuidanceForLabelTextFieldLine(final Composite parent, final FormToolkit toolkit) {
+    	final Label l = toolkit.createLabel(parent, "Just Some Concerned Text you get");
+    	final Text t = toolkit.createText(parent, "More time text 12345:67890", SWT.FLAT);
+    	
+    	final int height = Math.max(t.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, l.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+    	
+    	l.dispose();
+    	t.dispose();
+    	
+    	return height;
+    }
+    
     /**
      * Creates the state space table (initializes the {@link stateSpace} variable)
+     * 
+     * TODO there's definite commonality between this and createAndSetupCoverage - abstract
+     * 
      * @param parent
      * @param toolkit
      * @return the constructed composite
      */
-    private Composite createAndSetupStateSpace(final Composite parent, final FormToolkit toolkit) {
+    private Composite createAndSetupStateSpace(final Composite parent, final FormToolkit toolkit, final int headerHeight) {
         final Composite statespaceComposite = toolkit.createComposite(parent, SWT.WRAP);
         GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 0;
+        gl.marginTop = 0;
+        gl.marginBottom = 3;
         gl.marginWidth = 0;
         statespaceComposite.setLayout(gl);
         GridData gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         statespaceComposite.setLayoutData(gd);
 
+        
         final Label title
         	= toolkit.createLabel(statespaceComposite, "State space progress (click column header for graph)");
         gd = new GridData();
-        gd.heightHint = 22;
+        gd.heightHint = headerHeight + 2;
         gd.horizontalAlignment = SWT.BEGINNING;
         gd.horizontalIndent = 0;
         gd.verticalIndent = 6;
@@ -1145,12 +1085,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			= toolkit.createTable(tableComposite, (SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER));
 		final StateSpaceLabelProvider sslp = new StateSpaceLabelProvider(this);
         gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         gd.minimumWidth = sslp.getMinimumTotalWidth();
-        gd.heightHint = 100;
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalAlignment = SWT.FILL;
+        gd.minimumHeight = 100;
         tableComposite.setLayoutData(gd);
 
         stateTable.setHeaderVisible(true);
@@ -1182,20 +1124,26 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     }
 
     /**
-     * Creates the coverage table (initializes the {@link coverageTimestamp} and {@link coverage} variables)  
+     * Creates the coverage table (initializes the {@link coverageTimestamp} and {@link coverage} variables)
+     * 
+     * TODO there's definite commonality between this and createAndSetupStateSpace - abstract
+     * 
      * @param parent
      * @param toolkit
      * @return returns the containing composite
      */
-    private Composite createAndSetupCoverage(final Composite parent, final FormToolkit toolkit) {
+    private Composite createAndSetupCoverage(final Composite parent, final FormToolkit toolkit, final int headerHeight) {
         final Composite coverageComposite = toolkit.createComposite(parent, SWT.WRAP);
         GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 0;
+        gl.marginTop = 0;
+        gl.marginBottom = 3;
         gl.marginWidth = 0;
         coverageComposite.setLayout(gl);
         GridData gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         coverageComposite.setLayoutData(gd);
@@ -1217,7 +1165,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd = new GridData();
         gd.horizontalIndent = 0;
         gd.verticalIndent = 6;
-        gd.heightHint = 22;
+        gd.heightHint = headerHeight + 2;
         gd.horizontalAlignment = SWT.BEGINNING;
         gd.verticalAlignment = SWT.BOTTOM;
         title.setLayoutData(gd);
@@ -1241,12 +1189,14 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         	= toolkit.createTable(tableComposite, SWT.MULTI | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.BORDER);
         final CoverageLabelProvider clp = new CoverageLabelProvider();
         gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         gd.minimumWidth = clp.getMinimumTotalWidth();
         gd.heightHint = 100;
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalAlignment = SWT.FILL;
         tableComposite.setLayoutData(gd);
 
         coverageTable.setHeaderVisible(true);
@@ -1311,10 +1261,136 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
     }
 
+    // this is only ever used to fetch ids SEC_GENERAL and SEC_STATISTICS
 	public Set<Section> getSections(String ...sectionIDs) {
 		final Set<String> set = new HashSet<String>(Arrays.asList(sectionIDs));
-		return this.sections.entrySet().stream().filter(e -> set.contains(e.getKey())).map(Map.Entry::getValue)
+		return sections.entrySet().stream().filter(e -> set.contains(e.getKey())).map(Map.Entry::getValue)
 				.collect(Collectors.toSet());
+	}
+	
+	public EvaluateConstantExpressionPage.State getECEContent() {
+		if (expressionEvalInput != null) {
+			return new EvaluateConstantExpressionPage.State(expressionEvalInput.getDocument(),
+					expressionEvalResult.getTextWidget().getText(), m_noBehaviorModeToggleButton.getSelection());
+		}
+		
+		return null;
+	}
+	
+	public void setECEContent(final EvaluateConstantExpressionPage.State state) {
+		if (expressionEvalInput == null) {
+			TLCUIActivator.getDefault().logError("Can't set ECE content on null objects.");
+		} else {
+			expressionEvalInput.setDocument(state.getInputDocument());
+			expressionEvalResult.getTextWidget().setText(state.getOutputText());
+			m_noBehaviorModeToggleButton.setSelection(state.getToggleState());
+		}
+	}
+    
+	public void setNoBehaviorSpecToggleState(final boolean selected) {
+		if (m_noBehaviorModeToggleButton != null) {
+			m_noBehaviorModeToggleButton.setSelection(selected);
+			EvaluateConstantExpressionPage.setAppropriateToggleButtonText(m_noBehaviorModeToggleButton);
+		}
+	}
+	
+	public void pageShouldDisplayEvaluateConstantUI(final boolean shouldShow) {
+		final IManagedForm managedForm = getManagedForm();
+		
+		if (shouldShow) {
+			final FormToolkit toolkit = managedForm.getToolkit();
+	        final int sectionFlags = Section.TITLE_BAR | Section.TREE_NODE | Section.EXPANDED | SWT.WRAP;
+	        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION | SWT.WRAP;
+			final EvaluateConstantExpressionPage.BodyContentAssets assets = EvaluateConstantExpressionPage
+					.createBodyContent(m_calculatorSection, toolkit, sectionFlags, textFieldFlags,
+							getExpansionListener(), (ModelEditor)getEditor());
+			final Section section = assets.getSection();
+			
+	        sections.put(SEC_EXPRESSION, section);
+
+			expressionEvalInput = assets.getExpressionInput();
+	        expressionEvalResult = assets.getExpressionOutput();
+	        m_noBehaviorModeToggleButton = assets.getToggleButton();
+
+	        m_validateableCalculatorSection = new ValidateableSectionPart(section, this, SEC_EXPRESSION);
+	        // This ensures that when the part is made dirty, the model appears unsaved.
+	        managedForm.addPart(m_validateableCalculatorSection);
+
+	        // This makes the widget unsaved when text is entered.
+	        expressionEvalInput.getTextWidget().addModifyListener(new DirtyMarkingListener(m_validateableCalculatorSection, false));
+
+	        getDataBindingManager().bindSection(m_validateableCalculatorSection, SEC_EXPRESSION, getId());
+	        getDataBindingManager().bindAttribute(Model.MODEL_EXPRESSION_EVAL, expressionEvalInput, m_validateableCalculatorSection);
+	        
+	        section.addExpansionListener(new ExpansionAdapter() {
+	            public void expansionStateChanged(final ExpansionEvent e) {
+	            	if (e.getState()) {
+	            		final GridData gd = new GridData();
+	                    gd.horizontalAlignment = SWT.FILL;
+	                    gd.verticalAlignment = SWT.FILL;
+	                    gd.grabExcessHorizontalSpace = true;
+	                    gd.grabExcessVerticalSpace = true;
+	                    m_calculatorSection.setLayoutData(gd);
+	            	} else {
+	            		final GridData gd = (GridData)m_calculatorSection.getLayoutData();
+	            		final Point size = section.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+	            		
+	            		gd.grabExcessVerticalSpace = e.getState();
+	            		gd.heightHint = size.y;
+
+		            	m_calculatorSection.setLayoutData(gd);
+	            	}
+	            }
+	        });
+		} else if (m_validateableCalculatorSection != null) {
+			sections.remove(SEC_EXPRESSION);
+			
+			managedForm.removePart(m_validateableCalculatorSection);
+			
+			m_validateableCalculatorSection = null;
+			expressionEvalInput = null;
+			expressionEvalResult = null;
+			m_noBehaviorModeToggleButton = null;
+			
+			for (final Control control : m_calculatorSection.getChildren()) {
+				control.dispose();
+			}
+			
+			getDataBindingManager().unbindSectionFromPage(SEC_EXPRESSION, getId());
+		}
+		
+		final GridData gd = (GridData)m_calculatorSection.getLayoutData();
+		gd.grabExcessVerticalSpace = shouldShow;
+		m_calculatorSection.setLayoutData(gd);
+		
+		getManagedForm().reflow(true);
+	}
+	
+	
+	private class GeneralSectionExpansionHoopJumper extends ExpansionAdapter implements Consumer<Boolean> {
+        public void expansionStateChanged(final ExpansionEvent e) {
+        	accept(Boolean.valueOf(e.getState()));
+        }
+
+        public void accept(final Boolean expand) {
+        	if (expand.booleanValue()) {
+        		final Composite c = (Composite)m_generalSection.getClient();
+        		final GridData gd = (GridData)m_generalSection.getLayoutData();
+        		
+        		gd.heightHint = m_collapsedSectionHeight + c.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+
+                m_generalSection.setLayoutData(gd);
+                m_generalSection.getParent().layout(true, true);
+        	} else {
+        		final GridData gd = new GridData();
+                gd.horizontalAlignment = SWT.FILL;
+                gd.grabExcessHorizontalSpace = true;
+                gd.verticalAlignment = SWT.TOP;
+                m_generalSection.setLayoutData(gd);
+                
+                m_collapsedSectionHeight = m_generalSection.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        	}
+        }
 	}
 	
 	

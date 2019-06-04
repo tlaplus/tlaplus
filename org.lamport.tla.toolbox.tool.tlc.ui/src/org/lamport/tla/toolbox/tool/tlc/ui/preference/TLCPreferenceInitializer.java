@@ -40,6 +40,7 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS, 10000);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS, true);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB, false);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT, MAX_HEAP_SIZE_DEFAULT);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT, TLCGlobals.setBound);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT, 1);

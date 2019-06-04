@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -106,8 +107,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
     
     
-    // presenter for the current process
-    protected ITLCModelLaunchDataPresenter presenter;
+    // presenters for the current process
+    private final CopyOnWriteArrayList<ITLCModelLaunchDataPresenter> m_dataPresenters;
     // list of errors
     protected List<TLCError> errors;
     // start time
@@ -157,10 +158,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
 	private boolean isSymmetryWithLiveness = false;
 	
-    public TLCModelLaunchDataProvider(Model model)
-    {
-    	Assert.isNotNull(model);
-        this.model = model;
+	public TLCModelLaunchDataProvider(final Model tlcModel) {
+    	Assert.isNotNull(tlcModel);
+        model = tlcModel;
+        
+        m_dataPresenters = new CopyOnWriteArrayList<>();
 
         // init provider, but not connect it to the source!
         initialize();
@@ -201,24 +203,20 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      * Inform the view, if any
      * @param fieldId
      */
-    protected void informPresenter(int fieldId)
-    {
-        if (presenter != null)
-        {
+	protected void informPresenter(final int fieldId) {
+    	m_dataPresenters.stream().forEach((presenter) -> {
             presenter.modelChanged(this, fieldId);
-        }
+    	});
     }
 
     /**
      * Populate data to the presenter 
      */
-    public void populate()
-    {
-        for (int i = 0; i < ITLCModelLaunchDataPresenter.ALL_FIELDS.length; i++)
-        {
-            informPresenter(ITLCModelLaunchDataPresenter.ALL_FIELDS[i]);
-        }
-    }
+	public void populate() {
+		for (int i = 0; i < ITLCModelLaunchDataPresenter.ALL_FIELDS.length; i++) {
+			informPresenter(ITLCModelLaunchDataPresenter.ALL_FIELDS[i]);
+		}
+	}
 
     /**
      * Name of the model
@@ -950,13 +948,21 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     }
 
     /**
-     * Set the presenter.  
-     * @param presenter a presenter to update on data changes
+     * Add a presenter.
+     * @param presenter
      */
-    public void setPresenter(ITLCModelLaunchDataPresenter presenter)
-    {
-        this.presenter = presenter;
-        populate();
+    public void addDataPresenter(final ITLCModelLaunchDataPresenter presenter) {
+    	m_dataPresenters.add(presenter);
+    	populate();
+    }
+    
+    /**
+     * Remove a presenter added via {@link #addDataPresenter(ITLCModelLaunchDataPresenter)}
+     * @param presenter
+     */
+    public void removeDataPresenter(final ITLCModelLaunchDataPresenter presenter) {
+    	m_dataPresenters.remove(presenter);
+    	populate();
     }
 
     public List<TLCError> getErrors()

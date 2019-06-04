@@ -1,0 +1,87 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA_Functional_ECE_Placement
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _JObaIIvTEemXYtOZX2zpng
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 6/10/19, 4:39 PM
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+//Create Spec
+OpenTLACreateNew
+
+try -command {
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
+	    key-type Down
+	    type-text "EXTENDS Naturals"
+	    key-type Enter
+	    type-text "VARIABLE x"
+	    key-type Enter -times 1
+	    type-text "Init == x = 1"
+	    key-type Enter -times 2
+	    type-text "Next == x' = x * 1"
+	    key-type "M1+s"
+	}
+
+	get-menu -path "TLC Model Checker/New Model..." | click
+	get-window "New model..." | get-button OK | click
+	with [get-editor "Model_1"] {
+	    get-tab-item "Model Checking Results" | click
+	    with [get-section "Evaluate Constant Expression" | get-text-viewer -after [get-label "Expression:"]] {
+    		type-text "CHOOSE w in {3, 5, 7} : w*w*w = 125"  // yes, "in" is invalid but escaping backspaces in the comparison below is quirky
+	    }
+	}
+	
+	get-preferences-menu | click
+	with [get-window Preferences ] {
+		get-tree | select "TLA+ Preferences/TLC Model Checker" 
+	    get-checkbox -text "Show Evaluate Constant Expression in its own tab" | check
+	    
+	    get-button "Apply and Close" | click
+	}
+
+	with [get-editor "Model_1"] {
+		verify-error { get-section "Evaluate Constant Expression" }
+		get-tab-item "Evaluate ConEx" | click
+	    with [get-section "Evaluate Constant Expression"] {
+	    	get-text-viewer -after [get-label "Expression:"] | get-text |
+	    		equals "CHOOSE w in {3, 5, 7} : w*w*w = 125" | verify-true
+	    }
+	}	
+	
+	get-preferences-menu | click
+	with [get-window Preferences ] {
+		get-tree | select "TLA+ Preferences/TLC Model Checker" 
+	    get-checkbox -text "Show Evaluate Constant Expression in its own tab" | uncheck
+	    
+	    get-button "Apply and Close" | click
+	}
+	
+	with [get-editor "Model_1"] {
+		verify-error { get-tab-item "Evaluate ConEx" }
+	    get-tab-item "Model Checking Results" | click
+	    with [get-section "Evaluate Constant Expression"] {
+	    	get-text-viewer -after [get-label "Expression:"] | get-text |
+	    		equals "CHOOSE w in {3, 5, 7} : w*w*w = 125" | verify-true
+	    	get-button "No evaluation" | click
+	    	get-button "Will evaluate" | get-object | invoke getSelection | verify-true
+	    }
+	    get-tab-item "Model Overview" | click
+	    with [get-section "What is the behavior spec?" | get-combo] {
+	    	get-text | equals "No behavior spec" | verify-true
+	    	select "Temporal formula"
+	    }
+	    get-tab-item "Model Checking Results" | click
+	    get-section "Evaluate Constant Expression" | get-button | get-text | equals "No evaluation" | verify-true
+	    key-type "M1+s"
+	}	
+} -finally {
+	DeleteSpecNew
+}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

@@ -23,6 +23,7 @@ public interface IHelpConstants
     public static final String ADVANCED_MODEL_PAGE = "advancedModelPage";
     public static final String ADVANCED_TLC_OPTIONS_PAGE = "advancedTLCOptionsPage";
     public static final String RESULT_MODEL_PAGE = "resultModelPage";
+    public static final String EVALUATE_CON_EX_PAGE = "evaluateConstantExpressionPage";
     public static final String TLC_ERROR_VIEW = "TLCErrorView";
     
     public static final String TLC_ERROR_VIEW_EXPRESSION = "ErrorTraceExplorerExpression";

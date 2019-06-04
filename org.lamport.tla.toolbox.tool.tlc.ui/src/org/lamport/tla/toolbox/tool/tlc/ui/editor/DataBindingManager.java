@@ -80,7 +80,7 @@ public class DataBindingManager implements ISectionConstants
         SectionPart part = sectionParts.get(id);
         if (part == null)
         {
-            throw new IllegalArgumentException("No section for id");
+            throw new IllegalArgumentException("No section for id [" + id + "]");
         }
         Section section = part.getSection();
         Control[] children = section.getChildren();
@@ -146,6 +146,41 @@ public class DataBindingManager implements ISectionConstants
         }
 
         sectionIds.add(id);
+    }
+    
+    /**
+     * Given an attribute name, remove all binding to it and its section.
+     * 
+     * @param attributeName
+     */
+    public void unbindSectionAndAttribute(final String attributeName) {
+    	viewerForAttribute.remove(attributeName);
+    	
+    	final String sectionId = sectionForAttribute.remove(attributeName);
+    	if (sectionId != null) {
+    		sectionParts.remove(sectionId);
+    		
+    		final String pageId = pageForSection.remove(sectionId);
+    		if (pageId != null) {
+    			final Vector<String> sectionIds = sectionsForPage.get(pageId);
+    			if (sectionIds != null) {
+    				sectionIds.remove(sectionId);
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * Given an attribute name, remove all binding to it and its section.
+     * 
+     * @param attributeName
+     */
+    public void unbindSectionFromPage(final String sectionId, final String pageId) {
+		final Vector<String> sectionIds = sectionsForPage.get(pageId);
+		
+		if (sectionIds != null) {
+			sectionIds.remove(sectionId);
+		}
     }
 
     /**
