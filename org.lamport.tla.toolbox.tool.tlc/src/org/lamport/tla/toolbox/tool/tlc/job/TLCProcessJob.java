@@ -99,9 +99,16 @@ public class TLCProcessJob extends TLCJob
             final List<String> vmArgs = new ArrayList<String>();
 
             // get max heap size as fraction from model editor
-            final double maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, HEAP_SIZE_DEFAULT) / 100d;
+            int maxHeapSize = launch.getLaunchConfiguration().getAttribute(LAUNCH_MAX_HEAP_SIZE, HEAP_SIZE_DEFAULT);
+            if (maxHeapSize < 1 || maxHeapSize > 99) {
+				TLCActivator.logInfo(String.format(
+						"Defaulting fraction of physical memory to %s because %s is out of range (0,100). Value can be adjusted on the model editor's \"Advanced TLC option\" tab.",
+						HEAP_SIZE_DEFAULT, maxHeapSize));
+            	// Dealing with a legacy model (absolute memory values) or somehow bogus input.
+            	maxHeapSize = HEAP_SIZE_DEFAULT;
+            }
 			final TLCRuntime instance = TLCRuntime.getInstance();
-			long absolutePhysicalSystemMemory = instance.getAbsolutePhysicalSystemMemory(maxHeapSize);
+			long absolutePhysicalSystemMemory = instance.getAbsolutePhysicalSystemMemory(maxHeapSize / 100d);
 
 			// Get class name of the user selected FPSet. If it is unset, try and load the
 			// OffHeapDiskFPSet (which might not be supported). In unsupported, revert to
