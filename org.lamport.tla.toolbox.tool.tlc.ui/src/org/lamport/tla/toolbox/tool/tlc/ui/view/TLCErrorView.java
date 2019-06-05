@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;
@@ -17,7 +18,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
@@ -26,7 +26,6 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ILazyTreeContentProvider;
@@ -160,16 +159,25 @@ public class TLCErrorView extends ViewPart
     // listener on changes to the tlc output font preference
     private FontPreferenceChangeListener outputFontChangeListener;
     // listener on changes to the error trace font preference
-    private ErrorTraceFontChangeListener errorTraceFontChangeListener;
+    private final IPropertyChangeListener errorTraceFontChangeListener;
 
 	public TLCErrorView() {
-		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+		numberOfStatesToShow = TLCUIActivator.getDefault().getPreferenceStore()
+				.getInt(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS);
 		
-		numberOfStatesToShow = ips.getInt(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS);
-		
-		errorTraceFontChangeListener = new ErrorTraceFontChangeListener();
+		errorTraceFontChangeListener = (event) -> {
+			if ((event == null) || event.getProperty().equals(ITLCPreferenceConstants.I_TLC_ERROR_TRACE_FONT)) {
+				final Font f = JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_ERROR_TRACE_FONT);
+				
+				JFaceResources.getFontRegistry().put(JFACE_ERROR_TRACE_ID, f.getFontData());
+
+				if (variableViewer != null) {
+					variableViewer.refresh(true);
+				}
+			}
+		};
 		errorTraceFontChangeListener.propertyChange(null);
-		ips.addPropertyChangeListener(errorTraceFontChangeListener);
+        JFaceResources.getFontRegistry().addListener(errorTraceFontChangeListener);
 	}
     
     /**
@@ -696,13 +704,14 @@ public class TLCErrorView extends ViewPart
         form.setFocus();
     }
 
-    public void dispose()
-    {
-        JFaceResources.getFontRegistry().removeListener(outputFontChangeListener);
-        
-		Activator.getDefault().getPreferenceStore().removePropertyChangeListener(errorTraceFontChangeListener);
+	public void dispose() {
+		final FontRegistry fr = JFaceResources.getFontRegistry();
+		
+        fr.removeListener(outputFontChangeListener);
+        fr.removeListener(errorTraceFontChangeListener);
         
         toolkit.dispose();
+        
         super.dispose();
     }
 
@@ -1493,18 +1502,6 @@ public class TLCErrorView extends ViewPart
 					holdDown = true;
 				}
 			}
-		}
-	}
-	
-	
-	// we don't have the same use case as the output font listener because we need to install the font
-	//		in the font registry so that we can later get a bold version of it.
-	private static class ErrorTraceFontChangeListener implements IPropertyChangeListener {
-		@Override
-		public void propertyChange(final PropertyChangeEvent event) {
-			final Font f = JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_ERROR_TRACE_FONT);
-			
-			JFaceResources.getFontRegistry().put(JFACE_ERROR_TRACE_ID, f.getFontData());
 		}
 	}
 }
