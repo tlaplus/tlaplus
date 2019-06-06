@@ -63,7 +63,7 @@ import util.TLCRuntime;
 public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     public static final String ID = "AdvancedTLCOptionsPage";
     
-    private static final String TITLE = "Advanced TLC Options";
+    private static final String TITLE = "TLC Options";
     
     
     private Spinner workers;

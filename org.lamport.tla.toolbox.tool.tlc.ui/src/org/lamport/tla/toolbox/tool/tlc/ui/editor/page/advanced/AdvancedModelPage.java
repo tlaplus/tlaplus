@@ -65,7 +65,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
      * @param editor
      */
 	public AdvancedModelPage(final FormEditor editor) {
-        super(editor, ID, "Advanced Options",
+        super(editor, ID, "Spec Options",
         		"icons/full/advanced_model_options_" + IMAGE_TEMPLATE_TOKEN + ".png");
         helpId = IHelpConstants.ADVANCED_MODEL_PAGE;
     }

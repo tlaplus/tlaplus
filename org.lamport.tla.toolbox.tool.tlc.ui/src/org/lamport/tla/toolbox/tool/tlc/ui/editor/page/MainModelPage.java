@@ -1017,7 +1017,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		gl.marginWidth = 0;
 		gl.horizontalSpacing = 0;
 		advancedLinkLine.setLayout(gl);
-		Hyperlink hyper = toolkit.createHyperlink(advancedLinkLine, "Advanced model options", SWT.NONE);
+		Hyperlink hyper = toolkit.createHyperlink(advancedLinkLine, "Additional model options", SWT.NONE);
 		hyper.addHyperlinkListener(advancedModelOptionsOpener);
 
 		
@@ -1227,7 +1227,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		gl.marginWidth = 0;
 		gl.horizontalSpacing = 0;
 		advancedLinkLine.setLayout(gl);
-		hyper = toolkit.createHyperlink(advancedLinkLine, "Advanced TLC execution options", SWT.NONE);
+		hyper = toolkit.createHyperlink(advancedLinkLine, "Additional TLC execution options", SWT.NONE);
 		hyper.addHyperlinkListener(advancedTLCOptionsOpener);
 
 		// ------------------------------------------
