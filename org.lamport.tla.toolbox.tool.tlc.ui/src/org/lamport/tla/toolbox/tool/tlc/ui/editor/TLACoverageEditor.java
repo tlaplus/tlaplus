@@ -209,6 +209,16 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 			TLCActivator.logDebug("Unexpected input for TLACoverageEditor of type: " + input.getClass().getName());
 		}
 	}
+	
+	@Override
+	protected boolean isEditorInputIncludedInContextMenu() {
+		// Exclude menu items from the editor's right-click context menu, contributed by
+		// the Eclipse foundation such as "Run As..." or "Debug As...". Those are
+		// completely bogus in the Toolbox's context and especially for the coverage
+		// editor. The crux is, that AbstractTextEditor sucks the contributions in and
+		// this seems to be the way to exclude them.
+		return false;
+	}
 
 	@Override
     protected TLASourceViewerConfiguration getTLASourceViewerConfiguration(IPreferenceStore preferenceStore) {
