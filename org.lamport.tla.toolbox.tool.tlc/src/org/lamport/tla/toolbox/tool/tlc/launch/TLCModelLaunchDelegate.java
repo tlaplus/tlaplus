@@ -1061,7 +1061,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             	Assert.isNotNull(event.getResult());
             	TLCProcessJob tlcJob = (TLCProcessJob) event.getJob();
 
-				if (!Status.CANCEL_STATUS.equals(event.getJob().getResult()) && tlcJob.getExitValue() > 0) {
+				if (!Status.CANCEL_STATUS.equals(event.getJob().getResult()) && tlcJob.hasCrashed()) {
 					// if TLC crashed with exit value > 0 and the user did *not*
 					// click cancel, mark the job as crashed.
 					model.setStale();

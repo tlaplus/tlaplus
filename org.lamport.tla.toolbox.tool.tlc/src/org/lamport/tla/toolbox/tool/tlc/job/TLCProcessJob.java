@@ -29,6 +29,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.internal.BroadcastStreamListener;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tlc2.TLC;
+import tlc2.output.EC;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.fp.NoopFPSet;
 import tlc2.tool.fp.OffHeapDiskFPSet;
@@ -437,6 +438,10 @@ public class TLCProcessJob extends TLCJob
     			shouldNotHappen.printStackTrace();
     		}
     	}
-    	return -1;
+    	return 255;
     }
+
+	public boolean hasCrashed() {
+		return EC.ExitStatus.exitStatusToCrash(getExitValue());
+	}
 }

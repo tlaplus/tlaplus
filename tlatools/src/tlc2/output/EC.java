@@ -1,5 +1,8 @@
 package tlc2.output;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Interface containing the error code constants 
@@ -395,5 +398,13 @@ public interface EC
 				return 255;
 			}
 	    }
+
+		private static final Set<Integer> knownExitValues = Stream.of(SUCCESS, FAILURE_LIVENESS_EVAL, FAILURE_SPEC_EVAL,
+				FAILURE_SAFETY_EVAL, VIOLATION_SAFETY, VIOLATION_LIVENESS, VIOLATION_DEADLOCK, VIOLATION_ASSUMPTION,
+				VIOLATION_ASSERT, ERROR_CONFIG_PARSE, ERROR_SPEC_PARSE).collect(Collectors.toSet());
+		
+		public static boolean exitStatusToCrash(final int exitStatus) {
+			return !knownExitValues.contains(exitStatus);
+		}
     }
 }
