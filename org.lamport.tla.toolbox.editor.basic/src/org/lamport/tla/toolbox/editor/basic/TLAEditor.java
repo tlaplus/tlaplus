@@ -218,21 +218,8 @@ public class TLAEditor extends TextEditor
         // set preference store
         setPreferenceStore(preferenceStore);
 
-        // setup the content description and image of spec root
-        if (input instanceof FileEditorInput)
-        {
-            FileEditorInput finput = (FileEditorInput) input;
-            if (finput != null)
-            {
-                IPath path = finput.getPath();
-                setContentDescription(path.toString());
-
-                if (ResourceHelper.isRoot(finput.getFile()))
-                {
-                    setTitleImage(rootImage);
-                }
-            }
-        }
+        initEditorNameAndDescription(input);
+        
         // grab context service and activate the context on editor load
         this.contextService = (IContextService) getSite().getService(IContextService.class);
         Assert.isNotNull(contextService);
@@ -288,6 +275,24 @@ public class TLAEditor extends TextEditor
 			}
 		});
     }
+
+	protected void initEditorNameAndDescription(final IEditorInput input) {
+        // setup the content description and image of spec root
+        if (input instanceof FileEditorInput)
+        {
+            final FileEditorInput finput = (FileEditorInput) input;
+            if (finput != null)
+            {
+                final IPath path = finput.getPath();
+                setContentDescription(path.toString());
+
+                if (ResourceHelper.isRoot(finput.getFile()))
+                {
+                    setTitleImage(rootImage);
+                }
+            }
+        }
+	}
 
 	private IUndoContext getUndoContext() {
 		if (getSourceViewer() instanceof ITextViewerExtension6) {

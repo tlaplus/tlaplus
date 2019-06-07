@@ -59,10 +59,13 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
@@ -73,24 +76,35 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly;
 import org.lamport.tla.toolbox.editor.basic.TLASourceViewerConfiguration;
+import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.ModuleCoverageInformation;
 import org.lamport.tla.toolbox.tool.tlc.output.data.Representation;
 import org.lamport.tla.toolbox.tool.tlc.output.data.Representation.Grouping;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 public class TLACoverageEditor extends TLAEditorReadOnly {
 
 	static {
-		JFaceResources.getColorRegistry().put("LIGHT_YELLOW", new RGB(245,245,245));
+		JFaceResources.getColorRegistry().put("LIGHT_GRAY", new RGB(245,245,245));
+		JFaceResources.getColorRegistry().put("DARK_GRAY", new RGB(200,200,200));
 	}
 	
-	private static final Color lightYellow = JFaceResources.getColorRegistry().get("LIGHT_YELLOW");
+	private static final Color lightGray = JFaceResources.getColorRegistry().get("LIGHT_GRAY");
+	private static final Color darkGray = JFaceResources.getColorRegistry().get("DARK_GRAY");
+
+	// Icon displayed left of the editor tab's name.
+	protected final Image coverageEditorImage = TLAEditorActivator
+			.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "/icons/full/report2_obj.gif").createImage();
 
 	private static class ResizeListener implements Listener {
 		
@@ -167,10 +181,33 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 		
 		// Make TLACoverageEditor distinguishable from regular TLAEditor.
 		final StyledText textWidget = createSourceViewer.getTextWidget();
-		textWidget.setBackground(lightYellow);
 		textWidget.setCursor(new Cursor(textWidget.getDisplay(), SWT.CURSOR_HAND));
+		// Flash the editor on keystrokes as a form of a visual bell.
+		textWidget.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				textWidget.setBackground(darkGray);
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+				textWidget.setBackground(lightGray);
+			}
+		});
 		
 		return createSourceViewer;
+	}
+	
+	@Override
+	protected void initEditorNameAndDescription(final IEditorInput input) {
+		if (input instanceof FileEditorInput) {
+			final FileEditorInput fei = (FileEditorInput) input;
+			// Replace useless filename extension in tab title with read-only indicator.
+            this.setPartName(fei.getName().replaceFirst(".tla$", " (ro)"));
+            // Use dedicated image to distinguish from regular TLA editor.
+            this.setTitleImage(coverageEditorImage);
+		} else {
+			TLCActivator.logDebug("Unexpected input for TLACoverageEditor of type: " + input.getClass().getName());
+		}
 	}
 
 	@Override
@@ -476,6 +513,10 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 
 		@Override
 		public synchronized void applyTextPresentation(final TextPresentation textPresentation) {
+			// Set the background color down here instead of in createSourceViewer above
+			// where it is overridden by the OS's default background color.
+			editor.getSourceViewer().getTextWidget().setBackground(lightGray);
+
 			// Unregister this to not rerun the initialization again.
 			editor.getViewer().removeTextPresentationListener(this);
 			

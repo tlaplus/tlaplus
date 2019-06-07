@@ -1410,6 +1410,7 @@ public class ModelEditor extends FormEditor {
     public void addPage(int index, IEditorPart editor, IEditorInput input) throws PartInitException
     {
         super.addPage(index, editor, input);
+        //TODO This method screams to be refactored and simplified, but sadly life is short.
         /*
          * Do stuff if the input is a tla file.
          * 
@@ -1418,7 +1419,14 @@ public class ModelEditor extends FormEditor {
          * 
          * 2.) Set the page to be closeable.
          */
-		if (input instanceof FileEditorInput
+        if (editor instanceof TLACoverageEditor) {
+			// ... just add another special case to this supposed-to-be generic method. We
+			// want the tab for the TLACoverageEditor to show not just the file name and an
+			// icon indicating the editor type.
+        	this.setPageText(index, editor.getTitle());
+        	this.setPageImage(index, editor.getTitleImage());
+			((CTabFolder) getContainer()).getItem(index).setShowClose(true);
+        } else if (input instanceof FileEditorInput
 				&& ((FileEditorInput) input).getFile().getFileExtension().equals(ResourceHelper.TLA_EXTENSION)) {
             setPageText(index, input.getName());
 
