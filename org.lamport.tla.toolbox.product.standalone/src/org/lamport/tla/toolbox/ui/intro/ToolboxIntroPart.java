@@ -187,7 +187,10 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		final StyledText styledExamples = new StyledText(outerContainer, SWT.WRAP | SWT.CENTER);
 		styledExamples.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
 		styledExamples.setBackground(backgroundColor);
-		String exampleText = "Clicking on one of the buttons below imports an introductory example into the Toolbox.  More examples can be found in the TLA+ examples repository.";
+		String exampleText = "Clicking on one of the buttons below imports an introductory example into the "
+				+ "Toolbox.  More examples can be found in the TLA+ examples repository.\nTo run the TLC model "
+				+ "checker on an example spec, open one of its models by double-clicking on it in the Spec "
+				+ "Explorer on the left.";
 		styledExamples.setText(exampleText);
 		
 		int[] exampleRange = { exampleText.indexOf("TLA+ examples repository"), "TLA+ examples repository".length() };
