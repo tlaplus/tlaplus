@@ -242,6 +242,10 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
 	@Override
 	public Image getTitleImage() {
+		// Display the page's image left of the page's name on the tar bar. E.g. the
+		// main model page displays three sliders left of its "Model
+		// Overview" label. createFormContent below additionally sets a slightly
+		// larger version of the same image on the page itself (not on the tab bar).
 		return createRegisteredImage(16);
 	}
 	
@@ -256,6 +260,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         formWidget.setText(getTitle());
         if (imagePathTemplate != null)
         {
+			// Show the given image left of the form page's title and beneath the tab
+			// bar. E.g. the main model page displays three sliders left of its "Model
+			// Overview" label.
             formWidget.setImage(createRegisteredImage(24));
         }
 
