@@ -186,10 +186,17 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 		textWidget.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
+				// whitelist modifier keys to not flash on ctrl+click to navigate the spec.
+				if (e.keyCode == SWT.MOD1 || e.keyCode == SWT.MOD2 || e.keyCode == SWT.MOD3 || e.keyCode == SWT.MOD4) {
+					return;
+				}
 				textWidget.setBackground(darkGray);
 			}
 			@Override
 			public void keyReleased(KeyEvent e) {
+				if (e.keyCode == SWT.MOD1 || e.keyCode == SWT.MOD2 || e.keyCode == SWT.MOD3 || e.keyCode == SWT.MOD4) {
+					return;
+				}
 				textWidget.setBackground(lightGray);
 			}
 		});
