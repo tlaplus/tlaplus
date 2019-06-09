@@ -943,12 +943,14 @@ public class ModelEditor extends FormEditor {
 						 * Close pages in reverse order because removing a page invalidates indices.
 						 */
 						for (int i = getPageCount() - 1; i >= 0; i--) {
-							/*
-							 * The normal form pages (main model page, advanced options, results) are remain
-							 * open, all other pages get closed i.e. Saved Module Editor and State Graph
-							 * editor.
-							 */
-							if (!(pages.get(i) instanceof BasicFormPage)) {
+							if (pages.get(i) instanceof BasicFormPage) {
+								((BasicFormPage)pages.get(i)).modelCheckingHasBegun();
+							} else {
+								/*
+								 * The normal form pages (main model page, advanced options, results) are remain
+								 * open, all other pages get closed i.e. Saved Module Editor and State Graph
+								 * editor.
+								 */
 								removePage(i);
 							}
 						}

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -183,18 +184,32 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	
 	private final INotificationService ns;
 
+	private final ErrorPaneViewState m_errorPaneViewState;
+
     /**
      * Constructor for the page
      * @param editor
      */
-    public ResultPage(final FormEditor editor)
-    {
-        super(editor, ID, "Model Checking Results",
-        		"icons/full/results_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
+	public ResultPage(final FormEditor editor) {
+        super(editor, ID, "Model Checking Results", "icons/full/results_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
         this.helpId = IHelpConstants.RESULT_MODEL_PAGE;
-        
+
         this.ns = NotificationsUi.getService();
+
+        m_errorPaneViewState = new ErrorPaneViewState();
     }
+
+	@Override
+    public void modelCheckingHasBegun() {
+		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+    		m_tlcStatusLabel.setText("Starting...");
+			m_errorStatusHyperLink.setVisible(false);
+			m_fingerprintCollisionLabel.setVisible(false);
+			m_zeroCoverageLabel.setVisible(false);
+			m_errorPaneViewState.clearState();
+			setErrorPaneVisible(false);
+		});
+	}
 
     /**
      * Will be called by the provider on data changes
@@ -262,10 +277,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                	
 	                	if (collisionText.length() == 0) {
 							m_fingerprintCollisionLabel.setVisible(false);
-							setErrorPaneVisible(m_zeroCoverageLabel.isVisible() || m_errorStatusHyperLink.isVisible());
+							m_errorPaneViewState.setFingerprintDisplay(false);
+							setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
 	                	} else {
 							m_fingerprintCollisionLabel.setText("Fingerprint collision chance: " + collisionText);
 							m_fingerprintCollisionLabel.setVisible(true);
+							m_errorPaneViewState.setFingerprintDisplay(true);
 							setErrorPaneVisible(true);
 	                	}
 	                    break;
@@ -283,15 +300,17 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 									marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
 									zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 									m_zeroCoverageLabel.setVisible(true);
+									m_errorPaneViewState.setZeroCountDisplay(true);
 									setErrorPaneVisible(true);
 								}
 							} else if (zeroCoverage != null) {
 								try {
 									zeroCoverage.delete();
 									resetMessage(RESULT_PAGE_PROBLEM);
-									zeroCoverage = null;
 									m_zeroCoverageLabel.setVisible(false);
-									setErrorPaneVisible(m_errorStatusHyperLink.isVisible() || m_fingerprintCollisionLabel.isVisible());
+									m_errorPaneViewState.setZeroCountDisplay(false);
+									setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
+									zeroCoverage = null;
 								} catch (CoreException e) {
 									TLCUIActivator.getDefault().logError(e.getMessage(), e);
 								}
@@ -398,8 +417,8 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    m_errorStatusHyperLink.setText(text);
 	                    m_errorStatusHyperLink.setForeground(color);
 						m_errorStatusHyperLink.setVisible(visible);
-						setErrorPaneVisible(visible || m_zeroCoverageLabel.isVisible()
-													|| m_fingerprintCollisionLabel.isVisible());
+						m_errorPaneViewState.setErrorLinkDisplay(visible);
+						setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
 						
 	                    // update the error view
 	                    TLCErrorView.updateErrorView(dataProvider.getModel());
@@ -1296,5 +1315,45 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		final Set<String> set = new HashSet<String>(Arrays.asList(sectionIDs));
 		return this.sections.entrySet().stream().filter(e -> set.contains(e.getKey())).map(Map.Entry::getValue)
 				.collect(Collectors.toSet());
+	}
+	
+	
+	/**
+	 * In an ideal world, we rely upon the associated SWT widgets being able to return a set value for visible and then
+	 * 	just base our view state on those, except we experience load data in situations in which the "actual" visible
+	 *  value does not match what has been set.
+	 */
+	static class ErrorPaneViewState {
+		private final AtomicBoolean m_displayErrorLink;
+		private final AtomicBoolean m_displayFingerprint;
+		private final AtomicBoolean m_displayZeroCount;
+		
+		ErrorPaneViewState() {
+			m_displayErrorLink = new AtomicBoolean(false);
+			m_displayFingerprint = new AtomicBoolean(false);
+			m_displayZeroCount = new AtomicBoolean(false);
+		}
+		
+		void setErrorLinkDisplay(final boolean display) {
+			m_displayErrorLink.set(display);
+		}
+		
+		void setFingerprintDisplay(final boolean display) {
+			m_displayFingerprint.set(display);
+		}
+		
+		void setZeroCountDisplay(final boolean display) {
+			m_displayZeroCount.set(display);
+		}
+		
+		void clearState() {
+			m_displayErrorLink.set(false);
+			m_displayFingerprint.set(false);
+			m_displayZeroCount.set(false);
+		}
+		
+		boolean shouldDisplay() {
+			return m_displayErrorLink.get() || m_displayFingerprint.get() || m_displayZeroCount.get();
+		}
 	}
 }

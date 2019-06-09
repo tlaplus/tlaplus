@@ -737,6 +737,11 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
     }
 
     /**
+     * Subclasses may override this to be notified when model checking has been launched.
+     */
+    public void modelCheckingHasBegun() { }
+    
+    /**
      * Retrieves the data binding manager
      */
     public DataBindingManager getDataBindingManager()
