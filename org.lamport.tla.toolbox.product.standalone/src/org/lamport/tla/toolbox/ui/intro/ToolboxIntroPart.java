@@ -137,13 +137,14 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		styledWhatIsNext.setBackground(backgroundColor);
 		final String whatIsnext = "There is no specification open. Click on Help if you're not sure what you should do next.";
 		final int indexOfHelp = whatIsnext.indexOf("Help");
+		final int lengthOfHelp = "Help".length();
 		styledWhatIsNext.setText(whatIsnext);
 
 		StyleRange winStyle = new StyleRange();
 		winStyle.underline = true;
 		winStyle.underlineStyle = SWT.UNDERLINE_LINK;
 
-		int[] winRange = { whatIsnext.indexOf("Help"), "Help".length() };
+		int[] winRange = { indexOfHelp, lengthOfHelp };
 		StyleRange[] winStyles = { winStyle };
 		styledWhatIsNext.setStyleRanges(winRange, winStyles);
 
@@ -151,8 +152,8 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		styledWhatIsNext.addListener(SWT.MouseDown, new Listener() {
 			public void handleEvent(Event event) {
 				// Only open help if user clicked on "Help" substring of whatIsNext.
-				final int offsetAtPoint = styledWhatIsNext.getOffsetAtPoint(new Point (event.x, event.y));
-				if (indexOfHelp <= offsetAtPoint && offsetAtPoint <= indexOfHelp + 4) {
+				final int oap = styledWhatIsNext.getOffsetAtPoint(new Point (event.x, event.y));
+				if (indexOfHelp <= oap && oap <= indexOfHelp + lengthOfHelp) {
 					IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
 					helpSystem.displayHelpResource("/org.lamport.tla.toolbox.doc/html/contents.html");
 				}
@@ -165,21 +166,27 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		styledGettingStarted.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
 		styledGettingStarted.setBackground(backgroundColor);
 		final String lblString = "If this is the first time you have used the Toolbox, please read the Getting Started guide.";
+		final int indexOfGettingStarted = lblString.indexOf("Getting Started");
+		final int lengthGettingStarted = "Getting Started".length();
 		styledGettingStarted.setText(lblString);
 
 		StyleRange style = new StyleRange();
 		style.underline = true;
 		style.underlineStyle = SWT.UNDERLINE_LINK;
 
-		int[] range = { lblString.indexOf("Getting Started"), "Getting Started".length() };
+		int[] range = { indexOfGettingStarted, lengthGettingStarted };
 		StyleRange[] styles = { style };
 		styledGettingStarted.setStyleRanges(range, styles);
 
 		// link styled text to getting started guide
 		styledGettingStarted.addListener(SWT.MouseDown, new Listener() {
 			public void handleEvent(Event event) {
-				IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
-				helpSystem.displayHelpResource("/org.lamport.tla.toolbox.doc/html/gettingstarted/gettingstarted.html");
+				final int oap = styledGettingStarted.getOffsetAtPoint(new Point(event.x, event.y));
+				if (indexOfGettingStarted <= oap && oap <= indexOfGettingStarted + lengthGettingStarted) {
+					IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
+					helpSystem.displayHelpResource(
+							"/org.lamport.tla.toolbox.doc/html/gettingstarted/gettingstarted.html");
+				}
 			}
 		});
 		
@@ -197,18 +204,23 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 				+ "Toolbox.  More examples can be found in the TLA+ examples repository.\nTo run the TLC model "
 				+ "checker on an example spec, open one of its models by double-clicking on it in the Spec "
 				+ "Explorer on the left.";
+		final int indexOfExamples = exampleText.indexOf("TLA+ examples repository");
+		final int lengthOfExamples = "TLA+ examples repository".length();
 		styledExamples.setText(exampleText);
 		
-		int[] exampleRange = { exampleText.indexOf("TLA+ examples repository"), "TLA+ examples repository".length() };
+		int[] exampleRange = { indexOfExamples, lengthOfExamples };
 		styledExamples.setStyleRanges(exampleRange, styles);
 		styledExamples.addListener(SWT.MouseDown, new Listener() {
 			public void handleEvent(Event event) {
-				try {
-					PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
-							.openURL(new URL("https://github.com/tlaplus/Examples"));
-				} catch (PartInitException | MalformedURLException e) {
-					StandaloneActivator.getDefault().getLog()
-							.log(new Status(Status.ERROR, StandaloneActivator.PLUGIN_ID, e.getMessage(), e));
+				final int oap = styledExamples.getOffsetAtPoint(new Point(event.x, event.y));
+				if (indexOfExamples <= oap && oap <= indexOfExamples + lengthOfExamples) {
+					try {
+						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+						.openURL(new URL("https://github.com/tlaplus/Examples"));
+					} catch (PartInitException | MalformedURLException e) {
+						StandaloneActivator.getDefault().getLog()
+						.log(new Status(Status.ERROR, StandaloneActivator.PLUGIN_ID, e.getMessage(), e));
+					}
 				}
 			}
 		});		
