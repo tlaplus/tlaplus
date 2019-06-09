@@ -56,6 +56,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -135,6 +136,7 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		styledWhatIsNext.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
 		styledWhatIsNext.setBackground(backgroundColor);
 		final String whatIsnext = "There is no specification open. Click on Help if you're not sure what you should do next.";
+		final int indexOfHelp = whatIsnext.indexOf("Help");
 		styledWhatIsNext.setText(whatIsnext);
 
 		StyleRange winStyle = new StyleRange();
@@ -148,8 +150,12 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		// link styled text to getting started guide
 		styledWhatIsNext.addListener(SWT.MouseDown, new Listener() {
 			public void handleEvent(Event event) {
-				IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
-				helpSystem.displayHelpResource("/org.lamport.tla.toolbox.doc/html/contents.html");
+				// Only open help if user clicked on "Help" substring of whatIsNext.
+				final int offsetAtPoint = styledWhatIsNext.getOffsetAtPoint(new Point (event.x, event.y));
+				if (indexOfHelp <= offsetAtPoint && offsetAtPoint <= indexOfHelp + 4) {
+					IWorkbenchHelpSystem helpSystem = PlatformUI.getWorkbench().getHelpSystem();
+					helpSystem.displayHelpResource("/org.lamport.tla.toolbox.doc/html/contents.html");
+				}
 			}
 		});
 
