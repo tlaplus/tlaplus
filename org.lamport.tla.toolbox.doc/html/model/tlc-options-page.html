@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/model/advanced-page.html  -->
+
+ 
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+<title>TLC Options Page</title>
+</head>
+<!-- a comment here -->
+
+<body>
+<h1>TLC Options Page</h1>
+
+ 
+<pre>
+Contents
+  <a href="#config">Configuration</a>
+  <a href="#checking">Checking Mode</a>
+  <a href="#features">Features</a>
+  <a href="#parameters">Parameters</a>
+</pre>
+
+<P> 
+This model editor page allows you to add less-often
+used parts of a model.&nbsp;  It's a good idea to browse
+this page just to see what options it provides, since
+some of the features are not ones you would expect.
+ </P>
+<h2><a name="config">Configuration</a>
+
+<h3>Number of worker threads</h3>
+
+TLC's algorithm for computing the set (actually the graph) of reachable states 
+is highly parallelizable, and it can make good use of arbitrarily many processors.&nbsp; 
+This parameter specifies the number of separate threads that TLC will spawn to
+perform that computation.&nbsp;  You should not set it to be greater than the number of
+separate processors (cores) on your computer; the Toolbox will warn you if you do.
+
+<h3>Fraction of physical memory allocated to TLC</h3>
+
+This determines how large a heap TLC will use.&nbsp;  If you make it too small, TLC
+could run out of heap space and crash.&nbsp;  If you make it too large, your machine will not have
+enough memory and everything will run slowly.&nbsp;  The slider's color warns you if
+you are giving TLC too little or too much memory.&nbsp;
+TLC can keep the set of reachable states it has found
+on disk, so having too many reachable states can't run it out of memory.&nbsp;
+However, it runs much faster when it can keep those states in memory.&nbsp;
+TLC can run out of heap space if it takes too much memory to represent the
+set of initial states or the set of successor states of a single state.&nbsp;  
+If TLC does run out of memory in the middle of a long run,
+you can give it more and restart it from a checkpoint.
+
+<p> 
+
+Setting the this parameter too large may produce a 
+<em>Could not create the Java virtual machine</em> error.
+
+
+<h3>Log base 2 of number of disk storage files</h3>
+
+If your computer has multiple disk drives, setting this parameter to a value greater
+than 0 might make it possible to reduce the time
+TLC spends writing to disk on a model with a very large number of reachable states.&nbsp;
+
+Contact us for more information.
+
+<h2><a name="checking">Checking Mode</a></h2>
+
+You can choose between two basic ways of running TLC:
+
+<h3><a  name="model-mode">Model-checking mode</a></h3>
+<p>
+This is the normal method of running TLC, in which it 
+essentially tries to check all possible behaviors allowed
+by the behavior spec.&nbsp;  Its default method of doing this
+is to find the graph of all reachable states using
+breadth-first search.&nbsp;  This has the advantage that if
+TLC finds a violation of a safety property, then it will
+produce a shortest possible behavior that exhibits the
+error.&nbsp;  You can direct TLC to use a depth-first search
+by choosing the <em>Depth-first</em> option and specifying
+the depth of its search.&nbsp;  (Limiting the depth ensures
+that only a finite set of states is explored, even if
+the complete set of reachable states is infinite.)&nbsp;
+With depth-first search, TLC will usually not produce
+a shortest-length error trace.&nbsp;  When running in depth-first
+mode, TLC does not compute the entire state graph and does not use a state
+queue, so it does not produce any
+ <i>Diameter</i> or <i>Queue size</i> 
+ statistics.
+</p>
+<p>
+<b>Warning:</b> Depth-first search is an experimental TLC
+option that has not been used much. We don't know
+if it offers any advantages.
+If you do try it and find it useful, please tell us what you did.
+</p>
+
+<p>
+You can also specify a <em>View</em> to be used in model-checking
+mode.&nbsp;  If you're curious about what that is and how it is used,
+see Section 14.3.3 (page 243) of 
+<em><a href=
+"http://research.microsoft.com/en-us/um/people/lamport/tla/book.html" target="_blank">
+Specifying Systems</a></em>. 
+</p>
+<h3>Simulation Mode</h3>
+
+<p>
+In simulation mode, TLC does not try to examine all reachable states.&nbsp;
+Instead, it checks an unending series of behaviors, each of which it constructs by
+starting from a randomly choosen initial state and repeatedly making a random
+choice of a possible next state.&nbsp;  (In this mode, you  stop TLC by clicking the&nbsp;
+<samp>Cancel</samp>&nbsp; button on the dialog that the Toolbox pops up when it
+runs TLC.)&nbsp; You specify the maximum length of each behavior that it generates.&nbsp;
+If you want to know what specifying the <em>Seed</em> and <em>Aril</em> does,
+look them up in
+<em><a href=
+"http://research.microsoft.com/en-us/um/people/lamport/tla/book.html" target="_blank">
+Specifying Systems</a></em>.&nbsp;  When run in simulation mode, the only
+statistics TLC reports are for <i>States Found</i>.
+</p>
+
+<h2><a name="features">Features</a></h2>
+
+
+<A name="checkpoint"></A><h3>Checkpoint Recovery</h3></A>
+
+ <p>
+TLC takes regular checkpoints, from which it can be restarted if it is
+stopped for any reason--for example, if your computer crashes.&nbsp; 
+
+The <em>Recover from checkpoint</em> option tells TLC to start from where it
+was when the last checkpoint was taken.&nbsp; 
+
+This option is enabled if the last time you ran TLC, it ran long enough to
+produce a checkpoint.&nbsp; The Toolbox will fill in the <em>Checkpoint
+id</em> for you.
+ </p>
+ <p>
+Warning: If you exit the Toolbox, it will stop any executions of TLC that are
+in process.&nbsp; 
+
+However, it is possible to stop the Toolbox in some drastic fashion that
+leaves TLC running as a background process.&nbsp; 
+
+Restarting from a checkpoint while the TLC process that created it is still
+running can cause the checkpoint to be destroyed, making recovery
+impossible.&nbsp; 
+
+If you have reason to believe TLC was not stopped, check to see if it is
+still running before trying to recover from a checkpoint. 
+ </p>
+ <p> 
+The checkpoint TLC produces after a short run does not take up
+much space.&nbsp;
+
+However, if TLC finds an error after running for a long time, the
+checkpoint files could take up a lot of space--sometimes on the order
+of a gigabyte for a model that has run for several days.&nbsp;
+
+These files are deleted if the model is re-run and a new checkpoint is
+produced, or if the model is validated when the
+<em>Recover from checkpoint</em> option is not selected.&nbsp; 
+
+When TLC has created a checkpoint, the <em>How to Run</em> section
+of the Model Overview page displays how much storage the checkpoint
+occupies.&nbsp; 
+
+It also provides a button that you can click to delete the checkpoint.&nbsp;
+ </p>
+
+<p>
+Checkpointing does not yet work when TLC is run in distributed mode.
+</p>
+
+<h3>Collect coverage and cost statistics</h3>
+<b>Add very brief description here, perhaps with eventual pointer
+   to complete description</b>
+
+<h3>Visualize state graph after completion</h3>
+<p>
+Visualize the generated state graph graphically after completion of model checking. The
+visualization helps to better understand the system being specified. Initial states are represented by gray vertices.
+<p><b>Warning: </b>Can reasonably display only  state graphs with at most around a hundred states.</b></p>
+<p>
+In order to visualize a state graph, the path to the <em>dot</em> executable of the 
+<a href="http://www.graphviz.org/">GraphViz</a> project has to be set under <em>Specify dot command</em> on the <em>PDF viewer</em> preference
+page on the File/Preferences menu. On macOS dot is most easily installed with the ports system. Homebrew has a Graphviz port too.
+On Windows, GraphViz can be obtained through Cygwin or installed standalone. On most Linux derivatives, GraphViz can be installed with the package manager.
+After installation, the dot binary can usually be found at:
+</p>
+
+<p>
+<table>
+ <tr>
+  <td>OS</td>
+  <td>Default path</td>
+ </tr>
+ <tr>
+  <td>Windows (Cygwin)</td>
+  <td>C:\cygwin\bin\dot.exe</td>
+ <tr>
+  <td>Windows (standalone)</td>
+  <td>C:\Program Files (x86)\Graphviz2.38\bin\dot.exe</td>
+ </tr>
+ <tr>
+  <td>macOS (ports)</td>
+  <td>/opt/local/bin/dot</td>
+ </tr>
+ <tr>
+  <td>Linux</td>
+  <td>/usr/bin/dot</td>
+ </tr>
+<table>
+</p>
+<p>
+On Windows and Linux the state graph will be visualized with either the built-in or standalone PDF viewer 
+depending on which is selected on the PDF viewer preference page
+(selecting a standalone viewer is advised for best results). 
+</p>
+
+
+
+<h2><a name="parameters">Parameters</a></h2>
+<h3>Verify temporal properties upon termination only</h3>
+<p>
+Defer the verification of temporal properties (liveness) to the end of model checking.
+<b>This reduces the overall model checking time</b> with the additional side effect that invariant (safety)
+violations will always be found first. In other words, check liveness only after the <em>complete</em>
+state space has been checked for safety violations.
+If unchecked, temporal properties are checked periodically on the <em>incomplete</em>
+state graph. Defering verification of temporal properties is especially useful if it is highly
+likely that the model does not violate its temporal properties (e.g. a smaller instance
+of the model has successfully been verified for liveness violations).
+
+<h3>Fingerprint seed index</h3>
+<p>
+TLC saves only 64-bit fingerprints (hashes) of the reachable states that it finds, not the
+complete states.&nbsp;  If two different reachable states have the same fingerprint, a situtation
+called a  <em>collision</em>, TLC may not find all reachable states.&nbsp;  
+At the
+end of a run, TLC prints estimates of how likely it was that a collision occurred.&nbsp;
+If you're worried that a collision might have occurred, you can re-run the model with a
+different fingerprint function.&nbsp;  The fingerprint seed index specifies which of 64 fingerprint
+functions TLC should use.&nbsp; If the two runs produce different numbers of reachable
+states, then there was a collision in at least one of the runs.&nbsp;  If not, the probability
+that there was a collision in both is the square of the probability that either one had
+a collision--a probability that is probably very, very small.&nbsp;  By default, which fingerprint
+function to use is chosen randomly.
+
+
+<h3> Cardinality of largest enumerable set</h3>
+
+If TLC tries to enumerate the elements of a set, it will report an error if the set
+contains more than this number of elements.&nbsp;  
+
+<h3><A name="jvmargs">JVM arguments</A></h3>
+
+These are the arguments given to the Java Virtual Machine when TLC is run on the model.&nbsp;  
+Certain parameters for running TLC in 
+<a href="distributed-mode.html">distributed mode</a> are specified this way.&nbsp; 
+Only sophisticated users who know what they are doing should specify other JVM arguments. 
+
+<h3>TLC command line parameters</h3>
+
+These are options given to TLC when it is run on the model.&nbsp;
+A complete list of TLC options can be found in the
+ <code>tlatools > src > tlc2 > TLC.java</code>
+file in the 
+  <a href="https://github.com/tlaplus/tlaplus">GitHub repository on 
+  the web</a>.&nbsp;  
+An option specified here can override an option otherwise specified by the rest of the model,
+which can cause strange things to happen.&nbsp; You should therefore use this
+feature with care.
+  
+
+</p>
+
+<!--  I don't know what I'm saving the following for
+<h2><a name="how">How to run?</a></h2>
+<hr> 
+<!-- delete rest of line to comment out 
+<dl>
+<dt><b><font color=#0000c0>Subtopics</font></b></dt>
+<dd> <A href=""> TOPIC </A></dd>
+<dd> <A href=""> TOPIC </A></dd>
+</dl>
+ --> 
+<!-- delete rest of line to comment out -->  
+<a href = "creating-model.html">&uarr; Creating a Model</a>
+<!-- --> 
+</hr>
+
+</body>
+</html>

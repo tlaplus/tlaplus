@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- This is file org.lamport.tla.toobox.doc/html/model/advanced-page.html  -->
+
+ 
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <LINK href="../style.css" rel="stylesheet" type="text/css">
+
+<title>Spec Options Page</title>
+</head>
+<!-- a comment here -->
+
+<body>
+<h1>Spec Options Page</h1>
+
+ 
+<pre>
+Contents
+  <a href="#additional">Additional Definitions</a>
+  <a href="#state">State Constraint</a>
+  <a href="#model">Model Values</a>
+  <a href="#override">Definition Override</a>
+  <a href="#action">Action Constraint</a>
+</pre>
+
+<P> 
+This model editor page allows you to add less-often
+used parts of a model that describe the spec
+that the Toolbox calls TLC to check.&nbsp;  It's a good idea to browse
+this page just to see what options it provides, since
+some of the features are not ones you would expect.&nbsp;
+The page is raised  from a link on the <a href="overview-page.html">Model Overview Page</a>.
+ </P>
+
+<h2><a name="additional">Additional Definitions</a></h2>
+
+<p>
+It is sometimes convenient to define operators just
+for use in the expressions that specify a model.&nbsp;  For
+example, you might want to define an operator that
+you use can use in more than one invariant.&nbsp;  If you
+don't want those definitions to be part of the spec,
+you can put them in this section of the page.&nbsp;  These
+definitions can use any operator or parameters that
+can be used in the the root module, as well as any
+<a href="model-values.html">model value</a> that is
+declared in the model.
+</p>
+
+<p>
+In addition to definitions, in this section you can also 
+put assumptions (<code>ASSUME</code>&nbsp; statements)
+for TLC to check.&nbsp;  Putting other
+things in this section, such as declarations,
+will result in mysterious TLC errors.
+
+</p>
+<h2><a name="state">State Constraint</a></h2>
+
+<p>
+Many behavior specifications have an infinite set of reachable 
+states.&nbsp;  For example, message queues could get arbitrarily large.&nbsp;  
+TLC will run forever (or until your computer runs out
+of disk space) on such a behavior spec.&nbsp;  You could just let it
+run and keep looking for violations of safety properties such as invariance.&nbsp;
+However, it's a better idea to limit the set of states by entering
+a state constraint here.
+</p>
+
+<p>
+A state constraint is a state predicate, which is a
+Boolean-valued expression that contains unprimed variables.&nbsp;
+When computing the set of reachable states, TLC will not
+explore successor states of any state it finds that does
+<em>not</em> satisfy the state constraint.&nbsp;  For example,
+specifying&nbsp; <code>len < 3</code>&nbsp; essentially
+limits the set of reachable states that TLC finds to ones
+that can be reached by a sequence of states in which 
+the value of the variable&nbsp; <code>len</code>&nbsp; 
+is less than 3.&nbsp;  See Section 14.3 (page 240) of 
+<em><a href=
+"http://research.microsoft.com/en-us/um/people/lamport/tla/book.html" target="_blank">
+Specifying Systems</a></em> for an explanation of how TLC
+computes reachable states.&nbsp;  Note that there is no need
+for multiple state constraints because they can simply be
+conjoined to form a single constraint.
+</p>
+
+<!-- 
+<p>A state constraint has an effect only in model checking mode.  (See
+<a href="#launching">TLC Options</a>.)
+</p>
+ -->
+
+<h2><a name="model">Model Values</a></h2>
+
+You can enter here a set of model values, which you can then
+use in expressions that define the model--for example, in
+the value substituted for a declared constant.&nbsp;  See the
+<A href="model-values.html"><em>Model Values and Symmetry</em></A> help
+page for an explanation of what model values are and how they
+are used.
+
+<h2><a name="override">Definition Override</a></h2>
+<p>
+We want our specifications to be as simple and easy to understand as
+possible.&nbsp;  Sometimes this leads to a definition that TLC cannot evaluate,
+or that it can evaluate only very inefficiently.&nbsp;  In that case, we
+must <em>override</em> the definition by telling TLC to replace it with
+a new definition.&nbsp;   To do this, click on the section's&nbsp; <samp>Add</samp>&nbsp;
+button, select the operator whose definition you want to override, and 
+click&nbsp; <samp>OK</samp>&nbsp;.&nbsp;  (You can also double-click on the
+operator name.)&nbsp;  This will raise a dialog in which you can specify
+the overriding.
+</p>
+
+<p>
+If the operator whose definition you are overriding has arguments,
+you will be presented with a form for writing the new definition in
+the obvious way.&nbsp;  If it has no arguments, you have two
+options.&nbsp;  With the <em>Ordinary assignment</em> option, you just
+write the new definition.&nbsp;  The <em>Model value</em> option
+defines the operator to equal a model value of the same name.&nbsp;
+See the
+<A href="model-values.html"><em>Model Values and Symmetry</em></A> help
+page for an explanation of model values and the most common
+reason why you would want to override the definition in this way.
+</p>
+
+<p>
+You can override definitions made in modules other than the root module.&nbsp;
+If a definition is in a module imported with an&nbsp; <samp>INSTANCE</samp>&nbsp;
+statement, then the name of the module containing the definition is indicated.
+</p>
+
+<p>
+You can edit or remove an overriding specification in the obvious way: by selecting it and
+using the&nbsp; <samp>Edit</samp>&nbsp; or&nbsp; <samp>Remove</samp>&nbsp; button.&nbsp;
+(Editing is also selected by double-clicking on the item.)
+</p>
+
+<p fontsize=80%>
+<b>Some Fine Print</b>&nbsp;
+<font size=-1>
+When overriding a definition, 
+the new definition can use any operator or parameters that
+can be used in the the root module, as well as any
+<a href="model-values.html">model value</a> that is
+declared in the model.&nbsp;  This means that you can override
+a definition with an expression that
+contains operators that are undefined at the point where the
+original definition occurred.&nbsp;
+TLC evaluates overridden definitions in the
+obvious way, and bizarre overriding can
+lead to strange results.&nbsp;  For example, if&nbsp; <samp>Fact</samp>&nbsp; is defined by
+<pre>
+   Fact(n)  ==  IF n = 0 THEN 1 ELSE n * Bar(n-1)
+</pre>
+and the definition of&nbsp; <samp>Bar</samp>&nbsp; is overridden with
+<pre>
+   Bar(n) <- Fact(n)
+</pre>
+then TLC will evaluate&nbsp; <samp>Fact(n)</samp>&nbsp; to 
+equal&nbsp; <samp>n!</samp>&nbsp; for any natural 
+number&nbsp; <samp>n</samp>&nbsp;.&nbsp;
+There is no good reason to use such bizarre overriding.</font> 
+</p>
+
+
+<h2><a name="action">Action Constraint</a></h2>
+
+An action constraint is much like a <a href="#state">state constraint</a>, except 
+that the constraint formula may also include primed variables.&nbsp;
+See Section 14.3 (page 240) of 
+<em><a href=
+"http://research.microsoft.com/en-us/um/people/lamport/tla/book.html" target="_blank">
+Specifying Systems</a></em> for an explanation of how TLC uses an
+action constraint.
+
+
+<hr> 
+<!-- uncomment to add links to any subtopics that are added 
+<dl>
+<dt><b><font color=#0000c0>Subtopics</font></b></dt>
+<dd> <A href=""> TOPIC </A></dd>
+<dd> <A href=""> TOPIC </A></dd>
+</dl>
+ --> 
+<!-- delete rest of line to comment out -->  
+
+<a href = "creating-model.html">&uarr; Creating a Model</a>
+ 
+</hr>
+
+</body>
+</html>
