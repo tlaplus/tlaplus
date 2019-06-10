@@ -1240,7 +1240,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		// ------------------------------------------
 		// run tab
-		section = FormHelper.createSectionComposite(body, "How to run?", "TLC Parameters", toolkit, sectionFlags,
+		section = FormHelper.createSectionComposite(body, "How to run?", "", toolkit, sectionFlags,
 				getExpansionListener());
 		twd = new TableWrapData();
 		twd.colspan = 2;

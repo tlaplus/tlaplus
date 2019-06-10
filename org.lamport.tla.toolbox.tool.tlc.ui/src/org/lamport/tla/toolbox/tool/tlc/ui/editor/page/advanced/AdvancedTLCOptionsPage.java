@@ -450,7 +450,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gd.horizontalAlignment = SWT.BEGINNING;
         m_checkpointRecoverCheckbox.setLayoutData(gd);
         
-        final Button b = HelpButton.helpButton(checkpointComposite, "model/overview-page.html#checkpoint") ;
+        final Button b = HelpButton.helpButton(checkpointComposite, "model/tlc-options-page.html#checkpoint") ;
         gd = new GridData();
         gd.horizontalAlignment = SWT.END;
         gd.grabExcessHorizontalSpace = true;
@@ -509,7 +509,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				+ "explosion. Both statistics negatively impact model checking performance and should thus be disabled while "
 				+ "checking large models.";
 		final Label collectCoverageLabel = toolkit.createLabel(body,
-				"Collect coverage and cost statistics during model checking:");
+				"Collect coverage and cost statistics:");
         gd = new GridData();
         gd.verticalIndent = 9;
         collectCoverageLabel.setLayoutData(gd);
