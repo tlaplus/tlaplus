@@ -584,7 +584,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         }
     }
 
-	private int getFPIndex(final String startupMessage) {
+	static int getFPIndex(final String startupMessage) {
 		final Matcher matcher = startupMessagePattern.matcher(startupMessage);
 		if (matcher.find()) {
 			return Integer.parseInt(matcher.group(2));
@@ -889,9 +889,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     private static final String CR = "\n";
     private static final String EMPTY = "";
 
-	private static final Pattern startupMessagePattern = Pattern.compile(
-			"^Running (depth|breadth)-first search Model-Checking with fp ([0-9]+) and seed "
-			+ "[-0-9]+ with [0-9]+ workers on [0-9]+ cores with .*? heap and .*? offheap memory \\(.*\\).$");
+	private static final Pattern startupMessagePattern = Pattern
+			.compile("^Running (depth|breadth)-first search Model-Checking with fp ([0-9]+) and seed "
+					+ "[-0-9]+ with [0-9]+ worker[s]? on [0-9]+ cores with .*? heap and .*? offheap memory (\\[pid: [0-9]+\\])? \\(.*\\).$");
 
     /**
      * Sets text to a document

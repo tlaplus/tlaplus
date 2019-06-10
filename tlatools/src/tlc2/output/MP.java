@@ -166,7 +166,7 @@ public class MP
      * @param parameters string of parameters to be replaced in the message
      * @return the formatted message
      */
-    private synchronized static String getMessage(int messageClass, int messageCode, String[] parameters)
+    public synchronized static String getMessage(int messageClass, int messageCode, String[] parameters)
     {
 
         if (parameters == null)
@@ -817,6 +817,13 @@ public class MP
         case EC.TLC_FINISHED:
             b.append("Finished in %1% at (").append(now()).append(")");
             break;
+		/*
+		 * The two startup banners below are parsed by the Toolbox in
+		 * org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider.
+		 * startupMessagePattern.  Remember to update when the banners below 
+		 * get changed 
+		 * (see org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProviderTest)!!!
+		 */
         case EC.TLC_MODE_MC:
             b.append("Running breadth-first search Model-Checking with fp %13% and seed %12% with %1% worker%2% on %3% cores with %10%MB heap and %11%MB offheap memory");
             if (!"".equals(parameters[13])) {

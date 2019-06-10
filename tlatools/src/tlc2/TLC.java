@@ -983,7 +983,7 @@ public class TLC
 		return TLCGlobals.DFIDMax == -1;
 	}
 
-	private static Map<String, String> getSimulationRuntime(final long seed) {
+	public static Map<String, String> getSimulationRuntime(final long seed) {
 		final Runtime runtime = Runtime.getRuntime();
 		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
 		
@@ -1008,7 +1008,7 @@ public class TLC
 		return result;
 	}
 
-	private static Map<String, String> getModelCheckingRuntime(final int fpIndex, final FPSetConfiguration fpSetConfig) {
+	public static Map<String, String> getModelCheckingRuntime(final int fpIndex, final FPSetConfiguration fpSetConfig) {
 		final Runtime runtime = Runtime.getRuntime();
 		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
 		
