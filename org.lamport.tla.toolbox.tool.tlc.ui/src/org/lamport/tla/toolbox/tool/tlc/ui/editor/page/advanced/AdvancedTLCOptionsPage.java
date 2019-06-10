@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Spinner;
@@ -185,11 +186,17 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		updateCheckpoints();
 	}
     
+    @Override
+	protected Layout getBodyLayout() {
+        return FormHelper.createFormTableWrapLayout(false, 1);
+    }
+    
 	@Override
 	protected void createBodyContent(final IManagedForm managedForm) {
         final DataBindingManager dm = getDataBindingManager();
         final FormToolkit toolkit = managedForm.getToolkit();
         final Composite formBody = managedForm.getForm().getBody();
+        final int sectionFlags = Section.TITLE_BAR | Section.TREE_NODE;
 
         GridLayout gl;
         GridData gd;
@@ -197,27 +204,26 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         mainModelPage = (MainModelPage)getEditor().findPage(MainModelPage.ID);
         programmaticallySettingWorkerParameters.set(true);
 
-        final Section section = FormHelper.createSectionComposite(formBody, "TLC Configuration", "",
-                toolkit, (Section.TITLE_BAR | Section.TREE_NODE | Section.EXPANDED), getExpansionListener());
-        final ValidateableSectionPart launchPart = new ValidateableSectionPart(section, this, SEC_LAUNCHING_SETUP);
-        managedForm.addPart(launchPart);
-        final DirtyMarkingListener launchListener = new DirtyMarkingListener(launchPart, true);
-        final Composite body = (Composite) section.getClient();
+        Section section = FormHelper.createSectionComposite(formBody, "Configuration", "",
+                toolkit, (sectionFlags | Section.EXPANDED), getExpansionListener());
+        final ValidateableSectionPart configPart = new ValidateableSectionPart(section, this, SEC_TLCOPT_CONFIGURATION);
+        managedForm.addPart(configPart);
+        final DirtyMarkingListener configPartListener = new DirtyMarkingListener(configPart, true);
+        final Composite configBody = (Composite) section.getClient();
         gl = new GridLayout(2, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        body.setLayout(gl);
+        gl.marginHeight = 2;
+        gl.marginWidth = 2;
+        configBody.setLayout(gl);
         
         /*
          * Workers Spinner
          */
         
         // label workers
-        toolkit.createLabel(body, "Number of worker threads:");
+        toolkit.createLabel(configBody, "Number of worker threads:");
 
         // field workers
-        workers = new Spinner(body, SWT.NONE);
-        workers.addSelectionListener(launchListener);
+        workers = new Spinner(configBody, SWT.NONE);
         workers.addFocusListener(focusListener);
         workers.addListener(SWT.Verify, (e) -> {
 			if (!programmaticallySettingWorkerParameters.get()) {
@@ -235,19 +241,19 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         workers.setSelection(TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
         workers.setEnabled(false);
 
-        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, launchPart);
+        dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, configPart);
         
         /*
          * MapHeap Scale
          */
         
         // max heap size label
-        toolkit.createLabel(body, "Fraction of physical memory allocated to TLC:");
+        toolkit.createLabel(configBody, "Fraction of physical memory allocated to TLC:");
 
 		// Create a composite inside the right "cell" of the "how to run"
 		// section grid layout to fit the scale and the maxHeapSizeFraction
 		// label into a single row.
-        final Composite maxHeapScale = new Composite(body, SWT.NONE);
+        final Composite maxHeapScale = new Composite(configBody, SWT.NONE);
         gl = new GridLayout(2, false);
         maxHeapScale.setLayout(gl);
         gd = new GridData();
@@ -260,7 +266,6 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
                 ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
         maxHeapSize = new Scale(maxHeapScale, SWT.NONE);
-        maxHeapSize.addSelectionListener(launchListener);
         maxHeapSize.addFocusListener(focusListener);
         maxHeapSize.addListener(SWT.Selection, (e) -> {
 			if (!programmaticallySettingWorkerParameters.get()) {
@@ -278,7 +283,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         maxHeapSize.setSelection(defaultMaxHeapSize);
         maxHeapSize.setToolTipText("Specifies the heap size of the Java VM that runs TLC.");
 
-        dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, launchPart);
+        dm.bindAttribute(LAUNCH_MAX_HEAP_SIZE, maxHeapSize, configPart);
         
         // label next to the scale showing the current fraction selected
 		final TLCRuntime instance = TLCRuntime.getInstance();
@@ -290,20 +295,48 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			maxHeapScale.layout();
 		});
         maxHeapSize.setEnabled(false);
-		
+        
+        // fpbits label
+        toolkit.createLabel(configBody, "Log base 2 of number of disk storage files:");
 
-        // add horizontal divider that makes the separation clear
-        Label hr = toolkit.createSeparator(body, SWT.HORIZONTAL);
+        // fpbits spinner
+        m_fingerprintBits = new Spinner(configBody, SWT.NONE);
+        m_fingerprintBits.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER);
+        m_fingerprintBits.addFocusListener(focusListener);
         gd = new GridData();
+        gd.verticalIndent = 20;
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 6;
-        hr.setLayoutData(gd);
+        m_fingerprintBits.setLayoutData(gd);
 
+        m_fingerprintBits.setMinimum(MultiFPSet.MIN_FPBITS);
+        m_fingerprintBits.setMaximum(MultiFPSet.MAX_FPBITS);
+
+        final int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
+        		ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
+        m_fingerprintBits.setSelection(defaultFPBits);
+
+
+        //
+        //
+        // Checking Mode section
+        //
+        //
+        
+        
+        section = FormHelper.createSectionComposite(formBody, "Checking Mode", "",
+                toolkit, sectionFlags, getExpansionListener());
+        final ValidateableSectionPart modePart = new ValidateableSectionPart(section, this, SEC_TLCOPT_CHECK_MODE);
+        managedForm.addPart(modePart);
+        final DirtyMarkingListener modePartListener = new DirtyMarkingListener(modePart, true);
+        final Composite modeBody = (Composite) section.getClient();
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 2;
+        gl.marginWidth = 2;
+        modeBody.setLayout(gl);
         
         // Model checking mode
-        m_modelCheckModeOption = toolkit.createButton(body, "Model-checking mode", SWT.RADIO);
+        m_modelCheckModeOption = toolkit.createButton(modeBody, "Model-checking mode", SWT.RADIO);
         gd = new GridData();
         gd.horizontalSpan = 2;
         m_modelCheckModeOption.setLayoutData(gd);
@@ -315,13 +348,13 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		});
 
         // label view
-        final Label viewLabel = toolkit.createLabel(body, "View:");
+        final Label viewLabel = toolkit.createLabel(modeBody, "View:");
         gd = new GridData();
         gd.verticalAlignment = SWT.BEGINNING;
         gd.horizontalIndent = 10;
         viewLabel.setLayoutData(gd);
         // field view
-        m_viewSource = FormHelper.createFormsSourceViewer(toolkit, body, SWT.V_SCROLL);
+        m_viewSource = FormHelper.createFormsSourceViewer(toolkit, modeBody, SWT.V_SCROLL);
         // layout of the source viewer
         gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
@@ -331,7 +364,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_viewSource.getTextWidget().setLayoutData(gd);
         m_viewSource.getTextWidget().setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
 
-        m_depthFirstOptionCheckbox = toolkit.createButton(body, "Depth-first", SWT.CHECK);
+        m_depthFirstOptionCheckbox = toolkit.createButton(modeBody, "Depth-first", SWT.CHECK);
         gd = new GridData();
         gd.horizontalSpan = 2;
         gd.horizontalIndent = 10;
@@ -345,12 +378,12 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_depthFirstOptionCheckbox.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
 
         // label depth
-        Label dfidDepthLabel = toolkit.createLabel(body, "Depth:");
+        Label dfidDepthLabel = toolkit.createLabel(modeBody, "Depth:");
         gd = new GridData();
         gd.horizontalIndent = 36;
         dfidDepthLabel.setLayoutData(gd);
         // field depth
-        m_depthText = toolkit.createText(body, "100");
+        m_depthText = toolkit.createText(modeBody, "100");
         gd = new GridData();
         gd.minimumWidth = 100;
         gd.horizontalAlignment = SWT.FILL;
@@ -360,7 +393,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_depthText.setEnabled(false);
         m_depthText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
 
-        m_simulationModeOption = toolkit.createButton(body, "Simulation mode", SWT.RADIO);
+        m_simulationModeOption = toolkit.createButton(modeBody, "Simulation mode", SWT.RADIO);
         gd = new GridData();
         gd.horizontalSpan = 2;
         m_simulationModeOption.setLayoutData(gd);
@@ -373,12 +406,12 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		});
 
         // label depth
-        final Label depthLabel = toolkit.createLabel(body, "Maximum length of the trace:");
+        final Label depthLabel = toolkit.createLabel(modeBody, "Maximum length of the trace:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         depthLabel.setLayoutData(gd);
         // field depth
-        m_simulationDepthText = toolkit.createText(body, "100");
+        m_simulationDepthText = toolkit.createText(modeBody, "100");
         gd = new GridData();
         gd.minimumWidth = 100;
         gd.horizontalAlignment = SWT.FILL;
@@ -388,13 +421,13 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_simulationDepthText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
 
         // label seed
-        final Label seedLabel = toolkit.createLabel(body, "Seed:");
+        final Label seedLabel = toolkit.createLabel(modeBody, "Seed:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         seedLabel.setLayoutData(gd);
 
         // field seed
-        m_simulationSeedText = toolkit.createText(body, "");
+        m_simulationSeedText = toolkit.createText(modeBody, "");
         gd = new GridData();
         gd.minimumWidth = 200;
         gd.horizontalAlignment = SWT.FILL;
@@ -404,13 +437,13 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_simulationSeedText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
 
         // label seed
-        final Label arilLabel = toolkit.createLabel(body, "Aril:");
+        final Label arilLabel = toolkit.createLabel(modeBody, "Aril:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         arilLabel.setLayoutData(gd);
 
         // field seed
-        m_simulationArilText = toolkit.createText(body, "");
+        m_simulationArilText = toolkit.createText(modeBody, "");
         gd = new GridData();
         gd.minimumWidth = 200;
         gd.horizontalAlignment = SWT.FILL;
@@ -419,19 +452,29 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_simulationArilText.addFocusListener(focusListener);
         m_simulationArilText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
 
-        // add horizontal divider that makes the separation clear
-        hr = toolkit.createSeparator(body, SWT.HORIZONTAL);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 6;
-        hr.setLayoutData(gd);
+
+        //
+        //
+        // Features section
+        //
+        //
+        
+
+        section = FormHelper.createSectionComposite(formBody, "Features", "",
+                toolkit, sectionFlags, getExpansionListener());
+        final ValidateableSectionPart featuresPart = new ValidateableSectionPart(section, this, SEC_TLCOPT_FEATURES);
+        managedForm.addPart(featuresPart);
+        final DirtyMarkingListener featuresPartListener = new DirtyMarkingListener(featuresPart, true);
+        final Composite featuresBody = (Composite) section.getClient();
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 2;
+        gl.marginWidth = 2;
+        featuresBody.setLayout(gl);
 
         /*
          * run from the checkpoint.  Checkpoint help button added by LL on 17 Jan 2013
          */
-        Composite checkpointComposite = new Composite(body, SWT.NONE) ;
+        Composite checkpointComposite = new Composite(featuresBody, SWT.NONE) ;
         gl = new GridLayout(2, false);
         gl.marginWidth = 0;
         gl.marginHeight = 0;
@@ -456,9 +499,9 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gd.grabExcessHorizontalSpace = true;
         b.setLayoutData(gd);
 
-        toolkit.createLabel(body, "Checkpoint ID:");
+        toolkit.createLabel(featuresBody, "Checkpoint ID:");
 
-        m_checkpointIdText = toolkit.createText(body, "");
+        m_checkpointIdText = toolkit.createText(featuresBody, "");
         m_checkpointIdText.setEditable(false);
         gd = new GridData();
         gd.minimumWidth = 100;
@@ -466,14 +509,14 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gd.grabExcessHorizontalSpace = true;
         m_checkpointIdText.setLayoutData(gd);
 
-        m_checkpointSizeLabel = toolkit.createLabel(body, "Checkpoint size (kbytes):");
-        m_checkpointSizeText = toolkit.createText(body, "");
+        m_checkpointSizeLabel = toolkit.createLabel(featuresBody, "Checkpoint size (kbytes):");
+        m_checkpointSizeText = toolkit.createText(featuresBody, "");
         gd = new GridData();
         gd.minimumWidth = 100;
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
         m_checkpointSizeText.setLayoutData(gd);
-        m_checkpointDeleteButton = toolkit.createButton(body, "Delete Checkpoint", SWT.PUSH);
+        m_checkpointDeleteButton = toolkit.createButton(featuresBody, "Delete Checkpoint", SWT.PUSH);
         m_checkpointDeleteButton.addSelectionListener(new SelectionListener() {
             /*
              * (non-Javadoc)
@@ -501,46 +544,73 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			public void widgetDefaultSelected(SelectionEvent e) { }
         });
         m_checkpointDeleteButton.addFocusListener(focusListener);
-        new Label(body, SWT.NONE); // use up last cell.
+        new Label(featuresBody, SWT.NONE); // use up last cell.
 
         // Collect Coverage
 		final String collectCoverageHelp = "Coverage helps identify problems with the specification such as action which are "
 				+ "never enabled. Cost statistics allow to diagnose expensive expressions to evaluate and state space "
 				+ "explosion. Both statistics negatively impact model checking performance and should thus be disabled while "
 				+ "checking large models.";
-		final Label collectCoverageLabel = toolkit.createLabel(body,
+		final Label collectCoverageLabel = toolkit.createLabel(featuresBody,
 				"Collect coverage and cost statistics:");
         gd = new GridData();
         gd.verticalIndent = 9;
         collectCoverageLabel.setLayoutData(gd);
         collectCoverageLabel.setToolTipText(collectCoverageHelp);
 
-        m_collectCoverageCheckbox = toolkit.createButton(body, "", SWT.CHECK);
+        m_collectCoverageCheckbox = toolkit.createButton(featuresBody, "", SWT.CHECK);
         gd = new GridData();
         gd.verticalIndent = 9;
         m_collectCoverageCheckbox.setLayoutData(gd);
         m_collectCoverageCheckbox.addFocusListener(focusListener);
         m_collectCoverageCheckbox.setToolTipText(collectCoverageHelp);
         
-        hr = toolkit.createSeparator(body, SWT.HORIZONTAL);
+        // Visualize State Graph with GraphViz (dot)
+		final String visualizeStateGraphHelp = "Draw the state graph after completion of model checking provided the "
+				+ "state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking).";
+        final Label visualizeStateGraphLabel = toolkit.createLabel(featuresBody, "Visualize state graph after completion of model checking:");
         gd = new GridData();
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
-        gd.verticalIndent = 6;
-        hr.setLayoutData(gd);
+        gd.verticalIndent = 9;
+        visualizeStateGraphLabel.setLayoutData(gd);
+        visualizeStateGraphLabel.setToolTipText(visualizeStateGraphHelp);
+
+        m_visualizeStateGraphCheckbox = toolkit.createButton(featuresBody, "", SWT.CHECK);
+        gd = new GridData();
+        gd.verticalIndent = 9;
+        m_visualizeStateGraphCheckbox.setLayoutData(gd);
+        m_visualizeStateGraphCheckbox.addFocusListener(focusListener);
+        m_visualizeStateGraphCheckbox.setToolTipText(visualizeStateGraphHelp);
+
+
+        //
+        //
+        // Parameters section
+        //
+        //
+        
+
+        section = FormHelper.createSectionComposite(formBody, "Parameters", "",
+                toolkit, sectionFlags, getExpansionListener());
+        final ValidateableSectionPart parametersPart = new ValidateableSectionPart(section, this, SEC_TLCOPT_PARAMS);
+        managedForm.addPart(parametersPart);
+        final DirtyMarkingListener parametersPartListener = new DirtyMarkingListener(parametersPart, true);
+        final Composite parametersBody = (Composite) section.getClient();
+        gl = new GridLayout(2, false);
+        gl.marginHeight = 2;
+        gl.marginWidth = 2;
+        parametersBody.setLayout(gl);
         
         // label deferred liveness checking
 		final String deferLivenessHelp = "Defer verification of temporal properties (liveness) to the end of model checking"
 				+ " to reduce overall model checking time. Liveness violations will be found late compared to invariant "
 				+ "violations. In other words check liveness only once on the complete state space.";
-        final Label deferLivenessLabel = toolkit.createLabel(body, "Verify temporal properties upon termination only:");
+        final Label deferLivenessLabel = toolkit.createLabel(parametersBody, "Verify temporal properties upon termination only:");
         gd = new GridData();
         gd.verticalIndent = 6;
         deferLivenessLabel.setLayoutData(gd);
 		deferLivenessLabel.setToolTipText(deferLivenessHelp);
 
-        m_deferLivenessCheckbox = toolkit.createButton(body, "", SWT.CHECK);
+        m_deferLivenessCheckbox = toolkit.createButton(parametersBody, "", SWT.CHECK);
         m_deferLivenessCheckbox.addFocusListener(focusListener);
         m_deferLivenessCheckbox.setToolTipText(deferLivenessHelp);
         gd = new GridData();
@@ -548,9 +618,9 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_deferLivenessCheckbox.setLayoutData(gd);
        
         // label fp
-        toolkit.createLabel(body, "Fingerprint seed index:");
+        toolkit.createLabel(parametersBody, "Fingerprint seed index:");
       
-        final Composite fpIndex = toolkit.createComposite(body);
+        final Composite fpIndex = toolkit.createComposite(parametersBody);
         gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -589,31 +659,11 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         
         m_fingerprintSeedIndex.addFocusListener(focusListener);
         
-        // fpbits label
-        toolkit.createLabel(body, "Log base 2 of number of disk storage files:");
-
-        // fpbits spinner
-        m_fingerprintBits = new Spinner(body, SWT.NONE);
-        m_fingerprintBits.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER);
-        m_fingerprintBits.addFocusListener(focusListener);
-        gd = new GridData();
-        gd.verticalIndent = 20;
-        gd.horizontalAlignment = SWT.FILL;
-        gd.grabExcessHorizontalSpace = true;
-        m_fingerprintBits.setLayoutData(gd);
-
-        m_fingerprintBits.setMinimum(MultiFPSet.MIN_FPBITS);
-        m_fingerprintBits.setMaximum(MultiFPSet.MAX_FPBITS);
-
-        final int defaultFPBits = TLCUIActivator.getDefault().getPreferenceStore().getInt(
-        		ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT);
-        m_fingerprintBits.setSelection(defaultFPBits);
-        
         // maxSetSize label
-        toolkit.createLabel(body, "Cardinality of largest enumerable set:");
+        toolkit.createLabel(parametersBody, "Cardinality of largest enumerable set:");
         
         // maxSetSize spinner
-        m_maxSetSize = new Spinner(body, SWT.NONE);
+        m_maxSetSize = new Spinner(parametersBody, SWT.NONE);
         m_maxSetSize.setData( FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER );
         m_maxSetSize.addFocusListener(focusListener);
         gd = new GridData();
@@ -629,27 +679,11 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         final int defaultMaxSetSize = TLCUIActivator.getDefault().getPreferenceStore().getInt(
         		ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT);
         m_maxSetSize.setSelection(defaultMaxSetSize);
-        
-        // Visualize State Graph with GraphViz (dot)
-		final String visualizeStateGraphHelp = "Draw the state graph after completion of model checking provided the "
-				+ "state graph is sufficiently small (cannot handle more than a few dozen states and slows down model checking).";
-        final Label visualizeStateGraphLabel = toolkit.createLabel(body, "Visualize state graph after completion of model checking:");
-        gd = new GridData();
-        gd.verticalIndent = 9;
-        visualizeStateGraphLabel.setLayoutData(gd);
-        visualizeStateGraphLabel.setToolTipText(visualizeStateGraphHelp);
-
-        m_visualizeStateGraphCheckbox = toolkit.createButton(body, "", SWT.CHECK);
-        gd = new GridData();
-        gd.verticalIndent = 9;
-        m_visualizeStateGraphCheckbox.setLayoutData(gd);
-        m_visualizeStateGraphCheckbox.addFocusListener(focusListener);
-        m_visualizeStateGraphCheckbox.setToolTipText(visualizeStateGraphHelp);
     
 		// Extra/Additional VM arguments and system properties
-        toolkit.createLabel(body, "JVM arguments:");
+        toolkit.createLabel(parametersBody, "JVM arguments:");
 
-        m_extraVMArgumentsText = toolkit.createText(body, "", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+        m_extraVMArgumentsText = toolkit.createText(parametersBody, "", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         m_extraVMArgumentsText.setEditable(true);
 		m_extraVMArgumentsText.setToolTipText(
 				"Optionally pass additional JVM arguments to TLC process (e.g. -Djava.rmi.server.hostname=ThisHostName)");
@@ -663,9 +697,9 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_extraVMArgumentsText.setLayoutData(gd);
 
 		// Extra/Additional TLC arguments
-        toolkit.createLabel(body, "TLC command line parameters:");
+        toolkit.createLabel(parametersBody, "TLC command line parameters:");
 
-        m_extraTLCParametersText = toolkit.createText(body, "", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+        m_extraTLCParametersText = toolkit.createText(parametersBody, "", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
         m_extraTLCParametersText.setEditable(true);
 		m_extraTLCParametersText
 				.setToolTipText("Optionally pass additional TLC process parameters (e.g. -Dcheckpoint 0)");
@@ -680,31 +714,39 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         
         updateEnabledStatesForAdvancedLaunchRadioSelection();
 
-        dm.bindAttribute(MODEL_PARAMETER_VIEW, m_viewSource, launchPart);
-        dm.bindAttribute(LAUNCH_RECOVER, m_checkpointRecoverCheckbox, launchPart);
+        dm.bindAttribute(MODEL_PARAMETER_VIEW, m_viewSource, modePart);
+        dm.bindAttribute(LAUNCH_RECOVER, m_checkpointRecoverCheckbox, featuresPart);
         
         // dirty listeners
-        m_simulationArilText.addModifyListener(launchListener);
-        m_simulationSeedText.addModifyListener(launchListener);
-        m_simulationDepthText.addModifyListener(launchListener);
-        m_fingerprintSeedIndex.addModifyListener(launchListener);
-        m_randomFingerprintCheckbox.addSelectionListener(launchListener);
-        m_fingerprintBits.addModifyListener(launchListener);
-        m_maxSetSize.addModifyListener(launchListener);
-        m_depthText.addModifyListener(launchListener);
-        m_simulationModeOption.addSelectionListener(launchListener);
-        m_deferLivenessCheckbox.addSelectionListener(launchListener);
-        m_depthFirstOptionCheckbox.addSelectionListener(launchListener);
-        m_modelCheckModeOption.addSelectionListener(launchListener);
-        m_checkpointRecoverCheckbox.addSelectionListener(launchListener);
-        m_viewSource.addTextListener(launchListener);
-        m_visualizeStateGraphCheckbox.addSelectionListener(launchListener);
-        m_collectCoverageCheckbox.addSelectionListener(launchListener);
-        m_extraTLCParametersText.addModifyListener(launchListener);
-        m_extraVMArgumentsText.addModifyListener(launchListener);
+        workers.addSelectionListener(configPartListener);
+        maxHeapSize.addSelectionListener(configPartListener);
+
+        m_modelCheckModeOption.addSelectionListener(modePartListener);
+        m_viewSource.addTextListener(modePartListener);
+        m_depthFirstOptionCheckbox.addSelectionListener(modePartListener);
+        m_depthText.addModifyListener(modePartListener);
+        m_simulationModeOption.addSelectionListener(modePartListener);
+        m_simulationDepthText.addModifyListener(modePartListener);
+        m_simulationSeedText.addModifyListener(modePartListener);
+        m_simulationArilText.addModifyListener(modePartListener);
+
+        m_checkpointRecoverCheckbox.addSelectionListener(featuresPartListener);
+        m_collectCoverageCheckbox.addSelectionListener(featuresPartListener);
+        m_visualizeStateGraphCheckbox.addSelectionListener(featuresPartListener);
+
+        m_deferLivenessCheckbox.addSelectionListener(parametersPartListener);
+        m_fingerprintSeedIndex.addModifyListener(parametersPartListener);
+        m_randomFingerprintCheckbox.addSelectionListener(parametersPartListener);
+        m_fingerprintBits.addModifyListener(parametersPartListener);
+        m_maxSetSize.addModifyListener(parametersPartListener);
+        m_extraVMArgumentsText.addModifyListener(parametersPartListener);
+        m_extraTLCParametersText.addModifyListener(parametersPartListener);
 
         // add section ignoring listeners
-        dirtyPartListeners.add(launchListener);
+        dirtyPartListeners.add(configPartListener);
+        dirtyPartListeners.add(modePartListener);
+        dirtyPartListeners.add(featuresPartListener);
+        dirtyPartListeners.add(parametersPartListener);
     }
 
     /**
@@ -909,7 +951,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
                     + ".\n The number of workers should not exceed the number of processors.",
                     this.getId(), IMessageProvider.WARNING, UIHelper.getWidget(dm
 					        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
-            expandSection(SEC_HOW_TO_RUN);
+            expandSection(SEC_TLCOPT_CONFIGURATION);
         } else {
         	modelEditor.removeErrorMessage("strangeNumber1", UIHelper.getWidget(dm
 			        .getAttributeControl(LAUNCH_NUMBER_OF_WORKERS)));
@@ -939,7 +981,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 								this.getId(), IMessageProvider.WARNING,
 								maxHeapSize);
 				setComplete(false);
-				expandSection(SEC_HOW_TO_RUN);
+				expandSection(SEC_TLCOPT_CONFIGURATION);
 			}
 		} catch (CoreException e) {
 			TLCUIActivator.getDefault().logWarning("Faild to read heap value", e);
@@ -958,7 +1000,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				modelEditor.addErrorMessage("dfid1", "Depth of DFID launch must be a positive integer", this.getId(),
 						IMessageProvider.ERROR, m_depthText);
 				setComplete(false);
-				expandSection(SEC_LAUNCHING_SETUP);
+				expandSection(SEC_TLCOPT_CHECK_MODE);
 			} else {
 				// Call of removeErrorMessage added by LL on 21 Mar 2013
 				modelEditor.removeErrorMessage("dfid1", m_depthText);
@@ -969,7 +1011,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			modelEditor.addErrorMessage("dfid2", "Depth of DFID launch must be a positive integer", this.getId(),
 					IMessageProvider.ERROR, m_depthText);
 			setComplete(false);
-			expandSection(SEC_LAUNCHING_SETUP);
+			expandSection(SEC_TLCOPT_CHECK_MODE);
 		}
 		try {
 			int simuDepth = Integer.parseInt(m_simulationDepthText.getText());
@@ -977,7 +1019,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				modelEditor.addErrorMessage("simuDepth1", "Length of the simulation tracemust be a positive integer",
 						this.getId(), IMessageProvider.ERROR, m_simulationDepthText);
 				setComplete(false);
-				expandSection(SEC_LAUNCHING_SETUP);
+				expandSection(SEC_TLCOPT_CHECK_MODE);
 			} else {
 				// Call of removeErrorMessage added by LL on 21 Mar 2013
 				modelEditor.removeErrorMessage("simuDepth1", m_simulationDepthText);
@@ -988,7 +1030,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			modelEditor.addErrorMessage("simuDepth2", "Length of the simulation trace must be a positive integer",
 					this.getId(), IMessageProvider.ERROR, m_simulationDepthText);
 			setComplete(false);
-			expandSection(SEC_LAUNCHING_SETUP);
+			expandSection(SEC_TLCOPT_CHECK_MODE);
 		}
 		if (!EMPTY_STRING.equals(m_simulationArilText.getText())) {
 			try {
@@ -1007,7 +1049,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				modelEditor.addErrorMessage("simuAril2", "The simulation aril must be a positive integer", this.getId(),
 						IMessageProvider.ERROR, m_simulationArilText);
 				setComplete(false);
-				expandSection(SEC_LAUNCHING_SETUP);
+				expandSection(SEC_TLCOPT_CHECK_MODE);
 			}
 		}
 		if (!EMPTY_STRING.equals(m_simulationSeedText.getText())) {
@@ -1019,7 +1061,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			} catch (NumberFormatException e) {
 				modelEditor.addErrorMessage("simuSeed1", "The simulation aril must be a positive integer", this.getId(),
 						IMessageProvider.ERROR, m_simulationSeedText);
-				expandSection(SEC_LAUNCHING_SETUP);
+				expandSection(SEC_TLCOPT_CHECK_MODE);
 				setComplete(false);
 			}
 		}
@@ -1035,7 +1077,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				modelEditor.addErrorMessage("noCheckpoint", "No checkpoint data found", this.getId(),
 						IMessageProvider.ERROR, checkpointRecover);
 				setComplete(false);
-				expandSection(SEC_LAUNCHING_SETUP);
+				expandSection(SEC_TLCOPT_CHECK_MODE);
 			}
 		}
 
@@ -1062,7 +1104,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
             modelEditor.addErrorMessage("wrongNumber3", "fpbits must be a positive integer number smaller than 31", this
 					.getId(), IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_FPBITS)));
             setComplete(false);
-            expandSection(SEC_HOW_TO_RUN);
+            expandSection(SEC_TLCOPT_CONFIGURATION);
         }
 //        else {
 //            // Call of removeErrorMessage added by LL on 21 Mar 2013
@@ -1079,7 +1121,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
             modelEditor.addErrorMessage("wrongNumber3", "maxSetSize must be a positive integer number", this.getId(),
             		IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(LAUNCH_MAXSETSIZE)));
             setComplete(false);
-            expandSection(SEC_HOW_TO_RUN);
+            expandSection(SEC_TLCOPT_PARAMS);
         }
 //        else {
 //        // Call of removeErrorMessage added by LL on 21 Mar 2013
