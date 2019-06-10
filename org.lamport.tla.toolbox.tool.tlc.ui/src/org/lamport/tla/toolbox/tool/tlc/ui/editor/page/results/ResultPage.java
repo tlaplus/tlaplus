@@ -201,13 +201,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 	@Override
     public void modelCheckingHasBegun() {
+		m_errorPaneViewState.clearState();
 		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
     		m_tlcStatusLabel.setText("Starting...");
-			m_errorStatusHyperLink.setVisible(false);
-			m_fingerprintCollisionLabel.setVisible(false);
-			m_zeroCoverageLabel.setVisible(false);
-			m_errorPaneViewState.clearState();
-			setErrorPaneVisible(false);
+			m_errorStatusHyperLink.setVisible(m_errorPaneViewState.errorLinkIsDisplayed());
+			m_fingerprintCollisionLabel.setVisible(m_errorPaneViewState.fingerprintIsDisplayed());
+			m_zeroCoverageLabel.setVisible(m_errorPaneViewState.zeroCountIsDisplayed());
+			setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
 		});
 	}
 
@@ -1338,12 +1338,24 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 			m_displayErrorLink.set(display);
 		}
 		
+		boolean errorLinkIsDisplayed() {
+			return m_displayErrorLink.get();
+		}
+		
 		void setFingerprintDisplay(final boolean display) {
 			m_displayFingerprint.set(display);
 		}
 		
+		boolean fingerprintIsDisplayed() {
+			return m_displayFingerprint.get();
+		}
+		
 		void setZeroCountDisplay(final boolean display) {
 			m_displayZeroCount.set(display);
+		}
+		
+		boolean zeroCountIsDisplayed() {
+			return m_displayZeroCount.get();
 		}
 		
 		void clearState() {
