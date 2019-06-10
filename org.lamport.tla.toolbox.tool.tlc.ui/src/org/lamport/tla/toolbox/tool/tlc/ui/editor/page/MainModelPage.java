@@ -1015,10 +1015,16 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		advancedLinkLine.setBackground(body.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		gl = new GridLayout(1, false);
 		gl.marginWidth = 0;
+		gl.marginRight = 36;
 		gl.horizontalSpacing = 0;
 		advancedLinkLine.setLayout(gl);
-		Hyperlink hyper = toolkit.createHyperlink(advancedLinkLine, "Additional model options", SWT.NONE);
+		Hyperlink hyper = toolkit.createHyperlink(advancedLinkLine, "Additional Spec Options", SWT.NONE);
 		hyper.addHyperlinkListener(advancedModelOptionsOpener);
+		Font baseFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT);
+		FontData[] baseFD = baseFont.getFontData();
+		FontData biggerLinkFD = new FontData(baseFD[0].getName(), baseFD[0].getHeight() + 1, baseFD[0].getStyle());
+		Font biggerLinkFont = new Font(body.getDisplay(), biggerLinkFD);
+		hyper.setFont(biggerLinkFont);
 
 		
 		/*
@@ -1225,10 +1231,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		advancedLinkLine.setBackground(body.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		gl = new GridLayout(1, false);
 		gl.marginWidth = 0;
+		gl.marginRight = 36;
 		gl.horizontalSpacing = 0;
 		advancedLinkLine.setLayout(gl);
-		hyper = toolkit.createHyperlink(advancedLinkLine, "Additional TLC execution options", SWT.NONE);
+		hyper = toolkit.createHyperlink(advancedLinkLine, "Additional TLC Options", SWT.NONE);
 		hyper.addHyperlinkListener(advancedTLCOptionsOpener);
+		hyper.setFont(biggerLinkFont);
 
 		// ------------------------------------------
 		// run tab
@@ -1335,8 +1343,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		advancedLinkLine.setLayout(gl);
 		tlcTuneHyperlink = toolkit.createHyperlink(advancedLinkLine, "Tune these parameters", SWT.NONE);
 		tlcTuneHyperlink.addHyperlinkListener(advancedTLCOptionsOpener);
-		final Font baseFont = JFaceResources.getFont(JFaceResources.DIALOG_FONT);
-		final FontData[] baseFD = baseFont.getFontData();
+		baseFont = JFaceResources.getFont(JFaceResources.DIALOG_FONT);
+		baseFD = baseFont.getFontData();
 		final FontData smaller = new FontData(baseFD[0].getName(), baseFD[0].getHeight() - 2, baseFD[0].getStyle());
 		tlcTuneHyperlink.setFont(new Font(body.getDisplay(), smaller));
 

@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _myVagAP4EemwBd2liJ-qvA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/3/19, 12:36 PM
+Save-Time: 6/10/19, 9:48 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -56,8 +56,8 @@ try -command {
 	
 	with [get-editor "Model_1"] {
 	    get-tab-folder | get-tab-item "Model Overview" | click
-		get-link "Advanced model options" | click
-		get-label "Advanced Options" | get-property caption | equals "Advanced Options" | verify-true
+		get-link "Additional Spec Options" | click
+		get-label "Spec Options" | get-property caption | equals "Spec Options" | verify-true
 	    get-section "Additional Definitions" | click
 	    get-section "State Constraint" | click
 	    get-section "Model Values" | click
@@ -71,7 +71,7 @@ try -command {
 	}
 	with [get-editor "Model_1"] {
 	    get-tab-folder | get-tab-item "Model Overview" | click
-		get-link "Advanced TLC execution options" | click
+		get-link "Additional TLC Options" | click
         get-button "Model-checking mode" | get-property selected | equals true | verify-true
         get-text-viewer | get-property text | equals "" | verify-true
         get-button "Depth-first" | get-property selected | equals false | verify-true

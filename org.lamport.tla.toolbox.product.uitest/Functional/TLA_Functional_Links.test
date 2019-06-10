@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _CTEKoBUbEemG79v6PBILBA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 5/30/19, 8:23 PM
+Save-Time: 6/10/19, 9:04 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -48,10 +48,10 @@ try -command {
 	with [get-editor "Model_1"] {
 	    get-section "Model description" | get-text-viewer | type-text sample
 	    get-section "What is the model?" | click
-	    get-link "Advanced TLC execution options" | click
+	    get-link "Additional TLC Options" | click
         get-editbox -after [get-label "Number of worker threads:"] | set-text 2
         get-tab-folder | get-tab-item "Model Overview" | click
-	    get-link "Advanced model options" | click
+	    get-link "Additional Spec Options" | click
 	}
 	get-editor "Model_1" | get-section "Additional Definitions" | get-label "Additional Definitions" | get-property caption 
 	    | equals "Additional Definitions" | verify-true
@@ -61,7 +61,7 @@ try -command {
 	    get-button "Checks the model for errors but does not run TLC on it." | click
 	    get-section "What is the behavior spec?" | get-combo | select "No Behavior Spec"
 	    get-button "Checks the model for errors but does not run TLC on it." | click
-	    get-link "Advanced model options" | click
+	    get-link "Additional Spec Options" | click
 	}
 	get-editor "Model_1" | get-section "State Constraint" | get-label "State Constraint" | get-property caption 
 	    | equals "State Constraint" | verify-true
@@ -69,13 +69,13 @@ try -command {
 	with [get-editor "Model_1"] {
 	    click
 	    get-tab-folder | get-tab-item "Model Overview" | click
-		get-link "Advanced model options" | click
+		get-link "Additional Spec Options" | click
 	}
 	get-editor "Model_1" | get-section "Model Values" | get-label "Model Values" | get-property caption 
 	    | equals "Model Values" | verify-true
 	with [get-editor "Model_1"] {
 		get-tab-folder | get-tab-item "Model Overview" | click
-		get-link "Advanced TLC execution options" | click
+		get-link "Additional TLC Options" | click
         get-button "Select randomly" | uncheck
 	    get-button "Checks the model for errors but does not run TLC on it." | click
 	}

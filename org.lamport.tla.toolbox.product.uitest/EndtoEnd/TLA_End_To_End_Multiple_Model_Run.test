@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _MHpE0ASNEemfpvVZm6oeFA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/3/19, 12:11 PM
+Save-Time: 6/10/19, 8:58 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -43,7 +43,7 @@ try -command {
 	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
 	with [get-editor $TLA-MODEL-ONE] {
 	    get-section "What to check?" | get-button Deadlock | uncheck
-	    get-link "Advanced TLC execution options" | click
+	    get-link "Additional TLC Options" | click
         get-editbox -after [get-label "Number of worker threads:"] | set-text 2
 	    get-button "Runs TLC on the model." | click
 	}
