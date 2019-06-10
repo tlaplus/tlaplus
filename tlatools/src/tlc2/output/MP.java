@@ -1471,13 +1471,18 @@ public class MP
         DebugPrinter.print("leaving printError(int, String[]) with errorCode "); //$NON-NLS-1$
     }
 
-    public static int printTLCRuntimeException(TLCRuntimeException tre) {
-    	recorder.record(tre.errorCode, (Object[]) new Object[] {tre});
-        DebugPrinter.print("entering printTLCRuntimeException(TLCRuntimeException) with errorCode " + tre.errorCode); //$NON-NLS-1$
-        // write the output
-        ToolIO.out.println(tre.getMessage());
-        DebugPrinter.print("leaving printTLCRuntimeException(TLCRuntimeException) with errorCode "); //$NON-NLS-1$
-        return tre.errorCode;
+    public static int printTLCRuntimeException(final TLCRuntimeException tre) {
+    	if (tre.parameters != null) {
+    		recorder.record(tre.errorCode, (Object[]) new Object[] {tre});
+    		DebugPrinter.print("entering printTLCRuntimeException(TLCRuntimeException) with errorCode " + tre.errorCode); //$NON-NLS-1$
+    		// write the output
+    		ToolIO.out.println(getMessage(ERROR, tre.errorCode, tre.parameters));
+    		DebugPrinter.print("leaving printTLCRuntimeException(TLCRuntimeException) with errorCode "); //$NON-NLS-1$
+    	} else {
+    		// Legacy code path except actual errorCode instead of EC.General.
+    		printError(tre.errorCode, tre);
+    	}
+    	return tre.errorCode;
     }
     
     /** 

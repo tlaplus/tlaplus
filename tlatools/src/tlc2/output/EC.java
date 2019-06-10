@@ -386,7 +386,7 @@ public interface EC
 	        case TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED:
 	        case TLC_CONFIG_OP_ARITY_INCONSISTENT:
 	        case TLC_CONFIG_NO_STATE_TYPE:
-	        case TLC_CANT_HANDLE_REAL_NUMBERS:
+	        case TLC_CANT_HANDLE_REAL_NUMBERS: // might also be in the spec
 	        case TLC_NO_MODULES:
 	        	return ERROR_CONFIG_PARSE;
 	        	
