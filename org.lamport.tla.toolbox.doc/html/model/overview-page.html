@@ -21,13 +21,18 @@ Contents
   <a href="#what-to-check">What to check?</a>
   <a href="#what-is-model">What is the model?</a>
   <a href="#how-to-run">How to run?</a>
-  <a href="#distributed">Running in Distributed Mode</a>
 </pre>
 
 
  <P> 
-This model editor page is usually the only one you will use to create
-and run your model.&nbsp;  Here are what the different sections of the
+This model editor page allows you to make the most common choices
+of the parameter values with which TLC is to be run.&nbsp; 
+It contains links to the <a href="spec-options-page.html">Spec Options Page</a>
+for specifying additional 
+options for telling TLC what spec behaviors to check and 
+to the <a href="tlc-options-page.html">TLC Options Page</a> for specifying additional
+ways to control the execution of TLC.&nbsp;
+Here are what the different sections of the Model Overview
 page are for. 
  </P>
 
@@ -114,7 +119,7 @@ help page.)
 </dd>
 <br></br>
 <dt><b>Set of model values</b></dt>
-<dd>You must enter comma-separated list of legal model-value names,
+<dd>You must enter a comma-separated list of legal model-value names,
 optionally enclosed by&nbsp; <code>{</code>&nbsp;
 and&nbsp; <code>}</code>.&nbsp;  You will have the option of making them
 a symmetry set.  
@@ -137,99 +142,104 @@ help page to learn about typed values and symmetry sets.
 </dl>
 <h2><a name="how-to-run">How to run?</a></h2>
 
-Here, you specify the following two aspects of how TLC should
-be run.&nbsp;  (See the <a href="advanced-page.html#launching">TLC Options</a> section
-of the <a href="advanced-page.html"><em>Advanced Options Page</em></a> help page for 
-additional ways to run TLC.)
-
-<h3>TLC Parameters</h3>
-There are two parameters that you can set here:
-
-<h4>Number of worker threads</h4>
-
-TLC's algorithm for computing the set (actually the graph) of reachable states 
-is highly parallelizable, and it can make good use of arbitrarily many processors.&nbsp; 
-This parameter specifies the number of separate threads that TLC will spawn to
-perform that computation.&nbsp;  You should not set it to be greater than the number of
-separate processors (cores) on your computer; the Toolbox will warn you if you do.
-
-<h4>Fraction of physical memory allocated to TLC</h4>
-
-This determines how large a heap TLC will use.&nbsp;  If you make it too small, TLC
-could run out of heap space and crash.&nbsp;  If you make it too large, your machine will not have
-enough memory and everything will run slowly.&nbsp;  The slider's color warns you if
-you are giving TLC too little or too much memory.&nbsp;
-TLC can keep the set of reachable states it has found
-on disk, so having too many reachable states can't run it out of memory.&nbsp;
-However, it runs much faster when it can keep those states in memory.&nbsp;
-TLC can run out of heap space if it takes too much memory to represent the
-set of initial states or the set of successor states of a single state.&nbsp;  
-If TLC does run out of memory in the middle of a long run,
-you can give it more and restart it from a checkpoint.
-
-<p> 
-
-Setting the this parameter too large may produce a 
-<em>Could not create the Java virtual machine</em> error.
-
-
-<A name="checkpoint"></A><h3>Checkpoint Recovery</h3></A>
-
- <p>
-TLC takes regular checkpoints, from which it can be restarted if it is
-stopped for any reason--for example, if your computer crashes.&nbsp; 
-
-The <em>Recover from checkpoint</em> option tells TLC to start from where it
-was when the last checkpoint was taken.&nbsp; 
-
-This option is enabled if the last time you ran TLC, it ran long enough to
-produce a checkpoint.&nbsp; The Toolbox will fill in the <em>Checkpoint
-id</em> for you.
- </p>
- <p>
-Warning: If you exit the Toolbox, it will stop any executions of TLC that are
-in process.&nbsp; 
-
-However, it is possible to stop the Toolbox in some drastic fashion that
-leaves TLC running as a background process.&nbsp; 
-
-Restarting from a checkpoint while the TLC process that created it is still
-running can cause the checkpoint to be destroyed, making recovery
-impossible.&nbsp; 
-
-If you have reason to believe TLC was not stopped, check to see if it is
-still running before trying to recover from a checkpoint. 
- </p>
- <p> 
-The checkpoint TLC produces after a short run does not take up
-much space.&nbsp;
-
-However, if TLC finds an error after running for a long time, the
-checkpoint files could take up a lot of space--sometimes on the order
-of a gigabyte for a model that has run for several days.&nbsp;
-
-These files are deleted if the model is re-run and a new checkpoint is
-produced, or if the model is validated when the
-<em>Recover from checkpoint</em> option is not selected.&nbsp; 
-
-When TLC has created a checkpoint, the <em>How to Run</em> section
-of the Model Overview page displays how much storage the checkpoint
-occupies.&nbsp; 
-
-It also provides a button that you can click to delete the checkpoint.&nbsp;
- </p>
-
-<p>
-Checkpointing does not yet work when TLC is run in distributed mode.
-</p>
-<a name="distributed"></a><h3>Running in Distributed Mode</h3>
-
-<p>
-TLC can be run with worker threads run on  multiple machine, 
-considerably speeding up its execution.
-See <a href="distributed-mode.html">Running TLC in Distributed Mode</a>
+There are two basic ways to run TLC: locally on the  computer running the
+Toolbox and remotely using multiple computers.&nbsp;  For local execution, you can choose
+from a small number of useful options.&nbsp;  See the <a href="tlc-options-page.html">TLC Options Page</a>  for 
+additional choices of how to run TLC.&nbsp;  Remote execution offers the possibility of
+greatly speeding up execution through the use of a network of computers.&nbsp;
+For information about the remote execution
+options, see <a href="distributed-mode.html">Running TLC in Distributed Mode</a>.
 
 </p>
+
+See the <a href="tlc-options-page.html">TLC Options Page</a>  for 
+additional choices of how to run TLC.
+
+<!-- MOVED TO TLC OPTIONS PAGE
+   <h3>TLC Parameters</h3>
+   There are two parameters that you can set here:
+   
+   
+   <h4>Number of worker threads</h4>
+   
+   TLC's algorithm for computing the set (actually the graph) of reachable states 
+   is highly parallelizable, and it can make good use of arbitrarily many processors.&nbsp; 
+   This parameter specifies the number of separate threads that TLC will spawn to
+   perform that computation.&nbsp;  You should not set it to be greater than the number of
+   separate processors (cores) on your computer; the Toolbox will warn you if you do.
+   
+   <h4>Fraction of physical memory allocated to TLC</h4>
+   
+   This determines how large a heap TLC will use.&nbsp;  If you make it too small, TLC
+   could run out of heap space and crash.&nbsp;  If you make it too large, your machine will not have
+   enough memory and everything will run slowly.&nbsp;  The slider's color warns you if
+   you are giving TLC too little or too much memory.&nbsp;
+   TLC can keep the set of reachable states it has found
+   on disk, so having too many reachable states can't run it out of memory.&nbsp;
+   However, it runs much faster when it can keep those states in memory.&nbsp;
+   TLC can run out of heap space if it takes too much memory to represent the
+   set of initial states or the set of successor states of a single state.&nbsp;  
+   If TLC does run out of memory in the middle of a long run,
+   you can give it more and restart it from a checkpoint.
+   
+   <p> 
+   
+   Setting the this parameter too large may produce a 
+   <em>Could not create the Java virtual machine</em> error.
+   
+
+   
+   <A name="checkpoint"></A><h3>Checkpoint Recovery</h3></A>
+   
+    <p>
+   TLC takes regular checkpoints, from which it can be restarted if it is
+   stopped for any reason--for example, if your computer crashes.&nbsp; 
+   
+   The <em>Recover from checkpoint</em> option tells TLC to start from where it
+   was when the last checkpoint was taken.&nbsp; 
+   
+   This option is enabled if the last time you ran TLC, it ran long enough to
+   produce a checkpoint.&nbsp; The Toolbox will fill in the <em>Checkpoint
+   id</em> for you.
+    </p>
+    <p>
+   Warning: If you exit the Toolbox, it will stop any executions of TLC that are
+   in process.&nbsp; 
+   
+   However, it is possible to stop the Toolbox in some drastic fashion that
+   leaves TLC running as a background process.&nbsp; 
+   
+   Restarting from a checkpoint while the TLC process that created it is still
+   running can cause the checkpoint to be destroyed, making recovery
+   impossible.&nbsp; 
+   
+   If you have reason to believe TLC was not stopped, check to see if it is
+   still running before trying to recover from a checkpoint. 
+    </p>
+    <p> 
+   The checkpoint TLC produces after a short run does not take up
+   much space.&nbsp;
+   
+   However, if TLC finds an error after running for a long time, the
+   checkpoint files could take up a lot of space--sometimes on the order
+   of a gigabyte for a model that has run for several days.&nbsp;
+   
+   These files are deleted if the model is re-run and a new checkpoint is
+   produced, or if the model is validated when the
+   <em>Recover from checkpoint</em> option is not selected.&nbsp; 
+   
+   When TLC has created a checkpoint, the <em>How to Run</em> section
+   of the Model Overview page displays how much storage the checkpoint
+   occupies.&nbsp; 
+   
+   It also provides a button that you can click to delete the checkpoint.&nbsp;
+    </p>
+   
+   <p>
+   Checkpointing does not yet work when TLC is run in distributed mode.
+   </p>
+-->
+
 
 <hr> 
 <!-- delete rest of line to comment out --> 
