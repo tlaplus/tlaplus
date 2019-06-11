@@ -584,38 +584,45 @@
            </menuContribution>
            <menuContribution
                  locationURI="popup:#TextEditorContext?after=foldCommands">
-              <command
+              <menu
+                    id="org.lamport.tla.toolbox.editor.basic.tlaps"
+                    label="TLA Proof Manager">
+                 <separator
+                       name="additions">
+                 </separator>
+                 <command
                     commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
-                    style="push">
-              </command>
-              <command
+                       style="push">
+                 </command>
+                 <command
                     commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
-                    style="push">
-              </command>
-              <command
+                       style="push">
+                 </command>
+                 <command
                     commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
-                    style="push">
-              </command>
-              <command
+                       style="push">
+                 </command>
+                 <command
                     commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
-                    style="push">
-              </command>
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
-                    style="push">
-              </command>
-              <command
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
+                       style="push">
+                 </command>
+                 <command
                     commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
-                    style="push">
-              </command>
-              <command
+                       style="push">
+                 </command>
+                 <command
                     commandId="org.lamport.tla.toolbox.editor.basic.renumberProof"
-                    style="push">
-              </command>
-              <command
+                       style="push">
+                 </command>
+                 <command
                     commandId="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
-                    style="push">
-              </command>
+                       style="push">
+                 </command>
+              </menu>
               <separator
                     name="org.lamport.tla.toolbox.editor.basic.commentseparator"
                     visible="true">
@@ -623,26 +630,29 @@
            </menuContribution>
            <menuContribution
                  locationURI="popup:#TextEditorContext?after=org.lamport.tla.toolbox.editor.basic.commentseparator">
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.startBoxedComment"
-                    style="push">
-              </command>
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.formatComment"
-                    style="push">
-              </command>
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.boxComment"
-                    style="push">
-              </command>
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.formatAndBoxComment"
-                    style="push">
-              </command>
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.unboxComment"
-                    style="push">
-              </command>
+              <menu
+                    label="Comments">
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.startBoxedComment"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.formatComment"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.boxComment"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.formatAndBoxComment"
+                       style="push">
+                 </command>
+                 <command
+                       commandId="org.lamport.tla.toolbox.editor.basic.unboxComment"
+                       style="push">
+                 </command>
+              </menu>
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
                     style="push">

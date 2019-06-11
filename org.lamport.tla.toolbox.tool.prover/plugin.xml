@@ -33,9 +33,9 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="popup:#TextEditorContext?after=foldCommands">
+            locationURI="popup:org.lamport.tla.toolbox.editor.basic.tlaps?after=additions">
          <command
-               commandId="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
+               commandId="org.lamport.tla.toolbox.tool.prover.ui.launchProver"
                style="push">
          </command>
          <command
@@ -43,7 +43,7 @@
                style="push">
          </command>
          <command
-               commandId="org.lamport.tla.toolbox.tool.prover.ui.launchProver"
+               commandId="org.lamport.tla.toolbox.tool.prover.ui.checkStep.delegate"
                style="push">
          </command>
       </menuContribution>
