@@ -566,15 +566,16 @@
          style="push">
    </command>
    <command
+         commandId="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
+         style="push">
+   </command>
+   <command
          commandId="org.lamport.tla.toolbox.editor.basic.gotoPCalSource"
          style="push">
    </command>
 		</menuContribution>
            <menuContribution
                  locationURI="popup:#TextEditorContext?after=additions">
-              <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.ToggleCommentAction">
-              </command>
               <command
                     commandId="org.lamport.tla.toolbox.editor.basic.Format">
               </command>
@@ -654,8 +655,7 @@
                  </command>
               </menu>
               <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.gotoMatchingParen"
-                    style="push">
+                    commandId="org.lamport.tla.toolbox.editor.basic.ToggleCommentAction">
               </command>
               <separator
                     name="org.lamport.tla.toolbox.editor.basic.commentseparator"
