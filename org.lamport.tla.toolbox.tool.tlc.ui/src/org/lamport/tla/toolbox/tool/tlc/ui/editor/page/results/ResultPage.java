@@ -297,14 +297,18 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                     break;
                 case COVERAGE:
                 	final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();
-                	ResultPage.this.coverage.setInput(coverageInfo);
+                	coverage.setInput(coverageInfo);
 					if (dataProvider.isDone() && !coverageInfo.isEmpty()) {
+// mku: uncomment the following line; run Dijkstra with no zero coverage; then with zero coverage; then no zero coverage
+//Logger.getAnonymousLogger().severe("COVERAGE - dp hasZeroCoverage? " + dataProvider.hasZeroCoverage());
 						if (dataProvider.hasZeroCoverage()) {
 							if (zeroCoverage == null) {
 								final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
 										ZERO_COVERAGE_WARNING, IMarker.SEVERITY_WARNING);
 								marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
 								zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+							}
+							if (coverageInfo.containsZeroCoverageInformation()) {
 								m_zeroCoverageLabel.setVisible(true);
 								m_errorPaneViewState.setZeroCountDisplay(true);
 								setErrorPaneVisible(true);
@@ -313,12 +317,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							try {
 								zeroCoverage.delete();
 								resetMessage(RESULT_PAGE_PROBLEM);
-								m_zeroCoverageLabel.setVisible(false);
-								m_errorPaneViewState.setZeroCountDisplay(false);
-								setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
 								zeroCoverage = null;
 							} catch (CoreException e) {
 								TLCUIActivator.getDefault().logError(e.getMessage(), e);
+							} finally {
+								m_zeroCoverageLabel.setVisible(false);
+								m_errorPaneViewState.setZeroCountDisplay(false);
+								setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
 							}
 						}
 					}

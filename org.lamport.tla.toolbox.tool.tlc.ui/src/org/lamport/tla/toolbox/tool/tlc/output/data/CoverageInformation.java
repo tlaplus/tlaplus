@@ -95,6 +95,19 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 	}
 	
 	/**
+	 * @return if any item is an instance of CoverageInformationItem and has a count of 0; this mirrors the logic which
+	 * 				paints the cells of our statistics coverage table; we do this because there is seemingly a bug
+	 *				in our data provider in which {@link TLCModelLaunchDataProvider#hasZeroCoverage()} returns
+	 *				true when that's actually incorrect, under the condition of a subsequent model check after a
+	 *				model check which did have zero coverage. mku alerted on 20190610.
+	 */
+	public boolean containsZeroCoverageInformation() {
+		return items.stream().filter(item -> 
+			((item instanceof CoverageInformationItem) && (((CoverageInformationItem)item).getCount() == 0))
+		).findAny().isPresent();
+	}
+	
+	/**
 	 * @return true if coverage information pre-dates TLC's new/hierarchical format introduced by the CostModel.
 	 */
 	public boolean isLegacy() {
