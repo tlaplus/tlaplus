@@ -152,24 +152,21 @@ options, see <a href="distributed-mode.html">Running TLC in Distributed Mode</a>
 
 </p>
 
-See the <a href="tlc-options-page.html">TLC Options Page</a>  for 
-additional choices of how to run TLC.
-
 <!-- MOVED TO TLC OPTIONS PAGE
    <h3>TLC Parameters</h3>
    There are two parameters that you can set here:
-   
-   
+
+
    <h4>Number of worker threads</h4>
-   
-   TLC's algorithm for computing the set (actually the graph) of reachable states 
-   is highly parallelizable, and it can make good use of arbitrarily many processors.&nbsp; 
+
+   TLC's algorithm for computing the set (actually the graph) of reachable states
+   is highly parallelizable, and it can make good use of arbitrarily many processors.&nbsp;
    This parameter specifies the number of separate threads that TLC will spawn to
    perform that computation.&nbsp;  You should not set it to be greater than the number of
    separate processors (cores) on your computer; the Toolbox will warn you if you do.
-   
+
    <h4>Fraction of physical memory allocated to TLC</h4>
-   
+
    This determines how large a heap TLC will use.&nbsp;  If you make it too small, TLC
    could run out of heap space and crash.&nbsp;  If you make it too large, your machine will not have
    enough memory and everything will run slowly.&nbsp;  The slider's color warns you if

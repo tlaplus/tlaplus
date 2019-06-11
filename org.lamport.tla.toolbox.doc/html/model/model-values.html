@@ -58,8 +58,8 @@ it cannot evaluate the unbounded&nbsp; <code>CHOOSE</code>&nbsp; expression.&nbs
 To allow TLC to handle the spec, you need to substitute a model value
 for&nbsp; <code>NotANat</code>&nbsp;.&nbsp;  The best model value to substitute for it
 is one named&nbsp; <code>NotANat</code>&nbsp;.&nbsp;  This is done in the
-<a href="advanced-page.html#override">Definition Override</a> section of
-the <a href="advanced-page.html">Advanced Options Page</a>.&nbsp;  The Toolbox will
+<a href="spec-options-page.html#override">Definition Override</a> section of
+the <a href="spec-options-page.html">Spec Options Page</a>.&nbsp;  The Toolbox will
 create the appropriate entry in that section when it creates a model
 if it finds a definition having the precise
 syntax above or the syntax
@@ -75,21 +75,21 @@ can be any identifiers.
 <p>
 There are some uses of model values that
 can't be specified with the <a href="overview-page.html#what-is-model">What is the model?</a>
-section of the <A href="overview-page.html">Model Overview Page</A>.&nbsp;  
+section of the <A href="overview-page.html">Model Overview Page</A>.&nbsp;
 If you encounter such a problem, you can declare your own set of model values
-with the <A href="advanced-page.html#additional">Additional Definitions</a> section
-of the <A href="advanced-page.html"> Advanced Options Page</A> and then use them
+with the <A href="spec-options-page.html#additional">Additional Definitions</a> section
+of the <A href="spec-options-page.html"> Spec Options Page</A> and then use them
 as ordinary values in expressions of the model.&nbsp;
 </p>
 
 <h2><a name="typed-values">Typed Model Values</a></h2>
 
 <p>
-Suppose that, by mistake, you write the 
+Suppose that, by mistake, you write the
 expression&nbsp; <code>p=2</code>&nbsp; where&nbsp; <code>p</code>&nbsp; is
 a process.&nbsp;  If you substitute a set of ordinary model values for the set
 of processes, TLC will simply obtain the value&nbsp; <code>FALSE</code>&nbsp;
-if it evalutes this expression, since it considers an ordinary model value 
+if it evalutes this expression, since it considers an ordinary model value
 to be different from any other value.&nbsp;  To allow TLC to detect this kind of error,
 you can use a set of <em>typed</em> model values.&nbsp;  TLC considers a typed model value
 to be unequal to any other model value of the same type.&nbsp;  However, it produces an
@@ -128,16 +128,16 @@ option of that section.
 <p>
 Model values can be declared in the following places:
 <ul>
-<li>When assigning a value to a constant parameter in the 
+<li>When assigning a value to a constant parameter in the
 <a href="overview-page.html#what-is-model">What is the model?</a> section of
 the <em>Model Overview Page</em>, by choosing the <em>Model value</em>
 or <em>Set of model values</em> option.</li>
-<li>When overriding a definition in the  <a href="advanced-page.html#override">Definition override</a> 
-section of the <em>Advanced Options Page</em>, by choosing the  <em>Model value</em> option.
+<li>When overriding a definition in the  <a href="spec-options-page.html#override">Definition override</a>
+section of the <em>Spec Options Page</em>, by choosing the <em>Model value</em> option.
 </li>
 
 <li>
-In the <a href="advanced-page.html#model">Model Values</a> section of the <em>Advanced Options Page</em>.
+In the <a href="spec-options-page.html#model">Model Values</a> section of the <em>Spec Options Page</em>.
 </li>
 </ul>
 
