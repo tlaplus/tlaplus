@@ -399,6 +399,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		final DataBindingManager dm = getDataBindingManager();
 		final IMessageManager mm = getManagedForm().getMessageManager();
+		mm.setAutoUpdate(false);
+		
 		final ModelEditor modelEditor = (ModelEditor) getEditor();
 
 		// The following comment was apparently written by Simon:
@@ -427,13 +429,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// constants in the table
 		List<Assignment> constants = getConstants();
 		// merge constants with currently defined in the specobj, if any
+		final String sectionId = dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS);
 		if (rootModuleNode != null) {
 			List<Assignment> toDelete = ModelHelper.mergeConstantLists(constants,
 					ModelHelper.createConstantsList(rootModuleNode));
 			if (!toDelete.isEmpty()) {
 				// if constants have been removed, these should be deleted from
 				// the model too
-				SectionPart constantSection = dm.getSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+				SectionPart constantSection = dm.getSection(sectionId);
 				if (constantSection != null) {
 					// mark the constants dirty
 					constantSection.markDirty();
@@ -447,27 +450,27 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// symmetric).
 		// It is set to the type of the first typed model value found in a symmetry set.
 		String symmetryType = null;
-		// boolean symmetryUsed = false;
-		// iterate over the constants
+		final Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS));
 		for (int i = 0; i < constants.size(); i++) {
 			Assignment constant = (Assignment) constants.get(i);
 
 			List<String> values = Arrays.asList(constant.getParams());
 			// check parameters
-			validateId(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name");
+			validateId(sectionId, widget, values, "param1_", "A parameter name");
 
 			// the constant is still in the list
+			String label = constant.getLabel();
 			if (constant.getRight() == null || EMPTY_STRING.equals(constant.getRight())) {
 				// right side of assignment undefined
-				modelEditor.addErrorMessage(constant.getLabel(), "Provide a value for constant " + constant.getLabel(),
+				modelEditor.addErrorMessage(label, "Provide a value for constant " + label,
 						this.getId(), IMessageProvider.ERROR,
-						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+						widget);
 				setComplete(false);
-				expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTANTS));
+				expandSection(sectionId);
 
 			} else { // Following added by LL on 21 Mar 2013
-				modelEditor.removeErrorMessage(constant.getLabel(),
-						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+				modelEditor.removeErrorMessage(label,
+						widget);
 				if (constant.isSetOfModelValues()) {
 					TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());
 
@@ -530,13 +533,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 						List<String> mvList = modelValuesSet.getValuesAsList();
 						// check list of model values
-						validateUsage(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value",
+						validateUsage(sectionId, widget, mvList, "modelValues2_", "A model value",
 								"Constant Assignment", true);
 						// check if the values are correct ids
-						validateId(MODEL_PARAMETER_CONSTANTS, mvList, "modelValues2_", "A model value");
+						validateId(sectionId, widget, mvList, "modelValues2_", "A model value");
 
 						// get widget for model values assigned to constant
-						Control widget = UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS));
 						// check if model values are config file keywords
 						for (int j = 0; j < mvList.size(); j++) {
 							String value = (String) mvList.get(j);
@@ -549,19 +551,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 						}
 					} else {
 						// This made an error by LL on 15 Nov 2009
-						modelEditor.addErrorMessage(constant.getLabel(), "The set of model values should not be empty.",
+						modelEditor.addErrorMessage(label, "The set of model values should not be empty.",
 								this.getId(), IMessageProvider.ERROR,
-								UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+								widget);
 						setComplete(false);
 					}
 				}
 			}
 
 			// the constant identifier is a config file keyword
-			if (SemanticHelper.isConfigFileKeyword(constant.getLabel())) {
-				modelEditor.addErrorMessage(constant.getLabel(),
-						"The toolbox cannot handle the constant identifier " + constant.getLabel() + ".", this.getId(),
-						IMessageProvider.ERROR, UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTANTS)));
+			if (SemanticHelper.isConfigFileKeyword(label)) {
+				modelEditor.addErrorMessage(label,
+						"The toolbox cannot handle the constant identifier " + label + ".", this.getId(),
+						IMessageProvider.ERROR, widget);
 				setComplete(false);
 			}
 		}
@@ -572,7 +574,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			Assignment constant = (Assignment) constants.get(i);
 			List<String> values = Arrays.asList(constant.getParams());
 			// check list of parameters
-			validateUsage(MODEL_PARAMETER_CONSTANTS, values, "param1_", "A parameter name", "Constant Assignment",
+			validateUsage(sectionId, widget, values, "param1_", "A parameter name", "Constant Assignment",
 					false);
 		}
 
@@ -1015,7 +1017,12 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		twd.align = TableWrapData.FILL;
 		section.setLayoutData(twd);
 
-		final ValidateableSectionPart commentsPart = new ValidateableSectionPart(section, this, SEC_COMMENTS);
+		// No need for a ValidatableSectionPart for the model description as there is
+		// nothing to validate when the free-form text gets changed. The model
+		// validation can be expensive especially when re-executed over and over again
+		// on every keystroke.
+		final SectionPart commentsPart = new SectionPart(section);
+        getDataBindingManager().bindSection(commentsPart, SEC_COMMENTS, getId());
 		managedForm.addPart(commentsPart);
 		final DirtyMarkingListener commentsListener = new DirtyMarkingListener(commentsPart, true);
 

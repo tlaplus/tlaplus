@@ -666,7 +666,13 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         }
         // retrieve the control
         Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
+        
+        validateUsage(sectionId, widget, values, errorMessagePrefix, elementType, listSourceDescription, addToContext);
+    }
 
+    public void validateUsage(final String sectionId, final Control widget, List<String> values, String errorMessagePrefix, String elementType,
+             String listSourceDescription, boolean addToContext)
+    {
         IMessageManager mm = getManagedForm().getMessageManager();
         SemanticHelper helper = getLookupHelper();
         String message;
@@ -739,7 +745,12 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
         }
         // retrieve the control
         Control widget = UIHelper.getWidget(dm.getAttributeControl(attributeName));
+        
+        validateId(sectionId, widget, values, errorMessagePrefix, elementType);
+    }
 
+    public void validateId(final String sectionId, final Control widget, List<String> values, String errorMessagePrefix, String elementType)
+    {
         String message;
         IMessageManager mm = getManagedForm().getMessageManager();
         for (int i = 0; i < values.size(); i++)

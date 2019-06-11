@@ -1393,6 +1393,8 @@ public class ModelEditor extends FormEditor {
      * This adds error messages to all pages for the given control.
      * If the control is null, it will do nothing.
      * 
+     * WARNING: Because of addMessage(...) this is an expensive operation.
+     * 
      * @param key the unique message key
      * @param messageText the message to add
      * @param pageId the id of the page that contains the control
