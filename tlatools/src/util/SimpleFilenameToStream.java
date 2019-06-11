@@ -193,6 +193,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
     * field in util/ToolIO.                                                *
     ***********************************************************************/
     int idx = 0;
+    InputStream is;
     while (true)
     {
         if ((idx == 0) && (ToolIO.getUserDir() != null)) {
@@ -207,28 +208,9 @@ public class SimpleFilenameToStream implements FilenameToStream {
         	// This would be a lot simpler if TLC would not depend on
         	// File but on InputStream instead
         	if(isInJar(prefix)) {
-					InputStream is = cl
-							.getResourceAsStream(STANDARD_MODULES
-									+ name);
-
+				is = cl.getResourceAsStream(STANDARD_MODULES + name);
 				if(is != null) {
-					try {
-						sourceFile = new File(TMPDIR + File.separator + name);
-						sourceFile.deleteOnExit();
-
-						FileOutputStream fos = new FileOutputStream(sourceFile);
-
-						byte buf[] = new byte[1024];
-						int len;
-						while ((len = is.read(buf)) > 0) {
-							fos.write(buf, 0, len);
-						}
-						fos.close();
-						is.close();
-					} catch (IOException e) {
-						// must not happen
-						e.printStackTrace();
-					}
+					sourceFile = read(name, is);
 				}
         	} else {
         		sourceFile = new File( prefix + name );
@@ -244,6 +226,27 @@ public class SimpleFilenameToStream implements FilenameToStream {
     return sourceFile;
 
   } // end locate()
+
+  private File read(String name, InputStream is) {
+    final File sourceFile = new File(TMPDIR + File.separator + name);
+	sourceFile.deleteOnExit();
+	try {
+
+		final FileOutputStream fos = new FileOutputStream(sourceFile);
+
+		byte buf[] = new byte[1024];
+		int len;
+		while ((len = is.read(buf)) > 0) {
+			fos.write(buf, 0, len);
+		}
+		fos.close();
+		is.close();
+	} catch (IOException e) {
+		// must not happen
+		e.printStackTrace();
+	}
+	return sourceFile;
+  }
 
   /**
    * Returns a file
