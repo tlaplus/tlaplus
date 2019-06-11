@@ -45,6 +45,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.lamport.tla.toolbox.Activator;
@@ -171,6 +172,18 @@ public class LibraryPathComposite {
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				String loc = getDirectory(null);
+				if (loc != null) {
+					addLocation(loc);
+				}
+			}
+		});
+
+
+		button = SWTFactory.createPushButton(bcomp,
+				"Add Archive &File...", null);
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				String loc = getZipArchiveFile(null);
 				if (loc != null) {
 					addLocation(loc);
 				}
@@ -388,6 +401,19 @@ public class LibraryPathComposite {
 		}
 		return null;
 	}
+	
+	String getZipArchiveFile(String prevLocation) {
+		final FileDialog dialog = new FileDialog(this.preferencePage.getShell());
+		dialog.setFilterExtensions(new String[] {"*.jar", "*.zip"});
+		if (prevLocation != null) {
+			dialog.setFilterPath(prevLocation);
+		}
+		final String open = dialog.open();
+		if (open != null) {
+			return open;
+		}
+		return null;
+	}
 
 	/**
 	 * Adds the given location to the table
@@ -417,6 +443,8 @@ public class LibraryPathComposite {
 		String newloc = null;
 		if (file.isDirectory()) {
 			newloc = getDirectory(location);
+		} else {
+			newloc = getZipArchiveFile(location);
 		}
 		if (newloc != null) {
 			fLocationList.remove(location);

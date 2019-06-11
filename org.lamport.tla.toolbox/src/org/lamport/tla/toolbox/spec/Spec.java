@@ -504,6 +504,31 @@ public class Spec implements IAdaptable {
             return "";
         }
     }
+    
+    public String getTLALibraryPathAsClassPath() {
+        final String[] tlaLibraryPath = getTLALibraryPath();
+
+        if (tlaLibraryPath.length > 0) {
+            final StringBuffer buf = new StringBuffer(tlaLibraryPath.length * 2);
+
+            for (final String location : tlaLibraryPath) {
+            	if (new File(location).isDirectory()) {
+            		// For directories include everything.
+            		buf.append(location + File.separator + "*") ;
+            	} else {
+            		buf.append(location);
+            	}
+                buf.append(File.pathSeparator);
+            }
+
+            final String vmArg = buf.toString();
+
+            // remove dangling pathSeparator
+            return vmArg.substring(0, vmArg.length() - 1);
+        } else {
+            return "";
+        }
+    }
 
     private final Lock lock = new ReentrantLock(true);
 

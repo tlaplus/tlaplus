@@ -3,6 +3,11 @@ package org.lamport.tla.toolbox.util;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -135,7 +140,14 @@ public class RCPNameToFileIStream implements FilenameToStream
                 sourceFile = new File(ToolIO.getUserDir(), name);
             } else
             {
-                sourceFile = new File(prefix + name);
+            	if(FilenameToStream.isArchive(prefix)) {
+            		sourceFile = getFromArchive(prefix, name);
+    				if(sourceFile != null) {
+    					return sourceFile;
+    				}
+            	} else {
+                    sourceFile = new File(prefix + name);
+            	}
             }
             if (sourceFile != null && sourceFile.exists()) {
             	break;
@@ -149,6 +161,21 @@ public class RCPNameToFileIStream implements FilenameToStream
         return sourceFile;
 
     }
+    
+	// Extract the archive to a temporary directory from where the Toolbox will read
+	// the resource. The problem is, that the Toolbox and TLC work with File instead
+	// of InputStream which is why we can't extract to memory only.
+	private File getFromArchive(String prefix, String name) {
+		final File outputFile = new File(TMPDIR + File.separator + name);
+		outputFile.deleteOnExit(); // Written to TMPDIR which is likely deleted regularly anyway.
+		try (FileSystem fileSystem = FileSystems.newFileSystem(new File(prefix).toPath(), null)) {
+	        Path fileToExtract = fileSystem.getPath(name);
+	        Files.copy(fileToExtract, outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+	        return outputFile;
+	    } catch (IOException e) {
+			return null;
+		}
+	}
 
 	/**
 	 * Returns true iff moduleName is the name of a standard module.

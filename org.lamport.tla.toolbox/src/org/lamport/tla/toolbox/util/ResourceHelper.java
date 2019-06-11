@@ -2321,8 +2321,10 @@ public class ResourceHelper
 	public static boolean isValidLibraryLocation(final String location) {
 		if (location != null && location.length() > 0) {
 			IPath path = new Path(location);		
-			File directory = path.toFile();
-			return directory.exists() && directory.isDirectory();
+			File directoryOrArchive = path.toFile();
+			// Not checking file extension here bc UI dialog only accepts .jar and .zip
+			// anyway.
+			return directoryOrArchive.exists();
 		}
 		return false;
 	}

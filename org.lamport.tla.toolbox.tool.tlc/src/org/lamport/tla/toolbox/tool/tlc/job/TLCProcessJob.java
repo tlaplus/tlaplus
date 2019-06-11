@@ -92,7 +92,13 @@ public class TLCProcessJob extends TLCJob
 			// classpath during toolbox development within Eclipse (will simply not
 			// exist in packaged toolbox)
 			final String devClasspath = runtimeClasspath + File.separator + "class";
-			String[] classPath = new String[] { runtimeClasspath, libClasspath, libMailClasspath, devClasspath };
+			
+			// Add TLA+ library path entries to the class path in case any one of them
+			// includes module overwrites.  It is the last element on the classpath.
+			final Spec spec = Activator.getSpecManager().getSpecByName(specName);
+			final String libraryPathClassPath = spec.getTLALibraryPathAsClassPath();
+			
+			final String[] classPath = new String[] { runtimeClasspath, libClasspath, libMailClasspath, devClasspath, libraryPathClassPath };
 
             // arguments
             String[] arguments = constructProgramArguments();
