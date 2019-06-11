@@ -353,6 +353,7 @@
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
+				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 			</classpath>
@@ -376,6 +377,7 @@
 					<exclude name="tlc2/TLCTest.java"/>
 					<exclude name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
 					<exclude name="tlc2/tool/UserModuleOverrideTest.java" />
+					<exclude name="tlc2/tool/UserModuleOverrideFromJarTest.java" />
 					
 					<exclude name="**/PCalTest.java" />
 					<exclude name="**/CommonTestCase.java" />
@@ -408,6 +410,11 @@
 					<exclude name="**/DetlefsTest.java" />
 					<exclude name="**/StarkMutexTest.java" />
 					<exclude name="**/SimpleMultiProcTest.java" />
+				</fileset>
+			</batchtest>
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${test.dir}">
+					<include name="tlc2/tool/UserModuleOverrideFromJarTest.java" />
 				</fileset>
 			</batchtest>
 			<batchtest fork="yes" todir="${test.reports}">
@@ -456,6 +463,7 @@
 					<pathelement location="lib/easymock-3.3.1.jar" />
 					<pathelement location="${dist.file}" />
 					<pathelement path="${test.class.dir}" />
+					<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				</classpath>
 	
 				<formatter type="xml" />
@@ -475,6 +483,7 @@
 						<exclude name="tlc2/TLCTest.java"/>
 						<exclude name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
 						<exclude name="tlc2/tool/UserModuleOverrideTest.java" />
+						<exclude name="tlc2/tool/UserModuleOverrideFromJarTest.java" />
 						
 						<exclude name="**/PCalTest.java" />
 						<exclude name="**/CommonTestCase.java" />
@@ -507,6 +516,11 @@
 						<exclude name="**/DetlefsTest.java" />
 						<exclude name="**/StarkMutexTest.java" />
 						<exclude name="**/SimpleMultiProcTest.java" />
+					</fileset>
+				</batchtest>
+				<batchtest fork="yes" todir="${test.reports}">
+					<fileset dir="${test.dir}">
+						<include name="tlc2/tool/UserModuleOverrideFromJarTest.java" />
 					</fileset>
 				</batchtest>
 				<batchtest fork="yes" todir="${test.reports}/onJar">

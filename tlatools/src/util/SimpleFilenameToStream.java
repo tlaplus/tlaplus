@@ -219,7 +219,19 @@ public class SimpleFilenameToStream implements FilenameToStream {
         // Debug
         // System.out.println("Looking for file " + sourceFile);
         if ( sourceFile.exists() )  break;
-        if (idx >= libraryPaths.length) break;
+        if (idx >= libraryPaths.length) {
+			// As a last resort, try to load resource from the Java classpath. Give up, if it
+			// fails.
+			// The use case for this strategy is to load additional TLA+ module collections
+			// - e.g. community-driven ones - which ship a single jar containing the .tla
+			// operator definitions as well as Java module overwrites as .class files.
+        	is = cl.getResourceAsStream(name);
+        	if(is != null) {
+				return read(name, is);
+			} else {
+				break;
+			}
+        }
         prefix = libraryPaths[idx++];
     } // end while
 
