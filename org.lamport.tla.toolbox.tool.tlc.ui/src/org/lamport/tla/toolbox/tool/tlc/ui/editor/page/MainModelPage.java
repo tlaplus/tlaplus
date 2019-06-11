@@ -140,7 +140,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		return percentage + "%" + " (" + MEMORY_FORMAT.format(megabytes) + " mb)";
 	}
 
+	
 	private Combo behaviorCombo;
+	private int previousBehaviorComboSelection;
 	private SourceViewer commentsSource;
 
 	private SourceViewer initFormulaSource;
@@ -382,9 +384,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	 */
 	public void setNoBehaviorSpec(final boolean noSpec) {
 		if (noSpec) {
+			previousBehaviorComboSelection = behaviorCombo.getSelectionIndex();
 			setSpecSelection(MODEL_BEHAVIOR_TYPE_NO_SPEC);			
 		} else {
-			behaviorCombo.select(0);
+			behaviorCombo.select(previousBehaviorComboSelection);
 			moveToTopOfBehaviorOptionsStack(behaviorCombo.getText());
 		}
 		
