@@ -41,4 +41,14 @@ public interface FilenameToStream
      * @return
      */
     public boolean isStandardModule(String moduleName) ;
+    
+	static final String TMPDIR = System.getProperty("java.io.tmpdir");
+
+	static boolean isInJar(final String aString) {
+		return aString.startsWith("jar:") || aString.endsWith(".jar");
+	}
+
+	static boolean isArchive(String aString) {
+		return isInJar(aString) || aString.endsWith(".zip");
+	}
 }

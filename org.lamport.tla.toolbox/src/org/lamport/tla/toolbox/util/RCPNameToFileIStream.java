@@ -137,10 +137,12 @@ public class RCPNameToFileIStream implements FilenameToStream
             {
                 sourceFile = new File(prefix + name);
             }
-            if (sourceFile.exists())
-                break;
-            if (idx >= libraryPathEntries.size())
-                break;
+            if (sourceFile != null && sourceFile.exists()) {
+            	break;
+            }
+            if (idx >= libraryPathEntries.size()) {
+            	break;
+            }
 
             prefix = (String) libraryPathEntries.elementAt(idx++);
         }

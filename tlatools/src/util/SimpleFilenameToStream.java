@@ -36,7 +36,6 @@ public class SimpleFilenameToStream implements FilenameToStream {
 
 	private static final ClassLoader cl = SimpleFilenameToStream.class.getClassLoader();
 
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	private static final String STANDARD_MODULES = "tla2sany"
 			+ '/' + STANDARD_MODULES_FOLDER + '/';
 
@@ -79,7 +78,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
     final String path = url.toString();
 	try {
     	// convert to URI which handles paths correctly (even OS dependently)
-    	if(!isInJar(path)) {
+    	if(!FilenameToStream.isInJar(path)) {
     	final URI uri = new URI(path);
     		return new File(uri).getAbsolutePath();
     	}
@@ -94,10 +93,6 @@ public class SimpleFilenameToStream implements FilenameToStream {
     }
     return path;
    }
-
-  private static boolean isInJar(String aString) {
-	return aString.startsWith("jar:");
-  }
 
   /**
    * August 2014 - TL
@@ -207,7 +202,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
         	//
         	// This would be a lot simpler if TLC would not depend on
         	// File but on InputStream instead
-        	if(isInJar(prefix)) {
+        	if(FilenameToStream.isInJar(prefix)) {
 				is = cl.getResourceAsStream(STANDARD_MODULES + name);
 				if(is != null) {
 					sourceFile = read(name, is);
