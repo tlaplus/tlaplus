@@ -526,14 +526,7 @@ public class Tool
           }
           else {
             if (val instanceof OpValue) {
-              Applicable opVal = (Applicable)val;
-              Value[] argVals = new Value[alen];
-              // evaluate the actuals:
-              for (int i = 0; i < alen; i++) {
-	                argVals[i] = this.eval(args[i], c, ps, TLCState.Empty, EvalControl.Init, cm);
-              }
-              // apply the operator:
-              bval = opVal.apply(argVals, EvalControl.Init);
+          	  bval = ((OpValue) val).eval(this, args, c, ps, TLCState.Empty, EvalControl.Init, cm);
             }
           }
 
@@ -1032,14 +1025,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
           }
           else {
             if (val instanceof OpValue) {
-              Applicable opVal = (Applicable)val;
-             Value[] argVals = new Value[alen];
-              // evaluate the actuals:
-              for (int i = 0; i < alen; i++) {
-                argVals[i] = this.eval(args[i], c, s0, s1, EvalControl.Clear, cm);
-              }
-              // apply the operator:
-              bval = opVal.apply(argVals, EvalControl.Clear);
+           	  bval = ((OpValue) val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
             }
           }
 
@@ -1736,15 +1722,8 @@ public final StateVec getNextStates(Action action, TLCState state) {
             }
             else {
               if (val instanceof OpValue) {
-                Applicable opVal = (Applicable)val;
-                Value[] argVals = new Value[alen];
-                // evaluate the actuals:
-                for (int i = 0; i < alen; i++) {
-                  argVals[i] = this.eval(args[i], c, s0, s1, control, cm);
-                }
-                // apply the operator:
-                res = opVal.apply(argVals, control);
-              }
+            	  res = ((OpValue) val).eval(this, args, c, s0, s1, control, cm);
+               } 
             }
           }
           /*********************************************************************
@@ -2757,16 +2736,8 @@ public final StateVec getNextStates(Action action, TLCState state) {
           {
             if (val instanceof OpValue)
             {
-              Applicable op = (Applicable) val;
-              Value[] argVals = new Value[alen];
-              // evaluate the actuals:
-              for (int i = 0; i < alen; i++)
-              {
-                argVals[i] = this.eval(args[i], c, s0, s1, EvalControl.Enabled, cm);
-              }
-              // apply the operator:
-              bval = op.apply(argVals, EvalControl.Enabled);
-            }
+            	bval = ((OpValue) val).eval(this, args, c, s0, s1, EvalControl.Enabled, cm);
+             }
           }
 
           if (opcode == 0)
