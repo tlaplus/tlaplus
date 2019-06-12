@@ -97,7 +97,7 @@ public class Tool
     implements ValueConstants, ToolGlobals, ITool
 {
 	
-  static final Value[] EmptyArgs = new Value[0];
+  public static final Value[] EmptyArgs = new Value[0];
 
 	
   protected final Action[] actions;     // the list of TLA actions.

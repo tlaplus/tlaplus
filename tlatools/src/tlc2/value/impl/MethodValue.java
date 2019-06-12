@@ -10,11 +10,14 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.impl.Tool;
 import tlc2.value.IValue;
 import tlc2.value.Values;
 import util.Assert;
@@ -22,11 +25,21 @@ import util.Assert.TLCRuntimeException;
 import util.WrongInvocationException;
 
 public class MethodValue extends OpValue implements Applicable {
+	
+	public static MethodValue get(final Method md) {
+		final MethodValue mv = new MethodValue(md);
+		// Eagerly evaluate the constant operator if possible (zero arity) to only
+		// evaluate once at startup and not during state exploration.
+		final int acnt = md.getParameterTypes().length;
+    	final boolean isConstant = (acnt == 0) && Modifier.isFinal(md.getModifiers());
+    	return isConstant ? (MethodValue) mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
+	}
+	
   private final MethodHandle mh;
   private final Method md;
 
   /* Constructor */
-	public MethodValue(final Method md) {
+	private MethodValue(final Method md) {
 		this.md = md;
 		try {
 			final int parameterCount = this.md.getParameterCount();

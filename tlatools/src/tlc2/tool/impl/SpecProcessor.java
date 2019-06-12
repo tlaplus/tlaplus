@@ -397,9 +397,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 				// should not be accessed by application code. Thus, exclude
 				// synthetic members from being processed.
                 if (!ms[i].isSynthetic()) {
-                	MethodValue mv = new MethodValue(ms[i]);
-                	IValue val = (acnt == 0) ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
-                	this.defns.put(name, val);
+                	this.defns.put(name, MethodValue.get(ms[i]));
                 }
             }
         }
@@ -486,12 +484,14 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         for (int i = 0; i < mods.length; i++)
         {
         	
-            UniqueString modName = mods[i].getName();
-            Class userModule = this.tlaClass.loadClass(modName.toString());
+        	final UniqueString modName = mods[i].getName();
+            final Class userModule = this.tlaClass.loadClass(modName.toString());
             if (userModule != null)
             {
             	final Map<UniqueString, Integer> opname2arity = new HashMap<>();
             	if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
+					// Remember arity for non built-in overrides to later match with java override
+					// when loading.
             		for (OpDefNode opDefNode : rootOpDefs) {
             			if (opDefNode.getOriginallyDefinedInModuleNode().getName().equals(modName)) {
             				opname2arity.put(opDefNode.getName(), opDefNode.getArity());
@@ -501,33 +501,29 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 // Override with a user defined Java class for the TLA+ module.
                 // Collects new definitions:
                 final Hashtable<UniqueString, IValue> javaDefs = new Hashtable<UniqueString, IValue>();
-                Method[] mds = userModule.getDeclaredMethods();
+                final Method[] mds = userModule.getDeclaredMethods();
                 for (int j = 0; j < mds.length; j++)
                 {
-                    int mdf = mds[j].getModifiers();
+                	final Method method = mds[j];
+                    int mdf = method.getModifiers();
                     if (Modifier.isPublic(mdf) && Modifier.isStatic(mdf))
                     {
-                        final Method method = mds[j];
                         String name = TLARegistry.mapName(method.getName());
                         UniqueString uname = UniqueString.uniqueStringOf(name);
-                        final int acnt = mds[j].getParameterTypes().length;
-                        final MethodValue mv = new MethodValue(method);
-						// Eagerly evaluate the constant operator to only evaluate once at startup and
-						// not during state exploration.
-                        boolean isConstant = (acnt == 0) && Modifier.isFinal(mdf);
-                        final IValue val = isConstant ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
+                    	final int acnt = method.getParameterCount();
+                    	final MethodValue val = MethodValue.get(method);
                         
                         if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
+                    		final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
+                    		// Print success or failure of loading the module override (arity mismatch).
 							final Integer arity = opname2arity.get(uname);
 							if (arity == null || arity != acnt) {
-								final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
 								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
-										new String[] { uname.toString(), resource.toExternalForm(), mv.toString() });
+										new String[] { uname.toString(), resource.toExternalForm(), val.toString() });
 							} else {
 		                        javaDefs.put(uname, val);
-								final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
 								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
-										new String[] { uname.toString(), resource.toExternalForm(), mv.toString() });
+										new String[] { uname.toString(), resource.toExternalForm(), val.toString() });
 							}
                         } else {
                             javaDefs.put(uname, val);
