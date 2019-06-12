@@ -64,10 +64,11 @@ import tlc2.TLCGlobals;
 import tlc2.module.BuiltInModuleHelper;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.overrides.ITLCOverrides;
+import tlc2.overrides.TLAPlusOperator;
 import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
-import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.Specs;
 import tlc2.tool.TLCState;
@@ -510,6 +511,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     {
                         String name = TLARegistry.mapName(method.getName());
                         UniqueString uname = UniqueString.uniqueStringOf(name);
+                        if (method.getAnnotation(TLAPlusOperator.class) != null) {
+                        	// Skip, handled below with annotation based mechanism.
+                        	continue;
+                        }
                     	final int acnt = method.getParameterCount();
                     	final MethodValue val = MethodValue.get(method);
                         
@@ -518,12 +523,12 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     		// Print success or failure of loading the module override (arity mismatch).
 							final Integer arity = opname2arity.get(uname);
 							if (arity == null || arity != acnt) {
-								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
-										new String[] { uname.toString(), resource.toExternalForm(), val.toString() });
+								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH, uname.toString(),
+										resource.toExternalForm(), val.toString());
 							} else {
 		                        javaDefs.put(uname, val);
-								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
-										new String[] { uname.toString(), resource.toExternalForm(), val.toString() });
+								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED, uname.toString(),
+										resource.toExternalForm(), val.toString());
 							}
                         } else {
                             javaDefs.put(uname, val);
@@ -544,6 +549,57 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 }
             }
         }
+		// Load override definitions through user-provided index class. In other words,
+		// a user creates a class that implements the interface ITLCOverrides.
+		// ITLCOverride defines a single method that returns an array of classes which
+		// define Java overrides (this approach is simpler and faster than scanning
+		// the complete classpath). The convention is to name the index class
+		// "tlc2.overrides.TLCOverrides":
+		final Class<?> idx = this.tlaClass.loadClass("tlc2.overrides.TLCOverrides");
+		if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {
+			try {
+				final ITLCOverrides index = (ITLCOverrides) idx.newInstance();
+				final Class<?>[] candidateClasses = index.get();
+				for (Class<?> c : candidateClasses) {
+					final Method[] candidateMethods = c.getDeclaredMethods();
+					for (Method m : candidateMethods) {
+						final TLAPlusOperator opOverrideCandidate = m.getAnnotation(TLAPlusOperator.class);
+						if (opOverrideCandidate != null) {
+							final ModuleNode moduleNode = modSet.get(opOverrideCandidate.module());
+							if (moduleNode == null) {
+								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
+										opOverrideCandidate.identifier(), opOverrideCandidate.module(), m.toString());
+								continue;
+							}
+							final OpDefNode opDef = moduleNode.getOpDef(opOverrideCandidate.identifier());
+							if (opDef == null) {
+								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
+										opOverrideCandidate.identifier(), opOverrideCandidate.module(), m.toString());
+								continue;
+							}
+
+							final Value val = MethodValue.get(m);
+							if (opDef.getArity() != m.getParameterCount()) {
+								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
+										opDef.getName().toString(), c.getName(), val.toString());
+								continue;
+							} else {
+								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+										opDef.getName().toString(), c.getName(), val.toString());
+							}
+
+							opDef.getBody().setToolObject(toolId, val);
+							this.defns.put(opOverrideCandidate.identifier(), val);
+						}
+					}
+				}
+			} catch (InstantiationException | IllegalAccessException e) {
+				// TODO Specific error code.
+				Assert.fail(EC.GENERAL);
+				return;
+			}
+        }
+        
 
         Set<String> overriden = new HashSet<String>();
         // Apply config file overrides to constants:
