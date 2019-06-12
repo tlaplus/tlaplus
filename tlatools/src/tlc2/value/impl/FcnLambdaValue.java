@@ -40,7 +40,10 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
   public int control;
   public FcnRcdValue fcnRcd;
 
-  /* Constructor */
+	/*
+	 * Constructor: E.g. [ s \in {"A", "B", "C"} |-> "foo" ] where s \in {"A", "B",
+	 * "C"} is FcnLambdaValue and body is the expression "foo".
+	 */
   public FcnLambdaValue(FcnParams params, SemanticNode body, ITool tool,
       Context c, TLCState s0, TLCState s1, int control) {
     this.params = params;
