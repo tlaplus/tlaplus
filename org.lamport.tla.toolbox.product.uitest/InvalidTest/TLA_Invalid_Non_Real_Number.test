@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _8r57gAJbEemDc-4PKyNT9w
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:13 AM
+Runtime-Version: 2.4.2.201905122359
+Save-Time: 6/12/19, 9:35 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -44,12 +44,7 @@ try -command {
 	
 	wait-run
     
-	get-view "TLC Errors" | get-text-viewer | get-property text | equals "TLC threw an unexpected exception.\n"
-	    + "This was probably caused by an error in the spec or model.\n"
-	    + "See the User Output or TLC Console for clues to what happened.\n"
-	    + "The exception was a java.lang.RuntimeException\n"
-	    + ": \n"
-	    + "TLC can't handle real numbers.\n"
+	get-view "TLC Errors" | get-text-viewer | get-property text | equals "TLC can't handle real numbers.\n"
 	    + "1.5" | verify-true
 } -finally {
 	DeleteSpecNew
