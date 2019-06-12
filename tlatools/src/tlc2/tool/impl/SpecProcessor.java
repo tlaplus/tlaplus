@@ -408,11 +408,11 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // here since we use defns. Things added into defns later will make it
         // wrong to use it in the method processConstants.
         ModuleNode[] mods = this.moduleTbl.getModuleNodes();
-        Set<String> modSet = new HashSet<String>();
+        final Map<String, ModuleNode> modSet = new HashMap<String, ModuleNode>();
         for (int i = 0; i < mods.length; i++)
         {
             this.processConstants(mods[i]);
-            modSet.add(mods[i].getName().toString());
+            modSet.put(mods[i].getName().toString(), mods[i]);
         }
 
         // Collect all the assumptions.
@@ -500,19 +500,22 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             	}
                 // Override with a user defined Java class for the TLA+ module.
                 // Collects new definitions:
-                Hashtable<UniqueString, IValue> javaDefs = new Hashtable<UniqueString, IValue>();
+                final Hashtable<UniqueString, IValue> javaDefs = new Hashtable<UniqueString, IValue>();
                 Method[] mds = userModule.getDeclaredMethods();
                 for (int j = 0; j < mds.length; j++)
                 {
                     int mdf = mds[j].getModifiers();
                     if (Modifier.isPublic(mdf) && Modifier.isStatic(mdf))
                     {
-                        String name = TLARegistry.mapName(mds[j].getName());
+                        final Method method = mds[j];
+                        String name = TLARegistry.mapName(method.getName());
                         UniqueString uname = UniqueString.uniqueStringOf(name);
-                        int acnt = mds[j].getParameterTypes().length;
-                        MethodValue mv = new MethodValue(mds[j]);
+                        final int acnt = mds[j].getParameterTypes().length;
+                        final MethodValue mv = new MethodValue(method);
+						// Eagerly evaluate the constant operator to only evaluate once at startup and
+						// not during state exploration.
                         boolean isConstant = (acnt == 0) && Modifier.isFinal(mdf);
-                        IValue val = isConstant ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
+                        final IValue val = isConstant ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
                         
                         if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
 							final Integer arity = opname2arity.get(uname);
@@ -662,7 +665,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         while (modKeys.hasMoreElements())
         {
             Object modName = modKeys.nextElement();
-            if (!modSet.contains(modName))
+            if (!modSet.keySet().contains(modName))
             {
                 Assert.fail(EC.TLC_NO_MODULES, modName.toString());
             }

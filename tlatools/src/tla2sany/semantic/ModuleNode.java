@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -409,6 +410,14 @@ public class ModuleNode extends SymbolNode {
         opDefs[j--] = (OpDefNode)contextVec.elementAt(i);
     }
     return opDefs;
+  }
+
+  public final OpDefNode getOpDef(final String name) {
+	  return getOpDef(UniqueString.uniqueStringOf(name));
+  }
+
+  public final OpDefNode getOpDef(final UniqueString name) {
+	  return Stream.of(getOpDefs()).filter(o -> o.getName() == name).findFirst().get();
   }
 
   /*************************************************************************
