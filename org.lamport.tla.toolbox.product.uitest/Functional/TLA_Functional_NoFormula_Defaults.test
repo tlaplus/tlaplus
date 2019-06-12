@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _ntQ8oBB4EemUS_ZdBJsvQg
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/10/19, 9:04 AM
+Runtime-Version: 2.4.2.201905122359
+Save-Time: 6/12/19, 10:56 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -91,8 +91,6 @@ try -command {
 	//get-window "Reset Perspective" | get-button Yes | click
 
 } -finally {
-	get-view "Spec Explorer" | get-tree | select $TLA-TREE-NAME | get-menu -path Delete | click
-	get-window "Delete specification?" | get-button Yes | click
-	get-window "Save Resource" | get-button "Don't Save" | click
+	DeleteSpecNew
 }
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
