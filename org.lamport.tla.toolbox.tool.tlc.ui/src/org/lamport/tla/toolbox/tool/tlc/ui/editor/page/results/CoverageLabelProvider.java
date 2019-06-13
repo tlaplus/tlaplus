@@ -19,11 +19,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.AbstractTableLabelProvider;
 class CoverageLabelProvider extends AbstractTableLabelProvider {
     static final int COL_MODULE = 0;
     static final int COL_LOCATION = 1;
-    static final int COL_COUNT = 2;
 
     static final String TOOLTIP = "Click on a row to go to action.";
     
-	private static final String[] COLUMN_TITLES = new String[] { "Module", "Location", "Count" };
+	private static final String[] COLUMN_TITLES = new String[] { "Module", "Location" };
     private static final int[] COLUMN_WIDTHS;
 	private static final double[] COLUMN_WIDTH_PERCENTAGES;
     private static final int MIN_WIDTH;
@@ -31,15 +30,14 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
     static {
     	final double scale = 1.0;	// future functionality: UIHelper.getDisplayScaleFactor();
     	
-    	COLUMN_WIDTHS = new int[3];
+    	COLUMN_WIDTHS = new int[2];
     	COLUMN_WIDTHS[0] = (int)(40.0 * scale);
     	COLUMN_WIDTHS[1] = (int)(100.0 * scale);
-    	COLUMN_WIDTHS[2] = (int)(40.0 * scale);
     	
-    	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1] + COLUMN_WIDTHS[2];
+    	MIN_WIDTH = COLUMN_WIDTHS[0] + COLUMN_WIDTHS[1];
 		
 		COLUMN_WIDTH_PERCENTAGES = new double[3];
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < COLUMN_WIDTHS.length; i++) {
 			COLUMN_WIDTH_PERCENTAGES[i] = ((double)COLUMN_WIDTHS[i] / (double)MIN_WIDTH);
 		}
     }
@@ -88,8 +86,6 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
 					return item.getModule();
 				case COL_LOCATION:
 					return item.getLocation();
-				case COL_COUNT:
-					return String.valueOf(item.getCount());
 			}
 		}
 		return null;
@@ -101,6 +97,7 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
 
 	public Color getBackground(final Object element, final int columnIndex) {
 		if ((element instanceof CoverageInformationItem) && (((CoverageInformationItem) element).getCount() == 0)) {
+			// This check is technically now obsolete because all elements have zero coverage.
 			return TLCUIActivator.getColor(SWT.COLOR_YELLOW);
 		}
 		

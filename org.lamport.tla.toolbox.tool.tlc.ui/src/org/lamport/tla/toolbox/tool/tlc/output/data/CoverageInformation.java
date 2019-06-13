@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -105,6 +106,13 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 		return items.stream().filter(item -> 
 			((item instanceof CoverageInformationItem) && (((CoverageInformationItem)item).getCount() == 0))
 		).findAny().isPresent();
+	}
+	
+	public CoverageInformationItem[] getZeroCoverageInformation() {
+		return items.stream()
+				.filter(item -> ((item instanceof CoverageInformationItem)
+						&& (((CoverageInformationItem) item).getCount() == 0)))
+				.collect(Collectors.toList()).toArray(new CoverageInformationItem[0]);
 	}
 	
 	/**

@@ -1166,7 +1166,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.verticalIndent = 0;
         headerLine.setLayoutData(gd);
         
-        final Label title = toolkit.createLabel(headerLine, "Coverage at");
+        final Label title = toolkit.createLabel(headerLine, "Zero coverage at");
         gd = new GridData();
         gd.horizontalIndent = 0;
         gd.verticalIndent = 6;
@@ -1225,7 +1225,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 if ((inputElement != null) && (inputElement instanceof List)) {
                     return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
                 } else if (inputElement instanceof CoverageInformation) {
-                	return ((CoverageInformation) inputElement).toArray();
+                	return ((CoverageInformation) inputElement).getZeroCoverageInformation();
                 }
                 return null;
             }
