@@ -52,17 +52,6 @@ import org.lamport.tla.toolbox.util.UIHelper;
 public class EvaluateConstantExpressionPage extends BasicFormPage implements ITLCModelLaunchDataPresenter {
     public static final String ID = "evaluateConstantExpressionPage";
    
-    private static final String EVALUATE_TOGGLE_TEXT = "Will evaluate";
-    private static final String NO_EVALUATE_TOGGLE_TEXT = "No evaluation";
-    
-    static void setAppropriateToggleButtonText(final Button toggleButton) {
-		if (toggleButton.getSelection()) {
-			toggleButton.setText(EVALUATE_TOGGLE_TEXT);
-		} else {
-			toggleButton.setText(NO_EVALUATE_TOGGLE_TEXT);
-		}
-    }
-    
 	static BodyContentAssets createBodyContent(final Composite body, final FormToolkit toolkit, final int sectionFlags,
 			final int textFieldFlags, final IExpansionListener expansionListener, final ModelEditor modelEditor) {
         // There is no description line for this section, so it is necessary to eliminate that bit in the style flags that
@@ -112,8 +101,8 @@ public class EvaluateConstantExpressionPage extends BasicFormPage implements ITL
 		gd.heightHint = l.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
 		l.setLayoutData(gd);
 		
-		final Button b = new Button(labelToggleLine, SWT.TOGGLE);
-		b.setText(modelEditor.modelIsConfiguredWithNoBehaviorSpec() ? EVALUATE_TOGGLE_TEXT : NO_EVALUATE_TOGGLE_TEXT);
+		final Button b = new Button(labelToggleLine, SWT.CHECK);
+		b.setText("No Behavior Spec");
 		gd = new GridData();
 		gd.horizontalAlignment = SWT.RIGHT;
 		gd.heightHint = b.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
@@ -124,8 +113,6 @@ public class EvaluateConstantExpressionPage extends BasicFormPage implements ITL
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
 				final MainModelPage mmp = (MainModelPage)modelEditor.findPage(MainModelPage.ID);
-				
-				setAppropriateToggleButtonText(b);
 				
 				mmp.setNoBehaviorSpec(b.getSelection());
 			}
@@ -211,8 +198,7 @@ public class EvaluateConstantExpressionPage extends BasicFormPage implements ITL
      * @param editor
      */
 	public EvaluateConstantExpressionPage(final FormEditor editor) {
-        super(editor, ID, "Evaluate ConEx",
-        		"icons/full/ece_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
+        super(editor, ID, "Constant Expressions", "icons/full/ece_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
         helpId = IHelpConstants.EVALUATE_CON_EX_PAGE;
     }
 
@@ -247,7 +233,6 @@ public class EvaluateConstantExpressionPage extends BasicFormPage implements ITL
     
 	public void setNoBehaviorSpecToggleState(final boolean selected) {
 		m_toggleButton.setSelection(selected);
-		setAppropriateToggleButtonText(m_toggleButton);
 	}
 	
 	public State getECEContent() {

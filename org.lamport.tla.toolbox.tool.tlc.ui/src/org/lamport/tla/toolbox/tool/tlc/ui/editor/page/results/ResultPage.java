@@ -1295,7 +1295,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	public void setNoBehaviorSpecToggleState(final boolean selected) {
 		if (m_noBehaviorModeToggleButton != null) {
 			m_noBehaviorModeToggleButton.setSelection(selected);
-			EvaluateConstantExpressionPage.setAppropriateToggleButtonText(m_noBehaviorModeToggleButton);
 		}
 	}
 	

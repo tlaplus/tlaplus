@@ -390,6 +390,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			behaviorCombo.select(previousBehaviorComboSelection);
 			moveToTopOfBehaviorOptionsStack(behaviorCombo.getText());
 		}
+		final DataBindingManager dm = getDataBindingManager();
+		dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_NO_SPEC)).markDirty();
 		
 		validatePage(false);
 	}
