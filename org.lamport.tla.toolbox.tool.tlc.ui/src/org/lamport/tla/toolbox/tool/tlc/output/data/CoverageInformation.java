@@ -103,14 +103,17 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 	 *				model check which did have zero coverage. mku alerted on 20190610.
 	 */
 	public boolean containsZeroCoverageInformation() {
-		return items.stream().filter(item -> 
-			((item instanceof CoverageInformationItem) && (((CoverageInformationItem)item).getCount() == 0))
-		).findAny().isPresent();
+		return items.stream()
+				.filter(item -> ((item instanceof CoverageInformationItem)
+						&& ((CoverageInformationItem) item).includeInCounts()
+						&& (((CoverageInformationItem) item).getCount() == 0)))
+				.findAny().isPresent();
 	}
 	
 	public CoverageInformationItem[] getZeroCoverageInformation() {
 		return items.stream()
 				.filter(item -> ((item instanceof CoverageInformationItem)
+						&& ((CoverageInformationItem) item).includeInCounts()
 						&& (((CoverageInformationItem) item).getCount() == 0)))
 				.collect(Collectors.toList()).toArray(new CoverageInformationItem[0]);
 	}

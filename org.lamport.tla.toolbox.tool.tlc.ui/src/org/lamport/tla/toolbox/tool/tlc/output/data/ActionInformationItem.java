@@ -115,6 +115,26 @@ public class ActionInformationItem extends CoverageInformationItem {
 		return relation;
 	}
 
+	@Override
+    public boolean includeInCounts() {
+		if (relation == Relation.PROP && count == 0) {
+			// Count should always be zero but better be safe than sorry. The reason to
+			// exclude PROP from counts is to prevent bogus zero coverage reports for
+			// properties. Consider the spec below:
+			// ---- Foo ----
+			// VARIABLE x
+			// Init == ...
+			// Next == ...
+			// TypeOK == x \in Nat
+			// =====
+			// The ActionInformationItem instance for the expression "TypeOK" (just the
+			// left-hand side), has zero count. The right-hand side will however report
+			// its count.
+			return false;
+		}
+    	return true;
+    }
+
 	public long getUnseen() {
 		return getCost();
 	}

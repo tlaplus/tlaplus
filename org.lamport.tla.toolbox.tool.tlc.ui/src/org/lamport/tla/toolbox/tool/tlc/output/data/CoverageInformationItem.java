@@ -115,7 +115,11 @@ public class CoverageInformationItem implements IModuleLocatable
 		return nameWithoutSuffix.equalsIgnoreCase(location.source());
     }
 
-    public final long getCount()
+    public boolean includeInCounts() {
+    	return true;
+    }
+    
+    public long getCount()
     {
         return count;
     }
