@@ -1462,7 +1462,7 @@ public class MP
      * @param parameters a list of string parameters to be inserted into the message, by replacing 
      * %i% with the i-th parameter in the array
      */
-    public static void printMessage(int errorCode, String[] parameters)
+    public static void printMessage(int errorCode, String... parameters)
     {
     	recorder.record(errorCode, (Object[]) parameters);
         DebugPrinter.print("entering printMessage(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
@@ -1539,7 +1539,7 @@ public class MP
      * @param errorCode
      * @param parameters
      */
-    public static void printWarning(int errorCode, String[] parameters)
+    public static void printWarning(int errorCode, String... parameters)
     {
     	recorder.record(errorCode, (Object[]) parameters);
         DebugPrinter.print("entering printWarning(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
