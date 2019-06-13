@@ -20,7 +20,9 @@ import tlc2.tool.Simulator;
 public class TLCGlobals
 {
 
-    // The current version of TLC
+	public static final int DEFAULT_CHECKPOINT_DURATION = (30 * 60 * 1000) + 42;
+
+	// The current version of TLC
     public static String versionOfTLC = "Version 2.13 of 18 July 2018";
     
     // The bound for set enumeration, used for pretty printing
@@ -115,7 +117,7 @@ public class TLCGlobals
 
     // The time interval to checkpoint. (in milliseconds)
 	public static long chkptDuration = Integer.getInteger(
-			TLCGlobals.class.getName() + ".chkpt", 30 * 60 * 1000);
+			TLCGlobals.class.getName() + ".chkpt", DEFAULT_CHECKPOINT_DURATION);
     
 	// MAK 08.2012: centralized checkpoint code and added disabling and
 	// externally forced checkpoints
@@ -124,7 +126,12 @@ public class TLCGlobals
     	forceChkpt = true;
     }
     private static long lastChkpt = System.currentTimeMillis();
-    
+
+	public static boolean chkptExplicitlyEnabled() {
+		// Assumption is that a user will always select a different value.
+		return chkptDuration > 0 && chkptDuration != DEFAULT_CHECKPOINT_DURATION;
+	}
+
 	/**
 	 * IMPORTANT NOTE: The method is unsynchronized. It is the caller's
 	 * responsibility to ensure that only a single thread calls this method.

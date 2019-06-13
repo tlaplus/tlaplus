@@ -805,10 +805,11 @@ public class ModelChecker extends AbstractChecker
     {
     	boolean vetoCleanup = VETO_CLEANUP;
     	
-		// If model checking is not done, checkpoints are enabled, and either and error
-		// has been found or time-bound model checking is enabled, take a snapshot to
-    	// allow users to continue model checking if needed.
-		if (TLCGlobals.chkptDuration > 0 && !theStateQueue.isEmpty() && (this.errState != null || isTimeBound())) {
+		// If model checking is not done, checkpoints are (explicitly) enabled, and
+		// either and error has been found or time-bound model checking is enabled, take
+		// a snapshot to allow users to continue model checking if needed.
+		if (TLCGlobals.chkptExplicitlyEnabled()
+				&& !theStateQueue.isEmpty() && (this.errState != null || isTimeBound())) {
 			checkpoint();
 			vetoCleanup = true;
 		}
