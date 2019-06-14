@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _JObaIIvTEemXYtOZX2zpng
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/10/19, 4:39 PM
+Save-Time: 6/14/19, 10:55 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -46,41 +46,46 @@ try -command {
 	    get-button "Apply and Close" | click
 	}
 
-	with [get-editor "Model_1"] {
-		verify-error { get-section "Evaluate Constant Expression" }
-		get-tab-item "Evaluate ConEx" | click
-	    with [get-section "Evaluate Constant Expression"] {
-	    	get-text-viewer -after [get-label "Expression:"] | get-text |
-	    		equals "CHOOSE w in {3, 5, 7} : w*w*w = 125" | verify-true
-	    }
-	}	
-	
-	get-preferences-menu | click
-	with [get-window Preferences ] {
-		get-tree | select "TLA+ Preferences/TLC Model Checker" 
-	    get-checkbox -text "Show Evaluate Constant Expression in its own tab" | uncheck
-	    
-	    get-button "Apply and Close" | click
+	let [val tabTitle [invoke-static
+							-pluginId "org.lamport.tla.toolbox.tool.tlc.ui"
+							-className "org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.EvaluateConstantExpressionPage"
+							-methodName "getTabTitle"]] {
+		with [get-editor "Model_1"] {
+			verify-error { get-section "Evaluate Constant Expression" }
+			get-tab-item $tabTitle | click
+		    with [get-section "Evaluate Constant Expression"] {
+		    	get-text-viewer -after [get-label "Expression:"] | get-text |
+		    		equals "CHOOSE w in {3, 5, 7} : w*w*w = 125" | verify-true
+		    }
+		}	
+		
+		get-preferences-menu | click
+		with [get-window Preferences ] {
+			get-tree | select "TLA+ Preferences/TLC Model Checker" 
+		    get-checkbox -text "Show Evaluate Constant Expression in its own tab" | uncheck
+		    
+		    get-button "Apply and Close" | click
+		}
+		
+		with [get-editor "Model_1"] {
+			verify-error { get-tab-item $tabTitle }
+		    get-tab-item "Model Checking Results" | click
+		    with [get-section "Evaluate Constant Expression"] {
+		    	get-text-viewer -after [get-label "Expression:"] | get-text |
+		    		equals "CHOOSE w in {3, 5, 7} : w*w*w = 125" | verify-true
+		    	get-button "No Behavior Spec" | click
+		    	get-button "No Behavior Spec" | get-object | invoke getSelection | verify-true
+		    }
+		    get-tab-item "Model Overview" | click
+		    with [get-section "What is the behavior spec?" | get-combo] {
+		    	get-text | equals "No behavior spec" | verify-true
+		    	select "Temporal formula"
+		    }
+		    get-tab-item "Model Checking Results" | click
+		    get-section "Evaluate Constant Expression" | get-button | get-object | invoke getSelection | verify-false
+		    key-type "M1+s"
+		}	
 	}
-	
-	with [get-editor "Model_1"] {
-		verify-error { get-tab-item "Evaluate ConEx" }
-	    get-tab-item "Model Checking Results" | click
-	    with [get-section "Evaluate Constant Expression"] {
-	    	get-text-viewer -after [get-label "Expression:"] | get-text |
-	    		equals "CHOOSE w in {3, 5, 7} : w*w*w = 125" | verify-true
-	    	get-button "No evaluation" | click
-	    	get-button "Will evaluate" | get-object | invoke getSelection | verify-true
-	    }
-	    get-tab-item "Model Overview" | click
-	    with [get-section "What is the behavior spec?" | get-combo] {
-	    	get-text | equals "No behavior spec" | verify-true
-	    	select "Temporal formula"
-	    }
-	    get-tab-item "Model Checking Results" | click
-	    get-section "Evaluate Constant Expression" | get-button | get-text | equals "No evaluation" | verify-true
-	    key-type "M1+s"
-	}	
 } -finally {
 	DeleteSpecNew
 }

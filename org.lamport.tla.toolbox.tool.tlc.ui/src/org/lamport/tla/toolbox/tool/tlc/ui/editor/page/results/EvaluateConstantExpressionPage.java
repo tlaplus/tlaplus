@@ -51,6 +51,11 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class EvaluateConstantExpressionPage extends BasicFormPage implements ITLCModelLaunchDataPresenter {
     public static final String ID = "evaluateConstantExpressionPage";
+    
+    /** Exists for making RCPTT tests nicer, hopefully **/
+    public static String getTabTitle() {
+    	return "Constant Expressions";
+    }
    
 	static BodyContentAssets createBodyContent(final Composite body, final FormToolkit toolkit, final int sectionFlags,
 			final int textFieldFlags, final IExpansionListener expansionListener, final ModelEditor modelEditor) {
@@ -198,7 +203,7 @@ public class EvaluateConstantExpressionPage extends BasicFormPage implements ITL
      * @param editor
      */
 	public EvaluateConstantExpressionPage(final FormEditor editor) {
-        super(editor, ID, "Constant Expressions", "icons/full/ece_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
+        super(editor, ID, getTabTitle(), "icons/full/ece_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
         helpId = IHelpConstants.EVALUATE_CON_EX_PAGE;
     }
 
