@@ -653,6 +653,16 @@ public class Spec implements IAdaptable {
 		return Activator.getSpecManager().getSpecLoaded() == this;
 	}
 
+	public Module getModule(final String moduleName) {
+		final List<Module> modules = getModules();
+		for (Module module : modules) {
+			if (moduleName.equals(module.getModuleName())) {
+				return module;
+			}
+		}
+		return null;
+	}
+	
 	public List<Module> getModules() {
 		final List<Module> modules = new ArrayList<Module>();
 		final IResource[] moduleResources = getModuleResources();
@@ -681,5 +691,16 @@ public class Spec implements IAdaptable {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Transitively deletes the given marker type on all modules (including the root
+	 * module) of the spec.
+	 */
+	public void deleteMarker(final String markerType) throws CoreException {
+		getRootFile().deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
+		for (IResource r : getModuleResources()) {
+			r.deleteMarkers(markerType, true, IResource.DEPTH_INFINITE);
+		}
 	}
 }

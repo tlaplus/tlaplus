@@ -41,6 +41,8 @@ import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 
+import tlc2.tool.coverage.ActionWrapper.Relation;
+
 public class CoverageInformation implements Iterable<CoverageInformationItem> {
 	
 	private final List<CoverageInformationItem> items = new ArrayList<>();
@@ -95,29 +97,27 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 		return this.items.toArray();
 	}
 	
+
 	/**
-	 * @return if any item is an instance of CoverageInformationItem and has a count of 0; this mirrors the logic which
-	 * 				paints the cells of our statistics coverage table; we do this because there is seemingly a bug
-	 *				in our data provider in which {@link TLCModelLaunchDataProvider#hasZeroCoverage()} returns
-	 *				true when that's actually incorrect, under the condition of a subsequent model check after a
-	 *				model check which did have zero coverage. mku alerted on 20190610.
+	 * CIIs for zero-covered/disabled spec actions (init and next-state relation).
 	 */
-	public boolean containsZeroCoverageInformation() {
+	public List<ActionInformationItem> getDisabledSpecActions() {
 		return items.stream()
-				.filter(item -> ((item instanceof CoverageInformationItem)
-						&& ((CoverageInformationItem) item).includeInCounts()
-						&& (((CoverageInformationItem) item).getCount() == 0)))
+				.filter(item -> ((item instanceof ActionInformationItem)
+						&& ((ActionInformationItem) item).getRelation() != Relation.PROP
+						&& (((ActionInformationItem) item).getCount() == 0)))
+				.map(item -> (ActionInformationItem) item)
+				.collect(Collectors.toList());
+	}
+	
+	public boolean hasDisabledSpecActions() {
+		return items.stream()
+				.filter(item -> ((item instanceof ActionInformationItem)
+						&& ((ActionInformationItem) item).getRelation() != Relation.PROP
+						&& (((ActionInformationItem) item).getCount() == 0)))
 				.findAny().isPresent();
 	}
-	
-	public CoverageInformationItem[] getZeroCoverageInformation() {
-		return items.stream()
-				.filter(item -> ((item instanceof CoverageInformationItem)
-						&& ((CoverageInformationItem) item).includeInCounts()
-						&& (((CoverageInformationItem) item).getCount() == 0)))
-				.collect(Collectors.toList()).toArray(new CoverageInformationItem[0]);
-	}
-	
+
 	/**
 	 * @return true if coverage information pre-dates TLC's new/hierarchical format introduced by the CostModel.
 	 */

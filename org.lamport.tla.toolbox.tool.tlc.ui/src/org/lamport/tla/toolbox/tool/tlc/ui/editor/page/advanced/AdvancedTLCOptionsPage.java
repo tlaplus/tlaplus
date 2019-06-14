@@ -13,6 +13,10 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.SourceViewer;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -22,6 +26,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -38,6 +43,7 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.Model.Coverage;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
@@ -92,7 +98,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     private Button m_checkpointDeleteButton;
     
     // Widgets to enable/disable coverage
-    private Button m_collectCoverageCheckbox;
+    private ComboViewer m_collectCoverageCombo;
     
     /**
      * Offset for the -fp parameter passed to TLC process to select the hash seed 
@@ -469,6 +475,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gl = new GridLayout(2, false);
         gl.marginHeight = 2;
         gl.marginWidth = 2;
+        
         featuresBody.setLayout(gl);
 
         /*
@@ -547,23 +554,44 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         new Label(featuresBody, SWT.NONE); // use up last cell.
 
         // Collect Coverage
-		final String collectCoverageHelp = "Coverage helps identify problems with the specification such as action which are "
-				+ "never enabled. Cost statistics allow to diagnose expensive expressions to evaluate and state space "
-				+ "explosion. Both statistics negatively impact model checking performance and should thus be disabled while "
+		final String collectCoverageHelp = "Coverage helps identify problems with the specification such as actions which are "
+				+ "never enabled (Action enablement). Cost statistics allow to diagnose expensive expressions (to evaluate) and state space "
+				+ "explosion (On). Coverage negatively impacts model checking performance and should thus be off while "
 				+ "checking large models.";
 		final Label collectCoverageLabel = toolkit.createLabel(featuresBody,
-				"Collect coverage and cost statistics:");
+				"Collect coverage:");
         gd = new GridData();
         gd.verticalIndent = 9;
+        gd.grabExcessHorizontalSpace = true;
         collectCoverageLabel.setLayoutData(gd);
         collectCoverageLabel.setToolTipText(collectCoverageHelp);
 
-        m_collectCoverageCheckbox = toolkit.createButton(featuresBody, "", SWT.CHECK);
+        m_collectCoverageCombo = new ComboViewer(new Combo(featuresBody, SWT.NONE));
         gd = new GridData();
         gd.verticalIndent = 9;
-        m_collectCoverageCheckbox.setLayoutData(gd);
-        m_collectCoverageCheckbox.addFocusListener(focusListener);
-        m_collectCoverageCheckbox.setToolTipText(collectCoverageHelp);
+        gd.grabExcessHorizontalSpace = true;
+        m_collectCoverageCombo.getCombo().setLayoutData(gd);
+        m_collectCoverageCombo.getCombo().addFocusListener(focusListener);
+        m_collectCoverageCombo.getCombo().setToolTipText(collectCoverageHelp);
+        
+        m_collectCoverageCombo.setContentProvider(ArrayContentProvider.getInstance());
+        m_collectCoverageCombo.setLabelProvider(new LabelProvider() {
+			@Override
+			public String getText(Object element) {
+				if (element instanceof Coverage) {
+					switch ((Coverage) element) {
+					case OFF:
+						return "Off";
+					case ACTION:
+						return "Action enablement";
+					case ON:
+						return "On";
+					}
+				}
+				return "Off"; // make compiler happy 
+			}
+        });
+        m_collectCoverageCombo.setInput(Model.Coverage.values());
         
         // Visualize State Graph with GraphViz (dot)
 		final String visualizeStateGraphHelp = "Draw the state graph after completion of model checking provided the "
@@ -571,6 +599,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         final Label visualizeStateGraphLabel = toolkit.createLabel(featuresBody, "Visualize state graph after completion of model checking:");
         gd = new GridData();
         gd.verticalIndent = 9;
+        gd.grabExcessHorizontalSpace = true;
         visualizeStateGraphLabel.setLayoutData(gd);
         visualizeStateGraphLabel.setToolTipText(visualizeStateGraphHelp);
 
@@ -731,7 +760,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_simulationArilText.addModifyListener(modePartListener);
 
         m_checkpointRecoverCheckbox.addSelectionListener(featuresPartListener);
-        m_collectCoverageCheckbox.addSelectionListener(featuresPartListener);
+        m_collectCoverageCombo.getCombo().addSelectionListener(featuresPartListener);
         m_visualizeStateGraphCheckbox.addSelectionListener(featuresPartListener);
 
         m_deferLivenessCheckbox.addSelectionListener(parametersPartListener);
@@ -802,7 +831,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_checkpointRecoverCheckbox.setSelection(recover);
         
         // coverage
-        m_collectCoverageCheckbox.setSelection(model.getAttribute(LAUNCH_COVERAGE, LAUNCH_COVERAGE_DEFAULT));
+        m_collectCoverageCombo.setSelection(new StructuredSelection(model.getCoverage()), true);
         
         // fp index
         final boolean randomly = model.getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT);
@@ -898,7 +927,10 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		model.setAttribute(LAUNCH_VISUALIZE_STATEGRAPH, m_visualizeStateGraphCheckbox.getSelection());
 
         // Collect Coverage
-		model.setAttribute(LAUNCH_COVERAGE, m_collectCoverageCheckbox.getSelection());
+		final Object coverage = m_collectCoverageCombo.getStructuredSelection().getFirstElement();
+		if (coverage instanceof Coverage) {
+			model.setCoverage((Coverage) coverage);
+		}
        
         // view
         String viewFormula = FormHelper.trimTrailingSpaces(m_viewSource.getDocument().get());

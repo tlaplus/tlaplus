@@ -78,9 +78,11 @@ import org.eclipse.ui.progress.UIJob;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAFastPartitioner;
 import org.lamport.tla.toolbox.editor.basic.TLAPartitionScanner;
+import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.output.data.ActionInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformation;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageUINotification;
@@ -133,7 +135,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 	private static final Color ERROR_PANE_BACKGROUND = new Color(PlatformUI.getWorkbench().getDisplay(), 255, 241, 237);
 	private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("HH:mm:ss '('MMM d')'");
-	private static final String ZERO_COVERAGE_WARNING = "Coverage is zero for one or more modules.";
+	private static final String ZERO_COVERAGE_WARNING = "Disabled actions for one or more modules.";
 	
 	
     /**
@@ -286,7 +288,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						m_errorPaneViewState.setFingerprintDisplay(false);
 						setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
                 	} else {
-						m_fingerprintCollisionLabel.setText("Fingerprint collision chance: " + collisionText);
+						m_fingerprintCollisionLabel.setText("Fingerprint collision probability: " + collisionText);
 						m_fingerprintCollisionLabel.setVisible(true);
 						m_errorPaneViewState.setFingerprintDisplay(true);
 						setErrorPaneVisible(true);
@@ -308,7 +310,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 								marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
 								zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 							}
-							if (coverageInfo.containsZeroCoverageInformation()) {
+							if (coverageInfo.hasDisabledSpecActions()) {
 								m_zeroCoverageLabel.setVisible(true);
 								m_errorPaneViewState.setZeroCountDisplay(true);
 								setErrorPaneVisible(true);
@@ -337,6 +339,40 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						// Cannot show coverage information without (non-legacy) coverage data.
                 		break;
                 	}
+
+            		final List<ActionInformationItem> zeroCoverageInformation = ci.getDisabledSpecActions();
+            		for (ActionInformationItem item : zeroCoverageInformation) {
+            			final Module m = getModel().getSpec().getModule(item.getModule());
+            			if (m == null) {
+            				// With the Toolbox better be safe than sorry.
+            				continue;
+            			}
+            			try {
+            				final IMarker createMarker = m.getResource()
+            						.createMarker(ModelEditor.ZERO_COVERAGE_ACTION_MARKER);
+            				
+							createMarker.setAttribute(IMarker.MESSAGE,
+									String.format("%s is never enabled.", item.getName()));
+							createMarker.setAttribute(IMarker.LINE_NUMBER, item.getModuleLocation().beginLine());
+
+							// In order to color/highlight the token itself, set char_start and char_end
+							// too. At this point we decided it is too intrusive though.
+//							final org.eclipse.jface.text.IRegion region = org.lamport.tla.toolbox.util.AdapterFactory
+//									.locationToRegion(item.getModuleLocation());
+//							createMarker.setAttribute(IMarker.CHAR_START, region.getOffset());
+//							createMarker.setAttribute(IMarker.CHAR_END, region.getOffset() + region.getLength());
+            			} catch (CoreException e) {
+            				TLCUIActivator.getDefault().logError(e.getMessage(), e);
+            			}
+            		}
+
+					// Do not open the dedicated coverage editor below if the user only requested
+					// action-only coverage.
+            		if (Model.Coverage.ACTION == getModel().getCoverage()) {
+                		break;
+                	}
+
+					
 					final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
 					
 					final List<IFile> savedTLAFiles = modelEditor.getModel().getSavedTLAFiles();
@@ -1166,7 +1202,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.verticalIndent = 0;
         headerLine.setLayoutData(gd);
         
-        final Label title = toolkit.createLabel(headerLine, "Zero coverage at");
+        final Label title = toolkit.createLabel(headerLine, "Disabled actions at");
         gd = new GridData();
         gd.horizontalIndent = 0;
         gd.verticalIndent = 6;
@@ -1177,7 +1213,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         this.coverageTimestampText = toolkit.createText(headerLine, "", SWT.FLAT);
         this.coverageTimestampText.setEditable(false);
-        this.coverageTimestampText.setMessage("No coverage information collected. Has coverage been enabled?");
+        this.coverageTimestampText.setMessage("No information collected. Has coverage been enabled?");
         gd = new GridData();
         gd.horizontalIndent = 6;
         gd.verticalIndent = 0;
@@ -1225,7 +1261,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 if ((inputElement != null) && (inputElement instanceof List)) {
                     return ((List<?>) inputElement).toArray(new Object[((List<?>) inputElement).size()]);
                 } else if (inputElement instanceof CoverageInformation) {
-                	return ((CoverageInformation) inputElement).getZeroCoverageInformation();
+                	return ((CoverageInformation) inputElement).getDisabledSpecActions().toArray();
                 }
                 return null;
             }

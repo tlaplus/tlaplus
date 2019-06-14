@@ -116,7 +116,7 @@ public interface IConfigurationDefaults
      */
     public static final boolean LAUNCH_RECOVER_DEFAULT = false;
     /**
-     * Collect covearge and cost statistics by default
+     * Collect coverage and cost statistics by default
      */
-    public static final boolean LAUNCH_COVERAGE_DEFAULT = true;
+    public static final int LAUNCH_COVERAGE_DEFAULT = 1;
 }

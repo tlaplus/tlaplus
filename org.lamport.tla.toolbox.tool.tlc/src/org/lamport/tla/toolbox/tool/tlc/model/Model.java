@@ -78,6 +78,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
@@ -1251,6 +1252,40 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		} catch (CoreException shouldNotHappen) {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 		}
+	}
+	
+	// TLC's coverage implementation (see tlc2.tool.coverage.CostModelCreator) only
+	// supports two modes: Off and On. However, we consider On too much information
+	// for novice users who are (likely) only interested in identifying spec errors
+	// that leave a subset of actions permanently disabled. The Toolbox therefore
+	// adds a third mode "Action" which filters TLC's output for All. This obviously
+	// means that the overhead of collecting coverage in Action and On mode is
+	// identical.  This shouldn't matter however as novice users don't create large
+	// specs anyway and the Toolbox warns users when a large spec has been
+	// configured with coverage.
+	// (see org.lamport.tla.toolbox.tool.tlc.output.data.CoverageUINotification)
+	// Alternatively, tlc2.tool.coverage.ActionWrapper.report() could be changed to
+	// omit the report of its children (line 126) to effectively create the Action
+	// mode at the TLC layer. I decided against it though, because I didn't want to
+	// extend the -coverage TLC parameter.
+	public enum Coverage {
+		OFF, ACTION, ON;
+	}
+	
+	public Coverage setCoverage(final Coverage c) {
+		setAttribute(LAUNCH_COVERAGE, c.ordinal());
+		return c;
+	}
+	
+	public Coverage getCoverage() {
+		try {
+			final int ordinal = getAttribute(LAUNCH_COVERAGE, IConfigurationDefaults.LAUNCH_COVERAGE_DEFAULT);
+			return Coverage.values()[ordinal];
+		} catch (CoreException shouldNotHappen) {
+			// We log the exceptions on setAttribute but expose exceptions with getAttribute %-)
+			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
+		}
+		return Coverage.ACTION;
 	}
 	
 	/* IAdaptable */

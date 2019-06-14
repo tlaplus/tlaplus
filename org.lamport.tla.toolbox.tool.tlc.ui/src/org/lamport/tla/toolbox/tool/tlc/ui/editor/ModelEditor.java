@@ -108,6 +108,8 @@ public class ModelEditor extends FormEditor {
      * Editor ID
      */
     public static final String ID = "org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor";
+    
+    public static final String ZERO_COVERAGE_ACTION_MARKER = "org.lamport.tla.toolbox.tlc.zerocoverage";
 
 	private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
 
@@ -973,6 +975,10 @@ public class ModelEditor extends FormEditor {
 								return;
 							}
 						}
+						
+						// Delete any zero coverage markers when model checking starts. The outcome of
+						// model checking can invalidate old markers. Noop if no markers are present.
+						spec.deleteMarker(ZERO_COVERAGE_ACTION_MARKER);
 					} else {
 						Activator.getDefault().logDebug("The spec manager has not been instantiated. This is a bug.");
 						return;

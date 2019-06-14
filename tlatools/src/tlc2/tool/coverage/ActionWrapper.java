@@ -122,6 +122,8 @@ public final class ActionWrapper extends CostModelNode {
 		// for this OpDefNode unless the action's pred is a substitution.
 		assert !(this.action.pred instanceof SubstInNode) ? this.children.size() == 1 : !this.children.isEmpty();
 		// Let children report.
+		// Could disable here if decided to implement action-only coverage at the TLC
+		// level (see org.lamport.tla.toolbox.tool.tlc.model.Model.Coverage).
 		this.children.values().forEach(c -> c.report());
 		return this;
 	}

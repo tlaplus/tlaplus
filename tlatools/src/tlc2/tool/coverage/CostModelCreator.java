@@ -334,6 +334,7 @@ public class CostModelCreator extends ExplorerVisitor {
     		initAction.cm.report();
     	}
 
+		// Order next-state actions based on location to print in order of location.
     	final Action[] actions = tool.getActions();
         final Set<CostModel> reported = new HashSet<>();
         final Set<Action> sortedActions = new TreeSet<>(new Comparator<Action>() {

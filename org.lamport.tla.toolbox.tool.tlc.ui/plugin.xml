@@ -919,4 +919,44 @@ Console Facory
          </defaultHandler>
       </event>
    </extension>
+   <extension
+         id="org.lamport.tla.toolbox.tlc.zerocoverage"
+         name="Zero Coverage Marker Name"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="org.lamport.tla.toolbox.tlc.zerocoverage"
+            name="org.lamport.tla.toolbox.tlc.zerocoverage">
+      </type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="org.lamport.tla.toolbox.tlc.zerocoverage"
+            colorPreferenceKey="org.lamport.tla.toolbox.tlc.zerocoverage.color"
+            colorPreferenceValue="250,218,92"
+            contributesToHeader="true"
+            highlightPreferenceKey="org.lamport.tla.toolbox.tlc.zerocoverage.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Zero Coverage"
+            overviewRulerPreferenceKey="org.lamport.tla.toolbox.tlc.zerocoverage.overruler"
+            overviewRulerPreferenceValue="true"
+            symbolicIcon="warning"
+            textPreferenceKey="org.lamport.tla.toolbox.tlc.zerocoverage.text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="org.lamport.tla.toolbox.tlc.zerocoverage.textstyle"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="org.lamport.tla.toolbox.tlc.zerocoverage.vertruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
 </plugin>
