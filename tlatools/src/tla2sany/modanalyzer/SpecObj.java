@@ -6,13 +6,13 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
+import java.util.Vector;
 
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Vector;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.NamedInputStream;
@@ -380,7 +380,10 @@ public class SpecObj
         // Vector referencees holds ParseUnits either extended by or
         // instanced by "candidate"
         Vector referencees = candidate.getExtendees();
-        referencees.appendNoRepeats(candidate.getInstancees());
+		candidate.getInstancees().forEach(
+		  instancee -> {
+			  if (!referencees.contains(instancee)) referencees.addElement(instancee);
+		  });
 
         for (int i = 0; i < referencees.size(); i++)
         {

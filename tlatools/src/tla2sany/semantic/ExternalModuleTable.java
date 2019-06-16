@@ -10,11 +10,11 @@ package tla2sany.semantic;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.utilities.Strings;
-import tla2sany.utilities.Vector;
 import util.UniqueString;
 
 public class ExternalModuleTable implements ExploreNode {

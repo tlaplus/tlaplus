@@ -2,7 +2,7 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.modanalyzer;
 
-import tla2sany.utilities.Vector;
+import java.util.Vector;
 
 /**
  * This class contains fields representing the names of modules that are all related by EXTENDing or INSTANCEing

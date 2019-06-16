@@ -25,13 +25,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.util.Vector;
 
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
 import tla2sany.st.Location;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Vector;
 import util.FileUtil;
 import util.NamedInputStream;
 import util.ToolIO;

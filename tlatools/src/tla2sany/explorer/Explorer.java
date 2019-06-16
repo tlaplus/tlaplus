@@ -15,6 +15,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
@@ -22,7 +23,6 @@ import tla2sany.semantic.Generator;
 import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
-import tla2sany.utilities.Vector;
 import util.UniqueString;
 
 /*

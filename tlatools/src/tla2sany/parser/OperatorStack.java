@@ -1,7 +1,8 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 package tla2sany.parser;
 
-import tla2sany.utilities.Vector;
+import java.util.Vector;
+
 import util.UniqueString;
 
 /***************************************************************************
