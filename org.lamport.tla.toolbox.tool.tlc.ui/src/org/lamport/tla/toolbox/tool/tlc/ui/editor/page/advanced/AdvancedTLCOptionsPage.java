@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Spinner;
@@ -41,6 +40,8 @@ import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.Coverage;
@@ -192,11 +193,6 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		updateCheckpoints();
 	}
     
-    @Override
-	protected Layout getBodyLayout() {
-        return FormHelper.createFormTableWrapLayout(false, 1);
-    }
-    
 	@Override
 	protected void createBodyContent(final IManagedForm managedForm) {
         final DataBindingManager dm = getDataBindingManager();
@@ -207,11 +203,22 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         GridLayout gl;
         GridData gd;
 
+		final TableWrapLayout twl = new TableWrapLayout();
+		twl.leftMargin = 0;
+		twl.rightMargin = 0;
+		twl.numColumns = 1;
+		formBody.setLayout(twl);
+
         mainModelPage = (MainModelPage)getEditor().findPage(MainModelPage.ID);
         programmaticallySettingWorkerParameters.set(true);
 
         Section section = FormHelper.createSectionComposite(formBody, "Configuration", "",
                 toolkit, (sectionFlags | Section.EXPANDED), getExpansionListener());
+        TableWrapData twd = new TableWrapData();
+        twd.align = TableWrapData.FILL;
+        twd.grabHorizontal = true;
+        section.setLayoutData(twd);
+        
         final ValidateableSectionPart configPart = new ValidateableSectionPart(section, this, SEC_TLCOPT_CONFIGURATION);
         managedForm.addPart(configPart);
         final DirtyMarkingListener configPartListener = new DirtyMarkingListener(configPart, true);
