@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _orbhsAJZEemDc-4PKyNT9w
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/3/19, 12:29 PM
+Runtime-Version: 2.4.2.201905122359
+Save-Time: 6/17/19, 2:45 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -38,7 +38,7 @@ try -command {
 	wait-run  
 	    
 	with [get-editor "Model_1"] {
-	    get-section General | get-label "Fingerprint collision chance: calculated: 5.4E-20"
+	    get-section General | get-label "Fingerprint collision probability: calculated: 5.4E-20"
 	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
 	}
 } -finally {
