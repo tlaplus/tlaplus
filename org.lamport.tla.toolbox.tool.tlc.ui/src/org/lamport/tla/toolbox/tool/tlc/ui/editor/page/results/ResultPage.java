@@ -272,7 +272,6 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 		getModel().setAttribute(LAUNCH_FP_INDEX, dataProvider.getFPIndex());
                 		getModelEditor().saveModel();
                 	}
-                	break;
                 case LAST_CHECKPOINT_TIME:
                 	setCheckpoint(dataProvider.getLastCheckpointTimeStamp());
                    	break;

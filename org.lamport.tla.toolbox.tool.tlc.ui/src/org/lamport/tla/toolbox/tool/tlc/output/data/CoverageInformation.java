@@ -81,7 +81,9 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 			notExpectedToHappen.printStackTrace();
 		}
 		
-		this.items.add(item);
+		synchronized (items) {
+			this.items.add(item);
+		}
 	}
 	
 	@Override
@@ -102,20 +104,23 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 	 * CIIs for zero-covered/disabled spec actions (init and next-state relation).
 	 */
 	public List<ActionInformationItem> getDisabledSpecActions() {
-		return items.stream()
-				.filter(item -> ((item instanceof ActionInformationItem)
-						&& ((ActionInformationItem) item).getRelation() != Relation.PROP
-						&& (((ActionInformationItem) item).getCount() == 0)))
-				.map(item -> (ActionInformationItem) item)
-				.collect(Collectors.toList());
+		synchronized (items) {
+			return items.stream()
+					.filter(item -> ((item instanceof ActionInformationItem)
+							&& ((ActionInformationItem) item).getRelation() != Relation.PROP
+							&& (((ActionInformationItem) item).getCount() == 0)))
+					.map(item -> (ActionInformationItem) item).collect(Collectors.toList());
+		}
 	}
 	
 	public boolean hasDisabledSpecActions() {
-		return items.stream()
-				.filter(item -> ((item instanceof ActionInformationItem)
-						&& ((ActionInformationItem) item).getRelation() != Relation.PROP
-						&& (((ActionInformationItem) item).getCount() == 0)))
-				.findAny().isPresent();
+		synchronized (items) {
+			return items.stream()
+					.filter(item -> ((item instanceof ActionInformationItem)
+							&& ((ActionInformationItem) item).getRelation() != Relation.PROP
+							&& (((ActionInformationItem) item).getCount() == 0)))
+					.findAny().isPresent();
+		}
 	}
 
 	/**
@@ -123,11 +128,15 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 	 */
 	public boolean isLegacy() {
 		// true if there are no ActionInformationItems.
-		return !items.stream().filter(i -> i instanceof ActionInformationItem).findAny().isPresent();
+		synchronized (items) {
+			return !items.stream().filter(i -> i instanceof ActionInformationItem).findAny().isPresent();
+		}
 	}
 
 	public boolean has(final IFile iFile) {
-		return items.stream().filter(i -> i.isInFile(iFile)).findAny().isPresent();
+		synchronized (items) {
+			return items.stream().filter(i -> i.isInFile(iFile)).findAny().isPresent();
+		}
 	}
 
 	public ModuleCoverageInformation projectionFor(final IFile iFile) {
