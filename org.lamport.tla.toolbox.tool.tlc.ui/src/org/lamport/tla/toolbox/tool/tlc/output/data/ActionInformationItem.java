@@ -90,7 +90,7 @@ public class ActionInformationItem extends CoverageInformationItem {
 	}
 	
 	public ActionInformationItem(final String name, Location loc, final String modelName, long generated) {
-		super(loc, generated, modelName, actionLayer);
+		super(loc, generated, generated, modelName, actionLayer); // For Init unseen = generated due to the way TLC prints it.
 		this.name = name;
 		this.relation = Relation.INIT;
 	}
@@ -135,6 +135,9 @@ public class ActionInformationItem extends CoverageInformationItem {
     	return true;
     }
 
+	/**
+	 * Number of *distinct* states.
+	 */
 	public long getUnseen() {
 		return getCost();
 	}
