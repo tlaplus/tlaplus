@@ -64,7 +64,8 @@ public class CoverageInformationItem implements IModuleLocatable
 
     // Siblings are CII instances shown at the same editor region/location. 
 	private final Set<CoverageInformationItem> siblings = new HashSet<>();
-    // Children are CII instances corresponding to nested expressions. 
+	// Children are CII instances corresponding to nested expressions (will only be
+	// populated after the TLACoverageEditor has been opened).
     private final Set<CoverageInformationItem> childs = new HashSet<>();
     // The parent is the CII instance this CII is a nested expressions of. 
     private CoverageInformationItem parent;

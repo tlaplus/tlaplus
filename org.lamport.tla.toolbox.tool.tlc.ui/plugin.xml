@@ -947,7 +947,7 @@ Console Facory
             highlightPreferenceKey="org.lamport.tla.toolbox.tlc.zerocoverage.highlight"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
-            label="Zero Coverage"
+            label="Disabled Actions"
             overviewRulerPreferenceKey="org.lamport.tla.toolbox.tlc.zerocoverage.overruler"
             overviewRulerPreferenceValue="true"
             symbolicIcon="warning"

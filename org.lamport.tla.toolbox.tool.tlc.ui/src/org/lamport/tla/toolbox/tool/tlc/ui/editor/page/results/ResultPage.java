@@ -1212,7 +1212,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         this.coverageTimestampText = toolkit.createText(headerLine, "", SWT.FLAT);
         this.coverageTimestampText.setEditable(false);
-        this.coverageTimestampText.setMessage("No information collected. Has coverage been enabled?");
+        this.coverageTimestampText.setMessage("No information collected yet. Has coverage been enabled?");
         gd = new GridData();
         gd.horizontalIndent = 6;
         gd.verticalIndent = 0;

@@ -561,12 +561,13 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         new Label(featuresBody, SWT.NONE); // use up last cell.
 
         // Collect Coverage
-		final String collectCoverageHelp = "Coverage helps identify problems with the specification such as actions which are "
-				+ "never enabled (Action enablement). Cost statistics allow to diagnose expensive expressions (to evaluate) and state space "
-				+ "explosion (On). Coverage negatively impacts model checking performance and should thus be off while "
+        
+		final String collectCoverageHelp = "Profiling helps identify problems with the specification such as actions which are "
+				+ "never enabled (Action enablement). Invocation and cost statistics allow to diagnose expensive expressions (to evaluate) and state space "
+				+ "explosion (On). Profiling negatively impacts model checking performance and should thus be off while "
 				+ "checking large models.";
 		final Label collectCoverageLabel = toolkit.createLabel(featuresBody,
-				"Collect coverage:");
+				"Profiling:");
         gd = new GridData();
         gd.verticalIndent = 9;
         gd.grabExcessHorizontalSpace = true;

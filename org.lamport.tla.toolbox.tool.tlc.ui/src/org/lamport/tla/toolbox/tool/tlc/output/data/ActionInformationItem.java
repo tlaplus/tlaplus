@@ -232,19 +232,19 @@ public class ActionInformationItem extends CoverageInformationItem {
 			return "";
 		} else if (relation == Relation.NEXT) {
 			if (getCount() == 0) {
-				return String.format("Action %s:\n- No states generated\n", name);
+				return String.format("Action %s:\n- No states found\n", name);
 			} else if (getUnseen() == 0) {
-				return String.format("Action %s:\n- %,d state%s generated but none distinct\n", name, getCount(),
+				return String.format("Action %s:\n- %,d state%s found but none distinct\n", name, getCount(),
 						getCount() == 1 ? "" : "s");
 			} else {
 				final double ratio = (getUnseen() * 1d / sum) * 100d;
 				final double overhead = (getUnseen() * 1d / getCount()) * 100d;
 				return String.format(
-						"Action %s:\n- %,d state%s generated with %,d distinct (%.2f%%)\n- Contributes %.2f%% to total number of distinct states across all actions\n",
+						"Action %s:\n- %,d state%s found with %,d distinct (%.2f%%)\n- Contributes %.2f%% to total number of distinct states across all actions\n",
 						name, getCount(), getCount() == 1 ? "" : "s", getUnseen(), overhead, ratio);
 			}
 		} else if (relation == Relation.INIT) {
-			return String.format("Action %s (Init):\n- %,d state%s generated", name, getCount(),
+			return String.format("Action %s (Init):\n- %,d state%s found", name, getCount(),
 					getCount() == 1 ? "" : "s");
 		}
 		return "";

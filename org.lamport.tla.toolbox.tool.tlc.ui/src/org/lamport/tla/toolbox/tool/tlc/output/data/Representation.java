@@ -54,7 +54,7 @@ public enum Representation {
 		} else if (this == INVCOST) {
 			return "Inv + Cost: %,d\nClick to jump to location %s.";
 		} else if (this == STATES) {
-			return "States Generated: %,d\nClick to jump to location %s.";
+			return "States Found: %,d\nClick to jump to location %s.";
 		} else if (this == STATES_DISTINCT) {
 			return "Distinct States: %,d\nClick to jump to location %s.";
 		}
@@ -69,7 +69,7 @@ public enum Representation {
 		} else if (this == INVCOST) {
 			return "Inv + Cost";
 		} else if (this == STATES) {
-			return "Generated States";
+			return "States Found";
 		} else if (this == STATES_DISTINCT) {
 			return "Distinct States";
 		}
