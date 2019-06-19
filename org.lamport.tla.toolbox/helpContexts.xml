@@ -40,7 +40,7 @@
 		<description>
 		This dialog lets you provide a new definition of the chosen operator that TLC will use instead of the actual definition.	
 		</description>
-	    <topic label="Definition Override" href="../org.lamport.tla.toolbox.doc/html/model/advanced-page.html#override" />
+	    <topic label="Definition Override" href="../org.lamport.tla.toolbox.doc/html/model/spec-options-page.html#override" />
 		
 	</context>
   <context id="GettingStarted" title="Getting Started">

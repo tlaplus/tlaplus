@@ -74,8 +74,12 @@
 
            </topic>
 
-           <topic label = "Advanced Options Page"
-               href  = "html/model/advanced-page.html">
+           <topic label = "Spec Options Page"
+               href  = "html/model/spec-options-page.html">
+           </topic>
+
+           <topic label = "TLC Options Page"
+               href  = "html/model/tlc-options-page.html">
            </topic>
 
            <topic label = "Model Checking Results Page"

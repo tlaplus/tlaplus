@@ -11,7 +11,7 @@
  <context id="advancedModelPage">
     <description>This is the advanced model page. You can use it to create the more esoteric aspects of a model.</description>
        <topic label="Advanced Options Page" 
-           href="../org.lamport.tla.toolbox.doc/html/model/advanced-page.html" />
+           href="../org.lamport.tla.toolbox.doc/html/model/spec-options-page.html" />
  </context>
  <context id="resultModelPage">
     <description>This is the model's result page. It shows the results of a TLC run.</description>
