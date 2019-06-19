@@ -64,6 +64,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -1281,6 +1282,8 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		try {
 			final int ordinal = getAttribute(LAUNCH_COVERAGE, IConfigurationDefaults.LAUNCH_COVERAGE_DEFAULT);
 			return Coverage.values()[ordinal];
+		} catch (DebugException legacyException) {
+			// Occurs for old models where the type wasn't int but bool.
 		} catch (CoreException shouldNotHappen) {
 			// We log the exceptions on setAttribute but expose exceptions with getAttribute %-)
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
