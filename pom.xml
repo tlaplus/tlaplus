@@ -123,7 +123,7 @@
 		<!-- Align toolbox.version with the version in 
 			 org.lamport.tla.toolbox.product.product.product
 			 product.version. -->
-		<toolbox.version>1.5.8</toolbox.version>
+		<toolbox.version>1.6.0</toolbox.version>
 
 		<!-- This is used in org.lamport.tla.toolbox.product.uitest but
 			has been placed at the top level should it need be referenced
