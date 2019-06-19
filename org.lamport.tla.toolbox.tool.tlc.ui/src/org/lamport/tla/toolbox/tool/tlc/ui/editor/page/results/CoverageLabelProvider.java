@@ -26,13 +26,12 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
     
 	static final int COL_MODULE = 0;
     static final int COL_ACTION = 1;
-    static final int COL_LOCATION = 2;
-    static final int COL_STATES = 3;
-    static final int COL_DISTSTATES = 4;
+    static final int COL_STATES = 2;
+    static final int COL_DISTSTATES = 3;
 
     static final String TOOLTIP = "Click on a row to go to action.";
     
-	private static final String[] COLUMN_TITLES = new String[] { "Module", "Action", "Location", "States Found", "Distinct States"  };
+	private static final String[] COLUMN_TITLES = new String[] { "Module", "Action", "States Found", "Distinct States"  };
     private static final int[] COLUMN_WIDTHS;
     private static final Comparator<ActionInformationItem>[] COLUMN_COMP;
 	private static final double[] COLUMN_WIDTH_PERCENTAGES;
@@ -45,7 +44,6 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
     	COLUMN_WIDTHS = new int[COLUMN_TITLES.length];
     	COLUMN_WIDTHS[i++] = (int)(30.0 * scale);
     	COLUMN_WIDTHS[i++] = (int)(30.0 * scale);
-    	COLUMN_WIDTHS[i++] = (int)(50.0 * scale);
     	COLUMN_WIDTHS[i++] = (int)(30.0 * scale);
     	COLUMN_WIDTHS[i++] = (int)(30.0 * scale);
     	
@@ -72,12 +70,6 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
 			@Override
 			public int compare(ActionInformationItem o1, ActionInformationItem o2) {
 				return o1.getName().compareTo(o2.getName());
-			}
-		}; 
-		COLUMN_COMP[i++] = new Comparator<ActionInformationItem>() {
-			@Override
-			public int compare(ActionInformationItem o1, ActionInformationItem o2) {
-				return o1.getModuleLocation().compareTo(o2.getModuleLocation());
 			}
 		}; 
 		COLUMN_COMP[i++] = new Comparator<ActionInformationItem>() {
@@ -139,8 +131,6 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
 					return item.getModule();
 				case COL_ACTION:
 					return item.getName();
-				case COL_LOCATION:
-					return item.getLocation();
 				case COL_STATES:
 					return MP.format(item.getCount());
 				case COL_DISTSTATES:
