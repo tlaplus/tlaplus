@@ -80,6 +80,9 @@
 
            <topic label = "TLC Options Page"
                href  = "html/model/tlc-options-page.html">
+	           <topic label = "Profiling"
+	               href  = "html/model/profiling.html">
+	           </topic>
            </topic>
 
            <topic label = "Model Checking Results Page"

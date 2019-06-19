@@ -177,9 +177,19 @@ It also provides a button that you can click to delete the checkpoint.&nbsp;
 Checkpointing does not yet work when TLC is run in distributed mode.
 </p>
 
-<h3>Collect coverage and cost statistics</h3>
-<b>Add very brief description here, perhaps with eventual pointer
-   to complete description</b>
+<A name="profiling"></A><h3>Profiling</h3>
+<p>TLC supports detailed profiling at the action as well as the expression level.  Profiling helps to identify specification errors such as permanently disabled actions
+(compare <i>Enabled</i> predicate in <a href="https://lamport.azurewebsites.net/pubs/lamport-actions.pdf">The Temporal Logic of Actions</a> section 2.7, page 6).
+Similarly it helps pinpoint the source of state space explosion by reporting the states found and distinct states on a per action level.
+</p>
+
+<p>
+In addition to action profiling, invocation and cost profiling allows to diagnose expensive expressions.  Please refer to the
+<a href="profiling.html">dedicated profiler documentation</a> for more information.
+</p>
+<p>
+<b>Warning</b>: Profiling negatively impacts model checking performance and should thus be off when checking large models.
+</p>   
 
 <h3>Visualize state graph after completion</h3>
 <p>
@@ -233,14 +243,14 @@ Defer the verification of temporal properties (liveness) to the end of model che
 violations will always be found first. In other words, check liveness only after the <em>complete</em>
 state space has been checked for safety violations.
 If unchecked, temporal properties are checked periodically on the <em>incomplete</em>
-state graph. Defering verification of temporal properties is especially useful if it is highly
+state graph. Deferring verification of temporal properties is especially useful if it is highly
 likely that the model does not violate its temporal properties (e.g. a smaller instance
 of the model has successfully been verified for liveness violations).
 
 <h3>Fingerprint seed index</h3>
 <p>
 TLC saves only 64-bit fingerprints (hashes) of the reachable states that it finds, not the
-complete states.&nbsp;  If two different reachable states have the same fingerprint, a situtation
+complete states.&nbsp;  If two different reachable states have the same fingerprint, a situation
 called a  <em>collision</em>, TLC may not find all reachable states.&nbsp;  
 At the
 end of a run, TLC prints estimates of how likely it was that a collision occurred.&nbsp;
