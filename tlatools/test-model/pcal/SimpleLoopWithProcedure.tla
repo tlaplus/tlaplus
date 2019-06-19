@@ -66,9 +66,11 @@ a == /\ pc = "a"
                 /\ UNCHANGED << i, stack, incr, z >>
      /\ UNCHANGED << x, y, n >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Incr \/ a
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

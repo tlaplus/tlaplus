@@ -108,9 +108,11 @@ Lbl_4 == /\ pc = "Lbl_4"
          /\ pc' = "Done"
          /\ UNCHANGED << result, stack, arg1, u, arg2, u2 >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == FactProc \/ FactProc2 \/ Lbl_3 \/ Lbl_4
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

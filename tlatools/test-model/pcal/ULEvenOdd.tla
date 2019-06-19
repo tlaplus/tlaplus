@@ -98,9 +98,11 @@ Lbl_5 == /\ pc = "Lbl_5"
          /\ pc' = "Done"
          /\ UNCHANGED << result, stack, xEven, xOdd >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Even \/ Odd \/ Lbl_4 \/ Lbl_5
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

@@ -220,9 +220,11 @@ main == /\ pc = "main"
         /\ pc' = "qs1"
         /\ UNCHANGED << A, returnVal, lo, hi, qlo2, qhi2, pivot2 >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Partition \/ QS \/ QS2 \/ main
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

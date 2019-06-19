@@ -142,11 +142,14 @@ b2 == /\ pc[3] = "b2"
 
 Minor == b1 \/ b2
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
 Next == Minor
            \/ (\E self \in ProcSet: FactProc(self) \/ FactProc2(self))
            \/ (\E self \in 1..2: Main(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..2 : WF_vars(Main(self)) /\ WF_vars(FactProc(self)) /\ WF_vars(FactProc2(self))

@@ -37,9 +37,11 @@ l == /\ pc = "l"
      /\ Assert(x' = 1, "Failure of assertion at line 16, column 5.")
      /\ pc' = "Done"
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == l
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == Init /\ [][Next]_vars
 

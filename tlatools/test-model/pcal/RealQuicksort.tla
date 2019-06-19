@@ -105,9 +105,11 @@ rqs2 == /\ pc = "rqs2"
         /\ pc' = "rqs"
         /\ UNCHANGED << A, new, stack, parg >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Part \/ rqs \/ rqs2
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

@@ -151,9 +151,11 @@ test == /\ pc = "test"
         /\ pc' = "Done"
         /\ UNCHANGED << Ainit, A, returnVal, stack, lo, hi, qlo, qhi, pivot >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Partition \/ QS \/ main \/ test
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

@@ -65,9 +65,11 @@ a2 == /\ pc = "a2"
       /\ pc' = "Done"
       /\ UNCHANGED << result, stack, arg1, u >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == FactProc \/ a1 \/ a2
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

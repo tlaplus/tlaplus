@@ -59,10 +59,13 @@ P2(self) == /\ pc[self] = "P2"
 
 P(self) == P1(self) \/ P2(self)
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
 Next == (\E self \in ProcSet: Foo(self))
            \/ (\E self \in 1..3: P(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == Init /\ [][Next]_vars
 

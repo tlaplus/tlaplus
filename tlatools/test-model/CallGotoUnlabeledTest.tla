@@ -56,9 +56,11 @@ C == /\ pc = "C"
      /\ pc' = "A"
      /\ stack' = stack
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Foo \/ A \/ Lbl_2 \/ C
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == Init /\ [][Next]_vars
 

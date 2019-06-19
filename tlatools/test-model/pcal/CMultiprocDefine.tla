@@ -43,9 +43,12 @@ main(self) == /\ pc[self] = "main"
 
 Proc(self) == main(self)
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
 Next == (\E self \in {1, 2, 3}: Proc(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in {1, 2, 3} : WF_vars(Proc(self))

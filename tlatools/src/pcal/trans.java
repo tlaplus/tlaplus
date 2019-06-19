@@ -114,6 +114,14 @@ import util.ToolIO;
 *                 - Removed the unnecessary CASE in the pc = ... clause of *
 *                   the Init predicate when there is only a single process *
 *                   statement.                                             *
+*   Version 1.9: (10 July 2019)                                            *
+*                 - Change translation to generate an explicit             *
+*                   Terminating action instead of the implicit one which   *
+*                   is the disjunct of the next-state relation.            *
+*                 - Support in-memory only translation for better          *
+*                   Toolbox integration (old file based translation was    *
+*                   racy).                                                 *
+*                 - Minor changes related to better error reporting.       *
 * -----------------------------------------------------------------        *
 *                                                                          *
 * This is the main method of the +CAL to TLA+ translation program.         *

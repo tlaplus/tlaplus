@@ -112,11 +112,14 @@ b2(self) == /\ pc[self] = "b2"
 
 ProcB(self) == b1(self) \/ b2(self)
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
 Next == ProcA
            \/ (\E self \in ProcSet: Sum(self))
            \/ (\E self \in {42, 43}: ProcB(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(ProcA) /\ WF_vars(Sum(41))

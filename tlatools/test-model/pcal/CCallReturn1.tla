@@ -109,9 +109,11 @@ a1 == /\ pc = "a1"
       /\ pc' = "p1"
       /\ UNCHANGED << arg2, v, arg3 >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Proc1 \/ Proc2 \/ Proc3 \/ a1
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

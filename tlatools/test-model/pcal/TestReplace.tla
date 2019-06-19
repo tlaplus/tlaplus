@@ -235,9 +235,11 @@ b == /\ pc = "b"
      /\ pc' = "a"
      /\ UNCHANGED << u_, v_, u_F, v_F, X_, Y >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Bar \/ Foo1 \/ Foo2 \/ start \/ b
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == Init /\ [][Next]_vars
 

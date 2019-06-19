@@ -184,9 +184,11 @@ C == /\ pc = "C"
      /\ pc' = "PP1"
      /\ UNCHANGED << depth, a, x_, y, r, x, s >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == P \/ Q \/ PP \/ R \/ S \/ A \/ B \/ C
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

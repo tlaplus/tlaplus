@@ -53,9 +53,11 @@ m3 == /\ pc = "m3"
       /\ pc' = "Done"
       /\ UNCHANGED << sum, stack >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Sum \/ m1 \/ m2 \/ m3
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

@@ -115,9 +115,12 @@ i(self) == prc(self) \/ comp(self) \/ b1(self) \/ b2(self) \/ b3(self)
               \/ b4(self) \/ b5(self) \/ b6(self) \/ b7(self) \/ b8(self)
               \/ b9(self)
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
 Next == (\E self \in 1..N: i(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

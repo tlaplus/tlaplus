@@ -294,10 +294,12 @@ Pc2 == /\ pc = "Pc2"
        /\ pc' = "Done"
        /\ UNCHANGED << stack, A, res, i_, exp, i, vdcl, prcdr, lstmt, proc >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == IsAlgorithm \/ IsExpr \/ IsVarDecl \/ IsProcedure \/ IsLabeledStmt
            \/ IsProcess \/ PC1 \/ Pc2
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == Init /\ [][Next]_vars
 

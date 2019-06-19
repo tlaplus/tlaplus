@@ -62,9 +62,11 @@ minor == /\ pc = "minor"
          /\ pc' = "Done"
          /\ UNCHANGED << n, stack, a, b >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Foo \/ main \/ minor
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == Init /\ [][Next]_vars
 

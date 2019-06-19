@@ -210,12 +210,15 @@ P5(self) == /\ pc[self] = "P5"
 Q(self) == P1(self) \/ P15(self) \/ P2(self) \/ P3(self) \/ P4(self)
               \/ P5(self)
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
 Next == (\E self \in ProcSet: P(self))
            \/ (\E self \in {qq \in {1,2} : /\ \A i \in {1} : i > 0
                                            /\ \A j \in {1} : j > 0
                                            /\ \A k \in {1} : k > 0 }: Q(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == Init /\ [][Next]_vars
 

@@ -72,9 +72,11 @@ Lbl_2 == /\ pc = "Lbl_2"
          /\ pc' = "Lbl_1"
          /\ UNCHANGED << u_ini, v_ini, v >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Lbl_1 \/ Lbl_2
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

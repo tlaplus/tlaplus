@@ -89,9 +89,11 @@ L2 == /\ pc = "L2"
       /\ pc' = "Done"
       /\ UNCHANGED << x, stack >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == Bar \/ L1 \/ L3 \/ L2
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)

@@ -66,9 +66,12 @@ d(self) == /\ pc[self] = "d"
 
 Foo(self) == a(self) \/ b(self) \/ c(self) \/ d(self)
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
 Next == (\E self \in {1, 2}: Foo(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in {1, 2} : WF_vars(Foo(self))

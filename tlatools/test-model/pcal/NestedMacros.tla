@@ -56,9 +56,12 @@ l2(self) == /\ pc[self] = "l2"
 
 foob(self) == l1(self) \/ l2(self)
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
+
 Next == (\E self \in {1,2}: foob(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in {1,2} : WF_vars(foob(self))

@@ -113,9 +113,11 @@ Lbl_4 == /\ pc = "Lbl_4"
          /\ pc' = "Lbl_1"
          /\ UNCHANGED << A, returnVal >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == QS \/ Lbl_4
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)
