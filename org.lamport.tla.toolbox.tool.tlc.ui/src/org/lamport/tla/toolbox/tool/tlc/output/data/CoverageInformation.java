@@ -112,6 +112,15 @@ public class CoverageInformation {
 		}
 	}
 
+	public List<ActionInformationItem> getSpecActions() {
+		synchronized (items) {
+			return items.stream()
+					.filter(item -> ((item instanceof ActionInformationItem)
+							&& ((ActionInformationItem) item).getRelation() != Relation.PROP))
+					.map(item -> (ActionInformationItem) item).collect(Collectors.toList());
+		}
+	}
+
 	/**
 	 * @return true if coverage information pre-dates TLC's new/hierarchical format introduced by the CostModel.
 	 */
