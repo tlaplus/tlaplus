@@ -54,10 +54,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
@@ -1267,6 +1269,23 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         });
 
         coverage.setLabelProvider(clp);
+        
+        coverage.setComparator(new CoverageViewerComparator());
+        for (TableColumn column : coverage.getTable().getColumns()) {
+            column.addListener(SWT.Selection, e -> {
+                final Item sortColumn = coverage.getTable().getSortColumn();
+                int direction = coverage.getTable().getSortDirection();
+
+                if (column.equals(sortColumn)) {
+                    direction = direction == SWT.UP ? SWT.DOWN : SWT.UP;
+                } else {
+                	coverage.getTable().setSortColumn(column);
+                    direction = SWT.UP;
+                }
+                coverage.getTable().setSortDirection(direction);
+                coverage.refresh();
+            });
+        }
         
         getSite().setSelectionProvider(coverage);
         
