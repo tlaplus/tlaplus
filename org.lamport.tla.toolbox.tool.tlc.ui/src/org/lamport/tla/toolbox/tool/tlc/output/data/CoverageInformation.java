@@ -27,7 +27,6 @@ package org.lamport.tla.toolbox.tool.tlc.output.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,7 +42,7 @@ import org.lamport.tla.toolbox.util.AdapterFactory;
 
 import tlc2.tool.coverage.ActionWrapper.Relation;
 
-public class CoverageInformation implements Iterable<CoverageInformationItem> {
+public class CoverageInformation {
 	
 	private final List<CoverageInformationItem> items = new ArrayList<>();
 
@@ -85,20 +84,10 @@ public class CoverageInformation implements Iterable<CoverageInformationItem> {
 			this.items.add(item);
 		}
 	}
-	
-	@Override
-	public Iterator<CoverageInformationItem> iterator() {
-		return this.items.iterator();
-	}
 
 	public boolean isEmpty() {
 		return this.items.isEmpty();
 	}
-
-	public Object[] toArray() {
-		return this.items.toArray();
-	}
-	
 
 	/**
 	 * CIIs for zero-covered/disabled spec actions (init and next-state relation).
