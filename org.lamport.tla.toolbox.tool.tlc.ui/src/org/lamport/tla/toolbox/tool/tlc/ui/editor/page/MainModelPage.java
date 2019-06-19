@@ -307,7 +307,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 						? model.getAttribute(LAUNCH_MAX_HEAP_SIZE, profile.getMemoryPercentage())
 						: profile.getMemoryPercentage();
 			}
-		} else { // for pre-1.5.8 models...
+		} else { // for pre-1.6.0 models...
 			String remoteWorkers = LAUNCH_DISTRIBUTED_NO;
 
 			try {
