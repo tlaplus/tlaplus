@@ -1,7 +1,5 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,7 +9,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 /**
  * Representation of the state space progress item 
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class StateSpaceInformationItem
 {
@@ -186,7 +183,7 @@ public class StateSpaceInformationItem
 		// assuming the previous check suffices, it should now be possible to
 		// parse the string back to its real types
 		try {
-			final Date time = SDF.parse(outputMessage.substring(
+			final Date time = TLCModelLaunchDataProvider.parseDate(outputMessage.substring(
 					i[1] + AT.length(), i[2]));
 
 			final long diameter = localizedNum2Long(
@@ -208,8 +205,6 @@ public class StateSpaceInformationItem
 					distinctStates, leftStates, statesPerMinute,
 					distinctStatesPerMinute);
 		} catch (NumberFormatException e) {
-			TLCUIActivator.getDefault().logError("Error reading progress information", e);
-		} catch (ParseException e) {
 			TLCUIActivator.getDefault().logError("Error reading progress information", e);
 		}
 		return null;
@@ -243,7 +238,7 @@ public class StateSpaceInformationItem
 		matcher = pattern.matcher(outputMessage);
 		if (matcher.find()) {
 			final long distinctStates = Long.parseLong(matcher.group(1));
-			final Date date = parseDate(matcher.group(2));
+			final Date date = TLCModelLaunchDataProvider.parseDate(matcher.group(2));
 			return new StateSpaceInformationItem(date, distinctStates);
 		}
 
@@ -253,18 +248,10 @@ public class StateSpaceInformationItem
 		if (matcher.find()) {
 			final long foundStates = Long.parseLong(matcher.group(1));
 			final long distinctStates = Long.parseLong(matcher.group(2));
-			final Date date = parseDate(matcher.group(3));
+			final Date date = TLCModelLaunchDataProvider.parseDate(matcher.group(3));
 			return new StateSpaceInformationItem(date, foundStates, distinctStates);
 		}
 		return null;
-	}
-	
-	private static Date parseDate(String str) {
-		try {
-			return SDF.parse(str);
-		} catch (ParseException e) {
-			return new Date();
-		}
 	}
 
 	/**
@@ -295,21 +282,17 @@ public class StateSpaceInformationItem
 		}
 
 		try {
-			return new StateSpaceInformationItem(SDF.parse(outputMessage.substring(i[1] + AT.length(), i[2])),
+			return new StateSpaceInformationItem(
+					TLCModelLaunchDataProvider.parseDate(outputMessage.substring(i[1] + AT.length(), i[2])),
 					localizedNum2Long(outputMessage.substring(i[0] + OB.length(), i[1])),
 					localizedNum2Long(outputMessage.substring(i[2] + COLON.length(), i[3])),
 					localizedNum2Long(outputMessage.substring(i[3] + GENERATED.length(), i[4])),
 					localizedNum2Long(outputMessage.substring(i[4] + DISTINCT.length(), i[5])), 0, 0);
 		} catch (NumberFormatException e) {
 			TLCUIActivator.getDefault().logError("Error reading progress information", e);
-		} catch (ParseException e) {
-			TLCUIActivator.getDefault().logError("Error reading progress information", e);
 		}
 		return null;
 	}
-
-	public final static SimpleDateFormat SDF = new SimpleDateFormat(
-			"yyyy-MM-dd HH:mm:ss");
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

@@ -1,7 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results;
 
 import java.text.NumberFormat;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ColumnWeightData;
@@ -11,6 +10,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.AbstractTableLabelProvider;
 
@@ -51,17 +51,6 @@ class StateSpaceLabelProvider extends AbstractTableLabelProvider {
 		}
 	}
 
-	private static String formatInterval(final long firstTS, final long secondTS) {
-		final long interval = secondTS - firstTS;
-		final long hr = TimeUnit.MILLISECONDS.toHours(interval);
-		final long min = TimeUnit.MILLISECONDS.toMinutes(interval - TimeUnit.HOURS.toMillis(hr));
-		final long sec = TimeUnit.MILLISECONDS
-				.toSeconds(interval - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
-		
-		return String.format("%02d:%02d:%02d", hr, min, sec);
-	}
-
-	
 	private boolean m_doHighlight;
 	private final ResultPage m_resultPage;
 
@@ -114,7 +103,7 @@ class StateSpaceLabelProvider extends AbstractTableLabelProvider {
 			
 			switch (columnIndex) {
 				case COL_TIME:
-					return formatInterval(m_resultPage.getStartTimestamp(), item.getTime().getTime());
+					return TLCModelLaunchDataProvider.formatInterval(m_resultPage.getStartTimestamp(), item.getTime().getTime());
 				case COL_DIAMETER:
 					if (item.getDiameter() >= 0) {
 						return nf.format(item.getDiameter());

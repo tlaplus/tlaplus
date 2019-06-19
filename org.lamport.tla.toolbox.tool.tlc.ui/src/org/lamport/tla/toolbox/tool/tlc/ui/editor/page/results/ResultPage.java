@@ -296,7 +296,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
                 	}
                     break;
                 case COVERAGE_TIME:
-                    ResultPage.this.coverageTimestampText.setText(dataProvider.getCoverageTimestamp());
+					final String coverageTimestamp = dataProvider.getCoverageTimestamp();
+					if ("".equals(coverageTimestamp)) {
+						// Reset
+						ResultPage.this.coverageTimestampText.setText("");
+					} else {
+						// Print statistics timestamp relative to TLC startup.
+						final Date date = TLCModelLaunchDataProvider.parseDate(coverageTimestamp);
+						final String interval = TLCModelLaunchDataProvider.formatInterval(getStartTimestamp(), date.getTime());
+						ResultPage.this.coverageTimestampText.setText(interval);
+					}
                     break;
                 case COVERAGE:
                 	final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();

@@ -26,11 +26,15 @@
 
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1121,5 +1125,27 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
 	public boolean isSymmetryWithLiveness() {
 		return isSymmetryWithLiveness;
+	}
+	
+
+	private final static SimpleDateFormat SDF = new SimpleDateFormat(
+			"yyyy-MM-dd HH:mm:ss");
+	
+	public static Date parseDate(final String str) {
+		try {
+			return SDF.parse(str);
+		} catch (ParseException e) {
+			return new Date();
+		}
+	}
+
+	public static String formatInterval(final long firstTS, final long secondTS) {
+		final long interval = secondTS - firstTS;
+		final long hr = TimeUnit.MILLISECONDS.toHours(interval);
+		final long min = TimeUnit.MILLISECONDS.toMinutes(interval - TimeUnit.HOURS.toMillis(hr));
+		final long sec = TimeUnit.MILLISECONDS
+				.toSeconds(interval - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
+
+		return String.format("%02d:%02d:%02d", hr, min, sec);
 	}
 }
