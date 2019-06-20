@@ -3,6 +3,9 @@ Version: [[product.version]]~[[product.build]]
 Section: misc
 Distribution: development
 Priority: optional
+## default-jre points to openjdk-11-re on Ubuntu for Bionic and up. We are not going to support Xenial/2016.
+## default-jre installs Java 8 on Debian stretch (The successor buster already has Java 11). Users of stretch
+## have to manually instal openjdk-11-jre from stretch backports (https://packages.debian.org/stretch-backports/openjdk-11-dbg)  
 Depends: default-jre (>= 1.7)
 Recommends: texlive-latex-recommended, libwebkitgtk-1.0-0
 Architecture: amd64
