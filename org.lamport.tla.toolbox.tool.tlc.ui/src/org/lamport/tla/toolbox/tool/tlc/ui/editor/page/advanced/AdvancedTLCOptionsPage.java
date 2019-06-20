@@ -75,6 +75,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     private static final String TITLE = "TLC Options";
     
     
+    private Button saveDefaultConfigurationButton;
     private Spinner workers;
     private Scale maxHeapSize;
     private Label maxHeapSizeFraction;
@@ -267,13 +268,13 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 
         dm.bindAttribute(LAUNCH_NUMBER_OF_WORKERS, workers, configPart);
         
-        Button b = new Button(workersLine, SWT.PUSH);
-        b.setText("Save as default");
+        saveDefaultConfigurationButton = new Button(workersLine, SWT.PUSH);
+        saveDefaultConfigurationButton.setText("Save as default");
         gd = new GridData();
         gd.horizontalAlignment = SWT.END;
         gd.grabExcessHorizontalSpace = true;
-        b.setLayoutData(gd);
-        b.addSelectionListener(new SelectionAdapter() {
+        saveDefaultConfigurationButton.setLayoutData(gd);
+        saveDefaultConfigurationButton.addSelectionListener(new SelectionAdapter() {
         	@Override
         	public void widgetSelected(final SelectionEvent se) {
                 final IPreferenceStore prefStore = TLCUIActivator.getDefault().getPreferenceStore();
@@ -538,7 +539,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gd.horizontalAlignment = SWT.BEGINNING;
         m_checkpointRecoverCheckbox.setLayoutData(gd);
         
-        b = HelpButton.helpButton(checkpointComposite, "model/tlc-options-page.html#checkpoint") ;
+        Button b = HelpButton.helpButton(checkpointComposite, "model/tlc-options-page.html#checkpoint") ;
         gd = new GridData();
         gd.horizontalAlignment = SWT.END;
         gd.grabExcessHorizontalSpace = true;
@@ -1280,6 +1281,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     
 	public void setWorkerAndMemoryEnable(final boolean enableWorker, final boolean enableMaxHeap) {
     	workers.getDisplay().asyncExec(() -> {
+    		saveDefaultConfigurationButton.setEnabled(enableWorker);
     		workers.setEnabled(enableWorker);
     		maxHeapSize.setEnabled(enableMaxHeap);
     	});
