@@ -427,7 +427,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
         // ---------------------------------------------------------------
         // action constraint
         section = FormHelper.createSectionComposite(right, "Action Constraint",
-                "An action constraint is a formula restricting the possible transitions.", toolkit, sectionFlags,
+                "A formula restricting a transition if its evaluation is not satisfied.", toolkit, sectionFlags,
                 getExpansionListener());
         ValidateableSectionPart actionConstraintPart = new ValidateableSectionPart(section, this, SEC_ACTION_CONSTRAINT);
         managedForm.addPart(actionConstraintPart);
@@ -452,7 +452,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
         // ---------------------------------------------------------------
         // constraint
         section = FormHelper.createSectionComposite(body, "State Constraint",
-                "A state constraint is a formula restricting the possible states by a state predicate.", toolkit,
+                "A formula restricting the possible states by a state predicate.", toolkit,
                 sectionFlags, getExpansionListener());
         ValidateableSectionPart constraintPart = new ValidateableSectionPart(section, this, SEC_STATE_CONSTRAINT);
         managedForm.addPart(constraintPart);
