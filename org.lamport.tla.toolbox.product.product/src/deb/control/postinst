@@ -2,6 +2,7 @@
 
 ## Fix permissions of executables
 chmod 755 /opt/TLA+Toolbox/toolbox
+chmod 755 /opt/TLA+Toolbox/tla2tools.jar
 chmod 755 /opt/TLA+Toolbox/plugins/org.lamport.openjdk.linux.x86_64_*/jre/bin/*
 
 ## Update mime database for x-tla type.
