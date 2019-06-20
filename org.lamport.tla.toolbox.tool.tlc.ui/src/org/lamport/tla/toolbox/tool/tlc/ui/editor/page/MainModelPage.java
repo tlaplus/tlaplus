@@ -22,6 +22,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -269,14 +270,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		final int threadCount;
 		final int memoryPercentage;
 		currentProfileIsAdHoc.set(false);
+        final IPreferenceStore prefStore = TLCUIActivator.getDefault().getPreferenceStore();
 		if (model.hasAttribute(TLC_RESOURCES_PROFILE)) {
 			final String tlcProfile = model.getAttribute(TLC_RESOURCES_PROFILE, (String) null);
 
 			if (tlcProfile.equals(CUSTOM_TLC_PROFILE_PREFERENCE_VALUE)) {
 				threadCount = model.getAttribute(LAUNCH_NUMBER_OF_WORKERS,
-						TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
-				final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
-						.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+						prefStore.getInt(ITLCPreferenceConstants.I_TLC_DEFAULT_WORKERS_COUNT));
+				final int defaultMaxHeapSize = prefStore.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
 				memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
 
 				setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
@@ -322,9 +323,8 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			if (remoteWorkers.equals(LAUNCH_DISTRIBUTED_NO)) {
 				moveToTopOfDistributedOptionsStack(LAUNCH_DISTRIBUTED_NO, true, true);
 				threadCount = model.getAttribute(LAUNCH_NUMBER_OF_WORKERS,
-						TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
-				final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
-						.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+						prefStore.getInt(ITLCPreferenceConstants.I_TLC_DEFAULT_WORKERS_COUNT));
+				final int defaultMaxHeapSize = prefStore.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
 				memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
 
 				setTLCProfileComboSelection(CUSTOM_TLC_PROFILE_DISPLAY_NAME);
@@ -346,8 +346,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				threadCount = 0;
 
 				if (isAdHoc) {
-					final int defaultMaxHeapSize = TLCUIActivator.getDefault().getPreferenceStore()
-							.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
+					final int defaultMaxHeapSize = prefStore.getInt(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT);
 					memoryPercentage = model.getAttribute(LAUNCH_MAX_HEAP_SIZE, defaultMaxHeapSize);
 				} else {
 					memoryPercentage = 0;
@@ -1381,7 +1380,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		gl.marginWidth = 0;
 		gl.horizontalSpacing = 0;
 		advancedLinkLine.setLayout(gl);
-		tlcTuneHyperlink = toolkit.createHyperlink(advancedLinkLine, "Tune these parameters", SWT.NONE);
+		tlcTuneHyperlink = toolkit.createHyperlink(advancedLinkLine, "Tune these parameters and set defaults", SWT.NONE);
 		tlcTuneHyperlink.addHyperlinkListener(advancedTLCOptionsOpener);
 		baseFont = JFaceResources.getFont(JFaceResources.DIALOG_FONT);
 		baseFD = baseFont.getFontData();

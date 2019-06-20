@@ -68,6 +68,8 @@ public interface ITLCPreferenceConstants {
      */
     public static final String I_TLC_TRACE_MAX_SHOW_ERRORS = "traceMaxShowErrors";
 
+    public static final String I_TLC_DEFAULT_WORKERS_COUNT = "tlcWorkersCountDefault";
+    
     public static final String I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT = "maxHeapSizeDefault";
 
     public static final String I_TLC_FPBITS_DEFAULT = "fpBitsDefault";

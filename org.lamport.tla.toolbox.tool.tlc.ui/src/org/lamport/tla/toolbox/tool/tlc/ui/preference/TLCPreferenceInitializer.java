@@ -9,6 +9,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.TLCConsumptionProfile;
 import org.osgi.service.prefs.BackingStoreException;
 
 import tlc2.TLCGlobals;
@@ -41,6 +42,8 @@ public class TLCPreferenceInitializer extends AbstractPreferenceInitializer
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_POPUP_ERRORS, true);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY, true);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB, false);
+        uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_DEFAULT_WORKERS_COUNT,
+        							  TLCConsumptionProfile.LOCAL_NORMAL.getWorkerThreads());
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_MAXIMUM_HEAP_SIZE_DEFAULT, MAX_HEAP_SIZE_DEFAULT);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_MAXSETSIZE_DEFAULT, TLCGlobals.setBound);
         uiPreferencesStore.setDefault(ITLCPreferenceConstants.I_TLC_FPBITS_DEFAULT, 1);
