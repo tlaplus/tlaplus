@@ -917,6 +917,10 @@ public class TLC
 				if (noSeed) {
                     seed = rng.nextLong();
 				}
+				// Replace seed with tlc2.util.FP64.Polys[fpIndex]?
+				// + No need to print seed in startup-banner for BFS and DFS
+				// - Only 131 different seeds
+				// RandomEnumerableValues.setSeed(tlc2.util.FP64.Polys[fpIndex]);
 				RandomEnumerableValues.setSeed(seed);
             	
 				// Print startup banner before SANY writes its output.
