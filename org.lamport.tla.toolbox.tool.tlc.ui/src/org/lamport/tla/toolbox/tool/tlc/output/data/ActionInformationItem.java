@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -44,26 +44,43 @@ public class ActionInformationItem extends CoverageInformationItem {
 	public static final int actionLayer = RootCoverageInformationItem.rootLayer + 1;
 	
 	public static ActionInformationItem parseInit(String outputMessage, String modelName) {
-		final Pattern pattern = Pattern.compile("^<(.*?) (.*)>: ([0-9]+)$");
+		final Pattern pattern = Pattern.compile("^<(.*?) (line [^(]+)( \\(([0-9 ]+)\\))?>: ([0-9]+)$");
 		final Matcher matcher = pattern.matcher(outputMessage);
 		matcher.find();
 
-		final Location location = Location.parseLocation(matcher.group(2));
-		final long generatedStates = Long.parseLong(matcher.group(3));
+		final Location declaration = Location.parseLocation(matcher.group(2));
 		
-		return new ActionInformationItem(matcher.group(1), location, modelName, generatedStates);
+		// Optional group with the definition.
+		final String group4 = matcher.group(4);
+		Location definition = null;
+		if (group4 != null) {
+			definition = Location.parseCoordinates(declaration.source(), group4);
+		}
+		
+		final long generatedStates = Long.parseLong(matcher.group(5));
+		
+		return new ActionInformationItem(Relation.INIT, matcher.group(1), declaration, definition, modelName, generatedStates, generatedStates);
 	}
-	
+
 	public static ActionInformationItem parseNext(String outputMessage, String modelName) {
-		final Pattern pattern = Pattern.compile("^<(.*?) (line .*)>: ([0-9]+):([0-9]+)$");
+		final Pattern pattern = Pattern.compile("^<(.*?) (line [^(]+)( \\(([0-9 ]+)\\))?>: ([0-9]+):([0-9]+)$");
 		final Matcher matcher = pattern.matcher(outputMessage);
 		matcher.find();
-
-		final Location location = Location.parseLocation(matcher.group(2));
-		final long distinctStates = Long.parseLong(matcher.group(3));
-		final long generatedStates = Long.parseLong(matcher.group(4));
 		
-		return new ActionInformationItem(matcher.group(1), location, modelName, generatedStates, distinctStates);
+		final Location declaration = Location.parseLocation(matcher.group(2));
+		
+		// Optional group with the definition.
+		final String group4 = matcher.group(4);
+		Location definition = null;
+		if (group4 != null) {
+			definition = Location.parseCoordinates(declaration.source(), group4);
+		}
+		
+		final long distinctStates = Long.parseLong(matcher.group(5));
+		final long generatedStates = Long.parseLong(matcher.group(6));
+		
+		return new ActionInformationItem(Relation.NEXT, matcher.group(1), declaration, definition, modelName,
+				generatedStates, distinctStates);
 	}
 	
 	public static ActionInformationItem parseProp(String outputMessage, String modelName) {
@@ -83,28 +100,31 @@ public class ActionInformationItem extends CoverageInformationItem {
 	private long sum;
 	private boolean isNotInFile = false;
 
+	/**
+	 * @see tlc2.tool.coverage.ActionWrapper.printLocation()
+	 */
+	private final Location definition;
+
 	public ActionInformationItem(final String name, Location loc, final String modelName) {
 		super(loc, 0, modelName, actionLayer);
 		this.name = name;
 		this.relation = Relation.PROP;
+		this.definition = null;
 	}
 	
-	public ActionInformationItem(final String name, Location loc, final String modelName, long generated) {
-		super(loc, generated, generated, modelName, actionLayer); // For Init unseen = generated due to the way TLC prints it.
-		this.name = name;
-		this.relation = Relation.INIT;
-	}
-
-	public ActionInformationItem(final String name, Location loc, final String modelName, long generated, long unseen) {
+	public ActionInformationItem(final Relation relation, final String name, Location loc, Location definition,
+			final String modelName, long generated, long unseen) {
 		super(loc, generated, unseen, modelName, actionLayer);
 		this.name = name;
-		this.relation = Relation.NEXT;
+		this.relation = relation;
+		this.definition = definition;
 	}
 
 	ActionInformationItem(ActionInformationItem item) {
 		super(item.location, item.count, item.cost, item.modelName, item.layer);
 		this.name = item.name;
 		this.relation = item.relation;
+		this.definition = item.definition;
 	}
 
 	public String getName() {
@@ -113,6 +133,18 @@ public class ActionInformationItem extends CoverageInformationItem {
 	
 	public Relation getRelation() {
 		return relation;
+	}
+	
+	/**
+	 * @return a Location or null if the definition location is unknown
+	 * @see tlc2.tool.coverage.ActionWrapper.printLocation()
+	 */
+	public Location getDefinition() {
+		return definition;
+	}
+
+	public boolean hasDefinition() {
+		return definition != null;
 	}
 
 	@Override
@@ -231,23 +263,24 @@ public class ActionInformationItem extends CoverageInformationItem {
 	}
 
 	public String getHover() {
+		final String definition = hasDefinition() ? " (" + getDefinition().linesAndColumns() + ")" : "";
 		if (relation == Relation.PROP){
 			return "";
 		} else if (relation == Relation.NEXT) {
 			if (getCount() == 0) {
-				return String.format("Action %s:\n- No states found\n", name);
+				return String.format("Action %s%s:\n- No states found\n", name, definition);
 			} else if (getUnseen() == 0) {
-				return String.format("Action %s:\n- %,d state%s found but none distinct\n", name, getCount(),
+				return String.format("Action %s%s:\n- %,d state%s found but none distinct\n", name, definition, getCount(),
 						getCount() == 1 ? "" : "s");
 			} else {
 				final double ratio = (getUnseen() * 1d / sum) * 100d;
 				final double overhead = (getUnseen() * 1d / getCount()) * 100d;
 				return String.format(
-						"Action %s:\n- %,d state%s found with %,d distinct (%.2f%%)\n- Contributes %.2f%% to total number of distinct states across all actions\n",
-						name, getCount(), getCount() == 1 ? "" : "s", getUnseen(), overhead, ratio);
+						"Action %s%s:\n- %,d state%s found with %,d distinct (%.2f%%)\n- Contributes %.2f%% to total number of distinct states across all actions\n",
+						name, definition, getCount(), getCount() == 1 ? "" : "s", getUnseen(), overhead, ratio);
 			}
 		} else if (relation == Relation.INIT) {
-			return String.format("Action %s (Init):\n- %,d state%s found", name, getCount(),
+			return String.format("Action %s%s (Init):\n- %,d state%s found", name, definition, getCount(),
 					getCount() == 1 ? "" : "s");
 		}
 		return "";

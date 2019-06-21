@@ -140,6 +140,9 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
 				case COL_ACTION:
 					return item.getName();
 				case COL_LOCATION:
+					if (item.hasDefinition()) {
+						return item.getDefinition().linesAndColumns();
+					}
 					return item.getLocation();
 				case COL_STATES:
 					return MP.format(item.getCount());

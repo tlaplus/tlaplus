@@ -92,7 +92,12 @@ public final class Location implements Comparable<Location>
     protected UniqueString name;
     protected int bLine, bColumn, eLine, eColumn;
 
-    /**
+	public Location(final String fName, final String bl, final String bc, final String el, final String ec) {
+		this(UniqueString.uniqueStringOf(fName), Integer.valueOf(bl), Integer.valueOf(bc), Integer.valueOf(el),
+				Integer.valueOf(ec));
+	}
+    
+   /**
      * Constructs a location
      * @param fName name of the source
      * @param bl begin line
@@ -216,6 +221,11 @@ public final class Location implements Comparable<Location>
         }
     }
 
+    public static Location parseCoordinates(final String source, final String coordinates) {
+    	final String[] c = coordinates.split(" ");
+		return new Location(source, c[0], c[1], c[2], c[3]);
+    }
+    
     /**
      * Returns an array of {@link Location} that can be parsed
      * from the input. More precisely, this method returns all
@@ -293,6 +303,10 @@ public final class Location implements Comparable<Location>
         return this.eLine;
     }
 
+    public final int[] getCoordinates() {
+		return new int[] { bLine, bColumn, eLine, eColumn };
+    }
+    
     /** 
      * gets the end column number of this location. 
      */
