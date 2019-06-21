@@ -50,7 +50,7 @@ public class CCoverageTest extends AbstractCoverageTest {
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertFalse(recorder.recorded(EC.TLC_COVERAGE_MISMATCH));
-		assertCoverage("<Init line 14, col 1 to line 14, col 4 of module C>: 3\n" + 
+		assertCoverage("<Init line 14, col 1 to line 14, col 4 of module C>: 3:3\n" + 
 				"  line 14, col 12 to line 14, col 21 of module C: 1\n" + 
 				"  line 15, col 12 to line 15, col 16 of module C: 3\n" + 
 				"<A line 17, col 1 to line 17, col 1 of module C>: 16:20\n" + 

@@ -41,29 +41,19 @@ import tlc2.tool.coverage.ActionWrapper.Relation;
 
 public class ActionInformationItem extends CoverageInformationItem {
 
+	private static final Pattern pattern = Pattern.compile("^<(.*?) (line [^(]+)( \\(([0-9 ]+)\\))?>: ([0-9]+):([0-9]+)$");
+	
 	public static final int actionLayer = RootCoverageInformationItem.rootLayer + 1;
 	
 	public static ActionInformationItem parseInit(String outputMessage, String modelName) {
-		final Pattern pattern = Pattern.compile("^<(.*?) (line [^(]+)( \\(([0-9 ]+)\\))?>: ([0-9]+)$");
-		final Matcher matcher = pattern.matcher(outputMessage);
-		matcher.find();
-
-		final Location declaration = Location.parseLocation(matcher.group(2));
-		
-		// Optional group with the definition.
-		final String group4 = matcher.group(4);
-		Location definition = null;
-		if (group4 != null) {
-			definition = Location.parseCoordinates(declaration.source(), group4);
-		}
-		
-		final long generatedStates = Long.parseLong(matcher.group(5));
-		
-		return new ActionInformationItem(Relation.INIT, matcher.group(1), declaration, definition, modelName, generatedStates, generatedStates);
+		return parseInitAndNext(Relation.INIT, outputMessage, modelName);
 	}
 
 	public static ActionInformationItem parseNext(String outputMessage, String modelName) {
-		final Pattern pattern = Pattern.compile("^<(.*?) (line [^(]+)( \\(([0-9 ]+)\\))?>: ([0-9]+):([0-9]+)$");
+		return parseInitAndNext(Relation.NEXT, outputMessage, modelName);
+	}
+
+	private static ActionInformationItem parseInitAndNext(Relation rel, String outputMessage, String modelName) {
 		final Matcher matcher = pattern.matcher(outputMessage);
 		matcher.find();
 		
@@ -79,9 +69,10 @@ public class ActionInformationItem extends CoverageInformationItem {
 		final long distinctStates = Long.parseLong(matcher.group(5));
 		final long generatedStates = Long.parseLong(matcher.group(6));
 		
-		return new ActionInformationItem(Relation.NEXT, matcher.group(1), declaration, definition, modelName,
+		return new ActionInformationItem(rel, matcher.group(1), declaration, definition, modelName,
 				generatedStates, distinctStates);
 	}
+	
 	
 	public static ActionInformationItem parseProp(String outputMessage, String modelName) {
 		final Pattern pattern = Pattern.compile("^<(.*?) (line .*)>$");

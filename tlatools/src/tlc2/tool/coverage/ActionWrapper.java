@@ -136,9 +136,10 @@ public final class ActionWrapper extends CostModelNode {
 			assert getEvalCount() == 0L && this.secondary.getCount() == 0L;
 			MP.printMessage(EC.TLC_COVERAGE_PROPERTY, new String[] { printLocation() });
 		} else if (relation == Relation.INIT) {
-			assert this.secondary.getCount() == 0L;
-			MP.printMessage(EC.TLC_COVERAGE_INIT,
-					new String[] { printLocation(), String.valueOf(getEvalCount()) });
+			// TODO Eventually coverage for init and next should consistently report states
+			// found and distinct states into the same counters.
+			MP.printMessage(EC.TLC_COVERAGE_INIT, new String[] { printLocation(), String.valueOf(getEvalCount()),
+					String.valueOf(getEvalCount() + this.secondary.getCount()) });
 		} else {
 			MP.printMessage(EC.TLC_COVERAGE_NEXT, new String[] { printLocation(),
 					String.valueOf(this.secondary.getCount()), String.valueOf(getEvalCount()) });

@@ -34,7 +34,7 @@ public class ActionInformationItemTest {
 	@Test
 	public void testParseInit() {
 		final ActionInformationItem item = ActionInformationItem
-				.parseInit("<Init line 13, col 1 to line 14, col 5 of module H>: 15", "Model");
+				.parseInit("<Init line 13, col 1 to line 14, col 5 of module H>: 3:15", "Model");
 		assertNotNull(item);
 		assertNull(item.getDefinition());
 
@@ -48,14 +48,14 @@ public class ActionInformationItemTest {
 		assertEquals(14, item.getModuleLocation().endLine());
 		assertEquals(5, item.getModuleLocation().endColumn());
 
-		assertEquals(15, item.getCost());
+		assertEquals(3, item.getCost());
 		assertEquals(15, item.getCount());
 	}
 	
 	@Test
 	public void testParseInit2() {
 		final ActionInformationItem item = ActionInformationItem
-				.parseInit("<Init line 13, col 1 to line 17, col 5 of module H (14 16 15 28)>: 15", "Model");
+				.parseInit("<Init line 13, col 1 to line 17, col 5 of module H (14 16 15 28)>: 3:15", "Model");
 		assertNotNull(item);
 		
 		assertEquals(14, item.getDefinition().beginLine());
@@ -73,7 +73,7 @@ public class ActionInformationItemTest {
 		assertEquals(17, item.getModuleLocation().endLine());
 		assertEquals(5, item.getModuleLocation().endColumn());
 
-		assertEquals(15, item.getCost());
+		assertEquals(3, item.getCost());
 		assertEquals(15, item.getCount());
 	}
 

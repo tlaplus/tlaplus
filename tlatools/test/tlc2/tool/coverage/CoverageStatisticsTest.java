@@ -49,7 +49,7 @@ public class CoverageStatisticsTest extends AbstractCoverageTest {
 		// No 'general' errors recorded
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertCoverage("<Init line 12, col 1 to line 12, col 4 of module CoverageStatistics>: 3\n" + 
+		assertCoverage("<Init line 12, col 1 to line 12, col 4 of module CoverageStatistics>: 3:3\n" + 
 				"  line 12, col 12 to line 12, col 21 of module CoverageStatistics: 1\n" + 
 				"  line 13, col 12 to line 13, col 16 of module CoverageStatistics: 3\n" + 
 				"<A line 15, col 1 to line 15, col 1 of module CoverageStatistics>: 16:19\n" + 

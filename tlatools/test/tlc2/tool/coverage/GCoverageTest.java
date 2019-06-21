@@ -48,7 +48,7 @@ public class GCoverageTest extends AbstractCoverageTest {
 		// No 'general' errors recorded
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertCoverage("<Init line 6, col 1 to line 6, col 4 of module G>: 1\n" + 
+		assertCoverage("<Init line 6, col 1 to line 6, col 4 of module G>: 1:1\n" + 
 				"  line 6, col 9 to line 6, col 20 of module G: 1\n" + 
 				"<Next line 8, col 1 to line 8, col 4 of module G>: 0:1\n" + 
 				"  line 8, col 12 to line 8, col 25 of module G: 1\n" + 

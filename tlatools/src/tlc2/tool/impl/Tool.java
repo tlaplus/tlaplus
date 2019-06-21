@@ -453,6 +453,10 @@ public class Tool
 							new String[] { "initial states", "boolean", bval.toString(), acts.pred.toString() });
 				}
 				if (!((BoolValue) bval).val) {
+					if (coverage) {
+						// Increase "states found".
+						cm.getRoot().incSecondary();
+					}
 					return;
 				}
 				// Move on to the next action in the ActionItemList.

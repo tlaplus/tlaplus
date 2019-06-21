@@ -50,7 +50,7 @@ public class BCoverageTest extends AbstractCoverageTest {
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertFalse(recorder.recorded(EC.TLC_COVERAGE_MISMATCH));
-		assertCoverage("<Init line 4, col 1 to line 4, col 4 of module B>: 1\n" + 
+		assertCoverage("<Init line 4, col 1 to line 4, col 4 of module B>: 1:1\n" + 
 				"  line 4, col 9 to line 4, col 17 of module B: 1\n" +
 				"<A line 8, col 1 to line 8, col 1 of module B>: 1:2\n" + 
 				"  line 8, col 6 to line 8, col 19 of module B: 2\n" + 

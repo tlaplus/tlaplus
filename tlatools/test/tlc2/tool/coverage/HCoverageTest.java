@@ -48,7 +48,7 @@ public class HCoverageTest extends AbstractCoverageTest {
 		// No 'general' errors recorded
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertCoverage("<Inv line 22, col 1 to line 22, col 3 of module H>: 1\n" + 
+		assertCoverage("<Inv line 22, col 1 to line 22, col 3 of module H>: 1:31\n" + 
 				"  line 22, col 11 to line 22, col 16 of module H: 1\n" + 
 				"  line 23, col 11 to line 23, col 15 of module H: 31\n" + 
 				"<A line 11, col 1 to line 11, col 1 of module H>: 1:6\n" + 
