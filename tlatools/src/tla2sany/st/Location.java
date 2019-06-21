@@ -436,4 +436,8 @@ public final class Location implements Comparable<Location>
 		}
 		return true;
 	}
+
+	public String linesAndColumns() {
+		return toString().replaceAll(OF_MODULE + ".*", "");
+	}
 }

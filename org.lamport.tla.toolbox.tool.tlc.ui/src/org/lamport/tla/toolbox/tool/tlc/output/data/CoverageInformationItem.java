@@ -51,11 +51,9 @@ import tlc2.TLCGlobals;
 
 public class CoverageInformationItem implements IModuleLocatable
 {
-    private final static String MOD = " of module ";
     private final static String COLON = ": ";
     private final static String AT = "at ";
 
-    private String locationString;
     protected Location location;
     protected String modelName;
     protected long count;
@@ -86,7 +84,6 @@ public class CoverageInformationItem implements IModuleLocatable
     protected CoverageInformationItem(Location location, long count, String modelName, int layer)
     {
         this.location = location;
-        this.locationString = this.location.toString();
         this.count = count;
         this.modelName = modelName;
         assert layer > ActionInformationItem.actionLayer;
@@ -103,12 +100,12 @@ public class CoverageInformationItem implements IModuleLocatable
 
 	public final String getModule()
     {
-        return locationString.substring(locationString.indexOf(MOD) + MOD.length());
+		return location.source();
     }
 
     public final String getLocation()
     {
-        return locationString.substring(0, locationString.indexOf(MOD));
+    	return location.linesAndColumns();
     }
     
     public final boolean isInFile(IFile f) {
