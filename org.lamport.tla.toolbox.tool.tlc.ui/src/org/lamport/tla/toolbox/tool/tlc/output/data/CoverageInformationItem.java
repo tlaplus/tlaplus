@@ -86,7 +86,7 @@ public class CoverageInformationItem implements IModuleLocatable
         this.location = location;
         this.count = count;
         this.modelName = modelName;
-        assert layer > ActionInformationItem.actionLayer;
+        assert layer >= ActionInformationItem.actionLayer;
         this.layer = layer;
     }
     

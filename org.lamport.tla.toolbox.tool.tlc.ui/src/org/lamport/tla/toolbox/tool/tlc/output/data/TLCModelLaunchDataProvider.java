@@ -1049,7 +1049,6 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     }
 
 	public boolean isDone() {
-		assert currentStatus.equals("Not running");
 		return isDone;
 	}
 

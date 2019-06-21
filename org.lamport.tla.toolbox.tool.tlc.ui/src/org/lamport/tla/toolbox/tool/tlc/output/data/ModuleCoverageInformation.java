@@ -96,7 +96,7 @@ public class ModuleCoverageInformation {
 				stack.push(aiiRoot);
 			}
 		}
-		assert root.getChildren().stream().noneMatch(c -> c instanceof CoverageInformationItem);
+		assert root.getChildren().stream().allMatch(c -> c instanceof ActionInformationItem);
 		
 		return root;
 	}
