@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -63,10 +62,8 @@ import util.UniqueString;
  * and the run method for information about this job.
  * 
  * @author Daniel Ricketts
- *
  */
-public class ProverJob extends Job
-{
+public class ProverJob extends Job {
     /**
      * The time that the run method was called.
      * This is the time in milliseconds returned
@@ -239,59 +236,10 @@ public class ProverJob extends Job
          * The following sets the path to tlapm.
          */
         Assert.isTrue(Platform.isRunning(), "Platform is not running when prover was launched. This makes no sense.");
-        // the default tlapm command on all systems if
-        // no complete tlapm path can be found.
-        this.tlapmPath = new Path("tlapm");
-
-        if (Platform.getOS().equals(Platform.OS_WIN32))
-        {
-            /*
-             * Check if "C:/cygwin/usr/local/bin/tlapm.exe" exists.
-             * If it does exist, that is the path. Else, the path is "tlapm". Setting
-             * the path to "tlapm" assumes that it is in the system path.
-             */
-            final IPath defaultPath = new Path("C:/cygwin/usr/local/bin/tlapm.exe");
-            final IPath defaultPath64 = new Path("C:/cygwin64/usr/local/bin/tlapm.exe");
-
-            if (defaultPath.toFile().exists())
-            {
-                this.tlapmPath = defaultPath;
-
-                /*
-                 * If cygwin path is specified, use that. If not
-                 * use the default cygwin path : 
-                 * "C:\cygwin\bin"
-                 */
-                this.cygwinPath = new Path("C:\\cygwin\\bin");
-            }
-            /*
-             * Nowadays 64bit systems are common, thus also check c:/cygwin64/...
-             */
-            else if (defaultPath64.toFile().exists())
-            {
-                this.tlapmPath = defaultPath64;
-                this.cygwinPath = new Path("C:\\cygwin64\\bin");
-            }
-            
-        } else if (Platform.getOS().equals(Platform.OS_MACOSX) || Platform.getOS().equals(Platform.OS_LINUX))
-        {
-
-            /*
-             * Check if "/usr/local/bin/tlapm" exists.
-             * If it does exist, that is the path. Else, the path is tlapm. Setting
-             * the path to "tlapm" assumes that it is in the system path.
-             */
-            IPath defaultPath = new Path("/usr/local/bin/tlapm");
-
-            if (defaultPath.toFile().exists())
-            {
-                this.tlapmPath = defaultPath;
-            }
-
-        } else
-        {
-            // TODO indicate that the operating system is unsupported
-        }
+        
+        final ResourceHelper.TLAPMExecutablePaths ep = ResourceHelper.getExecutablePaths();
+        this.tlapmPath = ep.getTLAPMPath();
+        this.cygwinPath = ep.getCygwinPath();
 
         /*
          * We create a useless launch object. It is

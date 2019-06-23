@@ -4,7 +4,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.prover.ui.dialog.LaunchProverDialog;
+import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -17,7 +19,6 @@ import org.lamport.tla.toolbox.util.UIHelper;
  */
 public class GeneralLaunchProverHandler extends AbstractHandler implements IHandler
 {
-
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
     	/*
@@ -34,4 +35,13 @@ public class GeneralLaunchProverHandler extends AbstractHandler implements IHand
         return null;
     }
 
+    /**
+     * This handler is enabled if there is a TLA editor with focus and a TLAPM executable exists.
+     */
+    public void setEnabled(Object context)
+    {
+        final ResourceHelper.TLAPMExecutablePaths ep = ResourceHelper.getExecutablePaths();
+
+        setBaseEnabled((EditorUtil.getTLAEditorWithFocus() != null) && ep.tlapmDoesExist());
+    }
 }

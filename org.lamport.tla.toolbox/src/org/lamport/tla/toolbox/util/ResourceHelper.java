@@ -37,9 +37,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.MultiRule;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -98,13 +99,100 @@ import util.FilenameToStream;
 import util.UniqueString;
 
 /**
- * A toolbox with resource related methods
+ * A utility class with resource related methods
  * @author Simon Zambrovski
- * @version $Id$
  */
-public class ResourceHelper
-{
+public class ResourceHelper {
+	private static TLAPMExecutablePaths EXECUTABLE_PATHS = null;
+	
+	public static class TLAPMExecutablePaths {
+		private final IPath tlapmPath;
+		private final IPath cygwinPath;
+		
+		private TLAPMExecutablePaths(final IPath tlapm, final IPath cygwin) {
+			tlapmPath = tlapm;
+			cygwinPath = cygwin;
+		}
 
+		/**
+		 * @return true if the path to TLAPM exists and there is a file there which can be executed
+		 */
+		public boolean tlapmDoesExist() {
+			return ((tlapmPath != null)
+						&& (tlapmPath.toFile() != null)
+						&& tlapmPath.toFile().exists()
+						&& tlapmPath.toFile().canExecute());
+		}
+		
+		/**
+		 * @return this will be null on non-Windows platforms
+		 */
+		public IPath getCygwinPath() {
+			return cygwinPath;
+		}
+		
+		public IPath getTLAPMPath() {
+			return tlapmPath;
+		}
+	}
+	
+	// For the purposes of the toolbox, i feel it suffices to have a singleton; this buys us the performance we'd like
+	//		as the paths will be part of a UI check for enabled state on menu items, at the cost that if a user installs
+	//		TLAPM while the toolbox is running, they'll need to restart to be able to use it.
+	public static synchronized TLAPMExecutablePaths getExecutablePaths() {
+		if (EXECUTABLE_PATHS == null) {
+	        // the default tlapm command on all systems if no complete tlapm path can be found.
+	        IPath tlapmPath = new Path("tlapm");
+	        IPath cygwinPath = null;
+
+			if (Platform.getOS().equals(Platform.OS_WIN32)) {
+	            /*
+	             * Check if "C:/cygwin/usr/local/bin/tlapm.exe" exists.
+	             * If it does exist, that is the path. Else, the path is "tlapm". Setting
+	             * the path to "tlapm" assumes that it is in the system path.
+	             */
+	            final IPath defaultPath = new Path("C:/cygwin/usr/local/bin/tlapm.exe");
+	            final IPath defaultPath64 = new Path("C:/cygwin64/usr/local/bin/tlapm.exe");
+
+				if (defaultPath.toFile().exists()) {
+	                tlapmPath = defaultPath;
+
+	                /*
+	                 * If cygwin path is specified, use that. If not
+	                 * use the default cygwin path : 
+	                 * "C:\cygwin\bin"
+	                 */
+	                cygwinPath = new Path("C:\\cygwin\\bin");
+	            }
+	            /*
+	             * Nowadays 64bit systems are common, thus also check c:/cygwin64/... preferring to use that
+	             */
+				else if (defaultPath64.toFile().exists()) {
+	                tlapmPath = defaultPath64;
+	                cygwinPath = new Path("C:\\cygwin64\\bin");
+	            }
+			} else if (Platform.getOS().equals(Platform.OS_MACOSX) || Platform.getOS().equals(Platform.OS_LINUX)) {
+	            /*
+	             * Check if "/usr/local/bin/tlapm" exists.
+	             * If it does exist, that is the path. Else, the path is tlapm. Setting
+	             * the path to "tlapm" assumes that it is in the system path.
+	             */
+	            final IPath defaultPath = new Path("/usr/local/bin/tlapm");
+
+				if (defaultPath.toFile().exists()) {
+	                tlapmPath = defaultPath;
+	            }
+			} else {
+	            // TODO indicate that the operating system is unsupported
+	        }
+			
+			EXECUTABLE_PATHS = new TLAPMExecutablePaths(tlapmPath, cygwinPath);
+		}
+		
+		return EXECUTABLE_PATHS;
+	}
+
+	
     /**
      * Filename suffix for {@link TLAtoPCalMapping} files
      */
@@ -436,7 +524,7 @@ public class ResourceHelper
                     String name = members[i].getName();
                     IPath newLocation = newLocationParent.append(name);
                     
-                    members[i].delete(true, new SubProgressMonitor(monitor, 1));
+                    members[i].delete(true, SubMonitor.convert(monitor).split(1));
                     if (newLocation.toFile().exists())
                     {
                         getLinkedFile(project, ResourceHelper.PARENT_ONE_PROJECT_LOC + name, true);
