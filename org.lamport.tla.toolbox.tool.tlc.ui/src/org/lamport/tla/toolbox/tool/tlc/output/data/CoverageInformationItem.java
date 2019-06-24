@@ -386,6 +386,15 @@ public class CoverageInformationItem implements IModuleLocatable
 	}
 
 	public TreeSet<CoverageInformationItem> getLegend(final Representation rep) {
+		if (rep == Representation.STATES || rep == Representation.STATES_DISTINCT) {
+			// The active tree also contains CoverageInformationItem instances which - for
+			// states found and distinct states - are not relevant. The legend for the 
+			// state based profiling (as opposed to invocation and cost) for a selected
+			// action just needs a single legend item, namely the selected action itself.
+			final TreeSet<CoverageInformationItem> s = new TreeSet<>(rep.getComparator(Grouping.INDIVIDUAL));
+			s.add(this);
+			return s;
+		}
 		return collectActive(new TreeSet<CoverageInformationItem>(rep.getComparator(Grouping.INDIVIDUAL)));
 	}
 	
