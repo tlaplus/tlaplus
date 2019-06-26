@@ -422,6 +422,17 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 				} else {
 					final Representation currentRepresentation = getActiveRepresentation();
 					heatMapComposite.dispose();
+
+					// Assume a spec with a Next action such as Next == (x' \in S) \/ (x' \in T)
+					// In other words, consider a spec where an action has sub-actions (disjuncts).
+					// If this is reported as COMBINED, the legend is bogus bc the value for Next
+					// appears twice (for the first and second disjunct) but the value is both
+					// times the combined one.
+					Representation.Grouping grpng = grouping;
+					if (currentRepresentation == Representation.STATES
+							|| currentRepresentation == Representation.STATES_DISTINCT) {
+						grpng = Grouping.INDIVIDUAL;
+					}
 					
 					heatMapComposite = new Composite(parent, SWT.BORDER);
 					final GridData layoutData = new GridData(SWT.FILL, SWT.TOP, true, false);
@@ -440,9 +451,9 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 						
 						// A label has a background color and a text indicating the actual value
 						// (cost/invocations/...).
-						label.setBackground(currentRepresentation.getColor(cii, grouping));
+						label.setBackground(currentRepresentation.getColor(cii, grpng));
 
-						final long value = currentRepresentation.getValue(cii, grouping);
+						final long value = currentRepresentation.getValue(cii, grpng);
 						// Format numbers > 1000 in scientific notation.
 						if (value > 1000) {
 							label.setText(df.format(value));
