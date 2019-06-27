@@ -49,6 +49,7 @@ import org.apache.commons.io.filefilter.NotFileFilter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceRuleFactory;
 import org.eclipse.core.resources.IWorkspace;
@@ -68,6 +69,7 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.text.BadLocationException;
@@ -82,6 +84,7 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
@@ -265,12 +268,18 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
 	}
 	
-	public Model donateForForeignSpecCopy(final Model foreignModel, final String newModelName) {
+	public Model copyIntoForeignSpec(final Spec foreignSpec, final String newModelName) {
+		final IProject foreignProject = foreignSpec.getProject();
+		final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+		final ILaunchConfigurationType launchConfigurationType
+				= launchManager.getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
 		final String sanitizedNewName = sanitizeName(newModelName);
+		final String wholeName = foreignSpec.getName() + SPEC_MODEL_DELIM + sanitizedNewName;
+		
 		try {
-			final ILaunchConfigurationWorkingCopy copy = this.launchConfig.copy(spec.getName() + SPEC_MODEL_DELIM + sanitizedNewName);
-			copyAttributesFromForeignModelToWorkingCopy(foreignModel, copy);
-	        copy.setAttribute(IConfigurationConstants.SPEC_NAME, spec.getName());
+			final ILaunchConfigurationWorkingCopy copy = launchConfigurationType.newInstance(foreignProject, wholeName);
+			copyAttributesFromForeignModelToWorkingCopy(this, copy);
+	        copy.setAttribute(IConfigurationConstants.SPEC_NAME, foreignSpec.getName());
             copy.setAttribute(IConfigurationConstants.MODEL_NAME, sanitizedNewName);
             return copy.doSave().getAdapter(Model.class);
 		} catch (CoreException e) {

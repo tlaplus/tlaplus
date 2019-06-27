@@ -5,8 +5,8 @@ Element-Name: ECL-SMOKE-PROCS
 Element-Type: context
 Element-Version: 2.0
 Id: _DSUP8P5YEeilFekyyVb9lA
-Runtime-Version: 2.4.0.201902270059
-Save-Time: 5/31/19, 7:42 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 6/27/19, 1:36 PM
 
 ------=_.ecl.context-718f04b4-ed39-33e3-af62-0995e4561998
 Content-Type: text/ecl
@@ -15,35 +15,32 @@ Entry-Name: .ecl.context
 // For future people trying to figure out what is going on with temp directory names; "${rnd.tmp.dir}" is looked-for
 // 	and substituted, in NewSpecWizardPage.
 
-// Create a new spec
- proc "OpenTLACreateNew"
- {
+// Set up the app window; remove all existing specs from the Spec Explorer; create a new spec with the default name
+proc "OpenTLACreateNew"
+{
 	try -command {
 		SetUpAppWindow
-		with [get-view "Spec Explorer" | get-tree] {
- 			collapse-all
- 			get-items | foreach {
-  				let [val item -input] {
-    				format "project %s" [$item | get-property "caption" -raw] | log
- 					get-view "Spec Explorer" | get-tree | select $item | get-menu -path Delete | click  
-  					get-window "Delete specification?" | get-button Yes | get-property caption | equals "&Yes" | verify-true
-					get-window "Delete specification?" | get-button Yes | click
-				}
-			}
-		}
+		DeleteSpecNew
 	}
 	-finally {
-		get-menu -path "File/Open Spec/Add New Spec..." | click
-		get-window -class WizardDialog | get-editbox -after [get-label "Root-module file:"] | set-text [concat "${rnd.tmp.dir}" [get-java-property "file.separator"] $TLA-File]
-		with [get-window -class WizardDialog] {
-		    get-label "New TLA+ Specification" | get-property caption | equals "New TLA+ Specification" | verify-true
-		    with [get-button "Finish"] {
-				get-property enablement | equals true | verify-true
-		        get-property caption | equals "&Finish" | verify-true
-			 }
-		}
-	 	get-window -class WizardDialog | get-button Finish | click
+		CreateNewSpec $TLA-File
 	}
+}
+
+// Create a spec with a given name
+proc "CreateNewSpec" [val fileName -input]
+{
+	get-menu -path "File/Open Spec/Add New Spec..." | click
+	get-window -class WizardDialog | get-editbox -after [get-label "Root-module file:"]
+		| set-text [concat "${rnd.tmp.dir}" [get-java-property "file.separator"] $fileName]
+	with [get-window -class WizardDialog] {
+	    get-label "New TLA+ Specification" | get-property caption | equals "New TLA+ Specification" | verify-true
+	    with [get-button "Finish"] {
+			get-property enablement | equals true | verify-true
+	        get-property caption | equals "&Finish" | verify-true
+		 }
+	}
+ 	get-window -class WizardDialog | get-button Finish | click
 }
 
 // set up main window
@@ -92,7 +89,7 @@ proc "wait-te"
 	}
 }
 
-// Delete New Spec
+// Delete all specs in the spec explorer - TODO name this proc more appropriately
 proc "DeleteSpecNew"
 {
     //MAK 04/25/2019: Removed seemingly bogus calls to parse spec & module during deletion.
