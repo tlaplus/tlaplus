@@ -79,6 +79,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent;
@@ -131,7 +132,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	/**
-	 * @param fullQualifiedModelName The full-qualified (includes the Spec name and separator too) name of the Model.
+	 * @param modelName The full-qualified (includes the Spec name and separator too) name of the Model.
 	 * @return A Model, iff a Model by the given name exists and <code>null</code> otherwise.
 	 */
 	public static Model getByName(final String modelName) {
@@ -251,16 +252,48 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		return this.spec;
 	}
 
-	public Model copy(String newModelName) {
-		newModelName = sanitizeName(newModelName);
+	public Model copy(final String newModelName) {
+		final String sanitizedNewName = sanitizeName(newModelName);
 		try {
-			final ILaunchConfigurationWorkingCopy copy = this.launchConfig
-					.copy(getSpec().getName() + SPEC_MODEL_DELIM + newModelName);
-            copy.setAttribute(ModelHelper.MODEL_NAME, newModelName);
+			final ILaunchConfigurationWorkingCopy copy = this.launchConfig.copy(spec.getName() + SPEC_MODEL_DELIM + sanitizedNewName);
+	        copy.setAttribute(IConfigurationConstants.SPEC_NAME, spec.getName());
+            copy.setAttribute(IConfigurationConstants.MODEL_NAME, sanitizedNewName);
             return copy.doSave().getAdapter(Model.class);
 		} catch (CoreException e) {
 			TLCActivator.logError("Error cloning model.", e);
 			return null;
+		}
+	}
+	
+	public Model donateForForeignSpecCopy(final Model foreignModel, final String newModelName) {
+		final String sanitizedNewName = sanitizeName(newModelName);
+		try {
+			final ILaunchConfigurationWorkingCopy copy = this.launchConfig.copy(spec.getName() + SPEC_MODEL_DELIM + sanitizedNewName);
+			copyAttributesFromForeignModelToWorkingCopy(foreignModel, copy);
+	        copy.setAttribute(IConfigurationConstants.SPEC_NAME, spec.getName());
+            copy.setAttribute(IConfigurationConstants.MODEL_NAME, sanitizedNewName);
+            return copy.doSave().getAdapter(Model.class);
+		} catch (CoreException e) {
+			TLCActivator.logError("Error cloning foreign model.", e);
+			return null;
+		}
+	}
+	
+	// There is actually a method ILaunchConfigurationWorkingCopy.copyAttributes however the launch configuration
+	//		need be a prototype; so we do this by hand.
+	private void copyAttributesFromForeignModelToWorkingCopy(final Model foreignModel,
+			final ILaunchConfigurationWorkingCopy copy) throws CoreException {
+		final ILaunchConfiguration foreignILC = foreignModel.getLaunchConfiguration();
+		final Map<String, Object> workingCopyAttributes = copy.getAttributes();
+		final Map<String, Object> foreignAttributes = foreignILC.getAttributes();
+
+		for (final Map.Entry<String, Object> me : foreignAttributes.entrySet()) {
+			copy.setAttribute(me.getKey(), me.getValue());
+			workingCopyAttributes.remove(me.getKey());
+		}
+		
+		for (final String key : workingCopyAttributes.keySet()) {
+			copy.removeAttribute(key);
 		}
 	}
 
@@ -1071,11 +1104,22 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
         return new Vector<SimpleTLCState>();
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
+    /**
+     * This currently invokes {@link #getFullyQualifiedName()}
+     * 
+     * {@inheritDoc}
      */
     public String toString() {
-    	// The model's full-qualified name
+    	return getFullyQualifiedName();
+    }
+
+    /**
+     * It's more sensible to have this explicitly named method, than rely on having the arcane knowledge that
+     * 	<code>toString()</code> returns this value.
+     * 
+     * @return the fully qualified name of the model, which includes the spec name.
+     */
+    public String getFullyQualifiedName() {
     	return getSpec().getName() + SPEC_MODEL_DELIM + getName();
     }
 

@@ -57,7 +57,7 @@ public class CloneModelContributionItem extends CompoundContributionItem
             specProject.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
         } catch (CoreException e)
         {
-        	e.printStackTrace();
+			TLCUIActivator.getDefault().logError("Exception encountered refreshing the project.", e);
         }
 
 		// First, search for all models for the given spec.

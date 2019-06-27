@@ -32,14 +32,25 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.TLCModelFactory;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelNameValidator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -66,6 +77,17 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
 	public static final String PARAM_MODEL_NAME = "toolbox.tool.tlc.commands.model.clone.param.modelName";
 
 	/**
+	 * If the cloning is being done on a foreign spec, this value must be set.
+	 * 
+	 * N.B The Eclipse codebase is such an exceedingly well written thing that if this parameter is not defined
+	 *		in the command XML, Eclipse will silently discard all contribution items containing parameters with
+	 *		this value. Kwality!
+	 */
+	public static final String PARAM_FOREIGN_FULLY_QUALIFIED_MODEL_NAME
+								= "toolbox.tool.tlc.commands.model.clone.param.foreignFullyQualifiedModelName";
+	
+	
+	/**
 	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
 	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -77,12 +99,16 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
 		 * parameter, so it may not have been set.
 		 */
 		final String paramModelName = (String) event.getParameter(PARAM_MODEL_NAME);
+		final String paramForeignModelName = (String) event.getParameter(PARAM_FOREIGN_FULLY_QUALIFIED_MODEL_NAME);
+		final boolean isForeignClone = (paramForeignModelName != null);
 		if (paramModelName != null) {
 			// The name is given which means the user clicked the main menu
 			// instead of the spec explorer. Under the constraint that only ever
 			// a single spec can be open, lookup the current spec to eventually
 			// get the corresponding model.
 			model = spec.getModel(paramModelName);
+		} else if (isForeignClone) {
+			model = TLCModelFactory.getByName(paramForeignModelName);
 		} else {
 			/*
 			 * No parameter try to get it from active navigator if any
@@ -99,18 +125,62 @@ public class CloneModelHandlerDelegate extends AbstractHandler implements IHandl
 					"Please input the new name of the model", spec.getModelNameSuggestion(model), new ModelNameValidator(spec));
 			dialog.setBlockOnOpen(true);
 			if (dialog.open() == Window.OK) {
-				final String usersChosenName = dialog.getValue();
-				if (model.copy(usersChosenName) == null) {
-					throw new ExecutionException(
-							"Failed to copy with name " + usersChosenName + " from model " + model.getName());
+				final String chosenName = dialog.getValue();
+
+				if (isForeignClone) {
+					final Model donorModel = getDonorModelForSpec(spec);
+					
+					if (donorModel == null) {
+						MessageDialog.openInformation(null, "Sorry...",
+								"Currently the open spec must have a pre-existing model in order to clone a foreign "
+									+ "model; thanks for your patience.");
+						
+						return null;
+					}
+
+					if (donorModel.donateForForeignSpecCopy(model, chosenName) == null) {
+						throw new ExecutionException("Failed to copy with name " + chosenName
+														+ " from model " + model.getName() + " in spec " + model.getSpec().getName());
+					}
+				} else {
+					if (model.copy(chosenName) == null) {
+						throw new ExecutionException("Failed to copy with name " + chosenName + " from model " + model.getName());
+					}
 				}
 
 				// Open the previously created model
 				final Map<String, String> parameters = new HashMap<String, String>();
-				parameters.put(OpenModelHandler.PARAM_MODEL_NAME, usersChosenName);
+				parameters.put(OpenModelHandler.PARAM_MODEL_NAME, chosenName);
 				UIHelper.runCommand(OpenModelHandler.COMMAND_ID, parameters);
 			}
 		}
+		return null;
+	}
+	
+	// We want a donor model for its launch configuration which has the correct toolbox pathing.
+	private Model getDonorModelForSpec(final Spec spec) {
+		final String specName = spec.getName();
+		final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+		final ILaunchConfigurationType launchConfigurationType
+				= launchManager.getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
+		
+		try {
+			final ILaunchConfiguration[] launchConfigurations
+					= launchManager.getLaunchConfigurations(launchConfigurationType);
+			for (final ILaunchConfiguration launchConfiguration : launchConfigurations) {
+				final String projectName = launchConfiguration.getAttribute(IConfigurationConstants.SPEC_NAME, "-l^!D!&q_");
+				if (projectName.equals(specName)) {
+					final Model model = launchConfiguration.getAdapter(Model.class);
+
+					if (!model.isSnapshot()) {
+						return model;
+					}
+				}
+			}
+		} catch (final CoreException ce) {
+			TLCUIActivator.getDefault().logError("Exception attempting to secure a donor model.", ce);
+		}
+
 		return null;
 	}
 }

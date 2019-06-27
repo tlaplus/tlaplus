@@ -108,8 +108,7 @@
          <commandParameter
                id="toolbox.tool.tlc.commands.model.clone.param.modelName"
                name="Model to be cloned"
-               optional="true">
-         </commandParameter>
+               optional="true"/>
       </command>
       <!-- The difference between this command and the "...delegate" above is, 
       	   that handlers associated to this command are *always* created. This 
@@ -124,8 +123,11 @@
          <commandParameter
                id="toolbox.tool.tlc.commands.model.clone.param.modelName"
                name="Model to be cloned"
-               optional="true">
-         </commandParameter>
+               optional="true"/>
+         <commandParameter
+               id="toolbox.tool.tlc.commands.model.clone.param.foreignFullyQualifiedModelName"
+               name="Foreign model to be cloned"
+               optional="true"/>
       </command>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
@@ -222,11 +224,29 @@
             </menu>
             <menu
                   id="toolbox.tool.tlc.modellaunch.clone"
-                  label="Clone Model"
-                  mnemonic="O">
+                  label="Clone Model">
                <dynamic
                      class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.CloneModelContributionItem"
                      id="toolbox.tool.tlc.model.clone.dynamic">
+               </dynamic>
+               <visibleWhen
+                     checkEnabled="true">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <not>
+                        <equals
+                              value="org.lamport.tla.toolbox.ui.perspective.initial">
+                        </equals>
+                     </not>
+                  </with>
+               </visibleWhen>
+            </menu>
+            <menu
+                  id="toolbox.tool.tlc.modellaunch.cloneforeign"
+                  label="Clone Foreign Model">
+               <dynamic
+                     class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.CloneForeignModelContributionItem"
+                     id="toolbox.tool.tlc.model.cloneforeign.dynamic">
                </dynamic>
                <visibleWhen
                      checkEnabled="true">

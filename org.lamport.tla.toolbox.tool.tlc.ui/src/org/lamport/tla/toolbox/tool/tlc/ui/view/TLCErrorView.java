@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;

@@ -110,7 +110,7 @@ public class TLCModelFactory implements IAdapterFactory, ILaunchConfigurationLis
 	 */
 	public static Model getByName(final String fullQualifiedModelName) {
 		Assert.isNotNull(fullQualifiedModelName);
-		Assert.isLegal(!fullQualifiedModelName.contains(Model.SPEC_MODEL_DELIM), "Not a full-qualified model name.");
+		Assert.isLegal(fullQualifiedModelName.contains(Model.SPEC_MODEL_DELIM), "Not a full-qualified model name.");
 		
         final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
         final ILaunchConfigurationType launchConfigurationType = launchManager
@@ -142,7 +142,6 @@ public class TLCModelFactory implements IAdapterFactory, ILaunchConfigurationLis
 		try {
 			final ILaunchConfiguration[] launchConfigurations = launchManager.getLaunchConfigurations(launchConfigurationType);
 			for (int i = 0; i < launchConfigurations.length; i++) {
-				// Can do equals here because of full qualified name.
 				final ILaunchConfiguration launchConfiguration = launchConfigurations[i];
 				if (aFile.equals(launchConfiguration.getFile())) {
 					return launchConfiguration.getAdapter(Model.class);
