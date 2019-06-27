@@ -6,7 +6,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
-import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.tool.prover.ui.util.TLAPMExecutableLocator;
 
 /**
  * Runs the prover to simply get the status of the step containing
@@ -32,8 +32,8 @@ public class StatusStepHandler extends AbstractHandler implements IHandler
      */
     public void setEnabled(Object context)
     {
-        final ResourceHelper.TLAPMExecutablePaths ep = ResourceHelper.getExecutablePaths();
+        final TLAPMExecutableLocator locator = TLAPMExecutableLocator.INSTANCE;
 
-        setBaseEnabled((EditorUtil.getTLAEditorWithFocus() != null) && ep.tlapmDoesExist());
+        setBaseEnabled((EditorUtil.getTLAEditorWithFocus() != null) && locator.tlapmDoesExist());
     }
 }

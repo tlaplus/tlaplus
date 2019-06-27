@@ -6,7 +6,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.prover.ui.dialog.LaunchProverDialog;
-import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.tool.prover.ui.util.TLAPMExecutableLocator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -40,8 +40,8 @@ public class GeneralLaunchProverHandler extends AbstractHandler implements IHand
      */
     public void setEnabled(Object context)
     {
-        final ResourceHelper.TLAPMExecutablePaths ep = ResourceHelper.getExecutablePaths();
+        final TLAPMExecutableLocator locator = TLAPMExecutableLocator.INSTANCE;
 
-        setBaseEnabled((EditorUtil.getTLAEditorWithFocus() != null) && ep.tlapmDoesExist());
+        setBaseEnabled((EditorUtil.getTLAEditorWithFocus() != null) && locator.tlapmDoesExist());
     }
 }

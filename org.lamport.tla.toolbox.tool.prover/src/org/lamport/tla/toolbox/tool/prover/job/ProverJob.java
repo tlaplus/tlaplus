@@ -49,6 +49,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
 import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
+import org.lamport.tla.toolbox.tool.prover.ui.util.TLAPMExecutableLocator;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
@@ -237,9 +238,9 @@ public class ProverJob extends Job {
          */
         Assert.isTrue(Platform.isRunning(), "Platform is not running when prover was launched. This makes no sense.");
         
-        final ResourceHelper.TLAPMExecutablePaths ep = ResourceHelper.getExecutablePaths();
-        this.tlapmPath = ep.getTLAPMPath();
-        this.cygwinPath = ep.getCygwinPath();
+        final TLAPMExecutableLocator locator = TLAPMExecutableLocator.INSTANCE;
+        this.tlapmPath = locator.getTLAPMPath();
+        this.cygwinPath = locator.getCygwinPath();
 
         /*
          * We create a useless launch object. It is

@@ -6,7 +6,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
-import org.lamport.tla.toolbox.util.ResourceHelper;
+import org.lamport.tla.toolbox.tool.prover.ui.util.TLAPMExecutableLocator;
 
 /**
  * Launches TLAPM on the proof step currently containing the caret or on the
@@ -35,8 +35,8 @@ public class CheckProofHandler extends AbstractHandler implements IHandler
      */
     public void setEnabled(Object context)
     {
-        final ResourceHelper.TLAPMExecutablePaths ep = ResourceHelper.getExecutablePaths();
+        final TLAPMExecutableLocator locator = TLAPMExecutableLocator.INSTANCE;
 
-        setBaseEnabled((EditorUtil.getTLAEditorWithFocus() != null) && ep.tlapmDoesExist());
+        setBaseEnabled((EditorUtil.getTLAEditorWithFocus() != null) && locator.tlapmDoesExist());
     }
 }
