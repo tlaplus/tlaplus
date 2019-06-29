@@ -1,7 +1,10 @@
 package org.lamport.tla.toolbox.editor.basic.tla;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.BadLocationException;
@@ -50,15 +53,26 @@ public class TLAAnnotationHover implements IAnnotationHover {
 		final Iterator<Annotation> it = model.getAnnotationIterator();
 		final IDocument document = viewer.getDocument();
 		final ArrayList<String> messages = new ArrayList<>();
+		final HashMap<Position, Set<String>> placeMessagesMap = new HashMap<>();
 		while (it.hasNext()) {
 			final Annotation annotation = it.next();
 			if (annotation instanceof MarkerAnnotation) {
 				final MarkerAnnotation ma = (MarkerAnnotation) annotation;
-				if (compareRulerLine(model.getPosition(ma), document, line)) {
+				final Position p = model.getPosition(ma);
+				if (compareRulerLine(p, document, line)) {
 					final IMarker marker = ma.getMarker();
 					final String message = marker.getAttribute(IMarker.MESSAGE, null);
 					if ((message != null) && (message.trim().length() > 0)) {
-						messages.add(message);
+						Set<String> priorMessages = placeMessagesMap.get(p);
+						if (priorMessages == null) {
+							priorMessages = new HashSet<>();
+							placeMessagesMap.put(p, priorMessages);
+						}
+						
+						if (!priorMessages.contains(message)) {
+							messages.add(message);
+							priorMessages.add(message);
+						}
 					}
 				}
 			}
