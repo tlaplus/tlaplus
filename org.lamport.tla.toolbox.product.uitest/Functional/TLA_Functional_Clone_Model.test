@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _ARWUAAJjEemDc-4PKyNT9w
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/27/19, 2:00 PM
+Save-Time: 6/30/19, 8:38 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -32,7 +32,7 @@ try -command {
 	get-menu -path "TLC Model Checker/New Model..." | click
 	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
 	    | equals "Please input the name of the model to create" | verify-true
-	get-window "New model..." | get-button OK | click
+	get-window "New model..." | get-button "OK" | click
 	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
 	get-editor "Model_1" | get-button "Runs TLC on the model." | click
 	get-editor "Model_1" | get-button "Stops the current TLC model checker run." | click
@@ -44,7 +44,7 @@ try -command {
 	get-menu -path "TLC Model Checker/Clone Model/Model_1" | click
 	get-window "Clone model..." | get-label "Please input the new name of the model" | get-property caption 
 	    | equals "Please input the new name of the model" | verify-true
-	get-window "Clone model..." | get-button OK | click
+	get-window "Clone model..." | get-button "OK" | click
 	
 	let [val descriptionText "Some description text."] {
 		with [get-editor "Model_2"] {
@@ -60,10 +60,15 @@ try -command {
 		}
 		
 		CreateNewSpec "another.tla"
-		get-menu -path [concat "TLC Model Checker/Clone Foreign Model/" $TLA-SPEC-NAME " - Model_2"] | click
+		get-menu -path [concat "TLC Model Checker/Clone Model/Foreign Model..."] | click
+		with [get-window "Please choose a spec and a model"] {
+			get-list | select $TLA-SPEC-NAME
+			get-list -index 1 | select "Model_2"
+			get-button "OK" | click
+		}
 		get-window "Clone model..." | get-label "Please input the new name of the model" | get-property caption 
 		    | equals "Please input the new name of the model" | verify-true
-		get-window "Clone model..." | get-button OK | click
+		get-window "Clone model..." | get-button "OK" | click
 		with [get-editor "Model_2"] {
 		    get-tab-folder | get-tab-item "Model Overview" | click
 		    with [get-section "Model description"] {
