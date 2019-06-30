@@ -103,7 +103,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
-import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.RecordToSourceCoupler;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
@@ -1259,7 +1259,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // create the viewer
         coverage = new TableViewer(coverageTable);
 
-        coverage.getTable().addMouseListener(new ActionClickListener(coverage));
+        coverage.getTable().addMouseListener(new RecordToSourceCoupler(coverage));
 
         // create list-based content provider
         coverage.setContentProvider(new IStructuredContentProvider() {

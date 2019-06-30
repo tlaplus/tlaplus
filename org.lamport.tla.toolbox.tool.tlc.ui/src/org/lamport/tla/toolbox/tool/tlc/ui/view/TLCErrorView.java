@@ -87,8 +87,8 @@ import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
-import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener;
-import org.lamport.tla.toolbox.tool.tlc.ui.util.ActionClickListener.LoaderTLCState;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.RecordToSourceCoupler;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.RecordToSourceCoupler.LoaderTLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ExpandableSpaceReclaimer;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.TLCUIHelper;
@@ -146,7 +146,7 @@ public class TLCErrorView extends ViewPart
 
     private SourceViewer errorViewer;
     private TreeViewer variableViewer;
-    private ActionClickListener stackTraceActionListener;
+    private RecordToSourceCoupler stackTraceActionListener;
     private SyncStackTraversal syncStackTraversalAction;
     private SourceViewer valueViewer;
     private Model model;
@@ -521,7 +521,8 @@ public class TLCErrorView extends ViewPart
         
         final Set<Class<? extends ITextEditor>> blacklist = new HashSet<>();
         blacklist.add(TLACoverageEditor.class);
-		stackTraceActionListener = new ActionClickListener(variableViewer, blacklist, this);
+		stackTraceActionListener = new RecordToSourceCoupler(variableViewer, blacklist, this,
+				RecordToSourceCoupler.FocusRetentionPolicy.ARROW_KEY_TRAVERSAL);
 		variableViewer.getTree().addMouseListener(stackTraceActionListener);
         variableViewer.getTree().addKeyListener(stackTraceActionListener);
         variableViewer.getTree().addDisposeListener((event) -> {
@@ -978,7 +979,7 @@ public class TLCErrorView extends ViewPart
 				if (error.isTraceRestricted() && viewerIndex == 0) {
 					// If only a subset of the trace is shown, show a dummy item
 					// at the top which can be double-clicked to load more.
-					viewer.replace(parent, viewerIndex, new ActionClickListener.LoaderTLCState(viewer,
+					viewer.replace(parent, viewerIndex, new RecordToSourceCoupler.LoaderTLCState(viewer,
 							Math.min(numberOfStatesToShow, error.getNumberOfRestrictedTraceStates()), error));
 					return;
 				}
@@ -1166,7 +1167,7 @@ public class TLCErrorView extends ViewPart
                     }
                     return state.getLabel();
                 case VALUE:
-                	if (state instanceof ActionClickListener.LoaderTLCState) {
+                	if (state instanceof RecordToSourceCoupler.LoaderTLCState) {
                     	return "";
                     } else {
                     	return "State (num = " + state.getStateNumber() + ")";
@@ -1319,7 +1320,7 @@ public class TLCErrorView extends ViewPart
 				if (((TLCVariable) element).isTraceExplorerVar()) {
 					returnBoldVersion = true;
 				}
-			} else if (element instanceof ActionClickListener.LoaderTLCState) {
+			} else if (element instanceof RecordToSourceCoupler.LoaderTLCState) {
 				returnBoldVersion = true;
 			}
 
@@ -1470,8 +1471,8 @@ public class TLCErrorView extends ViewPart
 		@Override
 		public void run() {
 			final int value = isChecked()
-					? (ActionClickListener.OBSERVE_ARROW_KEY | ActionClickListener.OBSERVE_SINGLE_CLICK)
-					: ActionClickListener.OBSERVE_DEFAULT;
+					? (RecordToSourceCoupler.OBSERVE_ARROW_KEY | RecordToSourceCoupler.OBSERVE_SINGLE_CLICK)
+					: RecordToSourceCoupler.OBSERVE_DEFAULT;
 
 			stackTraceActionListener.setNonDefaultObservables(value);
 		}
