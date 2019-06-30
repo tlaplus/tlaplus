@@ -141,6 +141,10 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	public static Model getByName(final String modelName) {
 		return TLCModelFactory.getByName(modelName);
 	}
+	
+	public static String fullyQualifiedNameFromSpecNameAndModelName(final String specName, final String modelName) {
+		return specName + SPEC_MODEL_DELIM + modelName;
+	}
 	       
 	/**
 	 * A {@link StateChangeListener} is notified when the running state of the model
@@ -258,7 +262,8 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	public Model copy(final String newModelName) {
 		final String sanitizedNewName = sanitizeName(newModelName);
 		try {
-			final ILaunchConfigurationWorkingCopy copy = this.launchConfig.copy(spec.getName() + SPEC_MODEL_DELIM + sanitizedNewName);
+			final String fullyQualified = fullyQualifiedNameFromSpecNameAndModelName(spec.getName(), sanitizedNewName);
+			final ILaunchConfigurationWorkingCopy copy = this.launchConfig.copy(fullyQualified);
 	        copy.setAttribute(IConfigurationConstants.SPEC_NAME, spec.getName());
             copy.setAttribute(IConfigurationConstants.MODEL_NAME, sanitizedNewName);
             return copy.doSave().getAdapter(Model.class);
@@ -274,7 +279,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		final ILaunchConfigurationType launchConfigurationType
 				= launchManager.getLaunchConfigurationType(TLCModelLaunchDelegate.LAUNCH_CONFIGURATION_TYPE);
 		final String sanitizedNewName = sanitizeName(newModelName);
-		final String wholeName = foreignSpec.getName() + SPEC_MODEL_DELIM + sanitizedNewName;
+		final String wholeName = fullyQualifiedNameFromSpecNameAndModelName(foreignSpec.getName(), sanitizedNewName);
 		
 		try {
 			final ILaunchConfigurationWorkingCopy copy = launchConfigurationType.newInstance(foreignProject, wholeName);
@@ -344,8 +349,8 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	private void renameLaunch(final Spec newSpec, String newModelName) {
 		try {
 			// create the model with the new name
-			final ILaunchConfigurationWorkingCopy copy = this.launchConfig
-					.copy(newSpec.getName() + SPEC_MODEL_DELIM + newModelName);
+			final String fullyQualifiedName = fullyQualifiedNameFromSpecNameAndModelName(newSpec.getName(), newModelName);
+			final ILaunchConfigurationWorkingCopy copy = this.launchConfig.copy(fullyQualifiedName);
 			copy.setAttribute(SPEC_NAME, newSpec.getName());
 			copy.setAttribute(ModelHelper.MODEL_NAME, newModelName);
 			copy.setContainer(newSpec.getProject());
@@ -1129,7 +1134,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      * @return the fully qualified name of the model, which includes the spec name.
      */
     public String getFullyQualifiedName() {
-    	return getSpec().getName() + SPEC_MODEL_DELIM + getName();
+    	return fullyQualifiedNameFromSpecNameAndModelName(getSpec().getName(), getName());
     }
 
 	public List<String> getTraceExplorerExpressions() {

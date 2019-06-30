@@ -124,17 +124,17 @@
                id="toolbox.tool.tlc.commands.model.clone.param.modelName"
                name="Model to be cloned"
                optional="true"/>
-         <commandParameter
-               id="toolbox.tool.tlc.commands.model.clone.param.foreignFullyQualifiedModelName"
-               name="Foreign model to be cloned"
-               optional="true"/>
       </command>
+      <command
+            categoryId="toolbox.tool.tlc.commands.category"
+            description="Starts the process of cloning a foreign model."
+            id="toolbox.tool.tlc.commands.model.cloneforeign"
+            name="Clone a foreign model"/>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
             description="Runs the model checker."
             id="toolbox.tool.tlc.commands.model.run"
-            name="Run model checking">
-      </command>
+            name="Run model checking"/>
       <command
             categoryId="toolbox.tool.tlc.commands.category"
             description="Stops the model checker execution."
@@ -228,25 +228,6 @@
                <dynamic
                      class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.CloneModelContributionItem"
                      id="toolbox.tool.tlc.model.clone.dynamic">
-               </dynamic>
-               <visibleWhen
-                     checkEnabled="true">
-                  <with
-                        variable="activeWorkbenchWindow.activePerspective">
-                     <not>
-                        <equals
-                              value="org.lamport.tla.toolbox.ui.perspective.initial">
-                        </equals>
-                     </not>
-                  </with>
-               </visibleWhen>
-            </menu>
-            <menu
-                  id="toolbox.tool.tlc.modellaunch.cloneforeign"
-                  label="Clone Foreign Model">
-               <dynamic
-                     class="org.lamport.tla.toolbox.tool.tlc.ui.modelexplorer.CloneForeignModelContributionItem"
-                     id="toolbox.tool.tlc.model.cloneforeign.dynamic">
                </dynamic>
                <visibleWhen
                      checkEnabled="true">
@@ -674,6 +655,10 @@ Console Facory
                </iterate>
             </with>
          </activeWhen>
+      </handler>
+      <handler
+            class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneForeignModelHandler"
+            commandId="toolbox.tool.tlc.commands.model.cloneforeign">
       </handler>
       <handler
             class="org.lamport.tla.toolbox.tool.tlc.handlers.CloneModelHandlerDelegate"
