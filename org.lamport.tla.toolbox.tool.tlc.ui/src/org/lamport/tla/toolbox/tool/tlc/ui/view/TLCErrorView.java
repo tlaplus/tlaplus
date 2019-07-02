@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
@@ -120,6 +121,11 @@ public class TLCErrorView extends ViewPart
 	private static final String MID_WEIGHTS_KEY = "MID_WEIGHTS_KEY";
   
 	private static final String SYNCED_TRAVERSAL_KEY = "SYNCED_TRAVERSAL_KEY";
+	
+	private static final String DEFAULT_TOOL_TIP
+		= "Click on a row to see in viewer below.\nDouble-click to go to corresponding action in spec \u2014 "
+			+ "while holding\n   down " + (Platform.getOS().equals(Platform.OS_MACOSX) ? "\u2318" : "CTRL")
+			+ " to go to the original PlusCal code, if present.";
 
     /**
      * This is the pattern of an error message resulting from evaluating the constant
@@ -127,7 +133,6 @@ public class TLCErrorView extends ViewPart
      */
     private static final Pattern CONSTANT_EXPRESSION_ERROR_PATTERN = Pattern.compile("Evaluating assumption PrintT\\("
             + TLCModelLaunchDataProvider.CONSTANT_EXPRESSION_OUTPUT_PATTERN.toString() + "\\)", Pattern.DOTALL);
-
 
     private static final IDocument EMPTY_DOCUMENT()
     {
@@ -138,6 +143,7 @@ public class TLCErrorView extends ViewPart
     {
         return new Document("Select line in Error Trace to show its value here.");
     }
+    
     
     private int numberOfStatesToShow;
 
@@ -239,7 +245,7 @@ public class TLCErrorView extends ViewPart
             	trace = new TLCError();
             }
 
-            IDocument document = errorViewer.getDocument();
+            final IDocument document = errorViewer.getDocument();
             try
             {
                 document.replace(0, document.getLength(), buffer.toString());
@@ -1351,7 +1357,7 @@ public class TLCErrorView extends ViewPart
 			if (element instanceof LoaderTLCState) {
 				return "Double-click to load more states.\nIf the number of states is large, this might take a few seconds.";
 			}
-			return "Click on a row to see in viewer below, double-click to go to corresponding action in spec.";
+			return DEFAULT_TOOL_TIP;
 		}
 
 		/* (non-Javadoc)

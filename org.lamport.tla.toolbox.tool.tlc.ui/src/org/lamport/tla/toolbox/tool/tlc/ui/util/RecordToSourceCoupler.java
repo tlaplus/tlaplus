@@ -108,7 +108,7 @@ public class RecordToSourceCoupler implements MouseListener, KeyListener {
 	 * @see org.eclipse.swt.events.MouseListener#mouseDoubleClick(org.eclipse.swt.events.MouseEvent)
 	 */
 	public void mouseDoubleClick(final MouseEvent event) {
-		performSourceCoupling(viewer.getSelection(), ((event.stateMask & SWT.CTRL) != 0), false);
+		performSourceCoupling(viewer.getSelection(), ((event.stateMask & SWT.MOD1) != 0), false);
 	}
 
 	/* (non-Javadoc)
@@ -121,7 +121,7 @@ public class RecordToSourceCoupler implements MouseListener, KeyListener {
 	 */
 	public void mouseUp(final MouseEvent event) {
 		if (observeSingleClickEvents.get()) {
-			performSourceCoupling(viewer.getSelection(), ((event.stateMask & SWT.CTRL) != 0), false);
+			performSourceCoupling(viewer.getSelection(), ((event.stateMask & SWT.MOD1) != 0), false);
 		}
 	}
 
@@ -137,7 +137,7 @@ public class RecordToSourceCoupler implements MouseListener, KeyListener {
 		final int code = event.keyCode;
 		
 		if (code == SWT.CR) {
-			performSourceCoupling(viewer.getSelection(), ((event.stateMask & SWT.CTRL) != 0), false);
+			performSourceCoupling(viewer.getSelection(), ((event.stateMask & SWT.MOD1) != 0), false);
 		} else if ((code == SWT.KEYPAD_DIVIDE) && ((event.stateMask & SWT.ALT) != 0) && (viewer instanceof TreeViewer)) {
 			((TreeViewer) viewer).collapseAll();
 		} else if (observeArrowKeyEvents.get() && ((code == SWT.ARROW_UP) || (code == SWT.ARROW_DOWN))

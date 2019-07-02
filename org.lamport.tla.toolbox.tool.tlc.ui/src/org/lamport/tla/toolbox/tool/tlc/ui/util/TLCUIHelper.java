@@ -77,7 +77,7 @@ public class TLCUIHelper
 		}
     }
     
-    protected static List<StyleRange> setTLCLocationHyperlinks(String text) {
+    protected static List<StyleRange> setTLCLocationHyperlinks(final String text) {
     	final List<StyleRange> result = new ArrayList<StyleRange>();
 
     	/*
@@ -89,7 +89,7 @@ public class TLCUIHelper
          * the module, but it is the same as the module in the
          * error reported by TLC for the failed assertion.
          */
-        String pcalModuleName = null;
+        String moduleName = null;
 
         /*
          * For each Pattern defined in the Location class, we find
@@ -99,25 +99,21 @@ public class TLCUIHelper
          * to nullLoc, or point to the MC or TE modules.
          */
         Matcher matcher;
-        for (int i = 0; i < Location.ALL_PATTERNS.length; i++)
-        {
+		for (int i = 0; i < Location.ALL_PATTERNS.length; i++) {
             matcher = Location.ALL_PATTERNS[i].matcher(text);
-            while (matcher.find())
-            {
+            int index = 0;
+			while (matcher.find(index)) {
                 final String locationString = matcher.group();
-                
-                // "consume" location string to prevent pcal matcher from consuming the same text again
-                // @see Bug #269 in general/bugzilla/index.html
-                text = text.replace(locationString, "");
-                
-                Location location = Location.parseLocation(locationString);
-                if (location != null && !location.equals(Location.nullLoc)
+                final Location location = Location.parseLocation(locationString);
+                if ((location != null)
+                		&& !location.equals(Location.nullLoc)
                         && !location.source().equals(ModelHelper.MC_MODEL_NAME)
-                        && !location.source().equals(ModelHelper.TE_MODEL_NAME))
-                {
-                    pcalModuleName = location.source();
+                        && !location.source().equals(ModelHelper.TE_MODEL_NAME)) {
+                    moduleName = location.source();
                     result.add(getHyperlinkStyleRange(location, matcher.start(), matcher.end()));
                 }
+                
+                index = matcher.end() - 1;
             }
         }
 
@@ -127,24 +123,21 @@ public class TLCUIHelper
          * written in PlusCal.
          */
         matcher = PCAL_LOC_PATTERN.matcher(text);
-        if (matcher.find())
-        {
-            try
-            {
-                Assert
-                        .isNotNull(pcalModuleName,
+		if (matcher.find()) {
+			try {
+                Assert.isNotNull(moduleName,
                                 "Found a plus cal assertion failed location without a TLC error location with the module name.");
-                int beginLine = Integer.parseInt(matcher.group(1));
-                int beginColumn = Integer.parseInt(matcher.group(2));
+                final int beginLine = Integer.parseInt(matcher.group(1));
+                final int beginColumn = Integer.parseInt(matcher.group(2));
+                final Location l = new Location(UniqueString.uniqueStringOf(moduleName), beginLine, beginColumn,
+                		beginLine, beginColumn);
 
-                result.add(getHyperlinkStyleRange(new Location(UniqueString
-                        .uniqueStringOf(pcalModuleName), beginLine, beginColumn, beginLine, beginColumn), matcher
-                        .start(), matcher.end()));
-            } catch (NumberFormatException e)
-            {
+                result.add(getHyperlinkStyleRange(l, matcher.start(), matcher.end()));
+			} catch (NumberFormatException e) {
                 TLCUIActivator.getDefault().logError("Error parsing PlusCal assertion failed location.", e);
             }
         }
+		
         return result;
     }
 
@@ -179,7 +172,7 @@ public class TLCUIHelper
                     boolean jumpToSavedModule = jumpToSavedLocation((Location) data, model, blacklist);
                     if (!jumpToSavedModule)
                     {
-                        UIHelper.jumpToLocation((Location) data, (trigger.stateMask & SWT.CTRL) != 0, null);
+                        UIHelper.jumpToLocation((Location) data, (trigger.stateMask & SWT.MOD1) != 0, null);
                     }
                 }
             }
