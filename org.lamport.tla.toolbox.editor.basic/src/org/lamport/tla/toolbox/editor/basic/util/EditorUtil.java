@@ -645,14 +645,15 @@ public class EditorUtil
      * @param moduleFileName name of the module with .tla extension.
      * @return
      */
-    public static TLAEditor openTLAEditor(String moduleFileName)
+    public static TLAEditor openTLAEditor(final String moduleFileName)
     {
-        IResource module = ResourceHelper.getResourceByName(moduleFileName);
-        if (module != null && module instanceof IFile)
-        {
-            IEditorPart editor = UIHelper.openEditor(TLAEditor.ID, (IFile) module);
-            if (editor instanceof TLAEditorAndPDFViewer)
-            {
+        final IResource module = ResourceHelper.getResourceByName(moduleFileName);
+		if ((module != null) && (module instanceof IFile)) {
+            final IEditorPart editor = UIHelper.openEditor(TLAEditor.ID, (IFile) module);
+            
+            if (editor instanceof TLAEditor) {
+            	return (TLAEditor)editor;
+			} else if (editor instanceof TLAEditorAndPDFViewer) {
                 return ((TLAEditorAndPDFViewer) editor).getTLAEditor();
             }
         }

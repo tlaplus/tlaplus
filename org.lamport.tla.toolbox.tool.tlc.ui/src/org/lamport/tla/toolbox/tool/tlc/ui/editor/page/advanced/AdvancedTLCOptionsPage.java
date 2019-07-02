@@ -616,7 +616,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gd.horizontalAlignment = SWT.FILL;
         coverageComposite.setLayoutData(gd);
 
-        m_collectCoverageCombo = new ComboViewer(new Combo(coverageComposite, SWT.NONE));
+        m_collectCoverageCombo = new ComboViewer(new Combo(coverageComposite, SWT.READ_ONLY));
         gd = new GridData();
         gd.verticalIndent = 9;
         gd.grabExcessHorizontalSpace = true;

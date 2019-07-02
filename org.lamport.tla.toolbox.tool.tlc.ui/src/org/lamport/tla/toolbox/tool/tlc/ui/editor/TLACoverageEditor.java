@@ -84,6 +84,7 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditorReadOnly;
 import org.lamport.tla.toolbox.editor.basic.TLASourceViewerConfiguration;
+import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.ModuleCoverageInformation;
@@ -516,11 +517,25 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 		
 		private final Listener listener = new Listener() {
 			@Override
-			public void handleEvent(Event event) {
+			public void handleEvent(final Event event) {
 				final Representation activeRepresentation = getActiveRepresentation();
 				final int offset = JFaceTextUtil.getOffsetForCursorLocation(editor.getViewer());
 				final Pair peek = queue.peek();
-				if (peek == null || peek.offset != offset || peek.rep != activeRepresentation) {
+				final boolean isControlClick = ((event.stateMask & SWT.MOD1) != 0);
+				
+				if (isControlClick) {
+					editor.getViewer().getTextWidget().notifyListeners(SWT.MouseUp, null);
+					event.doit = false;
+					
+					final String moduleName = getModuleName() + ".tla";
+					final TLAEditor editor = EditorUtil.openTLAEditor(moduleName);
+					
+					if (editor != null) {
+						editor.selectAndReveal(offset, 0);
+					} else {
+						TLCUIActivator.getDefault().logError("Unable to open editor for name: " + moduleName);
+					}
+				} else if ((peek == null) || (peek.offset != offset) || (peek.rep != activeRepresentation)) {
 //					System.out.println(String.format("Scheduling offset %s, %s after %s", offset, activeRepresentation, peek));
 					queue.offer(new Pair(offset, activeRepresentation));
 				} else {
