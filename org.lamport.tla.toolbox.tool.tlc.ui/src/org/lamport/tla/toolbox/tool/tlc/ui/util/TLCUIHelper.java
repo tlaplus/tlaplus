@@ -79,6 +79,7 @@ public class TLCUIHelper
     
     protected static List<StyleRange> setTLCLocationHyperlinks(final String text) {
     	final List<StyleRange> result = new ArrayList<StyleRange>();
+    	String mutableText = text;
 
     	/*
          * Will be set to the module name
@@ -100,9 +101,8 @@ public class TLCUIHelper
          */
         Matcher matcher;
 		for (int i = 0; i < Location.ALL_PATTERNS.length; i++) {
-            matcher = Location.ALL_PATTERNS[i].matcher(text);
-            int index = 0;
-			while (matcher.find(index)) {
+            matcher = Location.ALL_PATTERNS[i].matcher(mutableText);
+			while (matcher.find()) {
                 final String locationString = matcher.group();
                 final Location location = Location.parseLocation(locationString);
                 if ((location != null)
@@ -113,7 +113,11 @@ public class TLCUIHelper
                     result.add(getHyperlinkStyleRange(location, matcher.start(), matcher.end()));
                 }
                 
-                index = matcher.end() - 1;
+                // remove the matched location string to prevent PCAL_LOC_PATTERN's matcher from consuming
+                //		the same text again in the below code; should there ever be multiple markers
+                //		with the same location string, this would potentially cause problems.
+                // @see Bug #269 in general/bugzilla/index.html
+                mutableText = mutableText.replace(locationString, "");
             }
         }
 
@@ -122,7 +126,7 @@ public class TLCUIHelper
          * of assertion failure statements where the assertion was
          * written in PlusCal.
          */
-        matcher = PCAL_LOC_PATTERN.matcher(text);
+        matcher = PCAL_LOC_PATTERN.matcher(mutableText);
 		if (matcher.find()) {
 			try {
                 Assert.isNotNull(moduleName,
