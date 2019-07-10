@@ -335,6 +335,12 @@ public class CostModelCreator extends ExplorerVisitor {
     	}
 
 		// Order next-state actions based on location to print in order of location.
+		// Note that Action[] actions may contain action instances with identical
+		// location which is the case for actions that are evaluated in the scope of a
+		// Context, i.e. \E s \in ProcSet: action(s) \/ ...
+    	// However, actions with identical location share the ActionWrapper instance
+    	// which is why we can non-deterministically choose to report one of it without
+    	// producing bogus results (see CostModelCreator.preVisit(ExploreNode) above).
     	final Action[] actions = tool.getActions();
         final Set<CostModel> reported = new HashSet<>();
         final Set<Action> sortedActions = new TreeSet<>(new Comparator<Action>() {
@@ -352,7 +358,7 @@ public class CostModelCreator extends ExplorerVisitor {
 		}
         
         for (Action invariant : tool.getInvariants()) {
-        	//TODO Might have to be ordered similar to next-state actions above.
+        	//TODO May need to be ordered similar to next-state actions above.
         	invariant.cm.report();
 		}
         
