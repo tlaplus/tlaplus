@@ -16,34 +16,87 @@
 
 <pre>
 Contents
-  <a href="#how-it-works">How It Works</a>
-  <a href="#terminology">Terminology</a>
+  <a href="#how-it-works">What can the profiler do?</a>
   <a href="#modes">Profiling Modes</a>
+  <a href="#ui">Profiler UI</a>
   <a href="#limitations">Limitations</a>
-  <a href="#known-bugs">Known Bugs</a>
 </pre>
 
 
-<a name="how-it-works"></a><h2>How It Works</h2>
+<a name="how-it-works"></a><h2>What can the profiler do?</h2>
 
-TBD
+<p>
+Profiling a  specification is similar to profiling implementation 
+code: During model checking, the profiler collects evaluation 
+metrics about the invocation of expressions, their costs, as well 
+as  action metrics. The number of invocations equals the number 
+of times an expression has been evaluated by the model checker. 
+Assuming an identical, fixed cost for all expressions allows to 
+identify the biggest contributor to overall model checking time 
+by looking at the number of invocations. This assumption however 
+does not hold for expressions that require the model checker to 
+explicitly enumerate data structures as part of their evaluation. 
+For example, let S be a set of natural numbers from N to M such 
+that N << M and \A s \in SUBSET S : s \subseteq S be a  
+expression. This expression will clearly be a major contributor 
+to model checking time even if its number of invocations is low. 
+More concretely, its cost equals the number of operations 
+required by the model checker to enumerate the powerset of S. 
+Users can override such  operators with more efficient variants. 
+Specifically, TLC allows  operators to be overridden with Java 
+code which can usually be evaluated orders of magnitudes faster.
+</p>
+<p>
+Evaluation metrics are captured globally and at the call-chain 
+level. In other words, the metrics for an expression such as a  
+operator, that occurs in two or more expressions, will be 
+reported individually for each occurrence. Metrics are 
+furthermore sensitive to constants such that the change of a 
+constant value — across model checker runs — will be detectable 
+in the metrics unless the constant has no influence at all.
+</p>
+<p>
+Action metrics, which are orthogonal to evaluation metrics and 
+are not found in an implementation profiler, are the total number 
+of states and distinct states found which are reported at the  
+action level.
+</p>
 
-
-<a name="terminology"></a><h2>Terminology</h2>
-
-TBD
+<p>
+The profiler neither requires the specification nor the model to 
+be modified in order to collect metrics.
+</p>
 
 <a name="modes"></a><h2>Profiling modes</h2>
 
-TBD
+The profiler can be turned On to collect evaluation and action metrics, restricted to
+action metrics only to debug action enablement, or switched off completely.  Overhead 
+of profiling suggests to turn it off when checking large models. The control is located
+on the TLC Options page of the Model.
 
-<h3><a name="limitations"></a>Limitations</h3>
+<a name="ui"></a><h2>Profiling tab of the Model</h2>
 
-TBD
+The Toolbox overlays the evaluation and action metrics onto a module by coloring the 
+exact locations of the corresponding expressions or  actions in the Spec Editor. Users 
+can interactively drill into the call-chain scope by selecting individual expressions. 
+Heatmaps allow to quickly navigate to the dominant contributors of model checking time 
+as well as total states and distinct states found. Expressions with zero invocations 
+and actions whose enablement predicate is never true - which are considered spec errors - 
+are highlighted specifically.
+<p>
+<img src="profiler.png" alt="Action and evaluation metrics for the global scope overlayed 
+onto the Spec Editor. Red boxes indicate action that are never enabled and dead expressions. 
+The hover help displays detailed metrics for action a. Clicking the 1D heatmap at the bottom 
+selects the corresponding expression." height="600" width="700" class="center"> 
+<p>
 
-<a name="known-bugs"></a><h2>Known Bugs</h2>
+<a name="limitations"></a><h2>Limitations</h2>
 
-TBD
+<ul>
+  <li>Profiling only for the Spec and its invariants but not for liveness properties</li>
+  <li>No support for distributed TLC</li>
+  <li>Just profiling which incurs overhead, no sampling yet</li>
+</ul>
 
 <hr> 
 <a href = "overview-page.html">&uarr; Model Overview Page</a>
