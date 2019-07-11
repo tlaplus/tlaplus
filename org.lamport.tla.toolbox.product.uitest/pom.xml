@@ -181,7 +181,7 @@
 
               DO NOT USE - see above comment WRT truezip
 
-            <explicit>../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.0-[platform].zip</explicit>
+            <explicit>../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-[platform].zip</explicit>
             -->
             
             <explicit>${aut-unpack-directory}</explicit>

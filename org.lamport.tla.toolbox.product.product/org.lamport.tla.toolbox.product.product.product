@@ -8,7 +8,7 @@
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.6.0 of Day Month 20?? and includes:
+This is Version 1.6.1 of Day Month 20?? and includes:
   - SANY Version 2.1 of 23 July 2017
   - TLC Version 2.14 of 10 July 2019
   - PlusCal Version 1.9 of 10 July 2019
@@ -95,11 +95,11 @@ openFile
       <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
       <plugin id="packet" autoStart="true" startLevel="4" />
       <plugin id="sts" autoStart="true" startLevel="4" />
-      <property name="eclipse.buildId" value="1.6.0" />
+      <property name="eclipse.buildId" value="1.6.1" />
    </configurations>
 
    <repositories>
-      <repository location="http://lamport.org/tlatoolbox/branches/1.6.0/toolboxUpdate/" enabled="true" />
+      <repository location="http://lamport.org/tlatoolbox/branches/1.6.1/toolboxUpdate/" enabled="true" />
       <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
    </repositories>
 
