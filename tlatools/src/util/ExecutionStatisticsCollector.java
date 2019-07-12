@@ -147,7 +147,8 @@ public class ExecutionStatisticsCollector {
 		}
 		
 		// truncate the identifier no matter what, but first remove leading and trailing whitespaces.
-		return identifier.trim().substring(0, 32);
+		final String trimmed = identifier.trim();
+		return trimmed.substring(0, Math.min(trimmed.length(), 32));
 	}
 
 	private boolean escFileExists() {
