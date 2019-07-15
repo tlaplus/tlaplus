@@ -1,0 +1,47 @@
+Maven Central is the canonical repository for Java libraries.  To allow
+users to build software on top of tla2tools.jar, we publish tla2tools.jar 
+to Maven Central.  Users have asked us to do this [1].  Moreover, our 
+own Apalache [2] will find this useful [3].
+
+We initially had to claim [4] the org.lamport namespace to be allowed to 
+publish tla2tools.jar into it.  The artifacts are available online [5]
+and so far we have only pushed snapshots.
+
+[1] https://groups.google.com/forum/#!msg/tlaplus/xzmsu6qRMyo/YGgRNFE1CAAJ
+[2] https://github.com/konnov/apalache
+[3] https://github.com/konnov/apalache/issues/48
+[4] https://issues.sonatype.org/browse/OSSRH-50021
+[5] https://oss.sonatype.org/content/repositories/snapshots/org/lamport/
+
+Manually deploy tla2tools.jar
+-----------------------------
+
+1) Strip javax/ directory from tla2tools.jar built with regular customBuild.xml.
+   The version of tla2tools.jar - that we will upload to MC - will declare its
+   dependencies to javax packages instead of bundling them.
+
+zip -d dist/tla2tools.jar \
+  javax/\* \
+  com/\* \
+  META-INF/mailcap \
+  META-INF/javamail*
+   
+2) Upload to Maven Central (credentials have to be set in ~/.m2/settings.xml).
+
+mvn gpg:sign-and-deploy-file \
+ -Durl=https://oss.sonatype.org/content/repositories/snapshots
+ -DrepositoryId=ossrh
+ -DpomFile=ossrh.xml
+ -Dfile=tla2tools.jar
+
+
+Background material:
+* <https://central.sonatype.org/pages/manual-staging-bundle-creation-and-deployment.html>
+  * Credentials are the login details for Maven Central (OSSRH)
+* What is wrong when deploy returns a 400 bad request response: <https://stackoverflow.com/a/18702353/6291195>
+
+Delete existing/old artifacts
+-----------------------------
+
+1) Login to the OSSRH web front-end <https://oss.sonatype.org/index.html>
+2) Follow steps outlined in: <https://issues.sonatype.org/browse/OSSRH-776?focusedCommentId=117817&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-117817>
