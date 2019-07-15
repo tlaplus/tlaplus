@@ -214,7 +214,18 @@ The error-trace explorer allows you to view the values of expressions in each st
 of the trace.&nbsp;  You just enter one or more expressions, which can contain
 primed as well as unprimed variables, and click on <samp>Explore</samp>.&nbsp;  The values
 of the expressions will then be shown in the error trace.&nbsp;  Clicking on
-<samp>Restore</samp> restores the original error trace.
+<samp>Restore</samp> restores the original error trace. An error-trace expression may be 
+given the name "id" by preceding it with "id ==".  This defines id to equal that expression 
+in subsequent error-trace explorer expressions.
+</p>
+
+<p>
+The error-trace explorer allows you to form expressions from two built-in operators:
+The operators <code>_TETrace</code> and <code>_TEPosition</code> in an error-trace expression are defined 
+as follows. When the expression is evaluated, <code>_TETrace</code> equals the sequence of records such that 
+for every spec variable <code>v</code>, the value of <code>_TETrace[N].v</code> equals the value of v in 
+state number <code>N</code> of the trace.  When the expression is evaluated in state number <code>N</code>, 
+the operator <code>_TEPosition</code> equals <code>N</code>.
 </p>
 
 <p>
