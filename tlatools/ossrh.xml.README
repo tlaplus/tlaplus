@@ -29,10 +29,10 @@ zip -d dist/tla2tools.jar \
 2) Upload to Maven Central (credentials have to be set in ~/.m2/settings.xml).
 
 mvn gpg:sign-and-deploy-file \
- -Durl=https://oss.sonatype.org/content/repositories/snapshots
- -DrepositoryId=ossrh
- -DpomFile=ossrh.xml
- -Dfile=tla2tools.jar
+ -Durl=https://oss.sonatype.org/content/repositories/snapshots \
+ -DrepositoryId=ossrh \
+ -DpomFile=ossrh.xml \
+ -Dfile=dist/tla2tools.jar
 
 
 Background material:
