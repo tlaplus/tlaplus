@@ -125,6 +125,46 @@
 	        </configuration>
 	      </plugin>
 
+			<!-- Update the Manifest.mf packaged into the OSGi variant of tla2tools.jar 
+				which is embedded in the Toolbox. The standalone tla2tools.jar (see customBuild.xml) 
+				defines various properties in its manifest among which are the git revision 
+				and the implementation title. These two properties are read by TLCGlobals 
+				to determine TLCs revision. This is turn is reported as part of execution statistics.
+				To correctly report the TLC revision when it is launched from inside the Toolbox, the
+				embedded tla2tools.jar created here has to also include the two properties. -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+				    <shortRevisionLength>7</shortRevisionLength>
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+				</configuration>
+			</plugin>
+      		<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-packaging-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Implementation-Title>TLA+ Tools</Implementation-Title>
+							<X-Git-ShortRevision>${buildNumber}</X-Git-ShortRevision>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+
 			<!-- Compile aspects -->
             <plugin>
                 <!-- https://github.com/nickwongdev/aspectj-maven-plugin -->
