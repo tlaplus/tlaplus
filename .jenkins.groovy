@@ -93,22 +93,22 @@ node ('master') {
           rm -rf TLAToolbox-?.?.?-linux.gtk.x86_64.zip
 		rm -rf toolbox/
 
-		## copy last successful build (this predecessor) and extract it
-		cp /home/jenkins/jobs/M-HEAD-master-Toolbox.product.standalone/builds/lastSuccessfulBuild/archive/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-?.?.?-linux.gtk.x86_64.zip .
+		## copy currently released Toolbox and extract it (We want to make sure that we can update from it to this build)
+		wget http://dl.tlapl.us/tlatoolbox/products/TLAToolbox-1.6.0-linux.gtk.x86_64.zip
 		unzip -qq TLAToolbox*.zip
 
 		cd toolbox/
 		
-		## Update previous to this version
+		## Update current Toolbox release to this version
 		./toolbox -nosplash -application org.eclipse.equinox.p2.director \
-		-repository file:///home/jenkins/workspace/M-HEAD-master-Toolbox.product.standalone/org.lamport.tla.toolbox.product.product/target/repository \
+		-repository file://${WORKSPACE}/org.lamport.tla.toolbox.product.product/target/repository \
 		-uninstallIU org.lamport.tla.toolbox.product.product \
 		-installIU org.lamport.tla.toolbox.product.product \
 		-profileProperties org.eclipse.update.install.features=true
 
 		## Use Toolbox's p2 director to install the test feature into the previuos toolbox release to verify the update above worked and didn't trash anything.
 		./toolbox -nosplash -application org.eclipse.equinox.p2.director \
-		-repository file:///home/jenkins/workspace/M-HEAD-master-Toolbox.product.standalone/org.lamport.tla.toolbox.p2repository/target/repository/ \
+		-repository file://${WORKSPACE}/org.lamport.tla.toolbox.p2repository/target/repository/ \
 		-installIU org.lamport.tla.toolbox.feature.uitest.feature.group
 
 		## Run the SWTBot smoke tests to check product zips
