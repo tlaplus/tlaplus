@@ -112,16 +112,16 @@ node ('master') {
 		-installIU org.lamport.tla.toolbox.feature.uitest.feature.group
 
 		## Run the SWTBot smoke tests to check product zips
-		#./toolbox -nosplash -application org.eclipse.swtbot.eclipse.junit.headless.swtbottestapplication \
-		#-testApplication org.lamport.tla.toolbox.application \
-		#-product org.lamport.tla.toolbox.product.standalone.product \
-		#-nouithread \
-		#-testPluginName org.lamport.tla.toolbox.tool.tlc.ui.uitest \
-		#formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter \
-		#formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,org.lamport.tla.toolbox.tool.tlc.ui.uitest.SmokeTests.xml \
-		#-className org.lamport.tla.toolbox.SmokeTests \
-		#-data workspace$(date +%s) \
-		#-clean
+		./toolbox -nosplash -application org.eclipse.swtbot.eclipse.junit.headless.swtbottestapplication \
+		-testApplication org.lamport.tla.toolbox.application \
+		-product org.lamport.tla.toolbox.product.standalone.product \
+		-nouithread \
+		-testPluginName org.lamport.tla.toolbox.tool.tlc.ui.uitest \
+		formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter \
+		formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,org.lamport.tla.toolbox.tool.tlc.ui.uitest.SmokeTests.xml \
+		-className org.lamport.tla.toolbox.SmokeTests \
+		-data workspace$(date +%s) \
+		-clean
 
 		cp *.xml ${WORKSPACE}/
        '''
