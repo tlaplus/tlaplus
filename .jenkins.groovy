@@ -124,10 +124,13 @@ node ('master') {
 		-clean
 
 		cp *.xml ${WORKSPACE}/
-                ## Collect junit output for p2 smoke tests
        '''
-        junit '${WORKSPACE}/toolbox/org.lamport.tla.toolbox.tool.tlc.ui.uitest.SmokeTests.xml'
       }
+   }
+
+   stage ('RecordTestP2UpdateManager') {
+       // Collect junit output for p2 smoke tests
+       junit 'toolbox/org.lamport.tla.toolbox.tool.tlc.ui.uitest.SmokeTests.xml'
    }
    
    stage('CreateRPMFile') {
