@@ -186,10 +186,10 @@ node ('master') {
            cd ${WORKSPACE}/general/docs/changelogs
 
            ## Append sha1 sum to changelog (last line of changelog has the table header).
-           sha1sum ${WORKSPACE}/tlatools/dist/tla2tools.jar | sed -r 's/  /|/g' >> ch1_6_1.md
-           sha1sum ${WORKSPACE}/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-win32.win32.x86_64.zip | sed -r 's/  /|/g' >> ch1_6_1.md
-           sha1sum ${WORKSPACE}/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip | sed -r 's/  /|/g' >> ch1_6_1.md     
-           sha1sum ${WORKSPACE}/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-linux.gtk.x86_64.zip | sed -r 's/  /|/g' >> ch1_6_1.md
+           echo "$(sha1sum ${WORKSPACE}/tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_6_1.md
+           echo "$(sha1sum ${WORKSPACE}/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-win32.win32.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.6.1-win32.win32.x86_64.zip" >> ch1_6_1.md
+           echo "$(sha1sum ${WORKSPACE}/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip" >> ch1_6_1.md     
+           echo "$(sha1sum ${WORKSPACE}/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-linux.gtk.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.6.1-linux.gtk.x86_64.zip" >> ch1_6_1.md
            
            ## Two above as one-liner without intermediate file.
            $(jq -n --argjson changelog "$(cat ch1_6_1.md | jq  --raw-input --slurp .)" -f gh-1_6_1.jq > gh-1_6_1.json)
