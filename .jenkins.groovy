@@ -125,8 +125,8 @@ node ('master') {
 
 		cp *.xml ${WORKSPACE}/
                 ## Collect junit output for p2 smoke tests
-	        junit '${WORKSPACE}/toolbox/org.lamport.tla.toolbox.tool.tlc.ui.uitest.SmokeTests.xml'
        '''
+        junit '${WORKSPACE}/toolbox/org.lamport.tla.toolbox.tool.tlc.ui.uitest.SmokeTests.xml'
       }
    }
    
