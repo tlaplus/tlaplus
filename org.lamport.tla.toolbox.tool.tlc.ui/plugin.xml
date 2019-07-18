@@ -804,6 +804,12 @@ Console Facory
          point="org.eclipse.ui.preferencePages">
       <page
             category="toolbox.ui.preferences.GeneralPreferencePage"
+            class="org.lamport.tla.toolbox.tool.tlc.ui.editor.preference.ModelEditorPreferencePage"
+            id="toolbox.ui.preferences.ModelEditorPreferencePage"
+            name="Model Editor">
+      </page>
+      <page
+            category="toolbox.ui.preferences.GeneralPreferencePage"
             class="org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferencePage"
             id="toolbox.ui.preferences.TLCPreferencePage"
             name="TLC Model Checker">
@@ -812,8 +818,9 @@ Console Facory
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferenceInitializer">
-      </initializer>
+            class="org.lamport.tla.toolbox.tool.tlc.ui.editor.preference.ModelEditorPreferenceInitializer" />
+      <initializer
+            class="org.lamport.tla.toolbox.tool.tlc.ui.preference.TLCPreferenceInitializer" />
    </extension>
    <extension
          point="org.lamport.tla.toolbox.tlc.processResultPresenter">

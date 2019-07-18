@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.widgets.Composite;
@@ -18,6 +19,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.preference.IModelEditorPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -115,14 +117,27 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
             {
                 if (element instanceof OpDefNode)
                 {
-                    OpDefNode node = (OpDefNode) element;
+                    final OpDefNode node = (OpDefNode) element;
                     if (node.getSource() == node)
                     {
                         return node.getName().toString();
-                    } else
-                    {
-                        return node.getSource().getName().toString() + " ["
-                                + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+					} else {
+						final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+						final String style = ips
+								.getString(IModelEditorPreferenceConstants.I_OVERRIDDEN_DEFINITION_STYLE);
+						final boolean moduleNameStyle = IModelEditorPreferenceConstants.I_OVERRIDDEN_DEFINITION_STYLE_MODULE_NAME
+								.equals(style);
+						
+						if (moduleNameStyle) {
+	                        return node.getSource().getName().toString() + " ["
+	                                + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+						} else {
+	                        if (node.getSource().getOriginallyDefinedInModuleNode() != null) {
+	                        	return node.getName().toString();
+	                        } else {
+	                        	return node.getSource().getName().toString();
+	                        }
+						}
                     }
                 }
                 return super.getText(element);

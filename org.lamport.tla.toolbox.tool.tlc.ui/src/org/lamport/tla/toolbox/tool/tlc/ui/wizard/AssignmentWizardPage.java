@@ -15,7 +15,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
@@ -59,18 +59,8 @@ public class AssignmentWizardPage extends WizardPage
     // selection adapter reacting on the choice
     final private SelectionListener optionSelectionAdapter = new SelectionAdapter() {
         @Override
-        public void widgetSelected(SelectionEvent e)
-        {
-            boolean modelValueSelected = optionModelValue.getSelection();
-
-            if (modelValueSelected)
-            {
-                source.getTextWidget().setBackground(getControl().getBackground());
-            } else
-            {
-                source.getTextWidget().setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
-            }
-            source.getControl().setEnabled(!modelValueSelected);
+		public void widgetSelected(SelectionEvent e) {
+        	configureTextWidget(optionModelValue.getSelection());
 
             if (fieldFlags == AssignmentWizard.SHOW_OPTION)
             {
@@ -90,6 +80,17 @@ public class AssignmentWizardPage extends WizardPage
         this.helpId = helpId;
         setTitle(action);
         setDescription(description);
+    }
+    
+    private void configureTextWidget(final boolean forModelValue) {
+    	final StyledText textWidget = source.getTextWidget();
+    	
+		if (forModelValue) {
+			textWidget.setBackground(textWidget.getParent().getBackground());
+		} else {
+			textWidget.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		}		
+		textWidget.setEnabled(!forModelValue);
     }
 
     /* (non-Javadoc)
@@ -120,7 +121,7 @@ public class AssignmentWizardPage extends WizardPage
 
         // set data
         source.setDocument(new Document(assignment.getRight()));
-        StyledText styledText = source.getTextWidget();
+        final StyledText styledText = source.getTextWidget();
         styledText.addModifyListener(new ModifyListener() {
 
             public void modifyText(ModifyEvent e)
@@ -212,6 +213,7 @@ public class AssignmentWizardPage extends WizardPage
                 optionSetModelValues.addSelectionListener(optionSelectionAdapter);
 
                 // set the value from the assignment object
+                configureTextWidget(assignment.isModelValue());
                 if (assignment.isModelValue())
                 {
                     // single model value
@@ -221,7 +223,6 @@ public class AssignmentWizardPage extends WizardPage
                         smvTypeCombo.setEnabled(false);
                         optionSMVUntyped.setEnabled(false);
                         optionModelValue.setSelection(assignment.isModelValue());
-                        source.getTextWidget().setBackground(container.getBackground());
                         // set of model values
                     } else
                     {
@@ -236,6 +237,9 @@ public class AssignmentWizardPage extends WizardPage
 							smvTypeCombo.setText(set.getType());
 			                smvTypeCombo.setEnabled(true);
 						}
+						
+						styledText.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+						styledText.setEnabled(true);
                     }
                 } else
                 {
@@ -266,15 +270,18 @@ public class AssignmentWizardPage extends WizardPage
                 optionOrdinaryValue.addSelectionListener(optionSelectionAdapter);
                 optionModelValue.addSelectionListener(optionSelectionAdapter);
 
+                configureTextWidget(assignment.isModelValue());
                 // set the value from the assignment object
                 if (assignment.isModelValue())
                 {
                     // single model value
-                    if (!assignment.isSetOfModelValues())
-                    {
+                    if (!assignment.isSetOfModelValues()) {
                         optionModelValue.setSelection(assignment.isModelValue());
                         source.getTextWidget().setBackground(container.getBackground());
                         // set of model values
+                    } else {
+						styledText.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+						styledText.setEnabled(true);
                     }
                 } else
                 {

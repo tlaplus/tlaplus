@@ -60,9 +60,6 @@ public class TLCPreferencePage extends FieldEditorPreferencePage implements IWor
         addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_REVALIDATE_ON_MODIFY,
                 "&Re-validate model on save", getFieldEditorParent()));
 
-        addField(new BooleanFieldEditor(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB,
-                "Show Evaluate Constant Expression in its own tab", getFieldEditorParent()));
-
         IntegerFieldEditor integerFieldEditor = new IntegerFieldEditor(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT,
                                                                        "Number of model &snapshots to keep",
                                                                        getFieldEditorParent());

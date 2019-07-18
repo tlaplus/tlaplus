@@ -102,6 +102,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ErrorMessage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.preference.IModelEditorPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.RecordToSourceCoupler;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
@@ -848,7 +849,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // -------------------------------------------------------------------
         // Calculator section
 		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
-		final boolean eceInItsOwnTab = ips.getBoolean(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB);
+		final boolean eceInItsOwnTab = ips.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
 
 		m_calculatorSection = new Composite(body, SWT.NONE);
         gd = new GridData();

@@ -51,12 +51,6 @@ public interface ITLCPreferenceConstants {
 	 * old behavior prior to the change in https://bugs.eclipse.org/146205#c10.
 	 */
 	public static final String I_TLC_SHOW_MODAL_PROGRESS = "showModalProgress";
-	/**
-     * TODO this is not TLC - this is model editor
-     * 
-	 * If set, the Evaluate Constant Expressions section of the Results page will be shown in its own model editor tab.
-	 */
-	public static final String I_TLC_SHOW_ECE_AS_TAB = "showECEAsTab";
     // /**
     // * Delete data (.st files and unused checkpoints) from the previous run)
     // */

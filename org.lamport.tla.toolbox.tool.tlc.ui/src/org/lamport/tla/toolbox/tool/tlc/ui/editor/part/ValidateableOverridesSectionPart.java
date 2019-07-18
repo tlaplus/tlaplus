@@ -2,6 +2,8 @@ package org.lamport.tla.toolbox.tool.tlc.ui.editor.part;
 
 import java.util.Vector;
 
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.window.Window;
@@ -11,9 +13,11 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.dialog.FilteredDefinitionSelectionDialog;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.preference.IModelEditorPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
@@ -23,16 +27,29 @@ import tla2sany.semantic.OpDefNode;
 /**
  * Section part for the DefinitionOverride section of the Advanced Options page
  * @author Simon Zambrovski
- * @version $Id$
  */
-public class ValidateableOverridesSectionPart extends ValidateableConstantSectionPart
-{
+public class ValidateableOverridesSectionPart extends ValidateableConstantSectionPart {
+	private final IPropertyChangeListener m_preferenceChangeListener = (event) -> {
+		if (IModelEditorPreferenceConstants.I_OVERRIDDEN_DEFINITION_STYLE.equals(event.getProperty())) {
+			tableViewer.refresh(true);
+		}
+	};
 
-    public ValidateableOverridesSectionPart(Composite composite, String title, String description, FormToolkit toolkit,
-            int flags, BasicFormPage page)
-    {
+	public ValidateableOverridesSectionPart(Composite composite, String title, String description, FormToolkit toolkit,
+			int flags, BasicFormPage page) {
         super(composite, title, description, toolkit, flags, page, DataBindingManager.SEC_DEFINITION_OVERRIDE);
+        
+		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+		ips.addPropertyChangeListener(m_preferenceChangeListener);
     }
+	
+	@Override
+	public void dispose() {
+		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+		ips.removePropertyChangeListener(m_preferenceChangeListener);
+		
+		super.dispose();
+	}
 
     @Override
     @SuppressWarnings("unchecked")  // Generic casting...
@@ -163,8 +180,13 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
             {
                 if (element instanceof Assignment)
                 {
-                    Assignment assign = (Assignment) element;
-                    String label = assign.getLabel();
+					final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+					final String style = ips
+							.getString(IModelEditorPreferenceConstants.I_OVERRIDDEN_DEFINITION_STYLE);
+					final boolean moduleNameStyle = IModelEditorPreferenceConstants.I_OVERRIDDEN_DEFINITION_STYLE_MODULE_NAME
+							.equals(style);
+                    final Assignment assign = (Assignment) element;
+                    final String label = assign.getLabel();
                     String noBangLabel = label.substring(label.lastIndexOf("!") + 1);
             		
 					// This is upside-down because early in the call stack we had the node instance
@@ -172,21 +194,26 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
 					// have to reconstruct the actual OpDefNode because need to know its module.
 					// Since this is the standard idiom throughout this part of the model editor,
 					// I'm not going to rewrite it.
-                    OpDefNode node = ModelHelper.getOpDefNode(label);
-            		if (node != null && node.getSource() != node) {
+                    final OpDefNode node = ModelHelper.getOpDefNode(label);
+            		if (moduleNameStyle && (node != null) && (node.getSource() != node)) {
             			noBangLabel += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
             		}
-            		
-                    String rightSide = null;
-                    if (assign.isModelValue())
-                    {
-                        rightSide = noBangLabel;
-                    } else
-                    {
-                        rightSide = assign.getRight();
+
+					final boolean appendOverriddenModelValue = assign.isModelValue() && (node != null)
+							&& (node.getSource() != node);
+                    if (appendOverriddenModelValue && !moduleNameStyle) {
+                    	return (assign.toString() + " " + noBangLabel);
+                    } else {
+                        final String rightSide;
+    					if (assign.isModelValue()) {
+    						rightSide = noBangLabel;
+    					} else {
+    						rightSide = assign.getRight();
+    					}
+    					
+                        final Assignment assignNoBang = new Assignment(noBangLabel, assign.getParams(), rightSide);
+                        return assignNoBang.toString() + (appendOverriddenModelValue ? (" " + noBangLabel) : "");
                     }
-                    Assignment assignNoBang = new Assignment(noBangLabel, assign.getParams(), rightSide);
-                    return assignNoBang.toString();
                 }
                 return super.getText(element);
             }

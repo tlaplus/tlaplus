@@ -80,6 +80,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedModelPag
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.EvaluateConstantExpressionPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.ResultPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.preference.IModelEditorPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.ModelEditorPartListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.SemanticHelper;
@@ -139,7 +140,8 @@ public class ModelEditor extends FormEditor {
 							// Switch to Result Page (put on top) of model editor stack. A user wants to see
 							// the status of a model run she has just started.
 							final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
-							final boolean eceInItsOwnTab = ips.getBoolean(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB);
+							final boolean eceInItsOwnTab = ips
+									.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
 
 							if (!eceInItsOwnTab || !modelIsConfiguredWithNoBehaviorSpec()) {
 								showResultPage();
@@ -157,7 +159,7 @@ public class ModelEditor extends FormEditor {
 							if (lastStateCopy.in(State.RUNNING, State.REMOTE_RUNNING)) {
 								final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
 								final boolean eceInItsOwnTab = ips
-										.getBoolean(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB);
+										.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
 								
 								if (eceInItsOwnTab && modelIsConfiguredWithNoBehaviorSpec()) {
 									setActivePage(EvaluateConstantExpressionPage.ID);
@@ -298,7 +300,7 @@ public class ModelEditor extends FormEditor {
 	};
 	
 	private final IPropertyChangeListener m_preferenceChangeListener = (event) -> {
-		if (ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB.equals(event.getProperty())) {
+		if (IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB.equals(event.getProperty())) {
 			final boolean eceAsTab = ((Boolean) event.getNewValue()).booleanValue();
 			final Pair<Integer, FormPage> pair = getLastFormPage();
 			final String id = pair.getRight().getId();
@@ -384,7 +386,7 @@ public class ModelEditor extends FormEditor {
         } catch (CoreException e) { }
         
 		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
-		final boolean eceInItsOwnTab = ips.getBoolean(ITLCPreferenceConstants.I_TLC_SHOW_ECE_AS_TAB);
+		final boolean eceInItsOwnTab = ips.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
 
         if (openTabsValue == IModelConfigurationConstants.EDITOR_OPEN_TAB_NONE) {
         	if (eceInItsOwnTab) {
