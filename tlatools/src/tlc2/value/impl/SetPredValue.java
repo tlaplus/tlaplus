@@ -33,7 +33,14 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     ***********************************************************************/
   public Value inVal;           // the in value or the real set
   public final SemanticNode pred;     // the predicate
-  public ITool tool;             // null iff inVal is the real set
+  public final ITool tool;             // null iff inVal is the real set
+  /**
+   * true after inVal has been converted to a SetEnumValue.  I assume this
+   * implies (inVal instanceof SetEnumValue) too but the serialization
+   * might interfere.
+   * MAK 07/18/2019
+   */
+  private boolean converted = false; 
   public final Context con;
   public final TLCState state;
   public final TLCState pstate;
@@ -74,7 +81,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final int compareTo(Object obj) {
     try {
       this.inVal = this.toSetEnum();
-      this.tool = null;
+      this.converted = true;
       return this.inVal.compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -86,7 +93,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final boolean equals(Object obj) {
     try {
       this.inVal = this.toSetEnum();
-      this.tool = null;
+      this.converted = true;
       return this.inVal.equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -97,7 +104,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final boolean member(Value elem) {
     try {
-      if (this.tool == null) {
+      if (this.converted) {
         return this.inVal.member(elem);
       }
       try {
@@ -185,7 +192,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final int size() {
     try {
       this.inVal = this.toSetEnum();
-      this.tool = null;
+      this.converted = true;
       return this.inVal.size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -196,13 +203,13 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   private final void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
     this.inVal = (Value )ois.readObject();
-    this.tool = null;
+    this.converted = true;
   }
 
   private final void writeObject(ObjectOutputStream oos) throws IOException {
-    if (this.tool != null) {
+    if (!this.converted) {
       this.inVal = this.toSetEnum();
-      this.tool = null;
+      this.converted = true;
     }
     oos.writeObject(this.inVal);
   }
@@ -258,7 +265,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final long fingerPrint(long fp) {
     try {
       this.inVal = this.toSetEnum();
-      this.tool = null;
+      this.converted = true;
       return this.inVal.fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -270,7 +277,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final IValue permute(IMVPerm perm) {
     try {
       this.inVal = this.toSetEnum();
-      this.tool = null;
+      this.converted = true;
       return this.inVal.permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -281,7 +288,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   @Override
   public Value toSetEnum() {
-      if (this.tool == null) {
+      if (this.converted) {
     	  return (SetEnumValue) this.inVal;
       }
       ValueVec vals = new ValueVec();
@@ -333,7 +340,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final ValueEnumeration elements() {
     try {
-      if (this.tool == null) {
+      if (this.converted) {
         return ((SetEnumValue)this.inVal).elements();
       }
       return new Enumerator();
