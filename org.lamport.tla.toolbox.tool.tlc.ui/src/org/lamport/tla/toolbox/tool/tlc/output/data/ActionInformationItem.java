@@ -126,6 +126,28 @@ public class ActionInformationItem extends CoverageInformationItem {
 		return relation;
 	}
 	
+	@Override
+	public Location getModuleLocation()
+	{
+		if (hasDefinition()) {
+			// Do not jump to a sub-actions identifier but to its actual definition if a
+			// sub-action has a definition. Consider this partial spec:
+			// ...
+			// Next == \/ /\ x = 42
+			//            /\ x' = 23
+			//         \/ /\ x = 23
+			//            /\ x' = 4711
+			// ...
+		    // getModuleLocation called on the ActionInformationItem for sub-action
+			// "x = 42 /\ x' = 23" returns the location of  "x = 42 /\ x' = 23" and not
+			// that of "Next".
+			// This relevant in the Sub-actions for next-state table of the Model Checking
+			// Results page.
+			return definition; 
+		}
+		return location;
+	}
+	
 	/**
 	 * @return a Location or null if the definition location is unknown
 	 * @see tlc2.tool.coverage.ActionWrapper.printLocation()
