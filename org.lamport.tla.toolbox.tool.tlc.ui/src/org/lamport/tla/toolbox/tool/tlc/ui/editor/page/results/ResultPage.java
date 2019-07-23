@@ -138,7 +138,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 	private static final Color ERROR_PANE_BACKGROUND = new Color(PlatformUI.getWorkbench().getDisplay(), 255, 241, 237);
 	private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("HH:mm:ss '('MMM d')'");
-	private static final String ZERO_COVERAGE_WARNING = "Disabled actions for one or more modules.";
+	private static final String ZERO_COVERAGE_WARNING = "Disabled sub-actions for one or more modules.";
 	
 	
     /**
@@ -305,7 +305,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						// Print statistics timestamp relative to TLC startup.
 						final Date date = TLCModelLaunchDataProvider.parseDate(coverageTimestamp);
 						final String interval = TLCModelLaunchDataProvider.formatInterval(getStartTimestamp(), date.getTime());
-						ResultPage.this.coverageTimestampText.setText(interval);
+						ResultPage.this.coverageTimestampText.setText(String.format("(at %s)", interval));
+						ResultPage.this.coverageTimestampText
+								.setToolTipText("Time indicates the execution time at which the numbers were recorded");
 					}
                     break;
                 case COVERAGE:
@@ -1213,7 +1215,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         gd.verticalIndent = 0;
         headerLine.setLayoutData(gd);
         
-        final Label title = toolkit.createLabel(headerLine, "Actions at");
+        final Label title = toolkit.createLabel(headerLine, "Sub-actions of next-state"); // "next-state" term used on MainModelPage too
         gd = new GridData();
         gd.horizontalIndent = 0;
         gd.verticalIndent = 6;
@@ -1224,7 +1226,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         this.coverageTimestampText = toolkit.createText(headerLine, "", SWT.FLAT);
         this.coverageTimestampText.setEditable(false);
-        this.coverageTimestampText.setMessage("No information collected yet. Has coverage been enabled?");
+        this.coverageTimestampText.setMessage("(No numbers recorded yet. Has profiling been enabled on TLC options?)");
         gd = new GridData();
         gd.horizontalIndent = 6;
         gd.verticalIndent = 0;
