@@ -21,6 +21,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
+import org.lamport.tla.toolbox.tool.tlc.output.data.ActionInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -165,7 +166,26 @@ public class RecordToSourceCoupler implements MouseListener, KeyListener {
 					});
 				} else if (firstElement instanceof IModuleLocatable) {
 					final IModuleLocatable moduleLocatable = (IModuleLocatable) firstElement;
-					final Location location = moduleLocatable.getModuleLocation();
+					Location location = moduleLocatable.getModuleLocation();
+					if (moduleLocatable instanceof ActionInformationItem) {
+						ActionInformationItem aii = (ActionInformationItem) moduleLocatable;
+						if (aii.hasDefinition()) {
+							// Do not jump to a sub-actions identifier but to its actual definition if a
+							// sub-action has a definition. Consider this partial spec:
+							// ...
+							// Next == \/ /\ x = 42
+							//            /\ x' = 23
+							//         \/ /\ x = 23
+							//            /\ x' = 4711
+							// ...
+						    // getModuleLocation called on the ActionInformationItem for sub-action
+							// "x = 42 /\ x' = 23" returns the location of  "x = 42 /\ x' = 23" and not
+							// that of "Next".
+							// This relevant in the Sub-actions for next-state table of the Model Checking
+							// Results page.
+							location = aii.getDefinition();
+						}
+					}
 					if (location != null) {
 						/*
 						 * jumpToNested will be true if the location could be
