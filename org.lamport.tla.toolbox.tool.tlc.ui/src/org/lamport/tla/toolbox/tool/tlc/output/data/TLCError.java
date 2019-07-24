@@ -465,4 +465,20 @@ public class TLCError
 			}
 		}
 	}
+	
+	/**
+	 * This clone includes clones of each TLCState held.
+	 */
+	@Override
+	public TLCError clone() {
+		final TLCError clone = new TLCError(stateSortDirection);
+		
+		clone.message = message;
+		clone.cause = cause;
+		clone.errorCode = errorCode;
+		clone.numberOfStatesToShow =  numberOfStatesToShow;
+		states.stream().forEach((state) -> clone.states.add(state.clone()));
+		
+		return clone;
+	}
 }

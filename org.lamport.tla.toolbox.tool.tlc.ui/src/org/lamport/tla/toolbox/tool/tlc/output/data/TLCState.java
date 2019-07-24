@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -204,7 +203,7 @@ public class TLCState implements IModuleLocatable
      * is a state.
      */
 	private final String modelName;
-	private boolean wasDiffed= false;
+	private boolean wasDiffed = false;
 
     /**
      * 
@@ -250,6 +249,9 @@ public class TLCState implements IModuleLocatable
         this.label = label;
     }
 
+    /*
+     * Note to developers: in TLCErrorView, we rely on the fact that this method returns the internal collection instance.
+     */
 	public final List<TLCVariable> getVariablesAsList() {
 		return this.variables;
 	}
@@ -373,5 +375,23 @@ public class TLCState implements IModuleLocatable
 			return this.variables.size();
 		}
 		return 0;
+	}
+	
+	/**
+	 * This clone includes a shallow copy of the variables list.
+	 */
+	@Override
+	public TLCState clone() {
+		final TLCState clone = new TLCState(number, modelName);
+		
+		clone.stuttering = stuttering;
+		clone.isBackToState = isBackToState;
+		clone.label = label;
+		clone.variablesAsString = variablesAsString;
+		clone.location = location;
+		clone.wasDiffed = wasDiffed;
+		clone.variables.addAll(variables);
+		
+		return clone;
 	}
 }

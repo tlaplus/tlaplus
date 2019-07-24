@@ -203,7 +203,7 @@ public class TLCErrorViewTest  {
 		/*
 		 * Feed error trace to view.
 		 */
-		view.setTraceInput(error);
+		view.setTraceInput(error, true);
 		
 		/*
 		 * Expand all items to force coloring (expect test to fail otherwise).
