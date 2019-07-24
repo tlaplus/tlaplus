@@ -33,6 +33,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
@@ -43,6 +44,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -543,6 +545,29 @@ public class TLCErrorView extends ViewPart
         variableViewer.getTree().addDisposeListener((event) -> {
 			final IDialogSettings ids = Activator.getDefault().getDialogSettings();
 			ids.put(SYNCED_TRAVERSAL_KEY, syncStackTraversalAction.isChecked());
+        });
+        variableViewer.getTree().addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseUp(final MouseEvent event) {
+        		if ((event.stateMask & SWT.ALT) != 0) {
+        			final ISelection is = variableViewer.getSelection();
+        			if ((is != null) && !is.isEmpty() && (is instanceof StructuredSelection)) {
+        				final Object selection = ((StructuredSelection)variableViewer.getSelection()).getFirstElement();
+        				
+        				if (selection instanceof TLCVariable) {
+        					if (filterErrorTraceAction.isChecked()) {
+        						currentErrorTraceFilterSet.add((TLCVariable)selection);
+        					} else {
+        						currentErrorTraceFilterSet.clear();
+        						currentErrorTraceFilterSet.add((TLCVariable)selection);
+								filterErrorTraceAction.setChecked(true);
+        					}
+        					
+        					performVariableViewPopulation(true);
+        				}
+        			}
+        		}
+        	}
         });
         
         // Make it possible to expand and collapse the error trace with the push of a button.
@@ -1470,6 +1495,25 @@ public class TLCErrorView extends ViewPart
 		return variableViewer;
 	}
 	
+	private void performVariableViewPopulation(final boolean filter) {
+		if (!filter || (currentErrorTraceFilterSet.size() == 0)) {
+			setTraceInput(unfilteredInput, false);
+		} else {
+			// It would be much nicer (from both a time and space perspective) were there a veto-ing
+			//		ability provided by TableViewer - like "vetoRow(Object element)". Alas, there is not and
+			//		so we do this clone and filter of the input data.
+			final TLCError filtered = unfilteredInput.clone();
+			
+			for (final TLCState filteredState : filtered.getStates(TLCError.Length.ALL)) {
+				final List<TLCVariable> variables = filteredState.getVariablesAsList();
+				
+				variables.removeAll(currentErrorTraceFilterSet);
+			}
+			
+			setTraceInput(filtered, false);
+		}
+	}
+	
 	
 	private class SyncStackTraversal extends Action {
 		SyncStackTraversal() {
@@ -1500,18 +1544,41 @@ public class TLCErrorView extends ViewPart
 	
 	
 	private class FilterErrorTrace extends Action {
+		private static final String DEFAULT_TOOL_TIP_TEXT
+					= "Click to select variables and expressions to omit from the trace display; "
+									+ "ALT-click on an individual item below to omit it immediately.";
+		private static final String SELECTED_TOOL_TIP_TEXT = "Click to display all variables and expressions.";
+		
 		FilterErrorTrace() {
 			super("Filter the displayed variables and expressions..", AS_CHECK_BOX);
 			
 			final ImageDescriptor id = TLCUIActivator.getImageDescriptor("icons/elcl16/trace_filter.png");
 			setImageDescriptor(id);
+			
+			setToolTipText(DEFAULT_TOOL_TIP_TEXT);
 		}
-
+		
+	    /**
+	     * {@inheritDoc}
+	     */
+		@Override
+		public void setChecked(final boolean flag) {
+			super.setChecked(flag);
+			
+			setToolTipText(SELECTED_TOOL_TIP_TEXT);
+		}
+		
 	    /**
 	     * {@inheritDoc}
 	     */
 		@Override
 		public void run() {
+			if (isChecked()) {
+				setToolTipText(SELECTED_TOOL_TIP_TEXT);
+			} else {
+				setToolTipText(DEFAULT_TOOL_TIP_TEXT);
+			}
+			
 			final TLCError trace = (TLCError) variableViewer.getInput();
 			final List<TLCState> states = trace.getStates();
 			
@@ -1525,28 +1592,13 @@ public class TLCErrorView extends ViewPart
 				final ErrorViewTraceFilterDialog dialog = new ErrorViewTraceFilterDialog(s, state.getVariablesAsList());
 
 				dialog.setSelection(currentErrorTraceFilterSet);
-				if (dialog.open() == Window.OK) {
+				if (dialog.open() == Window.OK) { // (Currently can only ever be Windows.OK)
 					currentErrorTraceFilterSet = dialog.getSelection();
 					
-					if (currentErrorTraceFilterSet.size() == 0) {
-						setTraceInput(unfilteredInput, false);
-					} else {
-						// It would be much nicer (from both a time and space perspective) were there a veto-ing
-						//		ability provided by TableViewer - like "vetoRow(Object element)". Alas, there is not and
-						//		so we do this clone and filter of the input data.
-						final TLCError filtered = unfilteredInput.clone();
-						
-						for (final TLCState filteredState : filtered.getStates(TLCError.Length.ALL)) {
-							final List<TLCVariable> variables = filteredState.getVariablesAsList();
-							
-							variables.removeAll(currentErrorTraceFilterSet);
-						}
-						
-						setTraceInput(filtered, false);
-					}
+					performVariableViewPopulation(true);
 				}
 			} else {
-				setTraceInput(unfilteredInput, false);
+				performVariableViewPopulation(false);
 			}
 		}
 	}	

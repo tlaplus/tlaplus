@@ -190,9 +190,19 @@ You can reverse the order, so the initial state appears last, by clicking on eit
 two column headings in the error trace display.&nbsp;  Clicking again restores the
 normal order.
 </p>
-<p>The trace viewer uses colors to indicate changes in the values of variables and in
+
+<p>
+The trace viewer uses colors to indicate changes in the values of variables and in
 the values of their subexpressions from one state to the next.&nbsp;  The color code is:
 </p>
+
+<p>
+The error trace can be filtered to omit variables and expressions from the displayed states. By clicking on the filter button found to the
+left of the expand-hide all button, the user is presented with a a dialog allowing them to select from the set of variables and expressions
+found in the trace; alternatively, the user may ALT-click on a variable or expression in the Error-Trace tree view which will then omit that
+variable or expression.  Clicking on the filter button again will turn off the filtering.
+</p>
+
 <dl>
 <dt><IMG SRC="changed.gif" Align="bottom"/> &nbsp; Value changed in this state.</dt><br></br>
 
@@ -214,17 +224,17 @@ The error-trace explorer allows you to view the values of expressions in each st
 of the trace.&nbsp;  You just enter one or more expressions, which can contain
 primed as well as unprimed variables, and click on <samp>Explore</samp>.&nbsp;  The values
 of the expressions will then be shown in the error trace.&nbsp;  Clicking on
-<samp>Restore</samp> restores the original error trace. An error-trace expression may be 
-given the name "id" by preceding it with "id ==".  This defines id to equal that expression 
+<samp>Restore</samp> restores the original error trace. An error-trace expression may be
+given the name "id" by preceding it with "id ==".  This defines id to equal that expression
 in subsequent error-trace explorer expressions.
 </p>
 
 <p>
 The error-trace explorer allows you to form expressions from two built-in operators:
-The operators <code>_TETrace</code> and <code>_TEPosition</code> in an error-trace expression are defined 
-as follows. When the expression is evaluated, <code>_TETrace</code> equals the sequence of records such that 
-for every spec variable <code>v</code>, the value of <code>_TETrace[N].v</code> equals the value of v in 
-state number <code>N</code> of the trace.  When the expression is evaluated in state number <code>N</code>, 
+The operators <code>_TETrace</code> and <code>_TEPosition</code> in an error-trace expression are defined
+as follows. When the expression is evaluated, <code>_TETrace</code> equals the sequence of records such that
+for every spec variable <code>v</code>, the value of <code>_TETrace[N].v</code> equals the value of v in
+state number <code>N</code> of the trace.  When the expression is evaluated in state number <code>N</code>,
 the operator <code>_TEPosition</code> equals <code>N</code>.
 </p>
 
