@@ -88,7 +88,7 @@ public class TLCUIActivator extends AbstractTLCActivator
 			final UIJob j = new UIJob(Display.getCurrent(), "TLA+ execution statistics approval.") {
 				@Override
 				public IStatus runInUIThread(final IProgressMonitor monitor) {
-					new ExecutionStatisticsDialog(PlatformUI.createDisplay().getActiveShell()).open();
+					new ExecutionStatisticsDialog(false, PlatformUI.createDisplay().getActiveShell()).open();
 					return Status.OK_STATUS;
 				}
 			};

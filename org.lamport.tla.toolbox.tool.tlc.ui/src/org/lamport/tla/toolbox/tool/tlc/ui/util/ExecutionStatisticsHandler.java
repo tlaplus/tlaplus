@@ -37,7 +37,7 @@ public class ExecutionStatisticsHandler extends AbstractHandler {
 	 */
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		new ExecutionStatisticsDialog(HandlerUtil.getActiveShellChecked(event)).open();
+		new ExecutionStatisticsDialog(true, HandlerUtil.getActiveShellChecked(event)).open();
 		return null;
 	}
 }

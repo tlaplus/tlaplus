@@ -63,9 +63,12 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 	
 	private final ExecutionStatisticsCollector esc = new ExecutionStatisticsCollector();
 
-	public ExecutionStatisticsDialog(final Shell parentShell) {
+	private final boolean isUserTriggered;
+
+	public ExecutionStatisticsDialog(boolean isUserTriggered, final Shell parentShell) {
 		super(parentShell, "TLA+ execution statistics", (Image) null, "The TLA+ project needs your help!",
 				MessageDialog.QUESTION, new String[0], 0);
+		this.isUserTriggered = isUserTriggered;
 		
 		// Do not block the Toolbox's main window.
 		setShellStyle(getShellStyle() ^ SWT.APPLICATION_MODAL | SWT.MODELESS);
@@ -85,18 +88,25 @@ public class ExecutionStatisticsDialog extends MessageDialog {
         buttons[2] = createButton(parent, 2, "&Never Share\nExecution Statistics", false);
         buttons[2].setData(KEY, ExecutionStatisticsCollector.Selection.NO_ESC);
         
-        // Disable the button for the currently active selection. 
-        final Selection selection = esc.get();
-        switch (selection) {
-		case ON:
-			buttons[0].setEnabled(false);
-			break;
-		case RANDOM_IDENTIFIER:
-			buttons[1].setEnabled(false);
-			break;
-		case NO_ESC:
-			buttons[2].setEnabled(false);
-		}
+		// Disable the button for the currently active selection to indicate the state
+		// if this dialog is (explicitly) triggered by the user due to clicking the menu
+		// item.
+		// However, if this dialog is automatically opened by a fresh Toolbox install,
+		// we don't indicate the state. Technically the state is NO_ESC but the UI gives
+		// the impression it is impossible to disable exec stats.
+        if (isUserTriggered) {
+        	final Selection selection = esc.get();
+        	switch (selection) {
+        	case ON:
+        		buttons[0].setEnabled(false);
+        		break;
+        	case RANDOM_IDENTIFIER:
+        		buttons[1].setEnabled(false);
+        		break;
+        	case NO_ESC:
+        		buttons[2].setEnabled(false);
+        	}
+        }
         
         setButtons(buttons);
     }
