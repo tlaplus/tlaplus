@@ -129,7 +129,7 @@ public class TLCErrorView extends ViewPart
 	
 	private static final String DEFAULT_TOOL_TIP
 		= "Click on a row to see in viewer below.\nDouble-click to go to corresponding action in spec \u2014 "
-			+ "while holding\n   down " + (Platform.getOS().equals(Platform.OS_MACOSX) ? "\u2318" : "CTRL")
+			+ "while holding\ndown " + (Platform.getOS().equals(Platform.OS_MACOSX) ? "\u2318" : "CTRL")
 			+ " to go to the original PlusCal code, if present.";
 
     /**
