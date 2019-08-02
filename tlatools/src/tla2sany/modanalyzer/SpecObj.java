@@ -224,7 +224,7 @@ public class SpecObj
     // Returns enumeration of the modules so far included in the spec.
     // As whoever wrote this documentation didn't think was worth mentioning,
     // it appears that the "modules" being returned are ModulePointer objects.
-    public final Enumeration<String> getModules()
+    public final Enumeration<ModulePointer> getModules()
     {
         return moduleRelationshipsSpec.getKeys();
     }
