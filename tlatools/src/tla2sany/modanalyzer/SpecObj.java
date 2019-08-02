@@ -221,6 +221,15 @@ public class SpecObj
         return semanticErrors;
     }
 
+	public Set<String> getModuleNames() {
+		final Set<String> s = new HashSet<>();
+		final Enumeration<ModulePointer> modules = getModules();
+		while (modules.hasMoreElements()) {
+			s.add(modules.nextElement().getName());
+		}
+		return s;
+	}
+
     // Returns enumeration of the modules so far included in the spec.
     // As whoever wrote this documentation didn't think was worth mentioning,
     // it appears that the "modules" being returned are ModulePointer objects.
