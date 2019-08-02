@@ -8,8 +8,14 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
@@ -213,4 +219,41 @@ public class RCPNameToFileIStream implements FilenameToStream
 		}
 		return buf.toString();
 	}
+    
+	/**
+	 * @return The set of the names of all modules found in the various
+	 * libraryPathEntries (Toolbox & TLC installation, spec directories, library
+	 * directories, and library archives.
+	 * <p>
+	 * This are not the modules extended by the current spec.
+	 */
+    public Set<String> getAllModules() {
+    	final Set<String> s = new HashSet<>();
+    	for (final String path : libraryPathEntries) {
+    		if(FilenameToStream.isArchive(path)) {
+    			s.addAll(listTLAFilesInZip(path));
+    		} else {
+    			// List .tla files in the given directory.
+				s.addAll(Arrays.stream(new File(path).listFiles((d, name) -> name.endsWith(".tla")))
+						.map(f -> f.getName()).collect(Collectors.toSet()));
+    		}
+		}
+    	return s;
+    }
+    
+    private Set<String> listTLAFilesInZip(String path) {
+    	final Set<String> s = new HashSet<>();
+		try (final ZipFile zipFile = new ZipFile(path)) {
+			final Enumeration<? extends ZipEntry> e = zipFile.entries();
+			while (e.hasMoreElements()) {
+				ZipEntry entry = e.nextElement();
+				String entryName = entry.getName();
+				if (entryName.endsWith(".tla")) {
+					s.add(entryName);
+				}
+			}
+		} catch (IOException ignored) {
+		}
+		return s;
+    }
 }
