@@ -28,12 +28,14 @@ package org.lamport.tla.toolbox.tool.tlc.util;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 
 import org.eclipse.core.resources.IFile;
@@ -999,14 +1001,21 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     {
         // get the list of dependent modules
         List<String> extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
+        copyModuleFiles(specRootFile, targetFolderPath, monitor, STEP, project, extendedModules, e -> ToolboxHandle.isUserModule(e));
+    }
+  
+    public static void copyModuleFiles(IFile specRootFile, IPath targetFolderPath, IProgressMonitor monitor,
+            int STEP, IProject project, Collection<String> extendedModules, final Predicate<String> p) throws CoreException
+    {
 
         // iterate and copy modules that are needed for the spec
         IFile moduleFile = null;
-        for (int i = 0; i < extendedModules.size(); i++)
-        {
-            String module = extendedModules.get(i);
+        
+        final Iterator<String> iterator = extendedModules.iterator();
+        while (iterator.hasNext()) {
+        	String module = iterator.next();
             // only take care of user modules
-            if (ToolboxHandle.isUserModule(module))
+            if (p.test(module))
             {
                 moduleFile = ResourceHelper.getLinkedFile(project, module, false);
                 if (moduleFile != null)
