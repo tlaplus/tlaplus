@@ -115,7 +115,7 @@ public class ErrorViewTraceFilterDialog extends Dialog {
     	});
     	
     	b = new Button(buttonPane, SWT.PUSH);
-    	b.setText("Deslect All");
+    	b.setText("Deselect All");
     	gd = new GridData();
     	gd.horizontalAlignment = SWT.FILL;
     	gd.grabExcessHorizontalSpace = true;
