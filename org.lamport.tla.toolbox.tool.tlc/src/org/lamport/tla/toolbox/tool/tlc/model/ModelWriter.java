@@ -578,7 +578,7 @@ public class ModelWriter
      * Create a list of overrides. If the override is not in the spec's root module, then
      * the config file will have     A <- [M] id . This means that A is defined in module M,
      * and its definition is being overriden in the spec root module which is dependent upon M.
-     * The following is an example from Leslie Lamport that explains what occured before changing
+     * The following is an example from Leslie Lamport that explains what occurred before changing
      * the code and what occurs now.
      * Consider the root module
 

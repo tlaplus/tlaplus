@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _1OLRMAlXEem_pLt0eVfQIQ
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/10/19, 8:58 AM
+Runtime-Version: 2.4.2.201905122359
+Save-Time: 8/2/19, 2:51 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -144,7 +144,7 @@ try -command {
 	}
 	with [get-window "Parsing error when running trace explorer"] {
     with [get-editbox] {
-        get-property text | equals "***Parse Error***\nWas expecting \"Expression or Instance\"\nEncountered \"Beginning of definition\"  in Error-Trace Exploration expression at line 5 and token \"==\" \n\nResidual stack trace follows:\nDefinition starting at line 51, column 1.\nModule body starting at line 5, column 1.\nModule definition starting at line 1, column 1.\n" 
+        get-property text | equals "***Parse Error***\nWas expecting \"Expression or Instance\"\nEncountered \"Beginning of definition\"  in Error-Trace Exploration expression at line 5 and token \"==\" \n\nResidual stack trace follows:\nDefinition starting at line 46, column 1.\nModule body starting at line 4, column 1.\nModule definition starting at line 1, column 1.\n" 
 	    | verify-true
     }
     get-button OK | click
