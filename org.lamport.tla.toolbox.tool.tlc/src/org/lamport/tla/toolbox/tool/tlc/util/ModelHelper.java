@@ -1018,7 +1018,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             if (p.test(module))
             {
                 moduleFile = ResourceHelper.getLinkedFile(project, module, false);
-                if (moduleFile != null)
+                if (moduleFile != null && moduleFile.exists())
                 {
                     moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
                             | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));

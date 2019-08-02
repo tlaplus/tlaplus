@@ -29,7 +29,9 @@ package org.lamport.tla.toolbox.tool.tlc.traceexplorer;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -39,6 +41,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -72,19 +76,27 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.TraceExpressionModelWriter;
+import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.dialog.ExtraModulesDialog;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.FormulaContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
+
+import util.FilenameToStream;
 
 /**
  * This is somewhat mislabeled as a composite. Its really
@@ -199,8 +211,68 @@ public class TraceExplorerComposite
 		        dialogSettings.put(EXPANDED_STATE, section.isExpanded());
 			}
         });
+        
+		final ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
+		final ToolBar toolbar = toolBarManager.createControl(section);
+		toolBarManager.add(new ExtraModulesActions());
+		toolBarManager.update(true);
+		section.setTextClient(toolbar);
     }
 
+    private class ExtraModulesActions extends Action {
+
+		public ExtraModulesActions() {
+			super("Extend extra modules in trace expressions which are not extended by the actual spec.", TLCUIActivator
+					.getImageDescriptor("platform:/plugin/org.eclipse.ui/icons/full/etool16/new_fastview.png"));
+		}
+    	
+		@Override
+		public void run() {
+			final Spec currentSpec = ToolboxHandle.getCurrentSpec();
+			if (currentSpec != null && view.getModel() != null) {
+				// From the set of all modules remove those already included in the scope. The
+				// remaining unused modules are the ones a user might potentially be additional
+				// includes.
+				final Set<String> availableModules = currentSpec.getModules().stream().map(m -> m.getModuleName())
+						.collect(Collectors.toSet());
+				final FilenameToStream resolver = currentSpec.getValidRootModule().getResolver();
+				if (resolver instanceof RCPNameToFileIStream) {
+					final RCPNameToFileIStream rcpResolver = (RCPNameToFileIStream) resolver;
+					// Strip off ".tla" file extension.
+					availableModules.addAll(rcpResolver.getAllModules().stream()
+							.map(m -> m.replaceFirst(".tla$", "")).collect(Collectors.toSet()));
+				}
+				final Set<String> includedModules = currentSpec.getValidRootModule().getModuleNames();
+				
+				final Set<String> unusedModules = availableModules.stream()
+						.filter(m -> !includedModules.contains(m)).collect(Collectors.toSet());
+				
+				// Don't offer to extend  those modules which are already extended (implicitly).
+				unusedModules.remove("Toolbox");
+				unusedModules.remove("TLC");
+				
+				final ExtraModulesDialog extraModulesDialog = new ExtraModulesDialog(
+						PlatformUI.getWorkbench().getDisplay().getActiveShell(), unusedModules,
+						view.getModel().getTraceExplorerExtends());
+				if (Window.OK == extraModulesDialog.open()) { 
+					final Set<String> selectedModules = extraModulesDialog.getSelection();
+					
+					// Decouple I/O from UI thread.
+			    	final Job job = new WorkspaceJob("Saving updated model...") {
+						public IStatus runInWorkspace(final IProgressMonitor monitor) throws CoreException {
+							view.getModel().setTraceExplorerExtends(selectedModules);
+							view.getModel().save(monitor);
+							return Status.OK_STATUS;
+						}
+					};
+					job.setRule(ResourcesPlugin.getWorkspace().getRoot());
+					job.setUser(true);
+					job.schedule();
+				}
+			}
+		}
+    }
+    
     /**
      * Constructs the section content
      * 

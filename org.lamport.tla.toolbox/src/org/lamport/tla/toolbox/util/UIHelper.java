@@ -691,8 +691,12 @@ public class UIHelper {
 			// to not prompt the user to overwrite a file because
 			// that would not make any sense in an open file dialog.
 			openFileDialog.setOverwrite(false);
+		} else if (Platform.getOS().equals(Platform.OS_LINUX)) {
+			// SWT.SAVE allows to create files on Gtk3.x (without I couldn't create files on
+			// Ubuntu 18.04)?!
+			openFileDialog = new FileDialog(shell, SWT.OPEN | SWT.SAVE);
 		} else {
-			// On other platforms, an open dialog is sufficient as it
+			// On Windows, an open dialog is sufficient as it
 			// supports opening existing as well as creating new files.
 			openFileDialog = new FileDialog(shell, SWT.OPEN);
 		}
