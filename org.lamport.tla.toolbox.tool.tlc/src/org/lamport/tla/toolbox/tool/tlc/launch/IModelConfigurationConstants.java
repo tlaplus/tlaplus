@@ -103,6 +103,10 @@ public interface IModelConfigurationConstants extends IConfigurationConstants
      * when the trace explorer is run
      */
     public static final String TRACE_EXPLORE_EXPRESSIONS = "traceExploreExpressions";
+    /**
+     * Extra modules to extended by TE.tla.
+     */
+    public static final String TRACE_EXPLORE_EXTENDS = "traceExploreExtends";
     
     /**
      * a bitwise OR'd value representing which of the closeable tabs should be open on a model editor opening

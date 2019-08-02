@@ -25,8 +25,10 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.model;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
@@ -100,9 +102,21 @@ public class TraceExpressionModelWriter extends ModelWriter {
 	
 	@Override
 	public void addPrimer(final String moduleFilename, final String extendedModuleName) {
-		// A TE spec has to extend Toolbox because of the _TETrace and _TEPosition operators.
+		addPrimer(moduleFilename, extendedModuleName, new HashSet<>());
+	}
+	
+	public void addPrimer(final String moduleFilename, final String extendedModuleName, final Set<String> extraExtendedModules) {
+		extraExtendedModules.add(extendedModuleName);
+		
+		// Not sure why this is required by TE.tla.
+		extraExtendedModules.add("TLC");
+		
+		// A TE spec has to extend Toolbox to have access to _TETrace and _TEPosition
+		// operators.
+		extraExtendedModules.add("Toolbox");
+		
 		tlaBuffer.append(ResourceHelper.getExtendingModuleContent(moduleFilename,
-				new String[] { extendedModuleName, "TLC", "Toolbox" }));
+				extraExtendedModules.toArray(new String[extraExtendedModules.size()])));
 	}
 
 	public void addTraceFunction(final List<SimpleTLCState> input) {

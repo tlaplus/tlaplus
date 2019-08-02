@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1136,6 +1137,24 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
     public String getFullyQualifiedName() {
     	return fullyQualifiedNameFromSpecNameAndModelName(getSpec().getName(), getName());
     }
+
+	public void setTraceExplorerExtends(final Set<String> modules) {
+        try {
+        	getWorkingCopy().setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXTENDS, modules);
+		} catch (CoreException shouldNotHappen) {
+			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
+		}
+	}
+	
+	public Set<String> getTraceExplorerExtends() {
+		final Set<String> defaultValue = new HashSet<String>();
+		try {
+			return this.launchConfig.getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXTENDS, defaultValue);
+		} catch (CoreException shouldNotHappen) {
+			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
+			return defaultValue;
+		}
+	}
 
 	public List<String> getTraceExplorerExpressions() {
 		final Vector<String> defaultValue = new Vector<String>();

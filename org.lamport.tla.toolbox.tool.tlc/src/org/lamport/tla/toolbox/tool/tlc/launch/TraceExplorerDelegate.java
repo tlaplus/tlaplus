@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -390,6 +391,17 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         }
 
         ModelHelper.copyExtendedModuleFiles(specRootFile, targetFolderPath, monitor, STEP, project);
+        
+        // Copy extra extends defined in the Trace Explorer UI.
+		ModelHelper.copyModuleFiles(specRootFile, targetFolderPath, monitor, STEP, project,
+				// Append ".tla" extensions without which copyModuleFiles silently skips the
+				// file.
+				model.getTraceExplorerExtends().stream().map(m -> m + ".tla").collect(Collectors.toSet()),
+				// Unconditionally copy all extra modules to where TLC (trace exploration) will
+				// be able to resolve them with the SimpleFilenameToStream resolver. These are
+				// modules which are at the root of the spec directory but not extended by the
+				// root module.
+				e -> true);
 
         /******************************************************************
          * Finished copying files.                                        *
@@ -417,7 +429,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         final TraceExpressionModelWriter writer = new TraceExpressionModelWriter();
 
         // add extend primer
-        writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
+		writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()),
+				model.getTraceExplorerExtends());
 
         writeModelInfo(config, writer);
         
@@ -623,7 +636,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addInfoComments(traceExpressionData);
 
         // add extend primer
-        writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()));
+		writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()),
+				model.getTraceExplorerExtends());
 
         // write constants, model values, new definitions, definition overrides
         writeModelInfo(configuration, writer);
