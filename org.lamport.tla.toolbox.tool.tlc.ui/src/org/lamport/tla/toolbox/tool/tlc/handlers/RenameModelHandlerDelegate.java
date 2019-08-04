@@ -3,12 +3,14 @@ package org.lamport.tla.toolbox.tool.tlc.handlers;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
+import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IInputValidator;
@@ -119,4 +121,31 @@ public class RenameModelHandlerDelegate extends AbstractHandler implements IHand
         }
         return null;
     }
+    
+    @SuppressWarnings("unchecked")	// generics casting...
+	@Override
+	public void setEnabled(final Object evaluationContext) {
+		final Object selection = ((IEvaluationContext)evaluationContext).getDefaultVariable();
+		
+		if (selection instanceof List) {
+			final List<Object> list = (List<Object>)selection;
+
+			boolean modelEncountered = false; // Will always go to true on given current XML definitions; future proofing
+			for (final Object element : list) {
+				if (element instanceof Model) {
+					if (((Model)element).isSnapshot()) {
+						setBaseEnabled(false);
+						
+						return;
+					}
+					
+					modelEncountered = true;
+				}
+			}
+			
+			setBaseEnabled(modelEncountered);
+		} else {
+			setBaseEnabled(false);
+		}
+	}
 }
