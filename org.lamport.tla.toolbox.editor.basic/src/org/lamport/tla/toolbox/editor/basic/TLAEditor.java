@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
@@ -62,7 +63,10 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -72,7 +76,6 @@ import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -407,8 +410,8 @@ public class TLAEditor extends TextEditor
      * We use this to remove unwanted items from the menu
      * that eclipse plug-ins contribute.
      */
-    protected void editorContextMenuAboutToShow(IMenuManager menuManager)
-    {
+    @Override
+	protected void editorContextMenuAboutToShow(final IMenuManager menuManager) {
         super.editorContextMenuAboutToShow(menuManager);
         // The following adds an extra section for the fold commands.
         // First, try to find the additions group.
@@ -423,6 +426,55 @@ public class TLAEditor extends TextEditor
             menuManager.add(new Separator("foldCommands"));
         }
 
+        // It would be nice if we had all of that "Run As", etc nonsense populated by the time we get here,
+        //		but that gets added later, after us.. so, we will do something fairly hacky below.
+        if (menuManager instanceof ContributionManager) {
+        	final ContributionManager cm = (ContributionManager)menuManager;
+        	
+        	removeTopLevelMenuWithDisplayText("Open W&ith", cm);
+        	removeTopLevelMenuWithDisplayText("Sho&w In", cm);
+
+        	if (menuManager instanceof MenuManager) {
+        		
+        	}
+        	final Runnable r = () -> {
+        		final MenuManager mm = (MenuManager)cm;
+        		final ArrayList<Integer> menuCountFerry = new ArrayList<>();
+        		final Display d = PlatformUI.getWorkbench().getDisplay();
+        		
+        		d.syncExec(() -> {
+        			menuCountFerry.clear();
+        			
+        			final Menu m = mm.getMenu();
+        			menuCountFerry.add(Integer.valueOf((m != null) ? m.getItemCount() : 0));
+        		});
+        		while (menuCountFerry.get(0).intValue() == 0) {
+            		try {
+            			Thread.sleep(40);
+            		} catch (final Exception e) { }
+            		
+            		d.syncExec(() -> {
+            			menuCountFerry.clear();
+            			
+            			final Menu m = mm.getMenu();
+            			menuCountFerry.add(Integer.valueOf((m != null) ? m.getItemCount() : 0));
+            		});
+        		}
+        		
+        		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+        			final Menu menu = mm.getMenu();
+        			
+                	removeMenuItemWithDisplayText("&Run As", menu);
+                	removeMenuItemWithDisplayText("&Debug As", menu);
+                	removeMenuItemWithDisplayText("Import SWTBot", menu);
+                	removeMenuItemWithDisplayText("T&eam", menu);
+                	removeMenuItemWithDisplayText("Rep&lace With", menu);
+                	removeMenuItemWithDisplayText("Comp&are With", menu);
+        		});
+        	};
+        	(new Thread(r)).start();
+        }
+        
         /*
          * The following removes unwanted preference items.
          * 
@@ -432,36 +484,45 @@ public class TLAEditor extends TextEditor
          */
         menuManager.remove(ITextEditorActionConstants.SHIFT_RIGHT);
         menuManager.remove(ITextEditorActionConstants.SHIFT_LEFT);
-
-        /*
-         * The following is a bit of a hack to remove
-         * the "Show In" submenu that is contributed by
-         * AbstractDecoratedTextEditor in its implementation
-         * of this method. It is contributed without
-         * an id, so we have to check all items in the menu
-         * to check if a submenu contains an item with
-         * the id viewShowIn. Then we remove this submenu.
-         */
-        IContributionItem[] items = menuManager.getItems();
-        for (int i = 0; i < items.length; i++)
-        {
-            if (items[i] instanceof MenuManager)
-            {
-                MenuManager subMenu = (MenuManager) items[i];
-                if (subMenu.find(ContributionItemFactory.VIEWS_SHOW_IN.getId()) != null)
-                {
-                    menuManager.remove(subMenu);
-                    break;
-                }
-            }
+    }
+    
+    // Were there ever more than one menu with the same display text beginning, this would produce unexpected results.
+    private void removeMenuItemWithDisplayText(final String text, final Menu menu) {
+    	final MenuItem[] items = menu.getItems();
+    	
+    	for (final MenuItem item : items) {
+    		final String menuItemText = item.getText();
+    		
+    		if ((menuItemText != null) && menuItemText.startsWith(text)) {
+    			item.dispose();
+    			
+    			return;
+    		}
+    	}
+    }
+    
+    // Were there ever more than one menu with the same display text beginning, this would produce unexpected results.
+    private void removeTopLevelMenuWithDisplayText(final String text, final ContributionManager cm) {
+        final IContributionItem[] items = cm.getItems();
+    	
+        for (final IContributionItem item : items) {
+        	if (item instanceof MenuManager) {
+        		final MenuManager mm = (MenuManager)item;
+        		final String menuText = mm.getMenuText();
+        		
+        		if ((menuText != null) && menuText.startsWith(text)) {
+        			cm.remove(item);
+        			return;
+        		}
+        	}
         }
-
     }
 
     /*
      * We override this method to add information about who modified the file when. 
      * @see org.eclipse.ui.texteditor.AbstractTextEditor#doSave(org.eclipse.core.runtime.IProgressMonitor)
      */
+    @Override
     public void doSave(IProgressMonitor progressMonitor)
     {
         service.send(PRE_SAVE_EVENT, this);
