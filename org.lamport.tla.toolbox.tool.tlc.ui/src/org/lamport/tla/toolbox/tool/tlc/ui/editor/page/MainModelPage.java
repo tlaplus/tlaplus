@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionEvent;
@@ -1158,9 +1159,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		gd.horizontalAlignment = SWT.FILL;
 		gd.grabExcessHorizontalSpace = true;
 		gd.heightHint = 48;
-		initFormulaSource.getTextWidget().setLayoutData(gd);
-		initFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-		initFormulaSource.getTextWidget().addFocusListener(focusListener);
+		StyledText st = initFormulaSource.getTextWidget();
+		st.setLayoutData(gd);
+		st.addModifyListener(whatIsTheSpecListener);
+		st.addFocusListener(focusListener);
+		st.addTraverseListener((event) -> {
+			event.doit = true;
+		});
 		dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, initFormulaSource, behaviorPart);
 
 		// next
@@ -1171,9 +1176,13 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		gd.horizontalAlignment = SWT.FILL;
 		gd.grabExcessHorizontalSpace = true;
 		gd.heightHint = 48;
-		nextFormulaSource.getTextWidget().setLayoutData(gd);
-		nextFormulaSource.getTextWidget().addModifyListener(whatIsTheSpecListener);
-		nextFormulaSource.getTextWidget().addFocusListener(focusListener);
+		st = nextFormulaSource.getTextWidget();
+		st.setLayoutData(gd);
+		st.addModifyListener(whatIsTheSpecListener);
+		st.addFocusListener(focusListener);
+		st.addTraverseListener((event) -> {
+			event.doit = true;
+		});
 		dm.bindAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, nextFormulaSource, behaviorPart);
 
 		// fairness
