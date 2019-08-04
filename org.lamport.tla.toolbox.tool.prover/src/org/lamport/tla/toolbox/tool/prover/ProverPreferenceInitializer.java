@@ -5,8 +5,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.dialog.LaunchProverDialog;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.AdditionalPreferencesPage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ColorPredicatePreferencePage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.MainProverPreferencePage;
 
 /**
  * This class can be used to set default preferences for any preference
@@ -37,34 +38,35 @@ public class ProverPreferenceInitializer extends AbstractPreferenceInitializer
         store.setDefault(LaunchProverDialog.FP_NORMAL_KEY, true);
         store.setDefault(LaunchProverDialog.FP_FORGET_ALL_KEY, false);
         store.setDefault(LaunchProverDialog.FP_FORGET_CURRENT_KEY, false);
-        store.setDefault(ProverSecondPreferencePage.NUM_THREADS_KEY, "");
-        store.setDefault(ProverSecondPreferencePage.SOLVER_KEY, "");
-        store.setDefault(ProverSecondPreferencePage.SAFEFP_KEY, false);
+        store.setDefault(MainProverPreferencePage.EXECUTABLE_LOCATION_KEY, "");
+        store.setDefault(MainProverPreferencePage.NUM_THREADS_KEY, "");
+        store.setDefault(MainProverPreferencePage.SOLVER_KEY, "");
+        store.setDefault(MainProverPreferencePage.SAFEFP_KEY, false);
         
         /*
          * The following sets the default color predicates for the colors. First argument
          * is the key for each predicate for the logical color, and the second argument is
          * the predicate string (not the macro name).
          */
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(1), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(2), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(3), ColorPredicate.PREDICATE_BEING_PROVED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(4), ColorPredicate.PREDICATE_STOPPED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(5), ColorPredicate.PREDICATE_FAILED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(6), ColorPredicate.PREDICATE_PROVED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(7), ColorPredicate.PREDICATE_PROVED_OR_OMITTED);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(8), ColorPredicate.PREDICATE_PROVED_OR_OMITTED_OR_MISSING);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(9), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(10), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(11), ColorPredicate.PREDICATE_NONE);
-        store.setDefault(ProverPreferencePage.getColorPredPrefName(12), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(1), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(2), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(3), ColorPredicate.PREDICATE_BEING_PROVED);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(4), ColorPredicate.PREDICATE_STOPPED);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(5), ColorPredicate.PREDICATE_FAILED);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(6), ColorPredicate.PREDICATE_PROVED);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(7), ColorPredicate.PREDICATE_PROVED_OR_OMITTED);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(8), ColorPredicate.PREDICATE_PROVED_OR_OMITTED_OR_MISSING);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(9), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(10), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(11), ColorPredicate.PREDICATE_NONE);
+        store.setDefault(ColorPredicatePreferencePage.getColorPredPrefName(12), ColorPredicate.PREDICATE_NONE);
      
         
        /*
         * Set the defaults for the user-specified color predicates
         */
-        for (int i = 0; i < ProverSecondPreferencePage.USER_DEFINED_PREDICATE.length; i++) {
-            store.setDefault(ProverSecondPreferencePage.USER_DEFINED_PREDICATE[i], "some");
+        for (int i = 0; i < AdditionalPreferencesPage.USER_DEFINED_PREDICATE.length; i++) {
+            store.setDefault(AdditionalPreferencesPage.USER_DEFINED_PREDICATE[i], "some");
         }     
     }
 

@@ -7,7 +7,7 @@ import java.util.List;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Assert;
 import org.lamport.tla.toolbox.tool.prover.job.ProverJob;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ColorPredicatePreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 
 import tla2sany.st.Location;
@@ -141,7 +141,7 @@ public class StepTuple
          */
         if (predicateChanged)
         {
-            int newMinimum = ProverPreferencePage.NUM_STATUS_COLORS + 1;
+            int newMinimum = ColorPredicatePreferencePage.NUM_STATUS_COLORS + 1;
             for (int i = 0; i < colorPredicateValues.length; i++)
             {
                 if (colorPredicateValues[i])
@@ -176,7 +176,7 @@ public class StepTuple
         this.proverJob = proverJob;
         children = new ArrayList();
         ColorPredicate[] colorPredicates = proverJob.getColorPredicates();
-        colorPredicateValues = new boolean[ProverPreferencePage.NUM_STATUS_COLORS];
+        colorPredicateValues = new boolean[ColorPredicatePreferencePage.NUM_STATUS_COLORS];
         for (int i = 0; i < colorPredicateValues.length; i++)
         {
             colorPredicateValues[i] = !colorPredicates[i].isSome;

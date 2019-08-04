@@ -39,8 +39,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessag
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.WarningMessage;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.MainProverPreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
 import org.lamport.tla.toolbox.ui.dialog.InformationDialog;
 import org.lamport.tla.toolbox.util.AdapterFactory;
@@ -743,7 +742,7 @@ public class ProverHelper
 
             if (marker.getAttribute(SANY_IS_LEAF_ATR, false)) {
                 if (proverJob.getLeafStepMap().put(
-                        new Integer(locForAttr.beginLine()), stepTuple) != null) {
+                		Integer.valueOf(locForAttr.beginLine()), stepTuple) != null) {
                     // If there are two proof steps that begin at the same line,
                     // then raise a warning. Added by LL on 14 Feb 2013. 
                     System.out.println("Two steps start on line " + locForAttr.beginLine());
@@ -1031,7 +1030,7 @@ public class ProverHelper
                             IMarker obMarker = createObligationMarker(message.getID(), message.getLocation());
                             ObligationStatus obStatus = new ObligationStatus(null, obMarker,
                                     ColorPredicate.TO_BE_PROVED_STATE, message.getLocation(), message.getID());
-                            proverJob.getObsMap().put(new Integer(message.getID()), obStatus);
+                            proverJob.getObsMap().put(Integer.valueOf(message.getID()), obStatus);
                         }
                     }
                 };
@@ -1050,8 +1049,7 @@ public class ProverHelper
              * Update the state of the obligation. The obligation will
              * inform its parents step that its status should be updated.
              */
-            final ObligationStatus obStatus = (ObligationStatus) proverJob.getObsMap()
-                    .get(new Integer(message.getID()));
+            final ObligationStatus obStatus = (ObligationStatus) proverJob.getObsMap().get(Integer.valueOf(message.getID()));
 
             /*
              * If the obligation does not yet have a parent, then
@@ -1086,7 +1084,7 @@ public class ProverHelper
                     // and to raise an error if insanity is found.
                     while (searchLine >= 0)
                     {
-                        StepTuple stepTuple = proverJob.getLeafStepMap().get(new Integer(searchLine));
+                        StepTuple stepTuple = proverJob.getLeafStepMap().get(Integer.valueOf(searchLine));
                         if (stepTuple != null)
                         {
                             obligation.setParent(stepTuple);
@@ -1175,7 +1173,7 @@ public class ProverHelper
 
                 // the marker created
                 Map<String, Integer> markerAttributes = new HashMap<String, Integer>();
-                markerAttributes.put(OBLIGATION_ID, new Integer(id));
+                markerAttributes.put(OBLIGATION_ID, Integer.valueOf(id));
                 // markerAttributes.put(OBLIGATION_STATE, new Integer(initialState));
                 // markerAttributes.put(OBLIGATION_LOCATION, locToString(location));
 
@@ -1186,8 +1184,8 @@ public class ProverHelper
                  * For marking a region that starts at offset o and has length l, the
                  * start character is o and the end character is o+l.
                  */
-                markerAttributes.put(IMarker.CHAR_START, new Integer(obRegion.getOffset()));
-                markerAttributes.put(IMarker.CHAR_END, new Integer(obRegion.getOffset() + obRegion.getLength()));
+                markerAttributes.put(IMarker.CHAR_START, Integer.valueOf(obRegion.getOffset()));
+                markerAttributes.put(IMarker.CHAR_END, Integer.valueOf(obRegion.getOffset() + obRegion.getLength()));
 
                 IMarker marker = module.createMarker(OBLIGATION_MARKER);
                 marker.setAttributes(markerAttributes);
@@ -1234,7 +1232,7 @@ public class ProverHelper
      */
     public static void newStepStatusMessage(StepStatusMessage status, ProverJob proverJob)
     {
-        proverJob.getStepMessageMap().put(new Integer(status.getLocation().beginLine()), status);
+        proverJob.getStepMessageMap().put(Integer.valueOf(status.getLocation().beginLine()), status);
 
         /*
          * The following was commented out because the proof step status markers are now always
@@ -1503,9 +1501,9 @@ public class ProverHelper
                     {
                         // the attributes for the new marker to be created
                         Map<String, Integer> markerAttributes = new HashMap<String, Integer>(2);
-                        markerAttributes.put(IMarker.CHAR_START, new Integer(newCharStart));
-                        markerAttributes.put(IMarker.CHAR_END, new Integer(newCharEnd));
-                        markerAttributes.put(IMarker.LINE_NUMBER, new Integer(stringToLoc(
+                        markerAttributes.put(IMarker.CHAR_START, Integer.valueOf(newCharStart));
+                        markerAttributes.put(IMarker.CHAR_END, Integer.valueOf(newCharEnd));
+                        markerAttributes.put(IMarker.LINE_NUMBER, Integer.valueOf(stringToLoc(
                                 sanyMarker.getAttribute(SANY_LOC_ATR, "")).beginLine()));
 
                         // create the new marker and set its attributes
@@ -1918,7 +1916,7 @@ public class ProverHelper
     public static void setThreadsOption(List<String> command)
     {
         String numThreadsText = ProverUIActivator.getDefault().getPreferenceStore().getString(
-                ProverSecondPreferencePage.NUM_THREADS_KEY);
+        		MainProverPreferencePage.NUM_THREADS_KEY);
         if (numThreadsText.trim().length() == 0)
         {
             return;
@@ -1935,7 +1933,7 @@ public class ProverHelper
     public static void setSolverOption(List<String> command)
     {
         String solverText = ProverUIActivator.getDefault().getPreferenceStore().getString(
-                ProverSecondPreferencePage.SOLVER_KEY);
+        		MainProverPreferencePage.SOLVER_KEY);
         if (solverText.trim().length() == 0)
         {
             return;
@@ -1952,7 +1950,7 @@ public class ProverHelper
     public static void setSafeFPOption(List<String> command)
     {
         boolean safefp = ProverUIActivator.getDefault().getPreferenceStore().getBoolean(
-                ProverSecondPreferencePage.SAFEFP_KEY);
+        		MainProverPreferencePage.SAFEFP_KEY);
         if (safefp)
         {
             command.add(ITLAPMOptions.SAFEFP);

@@ -5,7 +5,7 @@ Element-Type: testsuite
 Element-Version: 2.0
 Id: _XtCd4APNEemtrbArmQOOJA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/10/19, 4:39 PM
+Save-Time: 8/3/19, 4:37 PM
 
 ------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8
 Content-Type: text/testcase
@@ -46,5 +46,6 @@ _HJaIUBU4EemG79v6PBILBA	// kind: 'test' name: 'TLA.Functional.TLA.Options.Defaul
 _s4DEYBXnEemrGZBXFuwIoA	// kind: 'test' name: 'TLA.Functional.Model.Results.Defaults' path: 'TLA_Functional_Model_Results_Defaults.test'
 _b7FWkFSpEemyiKKvW3h83Q	// kind: 'test' name: 'TLA.Functional.Delete.Additional.Module' path: 'TLA.Functional.Delete.Additional.Module.test'
 _JObaIIvTEemXYtOZX2zpng	// kind: 'test' name: 'TLA_Functional_ECE_Placement' path: 'TLA_Functional_ECE_Placement.test'
+_RifTcLZDEemcF9BXFSE9ew	// kind: 'test' name: 'TLA.Functional.TLAPS' path: 'TLA.Functional.TLAPS.test'
 
 ------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8--

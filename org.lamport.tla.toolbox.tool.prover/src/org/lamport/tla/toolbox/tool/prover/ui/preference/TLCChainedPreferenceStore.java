@@ -37,7 +37,7 @@ public class TLCChainedPreferenceStore implements IPreferenceStore {
 	private IPreferenceStore[] fPreferenceStores;
 
 	/** Listeners on this chained preference store. */
-	private ListenerList fClientListeners= new ListenerList(ListenerList.IDENTITY);
+	private ListenerList<IPropertyChangeListener> fClientListeners= new ListenerList<IPropertyChangeListener>(ListenerList.IDENTITY);
 
 	/** Listeners on the child preference stores. */
 	private List<PropertyChangeListener> fChildListeners= new ArrayList<PropertyChangeListener>();
@@ -504,13 +504,13 @@ public class TLCChainedPreferenceStore implements IPreferenceStore {
 		if (thisValue instanceof Boolean)
 			return store.getBoolean(property) ? Boolean.TRUE : Boolean.FALSE;
 		else if (thisValue instanceof Double)
-			return new Double(store.getDouble(property));
+			return Double.valueOf(store.getDouble(property));
 		else if (thisValue instanceof Float)
-			return new Float(store.getFloat(property));
+			return Float.valueOf(store.getFloat(property));
 		else if (thisValue instanceof Integer)
-			return new Integer(store.getInt(property));
+			return Integer.valueOf(store.getInt(property));
 		else if (thisValue instanceof Long)
-			return new Long(store.getLong(property));
+			return Long.valueOf(store.getLong(property));
 		else if (thisValue instanceof String)
 			return store.getString(property);
 
@@ -529,9 +529,9 @@ public class TLCChainedPreferenceStore implements IPreferenceStore {
 		// Redirect to the corresponding preference store based on key
 		// while assuming the texteditor pref is at array pos 0
 		if ((property.toLowerCase().contains("color") && !property
-				.endsWith(ProverPreferencePage.PREDICATE))
-				|| property.contains(ProverPreferencePage.APPLIES_TO_LEAF_ONLY)
-				|| property.contains(ProverPreferencePage.STEP_STATUS_OVERVIEW)) {
+				.endsWith(ColorPredicatePreferencePage.PREDICATE))
+				|| property.contains(ColorPredicatePreferencePage.APPLIES_TO_LEAF_ONLY)
+				|| property.contains(ColorPredicatePreferencePage.STEP_STATUS_OVERVIEW)) {
 			return fPreferenceStores[0];
 		} else {
 			return fPreferenceStores[1];

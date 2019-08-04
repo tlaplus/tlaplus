@@ -47,7 +47,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatus;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.ObligationStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepStatusMessage;
 import org.lamport.tla.toolbox.tool.prover.ui.output.data.StepTuple;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.ColorPredicatePreferencePage;
 import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
 import org.lamport.tla.toolbox.tool.prover.ui.util.TLAPMExecutableLocator;
 import org.lamport.tla.toolbox.tool.prover.ui.view.ObligationsView;
@@ -272,14 +272,14 @@ public class ProverJob extends Job {
          * 
          * Note that color numbers for the preference page are 1-based.
          */
-        colorPredicates = new ColorPredicate[ProverPreferencePage.NUM_STATUS_COLORS];
+        colorPredicates = new ColorPredicate[ColorPredicatePreferencePage.NUM_STATUS_COLORS];
 
         // the preference store containing color predicate preferences
         IPreferenceStore store = ProverUIActivator.getDefault().getPreferenceStore();
         for (int i = 1; i <= colorPredicates.length; i++)
         {
-            String predicate = store.getString(ProverPreferencePage.getColorPredPrefName(i));
-            boolean appliesToLeafOnly = store.getBoolean(ProverPreferencePage.getAppliesToLeafPrefName(i));
+            String predicate = store.getString(ColorPredicatePreferencePage.getColorPredPrefName(i));
+            boolean appliesToLeafOnly = store.getBoolean(ColorPredicatePreferencePage.getAppliesToLeafPrefName(i));
             colorPredicates[i - 1] = new ColorPredicate((appliesToLeafOnly ? "leaf " : "") + predicate);
         }
 

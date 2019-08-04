@@ -660,15 +660,23 @@
          point="org.eclipse.ui.preferencePages">
       <page
             category="toolbox.ui.preferences.GeneralPreferencePage"
-            class="org.lamport.tla.toolbox.tool.prover.ui.preference.ProverPreferencePage"
-            id="org.lamport.tla.toolbox.tool.prover.ProverPreferencePage"
+            class="org.lamport.tla.toolbox.tool.prover.ui.preference.MainProverPreferencePage"
+            id="org.lamport.tla.toolbox.tool.prover.MainProverPreferencePage"
             name="TLAPS">
       </page>
       <page
-            category="org.lamport.tla.toolbox.tool.prover.ProverPreferencePage"
-            class="org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage"
-            id="org.lamport.tla.toolbox.tool.prover.ProverSecondPreferencePage"
-            name="Additional Preferences">
+            category="org.lamport.tla.toolbox.tool.prover.MainProverPreferencePage"
+            class="org.lamport.tla.toolbox.tool.prover.ui.preference.ColorPredicatePreferencePage"
+            id="org.lamport.tla.toolbox.tool.prover.ColorPredicatePreferencePage"
+            name="Color Predicates">
+      </page>
+      <!-- This was originally called "Additional Preferences" but the wizards at Eclipse thought to themselves
+      		'No one will ever need to order preference pages beyond natural ordering by title!' -->
+      <page
+            category="org.lamport.tla.toolbox.tool.prover.MainProverPreferencePage"
+            class="org.lamport.tla.toolbox.tool.prover.ui.preference.AdditionalPreferencesPage"
+            id="org.lamport.tla.toolbox.tool.prover.AdditionalPreferencesPage"
+            name="Other Preferences">
       </page>
    </extension>
    <extension

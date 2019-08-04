@@ -91,7 +91,7 @@ import org.lamport.tla.toolbox.tool.prover.ui.output.data.ColorPredicate;
  * @author Daniel Ricketts
  *
  */
-public class ProverPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
+public class ColorPredicatePreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
 
     public static final String PREDICATE = "predicate";
@@ -112,7 +112,7 @@ public class ProverPreferencePage extends FieldEditorPreferencePage implements I
      */
     public static final String COLOR_PREF_KEY_PREFIX = STEP_STATUS_COLOR;
 
-    public ProverPreferencePage()
+    public ColorPredicatePreferencePage()
     {
         super(GRID);
         // Using somebody's else PreferenceStore is not a good idea!

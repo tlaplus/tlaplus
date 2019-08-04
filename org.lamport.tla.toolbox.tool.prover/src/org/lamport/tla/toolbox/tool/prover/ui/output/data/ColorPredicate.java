@@ -67,7 +67,7 @@ package org.lamport.tla.toolbox.tool.prover.ui.output.data;
 
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
-import org.lamport.tla.toolbox.tool.prover.ui.preference.ProverSecondPreferencePage;
+import org.lamport.tla.toolbox.tool.prover.ui.preference.AdditionalPreferencesPage;
 
 /**
  * @author lamport
@@ -225,7 +225,7 @@ public class ColorPredicate
             if (macroName.equalsIgnoreCase(USER_DEFINED[i]))
             {
                 return ProverUIActivator.getDefault().getPreferenceStore().getString(
-                        ProverSecondPreferencePage.USER_DEFINED_PREDICATE[i]);
+                        AdditionalPreferencesPage.USER_DEFINED_PREDICATE[i]);
             }
         }
         return null;
