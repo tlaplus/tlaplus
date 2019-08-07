@@ -185,12 +185,11 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
     /**
      * 
      */
-    public IReconciler getReconciler(ISourceViewer sourceViewer)
-    {
-        TLAReconcilingStrategy strategy = new TLAReconcilingStrategy();
+    @Override
+	public IReconciler getReconciler(final ISourceViewer sourceViewer) {
+        final TLAReconcilingStrategy strategy = new TLAReconcilingStrategy();
         strategy.setEditor(editor);
-        MonoReconciler reconciler = new MonoReconciler(strategy, false);
-        return reconciler;
+        return new MonoReconciler(strategy, false);
     }
 
     /**

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -81,6 +80,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -91,7 +91,6 @@ import org.lamport.tla.toolbox.editor.basic.actions.ToggleCommentAction;
 import org.lamport.tla.toolbox.editor.basic.pcal.IPCalReservedWords;
 import org.lamport.tla.toolbox.editor.basic.proof.IProofFoldCommandIds;
 import org.lamport.tla.toolbox.editor.basic.proof.TLAProofFoldingStructureProvider;
-import org.lamport.tla.toolbox.editor.basic.proof.TLAProofPosition;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -132,8 +131,6 @@ public class TLAEditor extends TextEditor
     private Image rootImage = TLAEditorActivator.imageDescriptorFromPlugin(TLAEditorActivator.PLUGIN_ID,
             "/icons/root_file.gif").createImage();
 
-    // currently installed annotations
-    private Annotation[] oldAnnotations;
     // annotation model
     private ProjectionAnnotationModel annotationModel;
     // proof structure provider
@@ -198,8 +195,8 @@ public class TLAEditor extends TextEditor
         }
     }
 
-    protected TLASourceViewerConfiguration getTLASourceViewerConfiguration(IPreferenceStore preferenceStore) {
-    	return new TLASourceViewerConfiguration(preferenceStore, this); 
+    protected TLASourceViewerConfiguration getTLASourceViewerConfiguration(final IPreferenceStore preferenceStore) {
+    	return new TLASourceViewerConfiguration(preferenceStore, this);
     }
     
     /*
@@ -319,26 +316,30 @@ public class TLAEditor extends TextEditor
         return viewer;
     }
 
-    public void createPartControl(Composite parent)
+    @Override
+    public void createPartControl(final Composite parent)
     {
         super.createPartControl(parent);
         /*
-         * Add projection support (e.G. for folding) 
+         * Add projection support (i.e. for folding) 
          */
-        ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+        final ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
         projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error"); //$NON-NLS-1$
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
         projectionSupport.install();
-        viewer.doOperation(ProjectionViewer.TOGGLE);
+        
+		if (viewer.canDoOperation(ProjectionViewer.TOGGLE)) {
+			viewer.doOperation(ProjectionViewer.TOGGLE);
+		}
 
         // model for adding projections (folds)
-        this.annotationModel = viewer.getProjectionAnnotationModel();
+        annotationModel = viewer.getProjectionAnnotationModel();
 
         // this must be instantiated after annotationModel so that it does
         // not call methods that use annotation model when the model is still null
-        this.proofStructureProvider = new TLAProofFoldingStructureProvider(this);
-
+        proofStructureProvider = new TLAProofFoldingStructureProvider(this);
+        
         // refresh the editor in case it should be
         // read only
         refresh();
@@ -640,40 +641,6 @@ public class TLAEditor extends TextEditor
     }
 
     /**
-     * Update the annotation structure in the editor.
-     * 
-     * This is only currently used by comment
-     * folding and should be removed because it
-     * is incorrect.
-     * 
-     * @param positions
-     * @deprecated
-     */
-    public void updateFoldingStructure(List<Position> positions)
-    {
-    	if (annotationModel == null) {
-    		return;
-    	}
-
-        Annotation[] annotations = new Annotation[positions.size()];
-
-        // this will hold the new annotations along
-        // with their corresponding positions
-        Map<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
-
-        for (int i = 0; i < positions.size(); i++)
-        {
-            ProjectionAnnotation annotation = new ProjectionAnnotation();
-            newAnnotations.put(annotation, positions.get(i));
-            annotations[i] = annotation;
-        }
-        // If this method is called too early, then annotationModel
-        // can be null. This should obviously be addressed.
-        this.annotationModel.modifyAnnotations(oldAnnotations, newAnnotations, null);
-        oldAnnotations = annotations;
-    }
-
-    /**
      * Calls {@link ProjectionAnnotationModel#modifyAnnotations(Annotation[], Map, Annotation[])} with the
      * arguments.
      * 
@@ -683,8 +650,8 @@ public class TLAEditor extends TextEditor
      * @param deletions
      * @param additions
      */
-    public void modifyProjectionAnnotations(Annotation[] deletions, Map<ProjectionAnnotation, TLAProofPosition> additions)
-    {
+	public void modifyProjectionAnnotations(final Annotation[] deletions,
+			final Map<ProjectionAnnotation, ? extends Position> additions) {
         this.annotationModel.modifyAnnotations(deletions, additions, null);
     }
     
@@ -904,9 +871,8 @@ public class TLAEditor extends TextEditor
 			}
 		}
 		
-		// fall back to original marker if the TLAtoPCalMarker didn't work or no
-		// TLAtoPCalMarker
-		super.gotoMarker(marker);
+		// fall back to original marker if the TLAtoPCalMarker didn't work or no TLAtoPCalMarker
+		((IGotoMarker)getAdapter(IGotoMarker.class)).gotoMarker(marker);
 	}
 
 	/**

@@ -257,12 +257,7 @@ public class TLAProofPosition extends Position implements IProjectionPosition
          */
         length = toFold.getOffset() + toFold.getLength() - offset;
 
-        if (toFold != null)
-        {
-            return new IRegion[] { toFold };
-        }
-
-        return null;
+        return new IRegion[] { toFold };
     }
 
     public ProjectionAnnotation getAnnotation()

@@ -14,9 +14,12 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.TextEditorAction;
 
 /**
- * Define folding region action
+ * Define folding region action.
+ * 
+ * Deprecated in August 2019 as it is not being used in our codebase. (At one time is was in TLAEditor.createActions().)
+ * 
  * @author Simon Zambrovski
- * @version $Id$
+ * @deprecated
  */
 public class DefineFoldingRegionAction extends TextEditorAction
 {

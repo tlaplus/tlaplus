@@ -236,9 +236,15 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
      * in the editor if the parse result points to the {@link ModuleNode} representing
      * the file in the editor for this class.
      */
-    public void newParseResult(ParseResult parseResult)
-    {
-
+	public void newParseResult(ParseResult parseResult) {
+		if (editor == null) {
+			Activator.getDefault().logDebug("Null editor in proof structure provider.");
+			return;
+		} else if (editor.getEditorInput() == null) {
+			Activator.getDefault().logDebug("Null editor input in proof structure provider.");
+			return;
+		}
+		
     	if (!(editor.getEditorInput() instanceof IFileEditorInput)) {
 			// input can be the file history which isn't an IFileEditorInput and
 			// thus cannot be parsed. There is no point parsing every revision
@@ -261,17 +267,6 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
 
         String moduleName = ResourceHelper.getModuleName(((IFileEditorInput) editor.getEditorInput()).getFile());
 
-        // TLAEditorActivator.getDefault().logDebug("Proof structure provider for " + moduleName + " recieved a parse result.");
-
-        if (editor == null)
-        {
-            Activator.getDefault().logDebug("Null editor in proof structure provider.");
-            return;
-        } else if (editor.getEditorInput() == null)
-        {
-            Activator.getDefault().logDebug("Null editor input in proof structure provider.");
-            return;
-        }
 
         // check if the editor is dirty or the editor document has been modified
         // or saved before SANY finished
