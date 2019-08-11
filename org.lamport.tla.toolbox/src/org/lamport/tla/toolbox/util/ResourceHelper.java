@@ -113,7 +113,7 @@ public class ResourceHelper {
     /**
      * 
      */
-    private static final String TOOLBOX_DIRECTORY_SUFFIX = ".toolbox";
+    public static final String TOOLBOX_DIRECTORY_SUFFIX = ".toolbox";
 
     /**
      * TLA extension

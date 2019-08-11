@@ -7,6 +7,7 @@ Bundle-Activator: org.lamport.tla.toolbox.tool.tlc.TLCActivator
 Bundle-Vendor: Simon Zambrovski, Leslie Lamport
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
+ org.eclipse.core.filesystem;bundle-version="1.7.200",
  org.eclipse.debug.core,
  org.lamport.tla.toolbox,
  org.eclipse.jdt.launching;bundle-version="3.4.1",

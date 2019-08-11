@@ -29,6 +29,8 @@ package org.lamport.tla.toolbox.tool.tlc.model;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,6 +49,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.NotFileFilter;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -73,6 +76,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.internal.core.LaunchConfiguration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
@@ -120,6 +124,8 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      */
     private static final String TRACE_EXPLORER_MARKER = "org.lamport.tla.toolbox.tlc.traceExplorerMarker";
 
+    private static final Collection<Model> EMPTY_MODEL_SET = Collections.unmodifiableList(new ArrayList<>());
+    
     public static final String SPEC_MODEL_DELIM = "___";
 
 	static String sanitizeName(String aModelName) {
@@ -253,7 +259,8 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			Assert.isTrue(launchName.contains(SPEC_MODEL_DELIM));
 			
 			final Spec spec = ToolboxHandle.getSpecByName(launchName.split(SPEC_MODEL_DELIM)[0]);
-			Assert.isNotNull(spec, "Failed to lookup spec with name " + launchName.split(SPEC_MODEL_DELIM)[0]);
+			Assert.isNotNull(spec, "Failed to lookup spec with name " + launchName.split(SPEC_MODEL_DELIM)[0]
+										+ " (" + launchName + ")");
 			
 			this.spec = spec.getAdapter(TLCSpec.class);
 		}
@@ -343,7 +350,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		this.spec = null;
 		
 		for (Model snapshot : snapshots) {
-			snapshot.specRename(newSpec);;
+			snapshot.specRename(newSpec);
 		}
 	}
 
@@ -357,9 +364,32 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			copy.setContainer(newSpec.getProject());
 			final ILaunchConfiguration renamed = copy.doSave();
 
+			@SuppressWarnings("restriction")	// discouraged access on getFileStore()
+			final IFileStore ifs = ((LaunchConfiguration)launchConfig).getFileStore();
+			
+			// delete the copy of the old model in the new toolbox directory
+			if (ifs != null) {
+				final IPath newToolboxName = renamed.getFile().getFullPath().removeLastSegments(1);
+				final URI u = ifs.toURI();
+				final File oldLaunchConfigFile = new File(u);
+				final File grandParentDirectory = oldLaunchConfigFile.getParentFile().getParentFile();
+				final String newToolboxDirectoryName = newToolboxName.toString() + ResourceHelper.TOOLBOX_DIRECTORY_SUFFIX;
+				final File fileToDelete = Paths.get(grandParentDirectory.getAbsolutePath(),
+													newToolboxDirectoryName,
+													oldLaunchConfigFile.getName()).toFile();
+				
+				if (!fileToDelete.delete()) {
+					TLCActivator.logInfo("Could not delete old launch file [" + fileToDelete.getAbsolutePath()
+											+ "] - will attempt on app exit, which is better than nothing.");
+					fileToDelete.deleteOnExit();
+				}
+			} else {
+				TLCActivator.logInfo("Could not get filestore for the original launch config; this is problematic.");
+			}
+
 			// delete the old model
-			this.launchConfig.delete();
-			this.launchConfig = renamed;
+			launchConfig.delete();
+			launchConfig = renamed;
 		} catch (CoreException e) {
 			TLCActivator.logError("Error renaming model.", e);
 		}
@@ -469,6 +499,11 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 	
 	public Collection<Model> getSnapshots() {
+		if (isSnapshot()) {
+			// Snapshots do not have snapshots
+			return EMPTY_MODEL_SET;
+		}
+		
 		return getSpec().getModels(Pattern.quote(getName()) + SNAPSHOT_REGEXP, true).values();
 	}
 
