@@ -17,6 +17,16 @@
  *   the error.  I left a couple of NewDecompose... in comments that seemed to accompany
  *   commented-out code from that file.
  *     
+ * BUG REPORTED in August 2019 
+ *   If a definition in an instantiated module contains an expression like 2 ++ 2
+ *   and the command expands that definition, it produces an expansion that might
+ *   contain the expression 2 I!++ 2 which is illegal, instead of the correct
+ *   expansion I++(2, 2).  This may be difficult to fix.  However, it shouldn't
+ *   be hard to fix what will probably be the most common case:  If the expression
+ *   is 2 + 2, where + is the operator imported from the Standard Module Integers or
+ *   Naturals, and that same + is imported into the current module, then I!+ is
+ *   equivalent to +, so the current 2 I!+ 2 can be changed to 2 + 2.
+ * 
  * IN MIDDLE OF
  * Fixing bug on line 428 of Test.tla.  Will try the approach of adding
  * a global Renaming to the decomposition state to keep track of all renaming in
