@@ -30,7 +30,7 @@ import org.lamport.tla.toolbox.editor.basic.pcal.IPCalReservedWords;
  */
 public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
 	// Per BoxedCommentHandler, a delimiter is "(" followed by three "*", then 0-N "*", and finally suffixed with ")"
-	private static final String BLOCK_COMMENT_DELIMITER_REGEX = "^\\(\\*{3}\\**\\)$";
+	private static final String BLOCK_COMMENT_DELIMITER_REGEX = "^[ \\t]*\\(\\*{3}\\**\\)\\s*$";
 	
 	
     private IDocument document;
@@ -126,11 +126,11 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 			if (find != null) {
 				final int pcalStartLocation = find.getOffset();
 				
-				find = search.find(pcalStartLocation, "^\\(\\*", false, true, false, true);
+				find = search.find(pcalStartLocation, "^\\(\\*.*[^\\)]$", false, true, false, true);
 				if (find != null) {
 					final int startLocation = find.getOffset();
 					
-					find = search.find(pcalStartLocation, "\\*\\)$", true, true, false, true);
+					find = search.find(pcalStartLocation, "^\\*.*\\*\\)$", true, true, false, true);
 					addProjectAdditionToMap(additions, startLocation, find);
 				}
 			}
