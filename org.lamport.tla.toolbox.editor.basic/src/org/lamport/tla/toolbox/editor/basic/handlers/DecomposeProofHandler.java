@@ -5,7 +5,7 @@
  *   expands definitions from the instantiated module by replacing the parameter by
  *   the text of the INSTANCE statement.  The problem is manifest in a bad argument
  *   passed to substInNodeToInstanceSub, and that manifestation is explained in comments
- *   starting around line 5333.  (Search for "22 March 2019".)  There are also comments containing 
+ *   starting around line 5342.  (Search for "22 March 2019".)  There are also comments containing 
  *   and explaining an unsuccessful attempt to fix the problem.
  * 
  * CHANGE MADE BY LL on 18 March 2019
@@ -17,7 +17,7 @@
  *   the error.  I left a couple of NewDecompose... in comments that seemed to accompany
  *   commented-out code from that file.
  *     
- * BUG REPORTED in August 2019 
+ * BUG DISCOVERED in August 2019 
  *   If a definition in an instantiated module contains an expression like 2 ++ 2
  *   and the command expands that definition, it produces an expansion that might
  *   contain the expression 2 I!++ 2 which is illegal, instead of the correct
