@@ -32,6 +32,9 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	// Per BoxedCommentHandler, a delimiter is "(" followed by three "*", then 0-N "*", and finally suffixed with ")"
 	private static final String BLOCK_COMMENT_DELIMITER_REGEX = "^[ \\t]*\\(\\*{3}\\**\\)\\s*$";
 	
+	private static final String PCAL_TRANSLATION_PREFIX_REGEX = "^\\\\\\* BEGIN TRANSLATION$";
+	private static final String PCAL_TRANSLATION_SUFFIX_REGEX = "^\\\\\\* END TRANSLATION$";
+	
 	
     private IDocument document;
     /* the currently displayed projection annotations */
@@ -114,7 +117,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 		
 		final HashMap<ProjectionAnnotation, Position> additions = new HashMap<>();
 
-		// PCAL locations
+		// PCal location
 		final FindReplaceDocumentAdapter search = new FindReplaceDocumentAdapter(document);
 		try {
 			IRegion find = search.find(0, IPCalReservedWords.ALGORITHM, true, true, false, false);
@@ -132,6 +135,21 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 					
 					find = search.find(pcalStartLocation, "^\\*.*\\*\\)$", true, true, false, true);
 					addProjectAdditionToMap(additions, startLocation, find);
+				}
+			}
+		} catch (final BadLocationException ble) { }
+		
+		
+		// Translated PCal location
+		try {
+			IRegion find = search.find(0, PCAL_TRANSLATION_PREFIX_REGEX, true, true, false, true);
+			
+			if (find != null) {
+				final int translationStartLocation = find.getOffset();
+				
+				find = search.find(translationStartLocation, PCAL_TRANSLATION_SUFFIX_REGEX, true, true, false, true);
+				if (find != null) {
+					addProjectAdditionToMap(additions, translationStartLocation, find);
 				}
 			}
 		} catch (final BadLocationException ble) { }
