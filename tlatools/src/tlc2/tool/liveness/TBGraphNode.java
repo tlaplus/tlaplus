@@ -122,11 +122,14 @@ public class TBGraphNode {
 	/**
 	 * @see TBGraph#toDotViz()
 	 */
-	public String toDotViz() {
+	public String toDotViz(final boolean isInitNode) {
 		final String label = "\"Id: " + this.index + "\n" + par.toDotViz() + "\"";
 		
 		final StringBuffer buf = new StringBuffer(nextSize());
 		buf.append(this.index + " [label=" + label + "]\n"); // nodes label
+		if (isInitNode) {
+			buf.append("[style = filled]\n");
+		}
 		for (int i = 0; i < nextSize(); i++) {
 			final TBGraphNode successor = nextAt(i);
 			buf.append(this.index + " -> " + successor.index);

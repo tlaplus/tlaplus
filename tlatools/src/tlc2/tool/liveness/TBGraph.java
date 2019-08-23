@@ -83,6 +83,10 @@ public class TBGraph extends Vect<TBGraphNode> {
 	public int getInitCnt() {
 		return this.initCnt;
 	}
+	
+	private boolean isInitNode(TBGraphNode aNode) {
+		return aNode.getIndex() < getInitCnt();
+	}
 
 	public final void toString(StringBuffer sb, String padding) {
 		for (int i = 0; i < this.size(); i++) {
@@ -113,7 +117,8 @@ public class TBGraph extends Vect<TBGraphNode> {
 		sb.append("nodesep = 0.7\n");
 		sb.append("rankdir=LR;\n"); // Left to right rather than top to bottom
 		for(int i = 0; i < size(); i++) {
-			sb.append(getNode(i).toDotViz());
+			final TBGraphNode node = getNode(i);
+			sb.append(node.toDotViz(isInitNode(node)));
 		}
 		sb.append("}");
 		return sb.toString();
