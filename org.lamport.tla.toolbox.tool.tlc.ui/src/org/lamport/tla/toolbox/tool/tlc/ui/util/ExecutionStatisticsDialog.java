@@ -164,16 +164,21 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 		st.setEditable(false);
 		st.setText(txt);
 		
-		final StyleRange[] ranges = new StyleRange[2];
+		final StyleRange[] ranges = new StyleRange[3];
 		ranges[0] = new StyleRange(txt.indexOf("(TLC) execution statistics"), "(TLC) execution statistics".length(), null, null);
 		ranges[0].underline = true;
 		ranges[0].underlineStyle = SWT.UNDERLINE_LINK;
 		ranges[0].data = "https://exec-stats.tlapl.us";
-				
-		ranges[1] = new StyleRange(txt.indexOf("git commit SHA"), "git commit SHA".length(), null, null);
+		
+		ranges[1] = new StyleRange(txt.indexOf("publicly available"), "publicly available".length(), null, null);
 		ranges[1].underline = true;
 		ranges[1].underlineStyle = SWT.UNDERLINE_LINK;
-		ranges[1].data = "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects";
+		ranges[1].data = "https://exec-stats.tlapl.us/tlaplus.csv";
+				
+		ranges[2] = new StyleRange(txt.indexOf("git commit SHA"), "git commit SHA".length(), null, null);
+		ranges[2].underline = true;
+		ranges[2].underlineStyle = SWT.UNDERLINE_LINK;
+		ranges[2].data = "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects";
 
 		st.setStyleRanges(ranges);
 		st.addMouseListener(new MouseAdapter() {
@@ -201,12 +206,14 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 		switch (esc.get()) {
 		case ON:
 			return String.format(
-					"Thank you for sharing (TLC) execution statistics with installation identifier\n%s.\n\nExecution Statistics help us make informed decisions about future research and\ndevelopment directions. Execution statistics contain the following information:\n\n",
+					"Thank you for sharing (TLC) execution statistics with installation identifier\n%s.\n\nExecution Statistics help us make informed decisions about future research and\ndevelopment directions. Execution statistics are made publicly available on the\nweb and contain the following information:\n\n",
 					esc.getIdentifier());
 		case RANDOM_IDENTIFIER:
-			return "Thank you for sharing (TLC) execution statistics. Execution Statistics help us\nmake informed decisions about future research anddevelopment directions.\nExecution statistics contain the following information:\n\n";
+			return "Thank you for sharing (TLC) execution statistics. Execution Statistics help us\nmake informed decisions about future research and development directions.\nExecution statistics are made publicly available on the web and contain the\nfollowing information:\n\n";
 		}
-		return "Please opt-in and share (TLC) execution statistics. Execution statistics contain\nthe following information:\n\n";
+		return "Please opt-in and share (TLC) execution statistics. "
+				+ "Execution statistics are made\npublicly available on the web "
+				+ "and contain the following information:\n\n";
 	}
 
 	@Override
