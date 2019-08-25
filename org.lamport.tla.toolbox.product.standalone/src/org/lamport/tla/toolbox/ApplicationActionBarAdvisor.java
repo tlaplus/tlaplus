@@ -3,7 +3,9 @@ package org.lamport.tla.toolbox;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
@@ -45,8 +47,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     /* (non-Javadoc)
      * @see org.eclipse.ui.application.ActionBarAdvisor#makeActions(org.eclipse.ui.IWorkbenchWindow)
      */
-    protected void makeActions(IWorkbenchWindow window)
-    {
+    protected void makeActions(final IWorkbenchWindow window) {
         helpContentsAction = ActionFactory.HELP_CONTENTS.create(window);
         register(helpContentsAction);
 
@@ -84,14 +85,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         resetPerspectiveAction = ActionFactory.RESET_PERSPECTIVE.create(window);
         register(resetPerspectiveAction);
         
-        backwardHistoryAction = ActionFactory.BACKWARD_HISTORY
-                .create(window);
+        backwardHistoryAction = ActionFactory.BACKWARD_HISTORY.create(window);
+        backwardHistoryAction.setId(IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY);
         register(backwardHistoryAction);
         
-        forwardHistoryAction= ActionFactory.FORWARD_HISTORY
-                .create(window);
+        forwardHistoryAction= ActionFactory.FORWARD_HISTORY.create(window);
+        forwardHistoryAction.setId(IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY);
         register(forwardHistoryAction);
-
     }
 
     /* (non-Javadoc)
