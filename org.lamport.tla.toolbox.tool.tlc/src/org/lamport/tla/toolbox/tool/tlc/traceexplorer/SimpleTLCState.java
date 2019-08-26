@@ -3,6 +3,9 @@ package org.lamport.tla.toolbox.tool.tlc.traceexplorer;
 import java.util.Vector;
 
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
+
+import tlc2.tool.TLCState;
 
 /**
  * A class for representing the elements of a TLC state that
@@ -146,21 +149,24 @@ public class SimpleTLCState
         return (SimpleTLCVariable[]) vars.toArray(new SimpleTLCVariable[vars.size()]);
     }
 
-    public String asFunction() {
+    /**
+     * @see TLCState#asRecord()
+     */
+    public String asRecord() {
     	final StringBuffer buf = new StringBuffer();
-    	buf.append("[");
+    	buf.append(ModelWriter.L_SQUARE_BRACKET);
     	for (int i = 0; i < vars.length; i++) {
     		final SimpleTLCVariable var = vars[i];
     		
 			buf.append(var.getVarName());
-			buf.append(" |-> ");
+			buf.append(ModelWriter.RECORD_ARROW);
 			buf.append(var.getValueAsString());
     		
 			if (i < vars.length - 1) {
-				buf.append(org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.COMMA);
+				buf.append(ModelWriter.COMMA);
 			}
 		}
-    	buf.append("]");
+    	buf.append(ModelWriter.R_SQUARE_BRACKET);
     	return buf.toString();
     }
 }

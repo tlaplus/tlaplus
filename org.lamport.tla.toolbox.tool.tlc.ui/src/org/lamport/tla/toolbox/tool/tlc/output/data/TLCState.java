@@ -26,6 +26,13 @@
 
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.COMMA;
+import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.L_SQUARE_BRACKET;
+import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.QUOTE;
+import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.RECORD_ARROW;
+import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.R_SQUARE_BRACKET;
+import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.SPACE;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IModuleLocatable;
 
 import tla2sany.st.Location;
@@ -239,6 +247,19 @@ public class TLCState implements IModuleLocatable
         return number;
     }
 
+    public final String getName() {
+    	// <Name line 154, col 15 to line 163, col 40 of module DijkstraMutex>
+    	if (label != null && label.length() > 3) {
+			// strip off "<" and ">"
+			return label.substring(2, label.length() - 1)
+					// strip off location if any (none with initial predicate)
+					.replaceAll(getModuleLocation().toString(), "")
+					// extra whitespaces
+					.trim();
+    	}
+    	return label;
+    }
+    
     public final String getLabel()
     {
         return label;
@@ -325,6 +346,74 @@ public class TLCState implements IModuleLocatable
         }
         return result.toString();
     }
+
+    /**
+     * @see SimpleTLCState#asRecord()
+     */
+	public String asRecord(final boolean includeHeader) {
+		final StringBuffer result = new StringBuffer();
+		result.append(L_SQUARE_BRACKET);
+		result.append(CR);
+		
+		if (includeHeader) {
+			result.append(SPACE);
+			result.append("_TEAction");
+			result.append(RECORD_ARROW);
+			
+			result.append(L_SQUARE_BRACKET);
+			result.append(CR);
+			result.append(SPACE).append(SPACE).append(SPACE);
+				result.append("position");
+				result.append(RECORD_ARROW);
+				result.append(getStateNumber());
+				result.append(COMMA).append(CR);
+			
+				result.append(SPACE).append(SPACE).append(SPACE);
+				result.append("name");
+				result.append(RECORD_ARROW);
+				result.append(QUOTE);
+				result.append(getName());
+				result.append(QUOTE);
+				result.append(COMMA).append(CR);
+				
+				result.append(SPACE).append(SPACE).append(SPACE);
+				result.append("location");
+				result.append(RECORD_ARROW);
+				result.append(QUOTE);
+				result.append(getModuleLocation());
+				result.append(QUOTE);
+				
+			result.append(CR);
+			result.append(SPACE).append(R_SQUARE_BRACKET);
+			if (!variables.isEmpty() ) {
+				// only append comma for additional records iff there are any variables to
+				// append.
+				result.append(COMMA).append(CR);
+			}
+		}
+		
+		for (int i = 0; i < variables.size(); i++) {
+			TLCVariable var = variables.get(i);
+			if (var.isTraceExplorerVar()) {
+				result.append(var.getSingleLineName());
+			} else {
+				result.append(var.getName());
+			}
+
+			result.append(RECORD_ARROW);
+
+			if (var.getValue().toString() != null) {
+				result.append(var.getValue().toString());
+			} else {
+				result.append(var.getValue().toSimpleString());
+			}
+			if (i < variables.size() - 1) {
+				result.append(COMMA).append(CR);
+			}
+		}
+		result.append(CR).append(R_SQUARE_BRACKET);
+		return result.toString();
+	}
 
     public String getModelName()
     {

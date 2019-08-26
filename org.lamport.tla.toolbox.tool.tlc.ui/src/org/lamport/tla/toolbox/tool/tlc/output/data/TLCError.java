@@ -38,6 +38,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.Assert;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
 import org.lamport.tla.toolbox.tool.tlc.model.Formula;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 
 /**
  * Representation of the TLC error
@@ -229,6 +230,36 @@ public class TLCError
 			Collections.reverse(states);
 			stateSortDirection = order;
 		}
+	}
+
+	public String toSequenceOfRecords(final boolean includeHeaders) {
+		final StringBuffer buf = new StringBuffer();
+		buf.append(ModelWriter.BEGIN_TUPLE);
+		buf.append(ModelWriter.CR);
+		
+		for (int i = 0; i < states.size(); i++) {
+			final TLCState tlcState = states.get(i);
+			if (tlcState.isBackToState() || tlcState.isStuttering()) {
+				//TODO How to represent these two types of states?
+				continue;
+			}
+			if (tlcState.getVariablesAsList().isEmpty() && includeHeaders == false) {
+				// When an user has used filtering to hide all variables, the error trace here
+				// has no variables. In this case just return empty sequence <<>> by breaking
+				// from the loop.
+				break;
+			}
+			
+			if (i > 0) {
+				// Append a comma if a record is going to be added below.
+				buf.append(ModelWriter.COMMA).append(ModelWriter.CR);
+			}
+			buf.append(tlcState.asRecord(includeHeaders));
+		}
+			
+		buf.append(ModelWriter.CR);
+		buf.append(ModelWriter.END_TUPLE);
+		return buf.toString();
 	}
 
 	public void applyFrom(final TLCError originalErrorWithTrace, final Map<String, Formula> traceExplorerExpressions,

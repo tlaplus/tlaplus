@@ -76,6 +76,7 @@ public class ModelWriter
     public static final String SEP = "----";
     public static final String EQ = " = ";
     public static final String ARROW = " <- ";
+    public static final String RECORD_ARROW = " |-> ";
     public static final String DEFINES = " == ";
     public static final String DEFINES_CR = " ==\n";
     public static final String COMMENT = "\\* ";
@@ -87,6 +88,7 @@ public class ModelWriter
     public static final String BEGIN_TUPLE = "<<";
     public static final String END_TUPLE = ">>";
     public static final String PRIME = "'";
+    public static final String QUOTE = "\"";
     public static final String VARIABLES = "VARIABLES ";
     public static final String TLA_AND = "/\\";
     public static final String TLA_OR = "\\/";
@@ -96,6 +98,9 @@ public class ModelWriter
     public static final String TRACE_NA = "\"--\"";
     public static final String L_PAREN = "(";
     public static final String R_PAREN = ")";
+    public static final String L_SQUARE_BRACKET = "[";
+    public static final String R_SQUARE_BRACKET = "]";
+    
 
     protected final StringBuffer tlaBuffer;
     protected final StringBuffer cfgBuffer;

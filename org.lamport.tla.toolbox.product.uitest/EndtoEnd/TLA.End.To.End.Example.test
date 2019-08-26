@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _0133MAldEem_kewt0eDFQIQ
-Runtime-Version: 2.4.2.201905122359
-Save-Time: 8/3/19, 12:39 PM
+Runtime-Version: 2.4.1.201903190000
+Save-Time: 8/27/19, 12:10 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -95,9 +95,31 @@ try -command {
 
 	wait-te
 
+    // Export trace to clipboard before the validation below sets a selection
+	with [get-view "TLC Errors" | get-section "Error-Trace"] {
+	    get-button "Click to export error-trace to clipboard assequence of records. Shift-click to omit the action's position (_TEPosition), name, and location." 
+	        | click
+	}
+
 	// Validate error trace exploration
 	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 5 1 | click
 	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | contains "[bank_of_boat |->" | verify-true
+	
+	// Paste exported trace into ECE and verify it is valid TLA+
+	with [get-editor "Model_1"] {
+	    click
+	    with [get-section "Evaluate Constant Expression"] {
+	        with [get-text-viewer] {
+	            key-type "M1+v"
+	            type-text "[2]._TEAction.name"
+	        }
+	        get-button "No Behavior Spec" | check
+	    }
+	    get-button "Runs TLC on the model." | click
+	    with [get-section "Evaluate Constant Expression"] {
+	        get-text-viewer "Value:" | get-property text | contains "Next" | verify-true
+	    }
+	}
 } -finally {
 	DeleteSpecNew
 }

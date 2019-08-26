@@ -135,7 +135,7 @@ public class TraceExpressionModelWriter extends ModelWriter {
 		for (int j = 0; j < trace.size(); j++) {
 			final SimpleTLCState state = trace.get(j);
 
-			traceFunctionDef.append(L_PAREN).append(state.asFunction()).append(R_PAREN);
+			traceFunctionDef.append(L_PAREN).append(state.asRecord()).append(R_PAREN);
 
 			if (j < trace.size() - 1) {
 				traceFunctionDef.append(COMMA).append(CR);
