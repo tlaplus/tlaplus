@@ -56,6 +56,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ScrollBar;
@@ -313,7 +314,8 @@ public class TLCErrorView extends ViewPart
         //
         // int sectionFlags = Section.DESCRIPTION | Section.TITLE_BAR
         // | Section.EXPANDED | Section.TWISTIE;
-        toolkit = new FormToolkit(parent.getDisplay());
+        final Display display = parent.getDisplay();
+		toolkit = new FormToolkit(display);
         form = toolkit.createForm(parent);
         form.setText("");
         toolkit.decorateFormHeading(form);
@@ -575,7 +577,7 @@ public class TLCErrorView extends ViewPart
 		final ToolBar toolbar = toolBarManager.createControl(errorTraceSection);
 		final ShiftClickAction action = new ShiftClickAction(
 				"Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)",
-				TLCUIActivator.getImageDescriptor("icons/elcl16/toggle_expand_state.png")) {
+				TLCUIActivator.getImageDescriptor("icons/elcl16/toggle_expand_state.png"), display) {
 			@Override
 			void runWithKey(final boolean pressed) {
 				if (pressed) {
@@ -593,8 +595,6 @@ public class TLCErrorView extends ViewPart
 				}
 			}
 		};
-		parent.getDisplay().addFilter(SWT.KeyDown, action);
-		parent.getDisplay().addFilter(SWT.KeyUp, action);
 		filterErrorTraceAction = new FilterErrorTrace();
 		toolBarManager.add(filterErrorTraceAction);
 		toolBarManager.add(action);
@@ -1607,8 +1607,16 @@ public class TLCErrorView extends ViewPart
 	private static abstract class ShiftClickAction extends Action implements Listener {
 		private boolean holdDown = false;
 
-		public ShiftClickAction(final String text, final ImageDescriptor imageDescriptor) {
+		public ShiftClickAction(final String text, final ImageDescriptor imageDescriptor, final Display display) {
 			super(text, imageDescriptor);
+			display.addFilter(SWT.KeyDown, this);
+			display.addFilter(SWT.KeyUp, this);
+		}
+		
+		public ShiftClickAction(final String text, final int style, final Display display) {
+			super(text, style);
+			display.addFilter(SWT.KeyDown, this);
+			display.addFilter(SWT.KeyUp, this);
 		}
 
 		@Override
