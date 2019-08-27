@@ -651,7 +651,7 @@ public class TLAEditor extends TextEditor
      * @param additions
      */
 	public void modifyProjectionAnnotations(final Annotation[] deletions,
-			final Map<ProjectionAnnotation, ? extends Position> additions) {
+			final Map<? extends ProjectionAnnotation, ? extends Position> additions) {
         this.annotationModel.modifyAnnotations(deletions, additions, null);
     }
     

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
@@ -32,13 +33,13 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	// Per BoxedCommentHandler, a delimiter is "(" followed by three "*", then 0-N "*", and finally suffixed with ")"
 	private static final String BLOCK_COMMENT_DELIMITER_REGEX = "^[ \\t]*\\(\\*{3}\\**\\)\\s*$";
 	
-	private static final String PCAL_TRANSLATION_PREFIX_REGEX = "^\\\\\\*+ BEGIN TRANSLATION$";
-	private static final String PCAL_TRANSLATION_SUFFIX_REGEX = "^\\\\\\*+ END TRANSLATION$";
+	private static final String PCAL_TRANSLATION_PREFIX_REGEX = "^\\\\\\*+ BEGIN TRANSLATION.*$";
+	private static final String PCAL_TRANSLATION_SUFFIX_REGEX = "^\\\\\\*+ END TRANSLATION.*$";
 	
 	
     private IDocument document;
     /* the currently displayed projection annotations */
-    protected final List<ProjectionAnnotation> currentAnnotations = new ArrayList<>();
+    protected final List<TLCProjectionAnnotation> currentAnnotations = new ArrayList<>();
     /* the editor we're bound to */
     private TLAEditor editor;
 	
@@ -91,15 +92,24 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	
 	private void reconcile(final IRegion partition, final DirtyRegion dirtyRegion, final IRegion subRegion) {
 		if (editor != null) {
-			final HashMap<ProjectionAnnotation, Position> additions
+			final HashMap<TLCProjectionAnnotation, Position> regionMap
 													= determineFoldingRegions(partition, dirtyRegion, subRegion);
+			final Annotation[] deletions;
+			final HashMap<TLCProjectionAnnotation, Position> regionsToAdd = new HashMap<>();
+			synchronized (currentAnnotations) {
+				for (final Map.Entry<TLCProjectionAnnotation, Position> me : regionMap.entrySet()) {
+					if (!currentAnnotations.remove(me.getKey())) {
+						regionsToAdd.put(me.getKey(), me.getValue());
+					}
+				}
+				
+				deletions = currentAnnotations.toArray(new Annotation[currentAnnotations.size()]);
+				currentAnnotations.clear();
+				currentAnnotations.addAll(regionMap.keySet());
+			}
 			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 				public void run() {
-					final Annotation[] deletions = currentAnnotations.toArray(new Annotation[currentAnnotations.size()]);
-					editor.modifyProjectionAnnotations(deletions, additions);
-					
-					currentAnnotations.clear();
-					currentAnnotations.addAll(additions.keySet());
+					editor.modifyProjectionAnnotations(deletions, regionsToAdd);
 				}
 			});
 		}
@@ -110,12 +120,12 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
      * 	{@link IDocumentExtension3#computePartitioning(String, int, int, boolean)} and it did a
      * 	terrible job. Now, instead, we're using the Eclipse {@link FindReplaceDocumentAdapter} class.
      */
-	private HashMap<ProjectionAnnotation, Position> determineFoldingRegions(final IRegion partition,
+	private HashMap<TLCProjectionAnnotation, Position> determineFoldingRegions(final IRegion partition,
 			final DirtyRegion dirtyRegion, final IRegion subRegion) {
     	// TODO use regions for tracking in optimizations on re-parses
 //		final boolean isInitialParse = ((partition == null) && (dirtyRegion == null) && (subRegion == null));
 		
-		final HashMap<ProjectionAnnotation, Position> additions = new HashMap<>();
+		final HashMap<TLCProjectionAnnotation, Position> additions = new HashMap<>();
 
 		// PCal location
 		final FindReplaceDocumentAdapter search = new FindReplaceDocumentAdapter(document);
@@ -134,7 +144,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 					final int startLocation = find.getOffset();
 					
 					find = search.find(pcalStartLocation, "^\\*+\\)$", true, true, false, true);
-					addProjectAdditionToMap(additions, startLocation, find);
+					addProjectionAdditionToMap(additions, startLocation, find);
 				}
 			}
 		} catch (final BadLocationException ble) { }
@@ -149,7 +159,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 				
 				find = search.find(translationStartLocation, PCAL_TRANSLATION_SUFFIX_REGEX, true, true, false, true);
 				if (find != null) {
-					addProjectAdditionToMap(additions, translationStartLocation, find);
+					addProjectionAdditionToMap(additions, translationStartLocation, find);
 				}
 			}
 		} catch (final BadLocationException ble) { }
@@ -163,7 +173,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 			
 			while (find != null) {
 				if (inBlock) {
-					addProjectAdditionToMap(additions, lastFoundIndex, find);
+					addProjectionAdditionToMap(additions, lastFoundIndex, find);
 				}
 				
 				inBlock = !inBlock;
@@ -175,18 +185,52 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 		return additions;
     }
 
-	private void addProjectAdditionToMap(final Map<ProjectionAnnotation, Position> additions, final int startLocation,
-										 final IRegion find)
+	private void addProjectionAdditionToMap(final Map<TLCProjectionAnnotation, Position> additions, final int startLocation,
+										    final IRegion find)
 			throws BadLocationException {
 		if (find != null) {
 			final int endLocation = find.getOffset() + find.getLength();
 			final int length = endLocation - startLocation;
 			final int positionLength = length + ((document.getLength() > endLocation) ? 1 : 0);	// +1 to cover the newline
 			final Position position = new Position(startLocation, positionLength);
-			final ProjectionAnnotation annotation = new ProjectionAnnotation();
-			annotation.setText(document.get(startLocation, length));
 
-			additions.put(annotation, position);
+			additions.put(new TLCProjectionAnnotation(document.get(startLocation, length)), position);
+		}
+	}
+	
+	
+	// Nothing in the ProjectionAnnotation hierarchy implements equals/hashCode, we'd like such things to exist
+	//		for reconciliation
+	private static class TLCProjectionAnnotation extends ProjectionAnnotation {
+		TLCProjectionAnnotation(final String text) {
+			setText(text);
+		}
+		
+		@Override
+		public boolean equals(final Object other) {
+			if (other == null) {
+				return false;
+			}
+			
+			if (!Annotation.class.isAssignableFrom(other.getClass())) {
+				return false;
+			}
+			
+			final Annotation otherAnnotation = (Annotation)other;
+			final String otherText = otherAnnotation.getText();
+			
+			return Objects.equals(getText(), otherText);
+		}
+		
+		@Override
+		public int hashCode() {
+			final String text = getText();
+			
+			if (text == null) {
+				return 0;
+			}
+			
+			return text.hashCode();
 		}
 	}
 }
