@@ -7,77 +7,86 @@
 
 <title>The PlusCal Translator</title>
 </head>
-<!-- a comment -->
 
 <body>
 <h1>The PlusCal Translator</h1>
 
- <P> 
+ <P>
 PlusCal is an algorithm language based on TLA<sup>+</sup>.&nbsp;  A PlusCal algorithm is written as a comment
-in a TLA<sup>+</sup> module.&nbsp;  The PlusCal translator writes the TLA<sup>+</sup> translation of the algorithm into
+in a TLA<sup>+</sup> module.
+<br/>
+<b>Please note:</b> In order to have the editor provide code folding for your PlusCal algorithm,
+the <samp>--algorithm</samp> or <samp>--fair</samp> must be preceded by a <samp>(*</samp> starting
+in column 0 on the same or a previous line. If you attempt to insert other comment blocks before the
+algorithm keyword, but after what you intend to be the start of your PlusCal algorithm 'block', make
+sure they do not start in column 0. Additionally, the closing
+comment of the PlusCal algorithm block should be one or more <samp>*</samp> starting in column 0 and
+terminating the line with a <samp>)</samp>.
+</br>
+The PlusCal translator writes the TLA<sup>+</sup> translation of the algorithm into
 the module.&nbsp;  See the <a href="http://research.microsoft.com/en-us/um/people/lamport/tla/pluscal.html" target="_blank"> PlusCal
 web page</a> for more information about PlusCal, including a language manual.&nbsp;  An overview of the
-language is provided by the paper 
-<a href="http://research.microsoft.com/en-us/um/people/lamport/pubs/pubs.html#pluscal" target="_blank">The 
-PlusCal Algorithm Language</a>.  
+language is provided by the paper
+<a href="http://research.microsoft.com/en-us/um/people/lamport/pubs/pubs.html#pluscal" target="_blank">The
+PlusCal Algorithm Language</a>.
  </P>
- 
+
  <p>
  You run the PlusCal translator on the module in the currently selected
- module editor by clicking 
-  on&nbsp; <samp>File/Translate PlusCal Algorithm</samp> or typing  <samp>Control+t</samp>&nbsp;
- Translation errors are displayed in  
+ module editor by clicking
+  on&nbsp; <samp>File/Translate PlusCal Algorithm</samp> or typing <samp>CTRL t</samp> / <samp>&#8984; t</samp>&nbsp;
+ Translation errors are displayed in
     the same&nbsp; <samp>Parsing Error</samp>&nbsp; view where <a href="../spec/parsing.html">TLA<sup>+</sup> parsing
     errors</a> are displayed.&nbsp;  Some errors in a PlusCal algorithm are not found by the translator, but
     instead produce parsing errors in the TLA<sup>+</sup> module.&nbsp;  Those are displayed as ordinary TLA<sup>+</sup> parsing errors.
  </p>
- 
+
  <p>
  The <a href="../spec/editing-modules.html#finding-pcal"><em>Goto PCal Source</em></a> command allows you to jump
  from a region in the TLA<sup>+</sup> translation to the PlusCal code that generated it.&nbsp;  This makes it
  easy to find the source in the algorithm of an error found in its translation.
 
  </p>
- 
+
  <p>The current version of Pluscal allows you to specify most translator options in an
  <samp>options</samp> statement within the module's <code>.tla</code> file.&nbsp;
- 
+
  You can also set translator options by opening the&nbsp;
- <samp>Spec Explorer</samp>&nbsp; view (see the 
+ <samp>Spec Explorer</samp>&nbsp; view (see the
  <a href="../spec/opening-closing.html"><em>Manipulating Specs</em></a>  help page), right-clicking on the spec,
  choosing&nbsp; <samp>Properties</samp>, and entering the desired options in
- the&nbsp; <samp>PlusCal call arguments</samp>&nbsp; field.&nbsp;  
- 
+ the&nbsp; <samp>PlusCal call arguments</samp>&nbsp; field.&nbsp;
+
  This is the only way to specify translator options that cannot be put in
  the <samp>options</samp> statement.&nbsp;  (However, you are unlikely to want
  to use those options.)
  </p>
- <!--  
+ <!--
  <p>
  The Toolbox now provides only one PlusCal translator preference.&nbsp;  You can have the translator
  automatically called when you modify and then save a module containing a PlusCal algorithm.&nbsp;
  (More precisely, it is called if the module contains the text &nbsp; <code>--algorithm</code>&nbsp;
  anywhere within it.)&nbsp;  You can set it by selecting
- the&nbsp; <samp>PlusCal Translator Preferences</samp>&nbsp; page 
- from among the 
- TLA<sup>+</sup> Preferences.&nbsp; (See the 
+ the&nbsp; <samp>PlusCal Translator Preferences</samp>&nbsp; page
+ from among the
+ TLA<sup>+</sup> Preferences.&nbsp; (See the
  <a href="../gettingstarted/preferences.html"><em>Preferences</em></a> help page.)&nbsp;
  The default is not to translate on save.
  </p> -->
-<!--  
-<hr> 
+<!--
+<hr>
 -->
-<!-- delete rest of line to comment out 
+<!-- delete rest of line to comment out
 <dl>
 <dt><b><font color=#0000c0>Subtopics</font></b></dt>
 <dd> <A href=""> TOPIC </A></dd>
 <dd> <A href=""> TOPIC </A></dd>
 </dl>
- --> 
-<!-- delete rest of line to comment out 
+ -->
+<!-- delete rest of line to comment out
 <a href = ".html">&uarr; HIGHER_LEVEL_TOPIC</a>
---> 
-<!--  
+-->
+<!--
 </hr>
 -->
 <hr>

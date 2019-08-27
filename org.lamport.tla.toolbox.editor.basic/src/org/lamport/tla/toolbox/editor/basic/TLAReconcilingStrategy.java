@@ -32,8 +32,8 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	// Per BoxedCommentHandler, a delimiter is "(" followed by three "*", then 0-N "*", and finally suffixed with ")"
 	private static final String BLOCK_COMMENT_DELIMITER_REGEX = "^[ \\t]*\\(\\*{3}\\**\\)\\s*$";
 	
-	private static final String PCAL_TRANSLATION_PREFIX_REGEX = "^\\\\\\* BEGIN TRANSLATION$";
-	private static final String PCAL_TRANSLATION_SUFFIX_REGEX = "^\\\\\\* END TRANSLATION$";
+	private static final String PCAL_TRANSLATION_PREFIX_REGEX = "^\\\\\\*+ BEGIN TRANSLATION$";
+	private static final String PCAL_TRANSLATION_SUFFIX_REGEX = "^\\\\\\*+ END TRANSLATION$";
 	
 	
     private IDocument document;
@@ -129,11 +129,11 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 			if (find != null) {
 				final int pcalStartLocation = find.getOffset();
 				
-				find = search.find(pcalStartLocation, "^\\(\\*.*[^\\)]$", false, true, false, true);
+				find = search.find(pcalStartLocation, "^\\(\\*", false, true, false, true);
 				if (find != null) {
 					final int startLocation = find.getOffset();
 					
-					find = search.find(pcalStartLocation, "^\\*.*\\*\\)$", true, true, false, true);
+					find = search.find(pcalStartLocation, "^\\*+\\)$", true, true, false, true);
 					addProjectAdditionToMap(additions, startLocation, find);
 				}
 			}
