@@ -79,6 +79,20 @@
       </command>
       <command
             categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.ExpandAllRegionsHandler"
+            description="Expand all regions in the editor."
+            id="org.lamport.tla.toolbox.editor.basic.ExpandAllRegionsHandler"
+            name="Expand All Regions">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
+            defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.FoldAllRegionsHandler"
+            description="Fold all regions in the editor."
+            id="org.lamport.tla.toolbox.editor.basic.FoldAllRegionsHandler"
+            name="Fold All Regions">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.textEditor"
             defaultHandler="org.lamport.tla.toolbox.editor.basic.handlers.HideAllProofsHandler"
             description="Hides all proofs in module"
             id="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
@@ -584,6 +598,19 @@
               </command>
            </menuContribution>
            <menuContribution
+                 locationURI="popup:#AbstractTextEditorRulerContext?after=additions">
+              <separator
+                    name="org.lamport.tla.toolbox.editor.basic.commentseparatorBeginning"
+                    visible="true"/>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.FoldAllRegionsHandler"/>
+              <command
+                    commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllRegionsHandler"/>
+              <separator
+                    name="org.lamport.tla.toolbox.editor.basic.commentseparatorEnd"
+                    visible="true"/>
+           </menuContribution>
+           <menuContribution
                  locationURI="popup:#TextEditorContext?after=foldCommands">
               <menu
                     id="org.lamport.tla.toolbox.editor.basic.tlaps"
@@ -592,37 +619,21 @@
                        name="additions">
                  </separator>
                  <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"
-                       style="push">
-                 </command>
+                    commandId="org.lamport.tla.toolbox.editor.basic.ExpandAllProofs"/>
                  <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"
-                       style="push">
-                 </command>
+                    commandId="org.lamport.tla.toolbox.editor.basic.FoldAllProofs"/>
                  <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"
-                       style="push">
-                 </command>
+                    commandId="org.lamport.tla.toolbox.editor.basic.ExpandSubtree"/>
                  <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"
-                       style="push">
-                 </command>
+                    commandId="org.lamport.tla.toolbox.editor.basic.CollapseSubtree"/>
                  <command
-                       commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"
-                       style="push">
-                 </command>
+                       commandId="org.lamport.tla.toolbox.editor.basic.ShowImmediate"/>
                  <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"
-                       style="push">
-                 </command>
+                    commandId="org.lamport.tla.toolbox.editor.basic.FocusOnStep"/>
                  <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.renumberProof"
-                       style="push">
-                 </command>
+                    commandId="org.lamport.tla.toolbox.editor.basic.renumberProof"/>
                  <command
-                    commandId="org.lamport.tla.toolbox.editor.basic.DecomposeProof"
-                       style="push">
-                 </command>
+                    commandId="org.lamport.tla.toolbox.editor.basic.DecomposeProof"/>
               </menu>
               <separator
                     name="org.lamport.tla.toolbox.editor.basic.commentseparator"
