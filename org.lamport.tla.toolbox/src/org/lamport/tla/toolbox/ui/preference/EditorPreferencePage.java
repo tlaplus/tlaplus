@@ -18,10 +18,10 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.util.IHelpConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 
 /**
  * @author lamport
- *
  */
 public class EditorPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
@@ -60,7 +60,6 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
     public EditorPreferencePage(int style)
     {
         super(style);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -70,7 +69,6 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
     public EditorPreferencePage(String title, int style)
     {
         super(title, style);
-        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -81,7 +79,6 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
     public EditorPreferencePage(String title, ImageDescriptor image, int style)
     {
         super(title, image, style);
-        // TODO Auto-generated constructor stub
     }
 
     protected Control createContents(Composite parent)
@@ -94,10 +91,9 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
     /* (non-Javadoc)
      * @see org.eclipse.jface.preference.FieldEditorPreferencePage#createFieldEditors()
      */
-    protected void createFieldEditors()
-    {   IntegerFieldEditor rightMarginEditor = 
-            new IntegerFieldEditor(EDITOR_RIGHT_MARGIN, "&Module editor right margin", 
-                   getFieldEditorParent());
+	protected void createFieldEditors() {
+		final IntegerFieldEditor rightMarginEditor = new IntegerFieldEditor(EDITOR_RIGHT_MARGIN,
+				"&Module editor right margin", getFieldEditorParent());
         addField(rightMarginEditor);
         rightMarginEditor.setValidRange(20, 200);
         
@@ -107,15 +103,16 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
         addField(new BooleanFieldEditor(EDITOR_ADD_MODIFICATION_HISTORY,
                 "&Add a modification history comment to new specs", getFieldEditorParent()));
 
+        
         // Preferences for renumbering.  Added 25 July 2013 by LL
         Label lbl = new Label(getFieldEditorParent(), SWT.NONE);
         GridData gd = new GridData();
         gd.horizontalSpan = 2;
         lbl.setLayoutData(gd);
         
-        lbl = new Label(getFieldEditorParent(), SWT.NONE);
-        lbl.setText("Renumber Proof Command preferences") ;
-        lbl.setLayoutData(gd);
+		lbl = new Label(getFieldEditorParent(), SWT.NONE);
+		lbl.setText("Renumber Proof Command preferences");
+		lbl.setLayoutData(gd);
         
         addField(new RadioGroupFieldEditor(EditorPreferencePage.RENUMBER_KEY, 
         		"Which step names to renumber", 1,
@@ -126,16 +123,28 @@ public class EditorPreferencePage extends FieldEditorPreferencePage implements I
         	      {"Names that are all digits", ALL_DIGITS} },
         		getFieldEditorParent())) ;
         addField(new BooleanFieldEditor(SAVE_MODULE, "&Save module", 
-                   getFieldEditorParent())) ;
+                   getFieldEditorParent()));
+        
+        
+        lbl = new Label(getFieldEditorParent(), SWT.NONE);
+        lbl.setLayoutData(gd);
+        
+        lbl = new Label(getFieldEditorParent(), SWT.NONE);
+        lbl.setText("Folding by default preferences");
+        lbl.setLayoutData(gd);
+        
+        addField(new BooleanFieldEditor(IPreferenceConstants.I_FOLDING_BLOCK_COMMENTS,
+                "Fold &block comments by default", getFieldEditorParent()));
+        
+        addField(new BooleanFieldEditor(IPreferenceConstants.I_FOLDING_PCAL_ALGORITHM,
+                "Fold &PlusCal algorithm blocks by default", getFieldEditorParent()));
+        
+        addField(new BooleanFieldEditor(IPreferenceConstants.I_FOLDING_PCAL_TRANSLATED,
+                "Fold &translated &PlusCal algorithm TLA+ code by default", getFieldEditorParent()));
     }
 
     /* (non-Javadoc)
      * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
      */
-    public void init(IWorkbench workbench)
-    {
-        // TODO Auto-generated method stub
-
-    }
-
+    public void init(final IWorkbench workbench) { }
 }

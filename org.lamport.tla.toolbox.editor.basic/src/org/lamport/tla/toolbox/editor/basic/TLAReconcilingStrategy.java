@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
@@ -18,8 +20,14 @@ import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategyExtension;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
+import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.PlatformUI;
 import org.lamport.tla.toolbox.editor.basic.pcal.IPCalReservedWords;
+import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
+import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 /**
  * We create this reconciling strategy for at least two reasons:
@@ -29,7 +37,7 @@ import org.lamport.tla.toolbox.editor.basic.pcal.IPCalReservedWords;
  * 			. block commments
  * 			. PlusCal code
  */
-public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
+public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconcilingStrategy, IReconcilingStrategyExtension {
 	// Per BoxedCommentHandler, a delimiter is "(" followed by three "*", then 0-N "*", and finally suffixed with ")"
 	private static final String BLOCK_COMMENT_DELIMITER_REGEX = "^[ \\t]*\\(\\*{3}\\**\\)\\s*$";
 	
@@ -39,11 +47,54 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 	
     private IDocument document;
     /* the currently displayed projection annotations */
-    protected final List<TLCProjectionAnnotation> currentAnnotations = new ArrayList<>();
+    protected final List<TLCProjectionAnnotation> currentAnnotations;
     /* the editor we're bound to */
     private TLAEditor editor;
+    /* the underlying source viewer */
+    private ProjectionViewer projectionViewer;
+    
+    private final AtomicBoolean foldBlockComments;
+    private final AtomicBoolean foldPlusCalAlgorithm;
+    private final AtomicBoolean foldTranslatedPlusCalBlock;
 	
-    /**
+    public TLAReconcilingStrategy() {
+        final IPreferenceStore store = PreferenceStoreHelper.getInstancePreferenceStore();
+
+        store.addPropertyChangeListener(this);
+        
+        currentAnnotations = new ArrayList<>();
+        
+        foldBlockComments = new AtomicBoolean(store.getBoolean(IPreferenceConstants.I_FOLDING_BLOCK_COMMENTS));
+        foldPlusCalAlgorithm = new AtomicBoolean(store.getBoolean(IPreferenceConstants.I_FOLDING_PCAL_ALGORITHM));
+        foldTranslatedPlusCalBlock = new AtomicBoolean(store.getBoolean(IPreferenceConstants.I_FOLDING_PCAL_TRANSLATED));
+    }
+    
+	/**
+     * {@inheritDoc}
+     */
+    @Override
+	public void propertyChange(final PropertyChangeEvent event) {
+    	final boolean reconcile;
+    	
+		if (IPreferenceConstants.I_FOLDING_BLOCK_COMMENTS.equals(event.getProperty())) {
+			foldBlockComments.set(((Boolean)event.getNewValue()).booleanValue());
+			reconcile = true;
+		} else if (IPreferenceConstants.I_FOLDING_PCAL_ALGORITHM.equals(event.getProperty())) {
+			foldPlusCalAlgorithm.set(((Boolean)event.getNewValue()).booleanValue());
+			reconcile = true;
+		} else if (IPreferenceConstants.I_FOLDING_PCAL_TRANSLATED.equals(event.getProperty())) {
+			foldTranslatedPlusCalBlock.set(((Boolean)event.getNewValue()).booleanValue());
+			reconcile = true;
+		} else {
+			reconcile = false;
+		}
+		
+		if (reconcile) {
+			reconcile(null, null, null);
+		}
+	}
+
+	/**
      * {@inheritDoc}
      */
     @Override
@@ -90,6 +141,15 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 		editor = tlaEditor;
 	}
 	
+	/**
+	 * Sets the projection viewer for which we're reconciling.
+	 * 
+	 * @param viewer
+	 */
+	public void setProjectionViewer(final ProjectionViewer viewer) {
+		projectionViewer = viewer;
+	}
+	
 	private void reconcile(final IRegion partition, final DirtyRegion dirtyRegion, final IRegion subRegion) {
 		if (editor != null) {
 			final HashMap<TLCProjectionAnnotation, Position> regionMap
@@ -110,6 +170,32 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 			PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 				public void run() {
 					editor.modifyProjectionAnnotations(deletions, regionsToAdd);
+					
+					if (projectionViewer != null) {
+						final ProjectionAnnotationModel model = projectionViewer.getProjectionAnnotationModel();
+						final boolean block = foldBlockComments.get();
+						final boolean pcal = foldPlusCalAlgorithm.get();
+						final boolean translated = foldTranslatedPlusCalBlock.get();
+						
+						for (final TLCProjectionAnnotation annotation : currentAnnotations) {
+							final boolean collapse;
+							
+							switch (annotation.getTLCType()) {
+								case BLOCK_COMMENT:
+									collapse = block;
+									break;
+								case PCAL_BLOCK:
+									collapse = pcal;
+									break;
+								default:
+									collapse = translated;
+							}
+							
+							if (collapse) {
+								model.collapse(annotation);
+							}
+						}
+					}
 				}
 			});
 		}
@@ -127,8 +213,9 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 		
 		final HashMap<TLCProjectionAnnotation, Position> additions = new HashMap<>();
 
-		// PCal location
 		final FindReplaceDocumentAdapter search = new FindReplaceDocumentAdapter(document);
+		
+		// PCal location
 		try {
 			IRegion find = search.find(0, IPCalReservedWords.ALGORITHM, true, true, false, false);
 			
@@ -144,7 +231,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 					final int startLocation = find.getOffset();
 					
 					find = search.find(pcalStartLocation, "^\\*+\\)$", true, true, false, true);
-					addProjectionAdditionToMap(additions, startLocation, find);
+					addProjectionAdditionToMap(additions, startLocation, find, AnnotationType.PCAL_BLOCK);
 				}
 			}
 		} catch (final BadLocationException ble) { }
@@ -159,7 +246,8 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 				
 				find = search.find(translationStartLocation, PCAL_TRANSLATION_SUFFIX_REGEX, true, true, false, true);
 				if (find != null) {
-					addProjectionAdditionToMap(additions, translationStartLocation, find);
+					addProjectionAdditionToMap(additions, translationStartLocation, find,
+							AnnotationType.TRANSLATED_PCAL_BLOCK);
 				}
 			}
 		} catch (final BadLocationException ble) { }
@@ -173,7 +261,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 			
 			while (find != null) {
 				if (inBlock) {
-					addProjectionAdditionToMap(additions, lastFoundIndex, find);
+					addProjectionAdditionToMap(additions, lastFoundIndex, find, AnnotationType.BLOCK_COMMENT);
 				}
 				
 				inBlock = !inBlock;
@@ -186,7 +274,7 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     }
 
 	private void addProjectionAdditionToMap(final Map<TLCProjectionAnnotation, Position> additions, final int startLocation,
-										    final IRegion find)
+										    final IRegion find, final AnnotationType type)
 			throws BadLocationException {
 		if (find != null) {
 			final int endLocation = find.getOffset() + find.getLength();
@@ -194,16 +282,30 @@ public class TLAReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 			final int positionLength = length + ((document.getLength() > endLocation) ? 1 : 0);	// +1 to cover the newline
 			final Position position = new Position(startLocation, positionLength);
 
-			additions.put(new TLCProjectionAnnotation(document.get(startLocation, length)), position);
+			additions.put(new TLCProjectionAnnotation(document.get(startLocation, length), type), position);
 		}
 	}
 	
 	
+	private enum AnnotationType {
+		BLOCK_COMMENT,
+		PCAL_BLOCK,
+		TRANSLATED_PCAL_BLOCK;
+	}
+	
 	// Nothing in the ProjectionAnnotation hierarchy implements equals/hashCode, we'd like such things to exist
-	//		for reconciliation
+	//		for reconciliation; also we denote classifications of annotations for folding groups.
 	private static class TLCProjectionAnnotation extends ProjectionAnnotation {
-		TLCProjectionAnnotation(final String text) {
+		private final AnnotationType type;
+		
+		TLCProjectionAnnotation(final String text, final AnnotationType annotationType) {
 			setText(text);
+			
+			type = annotationType;
+		}
+		
+		AnnotationType getTLCType() {
+			return type;
 		}
 		
 		@Override

@@ -1,18 +1,15 @@
 package org.lamport.tla.toolbox.util.pref;
 
 /**
- *
  * @author zambrovski
  */
-public interface IPreferenceConstants
-{
-    public static final String DEFAULT_NOT_SET                = "not set";
-
+public interface IPreferenceConstants {
+    public static final String DEFAULT_NOT_SET              = "not set";
     
     /**
      * Project preference storing the root file
      */
-    public static final String P_PROJECT_ROOT_FILE      = "ProjectRootFile";
+    public static final String P_PROJECT_ROOT_FILE          = "ProjectRootFile";
     /**
      * Popup parser errors
      */
@@ -29,7 +26,7 @@ public interface IPreferenceConstants
      * The minimum amount of storage used by the spec (in kbytes) for that
      * size to be displayed (on the bottom line, next to the parse status).
      */
-    public static final String I_MIN_DISPLAYED_SIZE          = "minDisplayedSize";
+    public static final String I_MIN_DISPLAYED_SIZE         = "minDisplayedSize";
     /**
      * Re-parse root on modify
      */
@@ -53,4 +50,11 @@ public interface IPreferenceConstants
     
     /** Resource persistent property for sticking the pcal call params */
     public static final String PCAL_CAL_PARAMS              = "pCalCallParams";
+    
+    /** Folding of the PlusCal algorithm block */
+    public static final String I_FOLDING_PCAL_ALGORITHM     = "foldingPCalAlg";
+    /** Folding of the translated PlusCal TLA+ block */
+    public static final String I_FOLDING_PCAL_TRANSLATED    = "foldingPCalTranslated";
+    /** Folding of block comments */
+    public static final String I_FOLDING_BLOCK_COMMENTS     = "foldingBlockComments";
 }

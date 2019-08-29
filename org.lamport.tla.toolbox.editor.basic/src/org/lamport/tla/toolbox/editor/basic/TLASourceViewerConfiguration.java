@@ -23,6 +23,7 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -189,6 +190,9 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
 	public IReconciler getReconciler(final ISourceViewer sourceViewer) {
         final TLAReconcilingStrategy strategy = new TLAReconcilingStrategy();
         strategy.setEditor(editor);
+        if (sourceViewer instanceof ProjectionViewer) {
+        	strategy.setProjectionViewer((ProjectionViewer)sourceViewer);
+        }
         return new MonoReconciler(strategy, false);
     }
 

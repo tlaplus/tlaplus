@@ -8,16 +8,12 @@ import org.lamport.tla.toolbox.ui.preference.GeneralPreferencePage;
 /**
  * Class used to initialize default preference values.
  */
-public class PreferenceInitializer extends AbstractPreferenceInitializer
-{
-
+public class PreferenceInitializer extends AbstractPreferenceInitializer {
     /**
      * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
      */
-    public void initializeDefaultPreferences()
-    {
-
-        IPreferenceStore store = PreferenceStoreHelper.getInstancePreferenceStore();
+	public void initializeDefaultPreferences() {
+        final IPreferenceStore store = PreferenceStoreHelper.getInstancePreferenceStore();
         store.setDefault(IPreferenceConstants.I_PARSER_POPUP_ERRORS, true); // set to true by LL on 22 Sep 2009
 
         // instance based properties
@@ -42,7 +38,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
 
         store.setDefault(EditorPreferencePage.EDITOR_ADD_MODIFICATION_HISTORY,
                 EditorPreferencePage.EDITOR_ADD_MODIFICATION_HISTORY_DEFAULT);
-              
+
         /*
          * Set default for Renumber Proof command option.
          */
@@ -50,6 +46,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
         		EditorPreferencePage.ALL_NAMES);
         store.setDefault(EditorPreferencePage.SAVE_MODULE, true);
         
+        store.setDefault(IPreferenceConstants.I_FOLDING_BLOCK_COMMENTS, false);
+        store.setDefault(IPreferenceConstants.I_FOLDING_PCAL_ALGORITHM, false);
+        store.setDefault(IPreferenceConstants.I_FOLDING_PCAL_TRANSLATED, false);
     }
-
 }
