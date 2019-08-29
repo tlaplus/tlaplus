@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.lamport.tla.toolbox.editor.basic.TLAEditorActivator
 Bundle-Vendor: Simon Zambrovski, Leslie Lamport
 Require-Bundle: org.eclipse.ui,
- org.eclipse.jdt.ui;bundle-version="3.15.0",
  org.eclipse.ui.editors,
  org.eclipse.ui.ide,
  org.eclipse.core.runtime,
