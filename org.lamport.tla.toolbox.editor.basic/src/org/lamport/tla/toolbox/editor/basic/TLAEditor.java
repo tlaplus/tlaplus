@@ -814,6 +814,11 @@ public class TLAEditor extends TextEditor
         // tlapmColoring.dispose();
         proofStructureProvider.dispose();
         rootImage.dispose();
+		final TLAReconcilingStrategy reconciler = (TLAReconcilingStrategy) getViewer()
+				.getData(TLAReconcilingStrategy.class.toString());
+		if (reconciler != null) {
+			reconciler.dispose();
+		}
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(moduleFileChangeListener);
         super.dispose();
     }

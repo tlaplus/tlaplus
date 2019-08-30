@@ -69,6 +69,11 @@ public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconci
         foldTranslatedPlusCalBlock = new AtomicBoolean(store.getBoolean(IPreferenceConstants.I_FOLDING_PCAL_TRANSLATED));
     }
     
+    public void dispose() {
+        final IPreferenceStore store = PreferenceStoreHelper.getInstancePreferenceStore();
+        store.removePropertyChangeListener(this);
+    }
+    
 	/**
      * {@inheritDoc}
      */
@@ -148,6 +153,7 @@ public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconci
 	 */
 	public void setProjectionViewer(final ProjectionViewer viewer) {
 		projectionViewer = viewer;
+		projectionViewer.setData(getClass().toString(), this);
 	}
 	
 	private void reconcile(final IRegion partition, final DirtyRegion dirtyRegion, final IRegion subRegion) {
@@ -176,23 +182,26 @@ public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconci
 						final boolean block = foldBlockComments.get();
 						final boolean pcal = foldPlusCalAlgorithm.get();
 						final boolean translated = foldTranslatedPlusCalBlock.get();
-						
-						for (final TLCProjectionAnnotation annotation : currentAnnotations) {
-							final boolean collapse;
-							
-							switch (annotation.getTLCType()) {
-								case BLOCK_COMMENT:
-									collapse = block;
-									break;
-								case PCAL_BLOCK:
-									collapse = pcal;
-									break;
-								default:
-									collapse = translated;
-							}
-							
-							if (collapse) {
-								model.collapse(annotation);
+
+						// We could do even more optimization than this, but this is better than none.
+						if (block || pcal || translated) {
+							for (final TLCProjectionAnnotation annotation : currentAnnotations) {
+								final boolean collapse;
+
+								switch (annotation.getTLCType()) {
+									case BLOCK_COMMENT:
+										collapse = block;
+										break;
+									case PCAL_BLOCK:
+										collapse = pcal;
+										break;
+									default:
+										collapse = translated;
+								}
+
+								if (collapse) {
+									model.collapse(annotation);
+								}
 							}
 						}
 					}
