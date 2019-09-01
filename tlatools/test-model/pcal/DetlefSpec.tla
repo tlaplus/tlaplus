@@ -29,7 +29,7 @@ L2:   rV := null
     } } }
 *)
 
-\* BEGIN TRANSLATION
+\* BEGIN TRANSLATION PC-51c7b3db096c8a2759201260936705be386063f4760b0e0dfd43ae4cbdefb4c6
 VARIABLES queue, pc, rV
 
 vars == << queue, pc, rV >>
@@ -71,7 +71,7 @@ Next == (\E self \in Procs: P(self))
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in Procs : WF_vars(P(self))
 
-\* END TRANSLATION
+\* END TRANSLATION TPC-e8adc767d572c129562b3809f8f8e7c14a330a2e5918786dee3cfc9e499001c3
 
 CONSTANT N
 

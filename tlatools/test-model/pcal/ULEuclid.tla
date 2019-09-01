@@ -41,7 +41,7 @@ GCD(x, y) == CHOOSE i \in (1..x) \cap (1..y) :
                       
 
 
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION PC-c4e7db904bfcde73be965c3f8e9d288c59d572ff31e5364476652ac8847e501d
 VARIABLES u_ini, v_ini, u, v, pc
 
 vars == << u_ini, v_ini, u, v, pc >>
@@ -83,7 +83,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION TPC-9f8ca6d6ca73b296f71b4e182e1ea28d5f6703e18ad46e36944d7d8625cf41e9
 
 
 Invariant == 

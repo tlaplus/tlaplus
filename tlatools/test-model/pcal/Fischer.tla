@@ -54,7 +54,7 @@ end algorithm
 
 ***********************)
 
-(**************** BEGIN TRANSLATION *******************************)
+\* BEGIN TRANSLATION PC-491d4ad05e99d50e4308e4093996b8f07a20a45702608fd558edf0b086848536
 VARIABLES x, timer, pc, firstTime
 
 vars == << x, timer, pc, firstTime >>
@@ -127,7 +127,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..N : WF_vars(Proc(self))
         /\ WF_vars(Tick)
 
-(**************** END TRANSLATION *******************************)
+\* END TRANSLATION TPC-433a3009847e65e14af7161889d07694650e98c59831b24e849a70dab507949d
 
 inCS(i) ==  pc[i] = "cs"
 

@@ -17,7 +17,7 @@ EXTENDS Sequences, Naturals, TLC
 
 *)
 					
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION PC-ca0010859be4dd9f1a51a77c69614655d5e6becf20f98e011fa1c900ab2fd5ea
 VARIABLES sum, pc, stack
 
 vars == << sum, pc, stack >>
@@ -64,6 +64,6 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION TPC-6d780752d0e5c50eb49af9a090e2c2532c3c7b446628242103d21bc58502c908
 
 =============================================================================

@@ -80,7 +80,7 @@ Copied from page 166 of the 2nd edition of Robert Sedgewick's "Algorithms".
   end algorithm
 *)
 					
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION PC-e95856295a7abc600b7bce798e1d77ed75ce2332c9d92a1b8fa584095f0460ee
 CONSTANT defaultInitValue
 VARIABLES a, b, pc, stack, l, r, i, j, k, m
 
@@ -240,7 +240,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION TPC-659c2451d7e850ceb3f896e65e78c5b7359ad2a5ee460ca3742e2bb154595680
 
 Invariant == 
    (pc = "Done") => \A x, y \in DOMAIN a :

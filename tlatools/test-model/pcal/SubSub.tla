@@ -24,7 +24,7 @@ ObjectID == {1}
 end algorithm
 *****)
 
-\******** BEGIN TRANSLATION ********
+\******** BEGIN TRANSLATION ******** PC-888deeb607b0bd876324a4d8615f73f404ffec1c621599f73910ce671c1eefcc
 CONSTANT defaultInitValue
 VARIABLES pc, x, y, z
 
@@ -61,7 +61,7 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\******** END TRANSLATION ********
+\******** END TRANSLATION ******** TPC-181d0dca3b3446e6692de26042b2f91f77ca0150f5b25ef1b70f0b1292c0d433
 
 --------------------------------------------------------------------------
 

@@ -103,7 +103,7 @@ bot == CHOOSE v: v \notin Data
 
 Proc == 1..N
 
-\* BEGIN TRANSLATION
+\* BEGIN TRANSLATION PC-bb136be7565e15f8ccd19456c484c82891b2d495cb61ad09a3882a45436a572e
 \* Label clock of process Clock at line 77 col 12 changed to clock_
 VARIABLES clock, input, round, buffer, crashed, pc, output, procs, value, 
           recd
@@ -240,7 +240,7 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION
+\* END TRANSLATION TPC-77a91cc561e65d094089a51d6917fc0fc2c454889f712a960c23cc812aab4e82
 
 C1 == \A p1, p2 \in (1..N) \ crashed:
   (pc[p1] = "Done" /\ pc[p2] = "Done") => (output[p1] = output[p2])

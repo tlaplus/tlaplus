@@ -43,7 +43,7 @@ PermsOf(Arr) ==
   end algorithm
 *)
 					
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION PC-48e0f40a61f5f5996118635a389ed0461fa3b447220c38f46e05bd3d4e26365d
 VARIABLES A, returnVal, pc, stack, qlo, qhi, pivot
 
 vars == << A, returnVal, pc, stack, qlo, qhi, pivot >>
@@ -124,7 +124,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION TPC-b227e4e5e111f283da2dfa67f704ce23867eb7ac934cfd23b0d001200fbdc08e
 
 Invariant == 
    (pc = "Done") => \A i, j \in 1..ArrayLen :

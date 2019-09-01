@@ -38,7 +38,7 @@ EXTENDS Naturals, Sequences, TLC
 
 *)
 					
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION
 \* Process variable y of process ProcA at line 20 col 17 changed to y_
 \* Process variable z of process ProcB at line 27 col 17 changed to z_
 VARIABLES x, sum, done, pc, stack, me, y, y_, z_, z
@@ -158,5 +158,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION
 =============================================================================

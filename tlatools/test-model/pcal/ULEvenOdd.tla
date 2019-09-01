@@ -31,7 +31,7 @@ CONSTANT N
 ----------------------------------------------
 
 
-\* BEGIN TRANSLATION
+\* BEGIN TRANSLATION PC-142ef629b4f0aa18a59e2ceb8e2d82f2c6e79a7706b141e97f71050cdbe3fa3a
 VARIABLES result, pc, stack, xEven, xOdd
 
 vars == << result, pc, stack, xEven, xOdd >>
@@ -109,7 +109,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION
+\* END TRANSLATION TPC-bd56803e88aa64534c5647dd25fd802290c4fc72a9f2a2cf1f5de901b8982de7
 
 ==============================================
 

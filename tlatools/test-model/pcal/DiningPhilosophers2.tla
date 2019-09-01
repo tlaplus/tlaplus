@@ -70,7 +70,7 @@ end algorithm
 
 ***********************)
 
-(**************** BEGIN TRANSLATION *******************************)
+\* BEGIN TRANSLATION
 \* Label e of procedure foo at line 23 col 16 changed to e_
 \* Label l3 of procedure foo at line 24 col 17 changed to l3_
 \* Label dp1 of process DummyProcessSet at line 35 col 15 changed to dp1_
@@ -209,7 +209,7 @@ Spec == /\ Init /\ [][Next]_vars
            /\ WF_vars(foo(0))
            /\ SF_vars(l2(0)) /\ SF_vars(e_(0)) /\ SF_vars(l3_(0))
 
-(**************** END TRANSLATION *******************************)
+\* END TRANSLATION
 
 IsEating(i) == IF i = 0 THEN pc[i] = "e0"
                         ELSE pc[i] = "e"

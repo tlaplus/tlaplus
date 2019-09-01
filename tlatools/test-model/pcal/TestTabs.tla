@@ -16,7 +16,7 @@ l:  x := IF /\ \A i \in {1} : 1 + 1 = 2
     assert x = 1 ;
   end algorithm
 *)
-(* BEGIN TRANSLATION *)
+\* BEGIN TRANSLATION PC-9e177812ae30787b295660b9055c8903874d634a7df9779a26828ff64cbfca5b
 VARIABLES x, pc
 
 vars == << x, pc >>
@@ -47,5 +47,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(* END TRANSLATION *)
+\* END TRANSLATION TPC-218ccbb896dc9260e1db905e46f8a9e6a9e50069d62fc43787ecf0dffe70e386
 =============================================================================

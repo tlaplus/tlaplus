@@ -23,7 +23,7 @@ EXTENDS Sequences, Naturals, TLC
 
 *)
 					
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION PC-60b1c2f409814b70bf043a1aba3a4ae2a1bd166511ed4cec4d71782b10967d84
 VARIABLES sum, pc, stack
 
 vars == << sum, pc, stack >>
@@ -86,7 +86,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION TPC-8f7aaa9c42f97af993269cfc2c117678c54175a8b308b81e4d5efadd8d494497
 
 
 =============================================================================

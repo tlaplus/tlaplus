@@ -14,7 +14,7 @@ EXTENDS Naturals, TLC
      end algorithm                  *)
 
 					
-(****** BEGIN TRANSLATION ****)
+\* BEGIN TRANSLATION PC-eeea5b71d35aa766860a65138939b172d3066b0c22b8d270030347e6ec4b758e
 VARIABLES x, pc
 
 vars == << x, pc >>
@@ -51,5 +51,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(****** END TRANSLATION ****)
+\* END TRANSLATION TPC-48a29714339b0c5df7dd86562239253ae989feabd850afd17ea2dd47effe5d24
 =============================================================================

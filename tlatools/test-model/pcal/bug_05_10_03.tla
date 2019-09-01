@@ -13,7 +13,7 @@ end algorithm
 ------------- MODULE bug_05_10_03 ------------
 EXTENDS Naturals, TLC, FiniteSets
 ------------------------------------------
-\* BEGIN TRANSLATION
+\* BEGIN TRANSLATION PC-ae6f9d9501742b762ca26373306368307813713570a6c559d4af8436a40b687d
 VARIABLES pc, x
 
 vars == << pc, x >>
@@ -43,5 +43,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION
+\* END TRANSLATION TPC-353dd37661f96f3713c3d18dfc83c37dbf06b36282739a32c32a8e6cee9e3327
 ==========================================

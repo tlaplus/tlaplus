@@ -41,7 +41,7 @@ PermsOf(Arr) ==
   end algorithm
 *)
 					
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION
 VARIABLES Ainit, A, S, pivot, pc
 
 vars == << Ainit, A, S, pivot, pc >>
@@ -83,7 +83,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION
 =============================================================================
 Checked without termination on svc-lamport-2 with 2 workers:
   arrayLen = 4 in 15 sec, 32280 states, depth 22

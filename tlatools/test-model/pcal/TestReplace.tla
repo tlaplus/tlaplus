@@ -59,7 +59,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION 
+\* BEGIN TRANSLATION  PC-5bc57910185f61cd5b4642969d8ff8eec84711d1ff364761ebbdf82818ac3d57
 \* Label a of procedure Bar at line 12 col 11 changed to a_
 \* Label a of procedure Foo1 at line 19 col 6 changed to a_F
 \* Label b of procedure Foo1 at line 20 col 6 changed to b_
@@ -245,7 +245,7 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION 
+\* END TRANSLATION  TPC-ca1ec99baccffd6e0f83643ecf7c3452b5a02411871f5983cda1c9db11501505
 
 ==================================================
 

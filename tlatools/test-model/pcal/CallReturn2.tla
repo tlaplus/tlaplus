@@ -48,7 +48,7 @@ EXTENDS Naturals, Sequences, TLC
   end algorithm
 *)
 					
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION PC-37a1558fbd6ba624ad4d76f0f13d2fdcfd7f63a3e00a540b0019b5d84c7fd476
 \* Procedure variable x of procedure P at line 13 col 16 changed to x_
 CONSTANT defaultInitValue
 VARIABLES depth, pc, stack, a, x_, y, aa, xx, yy, r, x, s
@@ -195,5 +195,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION TPC-074a703d734dc51ced9815251c28d72e6e164d3cc3c3b0cf25e5040838059053
 =============================================================================

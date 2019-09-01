@@ -25,7 +25,7 @@ EXTENDS Naturals, TLC
 
 *)
 					
-(***** BEGIN TRANSLATION ***)
+\* BEGIN TRANSLATION PC-e4c7613f519a0c5b63728a41b92b20a8cb57a42d5f1a98520e160a6e7568739b
 VARIABLES x, sum, done, pc, y, z
 
 vars == << x, sum, done, pc, y, z >>
@@ -85,5 +85,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-(***** END TRANSLATION ***)
+\* END TRANSLATION TPC-b2a7db25ae896a6d020b578daa79b4bfd9054c49a5aec0b43b00580d777d6b8b
 =============================================================================

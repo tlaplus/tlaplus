@@ -25,7 +25,7 @@ begin
 end algorithm
 *)
 
-\* BEGIN TRANSLATION
+\* BEGIN TRANSLATION PC-95550db78babaf662f0c191839b4a34260651709b2c7ab0b4243502ba2777293
 VARIABLES result, pc, stack, xEven, xOdd
 
 vars == << result, pc, stack, xEven, xOdd >>
@@ -108,6 +108,6 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION
+\* END TRANSLATION TPC-f6111ddf740bdb205f2a25ceb94a6a359616d8b3d4508e0cf2ffca4cba34a889
 
 =============================================================================

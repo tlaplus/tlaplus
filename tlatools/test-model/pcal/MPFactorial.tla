@@ -28,7 +28,7 @@ EXTENDS Naturals, Sequences, TLC
   end algorithm
 ***************************************************************************)
 
-(************** BEGIN TRANSLATION ********************)
+\* BEGIN TRANSLATION PC-3236b5d321d3f0c243351185d20c6c9d520e90f33c984ce1fa78b37275bd0934
 CONSTANT defaultInitValue
 VARIABLES result, pc, stack, arg1, u
 
@@ -113,7 +113,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-(************* END TRANSLATION ********************)
+\* END TRANSLATION TPC-e5786621c3c6fcb77175403d34425101c914f1dc866f823c6c4fc67ccf6d0e48
 
 
 Invariant == result \in Nat

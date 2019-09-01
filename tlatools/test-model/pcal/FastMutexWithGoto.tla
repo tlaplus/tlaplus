@@ -44,7 +44,7 @@ end algorithm
 
 ***********************)
 
-(**************** BEGIN TRANSLATION *******************************)
+\* BEGIN TRANSLATION PC-672c63f06cd36882cc0118a819bee96582beaee6fb09dc2c614a700f3aff173f
 VARIABLES x, y, b, pc, j
 
 vars == << x, y, b, pc, j >>
@@ -151,7 +151,7 @@ Next == (\E self \in 1..N: Proc(self))
 
 Spec == Init /\ [][Next]_vars
 
-(**************** END TRANSLATION *******************************)
+\* END TRANSLATION TPC-9a30c3c97c6626c69e9427dbf6648793281f278ea6f1c03d70a2d0bef0eb301c
 
 inCS(i) ==  (pc[i] = "cs") 
 

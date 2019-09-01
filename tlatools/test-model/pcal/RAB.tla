@@ -145,7 +145,7 @@ end algorithm
 *)    
 
 
-(* BEGIN TRANSLATION *)
+\* BEGIN TRANSLATION PC-20f72e53c0443fa7bd726e8a6e3e40c1b1b1078e18e81164b9b43903ba5a74e2
 VARIABLES flags, calc, pc, temp, myattr
 
 vars == << flags, calc, pc, temp, myattr >>
@@ -196,7 +196,7 @@ Next == (\E self \in Pid: work(self))
 
 Spec == Init /\ [][Next]_vars
 
-(* END TRANSLATION *)
+\* END TRANSLATION TPC-8b3eda676c24a4095a6448f40db4bf709a76d04f7600167c5509150268a6d3a6
 
 
 Consistency ==

@@ -26,7 +26,7 @@ EXTENDS Naturals, TLC
   }
 }
  ***************************************************************************)
-\* BEGIN TRANSLATION
+\* BEGIN TRANSLATION PC-278a87e1a5007eabe60c6e66489a8b9a3c858be6ab6905417806c13f1af8ead9
 CONSTANT defaultInitValue
 VARIABLES x, y, pc, z
 
@@ -68,5 +68,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION
+\* END TRANSLATION TPC-f8ddd0cf4a7ceaabac2d2f0c9e10cdd1ede0144f3a9683a0eb4dfd73d6c59ffd
 =============================================================================
