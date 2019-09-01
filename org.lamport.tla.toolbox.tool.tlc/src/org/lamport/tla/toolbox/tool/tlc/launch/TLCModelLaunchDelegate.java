@@ -2,12 +2,14 @@ package org.lamport.tla.toolbox.tool.tlc.launch;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.Random;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -76,6 +79,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 
+import pcal.Validator;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
@@ -146,24 +150,80 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
      * @return whether the launch should proceed
      * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate2#preLaunchCheck(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
      */
-    public boolean preLaunchCheck(ILaunchConfiguration config, String mode, IProgressMonitor monitor)
-            throws CoreException
-    {
-
+	public boolean preLaunchCheck(final ILaunchConfiguration config, final String mode, final IProgressMonitor monitor)
+			throws CoreException {
         // check the config existence
-        if (!config.exists())
-        {
+		if (!config.exists()) {
             return false;
         }
-        
-        try
-        {
-            monitor.beginTask("Reading model parameters", 1);
-        } finally
-        {
-            // finish the monitor
-            monitor.done();
+		
+        final int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
+        if (specType != MODEL_BEHAVIOR_TYPE_NO_SPEC) {
+            final Model model = config.getAdapter(Model.class);
+            final IFile rootModule = model.getSpec().toSpec().getRootFile();
+            final String specContents;
+
+            try (final InputStream is = rootModule.getContents()) {
+            	final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            	IOUtils.copy(is, baos);
+            	specContents = new String(baos.toByteArray(), "UTF-8");
+            } catch (final IOException e) {
+            	monitor.done();
+            	
+            	throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, e.getMessage()));
+            }
+            
+    		final String[] lines = specContents.split("\\r?\\n");
+    		final List<String> specText = Arrays.asList(lines);
+            final Validator.ValidationResult result = Validator.validate(specText);
+            switch (result) {
+            	case NO_PLUSCAL_EXISTS:
+            	case NO_DIVERGENCE:
+            		break;
+            	case ERROR_ENCOUNTERED:
+					final boolean ignoreError = MessageDialog.openQuestion(
+							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "Error encountered",
+							"Something went wrong attempting to detect divergence between PlusCal and its translation, continue anyway?");
+					
+					if (!ignoreError) {
+						return false;
+					}
+        			break;
+            	case NO_TRANSLATION_EXISTS:
+					final boolean translationError = MessageDialog.openQuestion(
+							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "Translation missing",
+							"Your spec appears to contain PlusCal but no TLA+ translation, are you sure you want to continue?");
+					
+					if (!translationError) {
+						return false;
+					}
+        			break;
+            	case NO_CHECKSUMS_EXIST:
+					MessageDialog.openInformation(
+							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "A note about your spec",
+							"Your spec contains PlusCal and a TLA+ translation - but they have not been verified to "
+								+ "be in sync; consider re-translating the PlusCal algorithm.");
+
+            		break;
+            	case DIVERGENCE_EXISTS:
+					final boolean stopLaunch = MessageDialog.openQuestion(
+							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "PlusCal out of sync",
+							"The PlusCal and TLA+ translation in your spec appear to be out of sync - would you like to"
+								+ " stop the launch?");
+					
+					if (stopLaunch) {
+						return false;
+					}
+            		break;
+            }
         }
+        
+		try {
+			monitor.beginTask("Reading model parameters", 1);
+		} finally {
+			// finish the monitor
+			monitor.done();
+		}
 
         return true;
     }

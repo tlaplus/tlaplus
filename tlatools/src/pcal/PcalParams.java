@@ -183,17 +183,21 @@ public final class PcalParams
     * algorithm in a .tla input file.  The translation is put immediately  *
     * after any line containing                                            *
     *                                                                      *
-    *    BeginXLation1 [one or more spaces] BeginXlation2                  *
+    *    BeginXLation1 [one space] BeginXlation2                           *
     *                                                                      *
     * It is followed by a line containing                                  *
     *                                                                      *
-    *    EndXLation1 [one or more spaces] EndXlation2.                     *
+    *    EndXLation1 [one space] EndXlation2                               *
     ***********************************************************************/
     public static final String BeginXlation1 = "BEGIN" ;
     public static final String BeginXlation2 = "TRANSLATION" ;
 
     public static final String EndXlation1 = "END" ;
     public static final String EndXlation2 = "TRANSLATION" ;
+    
+    // Checksum marker keywords - introduced as part of https://github.com/tlaplus/tlaplus/issues/296
+    public static final String PCAL_CHECKSUM_KEYWORD = "PC-";
+    public static final String TRANSLATED_PCAL_CHECKSUM_KEYWORD = "TPC-";
 
   /*************************************************************************
   * The string identifying the end of the automatically generated part of  *

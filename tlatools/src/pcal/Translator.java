@@ -26,6 +26,7 @@
  ******************************************************************************/
 package pcal;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -62,23 +63,21 @@ public class Translator
      * @return 
      */
 	public boolean translate() {
-		final Vector<String> in = new Vector<String>();
 		// The input .tla file might have unix or windows line ending. If we fail to
 		// properly split the input (a line per array cell), the pcal translator will
 		// silently fail as well.
 		final String[] lines = input.split("\\r?\\n");
-		for (String line : lines) {
-			in.add(line);
-		}
+		final List<String> in = Arrays.asList(lines);
 		
-		final Vector<String> out = trans.runMe(in);
+		final List<String> out = trans.performTranslation(in);
 		if (out != null) {
-			final StringBuffer buf = new StringBuffer(out.size());
-			for (String line : out) {
+			final StringBuilder buf = new StringBuilder();
+			final String lineSeparator = System.getProperty("line.separator");
+			for (final String line : out) {
 				buf.append(line);
 				// The output .tla file will use the OS's line ending which is in line with the
 				// the translator's legacy behavior.
-				buf.append(System.getProperty("line.separator"));
+				buf.append(lineSeparator);
 			}
 			output = buf.toString();
 		}
