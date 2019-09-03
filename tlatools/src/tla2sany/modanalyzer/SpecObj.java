@@ -1005,8 +1005,6 @@ public class SpecObj
 	private void validateParseUnit(final ParseUnit parseUnit) {
     	final File f = parseUnit.getNis().sourceFile();
     	
-    	ToolIO.out.println("Validating: " + f.getAbsolutePath());
-
     	try (final FileInputStream fis = new FileInputStream(f)) {
     		final Validator.ValidationResult result = Validator.validate(fis);
     		

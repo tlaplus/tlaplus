@@ -1,5 +1,6 @@
 package pcal;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +12,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.io.IOUtils;
 
 import pcal.exception.ParseAlgorithmException;
 
@@ -49,15 +48,23 @@ public class Validator {
 	/**
 	 * This method is a convenience wrapped around {@link #validate(List)}.
 	 * 
-	 * @param inputStream an stream to the entire specification to be validated.
+	 * @param inputStream an stream to the entire specification to be validated; this stream is not closed.
 	 * @return the result of the validation, as enumerated by the inner enum of this class.
 	 */
 	public static ValidationResult validate(final InputStream inputStream)
 			throws IOException {
         final String specContents;
     	final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	final byte[] buffer = new byte[4096];
+    	final BufferedInputStream bis = (inputStream instanceof BufferedInputStream)
+    											? (BufferedInputStream)inputStream
+    											: new BufferedInputStream(inputStream);
     	
-    	IOUtils.copy(inputStream, baos);
+        int bytesRead;
+        while ((bytesRead = bis.read(buffer)) != -1) {
+        	baos.write(buffer, 0, bytesRead);
+        }
+        
     	specContents = new String(baos.toByteArray(), "UTF-8");
 
 		final String[] lines = specContents.split("\\r?\\n");

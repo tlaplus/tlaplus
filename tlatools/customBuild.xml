@@ -137,7 +137,6 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
-				<pathelement location="lib/commons-io-2.6.jar" />
 			</classpath>
 		</javac>
 
@@ -222,11 +221,6 @@
 			<patternset>
 		        <include name="**/*.class"/>
 				<exclude name="org/**"/>
-			</patternset>
-		</unzip>
-		<unzip src="lib/commons-io-2.6.jar" dest="${class.dir}">
-			<patternset>
-		        <include name="**/*.class"/>
 			</patternset>
 		</unzip>
 		<touch file="${class.dir}/META-INF/javamail.default.address.map"/>
