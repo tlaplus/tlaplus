@@ -80,7 +80,7 @@ EXTENDS Sequences, Naturals, TLC
 
 ASSUME \forall i \in {} : i \geq 1
 
-\* BEGIN TRANSLATION PC-699985c5d230f3175151708017c180c489ea7f54d3f48793bf71b2ebff9267c9
+\* BEGIN TRANSLATION PCal-9ef67f07b10dbbf43fc7d4cb2d8d7b02
 \* Label P1 of procedure P at line 22 col 17 changed to P1_
 CONSTANT defaultInitValue
 VARIABLES x, y, z, pc, stack
@@ -224,5 +224,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TPC-a127283f5e7a2eb694ee199ad74a843646b692e8dba339577adb713db69b8453
+\* END TRANSLATION TLA-c0ae8bdf7ad8a969ed412d1b64210cb9
 ========================================

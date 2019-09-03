@@ -20,7 +20,7 @@ EXTENDS Naturals, Sequences, TLC
 *)
 
 					
-\* BEGIN TRANSLATION PC-ce6dc0e05794186934b5326b29e10c79eb2c436351738bb26855ec9fb0cd6cd2
+\* BEGIN TRANSLATION PCal-925d38ef233a8a8c33b34bb25ba0c30d
 VARIABLES x, y, n, i, pc, stack, incr, z
 
 vars == << x, y, n, i, pc, stack, incr, z >>
@@ -77,5 +77,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-06375659b5cf637b6d744f7ef696a1ba0f39e46f663bff8cfc8b368967cfccfc
+\* END TRANSLATION TLA-1145b37773754e0c960b38596f8082a0
 =============================================================================

@@ -37,7 +37,7 @@ Factorial Algorithm with 2 procedures
   end algorithm
 ***************************************************************************)
 
-\* BEGIN TRANSLATION PC-b2e1f835f06e7d3a6329577f2532807513e3090f7a55fa35a3a1d877795a9e2e
+\* BEGIN TRANSLATION PCal-b4a39db84a865a6dcb14d3b14f4d88b3
 VARIABLES result, pc, stack, arg1, u, arg2, u2
 
 vars == << result, pc, stack, arg1, u, arg2, u2 >>
@@ -157,7 +157,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TPC-5fec47ffbf3f6c5c2be063c50d64e0b6c6f310e37755a06e0fb10458136578ee
+\* END TRANSLATION TLA-81af4b8b8e1c44a573ab6b21fa7843b0
 
 
 Invariant == result \in Nat

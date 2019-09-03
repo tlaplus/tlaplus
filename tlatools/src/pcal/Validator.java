@@ -1,12 +1,18 @@
 package pcal;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.IOUtils;
 
 import pcal.exception.ParseAlgorithmException;
 
@@ -40,6 +46,24 @@ public class Validator {
 	static final Pattern TRANSLATED_PCAL_CHECKSUM_PATTERN = Pattern
 			.compile(PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + "[0-9a-f]+$");
 
+	/**
+	 * This method is a convenience wrapped around {@link #validate(List)}.
+	 * 
+	 * @param inputStream an stream to the entire specification to be validated.
+	 * @return the result of the validation, as enumerated by the inner enum of this class.
+	 */
+	public static ValidationResult validate(final InputStream inputStream)
+			throws IOException {
+        final String specContents;
+    	final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	
+    	IOUtils.copy(inputStream, baos);
+    	specContents = new String(baos.toByteArray(), "UTF-8");
+
+		final String[] lines = specContents.split("\\r?\\n");
+		return validate(Arrays.asList(lines));
+	}
+	
 	/**
 	 * There is some redundancy between this and {@link trans#performTranslation(List)} - it would be nice to make a
 	 * 	common method, extended by each.
@@ -110,8 +134,8 @@ public class Validator {
 
 		final int translationLine = trans.findTokenPair(deTabbedSpecification, 0, PcalParams.BeginXlation1,
 				PcalParams.BeginXlation2);
-        final String pcalSHA256;
-        final String translatedSHA256;
+        final String pcalMD5;
+        final String translatedMD5;
 		if (translationLine == -1) {
             return ValidationResult.NO_TRANSLATION_EXISTS;
 		} else {
@@ -124,22 +148,22 @@ public class Validator {
 			final String beginLine = deTabbedSpecification.get(translationLine);
         	Matcher m = Validator.PCAL_CHECKSUM_PATTERN.matcher(beginLine);
         	if (m.find()) {
-        		pcalSHA256 = beginLine.substring(m.start() + PcalParams.PCAL_CHECKSUM_KEYWORD.length());
+        		pcalMD5 = beginLine.substring(m.start() + PcalParams.PCAL_CHECKSUM_KEYWORD.length());
         	} else {
         		return ValidationResult.NO_CHECKSUMS_EXIST;
         	}
         	final String endLine = deTabbedSpecification.get(endTranslationLine);
         	m = Validator.TRANSLATED_PCAL_CHECKSUM_PATTERN.matcher(endLine);
         	if (m.find()) {
-        		translatedSHA256 = endLine.substring(m.start() + PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD.length());
+        		translatedMD5 = endLine.substring(m.start() + PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD.length());
         	} else {
         		return ValidationResult.NO_CHECKSUMS_EXIST;
         	}
 
         	final Vector<String> translation = new Vector<>(specificationText.subList((translationLine + 1),
         																			   endTranslationLine));
-        	final String calculatedSHA256 = calculateSHA256(translation);
-        	if (!translatedSHA256.equals(calculatedSHA256)) {
+        	final String calculatedMD5 = calculateMD5(translation);
+        	if (!translatedMD5.equals(calculatedMD5)) {
         		return ValidationResult.DIVERGENCE_EXISTS;
         	}
         }
@@ -169,26 +193,26 @@ public class Validator {
 			return ValidationResult.ERROR_ENCOUNTERED;
 		}
         
-        final String calculatedSHA256 = Validator.calculateSHA256(ast.toString());
-    	if (!pcalSHA256.equals(calculatedSHA256)) {
+        final String calculatedMD5 = Validator.calculateMD5(ast.toString());
+    	if (!pcalMD5.equals(calculatedMD5)) {
     		return ValidationResult.DIVERGENCE_EXISTS;
     	}
 
 		return ValidationResult.NO_DIVERGENCE;
 	}
     
-    static String calculateSHA256(final Vector<String> lines) {
+    static String calculateMD5(final Vector<String> lines) {
     	final StringBuilder sb = new StringBuilder();
     	for (final String str : lines) {
     		sb.append(str);
     	}
     	
-    	return calculateSHA256(sb.toString());
+    	return calculateMD5(sb.toString());
     }
     
-    static String calculateSHA256(final String string) {
+    static String calculateMD5(final String string) {
     	try {
-        	final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        	final MessageDigest digest = MessageDigest.getInstance("MD5");
         	final byte[] hash = digest.digest(string.getBytes(StandardCharsets.UTF_8));
         	final StringBuffer hexString = new StringBuffer();
 			for (int i = 0; i < hash.length; i++) {
@@ -200,7 +224,7 @@ public class Validator {
 			}
             return hexString.toString();
     	} catch (final NoSuchAlgorithmException e) {
-    		PcalDebug.reportError("Unable to calculate SHA256: " + e.getMessage());
+    		PcalDebug.reportError("Unable to calculate MD5: " + e.getMessage());
     		return null;
     	}
     }

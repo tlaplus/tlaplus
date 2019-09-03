@@ -915,7 +915,7 @@ class trans
         }
         PcalDebug.reportInfo("Parsing completed.");
         
-        final String pcalSHA256 = Validator.calculateSHA256(ast.toString());
+        final String pcalMD5 = Validator.calculateMD5(ast.toString());
 // tla-pcal debugging
 //System.out.println("Translation Output:");
 //System.out.println(ast.toString());
@@ -990,11 +990,11 @@ class trans
         }
         
         final String beginLine = output.remove(mapping.tlaStartLine - 1);
-        output.add((mapping.tlaStartLine - 1), (beginLine + PcalParams.PCAL_CHECKSUM_KEYWORD + pcalSHA256));
+        output.add((mapping.tlaStartLine - 1), (beginLine + PcalParams.PCAL_CHECKSUM_KEYWORD + pcalMD5));
         
-        final String translationSHA256 = Validator.calculateSHA256(translation);
+        final String translationMD5 = Validator.calculateMD5(translation);
         final String endLine = output.remove(mapping.tlaStartLine);
-		output.add(mapping.tlaStartLine, (endLine + PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + translationSHA256));
+		output.add(mapping.tlaStartLine, (endLine + PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + translationMD5));
 
         /*********************************************************************
         * Add the translation to outputVec.                                  *

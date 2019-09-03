@@ -17,7 +17,7 @@ EXTENDS Naturals, Sequences, TLC
   end algorithm
 *)
 					
-\* BEGIN TRANSLATION PC-d896243e5530d88b37abdab8dd55b4410f0bfd562ddc38d55fe0a56daf93d48a
+\* BEGIN TRANSLATION PCal-6a1ac8b08c9ed86b40d0f6e5ef5cbdb0
 CONSTANT defaultInitValue
 VARIABLES n, pc, stack
 
@@ -72,5 +72,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-70c05896cdc77c858cb9d71b1dd77aff4de8d333b11fee3df4332aab61f3fe60
+\* END TRANSLATION TLA-bb2646c148c04705a11ba77b1f981f05
 =============================================================================

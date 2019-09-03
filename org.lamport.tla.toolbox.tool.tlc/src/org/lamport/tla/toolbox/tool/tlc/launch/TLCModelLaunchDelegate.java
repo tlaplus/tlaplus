@@ -161,21 +161,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         if (specType != MODEL_BEHAVIOR_TYPE_NO_SPEC) {
             final Model model = config.getAdapter(Model.class);
             final IFile rootModule = model.getSpec().toSpec().getRootFile();
-            final String specContents;
+            final Validator.ValidationResult result;
 
             try (final InputStream is = rootModule.getContents()) {
-            	final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            	IOUtils.copy(is, baos);
-            	specContents = new String(baos.toByteArray(), "UTF-8");
+            	result = Validator.validate(is);
             } catch (final IOException e) {
             	monitor.done();
             	
             	throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, e.getMessage()));
             }
             
-    		final String[] lines = specContents.split("\\r?\\n");
-    		final List<String> specText = Arrays.asList(lines);
-            final Validator.ValidationResult result = Validator.validate(specText);
             switch (result) {
             	case NO_PLUSCAL_EXISTS:
             	case NO_DIVERGENCE:

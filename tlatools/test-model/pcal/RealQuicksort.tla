@@ -50,7 +50,7 @@ Max(S) == CHOOSE i \in S : \A j \in S : i \geq j
 
 *)
 					
-\* BEGIN TRANSLATION PC-0d20752cd1e79fb8624e361a73c019810cfe3cab245246ea3b4a5717264dbfaf
+\* BEGIN TRANSLATION PCal-1f05a46c32a9d2bb1934b39aad724eed
 CONSTANT defaultInitValue
 VARIABLES A, Uns, new, pc, stack, parg
 
@@ -116,7 +116,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-f98d37fb7b3dc6a22f7933b00481ae4e3f05409485ec201bc6124169d6c7c336
+\* END TRANSLATION TLA-4de5033005d037379ed702fb72c5f705
 
 Invariant == 
    (pc = "Done") => \A i, j \in 1..Len(A) :

@@ -77,7 +77,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION PC-67d16a63a1078128e128e49b3a86f51b12d1219816682acd5353e97e9bb30a0e
+\* BEGIN TRANSLATION PCal-cc9279d759058abea504462b4ff084d7
 VARIABLES x, y, b, pc, j, failed, j2, failed2
 
 vars == << x, y, b, pc, j, failed, j2, failed2 >>
@@ -284,7 +284,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..M : WF_vars(Proc1(self))
         /\ \A self \in (M+1)..N : WF_vars(Proc2(self))
 
-\* END TRANSLATION TPC-bc693921e9d1a06a923e1fc97814ec8c5cdedfe0b8dc360f1e57ee3e99b44835
+\* END TRANSLATION TLA-3862da72da966d861f548da308a59a9e
 
 ASSUME Print(<<"ProcSet =" , ProcSet>>, TRUE)
 inCS(i) ==  IF i \in 1..M 

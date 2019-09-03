@@ -42,6 +42,7 @@ Eclipse-BundleShape: dir
 Require-Bundle: org.aspectj.runtime;bundle-version="1.6.0";resolution:=optional;x-installation:=greedy,
  org.junit;bundle-version="4.12.0";resolution:=optional;x-installation:=greedy,
  javax.mail;bundle-version="1.4.0";resolution:=optional,
- org.easymock;bundle-version="2.4.0";resolution:=optional
+ org.easymock;bundle-version="2.4.0";resolution:=optional,
+ org.apache.commons.io
 Bundle-ClassPath: .
 Automatic-Module-Name: org.lamport.tlatools

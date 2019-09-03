@@ -14,7 +14,7 @@ EXTENDS Naturals, Sequences, TLC
   
 *)
 					
-\* BEGIN TRANSLATION PC-5df847a77f754a7dc24602c8e9c42d08a36b0244365061f77f34e895d19a98dc
+\* BEGIN TRANSLATION PCal-9c797e1d4e2fc4c259c478fdea1bd5fa
 CONSTANT defaultInitValue
 VARIABLES n, pc
 
@@ -55,5 +55,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TPC-7d01b66d282f4cbad87c513b02e3dd43528dcf06a5fdbf02243c55908c63e85e
+\* END TRANSLATION TLA-70c2856f6a2b2707884c9cedc014d866
 =============================================================================

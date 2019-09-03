@@ -21,7 +21,7 @@ EXTENDS Naturals, Sequences, TLC
   end algorithm
 ***************************************************************************)
 
-\* BEGIN TRANSLATION PC-02a2ac74d9c38708d7090e69a785c03474acff0645e945258a372a5581beb94a
+\* BEGIN TRANSLATION PCal-8354903ee5c9ddae0b8bb4f55d782009
 VARIABLES result, pc, stack, arg1, u
 
 vars == << result, pc, stack, arg1, u >>
@@ -76,7 +76,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-7c805838962eadbc72b85d7222677303ac50633afe1c26e6523d907573e755f7
+\* END TRANSLATION TLA-53ca468546a563a45762642894b2b2a3
 
 
 Invariant == result \in Nat

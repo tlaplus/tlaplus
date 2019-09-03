@@ -44,7 +44,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION PC-4e4969816214f13a98393548aecdd14262dd5309440d6b116b6523fddd0bc7e6
+\* BEGIN TRANSLATION PCal-0bb63b56a09bbe2e9360c99d30162534
 CONSTANT defaultInitValue
 VARIABLES x, y, b, pc, j, failed
 
@@ -156,7 +156,7 @@ Next == (\E self \in 1..N: Proc(self))
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..N : WF_vars(Proc(self))
 
-\* END TRANSLATION TPC-baa1dc6da1a9f921d833d64f8616545abbcfb6c920142a4c180d05686da10c7f
+\* END TRANSLATION TLA-7588f44b8dba7eba3195a1299d84da82
 
 inCS(i) ==  (pc[i] = "cs") /\ (~failed[i])
 

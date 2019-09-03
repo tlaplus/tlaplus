@@ -77,7 +77,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION PC-681c650ae685b409041b608b5e420c7dfae88400d4767df0ec34011ba59d184d
+\* BEGIN TRANSLATION PCal-1901ed6bf685f13ebc84143ab4ef5b13
 VARIABLES x, y, b, pc, j, failed, j2, failed2
 
 vars == << x, y, b, pc, j, failed, j2, failed2 >>
@@ -282,7 +282,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Proc1)
         /\ \A self \in 2..N : WF_vars(Proc2(self))
 
-\* END TRANSLATION TPC-75e5ffed42d029267a0231f0c4a43d1efc7c0c701ba68ce9ef8f7572da77210f
+\* END TRANSLATION TLA-35555ac3cdd01367ca89de83ceeebd64
 
 ASSUME Print(<<"ProcSet =" , ProcSet>>, TRUE)
 inCS(i) ==  IF i = 1 THEN (pc[i] = "cs") /\ (~failed)

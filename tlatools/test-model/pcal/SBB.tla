@@ -68,7 +68,7 @@ end algorithm
 *)    
 
 
-\* BEGIN TRANSLATION PC-533b33c7746a172d777f80327880e4a57ff1d51f621fa5b1f725a48bfe250b61
+\* BEGIN TRANSLATION PCal-28938b6571490e0f82ac59c63d6f47e4
 VARIABLES sb, availablebuffers, publishedbuffers, pc, buf, op
 
 vars == << sb, availablebuffers, publishedbuffers, pc, buf, op >>
@@ -140,7 +140,7 @@ Next == (\E self \in Pid: work(self))
 
 Spec == Init /\ [][Next]_vars
 
-\* END TRANSLATION TPC-4eab0d144e170064e19bed8461e1a580302cc1181d4c4c81d6f234e83535d765
+\* END TRANSLATION TLA-0476e94d7836683a2a4a6e344c5a0a7b
 
 
 Immutability ==

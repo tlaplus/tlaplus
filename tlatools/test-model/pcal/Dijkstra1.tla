@@ -26,7 +26,7 @@ CONSTANT K, N
 
 ASSUME (K > N) /\ (N > 0) 
 
-\* BEGIN TRANSLATION PC-a6c76b23c82b24e8ecc1a1a75b329b11d5b7628df7e2c17c90f259d220247cd1
+\* BEGIN TRANSLATION PCal-64143a14f748e286ec27eafe96303703
 VARIABLES M, pc
 
 vars == << M, pc >>
@@ -67,7 +67,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(P0)
         /\ \A self \in 1..(N-1) : WF_vars(Pi(self))
 
-\* END TRANSLATION TPC-9cca10256f3ddc211087d2fd207b43d51735d9dc8239d0ac85a3ae2e81e5992f
+\* END TRANSLATION TLA-80735c28b54285a89ec67fce31b85c9d
 
 HasToken(self) == \/ (self = 0) /\ (M[0] = M[N - 1])
                   \/ (self > 0) /\ (M[self] # M[self - 1])

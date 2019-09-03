@@ -22,7 +22,7 @@ GCD(x, y) == CHOOSE i \in (1..x) \cap (1..y) :
                         /\ y % j = 0
                         => i \geq j
 
-\* BEGIN TRANSLATION PC-c0026365244d76fdd62da89c3b234915b96008e9ca8cd45b9973769228b5acb0
+\* BEGIN TRANSLATION PCal-e89e843c1bd319cda8806c448153d025
 VARIABLES u, v, v_ini, pc
 
 vars == << u, v, v_ini, pc >>
@@ -63,6 +63,6 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-21593852d504144d808d2557adc10cbb888d63a6d60e993a218c4d4cc21b6deb
+\* END TRANSLATION TLA-13d9c528c7c380488278c40608c11ba4
  
 =============================================================================

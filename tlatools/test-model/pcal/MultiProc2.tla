@@ -31,7 +31,7 @@ EXTENDS Sequences, Naturals, TLC
     end algorithm 
 *)
 					
-\* BEGIN TRANSLATION PC-0bb6bd53c69de01e61f9ed5e1e69de3b86cf6dbc880ccd4ffb22cc831444dde6
+\* BEGIN TRANSLATION PCal-6a3f53faa6a08b14086cf6736a14399e
 VARIABLES x, sum, done, pc, stack, arg, u, y, z
 
 vars == << x, sum, done, pc, stack, arg, u, y, z >>
@@ -127,5 +127,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TPC-dc21bc218d6288ce0ae654b50724d4a0f213fc0840ff71f644c4ea70c78443cd
+\* END TRANSLATION TLA-3f17bd1aee44cca22b14ef7de16f1390
 =============================================================================

@@ -37,7 +37,7 @@ Proc == 1..NumProcs  \* The set of processes
 ********)
 
   
-\* BEGIN TRANSLATION PC-215a763c5a1c3fbf94d8e9593b6e95438149a39fe2faa8c7a9f1a19beff20e17
+\* BEGIN TRANSLATION PCal-3787a86d71fe978e1e68a7e275a515ae
 VARIABLES num, choosing, pc, read, max, nxt
 
 vars == << num, choosing, pc, read, max, nxt >>
@@ -120,7 +120,7 @@ Next == (\E self \in Proc: proc(self))
 
 Spec == Init /\ [][Next]_vars
 
-\* END TRANSLATION TPC-c6050d57326956b2f253aea65dec1258950275159923f01bb537cbae5d489221
+\* END TRANSLATION TLA-044cd15e6eddcf8edc1cfa67089d17cf
 Constraint 
 == \A i \in Proc : num[i] \leq MaxNum
 

@@ -40,7 +40,7 @@ l01 : while (TRUE)
           }
 } }
 ********)
-\******** BEGIN TRANSLATION ******** PC-04d74d66213c9565565ffc5297787eda1d0f89432eafa760abd9664f4fb28992
+\******** BEGIN TRANSLATION ******** PCal-d34a24305f241c923d0f8daa00682e02
 VARIABLES sem, pc
 
 vars == << sem, pc >>
@@ -109,7 +109,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..(N-1) : SF_vars(Proc(self))
         /\ SF_vars(Proc0)
 
-\******** END TRANSLATION ******** TPC-bd98f7d17af63eba4091a056d19515256f71bb4510d96ee07158bbe088a23c4d
+\******** END TRANSLATION ******** TLA-ff7acdd47d76382441ae75c392052170
 
 IsEating(i) == IF i = 0 THEN pc[i] = "e0"
                         ELSE pc[i] = "e"

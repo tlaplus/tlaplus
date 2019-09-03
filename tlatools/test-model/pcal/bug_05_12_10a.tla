@@ -76,7 +76,7 @@ alg == [type |-> "uniprocess",
   end algorithm
 *)
 
-\* BEGIN TRANSLATION PC-24aee8f999a62ad961c012b6d271be80eed3472917907a3de1f3656aaf132225
+\* BEGIN TRANSLATION PCal-019f5cd9d60f4235bafaf7162f8ed3b4
 \* Label IA5a of procedure IsAlgorithm at line 43 col 38 changed to IA5a_
 \* Procedure variable i of procedure IsAlgorithm at line 21 col 28 changed to i_
 CONSTANT defaultInitValue
@@ -305,5 +305,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-3727d8cc2219ec5bf0fd4079e2a4354bc6d0ff5bc7411b690d7aff5cc575402f
+\* END TRANSLATION TLA-1e7f8dbaa6644662e3fa38b76045e01d
 =============================================================================

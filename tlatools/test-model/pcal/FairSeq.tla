@@ -10,7 +10,7 @@ PlusCal options (version 1.5)
     }
 }
  ***************************************************************************)
-\* BEGIN TRANSLATION PC-755164df2e2bd65e9569f4d78be1801bb6d9ca6b02d3e1cfd34ce0fab635434d
+\* BEGIN TRANSLATION PCal-07e0e68497291a78b07d8fb9d5597180
 VARIABLES x, pc
 
 vars == << x, pc >>
@@ -37,7 +37,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-9037c011edf54e46da7478c88cda9045db618e0b27957dbea2c72c4b044f5c09
+\* END TRANSLATION TLA-8d9de25f8162fd0489585bc374dff964
 =============================================================================
 \* Modification History
 \* Last modified Sun Mar 20 10:13:11 PDT 2011 by lamport

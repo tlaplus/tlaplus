@@ -22,7 +22,7 @@ C:
   goto A;
 
 end algorithm *)
-\* BEGIN TRANSLATION PC-3f2fa73e541043025def1e8d364b252055cbd346d97d1540e76635c379292a39
+\* BEGIN TRANSLATION PCal-4786c31224fe8555dc7ad50128a92fc6
 VARIABLES x, pc, stack
 
 vars == << x, pc, stack >>
@@ -66,6 +66,6 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-0007aa5acdd9b6827fba4c69957e641fc5e2c73ee8e967e91815d1b2e22a1362
+\* END TRANSLATION TLA-8ca0b91b1573d7c7ae4c4135afa5f61b
 
 ====

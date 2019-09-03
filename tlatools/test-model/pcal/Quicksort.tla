@@ -47,7 +47,7 @@ PermsOf(Arr) ==
   end algorithm
 *)
 					
-\* BEGIN TRANSLATION PC-581e5df5a4c60e9995328200cf476d7af929413b9fc9fa0b6c01e8f0b2cfdd72
+\* BEGIN TRANSLATION PCal-9360dabbf03d04fb938a53e6f43a0dc3
 CONSTANT defaultInitValue
 VARIABLES Ainit, A, returnVal, pc, stack, lo, hi, qlo, qhi, pivot
 
@@ -162,7 +162,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-fb734a6527439751c4929bf42b4575e073661a26752789fba5a201c1df9db615
+\* END TRANSLATION TLA-c890d98935ff53e5f234680508ac16aa
 =============================================================================
 Checked without termination on svc-lamport-2 with 2 workers:
   arrayLen = 4 in 15 sec, 32280 states, depth 22

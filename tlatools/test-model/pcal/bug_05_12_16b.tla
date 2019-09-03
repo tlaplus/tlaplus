@@ -15,7 +15,7 @@
 ----------- MODULE bug_05_12_16b -----------
 EXTENDS Naturals, Sequences, TLC
  
-\* BEGIN TRANSLATION PC-a52b6b18a37485c3030063187a015730de7758ea89c726d8eb5cbc474aeef8aa
+\* BEGIN TRANSLATION PCal-7f01be0bd1e78f7ef9aee292dd8f66fc
 VARIABLES pc, stack, a, x, y
 
 vars == << pc, stack, a, x, y >>
@@ -71,6 +71,6 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TPC-26297bcd17a49213fa9558c6b3c54b7e1ded3ec60bbe832745422203657e89dc
+\* END TRANSLATION TLA-e3a05375e3bf2d3d55b6d92003f1f2fa
 
 ========================================

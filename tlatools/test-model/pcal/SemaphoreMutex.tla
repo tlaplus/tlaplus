@@ -29,7 +29,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION PC-3e98cb139311acc8454991fa59d1dee548d00fc231c9955d092da7f030a84ba8
+\* BEGIN TRANSLATION PCal-44c6b54854f894e836bedeb86826fe34
 VARIABLES sem, pc
 
 vars == << sem, pc >>
@@ -65,7 +65,7 @@ Next == (\E self \in 1..N: Proc(self))
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..N : SF_vars(Proc(self))
 
-\* END TRANSLATION TPC-5bf70a0cad4e8b2c6490b6daf0e6bafd3f65cc65c178083fad766480ec119b3b
+\* END TRANSLATION TLA-30232ad9c07579ad742b84411a6a279a
 
 inCS(i) ==  (pc[i] = "cs") 
 

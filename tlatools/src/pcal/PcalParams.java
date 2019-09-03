@@ -196,8 +196,8 @@ public final class PcalParams
     public static final String EndXlation2 = "TRANSLATION" ;
     
     // Checksum marker keywords - introduced as part of https://github.com/tlaplus/tlaplus/issues/296
-    public static final String PCAL_CHECKSUM_KEYWORD = "PC-";
-    public static final String TRANSLATED_PCAL_CHECKSUM_KEYWORD = "TPC-";
+    public static final String PCAL_CHECKSUM_KEYWORD = "PCal-";
+    public static final String TRANSLATED_PCAL_CHECKSUM_KEYWORD = "TLA-";
 
   /*************************************************************************
   * The string identifying the end of the automatically generated part of  *

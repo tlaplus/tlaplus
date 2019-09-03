@@ -16,7 +16,7 @@ EXTENDS Naturals, Sequences, TLC
   end algorithm
 *)
 					
-\* BEGIN TRANSLATION PC-1b44ee1584c71e267451734f7bfed1f6641f31930b435e06c1983f1e780256b6
+\* BEGIN TRANSLATION PCal-1f8e16f0d9c2b45f0271cd3d8415f9b8
 VARIABLES pc, stack, a, x, y
 
 vars == << pc, stack, a, x, y >>
@@ -62,5 +62,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TPC-0a2effa1aa37e466cbdd62252c47591602b03ea80da7a10a4d8ed69f870624b1
+\* END TRANSLATION TLA-6df4c643b7934c47f1761b2b8aced244
 =============================================================================
