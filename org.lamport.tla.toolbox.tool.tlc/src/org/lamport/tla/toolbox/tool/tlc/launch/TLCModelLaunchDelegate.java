@@ -2,14 +2,12 @@ package org.lamport.tla.toolbox.tool.tlc.launch;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -17,9 +15,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.core.internal.resources.ResourceException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -49,7 +47,9 @@ import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Display;
@@ -102,12 +102,8 @@ import util.ExecutionStatisticsCollector;
  * Modified on 10 Sep 2009 to add No Spec TLC launch option.
  */
 @SuppressWarnings("restriction")
-public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implements IModelConfigurationConstants,
-        IModelConfigurationDefaults
-{
-    // Mutex rule for the following jobs to run after each other
-    protected MutexRule mutexRule = new MutexRule();
-
+public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
+		implements IModelConfigurationConstants, IModelConfigurationDefaults {
     /**
      * Configuration type
      */
@@ -120,8 +116,14 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
      * Only generate the models but do not run TLC
      */
     public static final String MODE_GENERATE = "generate";
+    
+    private static final AtomicBoolean PERFORM_VALIDATION_BEFORE_LAUNCH = new AtomicBoolean(true);
 
-	private Launch launch;
+
+    // Mutex rule for the following jobs to run after each other
+    protected MutexRule mutexRule = new MutexRule();
+
+    private Launch launch;
 
     /**
      * 1. method called during the launch
@@ -158,7 +160,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
         }
 		
         final int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
-        if (specType != MODEL_BEHAVIOR_TYPE_NO_SPEC) {
+        if ((specType != MODEL_BEHAVIOR_TYPE_NO_SPEC) && PERFORM_VALIDATION_BEFORE_LAUNCH.get()) {
             final Model model = config.getAdapter(Model.class);
             final IFile rootModule = model.getSpec().toSpec().getRootFile();
             final Validator.ValidationResult result;
@@ -171,42 +173,67 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate implemen
             	throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, e.getMessage()));
             }
             
+    		final MessageDialogWithToggle dialog;
             switch (result) {
             	case NO_PLUSCAL_EXISTS:
             	case NO_DIVERGENCE:
             		break;
             	case ERROR_ENCOUNTERED:
-					final boolean ignoreError = MessageDialog.openQuestion(
+					dialog = MessageDialogWithToggle.openYesNoQuestion(
 							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "Error encountered",
-							"Something went wrong attempting to detect divergence between PlusCal and its translation, continue anyway?");
+							"Something went wrong attempting to detect divergence between PlusCal and its translation, continue anyway?",
+							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
+							null, null);
 					
-					if (!ignoreError) {
+					if (dialog.getToggleState()) {
+						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
+					}
+					
+					if (dialog.getReturnCode() == IDialogConstants.NO_ID) {
 						return false;
 					}
         			break;
             	case NO_TRANSLATION_EXISTS:
-					final boolean translationError = MessageDialog.openQuestion(
+					dialog = MessageDialogWithToggle.openYesNoQuestion(
 							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "Translation missing",
-							"Your spec appears to contain PlusCal but no TLA+ translation, are you sure you want to continue?");
+							"Your spec appears to contain PlusCal but no TLA+ translation, are you sure you want to continue?",
+							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
+							null, null);
 					
-					if (!translationError) {
+					if (dialog.getToggleState()) {
+						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
+					}
+					
+					if (dialog.getReturnCode() == IDialogConstants.NO_ID) {
 						return false;
 					}
         			break;
             	case NO_CHECKSUMS_EXIST:
-					MessageDialog.openInformation(
+					dialog = MessageDialogWithToggle.openInformation(
 							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "A note about your spec",
 							"Your spec contains PlusCal and a TLA+ translation - but they have not been verified to "
-								+ "be in sync; consider re-translating the PlusCal algorithm.");
+									+ "be in sync; consider re-translating the PlusCal algorithm.",
+							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
+							null, null);
+					
+					if (dialog.getToggleState()) {
+						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
+					}
 
             		break;
             	case DIVERGENCE_EXISTS:
-					final boolean stopLaunch = MessageDialog.openQuestion(
+					dialog = MessageDialogWithToggle.openYesNoQuestion(
 							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "PlusCal out of sync",
 							"The PlusCal and TLA+ translation in your spec appear to be out of sync - would you like to"
-								+ " stop the launch?");
+									+ " stop the launch?",
+							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
+							null, null);
 					
-					if (stopLaunch) {
+					if (dialog.getToggleState()) {
+						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
+					}
+					
+					if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
 						return false;
 					}
             		break;
