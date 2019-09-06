@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -34,7 +35,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
@@ -52,11 +53,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
+import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.tool.IParseResult;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
@@ -72,6 +75,7 @@ import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
+import org.lamport.tla.toolbox.ui.handler.ShowHistoryHandler;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
@@ -118,6 +122,17 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
     public static final String MODE_GENERATE = "generate";
     
     private static final AtomicBoolean PERFORM_VALIDATION_BEFORE_LAUNCH = new AtomicBoolean(true);
+    
+    private static final Integer DIVERGENCE_CONTINUE_LAUNCH = new Integer(1);
+    private static final Integer DIVERGENCE_SHOW_HISTORY = new Integer(2);
+    private static final LinkedHashMap<String, Integer> DIVERGENCE_DIALOG_BUTTONS;
+    
+    static {
+    	DIVERGENCE_DIALOG_BUTTONS = new LinkedHashMap<>();
+    	DIVERGENCE_DIALOG_BUTTONS.put("Don't Launch", new Integer(0));
+    	DIVERGENCE_DIALOG_BUTTONS.put("Continue", DIVERGENCE_CONTINUE_LAUNCH);
+    	DIVERGENCE_DIALOG_BUTTONS.put("Stop && Show History", DIVERGENCE_SHOW_HISTORY);
+    }
 
 
     // Mutex rule for the following jobs to run after each other
@@ -222,18 +237,24 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 
             		break;
             	case DIVERGENCE_EXISTS:
-					dialog = MessageDialogWithToggle.openYesNoQuestion(
-							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "PlusCal out of sync",
+					dialog = MessageDialogWithToggle.open(MessageDialogWithToggle.QUESTION,
+							PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+							"PlusCal out of sync",
 							"The PlusCal and TLA+ translation in your spec appear to be out of sync - would you like to"
 									+ " stop the launch?",
-							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
-							null, null);
+							"Do not bug me about PlusCal verification during the rest of my Toolbox session.",
+							false, null, null, SWT.NONE, DIVERGENCE_DIALOG_BUTTONS);
 					
 					if (dialog.getToggleState()) {
 						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
 					}
 					
-					if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
+					if (dialog.getReturnCode() != DIVERGENCE_CONTINUE_LAUNCH.intValue()) {
+						if (dialog.getReturnCode() == DIVERGENCE_SHOW_HISTORY.intValue()) {
+							final Module m = new Module(model.getSpec().getRootFile());
+							ShowHistoryHandler.openHistoryForModule(m);
+						}
+						
 						return false;
 					}
             		break;
@@ -343,7 +364,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                             {
                                 if (!members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE))
                                 {
-                                    members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                                    members[i].delete(IResource.FORCE, SubMonitor.convert(monitor).split(1));
                                 }
                             } catch (CoreException e)
                             {
@@ -360,7 +381,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             } else
             {
                 // create it
-                modelFolder.create(IResource.DERIVED | IResource.FORCE, true, new SubProgressMonitor(monitor, STEP));
+                modelFolder.create(IResource.DERIVED | IResource.FORCE, true, SubMonitor.convert(monitor).split(STEP));
             }
 
             // step 2
@@ -368,7 +389,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 
             // copy
             specRootFile.copy(targetFolderPath.append(specRootFile.getProjectRelativePath()), IResource.DERIVED
-                    | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                    | IResource.FORCE, SubMonitor.convert(monitor).split(1));
             // find the result
             IResource specRootFileCopy = modelFolder.findMember(specRootFile.getProjectRelativePath());
 
@@ -383,13 +404,13 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             copyUserModuleOverride(monitor, 2, project, targetFolderPath, specRootFile);
             
             // get the list of dependent modules
-            List extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
+            List<String> extendedModules = ToolboxHandle.getExtendedModules(specRootFile.getName());
 
             // iterate and copy modules that are needed for the spec
             IFile moduleFile = null;
             for (int i = 0; i < extendedModules.size(); i++)
             {
-                String module = (String) extendedModules.get(i);
+                String module = extendedModules.get(i);
 				// Only take care of user modules and actually *linked* files
 				// (not files defined via TLA_LIBRARY_PATH)
                 if (ToolboxHandle.isUserModule(module) && ResourceHelper.isLinkedFile(project, module))
@@ -399,7 +420,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                     {
 						try {
 	                        moduleFile.copy(targetFolderPath.append(moduleFile.getProjectRelativePath()), IResource.DERIVED
-	                                | IResource.FORCE, new SubProgressMonitor(monitor, STEP / extendedModules.size()));
+	                                | IResource.FORCE, SubMonitor.convert(monitor).split(STEP / extendedModules.size()));
 							copyUserModuleOverride(monitor, STEP / extendedModules.size(), project, targetFolderPath, moduleFile);
 						} catch (ResourceException re) {
                     		// Trying to copy the file to the targetFolderPath produces an exception.
@@ -434,10 +455,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 			for (int i = 0; i < files.length; i++) {
 				if (files[i].exists()) {
 					files[i].setContents(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
-							new SubProgressMonitor(monitor, 1));
+							SubMonitor.convert(monitor).split(1));
 				} else {
 					files[i].create(new ByteArrayInputStream("".getBytes()), IResource.DERIVED | IResource.FORCE,
-							new SubProgressMonitor(monitor, 1));
+							SubMonitor.convert(monitor).split(1));
 				}
 			}
 
@@ -594,7 +615,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             writer.writeFiles(tlaFile, cfgFile, monitor);
 
             // refresh the model folder
-            modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, STEP));
+            modelFolder.refreshLocal(IResource.DEPTH_ONE, SubMonitor.convert(monitor).split(STEP));
 
         } finally
         {
@@ -657,7 +678,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 		for (IFile userModuleOverride : userModuleOverrides) {
 			try {
 				userModuleOverride.copy(targetFolderPath.append(userModuleOverride.getProjectRelativePath()),
-						IResource.DERIVED | IResource.FORCE, new SubProgressMonitor(monitor, ticks));
+						IResource.DERIVED | IResource.FORCE, SubMonitor.convert(monitor).split(ticks));
 			} catch (CoreException e) {
 				// If the file could not be copied, the link is obviously stale
 				// and has to be removed to not create any problems in the
@@ -685,7 +706,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 
         monitor.worked(1);
         // parse the MC file
-        IParseResult parseResult = ToolboxHandle.parseModule(rootModule, new SubProgressMonitor(monitor, 1), false,
+        IParseResult parseResult = ToolboxHandle.parseModule(rootModule, SubMonitor.convert(monitor).split(1), false,
                 false);
         final Vector<TLAMarkerInformationHolder> detectedErrors = parseResult.getDetectedErrors();
         boolean status = !AdapterFactory.isProblemStatus(parseResult.getStatus());
@@ -1022,7 +1043,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 	}
 
 	// This opens up a dialog at the end of the job showing the status message
-    class WithStatusJobChangeListener extends SimpleJobChangeListener {
+    class WithStatusJobChangeListener extends JobChangeAdapter {
 
 		private final Model model;
 		private final DummyProcess process;
@@ -1080,7 +1101,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
     /**
      * listens to the termination of the TLC run 
      */
-    class TLCJobChangeListener extends SimpleJobChangeListener
+    class TLCJobChangeListener extends JobChangeAdapter
     {
         private Model model;
 
@@ -1264,37 +1285,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 			refreshJob.schedule();
         }
     }
-
-    /**
-     * A listener writing the job state to the System.out
-     */
-    class SimpleJobChangeListener extends JobChangeAdapter
-    {
-
-        public void done(IJobChangeEvent event)
-        {
-            String jobName = event.getJob().getName();
-            String status = null;
-            if (event.getResult().isOK())
-            {
-                status = "Done";
-            } else
-            {
-                // analyze the cause
-                switch (event.getResult().getSeverity()) {
-                case IStatus.CANCEL:
-                    status = "Cancelled";
-                    break;
-                case IStatus.ERROR:
-                    status = "Error";
-                    break;
-                default:
-                    status = "Unknown";
-                    break;
-                }
-            }
-        }
-    };
 
     /**
      * A simple mutex rule 

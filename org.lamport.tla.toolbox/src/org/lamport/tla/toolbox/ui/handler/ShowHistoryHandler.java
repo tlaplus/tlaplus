@@ -43,28 +43,31 @@ import org.lamport.tla.toolbox.spec.Module;
 
 @SuppressWarnings("restriction")
 public class ShowHistoryHandler extends AbstractHandler implements IHandler {
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
-	 */
-	public Object execute(final ExecutionEvent event) throws ExecutionException {
+	public static void openHistoryForModule(final Module module) {
 		final IWorkbenchWindow activeWorkbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (activeWorkbenchWindow == null) {
-			return null;
+			return;
 		}
 		
+		final IHistoryView view
+				= TeamUI.showHistoryFor(activeWorkbenchWindow.getActivePage(), module.getResource(), null);
+		final IHistoryPage page = view.getHistoryPage();
+		if (page instanceof LocalHistoryPage) {
+			((LocalHistoryPage)page).setClickAction(true);
+		}
+	}
+	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final ISelection selection = HandlerUtil.getCurrentSelection(event);
 		if (selection instanceof IStructuredSelection) {
 			final IStructuredSelection iss = (IStructuredSelection) selection;
 			final Object input = iss.getFirstElement();
 			if (input instanceof Module) {
-				final IHistoryView view = TeamUI.showHistoryFor(activeWorkbenchWindow.getActivePage(),
-						((Module) input).getResource(), null);
-				final IHistoryPage page = view.getHistoryPage();
-				if (page instanceof LocalHistoryPage) {
-					final LocalHistoryPage historyPage = (LocalHistoryPage) page;
-					historyPage.setClickAction(true);
-				}
+				openHistoryForModule((Module)input);
 			}
 		}
 		return null;
