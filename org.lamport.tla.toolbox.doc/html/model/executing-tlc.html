@@ -197,20 +197,39 @@ the values of their subexpressions from one state to the next.&nbsp;  The color 
 </p>
 
 <p>
-The error trace can be filtered to omit variables and expressions from the displayed states. By clicking on the filter button found to the
-left of the expand-hide all button, the user is presented with a a dialog allowing them to select from the set of variables and expressions
-found in the trace; alternatively, the user may ALT-click on a variable or expression in the Error-Trace tree view which will then omit that
-variable or expression.  Clicking on the filter button again will turn off the filtering.
+The error trace can be filtered to omit variables and expressions from the displayed states,
+as well as hiding variables which have not had their values changed. By clicking on the filter button
+found to the left of the expand-hide all button, the user is presented with a a dialog allowing them
+to select from the set of variables and expressions found in the trace; alternatively, the user may
+ALT-click on a variable or expression in the Error-Trace tree view which will then omit that
+variable or expression.
+<br/>
+On this dialog, the user may also select the visibility of the variables:
+<ul>
+	<li><b>Show all variables:</b> will show all variables, changed and unchanged</li>
+	<li><b>Show only changed variables:</b> will show all variables that have changed at some
+		point during the trace, in each frame even if the value has not changed in that particular
+	  frame.</li>
+	<li><b>Show only changed variables in changed frames:</b> will show only variables that have
+		changed, and only in the frames in which they have changed. If that results in some frames
+	  that have no variables to display, those frames will not be displayed.</li>
+</ul>
+Clicking on the filter button again will turn off the filtering.
 </p>
 
+<p>
+The background colors of the variables in this view change for the following cases:
 <dl>
-<dt><IMG SRC="changed.gif" Align="bottom"/> &nbsp; Value changed in this state.</dt><br></br>
+	<dt><IMG SRC="changed.gif"/></dt>
+	<dd style="margin-bottom: 9px;">Value changed in this state.</dd>
 
-<dt><IMG SRC="added.gif" Align="bottom"/> &nbsp; Value added in this state.</dt><br></br>
+	<dt><IMG SRC="added.gif"/></dt>
+	<dd style="margin-bottom: 9px;">Value added in this state.</dd>
 
-<dt><IMG SRC="removed.gif" Align="bottom"/> &nbsp; Value removed from the next state.</dt>
-
+	<dt><IMG SRC="removed.gif"/></dt>
+	<dd style="margin-bottom: 9px;">Value removed from the next state.</dd>
 </dl>
+</p>
 
 <p>
 The top line of a state's display in the error trace gives the location of the sub-action of the next-state

@@ -195,6 +195,10 @@ public class TLCError
 		}
 		return states;
 	}
+	
+	public void removeStates(final List<TLCState> statesToRemove) {
+		states.removeAll(statesToRemove);
+	}
 
 	public boolean isTraceEmpty() {
 		return numberOfStatesToShow == 0 || states.isEmpty();

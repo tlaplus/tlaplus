@@ -3,6 +3,7 @@ package org.lamport.tla.toolbox.tool.tlc.ui.view;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -153,6 +154,10 @@ public class TLCErrorView extends ViewPart
     private static final IDocument NO_VALUE_DOCUMENT()
     {
         return new Document("Select line in Error Trace to show its value here.");
+    }
+    
+    private enum FilterType {
+    	NONE, VARIABLES, MODIFIED_VALUES_ALL_FRAMES, MODIFIED_VALUES_MODIFIED_FRAMES;
     }
     
     
@@ -570,7 +575,7 @@ public class TLCErrorView extends ViewPart
 								filterErrorTraceAction.setChecked(true);
         					}
         					
-        					performVariableViewPopulation(true);
+        					performVariableViewPopulation(EnumSet.of(FilterType.VARIABLES));
         				}
         			}
         		}
@@ -1501,19 +1506,61 @@ public class TLCErrorView extends ViewPart
 		return variableViewer;
 	}
 	
-	private void performVariableViewPopulation(final boolean filter) {
-		if (!filter || (currentErrorTraceFilterSet.size() == 0)) {
+	private void performVariableViewPopulation(final EnumSet<FilterType> filters) {
+		if (filters.contains(FilterType.NONE)) {
 			setTraceInput(unfilteredInput, false);
 		} else {
-			// It would be much nicer (from both a time and space perspective) were there a veto-ing
-			//		ability provided by TableViewer - like "vetoRow(Object element)". Alas, there is not and
-			//		so we do this clone and filter of the input data.
 			final TLCError filtered = unfilteredInput.clone();
 			
-			for (final TLCState filteredState : filtered.getStates(TLCError.Length.ALL)) {
-				final List<TLCVariable> variables = filteredState.getVariablesAsList();
+			if (filters.contains(FilterType.VARIABLES) && (currentErrorTraceFilterSet.size() > 0)) {
+				// It would be much nicer (from both a time and space perspective) were there a veto-ing
+				//		ability provided by TableViewer - like "vetoRow(Object element)". Alas, there is not and
+				//		so we do this clone and filter of the input data.
+				for (final TLCState filteredState : filtered.getStates(TLCError.Length.ALL)) {
+					final List<TLCVariable> variables = filteredState.getVariablesAsList();
+					
+					variables.removeAll(currentErrorTraceFilterSet);
+				}
+			}
+
+			if (filters.contains(FilterType.MODIFIED_VALUES_MODIFIED_FRAMES)) {
+				final ArrayList<TLCState> emptyStates = new ArrayList<>();
 				
-				variables.removeAll(currentErrorTraceFilterSet);
+				for (final TLCState state : filtered.getStates(TLCError.Length.ALL)) {
+					final List<TLCVariable> variables = state.getVariablesAsList();
+					final ArrayList<TLCVariable> removals = new ArrayList<>();
+					
+					for (final TLCVariable variable : variables) {
+						if (!variable.isChanged()) {
+							removals.add(variable);
+						}
+					}
+					
+					variables.removeAll(removals);
+					if (variables.size() == 0) {
+						emptyStates.add(state);
+					}
+				}
+				
+				filtered.removeStates(emptyStates);
+			} else if (filters.contains(FilterType.MODIFIED_VALUES_ALL_FRAMES)) {
+				final Set<TLCVariable> changedVariables = new HashSet<>();
+				
+				for (final TLCState state : filtered.getStates(TLCError.Length.ALL)) {
+					final List<TLCVariable> variables = state.getVariablesAsList();
+					
+					for (final TLCVariable variable : variables) {
+						if (variable.isChanged()) {
+							changedVariables.add(variable);
+						}
+					}
+				}
+				
+				for (final TLCState filteredState : filtered.getStates(TLCError.Length.ALL)) {
+					final List<TLCVariable> variables = filteredState.getVariablesAsList();
+					
+					variables.retainAll(changedVariables);
+				}
 			}
 			
 			setTraceInput(filtered, false);
@@ -1601,10 +1648,27 @@ public class TLCErrorView extends ViewPart
 				if (dialog.open() == Window.OK) { // (Currently can only ever be Windows.OK)
 					currentErrorTraceFilterSet = dialog.getSelection();
 					
-					performVariableViewPopulation(true);
+					final ErrorViewTraceFilterDialog.MutatedFilter mutated = dialog.getMutatedFilterSelection();
+					
+					if (ErrorViewTraceFilterDialog.MutatedFilter.NO_FILTER.equals(mutated)) {
+						performVariableViewPopulation(EnumSet.of(FilterType.VARIABLES));
+					} else {
+						final FilterType filterType;
+						
+						switch (mutated) {
+							case CHANGED_ALL_FRAMES:
+								filterType = FilterType.MODIFIED_VALUES_ALL_FRAMES;
+								break;
+							default:
+								filterType = FilterType.MODIFIED_VALUES_MODIFIED_FRAMES;
+								break;
+						}
+						
+						performVariableViewPopulation(EnumSet.of(FilterType.VARIABLES, filterType));
+					}
 				}
 			} else {
-				performVariableViewPopulation(false);
+				performVariableViewPopulation(EnumSet.of(FilterType.NONE));
 			}
 		}
 	}	

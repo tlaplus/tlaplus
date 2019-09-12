@@ -18,6 +18,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -25,13 +26,27 @@ import org.eclipse.swt.widgets.Shell;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 
 /**
- * The genesis of this dialog is https://github.com/tlaplus/tlaplus/issues/274
+ * The genesis of this dialog is https://github.com/tlaplus/tlaplus/issues/274 and then further modified to support
+ * https://github.com/tlaplus/tlaplus/issues/360
  */
 public class ErrorViewTraceFilterDialog extends Dialog {
+	public enum MutatedFilter {
+		NO_FILTER, CHANGED_ALL_FRAMES, CHANGED_CHANGED_FRAMES;
+	}
+	
+	
+	private static final String[] MUTATED_VARIABLE_SELECTIONS = { "Show all variables",
+																  "Show only changed variables",
+																  "Show only changed variables in changed frames" };
+	
+	
 	private CheckboxTableViewer tableViewer;
 	
 	private final List<TLCVariable> variables;
 	private final HashSet<TLCVariable> selection;
+	
+	private Combo mutatedVariablesCombo;
+	private MutatedFilter selectedFilter;
 	
 	/**
 	 * @param parentShell
@@ -62,6 +77,10 @@ public class ErrorViewTraceFilterDialog extends Dialog {
 		}
 	}
 	
+	public MutatedFilter getMutatedFilterSelection() {
+		return selectedFilter;
+	}
+	
     @Override
     protected final Control createDialogArea(final Composite parent) {
     	final Composite container = (Composite) super.createDialogArea(parent);
@@ -71,7 +90,7 @@ public class ErrorViewTraceFilterDialog extends Dialog {
 
     	
     	
-    	final Label l = new Label(container, SWT.LEFT);
+    	Label l = new Label(container, SWT.LEFT);
     	l.setText("Selected variables and expressions will be hidden from the error trace.");
     	l.setFont(JFaceResources.getFontRegistry().get(JFaceResources.DIALOG_FONT));
     	GridData gd = new GridData();
@@ -128,6 +147,27 @@ public class ErrorViewTraceFilterDialog extends Dialog {
     	});
     	
     	
+    	final Composite mutatedVariablesComboPane = new Composite(container, SWT.NONE);
+    	gd = new GridData();
+    	gd.horizontalAlignment = SWT.FILL;
+    	gd.grabExcessHorizontalSpace = true;
+    	gd.horizontalSpan = 2;
+    	mutatedVariablesComboPane.setLayoutData(gd);
+    	gl = new GridLayout(2, false);
+    	mutatedVariablesComboPane.setLayout(gl);
+    	
+    	l = new Label(mutatedVariablesComboPane, SWT.LEFT);
+    	l.setText("Filter by change:");
+    	l.setFont(JFaceResources.getFontRegistry().get(JFaceResources.DIALOG_FONT));
+    	
+    	mutatedVariablesCombo = new Combo(mutatedVariablesComboPane, SWT.READ_ONLY);
+    	mutatedVariablesCombo.setItems(MUTATED_VARIABLE_SELECTIONS);
+    	gd = new GridData();
+    	gd.horizontalAlignment = SWT.FILL;
+    	gd.grabExcessHorizontalSpace = true;
+    	mutatedVariablesCombo.setLayoutData(gd);
+    	mutatedVariablesCombo.setText(MUTATED_VARIABLE_SELECTIONS[0]);
+    	
         return container;
     }
 
@@ -136,6 +176,7 @@ public class ErrorViewTraceFilterDialog extends Dialog {
     	selection.clear();
     	
 		Arrays.stream(tableViewer.getCheckedElements()).forEach((element) -> selection.add((TLCVariable)element));
+		selectedFilter = MutatedFilter.values()[mutatedVariablesCombo.getSelectionIndex()];
 		
         super.okPressed();
     }
