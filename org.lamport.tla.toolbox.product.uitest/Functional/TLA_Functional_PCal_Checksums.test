@@ -1,0 +1,52 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA_Functional_PCal_Checksums
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _wH2aMNWzEemOp9qASlV00A
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 9/13/19, 2:46 PM
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+//Create Spec
+OpenTLACreateNew
+
+try -command {
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
+		set-text [concat "-------------------------- MODULE " $TLA-SPEC-NAME " -----------------------------\nEXTENDS Naturals, Sequences\nAttacks(queens,i,j) ==\n  \/ queens[i] = queens[j]\n  \/ queens[i] - queens[j] = i - j\n  \/ queens[j] - queens[i] = i - j\nIsSolution(queens) ==\n  \A i \in 1 .. Len(queens)-1 : \A j \in i+1 .. Len(queens) : \n       ~ Attacks(queens,i,j) \nSolutions == { queens \in [1..3 -> 1..3] : IsSolution(queens) }\n(* --algorithm Queens\n     variables\n       todo = { << >> };\n       sols = {};\n\n     begin\nnxtQ:  while todo # {}\n       do\n         with queens \in todo,\n              nxtQ = Len(queens) + 1,\n              cols = { c \in 1..3 : ~ \E i \in 1 .. Len(queens) :\n                                      Attacks( Append(queens, c), i, nxtQ ) },\n              exts = { Append(queens,c) : c \in cols }\n         do\n           if (nxtQ = 3)\n           then todo := todo \ {queens}; sols := sols \union exts;\n           else todo := (todo \ {queens}) \union exts;\n           end if;\n         end with;\n       end while;\n     end algorithm\n*)\n\n===================================================================\n"]
+		key-type "M1+s"
+	    key-type "M1+t"
+	    set-text-offset 7 13
+	    type-text "new"
+	    key-type "M1+s"
+	}
+
+	get-menu -path "TLC Model Checker/New Model..." | click
+	get-window "New model..." | get-button "OK" | click
+	
+	get-menu -path "TLC Model Checker/Run model" | click
+	with [get-window "PlusCal out of sync"] {
+		get-checkbox | click
+		get-button -index 2 | click  // don't seem to able to get by title, likely due to the ampersand in the text
+	}
+	get-view "History" | close
+
+	get-menu -path "TLC Model Checker/Run model" | click
+	
+	listen errorLog {
+		try {
+			get-window "PlusCal out of sync"
+			log -message "Found checksum warning dialog that shouldn't be shown." -severity error -plugin "org.lamport.tla.toolbox.product.uitests"
+		} -catch { }
+	} | assert-empty
+
+	wait -ms 1200	
+} -finally {
+	DeleteSpecNew
+}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--
