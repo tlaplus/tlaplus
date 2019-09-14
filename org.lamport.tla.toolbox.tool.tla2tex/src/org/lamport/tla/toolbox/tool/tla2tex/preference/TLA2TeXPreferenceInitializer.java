@@ -21,12 +21,14 @@ public class TLA2TeXPreferenceInitializer extends AbstractPreferenceInitializer 
 		store.setDefault(ITLA2TeXPreferenceConstants.DOT_COMMAND, "dot");
 		store.setDefault(ITLA2TeXPreferenceConstants.LATEX_COMMAND, "pdflatex");
 		store.setDefault(ITLA2TeXPreferenceConstants.GRAY_LEVEL, "0.85");
+		store.setDefault(ITLA2TeXPreferenceConstants.HAVE_OS_OPEN_PDF, false);
 		if (Platform.getOS().equals(Platform.OS_MACOSX)) {
 			// Support for the built-in viewer has ended on MACOSX, thus disable
 			// even if user enabled it in an earlier Toolbox release.
 			store.setValue(ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER, false);
 		} else {
 			store.setDefault(ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER, true);
+			store.setValue(ITLA2TeXPreferenceConstants.HAVE_OS_OPEN_PDF, false);
 		}
 	}
 }

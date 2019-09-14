@@ -29,6 +29,7 @@ public class StandalonePDFViewerRunnable extends AbstractPDFViewerRunnable {
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.tool.tla2tex.handler.AbstractPDFViewerRunnable#preUpdate()
 	 */
+	@Override
 	protected void preUpdate() {
 		((PDFBrowser) part).setBlank();
 	}

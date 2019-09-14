@@ -732,22 +732,27 @@ public class ModelEditor extends FormEditor {
 		// constants to not introduce a plugin dependency.
 		// org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator.PLUGIN_ID
 		// org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER
+		// org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants.HAVE_OS_OPEN_PDF
 		final boolean useEmbeddedViewer = Platform.getPreferencesService()
 				.getBoolean("org.lamport.tla.toolbox.tool.tla2tex", "embeddedViewer", false, null);
+		final boolean osOpensPDF = Platform.getPreferencesService()
+				.getBoolean("org.lamport.tla.toolbox.tool.tla2tex", "osHandlesPDF", false, null);
 		
-		final IEditorPart findEditor;
-		if (useEmbeddedViewer) {
+		final IEditorPart pdfEditor;
+		if (osOpensPDF) {
+			pdfEditor = null;
+		} else if (useEmbeddedViewer) {
 			// Try to get hold of the editor instance without opening it yet. Opening is
 			// triggered by calling addPage.
-			findEditor = UIHelper.findEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor");
+			pdfEditor = UIHelper.findEditor("de.vonloesch.pdf4eclipse.editors.PDFEditor");
 		} else {
-			findEditor = UIHelper.findEditor(PDFBrowserEditor.ID);
+			pdfEditor = UIHelper.findEditor(PDFBrowserEditor.ID);
 		}
 
 		// Load a previously generated pdf file.
 		final IFile pdfFile = model.getFolder().getFile(model.getName() + ".pdf");
 		if (pdfFile.exists()) {
-			saferAddPage(stateGraphDotDump, findEditor, pdfFile, useEmbeddedViewer);
+			saferAddPage(stateGraphDotDump, pdfEditor, pdfFile, useEmbeddedViewer);
 			return;
 		}
 
@@ -769,7 +774,7 @@ public class ModelEditor extends FormEditor {
 					UIHelper.runUISync(new Runnable() {
 						@Override
 						public void run() {
-							ModelEditor.this.saferAddPage(stateGraphDotDump, findEditor, pdfFile, useEmbeddedViewer);
+							ModelEditor.this.saferAddPage(stateGraphDotDump, pdfEditor, pdfFile, useEmbeddedViewer);
 						}
 					});
 				} catch (CoreException e) {
@@ -791,9 +796,23 @@ public class ModelEditor extends FormEditor {
 	}
 
 	// Attempt to handle (primarily) OutOfMemory errors when opening large pdf files. 
-	private void saferAddPage(final IFile stateGraphDotDump, final IEditorPart findEditor, final IFile file, final boolean usesEmbeddedViewer) {
+	private void saferAddPage(final IFile stateGraphDotDump, final IEditorPart pdfEditor, final IFile file,
+			final boolean usesEmbeddedViewer) {
+		if (pdfEditor == null) {
+			// This is the case when the user would like the OS to open the PDF.
+			final String openCommand = "open " + file.getLocation().toOSString();
+			
+			try {
+				Runtime.getRuntime().exec(openCommand);
+			} catch (final Exception e) {
+				TLCUIActivator.getDefault().logError("Unable to execute 'open' command on PDF.", e);
+			}
+			
+			return;
+		}
+		
 		try {
-			addPage(findEditor, new FileEditorInput(file));
+			addPage(pdfEditor, new FileEditorInput(file));
 		} catch (PartInitException e) {
 			final Shell shell = Display.getDefault().getActiveShell();
 			MessageDialog.openError(shell == null ? new Shell() : shell,

@@ -43,6 +43,11 @@ public interface ITLA2TeXPreferenceConstants
      */
     public static final String EMBEDDED_VIEWER = "embeddedViewer";
 
+    /**
+     * True if the operating system should open the PDF - currently only used on macOS
+     */
+    public static final String HAVE_OS_OPEN_PDF = "osHandlesPDF";
+
 	/**
 	 * Specify the full qualified path to GraphViz's dot executable.
 	 */

@@ -55,15 +55,22 @@ public class HelpPDFHandler extends AbstractHandler implements IHandler {
 		// constants to not introduce a plugin dependency.
 		// org.lamport.tla.toolbox.tool.tla2tex.TLA2TeXActivator.PLUGIN_ID
 		// org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER
+		// org.lamport.tla.toolbox.tool.tla2tex.preference.ITLA2TeXPreferenceConstants.HAVE_OS_OPEN_PDF
 		final boolean useEmbeddedViewer = Platform.getPreferencesService()
 				.getBoolean("org.lamport.tla.toolbox.tool.tla2tex", "embeddedViewer", false, null);
-		
+		final boolean osOpensPDF = Platform.getPreferencesService()
+				.getBoolean("org.lamport.tla.toolbox.tool.tla2tex", "osHandlesPDF", false, null);
+
 		// Show a sandglass while loading (large) pdfs.
 		BusyIndicator.showWhile(Display.getCurrent(), new Runnable() {
 			public void run() {
 				try {
 					final File pdfFile = getDocFile("/pdfs/" + pdf);
-					if (useEmbeddedViewer) {
+					if (osOpensPDF) {
+						final String openCommand = "open " + pdfFile.getAbsolutePath();
+						
+						Runtime.getRuntime().exec(openCommand);
+					} else if (useEmbeddedViewer) {
 						UIHelper.openEditorUnchecked(
 								// Referencing de.vonloesch...
 								// creates an _implicit_

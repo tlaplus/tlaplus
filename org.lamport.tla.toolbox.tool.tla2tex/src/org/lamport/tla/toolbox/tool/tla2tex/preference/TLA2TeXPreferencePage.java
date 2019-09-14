@@ -37,11 +37,16 @@ public class TLA2TeXPreferencePage extends FieldEditorPreferencePage implements
 	}
 
 	protected void createFieldEditors() {
-		if (!Platform.getOS().equals(Platform.OS_MACOSX)) {
+		if (Platform.getOS().equals(Platform.OS_MACOSX)) {
+			addField(new BooleanFieldEditor(
+					ITLA2TeXPreferenceConstants.HAVE_OS_OPEN_PDF,
+					"Have your OS open PDFs", getFieldEditorParent()));
+		} else {
 			addField(new BooleanFieldEditor(
 					ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER,
 					"&Use built-in PDF viewer", getFieldEditorParent()));
 		}
+		
 		// Preference to regenerate PDF upon spec save?
 		addField(new BooleanFieldEditor(
 				ITLA2TeXPreferenceConstants.AUTO_REGENERATE, "&Regenerate pretty-printed PDF on spec save (takes effect once spec re-opened).",

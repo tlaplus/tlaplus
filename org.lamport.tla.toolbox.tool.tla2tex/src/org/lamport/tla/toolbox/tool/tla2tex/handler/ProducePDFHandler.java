@@ -47,27 +47,30 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 	 * org.eclipse.core.commands.AbstractHandler#execute(org.eclipse.core.commands
 	 * .ExecutionEvent)
 	 */
-	public Object execute(ExecutionEvent event) {
+	public Object execute(final ExecutionEvent event) {
 		if (!saveDirtyEditor(event)) {
 			return null;
 		}
 
-		boolean useEmbeddedViewer = TLA2TeXActivator.getDefault()
-				.getPreferenceStore()
-				.getBoolean(ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER);
+		final IPreferenceStore preferenceStore = TLA2TeXActivator.getDefault().getPreferenceStore();
+		final boolean useEmbeddedViewer = preferenceStore.getBoolean(ITLA2TeXPreferenceConstants.EMBEDDED_VIEWER);
+		final boolean osHandlesPDF = preferenceStore.getBoolean(ITLA2TeXPreferenceConstants.HAVE_OS_OPEN_PDF);
 		
-		IEditorInput editorInput = activeEditor.getEditorInput();
+		final IEditorInput editorInput = activeEditor.getEditorInput();
 		if (editorInput instanceof IFileEditorInput) {
-			final IResource fileToTranslate = ((IFileEditorInput) editorInput)
-					.getFile();
-			if (fileToTranslate != null
-					&& ResourceHelper.isModule(fileToTranslate)) {
-				if (useEmbeddedViewer) {
-					runPDFJob(new EmbeddedPDFViewerRunnable(this, activeEditor.getSite(), fileToTranslate),
-							fileToTranslate);
+			final IResource fileToTranslate = ((IFileEditorInput) editorInput).getFile();
+			if ((fileToTranslate != null) && ResourceHelper.isModule(fileToTranslate)) {
+				final AbstractPDFViewerRunnable pdfViewer;
+				
+				if (osHandlesPDF) {
+					pdfViewer = new OperatingSystemPDFRunnable(this, activeEditor.getSite(), fileToTranslate);
+				} else if (useEmbeddedViewer) {
+					pdfViewer = new EmbeddedPDFViewerRunnable(this, activeEditor.getSite(), fileToTranslate);
 				} else {
-					runPDFJob(new StandalonePDFViewerRunnable(this, activeEditor.getSite(), fileToTranslate), fileToTranslate);
+					pdfViewer = new StandalonePDFViewerRunnable(this, activeEditor.getSite(), fileToTranslate);
 				}
+				
+				runPDFJob(pdfViewer, fileToTranslate);
 			}
 		}
 
@@ -93,18 +96,12 @@ public class ProducePDFHandler extends SaveDirtyEditorAbstractHandler {
 	 * @param tlaEditorAndPDFViewer
 	 * @param fileToTranslate
 	 */
-	void runPDFJob(final AbstractPDFViewerRunnable runnable, 
-			final IResource fileToTranslate) {
+	void runPDFJob(final AbstractPDFViewerRunnable runnable, final IResource fileToTranslate) {
 		Job tla2TexJob = new WorkspaceJob("Produce PDF") {
-
 			public IStatus runInWorkspace(final IProgressMonitor monitor) {
-
 				try {
-
-					Vector<String> tla2texArgs = new Vector<String>();
-
-					IPreferenceStore preferenceStore = TLA2TeXActivator
-							.getDefault().getPreferenceStore();
+					final Vector<String> tla2texArgs = new Vector<String>();
+					final IPreferenceStore preferenceStore = TLA2TeXActivator.getDefault().getPreferenceStore();
 
 					if (preferenceStore
 							.getBoolean(ITLA2TeXPreferenceConstants.SHADE_COMMENTS)) {
