@@ -451,6 +451,49 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
+	<!-- Executes a single unit test. -->
+	<target name="test-single" unless="test.skip">
+		<!-- run junit test -->
+		<junit printsummary="yes" haltonfailure="true" showoutput="no" haltonerror="true" forkmode="perTest" fork="yes">
+			<!-- enable all assertions -->
+			<jvmarg value="-ea"/>
+			<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
+			<jvmarg value="-XX:+UseParallelGC"/>
+			<!-- Uncomment to open a debug port in each forked VM to remote attach your Eclipse at port 1044.
+            <jvmarg value="-Xdebug" />
+	        <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044" />
+			-->
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement location="lib/junit-4.12.jar" />
+				<pathelement location="lib/hamcrest-core-1.3.jar" />
+				<pathelement location="lib/cglib-nodep-3.1.jar" />
+				<pathelement location="lib/objenesis-2.1.jar" />
+				<pathelement location="lib/easymock-3.3.1.jar" />
+				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
+				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
+				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+				<pathelement path="${test.class.dir}" />
+				<pathelement path="test-model/" />
+			</classpath>
+
+			<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
+			<sysproperty key="basedir" value="${basedir}/"/>
+			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
+			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
+			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
+
+			<!-- Print all output of the test to the screen. -->
+			<formatter type="plain" usefile="false" />
+			<!-- Run a single test case specified by its class name, by setting the property 'test.testcase'. -->
+			<test name="${test.testcase}" skipNonTests="true"/>
+		</junit>
+
+		<!-- remove copied class.dir -->
+		<delete dir="${ws.class.dir}" deleteonexit="true"/>
+	</target>
+
 	<!-- Executes accompining unit tests on jar file -->
 	<target name="test-dist" unless="test.skip">
 		<!-- run junit tests on tlatools.jar -->
