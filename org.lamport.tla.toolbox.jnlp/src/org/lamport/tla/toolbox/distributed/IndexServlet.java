@@ -2,16 +2,17 @@
 package org.lamport.tla.toolbox.distributed;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class IndexServlet extends URLHttpServlet {
-
 	private static final long serialVersionUID = -653938914619406447L;
 	private static final String TLA2TOOLS_JAR = "tla2tools.jar";
 
+	
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
@@ -20,38 +21,59 @@ public class IndexServlet extends URLHttpServlet {
 		super.doGet(req, resp);
 
 		resp.setContentType("text/html");
-		
-		resp.getWriter().println("<!DOCTYPE html>");
 
-		resp.getWriter().println(
+		final PrintWriter writer = resp.getWriter();
+		writer.println("<!DOCTYPE html>");
+
+		writer.println(
 				"<html><head>\n" + 
 						"<title>Distributed TLC</title>\n" + 
 				"</head><body>");
 		
 		// boostrap JRE on Windows systems
-		resp.getWriter().println(
+		writer.println(
 				"<object codebase=\"http://java.sun.com/update/1.7.0/jinstall-7u80-windows-i586.cab#Version=7,0,0,0\" classid=\"clsid:5852F5ED-8BF4-11D4-A245-0080C6F74284\" height='0' width='0'>" +
 						"<param name=\"app\" value=\"" + addr + "\"/>" +
 						"<param name=\"back\" value=\"false\"/>" +
 				"</object>");
 		
-		// first table
-		printTable(resp, JNLPGeneratorServlet.JNLP, JNLPGeneratorServlet.MAINCLASS, "worker", JNLPGeneratorServlet.INDEX_DESC);
-
-		// second table
-		printTable(resp, FPSetJNLPGeneratorServlet.JNLP, FPSetJNLPGeneratorServlet.MAINCLASS, "fingerprint set", FPSetJNLPGeneratorServlet.INDEX_DESC);
+		writer.println(
+				"<p style=\"margin: 12px 20px;\">" +
+				"<b>Please note:</b> " +
+				"Starting with the 1.6.1 release of the Toolbox, we have removed the JNLP functionality previously " +
+				"found on this page. This is due to our move towards full Java 11+ usage (support for Java WebStart " +
+				"was removed beginning with Java 9.)" + 
+				"<br/>" +
+				"<ul>" + 
+				"<li>If you found the JNLP functionality to be critical to your usage, please open an issue at " +
+				"<a href=\"https://github.com/tlaplus/tlaplus/issues\" target=_blank>our GitHub repository.</a></li>" +
+				"<li>If you would like to take over development and deployment support for the JNLP related " +
+				"functionality, please contact us.</li>" +
+				"</ul>" + 
+				"</p>" +
+				"<hr style=\"margin-left: auto; margin-right: auto; width: 67%\"/>");
 		
-		// third table
-		printTable(resp, CombinedJNLPGeneratorServlet.JNLP, CombinedJNLPGeneratorServlet.MAINCLASS, "combined", CombinedJNLPGeneratorServlet.INDEX_DESC);
+		// TLC worker
+		printTable(writer, JNLPGeneratorServlet.JNLP, JNLPGeneratorServlet.MAINCLASS, "worker",
+				JNLPGeneratorServlet.INDEX_DESC);
+
+		// Fingerprint server
+		printTable(writer, FPSetJNLPGeneratorServlet.JNLP, FPSetJNLPGeneratorServlet.MAINCLASS, "fingerprint set",
+				FPSetJNLPGeneratorServlet.INDEX_DESC);
+		
+		// Combined fingerprint server and TLC worker
+		printTable(writer, CombinedJNLPGeneratorServlet.JNLP, CombinedJNLPGeneratorServlet.MAINCLASS, "combined",
+				CombinedJNLPGeneratorServlet.INDEX_DESC);
 		
 		// d) dist-tlc.zip OSGi fw that acts as a TLCWorker daemon
-		resp.getWriter().println(
+		writer.println(
 				"<table id=\"header\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" border=\"0\">\n" + 
-					"<p>Start a daemon-stlye TLCWorker (no need to restart the worker for each model checker run)</p>\n" + 
+					"<p style=\"font-size: 125%; font-weight: 700;\">Start a daemon-stlye TLCWorker (no need " +
+						"to restart the worker for each model checker run)</p>\n" + 
 					"<tr><td>\n" + 
 					"<ul>");
 			
-		resp.getWriter().println(
+		writer.println(
 				"<li>\n" + 
 					"<p>Run from slave command line (works best with <a href=\"http://www.oracle.com/technetwork/java/javase/downloads/index.html\">Java 8</a>):</p>\n" + 
 					// Linux
@@ -84,51 +106,52 @@ public class IndexServlet extends URLHttpServlet {
 														+ "-jar C:\\tmp\\disttlc\\dist-tlc.jar"
 														+				"\n</pre>\n" + 
 				"</li>");
-		resp.getWriter().println(
+		writer.println(
 				"</ul>\n" + 
 				"</td></tr></table>\n");
 		
-		resp.getWriter().println(
+		writer.println(
 				"</body></html>");
 	}
 
-	private void printTable(final HttpServletResponse resp, final String jnlpName, final String mainClass, final String name, final String description) throws IOException {
-		resp.getWriter().println(
+	private void printTable(final PrintWriter writer, final String jnlpName, final String mainClass, final String name, final String description) throws IOException {
+		writer.println(
 				"<table id=\"header\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" border=\"0\">\n" + 
-					"<p>" + description + "</p>\n" + 
-					"<tr><td>\n" + 
-					"<ul>");
+					"<p style=\"font-size: 125%; font-weight: 700;\">" + description + "</p>\n" + 
+					"<tr><td>\n");// + 
+//					"<ul>");
 			
-		// a) fpset direct link
-		resp.getWriter().println(
-				"<li>\n" + 
-						"<p><a href=\"" + jnlpName + "\" id=\"jnlp-link\"><img alt=\"launch FPSet\" src=\"/files/webstart.gif\" /> Launch "
-								+ name + " from browser</a></p>\n" + 
-				"</li>");
+		// a) direct link
+//		writer.println(
+//				"<li>\n" + 
+//						"<p><a href=\"" + jnlpName + "\" id=\"jnlp-link\"><img alt=\"launch FPSet\" src=\"/files/webstart.gif\" /> Launch "
+//								+ name + " from browser</a></p>\n" + 
+//				"</li>");
 		
 		// b) command line
-		resp.getWriter().println(
-				"<li>\n" + 
-					"<p>Run from slave command line:</p>\n" + 
-					"<p><pre>" + 
-						"javaws " + addr + "/" + jnlpName +
-					"</pre></p>\n" + 
-				"</li>");
+//		writer.println(
+//				"<li>\n" + 
+//					"<p>Run from slave command line:</p>\n" + 
+//					"<p><pre>" + 
+//						"javaws " + addr + "/" + jnlpName +
+//					"</pre></p>\n" + 
+//				"</li>");
 		
 		// c) headless
-		resp.getWriter().println(
-				"<li>\n" + 
-					"<p>Or if the slave is headless:</p>\n" + 
+		writer.println(
+//				"<li>\n" + 
+//					"<p>Or if the slave is headless:</p>\n" + 
 					"<pre>\n" + 
 						"wget " + addr + "/files/" + TLA2TOOLS_JAR + "\n" + 
 						"java -Djava.rmi.server.hostname=" + remoteAddr
 								+ " -cp <a href=\"/files/" + TLA2TOOLS_JAR + "\">" + TLA2TOOLS_JAR + "</a> " + mainClass
 						+ " " + url.getHost() + "\n" +
-					"</pre>\n" + 
-				"</li>");
+					"</pre>\n"); // + 
+//				"</li>");
 		
-		resp.getWriter().println(
-				"</ul>\n" + 
-				"</td></tr></table>\n");
+		writer.println(
+//				"</ul>\n" + 
+				"</td></tr></table>\n" +
+				"<hr style=\"margin-left: auto; margin-right: auto; width: 67%\"/>");
 	}
 }

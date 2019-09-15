@@ -8,7 +8,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Serves the {@link tlc2.tool.distributed.TLCWorker} jnlp file
+ * Serves the {@link tlc2.tool.distributed.TLCWorker} JNLP file.
+ * 
+ * Beginning with 1.6.1 we ceased supporting JNLP, due to our move to Java 11. Until a contributor arrives to take over
+ * this functionality, including providing a nice way to bundle IcedTea or similar with the Toolbox, i am marking this
+ * class as deprecated.
+ * 
+ * @deprecated
  */
 public class JNLPGeneratorServlet extends URLHttpServlet {
 
@@ -16,7 +22,7 @@ public class JNLPGeneratorServlet extends URLHttpServlet {
 	public static final String VM_ARGS = "vmargs";
 	public static final String MAINCLASS = "tlc2.tool.distributed.TLCWorker";
 	public static final String DESCRIPTION = "Distributed TLC worker instance";
-	public static final String INDEX_DESC = "Connect to TLCworker one of these ways:";
+	public static final String INDEX_DESC = "Connecting a TLCworker:";
 	public static final String JNLP = "worker.jnlp";
 
 	protected final String mainClass;
