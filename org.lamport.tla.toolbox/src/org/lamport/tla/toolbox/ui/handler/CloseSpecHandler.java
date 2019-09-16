@@ -27,7 +27,7 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
     public static final QualifiedName LAST_CLOSED_DATE = 
         new QualifiedName(COMMAND_ID, "lastClosedTime");
 
-    public Object execute(ExecutionEvent event) throws ExecutionException
+    public Object execute(final ExecutionEvent event) throws ExecutionException
     {
         // Set the project's last closed time to the current time.
     	Spec specClosed = null;
@@ -46,8 +46,13 @@ public class CloseSpecHandler extends AbstractHandler implements IHandler
             Activator.getDefault().logDebug(
              "Exception thrown when setting project LAST_CLOSED time.");
         }
+        
         // close all editors
-        UIHelper.getActivePage().closeAllEditors(true);
+        if (!UIHelper.getActivePage().closeAllEditors(true)) {
+        	// There are still open editors because the user canceled out of the process
+        	return Boolean.valueOf(false);
+        }
+        
         // hide errors
         UIHelper.hideView(ProblemView.ID);
         // switch perspective

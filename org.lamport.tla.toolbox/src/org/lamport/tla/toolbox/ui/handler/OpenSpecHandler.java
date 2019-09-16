@@ -33,9 +33,9 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
     public static final String PARAM_SPEC = "toolbox.command.spec.open.param";
     public static final String TLC_ERROR_VIEW_ID = "toolbox.tool.tlc.view.TLCErrorView";
 
-    public Object execute(ExecutionEvent event) throws ExecutionException
+    public Object execute(final ExecutionEvent event) throws ExecutionException
     {
-        String specName = event.getParameter(PARAM_SPEC);
+        final String specName = event.getParameter(PARAM_SPEC);
         // if no spec name, exit
         if (specName == null)
         {
@@ -43,9 +43,13 @@ public class OpenSpecHandler extends AbstractHandler implements IHandler
         }
 
         // if another spec is currently loaded, close it
-        if (Activator.getSpecManager().getSpecLoaded() != null)
-        {
-            UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, null);
+		if (Activator.getSpecManager().getSpecLoaded() != null) {
+			final Object result = UIHelper.runCommand(CloseSpecHandler.COMMAND_ID, null);
+			
+			if ((result != null) && (result instanceof Boolean) && !((Boolean)result).booleanValue()) {
+				// The attempt to close an open spec was canceled out of by the user
+				return null;
+			}
         }
 
         final Spec spec = Activator.getSpecManager().getSpecByName(specName);
