@@ -160,6 +160,23 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   @Override
   public final void deepNormalize() {
 	    try {
+			// MAK 09/17/2019: Added call to this.set.deepNormalize() to align with pattern
+			// generally found in overwrites of Value#deepNormalize.
+	    	// This omission surfaced through a race condition that led to a spurious
+	    	// safety violation (https://github.com/tlaplus/tlaplus/issues/361):
+	    	// 1) A TLA+ spec defines a (zero-arity) operator s.a. "Foo == UNION { ... }"
+	    	//    that appears in an invariant.
+	    	// 2) SpecProcessor#processConstantDefns eagerly evaluates the operator Foo at startup
+	    	//    and inserts its Value result UV into the corresponding node of the semantic graph.
+	    	// 3) Two workers check if two states violate the invariant which triggers UnionValue#member,
+	    	//    which internally causes this.set to be normalized.  Since Value instances are not thread-safe
+	    	//    because they are expected to be fully normalized during state space exploration, the
+	    	//    two workers race to normalize this.set.
+	    	// 4) Worker A gets ahead and loops over the elements in UV#member while worker B still normalizes UV.
+	    	//    Worker A reads inconsistent data and thus reports the invariant to be violated.
+	    	// Thanks to Calvin Loncaric for suggesting this fix.
+	    	this.set.deepNormalize();
+	    	
       if (realSet == null) {
         realSet = SetEnumValue.DummyEnum;
       }

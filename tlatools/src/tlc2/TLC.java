@@ -78,7 +78,7 @@ public class TLC
 	private String metadir;
     /**
 	 * If instantiated with a non-Noop* instance, the trace will be written to the
-	 * user provided file (-dump paramter).
+	 * user provided file (-dump parameter).
 	 * <p>
 	 * Contrary to plain -dump, -dot will also write out transitions from state s to
 	 * s' if s' is already known. Thus, the resulting graph shows all successors of
