@@ -63,6 +63,12 @@ public class MethodValue extends OpValue implements Applicable {
 
   public final byte getKind() { return METHODVALUE; }
 
+  @Override
+  public final void initialize() {
+	  this.deepNormalize();
+	  // Do not call fingerprint as a MethodValue has no fingerprint.
+  }
+  
   public final int compareTo(Object obj) {
     try {
       Assert.fail("Attempted to compare operator " + this.toString() +

@@ -206,7 +206,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
       for (int i = 0; i < consts.length; i++) {
         Object val = consts[i].getToolObject(toolId);
         if (val != null && val instanceof IValue) {
-          ((IValue)val).deepNormalize();
+          ((IValue)val).initialize();
           // System.err.println(consts[i].getName() + ": " + val);
         } // The following else clause was added by LL on 17 March 2012.
         else if (val != null && val instanceof OpDefNode) {
@@ -221,7 +221,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
           if (opDef.getArity() == 0) {
             try {
               IValue defVal = spec.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
-              defVal.deepNormalize();
+              defVal.initialize();
               consts[i].setToolObject(toolId, defVal);
             } catch (Assert.TLCRuntimeException | EvalException e) {
               Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
@@ -257,7 +257,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 }
                 // System.err.println(opName);
                 IValue val = spec.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
-                val.deepNormalize();
+                val.initialize();
                 // System.err.println(opName + ": " + val);
                 opDef.setToolObject(toolId, val);
                 Object def = this.defns.get(opName);
