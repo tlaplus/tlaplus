@@ -481,7 +481,7 @@ public abstract class TLCVariableValue
 
     public int getChildCount() {
     	if (this.value instanceof List) {
-    		return ((List) this.value).size();
+    		return ((List<?>) this.value).size();
     	} else if (this.value instanceof TLCVariableValue) {
     		return ((TLCVariableValue) this.value).getChildCount();
     	}

@@ -53,6 +53,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Order;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -110,7 +111,7 @@ public class TLCErrorViewTest  {
 		final long before = System.currentTimeMillis();
 		UIHelper.runUISync(new Runnable() {
 			public void run() {
-				TLCErrorView.updateErrorView(provider, dummyModel, true);
+				TLCErrorView.updateErrorView(provider, new ModelEditor(dummyModel), true);
 			}
 		});
 		assertTrue(before - System.currentTimeMillis() <= 10 * 1000); // maximally ten seconds

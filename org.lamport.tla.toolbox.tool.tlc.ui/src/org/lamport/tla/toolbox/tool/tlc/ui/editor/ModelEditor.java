@@ -127,60 +127,58 @@ public class ModelEditor extends FormEditor {
 		public boolean handleChange(final ChangeEvent event) {
 			if (event.getState().in(State.NOT_RUNNING, State.RUNNING)) {
 				final State lastStateCopy = m_lastState;
-				UIHelper.runUIAsync(new Runnable() {
-					public void run() {
-						for (int i = 0; i < getPageCount(); i++) {
-							final Object object = pages.get(i);
-							if (object instanceof BasicFormPage) {
-								final BasicFormPage bfp = (BasicFormPage) object;
-								bfp.refresh();
+				UIHelper.runUIAsync(() -> {
+					for (int i = 0; i < getPageCount(); i++) {
+						final Object object = pages.get(i);
+						if (object instanceof BasicFormPage) {
+							final BasicFormPage bfp = (BasicFormPage) object;
+							bfp.refresh();
+						}
+					}
+					if (event.getState().in(State.RUNNING)) {
+						// Switch to Result Page (put on top) of model editor stack. A user wants to see
+						// the status of a model run she has just started.
+						final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+						final boolean eceInItsOwnTab = ips
+								.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
+
+						if (!eceInItsOwnTab || !modelIsConfiguredWithNoBehaviorSpec()) {
+							showResultPage();
+						}
+					} else if (event.getState().in(State.NOT_RUNNING)) {
+						// Model checking finished, lets open state graph if any.
+						if (event.getModel().hasStateGraphDump()) {
+							try {
+								addOrUpdateStateGraphEditor(event.getModel().getStateGraphDump());
+							} catch (CoreException e) {
+								TLCUIActivator.getDefault().logError("Error initializing editor", e);
 							}
 						}
-						if (event.getState().in(State.RUNNING)) {
-							// Switch to Result Page (put on top) of model editor stack. A user wants to see
-							// the status of a model run she has just started.
+
+						if (lastStateCopy.in(State.RUNNING, State.REMOTE_RUNNING)) {
 							final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
 							final boolean eceInItsOwnTab = ips
 									.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
 
-							if (!eceInItsOwnTab || !modelIsConfiguredWithNoBehaviorSpec()) {
-								showResultPage();
+							if (eceInItsOwnTab && modelIsConfiguredWithNoBehaviorSpec()) {
+								setActivePage(EvaluateConstantExpressionPage.ID);
 							}
-						} else if (event.getState().in(State.NOT_RUNNING)) {
-							// Model checking finished, lets open state graph if any.
-							if (event.getModel().hasStateGraphDump()) {
-								try {
-									addOrUpdateStateGraphEditor(event.getModel().getStateGraphDump());
-								} catch (CoreException e) {
-									TLCUIActivator.getDefault().logError("Error initializing editor", e);
-								}
-							}
-							
-							if (lastStateCopy.in(State.RUNNING, State.REMOTE_RUNNING)) {
-								final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
-								final boolean eceInItsOwnTab = ips
-										.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
-								
-								if (eceInItsOwnTab && modelIsConfiguredWithNoBehaviorSpec()) {
-									setActivePage(EvaluateConstantExpressionPage.ID);
-								}
-							}
-							
-							// MAK 01/2018: Re-validate the page because running the model removes or sets
-							// problem markers (Model#setMarkers) which are presented to the user by
-							// ModelEditor#handleProblemMarkers. If we don't re-validate once a model is
-							// done running, the user visible presentation resulting from an earlier run of
-							// handleProblemMarkers gets stale.
-							// This behavior can be triggered by creating a spec (note commented EXTENDS): 
-							//   \* EXTENDS Integers
-							//   VARIABLE s
-							//   Spec == s = 0 /\ [][s'=s]_s
-							// and a model that defines the invariant (s >= 0). Upon the first launch of
-							// the model, the ModelEditor correctly marks the invariant due to the operator
-							// >= being not defined. Uncommenting EXTENDS, saving the spec and rerunning
-							// the model would incorrectly not remove the marker on the invariant.
-							UIHelper.runUISync(validateRunable);
 						}
+
+						// MAK 01/2018: Re-validate the page because running the model removes or sets
+						// problem markers (Model#setMarkers) which are presented to the user by
+						// ModelEditor#handleProblemMarkers. If we don't re-validate once a model is
+						// done running, the user visible presentation resulting from an earlier run of
+						// handleProblemMarkers gets stale.
+						// This behavior can be triggered by creating a spec (note commented EXTENDS):
+						// \* EXTENDS Integers
+						// VARIABLE s
+						// Spec == s = 0 /\ [][s'=s]_s
+						// and a model that defines the invariant (s >= 0). Upon the first launch of
+						// the model, the ModelEditor correctly marks the invariant due to the operator
+						// >= being not defined. Uncommenting EXTENDS, saving the spec and rerunning
+						// the model would incorrectly not remove the marker on the invariant.
+						UIHelper.runUISync(validateRunable);
 					}
 				});
 			}
@@ -201,90 +199,59 @@ public class ModelEditor extends FormEditor {
      */
     private final ValidateRunnable validateRunable = new ValidateRunnable();
 
-    // TODO this is pretty poor design - there is one instance of this inner class per instance of ModelEditor; the 
-    //			code below tweaks the switchToErrorPage ivar and then hands it off to a run async method, i guess just
-    //			hoping that the flag isn't tweaked again before the async method does what was originally intended...
-	private class ValidateRunnable implements Runnable {
-        private boolean switchToErrorPage = false;
+    // data binding manager
+    private DataBindingManager dataBindingManager = new DataBindingManager();
 
-        public void run()
-        {
-            // Re-validate the pages, iff the model is not running.
-			// Also check if the model is nulled by now which
-			// happens if the ModelEditor disposed before a scheduled run gets
-			// executed.
-            if (model != null && !model.isRunning())
-            {
-                /*
-                 * Note that all pages are not necessarily
-                 * instances of BasicFormPage. Some are read
-                 * only editors showing saved versions of
-                 * modules.
-                 */
-                for (int i = 0; i < getPageCount(); i++)
-                {
-                    if (pages.get(i) instanceof BasicFormPage)
-                    {
-                        BasicFormPage page = (BasicFormPage) pages.get(i);
-                        page.resetAllMessages(true);
-                    }
-                }
-                for (int i = 0; i < getPageCount(); i++)
-                {
-                    if (pages.get(i) instanceof BasicFormPage)
-                    {
-                        BasicFormPage page = (BasicFormPage) pages.get(i);
-                        // re-validate the model on changes of the spec
-                        page.validatePage(switchToErrorPage);
-                    }
-                }
-            }
-        }
-    };
+    /**
+     * A listener that reacts to when editor tabs showing saved modules
+     * get closed. This listener properly disposes of the editor and its contents.
+     * See the class documentation for more details.
+     */
+    private CTabFolder2Listener listener = new CloseModuleTabListener();
+    
+    private final Map<Integer, Closeable> m_indexCloseableMap;
+
+    // array of pages to add
+    private BasicFormPage[] pagesToAdd;
+
+	private Model model;
 
     // react on spec file changes
-    private IResourceChangeListener workspaceResourceChangeListener = new IResourceChangeListener() {
-        public void resourceChanged(IResourceChangeEvent event)
-        {
-            IResourceDelta delta = event.getDelta();
+	private IResourceChangeListener workspaceResourceChangeListener = (event) -> {
+		final IResourceDelta delta = event.getDelta();
 
-            /**
-             * This is a helper method that returns a new instance of ChangedModulesGatheringDeltaVisitor,
-             * which gathers the changed TLA modules from a resource delta tree.
-             */
-            ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor(model) {
-                public IResource getModel()
-                {
-                    return model.getFile();
-                }
-            };
+		/**
+		 * This is a helper method that returns a new instance of
+		 * ChangedModulesGatheringDeltaVisitor, which gathers the changed TLA modules
+		 * from a resource delta tree.
+		 */
+		final ChangedSpecModulesGatheringDeltaVisitor visitor = new ChangedSpecModulesGatheringDeltaVisitor(model) {
+			public IResource getModel() {
+				return model.getFile();
+			}
+		};
 
-            try
-            {
-                delta.accept(visitor);
-                // one of the modules in the specification has changed
-                // this means that identifiers defined in a spec might have changed
-                // re-validate the editor
-                if (!visitor.getModules().isEmpty() || visitor.isModelChanged() || visitor.getCheckpointChanged())
-                {
-                    // update the specObject of the helper
-                    helper.resetSpecNames();
+		try {
+			delta.accept(visitor);
+			// one of the modules in the specification has changed
+			// this means that identifiers defined in a spec might have changed
+			// re-validate the editor
+			if (!visitor.getModules().isEmpty() || visitor.isModelChanged() || visitor.getCheckpointChanged()) {
+				// update the specObject of the helper
+				helper.resetSpecNames();
 
-                    // iff the model has changed, switch to the error page after the validation
-                    validateRunable.switchToErrorPage = visitor.isModelChanged();
+				// iff the model has changed, switch to the error page after the validation
+				validateRunable.switchToErrorPage = visitor.isModelChanged();
 
-                    // re-validate the pages
-                    UIHelper.runUIAsync(validateRunable);
+				// re-validate the pages
+				UIHelper.runUIAsync(validateRunable);
 
-                    return;
-                }
-            } catch (CoreException e)
-            {
-                TLCUIActivator.getDefault().logError("Error visiting changed resource", e);
-                return;
-            }
-
-        }
+				return;
+			}
+		} catch (CoreException e) {
+			TLCUIActivator.getDefault().logError("Error visiting changed resource", e);
+			return;
+		}
     };
     
 	/**
@@ -337,29 +304,21 @@ public class ModelEditor extends FormEditor {
 		}
 	};
 
-    // data binding manager
-    private DataBindingManager dataBindingManager = new DataBindingManager();
-
-    /**
-     * A listener that reacts to when editor tabs showing saved modules
-     * get closed. This listener properly disposes of the editor and its contents.
-     * See the class documentation for more details.
-     */
-    private CTabFolder2Listener listener = new CloseModuleTabListener();
-    
-    private final Map<Integer, Closeable> m_indexCloseableMap;
-
-    // array of pages to add
-    private BasicFormPage[] pagesToAdd;
-
-	private Model model;
-
     /**
      * Simple editor constructor
      */
 	public ModelEditor() {
 		helper = new SemanticHelper();
 		m_indexCloseableMap = new HashMap<>();
+	}
+	
+	/**
+	 * This constructor should only be used with certain unit tests.
+	 */
+	public ModelEditor(final Model testingModel) {
+		this();
+		
+		model = testingModel;
 	}
 
     /**
@@ -1705,4 +1664,46 @@ public class ModelEditor extends FormEditor {
 			return next;
 		}
 	}
+
+	
+    // TODO this is pretty poor design - there is one instance of this inner class per instance of ModelEditor; the 
+    //			code below tweaks the switchToErrorPage ivar and then hands it off to a run async method, i guess just
+    //			hoping that the flag isn't tweaked again before the async method does what was originally intended...
+	private class ValidateRunnable implements Runnable {
+        private boolean switchToErrorPage = false;
+
+        @Override
+		public void run() {
+            // Re-validate the pages, iff the model is not running.
+			// Also check if the model is nulled by now which
+			// happens if the ModelEditor disposed before a scheduled run gets
+			// executed.
+            if ((model != null) && !model.isRunning())
+            {
+                /*
+                 * Note that all pages are not necessarily
+                 * instances of BasicFormPage. Some are read
+                 * only editors showing saved versions of
+                 * modules.
+                 */
+                for (int i = 0; i < getPageCount(); i++)
+                {
+                    if (pages.get(i) instanceof BasicFormPage)
+                    {
+                        BasicFormPage page = (BasicFormPage) pages.get(i);
+                        page.resetAllMessages(true);
+                    }
+                }
+                for (int i = 0; i < getPageCount(); i++)
+                {
+                    if (pages.get(i) instanceof BasicFormPage)
+                    {
+                        BasicFormPage page = (BasicFormPage) pages.get(i);
+                        // re-validate the model on changes of the spec
+                        page.validatePage(switchToErrorPage);
+                    }
+                }
+            }
+        }
+    }
 }

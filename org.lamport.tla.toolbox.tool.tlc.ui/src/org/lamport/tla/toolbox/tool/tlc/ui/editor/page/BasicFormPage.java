@@ -163,7 +163,7 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
             {
                 if (getModel() != null)
                 {
-                    TLCErrorView.updateErrorView(getModel());
+                    TLCErrorView.updateErrorView(getModelEditor());
                 }
             } else
             {

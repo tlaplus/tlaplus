@@ -185,7 +185,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             if (getModel() != null)
             {
             	getModel().setOriginalTraceShown(true);
-                TLCErrorView.updateErrorView(getModel());
+                TLCErrorView.updateErrorView(getModelEditor());
             }
         }
     };
@@ -379,12 +379,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
             			}
             		}
 
-					// Do not open the dedicated coverage editor below if the user only requested
-					// action-only coverage.
-            		if (Model.Coverage.ACTION == getModel().getCoverage()) {
+					// Do not open the dedicated coverage editor below if the user only requested action-only coverage.
+            		// These next three lines break Eclipse IDE syntax coloring for this file starting with the
+            		//			unenclosing method. Lame.
+            		if (Model.Coverage.ACTION.equals(getModel().getCoverage())) {
                 		break;
                 	}
-
 					
 					final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
 					
@@ -480,8 +480,9 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 					m_errorPaneViewState.setErrorLinkDisplay(visible);
 					setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
 					
-                    // update the error view
-                    TLCErrorView.updateErrorView(dataProvider.getModel());
+                    // update the error view - previously (pre-201909) we used the Model instance contained
+					//		in the data provider.
+                    TLCErrorView.updateErrorView(getModelEditor());
                     break;
                 default:
                     break;

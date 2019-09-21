@@ -24,7 +24,6 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * a singleton.
  * 
  * @author Dan Ricketts
- *
  */
 public class ModelEditorPartListener implements IPartListener2
 {
@@ -73,16 +72,14 @@ public class ModelEditorPartListener implements IPartListener2
      * If the model editor made visible does have errors, then the error
      * view is updated with these errors.
      */
-	public void partVisible(final IWorkbenchPartReference partRef)
-    {
+	public void partVisible(final IWorkbenchPartReference partRef) {
         final IWorkbenchPart part = partRef.getPart(false);
         
-		if (part != null && part instanceof ModelEditor) {
+		if ((part != null) && (part instanceof ModelEditor)) {
 			final ModelEditor editor = (ModelEditor) part;
-			TLCModelLaunchDataProvider provider = null;
+			final TLCModelLaunchDataProvider provider;
 
 			final Model model = editor.getModel();
-
 			if (model.isOriginalTraceShown()) {
 				provider = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(model);
 			} else {
@@ -90,7 +87,7 @@ public class ModelEditorPartListener implements IPartListener2
 			}
 
 			final TLCErrorView errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);
-			if (errorView != null && provider != null) {
+			if ((errorView != null) && (provider != null)) {
 				if (provider.getErrors().size() > 0) {
 					// Tell the TLCErrorView update function to not open the
 					// TLCErrorView iff the ModelEditor and the TLCErrorView
@@ -107,12 +104,11 @@ public class ModelEditorPartListener implements IPartListener2
 			    	// 3) Run the model
 			    	// 4) Cycle focus
 					// 5) Bam!
-					TLCErrorView.updateErrorView(model, !UIHelper.isInSameStack(editor, TLCErrorView.ID));
+					TLCErrorView.updateErrorView(editor, !UIHelper.isInSameStack(editor, TLCErrorView.ID));
 				} else {
 					errorView.clear();
 				}
 			}
 		}
     }
-
 }

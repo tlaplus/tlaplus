@@ -16,6 +16,7 @@ import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
@@ -29,6 +30,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegionContainer;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerHelper;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.util.LegacyFileDocumentProvider;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -44,14 +46,15 @@ import tlc2.output.EC;
  */
 public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 {
+    private static String TE_ERROR_HEADER = "Error(s) from running the Trace Explorer:\n";
 
+    
     // a hashmap containing information about trace expressions if this
     // provider is for a run of the trace explorer
     // the key is the variable name used for the expression, the value
     // is an instance of TraceExpressionInformationHolder corresponding
     // to the expression.
     private Hashtable<String, TraceExpressionInformationHolder> traceExpressionDataTable;
-    private static String TE_ERROR_HEADER = "Error(s) from running the Trace Explorer:\n";
 
     public TraceExplorerDataProvider(Model model)
     {
@@ -78,13 +81,17 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
         processTraceForTraceExplorer();
 
-        UIHelper.runUIAsync(new Runnable() {
-
-            public void run()
-            {
-                TLCErrorView.updateErrorView(getModel());
-            }
-        });
+        final IEditorPart activeEditor = UIHelper.getActiveEditor();
+		if (activeEditor != null) {
+			if (activeEditor instanceof ModelEditor) {
+				final ModelEditor activeModelEditor = (ModelEditor) activeEditor;
+				if (activeModelEditor.getModel() != null) {
+					UIHelper.runUIAsync(() -> {
+						TLCErrorView.updateErrorView(activeModelEditor);
+					});
+				}
+			}
+		}
     }
 
     /**
