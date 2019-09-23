@@ -219,9 +219,10 @@ public class TLC implements ValueConstants
 					// constant substitution.
 					throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 				}
-				// Not an IdThread implies that TLCGet("level") is part of the initial predicate
-				// where the level is 0.
-				return IntValue.gen(0);
+				// Not an IdThread (hence currentState is null) implies that TLCGet("level") is
+				// evaluated as part of the initial predicate where the level - by definition -
+				// is 0 (see TLCState#level).
+				return IntValue.gen(TLCState.INIT_LEVEL - 1);
 			}
 		}
 		throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
