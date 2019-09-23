@@ -1,5 +1,5 @@
 //def labels = ['windows', 'master', 'macos'] // labels for Jenkins node types we will build on
-def labels = ['master']
+def labels = ['master', 'macos']
 def builders = [:]
 for (x in labels) {
     def label = x // Need to bind the label variable before the closure - can't do 'for (label in labels)'
