@@ -46,6 +46,10 @@ public final class StateVec implements IStateFunctor {
 
   public final int size() { return this.size; }
 
+  public boolean isEmpty() {
+	return this.size == 0;
+  }
+
   public final void grow(int add) {
     int oldLen = this.v.length;
     if (oldLen >= TLCGlobals.setBound) {
@@ -61,6 +65,13 @@ public final class StateVec implements IStateFunctor {
 
   public final TLCState elementAt(int i) { return this.v[i]; }
 
+  public boolean isLastElement(final TLCState state) {
+	  if (isEmpty()) {
+		  return false;
+	  }
+	  return this.elementAt(size() - 1) == state;
+  }
+  
   public final void clear() {
     this.size = 0;
   }

@@ -39,6 +39,9 @@ public class SimulatorTest extends CommonTestCase {
 		// Make the each unit test execution as deterministic as possible.
 		rng = new RandomGenerator(0);
 		ToolIO.setUserDir(BASE_PATH + File.separator + "simulation" + File.separator + "BasicMultiTrace");
+		
+		// Printing the error trace entails fingerprint its states.
+		FP64.Init();
 	}
 	
 	@After

@@ -354,13 +354,30 @@ public class Simulator {
 			MP.printMessage(EC.TLC_ERROR_STATE);
 			StatePrinter.printState(state);
 		} else {
-			MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
-			TLCState lastState = null;
-			for (int i = 0; i < stateTrace.size(); i++) {
-				StatePrinter.printState(stateTrace.elementAt(i), lastState, i + 1);
-				lastState = stateTrace.elementAt(i);
+			if (!stateTrace.isLastElement(state)) {
+				// MAK 09/24/2019: this method is called with state being the stateTrace's
+				// last element or not.
+				stateTrace.addElement(state);
 			}
-			StatePrinter.printState(state, null, stateTrace.size() + 1);
+			
+			MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+			// MAK 09/24/2019: For space reasons, TLCState does not store the state's action.
+			// This is why the loop below creates TLCStateInfo instances out of the pair cur
+			// -> last to print the action's name as part of the error trace. This is
+			// especially useful for Error-Trace Explorer in the Toolbox.
+			TLCState lastState = null;
+			TLCStateInfo sinfo;
+			int i = 0;
+			for (; i < stateTrace.size(); i++) {
+				final TLCState curState = stateTrace.elementAt(i);
+				if (lastState != null) {
+					sinfo = this.tool.getState(curState, lastState);
+				} else {
+					sinfo = new TLCStateInfo(curState, "<Initial predicate>");
+				}
+				StatePrinter.printState(sinfo, lastState, i + 1);
+				lastState = curState;
+			}
 		}
 	}
 
