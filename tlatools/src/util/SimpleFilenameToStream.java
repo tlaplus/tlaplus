@@ -192,7 +192,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
     while (true)
     {
         if ((idx == 0) && (ToolIO.getUserDir() != null)) {
-            sourceFile = new File(ToolIO.getUserDir(), name );
+            sourceFile = new TLAFile(ToolIO.getUserDir(), name );
         }
         else
         {
@@ -208,7 +208,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
 					sourceFile = read(name, is);
 				}
         	} else {
-        		sourceFile = new File( prefix + name );
+        		sourceFile = new TLAFile( prefix + name, true );
         	}
         }
         // Debug
@@ -235,7 +235,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
   } // end locate()
 
   private File read(String name, InputStream is) {
-    final File sourceFile = new File(TMPDIR + File.separator + name);
+    final File sourceFile = new TLAFile(TMPDIR + File.separator + name, true);
 	sourceFile.deleteOnExit();
 	try {
 
@@ -309,6 +309,8 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	 * This method is used to set the isStandard field of the module's ModuleNode.
 	 * I don't know if this is every called with a module that
 	 * Added by LL on 24 July 2013.
+	 * @see tla2sany.modanalyzer.ParseUnit.isLibraryModule()
+	 * @see StandardModules.isDefinedInStandardModule()
 	 */
 	public boolean isStandardModule(String moduleName) {
 		 File file = this.resolve(moduleName, true) ;

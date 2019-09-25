@@ -256,20 +256,10 @@ public class ModuleParserLauncher
             String moduleName = enumerate.nextElement();
             ParseUnit parseUnit = (ParseUnit) moduleSpec.parseUnitContext.get(moduleName);
 
-            String absoluteFileName = null;
-            if (parseUnit.getNis() != null && parseUnit.getNis().sourceFile() != null)
-            {
-                absoluteFileName = parseUnit.getNis().sourceFile().getAbsolutePath();
-            }
-            if (absoluteFileName == null)
-            {
-                throw new RuntimeException("Bug: Spec.ParseMainModule:1730");
-            }
-
             // create module holder
-            Module module = new Module(absoluteFileName);
+            Module module = new Module(parseUnit);
 
-            if (!module.isStandardModule() && updateStorage)
+            if (!module.isLibraryModule() && updateStorage)
             {
 
                 IResource moduleResource = ResourceHelper.getResourceByModuleName(moduleName);
@@ -298,7 +288,7 @@ public class ModuleParserLauncher
                 module.setRoot(true);
             }
 
-            if (module.isStandardModule())
+            if (module.isLibraryModule())
             {
                 // standardModules.addElement(module);
             } else

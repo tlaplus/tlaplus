@@ -52,7 +52,7 @@ public class RMIFilenameToStreamResolver implements FilenameToStream {
 
 		// read the file from the server
 		// strip off path
-		final String name = new File(filename).getName();
+		final String name = new TLAFile(filename).getName();
 
 		File file = fileCache.get(name);
 		// not in cache
@@ -102,7 +102,7 @@ public class RMIFilenameToStreamResolver implements FilenameToStream {
 	}
 
 	private File writeToNewTempFile(String name, byte[] bs) {
-		final File f = new File(rndPrefix + File.separator + name);
+		final File f = new TLAFile(rndPrefix + File.separator + name);
 		f.deleteOnExit();
 
 		FileOutputStream outputStream = null;

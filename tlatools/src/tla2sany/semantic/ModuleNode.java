@@ -547,6 +547,7 @@ public void setInstantiated(boolean isInstantiated) {
 
 /**
  * @return the isStandard
+ * @see tla2sany.modanalyzer.ParseUnit.isLibraryModule()
  */
 public boolean isStandard() {
 	return isStandard;
@@ -554,6 +555,7 @@ public boolean isStandard() {
 
 /**
  * @param isStandard the isStandard to set
+ * @see tla2sany.modanalyzer.ParseUnit.isLibraryModule()
  */
 public void setStandard(boolean isStandard) {
 	this.isStandard = isStandard;

@@ -143,7 +143,7 @@ public class RCPNameToFileIStream implements FilenameToStream
             // improve this: ToolIO.getUserDir()
             if ((idx == 0) && (ToolIO.getUserDir() != null))
             {
-                sourceFile = new File(ToolIO.getUserDir(), name);
+                sourceFile = new TLAFile(ToolIO.getUserDir(), name);
             } else
             {
             	if(FilenameToStream.isArchive(prefix)) {
@@ -152,7 +152,7 @@ public class RCPNameToFileIStream implements FilenameToStream
     					return sourceFile;
     				}
             	} else {
-                    sourceFile = new File(prefix + name);
+                    sourceFile = new TLAFile(prefix + name, true);
             	}
             }
             if (sourceFile != null && sourceFile.exists()) {
@@ -172,7 +172,7 @@ public class RCPNameToFileIStream implements FilenameToStream
 	// the resource. The problem is, that the Toolbox and TLC work with File instead
 	// of InputStream which is why we can't extract to memory only.
 	private File getFromArchive(String prefix, String name) {
-		final File outputFile = new File(TMPDIR + File.separator + name);
+		final File outputFile = new TLAFile(TMPDIR + File.separator + name, true);
 		outputFile.deleteOnExit(); // Written to TMPDIR which is likely deleted regularly anyway.
 		try (FileSystem fileSystem = FileSystems.newFileSystem(new File(prefix).toPath(), null)) {
 	        Path fileToExtract = fileSystem.getPath(name);
@@ -203,6 +203,11 @@ public class RCPNameToFileIStream implements FilenameToStream
 
 	}
 
+	@Override
+	public boolean isLibraryModule(String moduleName) {
+		return isStandardModule(moduleName);
+	}
+	
 	/**
 	 * August 2014 - TL added a stub for this informative interface method. All
 	 * the usages of this class were written before the addition of this

@@ -202,6 +202,10 @@ public abstract class SemanticNode
 	  return Context.isBuiltIn(this);
   }
 
+  /**
+   * @see tla2sany.modanalyzer.ParseUnit.isLibraryModule()
+   * @see StandardModules.isDefinedInStandardModule()
+   */
   public boolean isStandardModule() {
 	  return StandardModules.isDefinedInStandardModule(this);
   }

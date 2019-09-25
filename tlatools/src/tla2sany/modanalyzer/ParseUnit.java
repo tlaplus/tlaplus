@@ -35,6 +35,7 @@ import tla2sany.utilities.Vector;
 import util.FileUtil;
 import util.NamedInputStream;
 import util.ToolIO;
+import util.FilenameToStream.TLAFile;
 
 /**
  * This class represents a parse unit, i.e. a file containing a
@@ -87,6 +88,13 @@ public class ParseUnit {
     return (nis != null &&  
 	    nis.sourceFile().exists() &&
 	    parseStamp > nis.sourceFile().lastModified());
+  }
+
+  public boolean isLibraryModule() {
+	  if (nis == null || !(nis.sourceFile() instanceof TLAFile)) {
+		  return false;
+	  }
+	  return ((TLAFile) nis.sourceFile()).isLibraryModule();
   }
 
   // Get-methods

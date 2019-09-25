@@ -30,6 +30,7 @@ import java.io.File;
 
 import org.eclipse.core.resources.IResource;
 
+import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.semantic.ModuleNode;
 import tlc2.module.BuiltInModuleHelper;
 
@@ -44,13 +45,17 @@ public class Module
     private boolean isRoot = false;
 	private IResource resource;
 
-    public Module(String absoluteFilename)
+	private final ParseUnit parseUnit;
+
+    public Module(ParseUnit parseUnit)
     {
-        file = new File(absoluteFilename);
+        this.file = new File(parseUnit.getNis().sourceFile().getAbsolutePath());
+        this.parseUnit = parseUnit;
     }
 
     public Module(IResource resource) {
-    	this(resource.getLocation().toOSString());
+    	this.file = new File(resource.getLocation().toOSString());
+    	this.parseUnit = null;
     	this.resource = resource;
 	}
 
@@ -125,16 +130,21 @@ public class Module
     }
 
     /**
-     * Determines if current module is a standard module <br>
-     * TODO Fishy method. improve/unify it
-     * 
-     * @return true iff the absolute path of the module contains BuiltInModuleHelper.STANDARD_MODULES value
-     */
-    public boolean isStandardModule()
+	 * Determines if current module has been loaded from the library path, i.e. it
+	 * is a standard module or part of a module archive such as CommuinityModules.
+	 */
+    public boolean isLibraryModule()
     {
+    	if (this.parseUnit != null && parseUnit.isLibraryModule()) {
+    		return true;
+    	}
+    	if (this.node != null) {
+    		// As standard module such as FiniteSets, ... are considered library modules.
+    		return this.node.isStandardModule();
+    	}
+    	// TODO Fishy method; improve/unify!
         return (getAbsolutePath().indexOf(BuiltInModuleHelper.STANDARD_MODULES) != -1);
     }
-
     
     public boolean isRoot()
     {
