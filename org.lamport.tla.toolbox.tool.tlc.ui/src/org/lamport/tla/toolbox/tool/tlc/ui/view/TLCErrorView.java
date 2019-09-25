@@ -11,6 +11,7 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
@@ -103,6 +104,13 @@ public class TLCErrorView extends ViewPart
   
 	private static final String SYNCED_TRAVERSAL_KEY = "SYNCED_TRAVERSAL_KEY";
 
+    private static final String NO_VALUE_VIEWER_TEXT
+			= "\u2022 Select a line in Error Trace to show its value here.\n"
+				+ "\u2022 Double-click on a line to go to corresponding action in spec \u2014 "
+				+ "or while holding down " + (Platform.getOS().equals(Platform.OS_MACOSX) ? "\u2318" : "CTRL")
+				+ " to go to the original PlusCal code, if present.\n"
+				+ "\u2022 Right-click on a location row for a context menu.";
+
     /**
      * This is the pattern of an error message resulting from evaluating the constant
      * expression entered in the expression field by the user.
@@ -117,7 +125,7 @@ public class TLCErrorView extends ViewPart
 
     private static final IDocument NO_VALUE_DOCUMENT()
     {
-        return new Document("Select line in Error Trace to show its value here.");
+        return new Document(NO_VALUE_VIEWER_TEXT);
     }
     
     private enum FilterType {
@@ -512,7 +520,7 @@ public class TLCErrorView extends ViewPart
 				final Object selection = ((IStructuredSelection) event.getSelection()).getFirstElement();
 				if (selection instanceof TLCState) {
 					final TLCState state = (TLCState) selection;
-					valueViewer.setDocument(new Document(state.getDescriptionWithTraceExpressions()));
+					valueViewer.setDocument(new Document(state.getConjunctiveDescription(true)));
 				} else {
 					valueViewer.setDocument(new Document(selection.toString()));
 				}

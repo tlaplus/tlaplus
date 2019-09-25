@@ -297,53 +297,49 @@ public class TLCState implements IModuleLocatable
     }
 
     /**
-     * Returns a string describing the state with the
-     * variables representing trace explorer expressions
-     * replaced with the expressions.
+     * The returns a conjunction list of variables.
      * 
+     * For variables representing trace explorer expressions, if {@code includeTraceExpressions} is true,
+     * the returned string has:
+     * 
+     * /\ expr = value
+     * 
+     * where expr is the single line form of the trace explorer expression as shown in the Name column of
+     * the trace viewer.
+     *  
+     * For all other variables, this method attempts to display them as TLC does.
+     * 
+     * @param includeTraceExpressions whether trace expressions should be included.
      * @return
      */
-    public String getDescriptionWithTraceExpressions()
-    {
-        /*
-         * The returns a conjunction list of variables.
-         * 
-         * For variables representing trace explorer expressions,
-         * the returned string has:
-         * 
-         * /\ expr = value
-         * 
-         *  where expr is the single line form of the trace explorer expression
-         *  as shown in the Name column of the trace viewer.
-         *  
-         *  For all other variables, this method attempts to display them as TLC
-         *  does.
-         */
-        StringBuffer result = new StringBuffer();
+    public String getConjunctiveDescription(final boolean includeTraceExpressions) {
+        final StringBuilder result = new StringBuilder();
+        
 		for (int i = 0; i < variables.size(); i++) {
-			TLCVariable var = variables.get(i);
+			final TLCVariable var = variables.get(i);
+			
+			if (var.isTraceExplorerVar() && !includeTraceExpressions) {
+				continue;
+			}
+			
             result.append("/\\ ");
-            if (var.isTraceExplorerVar())
-            {
-                result.append(var.getSingleLineName());
-            } else
-            {
-                result.append(var.getName());
-            }
+			if (var.isTraceExplorerVar()) {
+				result.append(var.getSingleLineName());
+			} else {
+				result.append(var.getName());
+			}
 
             result.append(" = ");
 
-            if (var.getValue().toString() != null)
-            {
-                result.append(var.getValue().toString());
-            } else
-            {
-                result.append(var.getValue().toSimpleString());
-            }
+			if (var.getValue().toString() != null) {
+				result.append(var.getValue().toString());
+			} else {
+				result.append(var.getValue().toSimpleString());
+			}
 
-            result.append("\n");
-
+            result.append('\n');
         }
+		
         return result.toString();
     }
 

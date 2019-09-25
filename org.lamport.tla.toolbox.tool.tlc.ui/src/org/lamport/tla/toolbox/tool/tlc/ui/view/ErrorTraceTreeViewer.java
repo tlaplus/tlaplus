@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -40,9 +40,11 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Scrollable;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.ui.PlatformUI;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
+import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
@@ -74,12 +76,6 @@ class ErrorTraceTreeViewer {
     private static final int[] COLUMN_WIDTH = { 200, 200 };
     private static final String[] COLUMN_TEXTS = { "Name", "Value" };
 
-    private static final String DEFAULT_TOOL_TIP
-			= "\u2022 Click on a row to see in viewer below.\n"
-				+ "\u2022 Double-click to go to corresponding action in spec \u2014 "
-				+ "while holding\ndown " + (Platform.getOS().equals(Platform.OS_MACOSX) ? "\u2318" : "CTRL")
-				+ " to go to the original PlusCal code, if present.\n"
-				+ "\u2022 Right-click on a location row for a context menu.";
 	private static final String LOADER_TOOL_TIP
 			= "Double-click to load more states.\nIf the number of states is large, this might take a few seconds.";
 
@@ -187,23 +183,33 @@ class ErrorTraceTreeViewer {
 		    	        		final Model m = modelEditor.getModel();
 		    	        		
 		    	        		if (m != null) {
-		    	        			final String key = IModelConfigurationConstants.MODEL_PARAMETER_CONSTRAINT;
-		    	        			
-		    	        			try {
-		    	        				final StringBuilder constraint = new StringBuilder(m.getAttribute(key, ""));
-		    	        				
-		    	        				if (constraint.length() > 0) {
-		    	        					constraint.append("\n/\\\n");
-		    	        				}
-		    	        				
-		    	        				constraint.append(((TLCState)selection).getDescriptionWithTraceExpressions());
-		    	        				
-		    	        				m.setAttribute(key, constraint.toString());
-		    	        				m.save(null);
+									try {
+										final int specType = m.getAttribute(
+												IModelConfigurationConstants.MODEL_BEHAVIOR_SPEC_TYPE,
+												IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_DEFAULT);
 
-		    	        				modelEditor.launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
+										if (specType == IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_NO_SPEC) {
+											return;
+										}
+										
+										final StringBuilder constraint = new StringBuilder();
+										final String attributeKey;
+										if (specType == IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT) {
+											attributeKey = IModelConfigurationConstants.MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT;
+										} else {
+											attributeKey = IModelConfigurationConstants.MODEL_BEHAVIOR_CLOSED_SPECIFICATION;
+											final String temporalSpecification = m.getAttribute(attributeKey, "");
+											constraint.append(temporalSpecification).append('\n');
+										}
+										
+										constraint.append(((TLCState) selection).getConjunctiveDescription(false));
+
+										m.setAttribute(attributeKey, constraint.toString());
+										m.save(null);
+
+										modelEditor.launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
 		    	        			} catch (final CoreException e) {
-		    	        				TLCActivator.logError("Problem attempting to launch ammended model.", e);
+		    	        				TLCActivator.logError("Problem encountered attempting to launch checker.", e);
 		    	        			}
 		    	        		}
 		    	        	} else {
@@ -423,7 +429,7 @@ class ErrorTraceTreeViewer {
 				return LOADER_TOOL_TIP;
 			}
 			
-			return DEFAULT_TOOL_TIP;
+			return null;
 		}
 
 		@Override
