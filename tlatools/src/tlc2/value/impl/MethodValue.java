@@ -6,6 +6,8 @@
 
 package tlc2.value.impl;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
@@ -150,7 +152,15 @@ public class MethodValue extends OpValue implements Applicable {
         	  throw (EvalException) e;
           } else
           {
-              Assert.fail(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), e.getMessage()});
+              String message = e.getMessage();
+              if (message == null) {
+				  // Try to pass some information along (i.e. the full stack-trace) in cases where
+				  // message is null.
+		          final StringWriter sw = new StringWriter();
+            	  e.printStackTrace(new PrintWriter(sw));
+            	  message = sw.toString();
+              }
+			Assert.fail(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), message});
           }
       }
       return res;
