@@ -80,6 +80,7 @@ import org.lamport.tla.toolbox.ui.handler.ShowHistoryHandler;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
+import org.lamport.tla.toolbox.util.UIHelper;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
@@ -1275,6 +1276,22 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 							}
 						};
 						j.schedule();
+						
+						// Open the ModelEditor on the snapshot. The output/result of the remote
+						// CloudTLC run is *not* reported into Model_1 but into its most recent
+						// snapshots. Without opening the ModelEditor on the snapshot, it appears
+						// as if nothing is happening (unless the TLCConsole happens to be open).
+						final IFile launchFile = snapshot.getLaunchConfiguration().getFile();
+						if (launchFile.exists()) {
+							PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+								@Override
+								public void run() {
+									//TODO Refactor constant into a class accessible by this bundle.
+									UIHelper.openEditor("org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor",
+											launchFile);
+								}
+							});
+						}
 					}
 					monitor.done();
 					return Status.OK_STATUS;
