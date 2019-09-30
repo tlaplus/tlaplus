@@ -311,22 +311,23 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             // step 1
             monitor.subTask("Creating directories");
 
-            // retrieve the project containing the specification
-            final IProject project = model.getSpec().getProject();
+            final TLCSpec spec = model.getSpec();
+			// retrieve the project containing the specification
+            final IProject project = spec.getProject();
             if (project == null)
             {
                 // project could not be found
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                        "Error accessing the spec project " + model.getSpec().getName()));
+                        "Error accessing the spec project " + spec.getName()));
             }
 
             // retrieve the root file
-            final IFile specRootFile = model.getSpec().getRootFile();
+            final IFile specRootFile = spec.getRootFile();
             if (specRootFile == null)
             {
                 // root module file not found
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
-                        "Error accessing the root module " + model.getSpec().getRootFilename()));
+                        "Error accessing the root module " + spec.getRootFilename()));
             }
 
             // retrieve the model folder
@@ -412,7 +413,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             if (specRootFileCopy == null)
             {
                 throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, "Error copying "
-                        + model.getSpec().getRootFilename() + " into " + targetFolderPath.toOSString()));
+                        + spec.getRootFilename() + " into " + targetFolderPath.toOSString()));
             }
             
             // Copy the spec's root file userModule override if any.
@@ -483,7 +484,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             ModelWriter writer = new ModelWriter();
        
             // add the MODULE beginning and EXTENDS statement
-            writer.addPrimer(ModelHelper.MC_MODEL_NAME, model.getSpec().getRootModuleName());
+            writer.addPrimer(ModelHelper.MC_MODEL_NAME, spec.getRootModuleName());
 
             // Sets constants to a Vector of the substitutions for the CONSTANT substitutions
             List<Assignment> constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
@@ -576,9 +577,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
 
                 // the specification name-formula pair
-            	final String spec = config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
-    			if (model.getSpec().declares(spec) && !isExpression(spec)) {
-            		writer.addFormulaList(spec, "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+            	final String specIdentifier = config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
+    			if (spec.declares(specIdentifier) && !isExpression(specIdentifier)) {
+            		writer.addFormulaList(specIdentifier, "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
     			} else {
     				writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
     						ModelWriter.SPEC_SCHEME, config), "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
@@ -587,7 +588,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
             	// the init and next formulas
             	final String init = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
-				if (model.getSpec().declares(init) && !isExpression(init)) {
+				if (spec.declares(init) && !isExpression(init)) {
             		writer.addFormulaList(init, "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	} else {
             		writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
@@ -595,7 +596,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             	}
 				
             	final String next = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
-				if (model.getSpec().declares(next) && !isExpression(next)) {
+				if (spec.declares(next) && !isExpression(next)) {
 	           		writer.addFormulaList(next, "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	} else {
 	                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
@@ -614,12 +615,12 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             	// invariants (separate those declared in the spec from those declared in the model).
 				final List<String> invariants = config.getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
 				writer.addFormulaList(
-						createProperties(writer, model.getSpec(), invariants, ModelWriter.INVARIANT_SCHEME),
+						createProperties(writer, spec, invariants, ModelWriter.INVARIANT_SCHEME),
 						"INVARIANT", MODEL_CORRECTNESS_INVARIANTS);
 
 				// properties
 				final List<String> properties = config.getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
-				writer.addFormulaList(createProperties(writer, model.getSpec(), properties, ModelWriter.PROP_SCHEME),
+				writer.addFormulaList(createProperties(writer, spec, properties, ModelWriter.PROP_SCHEME),
 						"PROPERTY", MODEL_CORRECTNESS_PROPERTIES);
             }
 
