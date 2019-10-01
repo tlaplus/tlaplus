@@ -8,13 +8,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -862,22 +865,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
         // number of workers
         int numberOfWorkers = config.getAttribute(LAUNCH_NUMBER_OF_WORKERS, LAUNCH_NUMBER_OF_WORKERS_DEFAULT);
 
-        // distributed launch (legacy launch configurations pre-dating TLC distributed functionality 
-        // do not have the LAUNCH_DISTRIBUTED attribute. Then, it obviously defaults to distribution turned off.
-        // Trying to lookup a non-existing attribute would cause a runtime exception.)
-        // Then it could also be true or false. The legacy flag showing if "ad hoc" distribution is turned
-        // on or not. Simply map it to "ad hoc" or "off".
-        String cloud = "off";
-        if (config.hasAttribute(LAUNCH_DISTRIBUTED)) {
-        	try {
-        		cloud = config.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
-        	} catch (CoreException e) {
-        		boolean distributed = config.getAttribute(LAUNCH_DISTRIBUTED, false);
-        		if (distributed) {
-        			cloud = "ad hoc";
-        		}
-        	}
-        }
+        final String cloud = getMode(config);
         
         // TLC job
         Job job = null;
@@ -1001,6 +989,27 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
         job.addJobChangeListener(tlcJobListener);
         job.schedule();
     }
+
+    private static final Set<String> local = new HashSet<>(Arrays.asList("ad hoc", "off"));
+    
+	private static String getMode(final ILaunchConfiguration config) throws CoreException {
+        // distributed launch (legacy launch configurations pre-dating TLC distributed functionality 
+        // do not have the LAUNCH_DISTRIBUTED attribute. Then, it obviously defaults to distribution turned off.
+        // Trying to lookup a non-existing attribute would cause a runtime exception.)
+        // Then it could also be true or false. The legacy flag showing if "ad hoc" distribution is turned
+        // on or not. Simply map it to "ad hoc" or "off".
+		if (config.hasAttribute(LAUNCH_DISTRIBUTED)) {
+        	try {
+        		return  config.getAttribute(LAUNCH_DISTRIBUTED, LAUNCH_DISTRIBUTED_DEFAULT);
+        	} catch (CoreException e) {
+        		boolean distributed = config.getAttribute(LAUNCH_DISTRIBUTED, false);
+        		if (distributed) {
+        			return "ad hoc";
+        		}
+        	}
+        }
+		return "off";
+	}
     
 	// A DummyProcess instance has to be attached to the corresponding ILaunch
 	// when the Job launched neither creates an IProcess nor IDebugTarget. In
