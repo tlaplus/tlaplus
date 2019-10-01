@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.internal.resources.ResourceException;
@@ -188,69 +189,83 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             	throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, e.getMessage()));
             }
             
-    		final MessageDialogWithToggle dialog;
+    		final Display d = PlatformUI.getWorkbench().getDisplay();
+    		final AtomicInteger returnCode = new AtomicInteger(-1);
             switch (result) {
             	case NO_PLUSCAL_EXISTS:
             	case NO_DIVERGENCE:
             		break;
             	case ERROR_ENCOUNTERED:
-					dialog = MessageDialogWithToggle.openYesNoQuestion(
-							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "Error encountered",
-							"Something went wrong attempting to detect divergence between PlusCal and its translation, continue anyway?",
-							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
-							null, null);
+            		d.syncExec(() -> {
+            			final MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(
+    							d.getActiveShell(), "Error encountered",
+    							"Something went wrong attempting to detect divergence between PlusCal and its translation, continue anyway?",
+    							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
+    							null, null);
+    					
+    					if (dialog.getToggleState()) {
+    						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
+    					}
+    					
+    					returnCode.set(dialog.getReturnCode());
+            		});
 					
-					if (dialog.getToggleState()) {
-						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
-					}
-					
-					if (dialog.getReturnCode() == IDialogConstants.NO_ID) {
+					if (returnCode.get() == IDialogConstants.NO_ID) {
 						return false;
 					}
         			break;
             	case NO_TRANSLATION_EXISTS:
-					dialog = MessageDialogWithToggle.openYesNoQuestion(
-							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "Translation missing",
-							"Your spec appears to contain PlusCal but no TLA+ translation, are you sure you want to continue?",
-							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
-							null, null);
+            		d.syncExec(() -> {
+            			final MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(
+    							d.getActiveShell(), "Translation missing",
+    							"Your spec appears to contain PlusCal but no TLA+ translation, are you sure you want to continue?",
+    							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
+    							null, null);
+    					
+    					if (dialog.getToggleState()) {
+    						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
+    					}
+    					
+    					returnCode.set(dialog.getReturnCode());
+            		});
 					
-					if (dialog.getToggleState()) {
-						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
-					}
-					
-					if (dialog.getReturnCode() == IDialogConstants.NO_ID) {
+					if (returnCode.get() == IDialogConstants.NO_ID) {
 						return false;
 					}
         			break;
             	case NO_CHECKSUMS_EXIST:
-					dialog = MessageDialogWithToggle.openInformation(
-							PlatformUI.getWorkbench().getDisplay().getActiveShell(), "A note about your spec",
-							"Your spec contains PlusCal and a TLA+ translation - but they have not been verified to "
-									+ "be in sync; consider re-translating the PlusCal algorithm.",
-							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
-							null, null);
+            		d.syncExec(() -> {
+            			final MessageDialogWithToggle dialog = MessageDialogWithToggle.openInformation(
+    							d.getActiveShell(), "A note about your spec",
+    							"Your spec contains PlusCal and a TLA+ translation - but they have not been verified to "
+    									+ "be in sync; consider re-translating the PlusCal algorithm.",
+    							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
+    							null, null);
+    					
+    					if (dialog.getToggleState()) {
+    						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
+    					}
+            		});
 					
-					if (dialog.getToggleState()) {
-						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
-					}
-
             		break;
             	case DIVERGENCE_EXISTS:
-					dialog = MessageDialogWithToggle.open(MessageDialogWithToggle.QUESTION,
-							PlatformUI.getWorkbench().getDisplay().getActiveShell(),
-							"PlusCal out of sync",
-							"The PlusCal and TLA+ translation in your spec appear to be out of sync - would you like to"
-									+ " stop the launch?",
-							"Do not bug me about PlusCal verification during the rest of my Toolbox session.",
-							false, null, null, SWT.NONE, DIVERGENCE_DIALOG_BUTTONS);
+            		d.syncExec(() -> {
+            			final MessageDialogWithToggle dialog = MessageDialogWithToggle.open(MessageDialogWithToggle.QUESTION,
+    							d.getActiveShell(), "PlusCal out of sync",
+    							"The PlusCal and TLA+ translation in your spec appear to be out of sync - would you like to"
+    									+ " stop the launch?",
+    							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
+    							null, null, SWT.NONE, DIVERGENCE_DIALOG_BUTTONS);
+    					
+    					if (dialog.getToggleState()) {
+    						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
+    					}
+    					
+    					returnCode.set(dialog.getReturnCode());
+            		});
 					
-					if (dialog.getToggleState()) {
-						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
-					}
-					
-					if (dialog.getReturnCode() != DIVERGENCE_CONTINUE_LAUNCH.intValue()) {
-						if (dialog.getReturnCode() == DIVERGENCE_SHOW_HISTORY.intValue()) {
+					if (returnCode.get() != DIVERGENCE_CONTINUE_LAUNCH.intValue()) {
+						if (returnCode.get() == DIVERGENCE_SHOW_HISTORY.intValue()) {
 							final Module m = new Module(model.getSpec().getRootFile());
 							ShowHistoryHandler.openHistoryForModule(m);
 						}
