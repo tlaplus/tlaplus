@@ -32,7 +32,7 @@ public class TLACompletionProcessor extends ToolboxCompletionProcessor implement
 		l.add(new CompletionProposalTemplate(
 				"(***************************************************************************\r\n"
 						+ "--algorithm AlgorithmName {\r\n}\r\n"
-						+ " ***************************************************************************)\r\n",
+						+ "***************************************************************************)\r\n",
 				IPCalReservedWords.ALGORITHM, IPCalReservedWords.ALGORITHM_HELP));
 		proposals.put(ITLAReserveredWords.ALGORITHM, l);
     }

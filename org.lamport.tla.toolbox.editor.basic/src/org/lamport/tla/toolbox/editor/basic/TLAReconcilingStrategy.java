@@ -239,7 +239,7 @@ public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconci
 				if (find != null) {
 					final int startLocation = find.getOffset();
 					
-					find = search.find(pcalStartLocation, "^\\*+\\)$", true, true, false, true);
+					find = search.find(pcalStartLocation, "^\\s?\\*+\\)$", true, true, false, true);
 					addProjectionAdditionToMap(additions, startLocation, find, AnnotationType.PCAL_BLOCK);
 				}
 			}
