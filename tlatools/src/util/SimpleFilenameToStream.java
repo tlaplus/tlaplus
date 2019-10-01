@@ -192,7 +192,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
     while (true)
     {
         if ((idx == 0) && (ToolIO.getUserDir() != null)) {
-            sourceFile = new TLAFile(ToolIO.getUserDir(), name );
+            sourceFile = new TLAFile(ToolIO.getUserDir(), name, this );
         }
         else
         {
@@ -208,7 +208,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
 					sourceFile = read(name, is);
 				}
         	} else {
-        		sourceFile = new TLAFile( prefix + name, true );
+        		sourceFile = new TLAFile( prefix + name, true, this );
         	}
         }
         // Debug
@@ -235,7 +235,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
   } // end locate()
 
   private File read(String name, InputStream is) {
-    final File sourceFile = new TLAFile(TMPDIR + File.separator + name, true);
+    final File sourceFile = new TLAFile(TMPDIR + File.separator + name, true, this);
 	sourceFile.deleteOnExit();
 	try {
 

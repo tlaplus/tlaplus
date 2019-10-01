@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -469,6 +471,25 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                     }
                     // TODO check the existence of copied files
                 }
+            }
+            
+			// CloudTLC deploys a custom packaged tla2tools.jar on the remote instance,
+			// which is self-contained. I.e. it contains all of the spec's dependencies such
+			// as modules from the library path and TLC module overrides. Here we make sure
+            // these dependencies get included in the custom tla2tools.jar (see PayloadHelper)
+            // by copying them to the model directory.
+            if (!local.contains(getMode(config))) {
+				final Path modelDirectoryPath = Paths.get(modelFolder.getRawLocation().makeAbsolute().toFile().toURI());
+            	for (Module m : spec.getModulesSANY()) {
+					if (m.isLibraryModule() && !m.isStandardModule()) {
+						try {
+							m.copyTo(modelDirectoryPath);
+						} catch (IOException e) {
+							throw new CoreException(new Status(Status.ERROR, "org.lamport.tlc.toolbox.tool.tlc",
+									String.format("Error copying file %s to %s.", m.getFile(), modelDirectoryPath), e));
+						}
+					}
+				}
             }
 
             // create files

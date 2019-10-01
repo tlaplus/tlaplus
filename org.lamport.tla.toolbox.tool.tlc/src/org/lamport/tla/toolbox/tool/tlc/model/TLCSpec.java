@@ -27,8 +27,11 @@
 package org.lamport.tla.toolbox.tool.tlc.model;
 
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
@@ -37,9 +40,11 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchManager;
+import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 
+import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 
 /**
@@ -176,5 +181,15 @@ public class TLCSpec extends Spec {
 			return getModelNameSuggestion(model.getName());
 		}
 		return modelName + "_Copy";
+	}
+	
+	public Set<Module> getModulesSANY() {
+		final Set<Module> s = new HashSet<>();
+        Enumeration<String> enumerate = spec.getRootModule().parseUnitContext.keys();
+        while (enumerate.hasMoreElements()) {
+            ParseUnit parseUnit = (ParseUnit) spec.getRootModule().parseUnitContext.get(enumerate.nextElement());
+            s.add(new Module(parseUnit));
+        }
+        return s;
 	}
 }

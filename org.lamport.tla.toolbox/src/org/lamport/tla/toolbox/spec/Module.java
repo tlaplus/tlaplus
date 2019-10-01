@@ -27,12 +27,18 @@
 package org.lamport.tla.toolbox.spec;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import org.eclipse.core.resources.IResource;
 
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.semantic.ModuleNode;
 import tlc2.module.BuiltInModuleHelper;
+import util.FilenameToStream.TLAFile;
+import util.NamedInputStream;
 
 /**
  * Representation of a module
@@ -129,6 +135,15 @@ public class Module
         this.node = node;
     }
 
+    public boolean isStandardModule() {
+    	if (this.node != null) {
+    		// As standard module such as FiniteSets, ... are considered library modules.
+    		return this.node.isStandardModule();
+    	}
+    	// TODO Fishy method; improve/unify!
+        return (getAbsolutePath().indexOf(BuiltInModuleHelper.STANDARD_MODULES) != -1);
+    }
+    
     /**
 	 * Determines if current module has been loaded from the library path, i.e. it
 	 * is a standard module or part of a module archive such as CommuinityModules.
@@ -138,12 +153,7 @@ public class Module
     	if (this.parseUnit != null && parseUnit.isLibraryModule()) {
     		return true;
     	}
-    	if (this.node != null) {
-    		// As standard module such as FiniteSets, ... are considered library modules.
-    		return this.node.isStandardModule();
-    	}
-    	// TODO Fishy method; improve/unify!
-        return (getAbsolutePath().indexOf(BuiltInModuleHelper.STANDARD_MODULES) != -1);
+    	return isStandardModule();
     }
     
     public boolean isRoot()
@@ -155,4 +165,20 @@ public class Module
     {
         this.isRoot = isRoot;
     }
+
+	public void copyTo(final Path dst) throws IOException {
+		Files.copy(file.toPath(), dst.resolve(file.getName()), StandardCopyOption.REPLACE_EXISTING);
+
+		// Attempt to copy corresponding TLC module override (.class file) if any for this Module. 
+		if (this.parseUnit != null) {
+			final NamedInputStream nis = this.parseUnit.getNis();
+			if (nis != null && nis.sourceFile() instanceof TLAFile) {
+				final TLAFile tlaFile = (TLAFile) nis.sourceFile();
+				final File moduleOverride = tlaFile.getModuleOverride();
+				if (moduleOverride != null) {
+					Files.copy(moduleOverride.toPath(), dst.resolve(moduleOverride.getName()), StandardCopyOption.REPLACE_EXISTING);
+				}
+			}
+		}
+	}
 }

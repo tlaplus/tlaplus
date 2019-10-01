@@ -26,23 +26,38 @@ public interface FilenameToStream
 	 */
 	public static class TLAFile extends File {
 		private final boolean isLibraryModule;
+		private transient final FilenameToStream resolver;
 
-		public TLAFile(String pathname) {
-			this(pathname, false);
+		public TLAFile(String pathname, FilenameToStream fts) {
+			this(pathname, false, fts);
 		}
 
-		public TLAFile(String pathname, boolean isLibraryModule) {
+		public TLAFile(String pathname, boolean isLibraryModule, FilenameToStream fts) {
 			super(pathname);
 			this.isLibraryModule = isLibraryModule;
+			this.resolver = fts;
 		}
 
-		public TLAFile(String parent, String child) {
+		public TLAFile(String parent, String child, FilenameToStream fts) {
 			super(parent, child);
 			this.isLibraryModule = false;
+			this.resolver = fts;
 		}
 
 		public boolean isLibraryModule() {
 			return isLibraryModule;
+		}
+
+		/**
+		 * @return null if no TLC module override for this module exists.
+		 */
+		public File getModuleOverride() {
+			final File moduleOverride = resolver.resolve(getName().replaceAll(".tla$", ".class"), false);
+			if (moduleOverride.exists()) {
+				// resolve(...) return a File instance even if the file doesn't exist.
+				return moduleOverride;
+			}
+			return null;
 		}
 	}
 	
