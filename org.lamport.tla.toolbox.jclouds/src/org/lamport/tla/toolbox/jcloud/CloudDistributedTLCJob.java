@@ -281,7 +281,12 @@ public class CloudDistributedTLCJob extends Job {
 						+ params.getJavaSystemProperties() + " "
 						+ "-jar /tmp/tla2tools.jar " 
 						+ params.getTLCParameters()
-						+ " && "
+						// Unless TLC's exit value is 1 or 255 (see EC.java),
+						// run the shutdown sequence. In other words, ignore
+						// all non-zero exit values because the represent 
+						// regular termination in which case we can safely
+						// terminate the cloud instance.
+						+ " ; [[ $? -ne 255 && $? -ne 1 ]] && "
 					// Let the machine power down immediately after
 					// finishing model checking to cut costs. However,
 					// do not shut down (hence "&&") when TLC finished
