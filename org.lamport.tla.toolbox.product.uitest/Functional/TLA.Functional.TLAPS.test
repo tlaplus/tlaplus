@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _RifTcLZDEemcF9BXFSE9ew
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 8/3/19, 4:30 PM
+Save-Time: 10/2/19, 10:33 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -47,8 +47,14 @@ let [val isWindows [get-by-os -win "yes" -default "no"]] {
 		    get-button "Apply and Close" | click
 		}
 		
-		get-editor $TLA-SPEC-NAME | get-text-viewer | mouse down -button Right
-				| get-menu -path "TLA Proof Manager/Launch Prover..." | is-disabled | verify-false
+		with [get-editor $TLA-SPEC-NAME] {
+			with [get-text-viewer] {
+				mouse down -button Right
+				with [get-menu -path "TLA Proof Manager/Launch Prover..."] {
+					is-disabled | verify-false
+				}
+			}
+		}
 	}
 	-finally {
 		DeleteSpecNew
