@@ -180,9 +180,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 		if (!config.exists()) {
             return false;
         }
-		
+
         final int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
-        if ((specType != MODEL_BEHAVIOR_TYPE_NO_SPEC) && PERFORM_VALIDATION_BEFORE_LAUNCH.get()) {
+        if ((specType != MODEL_BEHAVIOR_TYPE_NO_SPEC)
+        		&& PERFORM_VALIDATION_BEFORE_LAUNCH.get()
+        		&& mode.equals(MODE_MODELCHECK)) {
             final Model model = config.getAdapter(Model.class);
             final IFile rootModule = model.getSpec().toSpec().getRootFile();
             final Validator.ValidationResult result;
