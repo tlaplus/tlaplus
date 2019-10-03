@@ -220,6 +220,14 @@ public class ActionInformationItem extends CoverageInformationItem {
 			child.style(textPresentation, c, rep);
 		}
 	}
+	
+	@Override
+	protected boolean addThisToLegend() {
+		// Do not add ActionInformationItem to the legend of non state-based statistics
+		// (inv, cost, cost+inv). Otherwise, the legend (heatmap) will contain the value
+		// and color of the AII which is bogus.
+		return false;
+	}
 
 	@Override
 	Color colorItem(TreeSet<Long> counts, final Representation ignored) {

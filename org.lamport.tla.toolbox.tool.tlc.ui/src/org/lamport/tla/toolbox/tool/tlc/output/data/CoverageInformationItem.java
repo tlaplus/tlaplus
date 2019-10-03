@@ -399,12 +399,18 @@ public class CoverageInformationItem implements IModuleLocatable
 	}
 	
 	protected TreeSet<CoverageInformationItem> collectActive(final TreeSet<CoverageInformationItem> legend) {
-		legend.add(this);
+		if (addThisToLegend()) {
+			legend.add(this);
+		}
 		for (CoverageInformationItem child : childs) {
 			if (child.isActive()) {
 				child.collectActive(legend);
 			}
 		}
 		return legend;
+	}
+
+	protected boolean addThisToLegend() {
+		return true;
 	}
 }
