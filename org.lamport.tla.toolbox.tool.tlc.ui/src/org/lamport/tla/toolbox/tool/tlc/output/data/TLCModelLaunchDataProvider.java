@@ -201,6 +201,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         userOutput = new Document(NO_OUTPUT_AVAILABLE);
         constantExprEvalOutput = "";
         isSymmetryWithLiveness = false;
+        zeroCoverage = false;
     }
 
     /**
@@ -473,7 +474,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     CoverageInformationItem item = CoverageInformationItem.parseCost(outputMessage, getModelName());
                     this.coverageInfo.add(item);
                     if (item.getCount() == 0) {
-                    	this.zeroCoverage = true;
+                    	zeroCoverage = true;
                     }
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
@@ -481,7 +482,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 	item = CoverageInformationItem.parse(outputMessage, getModelName());
                     this.coverageInfo.add(item);
                     if (item.getCount() == 0) {
-                    	this.zeroCoverage = true;
+                    	zeroCoverage = true;
                     }
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
@@ -1009,7 +1010,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     }
 
     public boolean hasZeroCoverage() {
-    	return this.zeroCoverage;
+    	return zeroCoverage;
     }
     
     public List<StateSpaceInformationItem> getProgressInformation()
