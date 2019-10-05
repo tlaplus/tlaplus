@@ -110,33 +110,11 @@ public class TLCVariable
 	public final boolean isChanged() {
 		return value.isAdded() || value.isDeleted() || value.isChanged();
 	}
-
+	
 	/**
-	 * This only included name and whether this is a trace explorer variable in the calculation.
+	 * This compares against name and the value of {@code isTraceExplorerVar}
 	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(isTraceExplorerVar, name);
-	}
-
-	/**
-	 * This only included name and whether this is a trace explorer variable in the determination.
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		
-		if (obj == null) {
-			return false;
-		}
-		
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		
-		final TLCVariable other = (TLCVariable) obj;
+	public boolean representsTheSameAs(final TLCVariable other) {
 		return (isTraceExplorerVar == other.isTraceExplorerVar) && Objects.equals(name, other.name);
 	}
 }

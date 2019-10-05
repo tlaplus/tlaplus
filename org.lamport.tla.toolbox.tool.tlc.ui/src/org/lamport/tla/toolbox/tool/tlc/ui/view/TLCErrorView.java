@@ -109,6 +109,7 @@ public class TLCErrorView extends ViewPart
 				+ "\u2022 Double-click on a line to go to corresponding action in spec \u2014 "
 				+ "or while holding down " + (Platform.getOS().equals(Platform.OS_MACOSX) ? "\u2318" : "CTRL")
 				+ " to go to the original PlusCal code, if present.\n"
+				+ "\u2022 Click on a variable while holding down ALT to hide the variable from view.\n"
 				+ "\u2022 Right-click on a location row for a context menu.";
 
     /**
@@ -466,10 +467,10 @@ public class TLCErrorView extends ViewPart
         				
         				if (selection instanceof TLCVariable) {
         					if (filterErrorTraceAction.isChecked()) {
-        						currentErrorTraceFilterSet.add((TLCVariable)selection);
+        						addVariableFamilyToFiltering((TLCVariable)selection);
         					} else {
         						currentErrorTraceFilterSet.clear();
-        						currentErrorTraceFilterSet.add((TLCVariable)selection);
+        						addVariableFamilyToFiltering((TLCVariable)selection);
 								filterErrorTraceAction.setChecked(true);
         					}
         					
@@ -813,6 +814,16 @@ public class TLCErrorView extends ViewPart
 	
 	TreeViewer getViewer() {
 		return errorTraceTreeViewer.getTreeViewer();
+	}
+	
+	private void addVariableFamilyToFiltering(final TLCVariable protoVariable) {
+		for (final TLCState state : unfilteredInput.getStates(TLCError.Length.ALL)) {
+			for (final TLCVariable variable : state.getVariablesAsList()) {
+				if (protoVariable.representsTheSameAs(variable)) {
+					currentErrorTraceFilterSet.add(variable);
+				}
+			}
+		}
 	}
 	
 	private void performVariableViewPopulation(final EnumSet<FilterType> filters) {
