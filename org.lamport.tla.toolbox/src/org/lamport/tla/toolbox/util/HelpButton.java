@@ -11,28 +11,20 @@ import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.events.ShellListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-//import org.lamport.tla.toolbox.editor.basic.handlers.DecomposeProofHandler;
 import org.osgi.framework.Bundle;
 
 /**
@@ -57,22 +49,6 @@ import org.osgi.framework.Bundle;
  * to the help page specified by its String argument.
  */
 public class HelpButton {
-	
-	/**
-	 *  This is used only for testing
-	 */
-    public static String baseURL;
-
-    /**
-     * The following fields contain the Browser that displays the help page,
-     * the Shell that creates the Help Window containing the browser, and the
-     * location and size of that window the last time it was closed.
-     */
-    static Browser browser = null;
-    static Shell helpShell = null;
-    static Point location = null ;
-    static Point size = null ;
-    
     /**
      * 
      * @param parent    Where the button should be added.
@@ -82,30 +58,29 @@ public class HelpButton {
      * @return A Button that has been added to the Composite that, when clicked
      *         raises a browser window on the specified help page URL.
      */
-    public static Button helpButton(Composite parent, String helpFile) {
-        Button button = new Button(parent, SWT.NONE);
-        HelpButtonListener listener = new HelpButtonListener(parent, helpFile);
+    public static Button helpButton(final Composite parent, final String helpFile) {
+    	final Button button = new Button(parent, SWT.NONE);
+    	final HelpButtonListener listener = new HelpButtonListener(parent, helpFile);
         button.addSelectionListener(listener);
-        Image helpImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
-        button.setImage(helpImg);
-        GridData gridData = new GridData();
+        button.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP));
+        final GridData gridData = new GridData();
         gridData.verticalAlignment = SWT.TOP;
         button.setLayoutData(gridData);
         button.setEnabled(true);
-        baseURL = listener.url;
         return button;
     }
 
-    public static class HelpButtonListener extends SelectionAdapter implements
-            SelectionListener {
+    
+	private static class HelpButtonListener extends SelectionAdapter implements SelectionListener {
+        private final String url;
+        
+        private Browser browser = null;
+        private Shell helpShell = null;
+        private Point location = null ;
+        private Point size = null ;
 
-        String url;
-        Composite shell;
-
-        HelpButtonListener(Composite parent, String helpFile) {
-            super();
-            String file = helpFile;
-            shell = parent;
+        HelpButtonListener(final Composite parent, final String helpFile) {
+            final String file = helpFile;
             /*
              * For a helpFile like "foo.html#section", set fileName to
              * "foo.html" and suffix to "#section".  If there is no
@@ -113,22 +88,23 @@ public class HelpButton {
              */
             String fileName = file;
             String suffix = "" ;
-            int idx = fileName.indexOf("#") ;
+            final int idx = fileName.indexOf("#") ;
             if (idx != -1) {
                 suffix = fileName.substring(idx) ;
                 fileName = fileName.substring(0, idx) ;
             }
-            Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
+            final Bundle bundle = Platform.getBundle("org.lamport.tla.toolbox.doc");
             /* 
              * The bundle .tla.toolbox does not explicitly depend on .toolbox.doc.
              * Thus, it's possible that the application is running without documentation
              * which results in the variable bundle being null.
              */
+            String urlString = null;
             if (bundle == null) {
-                url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
+                urlString = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
                 System.out.println("Could not find local copy of help file.");
             } else {
-            	URL fileURL = bundle.getEntry("html/" + fileName);
+            	final URL fileURL = bundle.getEntry("html/" + fileName);
             	File theFile = null;
             	try {
             		theFile = new File(FileLocator.resolve(fileURL).getFile());
@@ -136,13 +112,15 @@ public class HelpButton {
             		e1.printStackTrace();
             	}
             	if (theFile != null) {
-            		url = theFile.getPath() + suffix;
-            	} ;
-            	if ((theFile == null) || (url == null)) {
-            		url = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
+            		urlString = theFile.getPath() + suffix;
+            	}
+            	if ((theFile == null) || (urlString == null)) {
+            		urlString = "http://tla.msr-inria.inria.fr/tlatoolbox/doc/" + file ;
             		System.out.println("Could not find local copy of help file.");
             	}
             }
+            
+            url = urlString;
         }
         
         /**
@@ -151,7 +129,8 @@ public class HelpButton {
          * a new window at the position and with the size of the window the last
          * time it was closed in the current execution of the Toolbox.
          */
-        public void widgetSelected(SelectionEvent e) {
+        @Override
+        public void widgetSelected(final SelectionEvent e) {
             boolean setSize = false;
 
             /*
@@ -160,28 +139,29 @@ public class HelpButton {
              */
             if (helpShell == null) {
                 setSize = true;
-                Shell topshell = UIHelper.getShellProvider().getShell();
+
                 /*
                  * Raise the window without a minimize button because minimizing
                  * puts it as a small window in a corner of the screen, not on
                  * the task bar.
                  */
-                helpShell = new Shell(topshell, SWT.CLOSE | SWT.TITLE
-                        | SWT.RESIZE);
+				helpShell = new Shell(SWT.CLOSE | SWT.TITLE | SWT.RESIZE);
                 helpShell.setText("Toolbox Help");
-                helpShell.addDisposeListener(new HelpWindowDisposeListener());
-                helpShell.addShellListener(new HelpShellListener());
+                helpShell.addDisposeListener((event) -> {
+                    location = helpShell.getLocation();
+                    size = helpShell.getSize();
+                    helpShell = null;
+                });
                 browser = null;
                 helpShell.setLayout(new FillLayout());
-                Composite comp = new Composite(helpShell, SWT.NONE);
+                final Composite comp = new Composite(helpShell, SWT.NONE);
                 comp.setLayout(new GridLayout(1, false));
 
                 /*
                  * Add the "back" and "forward" buttons.
                  */
-                ToolBar navBar = new ToolBar(comp, SWT.NONE);
-                navBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL
-                        | GridData.HORIZONTAL_ALIGN_END));
+                final ToolBar navBar = new ToolBar(comp, SWT.NONE);
+				navBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
                 final ToolItem back = new ToolItem(navBar, SWT.PUSH);
                 back.setText("<-    Back    ");
                 back.setEnabled(false);
@@ -195,31 +175,26 @@ public class HelpButton {
                 try {
                     browser = new Browser(comp, SWT.NONE);
                 } catch (SWTError e1) {
-                    System.out.println("Could not instantiate Browser: "
-                            + e1.getMessage());
+                    System.out.println("Could not instantiate Browser: " + e1.getMessage());
                     helpShell.dispose();
                     return;
                 }
 
-                GridData data = new GridData(GridData.FILL_BOTH);
+                final GridData data = new GridData(GridData.FILL_BOTH);
                 browser.setLayoutData(data);
 
                 /*
                  * Add the listeners for the "back" and "forward" buttons.
                  */
-                back.addListener(SWT.Selection, new Listener() {
-                    public void handleEvent(Event event) {
-                        browser.back();
-                    }
+                back.addListener(SWT.Selection, (event) -> {
+                    browser.back();
                 });
-                forward.addListener(SWT.Selection, new Listener() {
-                    public void handleEvent(Event event) {
-                        browser.forward();
-                    }
+                forward.addListener(SWT.Selection, (event) -> {
+                    browser.forward();
                 });
                 final LocationListener locationListener = new LocationListener() {
                     public void changed(LocationEvent event) {
-                        Browser browser = (Browser) event.widget;
+                    	final Browser browser = (Browser) event.widget;
                         back.setEnabled(browser.isBackEnabled());
                         forward.setEnabled(browser.isForwardEnabled());
                     }
@@ -240,68 +215,20 @@ public class HelpButton {
              * when the previous window was closed.
              */
             if (setSize) {
-                if (HelpButton.location != null) {
-                    helpShell.setLocation(HelpButton.location);
+                if (location != null) {
+                    helpShell.setLocation(location);
                 }
-                if (HelpButton.size != null) {
-                    helpShell.setSize(HelpButton.size);
+                if (size != null) {
+                    helpShell.setSize(size);
                 }
             }
             helpShell.open();
             helpShell.forceFocus();
         }
 
-        public void widgetDefaultSelected(SelectionEvent e) {
+        @Override
+        public void widgetDefaultSelected(final SelectionEvent e) {
             widgetSelected(e);
         }
     }
-
-    static class HelpShellListener implements ShellListener {
-
-        public void shellActivated(ShellEvent e) {
-            // TODO Auto-generated method stub
-//            System.out.println("shellActivated") ;
-            
-        }
-
-        public void shellClosed(ShellEvent e) {
-            // TODO Auto-generated method stub
-//            System.out.println("shellClosed") ;
-        }
-
-        public void shellDeactivated(ShellEvent e) {
-//            System.out.println("shellDeActivated") ;
-            
-        }
-
-        public void shellDeiconified(ShellEvent e) {
-            // TODO Auto-generated method stub
-//            System.out.println("shellDeiconified") ;
-        }
-
-        public void shellIconified(ShellEvent e) {
-            // TODO Auto-generated method stub
-//            System.out.println("shellIconified") ;
-            
-        }
-        
-    }
-    static class HelpWindowDisposeListener implements DisposeListener {
-//        DecomposeProofHandler commandHandler;
-
-//        WindowDisposeListener(DecomposeProofHandler handler) {
-//            commandHandler = handler;
-
-//        }
-
-        public void widgetDisposed(DisposeEvent e) {
-            HelpButton.location = helpShell.getLocation();
-            HelpButton.size = helpShell.getSize();
-            HelpButton.helpShell = null ;
-            
-            
-            
-        }
-    }
-
 }
