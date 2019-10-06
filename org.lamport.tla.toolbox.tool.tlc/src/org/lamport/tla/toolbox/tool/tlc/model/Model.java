@@ -90,8 +90,6 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
-import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent;
-import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
@@ -152,57 +150,8 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	public static String fullyQualifiedNameFromSpecNameAndModelName(final String specName, final String modelName) {
 		return specName + SPEC_MODEL_DELIM + modelName;
 	}
-	       
-	/**
-	 * A {@link StateChangeListener} is notified when the running state of the model
-	 * changes. There is no guarantee as to which thread is being used to send the
-	 * notification. A {@link StateChangeListener} has subscribe and unsubscribe
-	 * via {@link Model#add(StateChangeListener)} and {@link Model#remove(StateChangeListener)}.
-	 */
-	public static class StateChangeListener {
 
-		public static class ChangeEvent {
-
-			public enum State {
-				RUNNING, NOT_RUNNING, DELETED, REMOTE_RUNNING, REMOTE_NOT_RUNNING;
-				
-				public boolean in(State ... states) {
-					for (State state : states) {
-						if (state == this) {
-							return true;
-						}
-					}
-					return false;
-				}
-			}
-
-			private final State state;
-			private final Model model;
-
-			private ChangeEvent(Model model, State state) {
-				this.model = model;
-				this.state = state;
-			}
-
-			public State getState() {
-				return state;
-			}
-
-			public Model getModel() {
-				return model;
-			}
-		}
-
-		/**
-		 * @return true iff the listener should be unsubscribed from receiving future
-		 *         events after it handled the event.
-		 */
-		public boolean handleChange(ChangeEvent event) {
-			return false;
-		}
-	}
-
-	private final Set<StateChangeListener> listeners = new CopyOnWriteArraySet<StateChangeListener>();
+	private final Set<AbstractModelStateChangeListener> listeners = new CopyOnWriteArraySet<AbstractModelStateChangeListener>();
 	private TLCSpec spec;
 	private ILaunchConfiguration launchConfig;
 
@@ -236,16 +185,16 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		this.launchConfig = launchConfig;
 	}
 	
-	public boolean add(StateChangeListener stateChangeListener) {
-		return this.listeners.add(stateChangeListener);
+	public boolean add(final AbstractModelStateChangeListener stateChangeListener) {
+		return listeners.add(stateChangeListener);
 	}
 
-	public boolean remove(StateChangeListener stateChangeListener) {
-		return this.listeners.remove(stateChangeListener);
+	public boolean remove(final AbstractModelStateChangeListener stateChangeListener) {
+		return listeners.remove(stateChangeListener);
 	}
 
-	private void notifyListener(final StateChangeListener.ChangeEvent event) {
-		for (StateChangeListener scl : listeners) {
+	private void notifyListener(final AbstractModelStateChangeListener.ChangeEvent event) {
+		for (AbstractModelStateChangeListener scl : listeners) {
 			if (scl.handleChange(event)) {
 				// Listener wants to be deregistered as a listener.
 				listeners.remove(scl);
@@ -434,7 +383,9 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			// running now.
 			recover();
 		}
-		notifyListener(new StateChangeListener.ChangeEvent(this, isRunning ? State.RUNNING : State.NOT_RUNNING));
+		notifyListener(new AbstractModelStateChangeListener.ChangeEvent(this, 
+				isRunning ? AbstractModelStateChangeListener.State.RUNNING
+						  : AbstractModelStateChangeListener.State.NOT_RUNNING));
 	}
 
     /**
@@ -475,7 +426,9 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 
 	public void setRunningRemotely(boolean isRunning) {
 		this.isRunningRemotely = isRunning;
-		notifyListener(new StateChangeListener.ChangeEvent(this, isRunning ? State.REMOTE_RUNNING : State.REMOTE_NOT_RUNNING));
+		notifyListener(new AbstractModelStateChangeListener.ChangeEvent(this,
+				isRunning ? AbstractModelStateChangeListener.State.REMOTE_RUNNING
+						  : AbstractModelStateChangeListener.State.REMOTE_NOT_RUNNING));
 	}
 
 	/*
@@ -790,7 +743,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			model.delete(SubMonitor.convert(monitor));
 		}
 		
-		notifyListener(new ChangeEvent(this, State.DELETED));
+		notifyListener(new AbstractModelStateChangeListener.ChangeEvent(this, AbstractModelStateChangeListener.State.DELETED));
 		
 		final IResource[] members;
 

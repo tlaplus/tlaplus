@@ -1281,9 +1281,11 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     
 	public void setWorkerAndMemoryEnable(final boolean enableWorker, final boolean enableMaxHeap) {
     	workers.getDisplay().asyncExec(() -> {
-    		saveDefaultConfigurationButton.setEnabled(enableWorker);
-    		workers.setEnabled(enableWorker);
-    		maxHeapSize.setEnabled(enableMaxHeap);
+			if (!saveDefaultConfigurationButton.isDisposed()) {
+				saveDefaultConfigurationButton.setEnabled(enableWorker);
+				workers.setEnabled(enableWorker);
+				maxHeapSize.setEnabled(enableMaxHeap);
+			}
     	});
     }
 

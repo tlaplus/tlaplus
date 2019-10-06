@@ -35,9 +35,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
+import org.lamport.tla.toolbox.tool.tlc.model.AbstractModelStateChangeListener;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
-import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener;
-import org.lamport.tla.toolbox.tool.tlc.model.Model.StateChangeListener.ChangeEvent.State;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.ui.provider.IGroup;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -52,40 +51,7 @@ public class ModelContentProvider implements ITreeContentProvider {
 	private static final Object[] EMPTY_ARRAY = new Object[0];
 	
 	private final Map<Model, Group> reverse = new HashMap<Model, Group>();
-	private final MyStateChangeListener modelChangeListener = new MyStateChangeListener() {
-		@Override
-		public boolean handleChange(final ChangeEvent event) {
-			if (event.getState() == State.DELETED) {
-				UIHelper.runUISync(new Runnable() {
-					@Override
-					public void run() {
-						final Model model = event.getModel();
-						// getViewer().remove(...) internally (see
-						// org.eclipse.jface.viewers.StructuredViewer.findItems(Object)) tries to find
-						// the TreeItem corresponding to Spec (not TLCSpec). TLCSpec just wraps Spec but
-						// does not exist in the SpecExplorers content tree. With TLCSpec setSelection
-						// and remove are actually (silent) no-ops.
-						final Spec parent = model.getSpec().toSpec();
-						// The CommonViewer is stupid in that it accesses an element (model) even
-						// after it has been removed in order to update the viewer's current selection.
-						// Since we have to prevent this access to avoid a null pointer, we explicitly
-						// reset the selection.
-						getViewer().setSelection(new StructuredSelection(parent));
-						// ...still remove the element from the tree.
-						getViewer().remove(parent, new Object[] {model});
-					}
-				});
-			} else if (event.getState() == State.REMOTE_NOT_RUNNING) {
-				UIHelper.runUISync(new Runnable() {
-					@Override
-					public void run() {
-						getViewer().refresh(event.getModel(), true);			
-					}
-				});
-			}
-			return true;
-		}
-	};
+	private final MyStateChangeListener modelChangeListener = new MyStateChangeListener();
 	
 	public Object[] getChildren(final Object parentElement) {
 		if (parentElement instanceof Spec) {
@@ -148,21 +114,55 @@ public class ModelContentProvider implements ITreeContentProvider {
 		this.modelChangeListener.setViewer((CommonViewer) viewer);
 	}
 	
-	private static class MyStateChangeListener extends StateChangeListener {
+	
+	private static class MyStateChangeListener extends AbstractModelStateChangeListener {
 
 		private CommonViewer viewer;
 
-		public void setViewer(CommonViewer viewer) {
+		public void setViewer(final CommonViewer viewer) {
 			this.viewer = viewer;
 		}
 		
 		public CommonViewer getViewer() {
 			return viewer;
 		}
+		
+		@Override
+		public boolean handleChange(final ChangeEvent event) {
+			if (event.getState() == State.DELETED) {
+				UIHelper.runUISync(new Runnable() {
+					@Override
+					public void run() {
+						final Model model = event.getModel();
+						// getViewer().remove(...) internally (see
+						// org.eclipse.jface.viewers.StructuredViewer.findItems(Object)) tries to find
+						// the TreeItem corresponding to Spec (not TLCSpec). TLCSpec just wraps Spec but
+						// does not exist in the SpecExplorers content tree. With TLCSpec setSelection
+						// and remove are actually (silent) no-ops.
+						final Spec parent = model.getSpec().toSpec();
+						// The CommonViewer is stupid in that it accesses an element (model) even
+						// after it has been removed in order to update the viewer's current selection.
+						// Since we have to prevent this access to avoid a null pointer, we explicitly
+						// reset the selection.
+						getViewer().setSelection(new StructuredSelection(parent));
+						// ...still remove the element from the tree.
+						getViewer().remove(parent, new Object[] {model});
+					}
+				});
+			} else if (event.getState() == State.REMOTE_NOT_RUNNING) {
+				UIHelper.runUISync(new Runnable() {
+					@Override
+					public void run() {
+						getViewer().refresh(event.getModel(), true);			
+					}
+				});
+			}
+			return true;
+		}
 	}
 
+	
 	public static final class Group implements IGroup {
-		
 		private final Model[] models;
 		private final Spec spec;
 		
