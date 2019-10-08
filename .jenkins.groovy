@@ -1,5 +1,5 @@
 //def labels = ['windows', 'master', 'macos'] // labels for Jenkins node types we will build on
-def labels = ['master', 'macos']
+def labels = ['master']
 def builders = [:]
 for (x in labels) {
     def label = x // Need to bind the label variable before the closure - can't do 'for (label in labels)'
@@ -156,22 +156,22 @@ node ('master') {
    }
 }
 
-node ('macos') {
-    stage('SignToolbox') {
-        sh 'rm -rf *'
-        unstash 'toolbox'
-        sh 'ls -lah'
-        sh 'unzip org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip'
-        sh 'codesign -f -s "Developer ID Application: M K (3PCM4M3RWK)" -v "TLA+ Toolbox.app" --deep'
-        sh 'ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip'
-        sh 'mv TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip org.lamport.tla.toolbox.product.product/target/products/'
-        stash includes: 'org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip', name: 'signed'
-    }
-}
+//node ('macos') {
+//    stage('SignToolbox') {
+//        sh 'rm -rf *'
+//        unstash 'toolbox'
+//        sh 'ls -lah'
+//        sh 'unzip org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip'
+//        sh 'codesign -f -s "Developer ID Application: M K (3PCM4M3RWK)" -v "TLA+ Toolbox.app" --deep'
+//        sh 'ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip'
+//        sh 'mv TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip org.lamport.tla.toolbox.product.product/target/products/'
+//        stash includes: 'org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip', name: 'signed'
+//    }
+//}
 
 node ('master') {
    stage('Archive') {
-      unstash 'signed'
+//      unstash 'signed'
       fingerprint '**/org.lamport.tla.toolbox.product.product/target/repository/, **/org.lamport.tla.toolbox.product.product/target/products/*.zip, **/org.lamport.tla.toolbox.product.product/target/products/*.deb, **/tlatools/dist/, **/org.lamport.tla.toolbox.doc/html/'
 
       archiveArtifacts '**/general/docs/changelogs/changelog.html, **/org.lamport.tla.toolbox.product.product/target/org.lamport.tla.toolbox.product.product-1.4.0-SNAPSHOT.zip, **/org.lamport.tla.toolbox.p2repository/target/repository/, **/org.lamport.tla.toolbox.product.product/target/repository/, **/org.lamport.tla.toolbox.product.product/target/products/*.zip, **/org.lamport.tla.toolbox.product.product/target/products/*.deb, **/org.lamport.tla.toolbox.product.product/target/products/*.rpm, **/org.lamport.tla.toolbox.product.product/target/products/32bit_x86/*, **/tlatools/dist/, **/org.lamport.tla.toolbox.doc/html/'
