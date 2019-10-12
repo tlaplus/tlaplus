@@ -1,0 +1,80 @@
+--- RCPTT testcase ---
+Format-Version: 1.0
+Element-Name: TLA.Functional.Error.Trace
+Element-Type: testcase
+Element-Version: 3.0
+External-Reference: 
+Id: _BbLbgO0TEemu8qbF8JrHog
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/12/19, 4:06 PM
+Testcase-Type: ecl
+
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
+Content-Type: text/ecl
+Entry-Name: .content
+
+//Create Spec
+OpenTLACreateNew
+
+try -command {
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
+		set-text [concat "-------------------------- MODULE " $TLA-SPEC-NAME " -----------------------------\nEXTENDS Integers\nCONSTANT Proc\nCONSTANT defaultInitValue\nVARIABLES b, c, k, pc, temp\nvars == << b, c, k, pc, temp >>\nProcSet == (Proc)\nInit == /\ b = [i \in Proc |-> TRUE]\n        /\ c = [i \in Proc |-> TRUE]\n        /\ k \in Proc\n        /\ temp = [self \in Proc |-> defaultInitValue]\n        /\ pc = [self \in ProcSet |-> CASE self \in Proc -> \"Li0\"]\nLi0(self) == /\ pc[self] = \"Li0\"\n             /\ b' = [b EXCEPT ![self] = FALSE]\n             /\ pc' = [pc EXCEPT ![self] = \"Li1\"]\n             /\ UNCHANGED << c, k, temp >>\nLi1(self) == /\ pc[self] = \"Li1\"\n             /\ IF k # self\n                   THEN /\ pc' = [pc EXCEPT ![self] = \"Li2\"]\n                   ELSE /\ pc' = [pc EXCEPT ![self] = \"Li4a\"]\n             /\ UNCHANGED << b, c, k, temp >>\nLi2(self) == /\ pc[self] = \"Li2\"\n             /\ c' = [c EXCEPT ![self] = TRUE]\n             /\ pc' = [pc EXCEPT ![self] = \"Li3a\"]\n             /\ UNCHANGED << b, k, temp >>\nLi3a(self) == /\ pc[self] = \"Li3a\"\n              /\ temp' = [temp EXCEPT ![self] = k]\n              /\ pc' = [pc EXCEPT ![self] = \"Li3b\"]\n              /\ UNCHANGED << b, c, k >>\nLi3b(self) == /\ pc[self] = \"Li3b\"\n              /\ IF b[temp[self]]\n                    THEN /\ pc' = [pc EXCEPT ![self] = \"Li3c\"]\n                    ELSE /\ pc' = [pc EXCEPT ![self] = \"Li3d\"]\n              /\ UNCHANGED << b, c, k, temp >>\nLi3c(self) == /\ pc[self] = \"Li3c\"\n              /\ k' = self\n              /\ pc' = [pc EXCEPT ![self] = \"Li3d\"]\n              /\ UNCHANGED << b, c, temp >>\nLi3d(self) == /\ pc[self] = \"Li3d\"\n              /\ pc' = [pc EXCEPT ![self] = \"Li1\"]\n              /\ UNCHANGED << b, c, k, temp >>\nLi4a(self) == /\ pc[self] = \"Li4a\"\n              /\ c' = [c EXCEPT ![self] = FALSE]\n              /\ temp' = [temp EXCEPT ![self] = Proc \ {self}]\n              /\ pc' = [pc EXCEPT ![self] = \"Li4b\"]\n              /\ UNCHANGED << b, k >>\nLi4b(self) == /\ pc[self] = \"Li4b\"\n              /\ IF temp[self] # {}\n                    THEN /\ \E j \in temp[self]:\n                              /\ temp' = [temp EXCEPT \n                                            ![self] = temp[self] \ {j}]\n                              /\ IF ~c[j]\n                                    THEN /\ pc' = [pc EXCEPT \n                                                     ![self] = \"Li1\"]\n                                    ELSE /\ pc' = [pc EXCEPT \n                                                     ![self] = \"Li4b\"]\n                    ELSE /\ pc' = [pc EXCEPT ![self] = \"cs\"]\n                         /\ UNCHANGED temp\n              /\ UNCHANGED << b, c, k >>\ncs(self) == /\ pc[self] = \"cs\"\n            /\ TRUE\n            /\ pc' = [pc EXCEPT ![self] = \"Li5\"]\n            /\ UNCHANGED << b, c, k, temp >>\nLi5(self) == /\ pc[self] = \"Li5\"\n             /\ c' = [c EXCEPT ![self] = TRUE]\n             /\ pc' = [pc EXCEPT ![self] = \"Li6\"]\n             /\ UNCHANGED << b, k >>\nLi6(self) == /\ pc[self] = \"Li6\"\n             /\ b' = [b EXCEPT ![self] = TRUE]\n             /\ pc' = [pc EXCEPT ![self] = \"ncs\"]\n             /\ UNCHANGED << c, k, temp >>\nncs(self) == /\ pc[self] = \"ncs\"\n             /\ TRUE\n             /\ pc' = [pc EXCEPT ![self] = \"Li0\"]\n             /\ UNCHANGED << b, c, k, temp >>\nP(self) == Li0(self) \/ Li1(self) \/ Li2(self) \/ Li3a(self) \/ Li3b(self)\n              \/ Li3c(self) \/ Li3d(self) \/ Li4a(self) \/ Li4b(self)\n              \/ cs(self) \/ Li5(self) \/ Li6(self) \/ ncs(self)\nNext == (\E self \in Proc: P(self))\nMutualExclusion == \A i, j \in Proc : \n                     (i # j) => ~ /\ pc[i] = \"cs\"\n                                  /\ pc[j] = \"cs\"\nLSpec == Init /\ [][Next]_vars \n           /\ \A self \in Proc: WF_vars((pc[self] # \"ncs\") /\ P(self))\nDeadlockFreedom == \n    \A i \in Proc : \n      (pc[i] \\notin {\"Li5\", \"Li6\", \"ncs\"}) ~> (\E j \in Proc : pc[j] = \"cs\")\n\n===================================================================\n"]
+		key-type "M1+s"
+	}
+
+	get-menu -path "TLC Model Checker/New Model..." | click
+	get-window "New model..." | get-button "OK" | click
+
+	with [get-editor $TLA-MODEL-ONE] {
+		with [get-section "What is the behavior spec?"] {
+			get-combo | select "Temporal formula"
+			get-text-viewer | set-text "LSpec"
+		}
+	    with [get-section "What is the model?"] {
+	        get-table | select "Proc <- "
+	        get-button "Edit" | click
+        	with [get-window -class WizardDialog] {
+			    get-text-viewer | type-text "{ p1, p2, p3 }"
+			    get-button "Set of model values" | click
+			    get-button Finish | click
+			}
+	    }
+	    with [get-section "What to check?"] {
+	        get-button "Deadlock" | check
+	        with [get-section "Invariants"] {
+	        	click
+	        	get-button "Add" | click
+	        	with [get-window -class WizardDialog] {
+				    get-text-viewer | type-text "MutualExclusion"
+				    get-button Finish | click
+				}
+	        }
+	        with [get-section "Properties"] {
+	        	click
+	        	get-button "Add" | click
+	        	with [get-window -class WizardDialog] {
+				    get-text-viewer | type-text "DeadlockFreedom"
+				    get-button Finish | click
+				}
+	        }
+	    }
+	}	
+
+	get-menu -path "TLC Model Checker/Run model" | click
+	
+	wait-run
+
+	// I tried all manners of niceness to get the tree items by using basic ECL all to no avail, so now
+	//		i'm doing this hacky invoking of Java methods.
+	// This specific item is testing for regressions like the one behind Issue 372.
+	with [get-view "TLC Errors" | get-section "Error-Trace" | get-tree] {
+		let [val stateOneP1Val [get-object | invoke getItem 1 | invoke getItem 3 | invoke getItem 0 | invoke getText 1 | str]] {
+			let [val stateTwoP1Val [get-object | invoke getItem 2 | invoke getItem 3 | invoke getItem 0 | invoke getText 1 | str]] {
+				concat $stateOneP1Val | equals $stateTwoP1Val | verify-false
+			}
+		}
+	}
+} -finally {
+	DeleteSpecNew
+}
+------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

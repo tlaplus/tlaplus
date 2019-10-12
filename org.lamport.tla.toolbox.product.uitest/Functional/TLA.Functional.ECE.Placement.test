@@ -1,12 +1,12 @@
 --- RCPTT testcase ---
 Format-Version: 1.0
-Element-Name: TLA_Functional_ECE_Placement
+Element-Name: TLA.Functional.ECE.Placement
 Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _JObaIIvTEemXYtOZX2zpng
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/11/19, 11:54 AM
+Save-Time: 10/12/19, 10:10 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
