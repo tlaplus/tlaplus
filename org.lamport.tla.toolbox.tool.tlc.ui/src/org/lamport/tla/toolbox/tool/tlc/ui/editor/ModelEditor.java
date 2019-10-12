@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.resources.IFile;
@@ -70,6 +71,8 @@ import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.AbstractModelStateChangeListener;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCModelFactory;
+import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformation;
+import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -281,36 +284,41 @@ public class ModelEditor extends FormEditor {
         try {
 			openTabsValue = model.getLaunchConfiguration().getAttribute(IModelConfigurationConstants.EDITOR_OPEN_TABS, 0);
         } catch (CoreException e) { }
-        
-		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
-		final boolean eceInItsOwnTab = ips.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
 
+        final boolean mustShowResultsPage
+        			= model.isSnapshot()
+        				|| parsePotentialAssociatedTLCRunToDetermineWhetherResultsPageMustBeShown();
+		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
         if (openTabsValue == IModelConfigurationConstants.EDITOR_OPEN_TAB_NONE) {
-        	if (eceInItsOwnTab) {
-				pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new ResultPage(this), new EvaluateConstantExpressionPage(this) };
-			} else {
-				pagesToAdd = new BasicFormPage[] { new MainModelPage(this), new ResultPage(this) };
-			}
+			pagesToAdd = mustShowResultsPage
+									? new BasicFormPage[] { new MainModelPage(this), new ResultPage(this) }
+									: new BasicFormPage[] { new MainModelPage(this) };
         } else {
-        	ArrayList<BasicFormPage> pages = new ArrayList<>();
-        	
-        	pages.add(new MainModelPage(this));
-			if ((openTabsValue
-					& IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL) == IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL) {
-				pages.add(new AdvancedModelPage(this));
+        	final ArrayList<BasicFormPage> editorPages = new ArrayList<>();
+            
+        	editorPages.add(new MainModelPage(this));
+			if ((openTabsValue & IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL) != 0) {
+				editorPages.add(new AdvancedModelPage(this));
         	}
-			if ((openTabsValue
-					& IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC) == IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC) {
-				pages.add(new AdvancedTLCOptionsPage(this));
+			if ((openTabsValue & IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC) != 0) {
+				editorPages.add(new AdvancedTLCOptionsPage(this));
         	}
-        	pages.add(new ResultPage(this));
-        	if (eceInItsOwnTab) {
-        		pages.add(new EvaluateConstantExpressionPage(this));
+			if (mustShowResultsPage
+							|| ((openTabsValue & IModelConfigurationConstants.EDITOR_OPEN_TAB_RESULTS) != 0)) {
+				editorPages.add(new ResultPage(this));
+	        	if (ips.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB)) {
+	        		editorPages.add(new EvaluateConstantExpressionPage(this));
 	        	}
 	        	
-            pagesToAdd = pages.toArray(new BasicFormPage[pages.size()]);
+	        	if (mustShowResultsPage) {
+	        		final int openTabState = getModel().getOpenTabsValue();
+	        		updateOpenTabsState(openTabState | IModelConfigurationConstants.EDITOR_OPEN_TAB_RESULTS);	        		
+	        	}
         	}
 
+            pagesToAdd = editorPages.toArray(new BasicFormPage[editorPages.size()]);
+        }
+        
         ips.addPropertyChangeListener(preferenceChangeListener);
         
         
@@ -351,6 +359,40 @@ public class ModelEditor extends FormEditor {
 		
 		model.add(modelStateListener);
 	}
+    
+    // how's that for a method name....
+    private boolean parsePotentialAssociatedTLCRunToDetermineWhetherResultsPageMustBeShown() {
+        final TLCModelLaunchDataProvider ldp = TLCOutputSourceRegistry.getModelCheckSourceRegistry().getProvider(model);
+        final AtomicBoolean hasStartTime = new AtomicBoolean(false);
+        final AtomicBoolean hasError = new AtomicBoolean(false);
+        final AtomicBoolean hasZeroCoverage = new AtomicBoolean(false);
+    	final ITLCModelLaunchDataPresenter consumer = (dataProvider, fieldId) -> {
+    		switch (fieldId) {
+    			case ITLCModelLaunchDataPresenter.START_TIME:
+    				hasStartTime.set(dataProvider.getStartTimestamp() > 0);
+    				break;
+    			case ITLCModelLaunchDataPresenter.COVERAGE:
+    				if (!hasZeroCoverage.get()) {
+						final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();
+						if (dataProvider.isDone() && !coverageInfo.isEmpty() && dataProvider.hasZeroCoverage()) {
+							hasZeroCoverage.set(true);
+						}
+					}
+    				break;
+    			case ITLCModelLaunchDataPresenter.ERRORS:
+    				if (dataProvider.getErrors().size() > 0) {
+    					hasError.set(true);
+    				}
+    				break;
+    		}
+    	};
+    	
+    	ldp.addDataPresenter(consumer);
+    	ldp.waitForParsingFinish();
+    	ldp.removeDataPresenter(consumer);
+    	
+    	return hasStartTime.get() || hasError.get() || hasZeroCoverage.get();
+    }
     
     /**
 	 * @param index the tab index
@@ -561,11 +603,9 @@ public class ModelEditor extends FormEditor {
         	tabFolder.setTabPosition(SWT.TOP);
         	tabFolder.addCTabFolder2Listener(listener);
 
-            for (int i = 0; i < pagesToAdd.length; i++)
-            {
+			for (int i = 0; i < pagesToAdd.length; i++) {
                 addPage(pagesToAdd[i]);
                 // initialize the page
-
                 // this means the content will be created
                 // the data will be loaded
                 // the refresh method will update the UI state
@@ -596,7 +636,7 @@ public class ModelEditor extends FormEditor {
             final ModuleNode rootModule = SemanticHelper.getRootModuleNode();
 			if ((rootModule != null) && (rootModule.getVariableDecls().length == 0)
 					&& (rootModule.getConstantDecls().length == 0)) {
-            	showResultPage();
+            	addOrShowResultsPage();
             }
             
             if (model.hasStateGraphDump()) {
@@ -1069,16 +1109,14 @@ public class ModelEditor extends FormEditor {
             IMarker[] modelProblemMarkers = model.getMarkers();
             DataBindingManager dm = getDataBindingManager();
 
-            for (int j = 0; j < getPageCount(); j++)
-            {
+			for (int j = 0; j < getPageCount(); j++) {
                 /*
                  * Note that all pages are not necessarily
                  * instances of BasicFormPage. Some are read
                  * only editors showing saved versions of
                  * modules.
                  */
-                if (pages.get(j) instanceof BasicFormPage)
-                {
+				if (pages.get(j) instanceof BasicFormPage) {
                     // get the current page
                     BasicFormPage page = (BasicFormPage) pages.get(j);
                     Assert.isNotNull(page.getManagedForm(), "Page not initialized, this is a bug.");
@@ -1109,40 +1147,36 @@ public class ModelEditor extends FormEditor {
                             bubbleType = IMessageProvider.INFORMATION;
                         }
 
-                        if (ModelHelper.EMPTY_STRING.equals(attributeName))
-                        {
+						if (ModelHelper.EMPTY_STRING.equals(attributeName)) {
                             final String message = modelProblemMarkers[i].getAttribute(IMarker.MESSAGE,
                                     IModelConfigurationDefaults.EMPTY_STRING);
-							int pageId = modelProblemMarkers[i]
-									.getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, -1);
+							final String pageId = modelProblemMarkers[i]
+									.getAttribute(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, null);
                             // no attribute, this is a global error, not bound to a particular attribute
                             // install it on the first page
                             // if it is a global TLC error, then we call addGlobalTLCErrorMessage()
                             // to add a hyperlink to the TLC Error view
-							if ((pageId != -1) && (bubbleType == IMessageProvider.WARNING)
+							if ((pageId != null) && (bubbleType == IMessageProvider.WARNING)
 									&& !IModelConfigurationDefaults.EMPTY_STRING.equals(message)) {
-								// Used by the ResultPage to display an error on
-								// incomplete state space exploration.
-								if (pageId >= pagesToAdd.length) {
-									pageId = pagesToAdd.length - 1;
+								final ResultPage rp = (ResultPage)findPage(ResultPage.ID);
+								if (rp != null) {
+									rp.addGlobalTLCErrorMessage(ResultPage.RESULT_PAGE_PROBLEM, message);
 								}
-								pagesToAdd[pageId].addGlobalTLCErrorMessage(ResultPage.RESULT_PAGE_PROBLEM, message);
 							} else if (bubbleType == IMessageProvider.WARNING) {
 								final PageIterator iterator = new PageIterator();		
 								while (iterator.hasNext()) {
 									final BasicFormPage bfp = iterator.next();
 									
-									if (!bfp.getId().equals(ResultPage.ID)) {
+									if (!ResultPage.ID.equals(bfp.getId())) {
 										bfp.addGlobalTLCErrorMessage("modelProblem_" + i);
 									}
 								}
 							} else {
 								// else install as with other messages
-								IMessageManager mm = pagesToAdd[0].getManagedForm().getMessageManager();
+								IMessageManager mm = ((BasicFormPage)pages.get(0)).getManagedForm().getMessageManager();
 								mm.addMessage("modelProblem_" + i, message, null, bubbleType);
 							}
-                        } else
-                        {
+						} else {
                             // attribute found
                             String sectionId = dm.getSectionForAttribute(attributeName);
                             Assert.isNotNull(sectionId,
@@ -1266,25 +1300,6 @@ public class ModelEditor extends FormEditor {
             }
         }
         return null;
-    }
-    
-    /**
-     * Show the result page of the editor    
-     */
-    public void showResultPage()
-    {
-        // goto result page
-        IFormPage resultPage = setActivePage(ResultPage.ID);
-        if (resultPage != null)
-        {
-            try
-            {
-                ((ResultPage) resultPage).loadData();
-            } catch (CoreException e)
-            {
-                TLCUIActivator.getDefault().logError("Error refreshing the result page", e);
-            }
-        }
     }
     
 	/**
@@ -1424,10 +1439,13 @@ public class ModelEditor extends FormEditor {
         if (setActivePage(AdvancedTLCOptionsPage.ID) == null) {
         	try {
         		int pageIndex = 1;
-        		final String id = getIdForEditorAtIndex(pageIndex);
+        		
+        		if (pageIndex < getPageCount()) {
+            		final String id = getIdForEditorAtIndex(pageIndex);
 
-        		if (AdvancedModelPage.ID.equals(id)) {
-        			pageIndex++;
+            		if (AdvancedModelPage.ID.equals(id)) {
+            			pageIndex++;
+            		}
         		}
 
         		addPage(pageIndex, new AdvancedTLCOptionsPage(this), getEditorInput());
@@ -1440,6 +1458,61 @@ public class ModelEditor extends FormEditor {
 						"Could not add advanced TLC options page", e));
         	}
         }
+    }
+    
+    public void addOrShowResultsPage() {
+        if (setActivePage(ResultPage.ID) == null) {
+        	try {
+        		int pageIndex = 1;
+        		
+        		if (pageIndex < getPageCount()) {
+            		String id = getIdForEditorAtIndex(pageIndex);
+
+            		if (AdvancedTLCOptionsPage.ID.equals(id) || AdvancedModelPage.ID.equals(id)) {
+            			pageIndex++;
+            			
+                		if (pageIndex < getPageCount()) {
+                    		id = getIdForEditorAtIndex(pageIndex);
+
+                    		if (AdvancedTLCOptionsPage.ID.equals(id) || AdvancedModelPage.ID.equals(id)) {
+                    			pageIndex++;
+                    		}
+                		}
+            		}
+        		}
+
+        		addPage(pageIndex, new ResultPage(this), getEditorInput());
+
+        		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+	        	if (ips.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB)) {
+	        		addPage((pageIndex + 1), new EvaluateConstantExpressionPage(this), getEditorInput());
+	        	}
+
+        		ResultPage rp = (ResultPage)setActivePage(ResultPage.ID);
+        		
+        		final int openTabState = getModel().getOpenTabsValue();
+        		updateOpenTabsState(openTabState | IModelConfigurationConstants.EDITOR_OPEN_TAB_RESULTS);
+        		
+        		rp.loadData();
+        		
+        		// MMP for architecturally unclear reasons, is charged with updating content on the RP
+        		final MainModelPage page = (MainModelPage)findPage(MainModelPage.ID);
+        		page.validatePage(true);
+        	} catch (Exception e) {
+				TLCActivator.getDefault().getLog().log(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+						"Could not add results page", e));
+        	}
+        }
+    }
+    
+    public void resultsPageIsClosing() {
+		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
+    	if (ips.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB)) {
+    		removePage(getPageCount() - 1);
+    	}
+    	
+		final int openTabState = getModel().getOpenTabsValue();
+		updateOpenTabsState(openTabState & ~IModelConfigurationConstants.EDITOR_OPEN_TAB_RESULTS);
     }
     
     /**
@@ -1455,8 +1528,7 @@ public class ModelEditor extends FormEditor {
      * 2.) Set those pages to be closeable. This makes it possible to click on the tab
      *     to close it.
      */
-    public void addPage(int index, IEditorPart editor, IEditorInput input) throws PartInitException
-    {
+	public void addPage(int index, IEditorPart editor, IEditorInput input) throws PartInitException {
         super.addPage(index, editor, input);
         //TODO This method screams to be refactored and simplified, but sadly life is short.
         /*
@@ -1560,29 +1632,29 @@ public class ModelEditor extends FormEditor {
 	 */
 	private class PageIterator implements Iterator<BasicFormPage> {
 
-		private final List<Object> m_pages;
-		private int m_counter;
+		private final List<Object> cachedPages;
+		private int counter;
 		
-		private BasicFormPage m_nextPage;
+		private BasicFormPage nextPage;
 		
 		PageIterator() {
-			m_pages = new ArrayList<>(pages);
-			m_counter = 0;
-			
-			m_nextPage = findNextPage();
+			cachedPages = new ArrayList<>(pages);
+			counter = 0;
+
+			nextPage = findNextPage();
 		}
 		
 		private BasicFormPage findNextPage() {
 			BasicFormPage page = null;
 			
-			while ((page == null) && (m_counter < m_pages.size())) {
-				final Object o = m_pages.get(m_counter);
+			while ((page == null) && (counter < cachedPages.size())) {
+				final Object o = cachedPages.get(counter);
 				
 				if (o instanceof BasicFormPage) {
 					page = (BasicFormPage)o;
 				}
 				
-				m_counter++;
+				counter++;
 			}
 			
 			return page;
@@ -1590,14 +1662,14 @@ public class ModelEditor extends FormEditor {
 		
 		@Override
 		public boolean hasNext() {
-			return (m_nextPage != null);
+			return (nextPage != null);
 		}
 
 		@Override
 		public BasicFormPage next() {
-			final BasicFormPage next = m_nextPage;
+			final BasicFormPage next = nextPage;
 			
-			m_nextPage = findNextPage();
+			nextPage = findNextPage();
 
 			return next;
 		}
@@ -1669,7 +1741,7 @@ public class ModelEditor extends FormEditor {
 								.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
 
 						if (!eceInItsOwnTab || !modelIsConfiguredWithNoBehaviorSpec()) {
-							showResultPage();
+							addOrShowResultsPage();
 						}
 					} else if (event.getState().in(State.NOT_RUNNING)) {
 						// Model checking finished, lets open state graph if any.

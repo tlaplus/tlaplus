@@ -68,9 +68,8 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
      * one for trace exploration and one for model checking. This
      * connects to the one for trace exploration.
      */
-    protected void connectToSourceRegistry()
-    {
-        TLCOutputSourceRegistry.getTraceExploreSourceRegistry().connect(this);
+	protected boolean connectToSourceRegistry() {
+		return TLCOutputSourceRegistry.getTraceExploreSourceRegistry().connect(this);
     }
 
     public void onDone()

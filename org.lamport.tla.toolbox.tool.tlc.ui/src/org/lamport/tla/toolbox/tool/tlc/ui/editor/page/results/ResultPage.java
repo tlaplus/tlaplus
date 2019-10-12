@@ -1,8 +1,10 @@
 package org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,6 +86,7 @@ import org.lamport.tla.toolbox.spec.Module;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelCoverage;
 import org.lamport.tla.toolbox.tool.tlc.output.data.ActionInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformation;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
@@ -94,6 +97,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.contribution.DynamicContributionItem;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ISectionConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
@@ -104,9 +108,9 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptio
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.preference.IModelEditorPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
-import org.lamport.tla.toolbox.tool.tlc.ui.util.RecordToSourceCoupler;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+import org.lamport.tla.toolbox.tool.tlc.ui.util.RecordToSourceCoupler;
 import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.FontPreferenceChangeListener;
@@ -118,7 +122,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * @author Simon Zambrovski
  */
 @SuppressWarnings("restriction")
-public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPresenter {
+public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLaunchDataPresenter {
 	public static final String RESULT_PAGE_PROBLEM = "ResultPageProblem";
 
     public static final String ID = "resultPage";
@@ -147,27 +151,27 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     private SourceViewer userOutput;
     private SourceViewer progressOutput;
     
-    private Composite m_calculatorSection;
+    private Composite calculatorSection;
     private SourceViewer expressionEvalResult;
     private SourceViewer expressionEvalInput;
-	private ValidateableSectionPart m_validateableCalculatorSection;
-	private Button m_noBehaviorModeToggleButton;
+	private ValidateableSectionPart validateableCalculatorSection;
+	private Button noBehaviorModeToggleButton;
 
-	private Section m_generalSection;
-	private int m_collapsedSectionHeight = 20;		// We should be able to calculate this before we need; this is the 'just in case' value
-	private long m_startTimestamp;
-    private Composite m_generalTopPane;
-    private Label m_startLabel;
-    private Label m_lastCheckpointLabel;
-    private Label m_finishLabel;
-    private Label m_tlcSimulationLabel;    
-    private Label m_tlcSearchModeLabel;
-    private Label m_tlcStatusLabel;
+	private Section generalSection;
+	private int collapsedSectionHeight = 20;		// We should be able to calculate this before we need; this is the 'just in case' value
+	private long startTimestamp;
+    private Composite generalTopPane;
+    private Label startLabel;
+    private Label lastCheckpointLabel;
+    private Label finishLabel;
+    private Label tlcSimulationLabel;    
+    private Label tlcSearchModeLabel;
+    private Label tlcStatusLabel;
 
-    private Composite m_generalErrorPane;
-    private Hyperlink m_errorStatusHyperLink;
-    private Label m_fingerprintCollisionLabel;
-    private Label m_zeroCoverageLabel;
+    private Composite generalErrorPane;
+    private Hyperlink errorStatusHyperLink;
+    private Label fingerprintCollisionLabel;
+    private Label zeroCoverageLabel;
 
     private Text coverageTimestampText;
     private TableViewer coverage;
@@ -180,14 +184,12 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
     // hyper link listener activated in case of errors
     private final IHyperlinkListener m_errorHyperLinkListener = new HyperlinkAdapter() {
-        public void linkActivated(HyperlinkEvent e)
-        {
-            if (getModel() != null)
-            {
-            	getModel().setOriginalTraceShown(true);
-                TLCErrorView.updateErrorView(getModelEditor());
-            }
-        }
+		public void linkActivated(final HyperlinkEvent e) {
+			if (getModel() != null) {
+				getModel().setOriginalTraceShown(true);
+				TLCErrorView.updateErrorView(getModelEditor());
+			}
+		}
     };
 
 	private IMarker incompleteStateExploration;
@@ -195,7 +197,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	
 	private final INotificationService ns;
 	
-	private final ErrorPaneViewState m_errorPaneViewState;
+	private final ErrorPaneViewState errorPaneViewState;
 
     /**
      * Constructor for the page
@@ -207,292 +209,291 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         
         this.ns = NotificationsUi.getService();
         
-        m_errorPaneViewState = new ErrorPaneViewState();
+        errorPaneViewState = new ErrorPaneViewState();
     }
 
 	@Override
     public void modelCheckingHasBegun() {
-		m_errorPaneViewState.clearState();
+		errorPaneViewState.clearState();
 		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-    		m_tlcStatusLabel.setText("Starting...");
-			m_errorStatusHyperLink.setVisible(m_errorPaneViewState.errorLinkIsDisplayed());
-			m_fingerprintCollisionLabel.setVisible(m_errorPaneViewState.fingerprintIsDisplayed());
-			m_zeroCoverageLabel.setVisible(m_errorPaneViewState.zeroCountIsDisplayed());
-			setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
+    		tlcStatusLabel.setText("Starting...");
+			errorStatusHyperLink.setVisible(errorPaneViewState.errorLinkIsDisplayed());
+			fingerprintCollisionLabel.setVisible(errorPaneViewState.fingerprintIsDisplayed());
+			zeroCoverageLabel.setVisible(errorPaneViewState.zeroCountIsDisplayed());
+			setErrorPaneVisible(errorPaneViewState.shouldDisplay());
 		});
 	}
 
     /**
      * Will be called by the provider on data changes
      */
+	@Override
 	public void modelChanged(final TLCModelLaunchDataProvider dataProvider, final int fieldId) {
-        UIHelper.runUIAsync(() -> {
+		UIHelper.runUIAsync(() -> {
 			// Acquire dispose lock prior to widget access. Using a single
 			// lock just to serialize dispose and modelChange seems
 			// overkill, but the wait-for graph becomes tricky with all the
 			// background jobs going on (at least too tricky to get it
 			// solved within an hour).
-        	disposeLock.lock();
-        	try {
-            	if (getPartControl().isDisposed()) {
-        			// Don't update the widgets if the underlying SWT control has
-        			// already been disposed. Otherwise it results in an
-        			// "SWTException: Widget is disposed".
-            		return;
-            	}
+			disposeLock.lock();
+			try {
+				if (getPartControl().isDisposed()) {
+					// Don't update the widgets if the underlying SWT control has
+					// already been disposed. Otherwise it results in an
+					// "SWTException: Widget is disposed".
+					return;
+				}
 				switch (fieldId) {
-                case USER_OUTPUT:
-                    userOutput.setDocument(dataProvider.getUserOutput());
-                    break;
-                case PROGRESS_OUTPUT:
-                    progressOutput.setDocument(dataProvider.getProgressOutput());
-                    break;
-                case CONST_EXPR_EVAL_OUTPUT:
-                	if (expressionEvalResult != null) {
-                		expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
-                	}
-                    break;
-                case START_TIME:
-                	setStartTime(dataProvider.getStartTimestamp());
-                    break;
-                case END_TIME:
-                	setEndTime(dataProvider.getFinishTimestamp());
-                    
-                	final long delta = dataProvider.getFinishTimestamp() - dataProvider.getStartTimestamp();
-                	final String duration = DurationFormatUtils.formatDuration(delta, "HH'hrs' mm'mins' ss'sec'");
-                	m_startLabel.setToolTipText(duration);
-                	m_finishLabel.setToolTipText(duration);
-                    break;
-                case TLC_MODE:
-                	setSearchMode(dataProvider.getTLCMode());
-                	
-                	final IFormPage iep = getEditor().findPage(AdvancedTLCOptionsPage.ID);
-                	if (iep != null) {
-                		((AdvancedTLCOptionsPage)iep).setFpIndex(dataProvider.getFPIndex());
-                	} else {
-                		// The tab isn't open so set the value into the model and the tab, should it open, will
-                		//		load it out of the model.
-                		getModel().setAttribute(LAUNCH_FP_INDEX, dataProvider.getFPIndex());
-                		getModelEditor().saveModel();
-                	}
-                case LAST_CHECKPOINT_TIME:
-                	setCheckpoint(dataProvider.getLastCheckpointTimeStamp());
-                   	break;
-                case CURRENT_STATUS:
-                	m_tlcStatusLabel.setText(dataProvider.getCurrentStatus());
-                	m_generalTopPane.layout(true, true);
-                    break;
-                case FINGERPRINT_COLLISION_PROBABILITY:
-                	final String collisionText = dataProvider.getFingerprintCollisionProbability().trim();
-                	
-                	if (collisionText.length() == 0) {
-						m_fingerprintCollisionLabel.setVisible(false);
-						m_errorPaneViewState.setFingerprintDisplay(false);
-						setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
-                	} else {
-						m_fingerprintCollisionLabel.setText("Fingerprint collision probability: " + collisionText);
-						m_fingerprintCollisionLabel.setVisible(true);
-						m_errorPaneViewState.setFingerprintDisplay(true);
-						setErrorPaneVisible(true);
-                	}
-                    break;
-                case COVERAGE_TIME:
-					final String coverageTimestamp = dataProvider.getCoverageTimestamp();
-					if ("".equals(coverageTimestamp)) {
-						// Reset
-						ResultPage.this.coverageTimestampText.setText("");
-					} else {
-						// Print statistics timestamp relative to TLC startup.
-						final Date date = TLCModelLaunchDataProvider.parseDate(coverageTimestamp);
-						final String interval = TLCModelLaunchDataProvider.formatInterval(getStartTimestamp(), date.getTime());
-						ResultPage.this.coverageTimestampText.setText(String.format("(at %s)", interval));
-						ResultPage.this.coverageTimestampText
-								.setToolTipText("Time indicates the execution time at which the numbers were recorded");
-					}
-                    break;
-                case COVERAGE:
-                	final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();
-                	coverage.setInput(coverageInfo);
-					if (dataProvider.isDone() && !coverageInfo.isEmpty()) {
-// mku: uncomment the following line; run Dijkstra with no zero coverage; then with zero coverage; then no zero coverage
-//Logger.getAnonymousLogger().severe("COVERAGE - dp hasZeroCoverage? " + dataProvider.hasZeroCoverage());
-						if (dataProvider.hasZeroCoverage()) {
-							if (zeroCoverage == null) {
-								final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
-										ZERO_COVERAGE_WARNING, IMarker.SEVERITY_WARNING);
-								marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
-								zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
-							}
-							if (coverageInfo.hasDisabledSpecActions()) {
-								m_zeroCoverageLabel.setVisible(true);
-								m_errorPaneViewState.setZeroCountDisplay(true);
-								setErrorPaneVisible(true);
-							}
-						} else if (zeroCoverage != null) {
-							try {
-								zeroCoverage.delete();
-								resetMessage(RESULT_PAGE_PROBLEM);
-								zeroCoverage = null;
-							} catch (CoreException e) {
-								TLCUIActivator.getDefault().logError(e.getMessage(), e);
-							} finally {
-								m_zeroCoverageLabel.setVisible(false);
-								m_errorPaneViewState.setZeroCountDisplay(false);
-								setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
+					case USER_OUTPUT:
+						userOutput.setDocument(dataProvider.getUserOutput());
+						break;
+					case PROGRESS_OUTPUT:
+						progressOutput.setDocument(dataProvider.getProgressOutput());
+						break;
+					case CONST_EXPR_EVAL_OUTPUT:
+						if (expressionEvalResult != null) {
+							expressionEvalResult.getTextWidget().setText(dataProvider.getCalcOutput());
+						}
+						break;
+					case START_TIME:
+						setStartTime(dataProvider.getStartTimestamp());
+						break;
+					case END_TIME:
+						setEndTime(dataProvider.getFinishTimestamp());
+
+						final long delta = dataProvider.getFinishTimestamp() - dataProvider.getStartTimestamp();
+						final String duration = DurationFormatUtils.formatDuration(delta, "HH'hrs' mm'mins' ss'sec'");
+						startLabel.setToolTipText(duration);
+						finishLabel.setToolTipText(duration);
+						break;
+					case TLC_MODE:
+						setSearchMode(dataProvider.getTLCMode());
+
+						final IFormPage iep = getEditor().findPage(AdvancedTLCOptionsPage.ID);
+						if (iep != null) {
+							((AdvancedTLCOptionsPage) iep).setFpIndex(dataProvider.getFPIndex());
+						} else {
+							// The tab isn't open so set the value into the model and the tab, should it
+							// open, will
+							// load it out of the model.
+							getModel().setAttribute(LAUNCH_FP_INDEX, dataProvider.getFPIndex());
+							getModelEditor().saveModel();
+						}
+					case LAST_CHECKPOINT_TIME:
+						setCheckpoint(dataProvider.getLastCheckpointTimeStamp());
+						break;
+					case CURRENT_STATUS:
+						tlcStatusLabel.setText(dataProvider.getCurrentStatus());
+						generalTopPane.layout(true, true);
+						break;
+					case FINGERPRINT_COLLISION_PROBABILITY:
+						final String collisionText = dataProvider.getFingerprintCollisionProbability().trim();
+
+						if (collisionText.length() == 0) {
+							fingerprintCollisionLabel.setVisible(false);
+							errorPaneViewState.setFingerprintDisplay(false);
+							setErrorPaneVisible(errorPaneViewState.shouldDisplay());
+						} else {
+							fingerprintCollisionLabel.setText("Fingerprint collision probability: " + collisionText);
+							fingerprintCollisionLabel.setVisible(true);
+							errorPaneViewState.setFingerprintDisplay(true);
+							setErrorPaneVisible(true);
+						}
+						break;
+					case COVERAGE_TIME:
+						final String coverageTimestamp = dataProvider.getCoverageTimestamp();
+						if ("".equals(coverageTimestamp)) {
+							// Reset
+							coverageTimestampText.setText("");
+						} else {
+							// Print statistics timestamp relative to TLC startup.
+							final Date date = TLCModelLaunchDataProvider.parseDate(coverageTimestamp);
+							final String interval = TLCModelLaunchDataProvider.formatInterval(getStartTimestamp(),
+									date.getTime());
+							coverageTimestampText.setText(String.format("(at %s)", interval));
+							coverageTimestampText.setToolTipText(
+									"Time indicates the execution time at which the numbers were recorded");
+						}
+						break;
+					case COVERAGE:
+						final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();
+						coverage.setInput(coverageInfo);
+						if (dataProvider.isDone() && !coverageInfo.isEmpty()) {
+							if (dataProvider.hasZeroCoverage()) {
+								if (zeroCoverage == null) {
+									final Hashtable<String, Object> marker = ModelHelper
+											.createMarkerDescription(ZERO_COVERAGE_WARNING, IMarker.SEVERITY_WARNING);
+									marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, ResultPage.ID);
+									zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+								}
+								if (coverageInfo.hasDisabledSpecActions()) {
+									zeroCoverageLabel.setVisible(true);
+									errorPaneViewState.setZeroCountDisplay(true);
+									setErrorPaneVisible(true);
+								}
+							} else if (zeroCoverage != null) {
+								try {
+									zeroCoverage.delete();
+									resetMessage(RESULT_PAGE_PROBLEM);
+									zeroCoverage = null;
+								} catch (CoreException e) {
+									TLCUIActivator.getDefault().logError(e.getMessage(), e);
+								} finally {
+									zeroCoverageLabel.setVisible(false);
+									errorPaneViewState.setZeroCountDisplay(false);
+									setErrorPaneVisible(errorPaneViewState.shouldDisplay());
+								}
 							}
 						}
-					}
-                    break;
-                case COVERAGE_END_OVERHEAD:
-					ns.notify(Collections.singletonList(new CoverageUINotification(getModelEditor())));
-                	// Continue with COVERAGE_END...
-                case COVERAGE_END:
-                	final CoverageInformation ci = dataProvider.getCoverageInfo();
-                	if (ci.isEmpty() || ci.isLegacy()) {
-						// Cannot show coverage information without (non-legacy) coverage data.
-                		break;
-                	}
+						break;
+					case COVERAGE_END_OVERHEAD:
+						ns.notify(Collections.singletonList(new CoverageUINotification(getModelEditor())));
+						// Continue with COVERAGE_END...
+					case COVERAGE_END:
+						final CoverageInformation ci = dataProvider.getCoverageInfo();
+						if (ci.isEmpty() || ci.isLegacy()) {
+							// Cannot show coverage information without (non-legacy) coverage data.
+							break;
+						}
 
-            		final List<ActionInformationItem> zeroCoverageInformation = ci.getDisabledSpecActions();
-            		for (ActionInformationItem item : zeroCoverageInformation) {
-            			final Module m = getModel().getSpec().getModule(item.getModule());
-            			if (m == null) {
-            				// With the Toolbox better be safe than sorry.
-            				continue;
-            			}
-            			try {
-            				final IMarker createMarker = m.getResource()
-            						.createMarker(ModelEditor.ZERO_COVERAGE_ACTION_MARKER);
-            				
-							createMarker.setAttribute(IMarker.MESSAGE,
-									String.format("%s is never enabled.", item.getName()));
-							createMarker.setAttribute(IMarker.LINE_NUMBER, item.getModuleLocation().beginLine());
+						final List<ActionInformationItem> zeroCoverageInformation = ci.getDisabledSpecActions();
+						for (ActionInformationItem item : zeroCoverageInformation) {
+							final Module m = getModel().getSpec().getModule(item.getModule());
+							if (m == null) {
+								// With the Toolbox better be safe than sorry.
+								continue;
+							}
+							try {
+								final IMarker createMarker = m.getResource()
+										.createMarker(ModelEditor.ZERO_COVERAGE_ACTION_MARKER);
 
-							// In order to color/highlight the token itself, set char_start and char_end
-							// too. At this point we decided it is too intrusive though.
+								createMarker.setAttribute(IMarker.MESSAGE,
+										String.format("%s is never enabled.", item.getName()));
+								createMarker.setAttribute(IMarker.LINE_NUMBER, item.getModuleLocation().beginLine());
+
+								// In order to color/highlight the token itself, set char_start and char_end
+								// too. At this point we decided it is too intrusive though.
 //							final org.eclipse.jface.text.IRegion region = org.lamport.tla.toolbox.util.AdapterFactory
 //									.locationToRegion(item.getModuleLocation());
 //							createMarker.setAttribute(IMarker.CHAR_START, region.getOffset());
 //							createMarker.setAttribute(IMarker.CHAR_END, region.getOffset() + region.getLength());
-            			} catch (CoreException e) {
-            				TLCUIActivator.getDefault().logError(e.getMessage(), e);
-            			}
-            		}
-
-					// Do not open the dedicated coverage editor below if the user only requested action-only coverage.
-            		// These next three lines break Eclipse IDE syntax coloring for this file starting with the
-            		//			unenclosing method. Lame.
-            		if (Model.Coverage.ACTION.equals(getModel().getCoverage())) {
-                		break;
-                	}
-					
-					final ModelEditor modelEditor = (ModelEditor) ResultPage.this.getEditor();
-					
-					final List<IFile> savedTLAFiles = modelEditor.getModel().getSavedTLAFiles();
-					for (IFile iFile : savedTLAFiles) {
-						if (!ci.has(iFile)) {
-							continue;
-						}
-						// Open the files as pages of the current model editor.
-						final FileEditorInput input = new FileEditorInput(iFile);
-						final IEditorPart[] findEditors = modelEditor.findEditors(input);
-						try {
-							if (findEditors.length == 0) {
-								modelEditor.addPage(new TLACoverageEditor(ci.projectionFor(iFile)), input);
-							} else {
-								if (findEditors[0] instanceof TLACoverageEditor) {
-									final TLACoverageEditor coverageEditor = (TLACoverageEditor) findEditors[0];
-									coverageEditor.resetInput(ci.projectionFor(iFile));
-								}
+							} catch (CoreException e) {
+								TLCUIActivator.getDefault().logError(e.getMessage(), e);
 							}
-						} catch (PartInitException e) {
-							TLCUIActivator.getDefault().logError(e.getMessage(), e);
 						}
-					}
-                	break;
-                case PROGRESS:
-                    ResultPage.this.stateSpace.setInput(dataProvider.getProgressInformation());
 
-                    // The following code finds all the graph windows (shells) for this
-                    // model and calls redraw() and update() on them, which apparently is the
-                    // magic incantation to cause its listener to be called to issue the
-                    // necessary commands to redraw the data and then displays the result.
-                    String suffix = getGraphTitleSuffix(ResultPage.this);
-                    Shell[] shells = UIHelper.getCurrentDisplay().getShells();
-                    for (int i = 0; i < shells.length; i++)
-                    {
-                        if (shells[i].getText().endsWith(suffix))
-                        {
-                            shells[i].redraw();
-                            shells[i].update();
-                            // The following was commented out by LL on 6 Jul 2012 because it was filling
-                            // up the Console log with useless stuff.
-                            // TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" + i);
-                        }
-                    }
-                    break;
-                case WARNINGS:
-					if (dataProvider.isSymmetryWithLiveness()) {
-						final MainModelPage mmp = (MainModelPage) getModelEditor().getFormPage(MainModelPage.ID);
-						final Optional<Assignment> possibleSymmetrySet = mmp.getConstants().stream()
-								.filter(c -> c.isSymmetricalSet()).findFirst();
-						if (possibleSymmetrySet.isPresent()) {
-							final Assignment symmetrySet = possibleSymmetrySet.get();
-							getModelEditor().addErrorMessage(new ErrorMessage(String.format("%s %s",
-									symmetrySet.getLabel(),
-									"declared to be symmetric. Liveness checking under symmetry might fail to find a violation."),
-									symmetrySet.getLabel(), MainModelPage.ID,
-									Arrays.asList(ISectionConstants.SEC_WHAT_IS_THE_MODEL,
-											ISectionConstants.SEC_WHAT_TO_CHECK_PROPERTIES),
-									IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS));
+						// Do not open the dedicated coverage editor below if the user only requested
+						// action-only coverage.
+						if (ModelCoverage.ACTION.equals(getModel().getCoverage())) {
+							break;
 						}
-					}
-					break;
-                case ERRORS:
-                    final String text;
-                    final Color color;
-                    final boolean visible;
-                    final int errorCount = dataProvider.getErrors().size();
-                    switch (errorCount) {
-						case 0:
-							text = TLCModelLaunchDataProvider.NO_ERRORS;
-							color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
-							m_errorStatusHyperLink.removeHyperlinkListener(m_errorHyperLinkListener);
-							visible = false;
-							break;
-						case 1:
-							text = "1 Error";
-							m_errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
-							color = TLCUIActivator.getColor(SWT.COLOR_RED);
-							visible = true;
-							break;
-						default:
-							text = String.valueOf(errorCount) + " Errors";
-							m_errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
-							color = TLCUIActivator.getColor(SWT.COLOR_RED);
-							visible = true;
-							break;
-	                }
 
-                    m_errorStatusHyperLink.setText(text);
-                    m_errorStatusHyperLink.setForeground(color);
-					m_errorStatusHyperLink.setVisible(visible);
-					m_errorPaneViewState.setErrorLinkDisplay(visible);
-					setErrorPaneVisible(m_errorPaneViewState.shouldDisplay());
-					
-                    // update the error view - previously (pre-201909) we used the Model instance contained
-					//		in the data provider.
-                    TLCErrorView.updateErrorView(getModelEditor());
-                    break;
-                default:
-                    break;
-                }
-				
+						final ModelEditor modelEditor = (ModelEditor) getEditor();
+
+						final List<IFile> savedTLAFiles = modelEditor.getModel().getSavedTLAFiles();
+						for (IFile iFile : savedTLAFiles) {
+							if (!ci.has(iFile)) {
+								continue;
+							}
+							// Open the files as pages of the current model editor.
+							final FileEditorInput input = new FileEditorInput(iFile);
+							final IEditorPart[] findEditors = modelEditor.findEditors(input);
+							try {
+								if (findEditors.length == 0) {
+									modelEditor.addPage(new TLACoverageEditor(ci.projectionFor(iFile)), input);
+								} else {
+									if (findEditors[0] instanceof TLACoverageEditor) {
+										final TLACoverageEditor coverageEditor = (TLACoverageEditor) findEditors[0];
+										coverageEditor.resetInput(ci.projectionFor(iFile));
+									}
+								}
+							} catch (PartInitException e) {
+								TLCUIActivator.getDefault().logError(e.getMessage(), e);
+							}
+						}
+						break;
+					case PROGRESS:
+						stateSpace.setInput(dataProvider.getProgressInformation());
+
+						// The following code finds all the graph windows (shells) for this
+						// model and calls redraw() and update() on them, which apparently is the
+						// magic incantation to cause its listener to be called to issue the
+						// necessary commands to redraw the data and then displays the result.
+						String suffix = getGraphTitleSuffix(ResultPage.this);
+						Shell[] shells = UIHelper.getCurrentDisplay().getShells();
+						for (int i = 0; i < shells.length; i++) {
+							if (shells[i].getText().endsWith(suffix)) {
+								shells[i].redraw();
+								shells[i].update();
+								// The following was commented out by LL on 6 Jul 2012 because it was filling
+								// up the Console log with useless stuff.
+								// TLCUIActivator.getDefault().logDebug("Called redraw/update on shell number" +
+								// i);
+							}
+						}
+						break;
+					case WARNINGS:
+						if (dataProvider.isSymmetryWithLiveness()) {
+							final MainModelPage mmp = (MainModelPage) getModelEditor().getFormPage(MainModelPage.ID);
+							final Optional<Assignment> possibleSymmetrySet = mmp.getConstants().stream()
+									.filter(c -> c.isSymmetricalSet()).findFirst();
+							if (possibleSymmetrySet.isPresent()) {
+								final Assignment symmetrySet = possibleSymmetrySet.get();
+								getModelEditor().addErrorMessage(new ErrorMessage(String.format("%s %s",
+										symmetrySet.getLabel(),
+										"declared to be symmetric. Liveness checking under symmetry might fail to find a violation."),
+										symmetrySet.getLabel(), MainModelPage.ID,
+										Arrays.asList(ISectionConstants.SEC_WHAT_IS_THE_MODEL,
+												ISectionConstants.SEC_WHAT_TO_CHECK_PROPERTIES),
+										IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS));
+							}
+						}
+						break;
+					case ERRORS:
+						final String text;
+						final Color color;
+						final boolean visible;
+						final int errorCount = dataProvider.getErrors().size();
+						switch (errorCount) {
+							case 0:
+								text = TLCModelLaunchDataProvider.NO_ERRORS;
+								color = TLCUIActivator.getColor(SWT.COLOR_BLACK);
+								errorStatusHyperLink.removeHyperlinkListener(m_errorHyperLinkListener);
+								visible = false;
+								break;
+							case 1:
+								text = "1 Error";
+								errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
+								color = TLCUIActivator.getColor(SWT.COLOR_RED);
+								visible = true;
+								break;
+							default:
+								text = String.valueOf(errorCount) + " Errors";
+								errorStatusHyperLink.addHyperlinkListener(m_errorHyperLinkListener);
+								color = TLCUIActivator.getColor(SWT.COLOR_RED);
+								visible = true;
+								break;
+						}
+
+						errorStatusHyperLink.setText(text);
+						errorStatusHyperLink.setForeground(color);
+						errorStatusHyperLink.setVisible(visible);
+						errorPaneViewState.setErrorLinkDisplay(visible);
+						setErrorPaneVisible(errorPaneViewState.shouldDisplay());
+
+						// update the error view - previously (pre-201909) we used the Model instance
+						// contained
+						// in the data provider.
+						TLCErrorView.updateErrorView(getModelEditor());
+						break;
+					default:
+						break;
+				}
+
 				// Set label provider to highlight unexplored states if
 				// TLC is done but not all states are explored.
-				if (ResultPage.this.stateSpace.getLabelProvider() instanceof StateSpaceLabelProvider) {
-					final StateSpaceLabelProvider sslp = (StateSpaceLabelProvider) ResultPage.this.stateSpace
-							.getLabelProvider();
+				if (stateSpace.getLabelProvider() instanceof StateSpaceLabelProvider) {
+					final StateSpaceLabelProvider sslp = (StateSpaceLabelProvider) stateSpace.getLabelProvider();
 					if (dataProvider.isDone() && dataProvider.getProgressInformation().size() > 0) {
 						final long statesLeft = dataProvider.getProgressInformation().get(0).getLeftStates();
 						if (statesLeft > 0) {
@@ -503,14 +504,15 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							if (incompleteStateExploration == null) {
 								final Hashtable<String, Object> marker = ModelHelper.createMarkerDescription(
 										"State space exploration incomplete", IMarker.SEVERITY_WARNING);
-								marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, 2);
-								incompleteStateExploration = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+								marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, ResultPage.ID);
+								incompleteStateExploration = getModel().setMarker(marker,
+										ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 							}
 						} else {
 							if (incompleteStateExploration != null) {
 								try {
 									incompleteStateExploration.delete();
-									ResultPage.this.resetMessage(RESULT_PAGE_PROBLEM);
+									resetMessage(RESULT_PAGE_PROBLEM);
 									incompleteStateExploration = null;
 								} catch (CoreException e) {
 									TLCUIActivator.getDefault().logError(e.getMessage(), e);
@@ -519,14 +521,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 							sslp.unsetHighlightUnexplored();
 						}
 					}
-					ResultPage.this.stateSpace.refresh();
+					stateSpace.refresh();
 				}
-        	} finally {
-        		disposeLock.unlock();
-        	}
-        });
-
-    }
+			} finally {
+				disposeLock.unlock();
+			}
+		});
+	}
 
     /**
      * {@inheritDoc}
@@ -603,18 +604,18 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     			return;
     		}
     		
-    		m_startTimestamp = 0;
-    		m_startLabel.setText("");
-    		m_lastCheckpointLabel.setText("");
-    		m_finishLabel.setText("");
-    		m_tlcSimulationLabel.setVisible(false);
-    		m_tlcSearchModeLabel.setText("");
-    		m_tlcStatusLabel.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
-    		m_errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
-            m_errorStatusHyperLink.setVisible(false);
-            m_fingerprintCollisionLabel.setText("");
-            m_fingerprintCollisionLabel.setVisible(false);
-            m_zeroCoverageLabel.setVisible(false);
+    		startTimestamp = 0;
+    		startLabel.setText("");
+    		lastCheckpointLabel.setText("");
+    		finishLabel.setText("");
+    		tlcSimulationLabel.setVisible(false);
+    		tlcSearchModeLabel.setText("");
+    		tlcStatusLabel.setText(TLCModelLaunchDataProvider.NOT_RUNNING);
+    		errorStatusHyperLink.setText(TLCModelLaunchDataProvider.NO_ERRORS);
+            errorStatusHyperLink.setVisible(false);
+            fingerprintCollisionLabel.setText("");
+            fingerprintCollisionLabel.setVisible(false);
+            zeroCoverageLabel.setVisible(false);
     		coverage.setInput(new Vector<CoverageInformationItem>());
     		stateSpace.setInput(new Vector<StateSpaceInformationItem>());
     		progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
@@ -622,7 +623,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
     		setErrorPaneVisible(false);
         	
-        	m_generalTopPane.layout(true, true);
+        	generalTopPane.layout(true, true);
     	} finally {
     		disposeLock.unlock();
     	}
@@ -716,104 +717,104 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         // necessary to eliminate that bit in the style flags that
         // are passed in. If the bit were not changed to 0, an
         // extra empty line would appear below the title.
-        m_generalSection = FormHelper.createSectionComposite(body, "General", "", toolkit, sectionFlags & ~Section.DESCRIPTION,
+        generalSection = FormHelper.createSectionComposite(body, "General", "", toolkit, sectionFlags & ~Section.DESCRIPTION,
                 null); //getExpansionListener());
-        sections.put(SEC_GENERAL, m_generalSection);
+        sections.put(SEC_GENERAL, generalSection);
         gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
         gd.verticalAlignment = SWT.TOP;
-        m_generalSection.setLayoutData(gd);
+        generalSection.setLayoutData(gd);
         final GeneralSectionExpansionHoopJumper absurdListener = new GeneralSectionExpansionHoopJumper();
-        m_generalSection.addExpansionListener(absurdListener);
-        m_generalSection.setData(SECTION_EXPANSION_LISTENER, absurdListener);
+        generalSection.addExpansionListener(absurdListener);
+        generalSection.setData(SECTION_EXPANSION_LISTENER, absurdListener);
         
-        final Composite generalArea = (Composite) m_generalSection.getClient();
+        final Composite generalArea = (Composite) generalSection.getClient();
         gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         gl.marginBottom = 6;
         generalArea.setLayout(gl);
         
-        m_generalTopPane = new Composite(generalArea, SWT.NONE);
+        generalTopPane = new Composite(generalArea, SWT.NONE);
         gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
         gd.verticalAlignment = SWT.TOP;
-        m_generalTopPane.setLayoutData(gd);
+        generalTopPane.setLayoutData(gd);
         gl = new GridLayout(6, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         gl.horizontalSpacing = 12;
-        m_generalTopPane.setLayout(gl);
+        generalTopPane.setLayout(gl);
         
-        m_startLabel = new Label(m_generalTopPane, SWT.NONE);
-        m_startLabel.setLayoutData(new GridData());
-        m_startLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
-        m_lastCheckpointLabel = new Label(m_generalTopPane, SWT.NONE);
-        m_lastCheckpointLabel.setLayoutData(new GridData());
-        m_finishLabel = new Label(m_generalTopPane, SWT.NONE);
-        m_finishLabel.setLayoutData(new GridData());
-        m_finishLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
-        m_tlcSimulationLabel = new Label(m_generalTopPane, SWT.NONE);
+        startLabel = new Label(generalTopPane, SWT.NONE);
+        startLabel.setLayoutData(new GridData());
+        startLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        lastCheckpointLabel = new Label(generalTopPane, SWT.NONE);
+        lastCheckpointLabel.setLayoutData(new GridData());
+        finishLabel = new Label(generalTopPane, SWT.NONE);
+        finishLabel.setLayoutData(new GridData());
+        finishLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        tlcSimulationLabel = new Label(generalTopPane, SWT.NONE);
         gd = new GridData();
         gd.horizontalAlignment = SWT.CENTER;
-        m_tlcSimulationLabel.setLayoutData(gd);
-        m_tlcSimulationLabel.setText("Simulation mode");
-        m_tlcSimulationLabel.setVisible(false);
-        m_tlcSimulationLabel.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DIALOG_FONT));
-        m_tlcSearchModeLabel = new Label(m_generalTopPane, SWT.NONE);
+        tlcSimulationLabel.setLayoutData(gd);
+        tlcSimulationLabel.setText("Simulation mode");
+        tlcSimulationLabel.setVisible(false);
+        tlcSimulationLabel.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DIALOG_FONT));
+        tlcSearchModeLabel = new Label(generalTopPane, SWT.NONE);
         gd = new GridData();
         gd.horizontalAlignment = SWT.RIGHT;
         gd.grabExcessHorizontalSpace = true;
-        m_tlcSearchModeLabel.setLayoutData(gd);
-        m_tlcStatusLabel = new Label(m_generalTopPane, SWT.NONE);
+        tlcSearchModeLabel.setLayoutData(gd);
+        tlcStatusLabel = new Label(generalTopPane, SWT.NONE);
         gd = new GridData();
         gd.horizontalAlignment = SWT.RIGHT;
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalIndent = 18;
-        m_tlcStatusLabel.setLayoutData(gd);
-        m_tlcStatusLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        tlcStatusLabel.setLayoutData(gd);
+        tlcStatusLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
         
-        m_generalErrorPane = new Composite(generalArea, SWT.NONE);
+        generalErrorPane = new Composite(generalArea, SWT.NONE);
         gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
         gd.verticalIndent = 9;
         gd.verticalAlignment = SWT.TOP;
-        m_generalErrorPane.setLayoutData(gd);
+        generalErrorPane.setLayoutData(gd);
         gl = new GridLayout(3, false);
         gl.marginHeight = 6;
         gl.marginWidth = 0;
         gl.horizontalSpacing = 6;
-        m_generalErrorPane.setLayout(gl);
-        m_generalErrorPane.setBackground(ERROR_PANE_BACKGROUND);
+        generalErrorPane.setLayout(gl);
+        generalErrorPane.setBackground(ERROR_PANE_BACKGROUND);
 
         // errors
         // Label createLabel =
         // toolkit.createLabel(statusComposite, "Errors detected:");
         // this.errorStatusHyperLink = toolkit.createHyperlink(statusComposite, "", SWT.RIGHT);
-        m_errorStatusHyperLink = toolkit.createHyperlink(m_generalErrorPane, "", SWT.NONE);
-        m_errorStatusHyperLink.setBackground(m_generalErrorPane.getBackground());
-        m_errorStatusHyperLink.setVisible(false);
+        errorStatusHyperLink = toolkit.createHyperlink(generalErrorPane, "", SWT.NONE);
+        errorStatusHyperLink.setBackground(generalErrorPane.getBackground());
+        errorStatusHyperLink.setVisible(false);
         
         // fingerprint collision probability
-        m_fingerprintCollisionLabel = new Label(m_generalErrorPane, SWT.NONE);
+        fingerprintCollisionLabel = new Label(generalErrorPane, SWT.NONE);
         gd = new GridData();
         gd.horizontalAlignment = SWT.CENTER;
-        m_fingerprintCollisionLabel.setLayoutData(gd);
-        m_fingerprintCollisionLabel.setVisible(false);
+        fingerprintCollisionLabel.setLayoutData(gd);
+        fingerprintCollisionLabel.setVisible(false);
         
         // zero coverage label
-        m_zeroCoverageLabel = new Label(m_generalErrorPane, SWT.NONE);
-        m_zeroCoverageLabel.setText(ZERO_COVERAGE_WARNING);
-        m_zeroCoverageLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
-        m_zeroCoverageLabel.setVisible(false);
+        zeroCoverageLabel = new Label(generalErrorPane, SWT.NONE);
+        zeroCoverageLabel.setText(ZERO_COVERAGE_WARNING);
+        zeroCoverageLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        zeroCoverageLabel.setVisible(false);
         gd = new GridData();
         gd.horizontalAlignment = SWT.RIGHT;
         gd.grabExcessHorizontalSpace = true;
         gd.verticalAlignment = SWT.BOTTOM;
-        m_zeroCoverageLabel.setLayoutData(gd);
+        zeroCoverageLabel.setLayoutData(gd);
         
 		setErrorPaneVisible(false);
 
@@ -854,18 +855,18 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
 		final boolean eceInItsOwnTab = ips.getBoolean(IModelEditorPreferenceConstants.I_MODEL_EDITOR_SHOW_ECE_AS_TAB);
 
-		m_calculatorSection = new Composite(body, SWT.NONE);
+		calculatorSection = new Composite(body, SWT.NONE);
         gd = new GridData();
         gd.horizontalAlignment = SWT.FILL;
         gd.verticalAlignment = SWT.FILL;
         gd.grabExcessHorizontalSpace = true;
         gd.grabExcessVerticalSpace = !eceInItsOwnTab;
-        m_calculatorSection.setLayoutData(gd);
+        calculatorSection.setLayoutData(gd);
         gl = new GridLayout();
         gl.marginHeight = 0;
         gl.marginWidth = 0;
-        m_calculatorSection.setLayout(gl);
-        m_calculatorSection.setBackground(m_calculatorSection.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        calculatorSection.setLayout(gl);
+        calculatorSection.setBackground(calculatorSection.getDisplay().getSystemColor(SWT.COLOR_WHITE));
         
 		if (!eceInItsOwnTab) {
 			pageShouldDisplayEvaluateConstantUI(true);
@@ -939,7 +940,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
         progressOutput.getTextWidget().setLayoutData(gd);
         progressOutput.getTextWidget().setFont(JFaceResources.getFont(ITLCPreferenceConstants.I_TLC_OUTPUT_FONT));
 
-        Vector<Control> controls = new Vector<Control>();
+        final Vector<Control> controls = new Vector<Control>();
         controls.add(userOutput.getControl());
         controls.add(progressOutput.getControl());
         fontChangeListener = new FontPreferenceChangeListener(controls, ITLCPreferenceConstants.I_TLC_OUTPUT_FONT);
@@ -984,7 +985,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 						final Job job = new UIJob("Updating results page with loaded output...") {
 							public IStatus runInUIThread(IProgressMonitor monitor) {
 								try {
-									ResultPage.this.loadData();
+									loadData();
 								} catch (CoreException e) {
 									return new Status(IStatus.ERROR, TLCUIActivator.PLUGIN_ID, e.getMessage(), e);
 								}
@@ -1028,62 +1029,62 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     }
 
     private void setStartTime(final long msTime) {
-    	m_startTimestamp = msTime;
+    	startTimestamp = msTime;
     	
     	if (msTime < 0) {
 			// Leave the starttime text empty on a negative timestamp. A negative one indicates that the
 			// model has never been checked
     		// See Long.MIN_VALUE in org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider.initialize()
-    		m_startLabel.setText("Awaiting first run...");
+    		startLabel.setText("Awaiting first run...");
 		} else {
-			m_startLabel.setText("Start: " + DATE_FORMATTER.format(new Date(msTime)));
+			startLabel.setText("Start: " + DATE_FORMATTER.format(new Date(msTime)));
 		}
     	
-    	m_generalTopPane.layout(true, true);
+    	generalTopPane.layout(true, true);
     }
     
     private void setEndTime(final long msTime) {
     	if (msTime < 0) {
-    		m_finishLabel.setVisible(false);
+    		finishLabel.setVisible(false);
 		} else {
-			m_finishLabel.setText("End: " + DATE_FORMATTER.format(new Date(msTime)));
-    		m_finishLabel.setVisible(true);
+			finishLabel.setText("End: " + DATE_FORMATTER.format(new Date(msTime)));
+    		finishLabel.setVisible(true);
 		}
     	
-    	m_generalTopPane.layout(true, true);
+    	generalTopPane.layout(true, true);
     }
     
     private void setCheckpoint(final long msTime) {
     	if (msTime < 0) {
-        	m_lastCheckpointLabel.setVisible(false);
+        	lastCheckpointLabel.setVisible(false);
 		} else {
-        	m_lastCheckpointLabel.setText("Last checkpoint: " + DATE_FORMATTER.format(new Date(msTime)));
-        	m_lastCheckpointLabel.setVisible(true);
+        	lastCheckpointLabel.setText("Last checkpoint: " + DATE_FORMATTER.format(new Date(msTime)));
+        	lastCheckpointLabel.setVisible(true);
 		}
     	
-    	m_generalTopPane.layout(true, true);
+    	generalTopPane.layout(true, true);
     }
     
     private void setSearchMode(final String mode) {
     	if (TLCModelLaunchDataProvider.DEPTH_FIRST_SEARCH.equals(mode)) {
-    		m_tlcSearchModeLabel.setText(TLCModelLaunchDataProvider.DEPTH_FIRST_SEARCH);
-    		m_tlcSearchModeLabel.setVisible(true);
-    		m_tlcSimulationLabel.setVisible(false);
+    		tlcSearchModeLabel.setText(TLCModelLaunchDataProvider.DEPTH_FIRST_SEARCH);
+    		tlcSearchModeLabel.setVisible(true);
+    		tlcSimulationLabel.setVisible(false);
     	} else {
-    		m_tlcSearchModeLabel.setVisible(false);
-			m_tlcSimulationLabel.setVisible(TLCModelLaunchDataProvider.SIMULATION_MODE.equals(mode));
+    		tlcSearchModeLabel.setVisible(false);
+			tlcSimulationLabel.setVisible(TLCModelLaunchDataProvider.SIMULATION_MODE.equals(mode));
     	}
     	
-    	m_generalTopPane.layout(true, true);
+    	generalTopPane.layout(true, true);
     }
     
     private void setErrorPaneVisible(final boolean visible) {
-    	final GridData gd = (GridData)m_generalErrorPane.getLayoutData();
+    	final GridData gd = (GridData)generalErrorPane.getLayoutData();
     	
     	gd.exclude = !visible;
-    	m_generalErrorPane.setLayoutData(gd);
+    	generalErrorPane.setLayoutData(gd);
     	
-    	m_generalErrorPane.setVisible(visible);
+    	generalErrorPane.setVisible(visible);
     }
     
     private int getHeightGuidanceForLabelTextFieldLine(final Composite parent, final FormToolkit toolkit) {
@@ -1306,7 +1307,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
     }
 
     long getStartTimestamp() {
-    	return m_startTimestamp;
+    	return startTimestamp;
     }
     
     TableViewer getStateSpaceTableViewer() {
@@ -1321,8 +1322,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
      * @return
      */
     @SuppressWarnings("unchecked")  // generics cast
-    public StateSpaceInformationItem[] getStateSpaceInformation()
-    {
+	public StateSpaceInformationItem[] getStateSpaceInformation() {
 		List<StateSpaceInformationItem> infoList = (List<StateSpaceInformationItem>) stateSpace.getInput();
         StateSpaceInformationItem[] result = new StateSpaceInformationItem[infoList.size()];
         for (int i = 0; i < result.length; i++)
@@ -1343,7 +1343,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	public EvaluateConstantExpressionPage.State getECEContent() {
 		if (expressionEvalInput != null) {
 			return new EvaluateConstantExpressionPage.State(expressionEvalInput.getDocument(),
-					expressionEvalResult.getTextWidget().getText(), m_noBehaviorModeToggleButton.getSelection());
+					expressionEvalResult.getTextWidget().getText(), noBehaviorModeToggleButton.getSelection());
 		}
 		
 		return null;
@@ -1355,13 +1355,13 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 		} else {
 			expressionEvalInput.setDocument(state.getInputDocument());
 			expressionEvalResult.getTextWidget().setText(state.getOutputText());
-			m_noBehaviorModeToggleButton.setSelection(state.getToggleState());
+			noBehaviorModeToggleButton.setSelection(state.getToggleState());
 		}
 	}
     
 	public void setNoBehaviorSpecToggleState(final boolean selected) {
-		if (m_noBehaviorModeToggleButton != null) {
-			m_noBehaviorModeToggleButton.setSelection(selected);
+		if (noBehaviorModeToggleButton != null) {
+			noBehaviorModeToggleButton.setSelection(selected);
 		}
 	}
 	
@@ -1373,7 +1373,7 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	        final int sectionFlags = Section.TITLE_BAR | Section.TREE_NODE | Section.EXPANDED | SWT.WRAP;
 	        final int textFieldFlags = SWT.MULTI | SWT.V_SCROLL | SWT.READ_ONLY | SWT.FULL_SELECTION | SWT.WRAP;
 			final EvaluateConstantExpressionPage.BodyContentAssets assets = EvaluateConstantExpressionPage
-					.createBodyContent(m_calculatorSection, toolkit, sectionFlags, textFieldFlags,
+					.createBodyContent(calculatorSection, toolkit, sectionFlags, textFieldFlags,
 							getExpansionListener(), (ModelEditor)getEditor());
 			final Section section = assets.getSection();
 			
@@ -1381,17 +1381,16 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
 			expressionEvalInput = assets.getExpressionInput();
 	        expressionEvalResult = assets.getExpressionOutput();
-	        m_noBehaviorModeToggleButton = assets.getToggleButton();
+	        noBehaviorModeToggleButton = assets.getToggleButton();
 
-	        m_validateableCalculatorSection = new ValidateableSectionPart(section, this, SEC_EXPRESSION);
+	        validateableCalculatorSection = new ValidateableSectionPart(section, this, SEC_EXPRESSION);
 	        // This ensures that when the part is made dirty, the model appears unsaved.
-	        managedForm.addPart(m_validateableCalculatorSection);
+	        managedForm.addPart(validateableCalculatorSection);
 
 	        // This makes the widget unsaved when text is entered.
-	        expressionEvalInput.getTextWidget().addModifyListener(new DirtyMarkingListener(m_validateableCalculatorSection, false));
+	        expressionEvalInput.getTextWidget().addModifyListener(new DirtyMarkingListener(validateableCalculatorSection, false));
 
-	        getDataBindingManager().bindSection(m_validateableCalculatorSection, SEC_EXPRESSION, getId());
-	        getDataBindingManager().bindAttribute(Model.MODEL_EXPRESSION_EVAL, expressionEvalInput, m_validateableCalculatorSection);
+	        getDataBindingManager().bindAttribute(Model.MODEL_EXPRESSION_EVAL, expressionEvalInput, validateableCalculatorSection);
 	        
 	        section.addExpansionListener(new ExpansionAdapter() {
 	            public void expansionStateChanged(final ExpansionEvent e) {
@@ -1401,42 +1400,51 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 	                    gd.verticalAlignment = SWT.FILL;
 	                    gd.grabExcessHorizontalSpace = true;
 	                    gd.grabExcessVerticalSpace = true;
-	                    m_calculatorSection.setLayoutData(gd);
+	                    calculatorSection.setLayoutData(gd);
 	            	} else {
-	            		final GridData gd = (GridData)m_calculatorSection.getLayoutData();
+	            		final GridData gd = (GridData)calculatorSection.getLayoutData();
 	            		final Point size = section.computeSize(SWT.DEFAULT, SWT.DEFAULT);
 	            		
 	            		gd.grabExcessVerticalSpace = e.getState();
 	            		gd.heightHint = size.y;
 
-		            	m_calculatorSection.setLayoutData(gd);
+		            	calculatorSection.setLayoutData(gd);
 	            	}
 	            }
 	        });
-		} else if (m_validateableCalculatorSection != null) {
+		} else if (validateableCalculatorSection != null) {
 			sections.remove(SEC_EXPRESSION);
 			
-			managedForm.removePart(m_validateableCalculatorSection);
+			managedForm.removePart(validateableCalculatorSection);
 			
-			m_validateableCalculatorSection = null;
+			validateableCalculatorSection = null;
 			expressionEvalInput = null;
 			expressionEvalResult = null;
-			m_noBehaviorModeToggleButton = null;
+			noBehaviorModeToggleButton = null;
 			
-			for (final Control control : m_calculatorSection.getChildren()) {
+			for (final Control control : calculatorSection.getChildren()) {
 				control.dispose();
 			}
 			
 			getDataBindingManager().unbindSectionFromPage(SEC_EXPRESSION, getId());
 		}
 		
-		final GridData gd = (GridData)m_calculatorSection.getLayoutData();
+		final GridData gd = (GridData)calculatorSection.getLayoutData();
 		gd.grabExcessVerticalSpace = shouldShow;
-		m_calculatorSection.setLayoutData(gd);
+		calculatorSection.setLayoutData(gd);
 		
 		getManagedForm().reflow(true);
 	}
-	
+
+	@Override
+	public void close() throws IOException {
+		getModelEditor().resultsPageIsClosing();
+		
+		final DataBindingManager dm = getDataBindingManager();
+		dm.unbindSectionAndAttribute(Model.MODEL_EXPRESSION_EVAL);
+		dm.unbindSectionFromPage(SEC_EXPRESSION, getId());
+	}
+
 	
 	private class GeneralSectionExpansionHoopJumper extends ExpansionAdapter implements Consumer<Boolean> {
         public void expansionStateChanged(final ExpansionEvent e) {
@@ -1445,21 +1453,21 @@ public class ResultPage extends BasicFormPage implements ITLCModelLaunchDataPres
 
         public void accept(final Boolean expand) {
         	if (expand.booleanValue()) {
-        		final Composite c = (Composite)m_generalSection.getClient();
-        		final GridData gd = (GridData)m_generalSection.getLayoutData();
+        		final Composite c = (Composite)generalSection.getClient();
+        		final GridData gd = (GridData)generalSection.getLayoutData();
         		
-        		gd.heightHint = m_collapsedSectionHeight + c.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        		gd.heightHint = collapsedSectionHeight + c.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
 
-                m_generalSection.setLayoutData(gd);
-                m_generalSection.getParent().layout(true, true);
+                generalSection.setLayoutData(gd);
+                generalSection.getParent().layout(true, true);
         	} else {
         		final GridData gd = new GridData();
                 gd.horizontalAlignment = SWT.FILL;
                 gd.grabExcessHorizontalSpace = true;
                 gd.verticalAlignment = SWT.TOP;
-                m_generalSection.setLayoutData(gd);
+                generalSection.setLayoutData(gd);
                 
-                m_collapsedSectionHeight = m_generalSection.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+                collapsedSectionHeight = generalSection.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
         	}
         }
 	}

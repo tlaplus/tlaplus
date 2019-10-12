@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _0133MAldEem_kewt0eDFQIQ
-Runtime-Version: 2.4.1.201903190000
-Save-Time: 8/27/19, 12:10 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/11/19, 9:14 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -29,6 +29,8 @@ try -command {
 //	set-dialog-result File "/tmp/tlaplus/tlaplus-master/runtime-org.lamport.tla.toolbox.product.product.product/TExpression.tla"
 	set-dialog-result File [concat [get-workspace-location] "/MissionariesAndCannibals/TExpression.tla"]
 	get-menu -path "File/Open Module/Add TLA+ Module..." | click
+	// Note - the test will fail here if you're working via RCPTT locally and you've downloaded
+	//	the M&C spec previously without cleaning out your workspace directory.
 	get-window "TLA+ Module is not found" | get-button Yes | click
 	with [get-editor TExpression | get-text-viewer] {
 		set-caret-pos 2 1
@@ -103,7 +105,8 @@ try -command {
 
 	// Validate error trace exploration
 	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 5 1 | click
-	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text | contains "[bank_of_boat |->" | verify-true
+	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text
+		| contains "[bank_of_boat |->" | verify-true
 	
 	// Paste exported trace into ECE and verify it is valid TLA+
 	with [get-editor "Model_1"] {

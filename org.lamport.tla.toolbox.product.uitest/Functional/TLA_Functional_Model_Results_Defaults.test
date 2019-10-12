@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _s4DEYBXnEemrGZBXFuwIoA
-Runtime-Version: 2.4.2.201905122359
-Save-Time: 7/23/19, 9:23 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/11/19, 4:03 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -41,15 +41,13 @@ try -command {
 	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
 	    | equals "Please input the name of the model to create" | verify-true
 	get-window "New model..." | get-button OK | click
-	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-	
+
 	with [get-editor "Model_1"] {
+		get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+
 	    get-section "Model description" | get-text-viewer | type-text "this is a test"
-	    with [get-tab-folder] {
-	        get-tab-item "Model Checking Results" | click
-	    }
-	}
-	with [get-editor "Model_1"] {
+
+		get-link "Evaluate Constant Expressions" | click
 	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
 	    with [get-section General] {
 	    	get-label "Awaiting first run..."

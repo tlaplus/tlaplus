@@ -163,8 +163,7 @@ public class TLCOutputSourceRegistry
             }
             IFile logFile = model.getOutputLogFile(isTraceExploreInstance);
             // log file found
-            if (logFile != null && logFile.exists())
-            {
+			if ((logFile != null) && logFile.exists()) {
                 // initialize the reader and read the content
                 // this will create the parser
                 // the parser will create a source and register in the registry
@@ -174,7 +173,6 @@ public class TLCOutputSourceRegistry
                 source = logFileReader.getSource();
                 source.addTLCOutputListener(listener);
 
-                // read in the data
                 // read in the data
                 final Job job = new WorkspaceJob("Logfile reader...") {
 					public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
@@ -188,8 +186,7 @@ public class TLCOutputSourceRegistry
 						return Status.OK_STATUS;
 					}
 				};
-				job.setProperty(IProgressConstants.PROPERTY_IN_DIALOG, true);
-				job.setPriority(Job.LONG);
+				job.setPriority(Job.SHORT);
 				job.setUser(true);
 				job.schedule();
 

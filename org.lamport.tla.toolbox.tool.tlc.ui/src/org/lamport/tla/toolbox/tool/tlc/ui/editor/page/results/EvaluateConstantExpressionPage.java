@@ -301,6 +301,7 @@ public class EvaluateConstantExpressionPage extends BasicFormPage implements ITL
 
 			managedForm.removePart(m_validateableCalculatorSection);
 
+			getDataBindingManager().unbindSectionAndAttribute(SEC_EXPRESSION);
 			getDataBindingManager().unbindSectionFromPage(SEC_EXPRESSION, getId());
 
 			final Model model = getModel();

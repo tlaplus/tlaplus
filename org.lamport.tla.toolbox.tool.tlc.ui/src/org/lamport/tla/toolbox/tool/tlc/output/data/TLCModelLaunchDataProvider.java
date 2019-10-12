@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -162,6 +163,9 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 
 	private boolean isSymmetryWithLiveness = false;
 	
+	private final Object parsingLock;
+	private final AtomicBoolean parsing;
+	
 	public TLCModelLaunchDataProvider(final Model tlcModel) {
     	Assert.isNotNull(tlcModel);
         model = tlcModel;
@@ -171,11 +175,26 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         // init provider, but not connect it to the source!
         initialize();
 
-        /*
-         *  interested in the output for the model
-         */
-        connectToSourceRegistry();
+        parsingLock = new Object();
+        parsing = new AtomicBoolean(true);
+
+		synchronized (parsingLock) {
+			/*
+			 * interested in the output for the model
+			 */
+			parsing.set(connectToSourceRegistry());
+        }
     }
+	
+	public void waitForParsingFinish() {
+		if (parsing.get()) {
+			synchronized (parsingLock) {
+				try {
+					parsingLock.wait();
+				} catch (final Exception e) { }
+			}
+		}
+	}
 
     /**
      * Resets the values to defaults
@@ -231,8 +250,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         return model;
     }
 
-    public void onDone()
-    {
+	public void onDone() {
         /*
          * If the last message output by TLC
          * was an error, then this error will not
@@ -248,16 +266,24 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
          * to the list errors. It must be added to this list to
          * be shown to the user.
          */
-        if (lastDetectedError != null)
-        {
-            this.errors.add(lastDetectedError);
-            informPresenter(ITLCModelLaunchDataPresenter.ERRORS);
-        }
+		if (lastDetectedError != null) {
+			this.errors.add(lastDetectedError);
+			informPresenter(ITLCModelLaunchDataPresenter.ERRORS);
+		}
 
         // TLC is no longer running
         this.setCurrentStatus(NOT_RUNNING);
         informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
         isDone = true;
+        
+        synchronized (parsingLock) {
+        	try {
+        		parsingLock.notifyAll();
+        	} catch (final Exception e) { }
+        	finally {
+        		parsing.set(false);
+        	}
+        }
     }
 
     public void onNewSource()
@@ -267,8 +293,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         populate();
     }
 
-    public void onOutput(ITypedRegion region, String text)
-    {
+	public void onOutput(final ITypedRegion region, final String text) {
         // restarting
         if (isDone)
         {
@@ -946,10 +971,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
      *  one for trace exploration and one for model checking. This
      *  connects to the one for model checking.
      */
-    protected void connectToSourceRegistry()
-    {
-
-        TLCOutputSourceRegistry.getModelCheckSourceRegistry().connect(this);
+	protected boolean connectToSourceRegistry() {
+		return TLCOutputSourceRegistry.getModelCheckSourceRegistry().connect(this);
     }
 
     /**

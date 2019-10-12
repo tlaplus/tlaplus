@@ -171,9 +171,10 @@ public class DataBindingManager implements ISectionConstants
     }
     
     /**
-     * Given an attribute name, remove all binding to it and its section.
+     * Given a section id and a page id, remove the binding to that couplet, if one exists.
      * 
-     * @param attributeName
+     * @param sectionId
+     * @param pageId
      */
     public void unbindSectionFromPage(final String sectionId, final String pageId) {
 		final Vector<String> sectionIds = sectionsForPage.get(pageId);

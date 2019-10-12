@@ -687,7 +687,7 @@ public class TLCErrorView extends ViewPart
     	updateErrorView(associatedModelEditor, true);
     }
 
-	public static void updateErrorView(final ModelEditor associatedModelEditor, boolean openErrorView) {
+	public static void updateErrorView(final ModelEditor associatedModelEditor, final boolean openErrorView) {
 		if (associatedModelEditor == null) {
 			return;
 		}
@@ -711,7 +711,7 @@ public class TLCErrorView extends ViewPart
 	public static void updateErrorView(final TLCModelLaunchDataProvider provider, final ModelEditor associatedModelEditor,
 			final boolean openErrorView) {
         final TLCErrorView errorView;
-		if ((provider.getErrors().size() > 0) && openErrorView == true) {
+		if ((provider.getErrors().size() > 0) && openErrorView) {
        		errorView = (TLCErrorView) UIHelper.openView(TLCErrorView.ID);
 		} else {
             errorView = (TLCErrorView) UIHelper.findView(TLCErrorView.ID);

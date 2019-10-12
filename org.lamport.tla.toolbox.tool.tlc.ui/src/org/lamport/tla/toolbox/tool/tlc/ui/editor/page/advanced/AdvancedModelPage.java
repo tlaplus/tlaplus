@@ -486,5 +486,12 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
 	public void close() throws IOException {
 		final int openTabState = getModel().getOpenTabsValue();
 		getModelEditor().updateOpenTabsState(openTabState & ~IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_MODEL);
+		
+        final DataBindingManager dm = getDataBindingManager();
+        dm.unbindSectionAndAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT);
+        dm.unbindSectionAndAttribute(MODEL_PARAMETER_CONSTRAINT);
+        dm.unbindSectionAndAttribute(MODEL_PARAMETER_DEFINITIONS);
+        dm.unbindSectionAndAttribute(MODEL_PARAMETER_MODEL_VALUES);
+        dm.unbindSectionAndAttribute(MODEL_PARAMETER_NEW_DEFINITIONS);
 	}
 }

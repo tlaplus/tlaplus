@@ -81,6 +81,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.spec.Spec;
@@ -99,6 +100,7 @@ import tlc2.output.MP;
 /**
  * This class represents a Toolbox Model that can be executed by TLC.
  */
+@SuppressWarnings("restriction")		// org.eclipse.debug.internal.core.LaunchConfiguration discouraged
 public class Model implements IModelConfigurationConstants, IAdaptable {
 	/**
      * Marker indicating an error in the model
@@ -313,7 +315,6 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 			copy.setContainer(newSpec.getProject());
 			final ILaunchConfiguration renamed = copy.doSave();
 
-			@SuppressWarnings("restriction")	// discouraged access on getFileStore()
 			final IFileStore ifs = ((LaunchConfiguration)launchConfig).getFileStore();
 			
 			// delete the copy of the old model in the new toolbox directory
@@ -1181,6 +1182,22 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
 	}
 	
+	public void setModelVersion(final int version) {
+        try {
+        	getWorkingCopy().setAttribute(IModelConfigurationConstants.MODEL_VERSION, version);
+		} catch (CoreException shouldNotHappen) {
+			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
+		}
+	}
+	
+	public int getModelVersion() {
+        try {
+			return getWorkingCopy().getAttribute(IModelConfigurationConstants.MODEL_VERSION, 0);
+		} catch (CoreException shouldNotHappen) {
+			return -1;
+		}
+	}
+
 	public void setOpenTabsValue(final int value) {
         try {
         	getWorkingCopy().setAttribute(IModelConfigurationConstants.EDITOR_OPEN_TABS, value);
@@ -1215,8 +1232,15 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	}
 
 	public Model save(final IProgressMonitor monitor) {
+    	// Uncomment the following for development time forced restoration of all closeable tabs.
+//    	setOpenTabsValue((1 << 1) | (1 << 2) | (1 << 3));
+		setModelVersion(IModelConfigurationConstants.VERSION_161);
+		
 		if (this.workingCopy != null) {
-			//TODO This is a workspace operation and thus should be decoupled from the UI thread.
+			if (Thread.currentThread().equals(Display.getDefault().getThread())) {
+				TLCActivator.logInfo("Model save is occurring on the SWT thread, this should be addressed.");
+			}
+
 			try {
 				this.launchConfig = this.workingCopy.doSave();
 				// Null the temporary working copy . Save effectively merges the
@@ -1320,40 +1344,22 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		}
 	}
 	
-	// TLC's coverage implementation (see tlc2.tool.coverage.CostModelCreator) only
-	// supports two modes: Off and On. However, we consider On too much information
-	// for novice users who are (likely) only interested in identifying spec errors
-	// that leave a subset of actions permanently disabled. The Toolbox therefore
-	// adds a third mode "Action" which filters TLC's output for All. This obviously
-	// means that the overhead of collecting coverage in Action and On mode is
-	// identical.  This shouldn't matter however as novice users don't create large
-	// specs anyway and the Toolbox warns users when a large spec has been
-	// configured with coverage.
-	// (see org.lamport.tla.toolbox.tool.tlc.output.data.CoverageUINotification)
-	// Alternatively, tlc2.tool.coverage.ActionWrapper.report() could be changed to
-	// omit the report of its children (line 126) to effectively create the Action
-	// mode at the TLC layer. I decided against it though, because I didn't want to
-	// extend the -coverage TLC parameter.
-	public enum Coverage {
-		OFF, ACTION, ON;
-	}
-	
-	public Coverage setCoverage(final Coverage c) {
+	public ModelCoverage setCoverage(final ModelCoverage c) {
 		setAttribute(LAUNCH_COVERAGE, c.ordinal());
 		return c;
 	}
 	
-	public Coverage getCoverage() {
+	public ModelCoverage getCoverage() {
 		try {
 			final int ordinal = getAttribute(LAUNCH_COVERAGE, IConfigurationDefaults.LAUNCH_COVERAGE_DEFAULT);
-			return Coverage.values()[ordinal];
+			return ModelCoverage.values()[ordinal];
 		} catch (DebugException legacyException) {
 			// Occurs for old models where the type wasn't int but bool.
 		} catch (CoreException shouldNotHappen) {
 			// We log the exceptions on setAttribute but expose exceptions with getAttribute %-)
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 		}
-		return Coverage.ACTION;
+		return ModelCoverage.ACTION;
 	}
 	
 	/* IAdaptable */

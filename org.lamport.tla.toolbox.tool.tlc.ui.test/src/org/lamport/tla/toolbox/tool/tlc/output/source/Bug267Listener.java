@@ -69,8 +69,8 @@ public class Bug267Listener extends TLCModelLaunchDataProvider implements
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider#connectToSourceRegistry()
 	 */
-	public void connectToSourceRegistry() {
-		// intentionally noop
+	public boolean connectToSourceRegistry() {
+		return false;
 	}
 	
 	private static class DummyModel extends Model {

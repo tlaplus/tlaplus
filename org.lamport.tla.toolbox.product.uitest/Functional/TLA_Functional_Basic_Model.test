@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _44K9cAJWEemDc-4PKyNT9w
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/10/19, 9:47 AM
+Save-Time: 10/12/19, 9:07 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -34,7 +34,7 @@ try -command {
 	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
 	    | equals "Please input the name of the model to create" | verify-true
 	get-window "New model..." | get-button OK | click
-	with [get-editor "Model_1"] {
+	with [get-editor $TLA-MODEL-ONE] {
 		get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
 		get-section "What is the model?" | click
 		get-link "Additional Spec Options" | click
@@ -42,6 +42,7 @@ try -command {
 		get-section "How to run?" | click
 		get-link "Additional TLC Options" | click
 		get-tab-folder | get-tab-item "Model Overview" | click
+	    verify-error { get-tab-folder | get-tab-item "Model Checking Results" }
 		get-button "Runs TLC on the model." | click
 	}
 	
@@ -55,36 +56,36 @@ try -command {
 	    get-tab-item "TLC Options" | click
 	    get-tab-item "Model Checking Results" | click
 	}
-	get-editor "Model_1" | close	
+	get-editor $TLA-MODEL-ONE | close	
 	
 	// Test the state-saving of open close-able tabs in the model editor:
 	
-	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/Model_1"] | get-menu -path "Open" | click
-	with [get-editor "Model_1" | get-tab-folder] {
+	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
+	with [get-editor $TLA-MODEL-ONE | get-tab-folder] {
 	    get-tab-item "Model Overview" | click
 	    get-tab-item "Spec Options" | click
 	    get-tab-item "TLC Options" | click
 	    get-tab-item "Spec Options" | close
 	}
-	get-editor "Model_1" | close	
+	get-editor $TLA-MODEL-ONE | close	
 
-	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/Model_1"] | get-menu -path "Open" | click
-	with [get-editor "Model_1" | get-tab-folder] {
+	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
+	with [get-editor $TLA-MODEL-ONE | get-tab-folder] {
 	    get-tab-item "Model Overview" | click
 	    get-tab-item "TLC Options" | click
 	    verify-error { get-tab-item "Spec Options" }
 	    get-tab-item "TLC Options" | close
 	    get-tab-item "Model Checking Results" | click
 	}
-	get-editor "Model_1" | close	
+	get-editor $TLA-MODEL-ONE | close	
 
-	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/Model_1"] | get-menu -path "Open" | click
-	with [get-editor "Model_1" | get-tab-folder] {
+	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
+	with [get-editor $TLA-MODEL-ONE | get-tab-folder] {
 	    get-tab-item "Model Overview" | click
 	    verify-error { get-tab-item "TLC Options" }
 	    get-tab-item "Model Checking Results" | click
 	}
-	get-editor "Model_1" | close	
+	get-editor $TLA-MODEL-ONE | close	
 } -finally {
 	DeleteSpecNew
 }

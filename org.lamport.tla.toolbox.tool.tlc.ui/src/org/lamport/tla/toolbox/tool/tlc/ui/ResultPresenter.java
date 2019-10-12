@@ -32,7 +32,7 @@ public class ResultPresenter implements IResultPresenter {
 		} else {
 			final ModelEditor editor = (ModelEditor) UIHelper.openEditor(ModelEditor.ID, model.getFile());
 			if (editor != null) {
-                editor.showResultPage();
+                editor.addOrShowResultsPage();
             }
         }
     }

@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _g-dKoAPoEemwBd2liJ-qvA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/10/19, 9:02 AM
+Save-Time: 10/11/19, 11:26 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -71,6 +71,7 @@ try -command {
 	wait-run
 	
 	with [get-editor $TLA-Long-Model-Name] {
+		get-tab-folder | get-tab-item "Model Checking Results" | click	
 	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
 	    get-link "State space exploration incomplete" | get-property caption | equals "State space exploration incomplete" 
 	        | verify-true

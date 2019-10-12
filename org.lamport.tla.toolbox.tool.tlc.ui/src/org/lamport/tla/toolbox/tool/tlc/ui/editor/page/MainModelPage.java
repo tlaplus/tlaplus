@@ -27,6 +27,9 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -190,6 +193,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	protected HyperlinkAdapter advancedTLCOptionsOpener = new HyperlinkAdapter() {
 		public void linkActivated(final HyperlinkEvent he) {
 			getModelEditor().addOrShowAdvancedTLCOptionsPage();
+		}
+	};
+	protected HyperlinkAdapter resultsPageOpener = new HyperlinkAdapter() {
+		public void linkActivated(final HyperlinkEvent he) {
+			getModelEditor().addOrShowResultsPage();
 		}
 	};
 
@@ -644,10 +652,11 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		// that code changes the selection.
 		final Section whatToCheckSection = dm.getSection(SEC_WHAT_TO_CHECK).getSection();
 		final ResultPage rp = (ResultPage) modelEditor.findPage(ResultPage.ID);
-		final EvaluateConstantExpressionPage ecep = (EvaluateConstantExpressionPage) modelEditor
-				.findPage(EvaluateConstantExpressionPage.ID);
+		final EvaluateConstantExpressionPage ecep
+				= (rp != null) ? (EvaluateConstantExpressionPage) modelEditor.findPage(EvaluateConstantExpressionPage.ID)
+							   : null;
 
-		final Set<Section> resultPageSections = rp.getSections(SEC_GENERAL, SEC_STATISTICS);
+		final Set<Section> resultPageSections = (rp != null) ? rp.getSections(SEC_GENERAL, SEC_STATISTICS) : null;
 
 		final String hint = " (\"What is the behavior spec?\" above has no behavior spec)";
 		final String hintResults = " (\"What is the behavior spec?\" on \"Model Overview\" page has no behavior spec)";
@@ -658,15 +667,18 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			whatToCheckSection.setExpanded(false);
 			whatToCheckSection.setEnabled(false);
 
-			resultPageSections.forEach((section) -> {
-				section.setText(!section.getText().endsWith(hintResults) ? section.getText() + hintResults : section.getText());
-				section.setEnabled(false);
-				compensateForExpandableCompositesPoorDesign(section, false);
-			});
+			if (resultPageSections != null) {
+				resultPageSections.forEach((section) -> {
+					section.setText(!section.getText().endsWith(hintResults) ? section.getText() + hintResults
+							: section.getText());
+					section.setEnabled(false);
+					compensateForExpandableCompositesPoorDesign(section, false);
+				});
+			}
 			
 			if (ecep != null) {
 				ecep.setNoBehaviorSpecToggleState(true);
-			} else {
+			} else if (rp != null) {
 				rp.setNoBehaviorSpecToggleState(true);
 			}
 		} else {
@@ -674,15 +686,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 			whatToCheckSection.setExpanded(true);
 			whatToCheckSection.setEnabled(true);
 
-			resultPageSections.forEach((section) -> {
-				section.setText(section.getText().replace(hintResults, ""));
-				section.setEnabled(true);
-				compensateForExpandableCompositesPoorDesign(section, true);
-			});
+			if (resultPageSections != null) {
+				resultPageSections.forEach((section) -> {
+					section.setText(section.getText().replace(hintResults, ""));
+					section.setEnabled(true);
+					compensateForExpandableCompositesPoorDesign(section, true);
+				});
+			}
 			
 			if (ecep != null) {
 				ecep.setNoBehaviorSpecToggleState(false);
-			} else {
+			} else if (rp != null) {
 				rp.setNoBehaviorSpecToggleState(false);
 			}
 		}
@@ -978,7 +992,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		}
 		return constants;
 	}
-
+	
 	/**
 	 * Creates the UI This method is called to create the widgets and arrange them
 	 * on the page
@@ -990,6 +1004,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	 * given in the article
 	 * http://www.eclipse.org/articles/article.php?file=Article-Understanding-Layouts/index.html
 	 */
+	@Override
 	protected void createBodyContent(IManagedForm managedForm) {
 		DataBindingManager dm = getDataBindingManager();
 		int sectionFlags = Section.TITLE_BAR | Section.DESCRIPTION | Section.TREE_NODE;
@@ -1047,19 +1062,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		
 
-		Composite advancedLinkLine = new Composite(body, SWT.NONE);
+		Composite linkLineComposite = new Composite(body, SWT.NONE);
 		twd = new TableWrapData();
 		twd.colspan = 2;
 		twd.grabHorizontal = true;
 		twd.align = TableWrapData.RIGHT;
-		advancedLinkLine.setLayoutData(twd);
-		advancedLinkLine.setBackground(body.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		linkLineComposite.setLayoutData(twd);
+		linkLineComposite.setBackground(body.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		gl = new GridLayout(1, false);
 		gl.marginWidth = 0;
 		gl.marginRight = 36;
 		gl.horizontalSpacing = 0;
-		advancedLinkLine.setLayout(gl);
-		Hyperlink hyper = toolkit.createHyperlink(advancedLinkLine, "Additional Spec Options", SWT.NONE);
+		linkLineComposite.setLayout(gl);
+		Hyperlink hyper = toolkit.createHyperlink(linkLineComposite, "Additional Spec Options", SWT.NONE);
 		hyper.addHyperlinkListener(advancedModelOptionsOpener);
 		Font baseFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT);
 		FontData[] baseFD = baseFont.getFontData();
@@ -1270,19 +1285,19 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		dm.bindAttribute(MODEL_PARAMETER_CONSTANTS, constantTable, constantsPart);
 		
 
-		advancedLinkLine = new Composite(body, SWT.NONE);
+		linkLineComposite = new Composite(body, SWT.NONE);
 		twd = new TableWrapData();
 		twd.colspan = 2;
 		twd.grabHorizontal = true;
 		twd.align = TableWrapData.RIGHT;
-		advancedLinkLine.setLayoutData(twd);
-		advancedLinkLine.setBackground(body.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		linkLineComposite.setLayoutData(twd);
+		linkLineComposite.setBackground(body.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		gl = new GridLayout(1, false);
 		gl.marginWidth = 0;
 		gl.marginRight = 36;
 		gl.horizontalSpacing = 0;
-		advancedLinkLine.setLayout(gl);
-		hyper = toolkit.createHyperlink(advancedLinkLine, "Additional TLC Options", SWT.NONE);
+		linkLineComposite.setLayout(gl);
+		hyper = toolkit.createHyperlink(linkLineComposite, "Additional TLC Options", SWT.NONE);
 		hyper.addHyperlinkListener(advancedTLCOptionsOpener);
 		hyper.setFont(biggerLinkFont);
 
@@ -1379,17 +1394,17 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		gd.horizontalAlignment = SWT.CENTER;
 		tlcResourceSummaryLabel.setLayoutData(gd);
 
-		advancedLinkLine = new Composite(howToRunArea, SWT.NONE);
+		linkLineComposite = new Composite(howToRunArea, SWT.NONE);
 		gd = new GridData();
 		gd.horizontalSpan = 2;
 		gd.grabExcessHorizontalSpace = true;
 		gd.horizontalAlignment = SWT.CENTER;
-		advancedLinkLine.setLayoutData(gd);
+		linkLineComposite.setLayoutData(gd);
 		gl = new GridLayout(1, false);
 		gl.marginWidth = 0;
 		gl.horizontalSpacing = 0;
-		advancedLinkLine.setLayout(gl);
-		tlcTuneHyperlink = toolkit.createHyperlink(advancedLinkLine, "Tune these parameters and set defaults", SWT.NONE);
+		linkLineComposite.setLayout(gl);
+		tlcTuneHyperlink = toolkit.createHyperlink(linkLineComposite, "Tune these parameters and set defaults", SWT.NONE);
 		tlcTuneHyperlink.addHyperlinkListener(advancedTLCOptionsOpener);
 		baseFont = JFaceResources.getFont(JFaceResources.DIALOG_FONT);
 		baseFD = baseFont.getFontData();
@@ -1618,12 +1633,45 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 		distributedOptions.setData(CLOUD_CONFIGURATION_KEY, jcloudsOptions);
 
+	
+		linkLineComposite = new Composite(body, SWT.NONE);
+		twd = new TableWrapData();
+		twd.colspan = 2;
+		twd.grabHorizontal = true;
+		twd.align = TableWrapData.RIGHT;
+		linkLineComposite.setLayoutData(twd);
+		linkLineComposite.setBackground(body.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+		gl = new GridLayout(1, false);
+		gl.marginWidth = 0;
+		gl.marginRight = 36;
+		gl.horizontalSpacing = 0;
+		linkLineComposite.setLayout(gl);
+		hyper = toolkit.createHyperlink(linkLineComposite, "Evaluate Constant Expressions", SWT.NONE);
+		hyper.addHyperlinkListener(resultsPageOpener);
+		hyper.setFont(biggerLinkFont);
+		
+		
 		// add listeners propagating the changes of the elements to the changes
 		// of the parts to the list to be activated after the values has been loaded
 		dirtyPartListeners.add(commentsListener);
 		dirtyPartListeners.add(whatIsTheSpecListener);
 		dirtyPartListeners.add(whatToCheckListener);
 		dirtyPartListeners.add(howToRunListener);
+		
+		// add an empty ISelectionProvider; the default selection provider results in an infinite loop if the site
+		//		never gets another one set.
+		getSite().setSelectionProvider(new ISelectionProvider() {
+			@Override
+			public void addSelectionChangedListener(final ISelectionChangedListener listener) { }
+			@Override
+			public ISelection getSelection() {
+				return null;
+			}
+			@Override
+			public void removeSelectionChangedListener(final ISelectionChangedListener listener) { }
+			@Override
+			public void setSelection(final ISelection selection) { }
+		});
 	}
 
 	private void moveToTopOfDistributedOptionsStack(final String id, final boolean enableWorker,

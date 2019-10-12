@@ -45,7 +45,7 @@ import org.eclipse.ui.forms.widgets.TableWrapData;
 import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
-import org.lamport.tla.toolbox.tool.tlc.model.Model.Coverage;
+import org.lamport.tla.toolbox.tool.tlc.model.ModelCoverage;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
@@ -628,8 +628,8 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_collectCoverageCombo.setLabelProvider(new LabelProvider() {
 			@Override
 			public String getText(Object element) {
-				if (element instanceof Coverage) {
-					switch ((Coverage) element) {
+				if (element instanceof ModelCoverage) {
+					switch ((ModelCoverage) element) {
 					case OFF:
 						return "Off";
 					case ACTION:
@@ -641,7 +641,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				return "Off"; // make compiler happy 
 			}
         });
-        m_collectCoverageCombo.setInput(Model.Coverage.values());
+        m_collectCoverageCombo.setInput(ModelCoverage.values());
         
         
         b = HelpButton.helpButton(coverageComposite, "model/tlc-options-page.html#profiling") ;
@@ -986,8 +986,8 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 
         // Collect Coverage
 		final Object coverage = m_collectCoverageCombo.getStructuredSelection().getFirstElement();
-		if (coverage instanceof Coverage) {
-			model.setCoverage((Coverage) coverage);
+		if (coverage instanceof ModelCoverage) {
+			model.setCoverage((ModelCoverage) coverage);
 		}
        
         // view
@@ -1311,6 +1311,12 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 	public void close() throws IOException {
 		final int openTabState = getModel().getOpenTabsValue();
 		getModelEditor().updateOpenTabsState(openTabState & ~IModelConfigurationConstants.EDITOR_OPEN_TAB_ADVANCED_TLC);
+
+		final DataBindingManager dm = getDataBindingManager();
+		dm.unbindSectionAndAttribute(LAUNCH_MAX_HEAP_SIZE);
+		dm.unbindSectionAndAttribute(LAUNCH_NUMBER_OF_WORKERS);
+		dm.unbindSectionAndAttribute(LAUNCH_RECOVER);
+		dm.unbindSectionAndAttribute(MODEL_PARAMETER_VIEW);
 	}
     
     private String generateMemoryDisplayText () {

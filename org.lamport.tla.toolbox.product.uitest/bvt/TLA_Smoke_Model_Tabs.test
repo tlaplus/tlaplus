@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: __NXfoAPwEemwBd2liJ-qvA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/10/19, 9:48 AM
+Save-Time: 10/11/19, 12:03 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -53,15 +53,6 @@ try -command {
 	    get-section "Model Values" | click
 	    get-section "Definition Override" | click
 	    get-section "Action Constraint" | click
-	    get-tab-folder | get-tab-item "Model Checking Results" | click
-	}
-	with [get-editor "Model_1"] {
-	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
-	    with [get-section "General"] {
-	    	get-label "Awaiting first run..."
-	        verify-error {get-label "Not running"}
-	        verify-error {get-link "No errors"}
-	    }
 	}
 } -finally {
 	DeleteSpecNew
