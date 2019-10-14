@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _GbDfMAJNEemDc-4PKyNT9w
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:13 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/14/19, 12:57 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -22,23 +22,14 @@ Entry-Name: .content
 //Create Spec
 OpenTLACreateNew
 
+// This test should be renamed - there is no model content existing that could be invalid.
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-	    key-type Down
-	    type-text "EXTENDS Naturals"
-	    key-type Enter
-	    type-text "VARIABLE x y"
-	    key-type Enter -times 2
-	    type-text "Init == x = 1"
-	    key-type Enter -times 2
-	    type-text "Init == y = 5"
-	    key-type Enter -times 2
-	    type-text "Next == x' = x * 1"
-	    key-type "M1+s"
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x y\nInit == x = 1\n\nInit == y = 5\n\nNext == x' = x * 1\n\n=============================================================================\n"]
+		key-type "M1+s"
 	}
-    wait -ms 5000
-	get-view "Parsing Errors" | get-expand-bar | get-item -path "TLA\\+ Parser Error" | get-property caption 
-	    | equals "TLA+ Parser Error" | verify-true
+    wait -ms 1500
+	get-view $TLA-VIEW-PARSING-ERRORS | get-expand-bar | get-item -path "TLA\\+ Parser Error"
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
 	    set-caret-pos 1 1
 	    key-type Down -times 2
@@ -47,20 +38,11 @@ try -command {
 	    key-type BackSpace -times 2
 	    key-type Enter
 	}
-	// ldq: this never did anything (there was never a model made) - i have no idea why it's here
-	//		but i commmented out instead of nuking it.
-//	get-menu -path "TLC Model Checker/Run model" | click
-//	wait -ms 1000
-	get-label error | get-property caption | equals error | verify-true
+	get-label "error"
 } -finally {
-	get-view "Spec Explorer" | get-tree | select $TLA-TREE-NAME | get-menu -path Delete | click
-	get-window "Delete specification?" 
-	    | get-label "Do you really want the Toolbox to forget the specification new and delete all its models?" 
-	    | get-property caption 
-	    | equals "Do you really want the Toolbox to forget the specification new and delete all its models?" | verify-true
+	get-view $TLA-VIEW-SPEC-EXPLORER | get-tree | select $TLA-TREE-NAME | get-menu -path Delete | click
 	get-window "Delete specification?" | get-button Yes | click
-	get-window "Save Resource" | get-button "Don't Save" | get-property caption | equals "Do&n't Save" | verify-true
 	get-window "Save Resource" | get-button "Don't Save" | click
-	get-view "Spec Explorer" | get-tree | get-property itemCount | equals 0 | verify-true
+	get-view $TLA-VIEW-SPEC-EXPLORER | get-tree | get-property itemCount | equals 0 | verify-true
 }
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _LlgJkAL3EemtrbArmQOOJA
-Runtime-Version: 2.3.0.201806262310
-Save-Time: 12/18/18 11:00 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/14/19, 11:45 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -22,7 +22,7 @@ Entry-Name: .content
 
 get-menu -path "Window/Quick Access..." | click
 get-window -class TLAFilteredItemsSelectionDialog 
-    | get-label "Select an item to open (? = any character, * = any string):" | get-property caption 
-    | equals "&Select an item to open (? = any character, * = any string):" | verify-true
-get-window -class TLAFilteredItemsSelectionDialog | get-button Cancel | click
+    | get-label "Select an item to open (? = any character, * = any string):"
+get-window -class TLAFilteredItemsSelectionDialog | get-button $TLA-BUTTON-CANCEL | click
+
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

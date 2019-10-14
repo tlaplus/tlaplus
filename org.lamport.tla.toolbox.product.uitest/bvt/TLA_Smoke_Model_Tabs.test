@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: __NXfoAPwEemwBd2liJ-qvA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/11/19, 12:03 PM
+Save-Time: 10/14/19, 1:04 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -27,32 +27,21 @@ OpenTLACreateNew
 
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-	    key-type Down
-	    type-text "EXTENDS Naturals"
-	    key-type Enter
-	    type-text "VARIABLE x"
-	    key-type Enter -times 1
-	    type-text "Init == x = 999999999999999999999999999999999999999"
-	    key-type Enter -times 2
-	    type-text "Next == x' = x * 999999999999999999999999999999"
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 999999999999999999999999999999999999999\n\nNext == x' = x * 999999999999999999999999999999\n\n=============================================================================\n"]
 	    key-type "M1+s"
     }
     wait -ms 1000
 
-	get-menu -path "TLC Model Checker/New Model..." | click
-	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-	    | equals "Please input the name of the model to create" | verify-true
-	get-window "New model..." | get-button OK | click
-	with [get-editor "Model_1"] {
-		get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-		get-section "What is the model?" | click
-		get-link "Additional Spec Options" | click
-		get-label "Spec Options" | get-property caption | equals "Spec Options" | verify-true
-	    get-section "Additional Definitions" | click
-	    get-section "State Constraint" | click
-	    get-section "Model Values" | click
-	    get-section "Definition Override" | click
-	    get-section "Action Constraint" | click
+	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
+	with [get-editor $TLA-MODEL-ONE] {
+		get-section $TLA-MO-ED-OVERVIEW-SECTION-MODEL | click
+		get-link $TLA-MO-ED-OVERVIEW-LINK-SPEC | click
+	    get-section $TLA-MO-ED-ADDITIONAL-SECTION-AD | click
+	    get-section $TLA-MO-ED-ADDITIONAL-SECTION-SC | click
+	    get-section $TLA-MO-ED-ADDITIONAL-SECTION-MV | click
+	    get-section $TLA-MO-ED-ADDITIONAL-SECTION-DO | click
+	    get-section $TLA-MO-ED-ADDITIONAL-SECTION-AC | click
 	}
 } -finally {
 	DeleteSpecNew

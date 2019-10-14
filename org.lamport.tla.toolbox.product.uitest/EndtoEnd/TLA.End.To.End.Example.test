@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _0133MAldEem_kewt0eDFQIQ
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/11/19, 9:14 AM
+Save-Time: 10/14/19, 1:21 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -16,12 +16,12 @@ Entry-Name: .content
 try -command {
 	// Create new spec from build-in example.
 	get-view "Welcome View" | get-button "Missionaries and Cannibals(TLA+)" | click
-	get-window -class WizardDialog | get-button Finish | click
-	get-view "Spec Explorer" | get-tree | select "MissionariesAndCannibals \\[ MissionariesAndCannibals.tla \\]/model" +
-		"s/Model_1" | double-click
+	get-window -class WizardDialog | get-button $TLA-BUTTON-FINISH | click
+	get-view $TLA-VIEW-SPEC-EXPLORER | get-tree 
+		| select "MissionariesAndCannibals \\[ MissionariesAndCannibals.tla \\]/models/Model_1" | double-click
 
 	// Run model checking.
-	get-editor Model_1 | get-button "Runs TLC on the model." | click
+	get-editor $TLA-MODEL-ONE | get-button $TLA-BUTTON-RUN-TLC | click
 
 	// wait for model checking to finish.
 	wait-run
@@ -31,8 +31,8 @@ try -command {
 	get-menu -path "File/Open Module/Add TLA+ Module..." | click
 	// Note - the test will fail here if you're working via RCPTT locally and you've downloaded
 	//	the M&C spec previously without cleaning out your workspace directory.
-	get-window "TLA+ Module is not found" | get-button Yes | click
-	with [get-editor TExpression | get-text-viewer] {
+	get-window "TLA+ Module is not found" | get-button "Yes" | click
+	with [get-editor "TExpression" | get-text-viewer] {
 		set-caret-pos 2 1
 		type-text "EXTENDS Toolbox"
 		key-type Enter -times 1
@@ -41,35 +41,38 @@ try -command {
 	}
 	get-menu -path "File/Parse Module" | click
 
-	// validate the error trace.
-	get-view "TLC Errors" | get-section "Error-Trace" | get-button "Toggle between expand and collapse all (Shift+Cli" +
-		"ck to restore the default two-level expansion)" | click
-	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-property itemCount | equals 12 | verify-true
-
-	// Expand the Error-Trace Exploration section if collapsed.
-	if [get-view "TLC Errors" | get-section "Error-Trace Exploration" | get-property "isExpanded()" -raw | not] {
-		get-view "TLC Errors" | get-section "Error-Trace Exploration" | click
+	// validate the error trace
+	with [get-view $TLA-VIEW-TLC-ERRORS] {
+		with [get-section $TLA-MO-ED-TLCERRORS-SECTION-ET] {
+			get-button "Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)" | click
+			get-tree | get-property itemCount | equals 12 | verify-true
+		}
+	
+		with [get-section $TLA-MO-ED-TLCERRORS-SECTION-ETE] {
+			// Expand the Error-Trace Exploration section if collapsed.
+			if [get-property "isExpanded()" -raw | not] {
+				click
+			}
+		
+			get-button "Extend extra modules in trace expressions which are not extended by the actual spec." | click
+		}
 	}
-
-	// 
-	get-view "TLC Errors" | get-section "Error-Trace Exploration" | get-button "Extend extra modules in trace express" +
-		"ions which are not extended by the actual spec." | click
 	with [get-window "Extra Modules"] {
 		with [get-table] {
-			select Randomization | get-item -path Randomization | check
-			select TExpression | get-item -path TExpression | check
+			select "Randomization" | get-item -path "Randomization" | check
+			select "TExpression" | get-item -path "TExpression" | check
 		}
-		get-button OK | click
+		get-button $TLA-BUTTON-OK | click
 	}
 	
 	// Insert new trace explorer expression.
-	get-view "TLC Errors" | get-section "Error-Trace Exploration" | get-button Add | click
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ETE | get-button $TLA-BUTTON-ADD | click
 	try -command {
 		with [get-window -class WizardDialog] {
 			with [get-text-viewer] {
 				type-text "selfRef == RandomSubset(1, {1})"
 			}
-			get-button Finish | click
+			get-button $TLA-BUTTON-FINISH | click
 		}
 	} -catch {
 		// This probably means that the section is collapsed instead of expanded.
@@ -78,13 +81,13 @@ try -command {
 	}	
 
 	// // Insert new trace explorer expression.
-	get-view "TLC Errors" | get-section "Error-Trace Exploration" | get-button Add | click
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ETE | get-button $TLA-BUTTON-ADD | click
 	try -command {
 		with [get-window -class WizardDialog] {
 			with [get-text-viewer] {
-				type-text tExpression
+				type-text "tExpression"
 			}
-			get-button Finish | click
+			get-button $TLA-BUTTON-FINISH | click
 		}
 	} -catch {
 		// This probably means that the section is collapsed instead of expanded.
@@ -93,33 +96,37 @@ try -command {
 	}
 
 	// Run trace exploration.
-	get-view "TLC Errors" | get-section "Error-Trace Exploration" | get-button Explore | click
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ETE | get-button $TLA-BUTTON-EXPLORE | click
 
 	wait-te
 
     // Export trace to clipboard before the validation below sets a selection
-	with [get-view "TLC Errors" | get-section "Error-Trace"] {
+	with [get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET] {
 	    get-button "Click to export error-trace to clipboard assequence of records. Shift-click to omit the action's position (_TEPosition), name, and location." 
 	        | click
+	        
+		// Validate error trace exploration
+		get-tree | get-cell 5 1 | click
+		get-text-viewer | get-property text | contains "[bank_of_boat |->" | verify-true
 	}
 
 	// Validate error trace exploration
-	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-cell 5 1 | click
-	get-view "TLC Errors" | get-section "Error-Trace" | get-text-viewer | get-property text
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET | get-tree | get-cell 5 1 | click
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET | get-text-viewer | get-property text
 		| contains "[bank_of_boat |->" | verify-true
 	
 	// Paste exported trace into ECE and verify it is valid TLA+
-	with [get-editor "Model_1"] {
+	with [get-editor $TLA-MODEL-ONE] {
 	    click
-	    with [get-section "Evaluate Constant Expression"] {
+	    with [get-section $TLA-MO-ED-RESULTS-SECTION-ECE] {
 	        with [get-text-viewer] {
 	            key-type "M1+v"
 	            type-text "[2]._TEAction.name"
 	        }
 	        get-button "No Behavior Spec" | check
 	    }
-	    get-button "Runs TLC on the model." | click
-	    with [get-section "Evaluate Constant Expression"] {
+	    get-button $TLA-BUTTON-RUN-TLC | click
+	    with [get-section $TLA-MO-ED-RESULTS-SECTION-ECE] {
 	        get-text-viewer "Value:" | get-property text | contains "Next" | verify-true
 	    }
 	}

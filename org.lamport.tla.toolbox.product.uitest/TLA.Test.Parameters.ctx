@@ -5,31 +5,79 @@ Element-Name: TLA.Test.Parameters
 Element-Type: context
 Element-Version: 2.0
 Id: _zmZVMP5NEeilFekyyVb9lA
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 5/7/19, 10:32 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/14/19, 11:45 AM
 
 ------=_.parameters.context-2e023de5-3294-36a9-ac1d-6701f05a40ee
 Content-Type: text/properties
 Entry-Name: .parameters.context
 
-#Tue May 07 10:32:12 PDT 2019
+#Mon Oct 14 11:45:07 PDT 2019
 TLA-Long-Model-Name=thisisaverylongnameforamodel
-TLA-File=new.tla
-TLA-TREE-NAME=new [ new.tla ]
-TLA-TREE-NAME-LONG=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz [ zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.tla ]
-TLA-BAD-DIR=C\:\\foo
-TLA-MODEL-TEN=new [ new.tla ]/models/Model_10
-TLA-File-Long=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.tla
+TLA-MO-ED-TLC-SECTION-CM=Checking Mode
+TLA-MO-ED-TLC-SECTION-PARAM=Parameters
+TLA-BUTTON-EDIT=Edit
 TLA-ADDITIONAL-MODULE-NAME=other
-TLA-MODEL-NEW=new [ new.tla ]/modules/new
-TLA-TREE-NAME-RENAME=new_Copy [ new.tla ]
-TLA-NEW-FILE-RENAME=new_Copy
 TLA-MODEL-ONE=Model_1
 TLA-BADFile=QQQ
-Model-TEST-Name=foo
-TLA-MODEL-ONE-TREE=new [ new.tla ]/models/Model_1
-TLA-MODEL-TREE-NAME=new [ new.tla ]/models
-TLA-ADDITIONAL-MODULE-NAME-FILE=other.tla
+TLA-MO-ED-OVERVIEW-SECTION-CHECK-INV=Invariants
+TLA-MO-ED-ADDITIONAL-SECTION-DO=Definition Override
+TLA-BUTTON-CANCEL=Cancel
+TLA-MO-ED-TLCERRORS-SECTION-ET=Error-Trace
+TLA-BUTTON-EXPLORE=Explore
 TLA-SPEC-NAME=new
+TLA-MO-ED-OVERVIEW-LINK-TLC=Additional TLC Options
+TLA-MODEL-EDITOR-TAB-OVERVIEW=Model Overview
+TLA-MO-ED-OVERVIEW-SECTION-DESCRIPTION=Model description
+TLA-BUTTON-MODEL-CHECK=Checks the model for errors but does not run TLC on it.
+TLA-TREE-NAME-LONG=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz [ zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.tla ]
+TLA-MO-ED-ADDITIONAL-SECTION-AD=Additional Definitions
+TLA-VIEW-PARSING-ERRORS=Parsing Errors
+TLA-MO-ED-TLC-SECTION-CONF=Configuration
+TLA-MO-ED-ADDITIONAL-SECTION-AC=Action Constraint
+TLA-BUTTON-ADD=Add
+TLA-MO-ED-OVERVIEW-SECTION-CHECK-PROP=Properties
+TLA-BUTTON-OK=OK
+TLA-BUTTON-CANCEL-TLC=Stops the current TLC model checker run.
+TLA-MO-ED-ADDITIONAL-SECTION-MV=Model Values
+TLA-MO-ED-TLCERRORS-SECTION-ETE=Error-Trace Exploration
+TLA-MO-ED-OVERVIEW-SECTION-SPEC=What is the behavior spec?
+TLA-MODEL-ONE-TREE=new [ new.tla ]/models/Model_1
+TLA-ADDITIONAL-MODULE-NAME-FILE=other.tla
+TLA-MO-ED-RESULTS-SECTION-PO=Progress Output
+TLA-MO-ED-RESULTS-SECTION-STATS=Statistics
+TLA-MENU-PATH-FILE-SPEC-EXPLORER=File/Spec Explorer
+TLA-MO-ED-RESULTS-SECTION-ECE=Evaluate Constant Expression
+TLA-MENU-PATH-WINDOW-SPEC-EXPLORER=Window/Spec Explorer
+TLA-MODEL-EDITOR-TAB-RESULTS=Model Checking Results
+TLA-MODEL-EDITOR-TAB-ADDITIONAL=Spec Options
+TLA-MODEL-TEN=new [ new.tla ]/models/Model_10
+TLA-File-Long=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.tla
+TLA-MODEL-NEW=new [ new.tla ]/modules/new
+TLA-MO-ED-OVERVIEW-SECTION-RUN=How to run?
+TLA-BUTTON-REMOVE=Remove
+Model-TEST-Name=foo
+TLA-MO-ED-ADDITIONAL-SECTION-SC=State Constraint
+TLA-VIEW-SPEC-EXPLORER=Spec Explorer
+TLA-MO-ED-RESULTS-SECTION-UO=User Output
+TLA-MENU-PATH-NEW-MODEL=TLC Model Checker/New Model...
+TLA-VIEW-TLC-ERRORS=TLC Errors
+TLA-MO-ED-OVERVIEW-SECTION-CHECK=What to check?
+TLA-MO-ED-TLC-SECTION-FEATURES=Features
+TLA-File=new.tla
+TLA-TREE-NAME=new [ new.tla ]
+TLA-MODEL-EDITOR-TAB-TLC-OPTIONS=TLC Options
+TLA-BAD-DIR=C\:\\foo
+TLA-BUTTON-DEADLOCK=Deadlock
+TLA-MO-ED-OVERVIEW-SECTION-MODEL=What is the model?
+TLA-MO-ED-RESULTS-SECTION-GENERAL=General
+TLA-TREE-NAME-RENAME=new_Copy [ new.tla ]
+TLA-NEW-FILE-RENAME=new_Copy
+TLA-DIALOG-TITLE-NEW-MODEL=New model...
+TLA-MO-ED-OVERVIEW-LINK-ECE=Evaluate Constant Expressions
+TLA-BUTTON-FINISH=Finish
+TLA-MODEL-TREE-NAME=new [ new.tla ]/models
+TLA-BUTTON-RUN-TLC=Runs TLC on the model.
+TLA-MO-ED-OVERVIEW-LINK-SPEC=Additional Spec Options
 
 ------=_.parameters.context-2e023de5-3294-36a9-ac1d-6701f05a40ee--

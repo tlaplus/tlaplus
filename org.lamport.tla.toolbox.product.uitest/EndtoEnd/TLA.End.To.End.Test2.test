@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _0133MAldEem_pLt0eVfQIQ
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/10/19, 8:59 AM
+Save-Time: 10/14/19, 1:31 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -45,86 +45,72 @@ OpenTLACreateNew
 
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-	    key-type Down
-	    type-text "EXTENDS Naturals"
-	    key-type Enter
-	    type-text "VARIABLE x"
-	    key-type Enter -times 1
-	    type-text "Init == x = 0"
-	    key-type Enter -times 2
-	    type-text "Next == x' = x + 1"
-	    key-type Enter -times 1
-	    type-text "Spec == Init /\ [][Next]_x"
-	    key-type Enter -times 1
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 0\n\nNext == x' = x + 1\nSpec == Init /\ [][Next]_x\n=============================================================================\n"]
 	    key-type "M1+s"
     }
     
-	    get-menu -path "TLC Model Checker/New Model..." | click
-	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-	    | equals "Please input the name of the model to create" | verify-true
-	get-window "New model..." | get-button OK | click
-	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-	with [get-editor "Model_1" | get-section "What to check?"] {
-	    get-button "Deadlock" | uncheck
-	    with [get-section "Invariants"] {
+    get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
+	with [get-editor $TLA-MODEL-ONE | get-section $TLA-MO-ED-OVERVIEW-SECTION-CHECK] {
+	    get-button $TLA-BUTTON-DEADLOCK | uncheck
+	    with [get-section $TLA-MO-ED-OVERVIEW-SECTION-CHECK-INV] {
 	        click
-	        get-button "Add" | click
+	        get-button $TLA-BUTTON-ADD | click
 	    }
 	}
 	with [get-window -class WizardDialog] {
 	    get-text-viewer | type-text "x<10"
-	    get-button "Finish" | click
+	    get-button $TLA-BUTTON-FINISH | click
 	}
-	get-editor "Model_1" | get-link "Additional TLC Options" | click
+	get-editor $TLA-MODEL-ONE | get-link $TLA-MO-ED-OVERVIEW-LINK-TLC | click
     get-editbox -after [get-label "Number of worker threads:"] | set-text 2
-	get-editor "Model_1" | get-button "Runs TLC on the model." | click
+	get-editor $TLA-MODEL-ONE | get-button $TLA-BUTTON-RUN-TLC | click
 
 	wait-run      
     
-	get-view "TLC Errors" | get-section "Error-Trace" 
-	    | get-button "Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)" 
-	    | click
-	get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-property itemCount | equals 11 | verify-true
-	with [get-view "TLC Errors" | get-section "Error-Trace Exploration"] {
-	    get-button "Add" | click
-	}
+    with [get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET] {
+    	get-button "Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)" 
+	    	| click
+	    get-tree | get-property itemCount | equals 11 | verify-true
+    }
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ETE | get-button $TLA-BUTTON-ADD | click
+
 	with [get-window -class WizardDialog] {
 	    get-text-viewer | type-text "x \\in Nat"
-	    wait -ms 1000   
-	    get-button "Finish" | click
+	    get-button $TLA-BUTTON-FINISH | click
 	}
-	get-view "TLC Errors" | get-section "Error-Trace Exploration" | get-button "Explore" | click
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ETE | get-button $TLA-BUTTON-EXPLORE | click
 	    
-	wait-run         
-//wait -ms 30000
-//get-view "TLC Errors" | get-section "Error-Trace" | get-tree | get-item -path " <Initial predicate>/x \\in Nat" 
+	wait-run
+
+//get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET | get-tree | get-item -path " <Initial predicate>/x \\in Nat" 
   //  | get-property caption | equals "x \\in Nat" | verify-true
-	with [get-editor "Model_1"] {
-	    get-section "User Output" | click
+	with [get-editor $TLA-MODEL-ONE] {
+	    get-section $TLA-MO-ED-RESULTS-SECTION-UO | click
 	    with [get-tab-folder] {
-	        get-tab-item "Model Overview" | click
-	        get-tab-item "Model Checking Results" | click
-	        get-tab-item "Model Overview" | click
+	        get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+	        get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
+	        get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
 	    }
-	    with [get-section "What to check?" | get-section Properties] {
+	    with [get-section $TLA-MO-ED-OVERVIEW-SECTION-CHECK | get-section $TLA-MO-ED-OVERVIEW-SECTION-CHECK-PROP] {
 	        click
-	        get-button "Add" | click
+	        get-button $TLA-BUTTON-ADD | click
 	    }
 	}
 	with [get-window -class WizardDialog] {
 	    get-text-viewer | type-text "<>[](x - 10)"
-	    get-button "Finish" | click
+	    get-button $TLA-BUTTON-FINISH | click
 	}
-	get-editor "Model_1" | get-button "Runs TLC on the model." | click
+	get-editor $TLA-MODEL-ONE | get-button $TLA-BUTTON-RUN-TLC | click
 	
 	wait-run        
 
-	with [get-view "TLC Errors" | get-text-viewer] {
+	with [get-view $TLA-VIEW-TLC-ERRORS | get-text-viewer] {
 	    get-property enablement | equals true | verify-true
 	    get-property "getBlockSelectionBounds().isEmpty()" | equals false | verify-true
 	}
 	
-	get-view "TLC Errors" | get-section "Error-Trace" 
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET 
 	    | get-button "Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)" 
 	    | click
 } -finally {

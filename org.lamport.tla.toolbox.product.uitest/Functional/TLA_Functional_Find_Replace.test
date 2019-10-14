@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _uAilEAPhEemwBd2liJ-qvA
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 11:52 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/14/19, 1:07 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -14,52 +14,43 @@ Content-Type: text/ecl
 Entry-Name: .content
 
 OpenTLACreateNew
+
 try -command {
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 1\n\nNext == x' = x * 1\n\n=============================================================================\n"]
+	    key-type "M1+s"
+	}
 
-
-with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "Init == x = 1"
-    key-type Enter -times 2
-    type-text "Next == x' = x * 1"
-     key-type "M1+s"
-    }
-    wait -ms 1000
-get-menu -path "TLC Model Checker/TLC Console" | click
-with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-    set-caret-pos 4 7
-    hover-text 4 1
-    set-caret-pos 4 1
-}
-get-menu -path "Edit/Content Assist" | click
-get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table | select "\\n"
-    + "eg: \\n"
-    + "eg"
-get-editor $TLA-SPEC-NAME | get-text-viewer | set-caret-pos 7 1
-get-menu -path "Edit/Content Assist" | click
-get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table | select "ACTION : ACTION "
-with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-    set-caret-pos 4 10
-    select-range 4 9 4 10
-    hover-text 4 9 -with Left
-}
-get-menu -path "Edit/Find and Replace" | click
-with [get-window "Find/Replace"] {
-    get-combo -after [get-label "Replace with:"] | set-text y
-    get-button "Replace All" | click
-    get-button Close | click
-
+	get-menu -path "TLC Model Checker/TLC Console" | click
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
+	    set-caret-pos 4 7
+	    hover-text 4 1
+	    set-caret-pos 4 1
+	}
+	get-menu -path "Edit/Content Assist" | click
+	get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table | select "\\n"
+	    + "eg: \\n"
+	    + "eg"
+	get-editor $TLA-SPEC-NAME | get-text-viewer | set-caret-pos 7 1
+	get-menu -path "Edit/Content Assist" | click
+	get-window -from "CompletionProposalPopup.createProposalSelector()" | get-table | select "ACTION : ACTION "
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
+	    set-caret-pos 4 10
+	    select-range 4 9 4 10
+	    hover-text 4 9 -with Left
+	}
+	get-menu -path "Edit/Find and Replace" | click
+	with [get-window "Find/Replace"] {
+	    get-combo -after [get-label "Replace with:"] | set-text y
+	    get-button "Replace All" | click
+	    get-button "Close" | click
+	
+	}
+	
+	get-menu -path "File/Parse Spec" | click
+	get-window "Modified resources" | get-button $TLA-BUTTON-OK | click
+} -finally {
+	DeleteSpecNew
 }
 
-
-get-menu -path "File/Parse Spec" | click
-get-window "Modified resources" | get-button OK | click
-
-} -finally
-//Delete Spec
-{DeleteSpecNew}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

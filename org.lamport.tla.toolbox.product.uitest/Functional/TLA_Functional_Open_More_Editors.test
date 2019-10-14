@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _5O_HkgPuEemwBd2liJ-qvA
-Runtime-Version: 2.4.2.201905122359
-Save-Time: 7/13/19, 9:42 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/14/19, 1:10 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -25,46 +25,30 @@ Entry-Name: .content
 OpenTLACreateNew
 
 try -command {
-with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-    key-type Down
-    type-text "EXTENDS Naturals"
-    key-type Enter
-    type-text "VARIABLE x"
-    key-type Enter -times 1
-    type-text "Init == x = 0"
-    key-type Enter -times 2
-    type-text "Next == x' = x - 1"
-     key-type "M1+s"
+	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 0\n\nNext == x' = x - 1\n=============================================================================\n"]
+	    key-type "M1+s"
     }
-
-
-get-menu -path "TLC Model Checker/New Model..." | click
-get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-    | equals "Please input the name of the model to create" | verify-true
-with [get-window "New model..."] {
-    get-editbox -after [get-label "Please input the name of the model to create"] | set-text saved
-    get-button OK | click
+	
+	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	with [get-window $TLA-DIALOG-TITLE-NEW-MODEL] {
+	    get-editbox -after [get-label "Please input the name of the model to create"] | set-text "saved"
+	    get-button $TLA-BUTTON-OK | click
+	}
+	
+	wait -ms 1000
+	
+	get-menu -path "Window/New Editor..." | click
+	get-menu -path "Window/Quick Access..." | click
+	get-window -class TLAFilteredItemsSelectionDialog | get-table | select "saved"
+	get-window -class TLAFilteredItemsSelectionDialog | get-label "Select an item to open (? = any character, * = any string):"
+	get-window -class TLAFilteredItemsSelectionDialog | get-button $TLA-BUTTON-OK | click
+	get-menu -path "Window/Reset Window Layout" | click
+	get-window "Reset Perspective" | get-label "Do you want to reset the current Specification perspective to its defaults?"
+	    
+	get-window "Reset Perspective" | get-button [ get-by-os -default "Reset Perspective" ] | click
+} -finally {
+	DeleteSpecNew
 }
 
-wait -ms 1000
-
-get-menu -path "Window/New Editor..." | click
-get-menu -path "Window/Quick Access..." | click
-get-window -class TLAFilteredItemsSelectionDialog | get-table | select saved
-get-window -class TLAFilteredItemsSelectionDialog 
-    | get-label "Select an item to open (? = any character, * = any string):" | get-property caption 
-    | equals "&Select an item to open (? = any character, * = any string):" | verify-true
-get-window -class TLAFilteredItemsSelectionDialog | get-button OK | click
-get-menu -path "Window/Reset Window Layout" | click
-get-window "Reset Perspective" 
-    | get-label "Do you want to reset the current Specification perspective to its defaults?" | get-property caption 
-    | equals "Do you want to reset the current Specification perspective to its defaults?" | verify-true
-    
-
-get-window "Reset Perspective" | get-button [ get-by-os -default "Reset Perspective" ] | click
-
-
-} -finally
-//Delete Spec
-{DeleteSpecNew}
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

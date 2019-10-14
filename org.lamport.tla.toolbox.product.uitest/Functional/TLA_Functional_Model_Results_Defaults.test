@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _s4DEYBXnEemrGZBXFuwIoA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/11/19, 4:03 PM
+Save-Time: 10/14/19, 1:09 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -25,46 +25,34 @@ OpenTLACreateNew
 
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-	    key-type Down
-	    type-text "EXTENDS Naturals"
-	    key-type Enter
-	    type-text "VARIABLE x"
-	    key-type Enter -times 1
-	    type-text "Init == x = 1"
-	    key-type Enter -times 2
-	    type-text "Next == x' = x * 2"
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 1\n\nNext == x' = x * 2\n=============================================================================\n"]
 	    key-type "M1+s"
 	}
 	wait -ms 500
 	get-menu -path "TLC Model Checker/Run model" | get-property enablement | equals false | verify-true
-	get-menu -path "TLC Model Checker/New Model..." | click
-	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-	    | equals "Please input the name of the model to create" | verify-true
-	get-window "New model..." | get-button OK | click
+	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
 
-	with [get-editor "Model_1"] {
-		get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
+	with [get-editor $TLA-MODEL-ONE] {
+	    get-section $TLA-MO-ED-OVERVIEW-SECTION-DESCRIPTION | get-text-viewer | type-text "this is a test"
 
-	    get-section "Model description" | get-text-viewer | type-text "this is a test"
-
-		get-link "Evaluate Constant Expressions" | click
-	    get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
-	    with [get-section General] {
+		get-link $TLA-MO-ED-OVERVIEW-LINK-ECE | click
+	    with [get-section $TLA-MO-ED-RESULTS-SECTION-GENERAL] {
 	    	get-label "Awaiting first run..."
 	        verify-error {get-label "Not running"}
 	        verify-error {get-link "No errors"}
 	    }
-	    get-section "Statistics" | get-editbox -after [get-label "Sub-actions of next-state"] | get-property text | equals "" | verify-true
-	    get-section "Evaluate Constant Expression" | get-editbox -after [get-label "Expression:"] | get-property text 
+	    get-section $TLA-MO-ED-RESULTS-SECTION-STATS | get-editbox -after [get-label "Sub-actions of next-state"] | get-property text | equals "" | verify-true
+	    get-section $TLA-MO-ED-RESULTS-SECTION-ECE | get-editbox -after [get-label "Expression:"] | get-property text 
 	        | equals "" | verify-true
-	    get-section "User Output" | get-text-viewer | get-property text | equals "No output is available" | verify-true
-	    get-section "Progress Output" | get-text-viewer | get-property text | equals "No output is available" | verify-true
-	    get-section "Statistics" | click
-	    get-section "Evaluate Constant Expression" | click
-	    get-section "User Output" | click
-	    get-section "General" | click
-	    get-section "Progress Output" | click
-	    get-button "Checks the model for errors but does not run TLC on it." | click
+	    get-section $TLA-MO-ED-RESULTS-SECTION-UO | get-text-viewer | get-property text | equals "No output is available" | verify-true
+	    get-section $TLA-MO-ED-RESULTS-SECTION-PO | get-text-viewer | get-property text | equals "No output is available" | verify-true
+	    get-section $TLA-MO-ED-RESULTS-SECTION-STATS | click
+	    get-section $TLA-MO-ED-RESULTS-SECTION-ECE | click
+	    get-section $TLA-MO-ED-RESULTS-SECTION-UO | click
+	    get-section $TLA-MO-ED-RESULTS-SECTION-GENERAL | click
+	    get-section $TLA-MO-ED-RESULTS-SECTION-PO | click
+	    get-button $TLA-BUTTON-MODEL-CHECK | click
 	}
 } -finally {
 	DeleteSpecNew

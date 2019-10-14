@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _BbLbgO0TEemu8qbF8JrHog
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/12/19, 4:06 PM
+Save-Time: 10/14/19, 11:30 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -22,39 +22,39 @@ try -command {
 		key-type "M1+s"
 	}
 
-	get-menu -path "TLC Model Checker/New Model..." | click
-	get-window "New model..." | get-button "OK" | click
+	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
 
 	with [get-editor $TLA-MODEL-ONE] {
-		with [get-section "What is the behavior spec?"] {
+		with [get-section $TLA-MO-ED-OVERVIEW-SECTION-SPEC] {
 			get-combo | select "Temporal formula"
 			get-text-viewer | set-text "LSpec"
 		}
-	    with [get-section "What is the model?"] {
+	    with [get-section $TLA-MO-ED-OVERVIEW-SECTION-MODEL] {
 	        get-table | select "Proc <- "
-	        get-button "Edit" | click
+	        get-button $TLA-BUTTON-EDIT | click
         	with [get-window -class WizardDialog] {
 			    get-text-viewer | type-text "{ p1, p2, p3 }"
 			    get-button "Set of model values" | click
-			    get-button Finish | click
+			    get-button $TLA-BUTTON-FINISH | click
 			}
 	    }
-	    with [get-section "What to check?"] {
-	        get-button "Deadlock" | check
-	        with [get-section "Invariants"] {
+	    with [get-section $TLA-MO-ED-OVERVIEW-SECTION-CHECK] {
+	        get-button $TLA-BUTTON-DEADLOCK | check
+	        with [get-section $TLA-MO-ED-OVERVIEW-SECTION-CHECK-INV] {
 	        	click
-	        	get-button "Add" | click
+	        	get-button $TLA-BUTTON-ADD | click
 	        	with [get-window -class WizardDialog] {
 				    get-text-viewer | type-text "MutualExclusion"
-				    get-button Finish | click
+				    get-button $TLA-BUTTON-FINISH | click
 				}
 	        }
-	        with [get-section "Properties"] {
+	        with [get-section $TLA-MO-ED-OVERVIEW-SECTION-CHECK-PROP] {
 	        	click
-	        	get-button "Add" | click
+	        	get-button $TLA-BUTTON-ADD | click
 	        	with [get-window -class WizardDialog] {
 				    get-text-viewer | type-text "DeadlockFreedom"
-				    get-button Finish | click
+				    get-button $TLA-BUTTON-FINISH | click
 				}
 	        }
 	    }
@@ -67,7 +67,7 @@ try -command {
 	// I tried all manners of niceness to get the tree items by using basic ECL all to no avail, so now
 	//		i'm doing this hacky invoking of Java methods.
 	// This specific item is testing for regressions like the one behind Issue 372.
-	with [get-view "TLC Errors" | get-section "Error-Trace" | get-tree] {
+	with [get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET | get-tree] {
 		let [val stateOneP1Val [get-object | invoke getItem 1 | invoke getItem 3 | invoke getItem 0 | invoke getText 1 | str]] {
 			let [val stateTwoP1Val [get-object | invoke getItem 2 | invoke getItem 3 | invoke getItem 0 | invoke getText 1 | str]] {
 				concat $stateOneP1Val | equals $stateTwoP1Val | verify-false

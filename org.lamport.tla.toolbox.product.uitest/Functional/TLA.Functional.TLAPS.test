@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _RifTcLZDEemcF9BXFSE9ew
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/3/19, 1:24 PM
+Save-Time: 10/14/19, 12:56 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -20,14 +20,7 @@ let [val shouldRunTest [get-by-os -macosx "no" -default "yes"]] {
 		let [val isWindows [get-by-os -win "yes" -default "no"]] {
 			try -command {
 				with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-				    key-type Down
-				    type-text "EXTENDS Naturals"
-				    key-type Enter
-				    type-text "VARIABLE x"
-				    key-type Enter -times 1
-				    type-text "Init == x = 3"
-				    key-type Enter -times 2
-				    type-text "Next == x' = x ^ 1"
+					set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 3\n\nNext == x' = x ^ 1\n=============================================================================\n"]
 				    key-type "M1+s"
 				    
 				    mouse down -button Right | get-menu -path "TLA Proof Manager/Launch Prover..." | is-disabled | verify-true

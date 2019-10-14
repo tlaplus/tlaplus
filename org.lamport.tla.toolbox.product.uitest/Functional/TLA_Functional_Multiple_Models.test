@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _3CVCoAMFEemtrbArmQOOJA
-Runtime-Version: 2.4.2.201905122359
-Save-Time: 7/13/19, 9:33 PM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/14/19, 11:58 AM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -25,32 +25,23 @@ Entry-Name: .content
 //Create Spec
 OpenTLACreateNew
 
-//try -command {
 //Create 10 Models
 CreateTenNewModels
 wait -ms 200
-  
-  
-get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" | verify-true
+    
 get-menu -path "File/Parse Spec" | click
 get-menu -path "File/Parse Module" | click
 
-  
-
-get-view "Spec Explorer" | get-tree | select $TLA-TREE-NAME | get-menu -path Delete | click
+get-view $TLA-VIEW-SPEC-EXPLORER | get-tree | select $TLA-TREE-NAME | get-menu -path "Delete" | click
 get-window "Delete specification?" 
     | get-label "Do you really want the Toolbox to forget the specification new and delete all its models?" 
     | get-property className | equals "org.eclipse.swt.widgets.Label" | verify-true
-get-window "Delete specification?" | get-button Yes | click
+get-window "Delete specification?" | get-button "Yes" | click
 with [get-window "Save Resources" | get-button "Select All"] {
     get-property enablement | equals true | verify-true
-    get-property caption | equals "&Select All" | verify-true
 }
 get-window "Save Resources" | get-button [ get-by-os -default "Save Selected" ] | click
 
 wait -ms 2000
-
-
-
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac--

@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _ARWUAAJjEemDc-4PKyNT9w
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 6/30/19, 8:38 AM
+Save-Time: 10/14/19, 1:06 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -18,37 +18,26 @@ OpenTLACreateNew
 
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-	    key-type Down
-	    type-text "EXTENDS Naturals"
-	    key-type Enter
-	    type-text "VARIABLE x"
-	    key-type Enter -times 1
-	    type-text "Init == x = 0"
-	    key-type Enter -times 2
-	    type-text "Next == x' = x - 1"
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 1\n\nNext == x' = x - 1\n=============================================================================\n"]
 	    key-type "M1+s"
     }
     
-	get-menu -path "TLC Model Checker/New Model..." | click
-	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-	    | equals "Please input the name of the model to create" | verify-true
-	get-window "New model..." | get-button "OK" | click
-	get-editor "Model_1" | get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-	get-editor "Model_1" | get-button "Runs TLC on the model." | click
-	get-editor "Model_1" | get-button "Stops the current TLC model checker run." | click
+	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
+	with [get-editor $TLA-MODEL-ONE] {
+		get-button $TLA-BUTTON-RUN-TLC | click
+		get-button $TLA-BUTTON-CANCEL-TLC | click
+	}
 	
 	wait-run    
 	
-	get-editor "Model_1" | get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" 
-	    | verify-true
-	get-menu -path "TLC Model Checker/Clone Model/Model_1" | click
-	get-window "Clone model..." | get-label "Please input the new name of the model" | get-property caption 
-	    | equals "Please input the new name of the model" | verify-true
-	get-window "Clone model..." | get-button "OK" | click
+	get-menu -path [concat "TLC Model Checker/Clone Model/" $TLA-MODEL-ONE] | click
+	get-window "Clone model..." | get-label "Please input the new name of the model"
+	get-window "Clone model..." | get-button $TLA-BUTTON-OK | click
 	
 	let [val descriptionText "Some description text."] {
 		with [get-editor "Model_2"] {
-		    with [get-section "Model description"] {
+		    with [get-section $TLA-MO-ED-OVERVIEW-SECTION-DESCRIPTION] {
 		        click
 		    	with [get-text-viewer] {
 		    		type-text $descriptionText
@@ -56,7 +45,7 @@ try -command {
 		    	}
 		        click
 		    }
-		    get-tab-folder | get-tab-item "Model Checking Results" | click
+		    get-tab-folder | get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
 		}
 		
 		CreateNewSpec "another.tla"
@@ -64,18 +53,17 @@ try -command {
 		with [get-window "Please choose a spec and a model"] {
 			get-list | select $TLA-SPEC-NAME
 			get-list -index 1 | select "Model_2"
-			get-button "OK" | click
+			get-button $TLA-BUTTON-OK | click
 		}
-		get-window "Clone model..." | get-label "Please input the new name of the model" | get-property caption 
-		    | equals "Please input the new name of the model" | verify-true
-		get-window "Clone model..." | get-button "OK" | click
+		get-window "Clone model..." | get-label "Please input the new name of the model"
+		get-window "Clone model..." | get-button $TLA-BUTTON-OK | click
 		with [get-editor "Model_2"] {
-		    get-tab-folder | get-tab-item "Model Overview" | click
-		    with [get-section "Model description"] {
+		    get-tab-folder | get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+		    with [get-section $TLA-MO-ED-OVERVIEW-SECTION-DESCRIPTION] {
 		        get-text-viewer | get-text | equals $descriptionText | verify-true
 		        click
 		    }
-		    get-tab-folder | get-tab-item "Model Checking Results" | click
+		    get-tab-folder | get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
 		}
 		get-menu -path "File/Save" | click
 	}

@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _I-Xj0APqEemwBd2liJ-qvA
-Runtime-Version: 2.4.0.201902090011
-Save-Time: 4/3/19, 9:13 AM
+Runtime-Version: 2.4.0.201902010011
+Save-Time: 10/14/19, 1:06 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -29,39 +29,28 @@ OpenTLACreateNew
 
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-	    key-type Down
-	    type-text "EXTENDS Naturals"
-	    key-type Enter
-	    type-text "VARIABLE x"
-	    key-type Enter -times 1
-	    type-text "Init == x = 0"
-	    key-type Enter -times 2
-	    type-text "Next == x' = x - 1"
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 1\n\nNext == x' = x - 1\n=============================================================================\n"]
 	    key-type "M1+s"
     }
     
 	get-menu -path "TLC Model Checker/TLC Console" | click
 	
-	get-menu -path "TLC Model Checker/New Model..." | click
-	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-	    | equals "Please input the name of the model to create" | verify-true
-	get-window "New model..." | get-button OK | click
-	get-editor "Model_1" | get-button "Runs TLC on the model." | click
+	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
+	get-editor $TLA-MODEL-ONE | get-button $TLA-BUTTON-RUN-TLC | click
 
 	wait -ms 1000
 	//TODO
-	get-editor "Model_1" | get-button "Stops the current TLC model checker run." | click
+	get-editor $TLA-MODEL-ONE | get-button $TLA-BUTTON-CANCEL-TLC | click
 
 	wait-run    
 		
-	get-editor "Model_1" | get-label "Model Checking Results" | get-property caption | equals "Model Checking Results" 
-	    | verify-true
-	with [get-view Console | get-text-viewer] {
+	with [get-view "Console" | get-text-viewer] {
 	    set-caret-pos 4 13
-	    get-menu -path Clear | click
+	    get-menu -path "Clear" | click
 	    set-caret-pos 1 1
+	    get-property text | equals "" | verify-true
 	}
-	get-view Console | get-text-viewer | get-property text | equals "" | verify-true
 } -finally {
 	DeleteSpecNew
 }

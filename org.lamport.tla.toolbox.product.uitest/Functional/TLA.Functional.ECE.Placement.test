@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _JObaIIvTEemXYtOZX2zpng
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/12/19, 10:10 AM
+Save-Time: 10/14/19, 1:12 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -18,26 +18,19 @@ OpenTLACreateNew
 
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-	    key-type Down
-	    type-text "EXTENDS Naturals"
-	    key-type Enter
-	    type-text "VARIABLE x"
-	    key-type Enter -times 1
-	    type-text "Init == x = 1"
-	    key-type Enter -times 2
-	    type-text "Next == x' = x * 1"
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 1\n\nNext == x' = x * 1\n\n=============================================================================\n"]
 	    key-type "M1+s"
 	}
 
-	get-menu -path "TLC Model Checker/New Model..." | click
-	get-window "New model..." | get-button OK | click
-	with [get-editor "Model_1"] {
-	    get-button "Runs TLC on the model." | click
+	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
+	with [get-editor $TLA-MODEL-ONE] {
+	    get-button $TLA-BUTTON-RUN-TLC | click
 
 		wait-run
 
-	    get-tab-item "Model Checking Results" | click
-	    with [get-section "Evaluate Constant Expression" | get-text-viewer -after [get-label "Expression:"]] {
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
+	    with [get-section $TLA-MO-ED-RESULTS-SECTION-ECE | get-text-viewer -after [get-label "Expression:"]] {
     		type-text "CHOOSE w in {3, 5, 7} : w*w*w = 125"  // yes, "in" is invalid but escaping backspaces in the comparison below is quirky
 	    }
 	}
@@ -54,10 +47,10 @@ try -command {
 							-pluginId "org.lamport.tla.toolbox.tool.tlc.ui"
 							-className "org.lamport.tla.toolbox.tool.tlc.ui.editor.page.results.EvaluateConstantExpressionPage"
 							-methodName "getTabTitle"]] {
-		with [get-editor "Model_1"] {
-			verify-error { get-section "Evaluate Constant Expression" }
+		with [get-editor $TLA-MODEL-ONE] {
+			verify-error { get-section $TLA-MO-ED-RESULTS-SECTION-ECE }
 			get-tab-item $tabTitle | click
-		    with [get-section "Evaluate Constant Expression"] {
+		    with [get-section $TLA-MO-ED-RESULTS-SECTION-ECE] {
 		    	get-text-viewer -after [get-label "Expression:"] | get-text |
 		    		equals "CHOOSE w in {3, 5, 7} : w*w*w = 125" | verify-true
 		    }
@@ -71,22 +64,22 @@ try -command {
 		    get-button "Apply and Close" | click
 		}
 		
-		with [get-editor "Model_1"] {
+		with [get-editor $TLA-MODEL-ONE] {
 			verify-error { get-tab-item $tabTitle }
-		    get-tab-item "Model Checking Results" | click
-		    with [get-section "Evaluate Constant Expression"] {
+		    get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
+		    with [get-section $TLA-MO-ED-RESULTS-SECTION-ECE] {
 		    	get-text-viewer -after [get-label "Expression:"] | get-text |
 		    		equals "CHOOSE w in {3, 5, 7} : w*w*w = 125" | verify-true
 		    	get-button "No Behavior Spec" | click
 		    	get-button "No Behavior Spec" | get-object | invoke getSelection | verify-true
 		    }
-		    get-tab-item "Model Overview" | click
-		    with [get-section "What is the behavior spec?" | get-combo] {
+		    get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+		    with [get-section $TLA-MO-ED-OVERVIEW-SECTION-SPEC | get-combo] {
 		    	get-text | equals "No behavior spec" | verify-true
 		    	select "Temporal formula"
 		    }
-		    get-tab-item "Model Checking Results" | click
-		    get-section "Evaluate Constant Expression" | get-button | get-object | invoke getSelection | verify-false
+		    get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
+		    get-section $TLA-MO-ED-RESULTS-SECTION-ECE | get-button | get-object | invoke getSelection | verify-false
 		    key-type "M1+s"
 		}	
 	}

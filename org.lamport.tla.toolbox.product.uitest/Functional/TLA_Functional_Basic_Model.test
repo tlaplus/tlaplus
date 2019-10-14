@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _44K9cAJWEemDc-4PKyNT9w
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/12/19, 10:18 AM
+Save-Time: 10/14/19, 1:06 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -18,72 +18,61 @@ OpenTLACreateNew
 
 try -command {
 	with [get-editor $TLA-SPEC-NAME | get-text-viewer] {
-	    key-type Down
-	    type-text "EXTENDS Naturals"
-	    key-type Enter
-	    type-text "VARIABLE x"
-	    key-type Enter -times 1
-	    type-text "Init == x = 1"
-	    key-type Enter -times 2
-	    type-text "Next == x' = x * 1"
+		set-text [concat "-------------------------------- MODULE " $TLA-SPEC-NAME " --------------------------------\nEXTENDS Naturals\nVARIABLE x\nInit == x = 1\n\nNext == x' = x * 1\n\n=============================================================================\n"]
 	    key-type "M1+s"
 	}
 
-	get-menu -path "TLC Model Checker/Run model" | get-property enablement | equals false | verify-true
-	get-menu -path "TLC Model Checker/New Model..." | click
-	get-window "New model..." | get-label "Please input the name of the model to create" | get-property caption 
-	    | equals "Please input the name of the model to create" | verify-true
-	get-window "New model..." | get-button OK | click
+	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
+	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
 	with [get-editor $TLA-MODEL-ONE] {
-		get-label "Model Overview" | get-property caption | equals "Model Overview" | verify-true
-		get-section "What is the model?" | click
-		get-link "Additional Spec Options" | click
-		get-tab-folder | get-tab-item "Model Overview" | click
-		get-section "How to run?" | click
-		get-link "Additional TLC Options" | click
-		get-tab-folder | get-tab-item "Model Overview" | click
-	    verify-error { get-tab-folder | get-tab-item "Model Checking Results" }
-		get-button "Runs TLC on the model." | click
+		get-section $TLA-MO-ED-OVERVIEW-SECTION-MODEL | click
+		get-link $TLA-MO-ED-OVERVIEW-LINK-SPEC | click
+		get-tab-folder | get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+		get-section $TLA-MO-ED-OVERVIEW-SECTION-RUN | click
+		get-link $TLA-MO-ED-OVERVIEW-LINK-TLC | click
+		get-tab-folder | get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+	    verify-error { get-tab-folder | get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS }
+		get-button $TLA-BUTTON-RUN-TLC | click
 	}
 	
 	wait-run
 	
 	// The error link should not be visible because there are no errors.
-	verify-error {get-editor $TLA-MODEL-ONE | get-section General | get-link "No errors" }
+	verify-error {get-editor $TLA-MODEL-ONE | get-section $TLA-MO-ED-RESULTS-SECTION-GENERAL | get-link "No errors" }
 	with [get-editor $TLA-MODEL-ONE | get-tab-folder] {
-	    get-tab-item "Model Overview" | click
-	    get-tab-item "Spec Options" | click
-	    get-tab-item "TLC Options" | click
-	    get-tab-item "Model Checking Results" | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-ADDITIONAL | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-TLC-OPTIONS | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
 	}
 	get-editor $TLA-MODEL-ONE | close	
 	
 	// Test the state-saving of open close-able tabs in the model editor:
 	
-	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
+	get-view $TLA-VIEW-SPEC-EXPLORER | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
 	with [get-editor $TLA-MODEL-ONE | get-tab-folder] {
-	    get-tab-item "Model Overview" | click
-	    get-tab-item "Spec Options" | click
-	    get-tab-item "TLC Options" | click
-	    get-tab-item "Spec Options" | close
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-ADDITIONAL | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-TLC-OPTIONS | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-ADDITIONAL | close
 	}
 	get-editor $TLA-MODEL-ONE | close	
 
-	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
+	get-view $TLA-VIEW-SPEC-EXPLORER | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
 	with [get-editor $TLA-MODEL-ONE | get-tab-folder] {
-	    get-tab-item "Model Overview" | click
-	    get-tab-item "TLC Options" | click
-	    verify-error { get-tab-item "Spec Options" }
-	    get-tab-item "TLC Options" | close
-	    get-tab-item "Model Checking Results" | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-TLC-OPTIONS | click
+	    verify-error { get-tab-item $TLA-MODEL-EDITOR-TAB-ADDITIONAL }
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-TLC-OPTIONS | close
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
 	}
 	get-editor $TLA-MODEL-ONE | close	
 
-	get-view "Spec Explorer" | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
+	get-view $TLA-VIEW-SPEC-EXPLORER | get-tree | select [concat $TLA-TREE-NAME "/models/" $TLA-MODEL-ONE] | get-menu -path "Open" | click
 	with [get-editor $TLA-MODEL-ONE | get-tab-folder] {
-	    get-tab-item "Model Overview" | click
-	    verify-error { get-tab-item "TLC Options" }
-	    get-tab-item "Model Checking Results" | click
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-OVERVIEW | click
+	    verify-error { get-tab-item $TLA-MODEL-EDITOR-TAB-TLC-OPTIONS }
+	    get-tab-item $TLA-MODEL-EDITOR-TAB-RESULTS | click
 	}
 	get-editor $TLA-MODEL-ONE | close	
 } -finally {
