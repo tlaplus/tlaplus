@@ -41,6 +41,7 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
@@ -151,6 +152,8 @@ public class CostModelCreator extends ExplorerVisitor {
 	private final Map<ExprOrOpArgNode, Subst> substs = new HashMap<>();
 	private final Map<OpApplNode, OpApplNodeWrapper> node2Wrapper = new HashMap<>();
 	private final Set<OpDefNode> opDefNodes = new HashSet<>();
+	// Set of OpDefNodes occurring in LetIns and their OpApplNodes.
+	private final Map<ExprNode, ExprNode> letIns = new HashMap<>();
 	// OpAppNode does not implement equals/hashCode which causes problem when added
 	// to sets or maps. E.g. for a test, an OpApplNode instance belonging to
 	// Sequences.tla showed up in coverage output.
@@ -183,6 +186,7 @@ public class CostModelCreator extends ExplorerVisitor {
 		this.substs.clear();
 		this.node2Wrapper.clear();
 		this.opDefNodes.clear();
+		this.letIns.clear();
 		this.stack.clear();
 		this.ctx = Context.Empty;
 		
@@ -211,6 +215,27 @@ public class CostModelCreator extends ExplorerVisitor {
 			
 			if (nodes.contains(oan)) {
 				oan.setPrimed();
+			}
+			
+			// A (recursive) function definition nested in LetIn:
+			//   LET F[n \in S] == e
+			//   IN F[...]
+			// with e either built from F or not.
+			if (letIns.containsKey(opApplNode)) {
+				// At the visit of the LETIN node in the walk over the semantic graph we stored
+				// the mapping from the LET part to the IN part in this.lets (see LetInNode below).
+				// Here, we add the LET parts(s) to the lets of the IN part if it is found on
+				// the stack (this is more involved because we have to find the OANWrappers and
+				// not just the OANs). 
+				final ExprNode in = letIns.get(opApplNode);
+				for (CostModelNode cmn : stack) {
+					final SemanticNode node = cmn.getNode();
+					if (node == in && cmn instanceof OpApplNodeWrapper) {
+						// addLets instead of addChild because lets can be added multiple times
+						// whereas addChild asserts a child to be added only once.
+						((OpApplNodeWrapper) cmn).addLets(oan);
+					}
+				}
 			}
 			
 			// CONSTANT operators (including definition overrides...)
@@ -253,7 +278,7 @@ public class CostModelCreator extends ExplorerVisitor {
 				}
 			}
 			if (this.node2Wrapper.containsKey(opApplNode)) {
-				// 3) Now its later. Connect w and oan. 
+				// 3) Now it's later. Connect w and oan. 
 				final OpApplNodeWrapper w = this.node2Wrapper.get(opApplNode);
 				w.addChild(oan);
 			}
@@ -273,6 +298,11 @@ public class CostModelCreator extends ExplorerVisitor {
 			final Subst[] substs = sin.getSubsts();
 			for (Subst subst : substs) {
 				this.substs.put(subst.getExpr(), subst);
+			}
+		} else if (exploreNode instanceof LetInNode) {
+			final LetInNode lin = (LetInNode) exploreNode;
+			for (OpDefNode opDefNode : lin.getLets()) {
+				letIns.put(opDefNode.getBody(), lin.getBody());
 			}
 		} else if (exploreNode instanceof OpDefNode) {
 			//TODO Might suffice to just keep RECURSIVE ones.

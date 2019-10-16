@@ -26,6 +26,8 @@
 package tlc2.tool.coverage;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import tla2sany.semantic.OpApplNode;
@@ -53,6 +55,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	private boolean primed = false;
 	private int level;
 	private OpApplNodeWrapper recursive;
+	protected final Map<SemanticNode, CostModelNode> lets = new LinkedHashMap<>();
 
 	OpApplNodeWrapper(OpApplNode node, CostModelNode root) {
 		super();
@@ -133,6 +136,11 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	}
 
 	// ---------------- Parent <> Child ---------------- //
+	
+	public OpApplNodeWrapper addLets(OpApplNodeWrapper lets) {
+		this.lets.put(lets.getNode(), lets);
+		return this;
+	}
 
 	public OpApplNodeWrapper setRecursive(OpApplNodeWrapper recursive) {
 		assert this.recursive == null;
@@ -161,6 +169,13 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		
 		if (recursive != null) {
 			child = recursive.children.get(eon);
+			if (child != null) {
+				return child;
+			}
+		}
+		
+		if (lets != null) {
+			child = lets.get(eon);
 			if (child != null) {
 				return child;
 			}
