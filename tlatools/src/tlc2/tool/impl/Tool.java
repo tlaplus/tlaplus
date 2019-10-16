@@ -1106,7 +1106,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
               FcnLambdaValue fcn = (FcnLambdaValue)fval;
               if (fcn.fcnRcd == null) {
                 Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Clear, cm);
-                return this.getNextStates(fcn.body, acts, c1, s0, s1, nss, cm);
+                return this.getNextStates(fcn.body, acts, c1, s0, s1, nss, fcn.cm);
               }
               fval = fcn.fcnRcd;
             }
