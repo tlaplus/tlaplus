@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.coverage;
 
+import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.st.Location;
@@ -104,11 +105,16 @@ public final class ActionWrapper extends CostModelNode {
 	 */
 	@Override
 	public final CostModel get(final SemanticNode eon) {
+		// returns this instance in case no match is found in children. As a result, the
+		// CostModel will be incorrect which is not as severe as running into an NPE.
 		if (eon instanceof SubstInNode) {
 			final SubstInNode sin = (SubstInNode) eon;
-			return this.children.get(sin.getBody());
+			return this.children.getOrDefault(sin.getBody(), this);
+		} else if (eon instanceof LetInNode) {
+			final LetInNode lin = (LetInNode) eon;
+			return this.children.getOrDefault(lin.getBody(), this);
 		}
-		return this.children.get(eon);
+		return this.children.getOrDefault(eon, this);
 	}
 
 	/* (non-Javadoc)
@@ -146,8 +152,10 @@ public final class ActionWrapper extends CostModelNode {
 		}
 
 		// An action has single child which is the OpApplNodeWrapper with the OpApplNode
-		// for this OpDefNode unless the action's pred is a substitution.
-		assert !(this.action.pred instanceof SubstInNode) ? this.children.size() == 1 : !this.children.isEmpty();
+		// for this OpDefNode unless the action's pred is a substitution or a let/in expr.
+		assert !(this.action.pred instanceof SubstInNode || this.action.pred instanceof LetInNode)
+				? this.children.size() == 1
+				: !this.children.isEmpty();
 		// Let children report.
 		// Could disable here if decided to implement action-only coverage at the TLC
 		// level (see org.lamport.tla.toolbox.tool.tlc.model.Model.Coverage).
