@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!-- This is file org.lamport.tla.toobox.doc/html/model/creating-model.html  -->
 
- 
+
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -14,15 +14,17 @@
 <body>
 <h1>Creating a Model</h1>
 
-<P> 
+<P>
 When you open a model, you open it in a <em>model editor</em>.&nbsp;  The model editor then
-shows two pages:  The  <A href="overview-page.html"> Model Overview Page</A> and
-the <A href="results-page.html"> Model Checking Results Page</A> that shows you either what 
-the model checker is doing while it runs, or what it did the last time it was
-run.&nbsp; The Model Overview Page contains links that open two other pages, 
-the  <A href="spec-options-page.html">Spec Options</A> and 
-<A href="tlc-options-page.html">TLC Options</A> pages that allow you to specify
-additional parameters for running TLC.&nbsp;
+shows only one page if the model has never been run before, and if it has been opened before,
+no other pages were kept open: &mdash; the  <A href="overview-page.html"> Model Overview Page.</A>
+<br/>
+If the model has been run before, the <A href="results-page.html"> Model Checking Results Page</A> will
+be opened showing what the checker did the last time it was
+run.&nbsp; The Model Overview Page contains links that open three other pages,
+the <A href="spec-options-page.html">Spec Options</A> page, the
+<A href="tlc-options-page.html">TLC Options</A> page, and the Results / Constant Expressions page(s)
+should you want to work with Constant Expressions having not yet run the model a first time.
 
 You can switch between the pages using the tabs at the upper-left of the
 model editor <a href="../gettingstarted/views.html">view</a>, or with the&nbsp;
@@ -33,22 +35,22 @@ model editor <a href="../gettingstarted/views.html">view</a>, or with the&nbsp;
 <p>You edit these pages in the usual way.&nbsp;  Sections can be opened or closed by clicking
 the&nbsp;
 <samp>+</samp>&nbsp; or&nbsp;
-<samp>-</samp>&nbsp;.  When entering text in fields, you can use your system's 
-standard editing commands.  
+<samp>-</samp>&nbsp;.  When entering text in fields, you can use your system's
+standard editing commands.
 </p>
 
 
 <p>Whenever you enter a TLA<sup>+</sup> expression as part of the model,
 that expression can use any
-symbols that you could use in a new definition placed at the end of the spec's root module.&nbsp;  
+symbols that you could use in a new definition placed at the end of the spec's root module.&nbsp;
 It can also contain any <a href="model-values.html">model values</a> that are declared
-in the model, as well as additional definitions entered in the  
-<a href="spec-options-page.html#additional">Additional Definitions</a> section 
+in the model, as well as additional definitions entered in the
+<a href="spec-options-page.html#additional">Additional Definitions</a> section
 of the Spec Options page.
 </p>
 
-<hr> 
-<!-- delete rest of line to comment out --> 
+<hr>
+<!-- delete rest of line to comment out -->
 <dl>
 <dt><b><font color=#0000c0>Subtopics</font></b></dt>
 <dd> <A href="overview-page.html"> Model Overview Page</A></dd>
@@ -57,10 +59,10 @@ of the Spec Options page.
 <dd> <A href="tlc-options-page.html">TLC Options Page</A></dd>
 
 </dl>
-<!-- --> 
-<!-- delete rest of line to comment out -->  
+<!-- -->
+<!-- delete rest of line to comment out -->
 <a href = "model.html">&uarr; Model Checking</a>
-<!-- --> 
+<!-- -->
 </hr>
 
 </body>
