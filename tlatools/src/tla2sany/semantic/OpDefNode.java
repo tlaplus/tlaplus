@@ -46,6 +46,7 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
+import tlc2.tool.BuiltInOPs;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -1210,6 +1211,10 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
+
+  public boolean hasOpcode(final int opCode) {
+      return opCode == BuiltInOPs.getOpCode(getName());
+  }
 
   /**
    * The body is the node's only child.

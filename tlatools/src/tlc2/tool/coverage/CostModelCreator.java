@@ -262,26 +262,65 @@ public class CostModelCreator extends ExplorerVisitor {
 					}
 				}
 			}
-			
+
 			// Higher-order operators/Operators as arguments (LAMBDA, ...)
-			if (tool != null && operator instanceof OpDefNode && opApplNode.hasOpcode(0)) {
-				// 1) Maintain Context as done by Tool...
+			//
+			// line X: Foo(Op(_), S) == \A s \in S: Op(s)
+			// line ?: ...
+			// line Y: Bar == Foo(LAMBDA e: e..., {1,2,3})
+			//
+			// This is the most involved part of CMC: The task is to make the OANW
+			// corresponding to the RHS of the LAMBDA expression on line Y a child of Op(s)
+			// on line X. However, the graph exploration is DFS which means that we haven't
+			// seen the LAMBDA on line Y when we are at the Op(s) on line X and we've
+			// (mostly) forgotten about Op(s) when we see the LAMBDA. ToolImpl - as part of
+			// its DFS over the semantic graph - passes a context along which gets extended
+			// or *branched*. Here, we cannot pass a Context along the decent but instead
+			// keep a single, global context. 
+			//
+			// The global context does not create a problem with regards to correctness, but
+			// can lead to long context chains for larger specifications. Therefore, only
+			// extend the context when opApplNode.argsContainOpArgNodes() is true, i.e. when
+			// one or more arguments of an operator are also operators (such as a LAMBDA).
+			// Without this safeguard, the time to create the CostModel for the SchedMono
+			// specification took approximately 60 seconds. With the safeguard, it is down
+			// to a second or two.
+			//
+			// To summarize, this is a clutch that has been hacked to work good enough!
+			// 
+			// Three if branches 1., 2., and 3. below re not evaluated right after each
+			// other but in three different invocation of outer preVisit for different
+			// ExploreNodes.
+			if (tool != null && operator instanceof OpDefNode && opApplNode.hasOpcode(0)
+					&& opApplNode.argsContainOpArgNodes()) {
+				// 1) Maintain Context for all OpApplNode iff one or more of its args are of
+				// type OpArgNode. This is more restrictive than Tool.
 				final OpDefNode odn = (OpDefNode) operator;
-				this.ctx = tool.getOpContext(odn, opApplNode.getArgs(), ctx, false);
+				if (odn.hasOpcode(0) && !odn.isStandardModule()) {
+					this.ctx = tool.getOpContext(odn, opApplNode.getArgs(), ctx, false);
+				}
 			}
 			final Object lookup = this.ctx.lookup(opApplNode.getOperator());
 			if (lookup instanceof OpDefNode) {
-				// 2) Context has an entry for the given body. Remember for later.
+				// 2) Context has an entry for the given body where body is 'LAMBDA e: e...' and
+				// oan is 'Op(s)'. Remember for later.
 				final ExprNode body = ((OpDefNode) lookup).getBody();
 				if (body instanceof OpApplNode) {
+					// Design choice:
+					// Might as well store the mapping from body to oan via
+					// body#setToolObject(tla2sany.semantic.FrontEnd.getToolId(), oan) instead of in
+					// node2Wrapper. However, node2Wrapper can be gc'ed after the CostModel has been
+					// created and before state space exploration.
 					this.node2Wrapper.put((OpApplNode) body, oan);
 				}
 			}
 			if (this.node2Wrapper.containsKey(opApplNode)) {
-				// 3) Now it's later. Connect w and oan. 
+				// 3) Now it's later. Connect w and oan where
+				// w is 'Op(s)' and oan is 'LAMBDA e: e...'
 				final OpApplNodeWrapper w = this.node2Wrapper.get(opApplNode);
 				w.addChild(oan);
 			}
+			// End of Higher-order operators/Operators as arguments (LAMBDA, ...) 
 			
 			// Substitutions
 			if (this.substs.containsKey(exploreNode)) {

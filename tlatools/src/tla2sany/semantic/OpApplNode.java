@@ -270,6 +270,15 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    */
   public final void setArgs(ExprOrOpArgNode[] args) { this.operands = args; }
 
+	public final boolean argsContainOpArgNodes() {
+		for (ExprOrOpArgNode o : operands) {
+			if (o instanceof OpArgNode) {
+				return true;
+			}
+		}
+		return false;
+	}
+  
   /*************************************************************************
   * Despite what you might gather from its 79 character name, this does    *
   * not return the number of bounded bound symbols.  It returns a weird    *
