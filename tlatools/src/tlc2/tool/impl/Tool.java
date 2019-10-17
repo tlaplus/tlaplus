@@ -1883,7 +1883,8 @@ public final StateVec getNextStates(Action action, TLCState state) {
               ExprOrOpArgNode[] pairArgs = pairNode.getArgs();
               if (pairArgs[0] == null) {
                 other = pairArgs[1];
-              }
+                cm = cm.get(pairNode);
+               }
               else {
                 Value bval = this.eval(pairArgs[0], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
                 if (!(bval instanceof BoolValue)) {
