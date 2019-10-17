@@ -164,6 +164,15 @@ public interface ITool extends TraceApp {
 
 	String[] getImpliedActNames();
 
+	/**
+	 * @return The name of the root module.
+	 */
+	String getRootName();
+	
+	/**
+	 * @return The file name of the root module which might contain the
+	 *         full or relative path information.
+	 */
 	String getRootFile();
 
 	String getConfigFile();

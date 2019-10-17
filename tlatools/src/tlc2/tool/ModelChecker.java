@@ -78,7 +78,7 @@ public class ModelChecker extends AbstractChecker
     public ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
             final FPSetConfiguration fpSetConfig, long startTime) throws EvalException, IOException {
     	this(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
-    	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, tool.getRootFile());
+    	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, tool.getRootName());
     }
     
     /**
@@ -98,13 +98,13 @@ public class ModelChecker extends AbstractChecker
         // this.theStateQueue = new MemStateQueue(this.metadir);
 
         // Finally, initialize the trace file:
-        this.trace = new ConcurrentTLCTrace(this.metadir, this.tool.getRootFile(), this.tool);
+        this.trace = new ConcurrentTLCTrace(this.metadir, this.tool.getRootName(), this.tool);
 
         // Initialize all the workers:
         this.workers = new Worker[TLCGlobals.getNumWorkers()];
         for (int i = 0; i < this.workers.length; i++)
         {
-            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootFile()));
+            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootName()));
         }
     }
 
@@ -269,7 +269,7 @@ public class ModelChecker extends AbstractChecker
 					// to rewrite the trace file but to reconstruct actual states referenced by
 					// their fingerprints in the trace.
 					this.doNext(this.predErrState, this.checkLiveness ? new SetOfStates() : null,
-							new Worker(4223, this, this.metadir, tool.getRootFile()));
+							new Worker(4223, this, this.metadir, tool.getRootName()));
                 } catch (FingerprintException e)
                 {
                     result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});

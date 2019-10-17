@@ -93,7 +93,7 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
     protected final String[] impliedActNames; // ... and their names
     protected final ExprNode[] modelConstraints; // Model constraints
     protected final ExprNode[] actionConstraints; // Action constraints
-    protected final ExprNode[] assumptions; // Assumpt	ions
+    protected final ExprNode[] assumptions; // Assumptions
     protected final boolean[] assumptionIsAxiom; // assumptionIsAxiom[i] is true iff assumptions[i]
                                            // is an AXIOM.  Added 26 May 2010 by LL
     private final FilenameToStream resolver; // takes care of path to stream resolution
@@ -118,7 +118,7 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
 		// SpecProcessor has be factored out to be able to assign the variables below as
 		// final. SpecProcessor duplicates most of the variables here but I don't have
 		// time to clean it up.
-		final SpecProcessor processor = new SpecProcessor(rootFile, resolver, toolId, defns, config, this, tlaClass);
+		final SpecProcessor processor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, tlaClass);
         this.rootModule = processor.getRootModule();
         this.moduleTbl = processor.getModuleTbl();
         this.variablesNodes = processor.getVariablesNodes();
@@ -901,6 +901,10 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
     public FilenameToStream getResolver()
     {
         return resolver;
+    }
+    
+    public String getRootName() {
+    	return new File(this.rootFile).getName();
     }
     
     public String getRootFile() {

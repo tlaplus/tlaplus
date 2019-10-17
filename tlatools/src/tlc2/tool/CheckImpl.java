@@ -40,7 +40,7 @@ public abstract class CheckImpl extends ModelChecker {
     this.depth = depth;
     this.curState = null;
     this.coverSet = FPSetFactory.getFPSet();
-    this.coverSet.init(TLCGlobals.getNumWorkers(), this.metadir, tool.getRootFile()+"_cs");
+    this.coverSet.init(TLCGlobals.getNumWorkers(), this.metadir, tool.getRootName()+"_cs");
     this.stateEnum = null;
   }
 
