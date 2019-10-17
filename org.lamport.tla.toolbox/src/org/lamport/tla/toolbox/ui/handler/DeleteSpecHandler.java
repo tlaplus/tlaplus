@@ -30,46 +30,47 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * 
  * @author Simon Zambrovski
  */
-public class DeleteSpecHandler extends AbstractHandler implements IHandler
-{
-
+public class DeleteSpecHandler extends AbstractHandler implements IHandler {
     /* (non-Javadoc)
      * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.ExecutionEvent)
      */
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+	public Object execute(ExecutionEvent event) throws ExecutionException {
          /*
          * No parameter try to get it from active navigator if any
          */
-        IWorkbenchPage activePage = UIHelper.getActivePage();
-        if (activePage != null)
-        {
-            ISelection selection = activePage.getSelection(ToolboxExplorer.VIEW_ID);
-            if (selection != null && selection instanceof IStructuredSelection
-                    && !((IStructuredSelection) selection).isEmpty())
-            {
-                
-                Iterator<Object> selectionIterator = ((IStructuredSelection) selection).iterator();
-                while (selectionIterator.hasNext()) 
-                {
-                	Object next = selectionIterator.next();
+		final IWorkbenchPage activePage = UIHelper.getActivePage();
+		if (activePage != null) {
+            final ISelection selection = activePage.getSelection(ToolboxExplorer.VIEW_ID);
+			if ((selection != null) && (selection instanceof IStructuredSelection)
+					&& !((IStructuredSelection) selection).isEmpty()) {
+                final Iterator<?> selectionIterator = ((IStructuredSelection) selection).iterator();
+				while (selectionIterator.hasNext()) {
+                	final Object next = selectionIterator.next();
                 	if (!(next instanceof Spec)) {
                 		// The selection can contain models and groups too.
                 		continue;
                 	}
+                	
                     final Spec spec = (Spec) next;
                     // 3 Aug 2011: LL changed the dialog's message to make it clearer what the Delete command does.
-                    boolean answer = MessageDialog.openQuestion(UIHelper.getShellProvider().getShell(), "Delete specification?",
-                            "Do you really want the Toolbox to forget the specification " + spec.getName() + " and delete all its models?");
-                    if (answer)
-                    {
+                    final boolean answer
+                    	= MessageDialog.openQuestion(UIHelper.getShellProvider().getShell(),
+                    								 "Delete specification?",
+                    								 "Do you really want the Toolbox to forget the specification "
+                    										 		+ spec.getName() + " and delete all its models?");
+					if (answer) {
                     	// close the spec handler (in the ui thread)
                     	final WorkspaceSpecManager specManager = Activator.getSpecManager();
                         if (specManager.isSpecLoaded(spec)) {
-                        	new CloseSpecHandler().execute(event);
+                        	final CloseSpecHandler handler = new CloseSpecHandler();
+                        	final Boolean result = (Boolean)handler.execute(event);
+                        	
+                        	if ((result != null) && !result.booleanValue()) {
+                        		// there was a dirty editor and the user cancelled out of the closing
+                        		return null;
+                        	}
                         }
                     	
-    					// use confirmed rename -> rename
     					final Job j = new ToolboxJob("Deleting spec...") {
     						protected IStatus run(final IProgressMonitor monitor) {
     							Activator.getSpecManager().removeSpec(spec, monitor, false);
@@ -81,11 +82,9 @@ public class DeleteSpecHandler extends AbstractHandler implements IHandler
                 }
             }
         }
-
         
         return null;
     }
-
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.commands.AbstractHandler#isEnabled()
@@ -97,5 +96,4 @@ public class DeleteSpecHandler extends AbstractHandler implements IHandler
 		}
 		return super.isEnabled();
 	}
-   
 }
