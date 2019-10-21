@@ -44,7 +44,7 @@ public class Integers extends UserObj implements ValueConstants
         TLARegistry.put("Expt", "^");
     }
 
-    private static Value SetInt = new UserValue(new Integers());
+    private static final Value SetInt = new UserValue(new Integers());
 
     public static Value Int()
     {
@@ -209,6 +209,7 @@ public class Integers extends UserObj implements ValueConstants
         return IntValue.gen((int) res);
     }
 
+    @Override
     public final int compareTo(Value val)
     {
         if (val instanceof UserValue)
@@ -227,6 +228,7 @@ public class Integers extends UserObj implements ValueConstants
         throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "Int", Values.ppr(val.toString()) });
     }
 
+    @Override
     public final boolean member(Value val)
     {
         if (val instanceof IntValue)
@@ -238,11 +240,13 @@ public class Integers extends UserObj implements ValueConstants
         throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Values.ppr(val.toString()), "Int" });
     }
 
+    @Override
     public final boolean isFinite()
     {
         return false;
     }
 
+    @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
         return sb.append("Int");

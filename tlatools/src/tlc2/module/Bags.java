@@ -184,8 +184,8 @@ public class Bags implements ValueConstants
         Value[] values = new Value[dVec.size()];
         for (int i = 0; i < domain.length; i++)
         {
-            domain[i] = (Value) dVec.elementAt(i);
-            values[i] = (Value) vVec.elementAt(i);
+            domain[i] = dVec.elementAt(i);
+            values[i] = vVec.elementAt(i);
         }
         return new FcnRcdValue(domain, values, false);
     }
@@ -232,8 +232,8 @@ public class Bags implements ValueConstants
         Value[] values = new Value[vVec.size()];
         for (int i = 0; i < domain.length; i++)
         {
-            domain[i] = (Value) dVec.elementAt(i);
-            values[i] = (Value) vVec.elementAt(i);
+            domain[i] = dVec.elementAt(i);
+            values[i] = vVec.elementAt(i);
         }
         return new FcnRcdValue(domain, values, fcn1.isNormalized());
     }

@@ -16,28 +16,32 @@ public class AnySet extends UserObj
 {
 	public static final long serialVersionUID = 20160822L;
 
-    private static Value AnySet = new UserValue(new AnySet());
+    private final static Value AnySet = new UserValue(new AnySet());
 
     public static Value ANY()
     {
         return AnySet;
     }
 
+    @Override
     public final int compareTo(Value val)
     {
         throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "ANY", Values.ppr(val.toString()) });
     }
 
+    @Override
     public final boolean member(Value val)
     {
         return true;
     }
 
+    @Override
     public final boolean isFinite()
     {
         return false;
     }
 
+    @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
         return sb.append("ANY");

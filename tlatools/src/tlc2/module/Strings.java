@@ -25,6 +25,7 @@ public class Strings extends UserObj
         return SetString;
     }
 
+    @Override
     public final int compareTo(Value val)
     {
         if ((val instanceof UserValue) && (((UserValue) val).userObj instanceof Strings))
@@ -36,6 +37,7 @@ public class Strings extends UserObj
         throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "STRING", Values.ppr(val.toString()) });
     }
 
+    @Override
     public final boolean member(Value val)
     {
         if (val instanceof StringValue)
@@ -45,11 +47,13 @@ public class Strings extends UserObj
         throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Values.ppr(val.toString()), "STRING" });
     }
 
+    @Override
     public final boolean isFinite()
     {
         return false;
     }
 
+    @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
         return sb.append("STRING");
