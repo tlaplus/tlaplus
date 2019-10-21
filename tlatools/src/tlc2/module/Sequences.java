@@ -365,6 +365,7 @@ public class Sequences extends UserObj implements ValueConstants
         return new TupleValue(elems);
     }
 
+    @Override
     public final int compareTo(Value s)
     {
         if ((s instanceof UserValue) && (((UserValue) s).userObj instanceof Sequences))
@@ -387,6 +388,7 @@ public class Sequences extends UserObj implements ValueConstants
                 Values.ppr(s.toString()) });
     }
 
+    @Override
     public final boolean member(Value s)
     {
         TupleValue seq = (TupleValue) s.toTuple();
@@ -408,11 +410,13 @@ public class Sequences extends UserObj implements ValueConstants
         return true;
     }
 
+    @Override
     public final boolean isFinite()
     {
         return this.size != Integer.MAX_VALUE;
     }
 
+    @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
         if (this.size == Integer.MAX_VALUE)

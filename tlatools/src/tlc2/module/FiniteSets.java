@@ -28,7 +28,7 @@ public class FiniteSets implements ValueConstants
     {
         if (val instanceof Enumerable)
         {
-            return IntValue.gen(((Enumerable) val).size());
+            return IntValue.gen(val.size());
         }
         throw new EvalException(EC.TLC_MODULE_COMPUTING_CARDINALITY, Values.ppr(val.toString()));
     }

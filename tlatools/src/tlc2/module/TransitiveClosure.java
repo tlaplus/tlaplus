@@ -48,7 +48,7 @@ public class TransitiveClosure implements ValueConstants
             Value elem1 = tv.elems[0];
             Value elem2 = tv.elems[1];
             int num1 = cnt;
-            Integer num = (Integer) fps.get(elem1);
+            Integer num = fps.get(elem1);
             if (num == null)
             {
                 fps.put(elem1, new Integer(cnt));
@@ -59,7 +59,7 @@ public class TransitiveClosure implements ValueConstants
                 num1 = num.intValue();
             }
             int num2 = cnt;
-            num = (Integer) fps.get(elem2);
+            num = fps.get(elem2);
             if (num == null)
             {
                 fps.put(elem2, new Integer(cnt));
@@ -94,8 +94,8 @@ public class TransitiveClosure implements ValueConstants
             {
                 if (matrix[i][j])
                 {
-                	Value elem1 = (Value) elemList.elementAt(i);
-                	Value elem2 = (Value) elemList.elementAt(j);
+                	Value elem1 = elemList.elementAt(i);
+                	Value elem2 = elemList.elementAt(j);
                 	Value newElem = new TupleValue(elem1, elem2);
                     newElems.addElement(newElem);
                 }

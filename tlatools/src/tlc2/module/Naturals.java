@@ -219,6 +219,7 @@ public class Naturals extends UserObj implements ValueConstants
         return IntValue.gen((int) res);
     }
 
+    @Override
     public final int compareTo(Value val)
     {
         if (val instanceof UserValue)
@@ -237,6 +238,7 @@ public class Naturals extends UserObj implements ValueConstants
         throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "Nat", Values.ppr(val.toString()) });
     }
 
+    @Override
     public final boolean member(Value val)
     {
         if (val instanceof IntValue)
@@ -247,11 +249,13 @@ public class Naturals extends UserObj implements ValueConstants
         throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Values.ppr(val.toString()), "Nat" });
     }
 
+    @Override
     public final boolean isFinite()
     {
         return false;
     }
 
+    @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
         return sb.append("Nat");
