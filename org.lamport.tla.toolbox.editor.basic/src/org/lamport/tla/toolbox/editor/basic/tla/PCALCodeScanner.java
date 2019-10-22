@@ -32,10 +32,10 @@ public class PCALCodeScanner extends RuleBasedScanner
     {
         TLAColorProvider provider = TLAEditorActivator.getDefault().getTLAColorProvider();
 
-        IToken keyword = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_KEYWORD), null, SWT.BOLD));
-        IToken value = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_VALUE)));
-        IToken other = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_DEFAULT)));
-        IToken pcal = new Token(new TextAttribute(provider.getColor(TLAColorProvider.PCAL_KEYWORD)));
+        IToken keyword = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_KEYWORD_KEY), null, SWT.BOLD));
+        IToken value = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_VALUE_KEY)));
+        IToken other = new Token(new TextAttribute(provider.getColor(TLAColorProvider.DEFAULT_TEXT_KEY)));
+        IToken pcal = new Token(new TextAttribute(provider.getColor(TLAColorProvider.PCAL_KEYWORD_KEY)));
         
         List<WordRule> rules = new ArrayList<WordRule>();
 

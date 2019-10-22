@@ -32,6 +32,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
@@ -40,6 +41,7 @@ import org.eclipse.swt.widgets.Scrollable;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.lamport.tla.toolbox.Activator;
+import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
@@ -440,9 +442,16 @@ class ErrorTraceTreeViewer {
 			
 			// font
 			cell.setFont(getFont(cell.getElement(), cell.getColumnIndex()));
+
 			
-			// colors - we were previously (pre-201909) calling a method to set foreground whose return was always null
-			cell.setBackground(getBackground(cell.getElement(), cell.getColumnIndex()));
+			final Color bg = getBackground(cell.getElement(), cell.getColumnIndex());
+			cell.setBackground(bg);
+
+			if (TLAEditorActivator.getDefault().isCurrentThemeDark()) {
+				cell.setForeground((bg == null) ? null : Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+			} else {
+				cell.setForeground(null);
+			}
 		}
 
 		private Image getColumnImage(Object element, int columnIndex) {

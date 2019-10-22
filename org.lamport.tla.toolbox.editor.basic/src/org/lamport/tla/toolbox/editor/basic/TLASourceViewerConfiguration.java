@@ -69,10 +69,9 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
      * The partitioner computes the partitions at the appropriate times and then the various
      * damager-repairers set in this method compute the coloring for the partitions.
      */
-    public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer)
-    {
-        TLAColorProvider provider = TLAEditorActivator.getDefault().getTLAColorProvider();
-        PresentationReconciler reconciler = new PresentationReconciler();
+	public IPresentationReconciler getPresentationReconciler(final ISourceViewer sourceViewer) {
+		final TLAColorProvider provider = TLAEditorActivator.getDefault().getTLAColorProvider();
+		final PresentationReconciler reconciler = new PresentationReconciler();
         reconciler.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
         DefaultDamagerRepairer dr = new DefaultDamagerRepairer(TLAEditorActivator.getDefault().getTLACodeScanner());
@@ -80,17 +79,17 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider
-                .getColor(TLAColorProvider.TLA_MULTI_LINE_COMMENT))));
+                .getColor(TLAColorProvider.TLA_MULTI_LINE_COMMENT_KEY))));
         reconciler.setDamager(dr, TLAPartitionScanner.TLA_MULTI_LINE_COMMENT);
         reconciler.setRepairer(dr, TLAPartitionScanner.TLA_MULTI_LINE_COMMENT);
 
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider
-                .getColor(TLAColorProvider.TLA_SINGLE_LINE_COMMENT))));
+                .getColor(TLAColorProvider.TLA_SINGLE_LINE_COMMENT_KEY))));
         reconciler.setDamager(dr, TLAPartitionScanner.TLA_SINGLE_LINE_COMMENT);
         reconciler.setRepairer(dr, TLAPartitionScanner.TLA_SINGLE_LINE_COMMENT);
 
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(new TextAttribute(provider
-                .getColor(TLAColorProvider.TLA_VALUE))));
+                .getColor(TLAColorProvider.TLA_VALUE_KEY))));
         reconciler.setDamager(dr, TLAPartitionScanner.TLA_STRING);
         reconciler.setRepairer(dr, TLAPartitionScanner.TLA_STRING);
 
@@ -147,7 +146,7 @@ public class TLASourceViewerConfiguration extends TextSourceViewerConfiguration
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
         assistant.setContextInformationPopupBackground(TLAEditorActivator.getDefault().getTLAColorProvider().getColor(
-                TLAColorProvider.CONTENT_ASSIST_BACKGROUNG));
+                TLAColorProvider.CONTENT_ASSIST_BACKGROUND_KEY));
         return assistant;
     }
 

@@ -28,9 +28,9 @@ public class TLACodeScanner extends RuleBasedScanner
     {
         TLAColorProvider provider = TLAEditorActivator.getDefault().getTLAColorProvider();
 
-        IToken keyword = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_KEYWORD), null, SWT.BOLD));
-        IToken value = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_VALUE)));
-        IToken other = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_DEFAULT)));
+        IToken keyword = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_KEYWORD_KEY), null, SWT.BOLD));
+        IToken value = new Token(new TextAttribute(provider.getColor(TLAColorProvider.TLA_VALUE_KEY)));
+        IToken other = new Token(new TextAttribute(provider.getColor(TLAColorProvider.DEFAULT_TEXT_KEY)));
 
         List rules = new ArrayList();
 

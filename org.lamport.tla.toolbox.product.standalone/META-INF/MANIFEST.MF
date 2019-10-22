@@ -18,7 +18,10 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.ui.sdk;bundle-version="1.0.0",
  org.eclipse.equinox.p2.operations;bundle-version="2.4.0",
  org.eclipse.equinox.p2.repository;bundle-version="2.3.0",
- org.eclipse.equinox.p2.metadata;bundle-version="2.3.0"
+ org.eclipse.equinox.p2.metadata;bundle-version="2.3.0",
+ org.eclipse.ui.themes;bundle-version="1.2.200",
+ org.eclipse.e4.ui.css.swt;bundle-version="0.13.200",
+ org.eclipse.e4.ui.css.swt.theme;bundle-version="0.12.100"
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.lamport.tla.toolbox.StandaloneActivator
 Export-Package: org.lamport.tla.toolbox.lifecycle,
