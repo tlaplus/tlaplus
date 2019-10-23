@@ -89,7 +89,7 @@ public class ModelValue extends Value implements IModelValue {
         && (val.charAt(1) == '_')) {
       this.type = val.charAt(0) ;
       }
-     else { this.type = 0 ; } ;
+     else { this.type = 0 ; }
   }
 
   /* Make str a new model value, if it is not one yet.  */
@@ -133,7 +133,7 @@ public class ModelValue extends Value implements IModelValue {
       if (this.type == 0) {
         return (obj instanceof ModelValue &&
           this.val.equals(((ModelValue)obj).val));
-       };
+       }
       if (obj instanceof ModelValue) {
         ModelValue mobj = (ModelValue) obj ;
         if (   (mobj.type == this.type)
@@ -145,8 +145,8 @@ public class ModelValue extends Value implements IModelValue {
                       + "of the differently-typed model values "
                         + Values.ppr(this.toString()) + " and "
                         + Values.ppr(mobj.toString()));
-          } ;
-       } ;
+          }
+      }
       Assert.fail("Attempted to check equality of typed model value "
                    + Values.ppr(this.toString()) + " and non-model value\n"
                    + Values.ppr(obj.toString())) ;
@@ -170,7 +170,7 @@ public class ModelValue extends Value implements IModelValue {
                    + Values.ppr(this.toString()) + " and the non-model value\n"
                    + Values.ppr(obj.toString())) ;
 
-       } ;
+       }
       return false ;
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -187,7 +187,7 @@ public class ModelValue extends Value implements IModelValue {
                    + " is an element of\n"
                    + Values.ppr(obj.toString())) ;
 
-       } ;
+       }
       return false ;
     }
     catch (RuntimeException | OutOfMemoryError e) {

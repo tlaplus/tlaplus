@@ -241,7 +241,7 @@ public class StringValue extends Value {
             buf.append(str.charAt(i)) ;
             break ;
          } // switch
-       }; // for
+       }// for
       return buf.toString();
     }
     catch (RuntimeException | OutOfMemoryError e) {
