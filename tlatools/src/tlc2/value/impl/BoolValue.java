@@ -31,8 +31,10 @@ public class BoolValue extends Value implements IBoolValue {
 	  return val;
   }
   
+  @Override
   public final byte getKind() { return BOOLVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof BoolValue) {
@@ -69,6 +71,7 @@ public class BoolValue extends Value implements IBoolValue {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
@@ -81,6 +84,7 @@ public class BoolValue extends Value implements IBoolValue {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       Assert.fail("Attempted to check if the boolean " + Values.ppr(this.toString()) +
@@ -93,6 +97,7 @@ public class BoolValue extends Value implements IBoolValue {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -107,6 +112,7 @@ public class BoolValue extends Value implements IBoolValue {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -121,6 +127,7 @@ public class BoolValue extends Value implements IBoolValue {
     }
   }
 
+  @Override
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the boolean " +
@@ -133,14 +140,19 @@ public class BoolValue extends Value implements IBoolValue {
     }
   }
 
+  @Override
   public final boolean isNormalized() { return true; }
 
+  @Override
   public final Value normalize() { /*nop*/ return this; }
 
+  @Override
   public final boolean isDefined() { return true; }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return ((val instanceof BoolValue) &&
@@ -159,6 +171,7 @@ public class BoolValue extends Value implements IBoolValue {
 	}
 
   /* The fingerprint method */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       fp = FP64.Extend(fp, BOOLVALUE) ;
@@ -171,6 +184,7 @@ public class BoolValue extends Value implements IBoolValue {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) { return this; }
 
   /* The string representation */
@@ -179,6 +193,7 @@ public class BoolValue extends Value implements IBoolValue {
 }
 
 /* The string representation */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       return sb.append((this.val) ? "TRUE" : "FALSE");

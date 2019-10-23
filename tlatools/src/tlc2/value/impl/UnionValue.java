@@ -32,8 +32,10 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 	  this.cm = cm;
   }
 
+  @Override
   public byte getKind() { return UNIONVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       this.convertAndCache();
@@ -56,6 +58,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       if (!(this.set instanceof Enumerable)) {
@@ -76,6 +79,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       if (!(this.set instanceof Enumerable)) {
@@ -95,6 +99,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -108,6 +113,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -121,6 +127,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final int size() {
     try {
       this.convertAndCache();
@@ -132,6 +139,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean isNormalized() {
     try {
       return (this.realSet != null &&
@@ -144,6 +152,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value normalize() {
     try {
       if (this.realSet != null && this.realSet != SetEnumValue.DummyEnum) {
@@ -190,6 +199,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 	    }
   }
 
+  @Override
   public final boolean isDefined() {
     try {
       return this.set.isDefined();
@@ -200,8 +210,10 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return this.equals(val);
@@ -244,6 +256,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 	}
 
   /* The fingerprint  */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       this.convertAndCache();
@@ -255,6 +268,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       this.convertAndCache();
@@ -300,6 +314,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   }
 
   /* String representation of this value. */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       if (TLCGlobals.expand) {
@@ -319,6 +334,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final ValueEnumeration elements() {
     try {
       if (this.realSet == null || this.realSet == SetEnumValue.DummyEnum) {
@@ -352,12 +368,14 @@ public class UnionValue extends EnumerableValue implements Enumerable {
       }
     }
 
+    @Override
     public final void reset() {
       this.Enum.reset();
       this.elemSet = this.Enum.nextElement();
       this.elemSetEnum = ((Enumerable)this.elemSet).elements();
     }
 
+    @Override
     public final Value nextElement() {
       if (this.elemSet == null) return null;
       Value val = this.elemSetEnum.nextElement();

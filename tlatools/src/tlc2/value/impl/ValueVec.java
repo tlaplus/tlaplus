@@ -73,6 +73,7 @@ public class ValueVec implements Cloneable, Serializable {
 
   public final int capacity() { return elementData.length; }
 
+  @Override
   public final Object clone() {
     ValueVec v = new ValueVec(this.elementData.length);
 	

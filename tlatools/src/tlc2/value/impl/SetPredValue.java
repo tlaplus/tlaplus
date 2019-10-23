@@ -76,8 +76,10 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 	  this.cm = cm;
   }
 
+  @Override
   public final byte getKind() { return SETPREDVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       this.inVal = this.toSetEnum();
@@ -102,6 +104,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       if (this.converted) {
@@ -148,6 +151,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       if (!(this.inVal.isFinite())) {
@@ -163,6 +167,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -176,6 +181,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -189,6 +195,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final int size() {
     try {
       this.inVal = this.toSetEnum();
@@ -215,6 +222,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   /* This method normalizes (destructively) this set. */
+  @Override
   public final boolean isNormalized() {
     try {
       return this.inVal.isNormalized();
@@ -225,6 +233,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value normalize() {
     try {
       this.inVal.normalize();
@@ -247,10 +256,13 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 	    }
   }
 
+  @Override
   public final boolean isDefined() { return true; }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return this.equals(val);
@@ -262,6 +274,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   /* The fingerprint method */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       this.inVal = this.toSetEnum();
@@ -274,6 +287,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       this.inVal = this.toSetEnum();
@@ -307,6 +321,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   /* The string representation of the value. */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       try {
@@ -338,6 +353,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final ValueEnumeration elements() {
     try {
       if (this.converted) {
@@ -362,8 +378,10 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       this.Enum = ((Enumerable)inVal).elements();
     }
 
+    @Override
     public final void reset() { this.Enum.reset(); }
 
+    @Override
     public final Value nextElement() {
     	Value  elem;
       while ((elem = this.Enum.nextElement()) != null) {

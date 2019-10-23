@@ -45,6 +45,7 @@ public class IntValue extends Value {
 
   private IntValue(int i) { this.val = i; }
 
+  @Override
   public final byte getKind() { return INTVALUE; }
 
   // the number of bits needed to encode the value of this int
@@ -65,6 +66,7 @@ public class IntValue extends Value {
     return new IntValue(i);
   }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof IntValue) {
@@ -99,6 +101,7 @@ public class IntValue extends Value {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
@@ -111,6 +114,7 @@ public class IntValue extends Value {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       Assert.fail("Attempted to check if the integer " + Values.ppr(this.toString()) +
@@ -123,6 +127,7 @@ public class IntValue extends Value {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -137,6 +142,7 @@ public class IntValue extends Value {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -151,6 +157,7 @@ public class IntValue extends Value {
     }
   }
 
+  @Override
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the integer " +
@@ -163,14 +170,19 @@ public class IntValue extends Value {
     }
   }
 
+  @Override
   public final boolean isNormalized() { return true; }
 
+  @Override
   public final Value normalize() { /*nop*/return this; }
 
+  @Override
   public final boolean isDefined() { return true; }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return ((val instanceof IntValue) &&
@@ -189,6 +201,7 @@ public class IntValue extends Value {
 	}
 
   /* The fingerprint methods */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       return FP64.Extend(FP64.Extend(fp, INTVALUE), this.val);
@@ -199,9 +212,11 @@ public class IntValue extends Value {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) { return this; }
 
   /* The string representation. */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean ignored) {
     try {
       return sb.append(this.val);

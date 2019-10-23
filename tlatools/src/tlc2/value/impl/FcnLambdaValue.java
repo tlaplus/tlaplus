@@ -80,6 +80,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     this.fcnRcd = fcn.fcnRcd;
   }
 
+  @Override
   public final byte getKind() { return FCNLAMBDAVALUE; }
 
   public final void makeRecursive(SymbolNode fname) {
@@ -93,6 +94,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       FcnRcdValue fcn = (FcnRcdValue) this.toFcnRcd();
@@ -115,6 +117,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
@@ -127,6 +130,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       Assert.fail("Attempted to check if the function:\n" + Values.ppr(this.toString()) +
@@ -140,6 +144,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
   }
 
   /* Apply this function to the arguments given by args.  */
+  @Override
   public final Value apply(Value args, int control) throws EvalException {
     try {
 
@@ -260,6 +265,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
   }
 
   /* This one does not seem to be needed anymore.  */
+  @Override
   public final Value apply(Value[] args, int control) throws EvalException {
     try {
       return this.apply(new TupleValue(args), control);
@@ -270,6 +276,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final Value select(Value arg) {
     try {
 
@@ -380,6 +387,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
   }
 
   /* This method returns a new function value by taking except. */
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
 
@@ -411,6 +419,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
   }
 
   /* This method returns a new function value by taking excepts. */
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
 
@@ -449,6 +458,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final Value getDomain() {
     try {
 
@@ -484,6 +494,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final int size() {
     try {
       if (this.fcnRcd == null) {
@@ -497,8 +508,10 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final boolean isDefined() { return true; }
 
+  @Override
   public final IValue deepCopy() {
     try {
       FcnLambdaValue fcn = new FcnLambdaValue(this);
@@ -515,6 +528,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return (val instanceof FcnLambdaValue);
@@ -534,6 +548,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     oos.writeObject(res);
   }
 
+  @Override
   public final boolean isNormalized() {
     try {
       if (this.fcnRcd == null) {
@@ -547,6 +562,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final Value normalize() {
     try {
       if (this.fcnRcd != null) {
@@ -714,6 +730,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
 	}
   
   /* The fingerprint methods.  */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       Value  fcn = this.toFcnRcd();
@@ -725,6 +742,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       Value  fcn = this.toFcnRcd();
@@ -742,6 +760,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
 }
 
 /* The string representation of this function.  */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       if (TLCGlobals.expand || this.params == null) {

@@ -35,8 +35,10 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 	  this.cm = cm;
   }
 
+  @Override
   public final byte getKind() { return SETOFFCNSVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       this.convertAndCache();
@@ -64,6 +66,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
@@ -101,6 +104,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       return this.domain.isFinite() && this.range.isFinite();
@@ -111,6 +115,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -125,6 +130,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -139,6 +145,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final int size() {
     try {
       int dsz = this.domain.size();
@@ -173,6 +180,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 		return false;
 	}
 
+  @Override
   public final boolean isNormalized() {
     try {
       if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
@@ -186,6 +194,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value normalize() {
     try {
       if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
@@ -221,6 +230,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 	    }
   }
 
+  @Override
   public final boolean isDefined() {
     try {
       return this.domain.isDefined() && this.range.isDefined();
@@ -231,8 +241,10 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return this.equals(val);
@@ -244,6 +256,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   /* The fingerprint  */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       this.convertAndCache();
@@ -255,6 +268,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       this.convertAndCache();
@@ -305,6 +319,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   /* The string representation of the value. */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       boolean unlazy = TLCGlobals.expand;
@@ -344,6 +359,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final ValueEnumeration elements() {
     try {
       if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
@@ -397,6 +413,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
     }
 
+    @Override
     public final void reset() {
       if (this.enums != null) {
         for (int i = 0; i < this.enums.length; i++) {
@@ -407,7 +424,8 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
     }
 
-		public final Value nextElement() {
+		@Override
+        public final Value nextElement() {
 			if (this.isDone) {
 				return null;
 			}

@@ -74,6 +74,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 	  this.cm = cm;
   }
 
+  @Override
   public final byte getKind() { return FCNRCDVALUE; }
 
   /* We create an index only when the domain is not very small. */
@@ -115,6 +116,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
 
@@ -281,6 +283,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
@@ -293,8 +296,10 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final boolean isFinite() { return true; }
 
+  @Override
   public final Value apply(Value arg, int control) {
     try {
     	Value result = this.select(arg);
@@ -312,6 +317,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   }
 
   /* This one does not seem to be needed anymore.  */
+  @Override
   public final Value apply(Value[] args, int control) {
     try {
       return this.apply(new TupleValue(args), EvalControl.Clear);
@@ -322,6 +328,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final Value select(Value arg) {
     try {
 
@@ -410,6 +417,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
 
@@ -460,6 +468,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       Value res = this;
@@ -474,6 +483,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final Value getDomain() {
     try {
       if (this.intv != null) {
@@ -500,6 +510,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 	  }
   }
   
+  @Override
   public final int size() {
     try {
       this.normalize();
@@ -555,9 +566,11 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 	}
   
   /* Return true iff this function is in normal form. */
+  @Override
   public final boolean isNormalized() { return this.isNorm; }
 
   /* This method normalizes (destructively) this function. */
+  @Override
   public final Value normalize() {
     try {
 
@@ -620,6 +633,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 	    }
   }
 
+  @Override
   public final boolean isDefined() {
     try {
 
@@ -641,6 +655,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final IValue deepCopy() {
     try {
     	Value[] vals = new Value[this.values.length];
@@ -655,6 +670,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       boolean canAssign = ((val instanceof FcnRcdValue) &&
@@ -702,6 +718,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 	}
 
   /* The fingerprint method.  */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       this.normalize();
@@ -729,6 +746,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
 
@@ -815,6 +833,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   }
 
   /* The string representation of the value.  */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
 

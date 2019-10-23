@@ -42,8 +42,10 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	  this.cm = cm;
   }
 
+  @Override
   public final byte getKind() { return SUBSETVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof SubsetValue) {
@@ -72,6 +74,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean member(Value val) {
     try {
       if (val instanceof Enumerable) {
@@ -95,6 +98,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public Value isSubsetEq(Value other) {
     try {
       // Reduce (SUBSET A \subseteq SUBSET B) to (A \subseteq B) to avoid
@@ -111,6 +115,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       return this.set.isFinite();
@@ -121,6 +126,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -134,6 +140,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -147,6 +154,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final int size() {
     try {
       int sz = this.set.size();
@@ -162,6 +170,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean isNormalized() {
     try {
       return (this.pset != null &&
@@ -174,6 +183,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value normalize() {
     try {
       if (this.pset == null || this.pset == SetEnumValue.DummyEnum) {
@@ -207,6 +217,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	    }
   }
 
+  @Override
   public final boolean isDefined() {
     try {
       return this.set.isDefined();
@@ -217,8 +228,10 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return this.equals(val);
@@ -235,6 +248,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	}
 
   /* The fingerprint  */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       this.convertAndCache();
@@ -246,6 +260,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       this.convertAndCache();
@@ -294,6 +309,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   /* The string representation  */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       boolean unlazy = TLCGlobals.expand;
@@ -676,6 +692,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		return elements();
 	}
 
+  @Override
   public final ValueEnumeration elements() {
     try {
       if (this.pset == null || this.pset == SetEnumValue.DummyEnum) {
@@ -707,10 +724,12 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       this.descriptor = new BitSet(this.elems.size());
     }
 
+    @Override
     public final void reset() {
       this.descriptor = new BitSet(this.elems.size());
     }
 
+    @Override
     public final Value nextElement() {
 			if (this.descriptor == null)
 				return null;
@@ -819,7 +838,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
 		// Repeated invocation can yield duplicate elements due to the probabilistic
 		// nature of CoinTossingSubsetEnumerator.
-		public Value nextElement() {
+		@Override
+        public Value nextElement() {
 			if (!hasNext()) {
 				return null;
 			}

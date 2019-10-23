@@ -16,8 +16,10 @@ public class UserValue extends Value {
 
   public UserValue(UserObj obj) { this.userObj = obj; }
 
+  @Override
   public final byte getKind() { return USERVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof UserValue) {
@@ -44,6 +46,7 @@ public class UserValue extends Value {
     }
   }
 
+  @Override
   public final boolean member(Value val) {
     try {
       return this.userObj.member(val);
@@ -54,6 +57,7 @@ public class UserValue extends Value {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       return this.userObj.isFinite();
@@ -64,6 +68,7 @@ public class UserValue extends Value {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -78,6 +83,7 @@ public class UserValue extends Value {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -92,6 +98,7 @@ public class UserValue extends Value {
     }
   }
 
+  @Override
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the overridden value " +
@@ -105,14 +112,19 @@ public class UserValue extends Value {
   }
 
   /* Nothing to normalize. */
+  @Override
   public final boolean isNormalized() { return true; }
 
+  @Override
   public final Value normalize() { /*SKIP*/return this; }
 
+  @Override
   public final boolean isDefined() { return true; }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return this.equals(val);
@@ -124,6 +136,7 @@ public class UserValue extends Value {
   }
 
   /* The string representation. */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       return this.userObj.toString(sb, offset, swallow);

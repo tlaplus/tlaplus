@@ -33,6 +33,7 @@ import tlc2.tool.coverage.CostModel;
 public interface IValue extends Comparable<Object> {
 
 	/* This method compares this with val.  */
+	@Override
 	int compareTo(Object val);
 
 	void write(IValueOutputStream vos) throws IOException;

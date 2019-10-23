@@ -47,8 +47,10 @@ public final class MVPerm implements IMVPerm {
     return res;
   }
   
+  @Override
   public final int size() { return this.count; }
 
+  @Override
   public final IValue get(IValue k) {
     return this.elems[((ModelValue) k).index];
   }

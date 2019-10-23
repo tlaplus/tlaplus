@@ -18,6 +18,7 @@ public interface Enumerable extends IValue {
 		NORMALIZED;
 	}
 	
+  @Override
   public int size();
   public boolean member(Value elem);
   /**

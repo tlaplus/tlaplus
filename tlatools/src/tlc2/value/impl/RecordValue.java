@@ -41,8 +41,10 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 	  this.cm = cm;
   }
 
+  @Override
   public final byte getKind() { return RECORDVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
@@ -97,6 +99,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if element:\n" + Values.ppr(elem.toString()) +
@@ -109,8 +112,10 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final boolean isFinite() { return true; }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -149,6 +154,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       Value res = this;
@@ -184,6 +190,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
         return new FcnRcdValue(dom, this.values, this.isNormalized(), cm);
 	}
 
+  @Override
   public final int size() {
     try {
       return this.names.length;
@@ -194,6 +201,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final Value apply(Value arg, int control) {
     try {
       if (!(arg instanceof StringValue)) {
@@ -217,6 +225,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final Value apply(Value[] args, int control) {
     try {
       if (args.length != 1) {
@@ -231,6 +240,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   }
 
   /* This method returns the named component of the record. */
+  @Override
   public final Value select(Value arg) {
     try {
       if (!(arg instanceof StringValue)) {
@@ -252,6 +262,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final Value getDomain() {
     try {
     	Value[] dElems = new Value[this.names.length];
@@ -287,8 +298,10 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final boolean isNormalized() { return this.isNorm; }
 
+  @Override
   public final Value normalize() {
     try {
       if (!this.isNorm) {
@@ -347,6 +360,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 	    }
   }
 
+  @Override
   public final boolean isDefined() {
     try {
       boolean defined = true;
@@ -361,6 +375,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final IValue deepCopy() {
     try {
     	Value[] vals = new Value[this.values.length];
@@ -382,6 +397,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       boolean canAssign = ((val instanceof RecordValue) &&
@@ -425,6 +441,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 	}
 
   /* The fingerprint methods.  */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       this.normalize();
@@ -446,6 +463,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       this.normalize();
@@ -468,6 +486,7 @@ public final static RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   }
 
   /* The string representation */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       int len = this.names.length;

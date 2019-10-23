@@ -37,10 +37,12 @@ public class StringValue extends Value {
 	  this.cm = cm;
   }
 
+  @Override
   public final byte getKind() { return STRINGVALUE; }
 
   public final UniqueString getVal() { return this.val; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof StringValue) {
@@ -75,6 +77,7 @@ public class StringValue extends Value {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
@@ -87,6 +90,7 @@ public class StringValue extends Value {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       Assert.fail("Attempted to check if the string " + Values.ppr(this.toString()) +
@@ -99,6 +103,7 @@ public class StringValue extends Value {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -113,6 +118,7 @@ public class StringValue extends Value {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -127,6 +133,7 @@ public class StringValue extends Value {
     }
   }
 
+  @Override
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the string " +
@@ -139,14 +146,19 @@ public class StringValue extends Value {
     }
   }
 
+  @Override
   public final boolean isNormalized() { return true; }
 
+  @Override
   public final Value normalize() { /*SKIP*/return this; }
 
+  @Override
   public final boolean isDefined() { return true; }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return ((val instanceof StringValue) &&
@@ -181,6 +193,7 @@ public class StringValue extends Value {
 	}
 
   /* The fingerprint method */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       fp = FP64.Extend(fp, STRINGVALUE) ;
@@ -194,6 +207,7 @@ public class StringValue extends Value {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) { return this; }
 
   /*************************************************************************
@@ -238,6 +252,7 @@ public class StringValue extends Value {
 
 
   /* The string representation of the value. */
+  @Override
   public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       return sb.append("\"" + PrintVersion(this.val.toString()) + "\"");
