@@ -11,10 +11,10 @@ import java.util.function.Consumer;
 
 public interface ValueEnumeration {
   /* Reset allows repeated use of this enumerator. */
-  public void reset();
+  void reset();
 
   /* Return the next element if there is one. Otherwise return null. */
-  public Value nextElement();
+  Value nextElement();
   
 	default List<Value> all() {
 		final List<Value> values = new ArrayList<Value>();

@@ -96,8 +96,8 @@ public abstract class RandomEnumerableValues {
 		}
 	};
 		
-	private static interface EnumerableValueRandom {
-		public Random initialize();
+	private interface EnumerableValueRandom {
+		Random initialize();
 	}
 
 	@SuppressWarnings("serial")
