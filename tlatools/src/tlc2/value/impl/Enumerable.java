@@ -15,8 +15,8 @@ public interface Enumerable extends IValue {
 		 * The normalized order is the order of elements when a Value gets
 		 * fingerprinted (@see {@link Value#fingerPrint(long)}.
 		 */
-		NORMALIZED;
-	}
+		NORMALIZED
+    }
 	
   @Override
   int size();
