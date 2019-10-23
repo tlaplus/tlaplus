@@ -34,6 +34,7 @@ import tlc2.value.RandomEnumerableValues;
 
 public abstract class EnumerableValue extends Value implements Enumerable {
 
+  @Override
   public Value isSubsetEq(Value other) {
     try {
       final ValueEnumeration Enum = this.elements();
@@ -78,6 +79,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 		return elements();
 	}
 	
+	@Override
 	public ValueEnumeration elements(final int k) {
 		// The generic implementation collects all n elements of the actual Enumerable
 		// into the temporary variable values. The SubSetEnumerator then randomly
@@ -138,6 +140,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 			}
 		}
 
+		@Override
 		public void reset() {
 			i = 0;
 		}
@@ -162,6 +165,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 			return index;
 		}
 
+		@Override
 		public abstract Value nextElement();
 	}
 }

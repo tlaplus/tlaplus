@@ -26,8 +26,10 @@ implements Enumerable, Reducible {
     this.high = high;
   }
 
+  @Override
   public final byte getKind() { return INTERVALVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof IntervalValue) {
@@ -62,6 +64,7 @@ implements Enumerable, Reducible {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       if (elem instanceof IntValue) {
@@ -82,6 +85,7 @@ implements Enumerable, Reducible {
     }
   }
 
+  @Override
   public Value isSubsetEq(Value other) {
     try {
       if (other instanceof IntervalValue) {
@@ -98,8 +102,10 @@ implements Enumerable, Reducible {
     }
   }
 
+  @Override
   public final boolean isFinite() { return true; }
 
+  @Override
   public final int size() {
     try {
       if (this.high < this.low) return 0;
@@ -125,6 +131,7 @@ implements Enumerable, Reducible {
 	}
   
   /* Return this - val.  */
+  @Override
   public final Value diff(Value val) {
     try {
       ValueVec diffElems = new ValueVec();
@@ -141,6 +148,7 @@ implements Enumerable, Reducible {
   }
 
   /* Return this \cap val. */
+  @Override
   public final Value cap(Value val) {
     try {
       ValueVec capElems = new ValueVec();
@@ -157,6 +165,7 @@ implements Enumerable, Reducible {
   }
 
   /* Return this \cup val.  */
+  @Override
   public final Value cup(Value set) {
     try {
       if (this.size() == 0) return set;
@@ -181,6 +190,7 @@ implements Enumerable, Reducible {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -195,6 +205,7 @@ implements Enumerable, Reducible {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -209,14 +220,19 @@ implements Enumerable, Reducible {
     }
   }
 
+  @Override
   public final boolean isNormalized() { return true; }
 
+  @Override
   public final Value normalize() { /*nop*/return this; }
 
+  @Override
   public final boolean isDefined() { return true; }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return ((val instanceof IntervalValue) &&
@@ -237,6 +253,7 @@ implements Enumerable, Reducible {
 	}
 
   /* The fingerprint method */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       fp = FP64.Extend(fp, SETENUMVALUE);
@@ -253,6 +270,7 @@ implements Enumerable, Reducible {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     return this;
   }
@@ -268,6 +286,7 @@ implements Enumerable, Reducible {
   }
 
   /* The string representation */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, final boolean ignored) {
     try {
       if (this.low <= this.high) {
@@ -303,6 +322,7 @@ implements Enumerable, Reducible {
         return null; // make compiler happy
 	}
     
+  @Override
   public final ValueEnumeration elements() {
     try {
       return new Enumerator();
@@ -316,8 +336,10 @@ implements Enumerable, Reducible {
   final class Enumerator implements ValueEnumeration {
     int index = low;
 
+    @Override
     public final void reset() { this.index = low; }
 
+    @Override
     public final Value nextElement() {
       if (this.index <= high) {
     	  if (coverage) { cm.incSecondary(); }

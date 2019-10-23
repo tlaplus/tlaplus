@@ -27,6 +27,7 @@ public class FcnParams implements IFcnParams {
     }
   }
 
+  @Override
   public final int length() { return this.argLen; }
   
   public final int size() {
@@ -136,6 +137,7 @@ public class FcnParams implements IFcnParams {
       }
     }
 
+    @Override
     public final void reset() {
       if (this.enums != null) {
 	for (int i = 0; i < this.enums.length; i++) {
@@ -145,6 +147,7 @@ public class FcnParams implements IFcnParams {
       }
     }
 
+    @Override
     public final Value nextElement() {
       if (this.enums == null) return null;
       Value[] elems = new Value[argLen];

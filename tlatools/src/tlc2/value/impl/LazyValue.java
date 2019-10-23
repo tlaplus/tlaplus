@@ -78,8 +78,10 @@ public class LazyValue extends Value {
 	  return this.val;
   }
  
+  @Override
   public final byte getKind() { return LAZYVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -106,6 +108,7 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -119,6 +122,7 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -132,6 +136,7 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -145,6 +150,7 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -158,6 +164,7 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final int size() {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -183,6 +190,7 @@ public class LazyValue extends Value {
   }
 
   /* Nothing to normalize. */
+  @Override
   public final boolean isNormalized() {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -196,6 +204,7 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final Value normalize() {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -210,8 +219,10 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final boolean isDefined() { return true; }
 
+  @Override
   public final IValue deepCopy() {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) return this;
@@ -223,6 +234,7 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -237,6 +249,7 @@ public class LazyValue extends Value {
   }
 
   /* The fingerprint method */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -250,6 +263,7 @@ public class LazyValue extends Value {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {
@@ -264,6 +278,7 @@ public class LazyValue extends Value {
   }
 
   /* The string representation of the value. */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       if (this.val == null || this.val == UndefValue.ValUndef) {

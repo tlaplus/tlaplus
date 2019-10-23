@@ -41,8 +41,10 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 	  this.cm = cm;
   }
 
+  @Override
   public final byte getKind() { return SETOFRCDSVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       this.convertAndCache();
@@ -83,6 +85,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       RecordValue rcd = (RecordValue) elem.toRcd();
@@ -110,6 +113,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean isFinite() {
     try {
       for (int i = 0; i < this.values.length; i++) {
@@ -123,6 +127,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -137,6 +142,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -151,6 +157,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final int size() {
     try {
       long sz = 1;
@@ -181,6 +188,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 		return false;
 	}
 
+  @Override
   public final boolean isNormalized() {
     try {
       if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
@@ -199,6 +207,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final Value normalize() {
     try {
       if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
@@ -271,6 +280,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final boolean isDefined() {
     try {
       boolean isDefined = true;
@@ -285,8 +295,10 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return this.equals(val);
@@ -298,6 +310,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   /* The fingerprint  */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       this.convertAndCache();
@@ -309,6 +322,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       this.convertAndCache();
@@ -359,6 +373,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   /* The string representation of the value. */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       boolean unlazy = TLCGlobals.expand;
@@ -403,6 +418,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  @Override
   public final ValueEnumeration elements() {
     try {
       if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
@@ -443,6 +459,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
     }
 
+    @Override
     public final void reset() {
       if (this.enums != null) {
         for (int i = 0; i < this.enums.length; i++) {
@@ -453,6 +470,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
     }
 
+    @Override
     public final Value nextElement() {
       if (this.isDone) return null;
       Value[] elems = new Value[this.currentElems.length];
@@ -499,7 +517,8 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 			}
 		}
 
-		protected RecordValue elementAt(final int idx) {
+		@Override
+        protected RecordValue elementAt(final int idx) {
 			assert 0 <= idx && idx < size();
 			
 			final Value[] val = new Value[names.length];

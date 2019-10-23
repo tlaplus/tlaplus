@@ -55,8 +55,10 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 	  this.cm = cm;
   }
 
+  @Override
   public final byte getKind() { return SETENUMVALUE; }
 
+  @Override
   public final int compareTo(Object obj) {
     try {
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
@@ -110,6 +112,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final boolean member(Value elem) {
     try {
       return this.elems.search(elem, this.isNorm);
@@ -120,8 +123,10 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final boolean isFinite() { return true; }
 
+  @Override
   public final Value diff(Value val) {
     try {
       int sz = this.elems.size();
@@ -140,6 +145,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final Value cap(Value val) {
     try {
       int sz = this.elems.size();
@@ -158,6 +164,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final Value cup(Value set) {
     try {
       int sz = this.elems.size();
@@ -184,6 +191,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
@@ -197,6 +205,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
@@ -210,6 +219,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final int size() {
     try {
       this.normalize();
@@ -222,8 +232,10 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   }
 
   /* This method normalizes (destructively) this set. */
+  @Override
   public final boolean isNormalized() { return this.isNorm; }
 
+  @Override
   public final Value normalize() {
     try {
       if (!this.isNorm) {
@@ -257,6 +269,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 	  return this;
   }
 
+  @Override
   public final boolean isDefined() {
     try {
       boolean defined = true;
@@ -272,8 +285,10 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final IValue deepCopy() { return this; }
 
+  @Override
   public final boolean assignable(Value val) {
     try {
       return this.equals(val);
@@ -301,6 +316,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 	}
 
   /* The fingerprint methods */
+  @Override
   public final long fingerPrint(long fp) {
     try {
       this.normalize();
@@ -319,6 +335,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     }
   }
 
+  @Override
   public final IValue permute(IMVPerm perm) {
     try {
       int sz = this.elems.size();
@@ -340,6 +357,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   }
 
   /* The string representation */
+  @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       // If this SetEnumValue object is created by a union, at least one of
@@ -384,6 +402,7 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
      return this.elems.elementAt(index);
   }
 
+  @Override
   public final ValueEnumeration elements() {
     try {
       return new Enumerator();
@@ -401,8 +420,10 @@ public final static SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       normalize();
     }
 
+    @Override
     public final void reset() { this.index = 0; }
 
+    @Override
     public final Value nextElement() {
     	if (coverage) { cm.incSecondary(); }
       if (this.index < elems.size()) {
