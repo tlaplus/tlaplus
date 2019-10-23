@@ -9,9 +9,9 @@ import tlc2.tool.EvalException;
 
 public interface Applicable {
   
-  public Value apply(Value[] args, int control) throws EvalException;
-  public Value apply(Value arg, int control) throws EvalException;
-  public Value getDomain() throws EvalException;
-  public Value select(Value arg) throws EvalException;
+  Value apply(Value[] args, int control) throws EvalException;
+  Value apply(Value arg, int control) throws EvalException;
+  Value getDomain() throws EvalException;
+  Value select(Value arg) throws EvalException;
   
 }

@@ -27,5 +27,5 @@ package tlc2.value;
 
 public interface IBoolValue extends IValue {
 
-	public boolean getVal();
+	boolean getVal();
 }
