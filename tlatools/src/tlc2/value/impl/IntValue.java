@@ -26,11 +26,11 @@ public class IntValue extends Value {
     }
   }
 
-	public final static IntValue ValNegOne = gen(-1);
+	public static final IntValue ValNegOne = gen(-1);
 	
-	public final static IntValue ValOne    = gen(1);
+	public static final IntValue ValOne    = gen(1);
 	
-	public final static IntValue ValZero   = gen(0);
+	public static final IntValue ValZero   = gen(0);
 
   public static final int nbits(int tmp) {
     int nb = 0;
