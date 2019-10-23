@@ -19,9 +19,9 @@ import util.Assert;
 
 public class BoolValue extends Value implements IBoolValue {
   public boolean val;   // the boolean
-  public final static BoolValue ValFalse = new BoolValue(false);
+  public static final BoolValue ValFalse = new BoolValue(false);
   /* Value constants. */
-  public final static BoolValue ValTrue  = new BoolValue(true);
+  public static final BoolValue ValTrue  = new BoolValue(true);
 
   /* Constructor */
   public BoolValue(boolean b) { this.val = b; }

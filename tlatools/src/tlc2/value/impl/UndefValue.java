@@ -13,7 +13,7 @@ import util.Assert;
 
 public class UndefValue extends Value {
 
-  public final static UndefValue ValUndef = new UndefValue();
+  public static final UndefValue ValUndef = new UndefValue();
 
   public UndefValue() { /*SKIP*/ }
 

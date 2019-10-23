@@ -24,7 +24,7 @@ import util.Assert;
 
 public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value[] elems;          // the elements of this tuple.
-  public final static TupleValue EmptyTuple = new TupleValue(new Value[0]);
+  public static final TupleValue EmptyTuple = new TupleValue(new Value[0]);
 
   /* Constructor */
   public TupleValue(Value[] elems) { this.elems = elems; }
