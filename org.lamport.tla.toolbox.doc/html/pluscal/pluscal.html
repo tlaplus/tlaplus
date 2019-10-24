@@ -33,12 +33,23 @@ PlusCal Algorithm Language</a>.
 
  <p>
  You run the PlusCal translator on the module in the currently selected
- module editor by clicking
-  on&nbsp; <samp>File/Translate PlusCal Algorithm</samp> or typing <samp>CTRL t</samp> / <samp>&#8984; t</samp>&nbsp;
- Translation errors are displayed in
-    the same&nbsp; <samp>Parsing Error</samp>&nbsp; view where <a href="../spec/parsing.html">TLA<sup>+</sup> parsing
-    errors</a> are displayed.&nbsp;  Some errors in a PlusCal algorithm are not found by the translator, but
-    instead produce parsing errors in the TLA<sup>+</sup> module.&nbsp;  Those are displayed as ordinary TLA<sup>+</sup> parsing errors.
+ module editor by clicking on&nbsp; <samp>File/Translate PlusCal Algorithm</samp>
+ or typing <samp>CTRL t</samp> / <samp>&#8984; t</samp>&nbsp;
+ <br/>
+ Translation errors are displayed in the same&nbsp; <samp>Parsing Error</samp>&nbsp; view where
+ <a href="../spec/parsing.html">TLA<sup>+</sup> parsing errors</a> are displayed.&nbsp; Some errors
+ in a PlusCal algorithm are not found by the translator, but instead produce parsing errors in the
+ TLA<sup>+</sup> module.&nbsp;  Those are displayed as ordinary TLA<sup>+</sup> parsing errors.
+ <br/>
+ The translation produces two checksums which are included in the translation comment delimiters, for example:
+ <ul>
+	 <li><samp>\** BEGIN TRANSLATION PCal-5cc64096184dcd2bcb0741a5056a664a</samp></li>
+	 <li><samp>\** END TRANSLATION TLA-6aeb9b3874fd3c001211b4a5b3da8249</samp></li>
+ </ul>
+ If changes are made to the PlusCal code, or generated TLA code, after translation, the user
+ will receive a warning dialog when they attempt to run model checking.  If the user would like
+ to make a change to the TLA code and not be warned, they can remove the <samp>TLA-...</samp>
+ checksum comment text from their spec.
  </p>
 
  <p>

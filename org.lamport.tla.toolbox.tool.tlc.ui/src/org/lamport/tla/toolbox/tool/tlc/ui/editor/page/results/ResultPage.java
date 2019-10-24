@@ -216,11 +216,13 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
     public void modelCheckingHasBegun() {
 		errorPaneViewState.clearState();
 		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-    		tlcStatusLabel.setText("Starting...");
-			errorStatusHyperLink.setVisible(errorPaneViewState.errorLinkIsDisplayed());
-			fingerprintCollisionLabel.setVisible(errorPaneViewState.fingerprintIsDisplayed());
-			zeroCoverageLabel.setVisible(errorPaneViewState.zeroCountIsDisplayed());
-			setErrorPaneVisible(errorPaneViewState.shouldDisplay());
+			if (!tlcStatusLabel.isDisposed()) {
+	    		tlcStatusLabel.setText("Starting...");
+				errorStatusHyperLink.setVisible(errorPaneViewState.errorLinkIsDisplayed());
+				fingerprintCollisionLabel.setVisible(errorPaneViewState.fingerprintIsDisplayed());
+				zeroCoverageLabel.setVisible(errorPaneViewState.zeroCountIsDisplayed());
+				setErrorPaneVisible(errorPaneViewState.shouldDisplay());
+			}
 		});
 	}
 

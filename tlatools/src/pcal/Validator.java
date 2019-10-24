@@ -163,15 +163,15 @@ public class Validator {
         	m = Validator.TRANSLATED_PCAL_CHECKSUM_PATTERN.matcher(endLine);
         	if (m.find()) {
         		translatedMD5 = endLine.substring(m.start() + PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD.length());
-        	} else {
-        		return ValidationResult.NO_CHECKSUMS_EXIST;
-        	}
 
-        	final Vector<String> translation = new Vector<>(specificationText.subList((translationLine + 1),
-        																			   endTranslationLine));
-        	final String calculatedMD5 = calculateMD5(translation);
-        	if (!translatedMD5.equals(calculatedMD5)) {
-        		return ValidationResult.DIVERGENCE_EXISTS;
+            	final Vector<String> translation = new Vector<>(specificationText.subList((translationLine + 1),
+            																			   endTranslationLine));
+            	final String calculatedMD5 = calculateMD5(translation);
+            	if (!translatedMD5.equals(calculatedMD5)) {
+            		return ValidationResult.DIVERGENCE_EXISTS;
+            	}
+        	} else {
+        		translatedMD5 = null;
         	}
         }
         
