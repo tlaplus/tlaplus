@@ -28,6 +28,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         super(name, mode);
     }
 
+    @Override
     public void seek(long pos) throws IOException {
         this.superSeekCnt++;
         long start = System.currentTimeMillis();
@@ -35,6 +36,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         this.superSeekTime += System.currentTimeMillis() - start;
     }
     
+    @Override
     public int read() throws IOException {
         this.superReadCnt++;
         long start = System.currentTimeMillis();
@@ -43,6 +45,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         return res;
     }
     
+    @Override
     public int read(byte[] b) throws IOException {
         this.superReadCnt++;
         long start = System.currentTimeMillis();
@@ -51,6 +54,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         return res;
     }
     
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         this.superReadCnt++;
         long start = System.currentTimeMillis();
@@ -59,6 +63,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         return res;
     }
     
+    @Override
     public void write(int b) throws IOException {
         this.superWriteCnt++;
         long start = System.currentTimeMillis();
@@ -66,6 +71,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         this.superWriteTime += System.currentTimeMillis() - start;
     }
     
+    @Override
     public void write(byte[] b) throws IOException {
         this.superWriteCnt++;
         long start = System.currentTimeMillis();
@@ -73,6 +79,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         this.superWriteTime += System.currentTimeMillis() - start;
     }    
     
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         this.superWriteCnt++;
         long start = System.currentTimeMillis();

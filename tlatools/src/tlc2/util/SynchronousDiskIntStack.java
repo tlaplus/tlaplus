@@ -64,14 +64,16 @@ public class SynchronousDiskIntStack implements IntStack {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IntStack#size()
 	 */
-	public long size() {
+	@Override
+    public long size() {
 		return this.size;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.IntStack#pushInt(int)
 	 */
-	public void pushInt(int x) {
+	@Override
+    public void pushInt(int x) {
 		if (this.index == bufSize) {
 			// flush to disk
 			try {
@@ -96,7 +98,8 @@ public class SynchronousDiskIntStack implements IntStack {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IntStack#pushLong(long)
 	 */
-	public void pushLong(long x) {
+	@Override
+    public void pushLong(long x) {
 		this.pushInt((int) (x & 0xFFFFFFFFL));
 		this.pushInt((int) (x >>> 32));
 	}
@@ -104,7 +107,8 @@ public class SynchronousDiskIntStack implements IntStack {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IntStack#popInt()
 	 */
-	public int popInt() {
+	@Override
+    public int popInt() {
 		if (this.index == 0 && hasPool()) {
 			// fill buffer
 			try {
@@ -132,7 +136,8 @@ public class SynchronousDiskIntStack implements IntStack {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IntStack#popLong()
 	 */
-	public long popLong() {
+	@Override
+    public long popLong() {
 		long high = this.popInt();
 		long low = this.popInt();
 		return (high << 32) | (low & 0xFFFFFFFFL);
@@ -141,7 +146,8 @@ public class SynchronousDiskIntStack implements IntStack {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IntStack#reset()
 	 */
-	public void reset() {
+	@Override
+    public void reset() {
 		this.size = 0L;
 		this.index = 0;
 

@@ -38,63 +38,72 @@ public class DummyBucketStatistics implements IBucketStatistics {
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#addSample(int)
 	 */
-	public void addSample(int amount) {
+	@Override
+    public void addSample(int amount) {
 		// ignore
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getObservations()
 	 */
-	public long getObservations() {
+	@Override
+    public long getObservations() {
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getMedian()
 	 */
-	public int getMedian() {
+	@Override
+    public int getMedian() {
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getMean()
 	 */
-	public double getMean() {
+	@Override
+    public double getMean() {
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getMin()
 	 */
-	public int getMin() {
+	@Override
+    public int getMin() {
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getMax()
 	 */
-	public int getMax() {
+	@Override
+    public int getMax() {
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getStdDev()
 	 */
-	public double getStdDev() {
+	@Override
+    public double getStdDev() {
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getPercentile(double)
 	 */
-	public double getPercentile(double quantile) {
+	@Override
+    public double getPercentile(double quantile) {
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getSamples()
 	 */
-	public NavigableMap<Integer, Long> getSamples() {
+	@Override
+    public NavigableMap<Integer, Long> getSamples() {
 		return new TreeMap<Integer, Long>();
 	}
 

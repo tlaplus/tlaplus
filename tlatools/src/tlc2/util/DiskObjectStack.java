@@ -47,6 +47,7 @@ public class DiskObjectStack extends ObjectStack {
     this.diskStack = new ObjectPoolStack(BufSize, this.filePrefix);
   }
   
+  @Override
   final void enqueueInner(Object state) {
     if (this.index == BufSize && this.buf == this.buf2) {
       // need to flush buf1 to disk      
@@ -63,6 +64,7 @@ public class DiskObjectStack extends ObjectStack {
     this.buf[this.index++] = state;
   }
   
+  @Override
   final Object dequeueInner() {
     if (this.buf == this.buf1 && this.index < BufSize/2) {
       // need to fill buffers
@@ -82,6 +84,7 @@ public class DiskObjectStack extends ObjectStack {
   }
 
   /* Checkpoint.  */
+  @Override
   public final void beginChkpt() throws IOException {
     String filename = this.filePrefix + ".tmp";
     ObjectOutputStream oos = FileUtil.newOBFOS(filename);
@@ -99,6 +102,7 @@ public class DiskObjectStack extends ObjectStack {
     oos.close();
   }
 
+  @Override
   public final void commitChkpt() throws IOException {
     // SZ 23.02.2009: filename is not used  
     // String filename = this.filePrefix + ".chkpt"; 
@@ -111,6 +115,7 @@ public class DiskObjectStack extends ObjectStack {
     }
   }
 
+  @Override
   public final void recover() throws IOException {
     String filename = this.filePrefix + ".chkpt";
     

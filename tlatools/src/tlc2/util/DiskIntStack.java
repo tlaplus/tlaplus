@@ -53,9 +53,11 @@ public final class DiskIntStack implements IntStack {
   }
 
   /* Return the number of items on the stack. */
+  @Override
   public final long size() { return this.size; }
   
   /* Push an integer onto the stack.  */
+  @Override
   public final synchronized void pushInt(int x) {
     if (this.index == BufSize && this.buf == this.buf2) {
       // need to flush buf1 to disk
@@ -79,12 +81,14 @@ public final class DiskIntStack implements IntStack {
   }
   
   /* Push a long integer onto the stack.  */
+  @Override
   public final synchronized void pushLong(long x) {
     this.pushInt((int)(x & 0xFFFFFFFFL));
     this.pushInt((int)(x >>> 32));
   }
 
   /* Pop the integer on top of the stack.  */
+  @Override
   public final synchronized int popInt() {
     if (this.buf == this.buf1 && this.index < BufSize/2 && this.hiPool != 0) {
       // need to fill buf1 from disk
@@ -111,6 +115,7 @@ public final class DiskIntStack implements IntStack {
   }
 
   /* Pop the long integer on top of the stack.  */
+  @Override
   public final synchronized long popLong() {
     long high = this.popInt();
     long low = this.popInt();
@@ -118,6 +123,7 @@ public final class DiskIntStack implements IntStack {
   }
 
   class Reader extends Thread {
+    @Override
     public void run() {
       try {
 	synchronized(this) {
@@ -145,6 +151,7 @@ public final class DiskIntStack implements IntStack {
   }
 
   class Writer extends Thread {
+    @Override
     public void run() {
       try {
 	synchronized(this) {
@@ -174,7 +181,8 @@ public final class DiskIntStack implements IntStack {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IntStack#reset()
 	 */
-	public void reset() {
+	@Override
+    public void reset() {
 		// TODO Auto-generated method stub
 	}
 }

@@ -109,7 +109,8 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 		return buf.toString();
 	}
 
-	public int getMedian() {
+	@Override
+    public int getMedian() {
 		long l = getObservations();
 		if (l <= 0) {
 			return -1;
@@ -129,7 +130,8 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 		throw new RuntimeException("bug, shoud not get here");
 	}
 
-	public double getMean() {
+	@Override
+    public double getMean() {
 		long sum = 0L;
 		// Sum up values and count
 		final Iterator<Entry<Integer, Long>> iterator = getSamples().entrySet().iterator();
@@ -147,21 +149,24 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 		}
 	}
 
-	public int getMin() {
+	@Override
+    public int getMin() {
 		if (getObservations() <= 0) {
 			return -1;
 		}
 		return getSamples().firstKey();
 	}
 
-	public int getMax() {
+	@Override
+    public int getMax() {
 		if (getObservations() <= 0) {
 			return -1;
 		}
 		return getSamples().lastKey();
 	}
 
-	public double getStdDev() {
+	@Override
+    public double getStdDev() {
 		final long N = getObservations();
 		if (N <= 0) {
 			return -1.0d;
@@ -180,7 +185,8 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 		return stdDev;
 	}
 
-	public double getPercentile(double quantile) {
+	@Override
+    public double getPercentile(double quantile) {
 		if (Double.isNaN(quantile)) {
 			throw new IllegalArgumentException("NaN");
 		}

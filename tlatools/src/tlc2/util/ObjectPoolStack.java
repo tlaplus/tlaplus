@@ -82,6 +82,7 @@ public class ObjectPoolStack {
   }
 
   class Reader extends Thread {
+      @Override
       public void run() {
           try {
               synchronized(this) {
@@ -109,6 +110,7 @@ public class ObjectPoolStack {
   }
 
   class Writer extends Thread {
+      @Override
       public void run() {
           try {
               synchronized(this) {

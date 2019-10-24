@@ -34,10 +34,12 @@ public class BigInt extends BigInteger implements Cloneable, ExternalSortable {
     return ((x instanceof BigInt) && super.equals(x));
   }
 
+  @Override
   public final void write(OutputStream out) throws IOException {
     ByteUtils.writeSizeBigInt(out, this);
   }
     
+  @Override
   public final BigInt read(InputStream in) throws IOException {
     return ByteUtils.readSizeBigInt(in);
   }

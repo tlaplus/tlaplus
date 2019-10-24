@@ -49,84 +49,96 @@ public class BucketStatisticsMXWrapper extends TLCStandardMBean implements Bucke
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getObjectName()
 	 */
-	public String getObjectName() {
+	@Override
+    public String getObjectName() {
 		return objectName;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getObservations()
 	 */
-	public long getObservations() {
+	@Override
+    public long getObservations() {
 		return graphStats.getObservations();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getMedian()
 	 */
-	public int getMedian() {
+	@Override
+    public int getMedian() {
 		return graphStats.getMedian();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getMean()
 	 */
-	public double getMean() {
+	@Override
+    public double getMean() {
 		return graphStats.getMean();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getMin()
 	 */
-	public int getMin() {
+	@Override
+    public int getMin() {
 		return graphStats.getMin();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getMax()
 	 */
-	public int getMax() {
+	@Override
+    public int getMax() {
 		return graphStats.getMax();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#getStdDev()
 	 */
-	public double getStdDev() {
+	@Override
+    public double getStdDev() {
 		return graphStats.getStdDev();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get75Percentile()
 	 */
-	public double get75Percentile() {
+	@Override
+    public double get75Percentile() {
 		return graphStats.getPercentile(0.75d);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get95Percentile()
 	 */
-	public double get95Percentile() {
+	@Override
+    public double get95Percentile() {
 		return graphStats.getPercentile(0.95d);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get98Percentile()
 	 */
-	public double get98Percentile() {
+	@Override
+    public double get98Percentile() {
 		return graphStats.getPercentile(0.98d);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get99Percentile()
 	 */
-	public double get99Percentile() {
+	@Override
+    public double get99Percentile() {
 		return graphStats.getPercentile(0.99d);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.management.GraphStatisticsMXBean#get999Percentile()
 	 */
-	public double get999Percentile() {
+	@Override
+    public double get999Percentile() {
 		return graphStats.getPercentile(0.999d);
 	}
 }
