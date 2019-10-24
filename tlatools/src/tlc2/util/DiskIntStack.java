@@ -23,7 +23,7 @@ import util.FileUtil;
  * 
  */
 public final class DiskIntStack implements IntStack {
-  private final static int BufSize = 16384;
+  private static final int BufSize = 16384;
 
   private long size;
   private String filePrefix;

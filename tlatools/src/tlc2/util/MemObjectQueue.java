@@ -19,8 +19,8 @@ import util.FileUtil;
  * @version $Id$
  */
 public final class MemObjectQueue {
-  private final static int InitialSize = 4096;
-  private final static int GrowthFactor = 2;
+  private static final int InitialSize = 4096;
+  private static final int GrowthFactor = 2;
 
   /* Fields  */
   private int len;

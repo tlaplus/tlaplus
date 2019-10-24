@@ -14,7 +14,7 @@ import util.BufferedDataOutputStream;
 import util.FileUtil;
 
 public final class MemIntQueue extends MemBasedSet {
-	private final static int InitialSize = 4096;
+	private static final int InitialSize = 4096;
 
 	private int start;
 	private String diskdir;

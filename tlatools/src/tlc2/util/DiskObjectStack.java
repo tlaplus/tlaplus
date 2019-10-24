@@ -20,7 +20,7 @@ import util.FileUtil;
  * @version $Id$
  */
 public class DiskObjectStack extends ObjectStack {
-  private final static int BufSize = 8192;
+  private static final int BufSize = 8192;
 
   /**
    * Invariants:

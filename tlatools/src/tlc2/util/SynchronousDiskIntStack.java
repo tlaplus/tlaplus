@@ -36,8 +36,8 @@ import util.FileUtil;
 
 public class SynchronousDiskIntStack implements IntStack {
 
-	public final static int BufSize = 8388608; // ~32mb
-	private final static int BufSizeMax = BufSize << 5; // ~1024mb
+	public static final int BufSize = 8388608; // ~32mb
+	private static final int BufSizeMax = BufSize << 5; // ~1024mb
 
 	private final int bufSize;
 	private final String filePrefix;
