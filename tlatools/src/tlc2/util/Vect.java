@@ -193,7 +193,7 @@ public class Vect<E> implements Cloneable, Serializable {
   }
   
   public String toString() {  
-    StringBuffer buf = new StringBuffer("{");
+    StringBuilder buf = new StringBuilder("{");
     if (this.size() != 0) {
       buf.append(this.elementAt(0).toString());
     }

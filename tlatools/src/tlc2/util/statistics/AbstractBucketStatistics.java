@@ -74,7 +74,7 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 	}
 
 	public String toString() {
-		final StringBuffer buf = new StringBuffer();
+		final StringBuilder buf = new StringBuilder();
 		buf.append("============================%n");
 		buf.append("=" + title + "=%n");
 		buf.append("============================%n");
