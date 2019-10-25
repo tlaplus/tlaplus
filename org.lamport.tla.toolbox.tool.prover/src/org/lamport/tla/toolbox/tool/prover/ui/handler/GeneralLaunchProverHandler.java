@@ -1,12 +1,9 @@
 package org.lamport.tla.toolbox.tool.prover.ui.handler;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
-import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.tool.prover.ui.dialog.LaunchProverDialog;
-import org.lamport.tla.toolbox.tool.prover.ui.util.TLAPMExecutableLocator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
@@ -15,33 +12,19 @@ import org.lamport.tla.toolbox.util.UIHelper;
  * class for a more detailed explanation of the dialog.
  * 
  * @author Daniel Ricketts
- *
  */
-public class GeneralLaunchProverHandler extends AbstractHandler implements IHandler
-{
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
-    	/*
-    	 * Check for dirty module added by LL on 14 Dec 2010
-    	 */
-        boolean proceed = UIHelper.promptUserForDirtyModules();
-        if (!proceed)
-        {
-            // the user cancelled
-            return null;
-        }
-        LaunchProverDialog dialog = new LaunchProverDialog(UIHelper.getShellProvider());
-        dialog.open();
-        return null;
-    }
-
-    /**
-     * This handler is enabled if there is a TLA editor with focus and a TLAPM executable exists.
-     */
-    public void setEnabled(Object context)
-    {
-        final TLAPMExecutableLocator locator = TLAPMExecutableLocator.INSTANCE;
-
-        setBaseEnabled((EditorUtil.getTLAEditorWithFocus() != null) && locator.tlapmDoesExist());
-    }
+public class GeneralLaunchProverHandler extends AbstractProverHandler implements IHandler {
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		/*
+		 * Check for dirty module added by LL on 14 Dec 2010
+		 */
+		boolean proceed = UIHelper.promptUserForDirtyModules();
+		if (!proceed) {
+			// the user cancelled
+			return null;
+		}
+		LaunchProverDialog dialog = new LaunchProverDialog(UIHelper.getShellProvider());
+		dialog.open();
+		return null;
+	}
 }

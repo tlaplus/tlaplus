@@ -1963,6 +1963,16 @@ public class DecomposeProofHandler extends AbstractHandler implements
     }
 
     /**
+     * Enabled state is based upon whether the spec has been parsed. (https://github.com/tlaplus/tlaplus/issues/243)
+     */
+    @Override
+	public void setEnabled(Object context) {
+		final Spec spec = Activator.getSpecManager().getSpecLoaded();
+
+		setBaseEnabled(spec.getStatus() == IParseConstants.PARSED);
+	}
+
+    /**
      * The Runnable class extension for running the realExecute() method.
      * 
      * @author lamport
