@@ -876,9 +876,9 @@ public abstract class BasicFormPage extends FormPage implements IModelConfigurat
      */
     class RunAction extends Action
     {
-        RunAction()
-        {
-            super("Run", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/lrun_obj.gif"));
+    	// TODO: HiDPI on this icon as we also have an @2x version
+        RunAction() {
+            super("Run", TLCUIActivator.imageDescriptorFromPlugin(TLCUIActivator.PLUGIN_ID, "icons/full/run_exc.png"));
             this.setDescription("Run TLC");
             this.setToolTipText("Runs TLC on the model.");
         }

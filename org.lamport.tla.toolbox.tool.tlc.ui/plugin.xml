@@ -286,7 +286,7 @@
          <!-- Run model menu bar command in TLC Model Checker menu -->
          <command
                commandId="toolbox.tool.tlc.commands.model.run"
-               icon="icons/full/lrun_obj.gif"
+               icon="icons/full/run_exc.png"
                id="toolbox.menu.runmodel"
                label="Run model"
                mnemonic="R"
@@ -424,7 +424,7 @@
              is RunAction, a nested class in BasicFormPage.-->
          <!-- command
                commandId="toolbox.tool.tlc.commands.model.run"
-               icon="icons/full/lrun_obj.gif"
+               icon="icons/full/run_exc.png"
                id="toolbox.popupmenu.model.run"
                label="Run model"
                style="push">
