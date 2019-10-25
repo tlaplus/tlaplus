@@ -404,6 +404,34 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		validatePage(false);
 	}
 	
+	/**
+	 * This switches the behavior combo to be Init-Next behavior and potentially sets the Init and Next values in the
+	 * 	UI text areas.
+	 * 
+	 * @param initFormula if non-null, this will be set into the Init text area
+	 * @param nextFormula if non-null, this will be set into the Next text area
+	 */
+	public void setInitNextBehavior(final String initFormula, final String nextFormula) {
+		boolean setDirty = setSpecSelection(MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT);
+		
+		if (initFormula != null) {
+			initFormulaSource.setDocument(new Document(initFormula));
+			setDirty = true;
+		}
+		
+		if (nextFormula != null) {
+			nextFormulaSource.setDocument(new Document(nextFormula));
+			setDirty = true;
+		}
+		
+		if (setDirty) {
+			final DataBindingManager dm = getDataBindingManager();
+			dm.getSection(dm.getSectionForAttribute(MODEL_BEHAVIOR_NO_SPEC)).markDirty();
+			
+			validatePage(false);
+		}
+	}
+	
 	@Override
 	public void validatePage(boolean switchToErrorPage) {
 		if (getManagedForm() == null) {
@@ -852,8 +880,9 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 	 * This method sets the selection on the
 	 * 
 	 * @param selectedFormula
+	 * @return true if the selection changed
 	 */
-	private void setSpecSelection(int specType) {
+	private boolean setSpecSelection(int specType) {
 		int index = -1;
 
 		switch (specType) {
@@ -870,10 +899,14 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 				throw new IllegalArgumentException("Wrong spec type, this is a bug");
 		}
 		
-		if (index != -1) {
+		if ((index != -1) && (index != behaviorCombo.getSelectionIndex())) {
 			behaviorCombo.select(index);
 			moveToTopOfBehaviorOptionsStack(behaviorCombo.getText());
+			
+			return true;
 		}
+		
+		return false;
 	}
 	
 	private int getModelConstantForSpecSelection() {

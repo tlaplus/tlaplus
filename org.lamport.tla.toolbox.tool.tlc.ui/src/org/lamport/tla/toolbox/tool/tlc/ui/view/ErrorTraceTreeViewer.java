@@ -11,6 +11,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -45,7 +46,6 @@ import org.lamport.tla.toolbox.editor.basic.TLAEditorActivator;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
-import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
@@ -62,6 +62,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.preference.ITLCPreferenceConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.RecordToSourceCoupler;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.RecordToSourceCoupler.LoaderTLCState;
@@ -192,22 +193,39 @@ class ErrorTraceTreeViewer {
 											return;
 										}
 										
-										final StringBuilder constraint = new StringBuilder();
-										final String attributeKey;
-										if (specType == IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT) {
-											attributeKey = IModelConfigurationConstants.MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT;
+										final String init = ((TLCState) selection).getConjunctiveDescription(false);
+										final String next;
+										if (specType == IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_SPEC_CLOSED) {
+											next = m.getAttribute(
+													IModelConfigurationConstants.MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
+													"");
 										} else {
-											attributeKey = IModelConfigurationConstants.MODEL_BEHAVIOR_CLOSED_SPECIFICATION;
-											final String temporalSpecification = m.getAttribute(attributeKey, "");
-											constraint.append(temporalSpecification).append('\n');
+											next = null;
 										}
+										final MainModelPage page = (MainModelPage)modelEditor.findPage(MainModelPage.ID);
+										page.setInitNextBehavior(init, next);
+										modelEditor.setActivePage(MainModelPage.ID);
 										
-										constraint.append(((TLCState) selection).getConjunctiveDescription(false));
+										Display.getDefault().asyncExec(() -> {
+											MessageDialog.openInformation(null, "Model Reconfigured",
+													"The model has been set up to begin checking from the selected "
+														+ "state; please review the model parameters and run the checker.");
+										});										
 
-										m.setAttribute(attributeKey, constraint.toString());
-										m.save(null);
-
-										modelEditor.launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
+		// We previously handled the config alteration and model check launch behind the
+		//	scenes but have since stopped doing that. I'm leaving a portion of this here,
+		//	commented out, in case we decide to return to that workflow.
+//										final StringBuilder constraint = new StringBuilder();
+//										if (specType == IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_SPEC_CLOSED) {
+//											final String temporalSpecification = m.getAttribute(IModelConfigurationConstants.MODEL_BEHAVIOR_CLOSED_SPECIFICATION, "");
+//										}
+//										
+//										constraint.append(((TLCState) selection).getConjunctiveDescription(false));
+//
+//										m.setAttribute(IModelConfigurationConstants.MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, constraint.toString());
+//										m.save(null);
+//
+//										modelEditor.launchModel(TLCModelLaunchDelegate.MODE_MODELCHECK, true);
 		    	        			} catch (final CoreException e) {
 		    	        				TLCActivator.logError("Problem encountered attempting to launch checker.", e);
 		    	        			}
