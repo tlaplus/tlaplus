@@ -31,26 +31,26 @@ Contents
 <h2><a name="works">How TLAPS Works</a></h2>
 
 <p>
-TLAPS consists of a <i>Proof Manager</i> (PM) and various 
+TLAPS consists of a <i>Proof Manager</i> (PM) and various
 <i>back-end provers</i>.&nbsp;
 
-In TLA+, a proof of a theorem or proof step is either a leaf proof or a 
+In TLA+, a proof of a theorem or proof step is either a leaf proof or a
 sequence of steps, each of which may have a proof.&nbsp;
 
 
-The PM translates a proof into a collection of 
+The PM translates a proof into a collection of
 <i>obligations</i> whose correctness implies
-the correctness of the proof.&nbsp;  
+the correctness of the proof.&nbsp;
 
 A proof's obligations include the obligations of each subproof.&nbsp;
 
 The PM calls one or more back-end provers to prove the obligations.&nbsp;
-It then displays with colors the proof status of of each theorem or 
+It then displays with colors the proof status of of each theorem or
 proof step whose
 proof it has checked.&nbsp;
 
 The proof status of a step or theorem is determined by which of its proof's
-obligations the back-end provers succeeded in proving.&nbsp;  
+obligations the back-end provers succeeded in proving.&nbsp;
 
 The section titled <a href="#status-display">How the Toolbox Displays the Status of Proofs</a>
 explains how you can completely customize the colors and their significance.
@@ -72,6 +72,12 @@ If this is the case, click on the Browse... button and locate your executable.
 </p>
 
 <p>
+	<b>Note:</b> if the spec currently has syntax or other problems which prevent it from being
+	successfully parsed, the abilty to use the proof manager will remain disabled until the
+	spec is correct and successfully parsed.
+</p>
+
+<p>
 To tell the PM to check the proof of a theorem or step,
 place the cursor (<i>not</i> the mouse pointer) on that theorem
 or step and execute the command <i>Prove Step or Module</i>.&nbsp;
@@ -87,7 +93,7 @@ The PM can be executed with various options.&nbsp;
 You will probably want to use only the default options.&nbsp;
 
 Some that you might want to change for regular use can be set with
-prefences, as described in the 
+prefences, as described in the
 <a href="#advanced">Advanced Execution Preferences</a> subsection below.&nbsp;
 
 Even more esoteric PM options can be invoked using the <i>Launch Prover</i>
@@ -99,7 +105,7 @@ The PM remembers the outcome of the back-end provers' attempts to prove
 each obligation.&nbsp;
 
 If the PM finds that an obligation has already been proved, its default
-behavior is to 
+behavior is to
 accept it as true and not send it again to a back-end prover.&nbsp;
 
 Checking if an obligation has already been proved is fast, so there is no
@@ -109,7 +115,7 @@ harm telling the PM to prove something it has already proved.&nbsp;
 <p>
 If something mysterious happens when running the PM and you think
 something has gone wrong, you can try looking at the TLAPM
-console, which you can display by using the 
+console, which you can display by using the
 &nbsp;<samp>TLA Proof Manager</samp>&nbsp; menu at the top
 of the Toolbox window.&nbsp;  It shows the output that
 the PM sends to the Toolbox.
@@ -124,13 +130,13 @@ As explained <a href="#interesting">below</a>, the Toolbox shows obligations tha
 prover has been trying to prove for a while.&nbsp;
 
 You can tell PM to stop proving that obligation by clicking on the <i>Stop Proving</i>
-button at the top of the obligation.&nbsp;  
+button at the top of the obligation.&nbsp;
 
 You can stop the entire execution by clicking on the <i>Cancel</i> button of the
 <i>Prover Launch</i> dialog.
 </p>
 <p>Note: If you check <i>Always run in background</i> on the <i>Prover Launch</i> dialog,
-that dialog will stop popping up when you run the PM.&nbsp;  
+that dialog will stop popping up when you run the PM.&nbsp;
 
 To get it back, go to <code>File/Preferences/General</code> and uncheck the
 <i>Always run in background</i> preference.</p>
@@ -140,10 +146,10 @@ To get it back, go to <code>File/Preferences/General</code> and uncheck the
 <h3><a name="obligations">The Status of Obligations</a></h3>
 <p>
 The PM displays with colors the proof status of steps and theorems
-whose proofs it checks.&nbsp; 
+whose proofs it checks.&nbsp;
 
 The status of a step or theorem depends on the results of checking its
-proof obligations.&nbsp;  
+proof obligations.&nbsp;
 
 For each back-end prover and each obligation, there are five possible
 statuses of the checking of that obligation by that prover:
@@ -173,12 +179,12 @@ TLA+ allows the leaf "proof":
    OMITTED
 </pre>
 which indicates that the user has explicitly chosen to omit the proof.&nbsp;
- 
+
 In this case, the step is considered to have a dummy obligation whose status
-is <b>omitted</b>.&nbsp;  
+is <b>omitted</b>.&nbsp;
 
 TLA+ also allows incomplete proofs in which some proofs are
-missing, usually because they have yet to be written.&nbsp; 
+missing, usually because they have yet to be written.&nbsp;
 
 In this case, the step is considered to have a dummy obligation whose
 status is <b>missing</b>.&nbsp;
@@ -233,7 +239,7 @@ leaf steps (or theorems)--ones with no substeps--by checking the
 &nbsp;<samp>Applies to Leaf Steps Only</samp>&nbsp; field.&nbsp;
 
 The &nbsp;<samp>Show Leaf Steps in Side Bar</samp>&nbsp; field indicates if leaf steps
-colored with that logical color should be highlighted by a mark on the 
+colored with that logical color should be highlighted by a mark on the
 right-hand side of the
 module editor, next to the appropriate point in the vertical scroll bar.&nbsp;
 
@@ -253,12 +259,12 @@ on the preference page.&nbsp;
 <h3><a name="interesting">Interesting Obligations</a></h3>
 
 <p>
-When checking a proof, the Toolbox displays <i>interesting obligations</i> 
-in a separate window.&nbsp;  
+When checking a proof, the Toolbox displays <i>interesting obligations</i>
+in a separate window.&nbsp;
 
 Here is what can make an obligation interesting:
 <ul>
-<li>Some prover has failed to prove it.&nbsp;  
+<li>Some prover has failed to prove it.&nbsp;
 
 The obligation can stop being interesting (and no longer displayed)
 if the PM starts another prover to try proving it.&nbsp;
@@ -267,13 +273,13 @@ if the PM starts another prover to try proving it.&nbsp;
 <br></br>
 
 <li>Some prover has been proving it for some period of time (by default,
-about 15 seconds).&nbsp;  
+about 15 seconds).&nbsp;
 
 In this case, you can stop the prover's attempt to prove
 that obligation by clicking on the <samp>Stop Proving</samp> button
 at the top of the obligation.&nbsp;
 
-The obligation stops being interesting if the prover succeeds in 
+The obligation stops being interesting if the prover succeeds in
 proving it.
 </li>
 </ul>
@@ -283,9 +289,9 @@ that generated the obligation.&nbsp;
 
 <p>
 The obligation is a TLA+ representation of the exact mathematical fact
-that the back-end prover is required to prove.&nbsp;  
+that the back-end prover is required to prove.&nbsp;
 
-The back-end prover sees nothing except what the displayed obligation 
+The back-end prover sees nothing except what the displayed obligation
 contains.&nbsp;
 
 For example, suppose your specification defines <code>Two</code> by
@@ -295,8 +301,8 @@ For example, suppose your specification defines <code>Two</code> by
 A back-end prover will have no way of proving the obligation
 <pre>
    1+1 = Two
-</pre> 
-because it has no idea what <code>Two</code> means.&nbsp;  
+</pre>
+because it has no idea what <code>Two</code> means.&nbsp;
 
 A proof that generates this obligation is incorrect because it fails
 to indicate that the definition of <code>Two</code> must be used.&nbsp;
@@ -310,7 +316,7 @@ to be checked or you have canceled the command from the <i>Prover Launch</i>
 dialog, the colors shown in the module editor reflect the correct status
 of the proof(s) that were checked.&nbsp;
 
-Making a change to the module can change the obligations the PM 
+Making a change to the module can change the obligations the PM
 generates for a proof, changing the proof status of steps.&nbsp;
 
 For example, changing the definition of a symbol is likely to change
@@ -319,13 +325,13 @@ the obligations for the proof of any formula containing that symbol.&nbsp;
 A step's color is not changed to reflect changes to the module.&nbsp;
 
 You can edit the module while running a proof, but the proof is performed
-on the module as it was when TLAPS was launched.&nbsp; 
+on the module as it was when TLAPS was launched.&nbsp;
 
 
 </p>
 <p>
 Calling the PM to check the proof of a step (or a proof containing that
-step)  causes the step's color to be updated appropriately.&nbsp; 
+step)  causes the step's color to be updated appropriately.&nbsp;
 
 (Remember that this entails no further proving if the proof's obligations
 have not changed.)&nbsp;
@@ -345,13 +351,13 @@ status of its obligations obtained from proofs it has already attempted.&nbsp;
 
 <p>
 You can edit the module while the <i>Check Status</i> command is
-running.&nbsp;  
+running.&nbsp;
 
 You can therefore issue the command to update the status of all the module's
 proofs and let it run while you continue editing a proof.&nbsp;
 
 A step's color will be determined by the module's contents when the
-command was issued.&nbsp;  
+command was issued.&nbsp;
 
 </p>
 
@@ -361,9 +367,9 @@ There are some errors in a proof that are detected by the PM before sending a pr
 to the back-end provers.&nbsp;
 
 These can be actual mistakes in the proof--for example, using a <code>TAKE</code> step when the
-current goal is not a universally quantified formula.&nbsp;  
+current goal is not a universally quantified formula.&nbsp;
 
-They can also be TLA+ features not supported by TLAPS, such as quantification over tuples, as in 
+They can also be TLA+ features not supported by TLAPS, such as quantification over tuples, as in
 &nbsp;<code> \A &lt;&lt;x, y, z&gt;&gt; \in S : ...</x></code>&nbsp;.
 </p>
 
@@ -398,11 +404,11 @@ prover.&nbsp;
 
 This option tells the PM what SMT solver to use.&nbsp;
 
-See the  
+See the
 <a href=
   "https://tla.msr-inria.inria.fr/tlaps/content/Documentation/Tutorial/Tactics.html#solvers"
  target="_blank">SMT solvers</a>
-section of the 
+section of the
 <a href=
   "https://tla.msr-inria.inria.fr/tlaps/content/Documentation/Tutorial/Tactics.html"
  target="_blank">Tactics page</a>.&nbsp;
@@ -414,20 +420,20 @@ option.)
 
 <dt>Do not trust previous results from earlier versions of provers</dt>
 
-<dd>Selecting this option causes the PM to forget about previous results 
+<dd>Selecting this option causes the PM to forget about previous results
 of checking obligations obtained by
 earlier versions of back-end provers.&nbsp;
 
 You would select this option and redo your proofs if you are afraid that
-bugs in an earlier version of one of the back-end provers could have 
-caused it to report that it had proved an incorrect obligation. 
+bugs in an earlier version of one of the back-end provers could have
+caused it to report that it had proved an incorrect obligation.
 </dd>
 </dl>
 <h3><a name="launch">The Launch Prover Command</a></h3>
 
-The <i>Launch Prover Command</i> (<code>Ctl+G Ctl+P</code>) can be 
+The <i>Launch Prover Command</i> (<code>Ctl+G Ctl+P</code>) can be
 used to execute the PM with options that cannot be specified by using
-the ordinary <i>Prove Step Or Module</i> command with appropriate preference 
+the ordinary <i>Prove Step Or Module</i> command with appropriate preference
 settings.&nbsp;
 
 Issuing this command raises a dialog with which you choose the PM options
@@ -435,14 +441,14 @@ from the following selections.&nbsp;
 
 <h4>Launch in Toolbox Mode</h4>
 
-This is the normal option.&nbsp;  It causes the PM to determine 
+This is the normal option.&nbsp;  It causes the PM to determine
 what proof(s) it checks just as it does for the ordinary
 <i>Prove Step or Module</i> command.&nbsp;
 
 Without it (or appropriate options provided in the
 <i>Enter additional tlapm command-line arguments</i> field),
 the PM will check the entire module and will uncolor all proof
-steps. 
+steps.
 
 <h4>Chose prover(s) to use</h4>
 You must choose one of these options:
@@ -463,7 +469,7 @@ by Zenon.</dd>
 <br></br>
 
 <dt>Do not use Isabelle</dt>
-<dd>The PM will use Zenon or any other backend prover it should 
+<dd>The PM will use Zenon or any other backend prover it should
 except Isabelle.&nbsp;
 
 It will not use Isabelle even if the proof specifies that an
@@ -483,7 +489,7 @@ Accept the results previously obtained by back-end provers.&nbsp;
 This means that a back-end prover will not be called to prove
 an obligation if it already succeeded or failed when trying to
 prove the obligation.&nbsp;
- 
+
 This is the normal option.&nbsp;</dd>
 <br></br>
 
@@ -501,17 +507,17 @@ results of all previous attempts by back-end
 provers to prove obligations of the currently-selected
 proof(s).&nbsp;
 
-If you think that the PM has gotten confused about 
+If you think that the PM has gotten confused about
 the proof status of an obligation, use this option together with
 the <i>No proving</i>
-option to get it to forget the status and do nothing else. 
+option to get it to forget the status and do nothing else.
 
 </dd>
 </dl>
 
 <h4>Paranoid checking</h4>
 
-This tells the PM to call Isabelle to prove 
+This tells the PM to call Isabelle to prove
 obligations that the PM believes are trivially true and don't need
 to be proved.
 
@@ -523,7 +529,7 @@ Do not even think of using this field unless you know what
 command-line options tlapm accepts.&nbsp;
 
 The field allows you to write additional
-options exactly 
+options exactly
 the way they are written as command-line
 options for tlapm.&nbsp;
 
@@ -535,7 +541,7 @@ made in the rest of the dialog.&nbsp;
 If you are thinking about using this field,
 you can probably figure out what those options are.&nbsp;
 
-However, you will probably want to specify all the options yourself in 
+However, you will probably want to specify all the options yourself in
 this field.&nbsp;
 
 To cause the preference page to generate no options, use the default
@@ -566,13 +572,13 @@ you want.
 
 </p>
 <p>
-At any time, an obligation has a <i>state</i>.&nbsp; 
+At any time, an obligation has a <i>state</i>.&nbsp;
 For the dummy obligation representing a missing proof or
 the proof <code>OMITTED</code>,
-its state 
+its state
 is either <code>missing</code> or <code>omitted</code>.&nbsp; An ordinary proof
 obligation's state consists of a status for each prover.&nbsp;
-We consider there to be three provers: 
+We consider there to be three provers:
 <ul>
  <li>Isabelle</li>
 
@@ -581,11 +587,11 @@ any SMT backend prover</li>
  <li>The PM itself, which is considered to prove
      obligations that it finds trivial.
  </li>
-</ul> 
+</ul>
 
-The possible statuses of these provers are: 
+The possible statuses of these provers are:
 
-<ul> 
+<ul>
 
 <li>Isabelle: <code>untried</code>, <code>proving</code>,
 <code>proved</code>, <code>failed</code>, <code>stopped</code> </li>
@@ -596,7 +602,7 @@ The possible statuses of these provers are:
 
 </ul>
 The state of an ordinary obligation is written as a triple
-such as <code>(proving</code>, <code>failed</code>, <code>none)</code>, 
+such as <code>(proving</code>, <code>failed</code>, <code>none)</code>,
 where the value of the <i>i</i><sup>th</sup> element
 is the obligation's proof status for the <i>i</i><sup>th</sup> prover.
 </p>
@@ -619,17 +625,17 @@ A color predicate is specified by a string with the following syntax
 <pre>
    &lt;color-predicate&gt; ::=  ["every" | "some"] &lt;state-set&gt;*
 
-   &lt;state-set&gt; ::= "missing" | "omitted" 
+   &lt;state-set&gt; ::= "missing" | "omitted"
                      | "(" &lt;statuses&gt; "," &lt;statuses&gt; "," &lt;statuses&gt; ")"
 
-   &lt;statuses&gt; ::=  &lt;status&gt;* | "-" &lt;status&gt;+ 
+   &lt;statuses&gt; ::=  &lt;status&gt;* | "-" &lt;status&gt;+
 </pre>
 
 Each <code>&lt;state-set&gt;</code> specifies a set of states, and a
 sequence of <code>&lt;state-set&gt;</code>s specifies their union.&nbsp;
 
 The <code>&lt;state-set&gt;</code>s <code>"missing"</code> and <code>"omitted"</code>
-specify the obvious singleton sets of dummy-obligation states.&nbsp;  
+specify the obvious singleton sets of dummy-obligation states.&nbsp;
 
 A <code>&lt;statuses&gt;</code> specifies a set of possible prover statuses
 as a list, where <code>"-"</code>, means <i>all statuses
@@ -638,18 +644,18 @@ except</i> and the empty list means all possible statuses.&nbsp;
 A triple of sequences of statuses specifies the set of all states in
 which the proof status of the <i>i</i><sup>th</sup> prover is one of
 the statuses in the <i>i</i><sup>th</sup> component of the
-triple.&nbsp; 
+triple.&nbsp;
 
 An empty sequence of statuses is an abbreviation for all possible
 statuses.&nbsp; For example, the <code>&lt;state-set&gt;</code>
 <pre>
-   (proving proved, untried, ) 
+   (proving proved, untried, )
 </pre>
 
 is the set of all obligation states in which Isabelle's proof status
 is either <code>proving</code> or <code>proved</code>, the Other
 prover's status is <code>untried</code>, and the PM's prover status is either
-<code>none</code> or <code>trivial</code>.&nbsp; 
+<code>none</code> or <code>trivial</code>.&nbsp;
 
 We can write a color predicate that is always true as: <pre>
    every missing omitted ( , , )
@@ -666,7 +672,7 @@ is true iff every obligation is either omitted, is proved by Isabelle
 or the Other prover, or is found trivial by the PM.&nbsp; The predicate
 <pre>
   some (failed, - proved, none) (- proved, failed, none)
-</pre> 
+</pre>
 
 is true for a proof iff, for at least one of its obligations, either
 Isabelle's status is <code>failed</code> and the Other prover's status
@@ -674,12 +680,12 @@ is not <code>proved</code>, or vice-versa, and the PM has not found it
 to be trivial.&nbsp;
 
 <hr>
-<!-- 
+<!--
 <dl>
 <dt><b><font color=#0000c0>Subtopics</font></b></dt>
 <dd> <A href="reading.html">Using Color Predicates</A></dd>
 <dd> <A href="runningTlaps.html">Defining New Color Predicates</A></dd>
-</dl> 
+</dl>
 -->
 <a href = "prover.html">&uarr; Proofs</a>
 </hr>
