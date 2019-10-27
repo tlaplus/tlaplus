@@ -195,7 +195,7 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 	private IMarker incompleteStateExploration;
 	private IMarker zeroCoverage;
 	
-	private final INotificationService ns;
+	private final INotificationService notificationService;
 	
 	private final ErrorPaneViewState errorPaneViewState;
 
@@ -205,9 +205,9 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
      */
 	public ResultPage(final FormEditor editor) {
         super(editor, ID, "Model Checking Results", "icons/full/results_page_" + IMAGE_TEMPLATE_TOKEN + ".png");
-        this.helpId = IHelpConstants.RESULT_MODEL_PAGE;
+        helpId = IHelpConstants.RESULT_MODEL_PAGE;
         
-        this.ns = NotificationsUi.getService();
+        notificationService = NotificationsUi.getService();
         
         errorPaneViewState = new ErrorPaneViewState();
     }
@@ -349,7 +349,7 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 						}
 						break;
 					case COVERAGE_END_OVERHEAD:
-						ns.notify(Collections.singletonList(new CoverageUINotification(getModelEditor())));
+						notificationService.notify(Collections.singletonList(new CoverageUINotification(getModelEditor())));
 						// Continue with COVERAGE_END...
 					case COVERAGE_END:
 						final CoverageInformation ci = dataProvider.getCoverageInfo();
@@ -477,6 +477,13 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 								break;
 						}
 
+						if (visible) {
+							final ModelEditor editor = (ModelEditor)getEditor();
+							final MainModelPage mmp = (MainModelPage)editor.findPage(MainModelPage.ID);
+							
+							mmp.addGlobalTLCErrorMessage(ResultPage.ID + "_err_" + errorCount);
+						}
+						
 						errorStatusHyperLink.setText(text);
 						errorStatusHyperLink.setForeground(color);
 						errorStatusHyperLink.setVisible(visible);
