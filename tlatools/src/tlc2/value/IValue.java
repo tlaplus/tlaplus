@@ -29,6 +29,10 @@ import java.io.IOException;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.coverage.CostModel;
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.ModelValue;
+import tlc2.value.impl.StringValue;
 
 public interface IValue extends Comparable<Object> {
 
@@ -66,11 +70,12 @@ public interface IValue extends Comparable<Object> {
 	 *  
 	 *  see comment in UnionValue#deepNormalize too
 	 */
-	default void initialize() {
+	default IValue initialize() {
 		this.deepNormalize();
 		// Execute fingerprint code path to internally trigger convertAndCache iff
 		// defined (0L parameter is not relevant)
 		this.fingerPrint(0L);
+		return this;
 	}
 	
 	/**
@@ -113,5 +118,12 @@ public interface IValue extends Comparable<Object> {
 	String toString();
 
 	String toString(String delim);
-
+	
+	default boolean isAtom() {
+		if (this instanceof ModelValue || this instanceof IntValue || this instanceof StringValue
+				|| this instanceof BoolValue) {
+			return true;
+		}
+		return false;
+	}
 }

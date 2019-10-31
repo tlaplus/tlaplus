@@ -779,7 +779,7 @@ public class Tool
    * in the given state.
    */
   @Override
-public final StateVec getNextStates(Action action, TLCState state) {
+  public final StateVec getNextStates(Action action, TLCState state) {
     ActionItemList acts = ActionItemList.Empty;
     TLCState s1 = TLCState.Empty.createEmpty();
     StateVec nss = new StateVec(0);
@@ -1495,7 +1495,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
         case DecimalKind:
         case StringKind:
           {
-            return (Value) expr.getToolObject(toolId);
+            return (Value) WorkerValue.mux(expr.getToolObject(toolId));
           }
         case AtNodeKind:
           {
@@ -2050,7 +2050,7 @@ public final StateVec getNextStates(Action action, TLCState state) {
         case OPCODE_rs:     // RcdSelect
           {
             Value rval = this.eval(args[0], c, s0, s1, control, cm);
-            Value sval = (Value) args[1].getToolObject(toolId);
+            Value sval = (Value) WorkerValue.mux(args[1].getToolObject(toolId));
             if (rval instanceof RecordValue) {
               Value result = (Value) ((RecordValue)rval).select(sval);
               if (result == null) {

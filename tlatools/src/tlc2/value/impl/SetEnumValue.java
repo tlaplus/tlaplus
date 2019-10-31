@@ -54,6 +54,24 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 	  this();
 	  this.cm = cm;
   }
+  
+  // See IValue#isAtom except that this is for sets of atoms.
+  public final boolean isSetOfAtoms() {
+      final int len = this.elems.size();
+      for (int i = 0; i < len; i++) {
+    	  final Value v = this.elems.elementAt(i);
+    	  if (v instanceof SetEnumValue) {
+    		  // Sets of sets of sets... of atoms.
+    		  final SetEnumValue sev = (SetEnumValue) v;
+    		  if (!sev.isSetOfAtoms()) {
+    			  return false;
+    		  }
+    	  } else if (!v.isAtom()) {
+    		  return false;
+    	  }
+      }
+      return true;
+  }
 
   @Override
   public final byte getKind() { return SETENUMVALUE; }

@@ -67,9 +67,10 @@ public class MethodValue extends OpValue implements Applicable {
   public final byte getKind() { return METHODVALUE; }
 
   @Override
-  public final void initialize() {
+  public final IValue initialize() {
 	  this.deepNormalize();
 	  // Do not call fingerprint as a MethodValue has no fingerprint.
+	  return this;
   }
   
   @Override

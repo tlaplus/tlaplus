@@ -468,7 +468,7 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
 
         result = opNode.getToolObject(toolId);
         if (result != null) {
-        	return result;
+			return WorkerValue.mux(result);
         }
 
         if (opNode.getKind() == UserDefinedOpKind)
