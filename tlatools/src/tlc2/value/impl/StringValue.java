@@ -147,6 +147,12 @@ public class StringValue extends Value {
   }
 
   @Override
+  public boolean mutates() {
+	  // finalized after construction.
+	  return true;
+  }
+
+  @Override
   public final boolean isNormalized() { return true; }
 
   @Override

@@ -266,6 +266,11 @@ public class ModelValue extends Value implements IModelValue {
   }
 
   @Override
+  public boolean mutates() {
+	  return false;
+  }
+
+  @Override
   public final boolean isNormalized() { return true; }
 
   @Override

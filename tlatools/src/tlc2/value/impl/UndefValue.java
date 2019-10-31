@@ -111,6 +111,11 @@ public class UndefValue extends Value {
   }
 
   @Override
+  public boolean mutates() {
+	  return false;
+  }
+
+  @Override
   public final boolean isNormalized() { return true; }
 
   @Override

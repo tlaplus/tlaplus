@@ -141,6 +141,11 @@ public class BoolValue extends Value implements IBoolValue {
   }
 
   @Override
+  public boolean mutates() {
+	  return false;
+  }
+
+  @Override
   public final boolean isNormalized() { return true; }
 
   @Override

@@ -126,4 +126,11 @@ public interface IValue extends Comparable<Object> {
 		}
 		return false;
 	}
+	
+	/**
+	 * @return true if a value mutates as part of normalization or fingerprinting.
+	 */
+	default boolean mutates() {
+		return true;
+	}
 }

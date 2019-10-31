@@ -118,7 +118,7 @@ public class WorkerValue {
     	final IValue defVal = spec.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
     	defVal.deepNormalize();
     	
-    	if (defVal instanceof Enumerable && TLCGlobals.getNumWorkers() > 1) {
+    	if (defVal.mutates() && TLCGlobals.getNumWorkers() > 1) {
     		final IValue[] values = new IValue[TLCGlobals.getNumWorkers()];
     		values[0] = defVal;
 

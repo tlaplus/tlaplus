@@ -271,6 +271,11 @@ implements Enumerable, Reducible {
   }
 
   @Override
+  public boolean mutates() {
+	  return false;
+  }
+  
+  @Override
   public final IValue permute(IMVPerm perm) {
     return this;
   }
