@@ -59,7 +59,7 @@ public class MainProverPreferencePage extends FieldEditorPreferencePage implemen
         lbl.setText("Advanced Execution Preferences");
 
         addField(new ThreadsFieldEditor(NUM_THREADS_KEY, "  Num. of Threads", parent));
-        addField(new SolverFieldEditor(SOLVER_KEY, "  SMT Solver", parent));
+        addField(new SolverFieldEditor(SOLVER_KEY, "  SMT Solver Command", parent));
         addField(new BooleanFieldEditor(SAFEFP_KEY, "Do not trust previous results from earlier versions of provers.",
         		parent));
 	}
