@@ -5,7 +5,7 @@ Element-Type: testsuite
 Element-Version: 2.0
 Id: _XtCd4APNEemtrbArmQOOJA
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/12/19, 10:10 AM
+Save-Time: 11/4/19, 12:24 PM
 
 ------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8
 Content-Type: text/testcase
@@ -49,5 +49,6 @@ _JObaIIvTEemXYtOZX2zpng	// kind: 'test' name: 'TLA.Functional.ECE.Placement' pat
 _RifTcLZDEemcF9BXFSE9ew	// kind: 'test' name: 'TLA.Functional.TLAPS' path: 'TLA.Functional.TLAPS.test'
 _wH2aMNWzEemOp9qASlV00A	// kind: 'test' name: 'TLA.Functional.PCal.Checksums' path: 'TLA.Functional.PCal.Checksums.test'
 _BbLbgO0TEemu8qbF8JrHog	// kind: 'test' name: 'TLA.Functional.Error.Trace' path: 'TLA.Functional.Error.Trace.test'
+_r_EqIP84EemUPYAc4mFamA	// kind: 'test' name: 'TLA.Functional.Start.From.Error.Trace' path: 'TLA.Functional.Start.From.Error.Trace.test'
 
 ------=_testcase-items-62c497da-4241-31f4-811a-6b453a3ecff8--
