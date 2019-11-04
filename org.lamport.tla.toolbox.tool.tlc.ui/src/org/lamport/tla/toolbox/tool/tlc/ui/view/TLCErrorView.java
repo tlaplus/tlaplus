@@ -838,8 +838,18 @@ public class TLCErrorView extends ViewPart
 				//		so we do this clone and filter of the input data.
 				for (final TLCState filteredState : filtered.getStates(TLCError.Length.ALL)) {
 					final List<TLCVariable> variables = filteredState.getVariablesAsList();
+					final ArrayList<TLCVariable> removals = new ArrayList<>();
 					
-					variables.removeAll(currentErrorTraceFilterSet);
+					for (final TLCVariable variable : variables) {
+						for (final TLCVariable filterVariable : currentErrorTraceFilterSet) {
+							if (filterVariable.representsTheSameAs(variable)) {
+								removals.add(variable);
+								break;
+							}
+						}
+					}
+					
+					variables.removeAll(removals);
 				}
 			}
 
@@ -923,7 +933,7 @@ public class TLCErrorView extends ViewPart
 		private static final String SELECTED_TOOL_TIP_TEXT = "Click to display all variables and expressions.";
 		
 		FilterErrorTrace() {
-			super("Filter the displayed variables and expressions..", AS_CHECK_BOX);
+			super("Filter the displayed variables and expressions", AS_CHECK_BOX);
 			
 			final ImageDescriptor id = TLCUIActivator.getImageDescriptor("icons/elcl16/trace_filter.png");
 			setImageDescriptor(id);
