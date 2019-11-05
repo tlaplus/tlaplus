@@ -997,10 +997,10 @@ public class ModelEditor extends FormEditor {
 							return;
 						}
 					} else {
-						// launching the config
-						model.launch(mode, SubMonitor.convert(monitor, 1), true);
-						
 						/*
+						 * Notify that model checking has begun ahead the launch to avoid potentially cleaning state
+						 * 	after it has started mutating.
+						 * 
 						 * Close any tabs in this editor containing read-only versions of modules. They
 						 * will be changed by the launch, regardless of the mode. We could do something
 						 * more sophisticated like listening to resource changes and updating the
@@ -1011,7 +1011,7 @@ public class ModelEditor extends FormEditor {
 						 */
 						for (int i = getPageCount() - 1; i >= 0; i--) {
 							if (pages.get(i) instanceof BasicFormPage) {
-								((BasicFormPage)pages.get(i)).modelCheckingHasBegun();
+								((BasicFormPage)pages.get(i)).modelCheckingWillBegin();
 							} else {
 								/*
 								 * The normal form pages (main model page, advanced options, results) are remain
@@ -1022,6 +1022,9 @@ public class ModelEditor extends FormEditor {
 							}
 						}
 
+						// launching the config
+						model.launch(mode, SubMonitor.convert(monitor, 1), true);
+						
 						// clear the error view when launching the model
 						// checker
 						// but not when validating

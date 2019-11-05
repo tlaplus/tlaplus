@@ -275,6 +275,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
         this.setCurrentStatus(NOT_RUNNING);
         informPresenter(ITLCModelLaunchDataPresenter.CURRENT_STATUS);
         isDone = true;
+        if (zeroCoverage) {
+        	// the logic for whatever reason in ResultPage doesn't display zero coverage information unless 
+        	//		the data provider is done.
+            informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+        }
         
         synchronized (parsingLock) {
         	try {

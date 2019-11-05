@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -93,6 +94,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageInformationItem;
 import org.lamport.tla.toolbox.tool.tlc.output.data.CoverageUINotification;
 import org.lamport.tla.toolbox.tool.tlc.output.data.ITLCModelLaunchDataPresenter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.StateSpaceInformationItem;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -198,6 +200,8 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 	private final INotificationService notificationService;
 	
 	private final ErrorPaneViewState errorPaneViewState;
+	
+	private final ArrayList<String> markedErrorMessages;
 
     /**
      * Constructor for the page
@@ -210,12 +214,21 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
         notificationService = NotificationsUi.getService();
         
         errorPaneViewState = new ErrorPaneViewState();
+        markedErrorMessages = new ArrayList<>();
     }
 
 	@Override
-    public void modelCheckingHasBegun() {
+    public void modelCheckingWillBegin() {
 		errorPaneViewState.clearState();
-		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+		markedErrorMessages.clear();
+		try {
+			if (zeroCoverage != null) {
+				zeroCoverage.delete();
+			}
+		} catch (final CoreException e) { /* don't really care */ }
+		zeroCoverage = null;
+		getManagedForm().getMessageManager().removeAllMessages();
+		PlatformUI.getWorkbench().getDisplay().syncExec(() -> {
 			if (!tlcStatusLabel.isDisposed()) {
 	    		tlcStatusLabel.setText("Starting...");
 				errorStatusHyperLink.setVisible(errorPaneViewState.errorLinkIsDisplayed());
@@ -441,13 +454,16 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 									.filter(c -> c.isSymmetricalSet()).findFirst();
 							if (possibleSymmetrySet.isPresent()) {
 								final Assignment symmetrySet = possibleSymmetrySet.get();
-								getModelEditor().addErrorMessage(new ErrorMessage(String.format("%s %s",
-										symmetrySet.getLabel(),
-										"declared to be symmetric. Liveness checking under symmetry might fail to find a violation."),
-										symmetrySet.getLabel(), MainModelPage.ID,
-										Arrays.asList(ISectionConstants.SEC_WHAT_IS_THE_MODEL,
-												ISectionConstants.SEC_WHAT_TO_CHECK_PROPERTIES),
-										IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS));
+								final String errorMessage = String.format("%s %s", symmetrySet.getLabel(),
+										"declared to be symmetric. Liveness checking under symmetry might fail to find a violation.");
+								getModelEditor().addErrorMessage(
+										new ErrorMessage(errorMessage, symmetrySet.getLabel(), MainModelPage.ID,
+												Arrays.asList(ISectionConstants.SEC_WHAT_IS_THE_MODEL,
+														ISectionConstants.SEC_WHAT_TO_CHECK_PROPERTIES),
+												IModelConfigurationConstants.MODEL_PARAMETER_CONSTANTS));
+								final Hashtable<String, Object> marker = ModelHelper
+										.createMarkerDescription(errorMessage, IMarker.SEVERITY_WARNING);
+								getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 							}
 						}
 						break;
@@ -482,6 +498,18 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 							final MainModelPage mmp = (MainModelPage)editor.findPage(MainModelPage.ID);
 							
 							mmp.addGlobalTLCErrorMessage(ResultPage.ID + "_err_" + errorCount);
+						}
+						
+						synchronized (markedErrorMessages) {
+							for (final TLCError error : dataProvider.getErrors()) {
+								final String message = error.getMessage();
+								if (!markedErrorMessages.contains(message)) {
+									final Hashtable<String, Object> marker = ModelHelper
+											.createMarkerDescription(message, IMarker.SEVERITY_ERROR);
+									getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
+									markedErrorMessages.add(message);
+								}
+							}
 						}
 						
 						errorStatusHyperLink.setText(text);
