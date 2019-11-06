@@ -38,6 +38,14 @@
             alias="/files/dist-tlc.zip"
             base-name="files/dist-tlc.zip">
       </resource>
+      <resource
+            alias="/files/animator.html"
+            base-name="files/animator.html">
+      </resource>
+      <resource
+            alias="/files/jquery.js"
+            base-name="files/jquery.js">
+      </resource>
    </extension>
 
 

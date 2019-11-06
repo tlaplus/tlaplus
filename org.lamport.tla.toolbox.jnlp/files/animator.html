@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>TLA+ Trace Animator</title>
+	<script src="jquery.js"></script>
+	<!-- <script src="js/jquery.min.js"></script> -->
+</head>
+<body _adv_already_used="true">
+
+<style type="text/css">
+	body{
+		font-family: sans-serif;
+	}
+	div{
+		padding: 10px;
+	}
+</style>
+
+<div id="container" style="text-align:center;">
+
+	<h2>TLA+ Trace Animator</h2>
+
+	<!-- Text area for pasting SVG frames. -->
+	<div style="text-align: center;margin:auto;">
+		<textarea id="textdrop" cols="60" rows="20" placeholder="Paste SVG Frames Here" style="font-size:16px;"></textarea>
+	</div>
+		
+	<!-- <svg id="svgBox" width="40%" viewBox="0 0 100 90" style="border:solid;float:right"> -->
+	<div style="margin:auto">
+		<svg id="svgBox" width="50%" height="500px" viewBox="0 0 300 300" style="border:solid; border-width: 1px; border-color:lightgray; visibility: hidden">
+		</svg>
+	</div>
+
+	<!-- Control Buttons and Frame Info -->
+	<button id="prevBtn">Prev Frame</button>
+	<button id="nextBtn">Next Frame</button>
+	<div id="frameNum">Frame Number: 0</div>
+
+</div>
+
+
+<script type="text/javascript">
+	let frameClass = "tlaframe";
+	let frameElems = $([]); // stores all SVG frame elements.
+	let currFrame = 0;
+	let maxFrame = frameElems.length;
+
+	function init(){
+		// children = ;
+		// console.log(children);
+		// We expect that first level <g> child that lives inside the SVG box is its own frame. This is a simple convention 
+		// that makes the contract between the TLA+ toolbox and this web animator tool simpler. The only thing 
+		// the toolbox needs to export is a sequence of <g> elements, where each one is an animation frame.
+		frameElems = $("#svgBox > g"); // gets all first-level children.		
+		currFrame = 0;
+		maxFrame = frameElems.length;
+		console.log("Initialized animation. Current frame: " + currFrame + ", Total Frames: " + maxFrame);
+	}
+
+	$("#textdrop").on('input', function(ev) {
+	    var text = $("#textdrop").val();
+
+		// The pasted text should be a TLA+ sequence (tuple) of records, where each record has
+		// one key-value pair, whose value is the SVG element for that frame. We expect
+		// that the record has been filtered to only include the view expression, so we 
+		// pull out all lines that contain a record delimiter. We might want to eventually
+		// make this a regex that properly matches and extracts key-value pairs from a TLA+
+		// record, but for now this will do the job.
+		// text should look something like:
+		// <<
+		// [SlotNumber |-> "<text x='25' font='Arial' y='25'>Text A</text>"],
+		// [SlotNumber |-> "<text x='50' font='Arial' y='50'>Text B</text>"],
+		// [SlotNumber |-> "<text x='75' font='Arial' y='75'>Text C</text>"]
+		// >>
+		//
+		tlaRecordDelim = "|->";
+		frameLines = text.split("\n").filter(line => line.includes(tlaRecordDelim));
+		frames = frameLines.map(line => line.split("|->").pop());
+		framesText = frames.join("");
+
+		$("#svgBox").html(framesText);
+
+		// Hide the text area input and show the SVG viewer.
+		$(this).hide();
+		init();
+		reload();
+		$("#svgBox").css("visibility", "visible");
+
+	});
+
+	function reload(){
+		frameElems.each(function(index){
+			let gid = $(this).attr("id");
+			if(index == currFrame){
+				$(this).attr("visibility", "visible");
+			} else{
+				$(this).attr("visibility", "hidden");
+			}
+		});
+		$("#frameNum").html("Frame Number: "+ currFrame + "/" + Math.max(0, maxFrame - 1));
+		console.log("Current frame: " + currFrame);
+	}
+
+	// Set the current frame to the given index. If an out of bound frame index is given, we take the
+	// index modulo the maximum frame index.
+	function setFrame(frameInd){
+		currFrame = frameInd % maxFrame;
+		reload();
+	}
+
+
+	function advanceFrame(){
+		currFrame = (currFrame + 1) % maxFrame;
+		reload();
+	}
+
+	function prevFrame(){
+		if(currFrame - 1 < 0){
+			currFrame = maxFrame - 1;
+		} else{
+			currFrame = currFrame - 1;
+		}
+		reload();
+	}
+
+	$(document).keydown(function(e) {
+    switch(e.which) {
+        case 37: // left
+        	prevFrame();
+        	break;
+
+        case 39: // right
+        	advanceFrame();
+        	break;
+
+        default: return; // exit this handler for other keys
+    }
+	    e.preventDefault(); // prevent the default action (scroll / move caret)
+	});
+
+	$("#nextBtn").click(advanceFrame);
+	$("#prevBtn").click(prevFrame);
+
+	reload();
+
+</script>
+
+
+
+
+
+
+
+
+</body></html>
