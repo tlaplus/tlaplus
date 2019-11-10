@@ -133,7 +133,7 @@
 						<delete file="${unpack_dir}/TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/MacOS/libjli.dylib"/>
 						<symlink
 						  link="${basedir}/${unpack_dir}/TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/MacOS/libjli.dylib"
-						  resource="${basedir}/${unpack_dir}TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/Home/lib/jli/libjli.dylib"/>
+						  resource="${basedir}/${unpack_dir}TLA+ Toolbox.app/Contents/Eclipse/plugins/${plugin_prefix}macosx.x86_64_${plugin_version}/Contents/Home/lib/libjli.dylib"/>
 						<!-- Rename Toolbox directory to remove "+ " in path ".../TLA+ Toolbox/..." to make RCPTT not crash with
 						         java.net.URISyntaxException: Illegal character in path at index 104: ...
 						   (see https://bugs.eclipse.org/547632) -->

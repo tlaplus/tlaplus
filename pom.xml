@@ -99,17 +99,17 @@
 		<tycho.test.vm.useUiThread>false</tycho.test.vm.useUiThread>
 
         <!-- These properties define a dummy certificate store that is used unless the developer passes overwrites to maven -->
-        <!-- see http://stackoverflow.com/a/3620575 for how such an overwrite would look like. -->  
+        <!-- see http://stackoverflow.com/a/3620575 for how such an overwrite would look like. -->
   	    <keystore.path>${project.basedir}/../keystore</keystore.path>
 	    <keystore.alias>msr</keystore.alias>
         <keystore.store.password>secret</keystore.store.password>
         <keystore.key.password>secret</keystore.key.password>
-        <!-- 
-          Set to the values below if the signature should include a timestamp. You want this for a release build 
+        <!--
+          Set to the values below if the signature should include a timestamp. You want this for a release build
           because a timestamp makes sure the signature remains valid after the certificate expired.
           If you activate RFC3161, make sure the machine running the build has sufficient entropy available. Otherwise
           expect to see intermittent hangs when the build attempts to sign a jar. On Linux the haveged and rng-tools
-          can help to collect entropy. 
+          can help to collect entropy.
           <tsa.flag>-tsa</tsa.flag>
           <tsa.server>http://timestamp.comodoca.com</tsa.server>
 		 -->
@@ -119,8 +119,8 @@
 		<!-- Report into the tlaplus organization at SonarQube. -->
 		<!-- Organizations support reporting different branches. -->
 		<sonar.organization>tlaplus</sonar.organization>
-		
-		<!-- Align toolbox.version with the version in 
+
+		<!-- Align toolbox.version with the version in
 			 org.lamport.tla.toolbox.product.product.product
 			 product.version. -->
 		<toolbox.version>1.6.1</toolbox.version>
@@ -130,12 +130,12 @@
 			in other POMs. This property is only referenced during the AUT
 			unpacking if it is occurring on mac - the AUT unpacks out of
 			the ZIP ok on Linux and Windows-->
-		<jdk-bundle-plugin-version>11.0.3.1</jdk-bundle-plugin-version>
+		<jdk-bundle-plugin-version>13.0.1.2</jdk-bundle-plugin-version>
 	</properties>
 
 	<build>
 		<plugins>
-			<!-- Fail the build early and with a clear error message if the Java 11 
+			<!-- Fail the build early and with a clear error message if the Java 11
 				dependency isn't satisfied. https://github.com/tlaplus/tlaplus/issues/278 -->
 		    <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -228,8 +228,8 @@
 				        <keypass>${keystore.key.password}</keypass>
 			           	<verbose>false</verbose>
 			           	<arguments>
-			 			  <!-- Embed a current timestamp in the signed content (file). With this timestamp, 
-							the signature of the content remains valid *after* the signing certificate 
+			 			  <!-- Embed a current timestamp in the signed content (file). With this timestamp,
+							the signature of the content remains valid *after* the signing certificate
 							expired. -->
 			              <argument>${tsa.flag}</argument>
 			              <argument>${tsa.server}</argument>
@@ -253,8 +253,8 @@
 					<!-- recommended: use p2-based target platform resolver -->
 					<resolver>p2</resolver>
 					<ignoreTychoRepositories>true</ignoreTychoRepositories>
-					<!-- Include the pack200 artifacts in the p2 repository. This increases 
-						the size of the p2 repository (jars + pack.gz), but reduces the load on the 
+					<!-- Include the pack200 artifacts in the p2 repository. This increases
+						the size of the p2 repository (jars + pack.gz), but reduces the load on the
 						server hosting the repository as clients download the compressed pack.gz files. -->
 					<includePackedArtifacts>true</includePackedArtifacts>
 					<!-- use existing target platform definition -->
@@ -266,13 +266,13 @@
 					    <classifier>TLAToolbox</classifier>
 					 </artifact>
 					</target>
-					
+
 					<!-- Need to specify mininum Java version. This defines what
 					     java.* packages are available during dependency resolution.
 					     Java 1.4, e.g. does not come with "java.security.sasl", a
 					     package that is indirectly referenced by the toolbox (indirectly via
 					     org.apache.mina.core).
-					     see http://dev.eclipse.org/mhonarc/lists/cbi-dev/msg00166.html --> 
+					     see http://dev.eclipse.org/mhonarc/lists/cbi-dev/msg00166.html -->
 		 			<executionEnvironment>JavaSE-11</executionEnvironment>
 
 					<!-- configure the p2 target environments for multi-platform build -->
@@ -325,4 +325,3 @@
 		</profile>
 	</profiles>
 </project>
-
