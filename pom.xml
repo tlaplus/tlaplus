@@ -130,7 +130,7 @@
 			in other POMs. This property is only referenced during the AUT
 			unpacking if it is occurring on mac - the AUT unpacks out of
 			the ZIP ok on Linux and Windows-->
-		<jdk-bundle-plugin-version>13.0.1.2</jdk-bundle-plugin-version>
+		<jdk-bundle-plugin-version>13.0.1.3</jdk-bundle-plugin-version>
 	</properties>
 
 	<build>
