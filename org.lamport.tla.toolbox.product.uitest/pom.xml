@@ -31,10 +31,10 @@
     -->
   </pluginRepositories>
 
-  <!-- 
-       If RCPTT tests are planned to be run on an update site, 
+  <!--
+       If RCPTT tests are planned to be run on an update site,
        RCPTT Maven Plugin can download Eclipse SDK of required version
-       for current platform from repository below (to see 
+       for current platform from repository below (to see
        an up-to-date list of available versions visit this link:
        http://maven.xored.com/nexus/content/repositories/ci4rcptt-releases/org/eclipse/sdk/
   -->
@@ -42,7 +42,7 @@
     <rcptt-maven-version>2.4.2</rcptt-maven-version>
     <rcptt-runner-version>2.4.2</rcptt-runner-version>
     <aut-unpack-directory>target/unpack-for-aut/</aut-unpack-directory>
-<!-- 
+<!--
     <jdk-bundle-plugin-prefix>st.theori.openjdk.</jdk-bundle-plugin-prefix>
  -->
     <jdk-bundle-plugin-prefix>org.lamport.openjdk.</jdk-bundle-plugin-prefix>
@@ -91,7 +91,7 @@
 
   <build>
     <plugins>
-      <!-- 
+      <!--
           Something has a bug on macos where it does not preserve the executable
             perms on unpacked files; this bites us as RCPTT attempts to run the java binary
             that has been zipped up in our JDK wrapping feature. We will unpack the ZIP using a
@@ -124,8 +124,8 @@
                 <unzip
                   src="../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-${toolbox_version}-${os_ws_arch}.zip"
                   dest="${unpack_dir}" />
-                <chmod dir="${unpack_dir}" perm="ugo+x" includes="**/bin/*,**/Contents/Home/lib/jspawnhelper"/>
-                
+                <chmod dir="${unpack_dir}" perm="ugo+x" includes="**/bin/*,**/lib/jspawnhelper"/>
+
                 <ac:if xmlns:ac="antlib:net.sf.antcontrib">
                 	<ac:equals arg1="${os_ws_arch}" arg2="macosx.cocoa.x86_64"/>
                 	<ac:then>
@@ -183,7 +183,7 @@
 
             <explicit>../org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.6.1-[platform].zip</explicit>
             -->
-            
+
             <explicit>${aut-unpack-directory}</explicit>
 
             <!-- Or specify a path to AUT folder -->
@@ -195,9 +195,9 @@
             <!--
             <explicit>http://server/path/aut-archive.zip</explicit>
             -->
-            
+
             <!-- AUT can be downloaded automatically from Maven repository -->
-            <!-- 
+            <!--
             <groupId>com.company.product</groupId>
             <artifactId>com.company.product.rcp</artifactId>
             <version>3.7.2</version>
@@ -211,12 +211,12 @@
                  Mac OS X 64bit: macosx.coca.x86_64
             -->
 
-            <!-- Optionally it is possible to specify extra features to 
+            <!-- Optionally it is possible to specify extra features to
                  be installed into AUT, this is useful when RCPTT tests
-                 need to be executed using a repository assembled as 
+                 need to be executed using a repository assembled as
                  part of current Maven build.
 
-                 Inside an 'injection element it is possible to specify a list of 
+                 Inside an 'injection element it is possible to specify a list of
                  features/plugins to install, if nothing is set, all available
                  features will be installed.
                  feature.group suffix is required by p2,
@@ -227,7 +227,7 @@
             -->
 
 
-                 
+
             <injections>
               <!-- features are optional - when omitted, all features from given site will be installed -->
               <!--
@@ -240,9 +240,9 @@
               -->
             </injections>
 
-           <!-- additional AUT args (besides taken in its ini-file) can be set 
+           <!-- additional AUT args (besides taken in its ini-file) can be set
                 Use one argument per <arg> element -->
-           <!-- 
+           <!--
             <args>
               <arg>-ws</arg>
               <arg>$${target.ws}</arg>
@@ -260,13 +260,13 @@
           </aut>
 
           <runner>
-            <!-- RCPTT Runner location can be set using the same methods 
+            <!-- RCPTT Runner location can be set using the same methods
                  as AUT location:
             -->
             <!--
             <explicit>/path/to/rcptt/runner</explicit>
             -->
-            
+
             <!-- but the most convenient way is to just set its version,
                  RCPTT maven plugin will automatically set right groupId and
                  artifact ID and will download RCPTT Runner from Xored Maven Repo -->
@@ -288,7 +288,7 @@
 
             <!-- When set to true, in case of test failure
                  AUT will be restarted. This significantly
-                 slows down execution, but may be useful 
+                 slows down execution, but may be useful
                  for some test suites -->
             <!--
             <restartAUTOnFailure>true</restartAUTOnFailure>
@@ -296,7 +296,7 @@
           </testOptions>
 
           <!-- By default RCPTT Runner runs tests from a project directory,
-               but in some cases it might be required to import additional 
+               but in some cases it might be required to import additional
                projects into runner's workspace -->
           <!--
           <projects>
@@ -317,7 +317,7 @@
           <!-- Sometimes it might be useful to skip a test case
                (for instance because of some unresolved bug). RCPTT
                can skip tests based on its tags. By default RCPTT skips
-               tests with tag 'skipExecution' (this value has been 
+               tests with tag 'skipExecution' (this value has been
                chosen because on one hand it is descriptive enough,
                on another hand it is unlikely that this tag name
                will collide with some user's tag)
