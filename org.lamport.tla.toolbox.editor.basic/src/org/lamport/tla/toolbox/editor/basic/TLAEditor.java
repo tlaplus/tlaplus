@@ -877,7 +877,11 @@ public class TLAEditor extends TextEditor
 		}
 		
 		// fall back to original marker if the TLAtoPCalMarker didn't work or no TLAtoPCalMarker
-		((IGotoMarker)getAdapter(IGotoMarker.class)).gotoMarker(marker);
+		//  N.B even though this is marked deprecated, the recommended replacement of: 
+		//					((IGotoMarker)getAdapter(IGotoMarker.class)).gotoMarker(marker);
+		//	causes a stack overflow.
+		//		See: https://github.com/tlaplus/tlaplus/commit/28f6e2cf6328b84027762e828fb2f741b1a25377#r35904992
+		super.gotoMarker(marker);
 	}
 
 	/**
