@@ -20,7 +20,7 @@ jobs:
   steps:
   - task: CacheBeta@0
     inputs:
-      key: maven | s/*/pom.xml
+      key: maven | 42
       path: $(MAVEN_CACHE_FOLDER)
       displayName: Cache Maven local repo
   - task: Maven@3
