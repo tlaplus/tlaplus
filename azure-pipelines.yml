@@ -3,6 +3,12 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
+## https://docs.microsoft.com/en-us/azure/devops/pipelines/caching/?view=azure-devops#can-i-clear-a-cache
+variables:
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+
+
 jobs:
 
 - job: Linux
@@ -12,6 +18,11 @@ jobs:
     vmImage: 'Ubuntu-16.04'
 
   steps:
+  - task: CacheBeta@0
+    inputs:
+      key: maven | **/pom.xml
+      path: $(MAVEN_CACHE_FOLDER)
+      displayName: Cache Maven local repo
   - task: Maven@3
     inputs:
       mavenPomFile: 'pom.xml'
