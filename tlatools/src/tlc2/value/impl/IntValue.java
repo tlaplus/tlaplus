@@ -70,7 +70,7 @@ public class IntValue extends Value {
   public final int compareTo(Object obj) {
     try {
       if (obj instanceof IntValue) {
-        return this.val - ((IntValue)obj).val;
+        return Integer.compare(this.val, ((IntValue)obj).val);
       }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to compare integer " + Values.ppr(this.toString()) +

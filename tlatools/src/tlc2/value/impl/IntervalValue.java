@@ -32,13 +32,14 @@ implements Enumerable, Reducible {
   @Override
   public final int compareTo(Object obj) {
     try {
-      if (obj instanceof IntervalValue) {
-        IntervalValue intv = (IntervalValue)obj;
-        int cmp = this.size() - intv.size();
-        if (cmp != 0) return cmp;
-        if (this.size() == 0) return 0;
-        return this.low - intv.low;
-      }
+        if (obj instanceof IntervalValue) {
+				IntervalValue intv = (IntervalValue) obj;
+		        int cmp = this.size() - intv.size();
+		        if (cmp != 0) {
+					return cmp;
+				}
+                return Integer.compare(this.low, intv.low);
+			}
       // Well, we have to convert them to sets and compare.
       return this.toSetEnum().compareTo(obj);
     }
@@ -108,8 +109,15 @@ implements Enumerable, Reducible {
   @Override
   public final int size() {
     try {
-      if (this.high < this.low) return 0;
-      return this.high - this.low + 1;
+		if (this.high < this.low) {
+			return 0;
+		}
+		final int size = this.high - this.low + 1;
+		if (size < 0) {
+			Assert.fail("Size of interval value exceeds the maximum representable size (32bits)"
+					+ Values.ppr(this.toString()) + ".");
+		}
+		return size;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

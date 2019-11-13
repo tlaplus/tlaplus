@@ -1,12 +1,11 @@
 package tlc2.value.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import tlc2.value.impl.IntValue;
-import tlc2.value.impl.IntervalValue;
 import util.Assert.TLCRuntimeException;
 
 public class IntervalValueTest {
@@ -39,5 +38,30 @@ public class IntervalValueTest {
 			return;
 		}
 		fail();
+	}
+	
+	@Test
+	public void sizeOverflow() {
+		assertEquals(Integer.MAX_VALUE, new IntervalValue(1, Integer.MAX_VALUE).size());
+		assertEquals(Integer.MAX_VALUE, new IntervalValue(Integer.MIN_VALUE, -2).size());
+		
+		try {
+			assertEquals(0, new IntervalValue(-989_822_976, 1_157_660_672).size());
+		} catch (TLCRuntimeException e) {
+			assertTrue(e.getMessage().contains("Size of interval value exceeds the maximum representable size (32bits)"));
+			return;
+		}
+		fail();
+	}
+	
+	@Test
+	public void compareToOverflow1() {
+		final IntervalValue iv = new IntervalValue(Integer.MAX_VALUE - 1, Integer.MAX_VALUE);
+		assertEquals(2, iv.size());
+		
+		final IntervalValue iv2 = new IntervalValue(Integer.MIN_VALUE + 1, Integer.MIN_VALUE + 2);
+		assertEquals(2, iv2.size());
+		
+		assertEquals(1, iv.compareTo(iv2));
 	}
 }
