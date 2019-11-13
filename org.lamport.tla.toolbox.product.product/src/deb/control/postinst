@@ -4,6 +4,7 @@
 chmod 755 /opt/TLA+Toolbox/toolbox
 chmod 755 /opt/TLA+Toolbox/tla2tools.jar
 chmod 755 /opt/TLA+Toolbox/plugins/org.lamport.openjdk.linux.x86_64_*/jre/bin/*
+chmod 755 /opt/TLA+Toolbox/plugins/org.lamport.openjdk.linux.x86_64_*/jre/lib/jspawnhelper
 
 ## Update mime database for x-tla type.
 /usr/bin/update-mime-database /usr/share/mime
