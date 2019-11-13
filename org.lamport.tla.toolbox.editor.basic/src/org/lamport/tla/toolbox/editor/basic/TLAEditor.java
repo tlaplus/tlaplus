@@ -80,7 +80,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.ide.IGotoMarker;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -240,16 +240,27 @@ public class TLAEditor extends TextEditor
 
                 for (int i = 0; i < markerChanges.length; i++)
                 {
-                    if (markerChanges[i].getResource().equals(((IFileEditorInput) getEditorInput()).getFile()))
-                    {
-                        UIHelper.runUIAsync(new Runnable() {
-
-                            public void run()
-                            {
-                                refresh();
-                            }
-                        });
-                    }
+                	if (getEditorInput() instanceof IFileEditorInput) {
+                		final IFileEditorInput iFileEditorInput = (IFileEditorInput) getEditorInput();
+                		if (markerChanges[i].getResource().equals(iFileEditorInput.getFile())) {
+                			UIHelper.runUIAsync(new Runnable() {
+                				public void run() {
+                					refresh();
+                				}
+                			});
+                		}
+                	} else if (getEditorInput() instanceof FileStoreEditorInput) {
+						// Leslie reported a ClassCastException triggered by clicking the “Goto
+						// Obligation” button on a failed proof obligation.
+                		final FileStoreEditorInput fsei = (FileStoreEditorInput) getEditorInput();
+                		if (markerChanges[i].getResource().getLocationURI().equals(fsei.getURI())) {
+                			UIHelper.runUIAsync(new Runnable() {
+                				public void run() {
+                					refresh();
+                				}
+                			});
+                		}
+                	}
                 }
             }
         };
