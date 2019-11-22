@@ -424,24 +424,24 @@ public class ModelChecker extends AbstractChecker
 					}
 
 					final boolean inModel = (this.tool.isInModel(succState) && this.tool.isInActions(curState, succState));
-					boolean seen = false;
+					boolean unseen = true;
                     if (inModel)
                     {
-						seen = isSeenState(curState, worker, succState, liveNextStates, action);
+						unseen = !isSeenState(curState, succState, action, worker, liveNextStates);
 					}
-					// Check if succState violates any invariant:
-                    if (!seen)
+					// Check if an unseen succState violates any invariant:
+                    if (unseen)
                     {
-                    	if (doNextCheckInvariants(curState, succState, inModel, seen)) {
+                    	if (doNextCheckInvariants(curState, succState)) {
                     		return true;
                     	}
 					}
                     // Check if the state violates any implied action. We need to do it
                     // even if succState is not new.
-                    if (doNextCheckImplied(curState, succState, inModel, seen)) {
+                    if (doNextCheckImplied(curState, succState)) {
                     	return true;
                     }
-                    if (inModel && !seen) {
+                    if (inModel && unseen) {
 						// The state is inModel, unseen and neither invariants
 						// nor implied actions are violated. It is thus eligible
 						// for further processing by other workers.
@@ -464,8 +464,8 @@ public class ModelChecker extends AbstractChecker
 		}
     }
 
-	private final boolean isSeenState(final TLCState curState, final Worker worker, final TLCState succState,
-			final SetOfStates liveNextStates, final Action action) throws IOException {
+	private final boolean isSeenState(final TLCState curState, final TLCState succState,
+			final Action action, final Worker worker, final SetOfStates liveNextStates) throws IOException {
 		final long fp = succState.fingerPrint();
 		final boolean seen = this.theFPSet.put(fp);
 		// Write out succState when needed:
@@ -493,7 +493,7 @@ public class ModelChecker extends AbstractChecker
 		return seen;
 	}
 
-	private final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState, final boolean inModel, final boolean seen) throws IOException, WorkerException, Exception {
+	private final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
         int k = 0;
 		try
         {
@@ -524,7 +524,7 @@ public class ModelChecker extends AbstractChecker
 		return false;
 	}
 
-	private final boolean doNextCheckImplied(final TLCState curState, final TLCState succState, final boolean inModel, boolean seen) throws IOException, WorkerException, Exception {
+	private final boolean doNextCheckImplied(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
 		int k = 0;
         try
         {
