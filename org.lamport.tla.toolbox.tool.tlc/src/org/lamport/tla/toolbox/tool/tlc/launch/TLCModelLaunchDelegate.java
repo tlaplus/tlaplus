@@ -136,9 +136,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
     
     static {
     	DIVERGENCE_DIALOG_BUTTONS = new LinkedHashMap<>();
-    	DIVERGENCE_DIALOG_BUTTONS.put("Don't Launch", new Integer(0));
-    	DIVERGENCE_DIALOG_BUTTONS.put("Continue", DIVERGENCE_CONTINUE_LAUNCH);
-    	DIVERGENCE_DIALOG_BUTTONS.put("Stop && Show History", DIVERGENCE_SHOW_HISTORY);
+    	DIVERGENCE_DIALOG_BUTTONS.put("&Abort Launch", new Integer(0));
+    	DIVERGENCE_DIALOG_BUTTONS.put("Continue &Launch", DIVERGENCE_CONTINUE_LAUNCH);
+    	DIVERGENCE_DIALOG_BUTTONS.put("Abort Launch && Show &History", DIVERGENCE_SHOW_HISTORY); // "&&" because "&" is mnemonic.
     }
 
 
