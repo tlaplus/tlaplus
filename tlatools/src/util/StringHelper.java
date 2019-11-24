@@ -1,22 +1,16 @@
-/**
- * 
- */
-package org.lamport.tla.toolbox.util;
+package util;
 
 /**
  * Contains some useful methods for manipulating strings.
  * 
  * @author lamport
- *
  */
-public class StringHelper
-{
-    
+public class StringHelper {
     /*
      * The following defines newline to be a new-line character in whatever
      * system this is.
      */
-    public static String newline = System.getProperty("line.separator");
+    public static String PLATFORM_NEWLINE = System.getProperty("line.separator");
 
     /**
      * Returns the result of concatenating 'copies' copies of string str, 
@@ -41,7 +35,7 @@ public class StringHelper
      *   }
      * }
      */
-    public static final String copyString(String str, int copies) {
+    public static final String copyString(final String str, final int copies) {
         String result = "";
         String powerOf2Copies = str;
         int    remaining = copies;
@@ -57,18 +51,17 @@ public class StringHelper
         return result;
     }
     
-    
     /**
      *  Returns true if the string str contains only whitespace 
      */
-    public static final boolean onlySpaces(String str) {
+    public static final boolean onlySpaces(final String str) {
         return str.trim().equals("");
     }
     
     /**
      * Returns str with any leading whitespace removed. 
      */
-    public static final String trimFront(String str) {
+    public static final String trimFront(final String str) {
         int position = 0;
         while ((position < str.length()) && 
                 Character.isWhitespace(str.charAt(position))) {
@@ -83,7 +76,7 @@ public class StringHelper
     /**
      * Returns str with any terminating whitespace removed. 
      */
-    public static final String trimEnd(String str) {
+    public static final String trimEnd(final String str) {
         int position = str.length();
         while ((position > 0) && 
                 Character.isWhitespace(str.charAt(position - 1))) {
@@ -100,7 +93,7 @@ public class StringHelper
      * @param str
      * @return
      */
-    public static final int leadingSpaces(String str) {
+    public static final int leadingSpaces(final String str) {
         return str.length() - trimFront(str).length() ;
     }
     
@@ -108,7 +101,7 @@ public class StringHelper
      * Prints the elements of the array, one per line, enclosed between
      * *- and -*, except with the first line enclosed with 0- and -0.
      */
-    public static final void printArray(Object[] array) {
+    public static final void printArray(final Object[] array) {
         if (array == null) {
             System.out.println("null array");
             return;
@@ -129,8 +122,8 @@ public class StringHelper
      * @param str
      * @return
      */
-    public static final String[] getWords(String str) {
-        String[] result = trimFront(str).split("\\s+") ;
+    public static final String[] getWords(final String str) {
+    	final String[] result = trimFront(str).split("\\s+") ;
         return result;
     }
     
@@ -141,8 +134,7 @@ public class StringHelper
      * @param str
      * @return
      */
-    public static final boolean isIdentifier(String str) {
-        
+    public static final boolean isIdentifier(final String str) {
         boolean result = true ;
         boolean allChars = true ;
         int i = 0;

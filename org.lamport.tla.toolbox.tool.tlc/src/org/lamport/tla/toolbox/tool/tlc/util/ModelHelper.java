@@ -66,10 +66,7 @@ import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
-import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
-import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
 import tla2sany.modanalyzer.SpecObj;
@@ -78,6 +75,9 @@ import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
+import tlc2.model.Assignment;
+import tlc2.output.SpecWriterUtilities;
+import util.TLAConstants;
 
 /**
  * Provides utility methods for model manipulation
@@ -109,22 +109,15 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      * Delimiter used to serialize parameter-value pair  
      */
     private static final String PARAM_DELIMITER = ":";
-
-    public static final String FILE_TLA_EXTENSION = ".tla";
     
-    public static final String MC_MODEL_NAME = "MC";
-    public static final String FILE_TLA = MC_MODEL_NAME + FILE_TLA_EXTENSION;
-    public static final String FILE_CFG = MC_MODEL_NAME + ".cfg";
-    public static final String FILE_OUT = MC_MODEL_NAME + ".out";
-
     // trace explorer file names
     public static final String TE_MODEL_NAME = "TE";
-    public static final String TE_FILE_TLA = TE_MODEL_NAME + FILE_TLA_EXTENSION;
-    public static final String TE_FILE_CFG = TE_MODEL_NAME + ".cfg";
-    public static final String TE_FILE_OUT = TE_MODEL_NAME + ".out";
+    public static final String TE_FILE_TLA = TE_MODEL_NAME + TLAConstants.Files.TLA_EXTENSION;
+    public static final String TE_FILE_CFG = TE_MODEL_NAME + TLAConstants.Files.CONFIG_EXTENSION;
+    public static final String TE_FILE_OUT = TE_MODEL_NAME + TLAConstants.Files.OUTPUT_EXTENSION;
     // the file to which TLC's output is written so
     // that the trace explorer can retrieve the trace when it is run
-    public static final String TE_TRACE_SOURCE = "MC_TE.out";
+    public static final String TE_TRACE_SOURCE = "MC_TE" + TLAConstants.Files.OUTPUT_EXTENSION;
 
     /**
      * Convenience method
@@ -251,28 +244,6 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             }
 
             result.add(assign);
-        }
-        return result;
-    }
-
-    /**
-     * De-serialize formula list, to a list of formulas, that are selected (have a leading "1")
-     * 
-     * The first character of the formula is used to determine if the formula is enabled in the model 
-     * editor or not. This allows the user to persist formulas, which are not used in the current model 
-     */
-    public static List<Formula> deserializeFormulaList(List<String> serializedList)
-    {
-        Vector<Formula> result = new Vector<Formula>(serializedList.size());
-        Iterator<String> serializedIterator = serializedList.iterator();
-        while (serializedIterator.hasNext())
-        {
-            String entry = serializedIterator.next();
-            Formula formula = new Formula(entry.substring(1));
-            if ("1".equals(entry.substring(0, 1)))
-            {
-                result.add(formula);
-            }
         }
         return result;
     }
@@ -575,28 +546,28 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
                 final int errorLineOffset = lineRegion.getOffset();
 
                 // find the previous comment
-                final IRegion commentRegion = searchAdapter.find(errorLineOffset, ModelWriter.COMMENT, false, false, false,
+                final IRegion commentRegion = searchAdapter.find(errorLineOffset, TLAConstants.COMMENT, false, false, false,
                         false);
 
                 // find the next separator
-                final IRegion separatorRegion = searchAdapter.find(errorLineOffset, ModelWriter.SEP, true, false, false,
+                final IRegion separatorRegion = searchAdapter.find(errorLineOffset, TLAConstants.SEP, true, false, false,
                         false);
                 if (separatorRegion != null && commentRegion != null)
                 {
                     // find the first attribute inside of the
                     // comment
-                    final IRegion attributeRegion = searchAdapter.find(commentRegion.getOffset(), ModelWriter.ATTRIBUTE
+                    final IRegion attributeRegion = searchAdapter.find(commentRegion.getOffset(), TLAConstants.ATTRIBUTE
                             + "[a-z]*[A-Z]*", true, false, false, true);
                     if (attributeRegion != null)
                     {
                         // get the attribute name without the
                         // attribute marker
                         attributeName = document.get(attributeRegion.getOffset(), attributeRegion.getLength())
-                                .substring(ModelWriter.ATTRIBUTE.length());
+                                .substring(TLAConstants.ATTRIBUTE.length());
 
                         // find the index
                         final IRegion indexRegion = searchAdapter.find(attributeRegion.getOffset()
-                                + attributeRegion.getLength(), ModelWriter.INDEX + "[0-9]+", true, false, false, true);
+                                + attributeRegion.getLength(), TLAConstants.COLON + "[0-9]+", true, false, false, true);
                         if (indexRegion != null && indexRegion.getOffset() < separatorRegion.getOffset())
                         {
                             // index value found
@@ -753,7 +724,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
      */
     private static String getMessageWithoutFile(IFile rootModule, String message, String attributeName, int attributeIndex)
     {
-        String module = rootModule.getName().replace(".tla", "");
+        String module = rootModule.getName().replace(TLAConstants.Files.TLA_EXTENSION, "");
 		if (message.indexOf("in module " + module) != -1 || message.indexOf("of module " + module) != -1)
         {
             // first possible expression
@@ -833,23 +804,31 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } else if (attributeName.equals(Model.MODEL_EXPRESSION_EVAL))
         {
             return "Expression";
-        } else if (attributeName.equals(TRACE_EXPLORE_EXPRESSIONS)) {
+        } else if (attributeName.equals(TLAConstants.TraceExplore.TRACE_EXPLORE_EXPRESSIONS)) {
         	return "Error-Trace Exploration expression";
         }
         return attributeName;
     }
 
     /**
-    /**
      * Find the IDs in the given text and return the array of 
      * regions pointing to those or an empty array, if no IDs were found.
-     * An ID is scheme_timestamp, created by {@link ModelWriter#getValidIdentifier(String)} e.G. next_125195338522638000
+     * An ID is scheme_timestamp, created by {@link SpecWriterUtilities#getValidIdentifier(String)} e.G. next_125195338522638000
+     * 
      * @param text text containing IDs (error text)
      * @return array of regions or empty array
      */
-    public static IRegion[] findIds(String text)
-    {
-        return ModelWriter.findIds(text);
+	public static IRegion[] findIds(final String text) {
+		if ((text == null) || (text.length() == 0)) {
+			return new IRegion[0];
+		}
+
+		final Matcher matcher = SpecWriterUtilities.ID_MATCHER.matcher(text);
+		final ArrayList<Region> regions = new ArrayList<>();
+		while (matcher.find()) {
+            regions.add(new Region(matcher.start(), matcher.end() - matcher.start()));
+        }
+        return regions.toArray(new IRegion[regions.size()]);
     }
 
     /**
@@ -1048,7 +1027,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         while (it.hasNext())
         {
             String moduleName = it.next();
-            if (moduleName.equals(FILE_TLA))
+            if (moduleName.equals(TLAConstants.Files.MODEL_CHECK_TLA_FILE))
             {
                 return true;
             }

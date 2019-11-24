@@ -184,7 +184,7 @@ public class ModuleNode extends SymbolNode {
     * ModuleNode class.                                                    *
     ***********************************************************************/
 
-  private HashSet allExtendees = null ;
+  private HashSet<ModuleNode> allExtendees = null ;
     /***********************************************************************
     * The set of all modules that are extended by this module--either      *
     * directly or indirectly.  Returned by getExtendModules                *
@@ -197,7 +197,7 @@ public class ModuleNode extends SymbolNode {
     // VARIABLEs declared in this module
 
 
-  private Vector definitions         = new Vector(8);
+  private ArrayList<SemanticNode> definitions = new ArrayList<>();
     // AssumeNodes, internal ModuleNodes, OpDefNodes, and TheoremNodes, in
     // the exact order they were defined in this module
     /***********************************************************************
@@ -218,7 +218,8 @@ public class ModuleNode extends SymbolNode {
     * It also contains ModuleNodes for inner modules, but not for modules  *
     * nested within them.                                                  *
     *                                                                      *
-    * It appears that this field is never used in SANY1.                   *
+    * It appears that this field is never used in SANY1; it is used by the *
+    * MCParser though.                                                     *
     ***********************************************************************/
 
   Vector recursiveDecls = new Vector(8);
@@ -227,7 +228,7 @@ public class ModuleNode extends SymbolNode {
     * RECURSIVE statements, in the order in which they were created.       *
     ***********************************************************************/
 
-  Vector opDefsInRecursiveSection = new Vector(16);
+  Vector<OpDefNode> opDefsInRecursiveSection = new Vector<>(16);
     /***********************************************************************
     * The list of all OpDefNode objects opd in this module, and in any     *
     * inner modules, with opd.recursiveSection >= 0.  (See the comments    *
@@ -346,8 +347,12 @@ public class ModuleNode extends SymbolNode {
     return (getConstantDecls().length == 0 &&
             getVariableDecls().length == 0);
   }
+  
+  public List<SemanticNode> getDefinitions() {
+	  return definitions;
+  }
 
-  public final void createExtendeeArray(Vector extendeeVec) {
+  public final void createExtendeeArray(Vector<ModuleNode> extendeeVec) {
     /***********************************************************************
     * This is called by Generator.processExtendsList to set the            *
     * ModuleNode's extendees field, which never seems to be used.          *
@@ -355,7 +360,7 @@ public class ModuleNode extends SymbolNode {
     extendees = new ModuleNode[extendeeVec.size()];
 
     for ( int i = 0; i < extendees.length; i++ ) {
-      extendees[i] = (ModuleNode)extendeeVec.elementAt(i);
+      extendees[i] = extendeeVec.elementAt(i);
     }
   }
 
@@ -368,7 +373,7 @@ public class ModuleNode extends SymbolNode {
   public final OpDeclNode[] getConstantDecls() {
     if (constantDecls != null) return constantDecls;
 
-    Vector contextVec = ctxt.getConstantDecls();
+    Vector<SemanticNode> contextVec = ctxt.getConstantDecls();
     constantDecls = new OpDeclNode[contextVec.size()];
     for (int i = 0, j = constantDecls.length - 1; i < constantDecls.length; i++) {
       constantDecls[j--] = (OpDeclNode)contextVec.elementAt(i);
@@ -384,7 +389,7 @@ public class ModuleNode extends SymbolNode {
    public final OpDeclNode[] getVariableDecls() {
     if (variableDecls != null) return variableDecls;
 
-    Vector contextVec = ctxt.getVariableDecls();
+    Vector<SemanticNode> contextVec = ctxt.getVariableDecls();
     variableDecls = new OpDeclNode[contextVec.size()];
     for (int i = 0, j = variableDecls.length - 1; i < variableDecls.length; i++) {
       variableDecls[j--] = (OpDeclNode)contextVec.elementAt(i);
@@ -437,14 +442,13 @@ public class ModuleNode extends SymbolNode {
     return thmOrAssDefs;
   }
 
-  /**
-   * Appends to vector of definitions in this module; should only be
-   * called with AssumeNodes, ModuleNodes, OpDefNodes and TheoremNodes
-   * as arguments.
-   */
-  public final void appendDef(SemanticNode s) {
-    definitions.addElement(s);
-  }
+	/**
+	 * Appends to vector of definitions in this module; should only be called with
+	 * AssumeNodes, ModuleNodes, OpDefNodes and TheoremNodes as arguments.
+	 */
+	public final void appendDef(SemanticNode s) {
+		definitions.add(s);
+	}
 
   /**
    * Returns array of the InstanceNode's representing module
@@ -612,20 +616,31 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
   }
 
 
-  public final HashSet getExtendedModuleSet() {
-    /***********************************************************************
-    * Returns a Hashset whose elements are ModuleNode objects representing  *
-    * all modules that are extended by this module--either directly or      *
-    * indirectly.                                                           *
-    ***********************************************************************/
-    if (this.allExtendees == null) {
-      this.allExtendees = new HashSet() ;
-      for (int i = 0; i < this.extendees.length; i++) {
-        this.allExtendees.add(this.extendees[i]) ;
-        this.allExtendees.addAll(this.extendees[i].getExtendedModuleSet()) ;
-       } // for
-      }; //if
-    return this.allExtendees ;
+  public final HashSet<ModuleNode> getExtendedModuleSet() {
+	  return getExtendedModuleSet(true);
+  }
+
+  /**
+   * @param recursively if true, the extendees of extendees of extendees of ...
+   * 						will be included; if false, only the direct extendees
+   * 						of this instance will be returned.
+   * @return
+   */
+  public final HashSet<ModuleNode> getExtendedModuleSet(final boolean recursively) {
+		/***********************************************************************
+		 * Returns a Hashset whose elements are ModuleNode objects representing * all
+		 * modules that are extended by this module--either directly or * indirectly. *
+		 ***********************************************************************/
+		if (this.allExtendees == null) {
+			this.allExtendees = new HashSet<>();
+			for (int i = 0; i < this.extendees.length; i++) {
+				this.allExtendees.add(this.extendees[i]);
+				if (recursively) {
+					this.allExtendees.addAll(this.extendees[i].getExtendedModuleSet(recursively));
+				}
+			} // for
+		} // if
+		return this.allExtendees ;
   }
 
   public boolean extendsModule(ModuleNode mod) {
@@ -754,8 +769,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       * opDefsInRecursiveSection vector.                                   *
       *********************************************************************/
       int curNodeIdx = firstInSectIdx ;
-      OpDefNode curNode =
-          (OpDefNode) opDefsInRecursiveSection.elementAt(curNodeIdx);
+      OpDefNode curNode = opDefsInRecursiveSection.elementAt(curNodeIdx);
       int curSection = curNode.recursiveSection ;
       boolean notDone = true ;
       while (notDone) {
@@ -779,8 +793,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
          else {curNode.levelChecked = 0 ;};
         curNodeIdx++ ;
         if (curNodeIdx < opDefsInRecursiveSection.size()) {
-          curNode = (OpDefNode)
-                        opDefsInRecursiveSection.elementAt(curNodeIdx);
+          curNode = opDefsInRecursiveSection.elementAt(curNodeIdx);
           notDone = (curNode.recursiveSection == curSection) ;
          }
         else {notDone = false ;} ;
@@ -798,7 +811,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       HashSet recursiveLevelParams = new HashSet() ;
       HashSet recursiveAllParams = new HashSet() ;
       for (int i = firstInSectIdx ; i < curNodeIdx ; i++) {
-        curNode = (OpDefNode) opDefsInRecursiveSection.elementAt(i) ;
+        curNode = opDefsInRecursiveSection.elementAt(i) ;
         if (curNode.inRecursive) {curNode.levelChecked = 0 ;} ;
         curNode.levelCheck(1) ;
 
@@ -826,7 +839,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       * for every operator in the recursive section.                       *
       *********************************************************************/
       for (int i = firstInSectIdx ; i < curNodeIdx ; i++) {
-        curNode = (OpDefNode) opDefsInRecursiveSection.elementAt(i) ;
+        curNode = opDefsInRecursiveSection.elementAt(i) ;
         if (curNode.inRecursive) {curNode.levelChecked = 2;} ;
         curNode.level = Math.max(curNode.level, maxRecursiveLevel) ;
         curNode.levelParams.addAll(recursiveLevelParams) ;
@@ -838,7 +851,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       * recursive section.                                                 *
       *********************************************************************/
       for (int i = firstInSectIdx ; i < curNodeIdx ; i++) {
-        curNode = (OpDefNode) opDefsInRecursiveSection.elementAt(i) ;
+        curNode = opDefsInRecursiveSection.elementAt(i) ;
         if (curNode.inRecursive) {curNode.levelChecked = 1;} ;
         curNode.levelCheck(2) ;
        }; // for i

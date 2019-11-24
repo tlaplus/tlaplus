@@ -35,11 +35,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import util.TLAConstants;
 
 public class NQTest extends ModelCheckerTestCase {
 
 	public NQTest() {
-		super("MC", "symmetry" + File.separator + "NQ");
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "symmetry" + File.separator + "NQ");
 	}
 	
 	/*

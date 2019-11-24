@@ -24,6 +24,7 @@ import org.osgi.framework.Bundle;
 import tla2sany.semantic.ModuleNode;
 import tlc2.module.BuiltInModuleHelper;
 import util.FilenameToStream;
+import util.TLAConstants;
 import util.ToolIO;
 
 /**
@@ -105,7 +106,7 @@ public class RCPNameToFileIStream implements FilenameToStream
      */
     public File resolve(String name, boolean isModule)
     {
-        if (isModule && name.endsWith(".tla"))
+        if (isModule && name.endsWith(TLAConstants.Files.TLA_EXTENSION))
         {
             // user/Foo.tla => user/Foo
             name = name.substring(0, name.length() - 4);
@@ -115,7 +116,7 @@ public class RCPNameToFileIStream implements FilenameToStream
         if (isModule)
         {
             // user/Foo => user/Foo.tla
-            sourceFileName = name + ".tla"; // could be Foo.tla or user/Foo.tla
+            sourceFileName = name + TLAConstants.Files.TLA_EXTENSION; // could be Foo.tla or user/Foo.tla
         } else {
             // user/Foo.cfg => user/Foo.cfg
             sourceFileName = name;
@@ -239,7 +240,7 @@ public class RCPNameToFileIStream implements FilenameToStream
     			s.addAll(listTLAFilesInZip(path));
     		} else {
     			// List .tla files in the given directory.
-				s.addAll(Arrays.stream(new File(path).listFiles((d, name) -> name.endsWith(".tla")))
+				s.addAll(Arrays.stream(new File(path).listFiles((d, name) -> name.endsWith(TLAConstants.Files.TLA_EXTENSION)))
 						.map(f -> f.getName()).collect(Collectors.toSet()));
     		}
 		}
@@ -253,7 +254,7 @@ public class RCPNameToFileIStream implements FilenameToStream
 			while (e.hasMoreElements()) {
 				ZipEntry entry = e.nextElement();
 				String entryName = entry.getName();
-				if (entryName.endsWith(".tla")) {
+				if (entryName.endsWith(TLAConstants.Files.TLA_EXTENSION)) {
 					s.add(entryName);
 				}
 			}

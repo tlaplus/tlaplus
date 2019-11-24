@@ -24,11 +24,13 @@
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
 
-package org.lamport.tla.toolbox.tool.tlc.model;
+package tlc2.model;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+
+import tlc2.model.Assignment;
 
 public class AssignmentTest {
 

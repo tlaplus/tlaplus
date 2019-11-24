@@ -23,10 +23,12 @@ import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 
+import util.TLAConstants;
+
 public abstract class AbstractTest {
 
 	protected static final String SPEC_EXPLORER = "Spec Explorer";
-	protected static final String TLA_SUFFIX = ".tla";
+	protected static final String TLA_SUFFIX = TLAConstants.Files.TLA_EXTENSION;
 
 	/**
 	 * workbench handle used by tests to access UI elements 

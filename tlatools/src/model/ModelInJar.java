@@ -9,21 +9,23 @@ import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import util.TLAConstants;
+
 public abstract class ModelInJar {
 	public static final String PATH = "/model/";
 	
 	public static boolean hasModel() {
-		return ModelInJar.class.getResource("/model/MC.tla") != null;
+		return ModelInJar.class.getResource(PATH + TLAConstants.Files.MODEL_CHECK_TLA_FILE) != null;
 	}
 	
 	public static boolean hasCfg() {
-		return ModelInJar.class.getResource("/model/MC.cfg") != null;
+		return ModelInJar.class.getResource(PATH + TLAConstants.Files.MODEL_CHECK_CONFIG_FILE) != null;
 	}
 
 	public static File getCfg() {
 		try {
-			final InputStream source = ModelInJar.class.getResourceAsStream("/model/MC.cfg");
-			Path target = Files.createTempFile("MC", ".cfg");
+			final InputStream source = ModelInJar.class.getResourceAsStream(PATH + TLAConstants.Files.MODEL_CHECK_CONFIG_FILE);
+			Path target = Files.createTempFile(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, TLAConstants.Files.CONFIG_EXTENSION);
 			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 			return target.toFile();
 		} catch (IOException notExpectedToHappen) {
@@ -32,8 +34,7 @@ public abstract class ModelInJar {
 	}
 	
 	public static boolean loadProperties() {
-		InputStream in = ModelInJar.class
-				.getResourceAsStream("/model/generated.properties");
+		InputStream in = ModelInJar.class.getResourceAsStream(PATH + "generated.properties");
 		if (in != null) {
 			Properties prop = new Properties();
 			try {

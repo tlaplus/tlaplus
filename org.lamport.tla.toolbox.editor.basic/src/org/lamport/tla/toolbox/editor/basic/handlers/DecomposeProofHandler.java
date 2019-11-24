@@ -534,7 +534,6 @@ import org.lamport.tla.toolbox.spec.parser.ModuleParserLauncher;
 import org.lamport.tla.toolbox.spec.parser.ParseResult;
 import org.lamport.tla.toolbox.util.HelpButton;
 import org.lamport.tla.toolbox.util.ResourceHelper;
-import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.StringSet;
 import org.lamport.tla.toolbox.util.UIHelper;
 
@@ -562,6 +561,8 @@ import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
+import util.StringHelper;
+import util.TLAConstants;
 import util.UniqueString;
 
 public class DecomposeProofHandler extends AbstractHandler implements
@@ -8570,7 +8571,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 try {
                     if (references[i].isDirty()
                             && references[i].getEditorInput().getName()
-                                    .endsWith(".tla")) {
+                                    .endsWith(TLAConstants.Files.TLA_EXTENSION)) {
                         dirtyEditors.add(references[i]);
                     }
                 } catch (PartInitException e) {

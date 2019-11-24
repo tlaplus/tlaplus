@@ -21,6 +21,8 @@ import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import util.TLAConstants;
+
 /**
  * This class is used to populate a menu with items that represent the versions
  * of modules saved in a run of TLC. Selecting an item opens the module in a
@@ -82,7 +84,7 @@ public class SavedModuleContributionItem extends CompoundContributionItem
                          */
                         if (members[i].exists() && members[i].getFileExtension() != null
                                 && members[i].getFileExtension().equals(ResourceHelper.TLA_EXTENSION)
-                                && !members[i].getName().equals(ModelHelper.FILE_TLA)
+                                && !members[i].getName().equals(TLAConstants.Files.MODEL_CHECK_TLA_FILE)
                                 && !members[i].getName().equals(ModelHelper.TE_FILE_TLA))
                         {
                             Map<String, String> parameters = new HashMap<String, String>(1);

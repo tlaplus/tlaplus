@@ -36,11 +36,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import util.TLAConstants;
 
 public class SymmetryModelCheckerTest3 extends ModelCheckerTestCase {
 
 	public SymmetryModelCheckerTest3() {
-		super("MC", "symmetry");
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "symmetry");
 	}
 	
 	@Test

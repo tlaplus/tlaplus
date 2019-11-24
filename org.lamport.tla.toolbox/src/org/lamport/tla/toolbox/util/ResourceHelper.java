@@ -11,7 +11,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -94,7 +93,10 @@ import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
+import tlc2.output.SpecWriterUtilities;
 import util.FilenameToStream;
+import util.StringHelper;
+import util.TLAConstants;
 import util.UniqueString;
 
 /**
@@ -119,23 +121,6 @@ public class ResourceHelper {
      * TLA extension
      */
     public static final String TLA_EXTENSION = "tla";
-
-    /*
-     * Constants used for displaying modification history.
-     * It has the syntax:
-     *   modificationHistory +
-     *   (lastModified + date + modifiedBy +
-     *      username + newline)*
-     *      
-     * Note: The StringHelper.newline string wasn't being found on my 64-bit
-     * Windows 7 machine.  So on 8 Dec 2010 I removed it from here, and added
-     * a "\n" before it when writing a new file.
-     */
-    public static String modificationHistory = /* StringHelper.newline + */ "\\* Modification History";
-
-    public static String lastModified = StringHelper.newline + "\\* Last modified ";
-
-    public static String modifiedBy = " by ";
 
     /**
      * Look up if a project exist and return true if so
@@ -613,7 +598,7 @@ public class ResourceHelper {
      */
     public static String getModuleName(String moduleFilename)
     {
-        return getModuleNameChecked(moduleFilename, true);
+        return SpecWriterUtilities.getModuleNameChecked(moduleFilename, true);
     }
 
     /**
@@ -629,28 +614,6 @@ public class ResourceHelper {
         	return null;
         }
         return getModuleName(resource.getLocation().toOSString());
-    }
-
-    /**
-     * Retrieves the name of the module (filename without extension)
-     * 
-     * @param moduleFilename
-     *            filename of a module
-     * @param checkExistence
-     *            if true, the method returns module name, iff the specified file exists or null, if the specified file
-     *            does not exist, if false - only string manipulations are executed
-     * @return module name
-     */
-    public static String getModuleNameChecked(String moduleFilename, boolean checkExistence)
-    {
-        File f = new File(moduleFilename);
-        IPath path = new Path(f.getName()).removeFileExtension();
-        // String modulename = f.getName().substring(0, f.getName().lastIndexOf("."));
-        if (checkExistence)
-        {
-            return (f.exists()) ? path.toOSString() : null;
-        }
-        return path.toOSString();
     }
 
     /**
@@ -715,13 +678,13 @@ public class ResourceHelper {
     public static StringBuffer getEmptyModuleContent(String moduleFilename)
     {
         StringBuffer buffer = new StringBuffer();
-        String moduleName = ResourceHelper.getModuleNameChecked(moduleFilename, false);
+        String moduleName = SpecWriterUtilities.getModuleNameChecked(moduleFilename, false);
         int numberOfDashes = Math.max(4, (Activator.getDefault().getPreferenceStore().getInt(
                 EditorPreferencePage.EDITOR_RIGHT_MARGIN)
                 - moduleName.length() - 9) / 2);
         String dashes = StringHelper.copyString("-", numberOfDashes);
         buffer.append(dashes).append(" MODULE ").append(moduleName).append(" ").append(dashes).append(
-                StringHelper.copyString(StringHelper.newline, 3));
+                StringHelper.copyString(StringHelper.PLATFORM_NEWLINE, 3));
         return buffer;
     }
 
@@ -729,46 +692,12 @@ public class ResourceHelper {
      * Returns the content for the end of the module
      * @return
      */
-    public static StringBuffer getModuleClosingTag()
-    {
-        StringBuffer buffer = new StringBuffer();
-        IPreferenceStore preferencesStore = Activator.getDefault().getPreferenceStore();
-        int rightMarginWidth = preferencesStore.getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
-        buffer.append(StringHelper.copyString("=", rightMarginWidth)).append(StringHelper.newline);
-
-        if (preferencesStore.getBoolean(EditorPreferencePage.EDITOR_ADD_MODIFICATION_HISTORY)) {
-            buffer.append(modificationHistory).append(StringHelper.newline)
-                .append("\\* Created ").append(new Date()).append(" by ")
-                .append(System.getProperty("user.name")).append(StringHelper.newline);
-        }
-        return buffer;
-    }
-
-    /**
-     * Returns the content for the end of the module
-     * @return
-     */
-    public static StringBuffer getConfigClosingTag()
-    {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("\\* Generated on ").append(new Date());
-        return buffer;
-    }
-
-    /**
-     * Creates a simple content for a new TLA+ module
-     *  
-     * @param moduleFileName, name of the file 
-     * @return the stream with content
-     */
-    public static StringBuffer getExtendingModuleContent(String moduleFilename, String... extendedModuleName)
-    {
-		final StringBuffer buffer = new StringBuffer();
-		buffer.append("---- MODULE ").append(ResourceHelper.getModuleNameChecked(moduleFilename, false))
-				.append(" ----\n").append("EXTENDS ");
-		buffer.append(String.join(", ", extendedModuleName));
-		buffer.append("\n\n");
-        return buffer;
+    public static StringBuilder getModuleClosingTag() {
+        final IPreferenceStore ips = Activator.getDefault().getPreferenceStore();
+        final int rightMarginWidth = ips.getInt(EditorPreferencePage.EDITOR_RIGHT_MARGIN);
+        final boolean addModificationHistory = ips.getBoolean(EditorPreferencePage.EDITOR_ADD_MODIFICATION_HISTORY);
+        
+        return SpecWriterUtilities.getModuleClosingTag(rightMarginWidth, addModificationHistory);
     }
 
     /**
@@ -806,47 +735,21 @@ public class ResourceHelper {
     }
 
     /**
-     * Writes contents stored in the string buffer to the file, replacing the content 
-     * @param file
-     * @param buffer
-     * @param monitor
-     * @throws CoreException
-     */
-    public static void replaceContent(IFile file, StringBuffer buffer, IProgressMonitor monitor) throws CoreException
-    {
-        ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
-        if (file.exists())
-        {
-            file.setContents(stream, IResource.FORCE, monitor);
-        } else
-        {
-            throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Exected " + file.getName()
-                    + " file has been removed externally"));
-            // this will create a file in a wrong location
-            // instead of /rootfile-dir/file.cfg it will create it under /specdir/file.cfg
-            // file.create(stream, force, monitor);
-        }
-    }
-
-    /**
      * Writes contents stored in the string buffer to the file, appending the content
      * @param file
      * @param buffer
      * @param monitor
      * @throws CoreException
      */
-    public static void addContent(IFile file, StringBuffer buffer, IProgressMonitor monitor) throws CoreException
-    {
-        boolean force = true;
-        ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
-        if (file.exists())
-        {
-            file.appendContents(stream, IResource.FORCE, monitor);
-        } else
-        {
-            file.create(stream, force, monitor);
-        }
-    }
+	public static void addContent(final IFile file, final StringBuilder buffer, final IProgressMonitor monitor)
+			throws CoreException {
+		final ByteArrayInputStream stream = new ByteArrayInputStream(buffer.toString().getBytes());
+		if (file.exists()) {
+			file.appendContents(stream, IResource.FORCE, monitor);
+		} else {
+			file.create(stream, true, monitor);
+		}
+	}
 
     /**
      * Retrieves a combined rule for modifying the resources
@@ -1795,7 +1698,7 @@ public class ResourceHelper {
         }
 
         // then we get the name of the root module
-        String rootModuleName = getModuleNameChecked(rootFileName, false);
+        String rootModuleName = SpecWriterUtilities.getModuleNameChecked(rootFileName, false);
         if (rootModuleName == null)
         {
             return null;
@@ -1808,7 +1711,7 @@ public class ResourceHelper {
         {
             return null;
         }
-        List<String> listOfImportedModules = pds.getListOfExtendedModules(rootModuleName + ".tla");
+        List<String> listOfImportedModules = pds.getListOfExtendedModules(rootModuleName + TLAConstants.Files.TLA_EXTENSION);
 
         // Then we put them in an array and sort them.
         String[] value = new String[listOfImportedModules.size() + 1];

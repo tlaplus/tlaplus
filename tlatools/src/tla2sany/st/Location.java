@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import pcal.PCalLocation;
 import pcal.Region;
 import util.Assert;
+import util.TLAConstants;
 import util.UniqueString;
 
 /**
@@ -22,7 +23,7 @@ import util.UniqueString;
 public final class Location implements Comparable<Location>
 {
     // strings used in toString() and Regex
-    private static final String LINE = "line ";
+    private static final String LINE = TLAConstants.LINE;
     private static final String LINE_CAP = "Line ";
     private static final String TO_LINE = " to line ";
     private static final String COL = ", col ";
@@ -393,6 +394,14 @@ public final class Location implements Comparable<Location>
 	public Region toRegion() {
 		return new pcal.Region(new PCalLocation(bLine - 1, bColumn - 1),
 				new PCalLocation(eLine - 1, eColumn - 1));
+	}
+	
+	/**
+	 * @param line
+	 * @return returns true if line is in [beginLine, endLine]
+	 */
+	public boolean containsLine(final int line) {
+		return ((line >= bLine) && (line <= eLine));
 	}
 
 	@Override

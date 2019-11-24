@@ -34,11 +34,12 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import util.TLAConstants;
 
 public class StutteringTest extends ModelCheckerTestCase {
 
 	public StutteringTest() {
-		super("MC", "CodePlexBug08", new String[] { "-simulate" }, ExitStatus.VIOLATION_LIVENESS);
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "CodePlexBug08", new String[] { "-simulate" }, ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

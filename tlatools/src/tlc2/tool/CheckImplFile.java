@@ -23,6 +23,7 @@ import tlc2.tool.impl.Tool;
 import tlc2.util.FP64;
 import util.Assert;
 import util.FileUtil;
+import util.TLAConstants;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -179,9 +180,11 @@ public class CheckImplFile extends CheckImpl
             index++;
             if (index < args.length) {
                 configFile = args[index++];
-                int len = configFile.length();
-                if (configFile.startsWith(".cfg", len-4)) {
-                    configFile = configFile.substring(0, len-4);
+                if (configFile.endsWith(TLAConstants.Files.CONFIG_EXTENSION))
+                {
+                    configFile
+                    	= configFile.substring(0,
+                    			(configFile.length() - TLAConstants.Files.CONFIG_EXTENSION.length()));
                 }
             }
             else {
@@ -285,9 +288,8 @@ public class CheckImplFile extends CheckImpl
                 return;
             }
             mainFile = args[index++];
-            int len = mainFile.length();
-            if (mainFile.startsWith(".tla", len-4)) {
-                mainFile = mainFile.substring(0, len-4);
+            if (mainFile.endsWith(TLAConstants.Files.TLA_EXTENSION)) {
+                mainFile = mainFile.substring(0, (mainFile.length() - TLAConstants.Files.TLA_EXTENSION.length()));
             }
         }
     }

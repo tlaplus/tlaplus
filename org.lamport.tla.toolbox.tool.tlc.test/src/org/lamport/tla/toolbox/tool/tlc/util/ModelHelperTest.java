@@ -46,9 +46,9 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchDelegate;
 import org.junit.Assert;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 
 import junit.framework.TestCase;
+import tlc2.model.Assignment;
 
 /**
  * Test for toolkit methods

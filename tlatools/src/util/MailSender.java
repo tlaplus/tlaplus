@@ -221,9 +221,9 @@ public class MailSender {
 			
 			// Record/Log output to later send it by email
 			final String tmpdir = System.getProperty("java.io.tmpdir");
-			this.out = new File(tmpdir + File.separator + "MC.out");
+			this.out = new File(tmpdir + File.separator + TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE);
 			ToolIO.out = new LogPrintStream(out);
-			this.err = new File(tmpdir + File.separator + "MC.err");
+			this.err = new File(tmpdir + File.separator + TLAConstants.Files.MODEL_CHECK_ERROR_FILE);
 			ToolIO.err = new ErrLogPrintStream(err);
 		}
 	}

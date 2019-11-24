@@ -41,6 +41,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.util.AdapterFactory;
 
 import tlc2.tool.coverage.ActionWrapper.Relation;
+import util.TLAConstants;
 
 public class CoverageInformation {
 	
@@ -70,7 +71,7 @@ public class CoverageInformation {
 
 	public void add(final CoverageInformationItem item) {
 		try {
-			final String filename = item.getModuleLocation().source() + ".tla";
+			final String filename = item.getModuleLocation().source() + TLAConstants.Files.TLA_EXTENSION;
 			if (nameToDocument.containsKey(filename)) {
 				final IDocument document = nameToDocument.get(filename);
 				final IRegion region = AdapterFactory.locationToRegion(document , item.getModuleLocation());

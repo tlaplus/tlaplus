@@ -389,7 +389,7 @@ public class Tool
             Context c1 = c;
             for (int i = 0; i < subs.length; i++) {
               Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm));
+              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
             }
             this.getInitStates(init1.getBody(), acts, c1, ps, states, cm);
             return;
@@ -402,7 +402,7 @@ public class Tool
             Context c1 = c;
             for (int i = 0; i < subs.length; i++) {
               Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, cm));
+              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, cm, toolId));
             }
             this.getInitStates(init1.getBody(), acts, c1, ps, states, cm);
             return;
@@ -497,7 +497,7 @@ public class Tool
             opcode = BuiltInOPs.getOpCode(opDef.getName());
             if (opcode == 0) {
               // Context c1 = this.getOpContext(opDef, args, c, false);
-              Context c1 = this.getOpContext(opDef, args, c, true, cm);
+              Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
               this.getInitStates(opDef.getBody(), acts, c1, ps, states, cm);
               return;
             }
@@ -669,7 +669,7 @@ public class Tool
           }
         case OPCODE_eq:
           {
-            SymbolNode var = this.getVar(args[0], c, false);
+            SymbolNode var = this.getVar(args[0], c, false, toolId);
             if (var == null || var.getName().getVarLoc() < 0) {
               Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
@@ -697,7 +697,7 @@ public class Tool
           }
         case OPCODE_in:
           {
-            SymbolNode var = this.getVar(args[0], c, false);
+            SymbolNode var = this.getVar(args[0], c, false, toolId);
             if (var == null || var.getName().getVarLoc() < 0) {
               Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
@@ -857,7 +857,7 @@ public class Tool
   	Context c1 = c;
   	for (int i = 0; i < slen; i++) {
   	  Subst sub = subs[i];
-  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm));
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
   	}
   	return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
@@ -869,7 +869,7 @@ public class Tool
   	Context c1 = c;
   	for (int i = 0; i < slen; i++) {
   	  Subst sub = subs[i];
-  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, cm));
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, cm, toolId));
   	}
   	return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
@@ -1000,13 +1000,14 @@ public class Tool
           Object val = this.lookup(opNode, c, s0, false);
 
           if (val instanceof OpDefNode) {
-            OpDefNode opDef = (OpDefNode)val;
-            opcode = BuiltInOPs.getOpCode(opDef.getName());
-            if (opcode == 0) {
-              // Context c1 = this.getOpContext(opDef, args, c, false);
-              Context c1 = this.getOpContext(opDef, args, c, true, cm);
-              return this.getNextStates(action, opDef.getBody(), acts, c1, s0, s1, nss, cm);
-            }
+				OpDefNode opDef = (OpDefNode) val;
+				opcode = BuiltInOPs.getOpCode(opDef.getName());
+				if (opcode == 0) {
+					// Context c1 = this.getOpContext(opDef, args, c, false);
+
+					Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
+					return this.getNextStates(action, opDef.getBody(), acts, c1, s0, s1, nss, cm);
+	            }
           }
 
           // Added by LL 13 Nov 2009 to fix Yuan's fix
@@ -1334,7 +1335,7 @@ public class Tool
   private final TLCState processUnchangedImpl(final Action action, SemanticNode expr, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
     if (coverage){cm = cm.get(expr);}
-        SymbolNode var = this.getVar(expr, c, false);
+        SymbolNode var = this.getVar(expr, c, false, toolId);
         TLCState resState = s1;
         if (var != null) {
             return processUnchangedImplVar(action, expr, acts, s0, s1, nss, var, cm);
@@ -1551,7 +1552,7 @@ public class Tool
   	Context c1 = c;
   	for (int i = 0; i < slen; i++) {
   	  Subst sub = subs[i];
-  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true, coverage ? sub.getCM() : cm));
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true, coverage ? sub.getCM() : cm, toolId));
   	}
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
@@ -1563,7 +1564,7 @@ public class Tool
   	Context c1 = c;
   	for (int i = 0; i < slen; i++) {
   	  Subst sub = subs[i];
-  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true, cm));
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true, cm, toolId));
   	}
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
@@ -1733,7 +1734,7 @@ public class Tool
             OpDefNode opDef = (OpDefNode)val;
             opcode = BuiltInOPs.getOpCode(opDef.getName());
             if (opcode == 0) {
-              Context c1 = this.getOpContext(opDef, args, c, true, cm);
+              Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
               res = this.eval(opDef.getBody(), c1, s0, s1, control, cm);
             }
           }
@@ -2626,7 +2627,7 @@ public class Tool
             Context c1 = c;
             for (int i = 0; i < slen; i++) {
               Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm));
+              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
             }
             return this.enabled(pred1.getBody(), acts, c1, s0, s1, cm);
           }
@@ -2639,7 +2640,7 @@ public class Tool
             Context c1 = c;
             for (int i = 0; i < slen; i++) {
               Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, cm));
+              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, cm, toolId));
             }
             return this.enabled(pred1.getBody(), acts, c1, s0, s1, cm);
           }
@@ -2735,7 +2736,7 @@ public class Tool
             if (opcode == 0)
             {
               // Context c1 = this.getOpContext(opDef, args, c, false);
-              Context c1 = this.getOpContext(opDef, args, c, true, cm);
+              Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
               return this.enabled(opDef.getBody(), acts, c1, s0, s1, cm);
             }
           }
@@ -3136,7 +3137,7 @@ public class Tool
   private final TLCState enabledUnchangedImpl(SemanticNode expr, ActionItemList acts,
             Context c, TLCState s0, TLCState s1, CostModel cm) {
 	    if (coverage) {cm = cm.get(expr);}
-        SymbolNode var = this.getVar(expr, c, true);
+        SymbolNode var = this.getVar(expr, c, true, toolId);
         if (var != null) {
           // a state variable, e.g. UNCHANGED var1
           UniqueString varName = var.getName();
@@ -3517,4 +3518,23 @@ public class Tool
     }
     return new ContextEnumerator(vars, enums, c);
   }
+
+    // These three are expected by implementing the {@link ITool} interface; they used
+    //		to mirror exactly methods that our parent class ({@link Spec}) implemented
+    //		however those methods have changed signature with refactoring done for 
+    //		Issue #393
+	@Override
+	public Context getOpContext(OpDefNode odn, ExprOrOpArgNode[] args, Context ctx, boolean b) {
+		return getOpContext(odn, args, ctx, b, toolId);
+	}
+	
+	@Override
+	public Object lookup(SymbolNode opNode, Context con, boolean b) {
+		return lookup(opNode, con, b, toolId);
+	}
+	
+	@Override
+	public Object getVal(ExprOrOpArgNode expr, Context con, boolean b) {
+		return getVal(expr, con, b, toolId);
+	}
 }

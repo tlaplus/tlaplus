@@ -24,6 +24,8 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tlc2.output.SpecWriterUtilities;
+
 /**
  * Command handler for adding new modules (opening non-existing modules or modules in the directory of the root module)
  * 
@@ -146,7 +148,7 @@ public class AddModuleHandler extends AbstractHandler implements IHandler
 
                 // create parameters for the handler
                 Map<String, String> parameters = new HashMap<String, String>();
-                parameters.put(OpenModuleHandler.PARAM_MODULE, ResourceHelper.getModuleNameChecked(module.getName(),
+                parameters.put(OpenModuleHandler.PARAM_MODULE, SpecWriterUtilities.getModuleNameChecked(module.getName(),
                         false));
 
                 // runs the command and opens the module in the editor

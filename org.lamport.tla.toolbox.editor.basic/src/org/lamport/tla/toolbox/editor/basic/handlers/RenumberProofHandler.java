@@ -26,7 +26,6 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.parser.IParseConstants;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
 import org.lamport.tla.toolbox.util.AdapterFactory;
-import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.DefStepNode;
@@ -38,6 +37,7 @@ import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
+import util.StringHelper;
 import util.UniqueString;
 
 /**

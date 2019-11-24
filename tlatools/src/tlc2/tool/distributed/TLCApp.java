@@ -24,6 +24,7 @@ import tlc2.tool.impl.Tool;
 import tlc2.util.FP64;
 import util.FileUtil;
 import util.FilenameToStream;
+import util.TLAConstants;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -287,9 +288,9 @@ public class TLCApp extends DistApp {
 				index++;
 				if (index < args.length) {
 					configFile = args[index];
-					int len = configFile.length();
-					if (configFile.startsWith(".cfg", len - 4)) {
-						configFile = configFile.substring(0, len - 4);
+					if (configFile.endsWith(TLAConstants.Files.CONFIG_EXTENSION)) {
+						configFile = configFile.substring(0,
+								(configFile.length() - TLAConstants.Files.CONFIG_EXTENSION.length()));
 					}
 					index++;
 				} else {
@@ -494,9 +495,8 @@ public class TLCApp extends DistApp {
 					return null;
 				}
 				specFile = args[index++];
-				int len = specFile.length();
-				if (specFile.startsWith(".tla", len - 4)) {
-					specFile = specFile.substring(0, len - 4);
+				if (specFile.endsWith(TLAConstants.Files.TLA_EXTENSION)) {
+					specFile = specFile.substring(0, (specFile.length() - TLAConstants.Files.TLA_EXTENSION.length()));
 				}
 			}
 		}
@@ -511,8 +511,8 @@ public class TLCApp extends DistApp {
 				TLCGlobals.chkptDuration = 0; // never use checkpoints with distributed TLC (highly inefficient)
 				FP64.Init(fpIndex);
 				FilenameToStream resolver = new InJarFilenameToStream(ModelInJar.PATH);
-				return new TLCApp("MC", "MC", deadlock, fromChkpt,
-						fpSetConfig, resolver);
+				return new TLCApp(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, TLAConstants.Files.MODEL_CHECK_FILE_BASENAME,
+						deadlock, fromChkpt, fpSetConfig, resolver);
 			}
 			
 			printErrorMsg("Error: Missing input TLA+ module.");

@@ -33,7 +33,6 @@ import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.value.IValue;
-import tlc2.value.impl.Enumerable;
 
 /*
 Root Cause:
@@ -110,11 +109,11 @@ public class WorkerValue {
 	 * Demuxing is supposed to be called only once per sn/opDef whereas muxing is called many many times.
 	 */
 	
-    public static Object demux(final Spec spec, final OpDefNode opDef) {
+    public static Object demux(final OpDefEvaluator spec, final OpDefNode opDef) {
     	return demux(spec, opDef, opDef);
     }
     
-    public static Object demux(final Spec spec, final SemanticNode sn, final OpDefNode opDef) {
+    public static Object demux(final OpDefEvaluator spec, final SemanticNode sn, final OpDefNode opDef) {
     	final IValue defVal = spec.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
     	defVal.deepNormalize();
     	

@@ -22,6 +22,8 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.spec.manager.WorkspaceSpecManager;
 import org.lamport.tla.toolbox.util.ToolboxJob;
 
+import util.TLAConstants;
+
 /**
  * If a module is selected and it is not the main module of the specification, facilitate its deletion.
  */
@@ -75,7 +77,7 @@ public class DeleteModuleHandler extends AbstractHandler {
 		final IWorkbenchWindow iww = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		final IWorkbenchPage page = iww.getActivePage();
 		final IEditorReference[] refs = page.getEditorReferences();
-		final String tabName = m.getModuleName() + ".tla";
+		final String tabName = m.getModuleName() + TLAConstants.Files.TLA_EXTENSION;
 		boolean removeModule = true;
 		for (final IEditorReference ier : refs) {
 			if (tabName.equals(ier.getName())) {

@@ -1,6 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.model;
-
-
+package tlc2.model;
 
 /**
  * An Assignment consists of a label, a list of parameters and the right side.
@@ -29,29 +27,27 @@ package org.lamport.tla.toolbox.tool.tlc.model;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class Assignment extends Formula
-{
+public class Assignment extends Formula {
     public static final String ASSIGNMENT_SIGN = " <- ";
     public static final String IS_MV = " [ model value ] ";
     public static final String SYMMETRICAL = " <symmetrical> ";
 
+    
     private String label;
     private String[] params = new String[0];
     private boolean modelValue = false;
     private boolean symmetry = false;
+    private TypedSet setOfModelValues = null;
 
     /**
      * Constructs the assignment
      * if the right side is equals to the label, the assignment is treated as a model value assignment
      */
-    public Assignment(String label, String[] params, String right)
-    {
-
+	public Assignment(String label, String[] params, String right) {
         super(right);
         this.label = label;
         this.setParams(params);
-        if (this.label != null && right != null && this.label.equals(right))
-        {
+		if ((this.label != null) && (right != null) && this.label.equals(right)) {
             // right side equals label => model value
             setModelValue(true);
         }
@@ -120,14 +116,14 @@ public class Assignment extends Formula
         {
             return "";
         }
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("(");
+        final StringBuilder buffer = new StringBuilder();
+        buffer.append('(');
         for (int i = 0; i < params.length; i++)
         {
             buffer.append(params[i]);
             buffer.append((i != params.length - 1) ? ", " : "");
         }
-        buffer.append(")");
+        buffer.append(')');
         return buffer.toString();
     }
 
@@ -195,10 +191,10 @@ public class Assignment extends Formula
      * Sets the right part
      * @param right
      */
-    public void setRight(String right)
-    {
-        super.setFormula(right);
-    }
+	public synchronized void setRight(String right) {
+		super.setFormula(right);
+		setOfModelValues = null;
+	}
 
     /**
      * Set parameters, the left part depends on
@@ -222,8 +218,7 @@ public class Assignment extends Formula
     }
 
     /**
-     * Returns if this assignment is to be set to the model value
-     * @return
+     * @return if this assignment is to be set to the model value
      */
     public boolean isModelValue()
     {
@@ -238,19 +233,32 @@ public class Assignment extends Formula
     }
     
     /**
-     * Returns true, iff the assignment is a set of model values
+     * @return true, iff the assignment is a set of model values
      */
-    public boolean isSetOfModelValues()
-    {
+	public boolean isSetOfModelValues() {
         return modelValue && !getLabel().equals(getRight());
     }
+	
+	/**
+	 * @return the TypedSet for model values if {@link #isSetOfModelValues()} returns true, otherwise null
+	 */
+	public synchronized TypedSet getSetOfModelValues() {
+		if (isSetOfModelValues()) {
+			if (setOfModelValues == null) {
+				setOfModelValues = TypedSet.parseSet(getRight());
+			}
+			
+			return setOfModelValues;
+		}
+		
+		return null;
+	}
 
     /**
-     * Returns true, if the set of model values is symmetrical 
+     * @return true, if the set of model values is symmetrical 
      */
-    public boolean isSymmetricalSet()
-    {
-        return symmetry;
+	public boolean isSymmetricalSet() {
+		return symmetry;
     }
 
     /**

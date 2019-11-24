@@ -36,6 +36,7 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
+import util.TLAConstants;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
@@ -43,7 +44,7 @@ import tlc2.output.EC.ExitStatus;
 public class CodePlexBug08Test extends ModelCheckerTestCase {
 
 	public CodePlexBug08Test() {
-		super("MC", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

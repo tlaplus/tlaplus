@@ -15,6 +15,7 @@ import tlc2.util.statistics.IBucketStatistics;
 import util.Assert;
 import util.DebugPrinter;
 import util.Set;
+import util.TLAConstants;
 import util.ToolIO;
 import util.Assert.TLCRuntimeException;
 
@@ -161,15 +162,15 @@ public class MP
     /**
      * 
      */
-    public static final String CR = "\n";
+    public static final String CR = TLAConstants.CR;
     /**
      * 
      */
-    private static final String SPACE = " ";
+    public static final String SPACE = TLAConstants.SPACE;
     /**
      * 
      */
-    public static final String COLON = ":";
+    public static final String COLON = TLAConstants.COLON;
     public static final String DELIM = "@!@!@"; //$NON-NLS-1$
     public static final String STARTMSG = "STARTMSG "; //$NON-NLS-1$
 
@@ -527,17 +528,17 @@ public class MP
                 // format same as state printing for easier
                 // parsing by toolbox
                 if (parameters.length == 1) {
-                    b.append("%1%: Back to state\n");
+                    b.append("%1%: ").append(TLAConstants.BACK_TO_STATE).append("\n");
                 }
                 else if (parameters.length == 2) {
-                    b.append("%1%: Back to state: %2%\n");
+                    b.append("%1%: ").append(TLAConstants.BACK_TO_STATE).append(": %2%\n");
                 }
             } else {
                 if (parameters.length == 1) {
-                    b.append("Back to state %1%\n");
+                    b.append(TLAConstants.BACK_TO_STATE).append(" %1%\n");
                 }
                 else if (parameters.length == 2) {
-                    b.append("Back to state %1%: %2%\n");
+                    b.append(TLAConstants.BACK_TO_STATE).append(" %1%: %2%\n");
                 }
             }
             break;
@@ -1210,7 +1211,7 @@ public class MP
         	}
             break;
         case EC.TLC_STATE_PRINT3:
-            b.append("%1%: Stuttering");
+            b.append("%1%:").append(TLAConstants.STUTTERING);
             break;
 
         /* ************************************************************************ */

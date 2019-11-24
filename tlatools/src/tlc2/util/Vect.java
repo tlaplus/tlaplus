@@ -9,12 +9,19 @@ import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
+/**
+ * TODO it's unclear why we've written our own list implementation; we should consider using existing framework code for this;
+ * 		we've also written our own "Vector" class in SANY...
+ */
 @SuppressWarnings("unchecked")
 public class Vect<E> implements Cloneable, Serializable {
+	private static final long serialVersionUID = 1L;
+
+	
   private E[] elementData;
   private int elementCount;
          
-  final class Enumerator<E> implements Enumeration {
+  final class Enumerator implements Enumeration<E> {
     int index = 0;
 
     public final boolean hasMoreElements () {
@@ -38,11 +45,11 @@ public class Vect<E> implements Cloneable, Serializable {
     }
   }
 
-  public Vect(Vector v) {
+  public Vect(Vector<E> v) {
     this(v.size());
     int sz = v.size();    
     for (int i = 0; i < sz; i++) {
-      this.addElement((E) v.elementAt(i));
+      this.addElement(v.elementAt(i));
     }
   }
 

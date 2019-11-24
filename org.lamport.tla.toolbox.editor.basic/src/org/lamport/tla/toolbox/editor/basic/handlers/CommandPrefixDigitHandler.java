@@ -39,6 +39,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SemanticNode;
+import util.TLAConstants;
 
 /**
  * @author lamport
@@ -80,12 +81,12 @@ public class CommandPrefixDigitHandler extends AbstractHandler implements IHandl
 
         ParserDependencyStorage pds = Activator.getModuleDependencyStorage();     
         String moduleName = EditorUtil.getTLAEditorWithFocus().getModuleName();
-        List vec = pds.getListOfExtendedModules(moduleName + ".tla");
+        List vec = pds.getListOfExtendedModules(moduleName + TLAConstants.Files.TLA_EXTENSION);
         System.out.println("ExtendedModules");
         for (int i = 0; i < vec.size(); i++) {
             System.out.println((String) vec.get(i));
         }
-        vec = pds.getListOfModulesToReparse(moduleName + ".tla");
+        vec = pds.getListOfModulesToReparse(moduleName + TLAConstants.Files.TLA_EXTENSION);
         System.out.println("ModulesToReparse");
         for (int i = 0; i < vec.size(); i++) {
             System.out.println((String) vec.get(i));

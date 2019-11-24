@@ -103,6 +103,7 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
+import util.TLAConstants;
 
 /**
  * A Helper for handling the RCP Objects like windows, editors and views
@@ -621,7 +622,8 @@ public class UIHelper {
 		if (references != null) {
 			for (int i = 0; i < references.length; i++) {
 				try {
-					if (references[i].isDirty() && references[i].getEditorInput().getName().endsWith(".tla")) {
+					if (references[i].isDirty()
+							&& references[i].getEditorInput().getName().endsWith(TLAConstants.Files.TLA_EXTENSION)) {
 						dirtyEditors.add(references[i]);
 					}
 				} catch (PartInitException e) {
@@ -924,7 +926,7 @@ public class UIHelper {
 						try {
 							if (jumpToPCal) {
 								final TLAtoPCalMapping mapping = ToolboxHandle.getCurrentSpec().getTpMapping(
-										location.source() + ".tla");
+										location.source() + TLAConstants.Files.TLA_EXTENSION);
 								if (mapping != null) {
 									final Region pCalRegion = AdapterFactory.jumptToPCal(mapping, location, document);
 									if (pCalRegion != null) {

@@ -84,8 +84,6 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.tool.tlc.launch.TraceExplorerDelegate;
-import org.lamport.tla.toolbox.tool.tlc.model.Formula;
-import org.lamport.tla.toolbox.tool.tlc.model.TraceExpressionModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.dialog.ExtraModulesDialog;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
@@ -96,7 +94,9 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.FormulaWizard;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.RCPNameToFileIStream;
 
+import tlc2.model.Formula;
 import util.FilenameToStream;
+import util.TLAConstants;
 
 /**
  * This is somewhat mislabeled as a composite. Its really
@@ -240,7 +240,8 @@ public class TraceExplorerComposite
 					final RCPNameToFileIStream rcpResolver = (RCPNameToFileIStream) resolver;
 					// Strip off ".tla" file extension.
 					availableModules.addAll(rcpResolver.getAllModules().stream()
-							.map(m -> m.replaceFirst(".tla$", "")).collect(Collectors.toSet()));
+							.map(m -> m.replaceFirst((TLAConstants.Files.TLA_EXTENSION + "$"), ""))
+							.collect(Collectors.toSet()));
 				}
 				final Set<String> includedModules = currentSpec.getValidRootModule().getModuleNames();
 				
@@ -807,7 +808,7 @@ public class TraceExplorerComposite
 				"Enter an expression to be evaluated at each state of the trace.",
 				String.format(
 						"The expression may be named and may include the %s and %s operators (click question mark below for details).",
-						TraceExpressionModelWriter.TRACE, TraceExpressionModelWriter.POSITION),
+						TLAConstants.TraceExplore.TRACE, TLAConstants.TraceExplore.POSITION),
 				"ErrorTraceExplorerExpression");
 		wizard.setFormula(formula);
 

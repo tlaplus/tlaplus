@@ -46,6 +46,7 @@ import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import junit.framework.TestCase;
+import util.TLAConstants;
 
 public class SpecTest extends TestCase {
 
@@ -61,7 +62,7 @@ public class SpecTest extends TestCase {
 	 */
 	public void testCreateSpecStoreRelativePath() throws IOException, CoreException {
 		// Create...
-		final File tempFile = File.createTempFile("TestCreateSpecStoreRelativePath", ".tla");
+		final File tempFile = File.createTempFile("TestCreateSpecStoreRelativePath", TLAConstants.Files.TLA_EXTENSION);
 		final Spec spec = Spec.createNewSpec("TestCreateSpecStoreRelativePath", tempFile.getAbsolutePath(), false, new NullProgressMonitor());
 		
 		// ...check it's correct.
@@ -88,7 +89,9 @@ public class SpecTest extends TestCase {
 	public void testCreateSpecInReadOnlyDirectory() throws IOException {
 		// Create...
 		final Path tempDirectory = Files.createTempDirectory("ReadOnlyDirectory" + System.currentTimeMillis());
-		final File tempFile = Files.createTempFile(tempDirectory, "TestCreateSpecInReadOnlyDirectory", ".tla").toFile();
+		final File tempFile = Files
+				.createTempFile(tempDirectory, "TestCreateSpecInReadOnlyDirectory", TLAConstants.Files.TLA_EXTENSION)
+				.toFile();
 
 //		Assume.assumeTrue(tempDirectory.toFile().setReadOnly());
 		if (!tempDirectory.toFile().setReadOnly()) {
@@ -127,7 +130,7 @@ public class SpecTest extends TestCase {
 
 	private void createDelete(final String specName, boolean forget) throws IOException, CoreException {
 		// Create...
-		final File tempFile = File.createTempFile(specName, ".tla");
+		final File tempFile = File.createTempFile(specName, TLAConstants.Files.TLA_EXTENSION);
 		final Spec spec = Spec.createNewSpec("TestCreateDeleteSpec", tempFile.getAbsolutePath(), false, new NullProgressMonitor());
 		final IProject project = spec.getProject();
 		

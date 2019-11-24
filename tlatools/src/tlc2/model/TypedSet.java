@@ -1,4 +1,4 @@
-package org.lamport.tla.toolbox.tool.tlc.model;
+package tlc2.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,11 +22,13 @@ import java.util.List;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class TypedSet
-{
+public class TypedSet {
+	public static final TypedSet EMPTY_SET = new TypedSet();
+	
     private static final String SEPARATOR = "_";
     private static final String PATTERN = "[\\s]*,[\\s]*";
 
+    
     private String[] values = new String[0];
     private String type = null;
 
@@ -160,6 +162,24 @@ public class TypedSet
     
     public void unsetType() {
     	setType(null);
+    }
+    
+    /**
+     * Not remotely efficient.
+     * 
+     * @param value
+     * @return true if the parameter value is one of this set's values.
+     */
+    public boolean contains(final String value) {
+    	if (value != null) {
+    		for (final String aValue : values) {
+    			if (value.equals(aValue)) {
+    				return true;
+    			}
+    		}
+    	}
+    	
+    	return false;
     }
 
     public String[] getValues()

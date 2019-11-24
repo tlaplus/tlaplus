@@ -67,6 +67,15 @@ public class NumeralNode extends ExprNode {
   public final int val() { return this.value; }
 
   public final BigInteger bigVal() { return this.bigValue; }
+  
+  	/**
+	 * @return true if the numerical value of this instance should be referenced via
+	 *         {@link #val()}, false if it should be referenced via
+	 *         {@link #bigVal()}
+	 */
+  public final boolean useVal() {
+	  return (bigValue == null);
+  }
 
   /**
    * Returns the value as a string--for example, "4095".  This string

@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.tool.tlc.ui.dialog.FilteredDefinitionSelectionDialog;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
@@ -23,6 +22,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 
 import tla2sany.semantic.OpDefNode;
+import tlc2.model.Assignment;
 
 /**
  * Section part for the DefinitionOverride section of the Advanced Options page

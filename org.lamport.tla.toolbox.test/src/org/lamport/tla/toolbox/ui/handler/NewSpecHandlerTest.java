@@ -43,6 +43,7 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.ui.handler.NewSpecHandler.NewSpecHandlerJob;
 
 import junit.framework.TestCase;
+import util.TLAConstants;
 
 public class NewSpecHandlerTest extends TestCase {
 
@@ -84,7 +85,7 @@ public class NewSpecHandlerTest extends TestCase {
 
 	private IStatus runJob(String specName) throws IOException, InterruptedException {
 		final NewSpecHandlerJob job = new NewSpecHandlerJob(specName,
-				Files.createTempFile(specName, ".tla").toFile().getAbsolutePath(), false);
+				Files.createTempFile(specName, TLAConstants.Files.TLA_EXTENSION).toFile().getAbsolutePath(), false);
 		MyJobChangeAdapter listener = new MyJobChangeAdapter();
 		job.addJobChangeListener(listener);
 		job.schedule();

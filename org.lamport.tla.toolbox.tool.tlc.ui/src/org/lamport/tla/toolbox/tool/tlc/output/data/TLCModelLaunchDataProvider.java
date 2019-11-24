@@ -58,10 +58,7 @@ import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
-import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
-import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.output.ITLCOutputListener;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Order;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
@@ -73,8 +70,11 @@ import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
+import tlc2.model.Assignment;
+import tlc2.model.Formula;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import util.TLAConstants;
 
 /**
  * Container for the data about the model launch
@@ -105,10 +105,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
     public static final String SIMULATION_MODE = "Simulation";
 
     // pattern for the output of evaluating constant expressions
-    public static final Pattern CONSTANT_EXPRESSION_OUTPUT_PATTERN = Pattern.compile("(?s)" + ModelWriter.BEGIN_TUPLE
-            + "[\\s]*" + Pattern.quote(ModelWriter.CONSTANT_EXPRESSION_EVAL_IDENTIFIER) + "[\\s]*" + ModelWriter.COMMA
+    public static final Pattern CONSTANT_EXPRESSION_OUTPUT_PATTERN = Pattern.compile("(?s)" + TLAConstants.BEGIN_TUPLE
+            + "[\\s]*" + Pattern.quote(TLAConstants.CONSTANT_EXPRESSION_EVAL_IDENTIFIER) + "[\\s]*" + TLAConstants.COMMA
             + "(.*)"/*calc output group*/
-            + ModelWriter.END_TUPLE);
+            + TLAConstants.END_TUPLE);
 
     
     
@@ -791,7 +791,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                                     } else
                                     {
                                         // invariants and properties
-                                        List<Formula> valueList = ModelHelper.deserializeFormulaList(attributeValue);
+                                        final List<Formula> valueList = Formula.deserializeFormulaList(attributeValue);
                                         
                                         // @see bug #98 (if root cause has been fixed, remove if/else)
                                         if (valueList.size() >= (attributeNumber + 1)) {
@@ -844,9 +844,8 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 							}
                             Location location = Location.parseLocation(locationString);
                             // look only for location in the MC file
-                            if (location.source().equals(
-                                    mcFile.getName().substring(0, mcFile.getName().length() - ".tla".length())))
-                            {
+							if (location.source().equals(mcFile.getName().substring(0,
+									mcFile.getName().length() - TLAConstants.Files.TLA_EXTENSION.length()))) {
                                 IRegion region = AdapterFactory.locationToRegion(mcDocument, location);
                                 regionContent[j] = mcDocument.get(region.getOffset(), region.getLength());
                                 // replace the location statement in the error message

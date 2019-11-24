@@ -73,12 +73,9 @@ import org.lamport.tla.toolbox.tool.tlc.job.DistributedTLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.ITLCJobStatus;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJobFactory;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
-import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
-import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.tool.tlc.output.IProcessOutputSink;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.ui.handler.ShowHistoryHandler;
@@ -94,8 +91,13 @@ import pcal.Validator;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
+import tlc2.model.Assignment;
+import tlc2.model.Formula;
+import tlc2.model.TypedSet;
+import tlc2.output.SpecWriterUtilities;
 import tlc2.util.FP64;
 import util.ExecutionStatisticsCollector;
+import util.TLAConstants;
 
 /**
  * Represents a launch delegate for TLC<br>
@@ -343,9 +345,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             IPath targetFolderPath = modelFolder.getProjectRelativePath().addTrailingSeparator();
 
             // create the handles: MC.tla, MC.cfg and MC.out
-            IFile tlaFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_TLA));
-            IFile cfgFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_CFG));
-            IFile outFile = project.getFile(targetFolderPath.append(ModelHelper.FILE_OUT));
+            IFile tlaFile = project.getFile(targetFolderPath.append(TLAConstants.Files.MODEL_CHECK_TLA_FILE));
+            IFile cfgFile = project.getFile(targetFolderPath.append(TLAConstants.Files.MODEL_CHECK_CONFIG_FILE));
+            IFile outFile = project.getFile(targetFolderPath.append(TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE));
 
             final IFile[] files = new IFile[] { tlaFile, cfgFile, outFile };
 
@@ -511,11 +513,11 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             ModelWriter writer = new ModelWriter();
        
             // add the MODULE beginning and EXTENDS statement
-            writer.addPrimer(ModelHelper.MC_MODEL_NAME, spec.getRootModuleName());
+            writer.addPrimer(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, spec.getRootModuleName());
 
             // Sets constants to a Vector of the substitutions for the CONSTANT substitutions
             List<Assignment> constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
-                    new Vector<String>()));
+                    new ArrayList<String>()));
 
             // Sets modelValues to a TypedSet object whose value is a String array containing
             // the names of the model values declared on the Advanced model page.
@@ -542,12 +544,13 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 
             // Sets overrides to the Vector of definition overrides.
             List<Assignment> overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
-                    new Vector<String>()));
+                    new ArrayList<String>()));
             
             // For the definition overrides, it adds the definitions to the MC.tla file and the
             // overriding CONSTANT statements to the MC.cfg file.
-            writer.addFormulaList(ModelWriter.createOverridesContent(overrides, ModelWriter.DEFOV_SCHEME), "CONSTANT",
-                    MODEL_PARAMETER_DEFINITIONS);
+            writer.addFormulaList(SpecWriterUtilities.createOverridesContent(overrides, TLAConstants.Schemes.DEFOV_SCHEME,
+            		ToolboxHandle.getCurrentSpec().getValidRootModule()), TLAConstants.KeyWords.CONSTANT,
+            		MODEL_PARAMETER_DEFINITIONS);
 
             /* 
              * specType is used to write the desired spec or lack of spec to the MC files.
@@ -568,14 +571,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
             boolean hasSpec = specType != MODEL_BEHAVIOR_TYPE_NO_SPEC;
 
-            if (hasSpec)
-            {
+			if (hasSpec) {
                 // constraint
-                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_CONSTRAINT,
-                        ModelWriter.CONSTRAINT_SCHEME, config), "CONSTRAINT", MODEL_PARAMETER_CONSTRAINT);
+				String constraintValue = config.getAttribute(MODEL_PARAMETER_CONSTRAINT, TLAConstants.EMPTY_STRING);
+                writer.addFormulaList(SpecWriterUtilities.createSourceContent(constraintValue,
+                        TLAConstants.Schemes.CONSTRAINT_SCHEME), "CONSTRAINT", MODEL_PARAMETER_CONSTRAINT);
+                
                 // action constraint
-                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_PARAMETER_ACTION_CONSTRAINT,
-                        ModelWriter.ACTIONCONSTRAINT_SCHEME, config), "ACTION_CONSTRAINT",
+                constraintValue = config.getAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT, TLAConstants.EMPTY_STRING);
+                writer.addFormulaList(SpecWriterUtilities.createSourceContent(constraintValue,
+                		TLAConstants.Schemes.ACTIONCONSTRAINT_SCHEME), TLAConstants.KeyWords.ACTION_CONSTRAINT,
                         MODEL_PARAMETER_ACTION_CONSTRAINT);
                 // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
 
@@ -596,8 +601,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                     if (vars != null && vars.length > 0)
                     {
                         String var = rootModuleNode.getVariableDecls()[0].getName().toString();
-                        writer.addFormulaList(ModelWriter.createFalseInit(var), "INIT", MODEL_BEHAVIOR_NO_SPEC);
-                        writer.addFormulaList(ModelWriter.createFalseNext(var), "NEXT", MODEL_BEHAVIOR_NO_SPEC);
+                        writer.addFormulaList(SpecWriterUtilities.createFalseInit(var), TLAConstants.KeyWords.INIT,
+                        		MODEL_BEHAVIOR_NO_SPEC);
+                        writer.addFormulaList(SpecWriterUtilities.createFalseNext(var), TLAConstants.KeyWords.NEXT,
+                        		MODEL_BEHAVIOR_NO_SPEC);
                     }
                 }
                 break;
@@ -606,28 +613,33 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                 // the specification name-formula pair
             	final String specIdentifier = config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
     			if (spec.declares(specIdentifier) && !isExpression(specIdentifier)) {
-            		writer.addFormulaList(specIdentifier, "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+            		writer.addFormulaList(specIdentifier, TLAConstants.KeyWords.SPECIFICATION, MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
     			} else {
-    				writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
-    						ModelWriter.SPEC_SCHEME, config), "SPECIFICATION", MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
+    				final String value = config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, TLAConstants.EMPTY_STRING);
+    				writer.addFormulaList(SpecWriterUtilities.createSourceContent(value,
+    						TLAConstants.Schemes.SPEC_SCHEME), TLAConstants.KeyWords.SPECIFICATION, MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
     			}
                 break;
             case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
             	// the init and next formulas
             	final String init = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
 				if (spec.declares(init) && !isExpression(init)) {
-            		writer.addFormulaList(init, "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+            		writer.addFormulaList(init, TLAConstants.KeyWords.INIT, MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	} else {
-            		writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT,
-            				ModelWriter.INIT_SCHEME, config), "INIT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+    				final String value = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, TLAConstants.EMPTY_STRING);
+            		writer.addFormulaList(SpecWriterUtilities.createSourceContent(value,
+            				TLAConstants.Schemes.INIT_SCHEME), TLAConstants.KeyWords.INIT,
+            				MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	}
 				
             	final String next = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
 				if (spec.declares(next) && !isExpression(next)) {
-	           		writer.addFormulaList(next, "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
+	           		writer.addFormulaList(next, TLAConstants.KeyWords.NEXT, MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	} else {
-	                writer.addFormulaList(ModelWriter.createSourceContent(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT,
-	                        ModelWriter.NEXT_SCHEME, config), "NEXT", MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
+    				final String value = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, TLAConstants.EMPTY_STRING);
+	                writer.addFormulaList(SpecWriterUtilities.createSourceContent(value,
+	                		TLAConstants.Schemes.NEXT_SCHEME), TLAConstants.KeyWords.NEXT,
+	                		MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT);
             	}
                 break;
             }
@@ -640,15 +652,15 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             if (hasSpec)
             {
             	// invariants (separate those declared in the spec from those declared in the model).
-				final List<String> invariants = config.getAttribute(MODEL_CORRECTNESS_INVARIANTS, new Vector<String>());
+				final List<String> invariants = config.getAttribute(MODEL_CORRECTNESS_INVARIANTS, new ArrayList<String>());
 				writer.addFormulaList(
-						createProperties(writer, spec, invariants, ModelWriter.INVARIANT_SCHEME),
-						"INVARIANT", MODEL_CORRECTNESS_INVARIANTS);
+						createProperties(writer, spec, invariants, TLAConstants.Schemes.INVARIANT_SCHEME),
+						TLAConstants.KeyWords.INVARIANT, MODEL_CORRECTNESS_INVARIANTS);
 
 				// properties
-				final List<String> properties = config.getAttribute(MODEL_CORRECTNESS_PROPERTIES, new Vector<String>());
-				writer.addFormulaList(createProperties(writer, spec, properties, ModelWriter.PROP_SCHEME),
-						"PROPERTY", MODEL_CORRECTNESS_PROPERTIES);
+				final List<String> properties = config.getAttribute(MODEL_CORRECTNESS_PROPERTIES, new ArrayList<String>());
+				writer.addFormulaList(createProperties(writer, spec, properties, TLAConstants.Schemes.PROP_SCHEME),
+						TLAConstants.KeyWords.PROPERTY, MODEL_CORRECTNESS_PROPERTIES);
             }
 
             monitor.worked(STEP);
@@ -685,10 +697,10 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 		
 		// Convert list of strings such as {"1Inv", "0x \in Nat"} into a subset of
 		// checked formulas (prefixed with 1).
-		final List<Formula> checkedFormula = ModelHelper.deserializeFormulaList(properties);
+		final List<Formula> checkedFormula = Formula.deserializeFormulaList(properties);
 
 		// Create the input for the model writer out of all formula...
-		final List<String[]> createFormulaListContent = ModelWriter.createFormulaListContentFormula(checkedFormula,
+		final List<String[]> createFormulaListContent = SpecWriterUtilities.createFormulaListContentFormula(checkedFormula,
 				scheme);
 
 		// Collect those formula that are declared in the spec, not the MC.tla file.

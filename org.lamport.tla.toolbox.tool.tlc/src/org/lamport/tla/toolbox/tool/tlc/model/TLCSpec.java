@@ -46,6 +46,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
 
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
+import util.TLAConstants;
 
 /**
  * {@link TLCSpec} is the glue between {@link Spec} and {@link Model}. Why do we
@@ -151,7 +152,7 @@ public class TLCSpec extends Spec {
 		
 	private String getModelNameSuggestion(String proposition) {
 		Model model = getModel(proposition);
-		if (model != null || getProject().getFile(proposition + ".tla").exists()) {
+		if (model != null || getProject().getFile(proposition + TLAConstants.Files.TLA_EXTENSION).exists()) {
 			String oldNumber = proposition.substring(proposition.lastIndexOf("_") + 1);
 			int number = Integer.parseInt(oldNumber) + 1;
 			proposition = proposition.substring(0, proposition.lastIndexOf("_") + 1);

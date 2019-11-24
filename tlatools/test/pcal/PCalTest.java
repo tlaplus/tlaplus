@@ -33,6 +33,7 @@ import java.nio.file.Paths;
 
 import org.junit.Before;
 
+import util.TLAConstants;
 import util.ToolIO;
 
 public abstract class PCalTest {
@@ -49,7 +50,7 @@ public abstract class PCalTest {
 	}
 
 	protected static String writeFile(String filename, String content) throws IOException {
-		final Path path = Files.createFile(Paths.get(filename + ".tla"));
+		final Path path = Files.createFile(Paths.get(filename + TLAConstants.Files.TLA_EXTENSION));
 		Files.write(path, content.getBytes());
 		
 		final File file = path.toFile();
@@ -58,7 +59,7 @@ public abstract class PCalTest {
 	}
 	
 	protected static String writeTempFile(String filename, String content) throws IOException {
-		final Path path = Files.createTempFile(filename, ".tla");
+		final Path path = Files.createTempFile(filename, TLAConstants.Files.TLA_EXTENSION);
 		Files.write(path, content.getBytes());
 		
 		final File file = path.toFile();

@@ -255,10 +255,10 @@ public class FileUtil
         File filedir = new File(metadir);
 
         // ensure the non-existence
-        Assert.check(!filedir.exists(), EC.SYSTEM_METADIR_EXISTS, metadir);
+        Assert.check(!filedir.exists(), EC.SYSTEM_METADIR_EXISTS, filedir.getAbsolutePath());
 
         // ensure the dirs are created
-        Assert.check(filedir.mkdirs(), EC.SYSTEM_METADIR_CREATION_ERROR, metadir);
+        Assert.check(filedir.mkdirs(), EC.SYSTEM_METADIR_CREATION_ERROR, filedir.getAbsolutePath());
 
         return metadir;
     }
@@ -285,16 +285,16 @@ public class FileUtil
         // or name=/frob/bar/somemod
 
         // Make sure the file name ends with ".tla".
-        if (name.toLowerCase().endsWith(".tla"))
+        if (name.toLowerCase().endsWith(TLAConstants.Files.TLA_EXTENSION))
         {
-            name = name.substring(0, name.length() - 4);
+            name = name.substring(0, (name.length() - TLAConstants.Files.TLA_EXTENSION.length()));
         }
 
         // now name=/frob/bar/somemod
 
         // filename is a path ending with .tla
         // sourceFilename=/frob/bar/somemod
-        sourceFileName = name + ".tla";
+        sourceFileName = name + TLAConstants.Files.TLA_EXTENSION;
 
         // module name is =somemod
         sourceModuleName = name.substring(name.lastIndexOf(FileUtil.separator) + 1);

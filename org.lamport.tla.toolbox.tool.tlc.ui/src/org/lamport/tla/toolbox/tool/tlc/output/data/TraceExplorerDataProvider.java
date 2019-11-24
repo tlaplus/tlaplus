@@ -20,10 +20,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.lamport.tla.toolbox.Activator;
-import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
-import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
-import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Order;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCRegion;
@@ -35,7 +32,10 @@ import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.util.LegacyFileDocumentProvider;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tlc2.model.Formula;
+import tlc2.model.TraceExpressionInformationHolder;
 import tlc2.output.EC;
+import util.TLAConstants;
 
 /**
  * A data provider for runs of the trace explorer. This mostly uses the methods from
@@ -136,8 +136,8 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
 
             // search for comments containing the information about trace explorer expressions
             String regularExpression = FindReplaceDocumentAdapter.escapeForRegExPattern("\\* ") + ":[0-2]:"
-                    + ModelWriter.TRACE_EXPR_VAR_SCHEME + "_[0-9]{17,}:[\\s\\S]*?"
-                    + Pattern.quote(ModelWriter.CONSTANT_EXPRESSION_EVAL_IDENTIFIER) + "\n";
+                    + TLAConstants.Schemes.TRACE_EXPR_VAR_SCHEME + "_[0-9]{17,}:[\\s\\S]*?"
+                    + Pattern.quote(TLAConstants.CONSTANT_EXPRESSION_EVAL_IDENTIFIER) + "\n";
             IRegion region = teSearcher.find(0, regularExpression, true, true, false, true);
 
             while (region != null)
@@ -153,7 +153,7 @@ public class TraceExplorerDataProvider extends TLCModelLaunchDataProvider
                 // should be expr"$!@$!@$!@$!@$!" where "$!@$!@$!@$!@$!" is the delimiter
                 String expressionAndDelimiter = stringSections[3];
                 String expression = expressionAndDelimiter.substring(0, expressionAndDelimiter
-                        .indexOf(ModelWriter.CONSTANT_EXPRESSION_EVAL_IDENTIFIER));
+                        .indexOf(TLAConstants.CONSTANT_EXPRESSION_EVAL_IDENTIFIER));
 
                 TraceExpressionInformationHolder expressionData = new TraceExpressionInformationHolder(expression,
                         null, variableName);

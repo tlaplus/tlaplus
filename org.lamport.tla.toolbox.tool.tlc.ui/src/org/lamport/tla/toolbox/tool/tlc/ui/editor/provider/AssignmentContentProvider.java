@@ -4,7 +4,8 @@ import java.util.Vector;
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+
+import tlc2.model.Assignment;
 
 /**
  * Boy.  You could spend days studying Simon's documentation of this class.

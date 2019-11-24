@@ -126,6 +126,7 @@ import java.io.File;
 import java.io.IOException;
 
 import util.FileUtil;
+import util.TLAConstants;
 import util.ToolIO;
 
 public class TLA
@@ -437,7 +438,7 @@ public class TLA
                 Parameters.TLAOutFile = args[nextArg];
                 if (Parameters.TLAOutFile.indexOf(".") == -1)
                 {
-                    Parameters.TLAOutFile = Parameters.TLAOutFile + ".tla";
+                    Parameters.TLAOutFile = Parameters.TLAOutFile + TLAConstants.Files.TLA_EXTENSION;
                 }
                 if (HasPathPrefix(Parameters.TLAOutFile))
                 {
@@ -636,7 +637,7 @@ public class TLA
         ********************************************************************/
         if (args[maxArg].indexOf(".") == -1)
         {
-            Parameters.TLAInputFile = args[maxArg] + ".tla";
+            Parameters.TLAInputFile = args[maxArg] + TLAConstants.Files.TLA_EXTENSION;
         } else
         {
             Parameters.TLAInputFile = args[maxArg];

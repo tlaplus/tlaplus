@@ -98,6 +98,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 import com.abstratt.graphviz.GraphViz;
 
 import tla2sany.semantic.ModuleNode;
+import util.TLAConstants;
 
 /**
  * Editor for the model.
@@ -921,7 +922,7 @@ public class ModelEditor extends FormEditor {
 							if (ModelHelper.containsModelCheckingModuleConflict(rootModuleName)) {
 								MessageDialog.openError(getSite().getShell(), "Illegal module name",
 										"Model validation and checking is not allowed on a spec containing a module named "
-												+ ModelHelper.MC_MODEL_NAME + "."
+												+ TLAConstants.Files.MODEL_CHECK_FILE_BASENAME + "."
 												+ (userInvoked ? "" : " However, the model can still be saved."));
 								return;
 							}

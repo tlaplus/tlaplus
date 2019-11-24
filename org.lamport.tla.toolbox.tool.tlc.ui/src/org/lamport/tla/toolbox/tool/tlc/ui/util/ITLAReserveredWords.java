@@ -4,11 +4,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import util.TLAConstants;
+
 /**
  * TLA+ Reserved words
  * TODO complete the word list
  * @author Simon Zambrovski, <a href="http://simon.zambrovski.org">http://simon.zambrovski.org</a> 
- * @version $Id: ITLAReserveredWords.java,v 1.1 2005/08/22 15:43:33 szambrovski Exp $
  */
 public interface ITLAReserveredWords
 {
@@ -17,7 +18,7 @@ public interface ITLAReserveredWords
     public final static String AXIOM = "AXIOM";
     public final static String CASE = "CASE";
     public final static String CHOOSE = "CHOOSE";
-    public final static String CONSTANT = "CONSTANT";
+    public final static String CONSTANT = TLAConstants.KeyWords.CONSTANT;
     public final static String CONSTANTS = "CONSTANTS";
     public final static String DOMAIN = "DOMAIN";
     public final static String ELSE = "ELSE";

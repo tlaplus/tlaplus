@@ -13,11 +13,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.provider.AssignmentContentProvider;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizard;
 import org.lamport.tla.toolbox.tool.tlc.ui.wizard.AssignmentWizardPage;
+
+import tlc2.model.Assignment;
 
 /**
  * Section part for the constants 

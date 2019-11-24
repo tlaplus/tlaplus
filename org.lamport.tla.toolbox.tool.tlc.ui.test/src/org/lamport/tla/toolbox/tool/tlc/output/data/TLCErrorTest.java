@@ -33,9 +33,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.lamport.tla.toolbox.tool.tlc.launch.TraceExpressionInformationHolder;
-import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Order;
+
+import tlc2.model.Formula;
+import tlc2.model.TraceExpressionInformationHolder;
 
 public class TLCErrorTest {
 	

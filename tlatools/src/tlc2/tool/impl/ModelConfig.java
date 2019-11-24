@@ -30,31 +30,40 @@ import tlc2.value.impl.ValueVec;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
+import util.TLAConstants;
 
 /** 
  * Stores information from user's model configuration file.
+ * 
+ * TODO we should move from Hashtable to HashMap (we should probably also stop using our own collection implmentations
+ * 			like {@link Vect}.)
+ * TODO we're storing a heterogeneous mishmash in the values of configTbl - sometimes a Vect, sometimes a String, sometime
+ * 			that Vect has only String instances, sometimes is has a String instance and Value subclasses, ... it would
+ * 			be nice were the design cleaner.
+ * 
  * @author Yuan Yu, Leslie Lamport
  */
-public class ModelConfig implements ValueConstants, Serializable
-{
+public class ModelConfig implements ValueConstants, Serializable {
     // keywords of the configuration file
-    private static final String Constant = "CONSTANT";
-    private static final String Constants = "CONSTANTS";
+    private static final String Constant = TLAConstants.KeyWords.CONSTANT;
+    private static final String Constants = TLAConstants.KeyWords.CONSTANTS;
     private static final String Constraint = "CONSTRAINT";
     private static final String Constraints = "CONSTRAINTS";
-    private static final String ActionConstraint = "ACTION_CONSTRAINT";
-    private static final String ActionConstraints = "ACTION_CONSTRAINTS";
-    private static final String Invariant = "INVARIANT";
-    private static final String Invariants = "INVARIANTS";
-    private static final String Init = "INIT";
-    private static final String Next = "NEXT";
+    private static final String ActionConstraint = TLAConstants.KeyWords.ACTION_CONSTRAINT;
+    private static final String ActionConstraints = ActionConstraint + 'S';
+    private static final String Invariant = TLAConstants.KeyWords.INVARIANT;
+    private static final String Invariants = Invariant + 'S';
+    private static final String Init = TLAConstants.KeyWords.INIT;
+    private static final String Next = TLAConstants.KeyWords.NEXT;
     private static final String View = "VIEW";
-    private static final String Symmetry = "SYMMETRY";
-    private static final String Spec = "SPECIFICATION";
-    private static final String Prop = "PROPERTY";
+    private static final String Symmetry = TLAConstants.KeyWords.SYMMETRY;
+    private static final String Spec = TLAConstants.KeyWords.SPECIFICATION;
+    private static final String Prop = TLAConstants.KeyWords.PROPERTY;
     private static final String Props = "PROPERTIES";
     private static final String Type = "TYPE";
     private static final String TypeConstraint = "TYPE_CONSTRAINT";
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * All keywords used in the configuration file
@@ -523,6 +532,12 @@ public class ModelConfig implements ValueConstants, Serializable
     public synchronized final String getView()
     {
         return (String) this.configTbl.get(View);
+    }
+    
+    public synchronized final boolean configDefinesSpecification() {
+    	final String spec = getSpec();
+    	
+    	return ((spec != null) && (spec.trim().length() > 0));
     }
 
     public synchronized final String getSymmetry()

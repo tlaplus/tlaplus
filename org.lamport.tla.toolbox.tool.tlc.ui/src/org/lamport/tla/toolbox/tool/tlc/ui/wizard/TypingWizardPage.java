@@ -10,9 +10,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
-import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import tlc2.model.Assignment;
+import tlc2.model.TypedSet;
 
 /**
  * A wizard page for typing sets of model values

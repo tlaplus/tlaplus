@@ -32,11 +32,12 @@ import java.io.File;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import util.TLAConstants;
 
 public class TwoPhaseCommitTest extends ModelCheckerTestCase {
 
 	public TwoPhaseCommitTest() {
-		super("MC", "symmetry" + File.separator + "TwoPhaseCommit");
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "symmetry" + File.separator + "TwoPhaseCommit");
 	}
 	
 	@Test

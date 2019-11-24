@@ -5,18 +5,17 @@ import java.util.regex.Matcher;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
-import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 
 import junit.framework.TestCase;
 import tla2sany.st.Location;
+import tlc2.output.SpecWriterUtilities;
+import util.TLAConstants;
 
 /**
  * Tests the regex matcher for generated ids
  * @author Simon Zambrovski
  */
-public class OutputRegexTest extends TestCase
-{
-
+public class OutputRegexTest extends TestCase {
     private String id;
     private final String random = " ksj fhksd hfskd hfsdk hsdk hj ";
     private final String random2 = " lksjfh ksfh ksdhf sdkhf sdk hj ";
@@ -26,18 +25,18 @@ public class OutputRegexTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
-        id = ModelWriter.getValidIdentifier(ModelWriter.CONSTANT_SCHEME);
+        id = SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.CONSTANT_SCHEME);
     }
 
     public void testRegexMatchId()
     {
         // exact match
-        assertTrue(ModelWriter.ID_MATCHER.matcher(id).matches());
+        assertTrue(SpecWriterUtilities.ID_MATCHER.matcher(id).matches());
     }
 
     public void testRegexFindId()
     {
-        Matcher matcher = ModelWriter.ID_MATCHER.matcher(random + id + random2);
+        Matcher matcher = SpecWriterUtilities.ID_MATCHER.matcher(random + id + random2);
         // find the id inside of the text
         assertTrue(matcher.find());
         // start points to the beginning
@@ -47,12 +46,12 @@ public class OutputRegexTest extends TestCase
         // here is how the content can be extracted
         assertEquals(id, (random + id + random2).substring(matcher.start(), matcher.end()));
         // not a false positive
-        assertFalse(ModelWriter.ID_MATCHER.matcher(random + random2).find());
+        assertFalse(SpecWriterUtilities.ID_MATCHER.matcher(random + random2).find());
     }
 
     public void testRegexFindManyIds()
     {
-        Matcher matcher = ModelWriter.ID_MATCHER.matcher(random + id + random2 + id + random);
+        Matcher matcher = SpecWriterUtilities.ID_MATCHER.matcher(random + id + random2 + id + random);
         // find the id inside of the text
         assertTrue(matcher.find());
         // start points to the beginning
@@ -68,7 +67,7 @@ public class OutputRegexTest extends TestCase
      */
     public void testFindIds()
     {
-        IRegion[] regions = ModelWriter.findIds(random + id + random2 + id + random);
+        IRegion[] regions = ModelHelper.findIds(random + id + random2 + id + random);
         assertEquals(2, regions.length);
         // start points to the beginning
         assertEquals(random.length(), regions[0].getOffset());
@@ -82,7 +81,7 @@ public class OutputRegexTest extends TestCase
     
     public void testFindIds2()
     {
-        IRegion[] regions = ModelWriter.findIds(random + id + random2 + id + random);
+        IRegion[] regions = ModelHelper.findIds(random + id + random2 + id + random);
         Document doc = new Document(random + id + random2 + id + random);
         
         try

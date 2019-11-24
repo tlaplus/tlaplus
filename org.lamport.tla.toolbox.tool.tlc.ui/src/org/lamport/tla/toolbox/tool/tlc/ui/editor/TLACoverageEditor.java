@@ -93,6 +93,8 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.Representation.Grouping;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import util.TLAConstants;
+
 public class TLACoverageEditor extends TLAEditorReadOnly {
 
 	static {
@@ -527,7 +529,7 @@ public class TLACoverageEditor extends TLAEditorReadOnly {
 					editor.getViewer().getTextWidget().notifyListeners(SWT.MouseUp, null);
 					event.doit = false;
 					
-					final String moduleName = getModuleName() + ".tla";
+					final String moduleName = getModuleName() + TLAConstants.Files.TLA_EXTENSION;
 					final TLAEditor editor = EditorUtil.openTLAEditor(moduleName);
 					
 					if (editor != null) {

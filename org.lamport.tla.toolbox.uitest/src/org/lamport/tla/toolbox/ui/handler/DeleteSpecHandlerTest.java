@@ -34,6 +34,8 @@ import org.lamport.tla.toolbox.ui.navigator.ToolboxExplorer;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import util.TLAConstants;
+
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class DeleteSpecHandlerTest {
 
@@ -70,7 +72,7 @@ public class DeleteSpecHandlerTest {
 		assertEquals(0, Activator.getSpecManager().getSpecs().size());
 		
 		// create a valid path
-		File fileA = File.createTempFile("DeleteMultiSpecA", ".tla");
+		File fileA = File.createTempFile("DeleteMultiSpecA", TLAConstants.Files.TLA_EXTENSION);
 		fileA.delete();
 		// Create the spec file
 		ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(new Path(fileA.getAbsolutePath())),
@@ -81,7 +83,7 @@ public class DeleteSpecHandlerTest {
 		Activator.getSpecManager().addSpec(spec);
 
 		// create a second valid path
-		File fileB = File.createTempFile("DeleteMultiSpecB", ".tla");
+		File fileB = File.createTempFile("DeleteMultiSpecB", TLAConstants.Files.TLA_EXTENSION);
 		fileB.delete();
 		// Create the spec file
 		ResourcesPlugin.getWorkspace().run(ResourceHelper.createTLAModuleCreationOperation(new Path(fileB.getAbsolutePath())),

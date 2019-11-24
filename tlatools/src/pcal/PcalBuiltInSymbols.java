@@ -37,25 +37,26 @@ import java.util.Hashtable;
 
 import tla2tex.Misc;
 import tla2tex.Symbol;
+import util.TLAConstants;
 
 public final class PcalBuiltInSymbols
   { 
     /***********************************************************************
     * The following three hash tables are built by the Initialize method.  *
     ***********************************************************************/
-    private static Hashtable builtInHashTable = new Hashtable(200);
+    private static Hashtable<String, Symbol> builtInHashTable = new Hashtable<>(200);
       /*********************************************************************
       * Maps built-in symbols (which are strings) to their Symbol          *
       * objects.                                                           *
       *********************************************************************/
 
-    private static Hashtable prefixHashTable  = new Hashtable(700);
+    private static Hashtable<String, String> prefixHashTable  = new Hashtable<>(700);
       /*********************************************************************
       * A table containing the prefixes of all built-in symbols.  (It      *
       * holds only their keys.)                                            *
       *********************************************************************/
 
-    private static Hashtable stringCharTable  = new Hashtable(100);
+    private static Hashtable<String, String> stringCharTable  = new Hashtable<>(100);
       /*********************************************************************
       * A table of all the characters that may appear in a TLA+ string     *
       * token.                                                             *
@@ -79,7 +80,7 @@ public final class PcalBuiltInSymbols
       } ;
 
     public static Symbol GetBuiltInSymbol(String str)
-      { return (Symbol) builtInHashTable.get(str);
+      { return builtInHashTable.get(str);
       } ;
 
     public static boolean IsBuiltInPrefix(String str)
@@ -134,15 +135,15 @@ public final class PcalBuiltInSymbols
         add("AXIOM",      "{\\AXIOM}",       Symbol.KEYWORD, 0);
         add("BOOLEAN",    "{\\BOOLEAN}",     Symbol.KEYWORD, 0);
         add("CASE",       "{\\CASE}",        Symbol.KEYWORD, 0);
-        add("CONSTANT",   "{\\CONSTANT}",    Symbol.KEYWORD, 0);
-        add("CONSTANTS",  "{\\CONSTANTS}",   Symbol.KEYWORD, 0);
+        add(TLAConstants.KeyWords.CONSTANT,   "{\\CONSTANT}",    Symbol.KEYWORD, 0);
+        add(TLAConstants.KeyWords.CONSTANTS,  "{\\CONSTANTS}",   Symbol.KEYWORD, 0);
         add("EXCEPT",     "{\\EXCEPT}",      Symbol.KEYWORD, 0);
-        add("EXTENDS",    "{\\EXTENDS}",     Symbol.KEYWORD, 0);
+        add(TLAConstants.KeyWords.EXTENDS,    "{\\EXTENDS}",     Symbol.KEYWORD, 0);
         add("FALSE",      "{\\FALSE}",       Symbol.KEYWORD, 0);
         add("IF",         "{\\IF}",          Symbol.KEYWORD, 0);
         add("INSTANCE",   "{\\INSTANCE}",    Symbol.KEYWORD, 0);
         add("LOCAL",      "{\\LOCAL}",       Symbol.KEYWORD, 0);
-        add("MODULE",     "{\\MODULE}",      Symbol.KEYWORD, 0);
+        add(TLAConstants.KeyWords.MODULE,     "{\\MODULE}",      Symbol.KEYWORD, 0);
         add("OTHER",      "{\\OTHER}",       Symbol.KEYWORD, 0);
         add("STRING",     "{\\STRING}",      Symbol.KEYWORD, 0);
         add("THEOREM",    "{\\THEOREM}",     Symbol.KEYWORD, 0);
@@ -340,9 +341,9 @@ public final class PcalBuiltInSymbols
       * Initializes prefixHashTable, assuming that builtInHashTable is     *
       * already initialized.                                               *
       *********************************************************************/
-      { Enumeration builtInEnum = builtInHashTable.keys();
+      { Enumeration<String> builtInEnum = builtInHashTable.keys();
         while (builtInEnum.hasMoreElements())
-          { String symbol = (String) builtInEnum.nextElement();
+          { String symbol = builtInEnum.nextElement();
             if (    Misc.IsLetter(symbol.charAt(0))
                  ||    (symbol.length() > 1)
                     && (symbol.charAt(0) == '\\')

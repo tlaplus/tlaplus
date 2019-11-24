@@ -28,6 +28,9 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 import org.lamport.tla.toolbox.util.ZipUtil;
 
+import tlc2.output.SpecWriterUtilities;
+import util.TLAConstants;
+
 /**
  * A wizard page input of the specification name and the location of the root file
  * 
@@ -263,16 +266,16 @@ public class NewSpecWizardPage extends WizardPage
 					final File destDir = ZipUtil.unzip(zip, new File(zip.getAbsolutePath().replaceFirst(".zip$", "")), true);
 					
 					// recursively trigger dialogChanged with now extracted spec.
-					this.fileText.setText(
-							destDir.getAbsolutePath() + File.separator + zip.getName().replaceFirst(".zip$", ".tla"));
+					this.fileText.setText(destDir.getAbsolutePath() + File.separator
+							+ zip.getName().replaceFirst(".zip$", TLAConstants.Files.TLA_EXTENSION));
 					return;
 				} catch (IOException e) {
 					reportError(String.format("Failed to unzip zip archive %s with error %s", rootfilePath,
 							e.getMessage()));
 				}
-            } else if (!rootfilePath.endsWith(".tla"))
+            } else if (!rootfilePath.endsWith(TLAConstants.Files.TLA_EXTENSION))
             {
-                reportError("Root file name should have a file-system path and extension .tla");
+                reportError("Root file name should have a file-system path and extension " + TLAConstants.Files.TLA_EXTENSION);
                 return;
             } else if (!(new File(rootfilePath).isAbsolute()))
             {
@@ -280,14 +283,14 @@ public class NewSpecWizardPage extends WizardPage
                 return;
                 // make sure module name does not violate valid spec name rules
                 // see Bug #112 in general/bugzilla/index.html
-            } else if(!ResourceHelper.isValidSpecName(ResourceHelper.getModuleNameChecked(rootfilePath, false))) {
+            } else if(!ResourceHelper.isValidSpecName(SpecWriterUtilities.getModuleNameChecked(rootfilePath, false))) {
             	// Give the user a hint what a valid spec name might be. E.g. if "Foo.tla" is given,
             	// a valid spec name is "Foo" (without the ".tla" file extension).
-            	final String moduleNameChecked = ResourceHelper.getModuleNameChecked(rootfilePath, false);
+            	final String moduleNameChecked = SpecWriterUtilities.getModuleNameChecked(rootfilePath, false);
             	final String validIdenfier = ResourceHelper.getIdentifier(moduleNameChecked);
 				if ("".equals(validIdenfier)) {
 					reportError("Module name is not valid. The module name '"
-							+ ResourceHelper.getModuleNameChecked(rootfilePath, false) + "' is not a valid identifier.");
+							+ SpecWriterUtilities.getModuleNameChecked(rootfilePath, false) + "' is not a valid identifier.");
 					reportError(String.format(
 							"Module name is not valid. The module name '%s' is not a valid identifier.",
 							moduleNameChecked));
@@ -369,7 +372,7 @@ public class NewSpecWizardPage extends WizardPage
                 // if we got to this point, the fileText is a valid entry
 
                 // just use the module name as a spec name
-                String moduleName = ResourceHelper.getModuleNameChecked(getRootFilename(), false);
+                String moduleName = SpecWriterUtilities.getModuleNameChecked(getRootFilename(), false);
 
                 Spec existingSpec = Activator.getSpecManager().getSpecByName(moduleName);
                 if (existingSpec != null)

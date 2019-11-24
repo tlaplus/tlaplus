@@ -31,6 +31,7 @@ import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import util.Assert;
 import util.SimpleFilenameToStream;
+import util.TLAConstants;
 
 public class LiveCheck implements ILiveCheck {
 
@@ -770,7 +771,8 @@ public class LiveCheck implements ILiveCheck {
 
 			// Re-create the tool to do the init states down below (LiveCheck#init
 			// doesn't really need tool).
-	        final ITool tool = new Tool("", "MC", "MC", new SimpleFilenameToStream());
+			final ITool tool = new Tool("", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME,
+					TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream());
 	        
 			// Initialize tool's actions explicitly. LiveCheck#printTrace is
 			// going to access the actions and fails with a NPE unless

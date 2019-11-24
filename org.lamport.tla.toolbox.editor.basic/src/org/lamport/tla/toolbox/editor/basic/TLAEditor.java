@@ -96,12 +96,14 @@ import org.lamport.tla.toolbox.editor.basic.util.ElementStateAdapter;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.ResourceHelper;
-import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.TLAtoPCalMarker;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import pcal.PCalLocation;
 import pcal.TLAtoPCalMapping;
+import tlc2.output.SpecWriterUtilities;
+import util.StringHelper;
+import util.TLAConstants;
 
 /**
  * Basic editor for TLA+
@@ -546,17 +548,17 @@ public class TLAEditor extends TextEditor
         // Set historyStart to the offset at the start of the
         // modification history section, if there is one. And if there is,
         // we add the modification date and user.
-        int historyStart = text.indexOf(ResourceHelper.modificationHistory);
+        int historyStart = text.indexOf(SpecWriterUtilities.MODIFICATION_HISTORY);
 
         if (historyStart > -1)
         {
 
             // Set newEntryStart to the point at which the new modification
             // information is to be inserted.
-            int newEntryStart = historyStart + ResourceHelper.modificationHistory.length();
+            int newEntryStart = historyStart + SpecWriterUtilities.MODIFICATION_HISTORY.length();
 
             String user = System.getProperty("user.name");
-            String searchString = ResourceHelper.modifiedBy + user;
+            String searchString = SpecWriterUtilities.MODIFIED_BY + user;
             int searchStringLength = searchString.length();
 
             // Need to remove existing modification entry for user
@@ -574,14 +576,14 @@ public class TLAEditor extends TextEditor
             int endOfLine = -1; // initialization needed to make compiler happy.
             label: while (!found)
             {
-                nextEntry = text.indexOf(ResourceHelper.lastModified, nextEntry + 1);
+                nextEntry = text.indexOf(SpecWriterUtilities.LAST_MODIFIED, nextEntry + 1);
                 // It we don't find an entry, we eventually exit by
                 // nextEntry becoming -1.
                 if (nextEntry < 0)
                 {
                     break label;
                 }
-                endOfLine = text.indexOf(StringHelper.newline, nextEntry + 1);
+                endOfLine = text.indexOf(StringHelper.PLATFORM_NEWLINE, nextEntry + 1);
                 if (endOfLine < 0)
                 {
                     endOfLine = text.length();
@@ -612,7 +614,7 @@ public class TLAEditor extends TextEditor
                 {
                     doc.replace(nextEntry, endOfLine - nextEntry, "");
                 }
-                doc.replace(newEntryStart, 0, ResourceHelper.lastModified + (new Date()) + searchString);
+                doc.replace(newEntryStart, 0, SpecWriterUtilities.LAST_MODIFIED + (new Date()) + searchString);
                 
     			// Save the last one to two (depending on boolean "found")
     			// IUndoableOperations created by the previous two doc.replace(...)
@@ -861,7 +863,7 @@ public class TLAEditor extends TextEditor
 	 */
 	public TLAtoPCalMapping getTpMapping() {
         final Spec spec = ToolboxHandle.getCurrentSpec();
-        return spec.getTpMapping(getModuleName() + ".tla");
+        return spec.getTpMapping(getModuleName() + TLAConstants.Files.TLA_EXTENSION);
 	}
 	
 	/* (non-Javadoc)

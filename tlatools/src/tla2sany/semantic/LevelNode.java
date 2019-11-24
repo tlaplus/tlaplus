@@ -283,13 +283,13 @@ public int levelChecked   = 0 ;
        "NonLeibnizParams: "    + HashSetToString(this.getNonLeibnizParams()) ;
     }
 
-  public static String HashSetToString(HashSet<SymbolNode> hs) {
+  public static String HashSetToString(HashSet<? extends SymbolNode> hs) {
     /***********************************************************************
     * Converts a HashSet of SymbolNodes to a printable string.             *
     ***********************************************************************/
     String rval = "{" ;
     boolean first = true ;
-    Iterator<SymbolNode> iter = hs.iterator();
+    final Iterator<? extends SymbolNode> iter = hs.iterator();
     while (iter.hasNext()) {
       if (! first) {rval = rval + ", ";} ;
       rval = rval + iter.next().getName() ;

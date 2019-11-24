@@ -33,6 +33,7 @@ import org.lamport.tla.toolbox.util.ToolboxJob;
 
 import tlc2.TLCGlobals;
 import tlc2.util.FP64;
+import util.TLAConstants;
 
 /**
  * Abstract TLC job
@@ -99,9 +100,9 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
             this.outFile = this.launchDir.getFile(ModelHelper.TE_FILE_OUT);
         } else
         {
-            this.rootModule = this.launchDir.getFile(ModelHelper.FILE_TLA);
-            this.cfgFile = this.launchDir.getFile(ModelHelper.FILE_CFG);
-            this.outFile = this.launchDir.getFile(ModelHelper.FILE_OUT);
+            this.rootModule = this.launchDir.getFile(TLAConstants.Files.MODEL_CHECK_TLA_FILE);
+            this.cfgFile = this.launchDir.getFile(TLAConstants.Files.MODEL_CHECK_CONFIG_FILE);
+            this.outFile = this.launchDir.getFile(TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE);
         }
     }
 

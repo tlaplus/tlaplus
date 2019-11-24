@@ -28,6 +28,7 @@ import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import util.FileUtil;
 import util.SimpleFilenameToStream;
+import util.TLAConstants;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -60,7 +61,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 
 	@Test
 	public void testSuccessfulRun() throws Exception {
-		Tool tool = new Tool("", "BasicMultiTrace", "MC", new SimpleFilenameToStream());
+		Tool tool = new Tool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream());
 
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		StateVec initStates = tool.getInitStates();
@@ -276,7 +277,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testDeadlock() throws Exception {
-		ITool tool = new Tool("", "BasicMultiTrace", "MC", new SimpleFilenameToStream());
+		ITool tool = new Tool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream());
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -405,7 +406,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testStateAndTraceGenerationCount() throws Exception {
-		ITool tool = new Tool("", "BasicMultiTrace", "MC", new SimpleFilenameToStream());
+		ITool tool = new Tool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream());
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");

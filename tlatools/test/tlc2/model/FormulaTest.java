@@ -1,8 +1,10 @@
-package org.lamport.tla.toolbox.tool.tlc.model;
+package tlc2.model;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
+import tlc2.model.Formula;
 
 public class FormulaTest {
 

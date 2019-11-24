@@ -280,11 +280,11 @@ public class SimpleFilenameToStream implements FilenameToStream {
       {
           // SZ Feb 20, 2009:
           // Make sure the file name ends with ".tla".
-          if (name.toLowerCase().endsWith(".tla"))
+          if (name.toLowerCase().endsWith(TLAConstants.Files.TLA_EXTENSION))
           {
-              name = name.substring(0, name.length() - 4);
+              name = name.substring(0, (name.length() - TLAConstants.Files.TLA_EXTENSION.length()));
           }
-          sourceFileName = name + ".tla";
+          sourceFileName = name + TLAConstants.Files.TLA_EXTENSION;
       } else
       {
           // SZ Feb 20, 2009: for other files

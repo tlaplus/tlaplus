@@ -25,9 +25,11 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
+import util.TLAConstants;
+
 public class TableauSpecTest extends MultiThreadedSpecTest {
 
 	public TableauSpecTest() {
-		super("MC", "EWD840", new String[] {"-maxSetSize", "9000000"}, "540765192", "10487806", 0.3d, 0.3d);
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "EWD840", new String[] {"-maxSetSize", "9000000"}, "540765192", "10487806", 0.3d, 0.3d);
 	}
 }

@@ -20,6 +20,7 @@ import tlc2.util.FP64;
 import tlc2.util.RandomGenerator;
 import util.FileUtil;
 import util.SimpleFilenameToStream;
+import util.TLAConstants;
 import util.ToolIO;
 
 /**
@@ -70,7 +71,7 @@ public class SimulatorTest extends CommonTestCase {
 	
 	@Test
 	public void testSuccessfulSimulation() {	
-		runSimulatorTest("BasicMultiTrace", "MC", false, 100, 100);
+		runSimulatorTest("BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, false, 100, 100);
 		assertFalse(recorder.recorded(EC.TLC_INVARIANT_VIOLATED_INITIAL));
 		assertTrue(recorder.recorded(EC.TLC_PROGRESS_SIMU));
 	}

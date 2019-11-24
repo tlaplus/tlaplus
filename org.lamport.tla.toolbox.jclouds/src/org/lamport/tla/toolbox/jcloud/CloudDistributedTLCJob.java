@@ -85,6 +85,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 
+import util.TLAConstants;
+
 /*
  * TODO
  * ====
@@ -416,11 +418,12 @@ public class CloudDistributedTLCJob extends Job {
 					// Guarantee the MC.out file exists in case the java process has not written to
 					// it yet. Otherwise tail might terminate immediately. touch is idempotent and
 					// thus does not fail when MC.out already exists.
-					+ "touch /mnt/tlc/MC.out"
+					+ "touch /mnt/tlc/" + TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE
 					+ " && "
 					// Read the MC.out file and remain attached for as long as there is a TLC/java
 					// process.
-					+ "tail -q -f -n +1 /mnt/tlc/MC.out --pid $(pgrep -f \"^java .* -jar /tmp/tla2tools.jar\")");
+					+ "tail -q -f -n +1 /mnt/tlc/" + TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE
+					+ " --pid $(pgrep -f \"^java .* -jar /tmp/tla2tools.jar\")");
 			
 			// Communicate result to user
 			monitor.done();
@@ -652,9 +655,12 @@ public class CloudDistributedTLCJob extends Job {
 							// instance.
 							+ " && "
 							+ "mkdir -p /mnt/tlc/ && chmod 777 /mnt/tlc/ && "
-							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.out && "
-							+ "ln -s /mnt/tlc/MC.out /var/www/html/MC.txt && " // Microsoft IE and Edge fail to show line breaks correctly unless ".txt" extension.
-							+ "ln -s /mnt/tlc/MC.err /var/www/html/MC.err && "
+							+ "ln -s /mnt/tlc/" + TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE
+									+ " /var/www/html/" + TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE + " && "
+							+ "ln -s /mnt/tlc/" + TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE
+									+ " /var/www/html/MC.txt && " // Microsoft IE and Edge fail to show line breaks correctly unless ".txt" extension.
+							+ "ln -s /mnt/tlc/" + TLAConstants.Files.MODEL_CHECK_ERROR_FILE
+									+ " /var/www/html/" + TLAConstants.Files.MODEL_CHECK_ERROR_FILE + " && "
 							+ "ln -s /mnt/tlc/tlc.jfr /var/www/html/tlc.jfr"),
 					new TemplateOptions().runAsRoot(true).wrapInInitScript(
 							false));			

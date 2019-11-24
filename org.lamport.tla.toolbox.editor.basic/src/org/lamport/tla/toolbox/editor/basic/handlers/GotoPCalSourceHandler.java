@@ -17,6 +17,8 @@ import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import util.TLAConstants;
+
 /**
  * @author lamport
  *
@@ -57,7 +59,7 @@ public class GotoPCalSourceHandler extends AbstractHandler implements IHandler {
         }
         String moduleName = tlaEditor.getModuleName();
        
-       return spec.getTpMapping(moduleName + ".tla") != null; 
+       return spec.getTpMapping(moduleName + TLAConstants.Files.TLA_EXTENSION) != null; 
     }
 
 }

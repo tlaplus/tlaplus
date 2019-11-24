@@ -46,6 +46,7 @@ import util.FileUtil;
 import util.FilenameToStream;
 import util.MailSender;
 import util.SimpleFilenameToStream;
+import util.TLAConstants;
 import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
@@ -56,14 +57,18 @@ import util.UniqueString;
  * @author Leslie Lamport
  * @author Simon Zambrovski
  */
-public class TLC
-{
-    
+public class TLC {
     private static boolean MODEL_PART_OF_JAR = false;
+    
+    private enum RunMode {
+    	MODEL_CHECK, SIMULATE;
+    }
+    
 
     // SZ Feb 20, 2009: the class has been 
     // transformed from static to dynamic
-    private boolean isSimulate; 
+
+    private RunMode runMode;
     private boolean cleanup;
     private boolean deadlock;
 
@@ -107,11 +112,10 @@ public class TLC
     /**
      * Initialization
      */
-    public TLC()
-    {
+	public TLC() {
         welcomePrinted = false;
         
-        isSimulate = false; // Default to model checking
+        runMode = RunMode.MODEL_CHECK;
         cleanup = false;
         deadlock = true;
         
@@ -132,67 +136,70 @@ public class TLC
 
     /*
      * This TLA checker (TLC) provides the following functionalities:
-     *  1. Simulation of TLA+ specs: java tlc2.TLC -simulate spec[.tla]
-     *  2. Model checking of TLA+ specs: java tlc2.TLC [-modelcheck] spec[.tla]
+     *  1. Simulation of TLA+ specs:
+     *  				java tlc2.TLC -simulate spec[.tla]
+     *  2. Model checking of TLA+ specs:
+     *  				java tlc2.TLC [-modelcheck] spec[.tla]
      *
-     * The command line also provides the following options:
+     * The command line also provides the following options observed for functionalities 1. & 2.:
      *  o -config file: provide the config file.
-     *    Defaults to spec.cfg if not provided
+     *		Defaults to spec.cfg if not provided
      *  o -deadlock: do not check for deadlock.
-     *    Defaults to checking deadlock if not specified
+     *		Defaults to checking deadlock if not specified
      *  o -depth num: specify the depth of random simulation 
-     *    Defaults to 100 if not specified
+     *		Defaults to 100 if not specified
      *  o -seed num: provide the seed for random simulation
-     *    Defaults to a random seed if not specified
+     *		Defaults to a random seed if not specified
      *  o -aril num: Adjust the seed for random simulation
-     *    Defaults to 0 if not specified
+     *		Defaults to 0 if not specified
      *  o -recover path: recover from the checkpoint at path
-     *    Defaults to scratch run if not specified
+     *		Defaults to scratch run if not specified
      *  o -bound: The upper limit for sets effectively limiting the number of init states
-     *    (@see Bug #264 in general/bugzilla/index.html)
-     *    Defaults to 1000000 if not specified
+     *					(@see Bug #264 in general/bugzilla/index.html)
+     *		Defaults to 1000000 if not specified
      *  o -metadir path: store metadata in the directory at path
-     *    Defaults to specdir/states if not specified
+     *		Defaults to specdir/states if not specified
 	 *  o -userFile file: A full qualified/absolute path to a file to log user
-	 *    output (Print/PrintT/...) to
+	 *					output (Print/PrintT/...) to
      *  o -workers num: the number of TLC worker threads
-     *    Defaults to 1
+     *		Defaults to 1
      *  o -dfid num: use depth-first iterative deepening with initial depth num
      *  o -cleanup: clean up the states directory
      *  o -dump [dot] file: dump all the states into file. If "dot" as sub-parameter
-     *                      is given, the output will be in dot notation.
+     *					is given, the output will be in dot notation.
      *  o -difftrace: when printing trace, show only
-     *                the differences between successive states
-     *    Defaults to printing full state descriptions if not specified
-     *    (Added by Rajeev Joshi)
+     *					the differences between successive states
+     *		Defaults to printing full state descriptions if not specified
+     *					(Added by Rajeev Joshi)
      *  o -terse: do not expand values in Print statement
-     *    Defaults to expand value if not specified
+     *		Defaults to expand value if not specified
      *  o -coverage minutes: collect coverage information on the spec,
-     *                       print out the information every minutes.
-     *    Defaults to no coverage if not specified
+     *					print out the information every minutes.
+     *		Defaults to no coverage if not specified
      *  o -continue: continue running even when invariant is violated
-     *    Defaults to stop at the first violation if not specified
+     *		Defaults to stop at the first violation if not specified
      *  o -lncheck: Check liveness properties at different times
-     *    of model checking.
-     *    Defaults to false increasing the overall model checking time.
+     *					of model checking.
+     *		Defaults to false increasing the overall model checking time.
      *  o -nowarning: disable all the warnings
-     *    Defaults to report warnings if not specified
+     *		Defaults to report warnings if not specified
      *  o -fp num: use the num'th irreducible polynomial from the list
-     *    stored in the class FP64.
+     *					stored in the class FP64.
      *  o -view: apply VIEW (if provided) when printing out states.
      *  o -gzip: control if gzip is applied to value input/output stream.
-     *    Defaults to off if not specified
+     *		Defaults to off if not specified
      *  o -debug: debbuging information (non-production use)
      *  o -tool: tool mode (put output codes on console)
      *  o -checkpoint num: interval for check pointing (in minutes)
-     *     Defaults to 30
-     *  o -fpmem num: the number of megabytes of memory used to store
-     *                the fingerprints of found states.
-     *  Defaults to 1/4 physical memory.  (Added 6 Apr 2010 by Yuan Yu.)
+     *		Defaults to 30
+     *  o -fpmem num: a value between 0 and 1, exclusive, representing the ratio
+     *  				of total system memory used to store the fingerprints of
+     *  				found states.
+     *  	Defaults to 1/4 physical memory.  (Added 6 Apr 2010 by Yuan Yu.)
      *  o -fpbits num: the number of msb used by MultiFPSet to create nested FPSets.
-     *  Defaults to 1
+     *  	Defaults to 1
      *  o -maxSetSize num: the size of the largest set TLC will enumerate.
-     *                     default: 1000000
+     *		Defaults to 1000000
      *   
      */
     public static void main(String[] args) throws Exception
@@ -215,33 +222,33 @@ public class TLC
             System.exit(1);
         }
 
-        // Setup how spec files will be resolved in the filesystem.
-        if (MODEL_PART_OF_JAR) {
-            // There was not spec file given, it instead exists in the
-            // .jar file being executed. So we need to use a special file
-            // resolver to parse it.
-        	tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
-        } else {
-            // The user passed us a spec file directly. To ensure we can
-            // recover it during semantic parsing, we must include its
-            // parent directory as a library path in the file resolver.
-            //
-            // If the spec file has no parent directory, use the "standard"
-            // library paths provided by SimpleFilenameToStream.
-            final String dir = FileUtil.parseDirname(tlc.getMainFile());
-            if (!dir.isEmpty()) {
-            	tlc.setResolver(new SimpleFilenameToStream(dir));
-            } else {
-            	tlc.setResolver(new SimpleFilenameToStream());
-            }
-        }
-        
+		final MailSender ms = new MailSender();
+		// Setup how spec files will be resolved in the filesystem.
+		if (MODEL_PART_OF_JAR) {
+			// There was not spec file given, it instead exists in the
+			// .jar file being executed. So we need to use a special file
+			// resolver to parse it.
+			tlc.setResolver(new InJarFilenameToStream(ModelInJar.PATH));
+		} else {
+			// The user passed us a spec file directly. To ensure we can
+			// recover it during semantic parsing, we must include its
+			// parent directory as a library path in the file resolver.
+			//
+			// If the spec file has no parent directory, use the "standard"
+			// library paths provided by SimpleFilenameToStream.
+			final String dir = FileUtil.parseDirname(tlc.getMainFile());
+			if (!dir.isEmpty()) {
+				tlc.setResolver(new SimpleFilenameToStream(dir));
+			} else {
+				tlc.setResolver(new SimpleFilenameToStream());
+			}
+		}
+
 		// Setup MailSender *before* calling tlc.process. The MailSender's task it to
 		// write the MC.out file. The MC.out file is e.g. used by CloudTLC to feed
 		// progress back to the Toolbox (see CloudDistributedTLCJob).
-        final MailSender ms = new MailSender();
-        ms.setModelName(tlc.getModelName());
-        ms.setSpecName(tlc.getSpecName());
+		ms.setModelName(tlc.getModelName());
+		ms.setSpecName(tlc.getSpecName());
 
         // Execute TLC.
         final int errorCode = tlc.process();
@@ -291,6 +298,7 @@ public class TLC
      * @throws IOException 
      */
     // SZ Feb 23, 2009: added return status to indicate the error in parsing
+	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
 	public boolean handleParameters(String[] args)
     {
 		String dumpFile = null;
@@ -306,7 +314,7 @@ public class TLC
         {
             if (args[index].equals("-simulate"))
             {
-                isSimulate = true;
+            	runMode = RunMode.SIMULATE;
                 index++;
                 
 				// Simulation args can be:
@@ -314,7 +322,7 @@ public class TLC
 				// file=/path/to/file
 				// "file=..." and "num=..." are only relevant for simulation which is why they
 				// are args to "-simulate".
-				if (index + 1 < args.length && (args[index].contains("file=") || args[index].contains("num="))) {
+				if (((index + 1) < args.length) && (args[index].contains("file=") || args[index].contains("num="))) {
 					final String[] simArgs = args[index].split(",");
 					index++; // consume simulate args
 					for (String arg : simArgs) {
@@ -325,10 +333,8 @@ public class TLC
 						}
 					}
 				}
-            } else if (args[index].equals("-modelcheck"))
-            {
-                isSimulate = false;
-                index++;
+			} else if (args[index].equals("-modelcheck")) {
+				index++;
             } else if (args[index].equals("-difftrace"))
             {
                 index++;
@@ -391,11 +397,10 @@ public class TLC
                 if (index < args.length)
                 {
                     configFile = args[index];
-                    int len = configFile.length();
-                    if (configFile.startsWith(".cfg", len - 4))
-                    {
-                        configFile = configFile.substring(0, len - 4);
-                    }
+					if (configFile.endsWith(TLAConstants.Files.CONFIG_EXTENSION)) {
+						configFile = configFile.substring(0,
+								(configFile.length() - TLAConstants.Files.CONFIG_EXTENSION.length()));
+					}
                     index++;
                 } else
                 {
@@ -761,16 +766,16 @@ public class TLC
                     return false;
                 }
                 mainFile = args[index++];
-                int len = mainFile.length();
-                if (mainFile.endsWith(".tla"))
+                if (mainFile.endsWith(TLAConstants.Files.TLA_EXTENSION))
                 {
-                    mainFile = mainFile.substring(0, len - 4);
+                    mainFile = mainFile.substring(0, (mainFile.length() - TLAConstants.Files.TLA_EXTENSION.length()));
                 }
             }
         }
-        
-        if (mainFile == null)
-        {
+                
+        startTime = System.currentTimeMillis();
+
+		if (mainFile == null) {
 			// command line omitted name of spec file, take this as an
 			// indicator to check the in-jar model/ folder for a spec.
 			// If a spec is found, use it instead.
@@ -779,40 +784,37 @@ public class TLC
 				ModelInJar.loadProperties();
 				TLCGlobals.tool = true; // always run in Tool mode (to parse output by Toolbox later)
 				TLCGlobals.chkptDuration = 0; // never use checkpoints with distributed TLC (highly inefficient)
-				mainFile = "MC";
+				mainFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 			} else {
 				printErrorMsg("Error: Missing input TLA+ module.");
 				return false;
 			}
-        }
-        
+		}
+
 		// The functionality to start TLC from an (absolute) path /path/to/spec/file.tla
 		// seems to have eroded over the years which is why this block of code is a
-		// clutch.  It essentially massages the variable values for mainFile, specDir and
-        // the user dir to make the code below - as well as the FilenameToStream resolver -
-        // work. Original issues was https://github.com/tlaplus/tlaplus/issues/24.
-        final File f = new File(mainFile);
-        String specDir = "";
-        if (f.isAbsolute()) {
-        	specDir = f.getParent() + FileUtil.separator;
-        	mainFile = f.getName();
-        	// Not setting user dir causes a ConfigFileException when the resolver
-        	// tries to read the .cfg file later in the game.
-        	ToolIO.setUserDir(specDir);
-        }
-        
-        if (configFile == null)
-        {
-            configFile = mainFile;
-        }
+		// clutch. It essentially massages the variable values for mainFile, specDir and
+		// the user dir to make the code below - as well as the FilenameToStream
+		// resolver -
+		// work. Original issues was https://github.com/tlaplus/tlaplus/issues/24.
+		final File f = new File(mainFile);
+		String specDir = "";
+		if (f.isAbsolute()) {
+			specDir = f.getParent() + FileUtil.separator;
+			mainFile = f.getName();
+			// Not setting user dir causes a ConfigFileException when the resolver
+			// tries to read the .cfg file later in the game.
+			ToolIO.setUserDir(specDir);
+		}
 
-        if (cleanup && fromChkpt == null)
-        {
-            // clean up the states directory only when not recovering
-            FileUtil.deleteDir(TLCGlobals.metaRoot, true);
-        }
-        
-        startTime = System.currentTimeMillis();
+		if (configFile == null) {
+			configFile = mainFile;
+		}
+
+		if (cleanup && (fromChkpt == null)) {
+			// clean up the states directory only when not recovering
+			FileUtil.deleteDir(TLCGlobals.metaRoot, true);
+		}
 
         // Check if mainFile is an absolute or relative file system path. If it is
 		// absolute, the parent gets used as TLC's meta directory (where it stores
@@ -820,40 +822,37 @@ public class TLC
 		// the current directory.
     	metadir = FileUtil.makeMetaDir(new Date(startTime), specDir, fromChkpt);
     	
-        if (dumpFile != null) {
-        	if (dumpFile.startsWith("${metadir}")) {
+		if (dumpFile != null) {
+			if (dumpFile.startsWith("${metadir}")) {
 				// prefix dumpfile with the known value of this.metadir. There
 				// is no way to determine the actual value of this.metadir
 				// before TLC startup and thus it's impossible to make the
 				// dumpfile end up in the metadir if desired.
-        		dumpFile = dumpFile.replace("${metadir}", metadir);
-        	}
-        	try {
-        		if (asDot) {
-        			this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels, snapshot);
-        		} else {
-        			this.stateWriter = new StateWriter(dumpFile);
-        		}
-        	} catch (IOException e) {
+				dumpFile = dumpFile.replace("${metadir}", metadir);
+			}
+			try {
+				if (asDot) {
+					this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels, snapshot);
+				} else {
+					this.stateWriter = new StateWriter(dumpFile);
+				}
+			} catch (IOException e) {
 				printErrorMsg(String.format("Error: Given file name %s for dumping states invalid.", dumpFile));
 				return false;
-        	}
-        }
-        
-        if (TLCGlobals.debug) 
-        {
-		StringBuffer buffer = new StringBuffer("TLC arguments:");
-		for (int i=0; i < args.length; i++)
-		{
-		    buffer.append(args[i]);
-		    if (i < args.length - 1) 
-		    {
-		        buffer.append(" ");
-		    }
+			}
 		}
-            buffer.append("\n");
-            DebugPrinter.print(buffer.toString());
-        }
+        
+		if (TLCGlobals.debug) {
+			final StringBuilder buffer = new StringBuilder("TLC arguments:");
+			for (int i = 0; i < args.length; i++) {
+				buffer.append(args[i]);
+				if (i < args.length - 1) {
+					buffer.append(" ");
+				}
+			}
+			buffer.append("\n");
+			DebugPrinter.print(buffer.toString());
+		}
         
         // if no errors, print welcome message
         printWelcome();
@@ -897,8 +896,7 @@ public class TLC
     		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
             final int result;
-            if (isSimulate)
-            {
+			if (RunMode.SIMULATE.equals(runMode)) {
                 // random simulation
                 if (noSeed)
                 {
@@ -914,8 +912,7 @@ public class TLC
                         traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
                 result = simulator.simulate();
-            } else
-            {
+			} else { // RunMode.MODEL_CHECK
 				if (noSeed) {
                     seed = rng.nextLong();
 				}
@@ -985,7 +982,7 @@ public class TLC
 			MP.flush();
         }
     }
-
+    
 	private static boolean isBFS() {
 		return TLCGlobals.DFIDMax == -1;
 	}
@@ -1181,6 +1178,10 @@ public class TLC
 
     FPSetConfiguration getFPSetConfiguration() {
     	return fpSetConfiguration;
+    }
+    
+    public RunMode getRunMode() {
+    	return runMode;
     }
 
     public String getMainFile() {

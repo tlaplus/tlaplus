@@ -25,6 +25,7 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.tool.tlc.launch;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +47,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunch;
@@ -61,19 +62,23 @@ import org.lamport.tla.toolbox.tool.tlc.TLCActivator;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TLCProcessJob;
 import org.lamport.tla.toolbox.tool.tlc.job.TraceExplorerJob;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
-import org.lamport.tla.toolbox.tool.tlc.model.ModelWriter;
 import org.lamport.tla.toolbox.tool.tlc.model.TLCSpec;
 import org.lamport.tla.toolbox.tool.tlc.model.TraceExpressionModelWriter;
-import org.lamport.tla.toolbox.tool.tlc.model.TypedSet;
-import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.semantic.OpDefNode;
+import tlc2.model.Assignment;
+import tlc2.model.Formula;
+import tlc2.model.MCState;
+import tlc2.model.TraceExpressionInformationHolder;
+import tlc2.model.TypedSet;
+import tlc2.output.AbstractSpecWriter;
+import tlc2.output.SpecWriterUtilities;
+import util.TLAConstants;
 
 /**
  * Methods in this class are executed when the user clicks the explore
@@ -115,9 +120,10 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
     private IFile tlaFile;
     private IFile cfgFile;
     private IFile outFile;
-    private List<SimpleTLCState> trace;
+    private List<MCState> trace;
     private String initId;
     private String nextId;
+    private String actionConstraintId;
 
     /**
      * Writes data to TE.tla so that SANY can be run on that module in the next
@@ -326,9 +332,9 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                         try
                         {
                             if ((checkpoints.length > 0 && checkpoints[0].equals(members[i]))
-                                    || members[i].getName().equals(ModelHelper.FILE_CFG)
-                                    || members[i].getName().equals(ModelHelper.FILE_TLA)
-                                    || members[i].getName().equals(ModelHelper.FILE_OUT)
+                                    || members[i].getName().equals(TLAConstants.Files.MODEL_CHECK_CONFIG_FILE)
+                                    || members[i].getName().equals(TLAConstants.Files.MODEL_CHECK_TLA_FILE)
+                                    || members[i].getName().equals(TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE)
                                     || members[i].getName().equals(ModelHelper.TE_TRACE_SOURCE)
 									// Iff the model has been run with a module
 									// override, then there is a .class (and
@@ -344,7 +350,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                                 // or any of the MC files or the MC_TE.out file.
                                 continue;
                             }
-                            members[i].delete(IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                            members[i].delete(IResource.FORCE, SubMonitor.convert(monitor).split(1));
                         } catch (CoreException e)
                         {
                             // catch the exception if
@@ -357,7 +363,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
                     }
                     monitor.done();
                 }
-            }, deleteRule, IWorkspace.AVOID_UPDATE, new SubProgressMonitor(monitor, STEP));
+            }, deleteRule, IWorkspace.AVOID_UPDATE, SubMonitor.convert(monitor).split(STEP));
         }
         /******************************************************************
          * Finished deleting files.                                       *
@@ -379,7 +385,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 
         // copy
         specRootFile.copy(targetFolderPath.append(specRootFile.getProjectRelativePath()), IResource.DERIVED
-                | IResource.FORCE, new SubProgressMonitor(monitor, 1));
+                | IResource.FORCE, SubMonitor.convert(monitor).split(1));
         // find the result
         IResource specRootFileCopy = modelFolder.findMember(specRootFile.getProjectRelativePath());
 
@@ -396,7 +402,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 		ModelHelper.copyModuleFiles(specRootFile, targetFolderPath, monitor, STEP, project,
 				// Append ".tla" extensions without which copyModuleFiles silently skips the
 				// file.
-				model.getTraceExplorerExtends().stream().map(m -> m + ".tla").collect(Collectors.toSet()),
+				model.getTraceExplorerExtends().stream().map(m -> m + TLAConstants.Files.TLA_EXTENSION).collect(Collectors.toSet()),
 				// Unconditionally copy all extra modules to where TLC (trace exploration) will
 				// be able to resolve them with the SimpleFilenameToStream resolver. These are
 				// modules which are at the root of the spec directory but not extended by the
@@ -453,19 +459,19 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          * of each expression. This is done in finalLaunchCheck() using the ParseResult
          * object returned by SANY.
          */
-        traceExpressionData = writer.createAndAddVariablesAndDefinitions(ModelHelper.deserializeFormulaList(config
-                .getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, new Vector<String>())),
-                TRACE_EXPLORE_EXPRESSIONS);
+        traceExpressionData = writer.createAndAddVariablesAndDefinitions(Formula.deserializeFormulaList(config
+                .getAttribute(TLAConstants.TraceExplore.TRACE_EXPLORE_EXPRESSIONS, new ArrayList<String>())),
+        		TLAConstants.TraceExplore.TRACE_EXPLORE_EXPRESSIONS);
 
         // add the initial state predicate and next state action without
         // the trace exploration expressions in order to determine if they parse
         // initNext[0] is the identifier for init, initNext[1] is the identifier for next
-        String[] initNext = writer.addInitNext(trace, null);
-        if (initNext != null)
-        {
-            initId = initNext[0];
-            nextId = initNext[1];
-        }
+        final String[] initNextActionConstraint = writer.addInitNext(trace, null);
+		if (initNextActionConstraint != null) {
+			initId = initNextActionConstraint[0];
+			nextId = initNextActionConstraint[1];
+			actionConstraintId = initNextActionConstraint[2];
+		}
 
         monitor.worked(STEP);
         monitor.subTask("Writing contents");
@@ -492,7 +498,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 
         monitor.worked(1);
         // parse the TE.tla file
-        IParseResult parseResult = ToolboxHandle.parseModule(rootModule, new SubProgressMonitor(monitor, 1), false,
+        IParseResult parseResult = ToolboxHandle.parseModule(rootModule, SubMonitor.convert(monitor).split(1), false,
                 false);
         Assert
                 .isTrue(parseResult instanceof ParseResult,
@@ -564,7 +570,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
          * We use the following object to collect level three expressions in order to display
          * these in a message to the user.
          */
-        Vector<TraceExpressionInformationHolder> levelThreeExpressions = new Vector<TraceExpressionInformationHolder>();
+        final ArrayList<TraceExpressionInformationHolder> levelThreeExpressions = new ArrayList<TraceExpressionInformationHolder>();
         for (int i = 0; i < traceExpressionData.length; i++)
         {
             OpDefNode opDefNode = (OpDefNode) nodeTable.get(traceExpressionData[i].getIdentifier());
@@ -645,12 +651,12 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addTraceFunction(trace);
 
         // variables declarations for trace explorer expressions
-        writer.addVariablesAndDefinitions(traceExpressionData, TRACE_EXPLORE_EXPRESSIONS, false);
+        writer.addVariablesAndDefinitions(traceExpressionData, TLAConstants.TraceExplore.TRACE_EXPLORE_EXPRESSIONS, false);
 
         // add init and next
-        writer.addInitNext(trace, traceExpressionData, initId, nextId);
+        writer.addInitNext(trace, traceExpressionData, initId, nextId, actionConstraintId);
 
-        SimpleTLCState finalState = (SimpleTLCState) trace.get(trace.size() - 1);
+        MCState finalState = trace.get(trace.size() - 1);
         boolean isBackToState = finalState.isBackToState();
         boolean isStuttering = finalState.isStuttering();
 
@@ -658,11 +664,10 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // read the method comments to see the form of the invariant or property
         if (isStuttering)
         {
-            writer.addStutteringProperty((SimpleTLCState) trace.get(trace.size() - 2));
+            writer.addStutteringProperty(trace.get(trace.size() - 2));
         } else if (isBackToState)
         {
-            writer.addBackToStateProperty((SimpleTLCState) trace.get(trace.size() - 2),
-                    (SimpleTLCState) trace.get(finalState.getStateNumber() - 1));
+            writer.addBackToStateProperty(trace.get(trace.size() - 2), trace.get(finalState.getStateNumber() - 1));
         } else
         {
             // checking deadlock eliminates the need for the following
@@ -674,7 +679,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // retrieve the model folder
         IFolder modelFolder = model.getFolder();
         // refresh the model folder
-        modelFolder.refreshLocal(IResource.DEPTH_ONE, new SubProgressMonitor(monitor, 100));
+        modelFolder.refreshLocal(IResource.DEPTH_ONE, SubMonitor.convert(monitor).split(100));
 
         // set the model to have the trace with trace explorer expression shown
         configuration.getAdapter(Model.class).setOriginalTraceShown(false);
@@ -724,11 +729,11 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
      * @param writer
      * @throws CoreException
      */
-    private void writeModelInfo(ILaunchConfiguration config, ModelWriter writer) throws CoreException
+    private void writeModelInfo(final ILaunchConfiguration config, final AbstractSpecWriter writer) throws CoreException
     {
         // constants list
     	final List<Assignment> constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
-                new Vector<String>()), true);
+                new ArrayList<String>()), true);
 
         // the advanced model values
         TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
@@ -744,8 +749,9 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addConstantsBis(constants, MODEL_PARAMETER_CONSTANTS);
         // definition overrides list
         List<Assignment> overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
-                new Vector<String>()));
-        writer.addFormulaList(ModelWriter.createOverridesContent(overrides, ModelWriter.DEFOV_SCHEME), "CONSTANT",
-                MODEL_PARAMETER_DEFINITIONS);
+                new ArrayList<String>()));
+        writer.addFormulaList(SpecWriterUtilities.createOverridesContent(overrides, TLAConstants.Schemes.DEFOV_SCHEME,
+        		ToolboxHandle.getCurrentSpec().getValidRootModule()), TLAConstants.KeyWords.CONSTANT,
+        		MODEL_PARAMETER_DEFINITIONS);
     }
 }

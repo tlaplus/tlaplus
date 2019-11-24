@@ -26,13 +26,6 @@
 
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
-import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.COMMA;
-import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.L_SQUARE_BRACKET;
-import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.QUOTE;
-import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.RECORD_ARROW;
-import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.R_SQUARE_BRACKET;
-import static org.lamport.tla.toolbox.tool.tlc.model.ModelWriter.SPACE;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,23 +33,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.IModuleLocatable;
 
 import tla2sany.st.Location;
+import util.TLAConstants;
 
 /**
  * Representation of the TLC state
+ * 
+ * TODO 393 MCState
+ * 
  * @author Simon Zambrovski
  */
 public class TLCState implements IModuleLocatable
 {
-    private static final String COLON = ":";
-    private static final String CR = "\n";
-    private static final String STUTTERING = " Stuttering"; // See tlc2.output.MP
-    private static final String AND = "/\\";
-    private static final String EQ = " = ";
-    private static final String BACK_TO_STATE = " Back to state"; // See tlc2.output.MP
+	private static final String BACK_TO_STATE = " " + TLAConstants.BACK_TO_STATE;
 
     /**
      * A factory for stuttering states
@@ -91,9 +82,9 @@ public class TLCState implements IModuleLocatable
     public static TLCState parseState(String input, String modelName)
     {
         // state number
-        int index = input.indexOf(COLON);
+        int index = input.indexOf(TLAConstants.COLON);
         // multi line
-        int index2 = input.indexOf(CR, index);
+        int index2 = input.indexOf(TLAConstants.CR, index);
         if (index2 == -1)
         {
             index2 = input.length();
@@ -101,7 +92,7 @@ public class TLCState implements IModuleLocatable
 
         int number = Integer.parseInt(input.substring(0, index));
         String label = input.substring(index + 1, index2);
-        if (label.indexOf(STUTTERING) == 0)
+        if (label.indexOf(TLAConstants.STUTTERING) == 0)
         {
             return STUTTERING_STATE(number, modelName);
         } else if (label.indexOf(BACK_TO_STATE) == 0)
@@ -127,7 +118,7 @@ public class TLCState implements IModuleLocatable
      * @return
      */
 	private static List<TLCVariable> parseVariables(String variablesText) {
-        String[] lines = variablesText.split(CR);
+        String[] lines = variablesText.split(TLAConstants.CR);
 		List<TLCVariable> vars = new ArrayList<TLCVariable>();
         int index;
 
@@ -138,7 +129,7 @@ public class TLCState implements IModuleLocatable
         for (int j = 0; j < lines.length; j++)
         {
             // find the index of the first /\ in the line
-            index = lines[j].indexOf(AND);
+            index = lines[j].indexOf(TLAConstants.TLA_AND);
 
             // adding the current line to the previous lines
             if (index != -1)
@@ -151,7 +142,7 @@ public class TLCState implements IModuleLocatable
                     vars.add(var);
                 }
 
-                stateVarString = lines[j].substring(index + AND.length()).split(EQ);
+                stateVarString = lines[j].substring(index + TLAConstants.TLA_AND.length()).split(TLAConstants.EQ);
             } else
             {
                 // no index
@@ -159,12 +150,12 @@ public class TLCState implements IModuleLocatable
                 if (stateVarString != null)
                 {
                     // either an empty line
-                    stateVarString[1] += CR;
+                    stateVarString[1] += TLAConstants.CR;
                     stateVarString[1] += lines[j];
                 } else
                 {
                     // the state has one variable only
-                    stateVarString = lines[j].split(EQ);
+                    stateVarString = lines[j].split(TLAConstants.EQ);
                 }
             }
         }
@@ -343,48 +334,45 @@ public class TLCState implements IModuleLocatable
         return result.toString();
     }
 
-    /**
-     * @see SimpleTLCState#asRecord()
-     */
 	public String asRecord(final boolean includeHeader) {
 		final StringBuffer result = new StringBuffer();
-		result.append(L_SQUARE_BRACKET);
-		result.append(CR);
+		result.append(TLAConstants.L_SQUARE_BRACKET);
+		result.append(TLAConstants.CR);
 		
 		if (includeHeader) {
-			result.append(SPACE);
-			result.append("_TEAction");
-			result.append(RECORD_ARROW);
+			result.append(TLAConstants.SPACE);
+			result.append(TLAConstants.TraceExplore.ACTION);
+			result.append(TLAConstants.RECORD_ARROW);
 			
-			result.append(L_SQUARE_BRACKET);
-			result.append(CR);
-			result.append(SPACE).append(SPACE).append(SPACE);
+			result.append(TLAConstants.L_SQUARE_BRACKET);
+			result.append(TLAConstants.CR);
+			result.append(TLAConstants.SPACE).append(TLAConstants.SPACE).append(TLAConstants.SPACE);
 				result.append("position");
-				result.append(RECORD_ARROW);
+				result.append(TLAConstants.RECORD_ARROW);
 				result.append(getStateNumber());
-				result.append(COMMA).append(CR);
+				result.append(TLAConstants.COMMA).append(TLAConstants.CR);
 			
-				result.append(SPACE).append(SPACE).append(SPACE);
+				result.append(TLAConstants.SPACE).append(TLAConstants.SPACE).append(TLAConstants.SPACE);
 				result.append("name");
-				result.append(RECORD_ARROW);
-				result.append(QUOTE);
+				result.append(TLAConstants.RECORD_ARROW);
+				result.append(TLAConstants.QUOTE);
 				result.append(getName());
-				result.append(QUOTE);
-				result.append(COMMA).append(CR);
+				result.append(TLAConstants.QUOTE);
+				result.append(TLAConstants.COMMA).append(TLAConstants.CR);
 				
-				result.append(SPACE).append(SPACE).append(SPACE);
+				result.append(TLAConstants.SPACE).append(TLAConstants.SPACE).append(TLAConstants.SPACE);
 				result.append("location");
-				result.append(RECORD_ARROW);
-				result.append(QUOTE);
+				result.append(TLAConstants.RECORD_ARROW);
+				result.append(TLAConstants.QUOTE);
 				result.append(getModuleLocation());
-				result.append(QUOTE);
+				result.append(TLAConstants.QUOTE);
 				
-			result.append(CR);
-			result.append(SPACE).append(R_SQUARE_BRACKET);
+			result.append(TLAConstants.CR);
+			result.append(TLAConstants.SPACE).append(TLAConstants.R_SQUARE_BRACKET);
 			if (!variables.isEmpty() ) {
 				// only append comma for additional records iff there are any variables to
 				// append.
-				result.append(COMMA).append(CR);
+				result.append(TLAConstants.COMMA).append(TLAConstants.CR);
 			}
 		}
 		
@@ -396,7 +384,7 @@ public class TLCState implements IModuleLocatable
 				result.append(var.getName());
 			}
 
-			result.append(RECORD_ARROW);
+			result.append(TLAConstants.RECORD_ARROW);
 
 			if (var.getValue().toString() != null) {
 				result.append(var.getValue().toString());
@@ -404,10 +392,10 @@ public class TLCState implements IModuleLocatable
 				result.append(var.getValue().toSimpleString());
 			}
 			if (i < variables.size() - 1) {
-				result.append(COMMA).append(CR);
+				result.append(TLAConstants.COMMA).append(TLAConstants.CR);
 			}
 		}
-		result.append(CR).append(R_SQUARE_BRACKET);
+		result.append(TLAConstants.CR).append(TLAConstants.R_SQUARE_BRACKET);
 		return result.toString();
 	}
 

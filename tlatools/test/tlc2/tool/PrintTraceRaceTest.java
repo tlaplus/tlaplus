@@ -37,11 +37,12 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import util.TLAConstants;
 
 public class PrintTraceRaceTest extends ModelCheckerTestCase {
 
 	public PrintTraceRaceTest() {
-		super("MC", "PrintTraceRace", ExitStatus.FAILURE_SAFETY_EVAL);
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "PrintTraceRace", ExitStatus.FAILURE_SAFETY_EVAL);
 	}
 	
 	@Test

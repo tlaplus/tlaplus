@@ -29,6 +29,7 @@ import org.lamport.tla.toolbox.util.AdapterFactory;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
+import util.TLAConstants;
 import util.UniqueString;
 
 public class TLCUIHelper
@@ -107,7 +108,7 @@ public class TLCUIHelper
                 final Location location = Location.parseLocation(locationString);
                 if ((location != null)
                 		&& !location.equals(Location.nullLoc)
-                        && !location.source().equals(ModelHelper.MC_MODEL_NAME)
+                        && !location.source().equals(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME)
                         && !location.source().equals(ModelHelper.TE_MODEL_NAME)) {
                     moduleName = location.source();
                     result.add(getHyperlinkStyleRange(location, matcher.start(), matcher.end()));

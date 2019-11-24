@@ -39,6 +39,7 @@ import tla2sany.semantic.ModuleNode;
 import tlc2.module.BuiltInModuleHelper;
 import util.FilenameToStream.TLAFile;
 import util.NamedInputStream;
+import util.TLAConstants;
 
 /**
  * Representation of a module
@@ -107,9 +108,10 @@ public class Module
     public String getModuleName()
     {
         String filename = file.getName();
-        if (filename.toLowerCase().indexOf(".tla") != -1)
+        final int tlaSuffixIndex = filename.toLowerCase().indexOf(TLAConstants.Files.TLA_EXTENSION);
+        if (tlaSuffixIndex != -1)
         {
-            filename = filename.substring(0, filename.indexOf(".tla"));
+            filename = filename.substring(0, tlaSuffixIndex);
         }
         return filename;
     }

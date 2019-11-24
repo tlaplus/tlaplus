@@ -17,8 +17,9 @@ import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.editor.basic.TLAEditor;
 import org.lamport.tla.toolbox.editor.basic.util.EditorUtil;
 import org.lamport.tla.toolbox.ui.preference.EditorPreferencePage;
-import org.lamport.tla.toolbox.util.StringHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
+
+import util.StringHelper;
 
 /**
  * This is the handler method for the following commands:
@@ -168,12 +169,12 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 
 		String asterisks = StringHelper.copyString("*", Math.max(3, RightMargin
 				- indent - 1));
-		String newText = "(" + asterisks + StringHelper.newline
-				+ StringHelper.newline + StringHelper.copyString(" ", indent)
-				+ asterisks + ")" + (dontAddNewLine ? "" : StringHelper.newline);
+		String newText = "(" + asterisks + StringHelper.PLATFORM_NEWLINE
+				+ StringHelper.PLATFORM_NEWLINE + StringHelper.copyString(" ", indent)
+				+ asterisks + ")" + (dontAddNewLine ? "" : StringHelper.PLATFORM_NEWLINE);
 		doc.replace(selection.getOffset(), selection.getLength(), newText);
 		selectionProvider.setSelection(new TextSelection(offset + 1
-				+ asterisks.length() + StringHelper.newline.length(), 0));
+				+ asterisks.length() + StringHelper.PLATFORM_NEWLINE.length(), 0));
 	}
 
 	private void formatAndBoxComment()
@@ -262,7 +263,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 
 		StringBuffer buffer = new StringBuffer(4 * margin);
 		buffer.append(makeCommentBoxStart());
-		buffer.append(StringHelper.newline);
+		buffer.append(StringHelper.PLATFORM_NEWLINE);
 
 		// Handle special case of entire comment on one line.
 		if (beginLine == endLine) {
@@ -273,7 +274,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 			buffer
 					.append(makeCommentBoxLine(StringHelper
 							.trimFront(singleLine)));
-			buffer.append(StringHelper.newline);
+			buffer.append(StringHelper.PLATFORM_NEWLINE);
 		} else {
 
 			// Produce a first line for anything after the (* on its line.
@@ -285,13 +286,13 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 			if (!StringHelper.onlySpaces(restOfLine)) {
 				buffer.append(makeCommentBoxLine(StringHelper
 						.trimFront(restOfLine)));
-				buffer.append(StringHelper.newline);
+				buffer.append(StringHelper.PLATFORM_NEWLINE);
 			}
 
 			for (int i = beginLine + 1; i < endLine; i++) {
 				buffer.append(makeCommentBoxLine(doc.get(doc.getLineOffset(i),
 						doc.getLineLength(i))));
-				buffer.append(StringHelper.newline);
+				buffer.append(StringHelper.PLATFORM_NEWLINE);
 			}
 
 			// Produce a last line for anything before the *) on its line.
@@ -300,7 +301,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 					- endCommentLength - lineOffset);
 			if (!StringHelper.onlySpaces(startOfLine)) {
 				buffer.append(makeCommentBoxLine(startOfLine));
-				buffer.append(StringHelper.newline);
+				buffer.append(StringHelper.PLATFORM_NEWLINE);
 			}
 		}
 
@@ -311,7 +312,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 		if (!StringHelper.onlySpaces(doc.get(endCommentOffset, doc
 				.getLineOffset(endLine)
 				- endCommentOffset + doc.getLineLength(endLine)))) {
-			buffer.append(StringHelper.newline);
+			buffer.append(StringHelper.PLATFORM_NEWLINE);
 		}
 
 		doc.replace(beginCommentOffset, endCommentOffset - beginCommentOffset,
@@ -379,7 +380,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 		// and the ending ) . We must therefore begin
 		// with asterisks and a StringHelper.newline;
 		buffer.append(asterisks);
-		buffer.append(StringHelper.newline);
+		buffer.append(StringHelper.PLATFORM_NEWLINE);
 
 		// process the individual lines.
 		for (int i = beginLine + 1; i < endLine; i++) {
@@ -392,10 +393,10 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 					&& (!(beginTokenIndex > endTokenIndex))) {
 				buffer.append(StringHelper.trimEnd(currentLine.substring(
 						beginTokenIndex + 3, endTokenIndex)));
-				buffer.append(StringHelper.newline);
+				buffer.append(StringHelper.PLATFORM_NEWLINE);
 			} else {
 				buffer.append(currentLine);
-				buffer.append(StringHelper.newline);
+				buffer.append(StringHelper.PLATFORM_NEWLINE);
 			}
 
 		}
@@ -463,12 +464,12 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 				// Output a StringHelper.newline if there's an unfinished
 				// paragraph.
 				if (unfinishedLineWidth > 0) {
-					buffer.append(StringHelper.newline);
+					buffer.append(StringHelper.PLATFORM_NEWLINE);
 					unfinishedLineWidth = 0;
 				}
 				// Output the line and an endline
 				buffer.append(currentLine);
-				buffer.append(StringHelper.newline);
+				buffer.append(StringHelper.PLATFORM_NEWLINE);
 			} else {
 				// This line is part of a paragraph. Set the array words
 				// to the words on this line.
@@ -491,7 +492,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 						int nextWidth = unfinishedLineWidth
 								+ (followsPeriod ? 2 : 1) + nextWord.length();
 						if (nextWidth > lineWidth) {
-							buffer.append(StringHelper.newline);
+							buffer.append(StringHelper.PLATFORM_NEWLINE);
 							buffer.append(nextWord);
 							unfinishedLineWidth = nextWord.length();
 						} else {
@@ -506,7 +507,7 @@ public class BoxedCommentHandler extends AbstractHandler implements IHandler {
 		} // end for
 		// Output a newline if there's an unfinished paragraph.
 		if (unfinishedLineWidth > 0) {
-			buffer.append(StringHelper.newline);
+			buffer.append(StringHelper.PLATFORM_NEWLINE);
 			unfinishedLineWidth = 0;
 		}
 		doc.replace(beginReplacementOffset, endReplacementOffset

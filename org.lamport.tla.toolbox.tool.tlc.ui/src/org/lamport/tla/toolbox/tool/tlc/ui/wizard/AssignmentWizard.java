@@ -2,7 +2,8 @@ package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.lamport.tla.toolbox.tool.tlc.model.Assignment;
+
+import tlc2.model.Assignment;
 
 /**
  * Wizard for editing a constant assignement

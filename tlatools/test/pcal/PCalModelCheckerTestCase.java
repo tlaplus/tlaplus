@@ -39,6 +39,7 @@ import org.junit.Before;
 import tlc2.output.EC;
 import tlc2.tool.CommonTestCase;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import util.TLAConstants;
 import util.ToolIO;
 
 public abstract class PCalModelCheckerTestCase extends ModelCheckerTestCase {
@@ -70,7 +71,8 @@ public abstract class PCalModelCheckerTestCase extends ModelCheckerTestCase {
 		// the previous tests.
 		ToolIO.reset();
 		
-		this.pcalArgs.add(CommonTestCase.BASE_PATH + File.separator + path + File.separator + spec + ".tla");
+		this.pcalArgs.add(CommonTestCase.BASE_PATH + File.separator + path + File.separator + spec
+				+ TLAConstants.Files.TLA_EXTENSION);
 		
 		// Run PCal translator
 		assertEquals(0, trans.runMe(pcalArgs.toArray(new String[pcalArgs.size()])));

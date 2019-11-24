@@ -20,6 +20,7 @@ import pcal.exception.RemoveNameConflictsException;
 import pcal.exception.StringVectorToFileException;
 import pcal.exception.TLCTranslationException;
 import pcal.exception.UnrecoverableException;
+import util.TLAConstants;
 import util.ToolIO;
 
 /***************************************************************************
@@ -352,7 +353,7 @@ class trans
         List<String> inputVec = null;
         try
         {
-            inputVec = fileToStringVector(PcalParams.TLAInputFile + /* (PcalParams.fromPcalFile ? ".pcal" : */".tla" /*)*/);
+            inputVec = fileToStringVector(PcalParams.TLAInputFile + /* (PcalParams.fromPcalFile ? ".pcal" : */TLAConstants.Files.TLA_EXTENSION /*)*/);
         } catch (FileToStringVectorException e)
         {
             PcalDebug.reportError(e);
@@ -384,11 +385,11 @@ class trans
                 file.delete();
             }
             ;
-            file = new File(PcalParams.TLAInputFile + ".tla");
+            file = new File(PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION);
             file.renameTo(new File(PcalParams.TLAInputFile + ".old"));
         } catch (Exception e)
         {
-            PcalDebug.reportError("Could not rename input file " + PcalParams.TLAInputFile + ".tla" + " to "
+            PcalDebug.reportError("Could not rename input file " + PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION + " to "
                     + PcalParams.TLAInputFile + ".old");
             return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         }
@@ -426,19 +427,19 @@ class trans
         *********************************************************************/
         try
         {
-            WriteStringVectorToFile(outputVec, PcalParams.TLAInputFile + ".tla");
+            WriteStringVectorToFile(outputVec, PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION);
         } catch (StringVectorToFileException e)
         {
             PcalDebug.reportError(e);
             return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
         }
 
-        PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".tla" + " written.");
+        PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION + " written.");
 
         /*********************************************************************
         * Write the cfg file, unless the -nocfg option is used.              *
         *********************************************************************/
-        final File cfgFile = new File(PcalParams.TLAInputFile + ".cfg");
+        final File cfgFile = new File(PcalParams.TLAInputFile + TLAConstants.Files.CONFIG_EXTENSION);
         List<String> cfg = null;
         boolean writeCfg = !PcalParams.Nocfg;
         if (writeCfg && cfgFile.exists())
@@ -447,7 +448,7 @@ class trans
             {
                 try
                 {
-                    cfg = fileToStringVector(PcalParams.TLAInputFile + ".cfg");
+                    cfg = fileToStringVector(PcalParams.TLAInputFile + TLAConstants.Files.CONFIG_EXTENSION);
                 } catch (FileToStringVectorException e)
                 {
                     PcalDebug.reportError(e);
@@ -528,9 +529,9 @@ class trans
             ******************************************************************/
             boolean hasSpec = false;
             for (final String thisLine : cfg) {
-                if ((thisLine.indexOf("SPECIFICATION") != -1)
+                if ((thisLine.indexOf(TLAConstants.KeyWords.SPECIFICATION) != -1)
                         && ((thisLine.indexOf("\\*") == -1) || (thisLine.indexOf("\\*") > thisLine
-                                .indexOf("SPECIFICATION")))) {
+                                .indexOf(TLAConstants.KeyWords.SPECIFICATION)))) {
                     hasSpec = true;
                     break;
                 }
@@ -539,21 +540,22 @@ class trans
             if (hasSpec)
             {
                 PcalDebug.reportInfo("File " + PcalParams.TLAInputFile
-                        + ".cfg already contains SPECIFICATION statement," + "\n   so new one not written.");
+                        + ".cfg already contains " + TLAConstants.KeyWords.SPECIFICATION
+                        + " statement," + "\n   so new one not written.");
             } else
             {
-                cfg.add(0, "SPECIFICATION Spec");
+                cfg.add(0, TLAConstants.KeyWords.SPECIFICATION + " Spec");
             }
 
             try
             {
-                WriteStringVectorToFile(cfg, PcalParams.TLAInputFile + ".cfg");
+                WriteStringVectorToFile(cfg, PcalParams.TLAInputFile + TLAConstants.Files.CONFIG_EXTENSION);
             } catch (StringVectorToFileException e)
             {
                 PcalDebug.reportError(e);
                 return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
             }
-            PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + ".cfg" + " written.");
+            PcalDebug.reportInfo("New file " + PcalParams.TLAInputFile + TLAConstants.Files.CONFIG_EXTENSION + " written.");
         }
 
         return exitWithStatus(STATUS_EXIT_WITHOUT_ERROR);
@@ -1095,15 +1097,16 @@ class trans
         {
             try
             {
-                Vector<String> parseFile = PcalResourceFileReader.ResourceFileToStringVector(PcalParams.SpecFile + ".tla");
+				Vector<String> parseFile = PcalResourceFileReader
+						.ResourceFileToStringVector(PcalParams.SpecFile + TLAConstants.Files.TLA_EXTENSION);
 
-                WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".tla");
-                parseFile = PcalResourceFileReader.ResourceFileToStringVector(PcalParams.SpecFile + ".cfg");
-                WriteStringVectorToFile(parseFile, PcalParams.SpecFile + ".cfg");
+				WriteStringVectorToFile(parseFile, PcalParams.SpecFile + TLAConstants.Files.TLA_EXTENSION);
+				parseFile = PcalResourceFileReader
+						.ResourceFileToStringVector(PcalParams.SpecFile + TLAConstants.Files.CONFIG_EXTENSION);
+				WriteStringVectorToFile(parseFile, PcalParams.SpecFile + TLAConstants.Files.CONFIG_EXTENSION);
 
-                PcalDebug
-                        .reportInfo("Wrote files " + PcalParams.SpecFile + ".tla and " + PcalParams.SpecFile + ".cfg.");
-
+				PcalDebug.reportInfo("Wrote files " + PcalParams.SpecFile + TLAConstants.Files.TLA_EXTENSION + " and "
+						+ PcalParams.SpecFile + TLAConstants.Files.CONFIG_EXTENSION + ".");
             } catch (UnrecoverableException e)
             {
                 throw new TLCTranslationException(e.getMessage());
@@ -1734,7 +1737,7 @@ class trans
         { 
           PcalParams.TLAInputFile = args[maxArg]; 
         } 
-        else if (args[maxArg].substring(dotIndex).equals(".tla"))
+        else if (args[maxArg].substring(dotIndex).equals(TLAConstants.FILE_TLA_EXTENSION))
         { 
           PcalParams.TLAInputFile = args[maxArg].substring(0, dotIndex); 
         }
@@ -1755,7 +1758,7 @@ class trans
         } else
         {
             // extension present
-            if (file.getName().toLowerCase().endsWith(".tla"))
+            if (file.getName().toLowerCase().endsWith(TLAConstants.Files.TLA_EXTENSION))
             {
                 hasExtension = true;
             }
@@ -1786,7 +1789,7 @@ class trans
             // PcalParams.fromPcalFile = true;
             // } else
             // {
-            file = new File(PcalParams.TLAInputFile + ".tla");
+            file = new File(PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION);
             if (!file.exists())
             {
                 return CommandLineError("Input file " + PcalParams.TLAInputFile + ".pcal and " + file.getPath()
@@ -1794,7 +1797,7 @@ class trans
             }
             // }
         }
-        // file = new File(PcalParams.TLAInputFile + (PcalParams.fromPcalFile?".pcal":".tla"));
+        // file = new File(PcalParams.TLAInputFile + (PcalParams.fromPcalFile?".pcal":TLAConstants.FILE_TLA_EXTENSION));
         // if (!file.exists())
         // {
         // return CommandLineError("Input file " + file.getPath() + " not found");

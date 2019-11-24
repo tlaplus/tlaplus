@@ -92,11 +92,13 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.TLCModelLaunchDelegate;
-import org.lamport.tla.toolbox.tool.tlc.traceexplorer.SimpleTLCState;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 
+import tlc2.model.Formula;
+import tlc2.model.MCState;
 import tlc2.output.MP;
+import util.TLAConstants;
 
 /**
  * This class represents a Toolbox Model that can be executed by TLC.
@@ -837,7 +839,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	 * @return a file handle or <code>null</code>
 	 */
 	public IFile getTLAFile() {
-		return getFile(ModelHelper.FILE_TLA);
+		return getFile(TLAConstants.Files.MODEL_CHECK_TLA_FILE);
 	}
 
 	/**
@@ -868,7 +870,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		if (getTraceExplorerOutput) {
 			return getFile(ModelHelper.TE_FILE_OUT);
 		} else {
-			return getFile(ModelHelper.FILE_OUT);
+			return getFile(TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE);
 		}
 	}
 
@@ -929,7 +931,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
         	targetFolder.refreshLocal(IFolder.DEPTH_INFINITE, monitor);
         	
         	// Import MC.out
-        	IFile mcOutFile = targetFolder.getFile(ModelHelper.FILE_OUT);
+        	IFile mcOutFile = targetFolder.getFile(TLAConstants.Files.MODEL_CHECK_OUTPUT_FILE);
         	if (mcOutFile.exists()) {
         		mcOutFile.delete(true, monitor);
         	}
@@ -951,7 +953,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		return getSpec().getProject().getFolder(getName());
 	}
 
-    private static final String CHECKPOINT_STATES = ModelHelper.MC_MODEL_NAME + ".st.chkpt";
+    private static final String CHECKPOINT_STATES = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME + ".st.chkpt";
     private static final String CHECKPOINT_QUEUE = "queue.chkpt";
     private static final String CHECKPOINT_VARS = "vars.chkpt";
 
@@ -1031,15 +1033,12 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
         return result;
     }
 
-    private static final String CR = "\n";
-    private static final String SPACE = " ";
-
     /**
      * Returns a possibly empty List of {@link SimpleTLCState} that represents
      * the error trace produced by the most recent run of TLC on config, if an error
      * trace was produced.
      */
-    public List<SimpleTLCState> getErrorTrace()
+    public List<MCState> getErrorTrace()
     {
         /*
          * Use a file editor input and file document provider to gain access to the
@@ -1055,17 +1054,14 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
             FindReplaceDocumentAdapter logFileSearcher = new FindReplaceDocumentAdapter(logFileDocument);
 
             // the regular expression for searching for the start tag for state print outs
-            String regExStartTag = MP.DELIM + MP.STARTMSG + "[0-9]{4}" + MP.COLON + MP.STATE + SPACE + MP.DELIM + CR;
+            String regExStartTag = MP.DELIM + MP.STARTMSG + "[0-9]{4}" + MP.COLON + MP.STATE + MP.SPACE + MP.DELIM + MP.CR;
             // the regular expression for searching for the end tag for state print outs
-            String regExEndTag = MP.DELIM + MP.ENDMSG + "[0-9]{4}" + SPACE + MP.DELIM;
+            String regExEndTag = MP.DELIM + MP.ENDMSG + "[0-9]{4}" + MP.SPACE + MP.DELIM;
 
             IRegion startTagRegion = logFileSearcher.find(0, regExStartTag, true, true, false, true);
 
-            // vector of SimpleTLCStates
-            Vector<SimpleTLCState> trace = new Vector<SimpleTLCState>();
-
-            while (startTagRegion != null)
-            {
+            final ArrayList<MCState> trace = new ArrayList<>();
+			while (startTagRegion != null) {
                 IRegion endTagRegion = logFileSearcher.find(startTagRegion.getOffset() + startTagRegion.getLength(),
                         regExEndTag, true, true, false, true);
 
@@ -1076,7 +1072,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
                     // string from which the state can be parsed
                     String stateInputString = logFileDocument.get(stateInputStart, stateInputLength);
 
-                    trace.add(SimpleTLCState.parseSimpleTLCState(stateInputString));
+                    trace.add(MCState.parseState(stateInputString));
 
                 } else
                 {
@@ -1108,7 +1104,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
             logFileDocumentProvider.disconnect(logFileEditorInput);
         }
 
-        return new Vector<SimpleTLCState>();
+        return new Vector<MCState>();
     }
     
     /**
@@ -1151,7 +1147,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	public List<String> getTraceExplorerExpressions() {
 		final Vector<String> defaultValue = new Vector<String>();
 		try {
-			return this.launchConfig.getAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, defaultValue);
+			return this.launchConfig.getAttribute(TLAConstants.TraceExplore.TRACE_EXPLORE_EXPRESSIONS, defaultValue);
 		} catch (CoreException shouldNotHappen) {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 			return defaultValue;
@@ -1160,7 +1156,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 
 	public List<Formula> getTraceExplorerExpressionsAsFormula() {
 		final List<String> traceExplorerExpressions = getTraceExplorerExpressions();
-		return ModelHelper.deserializeFormulaList(traceExplorerExpressions);
+		return Formula.deserializeFormulaList(traceExplorerExpressions);
 	}
 	
 	public Map<String, Formula> getNamedTraceExplorerExpressionsAsFormula() {
@@ -1179,7 +1175,7 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		// into a working copy, which is synced on save. Thus, make sure never
 		// to write to different copies concurrently.
         try {
-        	getWorkingCopy().setAttribute(IModelConfigurationConstants.TRACE_EXPLORE_EXPRESSIONS, serializedInput);
+        	getWorkingCopy().setAttribute(TLAConstants.TraceExplore.TRACE_EXPLORE_EXPRESSIONS, serializedInput);
 		} catch (CoreException shouldNotHappen) {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 		}

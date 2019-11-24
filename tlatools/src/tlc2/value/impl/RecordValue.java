@@ -23,6 +23,7 @@ import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
+import util.TLAConstants;
 import util.UniqueString;
 
 public class RecordValue extends Value implements Applicable {
@@ -509,12 +510,12 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 
       sb.append("[");
       if (len > 0) {
-        sb.append(this.names[0] + " |-> ");
+        sb.append(this.names[0] + TLAConstants.RECORD_ARROW);
         sb = this.values[0].toString(sb, offset, swallow);
       }
       for (int i = 1; i < len; i++) {
         sb.append(", ");
-        sb.append(this.names[i] + " |-> ");
+        sb.append(this.names[i] + TLAConstants.RECORD_ARROW);
         sb = this.values[i].toString(sb, offset, swallow);
       }
       return sb.append("]");

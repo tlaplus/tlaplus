@@ -18,7 +18,6 @@ import org.lamport.tla.toolbox.tool.tlc.ui.test.ModelEditorOpenCondition;
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class CloneModelTest extends AbstractTest {
 
-	private static final String TLA_SUFFIX = ".tla";
 	private static final String TEST_SPEC = "ToBeClonedSpec";
 	private static final String TEST_MODEL = "Model_1";
 	private static final String TEST_MODEL_RENAME = "Model_2";

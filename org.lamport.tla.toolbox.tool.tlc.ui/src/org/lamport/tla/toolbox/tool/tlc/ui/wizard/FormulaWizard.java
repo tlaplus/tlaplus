@@ -2,8 +2,9 @@ package org.lamport.tla.toolbox.tool.tlc.ui.wizard;
 
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.wizard.Wizard;
-import org.lamport.tla.toolbox.tool.tlc.model.Formula;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.FormHelper;
+
+import tlc2.model.Formula;
 
 /**
  * A wizard for entering formulas

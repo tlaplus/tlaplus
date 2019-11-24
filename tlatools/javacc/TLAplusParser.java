@@ -8,6 +8,7 @@ import tlc2.output.EC;
 import tla2sany.utilities.Vector;
 import tla2sany.utilities.Stack;
 import util.Assert;
+import util.TLAConstants;
 import util.UniqueString;
 import util.ToolIO;
 
@@ -1645,7 +1646,7 @@ Token t;
   SyntaxTreeNode tn, sn[];
   Token t;
   bpa("Parameter declaration");
-  expecting = "CONSTANT";
+  expecting = TLAConstants.KeyWords.CONSTANT;
     tn = ParamSubDecl();
                          addHeir(tn);
  expecting = "Identifier, operator or _";

@@ -48,6 +48,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.util.IModuleLocatable;
 
 import tla2sany.st.Location;
 import tlc2.TLCGlobals;
+import util.TLAConstants;
 
 public class CoverageInformationItem implements IModuleLocatable
 {
@@ -109,7 +110,7 @@ public class CoverageInformationItem implements IModuleLocatable
     }
     
     public final boolean isInFile(IFile f) {
-    	final String nameWithoutSuffix = f.getName().replace(".tla", "");
+    	final String nameWithoutSuffix = f.getName().replace(TLAConstants.Files.TLA_EXTENSION, "");
 		return nameWithoutSuffix.equalsIgnoreCase(location.source());
     }
 

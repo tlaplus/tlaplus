@@ -33,11 +33,12 @@ import java.io.File;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import util.TLAConstants;
 
 public class TSnapShotDistributedTLCTest extends DistributedTLCTestCase {
 
 	public TSnapShotDistributedTLCTest() {
-		super("MC", BASE_PATH + "TSnapShot" + File.separator, new String[] {"-deadlock"});
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, BASE_PATH + "TSnapShot" + File.separator, new String[] {"-deadlock"});
 	}
 
 	@Test

@@ -36,11 +36,12 @@ import org.junit.Test;
 import tlc2.TLC;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import util.TLAConstants;
 
 public class NQSpecTest extends ModelCheckerTestCase {
 
 	public NQSpecTest() {
-		super("MC", "simulation" + File.separator + "NQSpec", new String[] { "-simulate" });
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "simulation" + File.separator + "NQSpec", new String[] { "-simulate" });
 		TLC.setTraceNum(100);
 	}
 

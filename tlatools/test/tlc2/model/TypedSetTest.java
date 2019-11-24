@@ -1,6 +1,7 @@
-package org.lamport.tla.toolbox.tool.tlc.model;
+package tlc2.model;
 
 import junit.framework.TestCase;
+import tlc2.model.TypedSet;
 
 /**
  * Test of the typed set factory
@@ -11,7 +12,7 @@ public class TypedSetTest extends TestCase
 {
 
     /**
-     * Test method for {@link org.lamport.tla.toolbox.tool.tlc.model.TypedSet#parseSet(java.lang.String)}.
+     * Test method for {@link tlc2.model.TypedSet#parseSet(java.lang.String)}.
      */
     public void testParseSet1()
     {
@@ -22,7 +23,7 @@ public class TypedSetTest extends TestCase
     }
 
     /**
-     * Test method for {@link org.lamport.tla.toolbox.tool.tlc.model.TypedSet#parseSet(java.lang.String)}.
+     * Test method for {@link tlc2.model.TypedSet#parseSet(java.lang.String)}.
      */
     public void testParseSet2()
     {
@@ -32,7 +33,7 @@ public class TypedSetTest extends TestCase
     }
 
     /**
-     * Test method for {@link org.lamport.tla.toolbox.tool.tlc.model.TypedSet#parseSet(java.lang.String)}.
+     * Test method for {@link tlc2.model.TypedSet#parseSet(java.lang.String)}.
      */
     public void testParseSet3()
     {
@@ -46,7 +47,7 @@ public class TypedSetTest extends TestCase
 
     
     /**
-     * Test method for {@link org.lamport.tla.toolbox.tool.tlc.model.TypedSet#parseSet(java.lang.String)}.
+     * Test method for {@link tlc2.model.TypedSet#parseSet(java.lang.String)}.
      */
     public void testParseSet4()
     {
@@ -58,7 +59,7 @@ public class TypedSetTest extends TestCase
 
     
     /**
-     * Test method for {@link org.lamport.tla.toolbox.tool.tlc.model.TypedSet#parseSet(java.lang.String)}.
+     * Test method for {@link tlc2.model.TypedSet#parseSet(java.lang.String)}.
      */
     public void testParseSet5()
     {
@@ -69,7 +70,7 @@ public class TypedSetTest extends TestCase
     }
 
     /**
-     * Test method for {@link org.lamport.tla.toolbox.tool.tlc.model.TypedSet#parseSet(java.lang.String)}.
+     * Test method for {@link tlc2.model.TypedSet#parseSet(java.lang.String)}.
      */
     public void testParseSet6()
     {

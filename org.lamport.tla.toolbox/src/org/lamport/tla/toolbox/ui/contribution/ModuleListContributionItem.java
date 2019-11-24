@@ -42,6 +42,8 @@ import org.lamport.tla.toolbox.ui.handler.OpenModuleHandler;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tlc2.output.SpecWriterUtilities;
+
 /**
  * Contribution item for opening the modules
  */
@@ -89,7 +91,7 @@ public class ModuleListContributionItem extends CompoundContributionItem
 
                 parameters = new HashMap<String, String>();
                 // fill the module name for the handler
-                parameters.put(OpenModuleHandler.PARAM_MODULE, ResourceHelper.getModuleNameChecked(
+                parameters.put(OpenModuleHandler.PARAM_MODULE, SpecWriterUtilities.getModuleNameChecked(
                         modules[i].getName(), false));
 
                 // create the contribution item

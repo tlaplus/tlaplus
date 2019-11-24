@@ -5,6 +5,7 @@ import java.util.Vector;
 import pcal.AST.VarDecl;
 import pcal.exception.PcalTLAGenException;
 import pcal.exception.TLAExprException;
+import util.TLAConstants;
 
 /****************************************************************************
  * Given an exploded and disambiguated AST, generate the equivalent TLA+.
@@ -2386,7 +2387,7 @@ public class PcalTLAGen
                             addLeftParen(proc.id.getOrigin());
                             addExprToTLA(proc.id);
                             addRightParen(proc.id.getOrigin());
-                            addOneTokenToTLA(" |-> " );
+                            addOneTokenToTLA(TLAConstants.RECORD_ARROW);
                             addLeftParen(decl.val.getOrigin());
                             addExprToTLA(AddSubscriptsToExpr(
                                            decl.val,
