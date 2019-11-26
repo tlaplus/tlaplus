@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="86">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.contribution.weaving.feature.group" version="2.2.4.201805281636"/>
-<unit id="org.eclipse.ajdt.feature.group" version="2.2.4.201805281636"/>
+<unit id="org.eclipse.contribution.weaving.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.ajdt.feature.group" version="0.0.0"/>
 <repository id="eclipse-ajdt" location="http://download.eclipse.org/tools/ajdt/48/dev/update/ajdt-e48-2.2.4.201805281636/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
-<unit id="org.hamcrest" version="1.1.0.v20090501071000"/>
-<unit id="com.jcraft.jsch" version="0.1.54.v20170116-1932"/>
-<unit id="org.apache.commons.io" version="2.2.0.v201405211200"/>
-<unit id="org.apache.commons.collections" version="3.2.2.v201511171945"/>
-<unit id="javax.activation" version="1.1.0.v201211130549"/>
-<unit id="javax.mail" version="1.4.0.v201005080615"/>
-<unit id="org.easymock" version="2.4.0.v20090202-0900"/>
+<unit id="org.apache.log4j" version="0.0.0"/>
+<unit id="org.hamcrest" version="0.0.0"/>
+<unit id="com.jcraft.jsch" version="0.0.0"/>
+<unit id="org.apache.commons.io" version="0.0.0"/>
+<unit id="org.apache.commons.collections" version="0.0.0"/>
+<unit id="javax.activation" version="0.0.0"/>
+<unit id="javax.mail" version="0.0.0"/>
+<unit id="org.easymock" version="0.0.0"/>
 <repository id="eclipse-orbit" location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.swtbot.ide.feature.group" version="2.7.0.201806111355"/>
-<unit id="org.eclipse.swtbot.eclipse.test.junit.feature.group" version="2.7.0.201806111355"/>
-<unit id="org.eclipse.swtbot.feature.group" version="2.7.0.201806111355"/>
-<unit id="org.eclipse.swtbot.eclipse.feature.group" version="2.7.0.201806111355"/>
+<unit id="org.eclipse.swtbot.ide.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.swtbot.eclipse.test.junit.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.swtbot.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.swtbot.eclipse.feature.group" version="0.0.0"/>
 <repository id="eclipse-swtbot" location="http://download.eclipse.org/technology/swtbot/releases/2.7.0/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -28,19 +28,19 @@
 <repository location="http://lemmy.github.com/jclouds2p2/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.help.feature.group" version="2.2.300.v20180906-0745"/>
-<unit id="org.eclipse.equinox.core.sdk.feature.group" version="3.15.0.v20180827-1536"/>
-<unit id="org.eclipse.platform.feature.group" version="4.9.0.v20180906-1121"/>
-<unit id="org.eclipse.rcp.configuration.feature.group" version="1.1.200.v20180906-0745"/>
-<unit id="org.eclipse.emf.ecore.feature.group" version="2.15.0.v20180722-1159"/>
-<unit id="org.eclipse.equinox.executable" version="3.8.100.v20180827-1352"/>
-<unit id="org.eclipse.ecf.core.feature.feature.group" version="1.5.1.v20180810-0833"/>
-<unit id="org.eclipse.e4.rcp.feature.group" version="1.6.200.v20180906-1121"/>
-<unit id="org.eclipse.emf.common.feature.group" version="2.15.0.v20180723-1316"/>
-<unit id="org.eclipse.equinox.sdk.feature.group" version="3.15.0.v20180904-1442"/>
-<unit id="org.eclipse.core.runtime.feature.feature.group" version="1.2.200.v20180903-1343"/>
-<unit id="org.eclipse.jdt.feature.group" version="3.15.0.v20180906-0745"/>
-<unit id="org.eclipse.pde.source.feature.group" version="3.13.200.v20180906-0745"/>
+<unit id="org.eclipse.help.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.equinox.core.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.rcp.configuration.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.emf.ecore.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.equinox.executable" version="0.0.0"/>
+<unit id="org.eclipse.ecf.core.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.e4.rcp.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.emf.common.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.equinox.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.core.runtime.feature.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.pde.source.feature.group" version="0.0.0"/>
 <repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.9/R-4.9-201809060745"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -52,16 +52,16 @@
 <repository location="http://lemmy.github.com/eclipse-jdk-bundles/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="2.5.201812"/>
+<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0"/>
 <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.5.201812/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="2.5.4.v20180909-1132"/>
+<unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/2018-09/201809191000"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.mylyn.commons.feature.group" version="3.24.2.v20180904-2231"/>
-<unit id="org.eclipse.mylyn.commons.notifications.feature.group" version="1.16.0.v20180904-2231"/>
+<unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.mylyn.commons.notifications.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/mylyn/releases/3.24"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
