@@ -3,7 +3,7 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.contribution.weaving.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.ajdt.feature.group" version="0.0.0"/>
-<repository id="eclipse-ajdt" location="http://download.eclipse.org/tools/ajdt/48/dev/update/ajdt-e48-2.2.4.201805281636/"/>
+<repository id="eclipse-ajdt" location="http://download.eclipse.org/tools/ajdt/48/dev/update/ajdt-e48-2.2.4.201908131520/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.log4j" version="0.0.0"/>
@@ -41,7 +41,7 @@
 <unit id="org.eclipse.core.runtime.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.pde.source.feature.group" version="0.0.0"/>
-<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.9/R-4.9-201809060745"/>
+<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.13/R-4.13-201909161045"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
