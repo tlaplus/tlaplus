@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,9 +40,12 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -143,11 +147,13 @@ public class TLCErrorView extends ViewPart
     private ErrorTraceTreeViewer errorTraceTreeViewer;
     private RecordToSourceCoupler stackTraceActionListener;
     private SyncStackTraversal syncStackTraversalAction;
+    private Button valueReflectsFiltering;
     private SourceViewer valueViewer;
     private ModelEditor modelEditor;
     private TraceExplorerComposite traceExplorerComposite;
     
     private TLCError unfilteredInput;
+    private final HashMap<TLCState, Integer> filteredStateIndexMap;
     private FilterErrorTrace filterErrorTraceAction;
     private Set<TLCVariable> currentErrorTraceFilterSet;
     
@@ -162,13 +168,14 @@ public class TLCErrorView extends ViewPart
 				.getInt(ITLCPreferenceConstants.I_TLC_TRACE_MAX_SHOW_ERRORS);
         
         currentErrorTraceFilterSet = new HashSet<>();
+        
+        filteredStateIndexMap = new HashMap<>();
 	}
     
     /**
      * Clears the view
      */
-    public void clear()
-    {
+	public void clear() {
         errorViewer.setDocument(EMPTY_DOCUMENT());
         setTraceInput(new TLCError(), true);
         traceExplorerComposite.getTableViewer().setInput(new Vector<Formula>());
@@ -515,24 +522,42 @@ public class TLCErrorView extends ViewPart
 		errorTraceSection.setTextClient(toolbar);
 
 		errorTraceTreeViewer.getTreeViewer().addSelectionChangedListener((event) -> {
-			if (!((IStructuredSelection) event.getSelection()).isEmpty()) {
-				// Set selection to the selected element (or the first if there are multiple
-				// selections), and show its string representation in the value viewer (the lower sub-window).
-				final Object selection = ((IStructuredSelection) event.getSelection()).getFirstElement();
-				if (selection instanceof TLCState) {
-					final TLCState state = (TLCState) selection;
-					valueViewer.setDocument(new Document(state.getConjunctiveDescription(true)));
-				} else {
-					valueViewer.setDocument(new Document(selection.toString()));
-				}
-			} else {
-				valueViewer.setDocument(NO_VALUE_DOCUMENT());
-			}
+			handleValueViewerUpdate((IStructuredSelection)event.getSelection());
         });
 
+		final Composite valueViewerComposite = new Composite(sashForm, SWT.NONE);
+		final GridLayout gl = new GridLayout(1, false);
+		gl.marginHeight = 0;
+		gl.marginWidth = 0;
+		gl.verticalSpacing = 3;
+		valueViewerComposite.setLayout(gl);
+		gd = new GridData();
+		gd.horizontalAlignment = SWT.LEFT;
+		gd.verticalAlignment = SWT.TOP;
+		gd.grabExcessHorizontalSpace = true;
+		valueViewerComposite.setLayoutData(gd);
+		
+		valueReflectsFiltering = new Button(valueViewerComposite, SWT.CHECK);
+		valueReflectsFiltering.setText("Reflect filtering");
+		valueReflectsFiltering.setSelection(true);
+		valueReflectsFiltering.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				handleValueViewerUpdate((IStructuredSelection)errorTraceTreeViewer.getTreeViewer().getSelection());
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) { }
+		});
+		gd = new GridData();
+		gd.horizontalAlignment = SWT.RIGHT;
+		gd.verticalAlignment = SWT.TOP;
+		gd.exclude = true;
+		valueReflectsFiltering.setLayoutData(gd);
+		valueReflectsFiltering.setVisible(false);
+		
         /* Horizontal scroll bar added by LL on 26 Aug 2009 */
-        valueViewer = FormHelper.createFormsSourceViewer(toolkit, sashForm, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI
-                | SWT.BORDER);
+        valueViewer = FormHelper.createFormsSourceViewer(toolkit, valueViewerComposite,
+        												 (SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER));
         valueViewer.setEditable(false);
 
         gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
@@ -599,6 +624,35 @@ public class TLCErrorView extends ViewPart
         JFaceResources.getFontRegistry().addListener(outputFontChangeListener);
 		
         TLCUIHelper.setHelp(parent, IHelpConstants.TLC_ERROR_VIEW);
+    }
+    
+    private void handleValueViewerUpdate(final IStructuredSelection structuredSelection) {
+		if (!structuredSelection.isEmpty()) {
+			// Set selection to the selected element (or the first if there are multiple
+			// selections), and show its string representation in the value viewer (the lower sub-window).
+			final Object selection = structuredSelection.getFirstElement();
+			if (selection instanceof TLCState) {
+				final TLCState state;
+				if ((filteredStateIndexMap.size() != 0) && !valueReflectsFiltering.getSelection()) {
+					final Integer index = filteredStateIndexMap.get(selection);
+					
+					if (index != null) {
+						state = unfilteredInput.getStates(TLCError.Length.ALL).get(index.intValue());
+					} else {
+						TLCUIActivator.getDefault().logWarning("Could not find mapped index for state.");
+						
+						state = (TLCState) selection;
+					}
+				} else {
+					state = (TLCState) selection;
+				}
+				valueViewer.setDocument(new Document(state.getConjunctiveDescription(true)));
+			} else {
+				valueViewer.setDocument(new Document(selection.toString()));
+			}
+		} else {
+			valueViewer.setDocument(NO_VALUE_DOCUMENT());
+		}
     }
     
 	private int[] stringToIntArray(final String str) {
@@ -827,15 +881,25 @@ public class TLCErrorView extends ViewPart
 	}
 	
 	private void performVariableViewPopulation(final EnumSet<FilterType> filters) {
+        filteredStateIndexMap.clear();
 		if (filters.contains(FilterType.NONE)) {
 			setTraceInput(unfilteredInput, false);
+			final GridData gd = (GridData)valueReflectsFiltering.getLayoutData();
+			gd.exclude = true;
+			valueReflectsFiltering.setLayoutData(gd);
+			valueReflectsFiltering.setVisible(false);
 		} else {
 			final TLCError filtered = unfilteredInput.clone();
 			
+			final GridData gd = (GridData)valueReflectsFiltering.getLayoutData();
+			gd.exclude = false;
+			valueReflectsFiltering.setLayoutData(gd);
+			valueReflectsFiltering.setVisible(true);
 			if (filters.contains(FilterType.VARIABLES) && (currentErrorTraceFilterSet.size() > 0)) {
 				// It would be much nicer (from both a time and space perspective) were there a veto-ing
 				//		ability provided by TableViewer - like "vetoRow(Object element)". Alas, there is not and
 				//		so we do this clone and filter of the input data.
+				int index = 0;
 				for (final TLCState filteredState : filtered.getStates(TLCError.Length.ALL)) {
 					final List<TLCVariable> variables = filteredState.getVariablesAsList();
 					final ArrayList<TLCVariable> removals = new ArrayList<>();
@@ -850,12 +914,17 @@ public class TLCErrorView extends ViewPart
 					}
 					
 					variables.removeAll(removals);
+					
+					filteredStateIndexMap.put(filteredState, new Integer(index));
+					index++;
 				}
 			}
 
 			if (filters.contains(FilterType.MODIFIED_VALUES_MODIFIED_FRAMES)) {
 				final ArrayList<TLCState> emptyStates = new ArrayList<>();
 				
+				filteredStateIndexMap.clear();
+				int index = 0;
 				for (final TLCState state : filtered.getStates(TLCError.Length.ALL)) {
 					final List<TLCVariable> variables = state.getVariablesAsList();
 					final ArrayList<TLCVariable> removals = new ArrayList<>();
@@ -869,7 +938,11 @@ public class TLCErrorView extends ViewPart
 					variables.removeAll(removals);
 					if (variables.size() == 0) {
 						emptyStates.add(state);
+					} else {
+						filteredStateIndexMap.put(state, new Integer(index));
 					}
+					
+					index++;
 				}
 				
 				filtered.removeStates(emptyStates);
@@ -886,15 +959,21 @@ public class TLCErrorView extends ViewPart
 					}
 				}
 				
+				filteredStateIndexMap.clear();
+				int index = 0;
 				for (final TLCState filteredState : filtered.getStates(TLCError.Length.ALL)) {
 					final List<TLCVariable> variables = filteredState.getVariablesAsList();
 					
 					variables.retainAll(changedVariables);
+					
+					filteredStateIndexMap.put(filteredState, new Integer(index));
+					index++;
 				}
 			}
 			
 			setTraceInput(filtered, false);
 		}
+		valueReflectsFiltering.getParent().layout(true, true);
 	}
 	
 	

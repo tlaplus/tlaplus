@@ -6,7 +6,7 @@ Element-Version: 3.0
 External-Reference: 
 Id: _BbLbgO0TEemu8qbF8JrHog
 Runtime-Version: 2.4.0.201902010011
-Save-Time: 11/4/19, 9:49 AM
+Save-Time: 11/26/19, 1:03 PM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -75,6 +75,12 @@ try -command {
 		}
 	}
 	
+	listen errorLog {
+		try {
+			get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET | get-button "Reflect filtering"
+			log -message "Found value reflect filtering button when we shouldn't." -severity error -plugin "org.lamport.tla.toolbox.product.uitests"
+		} -catch { }
+	} | assert-empty
 	
 	// The following is testing for regressions like the one behind Issue 386, which is, sadly, a regression due to 372.
 	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET
@@ -84,9 +90,35 @@ try -command {
 		get-table | get-item -path " b" | check
 		get-button "OK" | click
 	}
-	with [get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET | get-tree] {
-		get-object | invoke getItem 0 | invoke getItem 0 | invoke getText 0 | str | equals " c" | verify-true
-		get-object | invoke getItem 1 | invoke getItem 0 | invoke getText 0 | str | equals " b" | verify-false
+	with [get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET] {
+		with [get-tree] {
+			get-object | invoke getItem 0 | invoke getItem 0 | invoke getText 0 | str | equals " c" | verify-true
+			get-object | invoke getItem 1 | invoke getItem 0 | invoke getText 0 | str | equals " b" | verify-false
+		}
+
+		// make sure the reflect filtering button is visible
+		get-button "Reflect filtering"		
+	}
+	
+	
+	// Testing the 'reflect filtering' checkbox, additionally in the case where not all state frames are shown due to
+	//		filtering
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET
+			| get-button "Click to display all variables and expressions."
+			| click
+	get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET
+			| get-button "Click to select variables and expressions to omit from the trace display; ALT-click on an individual item below to omit it immediately."
+			| click
+	with [ get-window "Error Trace Filter" ] {
+		get-combo | select "Show only changed variables in changed frames"
+		get-button "OK" | click
+	}
+	with [get-view $TLA-VIEW-TLC-ERRORS | get-section $TLA-MO-ED-TLCERRORS-SECTION-ET] {
+		get-tree | get-cell 0 0 | click
+		get-text-viewer | get-property text | equals "/\\  pc = (p1 :> \"Li1\" @@ p2 :> \"Li0\" @@ p3 :> \"Li0\")" | verify-true
+
+		get-button "Reflect filtering" | click	
+		get-text-viewer | get-property text | equals "/\\  b = (p1 :> FALSE @@ p2 :> TRUE @@ p3 :> TRUE)\n/\\  c = (p1 :> TRUE @@ p2 :> TRUE @@ p3 :> TRUE)\n/\\  k = p1\n/\\  pc = (p1 :> \"Li1\" @@ p2 :> \"Li0\" @@ p3 :> \"Li0\")\n/\\  temp = (p1 :> defaultInitValue @@ p2 :> defaultInitValue @@ p3 :> defaultInitValue)" | verify-true
 	}
 } -finally {
 	DeleteSpecNew
