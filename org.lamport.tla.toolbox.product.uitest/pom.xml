@@ -39,8 +39,8 @@
        http://maven.xored.com/nexus/content/repositories/ci4rcptt-releases/org/eclipse/sdk/
   -->
   <properties>
-    <rcptt-maven-version>2.4.2</rcptt-maven-version>
-    <rcptt-runner-version>2.4.2</rcptt-runner-version>
+    <rcptt-maven-version>2.4.3</rcptt-maven-version>
+    <rcptt-runner-version>2.4.3</rcptt-runner-version>
     <aut-unpack-directory>target/unpack-for-aut/</aut-unpack-directory>
 <!--
     <jdk-bundle-plugin-prefix>st.theori.openjdk.</jdk-bundle-plugin-prefix>
