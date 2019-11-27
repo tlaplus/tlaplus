@@ -106,6 +106,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.editor.TLACoverageEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.ErrorMessage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
+import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedTLCOptionsPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.preference.IModelEditorPreferenceConstants;
@@ -465,6 +466,17 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 										.createMarkerDescription(errorMessage, IMarker.SEVERITY_WARNING);
 								getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 							}
+						}
+						if (dataProvider.isConstraintsWithLiveness()) {
+							final String errorMessage = "Liveness checking with state or action constraints might fail to find a violation. "
+									+ "Please read section 14.3.5 on page 247 of Specifying Systems "
+									+ "(https://lamport.azurewebsites.net/tla/book.html) for more details.";
+							getModelEditor().addErrorMessage(new ErrorMessage(errorMessage, "StateConstraintWarning",
+									AdvancedModelPage.ID, Arrays.asList(ISectionConstants.SEC_STATE_CONSTRAINT),
+									IModelConfigurationConstants.MODEL_PARAMETER_CONSTRAINT));
+							final Hashtable<String, Object> marker = ModelHelper
+									.createMarkerDescription(errorMessage, IMarker.SEVERITY_WARNING);
+							getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
 						}
 						break;
 					case ERRORS:

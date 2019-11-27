@@ -101,6 +101,9 @@ public abstract class AbstractChecker
         		// raise warning...
 				MP.printWarning(EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY);
         	}
+        	if (tool.hasStateOrActionConstraints()) {
+				MP.printWarning(EC.TLC_FEATURE_LIVENESS_CONSTRAINTS);
+        	}
             // Initialization for liveness checking:
             report("initializing liveness checking");
 			IBucketStatistics stats = new DummyBucketStatistics();

@@ -516,7 +516,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 					TypedSet modelValuesSet = TypedSet.parseSet(constant.getRight());
 
 					if (constant.isSymmetricalSet()) {
-						if (((CheckboxTableViewer) propertiesTable).getCheckedElements().length > 0) {
+						if (hasLivenessProperty()) {
 							modelEditor.addErrorMessage(constant.getLabel(), String.format(
 									"%s declared to be symmetric while one or more temporal formulas are set to be checked.\n"
 											+ "If the temporal formula is a liveness property, liveness checking might fail to find\n"
@@ -808,6 +808,10 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		mm.setAutoUpdate(true);
 
 		super.validatePage(switchToErrorPage);
+	}
+	
+	public boolean hasLivenessProperty() {
+		return ((CheckboxTableViewer) propertiesTable).getCheckedElements().length > 0;
 	}
 
 	public boolean workerCountCanBeModified() {

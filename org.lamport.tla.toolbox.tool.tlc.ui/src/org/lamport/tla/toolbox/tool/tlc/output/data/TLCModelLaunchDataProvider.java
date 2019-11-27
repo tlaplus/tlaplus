@@ -162,6 +162,7 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 	private int fpIndex;
 
 	private boolean isSymmetryWithLiveness = false;
+	private boolean isConstraintsWithLiveness = false;
 	
 	private final Object parsingLock;
 	private final AtomicBoolean parsing;
@@ -335,6 +336,11 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     break;
                 case EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY:
                 	this.isSymmetryWithLiveness = true;
+                    setDocumentText(this.progressOutput, outputMessage, true);
+                    informPresenter(ITLCModelLaunchDataPresenter.WARNINGS);
+                    break;
+                case EC.TLC_FEATURE_LIVENESS_CONSTRAINTS:
+                	this.isConstraintsWithLiveness = true;
                     setDocumentText(this.progressOutput, outputMessage, true);
                     informPresenter(ITLCModelLaunchDataPresenter.WARNINGS);
                     break;
@@ -1154,7 +1160,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
 	public boolean isSymmetryWithLiveness() {
 		return isSymmetryWithLiveness;
 	}
-	
+
+	public boolean isConstraintsWithLiveness() {
+		return isConstraintsWithLiveness;
+	}
 
 	private final static SimpleDateFormat SDF = new SimpleDateFormat(
 			"yyyy-MM-dd HH:mm:ss");

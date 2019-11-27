@@ -48,6 +48,7 @@ public interface EC
 	 */
 	public static final int TLC_FEATURE_UNSUPPORTED = 2156;
 	public static final int TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY = 2279;
+	public static final int TLC_FEATURE_LIVENESS_CONSTRAINTS = 2284;
 
     public static final int GENERAL = 1000;
     public static final int SYSTEM_OUT_OF_MEMORY = 1001;
