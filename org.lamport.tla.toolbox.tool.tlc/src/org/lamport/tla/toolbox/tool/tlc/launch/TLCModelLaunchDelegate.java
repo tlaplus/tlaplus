@@ -130,13 +130,13 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
     
     private static final AtomicBoolean PERFORM_VALIDATION_BEFORE_LAUNCH = new AtomicBoolean(true);
     
-    private static final Integer DIVERGENCE_CONTINUE_LAUNCH = new Integer(1);
-    private static final Integer DIVERGENCE_SHOW_HISTORY = new Integer(2);
+    private static final Integer DIVERGENCE_CONTINUE_LAUNCH = Integer.valueOf(1);
+    private static final Integer DIVERGENCE_SHOW_HISTORY = Integer.valueOf(2);
     private static final LinkedHashMap<String, Integer> DIVERGENCE_DIALOG_BUTTONS;
     
     static {
     	DIVERGENCE_DIALOG_BUTTONS = new LinkedHashMap<>();
-    	DIVERGENCE_DIALOG_BUTTONS.put("&Abort Launch", new Integer(0));
+    	DIVERGENCE_DIALOG_BUTTONS.put("&Abort Launch", Integer.valueOf(0));
     	DIVERGENCE_DIALOG_BUTTONS.put("Continue &Launch", DIVERGENCE_CONTINUE_LAUNCH);
     	DIVERGENCE_DIALOG_BUTTONS.put("Abort Launch && Show &History", DIVERGENCE_SHOW_HISTORY); // "&&" because "&" is mnemonic.
     }
