@@ -939,6 +939,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 					// The parameters below are the only one currently useful with CloudDistributedTLC
 					final StringBuffer tlcParams = new StringBuffer();
 					
+					if (!launch.getLaunchConfiguration().getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT)) {
+						tlcParams.append("-simulate");
+			        	tlcParams.append(" ");
+						tlcParams.append("-depth");
+			        	tlcParams.append(" ");
+						final int depth = launch.getLaunchConfiguration().getAttribute(LAUNCH_SIMU_DEPTH, LAUNCH_SIMU_DEPTH_DEFAULT);
+						tlcParams.append(Integer.toString(depth));
+			        	tlcParams.append(" ");
+					}
+					
 			        // fp seed offset (decrease by one to map from [1, 64] interval to [0, 63] array address)
 					if (launch.getLaunchConfiguration().getAttribute(LAUNCH_FP_INDEX_RANDOM, LAUNCH_FP_INDEX_RANDOM_DEFAULT)) {
 						final int fpIndex = new Random().nextInt(FP64.Polys.length);
