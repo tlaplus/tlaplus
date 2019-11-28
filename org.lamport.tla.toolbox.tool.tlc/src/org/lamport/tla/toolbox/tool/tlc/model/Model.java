@@ -45,6 +45,7 @@ import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -538,7 +539,9 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 	private void pruneOldestSnapshots() throws CoreException {
 		// Sort model by snapshot timestamp and remove oldest ones.
 		final int snapshotKeepCount = TLCActivator.getDefault().getPreferenceStore().getInt(TLCActivator.I_TLC_SNAPSHOT_KEEP_COUNT);
-		final List<Model> snapshotModels = new ArrayList<>(getSnapshots());
+		// Filter out running snapshots such as remotely running ones (CloudTLC).
+		final List<Model> snapshotModels = new ArrayList<>(getSnapshots().stream()
+				.filter(m -> !m.isRunning() && !m.isRunningRemotely()).collect(Collectors.toList()));
 		if (snapshotModels.size() > snapshotKeepCount) {
 		    final int pruneCount = snapshotModels.size() - snapshotKeepCount;
 		    Collections.sort(snapshotModels, new Comparator<Model>() {
