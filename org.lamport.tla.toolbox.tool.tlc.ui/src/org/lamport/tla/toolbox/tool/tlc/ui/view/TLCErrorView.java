@@ -559,8 +559,11 @@ public class TLCErrorView extends ViewPart
         valueViewer = FormHelper.createFormsSourceViewer(toolkit, valueViewerComposite,
         												 (SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI | SWT.BORDER));
         valueViewer.setEditable(false);
-
-        gd = new GridData(SWT.LEFT, SWT.TOP, true, false);
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.verticalAlignment = SWT.FILL;
+        gd.grabExcessVerticalSpace = true;
         valueViewer.getControl().setLayoutData(gd);
 
  
