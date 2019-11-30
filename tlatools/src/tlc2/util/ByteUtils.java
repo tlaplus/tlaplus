@@ -434,7 +434,7 @@ public class ByteUtils {
      Pretty printing code.
      ***************************************************************************  */
   public static String printHex(byte[] b) {
-    StringBuffer res = new StringBuffer();
+    StringBuilder res = new StringBuilder();
     StringBuffer t, t1;
 
     for (int i = 0; i < b.length; i++) {

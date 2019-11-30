@@ -200,7 +200,7 @@ public class List {
 
   /* The string representation. */
   public final String toString() {
-    StringBuffer sb = new StringBuffer("[");
+    StringBuilder sb = new StringBuilder("[");
     ConsCell work = this.first;
     while (work != null) {
       sb.append(work.value.toString());

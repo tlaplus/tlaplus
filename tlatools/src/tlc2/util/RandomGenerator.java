@@ -11,7 +11,7 @@ public class RandomGenerator extends Random {
 
   private long aril;
 
-  public final static int[] primes =
+  public static final int[] primes =
   { 1277011, 1277021, 1277039, 1277041, 1277063, 1277069, 1277071, 1277083, 1277093,
     1277099, 1277113, 1277137, 1277147, 1277197, 1277207, 1277209, 1277233, 1277249,
     1277257, 1277267, 1277299, 1277321, 1277323, 1277357, 1277359, 1277369, 1277387,
@@ -169,42 +169,50 @@ public class RandomGenerator extends Random {
     this.aril = 0;
   }
 
+  @Override
   public synchronized void setSeed(long seed) {
     super.setSeed(seed);
     this.aril = 0;
   }
 
+  @Override
   protected synchronized int next(int bits) {
     // this.aril++;
     return super.next(bits);    
   }
 
+  @Override
   public void nextBytes(byte bytes[]) {
     // this.aril++;
     super.nextBytes(bytes);
   }
 
+  @Override
   public int nextInt() {
     // this.aril++;
     return super.nextInt();
 
   }
 
+  @Override
   public long nextLong() {
     // this.aril++;
     return super.nextLong();
   }
 
+  @Override
   public float nextFloat() {
     // this.aril++;
     return super.nextFloat();
   }
 
+  @Override
   public double nextDouble() {
     this.aril++;
     return super.nextDouble();
   }
 
+  @Override
   public synchronized double nextGaussian() {
     // this.aril++;
     return super.nextGaussian();

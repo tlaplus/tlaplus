@@ -150,6 +150,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     }
     
     /* overrides RandomAccessFile.close() */
+    @Override
     public void close() throws IOException {
         // Assert.check(!this.closed);
         this.flush();
@@ -207,6 +208,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     }
 
     /* overrides RandomAccessFile.seek(long) */
+    @Override
     public void seek(long pos) throws IOException {
         // Assert.check(!this.closed);
         if (pos >= this.hi || pos < this.lo) {
@@ -261,18 +263,21 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
 	}
 
     /* overrides RandomAccessFile.getFilePointer() */
+    @Override
     public long getFilePointer() {
         // Assert.check(!this.closed);
         return this.curr;
     }
     
     /* overrides RandomAccessFile.length() */
+    @Override
     public long length() throws IOException {
         // Assert.check(!this.closed);
         return Math.max(this.curr, super.length());
     }
     
     /* overrides RandomAccessFile.read() */
+    @Override
     public int read() throws IOException {
         // Assert.check(!this.closed);
         if (this.curr == this.hi) {
@@ -295,11 +300,13 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     }
     
     /* overrides RandomAccessFile.read(byte[]) */
+    @Override
     public int read(byte[] b) throws IOException {
         return this.read(b, 0, b.length);
     }
     
     /* overrides RandomAccessFile.read(byte[], int, int) */
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         // Assert.check(!this.closed);
         if (this.curr == this.hi) {
@@ -347,6 +354,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
   }
 
     /* overrides RandomAccessFile.write(int) */
+    @Override
     public void write(int b) throws IOException {
         // Assert.check(!this.closed);
         if (this.curr == this.hi) {
@@ -375,11 +383,13 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     }
     
     /* overrides RandomAccessFile.write(byte[]) */
+    @Override
     public void write(byte[] b) throws IOException {
         this.write(b, 0, b.length);
     }
     
     /* overrides RandomAccessFile.write(byte[], int, int) */
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
         // Assert.check(!this.closed);
         while (len > 0) {

@@ -103,7 +103,7 @@ public class LongVec implements Cloneable, Serializable {
 	}
 
 	public final String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("<");
 		if (this.elementCount != 0) {
 			sb.append(this.elementData[0]);

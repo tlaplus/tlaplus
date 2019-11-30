@@ -100,6 +100,7 @@ public class StatePoolWriter extends Thread {
    * Write "buf" to "poolFile". The objects in the queue are written
    * using Java's object serialization facilities.
    */
+  @Override
   public void run() {
     try {
       synchronized(this) {

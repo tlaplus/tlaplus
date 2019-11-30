@@ -33,9 +33,9 @@ public final class Context {
 	private final Object value;
 	private final Context next;
 
-	public final static Context Empty = new Context(null, null, null);
+	public static final Context Empty = new Context(null, null, null);
 	
-	private final static Context BaseBranch = new Context(null, null, Empty);
+	private static final Context BaseBranch = new Context(null, null, Empty);
 	
 	private Context(SymbolNode name, Object value, final Context next) {
 		this.name = name;

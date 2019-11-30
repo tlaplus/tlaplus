@@ -31,7 +31,8 @@ public class SimpleCache implements Cache {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.Cache#hit(long)
 	 */
-	public boolean hit(final long fp) {
+	@Override
+    public boolean hit(final long fp) {
 	    final int index = (int)(fp & this.mask);
 	    long hit = this.cache[index];
 	    if (hit == fp) {
@@ -47,14 +48,16 @@ public class SimpleCache implements Cache {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.Cache#getHitRatio()
 	 */
-	public double getHitRatio() {
+	@Override
+    public double getHitRatio() {
 		return cacheHit / (double) cacheMiss;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.Cache#getHitRatioAsString()
 	 */
-	public String getHitRatioAsString() {
+	@Override
+    public String getHitRatioAsString() {
 		DecimalFormat df = new DecimalFormat("###,###.###");
 		return df.format(getHitRatio());
 	}
@@ -62,7 +65,8 @@ public class SimpleCache implements Cache {
 	/* (non-Javadoc)
 	 * @see tlc2.util.Cache#getHitRate()
 	 */
-	public long getHitRate() {
+	@Override
+    public long getHitRate() {
 		return cacheHit;
 	}
 }

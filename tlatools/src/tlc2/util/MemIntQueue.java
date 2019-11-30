@@ -14,7 +14,7 @@ import util.BufferedDataOutputStream;
 import util.FileUtil;
 
 public final class MemIntQueue extends MemBasedSet {
-	private final static int InitialSize = 4096;
+	private static final int InitialSize = 4096;
 
 	private int start;
 	private String diskdir;
@@ -127,7 +127,7 @@ public final class MemIntQueue extends MemBasedSet {
 		// An Eclipse detailed formatter for when this Queue holds pairs of long
 		// (fp) and int (tableau idx)
 		public static String fpAndtidx(MemIntQueue aQueue) {
-			final StringBuffer buf = new StringBuffer(aQueue.size / 3);
+			final StringBuilder buf = new StringBuilder(aQueue.size / 3);
 			for (int i = 0; i < aQueue.size; i += 3) {
 				final long fp = ((long) aQueue.elems[i] << 32) | ((long) (aQueue.elems[i + 1]) & 0xFFFFFFFFL);
 				buf.append("fp: " + fp);
@@ -140,7 +140,7 @@ public final class MemIntQueue extends MemBasedSet {
 		// An Eclipse detailed formatter for when this Queue holds pairs of long
 		// (fp), int (tableau idx) and long (disk graph pointer).
 		public static String fpAndtidxAndptr(MemIntQueue aQueue) {
-			final StringBuffer buf = new StringBuffer(aQueue.size / 5);
+			final StringBuilder buf = new StringBuilder(aQueue.size / 5);
 			for (int i = 0; i < aQueue.size; i += 5) {
 				final long fp = ((long) aQueue.elems[i] << 32) | ((long) (aQueue.elems[i + 1]) & 0xFFFFFFFFL);
 				buf.append("fp: " + fp);

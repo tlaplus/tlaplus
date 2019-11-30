@@ -61,7 +61,8 @@ public class FixedSizedConcurrentBucketStatistics extends AbstractBucketStatisti
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#addSample(int)
 	 */
-	public void addSample(final int amount) {
+	@Override
+    public void addSample(final int amount) {
 		if (amount < 0) {
 			throw new IllegalArgumentException("Negative amount invalid");
 		}
@@ -77,14 +78,16 @@ public class FixedSizedConcurrentBucketStatistics extends AbstractBucketStatisti
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.AbstractBucketStatistics#getObservations()
 	 */
-	public long getObservations() {
+	@Override
+    public long getObservations() {
 		return observations.sum();
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.statistics.IBucketStatistics#getSamples()
 	 */
-	public NavigableMap<Integer, Long> getSamples() {
+	@Override
+    public NavigableMap<Integer, Long> getSamples() {
 		final NavigableMap<Integer, Long> res = new TreeMap<Integer, Long>();
 		for (int i = 0; i < this.buckets.length(); i++) {
 			long value = this.buckets.get(i);

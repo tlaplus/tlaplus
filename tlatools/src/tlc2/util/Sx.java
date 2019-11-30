@@ -90,6 +90,7 @@ public abstract class Sx {
   
     private SxAtom(String st) { this.st = st; }
 
+    @Override
     public void print(PrintWriter pw) { pw.print(this.st); }
   }
 
@@ -98,12 +99,14 @@ public abstract class Sx {
   
     public SxInt(int k) { this.val = k; }
 
+    @Override
     public void print(PrintWriter pw) { pw.print(this.val); }
   }
 
   public static class SxNil extends Sx {
     private SxNil() { /*SKIP*/ }
 
+    @Override
     public void print(PrintWriter pw) { pw.print("nil"); }
   }
   
@@ -115,6 +118,7 @@ public abstract class Sx {
       this.cdr = b;
     }
 
+    @Override
     public void print(PrintWriter pw) {
       pw.print("(");
       this.car.print(pw);

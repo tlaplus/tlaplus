@@ -11,9 +11,9 @@ import java.util.Random;
 
 public class BigInt extends BigInteger implements Cloneable, ExternalSortable {
 
-  public final static BigInt BigZero = new BigInt("0");
-  public final static BigInt BigOne = new BigInt("1");
-  public final static BigInt BigTwo = new BigInt("2");
+  public static final BigInt BigZero = new BigInt("0");
+  public static final BigInt BigOne = new BigInt("1");
+  public static final BigInt BigTwo = new BigInt("2");
 
   public BigInt(String val) { super(val); }
   
@@ -34,10 +34,12 @@ public class BigInt extends BigInteger implements Cloneable, ExternalSortable {
     return ((x instanceof BigInt) && super.equals(x));
   }
 
+  @Override
   public final void write(OutputStream out) throws IOException {
     ByteUtils.writeSizeBigInt(out, this);
   }
     
+  @Override
   public final BigInt read(InputStream in) throws IOException {
     return ByteUtils.readSizeBigInt(in);
   }

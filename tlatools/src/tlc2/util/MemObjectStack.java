@@ -19,8 +19,8 @@ import util.FileUtil;
  * @version $Id$
  */
 public final class MemObjectStack extends ObjectStack {
-  private final static int InitialSize = 4096;
-  private final static int GrowthFactor = 2;
+  private static final int InitialSize = 4096;
+  private static final int GrowthFactor = 2;
 
   /* Fields  */
   private Object[] states;
@@ -31,6 +31,7 @@ public final class MemObjectStack extends ObjectStack {
     this.filename = metadir +  FileUtil.separator + name;
   }
     
+  @Override
   final void enqueueInner(Object state) {
     if (this.len == this.states.length) {
       // grow the array
@@ -42,6 +43,7 @@ public final class MemObjectStack extends ObjectStack {
     this.states[this.len] = state;
   }
     
+  @Override
   final Object dequeueInner() {
     int head = this.len - 1;
     Object res = this.states[head];
@@ -50,6 +52,7 @@ public final class MemObjectStack extends ObjectStack {
   }
 
   // Checkpoint.
+  @Override
   public final void beginChkpt() throws IOException {
     String tmpfile = this.filename + ".tmp";
     
@@ -62,6 +65,7 @@ public final class MemObjectStack extends ObjectStack {
     
   }
 
+  @Override
   public final void commitChkpt() throws IOException {
     String oldName = this.filename + ".chkpt";
     File oldChkpt = new File(oldName);
@@ -72,6 +76,7 @@ public final class MemObjectStack extends ObjectStack {
     }
   }
   
+  @Override
   public final void recover() throws IOException {
     String chkptfile = this.filename + ".chkpt";
     ObjectInputStream ois = FileUtil.newOBFIS(chkptfile);

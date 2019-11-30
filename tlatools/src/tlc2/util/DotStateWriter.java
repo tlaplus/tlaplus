@@ -121,7 +121,8 @@ public class DotStateWriter extends StateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState)
 	 */
-	public synchronized void writeState(final TLCState state) {
+	@Override
+    public synchronized void writeState(final TLCState state) {
 		// Marker the state as an initial state by using a filled style.
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" [label=\"");
@@ -139,10 +140,12 @@ public class DotStateWriter extends StateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean)
 	 */
-	public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew) {
+	@Override
+    public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew) {
 		writeState(state, successor, successorStateIsNew, Visualization.DEFAULT);
 	}
 	
+    @Override
     public synchronized void writeState(final TLCState state, final TLCState successor, final boolean successorStateIsNew, Action action)
     {
 		writeState(state, successor, null, 0, 0, successorStateIsNew, Visualization.DEFAULT, action);
@@ -151,14 +154,16 @@ public class DotStateWriter extends StateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
-	public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
+	@Override
+    public synchronized void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
 		writeState(state, successor, null, 0, 0, successorStateIsNew, visualization, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean)
 	 */
-	public synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
+	@Override
+    public synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
 		writeState(state, successor, actionChecks, from, length, successorStateIsNew, Visualization.DEFAULT, null);
 	}
 
@@ -301,7 +306,8 @@ public class DotStateWriter extends StateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#close()
 	 */
-	public void close() {
+	@Override
+    public void close() {
 		for (final Set<Long> entry : rankToNodes.values()) {
 			this.writer.append("{rank = same; ");
 			for (final Long l : entry) {
