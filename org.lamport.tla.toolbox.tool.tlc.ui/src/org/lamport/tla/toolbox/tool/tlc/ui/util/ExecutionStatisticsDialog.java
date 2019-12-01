@@ -141,6 +141,7 @@ public class ExecutionStatisticsDialog extends MessageDialog {
 		c.setLayout(new GridLayout());
 		c.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
+		//NOTE: Take care of ExecutionStatisticsCollector.md when updating!!!
 		final String txt = String.format("%s"
 				+ "* Total number of cores and cores assigned to TLC\n"
 				+ "* Heap and off-heap memory allocated to TLC\n"
