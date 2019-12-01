@@ -110,6 +110,7 @@ public class CloudDistributedTLCJob extends Job {
 	private final Properties props;
 	private final CloudTLCInstanceParameters params;
 	private boolean isCLI = false;
+	// Azul VM comes with JFR support. This can thus be safely activated.
 	private boolean doJfr = false;
 
 	public CloudDistributedTLCJob(String aName, File aModelFolder,
