@@ -44,6 +44,10 @@
 <repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.13/R-4.13-201909161045"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/egit/updates/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
 <repository location="http://lemmy.github.com/Pdf4Eclipse/"/>
 </location>
