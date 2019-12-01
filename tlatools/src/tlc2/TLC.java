@@ -1147,8 +1147,11 @@ public class TLC
 		parameters.remove("seed");
 		udc.putAll(parameters);
 		
-		// True if TLC is run from within the Toolbox.
+		// True if TLC is run from within the Toolbox. Derive ide name from .tool too
+		// unless set explicitly.  Eventually, we can probably remove the toolbox
+		// parameter.
 		udc.put("toolbox", Boolean.toString(TLCGlobals.tool));
+		udc.put("ide", System.getProperty(TLC.class.getName() + ".ide", TLCGlobals.tool ? "toolbox" : "cli"));
 		new ExecutionStatisticsCollector().collect(udc);
 	}
 	
