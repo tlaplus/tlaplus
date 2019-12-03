@@ -161,4 +161,12 @@ public final class StateVec implements IStateFunctor {
     return sb.toString();
   }
 
+  public final boolean contains(TLCState state) {
+	for (int i = 0; i < size; i++) {
+		if (this.v[i].fingerPrint() == state.fingerPrint()) {
+			return true;
+		}
+	}
+	return false;
+  }
 }
