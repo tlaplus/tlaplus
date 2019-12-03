@@ -27,6 +27,9 @@
 package tlc2.util;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,6 +37,7 @@ import java.util.Set;
 
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
+import util.FileUtil;
 
 /**
  * Writes the given state in dot notation.
@@ -71,8 +75,11 @@ public class DotStateWriter extends StateWriter {
 	// by 1 every time a new color is assigned to an action.
 	private Integer colorGen = 1;
 	
+	// Create a valid fname_snapshot.dot file after a state is written.
+	private final boolean snapshot;
+	
 	public DotStateWriter(final String fname, final String strict) throws IOException {
-		this(fname, strict, false, false);
+		this(fname, strict, false, false, false);
 	}
 	
 	/**
@@ -85,14 +92,17 @@ public class DotStateWriter extends StateWriter {
 	 *            clutter for large graphs with many actions.
 	 * @throws IOException
 	 */
-	public DotStateWriter(final String fname, final boolean colorize, final boolean actionLabels) throws IOException {
-		this(fname, "strict ", colorize, actionLabels);
+	public DotStateWriter(final String fname, final boolean colorize, final boolean actionLabels,
+			final boolean snapshot) throws IOException {
+		this(fname, "strict ", colorize, actionLabels, snapshot);
 	}
 	
-	public DotStateWriter(final String fname, final String strict, final boolean colorize, final boolean actionLabels) throws IOException {
+	public DotStateWriter(final String fname, final String strict, final boolean colorize, final boolean actionLabels,
+			final boolean snapshot) throws IOException {
 		super(fname);
 		this.colorize = colorize;
 		this.actionLabels = actionLabels;
+		this.snapshot = snapshot;
 		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		// Turned off LR because top to bottom provides better results with GraphViz viewer.
 //		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
@@ -130,6 +140,16 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append("\n");
 		
 		maintainRanks(state);
+		
+		if (snapshot) {
+			try {
+				this.snapshot();
+			} catch (IOException e) {
+				// Let's assume this never happens!
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}
 	}
 	
 	protected void maintainRanks(final TLCState state) {
@@ -199,6 +219,16 @@ public class DotStateWriter extends StateWriter {
 		}
 		
 		maintainRanks(state);
+		
+		if (snapshot) {
+			try {
+				this.snapshot();
+			} catch (IOException e) {
+				// Let's assume this never happens!
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		}
 	}
 	
 	/**
@@ -317,5 +347,34 @@ public class DotStateWriter extends StateWriter {
 		}
 		this.writer.append("}");
 		super.close();
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#snapshot()
+	 */
+	@Override
+	public void snapshot() throws IOException {
+		this.writer.flush();
+		
+		final String snapshot = fname.replace(".dot", "_snapshot" + ".dot");
+		FileUtil.copyFile(this.fname, snapshot);
+
+		StringBuffer buf = new StringBuffer();
+		for (final Set<Long> entry : rankToNodes.values()) {
+			buf.append("{rank = same; ");
+			for (final Long l : entry) {
+				buf.append(l + ";");
+			}
+			buf.append("}\n");
+		}
+		buf.append("}\n");
+		// We only need the legend if the edges are colored by action and there is more
+		// than a single action.
+		if (colorize && this.actionToColors.size() > 1) {
+			buf.append(dotLegend("DotLegend", this.actionToColors.keySet()));
+		}
+		buf.append("}");
+
+	    Files.write(Paths.get(snapshot), buf.toString().getBytes(), StandardOpenOption.APPEND);
 	}
 }

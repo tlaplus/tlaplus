@@ -15,7 +15,7 @@ public class StateWriter implements IStateWriter
 {
     protected final PrintWriter writer;
     protected int stateNum;
-	private String fname;
+    protected String fname;
 
     public StateWriter(String fname) throws IOException
     {
@@ -107,5 +107,10 @@ public class StateWriter implements IStateWriter
     	if (successorStateIsNew) {
     		this.writeState(state);
     	}
+	}
+
+	@Override
+	public void snapshot() throws IOException {
+		// No-op unless DotStateWriter.
 	}
 }

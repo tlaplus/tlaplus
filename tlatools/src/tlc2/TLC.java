@@ -297,6 +297,7 @@ public class TLC
 		boolean asDot = false;
 	    boolean colorize = false;
 	    boolean actionLabels = false;
+		boolean snapshot = false;
 		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
@@ -411,6 +412,7 @@ public class TLC
                 	asDot = true;
                 	colorize = dotArgs.contains("colorize");
                 	actionLabels = dotArgs.contains("actionlabels");
+                	snapshot = dotArgs.contains("snapshot");
 					dumpFile = getDumpFile(args[index++], ".dot");
                 }
                 else if (index < args.length)
@@ -828,7 +830,7 @@ public class TLC
         	}
         	try {
         		if (asDot) {
-        			this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels);
+        			this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels, snapshot);
         		} else {
         			this.stateWriter = new StateWriter(dumpFile);
         		}

@@ -25,6 +25,8 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
+import java.io.IOException;
+
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import tlc2.util.BitVector;
@@ -124,5 +126,12 @@ public class NoopLivenessStateWriter implements ILivenessStateWriter {
 	@Override
 	public boolean isDot() {
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#snapshot()
+	 */
+	@Override
+	public void snapshot() throws IOException {
 	}
 }
