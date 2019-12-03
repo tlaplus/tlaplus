@@ -53,6 +53,7 @@ import tlc2.value.Values;
 import tlc2.value.impl.Applicable;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.Enumerable;
+import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.FcnLambdaValue;
 import tlc2.value.impl.FcnParams;
 import tlc2.value.impl.FcnRcdValue;
@@ -1025,7 +1026,9 @@ public class Tool
           if (alen == 0) {
             if (val instanceof MethodValue) {
               bval = ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
-            }
+            } else if (val instanceof EvaluatingValue) {
+            	bval = ((EvaluatingValue)val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
+           }
           }
           else {
             if (val instanceof OpValue) {
@@ -1724,6 +1727,10 @@ public class Tool
                 res = ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
               }
             }
+            else if (val instanceof Evaluator) {
+            	  Evaluator evaluator = (Evaluator) val;
+            	  res = evaluator.eval(this, args, c, s0, s1, control, cm);
+            } 
             else {
               if (val instanceof OpValue) {
             	  res = ((OpValue) val).eval(this, args, c, s0, s1, control, cm);

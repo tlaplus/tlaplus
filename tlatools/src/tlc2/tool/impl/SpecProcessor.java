@@ -64,6 +64,7 @@ import tlc2.TLCGlobals;
 import tlc2.module.BuiltInModuleHelper;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.overrides.Evaluation;
 import tlc2.overrides.ITLCOverrides;
 import tlc2.overrides.TLAPlusOperator;
 import tlc2.tool.Action;
@@ -80,6 +81,7 @@ import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.MethodValue;
@@ -555,6 +557,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		// define Java overrides (this approach is simpler and faster than scanning
 		// the complete classpath). The convention is to name the index class
 		// "tlc2.overrides.TLCOverrides":
+        //TODO: Support multiple loader classes (MyTLCOverrides, AnotherTLCOverrides, ...).
 		final Class<?> idx = this.tlaClass.loadClass("tlc2.overrides.TLCOverrides");
 		if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {
 			try {
@@ -563,6 +566,34 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 				for (Class<?> c : candidateClasses) {
 					final Method[] candidateMethods = c.getDeclaredMethods();
 					for (Method m : candidateMethods) {
+						
+						
+						final Evaluation evaluation = m.getAnnotation(Evaluation.class);
+						if (evaluation != null) {
+							final ModuleNode moduleNode = modSet.get(evaluation.module());
+							if (moduleNode == null) {
+								//TODO Actual error code.
+				                Assert.fail(EC.GENERAL, "No module matching " + evaluation.module());
+							}
+							final OpDefNode opDef = moduleNode.getOpDef(evaluation.definition());
+							if (opDef == null) {
+								//TODO Actual error code.
+				                Assert.fail(EC.GENERAL, "No definition matching " + evaluation.definition());
+							}
+							
+							final Value val = new EvaluatingValue(m);
+							opDef.getBody().setToolObject(toolId, val);
+		                    this.defns.put(evaluation.definition(), val);
+		                    
+							// Print success of loading the module override.
+							MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+									evaluation.module() + "!" + evaluation.definition(),
+									c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+		                    
+		                    // continue with next method (don't try to also load Execution annotation below).
+		                    continue;
+						}
+						
 						final TLAPlusOperator opOverrideCandidate = m.getAnnotation(TLAPlusOperator.class);
 						if (opOverrideCandidate != null) {
 							final ModuleNode moduleNode = modSet.get(opOverrideCandidate.module());

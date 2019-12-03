@@ -119,6 +119,8 @@ public interface EC
     public static final int TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH = 2400;
     public static final int TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH = 2402;
     public static final int TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH = 2403;
+    // User-provided module overrides print to stdout.
+    public static final int TLC_MODULE_OVERRIDE_STDOUT = 20000;
 
     public static final int TLC_FP_NOT_IN_SET = 2133;
     public static final int TLC_FP_VALUE_ALREADY_ON_DISK = 2166;
