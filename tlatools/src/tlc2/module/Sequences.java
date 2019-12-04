@@ -73,6 +73,15 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Head(Value s)
     {
+    	// Implementation of Head(string) by MAK on 4 Dec 2019
+    	if (s instanceof StringValue) {
+    		String str = ((StringValue) s).val.toString();
+    		if (str.equals("")) {
+    			throw new EvalException(EC.TLC_MODULE_APPLY_EMPTY_SEQ, "Head");
+    		}
+    		return new StringValue(str.substring(0,1));
+    	}
+    	
         TupleValue seq = (TupleValue) s.toTuple();
         if (seq != null)
         {
@@ -130,6 +139,19 @@ public class Sequences extends UserObj implements ValueConstants
 
     public static Value Append(Value s, Value v)
     {
+    	// Implementation of Append(string, string) by MAK on 4 Dec 2019
+        if (s instanceof StringValue)
+        {
+            if (!(v instanceof StringValue))
+            {
+                throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "t \\o s", "string",
+                        Values.ppr(v.toString()) });
+            }
+            UniqueString u1 = ((StringValue) s).val;
+            UniqueString u2 = ((StringValue) v).val;
+            return new StringValue(u1.concat(u2));
+        }
+        
         TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {

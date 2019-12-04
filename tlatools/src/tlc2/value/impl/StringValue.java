@@ -151,6 +151,16 @@ public class StringValue extends Value {
 	  // finalized after construction.
 	  return true;
   }
+  
+  @Override
+  public final Value toTuple() {
+		final String s = val.toString();
+		Value[] vals = new Value[s.length()];
+		for (int i = 0; i < s.length(); i++) {
+			vals[i] = new StringValue(Character.toString(s.charAt(i)));
+		}
+		return new TupleValue(vals);
+  }
 
   @Override
   public final boolean isNormalized() { return true; }
