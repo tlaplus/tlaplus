@@ -7,13 +7,12 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleConstants;
 import org.eclipse.ui.console.IConsoleFactory;
 import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.IOConsole;
 import org.lamport.tla.toolbox.util.UIHelper;
 
 /**
  * A TLC console
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class ConsoleFactory implements IConsoleFactory
 {
@@ -34,9 +33,9 @@ public class ConsoleFactory implements IConsoleFactory
         }
     }
 
-    public static MessageConsole getTLCConsole()
+    public static IOConsole getTLCConsole()
     {
-        MessageConsole console = findConsole(TLC_ID);
+    	IOConsole console = findConsole(TLC_ID);
 
         return console;
     }
@@ -46,7 +45,7 @@ public class ConsoleFactory implements IConsoleFactory
      * @param name, name of the console
      * @return
      */
-    private static MessageConsole findConsole(String name)
+    private static IOConsole findConsole(String name)
     {
         if (name == null)
         {
@@ -60,12 +59,12 @@ public class ConsoleFactory implements IConsoleFactory
         {
             if (name.equals(existing[i].getName()))
             {
-                return (MessageConsole) existing[i];
+                return (IOConsole) existing[i];
             }
         }
 
         // no console found, create a new one
-        MessageConsole myConsole = new MessageConsole(name, null);
+        IOConsole myConsole = new IOConsole(name, null);
         consoleManager.addConsoles(new IConsole[] { myConsole });
         return myConsole;
     }

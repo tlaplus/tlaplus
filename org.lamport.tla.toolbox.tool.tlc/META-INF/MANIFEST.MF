@@ -26,5 +26,6 @@ Export-Package: org.lamport.tla.toolbox.tool.tlc,
  org.lamport.tla.toolbox.tool.tlc.result,
  org.lamport.tla.toolbox.tool.tlc.traceexplorer,
  org.lamport.tla.toolbox.tool.tlc.util
-Import-Package: org.eclipse.ui.part
+Import-Package: org.eclipse.ui.console,
+ org.eclipse.ui.part
 Automatic-Module-Name: org.lamport.tla.toolbox.tool.tlc

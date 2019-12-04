@@ -1,8 +1,13 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -15,9 +20,15 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.debug.core.model.IStreamsProxy;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.IOConsole;
+import org.eclipse.ui.console.IOConsoleInputStream;
 import org.lamport.tla.toolbox.Activator;
 import org.lamport.tla.toolbox.spec.Spec;
 import org.lamport.tla.toolbox.tool.ToolboxHandle;
@@ -238,9 +249,19 @@ public class TLCProcessJob extends TLCJob
 
                 listener = new BroadcastStreamListener(model, kind);
 
-                process.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
-                process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
-
+                // stdout, stderr, stdin of the forked TLC process.
+                final IStreamsProxy streamsProxy = process.getStreamsProxy();
+				streamsProxy.getOutputStreamMonitor().addListener(listener);
+				streamsProxy.getErrorStreamMonitor().addListener(listener);
+				
+				// This is a reader wrapping the input stream of the Toolbox console. In other
+				// words, if a user types a string into the Toolbox console, we can read the
+				// string from the reader. Iff consoleStdIn is not null (there is a Toolbox
+				// console), the loop below reads from consoleStdIn and writes (forwards) the
+				// string to stdin of the TLC process.  Because the while loop sleeps for a
+				// second, the response time isn't perfect but is good enough for now.
+				final BufferedReader consoleReader = getConsoleReader();
+				
                 // loop until the process is terminated
 				while (checkAndSleep()) {
 					// check the cancellation status
@@ -293,6 +314,16 @@ public class TLCProcessJob extends TLCJob
 						tlcEndTime = System.currentTimeMillis();
 						return Status.CANCEL_STATUS;
 					}
+					
+					
+					try {
+						if (consoleReader != null && consoleReader.ready()) {
+							streamsProxy.write(consoleReader.readLine() + "\n");
+						}
+					} catch (IOException e) {
+						throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID,
+								"Error reading from Toolbox console or writing to stdin of TLC process", e));
+					}
 				}
 
                 // step 6
@@ -339,6 +370,20 @@ public class TLCProcessJob extends TLCJob
             monitor.done();
         }
     }
+
+	private static BufferedReader getConsoleReader() {
+		final IConsoleManager consoleManager = ConsolePlugin.getDefault().getConsoleManager();
+		final List<IConsole> tlcConsole = Arrays.asList(consoleManager.getConsoles()).stream()
+				.filter(c -> "TLC-Console".equals(c.getName())).collect(Collectors.toList());
+		if (!tlcConsole.isEmpty()) {
+			final IConsole iConsole = tlcConsole.get(0);
+			if (iConsole instanceof IOConsole) {
+				IOConsoleInputStream inputStream = ((IOConsole) iConsole).getInputStream();
+				return new BufferedReader(new InputStreamReader(inputStream));
+			}
+		}
+		return null;
+	}
 
 	protected String getOptimalFPsetImpl() throws CoreException {
 		return launch.getLaunchConfiguration().getAttribute(LAUNCH_FPSET_IMPL, (String) null);
