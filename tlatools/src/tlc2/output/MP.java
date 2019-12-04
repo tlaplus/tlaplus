@@ -161,7 +161,7 @@ public class MP
     /**
      * 
      */
-    private static final String CR = "\n";
+    public static final String CR = "\n";
     /**
      * 
      */
