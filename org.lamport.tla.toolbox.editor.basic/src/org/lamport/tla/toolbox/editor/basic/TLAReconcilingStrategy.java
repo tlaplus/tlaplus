@@ -40,6 +40,8 @@ import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconcilingStrategy, IReconcilingStrategyExtension {
 	// Per BoxedCommentHandler, a delimiter is "(" followed by three "*", then 0-N "*", and finally suffixed with ")"
 	private static final String BLOCK_COMMENT_DELIMITER_REGEX = "^[ \\t]*\\(\\*{3}\\**\\)\\s*$";
+	// 
+	private static final String SINGLE_LINE_COMMENT = "^[ \\t]*\\\\\\*";
 	
 	private static final String PCAL_TRANSLATION_PREFIX_REGEX = "^\\\\\\*+ BEGIN TRANSLATION.*$";
 	private static final String PCAL_TRANSLATION_SUFFIX_REGEX = "^\\\\\\*+ END TRANSLATION.*$";
@@ -279,6 +281,40 @@ public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconci
 			}
 		} catch (final BadLocationException ble) { }
 		
+		// 2 or more consecutive single line comments
+		try {
+			int lastFoundIndex = 0; // TODO future optimizations based on DocumentEvents' locations
+			IRegion find = search.find(lastFoundIndex, SINGLE_LINE_COMMENT, true, true, false, true);
+			
+			int contiguousLineCount = 1;
+			int firstMatchingOffset = -1;
+			while (find != null) {
+				if (firstMatchingOffset == -1) {
+					firstMatchingOffset = find.getOffset();
+				}
+				lastFoundIndex = find.getOffset();
+				final IRegion lineEnding = search.find((lastFoundIndex + find.getLength()), "\\n", true, true, false, true);
+				lastFoundIndex = lineEnding.getOffset();
+				find = search.find((lastFoundIndex + 1), SINGLE_LINE_COMMENT, true, true, false, true);
+				
+				boolean addProjection = (contiguousLineCount > 1);
+				boolean reset = true;
+				if ((find != null) && (find.getOffset() == (lastFoundIndex + 1))) {
+					contiguousLineCount++;
+					addProjection = false;
+					reset = false;
+				}
+				if (addProjection) {
+					addProjectionAdditionToMap(additions, firstMatchingOffset, lastFoundIndex,
+											   AnnotationType.MULTIPLE_SINGLE_LINE_COMMENT);
+				}
+				if (reset) {
+					contiguousLineCount = 1;
+					firstMatchingOffset = -1;
+				}
+			}
+		} catch (final BadLocationException ble) { }
+		
 		return additions;
     }
 
@@ -286,18 +322,25 @@ public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconci
 										    final IRegion find, final AnnotationType type)
 			throws BadLocationException {
 		if (find != null) {
-			final int endLocation = find.getOffset() + find.getLength();
-			final int length = endLocation - startLocation;
-			final int positionLength = length + ((document.getLength() > endLocation) ? 1 : 0);	// +1 to cover the newline
-			final Position position = new Position(startLocation, positionLength);
-
-			additions.put(new TLCProjectionAnnotation(document.get(startLocation, length), type), position);
+			final int endLocation = find.getOffset() + find.getLength() + 1;
+			addProjectionAdditionToMap(additions, startLocation, endLocation, type);
 		}
+	}
+
+	private void addProjectionAdditionToMap(final Map<TLCProjectionAnnotation, Position> additions, final int startLocation,
+										    final int endLocation, final AnnotationType type)
+			throws BadLocationException {
+		final int length = endLocation - startLocation;
+		final int positionLength = length + ((document.getLength() > endLocation) ? 1 : 0);	// +1 to cover the newline
+		final Position position = new Position(startLocation, positionLength);
+
+		additions.put(new TLCProjectionAnnotation(document.get(startLocation, length), type), position);
 	}
 	
 	
 	private enum AnnotationType {
 		BLOCK_COMMENT,
+		MULTIPLE_SINGLE_LINE_COMMENT,
 		PCAL_BLOCK,
 		TRANSLATED_PCAL_BLOCK;
 	}
