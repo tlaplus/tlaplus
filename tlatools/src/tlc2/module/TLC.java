@@ -214,7 +214,7 @@ public class TLC implements ValueConstants
 			if (currentState != null) {
 				return IntValue.gen(currentState.getLevel());
 			} else {
-				if (TLCGlobals.mainChecker == null) {
+				if (TLCGlobals.mainChecker == null && TLCGlobals.simulator == null) {
 					// Be consistent with TLCGet("diameter") when TLCGet("level") appears as
 					// constant substitution.
 					throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
