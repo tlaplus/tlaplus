@@ -10,9 +10,11 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Arrays;
 
+import tla2sany.semantic.OpDeclNode;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
@@ -39,6 +41,20 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   public RecordValue(UniqueString[] names, Value[] values, boolean isNorm, CostModel cm) {
 	  this(names, values, isNorm);
 	  this.cm = cm;
+  }
+
+  public RecordValue(final TLCState state) {
+		final OpDeclNode[] vars = state.getVars();
+		
+		this.names = new UniqueString[vars.length];
+		this.values = new Value[vars.length];
+
+		for (int i = 0; i < vars.length; i++) {
+			this.names[i] = vars[i].getName();
+			this.values[i] = (Value) state.lookup(this.names[i]); 
+		}
+
+		this.isNorm = false;
   }
 
   @Override
