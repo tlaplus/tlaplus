@@ -48,4 +48,17 @@ public @interface Evaluation {
 	 */
 	String module();
 
+	/**
+	 * @return The minimum level that will be assigned to the OpDefNode that
+	 *         represents the EvaluatingValue in the semantic graph. Unless
+	 *         the actual level checking in Spec.getLevelBound assigns a
+	 *         greater value, the OpDefNode is a constant-level expression if
+	 *         0 causing it to be eagerly evaluated in 
+	 *         SpecProcessor.processConstantDefns.
+	 * @see tla2sany.semantic.LevelNode.getLevel()
+	 * @see tlc2.tool.impl.Spec.getLevelBound(SemanticNode, Context)
+	 * @see tlc2.value.impl.EvaluatingValue
+	 * @see tlc2.tool.impl.SpecProcessor.processConstantDefns()
+	 */
+	int minLevel() default 0;
 }

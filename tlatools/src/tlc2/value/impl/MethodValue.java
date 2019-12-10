@@ -27,9 +27,13 @@ import util.Assert.TLCRuntimeException;
 import util.WrongInvocationException;
 
 public class MethodValue extends OpValue implements Applicable {
-	
+
 	public static MethodValue get(final Method md) {
-		final MethodValue mv = new MethodValue(md);
+		return get(md, 0);
+	}
+	
+	public static MethodValue get(final Method md, int minLevel) {
+		final MethodValue mv = new MethodValue(md, minLevel);
 		// Eagerly evaluate the constant operator if possible (zero arity) to only
 		// evaluate once at startup and not during state exploration.
 		final int acnt = md.getParameterTypes().length;
@@ -39,10 +43,12 @@ public class MethodValue extends OpValue implements Applicable {
 	
   private final MethodHandle mh;
   private final Method md;
+  private final int minLevel;
 
   /* Constructor */
-	private MethodValue(final Method md) {
+	private MethodValue(final Method md, final int minLevel) {
 		this.md = md;
+		this.minLevel = minLevel;
 		try {
 			final int parameterCount = this.md.getParameterCount();
 			if (parameterCount > 0) {
@@ -292,5 +298,8 @@ public class MethodValue extends OpValue implements Applicable {
       else { throw e; }
     }
   }
-
+  
+  public final int getMinLevel() {
+	  return minLevel;
+  }
 }

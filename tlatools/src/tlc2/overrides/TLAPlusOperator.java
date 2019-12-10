@@ -48,4 +48,8 @@ public @interface TLAPlusOperator {
 	 */
 	String module();
 
+	/**
+	 * @see tlc2.overrides.Evaluation.minLevel()
+	 */
+	int minLevel() default 0;
 }

@@ -46,8 +46,10 @@ import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
+import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
+import tlc2.value.impl.MethodValue;
 import tlc2.value.impl.ModelValue;
 import util.Assert;
 import util.FilenameToStream;
@@ -893,6 +895,12 @@ abstract class Spec implements ValueConstants, ToolGlobals, Serializable
             {
                 LazyValue lv = (LazyValue) val;
                 level = Math.max(level, this.getLevelBound(lv.expr, lv.con));
+            } else if (val instanceof EvaluatingValue) {
+            	final EvaluatingValue ev = (EvaluatingValue) val;
+            	level = Math.max(level, ev.getMinLevel());
+            } else if (val instanceof MethodValue) {
+            	final MethodValue mv = (MethodValue) val;
+            	level = Math.max(level, mv.getMinLevel());
             }
         }
         return level;

@@ -574,7 +574,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 						
 						final Evaluation evaluation = m.getAnnotation(Evaluation.class);
 						if (evaluation != null) {
-							final Value val = new EvaluatingValue(m);
+							final Value val = new EvaluatingValue(m, evaluation.minLevel());
 							
 							final ModuleNode moduleNode = modSet.get(evaluation.module());
 							if (moduleNode == null) {
@@ -618,7 +618,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 								continue LOOP;
 							}
 
-							final Value val = MethodValue.get(m);
+							final Value val = MethodValue.get(m, opOverrideCandidate.minLevel());
 							if (opDef.getArity() != m.getParameterCount()) {
 								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
 										opDef.getName().toString(), c.getName(), val.toString());

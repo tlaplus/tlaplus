@@ -46,10 +46,12 @@ import util.WrongInvocationException;
 public class EvaluatingValue extends OpValue implements Applicable {
   private final MethodHandle mh;
   private final Method md;
+  private final int minLevel;
 
   /* Constructor */
-	public EvaluatingValue(final Method md) {
+	public EvaluatingValue(final Method md, final int minLevel) {
 		this.md = md;
+		this.minLevel = minLevel;
 		try {
 			this.mh = MethodHandles.publicLookup().unreflect(md).asFixedArity();
 		} catch (IllegalAccessException e) {
@@ -242,4 +244,7 @@ public class EvaluatingValue extends OpValue implements Applicable {
     }
   }
 
+  public int getMinLevel() {
+	  return minLevel;
+  }
 }
