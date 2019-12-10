@@ -267,9 +267,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                   this.defns.put(opName, val);
                 }
               }
-              catch (Throwable e) {
-                // Assert.printStack(e);
-              }
+              catch (Throwable swallow) {
+				// We get here when Op fails to evaluate. e is swallowed because Op might e.g. be 
+            	// Reals!Infinity from the standard module that has to be redefined iff it appears
+              	// in the actual spec. Another example is TLC!TLCGet(42) that the code above 
+              	// attempts to evaluate that fails with an EvalException. By definition, TLCGet
+              	// is not constant. 
+			  }
             }
           }
         }
