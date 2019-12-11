@@ -53,3 +53,8 @@ We raised an [enhancement request for the jclouds toolkit](https://issues.apache
 
 #### Finish Unicode support (difficulty: easy) (skills: Eclipse, SANY)
 A few [outstanding issues](https://github.com/tlaplus/tlaplus/issues?q=is%3Aissue+is%3Aopen+label%3AUnicode) prevent the integration of the Unicode support into the Toolbox. In addition to the open issues, adding unit tests would be welcomed. A [nightly/ci Jenkins build](https://tla.msr-inria.inria.fr/build/job/M-HEAD-pron-unicode-Toolbox.product.standalone/) is available.
+
+TLA+ Tools
+----------
+#### Pretty Print to HTML (difficulty: easy) (skills: Java, HTML)
+TLA+ has a great pretty-printer to TeX (`tla2tex`), but HTML is becoming a de-facto document standard, especially for content shared online. HTML also has other advantages, such as the ability to automatically add hyperlinks from symbols to their definitions, and allow for collapsing and expanding proofs. The existing `tla2tex` code already contains most of the necessary parsing and typesetting pre-processing (like alignment), and could serve as a basis for an HTML pretty-printer. A [prototype already exists](https://github.com/tlaplus/tlaplus/issues/146).
