@@ -318,6 +318,7 @@
 		<!-- Include auxilliary files when compiling classes. -->
 		<copy todir="${test.class.dir}">
 		   <fileset dir="${test.dir}" includes="**/*.dot"/>
+		   <fileset dir="${test.dir}" includes="**/*.dump"/>
 		</copy>		
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
