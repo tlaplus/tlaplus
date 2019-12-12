@@ -180,6 +180,10 @@ public class CloudDistributedTLCJob extends Job {
 
 			// Create compute environment in the cloud and inject an ssh
 			// implementation. ssh is our means of communicating with the node.
+			// In order to debug jclouds on the command-line or from the Toolbox:
+			// a) Make sure command-line also uses SLF4JLogginModule by hacking the build.
+			// b) Append -Dorg.slf4j.simpleLogger.defaultLogLevel=debug to toolbox/toolbox.ini
+			// c) Delete toolbox/plugins/slf4j.nop_1.7.25.jar to make sure slf4j.simple gets loaded.
 			final Iterable<AbstractModule> modules = ImmutableSet.<AbstractModule>of(new SshjSshClientModule(),
 					isCLI ? new ConsoleLoggingModule() : new SLF4JLoggingModule());
 
