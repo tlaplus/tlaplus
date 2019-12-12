@@ -1,0 +1,12 @@
+State 1:
+state = {}
+
+State 2:
+state = {"d1"}
+
+State 3:
+state = {"d2"}
+
+State 4:
+state = {"d1", "d2"}
+

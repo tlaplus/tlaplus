@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -25,12 +25,11 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -41,43 +40,34 @@ import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class DumpAsDotTest extends ModelCheckerTestCase {
+public class Github407Test extends ModelCheckerTestCase {
 
-	public DumpAsDotTest() {
-		super("MCa", "CodePlexBug08", new String[] { "-dump", "dot,colorize,actionlabels",
-				System.getProperty("java.io.tmpdir") + File.separator + "DumpAsDotTest" }, ExitStatus.VIOLATION_LIVENESS);
+	public Github407Test() {
+		super("Github407",
+				new String[] { "-dump", System.getProperty("java.io.tmpdir") + File.separator + "Github407" },
+				ExitStatus.SUCCESS);
 	}
 
 	@Test
-	public void testSpec() throws IOException {
-		// ModelChecker has finished and generated the expected amount of states
+	public void testSpec() throws FileNotFoundException, IOException {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "18", "11", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "4", "0"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
 		
-		// -dump appends the ".dump" extension to the file name
-		final File dumpFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "DumpAsDotTest.dot");
+		final File dumpFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "Github407.dump");
 		assertTrue(dumpFile.exists());
 		
 		// If the file exist, simply compare it to a correct and manually checked version.
-		final InputStream master = getClass().getResourceAsStream("DumpAsDotTest.dot");
-		assertTrue(Arrays.equals(getBytes(master), getBytes(new FileInputStream(dumpFile))));
+		final InputStream master = getClass().getResourceAsStream("Github407.dump");
+		assertTrue(Arrays.equals(DumpAsDotTest.getBytes(master), DumpAsDotTest.getBytes(new FileInputStream(dumpFile))));
 
 		assertZeroUncovered();
+		
 	}
-	
-	// http://stackoverflow.com/a/17861016
-	public static byte[] getBytes(InputStream is) throws IOException {
-		final ByteArrayOutputStream os = new ByteArrayOutputStream();
-		try {
-			byte[] buffer = new byte[0xFFFF];
-			for (int len; (len = is.read(buffer)) != -1;) {
-				os.write(buffer, 0, len);
-			}
-			os.flush();
-			return os.toByteArray();
-		} finally {
-			os.close();
-		}
+
+	@Override
+	protected boolean doDump() {
+		// Create the non-dot dump explicitly through constructor above.
+		return false;
 	}
 }
