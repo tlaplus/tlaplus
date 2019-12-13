@@ -5,6 +5,7 @@ package tlc2.tool.impl;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
+import tlc2.tool.Action;
 import tlc2.tool.IActionItemList;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
@@ -51,6 +52,10 @@ class ActionItemList implements IActionItemList {
   public final IActionItemList cons(SemanticNode pred,
 				   Context con, CostModel cm, int kind) {
     return new ActionItemList(pred, con, kind, this, coverage ? cm.get(pred) : cm);
+  }
+
+  public ActionItemList cons(final Action act, final int kind) {
+	return new ActionItemList(act.pred, act.con, kind, this, coverage ? act.cm.get(pred) : act.cm);
   }
 
   public final boolean isEmpty() { return this == Empty; }

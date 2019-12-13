@@ -339,7 +339,7 @@ public class Tool
       // doesn't get added to acts at all).
 	  for (int i = (init.size() - 1); i > 0; i--) {
 		  Action elem = (Action)init.elementAt(i);
-		  acts = (ActionItemList) acts.cons(elem.pred, elem.con, elem.cm, IActionItemList.PRED);
+		  acts = (ActionItemList) acts.cons(elem, IActionItemList.PRED);
 	  }
 	  if (init.size() != 0) {
 		  Action elem = (Action)init.elementAt(0);
