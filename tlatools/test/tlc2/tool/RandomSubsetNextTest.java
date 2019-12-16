@@ -47,7 +47,7 @@ public class RandomSubsetNextTest extends ModelCheckerTestCase {
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.TLC_BUG));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "67330", "7732", "999"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "67321", "7732", "999"));
 
 		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
 		

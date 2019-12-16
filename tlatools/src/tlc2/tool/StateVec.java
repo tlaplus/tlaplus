@@ -15,7 +15,7 @@ import util.Assert;
  * updates are used for improved performance and reduced
  * allocation.
  */
-public final class StateVec implements IStateFunctor {
+public final class StateVec implements IStateFunctor, INextStateFunctor {
   private TLCState v[];
   private int size;
 
@@ -85,6 +85,11 @@ public final class StateVec implements IStateFunctor {
     return this;
   }
   
+  @Override
+  public final StateVec addElement(TLCState predecessor, Action action, TLCState state) {
+	  return addElement(state);
+  }
+ 
   public final StateVec addElements(StateVec s1) {
     StateVec s0 = this;
 

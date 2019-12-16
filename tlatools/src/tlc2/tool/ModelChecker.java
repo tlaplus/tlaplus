@@ -494,7 +494,7 @@ public class ModelChecker extends AbstractChecker
 		return seen;
 	}
 
-	private final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
+	final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
         int k = 0;
 		try
         {
@@ -525,7 +525,7 @@ public class ModelChecker extends AbstractChecker
 		return false;
 	}
 
-	private final boolean doNextCheckImplied(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
+	final boolean doNextCheckImplied(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
 		int k = 0;
         try
         {
@@ -558,7 +558,7 @@ public class ModelChecker extends AbstractChecker
         return false;
 	}
 
-	private final boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
+	final boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
 		synchronized (this)
 		{
 		    if (this.setErrState(curState, succState, keep, ec))
@@ -576,7 +576,7 @@ public class ModelChecker extends AbstractChecker
 		return true;
 	}
 
-	private final boolean doNextSetErr(TLCState curState, TLCState succState, Action action) throws IOException, WorkerException {
+	final boolean doNextSetErr(TLCState curState, TLCState succState, Action action) throws IOException, WorkerException {
 		synchronized (this) {
 			final int errorCode = EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT;
 			if (this.setErrState(curState, succState, false, errorCode))
@@ -616,7 +616,7 @@ public class ModelChecker extends AbstractChecker
 		}
 	}
 
-	private final void doNextFailed(TLCState curState, TLCState succState, Throwable e)
+	final void doNextFailed(TLCState curState, TLCState succState, Throwable e)
 			throws IOException, WorkerException, Throwable {
 		// Assert.printStack(e);
 		final boolean keep = ((e instanceof StackOverflowError) || (e instanceof OutOfMemoryError)
