@@ -785,25 +785,25 @@ public class Tool
     ActionItemList acts = ActionItemList.Empty;
     TLCState s1 = TLCState.Empty.createEmpty();
     StateVec nss = new StateVec(0);
-    this.getNextStates(action.pred, acts, action.con, state, s1, nss, action.cm);
+    this.getNextStates(action, action.pred, acts, action.con, state, s1, nss, action.cm);
     if (coverage) { action.cm.incInvocations(nss.size()); }
     return nss;
   }
 
-  private final TLCState getNextStates(SemanticNode pred, ActionItemList acts, Context c,
+  private final TLCState getNextStates(final Action action, SemanticNode pred, ActionItemList acts, Context c,
                                        TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
 	    if (this.callStack != null) {
-	    	return getNextStatesWithCallStack(pred, acts, c, s0, s1, nss, cm);
+	    	return getNextStatesWithCallStack(action, pred, acts, c, s0, s1, nss, cm);
 	    } else {
-	    	return getNextStatesImpl(pred, acts, c, s0, s1, nss, cm);
+	    	return getNextStatesImpl(action, pred, acts, c, s0, s1, nss, cm);
 	    }
   }
   
-  private final TLCState getNextStatesWithCallStack(SemanticNode pred, ActionItemList acts, Context c,
+  private final TLCState getNextStatesWithCallStack(final Action action, SemanticNode pred, ActionItemList acts, Context c,
               TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
 	    this.callStack.push(pred);
 	    try {
-	    	return getNextStatesImpl(pred, acts, c, s0, s1, nss, cm);
+	    	return getNextStatesImpl(action, pred, acts, c, s0, s1, nss, cm);
 	    } catch (TLCRuntimeException | EvalException e) {
 	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
 	    	this.callStack.freeze();
@@ -813,34 +813,34 @@ public class Tool
 	    }
   }
   
-  private final TLCState getNextStatesImpl(SemanticNode pred, ActionItemList acts, Context c,
+  private final TLCState getNextStatesImpl(final Action action, SemanticNode pred, ActionItemList acts, Context c,
               TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
         switch (pred.getKind()) {
         case OpApplKind:
           {
             OpApplNode pred1 = (OpApplNode)pred;
             if (coverage) {cm = cm.get(pred);}
-            return this.getNextStatesAppl(pred1, acts, c, s0, s1, nss, cm);
+            return this.getNextStatesAppl(action, pred1, acts, c, s0, s1, nss, cm);
           }
         case LetInKind:
           {
             LetInNode pred1 = (LetInNode)pred;
-            return this.getNextStates(pred1.getBody(), acts, c, s0, s1, nss, cm);
+            return this.getNextStates(action, pred1.getBody(), acts, c, s0, s1, nss, cm);
           }
         case SubstInKind:
           {
-            return getNextStatesImplSubstInKind((SubstInNode) pred, acts, c, s0, s1, nss, cm);
+            return getNextStatesImplSubstInKind(action, (SubstInNode) pred, acts, c, s0, s1, nss, cm);
           }
         // Added by LL on 13 Nov 2009 to handle theorem and assumption names.
         case APSubstInKind:
           {
-            return getNextStatesImplApSubstInKind((APSubstInNode) pred, acts, c, s0, s1, nss, cm);
+            return getNextStatesImplApSubstInKind(action, (APSubstInNode) pred, acts, c, s0, s1, nss, cm);
           }
         // LabelKind class added by LL on 13 Jun 2007
         case LabelKind:
           {
             LabelNode pred1 = (LabelNode)pred;
-            return this.getNextStates(pred1.getBody(), acts, c, s0, s1, nss, cm);
+            return this.getNextStates(action, pred1.getBody(), acts, c, s0, s1, nss, cm);
           }
         default:
           {
@@ -851,7 +851,7 @@ public class Tool
   }
 
   @ExpectInlined
-  private final TLCState getNextStatesImplSubstInKind(SubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
+  private final TLCState getNextStatesImplSubstInKind(final Action action, SubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
   	Subst[] subs = pred1.getSubsts();
   	int slen = subs.length;
   	Context c1 = c;
@@ -859,11 +859,11 @@ public class Tool
   	  Subst sub = subs[i];
   	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm));
   	}
-  	return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss, cm);
+  	return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
   
   @ExpectInlined
-  private final TLCState getNextStatesImplApSubstInKind(APSubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
+  private final TLCState getNextStatesImplApSubstInKind(final Action action, APSubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
   	Subst[] subs = pred1.getSubsts();
   	int slen = subs.length;
   	Context c1 = c;
@@ -871,13 +871,13 @@ public class Tool
   	  Subst sub = subs[i];
   	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, cm));
   	}
-  	return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss, cm);
+  	return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
   
   @ExpectInlined
-  private final TLCState getNextStates(ActionItemList acts, final TLCState s0, final TLCState s1,
+  private final TLCState getNextStates(final Action action, ActionItemList acts, final TLCState s0, final TLCState s1,
           final StateVec nss, CostModel cm) {
-	  final TLCState copy = getNextStates0(acts, s0, s1, nss, cm);
+	  final TLCState copy = getNextStates0(action, acts, s0, s1, nss, cm);
 	  if (coverage && copy != s1) {
 		  cm.incInvocations();
 	  }
@@ -885,13 +885,13 @@ public class Tool
   }
 
   @ExpectInlined
-  private final TLCState getNextStates0(ActionItemList acts, final TLCState s0, final TLCState s1,
+  private final TLCState getNextStates0(final Action action, ActionItemList acts, final TLCState s0, final TLCState s1,
                                        final StateVec nss, CostModel cm) {
     if (acts.isEmpty()) {
       nss.addElement(s1);
       return s1.copy();
     } else if (s1.allAssigned()) {
-    	return getNextStatesAllAssigned(acts, s0, s1, nss, cm);
+    	return getNextStatesAllAssigned(action, acts, s0, s1, nss, cm);
     }
 
     final int kind = acts.carKind();
@@ -900,29 +900,29 @@ public class Tool
     ActionItemList acts1 = acts.cdr();
     cm = acts.cm;
     if (kind > 0) {
-      return this.getNextStates(pred, acts1, c, s0, s1, nss, cm);
+      return this.getNextStates(action, pred, acts1, c, s0, s1, nss, cm);
     }
     else if (kind == -1) {
-      return this.getNextStates(pred, acts1, c, s0, s1, nss, cm);
+      return this.getNextStates(action, pred, acts1, c, s0, s1, nss, cm);
     }
     else if (kind == -2) {
-      return this.processUnchanged(pred, acts1, c, s0, s1, nss, cm);
+      return this.processUnchanged(action, pred, acts1, c, s0, s1, nss, cm);
     }
     else {
       IValue v1 = this.eval(pred, c, s0, cm);
       IValue v2 = this.eval(pred, c, s1, cm);
       if (!v1.equals(v2)) {
     	  if (coverage) {
-    		  return this.getNextStates(acts1, s0, s1, nss, cm);
+    		  return this.getNextStates(action, acts1, s0, s1, nss, cm);
     	  } else {
-    		  return this.getNextStates0(acts1, s0, s1, nss, cm);
+    		  return this.getNextStates0(action, acts1, s0, s1, nss, cm);
     	  }
       }
     }
     return s1;
   }
   
-  private final TLCState getNextStatesAllAssigned(ActionItemList acts, final TLCState s0, final TLCState s1,
+  private final TLCState getNextStatesAllAssigned(final Action action, ActionItemList acts, final TLCState s0, final TLCState s1,
 		  								final StateVec nss, final CostModel cm) {
 	  int kind = acts.carKind();
 	  SemanticNode pred = acts.carPred();
@@ -941,7 +941,7 @@ public class Tool
 			  }
 		  } else if (kind == -2) {
 			  // Identical to default handling below (line 876). Ignored during this optimization.
-			  return this.processUnchanged(pred, acts.cdr(), c, s0, s1, nss, cm2);
+			  return this.processUnchanged(action, pred, acts.cdr(), c, s0, s1, nss, cm2);
 		  } else {
 			  final IValue v1 = this.eval(pred, c, s0, cm2);
 			  final IValue v2 = this.eval(pred, c, s1, cm2);
@@ -963,20 +963,20 @@ public class Tool
   /* getNextStatesAppl */
 
   @ExpectInlined
-  private final TLCState getNextStatesAppl(OpApplNode pred, ActionItemList acts, Context c,
+  private final TLCState getNextStatesAppl(final Action action, OpApplNode pred, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
 	  if (this.callStack != null) {
-		  return getNextStatesApplWithCallStack(pred, acts, c, s0, s1, nss, cm);
+		  return getNextStatesApplWithCallStack(action, pred, acts, c, s0, s1, nss, cm);
 	  } else {
-	      return getNextStatesApplImpl(pred, acts, c, s0, s1, nss, cm);
+	      return getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
 	  }
   }
   
-  private final TLCState getNextStatesApplWithCallStack(OpApplNode pred, ActionItemList acts, Context c,
+  private final TLCState getNextStatesApplWithCallStack(final Action action, OpApplNode pred, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
 	    this.callStack.push(pred);
 	    try {
-	    	return getNextStatesApplImpl(pred, acts, c, s0, s1, nss, cm);
+	    	return getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
 	    } catch (TLCRuntimeException | EvalException e) {
 	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
 	    	this.callStack.freeze();
@@ -986,7 +986,7 @@ public class Tool
 	    }
   }
 
-  private final TLCState getNextStatesApplImpl(OpApplNode pred, ActionItemList acts, Context c,
+  private final TLCState getNextStatesApplImpl(final Action action, OpApplNode pred, ActionItemList acts, Context c,
                                            TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
         ExprOrOpArgNode[] args = pred.getArgs();
         int alen = args.length;
@@ -1005,7 +1005,7 @@ public class Tool
             if (opcode == 0) {
               // Context c1 = this.getOpContext(opDef, args, c, false);
               Context c1 = this.getOpContext(opDef, args, c, true, cm);
-              return this.getNextStates(opDef.getBody(), acts, c1, s0, s1, nss, cm);
+              return this.getNextStates(action, opDef.getBody(), acts, c1, s0, s1, nss, cm);
             }
           }
 
@@ -1017,13 +1017,13 @@ public class Tool
           if (val instanceof ThmOrAssumpDefNode) {
             ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
             Context c1 = this.getOpContext(opDef, args, c, true);
-            return this.getNextStates(opDef.getBody(), acts, c1, s0, s1, nss, cm);
+            return this.getNextStates(action, opDef.getBody(), acts, c1, s0, s1, nss, cm);
           }
 
           if (val instanceof LazyValue) {
             LazyValue lv = (LazyValue)val;
             if (lv.getValue() == null || lv.isUncachable()) {
-              return this.getNextStates(lv.expr, acts, lv.con, s0, s1, nss, lv.cm);
+              return this.getNextStates(action, lv.expr, acts, lv.con, s0, s1, nss, lv.cm);
             }
             val = lv.getValue();
           }
@@ -1052,9 +1052,9 @@ public class Tool
             if (((BoolValue) bval).val)
             {
           	  if (coverage) {
-        		  return this.getNextStates(acts, s0, s1, nss, cm);
+        		  return this.getNextStates(action, acts, s0, s1, nss, cm);
           	  } else {
-          		  return this.getNextStates0(acts, s0, s1, nss, cm);
+          		  return this.getNextStates0(action, acts, s0, s1, nss, cm);
           	  }
             }
             return s1;
@@ -1070,13 +1070,13 @@ public class Tool
             for (int i = alen - 1; i > 0; i--) {
               acts1 = (ActionItemList) acts1.cons(args[i], c, cm, i);
             }
-            return this.getNextStates(args[0], acts1, c, s0, s1, nss, cm);
+            return this.getNextStates(action, args[0], acts1, c, s0, s1, nss, cm);
           }
         case OPCODE_dl:     // DisjList
         case OPCODE_lor:
           {
             for (int i = 0; i < alen; i++) {
-              resState = this.getNextStates(args[i], acts, c, s0, resState, nss, cm);
+              resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
             }
             return resState;
           }
@@ -1086,7 +1086,7 @@ public class Tool
             ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
             Context c1;
             while ((c1 = Enum.nextElement()) != null) {
-              resState = this.getNextStates(body, acts, c1, s0, resState, nss, cm);
+              resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
             }
             return resState;
           }
@@ -1096,7 +1096,7 @@ public class Tool
             ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
             Context c1 = Enum.nextElement();
             if (c1 == null) {
-              resState = this.getNextStates(acts, s0, s1, nss, cm);
+              resState = this.getNextStates(action, acts, s0, s1, nss, cm);
             }
             else {
               ActionItemList acts1 = acts;
@@ -1104,7 +1104,7 @@ public class Tool
               while ((c2 = Enum.nextElement()) != null) {
                 acts1 = (ActionItemList) acts1.cons(body, c2, cm, IActionItemList.PRED);
               }
-              resState = this.getNextStates(body, acts1, c1, s0, s1, nss, cm);
+              resState = this.getNextStates(action, body, acts1, c1, s0, s1, nss, cm);
             }
             return resState;
           }
@@ -1115,7 +1115,7 @@ public class Tool
               FcnLambdaValue fcn = (FcnLambdaValue)fval;
               if (fcn.fcnRcd == null) {
                 Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Clear, cm);
-                return this.getNextStates(fcn.body, acts, c1, s0, s1, nss, fcn.cm);
+                return this.getNextStates(action, fcn.body, acts, c1, s0, s1, nss, fcn.cm);
               }
               fval = fcn.fcnRcd;
             }
@@ -1131,14 +1131,14 @@ public class Tool
                       pred.toString() });
             }
             if (((BoolValue)bval).val) {
-              return this.getNextStates(acts, s0, s1, nss, cm);
+              return this.getNextStates(action, acts, s0, s1, nss, cm);
             }
             return resState;
           }
         case OPCODE_aa:     // AngleAct <A>_e
           {
             ActionItemList acts1 = (ActionItemList) acts.cons(args[1], c, cm, IActionItemList.CHANGED);
-            return this.getNextStates(args[0], acts1, c, s0, s1, nss, cm);
+            return this.getNextStates(action, args[0], acts1, c, s0, s1, nss, cm);
           }
         case OPCODE_sa:     // [A]_e
           {
@@ -1146,10 +1146,10 @@ public class Tool
              * YuanYu to mimic the way \/ works.  Change made
              *  11 Mar 2009, with LL sitting next to him.
              */
-              //    this.getNextStates(args[0], acts, c, s0, s1, nss);
+              //    this.getNextStates(action, args[0], acts, c, s0, s1, nss);
               //    return this.processUnchanged(args[1], acts, c, s0, s1, nss);
-            resState = this.getNextStates(args[0], acts, c, s0, resState, nss, cm);
-            return this.processUnchanged(args[1], acts, c, s0, resState, nss, cm);
+            resState = this.getNextStates(action, args[0], acts, c, s0, resState, nss, cm);
+            return this.processUnchanged(action, args[1], acts, c, s0, resState, nss, cm);
           }
         case OPCODE_ite:    // IfThenElse
           {
@@ -1160,10 +1160,10 @@ public class Tool
                           " an IF." + pred);
             }
             if (((BoolValue)guard).val) {
-              return this.getNextStates(args[1], acts, c, s0, s1, nss, cm);
+              return this.getNextStates(action, args[1], acts, c, s0, s1, nss, cm);
             }
             else {
-              return this.getNextStates(args[2], acts, c, s0, s1, nss, cm);
+              return this.getNextStates(action, args[2], acts, c, s0, s1, nss, cm);
             }
           }
         case OPCODE_case:   // Case
@@ -1183,7 +1183,7 @@ public class Tool
                               " of a CASE.\n" + pairArgs[1]);
                 }
                 if (((BoolValue)bval).val) {
-                  return this.getNextStates(pairArgs[1], acts, c, s0, s1, nss, coverage ? cm.get(args[i]) : cm);
+                  return this.getNextStates(action, pairArgs[1], acts, c, s0, s1, nss, coverage ? cm.get(args[i]) : cm);
                 }
               }
             }
@@ -1191,7 +1191,7 @@ public class Tool
               Assert.fail("In computing next states, TLC encountered a CASE with no" +
                           " conditions true.\n" + pred);
             }
-            return this.getNextStates(other, acts, c, s0, s1, nss, coverage ? cm.get(args[alen - 1]) : cm);
+            return this.getNextStates(action, other, acts, c, s0, s1, nss, coverage ? cm.get(args[alen - 1]) : cm);
           }
         case OPCODE_eq:
           {
@@ -1209,7 +1209,7 @@ public class Tool
               Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
               if (lval == null) {
                 resState.bind(varName, rval);
-                resState = this.getNextStates(acts, s0, resState, nss, cm);
+                resState = this.getNextStates(action, acts, s0, resState, nss, cm);
                 resState.unbind(varName);
                 return resState;
               }
@@ -1217,7 +1217,7 @@ public class Tool
                 return resState;
               }
             }
-            return this.getNextStates(acts, s0, s1, nss, cm);
+            return this.getNextStates(action, acts, s0, s1, nss, cm);
           }
         case OPCODE_in:
           {
@@ -1242,7 +1242,7 @@ public class Tool
                 Value elem;
                 while ((elem = Enum.nextElement()) != null) {
                   resState.bind(varName, elem);
-                  resState = this.getNextStates(acts, s0, resState, nss, cm);
+                  resState = this.getNextStates(action, acts, s0, resState, nss, cm);
                   resState.unbind(varName);
                 }
                 return resState;
@@ -1251,7 +1251,7 @@ public class Tool
                 return resState;
               }
             }
-            return this.getNextStates(acts, s0, s1, nss, cm);
+            return this.getNextStates(action, acts, s0, s1, nss, cm);
           }
         case OPCODE_implies:
           {
@@ -1261,15 +1261,15 @@ public class Tool
                           " P => Q, P was\n" + bval.getKindString() + ".\n" + pred);
             }
             if (((BoolValue)bval).val) {
-              return this.getNextStates(args[1], acts, c, s0, s1, nss, cm);
+              return this.getNextStates(action, args[1], acts, c, s0, s1, nss, cm);
             }
             else {
-              return this.getNextStates(acts, s0, s1, nss, cm);
+              return this.getNextStates(action, acts, s0, s1, nss, cm);
             }
           }
         case OPCODE_unchanged:
           {
-            return this.processUnchanged(args[0], acts, c, s0, s1, nss, cm);
+            return this.processUnchanged(action, args[0], acts, c, s0, s1, nss, cm);
           }
         case OPCODE_cdot:
           {
@@ -1277,11 +1277,11 @@ public class Tool
             /***
             TLCState s01 = TLCStateFun.Empty;
             StateVec iss = new StateVec(0);
-            this.getNextStates(args[0], ActionItemList.Empty, c, s0, s01, iss);
+            this.getNextStates(action, args[0], ActionItemList.Empty, c, s0, s01, iss);
             int sz = iss.size();
             for (int i = 0; i < sz; i++) {
               s01 = iss.elementAt(i);
-              this.getNextStates(args[1], acts, c, s01, s1, nss);
+              this.getNextStates(action, args[1], acts, c, s01, s1, nss);
             }
             ***/
             return s1;
@@ -1289,7 +1289,7 @@ public class Tool
         // The following case added by LL on 13 Nov 2009 to handle subexpression names.
         case OPCODE_nop:
         {
-            return this.getNextStates(args[0], acts, c, s0, s1, nss, cm);
+            return this.getNextStates(action, args[0], acts, c, s0, s1, nss, cm);
         }
         default:
           {
@@ -1300,7 +1300,7 @@ public class Tool
                       bval.toString(), pred.toString() });
             }
             if (((BoolValue)bval).val) {
-              resState = this.getNextStates(acts, s0, s1, nss, cm);
+              resState = this.getNextStates(action, acts, s0, s1, nss, cm);
             }
             return resState;
           }
@@ -1310,19 +1310,19 @@ public class Tool
   /* processUnchanged */
 
   @ExpectInlined
-  private final TLCState processUnchanged(SemanticNode expr, ActionItemList acts, Context c,
+  private final TLCState processUnchanged(final Action action, SemanticNode expr, ActionItemList acts, Context c,
                                           TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
 	  if (this.callStack != null) {
-		  return processUnchangedWithCallStack(expr, acts, c, s0, s1, nss, cm);
+		  return processUnchangedWithCallStack(action, expr, acts, c, s0, s1, nss, cm);
 	  } else {
-		   return processUnchangedImpl(expr, acts, c, s0, s1, nss, cm);
+		   return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
 	  }
   }
-  private final TLCState processUnchangedWithCallStack(SemanticNode expr, ActionItemList acts, Context c,
+  private final TLCState processUnchangedWithCallStack(final Action action, SemanticNode expr, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
 	   this.callStack.push(expr);
 	   try {
-		   return processUnchangedImpl(expr, acts, c, s0, s1, nss, cm);
+		   return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
 	    } catch (TLCRuntimeException | EvalException e) {
 	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
 	    	this.callStack.freeze();
@@ -1331,13 +1331,13 @@ public class Tool
 	    	this.callStack.pop();
 	    }
   }
-  private final TLCState processUnchangedImpl(SemanticNode expr, ActionItemList acts, Context c,
+  private final TLCState processUnchangedImpl(final Action action, SemanticNode expr, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
     if (coverage){cm = cm.get(expr);}
         SymbolNode var = this.getVar(expr, c, false);
         TLCState resState = s1;
         if (var != null) {
-            return processUnchangedImplVar(expr, acts, s0, s1, nss, var, cm);
+            return processUnchangedImplVar(action, expr, acts, s0, s1, nss, var, cm);
         }
 
         if (expr instanceof OpApplNode) {
@@ -1349,41 +1349,41 @@ public class Tool
           int opcode = BuiltInOPs.getOpCode(opName);
 
           if (opcode == OPCODE_tup) {
-            return processUnchangedImplTuple(acts, c, s0, s1, nss, args, alen, cm, coverage ? cm.get(expr1) : cm);
+            return processUnchangedImplTuple(action, acts, c, s0, s1, nss, args, alen, cm, coverage ? cm.get(expr1) : cm);
           }
 
           if (opcode == 0 && alen == 0) {
             // a 0-arity operator:
-            return processUnchangedImpl0Arity(expr, acts, c, s0, s1, nss, cm, opNode, opName);
+            return processUnchangedImpl0Arity(action, expr, acts, c, s0, s1, nss, cm, opNode, opName);
           }
         }
 
         IValue v0 = this.eval(expr, c, s0, cm);
         Value v1 = this.eval(expr, c, s1, null, EvalControl.Clear, cm);
         if (v0.equals(v1)) {
-          resState = this.getNextStates(acts, s0, s1, nss, cm);
+          resState = this.getNextStates(action, acts, s0, s1, nss, cm);
         }
         return resState;
   }
 
   @ExpectInlined
-  private final TLCState processUnchangedImpl0Arity(final SemanticNode expr, final ActionItemList acts,
+  private final TLCState processUnchangedImpl0Arity(final Action action, final SemanticNode expr, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final StateVec nss, final CostModel cm,
 			final SymbolNode opNode, final UniqueString opName) {
 		final Object val = this.lookup(opNode, c, false);
 	
 		if (val instanceof OpDefNode) {
-		  return this.processUnchanged(((OpDefNode)val).getBody(), acts, c, s0, s1, nss, cm);
+		  return this.processUnchanged(action, ((OpDefNode)val).getBody(), acts, c, s0, s1, nss, cm);
 		}
 		else if (val instanceof LazyValue) {
 		  final LazyValue lv = (LazyValue)val;
-		  return this.processUnchanged(lv.expr, acts, lv.con, s0, s1, nss, cm);
+		  return this.processUnchanged(action, lv.expr, acts, lv.con, s0, s1, nss, cm);
 		}
 		else {
 		  Assert.fail("In computing next states, TLC found the identifier\n" +
 		              opName + " undefined in an UNCHANGED expression at\n" + expr);
 		}
-		return this.getNextStates(acts, s0, s1, nss, cm);
+		return this.getNextStates(action, acts, s0, s1, nss, cm);
   }
 
   @Override
@@ -1392,7 +1392,7 @@ public class Tool
 	  }
 
   @ExpectInlined
-  private final TLCState processUnchangedImplTuple(ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss,
+  private final TLCState processUnchangedImplTuple(final Action action, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss,
   		ExprOrOpArgNode[] args, int alen, CostModel cm, CostModel cmNested) {
   	// a tuple:
   	if (alen != 0) {
@@ -1400,13 +1400,13 @@ public class Tool
   	  for (int i = alen-1; i > 0; i--) {
   	    acts1 = (ActionItemList) acts1.cons(args[i], c, cmNested, IActionItemList.UNCHANGED);
   	  }
-  	  return this.processUnchanged(args[0], acts1, c, s0, s1, nss, cmNested);
+  	  return this.processUnchanged(action, args[0], acts1, c, s0, s1, nss, cmNested);
   	}
-  	return this.getNextStates(acts, s0, s1, nss, cm);
+  	return this.getNextStates(action, acts, s0, s1, nss, cm);
   }
   
   @ExpectInlined
-  private final TLCState processUnchangedImplVar(SemanticNode expr, ActionItemList acts, TLCState s0, TLCState s1, StateVec nss,
+  private final TLCState processUnchangedImplVar(final Action action, SemanticNode expr, ActionItemList acts, TLCState s0, TLCState s1, StateVec nss,
   		SymbolNode var, final CostModel cm) {
           TLCState resState = s1;
           // expr is a state variable:
@@ -1416,17 +1416,17 @@ public class Tool
           if (val1 == null) {
 		  	resState.bind(varName, val0);
             if (coverage) {
-            	resState = this.getNextStates(acts, s0, resState, nss, cm);
+            	resState = this.getNextStates(action, acts, s0, resState, nss, cm);
             } else {
-            	resState = this.getNextStates0(acts, s0, resState, nss, cm);
+            	resState = this.getNextStates0(action, acts, s0, resState, nss, cm);
             }
 		  	resState.unbind(varName);
           }
           else if (val0.equals(val1)) {
               if (coverage) {
-                  resState = this.getNextStates(acts, s0, s1, nss, cm);
+                  resState = this.getNextStates(action, acts, s0, s1, nss, cm);
               } else {
-                  resState = this.getNextStates0(acts, s0, s1, nss, cm);
+                  resState = this.getNextStates0(action, acts, s0, s1, nss, cm);
               }
           }
           else {
