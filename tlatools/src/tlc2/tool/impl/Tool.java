@@ -43,6 +43,7 @@ import tlc2.tool.TLCStateMut;
 import tlc2.tool.ToolGlobals;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
+import tlc2.util.ExpectInlined;
 import tlc2.util.IdThread;
 import tlc2.util.Vect;
 import tlc2.value.IFcnLambdaValue;
@@ -849,6 +850,7 @@ public class Tool
     	return s1;
   }
 
+  @ExpectInlined
   private final TLCState getNextStatesImplSubstInKind(SubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
   	Subst[] subs = pred1.getSubsts();
   	int slen = subs.length;
@@ -860,6 +862,7 @@ public class Tool
   	return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
   
+  @ExpectInlined
   private final TLCState getNextStatesImplApSubstInKind(APSubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
   	Subst[] subs = pred1.getSubsts();
   	int slen = subs.length;
@@ -871,6 +874,7 @@ public class Tool
   	return this.getNextStates(pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
   
+  @ExpectInlined
   private final TLCState getNextStates(ActionItemList acts, final TLCState s0, final TLCState s1,
           final StateVec nss, CostModel cm) {
 	  final TLCState copy = getNextStates0(acts, s0, s1, nss, cm);
@@ -880,6 +884,7 @@ public class Tool
 	  return copy;
   }
 
+  @ExpectInlined
   private final TLCState getNextStates0(ActionItemList acts, final TLCState s0, final TLCState s1,
                                        final StateVec nss, CostModel cm) {
     if (acts.isEmpty()) {
@@ -957,6 +962,7 @@ public class Tool
 
   /* getNextStatesAppl */
 
+  @ExpectInlined
   private final TLCState getNextStatesAppl(OpApplNode pred, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, StateVec nss, final CostModel cm) {
 	  if (this.callStack != null) {
@@ -1303,6 +1309,7 @@ public class Tool
   
   /* processUnchanged */
 
+  @ExpectInlined
   private final TLCState processUnchanged(SemanticNode expr, ActionItemList acts, Context c,
                                           TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
 	  if (this.callStack != null) {
@@ -1359,6 +1366,7 @@ public class Tool
         return resState;
   }
 
+  @ExpectInlined
   private final TLCState processUnchangedImpl0Arity(final SemanticNode expr, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final StateVec nss, final CostModel cm,
 			final SymbolNode opNode, final UniqueString opName) {
@@ -1383,6 +1391,7 @@ public class Tool
 	    return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, CostModel.DO_NOT_RECORD);
 	  }
 
+  @ExpectInlined
   private final TLCState processUnchangedImplTuple(ActionItemList acts, Context c, TLCState s0, TLCState s1, StateVec nss,
   		ExprOrOpArgNode[] args, int alen, CostModel cm, CostModel cmNested) {
   	// a tuple:
@@ -1396,6 +1405,7 @@ public class Tool
   	return this.getNextStates(acts, s0, s1, nss, cm);
   }
   
+  @ExpectInlined
   private final TLCState processUnchangedImplVar(SemanticNode expr, ActionItemList acts, TLCState s0, TLCState s1, StateVec nss,
   		SymbolNode var, final CostModel cm) {
           TLCState resState = s1;
@@ -1442,6 +1452,7 @@ public class Tool
    * This method evaluates the expression expr in the given context,
    * current state, and partial next state.
    */
+  @ExpectInlined
   public final Value eval(SemanticNode expr, Context c, TLCState s0,
                           TLCState s1, final int control, final CostModel cm) {
 	    if (this.callStack != null) {
@@ -1464,6 +1475,7 @@ public class Tool
 	    }
   }
   
+  @ExpectInlined
   private final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
           final TLCState s1, final int control, CostModel cm) {
         switch (expr.getKind()) {
@@ -1517,6 +1529,7 @@ public class Tool
         }
   }
 
+  @ExpectInlined
   private final Value evalImplLetInKind(LetInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
 	OpDefNode[] letDefs = expr1.getLets();
 	int letLen = letDefs.length;
@@ -1531,6 +1544,7 @@ public class Tool
 	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
 
+  @ExpectInlined
   private final Value evalImplSubstInKind(SubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
   	Subst[] subs = expr1.getSubsts();
   	int slen = subs.length;
@@ -1542,6 +1556,7 @@ public class Tool
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
     
+  @ExpectInlined
   private final Value evalImplApSubstInKind(APSubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
   	Subst[] subs = expr1.getSubsts();
   	int slen = subs.length;
@@ -1553,6 +1568,7 @@ public class Tool
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
   
+  @ExpectInlined
   private final Value evalImplOpArgKind(OpArgNode expr1, Context c, TLCState s0, TLCState s1, final CostModel cm) {
   	SymbolNode opNode = expr1.getOp();
   	Object val = this.lookup(opNode, c, false);
@@ -1564,6 +1580,7 @@ public class Tool
   
   /* evalAppl */
   
+  @ExpectInlined
   private final Value evalAppl(final OpApplNode expr, Context c, TLCState s0,
           TLCState s1, final int control, final CostModel cm) {
 	  if (this.callStack != null) {
@@ -1573,6 +1590,7 @@ public class Tool
 	  }
   }
 
+  @ExpectInlined
   private final Value evalApplWithCallStack(final OpApplNode expr, Context c, TLCState s0,
           TLCState s1, final int control, final CostModel cm) {
 	    this.callStack.push(expr);

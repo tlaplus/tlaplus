@@ -93,11 +93,17 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		this.expectedExitStatus = exitStatus;
 	}
 
+	protected void beforeSetUp() {
+		// No-op
+	}
+
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	@Before
 	public void setUp() {
+		beforeSetUp();
+		
 		// some tests might want to access the liveness graph after model
 		// checking completed. Thus, prevent the liveness graph from being
 		// closed too earlier.
@@ -136,8 +142,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			args.add("-fp");
 			args.add("0");
 			
-			args.add("-coverage");
-			args.add("1");
+			if (doCoverage()) {
+				args.add("-coverage");
+				args.add("1");
+			}
 			
 			args.add("-workers");
 			args.add(Integer.toString(getNumberOfThreads()));
@@ -172,7 +180,11 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	public void assertExitStatus() {
 		assertEquals(expectedExitStatus, actualExitStatus);
 	}
-
+	
+	protected boolean doCoverage() {
+		return true;
+	}
+	
 	/**
 	 * @return True if TLC is to be called with "-deadlock".
 	 */
