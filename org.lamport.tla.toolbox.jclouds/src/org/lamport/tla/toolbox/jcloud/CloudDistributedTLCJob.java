@@ -248,7 +248,13 @@ public class CloudDistributedTLCJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 
-			final String tlcMasterCommand = " sudo shutdown -c && rm -rf /mnt/tlc/* && " // Cancel and remove any pending shutdown and leftovers from previous runs.
+			final String tlcMasterCommand = " sudo shutdown -c && " // Cancel a pending shutdown.
+					// In case the provision step didn't run (e.g. because we run a custom VM image), /mnt/tlc does not
+					// exist because it is on ephemeral storage. For the subsequent commands to work, create it and make
+					// it writeable.
+					+ "sudo mkdir -p /mnt/tlc && sudo chmod 777 /mnt/tlc/ && "
+					// Remove any leftovers from previous runs.
+					+ "rm -rf /mnt/tlc/* && "
 					+ "cd /mnt/tlc/ && "
 					// Decompress tla2tools.pack.gz
 					+ "unpack200 /tmp/tla2tools.pack.gz /tmp/tla2tools.jar"
