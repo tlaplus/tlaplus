@@ -75,7 +75,10 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 	@Override
 	public String getHardwareId() {
 		// STANDARD_D14: 16 cores, 112GB
+		// Find more with: 'az vm list-sizes -l eastus'
 		return System.getProperty("azure.instanceType", "eastus/Standard_D14");
+//		return System.getProperty("azure.instanceType", "eastus/Standard_L8s_v2");
+//		return System.getProperty("azure.instanceType", "eastus/Standard_L80s_v2");
 	}
 
 	/* (non-Javadoc)
