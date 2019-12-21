@@ -17,8 +17,11 @@ public class MCParserResults {
 
 	private final boolean behaviorIsInitNext;
 	
+	private final String originalNextOrSpecificationName;
+	
 	MCParserResults(final String rootModuleName, final MCError mcError, final List<MCOutputMessage> messages,
-			final List<String> extendeds, final List<Location> initNextLocations, final boolean wasInitNext) {
+			final List<String> extendeds, final List<Location> initNextLocations, final boolean wasInitNext,
+			final String nextOrSpecName) {
 		moduleName = rootModuleName;
 		
 		error = mcError;
@@ -29,10 +32,16 @@ public class MCParserResults {
 		initNextLocationsToDelete = initNextLocations;
 		
 		behaviorIsInitNext = wasInitNext;
+		
+		originalNextOrSpecificationName = nextOrSpecName;
 	}
 	
 	public String getModuleName() {
 		return moduleName;
+	}
+	
+	public String getOriginalNextOrSpecificationName() {
+		return originalNextOrSpecificationName;
 	}
 
 	public MCError getError() {

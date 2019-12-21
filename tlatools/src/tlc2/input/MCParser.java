@@ -89,11 +89,12 @@ public class MCParser {
 			final ModuleNode root = specProcessor.getRootModule();
 			final ArrayList<Location >initNextLocationsToDelete = new ArrayList<>();
 			final boolean isInitNext = !configParser.configDefinesSpecification();
+			final String nextOrSpecName;
 			if (isInitNext) {
 				final String initDefinitionName = configParser.getInit();
-				final String nextDefinitionName = configParser.getNext();
+				nextOrSpecName = configParser.getNext();
 				final Collection<SymbolNode> initNodes = root.getSymbols(new NodeNameMatcher(initDefinitionName));
-				final Collection<SymbolNode> nextNodes = root.getSymbols(new NodeNameMatcher(nextDefinitionName));
+				final Collection<SymbolNode> nextNodes = root.getSymbols(new NodeNameMatcher(nextOrSpecName));
 				
 				if (initNodes.size() == 1) {
 					final OpDefNode initNode = (OpDefNode)initNodes.iterator().next();
@@ -112,14 +113,17 @@ public class MCParser {
 					}
 					// else it is defined in a module MC is extending.. nothing to clean up
 				}
+			} else {
+				nextOrSpecName = configParser.getSpec();
 			}
 			initNextLocationsToDelete.sort(new LocationComparator());
 			
 			final ArrayList<String> extendees = new ArrayList<>();
 			root.getExtendedModuleSet(false).stream().forEach(moduleNode -> extendees.add(moduleNode.getName().toString()));
 			
-			parserResults = new MCParserResults(root.getName().toString(), outputParser.getError(), encounteredMessages,
-					extendees, initNextLocationsToDelete, isInitNext);
+			parserResults = new MCParserResults(root.getName().toString(), outputParser.getError(),
+												encounteredMessages, extendees, initNextLocationsToDelete,
+												isInitNext, nextOrSpecName);
 			
 			return parserResults;
 		} catch (final IOException e) {

@@ -32,6 +32,10 @@ public class TraceExplorer {
     
     private static final String SPEC_TE_MODULE_NAME = "SpecTE";
     
+    private static final String SPEC_TE_INIT_ID = "SpecTEInit";
+    private static final String SPEC_TE_NEXT_ID = "SpecTENext";
+    private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "SpecTEActionConstraint";
+    
     private enum RunMode {
     	GENERATE_SPEC_TE, PRETTY_PRINT;
     }
@@ -192,7 +196,9 @@ public class TraceExplorer {
     private void writeSpecTEFile(final MCParserResults results) throws IOException {
     	final StringBuilder tlaBuffer = new StringBuilder();
     	final StringBuilder cfgBuffer = new StringBuilder();
-    	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, results.getError().getStates(), null);
+    	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, results.getError().getStates(), null,
+    												  SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
+    												  results.getOriginalNextOrSpecificationName());
     	
     	final boolean specExtendsTLC = results.getExtendedModules().contains("TLC");
 		final TLACopier tlaCopier = new TLACopier(specGenerationOriginalSpecName, SPEC_TE_MODULE_NAME,

@@ -17,97 +17,8 @@ import util.TLAConstants;
  */
 public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	/**
-	 * This will generate two identifiers equal to the initial and next state
-	 * predicate for the trace. If expressionData is not null, it should contain information
-	 * about trace explorer expressions. This information is used to appropriately put
-	 * the variables representing trace explorer expressions in the trace. In the following example, trace
-	 * explorer expressions are used, but if expressionData is null, those variables will not appear in the
-	 * init and next definitions, but everything else will be the same.
-	 * 
-	 * Note: In the following example, the expressions expr1,...,expr6, texpr1, texpr2 can take up multiple
-	 * lines.
-	 * 
-	 * Consider the following trace:
-	 * 
-	 * <Initial predicate> <State num 1>
-	 * var1=expr1
-	 * var2=expr2
-	 * 
-	 * <Action...> <State num 2>
-	 * var1=expr3
-	 * var2=expr4
-	 * 
-	 * <Action...> <State num 3>
-	 * var1=expr5
-	 * var2=expr6
-	 * 
-	 * The user has defined two expressions in the trace explorer:
-	 * 
-	 * texpr1 (level 2 represented by var3)
-	 * texpr2 (level 1 represented by var4)
-	 * 
-	 * This method defines the following identifiers:
-	 * 
-	 * init_4123123123 ==
-	 * var1=(
-	 * expr1
-	 * )/\
-	 * var2=(
-	 * expr2
-	 * )/\
-	 * var3=(
-	 * "--"
-	 * )/\
-	 * var4=(
-	 * texpr2
-	 * )
-	 * 
-	 * next_12312312312 ==
-	 * (var1=(
-	 * expr1
-	 * )/\
-	 * var2=(
-	 * expr2
-	 * )/\
-	 * var1'=(
-	 * expr3
-	 * )/\
-	 * var2'=(
-	 * expr4
-	 * )/\
-	 * var3'=(
-	 * texpr1
-	 * )/\
-	 * var4'=(
-	 * texpr2
-	 * )')
-	 * \/
-	 * (var1=(
-	 * expr3
-	 * )/\
-	 * var2=(
-	 * expr4
-	 * )/\
-	 * var1'=(
-	 * expr5
-	 * )/\
-	 * var2'=(
-	 * expr6
-	 * )/\
-	 * var3'=(
-	 * texpr1
-	 * )/\
-	 * var4'=(
-	 * texpr2
-	 * )')
-	 * 
-	 * If the last state is back to state i, then this method treats
-	 * the trace as if it has the state labeled "Back to state i" removed and
-	 * replaced with a copy of state i.
-	 * 
-	 * If the last state is stuttering, then this method treats the trace as if it
-	 * has the state labeled "Stuttering" removed and replaced with a copy
-	 * of the state before the state labeled "Stuttering".
+	 * This will generate three identifiers equal to the initial and next state
+	 * predicate for the trace, and the action constraint.
 	 * 
 	 * @param tlaBuffer the buffer into which the TLA code will be placed
 	 * @param cfgBuffer if non-null, the buffer into which the CFG code will be placed
@@ -116,6 +27,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	 * @return String[], first element is the identifier for the initial state predicate,
 	 * second element is the identifier for the next-state action, the third element is the identifier for
 	 * the action contraint
+	 * @see #addInitNextToBuffers(StringBuilder, StringBuilder, List, TraceExpressionInformationHolder[], String, String, String)
 	 */
 	public static String[] addInitNextToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
 			final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData) {
@@ -129,12 +41,32 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	}
 	
 	/**
-	 * This will set initId equal to the initial state predicate and nextId equal to the next state
-	 * action for the trace. If expressionData is not null, it should contain information
-	 * about trace explorer expressions. This information is used to appropriately put
-	 * the variables representing trace explorer expressions in the trace. In the following example, trace
-	 * explorer expressions are used, but if expressionData is null, those variables will not appear in the
-	 * init and next definitions, but everything else will be the same.
+	 * This calls:
+	 * 	{@code addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData, initId, nextId, actionConstraintId, TLAConstants.Schemes.NEXT_SCHEME);}
+	 * 
+	 * @param tlaBuffer the buffer into which the TLA code will be placed
+	 * @param cfgBuffer if non-null, the buffer into which the CFG code will be placed
+	 * @param trace
+	 * @param expressionData data on trace explorer expressions, can be null
+	 * @param initId the identifier to be used for the initial state predicate, cannot be null
+	 * @param nextId the identifier to be used for the next-state action, cannot be null
+	 * @param actionConstraintId the indentified used for the action constraint
+	 * @see #addInitNextToBuffers(StringBuilder, StringBuilder, List, TraceExpressionInformationHolder[], String, String, String, String)
+	 */
+	public static void addInitNextToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
+			final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData, final String initId,
+			String nextId, final String actionConstraintId) {
+		addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData, initId, nextId, actionConstraintId,
+				TLAConstants.Schemes.NEXT_SCHEME);
+	}
+
+	/**
+	 * This will set initId equal to the initial state predicate, nextId equal to the next state
+	 * action for the trace, and actionConstraintId equal to the action constraint for the trace.
+	 * If expressionData is not null, it should contain information about trace explorer expressions. This
+	 * information is used to appropriately put the variables representing trace explorer expressions
+	 * in the trace. In the following example, trace explorer expressions are used, but if expressionData
+	 * is null, those variables will not appear in the init and next definitions, but everything else will be the same.
 	 * 
 	 * Note: In the following example, the expressions expr1,...,expr6, texpr1, texpr2 can take up multiple
 	 * lines.
@@ -228,9 +160,11 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	 * @param initId the identifier to be used for the initial state predicate, cannot be null
 	 * @param nextId the identifier to be used for the next-state action, cannot be null
 	 * @param actionConstraintId the indentified used for the action constraint
+	 * @param nextSubActionBasename the base string to be used as the prefix to unique names for next sub-actions
 	 */
-	public static void addInitNextToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer, final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData,
-			final String initId, String nextId, final String actionConstraintId) {
+	public static void addInitNextToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
+			final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData, final String initId,
+			String nextId, final String actionConstraintId, final String nextSubActionBasename) {
 		if (trace.size() > 0) {
 	        final Iterator<MCState> it = trace.iterator();
 	        MCState currentState = it.next();
@@ -344,7 +278,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 
 	        int subActionIndex = 0;
 			while (nextState != null) {
-		        final String nxtDisjunct = SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.NEXT_SCHEME);
+		        final String nxtDisjunct = SpecWriterUtilities.getValidIdentifier(nextSubActionBasename);
 		        nextDisjunctBuffer.append(TLAConstants.TLA_OR).append(TLAConstants.SPACE).append(nxtDisjunct).append(TLAConstants.CR);
 		        actionConstraintBuffer.append(nxtDisjunct).append(TLAConstants.CR);
 		        	        	
