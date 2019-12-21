@@ -17,11 +17,11 @@ import org.lamport.tla.toolbox.tool.prover.ui.preference.MainProverPreferencePag
  * 	the Cygwin path, should the platform be appropriate.
  */
 public class TLAPMExecutableLocator {
-	public static final TLAPMExecutableLocator INSTANCE = new TLAPMExecutableLocator();
-	
 	private static final IPath DEFAULT_NIX_INSTALL_DIRECTORY = new Path("/usr/local/bin");
 	private static final String NIX_EXECUTABLE_NAME = "tlapm";
 	private static final String WINDOWS_EXECUTABLE_NAME = "tlapm.exe";
+	
+	public static final TLAPMExecutableLocator INSTANCE = new TLAPMExecutableLocator();
 	
 	public static boolean pathForExecutableIsUsable(final IPath path) {
 		if (path == null) {
@@ -110,7 +110,9 @@ public class TLAPMExecutableLocator {
 				}
 				
 				if (!defaultDirectoryIncluded && (tlapm == null)) {
-					final IPath executable = new Path(DEFAULT_NIX_INSTALL_DIRECTORY + "/" + NIX_EXECUTABLE_NAME);
+					final String fullPath = DEFAULT_NIX_INSTALL_DIRECTORY.toFile().getAbsolutePath()
+							+ File.separatorChar + NIX_EXECUTABLE_NAME;
+					final IPath executable = new Path(fullPath);
 					if (pathForExecutableIsUsable(executable)) {
 						tlapm = executable;
 					}
