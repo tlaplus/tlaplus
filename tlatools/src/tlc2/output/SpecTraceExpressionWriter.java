@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import tlc2.model.Assignment;
 import tlc2.model.Formula;
@@ -422,6 +423,37 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	        tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
 	    }
 	}
+
+	public static void addTraceFunctionToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
+			final List<MCState> input) {
+		// Filter stuttering or back2state instances from trace.
+		final List<MCState> trace = input.stream()
+				.filter(state -> !state.isBackToState() && !state.isStuttering())
+				.collect(Collectors.toList());
+		
+		if (trace.isEmpty()) {
+			return;
+	    }
+		
+		// Trace
+		final StringBuilder traceFunctionDef = new StringBuilder();
+		traceFunctionDef.append(TLAConstants.BEGIN_TUPLE).append(TLAConstants.CR);
+		for (int j = 0; j < trace.size(); j++) {
+			final MCState state = trace.get(j);
+
+			traceFunctionDef.append(TLAConstants.L_PAREN).append(state.asSimpleRecord()).append(TLAConstants.R_PAREN);
+
+			if (j < trace.size() - 1) {
+				traceFunctionDef.append(TLAConstants.COMMA).append(TLAConstants.CR);
+			}
+		}
+		traceFunctionDef.append(TLAConstants.CR).append(TLAConstants.END_TUPLE);
+		traceFunctionDef.append(CLOSING_SEP).append(TLAConstants.CR);
+		
+		addArrowAssignmentToBuffers(tlaBuffer, cfgBuffer,
+				new Assignment(TLAConstants.TraceExplore.TRACE, new String[0], traceFunctionDef.toString()),
+				TLAConstants.Schemes.DEFOV_SCHEME);
+	}
 	
 	
 	public SpecTraceExpressionWriter() {
@@ -672,34 +704,8 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	}
 
 	public void addTraceFunction(final List<MCState> input) {
-		// Filter stuttering or back2state instances from trace.
-		final List<MCState> trace = input.stream()
-				.filter(state -> !state.isBackToState() && !state.isStuttering())
-				.collect(java.util.stream.Collectors.toList());
-		
-		if (trace.isEmpty()) {
-			return;
-	    }
-		
-		// Trace
-		final StringBuffer traceFunctionDef = new StringBuffer();
-		traceFunctionDef.append(TLAConstants.BEGIN_TUPLE).append(TLAConstants.CR);
-		for (int j = 0; j < trace.size(); j++) {
-			final MCState state = trace.get(j);
-
-			traceFunctionDef.append(TLAConstants.L_PAREN).append(state.asSimpleRecord()).append(TLAConstants.R_PAREN);
-
-			if (j < trace.size() - 1) {
-				traceFunctionDef.append(TLAConstants.COMMA).append(TLAConstants.CR);
-			}
-		}
-		traceFunctionDef.append(TLAConstants.CR).append(TLAConstants.END_TUPLE);
-		traceFunctionDef.append(CLOSING_SEP).append(TLAConstants.CR);
-		
-		addArrowAssignment(new Assignment(TLAConstants.TraceExplore.TRACE, new String[0], traceFunctionDef.toString()),
-				TLAConstants.Schemes.DEFOV_SCHEME);
+		addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, input);
 	}
-
 	
     /**
      * Returns a string representing the formula describing the state.

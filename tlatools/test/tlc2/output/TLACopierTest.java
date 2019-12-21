@@ -38,7 +38,7 @@ public class TLACopierTest {
 			+ "\\* Modification History\n"
 			+ "\\* Created Thu Nov 14 12:32:26 PST 2019 by loki\n";
 	private static final String NEW_SPEC_NONEXTENDED = "---- MODULE Spectacle ----\n"
-			+ "EXTENDS Queens, TLC, TLC\n"
+			+ "EXTENDS Queens, TLC, TLC, Toolbox\n"
 			+ "\n"
 			+ "\\* CONSTANT definitions @modelParameterConstants:0N\n"
 			+ "const_157376354642853000 == \n"
@@ -52,7 +52,7 @@ public class TLACopierTest {
 	
 	@Test
 	public void testNonExtending() throws IOException {
-		final TLACopier copier = new TLACopier("MC", "Spectacle", null, INIT_NEXT_DEFINITIONS, false);
+		final TLACopier copier = new TLACopier("MC", "Spectacle", null, INIT_NEXT_DEFINITIONS, false, false);
 		final StringReader sr = new StringReader(ORIGINAL_SPEC);
 		final StringWriter sw = new StringWriter();
 		
@@ -62,7 +62,7 @@ public class TLACopierTest {
 	
 	@Test
 	public void testExtending() throws IOException {
-		final TLACopier copier = new TLACopier("MC", "Spectacle", null, INIT_NEXT_DEFINITIONS, true);
+		final TLACopier copier = new TLACopier("MC", "Spectacle", null, INIT_NEXT_DEFINITIONS, true, true);
 		final StringReader sr = new StringReader(ORIGINAL_SPEC);
 		final StringWriter sw = new StringWriter();
 		

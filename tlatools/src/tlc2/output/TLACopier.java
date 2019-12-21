@@ -22,11 +22,13 @@ public class TLACopier extends AbstractCopier {
 	private final String initNextDefinitions;
 	
 	private final boolean needExtendTLC;
+	private final boolean needExtendToolbox;
 	
 	private boolean inBody;
 	
 	public TLACopier(final String originalName, final String newName, final File sourceLocation,
-					 final String initNextDefinitionTLA, final boolean originalExtendsTLC) {
+					 final String initNextDefinitionTLA, final boolean originalExtendsTLC,
+					 final boolean originalExtendsToolbox) {
 		super(originalName, newName, sourceLocation);
 
 		final String regex = MODULE_REGEX_PREFIX + originalModuleName;
@@ -37,6 +39,7 @@ public class TLACopier extends AbstractCopier {
 		initNextDefinitions = initNextDefinitionTLA;
 		
 		needExtendTLC = !originalExtendsTLC;
+		needExtendToolbox = !originalExtendsToolbox;
 	}
 	
 	protected String getFileExtension() {
@@ -58,8 +61,15 @@ public class TLACopier extends AbstractCopier {
 
 			writer.write(lineToWrite + '\n');
 		} else {
-			if (needExtendTLC && originalLine.trim().startsWith(TLAConstants.KeyWords.EXTENDS)) {
-				writer.write(originalLine + ", TLC\n");
+			if (originalLine.trim().startsWith(TLAConstants.KeyWords.EXTENDS)) {
+				String line = originalLine;
+				if (needExtendTLC) {
+					line += ", TLC";
+				}
+				if (needExtendToolbox) {
+					line += ", Toolbox";
+				}
+				writer.write(line + '\n');
 			} else {
 				final Matcher m = CLOSING_BODY_PATTERN.matcher(originalLine);
 

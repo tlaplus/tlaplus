@@ -19,6 +19,33 @@ import util.TLAConstants;
  */
 public abstract class AbstractSpecWriter {
     /**
+     * Assigns a right side to a label using an id generated from given schema
+	 * @param tlaBuffer the buffer into which the TLA code will be placed
+	 * @param cfgBuffer if non-null, the buffer into which the CFG code will be placed
+     * @param constant, constant containing the values
+     * @param schema schema to generate the Id
+     * @return generated id
+     */
+	public static String addArrowAssignmentToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
+			final Assignment constant, final String schema) {
+		// constant instantiation
+		// to .cfg : foo <- <id>
+		// to _MC.tla : <id>(a, b, c)==
+		// <expression>
+		final String id = SpecWriterUtilities.getValidIdentifier(schema);
+		tlaBuffer.append(constant.getParametrizedLabel(id)).append(TLAConstants.DEFINES).append(TLAConstants.CR);
+		tlaBuffer.append(constant.getRight()).append(TLAConstants.CR);
+		
+		if (cfgBuffer != null) {
+			cfgBuffer.append(TLAConstants.KeyWords.CONSTANT).append(TLAConstants.CR);
+			cfgBuffer.append(constant.getLabel()).append(TLAConstants.ARROW).append(id).append(TLAConstants.CR);
+		}
+		
+		return id;
+	}
+
+	
+	/**
 	 * Subclasses may implement this interface in order to invoke {@link #writeFiles(ContentWriter)} for cases
 	 * in which the subclass is has file handles which are not suitable to being converted and used in
 	 * {@link #writeStreamToFile(InputStream, boolean)}
@@ -381,20 +408,7 @@ public abstract class AbstractSpecWriter {
      * @return generated id
      */
 	public String addArrowAssignment(final Assignment constant, final String schema) {
-		// constant instantiation
-		// to .cfg : foo <- <id>
-		// to _MC.tla : <id>(a, b, c)==
-		// <expression>
-		final String id = SpecWriterUtilities.getValidIdentifier(schema);
-		tlaBuffer.append(constant.getParametrizedLabel(id)).append(TLAConstants.DEFINES).append(TLAConstants.CR);
-		tlaBuffer.append(constant.getRight()).append(TLAConstants.CR);
-		
-		if (cfgBuffer != null) {
-			cfgBuffer.append(TLAConstants.KeyWords.CONSTANT).append(TLAConstants.CR);
-			cfgBuffer.append(constant.getLabel()).append(TLAConstants.ARROW).append(id).append(TLAConstants.CR);
-		}
-		
-		return id;
+		return addArrowAssignmentToBuffers(tlaBuffer, cfgBuffer, constant, schema);
 	}
 
     /**

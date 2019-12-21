@@ -85,6 +85,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 import tlc2.model.Formula;
 import tlc2.output.MP;
+import util.TLAConstants;
 
 /**
  * Error representation view containing the error description and the trace
@@ -1124,7 +1125,8 @@ public class TLCErrorView extends ViewPart
 	private class ExportErrorTrace2Clipboard extends ShiftClickAction implements ISelectionChangedListener {
 		private static final String DEFAULT_TOOL_TIP_TEXT
 			= "Click to export error-trace to clipboard as\nsequence of records. "
-				+ "Shift-click to \nomit the action's position (_TEPosition), \nname, and location.";
+					+ "Shift-click to \nomit the action's position ("
+					+ TLAConstants.TraceExplore.POSITION + "), \nname, and location.";
 		
 		
 		private final Display display;

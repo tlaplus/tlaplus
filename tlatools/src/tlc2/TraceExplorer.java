@@ -2,10 +2,12 @@ package tlc2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import tlc2.input.MCOutputParser;
 import tlc2.input.MCParser;
 import tlc2.input.MCParserResults;
+import tlc2.model.MCState;
 import tlc2.output.CFGCopier;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -201,13 +203,16 @@ public class TraceExplorer {
     private void writeSpecTEFile(final MCParserResults results) throws IOException {
     	final StringBuilder tlaBuffer = new StringBuilder();
     	final StringBuilder cfgBuffer = new StringBuilder();
-    	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, results.getError().getStates(), null,
+    	final List<MCState> trace = results.getError().getStates();
+    	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, null,
     												  SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
     												  results.getOriginalNextOrSpecificationName());
+    	SpecTraceExpressionWriter.addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, trace);
     	
     	final boolean specExtendsTLC = results.getExtendedModules().contains("TLC");
+    	final boolean specExtendsToolbox = results.getExtendedModules().contains("Toolbox");
 		final TLACopier tlaCopier = new TLACopier(specGenerationOriginalSpecName, SPEC_TE_MODULE_NAME,
-				specGenerationSourceDirectory, tlaBuffer.toString(), specExtendsTLC);
+				specGenerationSourceDirectory, tlaBuffer.toString(), specExtendsTLC, specExtendsToolbox);
 		tlaCopier.copy();
 		
 		final CFGCopier cfgCopier = new CFGCopier(specGenerationOriginalSpecName, SPEC_TE_MODULE_NAME,
