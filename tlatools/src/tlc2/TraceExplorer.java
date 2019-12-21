@@ -167,7 +167,12 @@ public class TraceExplorer {
     		final MCParser parser = new MCParser(specGenerationSourceDirectory, specGenerationOriginalSpecName);
     		final MCParserResults results = parser.parse();
     		
-    		if (results.getError() == null) {
+    		if (results.getOutputMessages().size() == 0) {
+				MP.printMessage(EC.GENERAL, "The output file had no tool messages; was TLC not run with"
+												+ " the '-tool' option when producing it?");
+
+    			return EC.ExitStatus.ERROR;
+    		} else if (results.getError() == null) {
 				MP.printMessage(EC.GENERAL,
 						"The output file contained no error-state messages, no SpecTE will be produced.");
 

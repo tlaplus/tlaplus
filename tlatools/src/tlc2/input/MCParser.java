@@ -80,48 +80,58 @@ public class MCParser {
 		
 		try {
 			final List<MCOutputMessage> encounteredMessages = outputParser.parse(true);
-			
-			configParser.parse();
-			final SymbolNodeValueLookupProvider defaultLookup = new SymbolNodeValueLookupProvider() {};
-			specProcessor = new SpecProcessor(specBaseName, resolver, TOOL_ID, defns, configParser,
-											  defaultLookup, null, tlaClass);
 
-			final ModuleNode root = specProcessor.getRootModule();
+			configParser.parse();
+
+			final String rootModuleName;
+			final String nextOrSpecName;
+			final ArrayList<String> extendees = new ArrayList<>();
 			final ArrayList<Location >initNextLocationsToDelete = new ArrayList<>();
 			final boolean isInitNext = !configParser.configDefinesSpecification();
-			final String nextOrSpecName;
-			if (isInitNext) {
-				final String initDefinitionName = configParser.getInit();
-				nextOrSpecName = configParser.getNext();
-				final Collection<SymbolNode> initNodes = root.getSymbols(new NodeNameMatcher(initDefinitionName));
-				final Collection<SymbolNode> nextNodes = root.getSymbols(new NodeNameMatcher(nextOrSpecName));
-				
-				if (initNodes.size() == 1) {
-					final OpDefNode initNode = (OpDefNode)initNodes.iterator().next();
+			// No reason to start-up SANY if we're not going to generate something because the output file is unusable
+			if (encounteredMessages.size() > 0) {
+				final SymbolNodeValueLookupProvider defaultLookup = new SymbolNodeValueLookupProvider() {};
+				specProcessor = new SpecProcessor(specBaseName, resolver, TOOL_ID, defns, configParser,
+												  defaultLookup, null, tlaClass);
+
+				final ModuleNode root = specProcessor.getRootModule();
+				if (isInitNext) {
+					final String initDefinitionName = configParser.getInit();
+					nextOrSpecName = configParser.getNext();
+					final Collection<SymbolNode> initNodes = root.getSymbols(new NodeNameMatcher(initDefinitionName));
+					final Collection<SymbolNode> nextNodes = root.getSymbols(new NodeNameMatcher(nextOrSpecName));
 					
-					if (initNode.getOriginallyDefinedInModuleNode().equals(root)) {
-						initNextLocationsToDelete.add(initNode.getLocation());
+					if (initNodes.size() == 1) {
+						final OpDefNode initNode = (OpDefNode)initNodes.iterator().next();
+						
+						if (initNode.getOriginallyDefinedInModuleNode().equals(root)) {
+							initNextLocationsToDelete.add(initNode.getLocation());
+						}
+						// else it is defined in a module MC is extending.. nothing to clean up
 					}
-					// else it is defined in a module MC is extending.. nothing to clean up
-				}
-				
-				if (nextNodes.size() == 1) {
-					final OpDefNode nextNode = (OpDefNode)nextNodes.iterator().next();
 					
-					if (nextNode.getOriginallyDefinedInModuleNode().equals(root)) {
-						initNextLocationsToDelete.add(nextNode.getLocation());
+					if (nextNodes.size() == 1) {
+						final OpDefNode nextNode = (OpDefNode)nextNodes.iterator().next();
+						
+						if (nextNode.getOriginallyDefinedInModuleNode().equals(root)) {
+							initNextLocationsToDelete.add(nextNode.getLocation());
+						}
+						// else it is defined in a module MC is extending.. nothing to clean up
 					}
-					// else it is defined in a module MC is extending.. nothing to clean up
+				} else {
+					nextOrSpecName = configParser.getSpec();
 				}
+				initNextLocationsToDelete.sort(new LocationComparator());
+				
+				root.getExtendedModuleSet(false).stream().forEach(moduleNode -> extendees.add(moduleNode.getName().toString()));
+				rootModuleName = root.getName().toString();
 			} else {
-				nextOrSpecName = configParser.getSpec();
+				// we'll have a zero size if the output generated came from a TLC run that did not have the '-tool' flag
+				rootModuleName = null;
+				nextOrSpecName = null;
 			}
-			initNextLocationsToDelete.sort(new LocationComparator());
 			
-			final ArrayList<String> extendees = new ArrayList<>();
-			root.getExtendedModuleSet(false).stream().forEach(moduleNode -> extendees.add(moduleNode.getName().toString()));
-			
-			parserResults = new MCParserResults(root.getName().toString(), outputParser.getError(),
+			parserResults = new MCParserResults(rootModuleName, outputParser.getError(),
 												encounteredMessages, extendees, initNextLocationsToDelete,
 												isInitNext, nextOrSpecName);
 			
