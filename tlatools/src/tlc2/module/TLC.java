@@ -40,6 +40,12 @@ import util.UniqueString;
 
 public class TLC implements ValueConstants
 {
+	private static final UniqueString LEVEL = UniqueString.uniqueStringOf("level");
+	private static final UniqueString DURATION = UniqueString.uniqueStringOf("duration");
+	private static final UniqueString QUEUE = UniqueString.uniqueStringOf("queue");
+	private static final UniqueString DISTINCT = UniqueString.uniqueStringOf("distinct");
+	private static final UniqueString DIAMETER = UniqueString.uniqueStringOf("diameter");
+
 	public static final long serialVersionUID = 20160822L;
 
 	private static final long startTime = System.currentTimeMillis();
@@ -168,7 +174,7 @@ public class TLC implements ValueConstants
 
 	private static final Value TLCGetStringValue(final Value vidx) {
 		final StringValue sv = (StringValue) vidx;
-		if (UniqueString.uniqueStringOf("diameter") == sv.val) {
+		if (DIAMETER == sv.val) {
 			try {
 				return IntValue.gen(TLCGlobals.mainChecker.getProgress());
 			} catch (ArithmeticException e) {
@@ -180,7 +186,7 @@ public class TLC implements ValueConstants
 				// NPE.
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (UniqueString.uniqueStringOf("distinct") == sv.val) {
+		} else if (DISTINCT == sv.val) {
 			try {
 				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
 			} catch (ArithmeticException e) {
@@ -189,7 +195,7 @@ public class TLC implements ValueConstants
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (UniqueString.uniqueStringOf("queue") == sv.val) {
+		} else if (QUEUE == sv.val) {
 			try {
 				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getStateQueueSize()));
 			} catch (ArithmeticException e) {
@@ -198,7 +204,7 @@ public class TLC implements ValueConstants
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (UniqueString.uniqueStringOf("duration") == sv.val) {
+		} else if (DURATION == sv.val) {
 			try {
 				final int duration = (int) ((System.currentTimeMillis() - startTime) / 1000L);
 				return IntValue.gen(Math.toIntExact(duration));
@@ -206,7 +212,7 @@ public class TLC implements ValueConstants
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(((System.currentTimeMillis() - startTime) / 1000L)));
 			}
-		} else if (UniqueString.uniqueStringOf("level") == sv.val) {
+		} else if (LEVEL == sv.val) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter" is
 			// because it calls tlc2.tool.TLCTrace.getLevelForReporting(). "level" is the height
 			// stores as part of the state that is currently explored.
