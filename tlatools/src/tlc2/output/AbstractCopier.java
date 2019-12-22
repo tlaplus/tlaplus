@@ -18,6 +18,8 @@ abstract class AbstractCopier {
 
 	protected final File sourceDirectory;
 	
+	private File destinationFile;
+	
 	AbstractCopier(final String originalName, final String newName, final File sourceLocation) {
 		originalModuleName = originalName;
 		newModuleName = newName;
@@ -45,13 +47,21 @@ abstract class AbstractCopier {
 	 * invoked on that line.
 	 */
 	protected void allInputHasBeenConsumed(final BufferedWriter writer) throws IOException { }
+
+	/**
+	 * @return null until {@link #copy()} has been invoked, thereafter the location of the destination file.
+	 */
+	public File getDestinationFile() {
+		return destinationFile;
+	}
 	
 	public final void copy() throws IOException {
 		final String extension = getFileExtension();
 		final File originalFile = new File(sourceDirectory, (originalModuleName + extension));
-		final File newFile = new File(sourceDirectory, (newModuleName + extension));
 		
-		copy(new FileReader(originalFile), new FileWriter(newFile));
+		destinationFile = new File(sourceDirectory, (newModuleName + extension));
+		
+		copy(new FileReader(originalFile), new FileWriter(destinationFile));
 	}
 	
 	// This extra level of abstraction is done for unit tests

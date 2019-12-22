@@ -44,7 +44,12 @@ public class MCParser {
 	
 	private final String specBaseName;
 	
-	public MCParser(final File sourceDirectory, final String specName) {
+	/**
+	 * @param sourceDirectory
+	 * @param specName
+	 * @param specialCaseOutputFile if non-null, this will be used as the source for the output parser
+	 */
+	public MCParser(final File sourceDirectory, final String specName, final File specialCaseOutputFile) {
 		resolver = new SimpleFilenameToStream(sourceDirectory.getAbsolutePath());
 		specBaseName = specName;
 		
@@ -54,10 +59,15 @@ public class MCParser {
 		}
 		configParser = new ModelConfig(f.getAbsolutePath(), resolver);
 		
-		f = new File(sourceDirectory, (specBaseName + TLAConstants.Files.OUTPUT_EXTENSION));
-		if (!f.exists()) {
-			throw new IllegalArgumentException("No readable output file could be found at " + f.getAbsolutePath());
+		if (specialCaseOutputFile != null) {
+			f = specialCaseOutputFile;
+		} else {
+			f = new File(sourceDirectory, (specBaseName + TLAConstants.Files.OUTPUT_EXTENSION));
+			if (!f.exists()) {
+				throw new IllegalArgumentException("No readable output file could be found at " + f.getAbsolutePath());
+			}
 		}
+		
 		outputParser = new MCOutputParser(f);
 		
 		f = new File(sourceDirectory, (specBaseName + TLAConstants.Files.TLA_EXTENSION));
@@ -147,7 +157,7 @@ public class MCParser {
 
 	
 	public static void main(final String[] args) throws Exception {
-		final MCParser parser = new MCParser(new File(args[0]), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME);
+		final MCParser parser = new MCParser(new File(args[0]), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, null);
 		final MCParserResults results = parser.parse();
 		
 		System.out.println("Parse encountered " + results.getOutputMessages().size() + " messages.");

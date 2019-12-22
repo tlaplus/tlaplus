@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 
 import tlc2.output.MP;
+import util.TLAConstants;
 
 public class TagBasedTLCOutputIncrementalParserTest {
 
@@ -218,11 +219,11 @@ public class TagBasedTLCOutputIncrementalParserTest {
 			parser.addIncrement("@!@!@STARTMSG 2220:0 @!@!@\n");
 			parser.addIncrement("Starting SANY...\n");
 			parser.addIncrement("@!@!@ENDMSG 2220 @!@!@\n");
-			parser.addIncrement("Parsing file MC.tla\n");
-			parser.addIncrement("Parsing file Test.tla\n");
-			parser.addIncrement("Parsing file /toolbox/plugins/org.lamport.tla.toolbox_1.0.0/StandardModules/TLC.tla\n");
-			parser.addIncrement("Parsing file /tla/toolbox/plugins/org.lamport.tla.toolbox_1.0.0/StandardModules/Naturals.tla\n");
-			parser.addIncrement("Parsing file /tla/toolbox/plugins/org.lamport.tla.toolbox_1.0.0/StandardModules/Sequences.tla\n");
+			parser.addIncrement(TLAConstants.LoggingAtoms.PARSING_FILE + " MC.tla\n");
+			parser.addIncrement(TLAConstants.LoggingAtoms.PARSING_FILE + " Test.tla\n");
+			parser.addIncrement(TLAConstants.LoggingAtoms.PARSING_FILE + " /toolbox/plugins/org.lamport.tla.toolbox_1.0.0/StandardModules/TLC.tla\n");
+			parser.addIncrement(TLAConstants.LoggingAtoms.PARSING_FILE + " /tla/toolbox/plugins/org.lamport.tla.toolbox_1.0.0/StandardModules/Naturals.tla\n");
+			parser.addIncrement(TLAConstants.LoggingAtoms.PARSING_FILE + " /tla/toolbox/plugins/org.lamport.tla.toolbox_1.0.0/StandardModules/Sequences.tla\n");
 			parser.addIncrement("Semantic processing of module Naturals\n");
 			parser.addIncrement("Semantic processing of module Sequences\n");
 			parser.addIncrement("Semantic processing of module TLC\n");

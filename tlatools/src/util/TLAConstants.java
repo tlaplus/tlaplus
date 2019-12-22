@@ -4,6 +4,11 @@ package util;
  * A class of bits of keywords, operators, and bears.
  */
 public final class TLAConstants {
+	public final class BuiltInModules {
+		public static final String TLC = "TLC";
+		public static final String TRACE_EXPRESSIONS = "Toolbox";
+	}
+	
 	public final class Files {
 	    public static final String CONFIG_EXTENSION = ".cfg";
 	    public static final String ERROR_EXTENSION = ".err";
@@ -30,6 +35,10 @@ public final class TLAConstants {
 	    public static final String SPECIFICATION = "SPECIFICATION";
 	    public static final String SYMMETRY = "SYMMETRY";
 	    public static final String UNION = "\\union";
+	}
+	
+	public final class LoggingAtoms {
+		public static final String PARSING_FILE = "Parsing file";
 	}
     
 	public final class Schemes {

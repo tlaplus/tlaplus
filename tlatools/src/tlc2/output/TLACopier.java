@@ -64,10 +64,10 @@ public class TLACopier extends AbstractCopier {
 			if (originalLine.trim().startsWith(TLAConstants.KeyWords.EXTENDS)) {
 				String line = originalLine;
 				if (needExtendTLC) {
-					line += ", TLC";
+					line += ", " + TLAConstants.BuiltInModules.TLC;
 				}
 				if (needExtendToolbox) {
-					line += ", Toolbox";
+					line += ", " + TLAConstants.BuiltInModules.TRACE_EXPRESSIONS;
 				}
 				writer.write(line + '\n');
 			} else {
