@@ -67,7 +67,8 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 	@Override
 	public String getImageId() {
 		// With azure-cli v2 (based on Python) extract name from 'az vm image list --all --publisher Canonical'.
-		return System.getProperty("azure.image", "eastus/Canonical/UbuntuServer/18.04-LTS");	}
+		return System.getProperty("azure.image", "eastus/Canonical/UbuntuServer/18.04-LTS");
+	}
 
 	/* (non-Javadoc)
 	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getHardwareId()
@@ -76,9 +77,9 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 	public String getHardwareId() {
 		// STANDARD_D14: 16 cores, 112GB
 		// Find more with: 'az vm list-sizes -l eastus'
-		return System.getProperty("azure.instanceType", "eastus/Standard_D14");
-//		return System.getProperty("azure.instanceType", "eastus/Standard_L8s_v2");
-//		return System.getProperty("azure.instanceType", "eastus/Standard_L80s_v2");
+		return System.getProperty("azure.instanceType", getRegion() + "/Standard_D14");
+//		return System.getProperty("azure.instanceType", getRegion() + "/Standard_L8s_v2");
+//		return System.getProperty("azure.instanceType", getRegion() + "/Standard_L80s_v2");
 	}
 
 	/* (non-Javadoc)

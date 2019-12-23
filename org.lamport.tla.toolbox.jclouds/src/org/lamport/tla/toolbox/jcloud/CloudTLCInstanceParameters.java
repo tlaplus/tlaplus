@@ -173,4 +173,11 @@ public abstract class CloudTLCInstanceParameters {
 	public void mungeTemplateBuilder(final TemplateBuilder templateBuilder) {
 		// no-op, subclass may override
 	}
+
+	// A vanilla image will be provisioned by cloud tlc. In other words, CloudTLC
+	// will install a JavaVM and other dependencies. A non-vanilla image is expected
+	// to come with all dependencies.
+	protected boolean isVanillaVMImage() {
+		return true;
+	}
 }

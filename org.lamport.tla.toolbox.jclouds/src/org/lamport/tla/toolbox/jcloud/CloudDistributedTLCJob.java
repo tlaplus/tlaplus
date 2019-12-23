@@ -568,6 +568,11 @@ public class CloudDistributedTLCJob extends Job {
 				return createNodesInGroup;
 			}
 
+			if (!params.isVanillaVMImage()) {
+				// A non-vanilla image is needs no provisioning.
+				return createNodesInGroup;
+			}
+			
 			// Install custom tailored jmx2munin to monitor the TLC process. Can
 			// either monitor standalone tlc2.TLC or TLCServer.
 			monitor.subTask("Provisioning TLC environment on all node(s)");
