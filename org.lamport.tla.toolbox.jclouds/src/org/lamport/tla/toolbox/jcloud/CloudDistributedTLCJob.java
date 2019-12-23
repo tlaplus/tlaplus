@@ -543,6 +543,13 @@ public class CloudDistributedTLCJob extends Job {
 			if (isCLI) {
 				templateOptions.tags(Arrays.asList("CLI"));
 			}
+			
+			// Overriding login password to be able to login to the cloud instance if
+			// jclouds bootstrapping fails. This is the instances initial root password set
+			// by the cloud provider that jclouds makes the first connection with to
+			// subsequently set up ssh keys... If the setup of ssh keys fails for whatever
+			// reason, this password is the only way to login into the instance.
+			//templateOptions.overrideLoginPassword("8nwc3+r897NR98as37cr589234598");
 			params.mungeTemplateOptions(templateOptions);
 			
             final TemplateBuilder templateBuilder = compute.templateBuilder();
