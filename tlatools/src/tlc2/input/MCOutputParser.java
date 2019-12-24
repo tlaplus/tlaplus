@@ -20,15 +20,9 @@ import tlc2.output.MP;
  */
 public class MCOutputParser extends AbstractMCOutputConsumer {
 	private final File mcOutFile;
-
-	private MCError error;
 	
 	MCOutputParser(final File outFile) {
 		mcOutFile = outFile;
-	}
-	
-	MCError getError() {
-		return error;
 	}
 
 	List<MCOutputMessage> parse(final boolean returnAllMessages) throws IOException {
@@ -36,45 +30,14 @@ public class MCOutputParser extends AbstractMCOutputConsumer {
 		
 		try (final BufferedReader br = new BufferedReader(new FileReader(mcOutFile))) {
 			MCOutputMessage message;
-			MCError currentError = null;
 			
-			while ((message = parseChunk(br, null)) != null) {
+			while ((message = parseChunk(br)) != null) {
 				if (returnAllMessages) {
 					encounteredMessages.add(message);
 				}
 
-				// TODO unclear how - if - nested errors can occur; there is support for them in TLCError
-				//			which has [therefore] been mirrored in MCError
 				if (message.getType() == MP.ERROR) {
-					if (error == null) {
-						error = new MCError(null, message.getBody());
-						currentError = error;
-					} else {
-						currentError = new MCError((currentError != null) ? currentError : error, message.getBody());
-					}
-					
-					message = parseChunk(br, null);
-					if ((message == null) || (message.getType() != MP.ERROR)) {
-						throw new IOException("Expected a useless error message like "
-												+ "'The behavior up to this point is...' but didn't find one after"
-												+ "[" + currentError.getMessage() + "]");
-					}
-					
-					boolean inStateTrace = true;
-					while (inStateTrace) {
-						message = parseChunk(br, null);
-						if (message == null) {
-							throw new IOException("Unexpected end of the log during state consumption for "
-													+ "[" + currentError.getMessage() + "]");
-						}
-						
-						if (message.getType() == MP.STATE) {
-							currentError.addState(MCState.parseState(message.getBody()));
-						} else {
-							inStateTrace = false;
-							// TODO do we want to process this message?
-						}
-					}
+					consumeErrorMessageAndStates(br, message);
 				} else if (message.getCode() == EC.TLC_FINISHED) {
 					break;
 				}

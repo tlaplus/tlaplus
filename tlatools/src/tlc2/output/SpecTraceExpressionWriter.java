@@ -279,13 +279,14 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 
 	        int subActionIndex = 0;
 			while (nextState != null) {
-		        final String nxtDisjunct = SpecWriterUtilities.getValidIdentifier(nextSubActionBasename);
-		        nextDisjunctBuffer.append(TLAConstants.TLA_OR).append(TLAConstants.SPACE).append(nxtDisjunct).append(TLAConstants.CR);
-		        actionConstraintBuffer.append(nxtDisjunct).append(TLAConstants.CR);
+				final String nextDisjunct = String.format("%s_sa_%d", nextSubActionBasename, subActionIndex);
+				nextDisjunctBuffer.append(TLAConstants.TLA_OR).append(TLAConstants.SPACE).append(nextDisjunct)
+						.append(TLAConstants.CR);
+		        actionConstraintBuffer.append(nextDisjunct).append(TLAConstants.CR);
 		        	        	
 		        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE Sub-Action definition");
 		        tlaBuffer.append(subActionIndex++).append(TLAConstants.CR);
-		        tlaBuffer.append(nxtDisjunct).append(TLAConstants.DEFINES_CR);
+		        tlaBuffer.append(nextDisjunct).append(TLAConstants.DEFINES_CR);
 	            /*
 	             * Handle Back to state and stuttering.
 	             * 

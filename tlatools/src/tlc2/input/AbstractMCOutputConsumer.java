@@ -1,15 +1,16 @@
 package tlc2.input;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import tlc2.model.MCError;
+import tlc2.model.MCState;
 import tlc2.output.MP;
 
 abstract class AbstractMCOutputConsumer {
-	private static final int MAX_READ_RETRIES = 25;
+	private static final int MAX_READ_RETRIES = 60;
 	private static final long SLEEP_BETWEEN_RETRIES = 500;
 	
 	// In the current world, the 'message class' (the second number run in the regex) is only a single digit, but i
@@ -22,6 +23,12 @@ abstract class AbstractMCOutputConsumer {
 	protected static final Pattern END_MESSAGE_PATTERN = Pattern.compile(END_MESSAGE_REGEX);
 	
 
+	private MCError error;
+	
+	public MCError getError() {
+		return error;
+	}
+
 	/**
 	 * Subclasses may override this should they wish; via this method, they will be
 	 * 	handed any line which is read and does not exist in a message block. This line
@@ -32,18 +39,54 @@ abstract class AbstractMCOutputConsumer {
 	 */
 	protected void handleUnknownReadLine(final String line) throws IOException { }
 	
+	protected void consumeErrorMessageAndStates(final BufferedReader reader, final MCOutputMessage errorMessage)
+			throws IOException {
+		MCError currentError = null;
+		
+		// TODO unclear how - if - nested errors can occur; there is support for them in TLCError
+		//			which has [therefore] been mirrored in MCError
+		if (error == null) {
+			error = new MCError(null, errorMessage.getBody());
+			currentError = error;
+		} else {
+			currentError = new MCError((currentError != null) ? currentError : error, errorMessage.getBody());
+		}
+		
+		MCOutputMessage message = parseChunk(reader);
+		if ((message == null) || (message.getType() != MP.ERROR)) {
+			throw new IOException("Expected a useless error message like "
+									+ "'The behavior up to this point is...' but didn't find one after"
+									+ "[" + currentError.getMessage() + "]");
+		}
+		
+		boolean inStateTrace = true;
+		while (inStateTrace) {
+			message = parseChunk(reader);
+			if (message == null) {
+				throw new IOException("Unexpected end of the log during state consumption for "
+										+ "[" + currentError.getMessage() + "]");
+			}
+			
+			if (message.getType() == MP.STATE) {
+				currentError.addState(MCState.parseState(message.getBody()));
+			} else {
+				inStateTrace = false;
+				// TODO do we want to process this message?
+			}
+		}
+	}
+	
 	/**
 	 * The reader is assumed to be parked at a line containing a start message; if
 	 * not, lines will be consumed until one is found, and then the ensuing chunk
 	 * is consumed.
 	 * 
 	 * @param reader
-	 * @param writer if non-null, each line read will be written out through this instance
 	 * @return a consumed message, or null if a new chunk could not be encountered
 	 * @throws IOException on a read error, or, if in an attempt to consume the next
 	 *                     chunk, we're unable to find the end of the chunk
 	 */
-	protected MCOutputMessage parseChunk(final BufferedReader reader, final BufferedWriter writer) throws IOException {
+	protected MCOutputMessage parseChunk(final BufferedReader reader) throws IOException {
 		MCOutputMessage message = null;
 		String startLine = null;
 		while (startLine == null) {
@@ -60,10 +103,6 @@ abstract class AbstractMCOutputConsumer {
 			} else {
 				handleUnknownReadLine(line);
 			}
-			
-			if (writer != null) {
-				writer.write(line + '\n');
-			}
 		}
 		
 		boolean chunkEndEncountered = false;
@@ -79,10 +118,6 @@ abstract class AbstractMCOutputConsumer {
 					sb.append(MP.CR);
 				}
 				sb.append(line);
-			}
-			
-			if (writer != null) {
-				writer.write(line + '\n');
 			}
 		}
 		

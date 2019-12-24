@@ -1,20 +1,22 @@
 package tlc2.input;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import tlc2.output.EC;
+import tlc2.output.MP;
 import util.TLAConstants;
 
 /**
  * This class exists due to a request for the TraceExplorer CL application to be able to consume the output from TLC
  * 	piped into TraceExplorer.  To that extent, this class will:
  * 
- * 	. read from System.in
+ * 	. read from a stream (for piping, this is System.in)
  *	. ensure that it is reading tool messages (first line received will be a message of type EC.TLC_VERSION)
  *			and fail appropriately if not
  *	. look for the first TLAConstants.LoggingAtoms.PARSING_FILE line in order to derive spec name and source directory
@@ -22,43 +24,63 @@ import util.TLAConstants;
  *			to a temp file.
  */
 public class MCOutputPipeConsumer extends AbstractMCOutputConsumer {
+	public interface ConsumerLifespanListener {
+		void consumptionFoundSourceDirectoryAndSpecName(final MCOutputPipeConsumer consumer);
+	}
+	
 	private String specName;
 	private File sourceDirectory;
 	
 	private MCOutputMessage tlcVersionMessage;
 
-	private File temporaryOutputFile;
+	private final InputStream sourceStream;
+	private final ConsumerLifespanListener listener;
+	
+	/**
+	 * @param inputStream the stream containing the tool output
+	 */
+	public MCOutputPipeConsumer(final InputStream inputStream, final ConsumerLifespanListener lifespanListener) {
+		sourceStream = inputStream;
+		listener = lifespanListener;
+	}
 	
 	/**
 	 * This will not return until all output has been read and the output has correctly ended (or if there is a read
 	 * 	error, or if the output is not proper tool message output.)
 	 * 
+	 * @param returnAllMessages if true, all consumed messages will be returned
+	 * @return null or a {@link List} of {@link MCOutputMessage} instances of all messages consumed
 	 * @throws Exception
 	 */
-	public void consumeOutput() throws Exception {
-		temporaryOutputFile = File.createTempFile("mcopc_", ".out");
-		temporaryOutputFile.deleteOnExit();
+	public List<MCOutputMessage> consumeOutput(final boolean returnAllMessages) throws IOException {
+		final ArrayList<MCOutputMessage> encounteredMessages = returnAllMessages ? new ArrayList<>() : null;
 		
-		try (final BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
-			try (final BufferedWriter bw = new BufferedWriter(new FileWriter(temporaryOutputFile))) {
-				MCOutputMessage message;
+		try (final BufferedReader br = new BufferedReader(new InputStreamReader(sourceStream))) {
+			MCOutputMessage message;
 
-				while ((message = parseChunk(br, bw)) != null) {
-					if (message.getCode() == EC.TLC_VERSION) {
-						tlcVersionMessage = message;
-					} else if (message.getCode() == EC.TLC_FINISHED) {
-						break;
-					}
+			while ((message = parseChunk(br)) != null) {
+				if (returnAllMessages) {
+					encounteredMessages.add(message);
 				}
-			} catch (final IOException ioe) {
-				if (outputHadNoToolMessages()) {
-					// Either we threw this from handleUnknownReadLine(String), or the output was abortive.
-					return;
+
+				if (message.getType() == MP.ERROR) {
+					consumeErrorMessageAndStates(br, message);
+				} else if (message.getCode() == EC.TLC_VERSION) {
+					tlcVersionMessage = message;
+				} else if (message.getCode() == EC.TLC_FINISHED) {
+					break;
 				}
-				
-				throw ioe;
 			}
+		} catch (final IOException ioe) {
+			if (outputHadNoToolMessages()) {
+				// Either we threw this from handleUnknownReadLine(String), or the output was abortive.
+				return encounteredMessages;
+			}
+			
+			throw ioe;
 		}
+		
+		return encounteredMessages;
 	}
 	
 	public boolean outputHadNoToolMessages() {
@@ -71,10 +93,6 @@ public class MCOutputPipeConsumer extends AbstractMCOutputConsumer {
 	
 	public File getSourceDirectory() {
 		return sourceDirectory;
-	}
-	
-	public File getOutputTemporaryFile() {
-		return temporaryOutputFile;
 	}
 	
 	@Override
@@ -92,6 +110,10 @@ public class MCOutputPipeConsumer extends AbstractMCOutputConsumer {
 			final String tlaFilename = tlaFile.getName();
 			final int extensionDotIndex = tlaFilename.lastIndexOf('.');
 			specName = tlaFilename.substring(0, extensionDotIndex);
+			
+			if (listener != null) {
+				listener.consumptionFoundSourceDirectoryAndSpecName(this);
+			}
 		}
 	}	
 }

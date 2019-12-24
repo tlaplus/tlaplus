@@ -2,12 +2,16 @@ package tlc2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 import tlc2.input.MCOutputParser;
 import tlc2.input.MCOutputPipeConsumer;
 import tlc2.input.MCParser;
 import tlc2.input.MCParserResults;
+import tlc2.model.MCError;
 import tlc2.model.MCState;
 import tlc2.output.CFGCopier;
 import tlc2.output.EC;
@@ -34,9 +38,9 @@ public class TraceExplorer {
     
     private static final String SPEC_TE_MODULE_NAME = "SpecTE";
     
-    private static final String SPEC_TE_INIT_ID = "SpecTEInit";
-    private static final String SPEC_TE_NEXT_ID = "SpecTENext";
-    private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "SpecTEActionConstraint";
+    private static final String SPEC_TE_INIT_ID = "_SpecTEInit";
+    private static final String SPEC_TE_NEXT_ID = "_SpecTENext";
+    private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "_SpecTEActionConstraint";
     
     private enum RunMode {
     	GENERATE_SPEC_TE, PRETTY_PRINT;
@@ -123,33 +127,20 @@ public class TraceExplorer {
      * @return an {@link EC} defined error code representing success or failure.
      */
     public int execute() throws Exception {
-    	final File pipedOutputLocation;
     	if (expectedOutputFromStdIn) {
-    		final MCOutputPipeConsumer pipeConsumer = new MCOutputPipeConsumer();
-    		
-    		pipeConsumer.consumeOutput();
-    		
-			if (pipeConsumer.outputHadNoToolMessages()) {
-				MP.printMessage(EC.GENERAL, "The output had no tool messages; was TLC not run with"
-						+ " the '-tool' option when producing it?");
-
-				return EC.ExitStatus.ERROR;
-    		}
-			
-			specGenerationSourceDirectory = pipeConsumer.getSourceDirectory();
-			specGenerationOriginalSpecName = pipeConsumer.getSpecName();
-			pipedOutputLocation = pipeConsumer.getOutputTemporaryFile();
+    		return executeStreaming();
     	} else {
-    		pipedOutputLocation = null;
+    		return executeNonStreaming();
     	}
-    	
+    }
+    
+    private int executeNonStreaming() throws Exception {
     	if (!performPreFlightFileChecks()) {
 			throw new IllegalStateException("There was an issue with the input or SpecTE file.");
     	}
     	
     	if (RunMode.GENERATE_SPEC_TE.equals(runMode)) {
-			final MCParser parser = new MCParser(specGenerationSourceDirectory, specGenerationOriginalSpecName,
-					pipedOutputLocation);
+			final MCParser parser = new MCParser(specGenerationSourceDirectory, specGenerationOriginalSpecName);
     		final MCParserResults results = parser.parse();
     		
     		if (results.getOutputMessages().size() == 0) {
@@ -164,19 +155,97 @@ public class TraceExplorer {
     			return EC.NO_ERROR;
     		} else {
 				try {
-					writeSpecTEFile(results);
+					writeSpecTEFile(results, results.getError());
 
 					return EC.NO_ERROR;
 				} catch (final Exception e) { }
     		}
     	} else if (RunMode.PRETTY_PRINT.equals(runMode)) {
-    		final File mcOut;
-    		if (pipedOutputLocation != null) {
-    			mcOut = pipedOutputLocation;
+        	final String filename = specGenerationOriginalSpecName + TLAConstants.Files.OUTPUT_EXTENSION;
+    		final File mcOut = new File(specGenerationSourceDirectory, filename);
+
+    		try {
+	    		MCOutputParser.prettyPrintToStream(System.out, mcOut);
+				
+				return EC.NO_ERROR;
+    		} catch (final Exception e) { }
+    	}
+    	    	
+		return EC.ExitStatus.ERROR;
+    }
+    
+    private int executeStreaming() throws Exception {
+    	final AtomicBoolean mcParserCompleted = new AtomicBoolean(false);
+    	final ReentrantLock parseLock = new ReentrantLock();
+    	final ArrayList<MCParser> parserList = new ArrayList<>(1);
+		final MCOutputPipeConsumer.ConsumerLifespanListener listener
+							= new MCOutputPipeConsumer.ConsumerLifespanListener() {
+			@Override
+			public void consumptionFoundSourceDirectoryAndSpecName(MCOutputPipeConsumer consumer) {
+				specGenerationSourceDirectory = consumer.getSourceDirectory();
+				specGenerationOriginalSpecName = consumer.getSpecName();
+
+				if (!performPreFlightFileChecks()) {
+					throw new IllegalStateException("There was an issue with the input or SpecTE file.");
+				}
+
+				if (RunMode.GENERATE_SPEC_TE.equals(runMode)) {
+					MP.printMessage(EC.GENERAL,
+							"Have encountered the source spec in the output logging, will begin parsing of those assets now.");
+					
+					final Runnable r = () -> {
+						final MCParser parser
+								= new MCParser(specGenerationSourceDirectory, specGenerationOriginalSpecName, true);
+						parserList.add(parser);
+						
+						parseLock.lock();
+						try {
+							parser.parse();
+						} finally {
+							mcParserCompleted.set(true);
+							parseLock.unlock();
+						}
+					};
+					(new Thread(r)).start();
+				}
+			}
+		};
+		final MCOutputPipeConsumer pipeConsumer = new MCOutputPipeConsumer(System.in, listener);
+		
+		MP.printMessage(EC.GENERAL, "TraceExplorer is expecting input on stdin...");
+
+		pipeConsumer.consumeOutput(false);
+		
+		if (pipeConsumer.outputHadNoToolMessages()) {
+			MP.printMessage(EC.GENERAL, "The output had no tool messages; was TLC not run with"
+					+ " the '-tool' option when producing it?");
+
+			return EC.ExitStatus.ERROR;
+		}
+
+		MP.printMessage(EC.GENERAL, "Have received the final output logging message - finishing TraceExplorer work.");
+
+    	if (RunMode.GENERATE_SPEC_TE.equals(runMode)) {
+    		if (pipeConsumer.getError() == null) {
+				MP.printMessage(EC.GENERAL,
+						"The output file contained no error-state messages, no SpecTE will be produced.");
+
+    			return EC.NO_ERROR;
     		} else {
-            	final String filename = specGenerationOriginalSpecName + TLAConstants.Files.OUTPUT_EXTENSION;
-    			mcOut = new File(specGenerationSourceDirectory, filename);
+        		if (!mcParserCompleted.get()) {
+        			parseLock.lock();
+        		}
+        		final MCParserResults results = parserList.get(0).getParseResults();
+    			
+				try {
+					writeSpecTEFile(results, pipeConsumer.getError());
+
+					return EC.NO_ERROR;
+				} catch (final Exception e) { }
     		}
+    	} else if (RunMode.PRETTY_PRINT.equals(runMode)) {
+        	final String filename = specGenerationOriginalSpecName + TLAConstants.Files.OUTPUT_EXTENSION;
+    		final File mcOut = new File(specGenerationSourceDirectory, filename);
 
     		try {
 	    		MCOutputParser.prettyPrintToStream(System.out, mcOut);
@@ -241,10 +310,10 @@ public class TraceExplorer {
 		return true;
     }
     
-    private void writeSpecTEFile(final MCParserResults results) throws IOException {
+    private void writeSpecTEFile(final MCParserResults results, final MCError error) throws IOException {
     	final StringBuilder tlaBuffer = new StringBuilder();
     	final StringBuilder cfgBuffer = new StringBuilder();
-    	final List<MCState> trace = results.getError().getStates();
+    	final List<MCState> trace = error.getStates();
     	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, null,
     												  SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
     												  results.getOriginalNextOrSpecificationName());

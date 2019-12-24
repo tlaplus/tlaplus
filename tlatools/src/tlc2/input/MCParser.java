@@ -32,7 +32,7 @@ public class MCParser {
 	
 	private final ModelConfig configParser;
 
-	private final MCOutputParser outputParser;
+	private MCOutputParser outputParser;
 	
 	private final TLAClass tlaClass;
 	private final Defns defns;
@@ -49,23 +49,12 @@ public class MCParser {
 	 * @param specName
 	 * @param specialCaseOutputFile if non-null, this will be used as the source for the output parser
 	 */
-	public MCParser(final File sourceDirectory, final String specName, final File specialCaseOutputFile) {
-		resolver = new SimpleFilenameToStream(sourceDirectory.getAbsolutePath());
-		specBaseName = specName;
+	public MCParser(final File sourceDirectory, final String specName) {
+		this(sourceDirectory, specName, null);
 		
-		File f = new File(sourceDirectory, (specBaseName + TLAConstants.Files.CONFIG_EXTENSION));
+		File f= new File(sourceDirectory, (specBaseName + TLAConstants.Files.OUTPUT_EXTENSION));
 		if (!f.exists()) {
-			throw new IllegalArgumentException("No readable config file could be found at " + f.getAbsolutePath());
-		}
-		configParser = new ModelConfig(f.getAbsolutePath(), resolver);
-		
-		if (specialCaseOutputFile != null) {
-			f = specialCaseOutputFile;
-		} else {
-			f = new File(sourceDirectory, (specBaseName + TLAConstants.Files.OUTPUT_EXTENSION));
-			if (!f.exists()) {
-				throw new IllegalArgumentException("No readable output file could be found at " + f.getAbsolutePath());
-			}
+			throw new IllegalArgumentException("No readable output file could be found at " + f.getAbsolutePath());
 		}
 		
 		outputParser = new MCOutputParser(f);
@@ -74,14 +63,61 @@ public class MCParser {
 		if (!f.exists()) {
 			throw new IllegalArgumentException("No readable TLA file could be found at " + f.getAbsolutePath());
 		}
+	}
+	
+	/**
+	 * @param sourceDirectory
+	 * @param specName
+	 * @param ignoreOutputParse if this is true, no output parsing will be done by this instance; the results returned
+	 * 			by {@link #parse()} will contain no output messages nor any potential {@code MCError}
+	 */
+	public MCParser(final File sourceDirectory, final String specName, final boolean ignoreOutputParse) {
+		this(sourceDirectory, specName, null);
+
+		if (!ignoreOutputParse) {
+			final File f = new File(sourceDirectory, (specBaseName + TLAConstants.Files.OUTPUT_EXTENSION));
+			if (!f.exists()) {
+				throw new IllegalArgumentException("No readable output file could be found at " + f.getAbsolutePath());
+			}
+			
+			outputParser = new MCOutputParser(f);
+		}
+		
+		final File f = new File(sourceDirectory, (specBaseName + TLAConstants.Files.TLA_EXTENSION));
+		if (!f.exists()) {
+			throw new IllegalArgumentException("No readable TLA file could be found at " + f.getAbsolutePath());
+		}
+	}
+	
+	private MCParser(final File sourceDirectory, final String specName, final Object signatureDifferentiator) {
+		resolver = new SimpleFilenameToStream(sourceDirectory.getAbsolutePath());
+		specBaseName = specName;
+		
+		final File f = new File(sourceDirectory, (specBaseName + TLAConstants.Files.CONFIG_EXTENSION));
+		if (!f.exists()) {
+			throw new IllegalArgumentException("No readable config file could be found at " + f.getAbsolutePath());
+		}
+		configParser = new ModelConfig(f.getAbsolutePath(), resolver);
 		
 		tlaClass = new TLAClass("tlc2.module", resolver);
 		defns = new Defns();
 	}
+	
+	/**
+	 * @return will return null until {@link #parse()} has been run successfully
+	 */
+	public MCParserResults getParseResults() {
+		return parserResults;
+	}
 
 	/**
-	 * @return an instance of {@link MCParserResults} representing the results
-	 * @throws IllegalStateException if parse has already been called on this instance
+	 * @return an instance of {@link MCParserResults} representing the results. If
+	 *         this instance was constructed via
+	 *         {@link #MCParser(File, String, boolean)} with the third argument
+	 *         {@code true} then the results returned will contain no output
+	 *         messages nor any potential {@code MCError}
+	 * @throws IllegalStateException if parse has already been called on this
+	 *                               instance
 	 */
 	public MCParserResults parse() {
 		if (parserResults != null) {
@@ -89,7 +125,7 @@ public class MCParser {
 		}
 		
 		try {
-			final List<MCOutputMessage> encounteredMessages = outputParser.parse(true);
+			final List<MCOutputMessage> encounteredMessages = (outputParser != null) ? outputParser.parse(true) : null;
 
 			configParser.parse();
 
@@ -99,7 +135,7 @@ public class MCParser {
 			final ArrayList<Location >initNextLocationsToDelete = new ArrayList<>();
 			final boolean isInitNext = !configParser.configDefinesSpecification();
 			// No reason to start-up SANY if we're not going to generate something because the output file is unusable
-			if (encounteredMessages.size() > 0) {
+			if ((encounteredMessages == null) || (encounteredMessages.size() > 0)) {
 				final SymbolNodeValueLookupProvider defaultLookup = new SymbolNodeValueLookupProvider() {};
 				specProcessor = new SpecProcessor(specBaseName, resolver, TOOL_ID, defns, configParser,
 												  defaultLookup, null, tlaClass);
@@ -141,7 +177,8 @@ public class MCParser {
 				nextOrSpecName = null;
 			}
 			
-			parserResults = new MCParserResults(rootModuleName, outputParser.getError(),
+			parserResults = new MCParserResults(rootModuleName,
+												((outputParser != null) ? outputParser.getError() : null),
 												encounteredMessages, extendees, initNextLocationsToDelete,
 												isInitNext, nextOrSpecName);
 			
