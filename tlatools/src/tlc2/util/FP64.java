@@ -378,7 +378,7 @@ public class FP64 {
     /* This is the table used for computing fingerprints.  The
        ByteModTable could be hardwired.  Note that since we just
        extend a byte at a time, we need just "ByteModeTable[7]". */
-    private static long[] ByteModTable_7;
+    private static final long[] ByteModTable_7 = new long[256];
 
     /* This is the irreducible polynomial used as seed.  */
     private static long IrredPoly;
@@ -423,7 +423,6 @@ public class FP64 {
       }
 
       // Just need the 7th iteration of the ByteModTable initialization code
-      ByteModTable_7 = new long[256];
       for (int j = 0; j <= 255; j++) {
 	long v = Zero;
 	for (int k = 0; k <= 7; k++) {
