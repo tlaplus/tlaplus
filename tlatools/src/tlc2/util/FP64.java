@@ -128,7 +128,7 @@ public class FP64 {
      * Extend the fingerprint <code>fp</code> by an
      * integer <code>x</code>.
      */
-    public static long Extend(long fp, int x)
+    public static long ExtendLoop(long fp, int x)
     {
         long[] mod = ByteModTable_7;
 	for (int i = 0; i < 4; i++) {
@@ -137,6 +137,27 @@ public class FP64 {
 	  x = x >>> 8;
 	}
 	return fp;
+    }
+
+    public static long Extend(long fp, int x)
+    {
+      final long[] mod = ByteModTable_7;
+      byte b = (byte)(x & 0xFF);
+	  fp = ((fp >>> 8) ^ (mod[(b ^ ((int)fp)) & 0xFF]));
+  	  x = x >>> 8;
+
+	  b = (byte)(x & 0xFF);
+	  fp = ((fp >>> 8) ^ (mod[(b ^ ((int)fp)) & 0xFF]));
+	  x = x >>> 8;
+
+	  b = (byte)(x & 0xFF);
+	  fp = ((fp >>> 8) ^ (mod[(b ^ ((int)fp)) & 0xFF]));
+	  x = x >>> 8;
+
+	  b = (byte)(x & 0xFF);
+	  fp = ((fp >>> 8) ^ (mod[(b ^ ((int)fp)) & 0xFF]));
+	  
+	  return fp;
     }
 
     /*
