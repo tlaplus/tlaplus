@@ -788,7 +788,7 @@ public class CloudDistributedTLCJob extends Job {
 			final ExecChannel channel = sshClient.execChannel("cat /mnt/tlc/tlc.jfr");
 			final InputStream output = channel.getOutput();
 			final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
-			final File jfr = new File(cwd + "tlc-" + System.currentTimeMillis() + ".jfc");
+			final File jfr = new File(cwd + "tlc-" + System.currentTimeMillis() + ".jfr");
 			ByteStreams.copy(output, new FileOutputStream(jfr));
 			if (jfr.length() == 0) {
 				System.err.println("Received empty Java Flight recording. Not creating tlc.jfr file");
