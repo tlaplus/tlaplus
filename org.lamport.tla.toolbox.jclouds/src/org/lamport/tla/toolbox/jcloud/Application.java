@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 
@@ -119,10 +120,12 @@ public class Application implements IApplication {
         	tlcParams.append(String.valueOf(coverage));
 		}
 		
+		final boolean doJFR = Arrays.asList(args).contains("jfr");
+		
 		final TLCJobFactory factory = new CloudTLCJobFactory();
 		final CloudDistributedTLCJob job = (CloudDistributedTLCJob) factory.getTLCJob(cloud, new File(modelDirectory), 1, props, tlcParams.toString());
 		job.setIsCLI(true);
-//		job.setDoJfr(true); //Todo Reactivate once CloudTLC copies the JFR dump file to the local machine.
+		job.setDoJfr(doJFR);
 		final IStatus status = job.run(new MyProgressMonitor(9));
 		// Show error message if any such as invalid credentials.
 		if (status.getSeverity() == IStatus.ERROR || !(status instanceof ITLCJobStatus)) {
@@ -152,6 +155,10 @@ public class Application implements IApplication {
 			return new Integer(1);
 		}
 		
+		if (doJFR) {
+			((ITLCJobStatus) status).getJavaFlightRecording();
+		}
+
 		return IApplication.EXIT_OK;
 	}
 

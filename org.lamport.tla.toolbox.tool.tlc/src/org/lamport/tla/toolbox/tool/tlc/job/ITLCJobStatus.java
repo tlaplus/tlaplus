@@ -1,5 +1,6 @@
 package org.lamport.tla.toolbox.tool.tlc.job;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -14,4 +15,6 @@ public interface ITLCJobStatus extends IStatus {
 	void killTLC();
 
 	boolean isReconnect();
+
+	void getJavaFlightRecording() throws IOException;
 }

@@ -32,10 +32,12 @@ import static org.jclouds.compute.predicates.NodePredicates.inGroup;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -82,6 +84,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.inject.AbstractModule;
 
@@ -411,7 +414,7 @@ public class CloudDistributedTLCJob extends Job {
 			// not necessarily require an email to be sent).
 			final ExecChannel execChannel = sshClient.execChannel(
 					// Wait for the java process to start before tail'ing its MC.out file below.
-					// This obviously open the door to blocking indefinitely if the java/TLC process
+					// This obviously opens the door to blocking indefinitely if the java/TLC process
 					// terminates before until starts.
 					"until pids=$(pgrep -f \"^java .* -jar /tmp/tla2tools.jar\"); do sleep 1; done"
 					+ " && "
@@ -774,6 +777,23 @@ public class CloudDistributedTLCJob extends Job {
 		@Override
 	    public InputStream getOutput() {
 			return this.output;
+		}
+		
+		@Override
+		public void getJavaFlightRecording() throws IOException {
+			// Get Java Flight Recording from remote machine and save if to a local file in
+			// the current working directory. We call "cat" because sftclient#get fails with
+			// the old net.schmizz.sshj and an update to the newer com.hierynomus seems 
+			// awful lot of work.
+			final ExecChannel channel = sshClient.execChannel("cat /mnt/tlc/tlc.jfr");
+			final InputStream output = channel.getOutput();
+			final String cwd = Paths.get(".").toAbsolutePath().normalize().toString() + File.separator;
+			final File jfr = new File(cwd + "tlc-" + System.currentTimeMillis() + ".jfc");
+			ByteStreams.copy(output, new FileOutputStream(jfr));
+			if (jfr.length() == 0) {
+				System.err.println("Received empty Java Flight recording. Not creating tlc.jfr file");
+				jfr.delete();
+			}
 		}
 		
 		public void killTLC() {
