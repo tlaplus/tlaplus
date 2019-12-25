@@ -9,6 +9,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,17 +21,23 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 
+import org.apache.commons.io.output.TeeOutputStream;
+
 import model.InJarFilenameToStream;
 import model.ModelInJar;
+import tlc2.input.MCOutputPipeConsumer;
+import tlc2.input.MCParser;
+import tlc2.input.MCParserResults;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.DFIDModelChecker;
-import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.impl.ModelConfig;
+import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
@@ -108,6 +117,8 @@ public class TLC {
     private boolean welcomePrinted;
     
     private FPSetConfiguration fpSetConfiguration;
+    
+    private MCOutputPipeConsumer mcOutputConsumer;
     
     /**
      * Initialization
@@ -375,6 +386,35 @@ public class TLC {
             {
                 index++;
                 TLCGlobals.tool = true;
+                
+				try {
+					final PipedInputStream pis = new PipedInputStream();
+					final TeeOutputStream tos = new TeeOutputStream(ToolIO.out, new PipedOutputStream(pis));
+					ToolIO.out = new PrintStream(tos);
+					mcOutputConsumer = new MCOutputPipeConsumer(pis, null);
+					
+					// Note, this runnable's thread will not finish consuming output until just
+					// 	before the app exits and we will use the output consumer in the TLC main
+					//	thread while it is still consuming (but at a point where the model checking
+					//	itself has finished and so the consumer is as populated as we need it to be
+					//	- but prior to the output consumer encountering the EC.TLC_FINISHED message.)
+					final Runnable r = () -> {
+						try {
+							mcOutputConsumer.consumeOutput(false);
+						} catch (final Exception e) {
+							MP.printMessage(EC.GENERAL,
+											"A model checking error occurred while parsing tool output; the execution "
+													+ "ended before the potential SpecTE generation stage.");
+						}
+					};
+					(new Thread(r)).start();
+					
+					MP.printMessage(EC.GENERAL, "Will generate a SpecTE file pair if error states are encountered.");
+				} catch (final IOException ioe) {
+					printErrorMsg("Failed to set up a piped output consumer; no potential SpecTE will be generated: "
+							+ ioe.getMessage());
+					mcOutputConsumer = null;
+				}
             } else if (args[index].equals("-help"))
             {
                 printUsage();
@@ -926,8 +966,7 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
-		        final ITool tool = new Tool(mainFile, configFile, resolver);
-
+		        final Tool tool = new Tool(mainFile, configFile, resolver);
                 if (isBFS())
                 {
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
@@ -939,6 +978,24 @@ public class TLC {
                 {
 					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
 					result = TLCGlobals.mainChecker.modelCheck();
+                }
+
+                if (mcOutputConsumer != null)  {
+                	if (mcOutputConsumer.getError() == null) {
+                		MP.printMessage(EC.GENERAL,
+                						"The model check run produced no error-states, so no SpecTE was generated.");
+                	} else {
+                		final SpecProcessor sp = tool.getSpecProcessor();
+                		final ModelConfig mc = tool.getModelConfig();
+                		final MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
+                		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
+                		final String originalSpecName = mcOutputConsumer.getSpecName();
+                		
+                		MP.printMessage(EC.GENERAL,
+        								"The model check run produced error-states - we will generate the SpecTE files now.");
+                		TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName, parserResults,
+                									   mcOutputConsumer.getError());
+                	}
                 }
             }
             return result;

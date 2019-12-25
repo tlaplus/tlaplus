@@ -8,8 +8,8 @@ import tlc2.model.MCError;
 public class MCParserResults {
 	private final String moduleName;
 	
-	private final MCError error;
-	private final List<MCOutputMessage> outputMessages;
+	private MCError error;
+	private List<MCOutputMessage> outputMessages;
 
 	private final List<String> extendedModules;
 
@@ -18,14 +18,10 @@ public class MCParserResults {
 	private final boolean behaviorIsInitNext;
 	
 	private final String originalNextOrSpecificationName;
-	
-	MCParserResults(final String rootModuleName, final MCError mcError, final List<MCOutputMessage> messages,
-			final List<String> extendeds, final List<Location> initNextLocations, final boolean wasInitNext,
-			final String nextOrSpecName) {
+
+	MCParserResults(final String rootModuleName, final List<String> extendeds, final List<Location> initNextLocations,
+					final boolean wasInitNext, final String nextOrSpecName) {
 		moduleName = rootModuleName;
-		
-		error = mcError;
-		outputMessages = messages;
 		
 		extendedModules = extendeds;
 		
@@ -34,6 +30,15 @@ public class MCParserResults {
 		behaviorIsInitNext = wasInitNext;
 		
 		originalNextOrSpecificationName = nextOrSpecName;
+	}
+	
+	MCParserResults(final String rootModuleName, final MCError mcError, final List<MCOutputMessage> messages,
+					final List<String> extendeds, final List<Location> initNextLocations, final boolean wasInitNext,
+					final String nextOrSpecName) {
+		this(rootModuleName, extendeds, initNextLocations, wasInitNext, nextOrSpecName);
+		
+		error = mcError;
+		outputMessages = messages;
 	}
 	
 	public String getModuleName() {
@@ -48,8 +53,16 @@ public class MCParserResults {
 		return error;
 	}
 	
+	void setError(final MCError mcError) {
+		error = mcError;
+	}
+	
 	public List<MCOutputMessage> getOutputMessages() {
 		return outputMessages;
+	}
+	
+	void setOutputMessages(final List<MCOutputMessage> messages) {
+		outputMessages = messages;
 	}
 
 	public List<String> getExtendedModules() {

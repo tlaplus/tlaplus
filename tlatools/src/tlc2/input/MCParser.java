@@ -29,6 +29,52 @@ import util.TLAConstants;
 public class MCParser {
 	private static final int TOOL_ID = 0;
 	
+	/**
+	 * @param specProcessor
+	 * @param modelConfig
+	 * @return an instance of {@link MCParserResults} with neither error nor output messages set, yet
+	 */
+	public static MCParserResults generateResultsFromProcessorAndConfig(final SpecProcessor specProcessor,
+			final ModelConfig modelConfig) {
+		final String rootModuleName;
+		final String nextOrSpecName;
+		final ArrayList<String> extendees = new ArrayList<>();
+		final ArrayList<Location> initNextLocationsToDelete = new ArrayList<>();
+		final boolean isInitNext = !modelConfig.configDefinesSpecification();
+		final ModuleNode root = specProcessor.getRootModule();
+		if (isInitNext) {
+			final String initDefinitionName = modelConfig.getInit();
+			nextOrSpecName = modelConfig.getNext();
+			final Collection<SymbolNode> initNodes = root.getSymbols(new NodeNameMatcher(initDefinitionName));
+			final Collection<SymbolNode> nextNodes = root.getSymbols(new NodeNameMatcher(nextOrSpecName));
+
+			if (initNodes.size() == 1) {
+				final OpDefNode initNode = (OpDefNode) initNodes.iterator().next();
+
+				if (initNode.getOriginallyDefinedInModuleNode().equals(root)) {
+					initNextLocationsToDelete.add(initNode.getLocation());
+				}
+				// else it is defined in a module which the original spec is extending.. nothing to document
+			}
+
+			if (nextNodes.size() == 1) {
+				final OpDefNode nextNode = (OpDefNode) nextNodes.iterator().next();
+
+				if (nextNode.getOriginallyDefinedInModuleNode().equals(root)) {
+					initNextLocationsToDelete.add(nextNode.getLocation());
+				}
+				// else it is defined in a module which the original spec is extending.. nothing to document
+			}
+		} else {
+			nextOrSpecName = modelConfig.getSpec();
+		}
+		initNextLocationsToDelete.sort(new LocationComparator());
+
+		root.getExtendedModuleSet(false).stream().forEach(moduleNode -> extendees.add(moduleNode.getName().toString()));
+		rootModuleName = root.getName().toString();
+
+		return new MCParserResults(rootModuleName, extendees, initNextLocationsToDelete, isInitNext, nextOrSpecName);
+	}	
 	
 	private final ModelConfig configParser;
 
@@ -36,7 +82,6 @@ public class MCParser {
 	
 	private final TLAClass tlaClass;
 	private final Defns defns;
-	private SpecProcessor specProcessor;
 	
 	private final FilenameToStream resolver;
 
@@ -129,64 +174,28 @@ public class MCParser {
 
 			configParser.parse();
 
-			final String rootModuleName;
-			final String nextOrSpecName;
-			final ArrayList<String> extendees = new ArrayList<>();
-			final ArrayList<Location >initNextLocationsToDelete = new ArrayList<>();
-			final boolean isInitNext = !configParser.configDefinesSpecification();
 			// No reason to start-up SANY if we're not going to generate something because the output file is unusable
 			if ((encounteredMessages == null) || (encounteredMessages.size() > 0)) {
 				final SymbolNodeValueLookupProvider defaultLookup = new SymbolNodeValueLookupProvider() {};
-				specProcessor = new SpecProcessor(specBaseName, resolver, TOOL_ID, defns, configParser,
-												  defaultLookup, null, tlaClass);
-
-				final ModuleNode root = specProcessor.getRootModule();
-				if (isInitNext) {
-					final String initDefinitionName = configParser.getInit();
-					nextOrSpecName = configParser.getNext();
-					final Collection<SymbolNode> initNodes = root.getSymbols(new NodeNameMatcher(initDefinitionName));
-					final Collection<SymbolNode> nextNodes = root.getSymbols(new NodeNameMatcher(nextOrSpecName));
-					
-					if (initNodes.size() == 1) {
-						final OpDefNode initNode = (OpDefNode)initNodes.iterator().next();
-						
-						if (initNode.getOriginallyDefinedInModuleNode().equals(root)) {
-							initNextLocationsToDelete.add(initNode.getLocation());
-						}
-						// else it is defined in a module MC is extending.. nothing to clean up
-					}
-					
-					if (nextNodes.size() == 1) {
-						final OpDefNode nextNode = (OpDefNode)nextNodes.iterator().next();
-						
-						if (nextNode.getOriginallyDefinedInModuleNode().equals(root)) {
-							initNextLocationsToDelete.add(nextNode.getLocation());
-						}
-						// else it is defined in a module MC is extending.. nothing to clean up
-					}
-				} else {
-					nextOrSpecName = configParser.getSpec();
-				}
-				initNextLocationsToDelete.sort(new LocationComparator());
+				final SpecProcessor specProcessor = new SpecProcessor(specBaseName, resolver, TOOL_ID, defns,
+																	  configParser, defaultLookup, null, tlaClass);
+				parserResults = generateResultsFromProcessorAndConfig(specProcessor, configParser);
 				
-				root.getExtendedModuleSet(false).stream().forEach(moduleNode -> extendees.add(moduleNode.getName().toString()));
-				rootModuleName = root.getName().toString();
+				if (outputParser != null) {
+					parserResults.setError(outputParser.getError());
+					parserResults.setOutputMessages(encounteredMessages);
+				}
 			} else {
 				// we'll have a zero size if the output generated came from a TLC run that did not have the '-tool' flag
-				rootModuleName = null;
-				nextOrSpecName = null;
+				parserResults = new MCParserResults(null, ((outputParser != null) ? outputParser.getError() : null),
+													encounteredMessages, new ArrayList<>(), new ArrayList<>(),
+													true, null);
 			}
-			
-			parserResults = new MCParserResults(rootModuleName,
-												((outputParser != null) ? outputParser.getError() : null),
-												encounteredMessages, extendees, initNextLocationsToDelete,
-												isInitNext, nextOrSpecName);
 			
 			return parserResults;
 		} catch (final IOException e) {
 			System.out.println("Caught exception while performing MC parsing: " + e.getMessage());
 			e.printStackTrace();
-			specProcessor = null;
 		}
 
 		return null;

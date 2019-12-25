@@ -136,6 +136,7 @@
 			<!-- compilerarg value="-Xlint:deprecation"/-->
 			<classpath refid="project.classpath" />
 			<classpath>
+				<pathelement location="lib/commons-io-2.6.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
 			</classpath>
 		</javac>
@@ -224,6 +225,11 @@
 			</patternset>
 		</unzip>
 		<touch file="${class.dir}/META-INF/javamail.default.address.map"/>
+		<unzip src="lib/commons-io-2.6.jar" dest="${class.dir}">
+			<patternset>
+		        <include name="**/*.class"/>
+			</patternset>
+		</unzip>
 
 		<!-- Extract javax.mail to maven classes folder. This script is triggered by -->
 		<!-- maven. However, maven compiles the code again to target/classes from -->
@@ -249,7 +255,12 @@
 			</patternset>
 		</unzip>
 		<touch file="target/classes/META-INF/javamail.default.address.map"/>
-
+		<unzip src="lib/commons-io-2.6.jar" dest="target/classes">
+			<patternset>
+		        <include name="**/*.class"/>
+			</patternset>
+		</unzip>
+		
 
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
@@ -350,6 +361,7 @@
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
+				<pathelement location="lib/commons-io-2.6.jar" />
 				<pathelement location="lib/cglib-nodep-3.1.jar" />
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
@@ -468,6 +480,7 @@
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
+				<pathelement location="lib/commons-io-2.6.jar" />
 				<pathelement location="lib/cglib-nodep-3.1.jar" />
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
@@ -509,6 +522,7 @@
 				<classpath>
 					<pathelement location="lib/junit-4.12.jar" />
 					<pathelement location="lib/hamcrest-core-1.3.jar" />
+					<pathelement location="lib/commons-io-2.6.jar" />
 					<pathelement location="lib/cglib-nodep-3.1.jar" />
 					<pathelement location="lib/objenesis-2.1.jar" />
 					<pathelement location="lib/easymock-3.3.1.jar" />

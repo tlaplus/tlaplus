@@ -14,18 +14,14 @@ import java.util.List;
 import java.util.Set;
 
 import tla2sany.modanalyzer.ParseUnit;
-import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
-import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.FrontEnd;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
-import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
-import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
@@ -56,6 +52,8 @@ import util.UniqueString;
 //		is marked {@code abstract}.)
 abstract class Spec
 		implements ValueConstants, ToolGlobals, Serializable, OpDefEvaluator, SymbolNodeValueLookupProvider {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * @see See note on performance in CostModelCreator.
 	 */
@@ -66,42 +64,21 @@ abstract class Spec
 	protected final String specDir; // The spec directory.
     protected final String rootFile; // The root file of this spec.
     protected final String configFile; // The model config file.
-    protected final ModelConfig config; // The model configuration.
-    protected final ExternalModuleTable moduleTbl; // The external modules reachable from root
-    protected final ModuleNode rootModule; // The root module.
     protected final Set<OpDefNode> processedDefs ; 
-    protected final SpecObj specObj;
       // The set of OpDefNodes on which processSpec has been called.
       // Added by LL & YY on 25 June 2014 to eliminate infinite
       // loop when a recursively defined operator is used as an
       // operator argument in its own definition.
     protected final Defns defns; // Global definitions reachable from root
 	protected final Defns unprocessedDefns;
-    // SZ 10.04.2009: changed the name of the variable to reflect its nature
-    protected final OpDeclNode[] variablesNodes; // The state variables.
     protected final TLAClass tlaClass; // TLA built-in classes.
-    protected final Vect<Action> initPredVec; // The initial state predicate.
-    protected final Action nextPred; // The next state predicate.
-    protected final Action[] temporals; // Fairness specifications...
-    protected final String[] temporalNames; // ... and their names
-    protected final Action[] impliedTemporals; // Liveness conds to check...
-    protected final String[] impliedTemporalNames; // ... and their names
-    protected final Action[] invariants; // Invariants to be checked...
-    protected final String[] invNames; // ... and their names
-    protected final Action[] impliedInits; // Implied-inits to be checked...
-    protected final String[] impliedInitNames; // ... and their names
-    protected final Action[] impliedActions; // Implied-actions to be checked...
-    protected final String[] impliedActNames; // ... and their names
-    protected final ExprNode[] modelConstraints; // Model constraints
-    protected final ExprNode[] actionConstraints; // Action constraints
-    protected final ExprNode[] assumptions; // Assumptions
-    protected final boolean[] assumptionIsAxiom; // assumptionIsAxiom[i] is true iff assumptions[i]
-                                           // is an AXIOM.  Added 26 May 2010 by LL
     private final FilenameToStream resolver; // takes care of path to stream resolution
 
+    protected final ModelConfig config; // The model configuration.
+    private final SpecProcessor specProcessor;
+
     // SZ Feb 20, 2009: added support to name resolver, to be able to run outside of the tool
-    public Spec(String specDir, String specFile, String configFile, FilenameToStream resolver)
-    {
+	public Spec(final String specDir, final String specFile, final String configFile, final FilenameToStream resolver) {
         this.specDir = specDir;
         this.rootFile = specFile;
         this.defns = new Defns();
@@ -116,64 +93,30 @@ abstract class Spec
         this.config.parse();
         ModelValue.setValues(); // called after seeing all model values
 
-		// SpecProcessor has be factored out to be able to assign the variables below as
-		// final. SpecProcessor duplicates most of the variables here but I don't have
-		// time to clean it up.
-		final SpecProcessor processor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass);
-        this.rootModule = processor.getRootModule();
-        this.moduleTbl = processor.getModuleTbl();
-        this.variablesNodes = processor.getVariablesNodes();
-        this.initPredVec = processor.getInitPred();
-        this.nextPred = processor.getNextPred();
-        this.temporals = processor.getTemporal();
-        this.temporalNames = processor.getTemporalNames();
-        this.impliedTemporals = processor.getImpliedTemporals();
-        this.impliedTemporalNames = processor.getImpliedTemporalNames();
-        this.invariants = processor.getInvariants();
-        this.invNames = processor.getInvariantsNames();
-        this.impliedInits = processor.getImpliedInits();
-        this.impliedInitNames = processor.getImpliedInitNames();
-        this.impliedActions = processor.getImpliedActions();
-        this.impliedActNames = processor.getImpliedActionNames();
-        this.modelConstraints = processor.getModelConstraints();
-        this.actionConstraints = processor.getActionConstraints();
-        this.assumptions = processor.getAssumptions();
-        this.assumptionIsAxiom = processor.getAssumptionIsAxiom();
-        this.specObj = processor.getSpecObj();
+        specProcessor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass);
         
-        this.unprocessedDefns = processor.getUnprocessedDefns();
+        this.unprocessedDefns = specProcessor.getUnprocessedDefns();
     }
     
-    protected Spec(Spec other) {
+    protected Spec(final Spec other) {
     	this.specDir = other.specDir;
     	this.rootFile = other.rootFile;
     	this.configFile = other.configFile;
-    	this.config = other.config;
-    	this.moduleTbl = other.moduleTbl;
-    	this.rootModule = other.rootModule;
     	this.processedDefs = other.processedDefs;
     	this.defns = other.defns;
-    	this.variablesNodes = other.variablesNodes;
     	this.tlaClass = other.tlaClass;
-        this.initPredVec = other.initPredVec;
-    	this.nextPred = other.nextPred;
-    	this.temporals = other.temporals;
-    	this.temporalNames = other.temporalNames;
-    	this.impliedTemporals = other.impliedTemporals;
-    	this.impliedTemporalNames = other.impliedTemporalNames;
-    	this.invariants = other.invariants;
-    	this.invNames = other.invNames;
-    	this.impliedInits = other.impliedInits;
-        this.impliedInitNames = other.impliedInitNames;
-        this.impliedActions = other.impliedActions;
-        this.impliedActNames = other.impliedActNames;
-        this.modelConstraints = other.modelConstraints;
-        this.actionConstraints = other.actionConstraints;
-        this.assumptions = other.assumptions;
-        this.assumptionIsAxiom = other.assumptionIsAxiom;
         this.resolver = other.resolver;
-        this.specObj = other.specObj;
         this.unprocessedDefns = other.unprocessedDefns;
+    	this.config = other.config;
+        this.specProcessor = other.specProcessor;
+    }
+    
+    public ModelConfig getModelConfig() {
+    	return config;
+    }
+    
+    public SpecProcessor getSpecProcessor() {
+    	return specProcessor;
     }
 
     /* Return the variable if expr is a primed state variable. Otherwise, null. */
@@ -211,30 +154,26 @@ abstract class Spec
     /** 
      * Get model constraints.  
      */
-    public final ExprNode[] getModelConstraints()
-    {
-        return this.modelConstraints;
-    }
+	public final ExprNode[] getModelConstraints() {
+		return specProcessor.getModelConstraints();
+	}
 
     /**
      * Get action constraints.  
      */
-    public final ExprNode[] getActionConstraints()
-    {
-        return this.actionConstraints;
-    }
+	public final ExprNode[] getActionConstraints() {
+		return specProcessor.getActionConstraints();
+	}
 
     /* Get the initial state predicate of the specification.  */
-    public final Vect<Action> getInitStateSpec()
-    {
-        return this.initPredVec;
-    }
+	public final Vect<Action> getInitStateSpec() {
+		return specProcessor.getInitPred();
+	}
 
     /* Get the action (next state) predicate of the specification. */
-    public final Action getNextStateSpec()
-    {
-        return this.nextPred;
-    }
+	public final Action getNextStateSpec() {
+		return specProcessor.getNextPred();
+	}
 
     /** 
      * Get the view mapping for the specification. 
@@ -315,75 +254,65 @@ abstract class Spec
         return def.getBody();
     }
 
-    public final boolean livenessIsTrue()
-    {
-        return this.impliedTemporals.length == 0;
-    }
+	public final boolean livenessIsTrue() {
+		return getImpliedTemporals().length == 0;
+	}
 
     /* Get the fairness condition of the specification.  */
     public final Action[] getTemporals()
     {
-        return this.temporals;
+        return specProcessor.getTemporal();
     }
 
     public final String[] getTemporalNames()
     {
-        return this.temporalNames;
+        return specProcessor.getTemporalNames();
     }
 
     /* Get the liveness checks of the specification.  */
-    public final Action[] getImpliedTemporals()
-    {
-        return this.impliedTemporals;
-    }
+	public final Action[] getImpliedTemporals() {
+		return specProcessor.getImpliedTemporals();
+	}
 
-    public final String[] getImpliedTemporalNames()
-    {
-        return this.impliedTemporalNames;
-    }
+	public final String[] getImpliedTemporalNames() {
+		return specProcessor.getImpliedTemporalNames();
+	}
 
     /* Get the invariants of the specification. */
-    public final Action[] getInvariants()
-    {
-        return this.invariants;
-    }
+	public final Action[] getInvariants() {
+		return specProcessor.getInvariants();
+	}
 
-    public final String[] getInvNames()
-    {
-        return this.invNames;
-    }
+	public final String[] getInvNames() {
+		return specProcessor.getInvariantsNames();
+	}
 
     /* Get the implied-inits of the specification. */
-    public final Action[] getImpliedInits()
-    {
-        return this.impliedInits;
-    }
+	public final Action[] getImpliedInits() {
+		return specProcessor.getImpliedInits();
+	}
 
-    public final String[] getImpliedInitNames()
-    {
-        return this.impliedInitNames;
-    }
+	public final String[] getImpliedInitNames() {
+		return specProcessor.getImpliedInitNames();
+	}
 
     /* Get the implied-actions of the specification. */
-    public final Action[] getImpliedActions()
-    {
-        return this.impliedActions;
-    }
+	public final Action[] getImpliedActions() {
+		return specProcessor.getImpliedActions();
+	}
 
-    public final String[] getImpliedActNames()
-    {
-        return this.impliedActNames;
-    }
+	public final String[] getImpliedActNames() {
+		return specProcessor.getImpliedActionNames();
+	}
 
     /* Get the assumptions of the specification. */
-    public final ExprNode[] getAssumptions()
-    {
-        return this.assumptions;
-    }
+	public final ExprNode[] getAssumptions() {
+		return specProcessor.getAssumptions();
+	}
     
     /* Get the assumptionIsAxiom field */
     public final boolean[] getAssumptionIsAxiom() {
-        return this.assumptionIsAxiom;
+        return specProcessor.getAssumptionIsAxiom();
     }
     
     /**
@@ -696,7 +625,7 @@ abstract class Spec
 	public List<File> getModuleFiles(final FilenameToStream resolver) {
 		final List<File> result = new ArrayList<File>();
 	
-		final Enumeration<ParseUnit> parseUnitContext = this.specObj.parseUnitContext.elements();
+		final Enumeration<ParseUnit> parseUnitContext = specProcessor.getSpecObj().parseUnitContext.elements();
 		while (parseUnitContext.hasMoreElements()) {
 			ParseUnit pu = (ParseUnit) parseUnitContext.nextElement();
 			File resolve = resolver.resolve(pu.getFileName(), false);

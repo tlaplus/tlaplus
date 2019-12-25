@@ -27,6 +27,7 @@ import util.TLAConstants;
  * 				.tla / .cfg file pair
  * 		. given a directory of a previously run model check (containing a .out file), dump a pretty print of the
  *				errors states to {@link System#out}
+ *		. given an already executed output pipe consumer, generated a "SpecTE" .tla / .cfg pair
  */
 public class TraceExplorer {
 	private static final String GENERATE_SPEC_FUNCTION_PARAMETER_NAME = "-generateSpecTE";
@@ -42,8 +43,35 @@ public class TraceExplorer {
     private static final String SPEC_TE_NEXT_ID = "_SpecTENext";
     private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "_SpecTEActionConstraint";
     
+    public static void writeSpecTEFiles(final File sourceDirectory, final String originalSpecName,
+    								    final MCParserResults results, final MCError error) throws IOException {
+    	final StringBuilder tlaBuffer = new StringBuilder();
+    	final StringBuilder cfgBuffer = new StringBuilder();
+    	final List<MCState> trace = error.getStates();
+    	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, null,
+    												   SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
+    												   results.getOriginalNextOrSpecificationName());
+    	SpecTraceExpressionWriter.addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, trace);
+    	
+    	final boolean specExtendsTLC = results.getExtendedModules().contains(TLAConstants.BuiltInModules.TLC);
+    	final boolean specExtendsToolbox
+    					= results.getExtendedModules().contains(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
+		final TLACopier tlaCopier = new TLACopier(originalSpecName, SPEC_TE_MODULE_NAME, sourceDirectory,
+												  tlaBuffer.toString(), specExtendsTLC, specExtendsToolbox);
+		tlaCopier.copy();
+		MP.printMessage(EC.GENERAL,
+						"The file " + tlaCopier.getDestinationFile().getAbsolutePath() + " has been created.");
+		
+		final CFGCopier cfgCopier = new CFGCopier(originalSpecName, SPEC_TE_MODULE_NAME, sourceDirectory,
+												  cfgBuffer.toString());
+		cfgCopier.copy();
+		MP.printMessage(EC.GENERAL,
+						"The file " + cfgCopier.getDestinationFile().getAbsolutePath() + " has been created.");
+    }
+    
+    
     private enum RunMode {
-    	GENERATE_SPEC_TE, PRETTY_PRINT;
+    	GENERATE_SPEC_TE, PRETTY_PRINT, GENERATE_FROM_TLC_RUN;
     }
 
     
@@ -54,6 +82,17 @@ public class TraceExplorer {
     
     private RunMode runMode;
 
+    /**
+     * This constructor is used by TLC.
+     * 
+     * @param consumedOutput an instance which has already had consume output invoked-and-exited
+     * @throws IllegalStateException if {@code consumedOutput.getError() == null}
+     */
+    public TraceExplorer(final MCOutputPipeConsumer consumedOutput) {
+    	runMode = RunMode.GENERATE_FROM_TLC_RUN;
+    	// TODO
+    }
+    
     /**
      * @param commandLineArguments arguments, ostensibly from the command line, with which this instance will configure
      * 								itself.
@@ -155,7 +194,7 @@ public class TraceExplorer {
     			return EC.NO_ERROR;
     		} else {
 				try {
-					writeSpecTEFile(results, results.getError());
+					writeSpecTEFiles(results, results.getError());
 
 					return EC.NO_ERROR;
 				} catch (final Exception e) { }
@@ -238,7 +277,7 @@ public class TraceExplorer {
         		final MCParserResults results = parserList.get(0).getParseResults();
     			
 				try {
-					writeSpecTEFile(results, pipeConsumer.getError());
+					writeSpecTEFiles(results, pipeConsumer.getError());
 
 					return EC.NO_ERROR;
 				} catch (final Exception e) { }
@@ -310,29 +349,8 @@ public class TraceExplorer {
 		return true;
     }
     
-    private void writeSpecTEFile(final MCParserResults results, final MCError error) throws IOException {
-    	final StringBuilder tlaBuffer = new StringBuilder();
-    	final StringBuilder cfgBuffer = new StringBuilder();
-    	final List<MCState> trace = error.getStates();
-    	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, null,
-    												  SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
-    												  results.getOriginalNextOrSpecificationName());
-    	SpecTraceExpressionWriter.addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, trace);
-    	
-    	final boolean specExtendsTLC = results.getExtendedModules().contains(TLAConstants.BuiltInModules.TLC);
-    	final boolean specExtendsToolbox
-    					= results.getExtendedModules().contains(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
-		final TLACopier tlaCopier = new TLACopier(specGenerationOriginalSpecName, SPEC_TE_MODULE_NAME,
-				specGenerationSourceDirectory, tlaBuffer.toString(), specExtendsTLC, specExtendsToolbox);
-		tlaCopier.copy();
-		MP.printMessage(EC.GENERAL,
-				"The file " + tlaCopier.getDestinationFile().getAbsolutePath() + " has been created.");
-		
-		final CFGCopier cfgCopier = new CFGCopier(specGenerationOriginalSpecName, SPEC_TE_MODULE_NAME,
-				specGenerationSourceDirectory, cfgBuffer.toString());
-		cfgCopier.copy();
-		MP.printMessage(EC.GENERAL,
-				"The file " + cfgCopier.getDestinationFile().getAbsolutePath() + " has been created.");
+    private void writeSpecTEFiles(final MCParserResults results, final MCError error) throws IOException {
+    	writeSpecTEFiles(specGenerationSourceDirectory, specGenerationOriginalSpecName, results, error);
     }
     
     private void printErrorMessage(final String message) {
