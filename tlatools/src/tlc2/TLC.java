@@ -201,6 +201,9 @@ public class TLC {
      *		Defaults to off if not specified
      *  o -debug: debbuging information (non-production use)
      *  o -tool: tool mode (put output codes on console)
+     *  o -generateSpecTE: will generate SpecTE assets if both also run with
+     *  				the -tool flag, and error-states are encountered during
+     *  				model checking.
      *  o -checkpoint num: interval for check pointing (in minutes)
      *		Defaults to 30
      *  o -fpmem num: a value between 0 and 1, exclusive, representing the ratio
@@ -386,7 +389,9 @@ public class TLC {
             {
                 index++;
                 TLCGlobals.tool = true;
-                
+            } else if (args[index].equals("-generateSpecTE")) {
+                index++;
+            	
 				try {
 					final PipedInputStream pis = new PipedInputStream();
 					final TeeOutputStream tos = new TeeOutputStream(ToolIO.out, new PipedOutputStream(pis));
@@ -409,7 +414,9 @@ public class TLC {
 					};
 					(new Thread(r)).start();
 					
-					MP.printMessage(EC.GENERAL, "Will generate a SpecTE file pair if error states are encountered.");
+					MP.printMessage(EC.GENERAL,
+									"Will generate a SpecTE file pair if error states are encountered and we are "
+													+ "being run with the '-tool' flag.");
 				} catch (final IOException ioe) {
 					printErrorMsg("Failed to set up a piped output consumer; no potential SpecTE will be generated: "
 							+ ioe.getMessage());
@@ -983,7 +990,8 @@ public class TLC {
                 if (mcOutputConsumer != null)  {
                 	if (mcOutputConsumer.getError() == null) {
                 		MP.printMessage(EC.GENERAL,
-                						"The model check run produced no error-states, so no SpecTE was generated.");
+                						"The model check run produced no usable error-state messages, "
+                										+ "so no SpecTE was generated.");
                 	} else {
                 		final SpecProcessor sp = tool.getSpecProcessor();
                 		final ModelConfig mc = tool.getModelConfig();
