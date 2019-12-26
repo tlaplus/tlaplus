@@ -32,10 +32,18 @@ public class CFGCopier extends AbstractCopier {
 		initNextConfiguration = initNextCFG;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	protected String getFileExtension() {
 		return TLAConstants.Files.CONFIG_EXTENSION;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	protected void copyLine(final BufferedWriter writer, final String originalLine, final int lineNumber)
 			throws IOException {
 		if (skipNextLine) {

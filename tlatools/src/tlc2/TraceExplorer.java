@@ -43,8 +43,17 @@ public class TraceExplorer {
     private static final String SPEC_TE_NEXT_ID = "_SpecTENext";
     private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "_SpecTEActionConstraint";
     
-    public static void writeSpecTEFiles(final File sourceDirectory, final String originalSpecName,
-    								    final MCParserResults results, final MCError error) throws IOException {
+    /**
+	 * @param sourceDirectory
+	 * @param originalSpecName
+	 * @param results
+	 * @param error
+	 * @return an array of length two; the 0-index is the location to the
+	 *         destination TLA file, and the 1-index is that of the CFG file
+	 * @throws IOException
+	 */
+    public static File[] writeSpecTEFiles(final File sourceDirectory, final String originalSpecName,
+    									  final MCParserResults results, final MCError error) throws IOException {
     	final StringBuilder tlaBuffer = new StringBuilder();
     	final StringBuilder cfgBuffer = new StringBuilder();
     	final List<MCState> trace = error.getStates();
@@ -67,6 +76,8 @@ public class TraceExplorer {
 		cfgCopier.copy();
 		MP.printMessage(EC.GENERAL,
 						"The file " + cfgCopier.getDestinationFile().getAbsolutePath() + " has been created.");
+		
+		return new File[] { tlaCopier.getDestinationFile(), cfgCopier.getDestinationFile() };
     }
     
     

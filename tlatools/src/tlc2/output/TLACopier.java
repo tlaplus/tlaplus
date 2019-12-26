@@ -42,10 +42,18 @@ public class TLACopier extends AbstractCopier {
 		needExtendToolbox = !originalExtendsToolbox;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	protected String getFileExtension() {
 		return TLAConstants.Files.TLA_EXTENSION;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	protected void copyLine(final BufferedWriter writer, final String originalLine, final int lineNumber)
 			throws IOException {
 		if (!inBody) {

@@ -5,8 +5,11 @@
 
 package tlc2;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -20,7 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 
 import model.InJarFilenameToStream;
@@ -118,7 +124,11 @@ public class TLC {
     
     private FPSetConfiguration fpSetConfiguration;
     
+    private File temporaryMCOutputLogFile;
+    private FileOutputStream temporaryMCOutputStream;
+    private File specTETLAFile;
     private MCOutputPipeConsumer mcOutputConsumer;
+    private final AtomicBoolean waitingOnGenerationCompletion;
     
     /**
      * Initialization
@@ -143,7 +153,9 @@ public class TLC {
         traceDepth = 100;
 
         fpSetConfiguration = new FPSetConfiguration();
-    }
+        
+        waitingOnGenerationCompletion = new AtomicBoolean(false);
+	}
 
     /*
      * This TLA checker (TLC) provides the following functionalities:
@@ -393,9 +405,14 @@ public class TLC {
                 index++;
             	
 				try {
+					temporaryMCOutputLogFile = File.createTempFile("mcout_", ".out");
+					temporaryMCOutputLogFile.deleteOnExit();
+					temporaryMCOutputStream = new FileOutputStream(temporaryMCOutputLogFile);
+					final BufferedOutputStream bos = new BufferedOutputStream(temporaryMCOutputStream);
 					final PipedInputStream pis = new PipedInputStream();
-					final TeeOutputStream tos = new TeeOutputStream(ToolIO.out, new PipedOutputStream(pis));
-					ToolIO.out = new PrintStream(tos);
+					final TeeOutputStream tos1 = new TeeOutputStream(bos, new PipedOutputStream(pis));
+					final TeeOutputStream tos2 = new TeeOutputStream(ToolIO.out, tos1);
+					ToolIO.out = new PrintStream(tos2);
 					mcOutputConsumer = new MCOutputPipeConsumer(pis, null);
 					
 					// Note, this runnable's thread will not finish consuming output until just
@@ -404,12 +421,44 @@ public class TLC {
 					//	itself has finished and so the consumer is as populated as we need it to be
 					//	- but prior to the output consumer encountering the EC.TLC_FINISHED message.)
 					final Runnable r = () -> {
+						boolean haveClosedOutputStream = false;
 						try {
+							waitingOnGenerationCompletion.set(true);
 							mcOutputConsumer.consumeOutput(false);
+							
+							bos.flush();
+							temporaryMCOutputStream.close();
+							haveClosedOutputStream = true;
+
+							final File tempTLA = File.createTempFile("temp_tlc_tla_", ".tla");
+							tempTLA.deleteOnExit();
+							FileUtils.copyFile(specTETLAFile, tempTLA);
+							
+							final FileOutputStream fos = new FileOutputStream(specTETLAFile);
+							final FileInputStream mcOutFIS = new FileInputStream(temporaryMCOutputLogFile);
+							IOUtils.copy(mcOutFIS, fos);
+							
+							final FileInputStream tempTLAFIS = new FileInputStream(tempTLA);
+							IOUtils.copy(tempTLAFIS, fos);
+							
+							fos.close();
+							mcOutFIS.close();
+							tempTLAFIS.close();
+							waitingOnGenerationCompletion.set(false);
+							synchronized(this) {
+								notifyAll();
+							}
 						} catch (final Exception e) {
 							MP.printMessage(EC.GENERAL,
 											"A model checking error occurred while parsing tool output; the execution "
 													+ "ended before the potential SpecTE generation stage.");
+						} finally {
+							if (!haveClosedOutputStream) {
+								try {
+									bos.flush();
+									temporaryMCOutputStream.close();
+								} catch (final Exception e) { }
+							}
 						}
 					};
 					(new Thread(r)).start();
@@ -418,7 +467,7 @@ public class TLC {
 									"Will generate a SpecTE file pair if error states are encountered and we are "
 													+ "being run with the '-tool' flag.");
 				} catch (final IOException ioe) {
-					printErrorMsg("Failed to set up a piped output consumer; no potential SpecTE will be generated: "
+					printErrorMsg("Failed to set up piped output consumers; no potential SpecTE will be generated: "
 							+ ioe.getMessage());
 					mcOutputConsumer = null;
 				}
@@ -1001,8 +1050,9 @@ public class TLC {
                 		
                 		MP.printMessage(EC.GENERAL,
         								"The model check run produced error-states - we will generate the SpecTE files now.");
-                		TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName, parserResults,
-                									   mcOutputConsumer.getError());
+                		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
+                															parserResults, mcOutputConsumer.getError());
+                		specTETLAFile = files[0];
                 	}
                 }
             }
@@ -1035,8 +1085,7 @@ public class TLC {
         		try {
         			tlc2.module.TLC.OUTPUT.flush();
 					tlc2.module.TLC.OUTPUT.close();
-				} catch (IOException e) {
-				}
+				} catch (IOException e) { }
         	}
 			modelCheckerMXWrapper.unregister();
 			// In tool mode print runtime in milliseconds, in non-tool mode print human
@@ -1045,6 +1094,14 @@ public class TLC {
 			MP.printMessage(EC.TLC_FINISHED,
 					TLCGlobals.tool ? Long.toString(runtime) + "ms" : convertRuntimeToHumanReadable(runtime));
 			MP.flush();
+			
+	        while (waitingOnGenerationCompletion.get()) {
+	        	synchronized (this) {
+	        		try {
+	        			wait();
+	        		} catch (final InterruptedException ie) { }
+	        	}
+	        }
         }
     }
     
