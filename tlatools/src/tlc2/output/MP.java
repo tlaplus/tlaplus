@@ -13,11 +13,12 @@ import tlc2.tool.TLCStateInfo;
 import tlc2.tool.liveness.LiveWorker;
 import tlc2.util.statistics.IBucketStatistics;
 import util.Assert;
+import util.Assert.TLCRuntimeException;
 import util.DebugPrinter;
 import util.Set;
 import util.TLAConstants;
+import util.TLAFlightRecorder;
 import util.ToolIO;
-import util.Assert.TLCRuntimeException;
 
 /**
  * This class is used in the following way to support the replacements of the
@@ -287,7 +288,42 @@ public class MP
                 break;
             }
         }
-        // fill with different message depending on the error code
+        
+        b.append(getMessage0(messageClass, messageCode, parameters));
+
+        if (TLCGlobals.tool)
+        {
+            // for the tool we always print the message code
+            b.append(CR).append(DELIM).append(ENDMSG).append(messageCode).append(SPACE).append(DELIM);
+        } else
+        {
+
+            // post processing
+            switch (messageClass) {
+            case WARNING:
+            	if (instance.warningHistory.isEmpty()) {
+            		b.append("\n(Use the -nowarning option to disable this warning.)");
+            	}
+                break;
+            case ERROR:
+                if (TLCGlobals.tool)
+                {
+                    b.append("\n--End Error.");
+                }
+                break;
+            case TLCBUG:
+            case NONE:
+            default:
+                break;
+            }
+        }
+        DebugPrinter.print("Leaving getMessage()"); //$NON-NLS-1$
+        return b.toString();
+    }
+
+	private static String getMessage0(int messageClass, int messageCode, String[] parameters) {
+        final StringBuffer b = new StringBuffer();
+		// fill with different message depending on the error code
         switch (messageCode) {
         case EC.UNIT_TEST:
             b.append("[%1%][%2%]");
@@ -1261,36 +1297,8 @@ public class MP
         }
 
         replaceString(b, parameters);
-
-        if (TLCGlobals.tool)
-        {
-            // for the tool we always print the message code
-            b.append(CR).append(DELIM).append(ENDMSG).append(messageCode).append(SPACE).append(DELIM);
-        } else
-        {
-
-            // post processing
-            switch (messageClass) {
-            case WARNING:
-            	if (instance.warningHistory.isEmpty()) {
-            		b.append("\n(Use the -nowarning option to disable this warning.)");
-            	}
-                break;
-            case ERROR:
-                if (TLCGlobals.tool)
-                {
-                    b.append("\n--End Error.");
-                }
-                break;
-            case TLCBUG:
-            case NONE:
-            default:
-                break;
-            }
-        }
-        DebugPrinter.print("Leaving getMessage()"); //$NON-NLS-1$
         return b.toString();
-    }
+	}
 
     /**
      * Returns the error  
@@ -1561,7 +1569,9 @@ public class MP
     	recorder.record(errorCode, (Object[]) parameters);
         DebugPrinter.print("entering printMessage(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         // write the output
-        ToolIO.out.println(getMessage(NONE, errorCode, parameters));
+		ToolIO.out.println(getMessage(NONE, errorCode, parameters));
+		// Don't log the start and end markers when in -tool mode.
+		TLAFlightRecorder.message(getMessage0(NONE, errorCode, parameters));
         DebugPrinter.print("leaving printError(int, String[]) with errorCode "); //$NON-NLS-1$
     }
 

@@ -33,10 +33,11 @@ import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import util.FileUtil;
+import util.FilenameToStream.TLAFile;
 import util.NamedInputStream;
 import util.TLAConstants;
+import util.TLAFlightRecorder;
 import util.ToolIO;
-import util.FilenameToStream.TLAFile;
 
 /**
  * This class represents a parse unit, i.e. a file containing a
@@ -264,10 +265,10 @@ public class ParseUnit {
         ***********************************************************************/
         if (ToolIO.getMode() == ToolIO.SYSTEM)
         {
-			ToolIO.out.println(String.format("%s %s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath));
+			ToolIO.out.println(TLAFlightRecorder.message(String.format("%s %s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath)));
         } else
         {
-            ToolIO.out.println(String.format("Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath));
+            ToolIO.out.println(TLAFlightRecorder.message(String.format("Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath)));
         }
 
         boolean parseSuccess; 

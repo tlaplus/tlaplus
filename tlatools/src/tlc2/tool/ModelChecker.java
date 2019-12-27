@@ -33,6 +33,7 @@ import util.Assert;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
+import util.TLAFlightRecorder;
 import util.UniqueString;
 
 /** 
@@ -836,7 +837,7 @@ public class ModelChecker extends AbstractChecker
          */
         if (TLCGlobals.tool)
         {	
-        	printProgresStats(startTime);
+        	printProgresStats(startTime, true);
         }
 
         MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(getStatesGenerated()),
@@ -861,7 +862,7 @@ public class ModelChecker extends AbstractChecker
         }
     }
     
-    private final void printProgresStats(final long startTime) throws IOException {
+    private final void printProgresStats(final long startTime, final boolean isFinal) throws IOException {
         final long fpSetSize = this.theFPSet.size();
         
         // print progress showing states per minute metric (spm)
@@ -887,6 +888,9 @@ public class ModelChecker extends AbstractChecker
                 MP.format(this.theStateQueue.size()),
                 MP.format(statesPerMinute),
                 MP.format(distinctStatesPerMinute) });
+		
+		TLAFlightRecorder.progress(isFinal, this.trace.getLevelForReporting(), l, fpSetSize, this.theStateQueue.size(),
+				statesPerMinute, distinctStatesPerMinute);
     }
 
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException
@@ -940,7 +944,7 @@ public class ModelChecker extends AbstractChecker
     {
         final int level = this.trace.getLevel();
         
-    	printProgresStats(-1);
+    	printProgresStats(-1, false);
         
         if (level > depth)
         {

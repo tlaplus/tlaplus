@@ -31,3 +31,4 @@ tlatools/test-model/CallGotoUnlabeledTest.old
 junit[0-9]*.properties
 junitvmwatcher[0-9]*.properties
 test.jfr
+*.jfr
