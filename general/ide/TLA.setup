@@ -185,7 +185,4 @@
       xsi:type="setup:ProjectCatalog"
       href="index:/org.eclipse.setup#//@projectCatalogs[name='com.github']"/>
   <description>TLA+ provides the tlatools and the TLA+Toolbox</description>
-  <setup:PreferenceTask
-      key="/instance/org.eclipse.ui/defaultPerspectiveId"
-      value="org.eclipse.jdt.ui.JavaPerspective"/>
 </setup:Project>
