@@ -195,19 +195,13 @@ public class FileUtil
         }
     }
 
-    public static void copyFile(String fromName, String toName) throws IOException
-    {
-        // REFACTOR
-        FileInputStream fis = new FileInputStream(fromName);
-        FileOutputStream fos = new FileOutputStream(toName);
-        byte[] buf = new byte[8192];
-        int n;
-        while ((n = fis.read(buf)) != -1)
-        {
-            fos.write(buf, 0, n);
-        }
-        fis.close();
-        fos.close();
+    public static void copyFile(final String fromName, final String toName) throws IOException {
+    	copyFile(new File(fromName), new File(toName));
+    }
+    
+    
+    public static void copyFile(final File source, final File destination) throws IOException {
+    	Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
 	/**

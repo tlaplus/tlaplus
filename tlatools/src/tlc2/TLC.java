@@ -5,6 +5,7 @@
 
 package tlc2;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,6 +13,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
@@ -25,10 +28,6 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.TeeOutputStream;
-
 import model.InJarFilenameToStream;
 import model.ModelInJar;
 import tlc2.input.MCOutputPipeConsumer;
@@ -36,6 +35,7 @@ import tlc2.input.MCParser;
 import tlc2.input.MCParserResults;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.output.TeeOutputStream;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
@@ -432,14 +432,14 @@ public class TLC {
 
 							final File tempTLA = File.createTempFile("temp_tlc_tla_", ".tla");
 							tempTLA.deleteOnExit();
-							FileUtils.copyFile(specTETLAFile, tempTLA);
+							FileUtil.copyFile(specTETLAFile, tempTLA);
 							
 							final FileOutputStream fos = new FileOutputStream(specTETLAFile);
 							final FileInputStream mcOutFIS = new FileInputStream(temporaryMCOutputLogFile);
-							IOUtils.copy(mcOutFIS, fos);
+							copyStream(mcOutFIS, fos);
 							
 							final FileInputStream tempTLAFIS = new FileInputStream(tempTLA);
-							IOUtils.copy(tempTLAFIS, fos);
+							copyStream(tempTLAFIS, fos);
 							
 							fos.close();
 							mcOutFIS.close();
@@ -1287,6 +1287,33 @@ public class TLC {
 		default:
 			return "unknown";
 		}
+	}
+	
+	/**
+	 * This is themed on commons-io-2.6's IOUtils.copyLarge(InputStream, OutputStream, byte[]) -
+	 * 	once we move to Java9+, dump this usage in favor of InputStream.transferTo(OutputStream)
+	 * 
+	 * @param is
+	 * @param os
+	 * @return the count of bytes copied
+	 * @throws IOException
+	 */
+	private static long copyStream(final InputStream is, final OutputStream os) throws IOException {
+		final byte[] buffer = new byte[1024 * 4];
+		long byteCount = 0;
+		int n;
+		final BufferedInputStream bis = (is instanceof BufferedInputStream) ? (BufferedInputStream)is
+																			: new BufferedInputStream(is);
+		final BufferedOutputStream bos = (os instanceof BufferedOutputStream) ? (BufferedOutputStream)os
+																			  : new BufferedOutputStream(os);
+		while ((n = bis.read(buffer)) != -1) {
+			bos.write(buffer, 0, n);
+			byteCount += n;
+		}
+		
+		bos.flush();
+		
+		return byteCount;
 	}
     
     /**
