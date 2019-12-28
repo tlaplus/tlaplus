@@ -37,8 +37,6 @@ public class TraceExplorer {
     
     private static final String GENERATE_SPEC_OVERWRITE_PARAMETER_NAME = "-overwrite";
     
-    private static final String SPEC_TE_MODULE_NAME = "SpecTE";
-    
     private static final String SPEC_TE_INIT_ID = "_SpecTEInit";
     private static final String SPEC_TE_NEXT_ID = "_SpecTENext";
     private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "_SpecTEActionConstraint";
@@ -62,17 +60,18 @@ public class TraceExplorer {
     												   results.getOriginalNextOrSpecificationName());
     	SpecTraceExpressionWriter.addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, trace);
     	
-    	final boolean specExtendsTLC = results.getExtendedModules().contains(TLAConstants.BuiltInModules.TLC);
-    	final boolean specExtendsToolbox
-    					= results.getExtendedModules().contains(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
-		final TLACopier tlaCopier = new TLACopier(originalSpecName, SPEC_TE_MODULE_NAME, sourceDirectory,
-												  tlaBuffer.toString(), specExtendsTLC, specExtendsToolbox);
+    	final List<String> extendedModules = results.getOriginalExtendedModules();
+    	final boolean specExtendsTLC = extendedModules.contains(TLAConstants.BuiltInModules.TLC);
+    	final boolean specExtendsToolbox = extendedModules.contains(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
+		final TLACopier tlaCopier = new TLACopier(originalSpecName, TLAConstants.TraceExplore.MODULE_NAME,
+												  sourceDirectory, tlaBuffer.toString(), specExtendsTLC,
+												  specExtendsToolbox);
 		tlaCopier.copy();
 		MP.printMessage(EC.GENERAL,
 						"The file " + tlaCopier.getDestinationFile().getAbsolutePath() + " has been created.");
 		
-		final CFGCopier cfgCopier = new CFGCopier(originalSpecName, SPEC_TE_MODULE_NAME, sourceDirectory,
-												  cfgBuffer.toString());
+		final CFGCopier cfgCopier = new CFGCopier(originalSpecName, TLAConstants.TraceExplore.MODULE_NAME,
+												  sourceDirectory, cfgBuffer.toString());
 		cfgCopier.copy();
 		MP.printMessage(EC.GENERAL,
 						"The file " + cfgCopier.getDestinationFile().getAbsolutePath() + " has been created.");
@@ -345,7 +344,7 @@ public class TraceExplorer {
 			
 			if (!overwriteSpecTE) {
 				final File specTETLA = new File(specGenerationSourceDirectory,
-												(SPEC_TE_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION));
+												(TLAConstants.TraceExplore.MODULE_NAME + TLAConstants.Files.TLA_EXTENSION));
 
 				if (specTETLA.exists()) {
 					printErrorMessage("Error: specified source directory already contains " + specTETLA.getName()

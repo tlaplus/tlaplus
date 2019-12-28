@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -184,10 +185,12 @@ public class ModuleNode extends SymbolNode {
     * ModuleNode class.                                                    *
     ***********************************************************************/
 
-  private HashSet<ModuleNode> allExtendees = null ;
+  private HashMap<Boolean, HashSet<ModuleNode>> depthAllExtendeesMap = new HashMap<>();
     /***********************************************************************
     * The set of all modules that are extended by this module--either      *
-    * directly or indirectly.  Returned by getExtendModules                *
+    * directly or indirectly, keyed a Boolean representing whether the     *
+    * extendees are gathered recursively of not.                           *
+    * Returned by getExtendModules                                         *
     ***********************************************************************/
 
   private OpDeclNode[] constantDecls = null;
@@ -628,19 +631,25 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
    */
   public final HashSet<ModuleNode> getExtendedModuleSet(final boolean recursively) {
 		/***********************************************************************
-		 * Returns a Hashset whose elements are ModuleNode objects representing * all
-		 * modules that are extended by this module--either directly or * indirectly. *
+		 * Returns a Hashset whose elements are ModuleNode objects representing *
+		 * all modules that are extended by this module--either directly or     *
+		 * indirectly.                                                          *
 		 ***********************************************************************/
-		if (this.allExtendees == null) {
-			this.allExtendees = new HashSet<>();
-			for (int i = 0; i < this.extendees.length; i++) {
-				this.allExtendees.add(this.extendees[i]);
-				if (recursively) {
-					this.allExtendees.addAll(this.extendees[i].getExtendedModuleSet(recursively));
-				}
-			} // for
-		} // if
-		return this.allExtendees ;
+	  final Boolean key = Boolean.valueOf(recursively);
+	  HashSet<ModuleNode> extendeesSet = depthAllExtendeesMap.get(key);
+	  if (extendeesSet == null) {
+		  extendeesSet = new HashSet<>();
+		  for (int i = 0; i < this.extendees.length; i++) {
+			  extendeesSet.add(extendees[i]);
+			  if (recursively) {
+				  extendeesSet.addAll(extendees[i].getExtendedModuleSet(true));
+			  }
+		  }
+		  
+		  depthAllExtendeesMap.put(key, extendeesSet);
+	  }
+	  
+	  return extendeesSet;
   }
 
   public boolean extendsModule(ModuleNode mod) {

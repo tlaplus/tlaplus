@@ -59,6 +59,7 @@ public final class TLAConstants {
 	}
 	
 	public final class TraceExplore {
+	    public static final String MODULE_NAME = "SpecTE";
 		public static final String ACTION = "_TEAction";
 		public static final String POSITION = "_TEPosition";
 		public static final String TRACE = "_TETrace";

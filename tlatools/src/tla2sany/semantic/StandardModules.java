@@ -29,22 +29,21 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class StandardModules {
-
-	private static final Set<String> standardModules = new HashSet<>();
+	private static final Set<String> STANDARD_MODULES = new HashSet<>();
 	
 	static {
 		// Quick'n'Dirty hack! This breaks if any one of the operators is override by
 		// the model or a complete standard module has been replaced by a user-defined
 		// module with the same name.
-		standardModules.add("FiniteSets");
-		standardModules.add("Sequences");
-		standardModules.add("Bags");
-		standardModules.add("Naturals");
-		standardModules.add("Integers");
-		standardModules.add("Reals");
-		standardModules.add("RealTime");
-		standardModules.add("Randomization");
-		standardModules.add("TLC");
+		STANDARD_MODULES.add("FiniteSets");
+		STANDARD_MODULES.add("Sequences");
+		STANDARD_MODULES.add("Bags");
+		STANDARD_MODULES.add("Naturals");
+		STANDARD_MODULES.add("Integers");
+		STANDARD_MODULES.add("Reals");
+		STANDARD_MODULES.add("RealTime");
+		STANDARD_MODULES.add("Randomization");
+		STANDARD_MODULES.add("TLC");
 	}
 
 	private StandardModules() {
@@ -52,10 +51,17 @@ public class StandardModules {
 	}
 	
 	public static boolean isDefinedInStandardModule(SemanticNode sn) {
-		if (sn != null && sn.getLocation() != null) {
-			final String source = sn.getLocation().source(); // source might be null
-			return standardModules.contains(source);
+		if ((sn != null) && (sn.getLocation() != null)) {
+			return isDefinedInStandardModule(sn.getLocation().source()); // source might be null
 		}
 		return false;
+	}
+	
+	public static boolean isDefinedInStandardModule(final String moduleName) {
+		return STANDARD_MODULES.contains(moduleName);
+	}
+	
+	public static void filterNonStandardModulesFromSet(final Set<String> listOfModules) {
+		listOfModules.retainAll(STANDARD_MODULES);
 	}
 }

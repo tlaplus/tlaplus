@@ -1,6 +1,7 @@
 package tlc2.input;
 
 import java.util.List;
+import java.util.Set;
 
 import tla2sany.st.Location;
 import tlc2.model.MCError;
@@ -11,7 +12,8 @@ public class MCParserResults {
 	private MCError error;
 	private List<MCOutputMessage> outputMessages;
 
-	private final List<String> extendedModules;
+	private final List<String> immediateExtendedModules;
+	private final Set<String> allExtendedModules;
 
 	private final List<Location> initNextLocationsToDelete;
 
@@ -19,11 +21,12 @@ public class MCParserResults {
 	
 	private final String originalNextOrSpecificationName;
 
-	MCParserResults(final String rootModuleName, final List<String> extendeds, final List<Location> initNextLocations,
-					final boolean wasInitNext, final String nextOrSpecName) {
+	MCParserResults(final String rootModuleName, final List<String> immediateExtendeds, final Set<String> allExtendeds,
+					final List<Location> initNextLocations, final boolean wasInitNext, final String nextOrSpecName) {
 		moduleName = rootModuleName;
 		
-		extendedModules = extendeds;
+		immediateExtendedModules = immediateExtendeds;
+		allExtendedModules = allExtendeds;
 		
 		initNextLocationsToDelete = initNextLocations;
 		
@@ -33,9 +36,9 @@ public class MCParserResults {
 	}
 	
 	MCParserResults(final String rootModuleName, final MCError mcError, final List<MCOutputMessage> messages,
-					final List<String> extendeds, final List<Location> initNextLocations, final boolean wasInitNext,
-					final String nextOrSpecName) {
-		this(rootModuleName, extendeds, initNextLocations, wasInitNext, nextOrSpecName);
+					final List<String> immediateExtendeds, final Set<String> allExtendeds,
+					final List<Location> initNextLocations, final boolean wasInitNext, final String nextOrSpecName) {
+		this(rootModuleName, immediateExtendeds, allExtendeds, initNextLocations, wasInitNext, nextOrSpecName);
 		
 		error = mcError;
 		outputMessages = messages;
@@ -65,8 +68,20 @@ public class MCParserResults {
 		outputMessages = messages;
 	}
 
-	public List<String> getExtendedModules() {
-		return extendedModules;
+	/**
+	 * @return the {@link List} of all modules extended by the root spec explicitly - in other words, for example,
+	 * 				the X, Y, Z cited by a root spec's "EXTENDS X, Y, Z"
+	 */
+	public List<String> getOriginalExtendedModules() {
+		return immediateExtendedModules;
+	}
+	
+	/**
+	 * @return the {@link Set} of all modules extended - in other words, the modules extended by all modules extended
+	 * 				by all modules extended by ... the root spec.
+	 */
+	public Set<String> getAllExtendedModules() {
+		return allExtendedModules;
 	}
 
 	/**

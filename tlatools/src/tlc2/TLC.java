@@ -36,6 +36,7 @@ import tlc2.input.MCParserResults;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.TeeOutputStream;
+import tlc2.output.TLAMonolithCreator;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
@@ -127,6 +128,7 @@ public class TLC {
     private File temporaryMCOutputLogFile;
     private FileOutputStream temporaryMCOutputStream;
     private File specTETLAFile;
+    private MCParserResults mcParserResults;
     private MCOutputPipeConsumer mcOutputConsumer;
     private final AtomicBoolean waitingOnGenerationCompletion;
     
@@ -429,7 +431,7 @@ public class TLC {
 							bos.flush();
 							temporaryMCOutputStream.close();
 							haveClosedOutputStream = true;
-
+							
 							final File tempTLA = File.createTempFile("temp_tlc_tla_", ".tla");
 							tempTLA.deleteOnExit();
 							FileUtil.copyFile(specTETLAFile, tempTLA);
@@ -444,6 +446,14 @@ public class TLC {
 							fos.close();
 							mcOutFIS.close();
 							tempTLAFIS.close();
+							
+							final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
+							final TLAMonolithCreator monolithCreator
+									= new TLAMonolithCreator(TLAConstants.TraceExplore.MODULE_NAME,
+															 mcOutputConsumer.getSourceDirectory(),
+															 extendedModules, mcParserResults.getAllExtendedModules());
+							monolithCreator.copy();
+							
 							waitingOnGenerationCompletion.set(false);
 							synchronized(this) {
 								notifyAll();
@@ -1044,14 +1054,14 @@ public class TLC {
                 	} else {
                 		final SpecProcessor sp = tool.getSpecProcessor();
                 		final ModelConfig mc = tool.getModelConfig();
-                		final MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
                 		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
                 		final String originalSpecName = mcOutputConsumer.getSpecName();
                 		
                 		MP.printMessage(EC.GENERAL,
         								"The model check run produced error-states - we will generate the SpecTE files now.");
+                		mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
                 		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
-                															parserResults, mcOutputConsumer.getError());
+                															mcParserResults, mcOutputConsumer.getError());
                 		specTETLAFile = files[0];
                 	}
                 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 import tla2sany.semantic.ModuleNode;
@@ -35,10 +36,9 @@ public class MCParser {
 	 * @return an instance of {@link MCParserResults} with neither error nor output messages set, yet
 	 */
 	public static MCParserResults generateResultsFromProcessorAndConfig(final SpecProcessor specProcessor,
-			final ModelConfig modelConfig) {
+																		final ModelConfig modelConfig) {
 		final String rootModuleName;
 		final String nextOrSpecName;
-		final ArrayList<String> extendees = new ArrayList<>();
 		final ArrayList<Location> initNextLocationsToDelete = new ArrayList<>();
 		final boolean isInitNext = !modelConfig.configDefinesSpecification();
 		final ModuleNode root = specProcessor.getRootModule();
@@ -70,10 +70,16 @@ public class MCParser {
 		}
 		initNextLocationsToDelete.sort(new LocationComparator());
 
+		final ArrayList<String> extendees = new ArrayList<>();
 		root.getExtendedModuleSet(false).stream().forEach(moduleNode -> extendees.add(moduleNode.getName().toString()));
+
+		final HashSet<String> allExtendees = new HashSet<>();
+		root.getExtendedModuleSet(true).stream().forEach(moduleNode -> allExtendees.add(moduleNode.getName().toString()));
+		
 		rootModuleName = root.getName().toString();
 
-		return new MCParserResults(rootModuleName, extendees, initNextLocationsToDelete, isInitNext, nextOrSpecName);
+		return new MCParserResults(rootModuleName, extendees, allExtendees, initNextLocationsToDelete,
+								   isInitNext, nextOrSpecName);
 	}	
 	
 	private final ModelConfig configParser;
@@ -188,8 +194,8 @@ public class MCParser {
 			} else {
 				// we'll have a zero size if the output generated came from a TLC run that did not have the '-tool' flag
 				parserResults = new MCParserResults(null, ((outputParser != null) ? outputParser.getError() : null),
-													encounteredMessages, new ArrayList<>(), new ArrayList<>(),
-													true, null);
+													encounteredMessages, new ArrayList<>(), new HashSet<>(),
+													new ArrayList<>(), true, null);
 			}
 			
 			return parserResults;
@@ -213,8 +219,8 @@ public class MCParser {
 			System.out.println(error.toSequenceOfRecords(true));
 		}
 		
-		final List<String> extendedModules = results.getExtendedModules();
-		System.out.println("Found " + extendedModules.size() + " module(s) being extended:");
+		final List<String> extendedModules = results.getOriginalExtendedModules();
+		System.out.println("Found " + extendedModules.size() + " module(s) being extended explicitly by the root spec:");
 		for (final String module : extendedModules) {
 			System.out.println("\t" + module);
 		}
