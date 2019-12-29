@@ -92,6 +92,7 @@ public class InliningTest extends ModelCheckerTestCase {
 		// "hot method too big" and not for "callee is too large":
 		// https://www.lmax.com/blog/staff-blogs/2016/03/30/notes-hotspot-compiler-flags/
 		final Set<RecordedObject> notInlined = recordedEvents.stream()
+				.filter(ev -> ev.hasField("message"))
 				.filter(ev -> "hot method too big".equals(ev.getString("message")))
 				.map(ev -> (RecordedObject) ev.getValue("callee"))
 				.filter(ro -> ro.getString("type").startsWith("tlc2/tool/impl/Tool"))
