@@ -22,6 +22,7 @@ import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.impl.CallStackTool;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.DiskByteArrayQueue;
 import tlc2.tool.queue.DiskStateQueue;
@@ -183,17 +184,17 @@ public class ModelChecker extends AbstractChecker
                 }
 
                 // Replay the error with the error stack recorded:
-                this.tool.setCallStack();
+                final CallStackTool cTool = new CallStackTool(this.tool);
                 try
                 {
                     numberOfInitialStates = 0;
                     // SZ Feb 23, 2009: ignore cancel on error reporting
-                    this.doInit(true);
+					this.doInit(cTool, true);
                 } catch (FingerprintException fe){
                     result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fe.getTrace(), fe.getRootCause().getMessage()});
                 } catch (Throwable e1) {
                     // Assert.printStack(e);
-                    result = MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
+                    result = MP.printError(EC.TLC_NESTED_EXPRESSION, cTool.toString());
                 }
                 this.printSummary(false, startTime);
                 this.cleanup(false);
@@ -270,13 +271,13 @@ public class ModelChecker extends AbstractChecker
             } else if (this.keepCallStack)
             {
                 // Replay the error with the error stack recorded:
-                this.tool.setCallStack();
+            	final CallStackTool cTool = new CallStackTool(this.tool);
                 try
                 {
 					// Not adding newly created Worker to trace#addWorker because it is not supposed
 					// to rewrite the trace file but to reconstruct actual states referenced by
 					// their fingerprints in the trace.
-					this.doNext(this.predErrState, this.checkLiveness ? new SetOfStates() : null,
+					this.doNext(cTool, this.predErrState, this.checkLiveness ? new SetOfStates() : null,
 							new Worker(4223, this, this.metadir, tool.getRootName()));
                 } catch (FingerprintException e)
                 {
@@ -284,7 +285,7 @@ public class ModelChecker extends AbstractChecker
                 } catch (Throwable e)
                 {
                     // Assert.printStack(e);
-                    result = MP.printError(EC.TLC_NESTED_EXPRESSION, this.tool.getCallStack().toString());
+                    result = MP.printError(EC.TLC_NESTED_EXPRESSION, cTool.toString());
                 }
             }
         } catch (Exception e)
@@ -347,7 +348,12 @@ public class ModelChecker extends AbstractChecker
      * @return status, if false, the processing should be stopped
      * @throws Throwable
      */
-    public final int doInit(boolean ignoreCancel) throws Throwable
+    @Override
+    public final int doInit(boolean ignoreCancel) throws Throwable {
+    	return doInit(this.tool, ignoreCancel);
+    }
+    
+    private final int doInit(final ITool tool, boolean ignoreCancel) throws Throwable
     {
 		// Generate the initial states.
         //
@@ -362,12 +368,12 @@ public class ModelChecker extends AbstractChecker
 			// Rerunning state space exploration to reconstruct the error stack to determine
 			// what caused Tool to fail to evaluate the init predicate expressions. Thus,
 			// re-check all invariants even if state is already known (= part of theFPSet).
-        	functor = new DoInitFunctor(ignoreCancel);
+        	functor = new DoInitFunctor(tool, ignoreCancel);
         } else {
-        	functor = new DoInitFunctor();
+        	functor = new DoInitFunctor(tool);
         }
 		try {
-			this.tool.getInitStates(functor);
+			tool.getInitStates(functor);
 		} catch (DoInitFunctor.InvariantViolatedException ive) {
 			this.errState = functor.errState;
 			return functor.returnValue;
@@ -397,27 +403,16 @@ public class ModelChecker extends AbstractChecker
      * 
      * This method is called from the workers on every step
      */
-    public final boolean doNext(TLCState curState, final SetOfStates liveNextStates, final Worker worker) throws Throwable
+    private final boolean doNext(final ITool tool, TLCState curState, final SetOfStates liveNextStates, final Worker worker) throws Throwable
     {
         boolean deadLocked = true;
         TLCState succState = null;
         try
         {
-            for (int i = 0; i < this.tool.getActions().length; i++)
+            for (int i = 0; i < tool.getActions().length; i++)
             {
-				//TODO Implement IStateFunctor pattern for getNextStates() too
-				// to reduce memory and runtime overhead of allocating and
-				// looping StateVec. However - contrary to doInit() - doNext()
-				// is incompatible to the functor when liveness checking is
-				// turned on. Liveness checking does not support adding
-				// nextStates one-by-one but expects to be given the whole set
-				// of nextStates in a single invocation
-				// (LiveCheck#addNextState(..). If this limitation is ever
-				// removed, the functor pattern could be applied to doNext too.
-				// Other problems are access to worker and curState. A stateless functor has no
-				// access to curState and worker except when it uses thread local storage.
-				final Action action = this.tool.getActions()[i];
-				final StateVec nextStates = this.tool.getNextStates(action, curState);
+				final Action action = tool.getActions()[i];
+				final StateVec nextStates = tool.getNextStates(action, curState);
 				final int sz = nextStates.size();
 				worker.incrementStatesGenerated(sz);
 				deadLocked = deadLocked && (sz == 0);
@@ -426,12 +421,12 @@ public class ModelChecker extends AbstractChecker
                 {
 					succState = nextStates.elementAt(j);
 					// Check if succState is a legal state.
-                    if (!this.tool.isGoodState(succState))
+                    if (!tool.isGoodState(succState))
                     {
                     	return doNextSetErr(curState, succState, action);
 					}
 
-					final boolean inModel = (this.tool.isInModel(succState) && this.tool.isInActions(curState, succState));
+					final boolean inModel = (tool.isInModel(succState) && tool.isInActions(curState, succState));
 					boolean unseen = true;
                     if (inModel)
                     {
@@ -440,13 +435,13 @@ public class ModelChecker extends AbstractChecker
 					// Check if an unseen succState violates any invariant:
                     if (unseen)
                     {
-                    	if (doNextCheckInvariants(curState, succState)) {
+                    	if (doNextCheckInvariants(tool, curState, succState)) {
                     		return true;
                     	}
 					}
                     // Check if the state violates any implied action. We need to do it
                     // even if succState is not new.
-                    if (doNextCheckImplied(curState, succState)) {
+                    if (doNextCheckImplied(tool, curState, succState)) {
                     	return true;
                     }
                     if (inModel && unseen) {
@@ -501,51 +496,51 @@ public class ModelChecker extends AbstractChecker
 		return seen;
 	}
 
-	private final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
+	private final boolean doNextCheckInvariants(final ITool tool, final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
         int k = 0;
 		try
         {
-			for (k = 0; k < this.tool.getInvariants().length; k++)
+			for (k = 0; k < tool.getInvariants().length; k++)
             {
-                if (!tool.isValid(this.tool.getInvariants()[k], succState))
+                if (!tool.isValid(tool.getInvariants()[k], succState))
                 {
                     // We get here because of invariant violation:
                 	if (TLCGlobals.continuation) {
                         synchronized (this)
                         {
 							MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
-									this.tool.getInvNames()[k]);
+									tool.getInvNames()[k]);
 							this.trace.printTrace(curState, succState);
 							return false;
                         }
                 	} else {
 						return doNextSetErr(curState, succState, false,
-								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
+								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, tool.getInvNames()[k]);
                 	}
 				}
 			}
         } catch (Exception e)
         {
 			doNextEvalFailed(curState, succState, EC.TLC_INVARIANT_EVALUATION_FAILED,
-					this.tool.getInvNames()[k], e);
+					tool.getInvNames()[k], e);
 		}
 		return false;
 	}
 
-	private final boolean doNextCheckImplied(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
+	private final boolean doNextCheckImplied(final ITool tool, final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
 		int k = 0;
         try
         {
-			for (k = 0; k < this.tool.getImpliedActions().length; k++)
+			for (k = 0; k < tool.getImpliedActions().length; k++)
             {
-                if (!tool.isValid(this.tool.getImpliedActions()[k], curState, succState))
+                if (!tool.isValid(tool.getImpliedActions()[k], curState, succState))
                 {
                     // We get here because of implied-action violation:
                     if (TLCGlobals.continuation)
                     {
                         synchronized (this)
                         {
-                            MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
+                            MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, tool
                                     .getImpliedActNames()[k]);
 							this.trace.printTrace(curState, succState);
 							return false;
@@ -553,14 +548,14 @@ public class ModelChecker extends AbstractChecker
                     } else {
 						return doNextSetErr(curState, succState, false,
 								EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
-								this.tool.getImpliedActNames()[k]);
+								tool.getImpliedActNames()[k]);
                 	}
 				}
 			}
         } catch (Exception e)
         {
 			doNextEvalFailed(curState, succState, EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
-					this.tool.getImpliedActNames()[k], e);
+					tool.getImpliedActNames()[k], e);
 		}
         return false;
 	}
@@ -1084,13 +1079,15 @@ public class ModelChecker extends AbstractChecker
 		private int returnValue = EC.NO_ERROR;
 		
 		private final boolean forceChecks;
+		private final ITool tool;
 		
-		public DoInitFunctor() {
-			this(false);
+		public DoInitFunctor(ITool tool) {
+			this(tool, false);
 		}
 		
-		public DoInitFunctor(boolean forceChecks) {
+		public DoInitFunctor(ITool tool, boolean forceChecks) {
 			this.forceChecks = forceChecks;
+			this.tool = tool;
 		}
 
 		/* (non-Javadoc)

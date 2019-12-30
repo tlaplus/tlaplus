@@ -28,7 +28,6 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
-import tlc2.tool.CallStack;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.IActionItemList;
@@ -83,7 +82,6 @@ import tlc2.value.impl.ValueEnumeration;
 import tlc2.value.impl.ValueExcept;
 import tlc2.value.impl.ValueVec;
 import util.Assert;
-import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
 import util.UniqueString;
 
@@ -95,17 +93,14 @@ import util.UniqueString;
  * This is one of two places in TLC, where not all messages are retrieved from the message printer,
  * but constructed just here in the code.
  */
-public class Tool
+public abstract class Tool
     extends Spec
     implements ValueConstants, ToolGlobals, ITool
 {
 	
   public static final Value[] EmptyArgs = new Value[0];
 
-	
   protected final Action[] actions;     // the list of TLA actions.
-  private CallStack callStack;    // the call stack.
-
   private Vect<Action> actionVec = new Vect<>(10);
 
   /**
@@ -127,7 +122,6 @@ public class Tool
   public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver)
   {
       super(specDir, specFile, configFile, resolver);
-      this.callStack = null;
 
       // Initialize state.
       TLCStateMut.setTool(this);
@@ -148,23 +142,10 @@ public class Tool
   Tool(Tool other) {
 	  super(other);
 	  this.actions = other.actions;
-	  this.callStack = other.callStack;
 	  this.actionVec = other.actionVec;
   }
 
-	@Override
-  public final void setCallStack()
-  {
-      this.callStack = new CallStack();
-  }
-
-  @Override
-  public final CallStack getCallStack()
-  {
-      return this.callStack;
-  }
-
-  /**
+	/**
    * This method returns the set of all possible actions of the
    * spec, and sets the actions field of this object. In fact, we
    * could simply treat the next predicate as one "giant" action.
@@ -366,10 +347,8 @@ public class Tool
     return state;
   }
 
-  private final void getInitStates(SemanticNode init, ActionItemList acts,
+  protected void getInitStates(SemanticNode init, ActionItemList acts,
                                    Context c, TLCState ps, IStateFunctor states, CostModel cm) {
-    if (this.callStack != null) this.callStack.push(init);
-    try {
         switch (init.getKind()) {
         case OpApplKind:
           {
@@ -420,17 +399,6 @@ public class Tool
             Assert.fail("The init state relation is not a boolean expression.\n" + init);
           }
         }
-    } catch (TLCRuntimeException | EvalException e) {
-	    if (this.callStack != null) {
-			// Freeze the callStack to ignore subsequent pop operations. This is
-			// necessary to ignore the callStack#pop calls in the finally blocks when the
-			// Java call stack gets unwounded.
-			this.callStack.freeze();
-	    }
-	    throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
 
   private final void getInitStates(ActionItemList acts, TLCState ps, IStateFunctor states, CostModel cm) {
@@ -477,11 +445,9 @@ public class Tool
 		this.getInitStates(acts.carPred(), acts1, acts.carContext(), ps, states, acts.cm);
 	  }
 
-  private final void getInitStatesAppl(OpApplNode init, ActionItemList acts,
+  protected void getInitStatesAppl(OpApplNode init, ActionItemList acts,
                                        Context c, TLCState ps, IStateFunctor states, CostModel cm) {
-    if (this.callStack != null) this.callStack.push(init);
     if (coverage) {cm = cm.get(init);}
-    try {
         ExprOrOpArgNode[] args = init.getArgs();
         int alen = args.length;
         SymbolNode opNode = init.getOperator();
@@ -768,15 +734,8 @@ public class Tool
             return;
           }
         }
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	if (this.callStack != null) { this.callStack.freeze(); }
-	    throw e;
-    } finally {
-    	if (this.callStack != null) { this.callStack.pop(); }
-    }
   }
-
+  
   /**
    * This method returns the set of next states when taking the action
    * in the given state.
@@ -801,30 +760,10 @@ public class Tool
 		return false;
   }
 
-  private final TLCState getNextStates(final Action action, SemanticNode pred, ActionItemList acts, Context c,
-                                       TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm) {
-	    if (this.callStack != null) {
-	    	return getNextStatesWithCallStack(action, pred, acts, c, s0, s1, nss, cm);
-	    } else {
-	    	return getNextStatesImpl(action, pred, acts, c, s0, s1, nss, cm);
-	    }
-  }
+  protected abstract TLCState getNextStates(final Action action, SemanticNode pred, ActionItemList acts, Context c,
+                                       TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm);
   
-  private final TLCState getNextStatesWithCallStack(final Action action, SemanticNode pred, ActionItemList acts, Context c,
-              TLCState s0, TLCState s1, INextStateFunctor nss, final CostModel cm) {
-	    this.callStack.push(pred);
-	    try {
-	    	return getNextStatesImpl(action, pred, acts, c, s0, s1, nss, cm);
-	    } catch (TLCRuntimeException | EvalException e) {
-	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-	    	this.callStack.freeze();
-		    throw e;
-	    } finally {
-	    	this.callStack.pop();
-	    }
-  }
-  
-  private final TLCState getNextStatesImpl(final Action action, SemanticNode pred, ActionItemList acts, Context c,
+  protected final TLCState getNextStatesImpl(final Action action, SemanticNode pred, ActionItemList acts, Context c,
               TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm) {
         switch (pred.getKind()) {
         case OpApplKind:
@@ -974,35 +913,15 @@ public class Tool
   /* getNextStatesAppl */
 
   @ExpectInlined
-  private final TLCState getNextStatesAppl(final Action action, OpApplNode pred, ActionItemList acts, Context c,
-          TLCState s0, TLCState s1, INextStateFunctor nss, final CostModel cm) {
-	  if (this.callStack != null) {
-		  return getNextStatesApplWithCallStack(action, pred, acts, c, s0, s1, nss, cm);
-	  } else {
-	      return getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
-	  }
-  }
+  protected abstract TLCState getNextStatesAppl(final Action action, OpApplNode pred, ActionItemList acts, Context c,
+          TLCState s0, TLCState s1, INextStateFunctor nss, final CostModel cm);
   
-  private final TLCState getNextStatesApplWithCallStack(final Action action, OpApplNode pred, ActionItemList acts, Context c,
-          TLCState s0, TLCState s1, INextStateFunctor nss, final CostModel cm) {
-	    this.callStack.push(pred);
-	    try {
-	    	return getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
-	    } catch (TLCRuntimeException | EvalException e) {
-	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-	    	this.callStack.freeze();
-	    	throw e;
-	    } finally {
-	    	this.callStack.pop();
-	    }
-  }
-
-  private final TLCState getNextStatesApplImpl(final Action action, final OpApplNode pred, final ActionItemList acts, final Context c,
+  protected final TLCState getNextStatesApplImpl(final Action action, final OpApplNode pred, final ActionItemList acts, final Context c,
                                            final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
         final ExprOrOpArgNode[] args = pred.getArgs();
         final int alen = args.length;
         final SymbolNode opNode = pred.getOperator();
-        
+
         int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
         if (opcode == 0) {
@@ -1072,7 +991,7 @@ public class Tool
   }
 
   private final TLCState getNextStatesApplUsrDefOp(final Action action, final OpApplNode pred, final ActionItemList acts, final TLCState s0,
-		final TLCState s1, final StateVec nss, final CostModel cm, final Object bval) {
+		final TLCState s1, final INextStateFunctor nss, final CostModel cm, final Object bval) {
 	if (!(bval instanceof BoolValue))
 	{
 	  Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
@@ -1090,7 +1009,7 @@ public class Tool
   }
 
   private final TLCState getNextStatesApplSwitch(final Action action, final OpApplNode pred, final ActionItemList acts, final Context c, final TLCState s0,
-		final TLCState s1, final StateVec nss, final CostModel cm, final ExprOrOpArgNode[] args, final int alen, final int opcode) {
+		final TLCState s1, final INextStateFunctor nss, final CostModel cm, final ExprOrOpArgNode[] args, final int alen, final int opcode) {
 	TLCState resState = s1;
 	switch (opcode) {
 	case OPCODE_cl:     // ConjList
@@ -1340,28 +1259,10 @@ public class Tool
   /* processUnchanged */
 
   @ExpectInlined
-  private final TLCState processUnchanged(final Action action, SemanticNode expr, ActionItemList acts, Context c,
-                                          TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm) {
-	  if (this.callStack != null) {
-		  return processUnchangedWithCallStack(action, expr, acts, c, s0, s1, nss, cm);
-	  } else {
-		   return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
-	  }
-  }
-  private final TLCState processUnchangedWithCallStack(final Action action, SemanticNode expr, ActionItemList acts, Context c,
-          TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm) {
-	   this.callStack.push(expr);
-	   try {
-		   return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
-	    } catch (TLCRuntimeException | EvalException e) {
-	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-	    	this.callStack.freeze();
-	    	throw e;
-	    } finally {
-	    	this.callStack.pop();
-	    }
-  }
-  private final TLCState processUnchangedImpl(final Action action, SemanticNode expr, ActionItemList acts, Context c,
+  protected abstract TLCState processUnchanged(final Action action, SemanticNode expr, ActionItemList acts, Context c,
+                                          TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm);
+  
+  protected final TLCState processUnchangedImpl(final Action action, SemanticNode expr, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm) {
     if (coverage){cm = cm.get(expr);}
         SymbolNode var = this.getVar(expr, c, false, toolId);
@@ -1482,31 +1383,11 @@ public class Tool
    * This method evaluates the expression expr in the given context,
    * current state, and partial next state.
    */
-  @ExpectInlined
-  public final Value eval(SemanticNode expr, Context c, TLCState s0,
-                          TLCState s1, final int control, final CostModel cm) {
-	    if (this.callStack != null) {
-	    	return evalWithCallStack(expr, c, s0, s1, control, cm);
-	    } else {
-	    	return evalImpl(expr, c, s0, s1, control, cm);
-	    }
-  }
-  private final Value evalWithCallStack(SemanticNode expr, Context c, TLCState s0,
-          TLCState s1, final int control, final CostModel cm) {
-	    this.callStack.push(expr);
-	    try {
-	    	return evalImpl(expr, c, s0, s1, control, cm);
-	    } catch (TLCRuntimeException | EvalException e) {
-	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-	    	this.callStack.freeze();
-	    	throw e;
-	    } finally {
-	    	this.callStack.pop();
-	    }
-  }
+  public abstract Value eval(SemanticNode expr, Context c, TLCState s0,
+                          TLCState s1, final int control, final CostModel cm);
   
   @ExpectInlined
-  private final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
+  protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
           final TLCState s1, final int control, CostModel cm) {
         switch (expr.getKind()) {
         /***********************************************************************
@@ -1611,31 +1492,10 @@ public class Tool
   /* evalAppl */
   
   @ExpectInlined
-  private final Value evalAppl(final OpApplNode expr, Context c, TLCState s0,
-          TLCState s1, final int control, final CostModel cm) {
-	  if (this.callStack != null) {
-		  return evalApplWithCallStack(expr, c, s0, s1, control, cm);
-	  } else {
-		  return evalApplImpl(expr, c, s0, s1, control, cm);
-	  }
-  }
+  protected abstract Value evalAppl(final OpApplNode expr, Context c, TLCState s0,
+          TLCState s1, final int control, final CostModel cm);
 
-  @ExpectInlined
-  private final Value evalApplWithCallStack(final OpApplNode expr, Context c, TLCState s0,
-          TLCState s1, final int control, final CostModel cm) {
-	    this.callStack.push(expr);
-	    try {
-	    	return evalApplImpl(expr, c, s0, s1, control, cm);
-	    } catch (TLCRuntimeException | EvalException e) {
-	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-	    	this.callStack.freeze();
-	    	throw e;
-	    } finally {
-	    	this.callStack.pop();
-	    }
-  }
-  
-  private final Value evalApplImpl(final OpApplNode expr, Context c, TLCState s0,
+  protected final Value evalApplImpl(final OpApplNode expr, Context c, TLCState s0,
                               TLCState s1, final int control, CostModel cm) {
     if (coverage){
     	cm = cm.getAndIncrement(expr);
@@ -2531,12 +2391,7 @@ public class Tool
         }
   }
 
-  private final Value setSource(final SemanticNode expr, final Value value) {
-    if (this.callStack != null) {
-      value.setSource(expr);
-    }
-    return value;
-  }
+  protected abstract Value setSource(final SemanticNode expr, final Value value);
 
   /**
    * This method determines if the argument is a valid state.  A state
@@ -2603,30 +2458,10 @@ public class Tool
    * enabled in the state s and context act.con.
    */
   @Override
-  public final TLCState enabled(SemanticNode pred, IActionItemList acts,
-                                Context c, TLCState s0, TLCState s1, CostModel cm) {
-	    if (this.callStack != null) {
-	    	return enabledWithCallStack(pred, (ActionItemList) acts, c, s0, s1, cm);
-	    } else {
-	    	return enabledImpl(pred, (ActionItemList) acts, c, s0, s1, cm);
-	    }
-  }
+  public abstract TLCState enabled(SemanticNode pred, IActionItemList acts,
+                                Context c, TLCState s0, TLCState s1, CostModel cm);
 
-  private final TLCState enabledWithCallStack(SemanticNode pred, ActionItemList acts,
-          Context c, TLCState s0, TLCState s1, CostModel cm) {
-    this.callStack.push(pred);
-    try {
-    	return enabledImpl(pred, acts, c, s0, s1, cm);
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	this.callStack.freeze();
-    	throw e;
-    } finally {
-    	this.callStack.pop();
-    }
-  }
-  
-  private final TLCState enabledImpl(SemanticNode pred, ActionItemList acts,
+  protected final TLCState enabledImpl(SemanticNode pred, ActionItemList acts,
           Context c, TLCState s0, TLCState s1, CostModel cm) {
         switch (pred.getKind()) {
         case OpApplKind:
@@ -2720,30 +2555,9 @@ public class Tool
     return res;
   }
 
-  private final TLCState enabledAppl(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm)
-  {
-	    if (this.callStack != null) {
-	    	return enabledApplWithCallStack(pred, acts, c, s0, s1, cm);
-	    } else {
-	    	return enabledApplImpl(pred, acts, c, s0, s1, cm);
-	    }
-  }
+  protected abstract TLCState enabledAppl(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm);
 
-  private final TLCState enabledApplWithCallStack(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm)
-  {
-	    this.callStack.push(pred);
-	    try {
-	    	return enabledApplImpl(pred, acts, c, s0, s1, cm);
-	    } catch (TLCRuntimeException | EvalException e) {
-	    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-	    	this.callStack.freeze();
-	    	throw e;
-	    } finally {
-	    	this.callStack.pop();
-	    }
-  }
- 
-  private final TLCState enabledApplImpl(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm)
+  protected final TLCState enabledApplImpl(OpApplNode pred, ActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm)
   {
     if (coverage) {cm = cm.get(pred);}
         ExprOrOpArgNode[] args = pred.getArgs();
@@ -3140,30 +2954,10 @@ public class Tool
         }
   }
 
-  private final TLCState enabledUnchanged(SemanticNode expr, ActionItemList acts,
-                                          Context c, TLCState s0, TLCState s1, CostModel cm) {
-	    if (this.callStack != null) {
-	    	return enabledUnchangedWithCallStack(expr, acts, c, s0, s1, cm);
-	    } else {
-	    	return enabledUnchangedImpl(expr, acts, c, s0, s1, cm);
-	    }
-  }
-
-  private final TLCState enabledUnchangedWithCallStack(SemanticNode expr, ActionItemList acts,
-          Context c, TLCState s0, TLCState s1, CostModel cm) {
-    this.callStack.push(expr);
-    try {
-    	return enabledUnchangedImpl(expr, acts, c, s0, s1, cm);
-    } catch (TLCRuntimeException | EvalException e) {
-    	// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor)
-    	this.callStack.freeze();
-    	throw e;
-    } finally {
-    	this.callStack.pop();
-    }
-  }
+  protected abstract TLCState enabledUnchanged(SemanticNode expr, ActionItemList acts,
+                                          Context c, TLCState s0, TLCState s1, CostModel cm);
   
-  private final TLCState enabledUnchangedImpl(SemanticNode expr, ActionItemList acts,
+  protected final TLCState enabledUnchangedImpl(SemanticNode expr, ActionItemList acts,
             Context c, TLCState s0, TLCState s1, CostModel cm) {
 	    if (coverage) {cm = cm.get(expr);}
         SymbolNode var = this.getVar(expr, c, true, toolId);

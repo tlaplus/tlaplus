@@ -43,6 +43,7 @@ import tlc2.tool.Simulator;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.ModelConfig;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
@@ -1032,7 +1033,7 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
-		        final Tool tool = new Tool(mainFile, configFile, resolver);
+		        final FastTool tool = new FastTool(mainFile, configFile, resolver);
                 if (isBFS())
                 {
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,

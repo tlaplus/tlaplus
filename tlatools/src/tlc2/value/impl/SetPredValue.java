@@ -75,6 +75,10 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 	  this(vars, inVal, pred, tool, con, s0, s1, control);
 	  this.cm = cm;
   }
+  
+	public SetPredValue(SetPredValue other, ITool tool) {
+		this(other.vars, other.inVal, other.pred, tool, other.con, other.state, other.pstate, other.control, other.cm);
+	}
 
   @Override
   public final byte getKind() { return SETPREDVALUE; }

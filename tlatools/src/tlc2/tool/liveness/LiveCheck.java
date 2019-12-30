@@ -15,23 +15,17 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
-import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
-import tlc2.tool.impl.Tool;
 import tlc2.util.BitVector;
-import tlc2.util.FP64;
 import tlc2.util.IStateWriter;
 import tlc2.util.IStateWriter.Visualization;
 import tlc2.util.NoopStateWriter;
 import tlc2.util.SetOfStates;
-import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import util.Assert;
-import util.SimpleFilenameToStream;
-import util.TLAConstants;
 
 public class LiveCheck implements ILiveCheck {
 
@@ -743,62 +737,6 @@ public class LiveCheck implements ILiveCheck {
 		 */
 		public AbstractDiskGraph getDiskGraph() {
 			return dgraph;
-		}
-	}
-	
-	// Intended to be used in unit tests only!!! This is not part of the API!!!
-	static class TestHelper {
-		
-		/*
-		 * - EWD840 (with tableau) spec with N = 11 and maxSetSize = 9.000.000 => 12GB nodes file, 46.141.438 distinct states
-		 * - EWD840 (with tableau) spec with N = 12 and maxSetSize = 9.000.000 => 56GB, 201.334.782 dist. states 
-		 */
-		
-		// The Eclipse Launch configuration has to set the working directory
-		// (Arguments tab) to the parent directory of the folder containing the
-		// nodes_* and ptrs_* files. The parent folder has to contain the spec
-		// and config file both named "MC".
-		// metadir is the the name of the folder with the nodes_* and ptrs_*
-		// relative to the parent directory. The directory does *not* need to contain the
-		// backing file of the fingerprint set or the state queue files.
-		public static ILiveCheck recreateFromDisk(final String path) throws Exception {
-			// Don't know with which Polynomial the FP64 has been initialized, but
-			// the default is 0.
-			FP64.Init(0);
-			
-			// Most models won't need this, but let's increase this anyway.
-			TLCGlobals.setBound = 9000000;
-
-			// Re-create the tool to do the init states down below (LiveCheck#init
-			// doesn't really need tool).
-			final ITool tool = new Tool("", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME,
-					TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream());
-	        
-			// Initialize tool's actions explicitly. LiveCheck#printTrace is
-			// going to access the actions and fails with a NPE unless
-			// initialized.
-	        tool.getActions();
-	        
-			final ILiveCheck liveCheck = new LiveCheck(tool, null, path, new DummyBucketStatistics());
-			
-			// Calling recover requires a .chkpt file to be able to re-create the
-			// internal data structures to continue with model checking. However, we
-			// only want to execute liveness checks on the current static disk
-			// graph. Thus, we don't need the .chkpt file.
-			//recover();
-			
-			// After recovery, one has to redo the init states
-			tool.getInitStates(new IStateFunctor() {
-				/* (non-Javadoc)
-				 * @see tlc2.tool.IStateFunctor#addElement(tlc2.tool.TLCState)
-				 */
-				public Object addElement(TLCState state) {
-					liveCheck.addInitState(tool, state, state.fingerPrint());
-					return true;
-				}
-			});
-			
-			return liveCheck; 
 		}
 	}
 }

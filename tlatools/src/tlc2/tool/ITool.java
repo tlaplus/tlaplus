@@ -45,10 +45,6 @@ import util.FilenameToStream;
 
 public interface ITool extends TraceApp {
 
-	void setCallStack();
-
-	CallStack getCallStack();
-
 	/**
 	   * This method returns the set of all possible actions of the
 	   * spec, and sets the actions field of this object. In fact, we

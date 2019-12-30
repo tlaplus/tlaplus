@@ -68,16 +68,20 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
 	  this.cm = cm;
   }
 
-  public FcnLambdaValue(FcnLambdaValue fcn) {
+  public FcnLambdaValue(FcnLambdaValue fcn, ITool tool) {
     this.params = fcn.params;
     this.body = fcn.body;
     this.excepts = fcn.excepts;
-    this.tool = fcn.tool;
+    this.tool = tool;
     this.con = fcn.con;
     this.state = fcn.state;
     this.pstate = fcn.pstate;
     this.control = fcn.control;
     this.fcnRcd = fcn.fcnRcd;
+  }
+
+  public FcnLambdaValue(FcnLambdaValue fcn) {
+	  this(fcn, fcn.tool);
   }
 
   @Override

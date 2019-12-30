@@ -20,7 +20,8 @@ import tlc2.tool.TLCStateInfo;
 import tlc2.tool.WorkerException;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
-import tlc2.tool.impl.Tool;
+import tlc2.tool.impl.CallStackTool;
+import tlc2.tool.impl.FastTool;
 import tlc2.util.FP64;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -66,7 +67,7 @@ public class TLCApp extends DistApp {
 		
 		this.checkDeadlock = deadlock.booleanValue();
 		this.preprocess = true;
-		this.tool = new Tool(specDir, specFile, configFile, fts);
+		this.tool = new FastTool(specDir, specFile, configFile, fts);
 
 		this.impliedInits = this.tool.getImpliedInits();
 		this.invariants = this.tool.getInvariants();
@@ -260,16 +261,14 @@ public class TLCApp extends DistApp {
 	 * @see tlc2.tool.distributed.DistApp#setCallStack()
 	 */
 	public final void setCallStack() {
-		this.tool.setCallStack();
+		this.tool = new CallStackTool(this.tool);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#printCallStack()
 	 */
 	public final String printCallStack() {
-		// SZ Jul 10, 2009: check if this is ok
-		// changed the method signature
-		return this.tool.getCallStack().toString();
+		return this.tool.toString();
 	}
 
 	@SuppressWarnings("deprecation")

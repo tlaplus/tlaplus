@@ -14,6 +14,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.impl.FastTool;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IStateWriter;
@@ -36,7 +37,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	 * We expect to get linear speedup with respect to the number of processors.
 	 */
 	private final ModelChecker tlc;
-	private final ITool tool;
+	private final FastTool tool;
 	private final IStateQueue squeue;
 	private final FPSet theFPSet;
 	private final IStateWriter allStateWriter;
@@ -58,7 +59,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		this.tlc = (ModelChecker) tlc;
 		this.checkLiveness = this.tlc.checkLiveness;
 		this.checkDeadlock = this.tlc.checkDeadlock;
-		this.tool = this.tlc.tool;
+		this.tool = (FastTool) this.tlc.tool;
 		this.squeue = this.tlc.theStateQueue;
 		this.theFPSet = this.tlc.theFPSet;
 		this.allStateWriter = this.tlc.allStateWriter;

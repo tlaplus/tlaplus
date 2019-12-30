@@ -34,7 +34,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 
-import tlc2.tool.impl.Tool;
+import tlc2.tool.impl.FastTool;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.Value;
 import util.SimpleFilenameToStream;
@@ -62,7 +62,7 @@ public class ModuleOverwritesBenchmark {
 		System.err.println(dir);
 		ToolIO.setUserDir(dir);
 
-		tool = new Tool("", "ModuleOverwrites", "ModuleOverwrites", new SimpleFilenameToStream());
+		tool = new FastTool("", "ModuleOverwrites", "ModuleOverwrites", new SimpleFilenameToStream());
 
 		state = (TLCStateMut) tool.getInitStates().elementAt(0);
 	}

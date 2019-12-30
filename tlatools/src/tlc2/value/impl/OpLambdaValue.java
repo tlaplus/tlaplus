@@ -40,6 +40,10 @@ public class OpLambdaValue extends OpValue implements Applicable {
 	this(op, tool, con, state, pstate);
 	this.cm = cm;
   }
+  
+  public OpLambdaValue(OpLambdaValue other, ITool tool) {
+	  this(other.opDef, tool, other.con, other.state, other.pstate);
+  }
 
   @Override
   public final byte getKind() { return OPLAMBDAVALUE; }

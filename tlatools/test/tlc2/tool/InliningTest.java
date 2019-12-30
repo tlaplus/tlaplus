@@ -27,7 +27,6 @@ package tlc2.tool;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -45,6 +44,7 @@ import jdk.jfr.consumer.RecordedObject;
 import jdk.jfr.consumer.RecordingFile;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
+import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.util.ExpectInlined;
@@ -95,7 +95,8 @@ public class InliningTest extends ModelCheckerTestCase {
 				.filter(ev -> ev.hasField("message"))
 				.filter(ev -> "hot method too big".equals(ev.getString("message")))
 				.map(ev -> (RecordedObject) ev.getValue("callee"))
-				.filter(ro -> ro.getString("type").startsWith("tlc2/tool/impl/Tool"))
+				.filter(ro -> ro.getString("type").startsWith("tlc2/tool/impl/Tool")
+						|| ro.getString("type").startsWith("tlc2/tool/impl/FastTool"))
 				.collect(Collectors.toSet());
 		
 		// Make sure the test ran long enough for compilation to detect methods as hot.
@@ -103,7 +104,13 @@ public class InliningTest extends ModelCheckerTestCase {
 		
 		// For now we only care that methods in Tool get correctly inlined
 		// because its methods are guaranteed to be on the hot path.
-		final Method[] dm = Tool.class.getDeclaredMethods();
+		Method[] dm = Tool.class.getDeclaredMethods();
+		for (int i = 0; i < dm.length; i++) {
+			if (dm[i].getAnnotation(ExpectInlined.class) != null) {
+				notIn(dm[i], notInlined);
+			}
+		}
+		dm = FastTool.class.getDeclaredMethods();
 		for (int i = 0; i < dm.length; i++) {
 			if (dm[i].getAnnotation(ExpectInlined.class) != null) {
 				notIn(dm[i], notInlined);
