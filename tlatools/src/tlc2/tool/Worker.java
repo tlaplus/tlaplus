@@ -13,6 +13,7 @@ import java.io.IOException;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.fp.FPSet;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IStateWriter;
@@ -37,6 +38,8 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	private final ModelChecker tlc;
 	private final ITool tool;
 	private final IStateQueue squeue;
+	private final FPSet theFPSet;
+	private final IStateWriter allStateWriter;
 	private final IBucketStatistics outDegree;
 	private final String filename;
 	private final BufferedRandomAccessFile raf;
@@ -57,6 +60,8 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		this.checkDeadlock = this.tlc.checkDeadlock;
 		this.tool = this.tlc.tool;
 		this.squeue = this.tlc.theStateQueue;
+		this.theFPSet = this.tlc.theFPSet;
+		this.allStateWriter = this.tlc.allStateWriter;
 		this.outDegree = new FixedSizedBucketStatistics(this.getName(), 32); // maximum outdegree of 32 appears sufficient for now.
 		this.setName("TLCWorkerThread-" + String.format("%03d", id));
 
@@ -308,12 +313,12 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	//**************************************************************//
 
 	@Override
-	public Object addElement(final TLCState state) {
+	public final Object addElement(final TLCState state) {
 		throw new WrongInvocationException("tlc2.tool.Worker.addElement(TLCState) should not be called");
 	}
 
 	@Override
-	public Object addElement(final TLCState curState, final Action action, final TLCState succState) {
+	public final Object addElement(final TLCState curState, final Action action, final TLCState succState) {
 	    if (coverage) { action.cm.incInvocations(); }
 		this.statesGenerated++;
 		
@@ -334,14 +339,14 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			
 			// Check if succState violates any invariant:
 			if (unseen) {
-				if (this.tlc.doNextCheckInvariants(curState, succState)) {
+				if (this.doNextCheckInvariants(curState, succState)) {
 					throw new InvariantViolatedException();
 				}
 			}
 			
 			// Check if the state violates any implied action. We need to do it
 			// even if succState is not new.
-			if (this.tlc.doNextCheckImplied(curState, succState)) {
+			if (this.doNextCheckImplied(curState, succState)) {
 				throw new InvariantViolatedException();
 			}
 			
@@ -360,9 +365,9 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	private final boolean isSeenState(final TLCState curState, final TLCState succState, final Action action)
 			throws IOException {
 		final long fp = succState.fingerPrint();
-		final boolean seen = this.tlc.theFPSet.put(fp);
+		final boolean seen = this.theFPSet.put(fp);
 		// Write out succState when needed:
-		this.tlc.allStateWriter.writeState(curState, succState, !seen, action);
+		this.allStateWriter.writeState(curState, succState, !seen, action);
 		if (!seen) {
 			// Write succState to trace only if it satisfies the
 			// model constraints. Do not enqueue it yet, but wait
@@ -381,5 +386,69 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			this.setOfStates.put(fp, succState);
 		}
 		return seen;
+	}
+
+	private final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
+        int k = 0;
+		try
+        {
+			for (k = 0; k < this.tool.getInvariants().length; k++)
+            {
+                if (!tool.isValid(this.tool.getInvariants()[k], succState))
+                {
+                    // We get here because of invariant violation:
+                	if (TLCGlobals.continuation) {
+                        synchronized (this.tlc)
+                        {
+							MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
+									this.tool.getInvNames()[k]);
+							this.tlc.trace.printTrace(curState, succState);
+							return false;
+                        }
+                	} else {
+						return this.tlc.doNextSetErr(curState, succState, false,
+								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
+                	}
+				}
+			}
+        } catch (Exception e)
+        {
+			this.tlc.doNextEvalFailed(curState, succState, EC.TLC_INVARIANT_EVALUATION_FAILED,
+					this.tool.getInvNames()[k], e);
+		}
+		return false;
+	}
+
+	private final boolean doNextCheckImplied(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
+		int k = 0;
+        try
+        {
+			for (k = 0; k < this.tool.getImpliedActions().length; k++)
+            {
+                if (!tool.isValid(this.tool.getImpliedActions()[k], curState, succState))
+                {
+                    // We get here because of implied-action violation:
+                    if (TLCGlobals.continuation)
+                    {
+                        synchronized (this.tlc)
+                        {
+                            MP.printError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, this.tool
+                                    .getImpliedActNames()[k]);
+                            this.tlc.trace.printTrace(curState, succState);
+							return false;
+                       }
+                    } else {
+						return this.tlc.doNextSetErr(curState, succState, false,
+								EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
+								this.tool.getImpliedActNames()[k]);
+                	}
+				}
+			}
+        } catch (Exception e)
+        {
+        	this.tlc.doNextEvalFailed(curState, succState, EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
+					this.tool.getImpliedActNames()[k], e);
+		}
+        return false;
 	}
 }

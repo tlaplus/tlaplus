@@ -74,12 +74,26 @@ public class ModelChecker extends AbstractChecker
             final Future<FPSet> future, long startTime) throws EvalException, IOException, InterruptedException, ExecutionException {
     	this(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
     	this.theFPSet = future.get();
+
+        // Initialize all the workers:
+        this.workers = new Worker[TLCGlobals.getNumWorkers()];
+        for (int i = 0; i < this.workers.length; i++)
+        {
+            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootName()));
+        }
     }
     
     public ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
             final FPSetConfiguration fpSetConfig, long startTime) throws EvalException, IOException {
     	this(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
     	this.theFPSet = FPSetFactory.getFPSet(fpSetConfig).init(TLCGlobals.getNumWorkers(), metadir, tool.getRootName());
+
+        // Initialize all the workers:
+        this.workers = new Worker[TLCGlobals.getNumWorkers()];
+        for (int i = 0; i < this.workers.length; i++)
+        {
+            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootName()));
+        }
     }
     
     /**
@@ -100,13 +114,6 @@ public class ModelChecker extends AbstractChecker
 
         // Finally, initialize the trace file:
         this.trace = new ConcurrentTLCTrace(this.metadir, this.tool.getRootName(), this.tool);
-
-        // Initialize all the workers:
-        this.workers = new Worker[TLCGlobals.getNumWorkers()];
-        for (int i = 0; i < this.workers.length; i++)
-        {
-            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootName()));
-        }
     }
 
     /**
@@ -494,7 +501,7 @@ public class ModelChecker extends AbstractChecker
 		return seen;
 	}
 
-	final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
+	private final boolean doNextCheckInvariants(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
         int k = 0;
 		try
         {
@@ -525,7 +532,7 @@ public class ModelChecker extends AbstractChecker
 		return false;
 	}
 
-	final boolean doNextCheckImplied(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
+	private final boolean doNextCheckImplied(final TLCState curState, final TLCState succState) throws IOException, WorkerException, Exception {
 		int k = 0;
         try
         {
@@ -602,7 +609,7 @@ public class ModelChecker extends AbstractChecker
 		}
 	}
 
-	private final void doNextEvalFailed(TLCState curState, TLCState succState, int ec, String param, Exception e)
+	final void doNextEvalFailed(TLCState curState, TLCState succState, int ec, String param, Exception e)
 			throws IOException, WorkerException, Exception {
 		synchronized (this) {
 		    if (this.setErrState(curState, succState, true, ec))
