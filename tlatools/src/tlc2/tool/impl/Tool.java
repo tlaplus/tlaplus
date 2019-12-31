@@ -986,11 +986,12 @@ public class Tool
 	    }
   }
 
-  private final TLCState getNextStatesApplImpl(final Action action, OpApplNode pred, ActionItemList acts, Context c,
-                                           TLCState s0, TLCState s1, StateVec nss, CostModel cm) {
-        ExprOrOpArgNode[] args = pred.getArgs();
-        int alen = args.length;
-        SymbolNode opNode = pred.getOperator();
+  private final TLCState getNextStatesApplImpl(final Action action, final OpApplNode pred, final ActionItemList acts, final Context c,
+                                           final TLCState s0, final TLCState s1, final StateVec nss, final CostModel cm) {
+        final ExprOrOpArgNode[] args = pred.getArgs();
+        final int alen = args.length;
+        final SymbolNode opNode = pred.getOperator();
+        
         int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
         if (opcode == 0) {
@@ -1062,250 +1063,255 @@ public class Tool
           }
         }
 
-        TLCState resState = s1;
-        switch (opcode) {
-        case OPCODE_cl:     // ConjList
-        case OPCODE_land:
-          {
-            ActionItemList acts1 = acts;
-            for (int i = alen - 1; i > 0; i--) {
-              acts1 = (ActionItemList) acts1.cons(args[i], c, cm, i);
-            }
-            return this.getNextStates(action, args[0], acts1, c, s0, s1, nss, cm);
-          }
-        case OPCODE_dl:     // DisjList
-        case OPCODE_lor:
-          {
-            for (int i = 0; i < alen; i++) {
-              resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
-            }
-            return resState;
-          }
-        case OPCODE_be:     // BoundedExists
-          {
-            SemanticNode body = args[0];
-            ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
-            Context c1;
-            while ((c1 = Enum.nextElement()) != null) {
-              resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
-            }
-            return resState;
-          }
-        case OPCODE_bf:     // BoundedForall
-          {
-            SemanticNode body = args[0];
-            ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
-            Context c1 = Enum.nextElement();
-            if (c1 == null) {
-              resState = this.getNextStates(action, acts, s0, s1, nss, cm);
-            }
-            else {
-              ActionItemList acts1 = acts;
-              Context c2;
-              while ((c2 = Enum.nextElement()) != null) {
-                acts1 = (ActionItemList) acts1.cons(body, c2, cm, IActionItemList.PRED);
-              }
-              resState = this.getNextStates(action, body, acts1, c1, s0, s1, nss, cm);
-            }
-            return resState;
-          }
-        case OPCODE_fa:     // FcnApply
-          {
-            Value fval = this.eval(args[0], c, s0, s1, EvalControl.KeepLazy, cm);
-            if (fval instanceof FcnLambdaValue) {
-              FcnLambdaValue fcn = (FcnLambdaValue)fval;
-              if (fcn.fcnRcd == null) {
-                Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Clear, cm);
-                return this.getNextStates(action, fcn.body, acts, c1, s0, s1, nss, fcn.cm);
-              }
-              fval = fcn.fcnRcd;
-            }
-            if (!(fval instanceof Applicable)) {
-              Assert.fail("In computing next states, a non-function (" +
-                          fval.getKindString() + ") was applied as a function.\n" + pred);
-            }
-            Applicable fcn = (Applicable)fval;
-            Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
-            Value bval = fcn.apply(argVal, EvalControl.Clear);
-            if (!(bval instanceof BoolValue)) {
-              Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "next states", "boolean",
-                      pred.toString() });
-            }
-            if (((BoolValue)bval).val) {
-              return this.getNextStates(action, acts, s0, s1, nss, cm);
-            }
-            return resState;
-          }
-        case OPCODE_aa:     // AngleAct <A>_e
-          {
-            ActionItemList acts1 = (ActionItemList) acts.cons(args[1], c, cm, IActionItemList.CHANGED);
-            return this.getNextStates(action, args[0], acts1, c, s0, s1, nss, cm);
-          }
-        case OPCODE_sa:     // [A]_e
-          {
-            /* The following two lines of code did not work, and were changed by
-             * YuanYu to mimic the way \/ works.  Change made
-             *  11 Mar 2009, with LL sitting next to him.
-             */
-              //    this.getNextStates(action, args[0], acts, c, s0, s1, nss);
-              //    return this.processUnchanged(args[1], acts, c, s0, s1, nss);
-            resState = this.getNextStates(action, args[0], acts, c, s0, resState, nss, cm);
-            return this.processUnchanged(action, args[1], acts, c, s0, resState, nss, cm);
-          }
-        case OPCODE_ite:    // IfThenElse
-          {
-            Value guard = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
-            if (!(guard instanceof BoolValue)) {
-              Assert.fail("In computing next states, a non-boolean expression (" +
-                          guard.getKindString() + ") was used as the condition of" +
-                          " an IF." + pred);
-            }
-            if (((BoolValue)guard).val) {
-              return this.getNextStates(action, args[1], acts, c, s0, s1, nss, cm);
-            }
-            else {
-              return this.getNextStates(action, args[2], acts, c, s0, s1, nss, cm);
-            }
-          }
-        case OPCODE_case:   // Case
-          {
-            SemanticNode other = null;
-            for (int i = 0; i < alen; i++) {
-              OpApplNode pair = (OpApplNode)args[i];
-              ExprOrOpArgNode[] pairArgs = pair.getArgs();
-              if (pairArgs[0] == null) {
-                other = pairArgs[1];
-              }
-              else {
-                Value bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Clear, coverage ? cm.get(args[i]) : cm);
-                if (!(bval instanceof BoolValue)) {
-                  Assert.fail("In computing next states, a non-boolean expression (" +
-                              bval.getKindString() + ") was used as a guard condition" +
-                              " of a CASE.\n" + pairArgs[1]);
-                }
-                if (((BoolValue)bval).val) {
-                  return this.getNextStates(action, pairArgs[1], acts, c, s0, s1, nss, coverage ? cm.get(args[i]) : cm);
-                }
-              }
-            }
-            if (other == null) {
-              Assert.fail("In computing next states, TLC encountered a CASE with no" +
-                          " conditions true.\n" + pred);
-            }
-            return this.getNextStates(action, other, acts, c, s0, s1, nss, coverage ? cm.get(args[alen - 1]) : cm);
-          }
-        case OPCODE_eq:
-          {
-            SymbolNode var = this.getPrimedVar(args[0], c, false);
-            // Assert.check(var.getName().getVarLoc() >= 0);
-            if (var == null) {
-              Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
-              if (!((BoolValue)bval).val) {
-                return resState;
-              }
-            }
-            else {
-              UniqueString varName = var.getName();
-              IValue lval = s1.lookup(varName);
-              Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
-              if (lval == null) {
-                resState.bind(varName, rval);
-                resState = this.getNextStates(action, acts, s0, resState, nss, cm);
-                resState.unbind(varName);
-                return resState;
-              }
-              else if (!lval.equals(rval)) {
-                return resState;
-              }
-            }
-            return this.getNextStates(action, acts, s0, s1, nss, cm);
-          }
-        case OPCODE_in:
-          {
-            SymbolNode var = this.getPrimedVar(args[0], c, false);
-            // Assert.check(var.getName().getVarLoc() >= 0);
-            if (var == null) {
-              Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
-              if (!((BoolValue)bval).val) {
-                return resState;
-              }
-            }
-            else {
-              UniqueString varName = var.getName();
-              Value lval = (Value) s1.lookup(varName);
-              Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
-              if (lval == null) {
-                if (!(rval instanceof Enumerable)) {
-                  Assert.fail("In computing next states, the right side of \\IN" +
-                              " is not enumerable.\n" + pred);
-                }
-                ValueEnumeration Enum = ((Enumerable)rval).elements();
-                Value elem;
-                while ((elem = Enum.nextElement()) != null) {
-                  resState.bind(varName, elem);
-                  resState = this.getNextStates(action, acts, s0, resState, nss, cm);
-                  resState.unbind(varName);
-                }
-                return resState;
-              }
-              else if (!rval.member(lval)) {
-                return resState;
-              }
-            }
-            return this.getNextStates(action, acts, s0, s1, nss, cm);
-          }
-        case OPCODE_implies:
-          {
-            Value bval = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
-            if (!(bval instanceof BoolValue)) {
-              Assert.fail("In computing next states of a predicate of the form" +
-                          " P => Q, P was\n" + bval.getKindString() + ".\n" + pred);
-            }
-            if (((BoolValue)bval).val) {
-              return this.getNextStates(action, args[1], acts, c, s0, s1, nss, cm);
-            }
-            else {
-              return this.getNextStates(action, acts, s0, s1, nss, cm);
-            }
-          }
-        case OPCODE_unchanged:
-          {
-            return this.processUnchanged(action, args[0], acts, c, s0, s1, nss, cm);
-          }
-        case OPCODE_cdot:
-          {
-            Assert.fail("The current version of TLC does not support action composition.");
-            /***
-            TLCState s01 = TLCStateFun.Empty;
-            StateVec iss = new StateVec(0);
-            this.getNextStates(action, args[0], ActionItemList.Empty, c, s0, s01, iss);
-            int sz = iss.size();
-            for (int i = 0; i < sz; i++) {
-              s01 = iss.elementAt(i);
-              this.getNextStates(action, args[1], acts, c, s01, s1, nss);
-            }
-            ***/
-            return s1;
-          }
-        // The following case added by LL on 13 Nov 2009 to handle subexpression names.
-        case OPCODE_nop:
-        {
-            return this.getNextStates(action, args[0], acts, c, s0, s1, nss, cm);
-        }
-        default:
-          {
-            // We handle all the other builtin operators here.
-            Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
-            if (!(bval instanceof BoolValue)) {
-              Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
-                      bval.toString(), pred.toString() });
-            }
-            if (((BoolValue)bval).val) {
-              resState = this.getNextStates(action, acts, s0, s1, nss, cm);
-            }
-            return resState;
-          }
-        }
+        return getNextStatesApplSwitch(action, pred, acts, c, s0, s1, nss, cm, args, alen, opcode);
+  }
+
+  private final TLCState getNextStatesApplSwitch(final Action action, OpApplNode pred, ActionItemList acts, Context c, TLCState s0,
+		TLCState s1, StateVec nss, CostModel cm, ExprOrOpArgNode[] args, int alen, int opcode) {
+	TLCState resState = s1;
+	switch (opcode) {
+	case OPCODE_cl:     // ConjList
+	case OPCODE_land:
+	  {
+	    ActionItemList acts1 = acts;
+	    for (int i = alen - 1; i > 0; i--) {
+	      acts1 = (ActionItemList) acts1.cons(args[i], c, cm, i);
+	    }
+	    return this.getNextStates(action, args[0], acts1, c, s0, s1, nss, cm);
+	  }
+	case OPCODE_dl:     // DisjList
+	case OPCODE_lor:
+	  {
+	    for (int i = 0; i < alen; i++) {
+	      resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
+	    }
+	    return resState;
+	  }
+	case OPCODE_be:     // BoundedExists
+	  {
+	    SemanticNode body = args[0];
+	    ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
+	    Context c1;
+	    while ((c1 = Enum.nextElement()) != null) {
+	      resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
+	    }
+	    return resState;
+	  }
+	case OPCODE_bf:     // BoundedForall
+	  {
+	    SemanticNode body = args[0];
+	    ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
+	    Context c1 = Enum.nextElement();
+	    if (c1 == null) {
+	      resState = this.getNextStates(action, acts, s0, s1, nss, cm);
+	    }
+	    else {
+	      ActionItemList acts1 = acts;
+	      Context c2;
+	      while ((c2 = Enum.nextElement()) != null) {
+	        acts1 = (ActionItemList) acts1.cons(body, c2, cm, IActionItemList.PRED);
+	      }
+	      resState = this.getNextStates(action, body, acts1, c1, s0, s1, nss, cm);
+	    }
+	    return resState;
+	  }
+	case OPCODE_fa:     // FcnApply
+	  {
+	    Value fval = this.eval(args[0], c, s0, s1, EvalControl.KeepLazy, cm);
+	    if (fval instanceof FcnLambdaValue) {
+	      FcnLambdaValue fcn = (FcnLambdaValue)fval;
+	      if (fcn.fcnRcd == null) {
+	        Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Clear, cm);
+	        return this.getNextStates(action, fcn.body, acts, c1, s0, s1, nss, fcn.cm);
+	      }
+	      fval = fcn.fcnRcd;
+	    }
+	    if (!(fval instanceof Applicable)) {
+	      Assert.fail("In computing next states, a non-function (" +
+	                  fval.getKindString() + ") was applied as a function.\n" + pred);
+	    }
+	    Applicable fcn = (Applicable)fval;
+	    Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+	    Value bval = fcn.apply(argVal, EvalControl.Clear);
+	    if (!(bval instanceof BoolValue)) {
+	      Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "next states", "boolean",
+	              pred.toString() });
+	    }
+	    if (((BoolValue)bval).val) {
+	      return this.getNextStates(action, acts, s0, s1, nss, cm);
+	    }
+	    return resState;
+	  }
+	case OPCODE_aa:     // AngleAct <A>_e
+	  {
+	    ActionItemList acts1 = (ActionItemList) acts.cons(args[1], c, cm, IActionItemList.CHANGED);
+	    return this.getNextStates(action, args[0], acts1, c, s0, s1, nss, cm);
+	  }
+	case OPCODE_sa:     // [A]_e
+	  {
+	    /* The following two lines of code did not work, and were changed by
+	     * YuanYu to mimic the way \/ works.  Change made
+	     *  11 Mar 2009, with LL sitting next to him.
+	     */
+	      //    this.getNextStates(action, args[0], acts, c, s0, s1, nss);
+	      //    return this.processUnchanged(args[1], acts, c, s0, s1, nss);
+	    resState = this.getNextStates(action, args[0], acts, c, s0, resState, nss, cm);
+	    return this.processUnchanged(action, args[1], acts, c, s0, resState, nss, cm);
+	  }
+	case OPCODE_ite:    // IfThenElse
+	  {
+	    Value guard = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
+	    if (!(guard instanceof BoolValue)) {
+	      Assert.fail("In computing next states, a non-boolean expression (" +
+	                  guard.getKindString() + ") was used as the condition of" +
+	                  " an IF." + pred);
+	    }
+	    if (((BoolValue)guard).val) {
+	      return this.getNextStates(action, args[1], acts, c, s0, s1, nss, cm);
+	    }
+	    else {
+	      return this.getNextStates(action, args[2], acts, c, s0, s1, nss, cm);
+	    }
+	  }
+	case OPCODE_case:   // Case
+	  {
+	    SemanticNode other = null;
+	    for (int i = 0; i < alen; i++) {
+	      OpApplNode pair = (OpApplNode)args[i];
+	      ExprOrOpArgNode[] pairArgs = pair.getArgs();
+	      if (pairArgs[0] == null) {
+	        other = pairArgs[1];
+	      }
+	      else {
+	        Value bval = this.eval(pairArgs[0], c, s0, s1, EvalControl.Clear, coverage ? cm.get(args[i]) : cm);
+	        if (!(bval instanceof BoolValue)) {
+	          Assert.fail("In computing next states, a non-boolean expression (" +
+	                      bval.getKindString() + ") was used as a guard condition" +
+	                      " of a CASE.\n" + pairArgs[1]);
+	        }
+	        if (((BoolValue)bval).val) {
+	          return this.getNextStates(action, pairArgs[1], acts, c, s0, s1, nss, coverage ? cm.get(args[i]) : cm);
+	        }
+	      }
+	    }
+	    if (other == null) {
+	      Assert.fail("In computing next states, TLC encountered a CASE with no" +
+	                  " conditions true.\n" + pred);
+	    }
+	    return this.getNextStates(action, other, acts, c, s0, s1, nss, coverage ? cm.get(args[alen - 1]) : cm);
+	  }
+	case OPCODE_eq:
+	  {
+	    SymbolNode var = this.getPrimedVar(args[0], c, false);
+	    // Assert.check(var.getName().getVarLoc() >= 0);
+	    if (var == null) {
+	      Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
+	      if (!((BoolValue)bval).val) {
+	        return resState;
+	      }
+	    }
+	    else {
+	      UniqueString varName = var.getName();
+	      IValue lval = s1.lookup(varName);
+	      Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+	      if (lval == null) {
+	        resState.bind(varName, rval);
+	        resState = this.getNextStates(action, acts, s0, resState, nss, cm);
+	        resState.unbind(varName);
+	        return resState;
+	      }
+	      else if (!lval.equals(rval)) {
+	        return resState;
+	      }
+	    }
+	    return this.getNextStates(action, acts, s0, s1, nss, cm);
+	  }
+	case OPCODE_in:
+	  {
+	    SymbolNode var = this.getPrimedVar(args[0], c, false);
+	    // Assert.check(var.getName().getVarLoc() >= 0);
+	    if (var == null) {
+	      Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
+	      if (!((BoolValue)bval).val) {
+	        return resState;
+	      }
+	    }
+	    else {
+	      UniqueString varName = var.getName();
+	      Value lval = (Value) s1.lookup(varName);
+	      Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+	      if (lval == null) {
+	        if (!(rval instanceof Enumerable)) {
+	          Assert.fail("In computing next states, the right side of \\IN" +
+	                      " is not enumerable.\n" + pred);
+	        }
+	        ValueEnumeration Enum = ((Enumerable)rval).elements();
+	        Value elem;
+	        while ((elem = Enum.nextElement()) != null) {
+	          resState.bind(varName, elem);
+	          resState = this.getNextStates(action, acts, s0, resState, nss, cm);
+	          resState.unbind(varName);
+	        }
+	        return resState;
+	      }
+	      else if (!rval.member(lval)) {
+	        return resState;
+	      }
+	    }
+	    return this.getNextStates(action, acts, s0, s1, nss, cm);
+	  }
+	case OPCODE_implies:
+	  {
+	    Value bval = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
+	    if (!(bval instanceof BoolValue)) {
+	      Assert.fail("In computing next states of a predicate of the form" +
+	                  " P => Q, P was\n" + bval.getKindString() + ".\n" + pred);
+	    }
+	    if (((BoolValue)bval).val) {
+	      return this.getNextStates(action, args[1], acts, c, s0, s1, nss, cm);
+	    }
+	    else {
+	      return this.getNextStates(action, acts, s0, s1, nss, cm);
+	    }
+	  }
+	case OPCODE_unchanged:
+	  {
+	    return this.processUnchanged(action, args[0], acts, c, s0, s1, nss, cm);
+	  }
+	case OPCODE_cdot:
+	  {
+	    Assert.fail("The current version of TLC does not support action composition.");
+	    /***
+	    TLCState s01 = TLCStateFun.Empty;
+	    StateVec iss = new StateVec(0);
+	    this.getNextStates(action, args[0], ActionItemList.Empty, c, s0, s01, iss);
+	    int sz = iss.size();
+	    for (int i = 0; i < sz; i++) {
+	      s01 = iss.elementAt(i);
+	      this.getNextStates(action, args[1], acts, c, s01, s1, nss);
+	    }
+	    ***/
+	    return s1;
+	  }
+	// The following case added by LL on 13 Nov 2009 to handle subexpression names.
+	case OPCODE_nop:
+	{
+	    return this.getNextStates(action, args[0], acts, c, s0, s1, nss, cm);
+	}
+	default:
+	  {
+	    // We handle all the other builtin operators here.
+	    Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
+	    if (!(bval instanceof BoolValue)) {
+	      Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
+	              bval.toString(), pred.toString() });
+	    }
+	    if (((BoolValue)bval).val) {
+	      resState = this.getNextStates(action, acts, s0, s1, nss, cm);
+	    }
+	    return resState;
+	  }
+	}
   }
   
   /* processUnchanged */
