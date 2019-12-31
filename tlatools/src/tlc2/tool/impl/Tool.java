@@ -1044,26 +1044,32 @@ public class Tool
             }
           }
 
+	      // opcode == 0 is a user-defined operator.
           if (opcode == 0)
           {
-            if (!(bval instanceof BoolValue))
-            {
-              Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
-                      bval.toString(), pred.toString() });
-            }
-            if (((BoolValue) bval).val)
-            {
-          	  if (coverage) {
-        		  return this.getNextStates(action, acts, s0, s1, nss, cm);
-          	  } else {
-          		  return this.getNextStates0(action, acts, s0, s1, nss, cm);
-          	  }
-            }
-            return s1;
+            return getNextStatesApplUsrDefOp(action, pred, acts, s0, s1, nss, cm, bval);
           }
         }
 
         return getNextStatesApplSwitch(action, pred, acts, c, s0, s1, nss, cm, args, alen, opcode);
+  }
+
+  private final TLCState getNextStatesApplUsrDefOp(final Action action, final OpApplNode pred, final ActionItemList acts, final TLCState s0,
+		final TLCState s1, final StateVec nss, final CostModel cm, Object bval) {
+	if (!(bval instanceof BoolValue))
+	{
+	  Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
+	          bval.toString(), pred.toString() });
+	}
+	if (((BoolValue) bval).val)
+	{
+	  if (coverage) {
+		  return this.getNextStates(action, acts, s0, s1, nss, cm);
+	  } else {
+		  return this.getNextStates0(action, acts, s0, s1, nss, cm);
+	  }
+	}
+	return s1;
   }
 
   private final TLCState getNextStatesApplSwitch(final Action action, OpApplNode pred, ActionItemList acts, Context c, TLCState s0,
