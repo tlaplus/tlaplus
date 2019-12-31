@@ -229,8 +229,10 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 				+ "Type=oneshot\\n"
 				+ "RemainAfterExit=true\\n"
 				+ "ExecStart=/bin/true\\n"
-				// Great, this is much simpler compared to 589e6fc82ce182b0c49c4c1fb63bc0aae711cf5f
-				+ "ExecStop=/usr/bin/az group delete --name %s -y\\n"
+				// Great, this is much simpler compared to 589e6fc82ce182b0c49c4c1fb63bc0aae711cf5f.
+				// Do not delete the instance if /tmp/NoAZ... marker exist. Create this file to
+				// skip deletion once e.g. when creating an image.
+				+ "ExecStop=/usr/bin/test -e /tmp/NoAZDelete.txt || /usr/bin/az group delete --name %s -y\\n"
 				+ "[Install]\\n"
 				+ "WantedBy=multi-user.target\\n\" | sudo tee /lib/systemd/system/delete-on-shutdown.service"
 				+ " && systemctl enable delete-on-shutdown" // restart delete-on-shutdown service after a reboot.

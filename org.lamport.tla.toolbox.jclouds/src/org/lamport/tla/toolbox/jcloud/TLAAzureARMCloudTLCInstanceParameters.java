@@ -42,15 +42,7 @@ public class TLAAzureARMCloudTLCInstanceParameters extends AzureARMCloudTLCInsta
 	@Override
 	public String getImageId() {
 		// With azure-cli v2 (based on Python) extract name from 'az vm image list --all --publisher Canonical'.
-		return System.getProperty("azure.image", "tlaplus/" + getRegion() + "/tlaplus-tlc-2019.12");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.lamport.tla.toolbox.jcloud.CloudTLCInstanceParameters#getRegion()
-	 */
-	@Override
-	public String getRegion() {
-		return System.getProperty("azure.region", "westus");
+		return System.getProperty("azure.image", "tlaplus/" + getRegion() + "/tlaplus-tlc-2019.12.23");
 	}
 
 	/* (non-Javadoc)
@@ -74,12 +66,13 @@ public class TLAAzureARMCloudTLCInstanceParameters extends AzureARMCloudTLCInsta
 	/*
 	 * How to create a TLA+ VM image?
 	 * 1. Start a regular Axure image with Cloud TLC.
-	 * 2. Disable/Remove Cloud Shutdown hook!!!
+	 * 2. Disable/Remove Cloud Shutdown hook
+	 *    (see AzureARMCloudTLCInstanceParam#getCloudAPIShutdown NoAZDelete.txt)!!!
+	 * 3. Deprovision the VM: sudo waagent -deprovision+user
+	 *    https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image
 	 * 3. Stop the Azure VM through the portal or az command-line app.
 	 * 4. Trigger image creation through Azure portal and wait for Azure to do its thing.
 	 * 5. Delete remnant of the actual Azure instance.
 	 * 6. Subst azure.image above with name given in 4.
-	 * 
-	 * Note that the image won't have a working shutdown hook.
 	 */
 }
