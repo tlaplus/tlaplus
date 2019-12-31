@@ -1001,13 +1001,10 @@ public class Tool
           Object val = this.lookup(opNode, c, s0, false);
 
           if (val instanceof OpDefNode) {
-				OpDefNode opDef = (OpDefNode) val;
+				final OpDefNode opDef = (OpDefNode) val;
 				opcode = BuiltInOPs.getOpCode(opDef.getName());
 				if (opcode == 0) {
-					// Context c1 = this.getOpContext(opDef, args, c, false);
-
-					Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
-					return this.getNextStates(action, opDef.getBody(), acts, c1, s0, s1, nss, cm);
+					return this.getNextStates(action, opDef.getBody(), acts, this.getOpContext(opDef, args, c, true, cm, toolId), s0, s1, nss, cm);
 	            }
           }
 
@@ -1017,9 +1014,8 @@ public class Tool
            * imported with parameterized instantiation.                         *
            *********************************************************************/
           if (val instanceof ThmOrAssumpDefNode) {
-            ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
-            Context c1 = this.getOpContext(opDef, args, c, true);
-            return this.getNextStates(action, opDef.getBody(), acts, c1, s0, s1, nss, cm);
+            final ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
+            return this.getNextStates(action, opDef.getBody(), acts, this.getOpContext(opDef, args, c, true), s0, s1, nss, cm);
           }
 
           if (val instanceof LazyValue) {
