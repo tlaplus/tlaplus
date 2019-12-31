@@ -1019,26 +1019,19 @@ public class Tool
           }
 
           if (val instanceof LazyValue) {
-            LazyValue lv = (LazyValue)val;
+            final LazyValue lv = (LazyValue)val;
             if (lv.getValue() == null || lv.isUncachable()) {
               return this.getNextStates(action, lv.expr, acts, lv.con, s0, s1, nss, lv.cm);
             }
             val = lv.getValue();
           }
 
-          Object bval = val;
-          if (alen == 0) {
-            if (val instanceof MethodValue) {
-              bval = ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
-            } else if (val instanceof EvaluatingValue) {
-            	bval = ((EvaluatingValue)val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
-           }
-          }
-          else {
-            if (val instanceof OpValue) {
-           	  bval = ((OpValue) val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
-            }
-          }
+          //TODO If all eval/apply in getNextStatesApplEvalAppl would be side-effect free (ie. not mutate args, c, s0,...), 
+          // this call could be moved into the if(opcode==0) branch below. However, opcode!=0 will only be the case if
+          // OpDefNode above has been substed with a built-in operator. In other words, a user defines an operator Op1,
+          // and re-defines Op1 with a TLA+ built-in one in a TLC model (not assumed to be common). => No point in trying
+          // to move this call into if(opcode==0) because this will be the case most of the time anyway.
+          final Object bval = getNextStatesApplEvalAppl(alen, args, c, s0, s1, cm, val);
 
 	      // opcode == 0 is a user-defined operator.
           if (opcode == 0)
@@ -1049,9 +1042,26 @@ public class Tool
 
         return getNextStatesApplSwitch(action, pred, acts, c, s0, s1, nss, cm, args, alen, opcode);
   }
+  
+  private final Object getNextStatesApplEvalAppl(final int alen, final ExprOrOpArgNode[] args, final Context c,
+			final TLCState s0, final TLCState s1, final CostModel cm, final Object val) {
+	      if (alen == 0) {
+        if (val instanceof MethodValue) {
+        	return ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
+        } else if (val instanceof EvaluatingValue) {
+        	return ((EvaluatingValue)val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
+       }
+      }
+      else {
+        if (val instanceof OpValue) { // EvaluatingValue sub-class of OpValue!
+       	  return ((OpValue) val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
+        }
+      }
+      return val;
+  }
 
   private final TLCState getNextStatesApplUsrDefOp(final Action action, final OpApplNode pred, final ActionItemList acts, final TLCState s0,
-		final TLCState s1, final StateVec nss, final CostModel cm, Object bval) {
+		final TLCState s1, final StateVec nss, final CostModel cm, final Object bval) {
 	if (!(bval instanceof BoolValue))
 	{
 	  Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
@@ -1068,8 +1078,8 @@ public class Tool
 	return s1;
   }
 
-  private final TLCState getNextStatesApplSwitch(final Action action, OpApplNode pred, ActionItemList acts, Context c, TLCState s0,
-		TLCState s1, StateVec nss, CostModel cm, ExprOrOpArgNode[] args, int alen, int opcode) {
+  private final TLCState getNextStatesApplSwitch(final Action action, final OpApplNode pred, final ActionItemList acts, final Context c, final TLCState s0,
+		final TLCState s1, final StateVec nss, final CostModel cm, final ExprOrOpArgNode[] args, final int alen, final int opcode) {
 	TLCState resState = s1;
 	switch (opcode) {
 	case OPCODE_cl:     // ConjList
