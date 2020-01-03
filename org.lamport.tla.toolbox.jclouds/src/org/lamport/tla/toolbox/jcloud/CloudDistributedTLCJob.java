@@ -295,7 +295,11 @@ public class CloudDistributedTLCJob extends Job {
 						+ "-Dcom.sun.management.jmxremote.authenticate=false "
 						// TLC tuning options
 						+ params.getJavaSystemProperties() + " "
-						+ "-jar /tmp/tla2tools.jar " 
+						+ "-jar /tmp/tla2tools.jar "
+						// Explicitly tell TLC to create states/ on ephemeral storage. This is redundant
+						// because we cd into /mnt/tlc above, but when the command is manually executed,
+						// this might not be the case (related to java.io.tmpdir).
+						+ "-metadir /mnt/tlc/ "
 						+ params.getTLCParameters()
 						// Unless TLC's exit value is 1 or 255 (see EC.java),
 						// run the shutdown sequence. In other words, ignore
