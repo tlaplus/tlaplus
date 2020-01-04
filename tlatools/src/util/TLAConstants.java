@@ -59,7 +59,8 @@ public final class TLAConstants {
 	}
 	
 	public final class TraceExplore {
-	    public static final String MODULE_NAME = "SpecTE";
+	    public static final String ERROR_STATES_MODULE_NAME = "SpecTE";
+	    public static final String EXPLORATION_MODULE_NAME = "TE";
 		public static final String ACTION = "_TEAction";
 		public static final String POSITION = "_TEPosition";
 		public static final String TRACE = "_TETrace";
@@ -78,14 +79,20 @@ public final class TLAConstants {
 	     * expression variables.
 	     */
 	    public static final String TRACE_EXPLORE_NEXT = "traceExploreNext";
+	    /**
+	     * The tuple of ordered sub-action names representing the trace states. 
+	     */
+	    public static final String TRACE_EXPLORE_ACTION_CONSTRAINT = "traceExploreActionConstraint";
 	}
 
 	
-	public static final String STUTTERING = " Stuttering";
 	public static final String BACK_TO_STATE = "Back to state";
+	public static final String GENERATION_TIMESTAMP_PREFIX = "\\* Generated on ";
 	public static final String LINE = "line ";
+	public static final String STUTTERING = " Stuttering";
 
     public static final String SPACE = " ";
+    public static final String INDENT = "    ";
     public static final String CR = "\n";
     public static final String SEP = "----";
     public static final String EQ = " = ";
@@ -114,6 +121,8 @@ public final class TLAConstants {
     public static final String L_SQUARE_BRACKET = "[";
     public static final String R_SQUARE_BRACKET = "]";
 
+    public static final String INDENTED_CONJUNCTIVE = TLAConstants.INDENT + TLAConstants.TLA_AND + TLAConstants.SPACE;
+    public static final String INDENTED_DISJUNCTIVE = TLAConstants.INDENT + TLAConstants.TLA_OR + TLAConstants.SPACE;
     
 	private TLAConstants() { }
 }

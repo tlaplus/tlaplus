@@ -6,6 +6,8 @@ import tla2sany.st.Location;
 import util.TLAConstants;
 
 public class MCState {
+	private static final String ANSI_BOLD_CODE = "\033[1m";
+	private static final String ANSI_RESET_CODE = "\033[0m";
 	private static final String BACK_TO_STATE = " " + TLAConstants.BACK_TO_STATE;
 
 	public static MCState parseState(final String stateInputString) {
@@ -141,7 +143,7 @@ public class MCState {
 		for (int i = 0; i < variables.length; i++) {
 			final MCVariable variable = variables[i];
 			if (variable.isTraceExplorerExpression()) {
-				result.append(variable.getSingleLineName());
+				result.append(variable.getSingleLineDisplayName());
 			} else {
 				result.append(variable.getName());
 			}
@@ -195,6 +197,30 @@ public class MCState {
      * @return
      */
     public String getConjunctiveDescription(final boolean includeTraceExpressions, final String indent) {
+        return getConjunctiveDescription(includeTraceExpressions, indent, false);
+    }
+
+    /**
+     * The returns a conjunction list of variables.
+     * 
+     * For variables representing trace explorer expressions, if {@code includeTraceExpressions} is true,
+     * the returned string has:
+     * 
+     * /\ expr = value
+     * 
+     * where expr is the single line form of the trace explorer expression as shown in the Name column of
+     * the trace viewer.
+     *  
+     * For all other variables, this method attempts to display them as TLC does.
+     * 
+     * @param includeTraceExpressions whether trace expressions should be included.
+     * @param indent if non-null, this will be prepended to each line
+     * @param ansiMarkup if true, the String will include ANSI markup for trace expressions; this is currently ignored
+     * 							if includeTraceExpressions is false
+     * @return
+     */
+    public String getConjunctiveDescription(final boolean includeTraceExpressions, final String indent,
+    										final boolean ansiMarkup) {
         final StringBuilder result = new StringBuilder();
         
 		for (int i = 0; i < variables.length; i++) {
@@ -210,13 +236,21 @@ public class MCState {
 			
             result.append("/\\ ");
 			if (var.isTraceExplorerExpression()) {
-				result.append(var.getSingleLineName());
+				if (ansiMarkup) {
+					result.append(ANSI_BOLD_CODE);
+				}
+				
+				result.append(var.getSingleLineDisplayName());
 			} else {
 				result.append(var.getName());
 			}
 
             result.append(" = ").append(var.getValueAsString());
 
+			if (var.isTraceExplorerExpression() && ansiMarkup) {
+				result.append(ANSI_RESET_CODE);
+			}
+			
             result.append('\n');
         }
 		
@@ -245,7 +279,7 @@ public class MCState {
 					vars.add(var);
 				}
 
-				stateVarString = lines[j].substring(index + TLAConstants.TLA_AND.length()).split(TLAConstants.EQ);
+				stateVarString = lines[j].substring(index + TLAConstants.TLA_AND.length() + 1).split(TLAConstants.EQ);
 			} else {
 				// no index
 

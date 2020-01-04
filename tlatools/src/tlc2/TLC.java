@@ -35,8 +35,8 @@ import tlc2.input.MCParser;
 import tlc2.input.MCParserResults;
 import tlc2.output.EC;
 import tlc2.output.MP;
-import tlc2.output.TeeOutputStream;
 import tlc2.output.TLAMonolithCreator;
+import tlc2.output.TeeOutputStream;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
@@ -46,7 +46,6 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.ModelConfig;
 import tlc2.tool.impl.SpecProcessor;
-import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.DotStateWriter;
@@ -69,7 +68,11 @@ import util.ToolIO;
 import util.UniqueString;
 
 /**
- * Main TLC starter class
+ * Main TLC starter class.
+ * 
+ * <b>Note:</b> If you are using a new instance of this class in an already existant JVM which has done processing with
+ * 			tlc2 parsers, please see the class javadocs for {@link TLCRunner}
+ * 
  * @author Yuan Yu
  * @author Leslie Lamport
  * @author Simon Zambrovski
@@ -450,7 +453,7 @@ public class TLC {
 							
 							final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
 							final TLAMonolithCreator monolithCreator
-									= new TLAMonolithCreator(TLAConstants.TraceExplore.MODULE_NAME,
+									= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
 															 mcOutputConsumer.getSourceDirectory(),
 															 extendedModules, mcParserResults.getAllExtendedModules());
 							monolithCreator.copy();
@@ -462,7 +465,9 @@ public class TLC {
 						} catch (final Exception e) {
 							MP.printMessage(EC.GENERAL,
 											"A model checking error occurred while parsing tool output; the execution "
-													+ "ended before the potential SpecTE generation stage.");
+													+ "ended before the potential "
+													+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
+													+ " generation stage.");
 						} finally {
 							if (!haveClosedOutputStream) {
 								try {
@@ -475,11 +480,13 @@ public class TLC {
 					(new Thread(r)).start();
 					
 					MP.printMessage(EC.GENERAL,
-									"Will generate a SpecTE file pair if error states are encountered and we are "
-													+ "being run with the '-tool' flag.");
+									"Will generate a " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
+										+ " file pair if error states are encountered and we are "
+										+ "being run with the '-tool' flag.");
 				} catch (final IOException ioe) {
-					printErrorMsg("Failed to set up piped output consumers; no potential SpecTE will be generated: "
-							+ ioe.getMessage());
+					printErrorMsg("Failed to set up piped output consumers; no potential "
+										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " will be generated: "
+										+ ioe.getMessage());
 					mcOutputConsumer = null;
 				}
             } else if (args[index].equals("-help"))
@@ -1051,7 +1058,8 @@ public class TLC {
                 	if (mcOutputConsumer.getError() == null) {
                 		MP.printMessage(EC.GENERAL,
                 						"The model check run produced no usable error-state messages, "
-                										+ "so no SpecTE was generated.");
+                										+ "so no " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
+                										+ " was generated.");
                 	} else {
                 		final SpecProcessor sp = tool.getSpecProcessor();
                 		final ModelConfig mc = tool.getModelConfig();
@@ -1059,7 +1067,8 @@ public class TLC {
                 		final String originalSpecName = mcOutputConsumer.getSpecName();
                 		
                 		MP.printMessage(EC.GENERAL,
-        								"The model check run produced error-states - we will generate the SpecTE files now.");
+        								"The model check run produced error-states - we will generate the "
+        										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " files now.");
                 		mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
                 		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
                 															mcParserResults, mcOutputConsumer.getError());

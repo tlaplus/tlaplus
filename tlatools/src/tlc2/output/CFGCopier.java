@@ -65,7 +65,7 @@ public class CFGCopier extends AbstractCopier {
 							|| TLAConstants.KeyWords.INIT.equals(trimmed)
 							|| TLAConstants.KeyWords.NEXT.equals(trimmed)) {
 						skipNextLine = true;
-					} else {
+					} else if (!trimmed.startsWith(TLAConstants.GENERATION_TIMESTAMP_PREFIX)) {
 						writer.write(originalLine + '\n');
 					}
 				}
@@ -76,12 +76,16 @@ public class CFGCopier extends AbstractCopier {
 	@Override
 	protected void allInputHasBeenConsumed(final BufferedWriter writer) throws IOException {
 		writer.write(initNextConfiguration + '\n');
+		writer.write(SpecWriterUtilities.getGeneratedTimeStampCommentLine().toString() + '\n');
 	}
 	
 	
 	public static void main(final String[] args) throws Exception {
 		final String initNext = "INIT\ninit_abc_ldq\n\nNEXT\nnext_abc_ldq";
-		final CFGCopier copier = new CFGCopier("MC", "SpecTE", new File(args[0]), initNext);
+		final CFGCopier copier = new CFGCopier(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME,
+											   TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
+											   new File(args[0]),
+											   initNext);
 		copier.copy();
 	}
 }

@@ -55,9 +55,9 @@ public final class SpecWriterUtilities {
 	/**
 	 * @return the content for the end of the module
 	 */
-	public static StringBuilder getConfigClosingTag() {
+	public static StringBuilder getGeneratedTimeStampCommentLine() {
 		final StringBuilder buffer = new StringBuilder();
-		buffer.append("\\* Generated on ").append(new Date());
+		buffer.append(TLAConstants.GENERATION_TIMESTAMP_PREFIX).append(new Date());
 		return buffer;
 	}
 
@@ -178,17 +178,33 @@ public final class SpecWriterUtilities {
 	}
 	
 	/**
-	 * @param value
+	 * @param value if null or empty, an empty list will be returned
 	 * @param labelingScheme one of the {@link TLAConstants.Schemes} constants
 	 * @return the content for a single source element
 	 */
 	public static List<String[]> createSourceContent(final String value, final String labelingScheme) {
+		return createSourceContent(value, labelingScheme, true);
+	}
+	
+	/**
+	 * @param value if null or empty, an empty list will be returned
+	 * @param identifierOrLabelingScheme an identifier or one of the
+	 *                                   {@link TLAConstants.Schemes} constants
+	 * @param isScheme                   true if {@code identifierOrLabelingScheme}
+	 *                                   is one of the scheme constants (in which
+	 *                                   case an identifier will be generated based
+	 *                                   off of it.)
+	 * @return the content for a single source element
+	 */
+	public static List<String[]> createSourceContent(final String value, final String identifierOrLabelingScheme,
+			final boolean isScheme) {
 		final ArrayList<String[]> result = new ArrayList<>();
 		if ((value == null) || (value.trim().length() == 0)) {
 			return result;
 		}
 		
-        final String identifier = SpecWriterUtilities.getValidIdentifier(labelingScheme);
+        final String identifier = isScheme ? SpecWriterUtilities.getValidIdentifier(identifierOrLabelingScheme)
+        								   : identifierOrLabelingScheme;
         final StringBuilder buffer = new StringBuilder();
 
         buffer.append(identifier).append(TLAConstants.DEFINES_CR);

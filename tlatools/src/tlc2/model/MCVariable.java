@@ -1,9 +1,9 @@
 package tlc2.model;
 
 public class MCVariable {
-    private String name;
-    private String valueAsString;
-    private boolean isTraceExplorerVariable;
+    private final String name;
+    private final String valueAsString;
+    private String traceExpression;
 
 	/**
 	 * @param varName   name of the variable
@@ -12,7 +12,7 @@ public class MCVariable {
 	public MCVariable(final String varName, final String value) {
 		name = varName;
 		valueAsString = value;
-		isTraceExplorerVariable = false;
+		traceExpression = null;
 	}
 
 	public String getName() {
@@ -20,11 +20,14 @@ public class MCVariable {
 	}
 
     /**
-	 * @return the name this variable in a single line String; the name could be
-	 *         multiple lines if this represents a trace explorer expression.
+	 * @return the name, or the trace expression if it is defined, for this variable
+	 *         in a single line String; the name could be multiple lines if this
+	 *         represents a trace explorer expression.
 	 */
-	public String getSingleLineName() {
-		return name.replaceAll("\n", "").replaceAll("\r", "");
+	public String getSingleLineDisplayName() {
+		final String s = isTraceExplorerExpression() ? traceExpression : name;
+		
+		return s.replaceAll("\n", "").replaceAll("\r", "");
 	}
 
 	public String getValueAsString() {
@@ -32,6 +35,14 @@ public class MCVariable {
 	}
 	
 	public boolean isTraceExplorerExpression() {
-		return isTraceExplorerVariable;
+		return (traceExpression != null);
+	}
+	
+	public void setTraceExpression(final String expression) {
+		traceExpression = expression;
+	}
+	
+	public String getTraceExpression() {
+		return traceExpression;
 	}
 }

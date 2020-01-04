@@ -85,13 +85,17 @@ public abstract class AbstractSpecWriter {
     /**
      * Write the buffers to files.
      * 
-     * @param tlaFile
-     * @param cfgFile must be non-null if this instance was constructed with {@code generateConfigurationContent == true}, otherwise this value is ignored
+     * @param tlaFile if null, nothing is written
+     * @param cfgFile if null, nothing is written
      * @throws IOException
      */
 	public void writeFiles(final File tlaFile, final File cfgFile) throws IOException {
 		final ContentWriter cw = (inputStream, forTLAFile) -> {
-	        Files.copy(inputStream, (forTLAFile ? tlaFile.toPath() : cfgFile.toPath()), new CopyOption[0]);
+			final File f = (forTLAFile ? tlaFile: cfgFile);
+			
+			if (f != null) {
+		        Files.copy(inputStream, f.toPath(), new CopyOption[0]);
+			}
 		};
 		
 		writeFiles(cw);
@@ -110,7 +114,7 @@ public abstract class AbstractSpecWriter {
         contentWriter.writeStreamToFile(tlaBAIS, true);
         
 		if (cfgBuffer != null) {
-			cfgBuffer.append(SpecWriterUtilities.getConfigClosingTag());
+			cfgBuffer.append(SpecWriterUtilities.getGeneratedTimeStampCommentLine());
 	        final ByteArrayInputStream configurationBAIS = new ByteArrayInputStream(cfgBuffer.toString().getBytes());
 	        contentWriter.writeStreamToFile(configurationBAIS, false);
 		}

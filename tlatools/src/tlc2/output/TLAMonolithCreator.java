@@ -58,7 +58,8 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 				
 				final StringBuilder commentLine = new StringBuilder(TLAConstants.CR);
 				commentLine.append(TLAConstants.COMMENT).append(TLAConstants.CR);
-				commentLine.append(TLAConstants.COMMENT).append(' ').append(TLAConstants.TraceExplore.MODULE_NAME);
+				commentLine.append(TLAConstants.COMMENT).append(' ');
+				commentLine.append(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME);
 				commentLine.append(" follows\n");
 				commentLine.append(TLAConstants.COMMENT).append(TLAConstants.CR).append(TLAConstants.CR);
 				writer.write(commentLine.toString());

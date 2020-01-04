@@ -1,6 +1,7 @@
 package tlc2.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import util.TLAConstants;
@@ -30,6 +31,18 @@ public class MCError {
 	
 	public MCError getCause() {
 		return cause;
+	}
+	
+	public void updateStatesForTraceExpression(final HashMap<String, String> variableExpressionMap) {
+		for (final MCState state : states) {
+			for (final MCVariable variable : state.getVariables()) {
+				final String expression = variableExpressionMap.get(variable.getName());
+
+				if (expression != null) {
+					variable.setTraceExpression(expression);
+				}
+			}
+		}
 	}
 
 	public String toSequenceOfRecords(final boolean includeHeaders) {

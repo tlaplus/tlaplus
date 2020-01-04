@@ -521,7 +521,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 
             // Sets modelValues to a TypedSet object whose value is a String array containing
             // the names of the model values declared on the Advanced model page.
-            TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, EMPTY_STRING));
+            TypedSet modelValues = TypedSet.parseSet(config.getAttribute(MODEL_PARAMETER_MODEL_VALUES, TLAConstants.EMPTY_STRING));
 
             // Adds to MC.cfg the CONSTANT declarations for (in order) 
             //  - The model values declared on the advanced model page.
@@ -535,7 +535,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             writer.addConstants(constants, modelValues, MODEL_PARAMETER_CONSTANTS, MODEL_PARAMETER_MODEL_VALUES);
             
             // The additional definitions from the Advanced model page.
-            writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, EMPTY_STRING),
+            writer.addNewDefinitions(config.getAttribute(MODEL_PARAMETER_NEW_DEFINITIONS, TLAConstants.EMPTY_STRING),
                     MODEL_PARAMETER_NEW_DEFINITIONS);
 
             // Adds to MC.cfg the CONSTANT declarations for CONSTANT parameters instantiated with ordinary values. 
@@ -585,7 +585,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                 // Changed from incorrect "ACTION-CONSTRAINT" on 11 Sep 2009
 
                 // view
-                writer.addView(config.getAttribute(LAUNCH_VIEW, EMPTY_STRING), MODEL_PARAMETER_VIEW);
+                writer.addView(config.getAttribute(LAUNCH_VIEW, TLAConstants.EMPTY_STRING), MODEL_PARAMETER_VIEW);
             }
 
             // calculator expression
@@ -611,7 +611,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             case MODEL_BEHAVIOR_TYPE_SPEC_CLOSED:
 
                 // the specification name-formula pair
-            	final String specIdentifier = config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, EMPTY_STRING);
+            	final String specIdentifier = config.getAttribute(MODEL_BEHAVIOR_CLOSED_SPECIFICATION, TLAConstants.EMPTY_STRING);
     			if (spec.declares(specIdentifier) && !isExpression(specIdentifier)) {
             		writer.addFormulaList(specIdentifier, TLAConstants.KeyWords.SPECIFICATION, MODEL_BEHAVIOR_CLOSED_SPECIFICATION);
     			} else {
@@ -622,7 +622,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                 break;
             case MODEL_BEHAVIOR_TYPE_SPEC_INIT_NEXT:
             	// the init and next formulas
-            	final String init = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, EMPTY_STRING);
+            	final String init = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT, TLAConstants.EMPTY_STRING);
 				if (spec.declares(init) && !isExpression(init)) {
             		writer.addFormulaList(init, TLAConstants.KeyWords.INIT, MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	} else {
@@ -632,7 +632,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             				MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	}
 				
-            	final String next = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, EMPTY_STRING);
+            	final String next = config.getAttribute(MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_NEXT, TLAConstants.EMPTY_STRING);
 				if (spec.declares(next) && !isExpression(next)) {
 	           		writer.addFormulaList(next, TLAConstants.KeyWords.NEXT, MODEL_BEHAVIOR_SEPARATE_SPECIFICATION_INIT);
             	} else {
@@ -710,7 +710,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 		// Override each declared formula with its original declaration. This will cause
 		// ModelWriter.addFormulaList to omit it from the MC.tla file and only add it to MC.cfg.
 		declaredFormula.forEach(f -> createFormulaListContent.set(checkedFormula.indexOf(f),
-				new String[] { f.getFormula(), EMPTY_STRING, String.valueOf(checkedFormula.indexOf(f)) }));
+				new String[] { f.getFormula(), TLAConstants.EMPTY_STRING, String.valueOf(checkedFormula.indexOf(f)) }));
 
 		// createFormulaListContent has to be in the same order as checkedFormula.
 		// Otherwise, TLCModelLaunchDataProvider.createError(TLCRegion,

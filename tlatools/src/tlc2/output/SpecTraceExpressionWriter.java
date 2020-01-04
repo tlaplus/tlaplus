@@ -188,33 +188,30 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 			for (int i = 0; i < vars.length; i++) {
 	            final MCVariable var = vars[i];
 	            /*
-	             * var=(
-	             * expr
-	             * )
+	             *    /\ var = (
+	             *            expr
+	             *          )
 	             */
+	            tlaBuffer.append(TLAConstants.INDENTED_CONJUNCTIVE);
 	            tlaBuffer.append(var.getName()).append(TLAConstants.EQ).append(TLAConstants.L_PAREN);
-	            tlaBuffer.append(TLAConstants.CR).append(var.getValueAsString()).append(TLAConstants.CR);
-	            tlaBuffer.append(TLAConstants.R_PAREN);
-	            /*
-	             * Add /\ after right parenthesis except for the last variable
-	             * 
-	             * var=(
-	             * expr
-	             * )/\
-	             */
-				if (i != vars.length - 1) {
-	                tlaBuffer.append(TLAConstants.TLA_AND).append(TLAConstants.CR);
-	            }
+	            tlaBuffer.append(TLAConstants.CR);
+	            
+	            tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
+	            tlaBuffer.append(var.getValueAsString()).append(TLAConstants.CR);
+	            
+	            tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT);
+	            tlaBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.CR);
 	        }
 	
 	        // variables representing trace explorer expressions
 			if (expressionData != null) {
 				for (int i = 0; i < expressionData.length; i++) {
 	                final TraceExpressionInformationHolder expressionInfo = expressionData[i];
-	                tlaBuffer.append(TLAConstants.TLA_AND).append(TLAConstants.CR);
+	                tlaBuffer.append(TLAConstants.INDENTED_CONJUNCTIVE);
 	                tlaBuffer.append(expressionInfo.getVariableName()).append(TLAConstants.EQ);
 	                tlaBuffer.append(TLAConstants.L_PAREN).append(TLAConstants.CR);
 	
+		            tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
 					if (expressionInfo.getLevel() == 2) {
 	                    // add "--" if the expression is temporal level
 	                    tlaBuffer.append(TLAConstants.TRACE_NA);
@@ -223,7 +220,8 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	                    tlaBuffer.append(expressionInfo.getExpression());
 	                }
 	
-	                tlaBuffer.append(TLAConstants.CR).append(TLAConstants.R_PAREN);
+		            tlaBuffer.append(TLAConstants.CR).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
+		            tlaBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.CR);
 	            }
 	        }
 	
@@ -280,11 +278,10 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	        int subActionIndex = 0;
 			while (nextState != null) {
 				final String nextDisjunct = String.format("%s_sa_%d", nextSubActionBasename, subActionIndex);
-				nextDisjunctBuffer.append(TLAConstants.TLA_OR).append(TLAConstants.SPACE).append(nextDisjunct)
-						.append(TLAConstants.CR);
+				nextDisjunctBuffer.append(TLAConstants.INDENTED_DISJUNCTIVE).append(nextDisjunct).append(TLAConstants.CR);
 		        actionConstraintBuffer.append(nextDisjunct).append(TLAConstants.CR);
 		        	        	
-		        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE Sub-Action definition");
+		        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE Sub-Action definition ");
 		        tlaBuffer.append(subActionIndex++).append(TLAConstants.CR);
 		        tlaBuffer.append(nextDisjunct).append(TLAConstants.DEFINES_CR);
 	            /*
@@ -317,7 +314,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	             * expr4
 	             * ))
 	             */
-	            tlaBuffer.append(TLAConstants.L_PAREN);
+	            tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
 	
 	            final MCVariable[] currentStateVars = currentState.getVariables();
 	            final MCVariable[] nextStateVars = nextState.getVariables();
@@ -335,9 +332,11 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	             */
 				for (int i = 0; i < currentStateVars.length; i++) {
 					final MCVariable currentStateVar = currentStateVars[i];
+					tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT);
 					tlaBuffer.append(currentStateVar.getName()).append(TLAConstants.EQ);
 					tlaBuffer.append(TLAConstants.L_PAREN).append(currentStateVar.getValueAsString());
-					tlaBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.TLA_AND).append(TLAConstants.CR);
+					tlaBuffer.append(TLAConstants.R_PAREN);
+					tlaBuffer.append(TLAConstants.SPACE).append(TLAConstants.TLA_AND).append(TLAConstants.CR);
 	            }
 	
 	            /*
@@ -364,11 +363,12 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	             */
 				for (int i = 0; i < currentStateVars.length; i++) {
 	                final MCVariable nextStateVar = nextStateVars[i];
+					tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT);
 					tlaBuffer.append(nextStateVar.getName()).append(TLAConstants.PRIME).append(TLAConstants.EQ);
 					tlaBuffer.append(TLAConstants.L_PAREN).append(nextStateVar.getValueAsString()).append(TLAConstants.R_PAREN);
 	                // add /\ for each variable except the last one
 					if (i != currentStateVars.length - 1) {
-	                    tlaBuffer.append(TLAConstants.TLA_AND).append(TLAConstants.CR);
+	                    tlaBuffer.append(TLAConstants.SPACE).append(TLAConstants.TLA_AND).append(TLAConstants.CR);
 	                }
 	            }
 	
@@ -387,10 +387,13 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 				if (expressionData != null) {
 					for (int i = 0; i < expressionData.length; i++) {
 	                    final TraceExpressionInformationHolder expressionInfo = expressionData[i];
-	                    tlaBuffer.append(TLAConstants.TLA_AND).append(TLAConstants.CR);
+	                    tlaBuffer.append(TLAConstants.SPACE).append(TLAConstants.TLA_AND).append(TLAConstants.CR);
+						tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT);
 	                    tlaBuffer.append(expressionInfo.getVariableName()).append(TLAConstants.PRIME);
 	                    tlaBuffer.append(TLAConstants.EQ).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
-	                    tlaBuffer.append(expressionInfo.getExpression()).append(TLAConstants.CR).append(TLAConstants.R_PAREN);
+						tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
+	                    tlaBuffer.append(expressionInfo.getExpression()).append(TLAConstants.CR);
+						tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.R_PAREN);
 	
 						if (expressionInfo.getLevel() < 2) {
 	                        tlaBuffer.append(TLAConstants.PRIME);
@@ -398,7 +401,8 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	                }
 	            }
 	
-	            tlaBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.CR).append(TLAConstants.CR);
+	            tlaBuffer.append(TLAConstants.CR).append(TLAConstants.INDENT).append(TLAConstants.R_PAREN);
+	            tlaBuffer.append(TLAConstants.CR).append(TLAConstants.CR);
 	
 				if (it.hasNext()) {
 	                actionConstraintBuffer.append(TLAConstants.COMMA);
@@ -413,12 +417,12 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 				}
 	        }
 	
-	        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE NEXT definition");
+	        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE NEXT definition ");
 	        tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPLORE_NEXT).append(TLAConstants.CR);
 	        tlaBuffer.append(nextDisjunctBuffer.toString()).append(TLAConstants.CR).append(TLAConstants.CR);
 	        
-	        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE Action Constraint definition");
-	        tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPLORE_NEXT).append(TLAConstants.CR);
+	        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE Action Constraint definition ");
+	        tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPLORE_ACTION_CONSTRAINT).append(TLAConstants.CR);
 	        tlaBuffer.append(actionConstraintBuffer.toString()).append(TLAConstants.END_TUPLE).append("[TLCGet(\"level\")]");
 
 	        tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
