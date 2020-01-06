@@ -107,7 +107,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 
 	private static final String TITLE = "Model Overview";
 
-	private static final String INIT_NEXT_COMBO_LABEL = "Initial predicate and next-state";
+	private static final String INIT_NEXT_COMBO_LABEL = "Initial predicate and next-state relation";
 	private static final String TEMPORAL_FORMULA_COMBO_LABEL = "Temporal formula";
 	private static final String NO_SPEC_COMBO_LABEL = "No behavior spec";
 	private static final String[] VARIABLE_BEHAVIOR_COMBO_ITEMS = { INIT_NEXT_COMBO_LABEL, TEMPORAL_FORMULA_COMBO_LABEL,
