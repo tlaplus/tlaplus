@@ -631,7 +631,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 								continue LOOP;
 							} else {
 								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
-										opDef.getName().toString(), c.getName(), val.toString());
+										opDef.getName().toString(), c.getName(),
+										val instanceof MethodValue ? val.toString() : val.getClass().getName()); // toString of non-MethodValue instances can be expensive.
 							}
 
 							opDef.getBody().setToolObject(toolId, val);
