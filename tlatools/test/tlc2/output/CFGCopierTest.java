@@ -48,7 +48,6 @@ public class CFGCopierTest {
 			+ "\\* PROPERTY definition\n"
 			+ "PROPERTY\n"
 			+ "Termination\n"
-			+ "\\* Generated on Thu Nov 14 12:32:26 PST 2019\n"
 			+ INIT_NEXT_CFG
 			+ "\n";
 
@@ -59,6 +58,7 @@ public class CFGCopierTest {
 		final StringWriter sw = new StringWriter();
 		
 		copier.copy(sr, sw);
-		Assert.assertEquals(NEW_CFG, sw.getBuffer().toString());
+		// We compare the substring because there is a new generation time stamp at the end of the newly created config
+		Assert.assertEquals(NEW_CFG, sw.getBuffer().toString().substring(0, NEW_CFG.length()));
 	}
 }
