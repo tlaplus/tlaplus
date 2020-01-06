@@ -28,17 +28,17 @@ import util.WrongInvocationException;
 
 public class MethodValue extends OpValue implements Applicable {
 
-	public static MethodValue get(final Method md) {
+	public static Value get(final Method md) {
 		return get(md, 0);
 	}
 	
-	public static MethodValue get(final Method md, int minLevel) {
+	public static Value get(final Method md, int minLevel) {
 		final MethodValue mv = new MethodValue(md, minLevel);
 		// Eagerly evaluate the constant operator if possible (zero arity) to only
 		// evaluate once at startup and not during state exploration.
 		final int acnt = md.getParameterTypes().length;
     	final boolean isConstant = (acnt == 0) && Modifier.isFinal(md.getModifiers());
-    	return isConstant ? (MethodValue) mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
+    	return isConstant ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
 	}
 	
   private final MethodHandle mh;

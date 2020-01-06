@@ -528,7 +528,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                         	continue;
                         }
                     	final int acnt = method.getParameterCount();
-                    	final MethodValue val = MethodValue.get(method);
+                    	final Value val = MethodValue.get(method);
                         
                         if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
                     		final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
