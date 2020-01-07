@@ -7,6 +7,7 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
+import java.util.Map;
 
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
@@ -16,8 +17,10 @@ import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.RandomEnumerableValues;
+import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
+import util.UniqueString;
 
 public class SetEnumValue extends EnumerableValue
 implements Enumerable, Reducible {
@@ -489,6 +492,23 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 		final Value[] elems = new Value[len];
 		for (int i = 0; i < len; i++) {
 			elems[i] = (Value) vos.read();
+		}
+		final Value res = new SetEnumValue(elems, isNorm);
+		vos.assign(res, index);
+		return res;
+	}
+
+	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
+		final int index = vos.getIndex();
+		boolean isNorm = true;
+		int len = vos.readInt();
+		if (len < 0) {
+			len = -len;
+			isNorm = false;
+		}
+		final Value[] elems = new Value[len];
+		for (int i = 0; i < len; i++) {
+			elems[i] = (Value) vos.read(tbl);
 		}
 		final Value res = new SetEnumValue(elems, isNorm);
 		vos.assign(res, index);

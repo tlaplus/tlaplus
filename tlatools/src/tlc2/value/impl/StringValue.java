@@ -7,6 +7,7 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
+import java.util.Map;
 
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
@@ -286,5 +287,12 @@ public class StringValue extends Value {
 		vos.assign(res, index);
 		return res;
 	}
-
+	
+	public static IValue createFrom(final IValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
+		final UniqueString str = UniqueString.read(vos.getInputStream(), tbl);
+		final IValue res = new StringValue(str);
+		final int index = vos.getIndex();
+		vos.assign(res, index);
+		return res;
+	}
 }

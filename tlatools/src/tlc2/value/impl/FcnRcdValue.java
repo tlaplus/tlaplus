@@ -8,6 +8,7 @@ package tlc2.value.impl;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
 import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
@@ -18,6 +19,7 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
+import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
@@ -907,6 +909,32 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 			for (int i = 0; i < len; i++) {
 				dvals[i] = (Value) vos.read();
 				rvals[i] = (Value) vos.read();
+			}
+			res = new FcnRcdValue(dvals, rvals, (info == 1));
+		}
+		vos.assign(res, index);
+		return res;
+	}
+
+	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
+		final int index = vos.getIndex();
+		final int len = vos.readNat();
+		final int info = vos.readByte();
+		Value res;
+		final Value[] rvals = new Value[len];
+		if (info == 0) {
+			final int low = vos.readInt();
+			final int high = vos.readInt();
+			for (int i = 0; i < len; i++) {
+				rvals[i] = (Value) vos.read(tbl);
+			}
+			final IntervalValue intv = new IntervalValue(low, high);
+			res = new FcnRcdValue(intv, rvals);
+		} else {
+			final Value[] dvals = new Value[len];
+			for (int i = 0; i < len; i++) {
+				dvals[i] = (Value) vos.read(tbl);
+				rvals[i] = (Value) vos.read(tbl);
 			}
 			res = new FcnRcdValue(dvals, rvals, (info == 1));
 		}

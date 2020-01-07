@@ -4,6 +4,7 @@ package util;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Map;
 
 import tlc2.tool.Defns;
 import tlc2.tool.TLCState;
@@ -303,6 +304,15 @@ public final class UniqueString implements Serializable
         int slen = dis.readInt();
         String str = dis.readString(slen);
         return new UniqueString(str, tok1, loc1);
+    }
+    
+    public static UniqueString read(IDataInputStream dis, final Map<String, UniqueString> tbl) throws IOException
+    {
+        dis.readInt(); // skip, because invalid for the given internTbl
+        dis.readInt(); // skip, because invalid for the given internTbl
+        final int slen = dis.readInt();
+        final String str = dis.readString(slen);
+        return tbl.get(str);
     }
 
 

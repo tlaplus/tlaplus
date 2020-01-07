@@ -9,6 +9,7 @@ package tlc2.value.impl;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
 import tla2sany.semantic.OpDeclNode;
 import tlc2.output.EC;
@@ -544,6 +545,33 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 			} else {
 				final int index1 = vos.getIndex();
 				names[i] = UniqueString.read(vos.getInputStream());
+				vos.assign(names[i], index1);
+			}
+			vals[i] = (Value) vos.read();
+		}
+		final Value res = new RecordValue(names, vals, isNorm);
+		vos.assign(res, index);
+		return res;
+	}
+
+	public static IValue createFrom(final IValueInputStream vos, final Map<String, UniqueString> tbl) throws EOFException, IOException {
+		final int index = vos.getIndex();
+		boolean isNorm = true;
+		int len = vos.readInt();
+		if (len < 0) {
+			len = -len;
+			isNorm = false;
+		}
+		final UniqueString[] names = new UniqueString[len];
+		final Value[] vals = new Value[len];
+		for (int i = 0; i < len; i++) {
+			final byte kind1 = vos.readByte();
+			if (kind1 == DUMMYVALUE) {
+				final int index1 = vos.readNat();
+				names[i] = vos.getValue(index1);
+			} else {
+				final int index1 = vos.getIndex();
+				names[i] = UniqueString.read(vos.getInputStream(), tbl);
 				vos.assign(names[i], index1);
 			}
 			vals[i] = (Value) vos.read();
