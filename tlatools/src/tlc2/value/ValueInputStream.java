@@ -27,11 +27,16 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
   private final BufferedDataInputStream dis;
   private final HandleTable handles;
 
-  public ValueInputStream(File file) throws IOException 
+  public ValueInputStream(File file, final boolean compressed) throws IOException 
   {
       // SZ Feb 24, 2009: FileUtil refactoring
-    this.dis = FileUtil.newBdFIS(TLCGlobals.useGZIP, file);
+    this.dis = FileUtil.newBdFIS(compressed, file);
     this.handles = new HandleTable();
+  }
+  
+  public ValueInputStream(File file) throws IOException 
+  {
+	  this(file, TLCGlobals.useGZIP);
   }
 
   public ValueInputStream(String fname) throws IOException {

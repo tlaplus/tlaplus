@@ -18,7 +18,11 @@ public final class ValueOutputStream implements IValueOutputStream {
   private final HandleTable handles;
 
   public ValueOutputStream(File file) throws IOException {
-    if (TLCGlobals.useGZIP) {
+	  this(file, TLCGlobals.useGZIP);
+  }
+
+  public ValueOutputStream(File file, final boolean compress) throws IOException {
+    if (compress) {
       OutputStream os = new GZIPOutputStream(new FileOutputStream(file));
       this.dos = new BufferedDataOutputStream(os);
     }
@@ -29,15 +33,19 @@ public final class ValueOutputStream implements IValueOutputStream {
   }
 
   public ValueOutputStream(String fname) throws IOException {
-    if (TLCGlobals.useGZIP) {
-      OutputStream os = new GZIPOutputStream(new FileOutputStream(fname));
-      this.dos = new BufferedDataOutputStream(os);
-    }
-    else {
-      this.dos = new BufferedDataOutputStream(fname);
-    }
-    this.handles = new HandleTable();
+	  this(fname, TLCGlobals.useGZIP);
   }
+  
+  public ValueOutputStream(String fname, boolean zip) throws IOException {
+	    if (zip) {
+	      OutputStream os = new GZIPOutputStream(new FileOutputStream(fname));
+	      this.dos = new BufferedDataOutputStream(os);
+	    }
+	    else {
+	      this.dos = new BufferedDataOutputStream(fname);
+	    }
+	    this.handles = new HandleTable();
+	  }
 
   @Override
   public final void writeShort(short x) throws IOException {
