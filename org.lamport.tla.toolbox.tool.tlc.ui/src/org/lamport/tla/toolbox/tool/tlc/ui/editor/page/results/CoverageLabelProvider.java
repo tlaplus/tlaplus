@@ -37,6 +37,9 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
     
     private static final boolean RUNNING_WINDOWS = Platform.getOS().equals(Platform.OS_WIN32);
 	private static final String[] COLUMN_TITLES = new String[] { "Module", "Action", "Location", "States Found", "Distinct States"  };
+	private static final String[] COLUMN_TOOLTIPS = new String[] { TOOLTIP, TOOLTIP, TOOLTIP,
+			"\u03A3 of this column equals (total) States Found on the State Space progress table to the left.",
+			"\u03A3 of this column equals (total) Distinct States on the State Space progress table to the left." };
     private static final int[] COLUMN_WIDTHS;
     private static final Comparator<ActionInformationItem>[] COLUMN_COMP;
 	private static final double[] COLUMN_WIDTH_PERCENTAGES;
@@ -111,7 +114,7 @@ class CoverageLabelProvider extends AbstractTableLabelProvider {
 			final TableColumn column = new TableColumn(stateTable, SWT.NULL);
 			column.setWidth(COLUMN_WIDTHS[i]);
 			column.setText(COLUMN_TITLES[i]);
-			column.setToolTipText(TOOLTIP);
+			column.setToolTipText(COLUMN_TOOLTIPS[i]);
 			column.setData(COVERAGE_COMPARATOR, COLUMN_COMP[i]);
 
 			final int weight = (int)(100.0 * COLUMN_WIDTH_PERCENTAGES[i]);
