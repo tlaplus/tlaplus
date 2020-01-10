@@ -52,6 +52,11 @@ public class ToolboxLabelProvider extends LabelProvider implements ILabelProvide
 			if (root == null) {
 				return null;
 			}
+			if (root.getName().replaceAll(".tla$", "").equals(spec.getName())) {
+				// Don't append name of root module if identical to spec name (which is usually
+				// the default).
+				return spec.getName();
+			}
 			return spec.getName() + " [ " + root.getName() + " ]";
 		} else if (element instanceof Module) {
 			return ((Module) element).getModuleName();
