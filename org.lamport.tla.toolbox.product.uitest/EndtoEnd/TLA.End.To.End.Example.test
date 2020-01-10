@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _0133MAldEem_kewt0eDFQIQ
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/14/19, 1:21 PM
+Runtime-Version: 2.4.3.201909171500
+Save-Time: 1/10/20, 9:22 AM
 Testcase-Type: ecl
 
 ------=_.content-0a7243a0-75d3-3d5f-9791-539de0e5b7ac
@@ -18,7 +18,7 @@ try -command {
 	get-view "Welcome View" | get-button "Missionaries and Cannibals(TLA+)" | click
 	get-window -class WizardDialog | get-button $TLA-BUTTON-FINISH | click
 	get-view $TLA-VIEW-SPEC-EXPLORER | get-tree 
-		| select "MissionariesAndCannibals \\[ MissionariesAndCannibals.tla \\]/models/Model_1" | double-click
+		| select "MissionariesAndCannibals/models/Model_1" | double-click
 
 	// Run model checking.
 	get-editor $TLA-MODEL-ONE | get-button $TLA-BUTTON-RUN-TLC | click
