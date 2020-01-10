@@ -88,7 +88,7 @@ public class RenameSpecHandlerTest extends AbstractTest {
 	public void renameSpec() throws InterruptedException {
 		openSpecExplorer();
 
-		SWTBotTreeItem treeItem = bot.tree().getTreeItem(TEST_SPEC + " [ " + TEST_SPEC + TLA_SUFFIX + " ]");
+		SWTBotTreeItem treeItem = bot.tree().getTreeItem(TEST_SPEC);
 		checkForModelExistenceUI(treeItem);
 
 		SWTBotMenu contextMenu = treeItem.contextMenu("Rename");
