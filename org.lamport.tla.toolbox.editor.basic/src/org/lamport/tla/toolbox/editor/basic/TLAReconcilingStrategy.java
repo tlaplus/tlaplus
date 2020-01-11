@@ -294,8 +294,14 @@ public class TLAReconcilingStrategy implements IPropertyChangeListener, IReconci
 				}
 				lastFoundIndex = find.getOffset();
 				final IRegion lineEnding = search.find((lastFoundIndex + find.getLength()), "\\n", true, true, false, true);
-				lastFoundIndex = lineEnding.getOffset();
-				find = search.find((lastFoundIndex + 1), SINGLE_LINE_COMMENT, true, true, false, true);
+				if (lineEnding != null) {
+					lastFoundIndex = lineEnding.getOffset();
+					find = search.find((lastFoundIndex + 1), SINGLE_LINE_COMMENT, true, true, false, true);
+				} else {
+					// In this case the document has ended without a newline (but with a comment)
+					lastFoundIndex += find.getLength();
+					find = null;
+				}
 				
 				boolean addProjection = (contiguousLineCount > 1);
 				boolean reset = true;
