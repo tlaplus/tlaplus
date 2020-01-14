@@ -43,11 +43,32 @@ class TLCRunner {
 	
 	
 	private final File outputLogfile;
+	private final OutputStream outputOutputStream;
 	private final List<String> arguments;
+	
+	private boolean silenceStdOut;
 
 	TLCRunner(final List<String> tlcArguments, final File logfileDestination) {
 		outputLogfile = logfileDestination;
+		outputOutputStream = null;
 		arguments = tlcArguments;
+		
+		silenceStdOut = false;
+	}
+
+	TLCRunner(final List<String> tlcArguments, final OutputStream logfileOutputStream) {
+		outputLogfile = null;
+		outputOutputStream = logfileOutputStream;
+		arguments = tlcArguments;
+		
+		silenceStdOut = false;
+	}
+	
+	/**
+	 * @param flag if true, no output from the TLC process will be sent to System.out
+	 */
+	void setSilenceStdOut(final boolean flag) {
+		silenceStdOut = flag;
 	}
 	
 	/**
@@ -60,9 +81,24 @@ class TLCRunner {
 		final Process p = processBuilder.start();
 		final BufferedInputStream stdOutReader = new BufferedInputStream(p.getInputStream());
 		final BufferedInputStream stdErrReader = new BufferedInputStream(p.getErrorStream());
-		final FileOutputStream fos = new FileOutputStream(outputLogfile);
-		final TeeOutputStream tos = new TeeOutputStream(System.out, new BufferedOutputStream(fos));
-		final StreamPump stdOutPump = new StreamPump(stdOutReader, tos);
+		final BufferedOutputStream logfileOutputStream;
+		if (outputOutputStream != null) {
+			if (outputOutputStream instanceof BufferedOutputStream) {
+				logfileOutputStream = (BufferedOutputStream)outputOutputStream;
+			} else {
+				logfileOutputStream = new BufferedOutputStream(outputOutputStream);
+			}
+		} else {
+			final FileOutputStream fos = new FileOutputStream(outputLogfile);
+			logfileOutputStream = new BufferedOutputStream(fos);
+		}
+		final OutputStream stdOutPumpOutput;
+		if (silenceStdOut) {
+			stdOutPumpOutput = logfileOutputStream;
+		} else {
+			stdOutPumpOutput = new TeeOutputStream(System.out, logfileOutputStream);
+		}
+		final StreamPump stdOutPump = new StreamPump(stdOutReader, stdOutPumpOutput);
 		final StreamPump stdErrPump = new StreamPump(stdErrReader, null);
 		
 		try {
@@ -80,7 +116,7 @@ class TLCRunner {
 			stdErrPump.stop();
 			
 			try {
-				fos.close();
+				logfileOutputStream.close();
 			} catch (final Exception e) { }
 		}
 		

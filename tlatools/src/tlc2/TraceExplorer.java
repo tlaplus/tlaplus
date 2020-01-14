@@ -40,6 +40,7 @@ import util.TLAConstants;
 public class TraceExplorer {
 	private static final String GENERATE_SPEC_FUNCTION_PARAMETER_NAME = "-generateSpecTE";
 	private static final String PRETTY_PRINT_FUNCTION_PARAMETER_NAME = "-prettyPrint";
+	private static final String QUASI_REPL_PARAMETER_NAME = "-replBis";
 	private static final String TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME = "-traceExpressions";
 
     private static final String EXPRESSIONS_FILE_PARAMETER_NAME = "-expressionsFile=";
@@ -104,7 +105,7 @@ public class TraceExplorer {
     
     
     private enum RunMode {
-    	GENERATE_SPEC_TE, PRETTY_PRINT, GENERATE_FROM_TLC_RUN, TRACE_EXPLORATION;
+    	GENERATE_SPEC_TE, PRETTY_PRINT, GENERATE_FROM_TLC_RUN, QUASI_REPL, TRACE_EXPLORATION;
     }
 
     
@@ -115,6 +116,9 @@ public class TraceExplorer {
     
     private List<String> expressions;
     private List<String> tlcArguments;
+    
+    private String replSpecName;
+    private File temporaryREPLSpec;
     
     private RunMode runMode;
 
@@ -136,8 +140,11 @@ public class TraceExplorer {
         	runMode = RunMode.GENERATE_SPEC_TE;
         } else if (args[0].equals(PRETTY_PRINT_FUNCTION_PARAMETER_NAME)) {
         	runMode = RunMode.PRETTY_PRINT;
-        } else if (args[0].contentEquals(TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME)) {
+        } else if (args[0].equals(TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME)) {
         	runMode = RunMode.TRACE_EXPLORATION;
+    		tlcArguments = new ArrayList<>();
+        } else if (args[0].equals(QUASI_REPL_PARAMETER_NAME)) {
+        	runMode = RunMode.QUASI_REPL;
     		tlcArguments = new ArrayList<>();
         } else {
         	runMode = null;
@@ -151,6 +158,8 @@ public class TraceExplorer {
 		expectedOutputFromStdIn = (specGenerationOriginalSpecName.charAt(0) == '-');
 		if (expectedOutputFromStdIn) {
 			specGenerationOriginalSpecName = null;
+		} else if (RunMode.QUASI_REPL.equals(runMode)) {
+			printUsageAndExit();
 		}
 		overwriteGeneratedFiles = false;
 
@@ -215,53 +224,63 @@ public class TraceExplorer {
 			}
 		}
 		
-		if (RunMode.TRACE_EXPLORATION.equals(runMode)) {
+		if (RunMode.TRACE_EXPLORATION.equals(runMode) || RunMode.QUASI_REPL.equals(runMode)) {
 			if (expressionsSourceFilename == null) {
     			printErrorMessage("Error: no expressions file specified.");
 				runMode = null;
 				return;
+			}
+			
+			final File sourceDirFile = new File(specGenerationSourceDirectory, expressionsSourceFilename);
+			final File absoluteFile = new File(expressionsSourceFilename);
+			final File f;
+			if (sourceDirFile.exists()) {
+				f = sourceDirFile;
+			} else if (absoluteFile.exists()) {
+				f = absoluteFile;
 			} else {
-				final File sourceDirFile = new File(specGenerationSourceDirectory, expressionsSourceFilename);
-				final File absoluteFile = new File(expressionsSourceFilename);
-				final File f;
-				
-				if (sourceDirFile.exists()) {
-					f = sourceDirFile;
-				} else if (absoluteFile.exists()) {
-					f = absoluteFile;
-				} else {
-	    			printErrorMessage("Error: an expressions file could be found at neither "
-	    									+ sourceDirFile.getAbsolutePath() + " nor "
-	    									+ absoluteFile.getAbsolutePath());
-					runMode = null;
-					return;
-				}
-				
-				try {
-					expressions = new ArrayList<>();
-					try (final BufferedReader br = new BufferedReader(new FileReader(f))) {
-						String line;
-						while ((line = br.readLine()) != null) {
-							expressions.add(line);
-						}
+				printErrorMessage("Error: an expressions file could be found at neither "
+										+ sourceDirFile.getAbsolutePath()
+										+ " nor " + absoluteFile.getAbsolutePath());
+				runMode = null;
+				return;
+			}
+
+			try {
+				expressions = new ArrayList<>();
+				try (final BufferedReader br = new BufferedReader(new FileReader(f))) {
+					String line;
+					while ((line = br.readLine()) != null) {
+						expressions.add(line);
 					}
-				} catch (final IOException e) {
-					printErrorMessage("Error: encountered an exception reading from expressions file "
-											+ f.getAbsolutePath() + " :: " + e.getMessage());
-					runMode = null;
-					return;
 				}
-				
+			} catch (final IOException e) {
+				printErrorMessage("Error: encountered an exception reading from expressions file "
+									+ f.getAbsolutePath() + " :: " + e.getMessage());
+				runMode = null;
+				return;
+			}
+
+			if (RunMode.TRACE_EXPLORATION.equals(runMode)) {
 				tlcArguments.add("-config");
 				tlcArguments.add(TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME 
 									+ TLAConstants.Files.CONFIG_EXTENSION);
 				
 				tlcArguments.add("-tool");
-				
-				tlcArguments.add("-metadir");
-				tlcArguments.add(specGenerationSourceDirectory.getAbsolutePath());
-				
+			} else {
+				replSpecName = "repl"; //"REPL_" + System.currentTimeMillis();
+				temporaryREPLSpec = new File(specGenerationSourceDirectory,
+											 replSpecName + TLAConstants.Files.TLA_EXTENSION);
+				temporaryREPLSpec.deleteOnExit();
+			}
+
+			tlcArguments.add("-metadir");
+			tlcArguments.add(specGenerationSourceDirectory.getAbsolutePath());
+			
+			if (RunMode.TRACE_EXPLORATION.equals(runMode)) {
 				tlcArguments.add(TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME);
+			} else {
+				tlcArguments.add(replSpecName);
 			}
 		}
      }
@@ -270,7 +289,9 @@ public class TraceExplorer {
      * @return an {@link EC} defined error code representing success or failure.
      */
     public int execute() throws Exception {
-    	if (expectedOutputFromStdIn) {
+    	if (RunMode.QUASI_REPL.equals(runMode)) {
+    		return performREPL();
+    	} else if (expectedOutputFromStdIn) {
     		return executeStreaming();
     	} else {
     		return executeNonStreaming();
@@ -446,6 +467,25 @@ public class TraceExplorer {
 		return EC.ExitStatus.ERROR;
     }
     
+    private int performREPL() throws IOException {
+    	final REPLSpecWriter writer = new REPLSpecWriter(replSpecName, expressions);
+    	final File cfgFile = new File(specGenerationSourceDirectory, replSpecName + TLAConstants.Files.CONFIG_EXTENSION);
+    	cfgFile.deleteOnExit();
+    	writer.writeFiles(temporaryREPLSpec, cfgFile);
+
+    	final REPLSpecWriter.REPLLogConsumerStream outputStream = new REPLSpecWriter.REPLLogConsumerStream();
+		final TLCRunner tlcRunner = new TLCRunner(tlcArguments, outputStream);
+		tlcRunner.setSilenceStdOut(true);
+		final int errorCode = tlcRunner.run();
+		
+		System.out.println(String.join("\n", expressions));
+		System.out.println("\t" + TLAConstants.EQ);
+		// TODO indent on multi-line
+		System.out.println("\t\t" + outputStream.getCollectedContent());
+
+    	return errorCode;
+    }
+    
 	private int performTraceExploration() throws IOException {
 		final File tlaFile = new File(specGenerationSourceDirectory,
 				TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
@@ -553,7 +593,7 @@ public class TraceExplorer {
     
     private static void printUsageAndExit() {
     	System.out.println("Usage");
-    	
+
     	System.out.println("\tTo evaluate trace expressions:");
     	System.out.println("\t\t\tjava tlc2.TraceExplorer " + TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME + " \\\n"
     							+ "\t\t\t\t" + EXPRESSIONS_FILE_PARAMETER_NAME
@@ -577,6 +617,20 @@ public class TraceExplorer {
     	System.out.println("\t\to if SpecName is specified and it is anything other than "
     							+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
     							+ ", generation of this file pair will occur first");
+    	
+    	System.out.println("");
+    	
+    	System.out.println("\tTo perform a one off evaluation of an expression:");
+    	System.out.println("\t\t\tjava tlc2.TraceExplorer " + QUASI_REPL_PARAMETER_NAME + " \\\n"
+    							+ "\t\t\t\t" + EXPRESSIONS_FILE_PARAMETER_NAME
+    										 + "_file_containing_an_expression_to_evaluate_ \\\n"
+				    			+ "\t\t\t\t[" + MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME
+				    						  + "\"-some -other 2 -tlc arguments\"]");
+    	System.out.println("\t\to the expressions file must either exist in the CWD or be a full path");
+    	System.out.println("\t\to if TLC arguments are specified (all within quotes) they will be passed on to TLC "
+    							+ "when performing the model check; -config, -tool, and -metadir will be ignored, "
+    							+ "if specified.");
+    	System.out.println("\t\to if a SpecName is specified, this usage will be printed and execution will hault");
     	
     	System.out.println("");
     	
@@ -611,16 +665,27 @@ public class TraceExplorer {
      * 
      *  1. Evaluation of trace expressions from afrom an existing .tla/.out/.cfg triplet in which the .out contains
      *  	one or more MP.ERROR messages - see https://github.com/tlaplus/tlaplus/issues/393 for background:
-     *  				java tlc2.TraceExplorer -generateSpecTE \
+     *  				java tlc2.TraceExplorer -traceExpressions \
+     *  						-expressionsFile=_file_containing_expressions_one_per_line_ \
+     *  						[-tlcArguments=_directory_containing_prior_run_output_] \
      *  						[-source=_directory_containing_prior_run_output_] \
      *  						[-overwrite] \
      *  						SpecName
-     *  	the source directory defaults to CWD if not defined; if overwrite is not specified and a SpecTE.tla
-     *  	already exists in the source directory, execution will halt; if no SpecName is specified then we
-     *  	will expect the output data to arrive on stdin - anything specified via -source will be ignore in this
-     *  	case as we will derive that from the output log content.
+     *  	the source directory defaults to CWD if not defined; the expressions file must either exist in the source
+     *  	directory or be a full path; if TLC arguments are specified (all within quotes) they will be passed on to
+     *  	TLC when performing the model check; -config, -tool, and -metadir will be ignored, if specified;  if no
+     *  	SpecName is specified then we will expect the output data to arrive on stdin - anything specified via
+     *  	-source will be ignore in this case as we will derive that from the output log content.
      *  
-     *  2. Generation of a 'SpecTE.tla' from an existing .tla/.out/.cfg triplet in which the .out contains
+     *  2. Evaluation of an expression, ala REPL-ese:
+     *  				java tlc2.TraceExplorer -replBis \
+     *  						-expressionsFile=_file_containing_expressions_to_evaluate_ \
+     *  						[-tlcArguments=_directory_containing_prior_run_output_]
+     *  	the expressions file must either exist in the source directory or be a full path; if TLC arguments are
+     *  	specified (all within quotes) they will be passed on to TLC when performing the model check; -config,
+     *  	-tool, and -metadir will be ignored, if specified
+     *  
+     *  3. Generation of a 'SpecTE.tla' from an existing .tla/.out/.cfg triplet in which the .out contains
      *  	one or more MP.ERROR messages - see https://github.com/tlaplus/tlaplus/issues/393 for background:
      *  				java tlc2.TraceExplorer -generateSpecTE \
      *  						[-source=_directory_containing_prior_run_output_] \
@@ -631,7 +696,7 @@ public class TraceExplorer {
      *  	will expect the output data to arrive on stdin - anything specified via -source will be ignore in this
      *  	case as we will derive that from the output log content.
      *  
-     *  3. Pretty print the error states from an existing .out file to {@link System#out}:
+     *  4. Pretty print the error states from an existing .out file to {@link System#out}:
      *  				java tlc2.TraceExplorer -prettyPrint \
      *  						[-source=_directory_containing_prior_run_output_] \
      *  						SpecName
@@ -651,6 +716,8 @@ public class TraceExplorer {
 	    	System.exit(returnCode);
     	} catch (final Exception e) {
     		System.err.println("Caught exception: " + e.getLocalizedMessage());
+    		
+    		printUsageAndExit();
     	}
     }
 }
