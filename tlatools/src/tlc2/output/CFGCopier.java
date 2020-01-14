@@ -9,7 +9,10 @@ import java.util.regex.Pattern;
 import util.TLAConstants;
 
 /**
- * This class which copies a CFG file, mutating it appropriately to become a SpecTE CFG file.
+ * This class which copies a CFG file, mutating it appropriately to become a SpecTE CFG file.  This is becoming
+ * 	pretty brittle; we would probably be better served at this point to work on the {@link ModelConfig} class
+ *  and make it able to write itself to a stream (and from that point forward, just modify an instance of that
+ *  directly.) (TODO)
  */
 public class CFGCopier extends AbstractCopier {
 	private static final String SPECIFICATION_COMMENT_REGEX = "^\\\\\\* " + TLAConstants.KeyWords.SPECIFICATION + ".*$?";

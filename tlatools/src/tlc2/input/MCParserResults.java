@@ -5,6 +5,7 @@ import java.util.Set;
 
 import tla2sany.st.Location;
 import tlc2.model.MCError;
+import tlc2.tool.impl.ModelConfig;
 
 public class MCParserResults {
 	private final String moduleName;
@@ -20,9 +21,12 @@ public class MCParserResults {
 	private final boolean behaviorIsInitNext;
 	
 	private final String originalNextOrSpecificationName;
+	
+	private final ModelConfig modelConfig;
 
 	MCParserResults(final String rootModuleName, final List<String> immediateExtendeds, final Set<String> allExtendeds,
-					final List<Location> initNextLocations, final boolean wasInitNext, final String nextOrSpecName) {
+					final List<Location> initNextLocations, final boolean wasInitNext, final String nextOrSpecName,
+					final ModelConfig config) {
 		moduleName = rootModuleName;
 		
 		immediateExtendedModules = immediateExtendeds;
@@ -33,15 +37,22 @@ public class MCParserResults {
 		behaviorIsInitNext = wasInitNext;
 		
 		originalNextOrSpecificationName = nextOrSpecName;
+		
+		modelConfig = config;
 	}
 	
 	MCParserResults(final String rootModuleName, final MCError mcError, final List<MCOutputMessage> messages,
 					final List<String> immediateExtendeds, final Set<String> allExtendeds,
-					final List<Location> initNextLocations, final boolean wasInitNext, final String nextOrSpecName) {
-		this(rootModuleName, immediateExtendeds, allExtendeds, initNextLocations, wasInitNext, nextOrSpecName);
+					final List<Location> initNextLocations, final boolean wasInitNext, final String nextOrSpecName,
+					final ModelConfig config) {
+		this(rootModuleName, immediateExtendeds, allExtendeds, initNextLocations, wasInitNext, nextOrSpecName, config);
 		
 		error = mcError;
 		outputMessages = messages;
+	}
+	
+	public ModelConfig getModelConfig() {
+		return modelConfig;
 	}
 	
 	public String getModuleName() {

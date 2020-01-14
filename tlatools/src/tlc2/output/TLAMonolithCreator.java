@@ -50,6 +50,8 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 		
 		modulesToSpecifyInExtends = new HashSet<>(entireExtendsList);
 		StandardModules.filterNonStandardModulesFromSet(modulesToSpecifyInExtends);
+		// for TLC things
+		modulesToSpecifyInExtends.add(TLAConstants.BuiltInModules.TLC);
 		// for _TE things
 		modulesToSpecifyInExtends.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
 	}

@@ -79,7 +79,7 @@ public class MCParser {
 		rootModuleName = root.getName().toString();
 
 		return new MCParserResults(rootModuleName, extendees, allExtendees, initNextLocationsToDelete,
-								   isInitNext, nextOrSpecName);
+								   isInitNext, nextOrSpecName, modelConfig);
 	}	
 	
 	private final ModelConfig configParser;
@@ -195,7 +195,7 @@ public class MCParser {
 				// we'll have a zero size if the output generated came from a TLC run that did not have the '-tool' flag
 				parserResults = new MCParserResults(null, ((outputParser != null) ? outputParser.getError() : null),
 													encounteredMessages, new ArrayList<>(), new HashSet<>(),
-													new ArrayList<>(), true, null);
+													new ArrayList<>(), true, null, configParser);
 			}
 			
 			return parserResults;
