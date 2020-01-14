@@ -150,7 +150,7 @@ public class CostModelCreator extends ExplorerVisitor {
 
 	private final Deque<CostModelNode> stack = new ArrayDeque<>();
 	private final Map<ExprOrOpArgNode, Subst> substs = new HashMap<>();
-	private final Map<OpApplNode, OpApplNodeWrapper> node2Wrapper = new HashMap<>();
+	private final Map<OpApplNode, Set<OpApplNodeWrapper>> node2Wrapper = new HashMap<>();
 	private final Set<OpDefNode> opDefNodes = new HashSet<>();
 	// Set of OpDefNodes occurring in LetIns and their OpApplNodes.
 	private final Map<ExprNode, ExprNode> letIns = new HashMap<>();
@@ -288,9 +288,8 @@ public class CostModelCreator extends ExplorerVisitor {
 			//
 			// To summarize, this is a clutch that has been hacked to work good enough!
 			// 
-			// Three if branches 1., 2., and 3. below re not evaluated right after each
-			// other but in three different invocation of outer preVisit for different
-			// ExploreNodes.
+			// if-branches 1., 2., and 3. below are evaluated in three distinct
+			// invocation of outer preVisit for different ExploreNodes.
 			if (tool != null && operator instanceof OpDefNode && opApplNode.hasOpcode(0)
 					&& opApplNode.argsContainOpArgNodes()) {
 				// 1) Maintain Context for all OpApplNode iff one or more of its args are of
@@ -311,14 +310,13 @@ public class CostModelCreator extends ExplorerVisitor {
 					// body#setToolObject(tla2sany.semantic.FrontEnd.getToolId(), oan) instead of in
 					// node2Wrapper. However, node2Wrapper can be gc'ed after the CostModel has been
 					// created and before state space exploration.
-					this.node2Wrapper.put((OpApplNode) body, oan);
+					this.node2Wrapper.computeIfAbsent((OpApplNode) body, key -> new HashSet<>()).add(oan);
 				}
 			}
 			if (this.node2Wrapper.containsKey(opApplNode)) {
 				// 3) Now it's later. Connect w and oan where
 				// w is 'Op(s)' and oan is 'LAMBDA e: e...'
-				final OpApplNodeWrapper w = this.node2Wrapper.get(opApplNode);
-				w.addChild(oan);
+				this.node2Wrapper.get(opApplNode).forEach(w -> w.addChild(oan));
 			}
 			// End of Higher-order operators/Operators as arguments (LAMBDA, ...) 
 			
