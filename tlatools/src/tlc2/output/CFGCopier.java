@@ -65,6 +65,12 @@ public class CFGCopier extends AbstractCopier {
 							|| TLAConstants.KeyWords.INIT.equals(trimmed)
 							|| TLAConstants.KeyWords.NEXT.equals(trimmed)) {
 						skipNextLine = true;
+					} else if (trimmed.startsWith(TLAConstants.KeyWords.SPECIFICATION)
+								|| trimmed.startsWith(TLAConstants.KeyWords.INIT)
+								|| trimmed.startsWith(TLAConstants.KeyWords.NEXT)) {
+						// NO-OP - don't write since it starts with the keyword, but trimmed doesn't match
+						//	the naming of the keyword-denoted-attribute is on this same line, e.g:
+						//			SPECIFICATION MySpec
 					} else if (!trimmed.startsWith(TLAConstants.GENERATION_TIMESTAMP_PREFIX)) {
 						writer.write(originalLine + '\n');
 					}
