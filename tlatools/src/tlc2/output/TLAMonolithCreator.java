@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,9 +19,6 @@ import tla2sany.semantic.StandardModules;
 import util.TLAConstants;
 
 public class TLAMonolithCreator extends AbstractTLACopier {
-	private static final String STANDARD_MODULES_DIRECTORY_NAME = "StandardModules";
-	
-	
 	// these are modules which SANY logs that it has parsed
 	private final List<File> extendedModules;
 	// these are the modules which the root ModuleNode or one of its sub-ModuleNodes (or one or their sub-ModuleNodes
@@ -31,7 +29,24 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 							  final Set<String> entireExtendsList) {
 		super(specTEName, ("tmp_" + System.currentTimeMillis() + "_monolith"), sourceLocation);
 		
-		extendedModules = extendeds;
+		extendedModules = new ArrayList<File>();
+		for (final File f : extendeds) {
+			final String name = f.getName();
+			final int index = name.toLowerCase().indexOf(TLAConstants.Files.TLA_EXTENSION);
+			final boolean keep;
+			if (index == -1) {
+				// this should never be the case
+				keep = true;
+			} else {
+				final String baseName = name.substring(0, index);
+
+				keep = !StandardModules.isDefinedInStandardModule(baseName);
+			}
+			
+			if (keep) {
+				extendedModules.add(f);
+			}
+		}
 		
 		modulesToSpecifyInExtends = new HashSet<>(entireExtendsList);
 		StandardModules.filterNonStandardModulesFromSet(modulesToSpecifyInExtends);
@@ -79,11 +94,6 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 	}	
 	
 	private void insertModuleIntoMonolith(final File module, final BufferedWriter monolithWriter) throws IOException {
-		final File moduleParentDirectory = module.getParentFile();
-		if (STANDARD_MODULES_DIRECTORY_NAME.contentEquals(moduleParentDirectory.getName())) {
-			return;
-		}
-		
 		final StringBuilder commentLine = new StringBuilder(TLAConstants.CR);
 		commentLine.append(TLAConstants.COMMENT).append(TLAConstants.CR);
 		commentLine.append(TLAConstants.COMMENT).append(' ').append(module.getName()).append(" follows\n");
