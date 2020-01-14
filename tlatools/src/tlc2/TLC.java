@@ -219,9 +219,10 @@ public class TLC {
      *		Defaults to off if not specified
      *  o -debug: debbuging information (non-production use)
      *  o -tool: tool mode (put output codes on console)
-     *  o -generateSpecTE: will generate SpecTE assets if both also run with
-     *  				the -tool flag, and error-states are encountered during
-     *  				model checking.
+     *  o -generateSpecTE: will generate SpecTE assets if error-states are
+     *  				encountered during model checking; this will change
+     *  				to tool mode regardless of whether '-tool' was
+     *  				explicitly specified.
      *  o -checkpoint num: interval for check pointing (in minutes)
      *		Defaults to 30
      *  o -fpmem num: a value between 0 and 1, exclusive, representing the ratio
@@ -410,6 +411,7 @@ public class TLC {
             } else if (args[index].equals("-generateSpecTE")) {
                 index++;
             	
+                TLCGlobals.tool = true;
 				try {
 					temporaryMCOutputLogFile = File.createTempFile("mcout_", ".out");
 					temporaryMCOutputLogFile.deleteOnExit();
