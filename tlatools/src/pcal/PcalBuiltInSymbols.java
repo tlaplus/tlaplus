@@ -148,7 +148,7 @@ public final class PcalBuiltInSymbols
         add("STRING",     "{\\STRING}",      Symbol.KEYWORD, 0);
         add("THEOREM",    "{\\THEOREM}",     Symbol.KEYWORD, 0);
         add("TRUE",       "{\\TRUE}",        Symbol.KEYWORD, 0);
-        add("VARIABLE",   "{\\VARIABLE}",    Symbol.KEYWORD, 0);
+        add(TLAConstants.KeyWords.VARIABLE,   "{\\VARIABLE}",    Symbol.KEYWORD, 0);
         add("VARIABLES",  "{\\VARIABLES}",   Symbol.KEYWORD, 0);
         add("WITH",       "{\\WITH}",        Symbol.KEYWORD, 0);
 

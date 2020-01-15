@@ -34,7 +34,9 @@ public final class TLAConstants {
 	    public static final String PROPERTY = "PROPERTY";
 	    public static final String SPECIFICATION = "SPECIFICATION";
 	    public static final String SYMMETRY = "SYMMETRY";
+	    public static final String TRUE = "TRUE";
 	    public static final String UNION = "\\union";
+	    public static final String VARIABLE = "VARIABLE";
 	}
 	
 	public final class LoggingAtoms {

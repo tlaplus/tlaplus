@@ -125,7 +125,7 @@ public class TraceExplorer {
     	final List<MCState> trace = error.getStates();
     	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, null,
     												   SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
-    												   results.getOriginalNextOrSpecificationName());
+    												   results.getOriginalNextOrSpecificationName(), true);
     	SpecTraceExpressionWriter.addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, trace);
     	
     	final List<String> extendedModules = results.getOriginalExtendedModules();

@@ -2042,7 +2042,7 @@ public class PcalTLAGen
         } else
         {
 //            res.append("VARIABLE ");
-            addOneTokenToTLA("VARIABLE ");
+            addOneTokenToTLA(TLAConstants.KeyWords.VARIABLE + " ");
         }
         ;
         for (int i = 0; i < varVec.size(); i++)

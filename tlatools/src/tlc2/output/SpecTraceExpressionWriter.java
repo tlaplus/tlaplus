@@ -17,6 +17,8 @@ import util.TLAConstants;
  * This is the abstract class of spec writers which produce specs capable of containing trace expressions.
  */
 public class SpecTraceExpressionWriter extends AbstractSpecWriter {
+	private static final String TRACE_EXPRESSION_VARIABLE = "TraceExp";
+	
 	/**
 	 * This will generate three identifiers equal to the initial and next state
 	 * predicate for the trace, and the action constraint.
@@ -43,7 +45,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	
 	/**
 	 * This calls:
-	 * 	{@code addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData, initId, nextId, actionConstraintId, TLAConstants.Schemes.NEXT_SCHEME);}
+	 * 	{@code addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData, initId, nextId, actionConstraintId, TLAConstants.Schemes.NEXT_SCHEME, false);}
 	 * 
 	 * @param tlaBuffer the buffer into which the TLA code will be placed
 	 * @param cfgBuffer if non-null, the buffer into which the CFG code will be placed
@@ -56,9 +58,9 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	 */
 	public static void addInitNextToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
 			final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData, final String initId,
-			String nextId, final String actionConstraintId) {
+			final String nextId, final String actionConstraintId) {
 		addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData, initId, nextId, actionConstraintId,
-				TLAConstants.Schemes.NEXT_SCHEME);
+							 TLAConstants.Schemes.NEXT_SCHEME, false);
 	}
 
 	/**
@@ -162,10 +164,14 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	 * @param nextId the identifier to be used for the next-state action, cannot be null
 	 * @param actionConstraintId the indentified used for the action constraint
 	 * @param nextSubActionBasename the base string to be used as the prefix to unique names for next sub-actions
+	 * @param leaveStubsForTraceExpression if true, then a variable will be defined {@link TRACE_EXPRESSION_VARIABLE},
+	 * 						yet commented out, and similarly conjoined, but commented out in the SpecTE Init and Next
+	 * 						declarations
 	 */
 	public static void addInitNextToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
 			final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData, final String initId,
-			String nextId, final String actionConstraintId, final String nextSubActionBasename) {
+			final String nextId, final String actionConstraintId, final String nextSubActionBasename,
+			final boolean leaveStubsForTraceExpression) {
 		if (trace.size() > 0) {
 	        final Iterator<MCState> it = trace.iterator();
 	        MCState currentState = it.next();
@@ -177,6 +183,11 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 				cfgBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.INIT).append(" definition");
 				cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.INIT).append(TLAConstants.CR);
 				cfgBuffer.append(initId).append(TLAConstants.CR);
+			}
+			
+			if (leaveStubsForTraceExpression) {
+				tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.VARIABLE).append(' ');
+				tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.CR).append(TLAConstants.CR);
 			}
 	
 	        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE INIT definition");
@@ -224,6 +235,12 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		            tlaBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.CR);
 	            }
 	        }
+			
+			if (leaveStubsForTraceExpression) {
+				tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
+				tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.EQ);
+				tlaBuffer.append(TLAConstants.KeyWords.TRUE).append(TLAConstants.CR);
+			}
 	
 	        tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
 	
@@ -265,6 +282,9 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	         */
 	        final StringBuilder nextDisjunctBuffer = new StringBuilder();
 	        nextDisjunctBuffer.append(nextId).append(TLAConstants.DEFINES_CR);
+			if (leaveStubsForTraceExpression) {
+				nextDisjunctBuffer.append(TLAConstants.TLA_AND).append(' ');
+			}
 	        
 	        final StringBuilder actionConstraintBuffer = new StringBuilder();
 	        actionConstraintBuffer.append(actionConstraintId).append(TLAConstants.DEFINES_CR).append(TLAConstants.BEGIN_TUPLE);
@@ -419,7 +439,15 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	
 	        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE NEXT definition ");
 	        tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPLORE_NEXT).append(TLAConstants.CR);
-	        tlaBuffer.append(nextDisjunctBuffer.toString()).append(TLAConstants.CR).append(TLAConstants.CR);
+	        tlaBuffer.append(nextDisjunctBuffer.toString());
+			
+			if (leaveStubsForTraceExpression) {
+				tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.TLA_AND).append(' ');
+				tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.PRIME).append(TLAConstants.EQ);
+				tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.CR);
+			}
+	        
+	        tlaBuffer.append(TLAConstants.CR).append(TLAConstants.CR);
 	        
 	        tlaBuffer.append(TLAConstants.COMMENT).append("TRACE Action Constraint definition ");
 	        tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPLORE_ACTION_CONSTRAINT).append(TLAConstants.CR);

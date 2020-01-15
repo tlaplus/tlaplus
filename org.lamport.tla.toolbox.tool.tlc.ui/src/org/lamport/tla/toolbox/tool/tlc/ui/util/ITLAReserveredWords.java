@@ -19,7 +19,7 @@ public interface ITLAReserveredWords
     public final static String CASE = "CASE";
     public final static String CHOOSE = "CHOOSE";
     public final static String CONSTANT = TLAConstants.KeyWords.CONSTANT;
-    public final static String CONSTANTS = "CONSTANTS";
+    public final static String CONSTANTS = TLAConstants.KeyWords.CONSTANTS;
     public final static String DOMAIN = "DOMAIN";
     public final static String ELSE = "ELSE";
     public final static String ENABLED = "ENABLED";
@@ -38,8 +38,8 @@ public interface ITLAReserveredWords
     public final static String THEOREM = "THEOREM";
     public final static String UNCHANGED = "UNCHANGED";
     public final static String UNION = "UNION";
-    public final static String VARIABLE = "VARIABLE";
-    public final static String VARIABLES = "VARIABLES";
+    public final static String VARIABLE = TLAConstants.KeyWords.VARIABLE;
+    public final static String VARIABLES = VARIABLE + "S";
     public final static String WF_ = "WF_";
     public final static String WITH = "WITH";
 
