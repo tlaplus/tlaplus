@@ -123,10 +123,13 @@ public class TraceExplorer {
     	}
     	
     	final List<MCState> trace = error.getStates();
-    	SpecTraceExpressionWriter.addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, null,
-    												   SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
-    												   results.getOriginalNextOrSpecificationName(), true);
+    	final StringBuilder[] tlaBuffers
+    		= SpecTraceExpressionWriter.addInitNextToBuffers(cfgBuffer, trace, null, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID,
+    														 SPEC_TE_ACTION_CONSTRAINT_ID,
+    														 results.getOriginalNextOrSpecificationName(), true);
+    	tlaBuffer.append(tlaBuffers[0].toString());
     	SpecTraceExpressionWriter.addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, trace);
+    	tlaBuffer.append(tlaBuffers[1].toString());
     	
     	final List<String> extendedModules = results.getOriginalExtendedModules();
     	final boolean specExtendsTLC = extendedModules.contains(TLAConstants.BuiltInModules.TLC);
