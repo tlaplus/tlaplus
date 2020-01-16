@@ -438,27 +438,29 @@ public class TLC {
 							temporaryMCOutputStream.close();
 							haveClosedOutputStream = true;
 							
-							final File tempTLA = File.createTempFile("temp_tlc_tla_", ".tla");
-							tempTLA.deleteOnExit();
-							FileUtil.copyFile(specTETLAFile, tempTLA);
-							
-							final FileOutputStream fos = new FileOutputStream(specTETLAFile);
-							final FileInputStream mcOutFIS = new FileInputStream(temporaryMCOutputLogFile);
-							copyStream(mcOutFIS, fos);
-							
-							final FileInputStream tempTLAFIS = new FileInputStream(tempTLA);
-							copyStream(tempTLAFIS, fos);
-							
-							fos.close();
-							mcOutFIS.close();
-							tempTLAFIS.close();
-							
-							final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
-							final TLAMonolithCreator monolithCreator
-									= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
-															 mcOutputConsumer.getSourceDirectory(),
-															 extendedModules, mcParserResults.getAllExtendedModules());
-							monolithCreator.copy();
+							if (mcOutputConsumer.getError() != null) {
+								final File tempTLA = File.createTempFile("temp_tlc_tla_", ".tla");
+								tempTLA.deleteOnExit();
+								FileUtil.copyFile(specTETLAFile, tempTLA);
+								
+								final FileOutputStream fos = new FileOutputStream(specTETLAFile);
+								final FileInputStream mcOutFIS = new FileInputStream(temporaryMCOutputLogFile);
+								copyStream(mcOutFIS, fos);
+								
+								final FileInputStream tempTLAFIS = new FileInputStream(tempTLA);
+								copyStream(tempTLAFIS, fos);
+								
+								fos.close();
+								mcOutFIS.close();
+								tempTLAFIS.close();
+								
+								final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
+								final TLAMonolithCreator monolithCreator
+										= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
+																 mcOutputConsumer.getSourceDirectory(),
+																 extendedModules, mcParserResults.getAllExtendedModules());
+								monolithCreator.copy();
+							}
 							
 							waitingOnGenerationCompletion.set(false);
 							synchronized(this) {
@@ -483,8 +485,7 @@ public class TLC {
 					
 					MP.printMessage(EC.GENERAL,
 									"Will generate a " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
-										+ " file pair if error states are encountered and we are "
-										+ "being run with the '-tool' flag.");
+										+ " file pair if error states are encountered.");
 				} catch (final IOException ioe) {
 					printErrorMsg("Failed to set up piped output consumers; no potential "
 										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " will be generated: "
@@ -1056,26 +1057,19 @@ public class TLC {
 					result = TLCGlobals.mainChecker.modelCheck();
                 }
 
-                if (mcOutputConsumer != null)  {
-                	if (mcOutputConsumer.getError() == null) {
-                		MP.printMessage(EC.GENERAL,
-                						"The model check run produced no usable error-state messages, "
-                										+ "so no " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
-                										+ " was generated.");
-                	} else {
-                		final SpecProcessor sp = tool.getSpecProcessor();
-                		final ModelConfig mc = tool.getModelConfig();
-                		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
-                		final String originalSpecName = mcOutputConsumer.getSpecName();
-                		
-                		MP.printMessage(EC.GENERAL,
-        								"The model check run produced error-states - we will generate the "
-        										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " files now.");
-                		mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
-                		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
-                															mcParserResults, mcOutputConsumer.getError());
-                		specTETLAFile = files[0];
-                	}
+                if ((mcOutputConsumer != null) && (mcOutputConsumer.getError() != null)) {
+            		final SpecProcessor sp = tool.getSpecProcessor();
+            		final ModelConfig mc = tool.getModelConfig();
+            		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
+            		final String originalSpecName = mcOutputConsumer.getSpecName();
+            		
+            		MP.printMessage(EC.GENERAL,
+    								"The model check run produced error-states - we will generate the "
+    										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " files now.");
+            		mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
+            		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
+            															mcParserResults, mcOutputConsumer.getError());
+            		specTETLAFile = files[0];
                 }
             }
             return result;
