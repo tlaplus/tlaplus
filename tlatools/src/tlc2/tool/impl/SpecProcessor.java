@@ -354,6 +354,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         this.moduleTbl = specObj.getExternalModuleTable();
         UniqueString rootName = UniqueString.uniqueStringOf(this.rootFile);
         this.rootModule = this.moduleTbl.getModuleNode(rootName);
+        
+		Assert.check(this.rootModule != null, EC.TLC_PARSING_FAILED2,
+				String.format(" Module-Table lookup failure for module name %s derived from %s file name.",
+						rootName.toString(), this.rootFile));
 
         // Get all the state variables in the spec:
         OpDeclNode[] varDecls = this.rootModule.getVariableDecls();
