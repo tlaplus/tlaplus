@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import tla2sany.semantic.StandardModules;
+import tlc2.input.MCParser;
+import tlc2.input.MCParserResults;
 import util.TLAConstants;
 
 public class TLAMonolithCreator extends AbstractTLACopier {
@@ -25,9 +28,9 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 	//		and so on, turtles all the way down) has defined as EXTENDS-ing in their spec
 	private final Set<String> modulesToSpecifyInExtends;
 	
-	public TLAMonolithCreator(final String specTEName, final File sourceLocation, final List<File> extendeds,
+	public TLAMonolithCreator(final String rootSpecName, final File sourceLocation, final List<File> extendeds,
 							  final Set<String> entireExtendsList) {
-		super(specTEName, ("tmp_" + System.currentTimeMillis() + "_monolith"), sourceLocation);
+		super(rootSpecName, ("tmp_" + System.currentTimeMillis() + "_monolith"), sourceLocation);
 		
 		extendedModules = new ArrayList<File>();
 		for (final File f : extendeds) {
@@ -76,7 +79,7 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 				final StringBuilder commentLine = new StringBuilder(TLAConstants.CR);
 				commentLine.append(TLAConstants.COMMENT).append(TLAConstants.CR);
 				commentLine.append(TLAConstants.COMMENT).append(' ');
-				commentLine.append(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME);
+				commentLine.append(originalModuleName);
 				commentLine.append(" follows\n");
 				commentLine.append(TLAConstants.COMMENT).append(TLAConstants.CR).append(TLAConstants.CR);
 				writer.write(commentLine.toString());
@@ -97,15 +100,20 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 	
 	private void insertModuleIntoMonolith(final File module, final BufferedWriter monolithWriter) throws IOException {
 		final StringBuilder commentLine = new StringBuilder(TLAConstants.CR);
+		final String moduleFilename = module.getName();
+		final int index = moduleFilename.indexOf(TLAConstants.Files.TLA_EXTENSION);
+		final String moduleName;
+		if (index != -1) {
+			moduleName = moduleFilename.substring(0, index);
+		} else {
+			moduleName = moduleFilename;
+		}
 		commentLine.append(TLAConstants.COMMENT).append(TLAConstants.CR);
-		commentLine.append(TLAConstants.COMMENT).append(' ').append(module.getName()).append(" follows\n");
+		commentLine.append(TLAConstants.COMMENT).append(' ').append(moduleName).append(" follows\n");
 		commentLine.append(TLAConstants.COMMENT).append(TLAConstants.CR).append(TLAConstants.CR);
 		
 		monolithWriter.write(commentLine.toString());
 		
-		final String moduleFilename = module.getName();
-		final String moduleName
-				= moduleFilename.substring(0, (moduleFilename.length() - TLAConstants.Files.TLA_EXTENSION.length()));
 		final String regex = MODULE_REGEX_PREFIX + moduleName;
 		final Pattern insertingModuleMatcher = Pattern.compile(regex);
 		
@@ -130,6 +138,66 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 					}
 				}
 			}
+		}
+	}
+	
+	
+	public static void main(final String[] args) {
+		if (args.length == 0) {
+			System.out.println("java tlc2.output.TLAMonolithCreator \\\n"
+									+ "\t[-sourceDir=_directory_containing_spec_tla_] \\\n"
+									+ "\t_specName_");
+			
+			System.exit(-2);
+		}
+		
+		final File sourceDirectory;
+		final String specName;
+		if (args.length == 1) {
+			sourceDirectory = new File(System.getProperty("user.dir"));
+			specName = args[0];
+		} else {
+			sourceDirectory = new File(args[0]);
+			specName = args[1];
+		}
+		final File originalTLA = new File(sourceDirectory, (specName + TLAConstants.Files.TLA_EXTENSION));
+		if (!originalTLA.exists()) {
+			System.out.println("Excepted to find the TLA file but could not: " + originalTLA.getAbsolutePath());
+			
+			System.exit(-3);
+		}
+		
+		final MCParser parser = new MCParser(sourceDirectory, specName, true);
+		final MCParserResults results = parser.parse();
+		
+		final File backupTLA = new File(sourceDirectory, (specName + "_orig" + TLAConstants.Files.TLA_EXTENSION));
+		
+		try {
+			Files.copy(originalTLA.toPath(), backupTLA.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+		} catch (final IOException ioe) {
+			System.out.println("Exception encountered while making a backup of the original TLA file: "
+									+ ioe.getMessage());
+			
+			System.exit(-1);
+		}
+		
+		try {
+			final ArrayList<File> extendeds = new ArrayList<>();
+			for (final String extended : results.getOriginalExtendedModules()) {
+				extendeds.add(new File(sourceDirectory, (extended + TLAConstants.Files.TLA_EXTENSION)));
+			}
+			
+			final TLAMonolithCreator creator = new TLAMonolithCreator(specName, sourceDirectory, extendeds,
+																	  results.getAllExtendedModules());
+			creator.copy();
+			
+			System.out.println("The monolith file is now present at: " + originalTLA.getAbsolutePath());
+		} catch (final IOException ioe) {
+			System.out.println("Exception encountered while making creating the monolith: " + ioe.getMessage());
+			
+			System.exit(-4);
+		} finally {
+			System.out.println("The original TLA file was backed up to: " + backupTLA.getAbsolutePath());
 		}
 	}
 }
