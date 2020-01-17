@@ -64,4 +64,51 @@ public class IntervalValueTest {
 		
 		assertEquals(1, iv.compareTo(iv2));
 	}
+
+	@Test
+	public void testCompareExtremeIntervals() {
+		final IntervalValue x = new IntervalValue(Integer.MIN_VALUE, -2);
+		final IntervalValue y = new IntervalValue(1, Integer.MAX_VALUE);
+		assertEquals(x.size(), y.size());
+		assertTrue(x.compareTo(y) < 0);
+		assertTrue(y.compareTo(x) > 0);
+	}
+
+	@Test
+	public void testEmptyIntervalEquality() {
+		IntervalValue i1 = new IntervalValue(10, 1);
+		IntervalValue i2 = new IntervalValue(20, 15);
+		assertEquals(i1, i2);
+	}
+
+	@Test
+	public void testCompareEmptyIntervals() {
+		int cmp = new IntervalValue(10, 1).compareTo(new IntervalValue(20, 15));
+		assertEquals(0, cmp);
+	}
+
+	@Test
+	public void testSizeOfMaximumRepresentableInterval() {
+		final IntervalValue iv = new IntervalValue(Integer.MIN_VALUE, Integer.MAX_VALUE);
+		try {
+			iv.size();
+		} catch (TLCRuntimeException e) {
+			assertTrue(e.getMessage().contains("Size of interval value exceeds the maximum representable size (32bits)"));
+			return;
+		}
+		fail();
+	}
+
+	@Test
+	public void testExtremeIntervalSize() {
+		final IntervalValue iv1 = new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		assertEquals(1, iv1.size());
+		final IntervalValue iv2 = new IntervalValue(Integer.MIN_VALUE, Integer.MIN_VALUE);
+		assertEquals(1, iv2.size());
+		final IntervalValue iv3 = new IntervalValue(Integer.MAX_VALUE-10, Integer.MAX_VALUE);
+		assertEquals(11, iv3.size());
+		final IntervalValue iv4 = new IntervalValue(Integer.MIN_VALUE, Integer.MIN_VALUE+10);
+		assertEquals(11, iv4.size());
+	}
+
 }
