@@ -22,32 +22,48 @@ import tlc2.input.MCParserResults;
 import util.TLAConstants;
 
 public class TLAMonolithCreator extends AbstractTLACopier {
+	private static final String NESTED_MODULE_INDENT = "    ";
+	
+	
 	// these are modules which SANY logs that it has parsed
-	private final List<File> extendedModules;
+	private final List<File> modulesToEmbed;
 	// these are the modules which the root ModuleNode or one of its sub-ModuleNodes (or one or their sub-ModuleNodes
 	//		and so on, turtles all the way down) has defined as EXTENDS-ing in their spec
 	private final Set<String> modulesToSpecifyInExtends;
+	// TODO this is insufficient for nestings beyond one level
+	private final List<File> modulesToNest;
 	
 	public TLAMonolithCreator(final String rootSpecName, final File sourceLocation, final List<File> extendeds,
-							  final Set<String> entireExtendsList) {
+							  final Set<String> entireExtendsList, final Set<String> allInstantiatedModules) {
 		super(rootSpecName, ("tmp_" + System.currentTimeMillis() + "_monolith"), sourceLocation);
 		
-		extendedModules = new ArrayList<File>();
+		final HashSet<String> instantiatedModules = new HashSet<>(allInstantiatedModules);
+		modulesToEmbed = new ArrayList<>();
 		for (final File f : extendeds) {
 			final String name = f.getName();
 			final int index = name.toLowerCase().indexOf(TLAConstants.Files.TLA_EXTENSION);
 			final boolean keep;
+			final String moduleName;
 			if (index == -1) {
 				// this should never be the case
 				keep = true;
+				moduleName = name;
 			} else {
-				final String baseName = name.substring(0, index);
+				moduleName = name.substring(0, index);
 
-				keep = !StandardModules.isDefinedInStandardModule(baseName);
+				keep = !StandardModules.isDefinedInStandardModule(moduleName);
 			}
 			
 			if (keep) {
-				extendedModules.add(f);
+				modulesToEmbed.add(f);
+				instantiatedModules.remove(moduleName);
+			}
+		}
+		
+		modulesToNest = new ArrayList<>();
+		for (final String module : instantiatedModules) {
+			if (!StandardModules.isDefinedInStandardModule(module)) {
+				modulesToNest.add(new File(sourceLocation, (module + TLAConstants.Files.TLA_EXTENSION)));
 			}
 		}
 		
@@ -72,8 +88,12 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 			if (originalLine.trim().startsWith(TLAConstants.KeyWords.EXTENDS)) {
 				writer.write(TLAConstants.KeyWords.EXTENDS + " " + String.join(", ", modulesToSpecifyInExtends) + "\n");
 
-				for (final File f : extendedModules) {
-					insertModuleIntoMonolith(f, writer);
+				for (final File f : modulesToNest) {
+					insertModuleIntoMonolith(f, writer, true);
+				}
+
+				for (final File f : modulesToEmbed) {
+					insertModuleIntoMonolith(f, writer, false);
 				}
 				
 				final StringBuilder commentLine = new StringBuilder(TLAConstants.CR);
@@ -98,7 +118,9 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 		Files.move(monolithPath, originalPath, new CopyOption[0]);
 	}	
 	
-	private void insertModuleIntoMonolith(final File module, final BufferedWriter monolithWriter) throws IOException {
+	private void insertModuleIntoMonolith(final File module, final BufferedWriter monolithWriter,
+										  final boolean nestedModule)
+			throws IOException {
 		final StringBuilder commentLine = new StringBuilder(TLAConstants.CR);
 		final String moduleFilename = module.getName();
 		final int index = moduleFilename.indexOf(TLAConstants.Files.TLA_EXTENSION);
@@ -126,14 +148,23 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 					final Matcher m = insertingModuleMatcher.matcher(line);
 
 					inModuleBody = m.find();
+					if (inModuleBody && nestedModule) {
+						monolithWriter.write(NESTED_MODULE_INDENT + line + '\n');
+					}
 				} else {
 					if (!line.trim().startsWith(TLAConstants.KeyWords.EXTENDS)) {
 						final Matcher m = CLOSING_BODY_PATTERN.matcher(line);
 
 						if (m.matches()) {
+							if (nestedModule) {
+								monolithWriter.write(NESTED_MODULE_INDENT + line + '\n');
+							}
 							break;
 						}
 
+						if (nestedModule) {
+							monolithWriter.write(NESTED_MODULE_INDENT);
+						}
 						monolithWriter.write(line + '\n');
 					}
 				}
@@ -188,7 +219,8 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 			}
 			
 			final TLAMonolithCreator creator = new TLAMonolithCreator(specName, sourceDirectory, extendeds,
-																	  results.getAllExtendedModules());
+																	  results.getAllExtendedModules(),
+																	  results.getAllInstantiatedModules());
 			creator.copy();
 			
 			System.out.println("The monolith file is now present at: " + originalTLA.getAbsolutePath());

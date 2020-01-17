@@ -15,6 +15,7 @@ public class MCParserResults {
 
 	private final List<String> immediateExtendedModules;
 	private final Set<String> allExtendedModules;
+	private final Set<String> modulesInstantiated;
 
 	private final List<Location> initNextLocationsToDelete;
 
@@ -25,12 +26,14 @@ public class MCParserResults {
 	private final ModelConfig modelConfig;
 
 	MCParserResults(final String rootModuleName, final List<String> immediateExtendeds, final Set<String> allExtendeds,
-					final List<Location> initNextLocations, final boolean wasInitNext, final String nextOrSpecName,
-					final ModelConfig config) {
+			 		final Set<String> allInstantiated, final List<Location> initNextLocations,
+			 		final boolean wasInitNext, final String nextOrSpecName, final ModelConfig config) {
 		moduleName = rootModuleName;
 		
 		immediateExtendedModules = immediateExtendeds;
 		allExtendedModules = allExtendeds;
+		
+		modulesInstantiated = allInstantiated;
 		
 		initNextLocationsToDelete = initNextLocations;
 		
@@ -43,9 +46,10 @@ public class MCParserResults {
 	
 	MCParserResults(final String rootModuleName, final MCError mcError, final List<MCOutputMessage> messages,
 					final List<String> immediateExtendeds, final Set<String> allExtendeds,
-					final List<Location> initNextLocations, final boolean wasInitNext, final String nextOrSpecName,
-					final ModelConfig config) {
-		this(rootModuleName, immediateExtendeds, allExtendeds, initNextLocations, wasInitNext, nextOrSpecName, config);
+					final Set<String> allInstantiated, final List<Location> initNextLocations,
+					final boolean wasInitNext, final String nextOrSpecName, final ModelConfig config) {
+		this(rootModuleName, immediateExtendeds, allExtendeds, allInstantiated, initNextLocations, wasInitNext,
+			 nextOrSpecName, config);
 		
 		error = mcError;
 		outputMessages = messages;
@@ -93,6 +97,16 @@ public class MCParserResults {
 	 */
 	public Set<String> getAllExtendedModules() {
 		return allExtendedModules;
+	}
+	
+	/**
+	 * @return this returns a {@link Set} of all instantiated modules - in other words, all modules, X, found in any
+	 * 				module of the entire module tree that is instantiated in TLA+ code like {@code ... = INSTANCE X}
+	 * 				<b>Note:</b> the is the possibility of a non-null intersection between this set and the set of
+	 * 				extended modules.
+	 */
+	public Set<String> getAllInstantiatedModules() {
+		return modulesInstantiated;
 	}
 
 	/**

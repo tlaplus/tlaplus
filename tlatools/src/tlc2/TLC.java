@@ -458,7 +458,9 @@ public class TLC {
 								final TLAMonolithCreator monolithCreator
 										= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
 																 mcOutputConsumer.getSourceDirectory(),
-																 extendedModules, mcParserResults.getAllExtendedModules());
+																 extendedModules,
+																 mcParserResults.getAllExtendedModules(),
+																 mcParserResults.getAllInstantiatedModules());
 								monolithCreator.copy();
 							}
 							

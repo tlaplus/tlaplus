@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
+import tla2sany.semantic.InstanceNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolMatcher;
@@ -77,10 +78,26 @@ public class MCParser {
 		root.getExtendedModuleSet(true).stream().forEach(moduleNode -> allExtendees.add(moduleNode.getName().toString()));
 		
 		rootModuleName = root.getName().toString();
+		
+		final HashSet<String> instantiatedModules = new HashSet<>();
+		collectionInstantiatedModules(root, instantiatedModules, allExtendees);
 
-		return new MCParserResults(rootModuleName, extendees, allExtendees, initNextLocationsToDelete,
-								   isInitNext, nextOrSpecName, modelConfig);
-	}	
+		return new MCParserResults(rootModuleName, extendees, allExtendees, instantiatedModules,
+								   initNextLocationsToDelete, isInitNext, nextOrSpecName, modelConfig);
+	}
+	
+	private static void collectionInstantiatedModules(final ModuleNode node, final HashSet<String> modulesList,
+													  final HashSet<String> allExtendees) {
+		final InstanceNode[] instances = node.getInstances();
+		for (final InstanceNode instance : instances) {
+			final ModuleNode instanceModule = instance.getModule();
+			instanceModule.getExtendedModuleSet(true)
+							.stream().forEach(moduleNode -> allExtendees.add(moduleNode.getName().toString()));
+			modulesList.add(instanceModule.getName().toString());
+			collectionInstantiatedModules(instanceModule, modulesList, allExtendees);
+		}
+	}
+	
 	
 	private final ModelConfig configParser;
 
@@ -195,7 +212,7 @@ public class MCParser {
 				// we'll have a zero size if the output generated came from a TLC run that did not have the '-tool' flag
 				parserResults = new MCParserResults(null, ((outputParser != null) ? outputParser.getError() : null),
 													encounteredMessages, new ArrayList<>(), new HashSet<>(),
-													new ArrayList<>(), true, null, configParser);
+													new HashSet<>(), new ArrayList<>(), true, null, configParser);
 			}
 			
 			return parserResults;
