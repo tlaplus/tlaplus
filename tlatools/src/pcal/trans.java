@@ -281,14 +281,19 @@ import util.ToolIO;
 * allow the parser to catch the error at the "if".                         *
 * </pre>
 ***************************************************************************/
-class trans
-{
+class trans {
     /** Status indicating no errors and successful process */
     static final int STATUS_OK = 1;
     /** Status of no errors, but abort of the translation */
     static final int STATUS_EXIT_WITHOUT_ERROR = 0;
     /** Status of present errors and abort of the translation */
     static final int STATUS_EXIT_WITH_ERRORS = -1;
+    
+    private static final String PCAL_TRANSLATION_COMMENT_LINE_PREFIX
+    		= "\\* " + PcalParams.BeginXlation1 + " " + PcalParams.BeginXlation2 + " " + PcalParams.BeginXlation3;
+    private static final String TLA_TRANSLATION_COMMENT_LINE_PREFIX
+    		= "\\* " + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2 + " " + PcalParams.EndXlation3;
+    
     
     /**
      * Main function called from the command line
@@ -676,8 +681,8 @@ class trans
         translationLine = findTokenPair(untabInputVec, 0, PcalParams.BeginXlation1, PcalParams.BeginXlation2);
         if (translationLine != -1)
         {
-            int endTranslationLine = findTokenPair(untabInputVec, translationLine + 1, PcalParams.EndXlation1,
-                PcalParams.EndXlation2);
+            int endTranslationLine = findTokenPair(untabInputVec, translationLine + 1,
+            									   PcalParams.EndXlation1, PcalParams.EndXlation2);
             if (endTranslationLine == -1)
             {
                 PcalDebug.reportError("No line containing `" + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2);
@@ -831,10 +836,10 @@ class trans
                 return null ;
             } ;
             
-			output.add((ecLine + 1), "\\* " + PcalParams.BeginXlation1 + " " + PcalParams.BeginXlation2 + " ");
-            untabInputVec.insertElementAt("\\* " + PcalParams.BeginXlation1 + " " + PcalParams.BeginXlation2, ecLine+1);
-            output.add((ecLine + 2), "\\* " + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2 + " ");
-            untabInputVec.insertElementAt("\\* " + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2, ecLine+2);
+			output.add((ecLine + 1), (PCAL_TRANSLATION_COMMENT_LINE_PREFIX + " "));
+            untabInputVec.insertElementAt(PCAL_TRANSLATION_COMMENT_LINE_PREFIX, (ecLine + 1));
+            output.add((ecLine + 2), (TLA_TRANSLATION_COMMENT_LINE_PREFIX + " "));
+            untabInputVec.insertElementAt(TLA_TRANSLATION_COMMENT_LINE_PREFIX, (ecLine + 2));
 
             translationLine = ecLine + 1;
 //System.out.println(ecLine + ", " + ecCol);
@@ -846,7 +851,7 @@ class trans
         	Matcher m = Validator.PCAL_CHECKSUM_PATTERN.matcher(originalBeginLine);
         	String outputLine;
         	if (m.find()) {
-        		outputLine = originalBeginLine.substring(0, m.start());
+        		outputLine = PCAL_TRANSLATION_COMMENT_LINE_PREFIX + " ";
         	} else {
         		outputLine = originalBeginLine + " ";
         	}
@@ -855,7 +860,7 @@ class trans
         	final String originalEndLine = output.remove(translationLine + 1);
         	m = Validator.TRANSLATED_PCAL_CHECKSUM_PATTERN.matcher(originalEndLine);
         	if (m.find()) {
-        		outputLine = originalEndLine.substring(0, m.start());
+        		outputLine = TLA_TRANSLATION_COMMENT_LINE_PREFIX + " ";
         	} else {
         		outputLine = originalEndLine + " ";
         	}

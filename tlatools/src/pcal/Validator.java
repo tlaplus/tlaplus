@@ -139,15 +139,15 @@ public class Validator {
 			return ValidationResult.NO_PLUSCAL_EXISTS;
 		}
 
-		final int translationLine = trans.findTokenPair(deTabbedSpecification, 0, PcalParams.BeginXlation1,
-				PcalParams.BeginXlation2);
+		final int translationLine = trans.findTokenPair(deTabbedSpecification, 0,
+														PcalParams.BeginXlation1, PcalParams.BeginXlation2);
         final String pcalMD5;
         final String translatedMD5;
 		if (translationLine == -1) {
             return ValidationResult.NO_TRANSLATION_EXISTS;
 		} else {
 			final int endTranslationLine = trans.findTokenPair(deTabbedSpecification, translationLine + 1,
-					PcalParams.EndXlation1, PcalParams.EndXlation2);
+															   PcalParams.EndXlation1, PcalParams.EndXlation2);
 			if (endTranslationLine == -1) {
                 return ValidationResult.NO_TRANSLATION_EXISTS;
             }
