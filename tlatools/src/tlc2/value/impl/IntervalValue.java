@@ -38,6 +38,10 @@ implements Enumerable, Reducible {
 		        if (cmp != 0) {
 					return cmp;
 				}
+				if (this.size() == 0) {
+					// empty intervals are equal, regardless of the low value
+					return 0;
+				}
                 return Integer.compare(this.low, intv.low);
 			}
       // Well, we have to convert them to sets and compare.
