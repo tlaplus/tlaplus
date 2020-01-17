@@ -45,6 +45,8 @@ public class TLC implements ValueConstants
 	private static final UniqueString QUEUE = UniqueString.uniqueStringOf("queue");
 	private static final UniqueString DISTINCT = UniqueString.uniqueStringOf("distinct");
 	private static final UniqueString DIAMETER = UniqueString.uniqueStringOf("diameter");
+	private static final UniqueString EXIT = UniqueString.uniqueStringOf("exit");
+	private static final UniqueString PAUSE = UniqueString.uniqueStringOf("pause");
 
 	public static final long serialVersionUID = 20160822L;
 
@@ -256,12 +258,12 @@ public class TLC implements ValueConstants
             }
         } else if (vidx instanceof StringValue) {
         	final StringValue sv = (StringValue) vidx;
-        	if (UniqueString.uniqueStringOf("exit") == sv.val) {
+        	if (EXIT == sv.val) {
         		if (val == BoolValue.ValTrue) {
         			TLCGlobals.mainChecker.stop();
         		}
         		return BoolValue.ValTrue;
-        	} else if (UniqueString.uniqueStringOf("pause") == sv.val) {
+        	} else if (PAUSE == sv.val) {
 				// Provisional TLCSet("pause", TRUE) implementation that suspends BFS model
 				// checking until enter is pressed on system.in.  Either use in spec as:
         		//   TLCSet("pause", guard)
