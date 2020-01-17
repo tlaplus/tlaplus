@@ -116,12 +116,13 @@ implements Enumerable, Reducible {
 		if (this.high < this.low) {
 			return 0;
 		}
-		final int size = this.high - this.low + 1;
-		if (size < 0) {
-			Assert.fail("Size of interval value exceeds the maximum representable size (32bits)"
-					+ Values.ppr(this.toString()) + ".");
+		try {
+			return Math.addExact(Math.subtractExact(this.high, this.low), 1);
+		} catch (ArithmeticException e) {
+			Assert.fail("Size of interval value exceeds the maximum representable size (32bits): "
+			      + Values.ppr(this.toString()) + ".");
+			return 0; // unreachable, but it satisfies the compiler
 		}
-		return size;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
