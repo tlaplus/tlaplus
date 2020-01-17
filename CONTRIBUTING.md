@@ -6,6 +6,33 @@ Generally, we welcome contributions from volunteers. A number of [improvements w
 
 Except for [TLAPS](https://tla.msr-inria.inria.fr/tlaps/content/Home.html), the TLA<sup>+</sup> tools are maintained in Eclipse. [For instructions on how to setup the Eclipse IDE, please go to general/ide/README.md.](https://github.com/tlaplus/tlaplus/tree/master/general/ide).
 
+Nightly Builds
+--------------
+
+Nightly builds of the [Toolbox](https://nightly.tlapl.us/products/) and [tla2tools](https://nightly.tlapl.us/dist/) are found at https://nightly.tlapl.us/products/ and https://nightly.tlapl.us/dist/, the [up-to-date changelog](https://nightly.tlapl.us/changelog.html) is at https://nightly.tlapl.us/changelog.html.  The Toolbox contains the latest version of tla2tools.jar for command-line usage in its root directory.
+
+It is also possible to configure the Toolbox to [automatically update to nightly (experimental) builds](https://nightly.tlapl.us/doc/update/update-preferences.html).  
+
+Note that it is called nightly for historical reasons, but builds are actually triggered by commits.
+
+#### Linux
+
+For dpkg-based Linux derivates such as Debian and Ubuntu, you can add the Toolbox's nightly package repository to your source list:
+
+```
+$ cat /etc/apt/sources.list.d/tlaplus.list
+deb https://nightly.tlapl.us/toolboxUpdate/ ./
+$ curl -fsSL https://tla.msr-inria.inria.fr/jenkins.pub | sudo apt-key add -
+```
+
+#### macOS
+
+The Toolbox's nightly builds are also made available as a [cask](https://github.com/Homebrew/homebrew-cask-versions/blob/master/Casks/tla-plus-toolbox-nightly.rb) through [homebrew versions](https://github.com/Homebrew/homebrew-cask-versions#usage):
+
+```bash
+$ brew tap homebrew/cask-versions
+$ brew install tlaplus-toolbox-nightly
+```
 
 Quality Metrics
 ---------------
