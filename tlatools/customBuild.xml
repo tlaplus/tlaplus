@@ -720,7 +720,7 @@
 			</classpath>
 		</javac>
 
-		<!-- Build benchmark jar which includes third-party deps, TLC proper (without tests) and the benchmark files compiled in the previous step. -->
+		<!-- Build benchmark jar which includes third-party deps, TLC proper (including tests bc of tlc2.tool.TLCStates.createDummyState) and the benchmark files compiled in the previous step. -->
 		<delete file="target/benchmarks.jar" />
 		<jar jarfile="target/benchmarks.jar" basedir="target/benchmark/">
 			<manifest>
@@ -728,6 +728,7 @@
 			</manifest>
 <!--			<zipfileset dir="${src.dir}" includes="**/*.java" />-->
 			<fileset dir="${class.dir}" includes="**/*" />
+			<fileset dir="${test.class.dir}" includes="**/*" />
 			<zipfileset src="lib/jmh/jmh-core-1.21.jar" excludes="**/META-INF/services/**" />
 			<zipfileset src="lib/jmh/jopt-simple-4.6.jar" />
 			<zipfileset src="lib/jmh/commons-math3-3.2.jar" />
