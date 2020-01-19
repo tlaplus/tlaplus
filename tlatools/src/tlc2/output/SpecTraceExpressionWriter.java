@@ -332,8 +332,8 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	
 			if (cfgBuffer != null) {
 				cfgBuffer.append(TLAConstants.COMMENT).append("Action Constraint definition").append(TLAConstants.CR);
-				cfgBuffer.append(TLAConstants.KeyWords.ACTION_CONSTRAINT).append(TLAConstants.CR);
-				cfgBuffer.append(actionConstraintId).append(TLAConstants.CR);
+				cfgBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.ACTION_CONSTRAINT).append(TLAConstants.CR);
+				cfgBuffer.append(TLAConstants.COMMENT).append(actionConstraintId).append(TLAConstants.CR);
 			}
 
 	        int subActionIndex = 0;
