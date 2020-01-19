@@ -450,11 +450,13 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	                    subActionsAndConstraint.append(TLAConstants.EQ).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
 	                    subActionsAndConstraint.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
 	                    subActionsAndConstraint.append(expressionInfo.getExpression()).append(TLAConstants.CR);
-	                    subActionsAndConstraint.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.R_PAREN);
+	                    subActionsAndConstraint.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
+	                    subActionsAndConstraint.append(TLAConstants.R_PAREN);
 	
 						if (expressionInfo.getLevel() < 2) {
 							subActionsAndConstraint.append(TLAConstants.PRIME);
 	                    }
+						subActionsAndConstraint.append(TLAConstants.CR);
 	                }
 	            }
 	
