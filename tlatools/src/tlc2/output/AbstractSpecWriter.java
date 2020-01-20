@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +84,21 @@ public abstract class AbstractSpecWriter {
     }
     
     /**
+     * Provided for test code
+     * @param tla if non-null the content will be appended to the tlaBuffer
+     * @param cfg if non-null the content will be appended to the cfgBuffer
+     */
+    void appendContentToBuffers(final String tla, final String cfg) {
+    	if (tla != null) {
+    		tlaBuffer.append(tla);
+    	}
+    	
+    	if (cfg != null) {
+    		cfgBuffer.append(cfg);
+    	}
+    }
+    
+    /**
      * Write the buffers to files.
      * 
      * @param tlaFile if null, nothing is written
@@ -94,7 +110,7 @@ public abstract class AbstractSpecWriter {
 			final File f = (forTLAFile ? tlaFile: cfgFile);
 			
 			if (f != null) {
-		        Files.copy(inputStream, f.toPath(), new CopyOption[0]);
+		        Files.copy(inputStream, f.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			}
 		};
 		
@@ -149,6 +165,37 @@ public abstract class AbstractSpecWriter {
 		tlaBuffer.append(specDefinition[1]).append(CLOSING_SEP);
 	}
 	
+	/**
+	 * Add an init-next pair of definitions.
+	 * 
+	 * @param initDefinition the 0th element is the init definition name, the 1rst is the entire definition
+	 * @param nextDefinition the 0th element is the next definition name, the 1rst is the entire definition
+	 * @param initAttributeName
+	 * @param nextAttributeName
+	 */
+	public void addInitNextDefinitions(final String[] initDefinition, final String[] nextDefinition,
+									   final String initAttributeName, final String nextAttributeName) {
+		if (cfgBuffer != null) {
+			cfgBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.INIT).append(" definition");
+			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.INIT).append(TLAConstants.CR);
+			cfgBuffer.append(initDefinition[0]).append(TLAConstants.CR);
+		}
+
+		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.INIT).append(" definition ");
+		tlaBuffer.append(TLAConstants.ATTRIBUTE).append(initAttributeName).append(TLAConstants.CR);
+		tlaBuffer.append(initDefinition[1]).append(TLAConstants.CR);
+
+		
+		if (cfgBuffer != null) {
+			cfgBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.NEXT).append(" definition");
+			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.NEXT).append(TLAConstants.CR);
+			cfgBuffer.append(nextDefinition[0]).append(TLAConstants.CR);
+		}
+
+		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.NEXT).append(" definition ");
+		tlaBuffer.append(TLAConstants.ATTRIBUTE).append(nextAttributeName).append(TLAConstants.CR);
+		tlaBuffer.append(nextDefinition[1]).append(TLAConstants.CR);
+	}
 
     /**
      * Documentation by SZ: Add constants declarations. 

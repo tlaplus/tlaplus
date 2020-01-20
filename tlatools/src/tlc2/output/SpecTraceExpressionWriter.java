@@ -14,7 +14,8 @@ import tlc2.model.TraceExpressionInformationHolder;
 import util.TLAConstants;
 
 /**
- * This is the abstract class of spec writers which produce specs capable of containing trace expressions.
+ * This is a reified class of spec writer which can produce specs capable of containing trace expressions; it is also
+ * 	the parent class for a more specialized version used by the toolbox, {@code TraceExpressionModelWriter}.
  */
 public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	private static final String TRACE_EXPRESSION_VARIABLE = "TraceExp";
@@ -779,8 +780,18 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	 * @see #addInitNextToBuffers(StringBuilder, StringBuilder, List, TraceExpressionInformationHolder[], String, String, String)
 	 */
 	public void addInitNext(final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData,
-			final String initId, String nextId, final String actionConstraintId) {
+							final String initId, String nextId, final String actionConstraintId) {
 		addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData, initId, nextId, actionConstraintId);
+	}
+
+	/**
+	 * @see #addInitNextToBuffers(StringBuilder, StringBuilder, List, TraceExpressionInformationHolder[], String, String, String, String, boolean)
+	 */
+	public void addInitNext(final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData,
+							final String initId, String nextId, final String actionConstraintId,
+							final String nextSubActionBasename) {
+		addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData, initId, nextId, actionConstraintId,
+							 nextSubActionBasename, true);
 	}
 
 	public void addTraceFunction(final List<MCState> input) {

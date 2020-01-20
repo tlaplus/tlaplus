@@ -78,7 +78,7 @@ public class SANY {
     //          should be reported
 
   /**
-   * The TLAFrontEnd.frontEndMain method Processes an entire TLA+ spec
+   * The SANY.frontEndMain method Processes an entire TLA+ spec
    * that starts in the file named in "filename", including all files
    * it refers to directly or indirectly in EXTENDS or INSTANCE
    * constructs.  "fileName" is relative to the current directory.  It
@@ -389,7 +389,7 @@ public class SANY {
   }
 
   /**
-   * Main driver method for maintainers and debuggers of the TLAFrontEnd.
+   * Main driver method for maintainers and debuggers of SANY.
    * 
    * Calls frontEndMain for each file named on the command line and then, 
    * barring errors too severe, calls the Explorer tool with the resulting 
