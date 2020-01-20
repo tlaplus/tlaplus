@@ -145,7 +145,7 @@ end algorithm
 *)    
 
 
-\* BEGIN TRANSLATION PCal-36470f24ec099c641e8894d14dc1be7a
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-36470f24ec099c641e8894d14dc1be7a
 VARIABLES flags, calc, pc, temp, myattr
 
 vars == << flags, calc, pc, temp, myattr >>
@@ -196,7 +196,7 @@ Next == (\E self \in Pid: work(self))
 
 Spec == Init /\ [][Next]_vars
 
-\* END TRANSLATION TLA-e0d61e0fb8a75ee2eb592e9a5b0f5f46
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-e0d61e0fb8a75ee2eb592e9a5b0f5f46
 
 
 Consistency ==

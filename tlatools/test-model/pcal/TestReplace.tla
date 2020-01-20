@@ -59,7 +59,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION  PCal-a373e52549e281416ed7cb70fa982188
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-a373e52549e281416ed7cb70fa982188
 \* Label a of procedure Bar at line 12 col 11 changed to a_
 \* Label a of procedure Foo1 at line 19 col 6 changed to a_F
 \* Label b of procedure Foo1 at line 20 col 6 changed to b_
@@ -245,7 +245,7 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION  TLA-424be35f7792f0f2c25e136cc792e4c5
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-424be35f7792f0f2c25e136cc792e4c5
 
 ==================================================
 

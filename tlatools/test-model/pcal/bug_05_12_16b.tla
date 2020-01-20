@@ -15,7 +15,7 @@
 ----------- MODULE bug_05_12_16b -----------
 EXTENDS Naturals, Sequences, TLC
  
-\* BEGIN TRANSLATION PCal-7f01be0bd1e78f7ef9aee292dd8f66fc
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-7f01be0bd1e78f7ef9aee292dd8f66fc
 VARIABLES pc, stack, a, x, y
 
 vars == << pc, stack, a, x, y >>
@@ -71,6 +71,6 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TLA-e3a05375e3bf2d3d55b6d92003f1f2fa
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-e3a05375e3bf2d3d55b6d92003f1f2fa
 
 ========================================

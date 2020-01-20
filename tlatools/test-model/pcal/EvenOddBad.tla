@@ -25,7 +25,7 @@ begin
 end algorithm
 *)
 
-\* BEGIN TRANSLATION PCal-4f4604590279cc4b2920a972bf28fdd0
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-4f4604590279cc4b2920a972bf28fdd0
 VARIABLES result, pc, stack, xEven, xOdd
 
 vars == << result, pc, stack, xEven, xOdd >>
@@ -108,6 +108,6 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-7dc8ff54d82fc57126829898458b6c6f
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-7dc8ff54d82fc57126829898458b6c6f
 
 =============================================================================

@@ -43,7 +43,7 @@ PermsOf(Arr) ==
   end algorithm
 *)
 					
-\* BEGIN TRANSLATION PCal-f3c86b18c12d46dfb100d83f44bd15cc
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-f3c86b18c12d46dfb100d83f44bd15cc
 VARIABLES A, returnVal, pc, stack, qlo, qhi, pivot
 
 vars == << A, returnVal, pc, stack, qlo, qhi, pivot >>
@@ -128,7 +128,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-f36591cc8efd54110514a4b1f13d3500
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-f36591cc8efd54110514a4b1f13d3500
 
 Invariant == 
    (pc = "Done") => \A i, j \in 1..ArrayLen :

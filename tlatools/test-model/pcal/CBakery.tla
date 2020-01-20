@@ -37,7 +37,7 @@ Proc == 1..NumProcs  \* The set of processes
 ********)
 
   
-\* BEGIN TRANSLATION PCal-3787a86d71fe978e1e68a7e275a515ae
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-3787a86d71fe978e1e68a7e275a515ae
 VARIABLES num, choosing, pc, read, max, nxt
 
 vars == << num, choosing, pc, read, max, nxt >>
@@ -120,7 +120,7 @@ Next == (\E self \in Proc: proc(self))
 
 Spec == Init /\ [][Next]_vars
 
-\* END TRANSLATION TLA-044cd15e6eddcf8edc1cfa67089d17cf
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-044cd15e6eddcf8edc1cfa67089d17cf
 Constraint 
 == \A i \in Proc : num[i] \leq MaxNum
 

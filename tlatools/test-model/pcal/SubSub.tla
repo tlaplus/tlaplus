@@ -24,7 +24,7 @@ ObjectID == {1}
 end algorithm
 *****)
 
-\******** BEGIN TRANSLATION ******** PCal-e4495880aa3211ed2f4c6f44d3918dc7
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-e4495880aa3211ed2f4c6f44d3918dc7
 CONSTANT defaultInitValue
 VARIABLES pc, x, y, z
 
@@ -61,7 +61,7 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\******** END TRANSLATION ******** TLA-4eda2626bbd263ed274c0990ecc17263
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-4eda2626bbd263ed274c0990ecc17263
 
 --------------------------------------------------------------------------
 

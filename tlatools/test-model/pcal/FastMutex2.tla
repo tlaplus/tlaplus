@@ -77,7 +77,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION PCal-cc9279d759058abea504462b4ff084d7
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-cc9279d759058abea504462b4ff084d7
 VARIABLES x, y, b, pc, j, failed, j2, failed2
 
 vars == << x, y, b, pc, j, failed, j2, failed2 >>
@@ -284,7 +284,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..M : WF_vars(Proc1(self))
         /\ \A self \in (M+1)..N : WF_vars(Proc2(self))
 
-\* END TRANSLATION TLA-3862da72da966d861f548da308a59a9e
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-3862da72da966d861f548da308a59a9e
 
 ASSUME Print(<<"ProcSet =" , ProcSet>>, TRUE)
 inCS(i) ==  IF i \in 1..M 

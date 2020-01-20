@@ -36,7 +36,7 @@ Here is the algorithm in +Cal (using the C syntax):
 (* assumes weak fairness of the next-state actions of both processes.      *)
 (* This fairness assumption is discussed below.                            *)
 (***************************************************************************)
-\* BEGIN TRANSLATION PCal-9255d446219a56b97b6d3847e8a2c94c
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-9255d446219a56b97b6d3847e8a2c94c
 VARIABLES flag, turn, pc
 
 vars == << flag, turn, pc >>
@@ -86,7 +86,7 @@ Next == (\E self \in {0,1}: proc(self))
 
 Spec == Init /\ [][Next]_vars
 
-\* END TRANSLATION TLA-3c75243f0ddf7b933ebf70f115d692f3
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-3c75243f0ddf7b933ebf70f115d692f3
 
 (***************************************************************************)
 (* Here is the invariant property that the algorithm should satisfy.  It   *)

@@ -68,7 +68,7 @@ end algorithm
 *)    
 
 
-\* BEGIN TRANSLATION PCal-28938b6571490e0f82ac59c63d6f47e4
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-28938b6571490e0f82ac59c63d6f47e4
 VARIABLES sb, availablebuffers, publishedbuffers, pc, buf, op
 
 vars == << sb, availablebuffers, publishedbuffers, pc, buf, op >>
@@ -140,7 +140,7 @@ Next == (\E self \in Pid: work(self))
 
 Spec == Init /\ [][Next]_vars
 
-\* END TRANSLATION TLA-0476e94d7836683a2a4a6e344c5a0a7b
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-0476e94d7836683a2a4a6e344c5a0a7b
 
 
 Immutability ==

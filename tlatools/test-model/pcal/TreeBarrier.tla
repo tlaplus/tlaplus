@@ -33,7 +33,7 @@ N == 2^exp-1
 
 --------------------------------------------------------------------
 
-\* BEGIN TRANSLATION PCal-f8296f0cc6166098bc809c33e090e03e
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-f8296f0cc6166098bc809c33e090e03e
 VARIABLES arrived, proceed, pc, b, p
 
 vars == << arrived, proceed, pc, b, p >>
@@ -127,7 +127,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TLA-cbb736d8ea82daa6b485e32bbe870840
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-cbb736d8ea82daa6b485e32bbe870840
 
 
 SafeBarrier == \A p1, p2 \in ProcSet:

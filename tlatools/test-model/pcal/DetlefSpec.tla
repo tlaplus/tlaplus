@@ -29,7 +29,7 @@ L2:   rV := null
     } } }
 *)
 
-\* BEGIN TRANSLATION PCal-1ffa57620b1dc5120c521caddbcfa0df
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-1ffa57620b1dc5120c521caddbcfa0df
 VARIABLES queue, pc, rV
 
 vars == << queue, pc, rV >>
@@ -71,7 +71,7 @@ Next == (\E self \in Procs: P(self))
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in Procs : WF_vars(P(self))
 
-\* END TRANSLATION TLA-a5e9e9156ce3a9bf6c7fb3f657f54020
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-a5e9e9156ce3a9bf6c7fb3f657f54020
 
 CONSTANT N
 

@@ -50,7 +50,7 @@ Max(S) == CHOOSE i \in S : \A j \in S : i \geq j
 
 *)
 					
-\* BEGIN TRANSLATION PCal-1f05a46c32a9d2bb1934b39aad724eed
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-1f05a46c32a9d2bb1934b39aad724eed
 CONSTANT defaultInitValue
 VARIABLES A, Uns, new, pc, stack, parg
 
@@ -116,7 +116,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-4de5033005d037379ed702fb72c5f705
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-4de5033005d037379ed702fb72c5f705
 
 Invariant == 
    (pc = "Done") => \A i, j \in 1..Len(A) :

@@ -21,7 +21,7 @@ GCD(x, y) == CHOOSE i \in (1..x) \cap (1..y) :
                         /\ y % j = 0
                         => i \geq j
 
-\* BEGIN TRANSLATION PCal-309bc67718dab989f45f39e55b144a3e
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-309bc67718dab989f45f39e55b144a3e
 VARIABLES u, v, v_ini, pc
 
 vars == << u, v, v_ini, pc >>
@@ -61,6 +61,6 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-696f44302fe4977c6881615aedc0e885
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-696f44302fe4977c6881615aedc0e885
  
 =============================================================================

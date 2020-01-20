@@ -16,7 +16,7 @@ EXTENDS Naturals, Sequences, TLC
      end algorithm
 *)
 
-\* BEGIN TRANSLATION PCal-be6b6d1cc0a0bacc6a419e686126c4c9
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-be6b6d1cc0a0bacc6a419e686126c4c9
 \* Label a at line 10 col 16 changed to a_
 CONSTANT defaultInitValue
 VARIABLES x, y, z, pc, stack, a
@@ -79,6 +79,6 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-5c5a7c7b427cee2468d220b4a9fada35
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-5c5a7c7b427cee2468d220b4a9fada35
 
 =============================================================================

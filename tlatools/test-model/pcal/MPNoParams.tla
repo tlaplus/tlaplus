@@ -23,7 +23,7 @@ EXTENDS Sequences, Naturals, TLC
 
 *)
 					
-\* BEGIN TRANSLATION PCal-deb6c76a28ce9358817b0dff2194ebab
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-deb6c76a28ce9358817b0dff2194ebab
 VARIABLES sum, pc, stack
 
 vars == << sum, pc, stack >>
@@ -86,7 +86,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TLA-714bbad3547f7f99ec47cfca79fad75e
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-714bbad3547f7f99ec47cfca79fad75e
 
 
 =============================================================================

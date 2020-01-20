@@ -47,7 +47,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION PCal-d34a24305f241c923d0f8daa00682e02
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-d34a24305f241c923d0f8daa00682e02
 VARIABLES sem, pc
 
 vars == << sem, pc >>
@@ -116,7 +116,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..(N-1) : SF_vars(Proc(self))
         /\ SF_vars(Proc0)
 
-\* END TRANSLATION TLA-ff7acdd47d76382441ae75c392052170
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-ff7acdd47d76382441ae75c392052170
 
 IsEating(i) == IF i = 0 THEN pc[i] = "e0"
                         ELSE pc[i] = "e"

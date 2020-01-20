@@ -13,7 +13,7 @@ end algorithm
 ------------- MODULE bug_05_10_03 ------------
 EXTENDS Naturals, TLC, FiniteSets
 ------------------------------------------
-\* BEGIN TRANSLATION PCal-b9dcdef1a5e6ce1735b61fe6aacca0f9
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-b9dcdef1a5e6ce1735b61fe6aacca0f9
 VARIABLES pc, x
 
 vars == << pc, x >>
@@ -43,5 +43,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TLA-50c9ab33ebfd9eb7e6aeb12b5bbb6bd1
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-50c9ab33ebfd9eb7e6aeb12b5bbb6bd1
 ==========================================

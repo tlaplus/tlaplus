@@ -16,7 +16,7 @@ l:  x := IF /\ \A i \in {1} : 1 + 1 = 2
     assert x = 1 ;
   end algorithm
 *)
-\* BEGIN TRANSLATION PCal-df86b294351f95a8207d12196b3732f0
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-df86b294351f95a8207d12196b3732f0
 VARIABLES x, pc
 
 vars == << x, pc >>
@@ -47,5 +47,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-ec3da753015679c262e945265fc700f9
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-ec3da753015679c262e945265fc700f9
 =============================================================================

@@ -48,7 +48,7 @@ EXTENDS Naturals, Sequences, TLC
   end algorithm
 *)
 					
-\* BEGIN TRANSLATION PCal-84a5cdf59d68214ad905732a585890ae
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-84a5cdf59d68214ad905732a585890ae
 \* Procedure variable x of procedure P at line 13 col 16 changed to x_
 CONSTANT defaultInitValue
 VARIABLES depth, pc, stack, a, x_, y, aa, xx, yy, r, x, s
@@ -195,5 +195,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-c8e76178d4d24aee35fa88a19dd439d8
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-c8e76178d4d24aee35fa88a19dd439d8
 =============================================================================

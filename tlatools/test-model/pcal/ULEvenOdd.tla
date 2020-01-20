@@ -31,7 +31,7 @@ CONSTANT N
 ----------------------------------------------
 
 
-\* BEGIN TRANSLATION PCal-ead0453df43345041c6d46c21bad39b3
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-ead0453df43345041c6d46c21bad39b3
 VARIABLES result, pc, stack, xEven, xOdd
 
 vars == << result, pc, stack, xEven, xOdd >>
@@ -109,7 +109,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-20632e604e66ef1ac373dca4eac3efb3
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-20632e604e66ef1ac373dca4eac3efb3
 
 ==============================================
 

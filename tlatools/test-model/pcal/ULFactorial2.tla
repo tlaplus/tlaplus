@@ -32,7 +32,7 @@ Factorial Algorithm with 2 procedures
   end algorithm
 ***************************************************************************)
 
-\* BEGIN TRANSLATION PCal-e543cee5733d328853b3f740967ffc6f
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-e543cee5733d328853b3f740967ffc6f
 VARIABLES result, pc, stack, arg1, u, arg2, u2
 
 vars == << result, pc, stack, arg1, u, arg2, u2 >>
@@ -119,7 +119,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-13df185bb6632a27d39dd317f4d5a749
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-13df185bb6632a27d39dd317f4d5a749
 
 
 Invariant == result \in Nat

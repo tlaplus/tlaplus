@@ -21,7 +21,7 @@ EXTENDS Naturals, TLC
 
 ****)
 					
-\* BEGIN TRANSLATION PCal-922bd40bbb66854d6ea0cf6dbef935cb
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-922bd40bbb66854d6ea0cf6dbef935cb
 VARIABLES pc, A, x
 
 vars == << pc, A, x >>
@@ -61,5 +61,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TLA-6c5ff91175ea2e80dc22b1dde5479e58
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-6c5ff91175ea2e80dc22b1dde5479e58
 =============================================================================

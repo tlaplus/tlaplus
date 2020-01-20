@@ -44,7 +44,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION PCal-765a4c9fba722b8f4115732919fba3a0
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-765a4c9fba722b8f4115732919fba3a0
 VARIABLES x, y, b, pc, j
 
 vars == << x, y, b, pc, j >>
@@ -151,7 +151,7 @@ Next == (\E self \in 1..N: Proc(self))
 
 Spec == Init /\ [][Next]_vars
 
-\* END TRANSLATION TLA-556f4fffd8fac96ddb09d8c9c984f878
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-556f4fffd8fac96ddb09d8c9c984f878
 
 inCS(i) ==  (pc[i] = "cs") 
 

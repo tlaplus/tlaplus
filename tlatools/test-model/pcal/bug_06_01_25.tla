@@ -80,7 +80,7 @@ EXTENDS Sequences, Naturals, TLC
 
 ASSUME \forall i \in {} : i \geq 1
 
-\* BEGIN TRANSLATION PCal-9ef67f07b10dbbf43fc7d4cb2d8d7b02
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-9ef67f07b10dbbf43fc7d4cb2d8d7b02
 \* Label P1 of procedure P at line 22 col 17 changed to P1_
 CONSTANT defaultInitValue
 VARIABLES x, y, z, pc, stack
@@ -224,5 +224,5 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION TLA-c0ae8bdf7ad8a969ed412d1b64210cb9
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-c0ae8bdf7ad8a969ed412d1b64210cb9
 ========================================

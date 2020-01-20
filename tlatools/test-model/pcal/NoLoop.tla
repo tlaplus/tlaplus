@@ -11,7 +11,7 @@ EXTENDS Sequences, Naturals, TLC
     end algorithm
 *)
 					
-\* BEGIN TRANSLATION PCal-688f592294a3ad1b9996ea0f884f9746
+\* BEGIN TRANSLATION - the hash of the PCal code: PCal-688f592294a3ad1b9996ea0f884f9746
 VARIABLES x, y, pc
 
 vars == << x, y, pc >>
@@ -52,5 +52,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION TLA-e78115b3384d72d09de2ad789d3620a6
+\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-e78115b3384d72d09de2ad789d3620a6
 =============================================================================
