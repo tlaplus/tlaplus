@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -371,6 +372,27 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 						if (ci.isEmpty() || ci.isLegacy()) {
 							// Cannot show coverage information without (non-legacy) coverage data.
 							break;
+						}
+						
+						// Delete all zero coverage markers because they might have become obsolete
+						// since the last reporting..
+						// Consider this spec:
+						// ----
+						// Init == x = 1
+						// A == x' = x + 1
+						// B == TLCGet("duration") > 90 /\ x' = x
+						// Spec == Init /\ [][A \/ B]_x
+						// ----
+						// With -coverage set to 1 (every  60 secs), the first coverage reporting
+						// marks action B as disabled. However, in subsequent reportings, B is enabled.
+						try {
+							List<Module> modules = getModel().getSpec().getModules();
+							for (Module module : modules) {
+								module.getResource().deleteMarkers(ModelEditor.ZERO_COVERAGE_ACTION_MARKER, false,
+										IResource.DEPTH_ZERO);
+							}
+						} catch (CoreException e) {
+							TLCUIActivator.getDefault().logError(e.getMessage(), e);
 						}
 
 						final List<ActionInformationItem> zeroCoverageInformation = ci.getDisabledSpecActions();
