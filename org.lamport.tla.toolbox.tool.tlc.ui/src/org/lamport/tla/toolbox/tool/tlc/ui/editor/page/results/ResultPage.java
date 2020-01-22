@@ -147,7 +147,6 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 
 	private static final Color ERROR_PANE_BACKGROUND = new Color(PlatformUI.getWorkbench().getDisplay(), 255, 241, 237);
 	private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("HH:mm:ss '('MMM d')'");
-	private static final String ZERO_COVERAGE_WARNING = "Disabled sub-actions for one or more modules.";
 	
 	
     /**
@@ -176,7 +175,6 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
     private Composite generalErrorPane;
     private Hyperlink errorStatusHyperLink;
     private Label fingerprintCollisionLabel;
-    private Label zeroCoverageLabel;
 
     private Text coverageTimestampText;
     private TableViewer coverage;
@@ -198,7 +196,6 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
     };
 
 	private IMarker incompleteStateExploration;
-	private IMarker zeroCoverage;
 	
 	private final INotificationService notificationService;
 	
@@ -224,19 +221,12 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
     public void modelCheckingWillBegin() {
 		errorPaneViewState.clearState();
 		markedErrorMessages.clear();
-		try {
-			if (zeroCoverage != null) {
-				zeroCoverage.delete();
-			}
-		} catch (final CoreException e) { /* don't really care */ }
-		zeroCoverage = null;
 		getManagedForm().getMessageManager().removeAllMessages();
 		PlatformUI.getWorkbench().getDisplay().syncExec(() -> {
 			if (!tlcStatusLabel.isDisposed()) {
 	    		tlcStatusLabel.setText("Starting...");
 				errorStatusHyperLink.setVisible(errorPaneViewState.errorLinkIsDisplayed());
 				fingerprintCollisionLabel.setVisible(errorPaneViewState.fingerprintIsDisplayed());
-				zeroCoverageLabel.setVisible(errorPaneViewState.zeroCountIsDisplayed());
 				setErrorPaneVisible(errorPaneViewState.shouldDisplay());
 			}
 		});
@@ -336,33 +326,6 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 					case COVERAGE:
 						final CoverageInformation coverageInfo = dataProvider.getCoverageInfo();
 						coverage.setInput(coverageInfo);
-						if (dataProvider.isDone() && !coverageInfo.isEmpty()) {
-							if (dataProvider.hasZeroCoverage()) {
-								if (zeroCoverage == null) {
-									final Hashtable<String, Object> marker = ModelHelper
-											.createMarkerDescription(ZERO_COVERAGE_WARNING, IMarker.SEVERITY_WARNING);
-									marker.put(ModelHelper.TLC_MODEL_ERROR_MARKER_ATTRIBUTE_PAGE, ResultPage.ID);
-									zeroCoverage = getModel().setMarker(marker, ModelHelper.TLC_MODEL_ERROR_MARKER_TLC);
-								}
-								if (coverageInfo.hasDisabledSpecActions()) {
-									zeroCoverageLabel.setVisible(true);
-									errorPaneViewState.setZeroCountDisplay(true);
-									setErrorPaneVisible(true);
-								}
-							} else if (zeroCoverage != null) {
-								try {
-									zeroCoverage.delete();
-									resetMessage(RESULT_PAGE_PROBLEM);
-									zeroCoverage = null;
-								} catch (CoreException e) {
-									TLCUIActivator.getDefault().logError(e.getMessage(), e);
-								} finally {
-									zeroCoverageLabel.setVisible(false);
-									errorPaneViewState.setZeroCountDisplay(false);
-									setErrorPaneVisible(errorPaneViewState.shouldDisplay());
-								}
-							}
-						}
 						break;
 					case COVERAGE_END_OVERHEAD:
 						notificationService.notify(Collections.singletonList(new CoverageUINotification(getModelEditor())));
@@ -687,7 +650,6 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
             errorStatusHyperLink.setVisible(false);
             fingerprintCollisionLabel.setText("");
             fingerprintCollisionLabel.setVisible(false);
-            zeroCoverageLabel.setVisible(false);
     		coverage.setInput(new Vector<CoverageInformationItem>());
     		stateSpace.setInput(new Vector<StateSpaceInformationItem>());
     		progressOutput.setDocument(new Document(TLCModelLaunchDataProvider.NO_OUTPUT_AVAILABLE));
@@ -723,11 +685,6 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 			if (incompleteStateExploration != null) {
 				incompleteStateExploration.delete();
 				incompleteStateExploration = null;
-			}
-			
-			if (zeroCoverage != null) {
-				zeroCoverage.delete();
-				zeroCoverage = null;
 			}
 
 			JFaceResources.getFontRegistry().removeListener(fontChangeListener);
@@ -876,18 +833,7 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
         gd.horizontalAlignment = SWT.CENTER;
         fingerprintCollisionLabel.setLayoutData(gd);
         fingerprintCollisionLabel.setVisible(false);
-        
-        // zero coverage label
-        zeroCoverageLabel = new Label(generalErrorPane, SWT.NONE);
-        zeroCoverageLabel.setText(ZERO_COVERAGE_WARNING);
-        zeroCoverageLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
-        zeroCoverageLabel.setVisible(false);
-        gd = new GridData();
-        gd.horizontalAlignment = SWT.RIGHT;
-        gd.grabExcessHorizontalSpace = true;
-        gd.verticalAlignment = SWT.BOTTOM;
-        zeroCoverageLabel.setLayoutData(gd);
-        
+                
 		setErrorPaneVisible(false);
 
 	
@@ -1575,14 +1521,6 @@ public class ResultPage extends BasicFormPage implements Closeable, ITLCModelLau
 		
 		boolean fingerprintIsDisplayed() {
 			return m_displayFingerprint.get();
-		}
-		
-		void setZeroCountDisplay(final boolean display) {
-			m_displayZeroCount.set(display);
-		}
-		
-		boolean zeroCountIsDisplayed() {
-			return m_displayZeroCount.get();
 		}
 		
 		void clearState() {
