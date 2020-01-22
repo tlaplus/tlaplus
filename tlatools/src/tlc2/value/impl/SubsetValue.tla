@@ -38,7 +38,7 @@ ASSUME /\ \A nn \in N: nn \in Nat
    in TLC has an order. This is e.g. important to efficiently determine equality of two
    or more sets. If all sets adhere to a predefined order, equality can be determined
    in O(n) time by a single pass over both sets.
-   Let u and v be to k-Subsets for a given k. The (total) order defined by this algorithm
+   Let u and v be two k-Subsets for a given k. The (total) order defined by this algorithm
    is such that there exists a prefix p of u with length 0..Len(u)-1 s.t.
    \A i \in 1..p: u[i] <= v[i] /\ u[p+1] < v[p+1]  (see Sorted operator above).
 --algorithm EnumerateSubsets {

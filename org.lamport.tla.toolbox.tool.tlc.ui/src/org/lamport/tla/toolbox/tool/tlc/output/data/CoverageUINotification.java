@@ -41,8 +41,7 @@ public class CoverageUINotification extends TLCUINotification {
 
 	public CoverageUINotification(final ModelEditor editor) {
 		super("Performance Hint",
-				  "TLC has for some time been\n"
-				+ "running with profiling enabled\n"
+				  "TLC is running with profiling enabled.\n"
 				+ "Please be advised that profiling\n"
 				+ "negatively impacts performance.\n"
 				+ "For this reason, please consider\n"
