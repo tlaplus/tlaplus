@@ -391,6 +391,16 @@ public class CostModelCreator extends ExplorerVisitor {
 		for (Action invariant : tool.getInvariants()) {
 			invariant.cm = collector.getCM(invariant, Relation.PROP);
 		}
+		
+        // https://github.com/tlaplus/tlaplus/issues/413#issuecomment-577304602
+        if (Boolean.getBoolean(CostModelCreator.class.getName() + ".implied")) {
+    		for (Action impliedInits : tool.getImpliedInits()) {
+    			impliedInits.cm = collector.getCM(impliedInits, Relation.PROP);
+    		}
+    		for (Action impliedActions : tool.getImpliedActions()) {
+    			impliedActions.cm = collector.getCM(impliedActions, Relation.PROP);
+    		}
+        }
 	}
 	
 	public static void report(final ITool tool, final long startTime) {
@@ -427,8 +437,18 @@ public class CostModelCreator extends ExplorerVisitor {
         for (Action invariant : tool.getInvariants()) {
         	//TODO May need to be ordered similar to next-state actions above.
         	invariant.cm.report();
-		}
+		}	
         
+        // https://github.com/tlaplus/tlaplus/issues/413#issuecomment-577304602
+        if (Boolean.getBoolean(CostModelCreator.class.getName() + ".implied")) {
+    		for (Action impliedInits : tool.getImpliedInits()) {
+    			impliedInits.cm.report();
+    		}
+    		for (Action impliedActions : tool.getImpliedActions()) {
+    			impliedActions.cm.report();
+    		}
+        }
+       
 		// Notify users about the performance overhead related to coverage collection
 		// after N minutes of model checking. The assumption is that a user has little
 		// interest in coverage for a large (long-running) model anyway.  In the future
