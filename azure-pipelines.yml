@@ -55,7 +55,7 @@ jobs:
   timeoutInMinutes: 0
 
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'macOS-10.14'
 
   steps:
   - task: Maven@3
