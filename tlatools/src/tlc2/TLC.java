@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -925,6 +926,14 @@ public class TLC {
 			// tries to read the .cfg file later in the game.
 			ToolIO.setUserDir(specDir);
 		}
+                else {
+                        final File fRelative = new File(Paths.get("").toAbsolutePath().normalize().toString() + FileUtil.separator + mainFile);
+                        specDir = fRelative.getParent() + FileUtil.separator;
+                        mainFile = fRelative.getName();
+                        // Not setting user dir causes a ConfigFileException when the resolver
+			// tries to read the .cfg file later in the game.
+			ToolIO.setUserDir(specDir);
+                }
 
 		if (configFile == null) {
 			configFile = mainFile;
