@@ -44,6 +44,14 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 	  this(names, values, isNorm);
 	  this.cm = cm;
   }
+  
+  public RecordValue(UniqueString name, Value v, boolean isNorm) {
+	  this(new UniqueString[] {name}, new Value[] {v}, isNorm);
+  }
+  
+  public RecordValue(UniqueString name, Value v) {
+	  this(new UniqueString[] {name}, new Value[] {v}, false);
+  }
 
   public RecordValue(final TLCState state) {
 		final OpDeclNode[] vars = state.getVars();
