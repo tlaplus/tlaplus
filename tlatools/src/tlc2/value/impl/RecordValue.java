@@ -22,6 +22,7 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
+import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
@@ -562,7 +563,7 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 		return res;
 	}
 
-	public static IValue createFrom(final IValueInputStream vos, final Map<String, UniqueString> tbl) throws EOFException, IOException {
+	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws EOFException, IOException {
 		final int index = vos.getIndex();
 		boolean isNorm = true;
 		int len = vos.readInt();
@@ -582,7 +583,7 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 				names[i] = UniqueString.read(vos.getInputStream(), tbl);
 				vos.assign(names[i], index1);
 			}
-			vals[i] = (Value) vos.read();
+			vals[i] = (Value) vos.read(tbl);
 		}
 		final Value res = new RecordValue(names, vals, isNorm);
 		vos.assign(res, index);
