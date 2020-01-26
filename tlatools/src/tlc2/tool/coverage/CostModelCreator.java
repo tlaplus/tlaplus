@@ -255,8 +255,9 @@ public class CostModelCreator extends ExplorerVisitor {
 				final OpDefNode odn = (OpDefNode) operator;
 				if (odn.getInRecursive()) {
 					final OpApplNodeWrapper recursive = (OpApplNodeWrapper) stack.stream()
-							.filter(w -> w.getNode() != null && ((OpApplNode) w.getNode()).getOperator() == odn).findFirst()
-							.orElse(null);
+							.filter(w -> w.getNode() != null && w.getNode() instanceof OpApplNode
+									&& ((OpApplNode) w.getNode()).getOperator() == odn)
+							.findFirst().orElse(null);
 					if (recursive != null) {
 						oan.setRecursive(recursive);
 					}
