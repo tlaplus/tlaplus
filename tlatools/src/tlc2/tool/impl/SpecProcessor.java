@@ -588,9 +588,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 							
 							final ModuleNode moduleNode = modSet.get(evaluation.module());
 							if (moduleNode == null) {
-								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
-										evaluation.module() + "!" + evaluation.definition(),
-										c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+								// If the module, for which the operator has been defined, isn't part of the spec,
+								// it is probably intentional and thus confusing to warn the user. This e.g.
+								// happen with CommunitModules which has a bunch of operators spread over a set
+								// modules and a user only uses a subset in her spec.
 								continue LOOP;
 							}
 							final OpDefNode opDef = moduleNode.getOpDef(evaluation.definition());
