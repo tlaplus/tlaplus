@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import pcal.exception.ParseAlgorithmException;
+import util.TLAConstants;
 
 /**
  * This class validates the recorded checksums generated from an input specification's PlusCal and translated PlusCal
@@ -41,9 +42,20 @@ public class Validator {
 	}
 	
 	
+	static protected boolean PRE_TRIM_VALIDATION_CONTENT = true;
+	
 	static final Pattern PCAL_CHECKSUM_PATTERN = Pattern.compile(PcalParams.PCAL_CHECKSUM_KEYWORD + "[0-9a-f]+$");
-	static final Pattern TRANSLATED_PCAL_CHECKSUM_PATTERN = Pattern
-			.compile(PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + "[0-9a-f]+$");
+	static final Pattern TRANSLATED_PCAL_CHECKSUM_PATTERN
+									= Pattern.compile(PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + "[0-9a-f]+$");
+
+	private static final Pattern MODULE_PREFIX = Pattern.compile(TLAConstants.MODULE_REGEX_PREFIX);
+	/*
+	 * This regex is appropriate for only pre-MODULE-lines; the PlusCal specification states that the options line
+	 *  	may exist before the module, after the module, or within the module in a comment line or block. For our
+	 *  	purposes, we only care if it exists before the module and therefore the following regex.
+	 */
+	private static final Pattern PLUSCAL_OPTIONS = Pattern.compile("^[\\s]*PlusCal[\\s]+options",
+																   Pattern.CASE_INSENSITIVE);
 
 	/**
 	 * This method is a convenience wrapped around {@link #validate(List)}.
@@ -68,7 +80,31 @@ public class Validator {
     	specContents = new String(baos.toByteArray(), "UTF-8");
 
 		final String[] lines = specContents.split("\\r?\\n");
-		return validate(Arrays.asList(lines));
+		int startLine = -1;
+		if (PRE_TRIM_VALIDATION_CONTENT) {
+			for (int i = 0; i < lines.length; i++) {
+				final Matcher m = MODULE_PREFIX.matcher(lines[i]);
+				if (m.find()) {
+					startLine = i;
+					break;
+				} else {
+					final Matcher m2 = PLUSCAL_OPTIONS.matcher(lines[i]);
+					if (m2.find()) {
+						startLine = i;
+						break;
+					}
+				}
+			}
+		}
+		if (startLine < 1) {
+			return validate(Arrays.asList(lines));
+		} else {
+			final int reducedLength = lines.length - startLine;
+			final String[] reducedLines = new String[reducedLength];
+
+			System.arraycopy(lines, startLine, reducedLines, 0, reducedLength);
+			return validate(Arrays.asList(reducedLines));
+		}
 	}
 	
 	/**
@@ -78,13 +114,22 @@ public class Validator {
 	 * @param specificationText the entire specification, line by line - for historical reasons.
 	 * @return the result of the validation, as enumerated by the inner enum of this class.
 	 */
-	public static ValidationResult validate(final List<String> specificationText) {
+	private static ValidationResult validate(final List<String> specificationText) {
         final Vector<String> deTabbedSpecification = trans.removeTabs(specificationText);
 		
         final IntPair searchLoc = new IntPair(0, 0);
         boolean notDone = true;
 		while (notDone) {
 			try {
+				/*
+				 * As mentioned in #413, this is a performance bottleneck point; unfortunately we need process the
+				 *		options as it affects the production of the AST and we base the checksum on the AST.
+				 * We have addressed a use case in which there is a long run of line prefacing the module specification
+				 * 		in the {@link #validate(InputStream)} method, but that doesn't address a long spec.
+				 * If we wanted to devote more time to this, we should examine the performance difference between
+				 * 		the character-by-character marching done in the ParseAlgorithm code versus using a
+				 * 		regex matcher to split apart lines.
+				 */
                 ParseAlgorithm.FindToken("PlusCal", deTabbedSpecification, searchLoc, "");
                 final String line = ParseAlgorithm.GotoNextNonSpace(deTabbedSpecification, searchLoc);
                 final String restOfLine = line.substring(searchLoc.two);

@@ -57,7 +57,11 @@ public abstract class CommonTestCase {
 
 	protected final TestMPRecorder recorder;
 
-	public CommonTestCase(TestMPRecorder testMPRecorder) {
+	public CommonTestCase() {
+		this(new TestMPRecorder());
+	}
+	
+	public CommonTestCase(final TestMPRecorder testMPRecorder) {
 		recorder = testMPRecorder;
 	}
 

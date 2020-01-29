@@ -92,6 +92,8 @@ public final class TLAConstants {
 	public static final String GENERATION_TIMESTAMP_PREFIX = "\\* Generated on ";
 	public static final String LINE = "line ";
 	public static final String STUTTERING = " Stuttering";
+	
+	public static final String MODULE_REGEX_PREFIX = "^([-]+ " + TLAConstants.KeyWords.MODULE + ") ";
 
     public static final String SPACE = " ";
     public static final String INDENT = "    ";
