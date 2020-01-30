@@ -85,6 +85,7 @@ public class AST
     public static AST.If           IfObj           ;
     public static AST.Either       EitherObj       ;
     public static AST.With         WithObj         ;
+    public static AST.Action	   ActionObj       ;
     public static AST.When         WhenObj         ;
     public static AST.PrintS       PrintSObj       ;
     public static AST.Assert       AssertObj       ;
@@ -206,6 +207,7 @@ public class AST
         IfObj           = new AST.If() ;
         EitherObj       = new AST.Either() ;
         WithObj         = new AST.With() ;
+        ActionObj       = new AST.Action() ;
         WhenObj         = new AST.When() ;
         PrintSObj       = new AST.PrintS() ;
         AssertObj       = new AST.Assert() ;
@@ -663,6 +665,18 @@ public class AST
                " exp    |-> " + exp.toString() + "," + NewLine() +          
                Indent(" do     |-> ") + VectorToSeqString(Do) + "]" + 
                EndIndent() +
+             EndIndent() ;
+          }
+      }
+
+    public static class Action extends AST
+      { public TLAExpr   exp  = null ;
+        public Action() {};
+        public String toString()
+          { return 
+             Indent(lineCol()) + 
+              "[type |-> \"action\", " + NewLine() + 
+              " exp |-> " + exp.toString() + "]" +
              EndIndent() ;
           }
       }

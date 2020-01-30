@@ -644,7 +644,18 @@ public class PcalTLAGen
         addLeftParenV(ast, macroBeginLeft);
         for (int i = 0; i < ast.stmts.size(); i++)
         {
-            GenStmt((AST) ast.stmts.elementAt(i), c, context, sb.toString(), sb.length());
+            AST nAst = (AST) ast.stmts.elementAt(i);
+			GenStmt(nAst, c, context, sb.toString(), sb.length());
+			if (nAst instanceof AST.Action) {
+				// The contract of an AST.Action is that it is the user's responsibility to take
+				// care of the UNCHANGED if it is necessary, i.e. not all variables are changed
+				// in the TLA+ expression.
+				c.AllChanged();
+				// TODO Check that the next stmt is the assignment to pc. However, a user might
+				// have written: /\ SomeTLA+; foo := "bar"; skip; (two additional statements
+				// that are disallowed). The translator should error with a meaningful message.
+				break;
+			}
             sb = new StringBuffer(NSpaces(col));
             sb.append("/\\ ");
         }
@@ -832,6 +843,8 @@ public class PcalTLAGen
             GenEither((AST.Either) ast, c, context, prefix, col);
         else if (ast.getClass().equals(AST.WithObj.getClass()))
             GenWith((AST.With) ast, c, context, prefix, col);
+        else if (ast.getClass().equals(AST.ActionObj.getClass()))
+            GenAction((AST.Action) ast, c, context, prefix, col);
         else if (ast.getClass().equals(AST.WhenObj.getClass()))
             GenWhen((AST.When) ast, c, context, prefix, col);
         else if (ast.getClass().equals(AST.PrintSObj.getClass()))
@@ -1681,6 +1694,18 @@ public class PcalTLAGen
          */
         ((Vector) mappingVector.elementAt(mappingVector.size()-1))
         .add(new MappingObject.RightParen(ast.getOrigin().getEnd()));
+    }
+
+    private void GenAction(AST.Action ast, Changed c, String context, String prefix, int col) throws PcalTLAGenException
+    {
+        addOneTokenToTLA(prefix);
+        
+//        TLAExpr exp = AddSubscriptsToExpr(ast.exp, SubExpr(Self(context)), c);
+      TLAExpr exp = ast.exp;
+      addLeftParen(exp.getOrigin());
+      addExprToTLA(exp);
+      addRightParen(exp.getOrigin());
+      endCurrentLineOfTLA();
     }
 
     private void GenWhen(AST.When ast, Changed c, String context, String prefix, int col) throws PcalTLAGenException
