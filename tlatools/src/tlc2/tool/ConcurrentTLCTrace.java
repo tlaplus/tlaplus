@@ -59,10 +59,12 @@ public class ConcurrentTLCTrace extends TLCTrace {
 	/**
 	 * @see ConcurrentTLCTrace#getLevel()
 	 */
+	@Override
 	public final int getLevelForReporting() throws IOException {
 		return getLevel();
 	}
 
+	@Override
 	public synchronized final int getLevel() throws IOException {
 		int maxLevel = 1; // With a single, init state the level/progress/diameter is 1, not 0!
 		for (Worker worker : workers) {

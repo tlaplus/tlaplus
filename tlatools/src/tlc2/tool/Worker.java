@@ -236,6 +236,10 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 
 	// Read from previously written (see writeState) trace file.
 	public final synchronized ConcurrentTLCTrace.Record readStateRecord(final long ptr) throws IOException {
+		// Remember current tip of the file before we rewind.
+		this.raf.mark();
+		
+		// rewind to position we want to read from.
 		this.raf.seek(ptr);
 		
 		final long prev = this.raf.readLongNat();
@@ -246,6 +250,11 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			
 		final long fp = this.raf.readLong();
 		assert tlc.theFPSet.contains(fp);
+		
+		// forward/go back back to tip of file.
+		// This is only necessary iff TLC runs with '-continue'. In other words, state
+		// space exploration continues after an error trace has been written.
+		this.raf.seek(this.raf.getMark());
 		
 		return new ConcurrentTLCTrace.Record(prev, worker, fp);
 	}
