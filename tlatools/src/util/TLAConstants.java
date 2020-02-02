@@ -93,7 +93,8 @@ public final class TLAConstants {
 	public static final String LINE = "line ";
 	public static final String STUTTERING = " Stuttering";
 	
-	public static final String MODULE_REGEX_PREFIX = "^([-]+ " + TLAConstants.KeyWords.MODULE + ") ";
+	public static final String MODULE_OPENING_PREFIX_REGEX = "^([-]+ " + TLAConstants.KeyWords.MODULE + ") ";
+	public static final String MODULE_CLOSING_REGEX = "^[=]+$";
 
     public static final String SPACE = " ";
     public static final String INDENT = "    ";

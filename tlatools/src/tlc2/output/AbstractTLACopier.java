@@ -9,8 +9,7 @@ import util.TLAConstants;
  * The abstract superclass for classes which copy a TLA file.
  */
 abstract class AbstractTLACopier extends AbstractCopier {
-	private static final String CLOSING_BODY_REGEX = "^[=]+$";
-	protected static final Pattern CLOSING_BODY_PATTERN = Pattern.compile(CLOSING_BODY_REGEX);
+	protected static final Pattern CLOSING_BODY_PATTERN = Pattern.compile(TLAConstants.MODULE_CLOSING_REGEX);
 	
 
 	protected final Pattern modulePattern;
@@ -20,7 +19,7 @@ abstract class AbstractTLACopier extends AbstractCopier {
 	AbstractTLACopier(final String originalName, final String newName, final File sourceLocation) {
 		super(originalName, newName, sourceLocation);
 
-		final String regex = TLAConstants.MODULE_REGEX_PREFIX + originalModuleName;
+		final String regex = TLAConstants.MODULE_OPENING_PREFIX_REGEX + originalModuleName;
 		modulePattern = Pattern.compile(regex);
 		
 		inBody = false;

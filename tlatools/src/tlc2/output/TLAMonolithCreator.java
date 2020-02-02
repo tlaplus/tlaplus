@@ -136,7 +136,7 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 		
 		monolithWriter.write(commentLine.toString());
 		
-		final String regex = TLAConstants.MODULE_REGEX_PREFIX + moduleName;
+		final String regex = TLAConstants.MODULE_OPENING_PREFIX_REGEX + moduleName;
 		final Pattern insertingModuleMatcher = Pattern.compile(regex);
 		
 		try (final BufferedReader br = new BufferedReader(new FileReader(module))) {

@@ -48,7 +48,9 @@ public class Validator {
 	static final Pattern TRANSLATED_PCAL_CHECKSUM_PATTERN
 									= Pattern.compile(PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + "[0-9a-f]+$");
 
-	private static final Pattern MODULE_PREFIX = Pattern.compile(TLAConstants.MODULE_REGEX_PREFIX);
+	private static final Pattern MODULE_PREFIX_PATTERN = Pattern.compile(TLAConstants.MODULE_OPENING_PREFIX_REGEX);
+	private static final Pattern MODULE_CLOSING_PATTERN = Pattern.compile(TLAConstants.MODULE_CLOSING_REGEX);
+	
 	/*
 	 * This regex is appropriate for only pre-MODULE-lines; the PlusCal specification states that the options line
 	 *  	may exist before the module, after the module, or within the module in a comment line or block. For our
@@ -83,7 +85,7 @@ public class Validator {
 		int startLine = -1;
 		if (PRE_TRIM_VALIDATION_CONTENT) {
 			for (int i = 0; i < lines.length; i++) {
-				final Matcher m = MODULE_PREFIX.matcher(lines[i]);
+				final Matcher m = MODULE_PREFIX_PATTERN.matcher(lines[i]);
 				if (m.find()) {
 					startLine = i;
 					break;
@@ -158,7 +160,12 @@ public class Validator {
         boolean foundBegin = false;
         boolean foundFairBegin = false;
 		while ((algLine < deTabbedSpecification.size()) && !foundBegin) {
-			String line = deTabbedSpecification.elementAt(algLine);
+			final String line = deTabbedSpecification.elementAt(algLine);
+			final Matcher m = MODULE_CLOSING_PATTERN.matcher(line);
+			if (m.matches()) {
+				break;
+			}
+			
 			algCol = line.indexOf(PcalParams.BeginAlg);
 			if (algCol != -1) {
 				algCol = algCol + PcalParams.BeginAlg.length();
