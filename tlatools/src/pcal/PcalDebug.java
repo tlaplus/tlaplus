@@ -105,14 +105,15 @@ public class PcalDebug
     * This method is called to report a bug in the program and abort.    *
     *********************************************************************/
     {
+    	final StringBuilder sb = new StringBuilder("You have discovered a bug in pcal.trans.\n");
+        sb.append("Send the following information and the\ninput file to the current maintainer(s).\n\n -- ");
+        sb.append(msg).append(".");
+    	
         ToolIO.out.println("");
-        ToolIO.out.println("You have discovered a bug in pcal.trans.");
-        ToolIO.out.println("Send the following information and the");
-        ToolIO.out.println("input file to the current maintainer(s).");
+        ToolIO.out.println(sb.toString());
         ToolIO.out.println("");
-        ToolIO.out.println(" -- " + msg + ".");
-        ToolIO.out.println("");
-        throw new Error();
+        
+        throw new Error(sb.toString());
     };
 
     public static void printObjectArray(Object[] array, String name)

@@ -3491,20 +3491,17 @@ public class ParseAlgorithm
                             + tok + "\"") ; } ;
      }
 
-   public static void MustGobbleThis(String str) throws ParseAlgorithmException
-     { 
-       String tok;
-    try
-    {
-        tok = GetAlgToken();
-    } catch (ParseAlgorithmException e)
-    {
-        throw new ParseAlgorithmException(e.getMessage());
-    }
-       if (! tok.equals(str) )
-         { PcalDebug.ReportBug("Expected \"" + str + "\" but found \""
-                                 + tok + "\"") ; } ;
-     }
+	public static void MustGobbleThis(final String str) throws ParseAlgorithmException {
+		final String tok;
+		try {
+			tok = GetAlgToken();
+		} catch (ParseAlgorithmException e) {
+			throw new ParseAlgorithmException(e.getMessage());
+		}
+		if (!tok.equals(str)) {
+			ParsingError("Expected \"" + str + "\" but found \"" + tok + "\"");
+		}
+	}
 
    public static boolean GobbleEqualOrIf() throws ParseAlgorithmException
      /**********************************************************************
