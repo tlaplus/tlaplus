@@ -3202,7 +3202,11 @@ public abstract class Tool
     if (!(fcns instanceof Enumerable)) {
       Assert.fail("The symmetry operator must specify a set of functions.");
     }
-    return MVPerms.permutationSubgroup((Enumerable) fcns);
+    final Enumerable enumerable = (Enumerable)fcns;
+    if (enumerable.size() < 2) {
+      Assert.fail(EC.TLC_SYMMETRY_SET_TOO_SMALL, "ignored text");
+    }
+    return MVPerms.permutationSubgroup(enumerable);
   }
 
   @Override

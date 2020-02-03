@@ -719,6 +719,10 @@ public class MP
         case EC.TLC_EXCEPT_APPLIED_TO_UNKNOWN_FIELD:
             b.append("The EXCEPT was applied to non-existing fields of the value at\n%1%");
             break;
+            
+        case EC.TLC_SYMMETRY_SET_TOO_SMALL:
+        	b.append("A symmetry set must have two or more elements.");
+        	break;
         /* ************************************************************************ */
         case EC.TLC_MODULE_TLCGET_UNDEFINED:
             b.append("TLCGet(%1%) was undefined.");

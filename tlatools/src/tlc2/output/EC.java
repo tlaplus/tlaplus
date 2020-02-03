@@ -165,6 +165,8 @@ public interface EC
     public static final int TLC_MODULE_ARGUMENT_NOT_IN_DOMAIN = 2183;
     public static final int TLC_MODULE_APPLY_EMPTY_SEQ = 2184;
     
+    public static final int TLC_SYMMETRY_SET_TOO_SMALL = 2300;
+    
     public static final int TLC_STARTING = 2185;
     public static final int TLC_FINISHED = 2186;
     
