@@ -524,6 +524,16 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       else { throw e; }
     }
   }
+  
+  /**
+   * {@link #size()} first normalizes, destructively, this instance; for inspections on the size without normalization
+   * 	use this method.
+   * 
+   * @return
+   */
+  public int nonNormalizedSize() {
+	  return values.length;
+  }
 
   @Override
   public final Value toTuple() {

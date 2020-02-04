@@ -721,7 +721,7 @@ public class MP
             break;
             
         case EC.TLC_SYMMETRY_SET_TOO_SMALL:
-        	b.append("A symmetry set must have two or more elements.");
+        	b.append("The set%1% %2% %3% been defined to be a symmetry set but only contain%4% a single element.");
         	break;
         /* ************************************************************************ */
         case EC.TLC_MODULE_TLCGET_UNDEFINED:

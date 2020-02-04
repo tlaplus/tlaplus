@@ -9,6 +9,10 @@ public final class TLAConstants {
 		public static final String TRACE_EXPRESSIONS = "Toolbox";
 	}
 	
+	public final class BuiltInOperators {
+		public static final String PERMUTATIONS = "Permutations";
+	}
+	
 	public final class Files {
 	    public static final String CONFIG_EXTENSION = ".cfg";
 	    public static final String ERROR_EXTENSION = ".err";

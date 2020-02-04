@@ -73,7 +73,8 @@ public class ModelConfig implements ValueConstants, Serializable {
             TypeConstraint };
 
     private Hashtable configTbl;
-    private Hashtable overrides;
+    private Hashtable<String, String> overrides;
+    private Hashtable<String, String> overridesReverseMap;
     private Hashtable modConstants;
     private Hashtable modOverrides;
     private String configFileName;
@@ -127,6 +128,7 @@ public class ModelConfig implements ValueConstants, Serializable {
         this.modConstants = new Hashtable<>();
         this.modOverrides = new Hashtable<>();
         this.overrides = new Hashtable<>();
+        this.overridesReverseMap = new Hashtable<>();
     }
 
     /**
@@ -317,7 +319,9 @@ public class ModelConfig implements ValueConstants, Serializable {
                                     throw new ConfigFileException(EC.CFG_EXPECT_ID, new String[] {
                                             String.valueOf(scs.getBeginLine()), "<-" });
                                 }
-                                this.overrides.put(line.elementAt(0), tt.image);
+                                final String string = (String)line.elementAt(0);
+                                this.overrides.put(string, tt.image);
+                                this.overridesReverseMap.put(tt.image, string);
                             }
                         } else
                         {
@@ -499,9 +503,13 @@ public class ModelConfig implements ValueConstants, Serializable {
         return this.modConstants;
     }
 
-    public synchronized final Hashtable getOverrides()
+    public synchronized final Hashtable<String, String> getOverrides()
     {
         return this.overrides;
+    }
+    
+    public synchronized final String getOverridenSpecNameForConfigName(final String configName) {
+    	return this.overridesReverseMap.get(configName);
     }
 
     public synchronized final Hashtable getModOverrides()

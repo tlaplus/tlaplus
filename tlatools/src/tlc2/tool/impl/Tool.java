@@ -7,7 +7,9 @@
 package tlc2.tool.impl;
 
 import java.io.File;
+import java.util.List;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
@@ -83,6 +85,7 @@ import tlc2.value.impl.ValueExcept;
 import tlc2.value.impl.ValueVec;
 import util.Assert;
 import util.FilenameToStream;
+import util.TLAConstants;
 import util.UniqueString;
 
 /**
@@ -3196,17 +3199,61 @@ public abstract class Tool
     if (!(symm instanceof OpDefNode)) {
       Assert.fail("The symmetry function " + name + " must specify a set of permutations.");
     }
+    final OpDefNode opDef = (OpDefNode)symm;
     // This calls tlc2.module.TLC.Permutations(Value) and returns a Value of |fcns|
     // = n! where n is the capacity of the symmetry set.
-    final IValue fcns = this.eval(((OpDefNode)symm).getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
-    if (!(fcns instanceof Enumerable)) {
+    final IValue fcns = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
+    if (!(fcns instanceof Enumerable) || !(fcns instanceof SetEnumValue)) {
       Assert.fail("The symmetry operator must specify a set of functions.");
     }
-    final Enumerable enumerable = (Enumerable)fcns;
-    if (enumerable.size() < 2) {
-      Assert.fail(EC.TLC_SYMMETRY_SET_TOO_SMALL, "ignored text");
+    // In the case where the config defines more than one set which is symmetric, they will pass through the
+    //		enumerable size() check even if they are single element sets
+    final StringBuilder cardinalityOneSetList = new StringBuilder();
+    final SetEnumValue sev = (SetEnumValue)fcns;
+    final List<Value> values = sev.elements().all();
+    final int valuesCount = values.size();
+    final ExprOrOpArgNode[] operands = ((OpApplNode)opDef.getBody()).getArgs();
+    int offenderCount = 0;
+    for (int i = 0; i < valuesCount; i++) {
+    	final Value v = values.get(0);
+    	if (!(v instanceof FcnRcdValue)) {
+    		Assert.fail("The symmetry values must be function records.");
+    	}
+    	
+    	if (((FcnRcdValue)v).nonNormalizedSize() < 2) {
+      	    final ExprOrOpArgNode operand = operands[i];
+      	    final SyntaxTreeNode tn = (SyntaxTreeNode)operand.getTreeNode();
+      	    // If this is part of a union of symmetry sets, the image will contain the permutations operator
+      	    final String image = tn.getHumanReadableImage();
+      	    final String constantAlias;
+      	    if (image.startsWith(TLAConstants.BuiltInOperators.PERMUTATIONS)) {
+      		  final int imageLength = image.length();
+      		  constantAlias = image.substring((TLAConstants.BuiltInOperators.PERMUTATIONS.length() + 1),
+      				  						  (imageLength - 1));
+      	    } else {
+      		  constantAlias = image;
+      	    }
+      	    final String specDefinitionName = this.config.getOverridenSpecNameForConfigName(constantAlias);
+      	    
+      	    if (specDefinitionName != null) {
+      	      if (offenderCount > 0) {
+        		  cardinalityOneSetList.append(", and ");
+      	      }
+      	      
+      	      cardinalityOneSetList.append(specDefinitionName);
+      	      offenderCount++;
+      	    }
+    	}
     }
-    return MVPerms.permutationSubgroup(enumerable);
+    if (offenderCount > 0) {
+      final String plurality = (offenderCount > 1) ? "s" : "";
+      final String antiPlurality = (offenderCount > 1) ? "" : "s";
+      final String toHaveConjugation = (offenderCount > 1) ? "have" : "has";
+      
+      Assert.fail(EC.TLC_SYMMETRY_SET_TOO_SMALL,
+    		  	  new String[] { plurality, cardinalityOneSetList.toString(), toHaveConjugation, antiPlurality });
+    }
+    return MVPerms.permutationSubgroup((Enumerable)fcns);
   }
 
   @Override

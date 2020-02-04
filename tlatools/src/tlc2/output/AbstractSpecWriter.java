@@ -286,7 +286,8 @@ public abstract class AbstractSpecWriter {
 			tlaBuffer.append(label).append(TLAConstants.DEFINES).append(TLAConstants.CR);
 			// symmetric model value sets added
 			for (int i = 0; i < symmetrySets.size(); i++) {
-				tlaBuffer.append("Permutations(").append(symmetrySets.get(i)).append(")");
+				tlaBuffer.append(TLAConstants.BuiltInOperators.PERMUTATIONS).append("(");
+				tlaBuffer.append(symmetrySets.get(i)).append(")");
 				if (i != symmetrySets.size() - 1) {
 					tlaBuffer.append(' ').append(TLAConstants.KeyWords.UNION).append(' ');
 				}
