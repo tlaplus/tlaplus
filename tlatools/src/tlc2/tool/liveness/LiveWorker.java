@@ -89,6 +89,13 @@ public class LiveWorker extends IdThread {
 		}
 	}
 
+        /**
+         * Clears errFoundByThread by resetting it.
+         */
+        public static void resetErrFound() {
+                errFoundByThread = -1;
+        }
+
 	/**
 	 * Returns true iff either an error has not been found or the error is found
 	 * by this thread.

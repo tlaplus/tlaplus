@@ -990,17 +990,21 @@ public class TLC {
 		return dumpFile + suffix;
 	}
 
+    public void resetStartTime() {
+        startTime = System.currentTimeMillis();
+    }
+
 	/**
      * The processing method
      */
     public int process()
     {
         // UniqueString.initialize();
-        
-        // a JMX wrapper that exposes runtime statistics 
+
+        // a JMX wrapper that exposes runtime statistics
         TLCStandardMBean modelCheckerMXWrapper = TLCStandardMBean.getNullTLCStandardMBean();
-        
-		// SZ Feb 20, 2009: extracted this method to separate the 
+
+		// SZ Feb 20, 2009: extracted this method to separate the
         // parameter handling from the actual processing
         try
         {
