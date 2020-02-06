@@ -233,8 +233,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             	Object defVal = WorkerValue.demux(opDefEvaluator, consts[i], opDef);
                 opDef.setToolObject(toolId, defVal);
             } catch (Assert.TLCRuntimeException | EvalException e) {
+              final String addendum = (e instanceof EvalException) ? "" : (" - specifically: " + e.getMessage());
               Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
-                  new String[] { consts[i].getName().toString(), opDef.getName().toString() });
+                  new String[] { consts[i].getName().toString(), opDef.getName().toString(), addendum });
             }
           }
         }

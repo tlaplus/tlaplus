@@ -1144,7 +1144,7 @@ public class MP
             b.append("In evaluation, the identifier %1% is either undefined or not an operator.\n%2%");
             break;
         case EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT:
-            b.append("The configuration file substitutes constant %1% with non-constant %2%.");
+            b.append("The configuration file substitutes constant %1% with non-constant %2%%3%");
             break;
         case EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS:
             b.append("The configuration file substitutes for %1% with %2% of different number of arguments.");
