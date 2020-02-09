@@ -54,9 +54,10 @@ public class Simulator {
 		// SZ Mar 5, 2009: removed it again because of the bug in simulator
 		// ToolIO.setUserDir(specDir);
 
-		this.tool = new FastTool(specDir, specFile, configFile, resolver);
+		FastTool tool = new FastTool(specDir, specFile, configFile, resolver);
 
-		this.checkDeadlock = deadlock;
+		this.checkDeadlock = deadlock && tool.getModelConfig().whetherCheckDeadlock();
+		this.tool = tool;
 		this.checkLiveness = !this.tool.livenessIsTrue();
 		this.invariants = this.tool.getInvariants();
 		if (traceDepth != -1) {

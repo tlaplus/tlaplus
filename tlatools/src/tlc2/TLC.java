@@ -1045,17 +1045,18 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
-		        final FastTool tool = new FastTool(mainFile, configFile, resolver);
+                final FastTool tool = new FastTool(mainFile, configFile, resolver);
+                boolean checkDeadlock = deadlock && tool.getModelConfig().whetherCheckDeadlock();
                 if (isBFS())
                 {
-					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
+					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, checkDeadlock, fromChkpt,
 							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, new File(mainFile).getName()),
 							startTime);
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) TLCGlobals.mainChecker, this);
 					result = TLCGlobals.mainChecker.modelCheck();
                 } else
                 {
-					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
+					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, checkDeadlock, fromChkpt, startTime);
 					result = TLCGlobals.mainChecker.modelCheck();
                 }
 
