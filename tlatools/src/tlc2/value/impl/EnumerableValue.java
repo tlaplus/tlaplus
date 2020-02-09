@@ -121,7 +121,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 			//
 			// x has to be co-prime to n. Since n might or might not be a prime number
 			// - it depends on the actual size of the set - we simply set x to
-			// be a prime number. The prime x has to be larger than n tough, since n is
+			// be a prime number. The prime x has to be larger than n though, since n is
 			// bound by Integer.MAX_VALUE, we simply choose the Mersenne prime
 			// Integer.MAX_VALUE
 			// for x and accept that we fail if n = Integer.MAX_VALUE. To minimize

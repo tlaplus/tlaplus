@@ -73,7 +73,10 @@ public class ConcurrentTLCTrace extends TLCTrace {
 		return maxLevel;
 	}
 
-	private TLCStateInfo[] getTrace(final TLCState state) throws IOException {
+	/**
+	 * @see TLCTrace#getTrace(LongVec)
+	 */
+	public TLCStateInfo[] getTrace(final TLCState state) throws IOException {
 		final LongVec fps = new LongVec();
 
 		// Starting at the given start fingerprint (which is the end of the

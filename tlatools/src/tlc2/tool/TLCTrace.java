@@ -260,6 +260,17 @@ public class TLCTrace {
 		return getTrace(fps);
 	}
 
+	/**
+	 * This method is *not* safe to call multiple times iff the spec being checked
+	 * consumed randomness, ie. TLC!RandomElement or through the Randomization
+	 * module. In other words, such specs are incompatible with TLC's -continue
+	 * mode.
+	 * <p>
+	 * To implement this correctly, state space exploration would either have to
+	 * halt while the fingerprints are resolved to TLCStates below or ITool has
+	 * to offer additional API s.t. the seed of RandomEnumerableValues gets
+	 * passed as part of the method call.
+	 */
 	protected final TLCStateInfo[] getTrace(LongVec fps) {
 		// Re-Initialize the rng with the seed value recorded and used during the model
 		// checking phase. Otherwise, we won't be able to reconstruct the error trace
