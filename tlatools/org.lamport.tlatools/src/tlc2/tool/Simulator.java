@@ -56,7 +56,7 @@ public class Simulator {
 
 		this.tool = new FastTool(specDir, specFile, configFile, resolver);
 
-		this.checkDeadlock = deadlock;
+		this.checkDeadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
 		this.checkLiveness = !this.tool.livenessIsTrue();
 		this.invariants = this.tool.getInvariants();
 		if (traceDepth != -1) {

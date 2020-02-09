@@ -1061,7 +1061,8 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
-		        final FastTool tool = new FastTool(mainFile, configFile, resolver);
+                final FastTool tool = new FastTool(mainFile, configFile, resolver);
+                deadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
                 if (isBFS())
                 {
 					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
@@ -1373,8 +1374,11 @@ public class TLC {
 														"interval between the collection of coverage information;\n"
     														+ "if not specified, no coverage will be collected", true));
     	sharedArguments.add(new UsageGenerator.Argument("-deadlock",
-														"if specified DO NOT CHECK FOR DEADLOCK; default\n"
-															+ "behavior is to check for deadlock", true));
+														"if specified DO NOT CHECK FOR DEADLOCK. Setting the flag is\n"
+															+ "the same as setting CHECK_DEADLOCK to FALSE in config\n"
+															+ "file. When -deadlock is specified, config entry is\n"
+															+ "ignored; default behavior is to check for deadlocks",
+														true));
     	sharedArguments.add(new UsageGenerator.Argument("-difftrace",
 														"show only the differences between successive states when\n"
 															+ "printing trace information; defaults to printing\n"
