@@ -280,6 +280,12 @@ public class StringValue extends Value {
     }
   }
 
+  /* Same as toString. */
+  @Override
+  public final String toUnquotedString() {
+	  return PrintVersion(this.val.toString());
+  }
+
 	public static IValue createFrom(final IValueInputStream vos) throws IOException {
 		final UniqueString str = UniqueString.read(vos.getInputStream());
 		final IValue res = new StringValue(str);

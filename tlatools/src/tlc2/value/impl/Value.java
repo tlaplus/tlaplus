@@ -316,6 +316,12 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	  return toStringImpl("", false);
   }
 
+  /* Same as toString. */
+  @Override
+  public String toUnquotedString() {
+	  return toString();
+  }
+
   @Override
   public final String toString(final String delim) {
 	  return toStringImpl(delim, true);

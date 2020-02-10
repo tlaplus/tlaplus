@@ -119,6 +119,8 @@ public interface IValue extends Comparable<Object> {
 
 	String toString(String delim);
 	
+	String toUnquotedString();
+
 	default boolean isAtom() {
 		if (this instanceof ModelValue || this instanceof IntValue || this instanceof StringValue
 				|| this instanceof BoolValue) {
@@ -133,4 +135,5 @@ public interface IValue extends Comparable<Object> {
 	default boolean mutates() {
 		return true;
 	}
+
 }
