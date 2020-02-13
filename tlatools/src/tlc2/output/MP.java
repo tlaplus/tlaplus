@@ -725,7 +725,7 @@ public class MP
         	break;
             
         case EC.TLC_SPECIFICATION_FEATURES_TEMPORAL_EXISTS:
-        	b.append("TLC does not support temporal existential quantification over state variables.");
+        	b.append("TLC does not support temporal existential, nor universal, quantification over state variables.");
         	break;
         /* ************************************************************************ */
         case EC.TLC_MODULE_TLCGET_UNDEFINED:
