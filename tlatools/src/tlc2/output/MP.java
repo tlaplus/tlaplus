@@ -723,6 +723,10 @@ public class MP
         case EC.TLC_SYMMETRY_SET_TOO_SMALL:
         	b.append("The set%1% %2% %3% been defined to be a symmetry set but only contain%4% a single element.");
         	break;
+            
+        case EC.TLC_SPECIFICATION_FEATURES_TEMPORAL_EXISTS:
+        	b.append("TLC does not support temporal existential quantification over state variables.");
+        	break;
         /* ************************************************************************ */
         case EC.TLC_MODULE_TLCGET_UNDEFINED:
             b.append("TLCGet(%1%) was undefined.");
@@ -1171,7 +1175,13 @@ public class MP
             break;
         case EC.TLC_CONFIG_MISSING_INIT:
             b.append("The configuration file did not specify the initial state predicate." +
-                     // Following part of error message added by LL on 15 Nov 2012
+                     // The below part of the error message was added by LL on 15 Nov 2012
+            		 //
+            		 //	ldq, 13 Feb 2020: I don't think this is semantically correct; I receive
+                     //			no errors when defining a specification that references
+            		 //			a formula which is a parameterized INSTANCE. I *do* receive
+                     //			such an error when that formula is being constrained via
+            		 //			the temporal existential qualifier.
                      "\nCan also be caused by trying to run TLC on a specification from" +
                      "\na module imported with a parameterized INSTANCE statement.");
             break;

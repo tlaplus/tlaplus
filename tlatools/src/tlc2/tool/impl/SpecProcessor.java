@@ -1051,6 +1051,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             }
 
             int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getName());
+            if (opcode == OPCODE_te)
+            {
+            	Assert.fail(EC.TLC_SPECIFICATION_FEATURES_TEMPORAL_EXISTS);
+            }
             if (opcode == OPCODE_cl || opcode == OPCODE_land)
             {
                 for (int i = 0; i < args.length; i++)
