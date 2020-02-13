@@ -166,7 +166,7 @@ public interface EC
     public static final int TLC_MODULE_APPLY_EMPTY_SEQ = 2184;
     
     public static final int TLC_SYMMETRY_SET_TOO_SMALL = 2300;
-    public static final int TLC_SPECIFICATION_FEATURES_TEMPORAL_EXISTS = 2301;
+    public static final int TLC_SPECIFICATION_FEATURES_TEMPORAL_QUANTIFIER = 2301;
     
     public static final int TLC_STARTING = 2185;
     public static final int TLC_FINISHED = 2186;

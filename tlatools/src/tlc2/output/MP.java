@@ -724,7 +724,7 @@ public class MP
         	b.append("The set%1% %2% %3% been defined to be a symmetry set but only contain%4% a single element.");
         	break;
             
-        case EC.TLC_SPECIFICATION_FEATURES_TEMPORAL_EXISTS:
+        case EC.TLC_SPECIFICATION_FEATURES_TEMPORAL_QUANTIFIER:
         	b.append("TLC does not support temporal existential, nor universal, quantification over state variables.");
         	break;
         /* ************************************************************************ */
