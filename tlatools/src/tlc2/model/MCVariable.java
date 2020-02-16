@@ -27,11 +27,25 @@ public class MCVariable {
 	public String getSingleLineDisplayName() {
 		final String s = isTraceExplorerExpression() ? traceExpression : name;
 		
-		return s.replaceAll("\n", "").replaceAll("\r", "");
+		return s.replaceAll("\\n", "").replaceAll("\\r", "");
 	}
 
 	public String getValueAsString() {
 		return valueAsString;
+	}
+	
+	public String getValueAsStringReIndentedAs(final String indent) {
+		final String[] split = valueAsString.split("(\\r\\n|\\r|\\n)");
+		final StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < split.length; i++) {
+			sb.append(indent).append(split[i]);
+			if (i < (split.length - 1)) {
+				sb.append("\n");
+			}
+		}
+		
+		return sb.toString();
 	}
 	
 	public boolean isTraceExplorerExpression() {

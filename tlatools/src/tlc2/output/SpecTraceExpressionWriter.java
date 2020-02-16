@@ -19,6 +19,7 @@ import util.TLAConstants;
  */
 public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	private static final String TRACE_EXPRESSION_VARIABLE = "TraceExp";
+	private static final String TRI_INDENT = TLAConstants.INDENT + TLAConstants.INDENT + TLAConstants.INDENT;
 	
 	/**
 	 * This will generate three identifiers equal to the initial and next state
@@ -244,8 +245,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	            initAndNext.append(var.getName()).append(TLAConstants.EQ).append(TLAConstants.L_PAREN);
 	            initAndNext.append(TLAConstants.CR);
 	            
-	            initAndNext.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
-	            initAndNext.append(var.getValueAsString()).append(TLAConstants.CR);
+	            initAndNext.append(var.getValueAsStringReIndentedAs(TRI_INDENT)).append(TLAConstants.CR);
 	            
 	            initAndNext.append(TLAConstants.INDENT).append(TLAConstants.INDENT);
 	            initAndNext.append(TLAConstants.R_PAREN).append(TLAConstants.CR);
@@ -259,7 +259,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	                initAndNext.append(expressionInfo.getVariableName()).append(TLAConstants.EQ);
 	                initAndNext.append(TLAConstants.L_PAREN).append(TLAConstants.CR);
 	
-	                initAndNext.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
+	                initAndNext.append(TRI_INDENT);
 					if (expressionInfo.getLevel() == 2) {
 	                    // add "--" if the expression is temporal level
 						initAndNext.append(TLAConstants.TRACE_NA);
@@ -397,8 +397,10 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 					final MCVariable currentStateVar = currentStateVars[i];
 					subActionsAndConstraint.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
 					subActionsAndConstraint.append(currentStateVar.getName()).append(TLAConstants.EQ);
-					subActionsAndConstraint.append(TLAConstants.L_PAREN).append(currentStateVar.getValueAsString());
-					subActionsAndConstraint.append(TLAConstants.R_PAREN).append(TLAConstants.CR);
+					subActionsAndConstraint.append(TLAConstants.L_PAREN).append(TLAConstants.CR);
+					subActionsAndConstraint.append(currentStateVar.getValueAsStringReIndentedAs(TRI_INDENT + TLAConstants.INDENT));
+					subActionsAndConstraint.append(TLAConstants.CR);
+					subActionsAndConstraint.append(TRI_INDENT).append(TLAConstants.R_PAREN).append(TLAConstants.CR);
 	            }
 	
 	            /*
@@ -427,9 +429,10 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	                final MCVariable nextStateVar = nextStateVars[i];
 	                subActionsAndConstraint.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
 	                subActionsAndConstraint.append(nextStateVar.getName()).append(TLAConstants.PRIME);
-	                subActionsAndConstraint.append(TLAConstants.EQ).append(TLAConstants.L_PAREN);
-	                subActionsAndConstraint.append(nextStateVar.getValueAsString()).append(TLAConstants.R_PAREN);
+	                subActionsAndConstraint.append(TLAConstants.EQ).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
+					subActionsAndConstraint.append(nextStateVar.getValueAsStringReIndentedAs(TRI_INDENT + TLAConstants.INDENT));
 					subActionsAndConstraint.append(TLAConstants.CR);
+					subActionsAndConstraint.append(TRI_INDENT).append(TLAConstants.R_PAREN).append(TLAConstants.CR);
 	            }
 	
 	            /*
@@ -449,10 +452,9 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		                subActionsAndConstraint.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
 	                    subActionsAndConstraint.append(expressionInfo.getVariableName()).append(TLAConstants.PRIME);
 	                    subActionsAndConstraint.append(TLAConstants.EQ).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
-	                    subActionsAndConstraint.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
+	                    subActionsAndConstraint.append(TRI_INDENT);
 	                    subActionsAndConstraint.append(expressionInfo.getExpression()).append(TLAConstants.CR);
-	                    subActionsAndConstraint.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
-	                    subActionsAndConstraint.append(TLAConstants.R_PAREN);
+	                    subActionsAndConstraint.append(TRI_INDENT).append(TLAConstants.R_PAREN);
 	
 						if (expressionInfo.getLevel() < 2) {
 							subActionsAndConstraint.append(TLAConstants.PRIME);

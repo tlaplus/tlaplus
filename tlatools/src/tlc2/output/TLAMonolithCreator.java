@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,22 +24,39 @@ import util.TLAConstants;
 
 public class TLAMonolithCreator extends AbstractTLACopier {
 	private static final String NESTED_MODULE_INDENT = "    ";
+	private static final String LOCAL_INSTANCE_REGEX = "^LOCAL INSTANCE ([^\\s]+)\\s*$";
+	private static final Pattern LOCAL_INSTANCE_PATTERN = Pattern.compile(LOCAL_INSTANCE_REGEX);
 	
 	
-	// these are modules which SANY logs that it has parsed
+	// these are modules which SANY logs that it has parsed, scrubbed of Standard Modules and in reverse order
 	private final List<File> modulesToEmbed;
+	private final Set<String> moduleNamesBeingEmbedded;
 	// these are the modules which the root ModuleNode or one of its sub-ModuleNodes (or one or their sub-ModuleNodes
 	//		and so on, turtles all the way down) has defined as EXTENDS-ing in their spec
 	private final Set<String> modulesToSpecifyInExtends;
 	// TODO this is insufficient for nestings beyond one level
 	private final List<File> modulesToNest;
 	
+	/**
+	 * @param rootSpecName
+	 * @param sourceLocation
+	 * @param extendeds these are modules which SANY logs that it has parsed; we expect to receive this in the order
+	 * 								which SANY emits it in logging; if that order changes in the future, the monolith
+	 * 								spec will potentially break due to dependent functions being declared in the
+	 * 								wrong order
+	 * @param entireExtendsList the modules which the root ModuleNode or one of its sub-ModuleNodes (or one or their
+	 * 								sub-ModuleNodes and so on, turtles all the way down) has defined as EXTENDS-ing
+	 * 								in their spec; this will get the Standard Modules filtered out of it prior to
+	 * 								usage in this class
+	 * @param allInstantiatedModules
+	 */
 	public TLAMonolithCreator(final String rootSpecName, final File sourceLocation, final List<File> extendeds,
 							  final Set<String> entireExtendsList, final Set<String> allInstantiatedModules) {
 		super(rootSpecName, ("tmp_" + System.currentTimeMillis() + "_monolith"), sourceLocation);
 		
 		final HashSet<String> instantiatedModules = new HashSet<>(allInstantiatedModules);
-		modulesToEmbed = new ArrayList<>();
+		final Stack<File> embedStack = new Stack<>();
+		moduleNamesBeingEmbedded = new HashSet<>();
 		for (final File f : extendeds) {
 			final String name = f.getName();
 			final int index = name.toLowerCase().indexOf(TLAConstants.Files.TLA_EXTENSION);
@@ -55,9 +73,14 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 			}
 			
 			if (keep) {
-				modulesToEmbed.add(f);
+				embedStack.push(f);
 				instantiatedModules.remove(moduleName);
+				moduleNamesBeingEmbedded.add(moduleName);
 			}
+		}
+		modulesToEmbed = new ArrayList<>();
+		while (!embedStack.isEmpty()) {
+			modulesToEmbed.add(embedStack.pop());
 		}
 		
 		modulesToNest = new ArrayList<>();
@@ -83,7 +106,9 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 
 			inBody = m.find();
 
-			writer.write(originalLine + '\n');
+			if (!vetoLocalInstanceLine(originalLine)) {
+				writer.write(originalLine + '\n');
+			}
 		} else {
 			if (originalLine.trim().startsWith(TLAConstants.KeyWords.EXTENDS)) {
 				writer.write(TLAConstants.KeyWords.EXTENDS + " " + String.join(", ", modulesToSpecifyInExtends) + "\n");
@@ -91,7 +116,7 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 				for (final File f : modulesToNest) {
 					insertModuleIntoMonolith(f, writer, true);
 				}
-
+				
 				for (final File f : modulesToEmbed) {
 					insertModuleIntoMonolith(f, writer, false);
 				}
@@ -162,14 +187,24 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 							break;
 						}
 
-						if (nestedModule) {
-							monolithWriter.write(NESTED_MODULE_INDENT);
+						if (!vetoLocalInstanceLine(line)) {
+							if (nestedModule) {
+								monolithWriter.write(NESTED_MODULE_INDENT);
+							}
+							monolithWriter.write(line + '\n');
 						}
-						monolithWriter.write(line + '\n');
 					}
 				}
 			}
 		}
+	}
+	
+	private boolean vetoLocalInstanceLine(final String line) {
+		final Matcher m = LOCAL_INSTANCE_PATTERN.matcher(line);
+		if (m.matches()) {
+			return moduleNamesBeingEmbedded.contains(m.group(1));
+		}
+		return false;
 	}
 	
 	
