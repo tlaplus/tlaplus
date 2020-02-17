@@ -35,6 +35,7 @@ import tlc2.input.MCParser;
 import tlc2.input.MCParserResults;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.output.Messages;
 import tlc2.output.TLAMonolithCreator;
 import tlc2.output.TeeOutputStream;
 import tlc2.tool.DFIDModelChecker;
@@ -66,6 +67,7 @@ import util.TLAConstants;
 import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
+import util.UsageGenerator;
 
 /**
  * Main TLC starter class.
@@ -494,7 +496,7 @@ public class TLC {
 										+ ioe.getMessage());
 					mcOutputConsumer = null;
 				}
-            } else if (args[index].equals("-help"))
+            } else if (args[index].equals("-help") || args[index].equals("-h"))
             {
                 printUsage();
                 return false;
@@ -1339,8 +1341,116 @@ public class TLC {
      */
     private void printUsage()
     {
-        printWelcome();
-        MP.printMessage(EC.TLC_USAGE);
+    	final List<List<UsageGenerator.Argument>> commandVariants = new ArrayList<>();
+    	final List<UsageGenerator.Argument> sharedArguments = new ArrayList<>();
+    	
+    	// N.B. alphabetical ordering is not required by the UsageGenerator, but introduced here to more easily
+    	//			find options when reading the code
+    	sharedArguments.add(new UsageGenerator.Argument("-checkpoint", "minutes",
+    													"interval between check point; defaults to 30",
+    													true));
+    	sharedArguments.add(new UsageGenerator.Argument("-cleanup", "clean up the states directory", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-config", "file",
+    													"provide the configuration file; defaults to SPEC.cfg", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-continue",
+    													"continue running even when an invariant is violated; default\n"
+    														+ "behavior is to halt on first violation", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-coverage", "minutes",
+														"interval between the collection of coverage information;\n"
+    														+ "if not specified, no coverage will be collected", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-deadlock",
+														"if specified DO NOT CHECK FOR DEADLOCK; default\n"
+															+ "behavior is to check for deadlock", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-difftrace",
+														"show only the differences between successive states when\n"
+															+ "printing trace information; defaults to printing\n"
+															+ "full state descriptions", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-debug",
+														"print various debugging information - not for production use\n",
+														true));
+    	sharedArguments.add(new UsageGenerator.Argument("-dump", "file", "dump all states into the specified file", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-fp", "N",
+    													"use the Nth irreducible polynomial from the list stored\n"
+    														+ "in the class FP64", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-fpbits", "num",
+														"the number of MSB used by MultiFPSet to create nested\n"
+    														+ "FPSets; defaults to 1", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-fpmem", "num",
+														"a value in (0.0,1.0) representing the ratio of total\n"
+															+ "physical memory to devote to storing the fingerprints\n"
+															+ "of found states; defaults to 0.25", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-generateSpecTE",
+														"if errors are encountered during model checking, generate\n"
+															+ "a SpecTE tla/cfg file pair which encapsulates Init-\n"
+															+ "Next definitions to specify the state conditions\n"
+															+ "of the error state; this enables 'tool' mode", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-gzip",
+														"control if gzip is applied to value input/output streams;\n"
+															+ "defaults to 'off'", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-h", "display these help instructions", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-maxSetSize", "num",
+														"the size of the largest set which TLC will enumerate; defaults\n"
+															+ "to 1000000 (10^6)", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-metadir", "path",
+														"specify the directory in which to store metadata; defaults to\n"
+															+ "SPEC-directory/states if not specified", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-nowarning",
+														"disable all warnings; defaults to reporting warnings", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-recover", "id",
+														"recover from the checkpoint with the specified id", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-terse",
+														"do not expand values in Print statements; defaults to\n"
+															+ "expanding values", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-tool",
+														"run in 'tool' mode, surrounding output with message codes;\n"
+															+ "if '-generateSpecTE' is specified, this is enabled\n"
+															+ "automatically", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-workers", "num",
+														"the number of TLC worker threads; defaults to 1", true));
+    	
+    	sharedArguments.add(new UsageGenerator.Argument("SPEC", null));
+    	
+    	
+    	final List<UsageGenerator.Argument> modelCheckVariant = new ArrayList<>(sharedArguments);
+    	modelCheckVariant.add(new UsageGenerator.Argument("-dfid", "num",
+														  "run the model check in depth-first iterative deepening\n"
+    														+ "starting with an initial depth of 'num'", true));
+    	modelCheckVariant.add(new UsageGenerator.Argument("-view",
+														  "apply VIEW (if provided) when printing out states", true));
+    	commandVariants.add(modelCheckVariant);
+    	
+    	
+    	final List<UsageGenerator.Argument> simulateVariant = new ArrayList<>(sharedArguments);
+    	simulateVariant.add(new UsageGenerator.Argument("-depth", "num",
+														"specifies the depth of random simulation; defaults to 100",
+														true));
+    	simulateVariant.add(new UsageGenerator.Argument("-seed", "num",
+														"provide the seed for random simulation; defaults to a\n"
+    														+ "random long pulled from a pseudo-RNG", true));
+    	simulateVariant.add(new UsageGenerator.Argument("-aril", "num",
+														"adjust the seed for random simulation; defaults to 0", true));
+    	simulateVariant.add(new UsageGenerator.Argument("-simulate",
+													  	"run in simulation mode", false));
+    	commandVariants.add(simulateVariant);
+
+    	
+    	final List<String> tips = new ArrayList<String>();
+    	tips.add("When using the  '-generateSpecTE' you can version the generated specification by doing:\n\t"
+    				+ "./tla2tools.jar -generateSpecTE MySpec.tla && NAME=\"SpecTE-$(date +%s)\" && sed -e \"s/MODULE"
+    				+ " SpecTE/MODULE $NAME/g\" SpecTE.tla > $NAME.tla");
+    	tips.add("If, while checking a SpecTE created via '-generateSpecTE', you get an error message concerning\n"
+    				+ "CONSTANT declaration and you've previous used 'integers' as model values, rename your\n"
+    				+ "model values to start with a non-numeral and rerun the model check to generate a new SpecTE.");
+    	tips.add("If, while checking a SpecTE created via '-generateSpecTE', you get a warning concerning\n"
+					+ "duplicate operator definitions, this is likely due to the 'monolith' specification\n"
+					+ "creation. Until a 'disable monolith creation' flag is added to TLC, provide the tool\n"
+					+ "output of your model checking to tlc2.TraceExplorer to have it generate a non-monolithic\n"
+					+ "specification.");
+    	
+    	UsageGenerator.displayUsage(ToolIO.out, "TLC", TLCGlobals.versionOfTLC,
+    								"provides model checking and simulation of TLA+ specifications",
+    								Messages.getString("TLCDescription"),
+    								commandVariants, tips, ' ');
     }
 
     FPSetConfiguration getFPSetConfiguration() {

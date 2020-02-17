@@ -414,9 +414,6 @@ public class MP
             b.append("%1%\nUsage: java tlc2.Simulator [-option] inputfile");
             break;
         /* ----------------------------------------------------------------- */
-        case EC.TLC_USAGE:
-            b.append(Messages.getString("HelpMessage"));// $NON-NLS-1$
-            break;
         case EC.TLC_VERSION:
             b.append("TLC2 %1%");
             break;

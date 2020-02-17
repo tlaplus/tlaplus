@@ -4,6 +4,12 @@ package util;
  * A class of bits of keywords, operators, and bears.
  */
 public final class TLAConstants {
+	public final class ANSI {
+		public static final String BOLD_CODE = "\033[1m";
+		public static final String ITALIC_CODE = "\033[3m";
+		public static final String RESET_CODE = "\033[0m";
+	}
+	
 	public final class BuiltInModules {
 		public static final String TLC = "TLC";
 		public static final String TRACE_EXPRESSIONS = "Toolbox";

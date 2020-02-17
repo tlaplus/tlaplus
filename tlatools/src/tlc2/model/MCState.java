@@ -6,8 +6,6 @@ import tla2sany.st.Location;
 import util.TLAConstants;
 
 public class MCState {
-	private static final String ANSI_BOLD_CODE = "\033[1m";
-	private static final String ANSI_RESET_CODE = "\033[0m";
 	private static final String BACK_TO_STATE = " " + TLAConstants.BACK_TO_STATE;
 
 	public static MCState parseState(final String stateInputString) {
@@ -237,7 +235,7 @@ public class MCState {
             result.append("/\\ ");
 			if (var.isTraceExplorerExpression()) {
 				if (ansiMarkup) {
-					result.append(ANSI_BOLD_CODE);
+					result.append(TLAConstants.ANSI.BOLD_CODE);
 				}
 				
 				result.append(var.getSingleLineDisplayName());
@@ -248,7 +246,7 @@ public class MCState {
             result.append(" = ").append(var.getValueAsString());
 
 			if (var.isTraceExplorerExpression() && ansiMarkup) {
-				result.append(ANSI_RESET_CODE);
+				result.append(TLAConstants.ANSI.RESET_CODE);
 			}
 			
             result.append('\n');
