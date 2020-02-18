@@ -187,9 +187,6 @@ public class TLC {
      *		Defaults to 0 if not specified
      *  o -recover path: recover from the checkpoint at path
      *		Defaults to scratch run if not specified
-     *  o -bound: The upper limit for sets effectively limiting the number of init states
-     *					(@see Bug #264 in general/bugzilla/index.html)
-     *		Defaults to 1000000 if not specified
      *  o -metadir path: store metadata in the directory at path
      *		Defaults to specdir/states if not specified
 	 *  o -userFile file: A full qualified/absolute path to a file to log user
@@ -1427,6 +1424,9 @@ public class TLC {
 														"run in 'tool' mode, surrounding output with message codes;\n"
 															+ "if '-generateSpecTE' is specified, this is enabled\n"
 															+ "automatically", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-userFile", "file",
+														"an absolute path to a file in which to log user output (for\n"
+    														+ "example, that which is produced by Print)", true));
     	sharedArguments.add(new UsageGenerator.Argument("-workers", "num",
 														"the number of TLC worker threads; defaults to 1", true));
     	
