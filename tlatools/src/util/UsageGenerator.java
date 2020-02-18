@@ -65,7 +65,7 @@ public class UsageGenerator {
 		ps.println();
 		
 		
-		final String commandNameRegex = commandName + "(\\)\\s|$)";
+		final String commandNameRegex = commandName + "(\\)|\\s|$)";
 		final Pattern p = Pattern.compile(commandNameRegex);
 		final Matcher m = p.matcher(commandDescription);
 		final String markedUpDescription;
@@ -183,7 +183,7 @@ public class UsageGenerator {
 		}
 		
 		if (requiredValued.size() > 0) {
-			for (final Argument arg : optionalValued) {
+			for (final Argument arg : requiredValued) {
 				sb.append(" ").append(markupWord(arg.getArgumentName(), true)).append(valuedArgumentsSeparator);
 				sb.append(markupWord(arg.getSampleValue(), false));
 			}

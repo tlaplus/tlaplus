@@ -20,6 +20,7 @@ import tlc2.model.MCState;
 import tlc2.output.CFGCopier;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.output.Messages;
 import tlc2.output.SpecTraceExpressionWriter;
 import tlc2.output.TLACopier;
 import tlc2.util.Vect;
@@ -27,6 +28,8 @@ import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.Value;
 import tlc2.value.impl.ValueEnumeration;
 import util.TLAConstants;
+import util.ToolIO;
+import util.UsageGenerator;
 
 /**
  * This is an application class which provides the following functionalities:
@@ -177,28 +180,24 @@ public class TraceExplorer {
     	processArguments(commandLineArguments);
     	
     	if (runMode == null) {
-			throw new IllegalStateException(
-					"The provided arguments were not sufficient to configure the TraceExplorer.");
+			printUsageAndExit();
     	}
     }
     
     protected final void processArguments(final String[] args) {
-    	if (args[0].equals(GENERATE_SPEC_FUNCTION_PARAMETER_NAME)) {
-        	runMode = RunMode.GENERATE_SPEC_TE;
-        } else if (args[0].equals(PRETTY_PRINT_FUNCTION_PARAMETER_NAME)) {
-        	runMode = RunMode.PRETTY_PRINT;
-        } else if (args[0].equals(TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME)) {
-        	runMode = RunMode.TRACE_EXPLORATION;
-    		tlcArguments = new ArrayList<>();
-        } else if (args[0].equals(QUASI_REPL_PARAMETER_NAME)) {
-        	runMode = RunMode.QUASI_REPL;
-    		tlcArguments = new ArrayList<>();
-        } else {
-        	runMode = null;
-        	return;
-        }
-    	
-    	int index = 1;
+    	runMode = determineRunModeFromArguments(args);
+    	if (runMode == null) {
+    		return;
+    	}
+
+    	switch (runMode) {
+			case QUASI_REPL:
+			case TRACE_EXPLORATION:
+	    		tlcArguments = new ArrayList<>();
+				break;
+			default:
+				break;
+    	}
     	
 		specGenerationSourceDirectory = new File(System.getProperty("user.dir"));
 		specGenerationOriginalSpecName = args[args.length - 1];
@@ -214,9 +213,15 @@ public class TraceExplorer {
 		
 		boolean consumedAdditionalParameters = true;
 		final int upperIndex = expectedOutputFromStdIn ? args.length : (args.length - 1);
+    	int index = 0;
 		while (consumedAdditionalParameters) {
 			if (index < upperIndex) {
 				final String nextArg = args[index];
+				
+				if (getRunModeForArgument(nextArg) != null) {
+					index++;
+					continue;
+				}
 				
 				if (nextArg.startsWith(SOURCE_DIR_PARAMETER_NAME)) {
 					final String runDirectory = nextArg.substring(SOURCE_DIR_PARAMETER_NAME.length());
@@ -343,6 +348,32 @@ public class TraceExplorer {
     	} else {
     		return executeNonStreaming();
     	}
+    }
+    
+    private RunMode determineRunModeFromArguments(final String[] args) {
+    	for (int i = 0; i < args.length; i++) {
+    		final RunMode rm = getRunModeForArgument(args[i]);
+    		
+    		if (rm != null) {
+    			return rm;
+    		}
+    	}
+
+    	return null;
+    }
+    
+    private RunMode getRunModeForArgument(final String arg) {
+    	if (GENERATE_SPEC_FUNCTION_PARAMETER_NAME.equals(arg)) {
+        	return RunMode.GENERATE_SPEC_TE;
+        } else if (PRETTY_PRINT_FUNCTION_PARAMETER_NAME.equals(arg)) {
+        	return RunMode.PRETTY_PRINT;
+        } else if (TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME.equals(arg)) {
+        	return RunMode.TRACE_EXPLORATION;
+        } else if (QUASI_REPL_PARAMETER_NAME.equals(arg)) {
+        	return RunMode.QUASI_REPL;
+        }
+    	
+    	return null;
     }
     
     private int executeNonStreaming() throws Exception {
@@ -639,70 +670,90 @@ public class TraceExplorer {
     
     
     private static void printUsageAndExit() {
-    	System.out.println("Usage");
+    	final List<List<UsageGenerator.Argument>> commandVariants = new ArrayList<>();
+    	final UsageGenerator.Argument overwrite
+	    		= new UsageGenerator.Argument(GENERATE_SPEC_OVERWRITE_PARAMETER_NAME,
+	    									  "if specified, and if a SpecTE, or TE, file pair already exists,\n"
+	    											+ "they will be overwritten; if they exist, and this has not been\n"
+	    											+ "specified, the process will halt", true);
+    	final UsageGenerator.Argument sourceDirectory
+				= new UsageGenerator.Argument(SOURCE_DIR_PARAMETER_NAME, "path",
+											  "the path to the directory containing tool output from model\n"
+													+ "checking; defaults to CWD. This will be ignored if no SpecName\n"
+													+ "has been specified (and so tool output will be expected to\n"
+													+ "arrive on stdin)", true);
+    	final UsageGenerator.Argument tlcArguments
+				= new UsageGenerator.Argument(MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME,
+											  "\"-some -other 2 -tlc arguments\"",
+											  "these arguments will be passed on to TLC when performing the\n"
+													+ "model check; -config, -tool, and -metadir will be ignored,\n"
+													+ "if specified",
+											  true);
+    	final UsageGenerator.Argument spec
+    			= new UsageGenerator.Argument("SpecName",
+    										  "if no spec name is specified, tool output will be expected to arrive\n"
+    												+ "via stdin and any " + SOURCE_DIR_PARAMETER_NAME
+    												+ " definition will be ignored.", false);
+    	final UsageGenerator.Argument expressionFile
+    			= new UsageGenerator.Argument(EXPRESSIONS_FILE_PARAMETER_NAME, "file",
+											 "expressions specified, one per line if being used in conjunction\n"
+    												+ "with " + TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME
+    												+ " and just one if being used with "
+    												+ QUASI_REPL_PARAMETER_NAME
+    												+ "\nthis file must be in the source "
+													+ "directory or specified by\nfull path", false);
+    	
+    	final List<UsageGenerator.Argument> traceExpressionsVariant = new ArrayList<>();
+    	traceExpressionsVariant.add(overwrite);
+    	traceExpressionsVariant.add(sourceDirectory);
+    	traceExpressionsVariant.add(tlcArguments);
+    	traceExpressionsVariant.add(spec);
+    	traceExpressionsVariant.add(expressionFile);
+    	traceExpressionsVariant.add(new UsageGenerator.Argument(
+    												TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME,
+    												"evaluate trace expressions in the context of an error state\n"
+    													+ "specified through a generated SpecTE file; if the 'SpecName'\n"
+    													+ "specified is anything other that 'SpecTE', the tool will\n"
+    													+ "generate the SpecTE file pair, prior to generating the TE\n"
+    													+ "file pair for the subsequently performed model checking",
+    													false));
+    	commandVariants.add(traceExpressionsVariant);
 
-    	System.out.println("\tTo evaluate trace expressions:");
-    	System.out.println("\t\t\tjava tlc2.TraceExplorer " + TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME + " \\\n"
-    							+ "\t\t\t\t" + EXPRESSIONS_FILE_PARAMETER_NAME
-    										 + "_file_containing_expressions_one_per_line_ \\\n"
-				    			+ "\t\t\t\t[" + MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME
-				    						  + "\"-some -other 2 -tlc arguments\"] \\\n"
-				    			+ "\t\t\t\t[" + SOURCE_DIR_PARAMETER_NAME
-				    						  + "_directory_containing_prior_run_output_] \\\n"
-				    			+ "\t\t\t\t[" + GENERATE_SPEC_OVERWRITE_PARAMETER_NAME + "] \\\n"
-				    			+ "\t\t\t\tSpecName");
-    	System.out.println("\t\to the expressions file must either exist in the source directory or be a full path");
-    	System.out.println("\t\to if TLC arguments are specified (all within quotes) they will be passed on to TLC "
-    							+ "when performing the model check; -config, -tool, and -metadir will be ignored, "
-    							+ "if specified.");
-    	System.out.println("\t\to source defaults to CWD if not specified.");
-    	System.out.println("\t\to if a " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + ".tla, or "
-    							+ TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME
-    							+ ".tla, already exists and overwrite is not specified, execution will halt.");
-    	System.out.println("\t\to if no SpecName is specified, output will be expected to arrive via stdin; "
-    							+ SOURCE_DIR_PARAMETER_NAME + " will be ignored in this case.");
-    	System.out.println("\t\to if SpecName is specified and it is anything other than "
-    							+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
-    							+ ", generation of this file pair will occur first");
     	
-    	System.out.println("");
+    	final List<UsageGenerator.Argument> replBisVariant = new ArrayList<>();
+    	replBisVariant.add(tlcArguments);
+    	replBisVariant.add(new UsageGenerator.Argument(
+    												QUASI_REPL_PARAMETER_NAME,
+    												"perform a one-off evaluation of an expression", false));
+    	replBisVariant.add(expressionFile);
+    	commandVariants.add(replBisVariant);
+
     	
-    	System.out.println("\tTo perform a one off evaluation of an expression:");
-    	System.out.println("\t\t\tjava tlc2.TraceExplorer " + QUASI_REPL_PARAMETER_NAME + " \\\n"
-    							+ "\t\t\t\t" + EXPRESSIONS_FILE_PARAMETER_NAME
-    										 + "_file_containing_an_expression_to_evaluate_ \\\n"
-				    			+ "\t\t\t\t[" + MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME
-				    						  + "\"-some -other 2 -tlc arguments\"]");
-    	System.out.println("\t\to the expressions file must either exist in the CWD or be a full path");
-    	System.out.println("\t\to if TLC arguments are specified (all within quotes) they will be passed on to TLC "
-    							+ "when performing the model check; -config, -tool, and -metadir will be ignored, "
-    							+ "if specified.");
-    	System.out.println("\t\to if a SpecName is specified, this usage will be printed and execution will hault");
+    	final List<UsageGenerator.Argument> generateSpecVariant = new ArrayList<>();
+    	generateSpecVariant.add(overwrite);
+    	generateSpecVariant.add(sourceDirectory);
+    	generateSpecVariant.add(spec);
+    	generateSpecVariant.add(new UsageGenerator.Argument(
+    												GENERATE_SPEC_FUNCTION_PARAMETER_NAME,
+    												"generate a SpecTE tla/cfg pair from a model checking\n"
+    													+ "tool mode output", false));
+    	commandVariants.add(generateSpecVariant);
+
     	
-    	System.out.println("");
+    	final List<UsageGenerator.Argument> prettyPrintVariant = new ArrayList<>();
+    	prettyPrintVariant.add(sourceDirectory);
+    	prettyPrintVariant.add(spec);
+    	prettyPrintVariant.add(new UsageGenerator.Argument(
+    												PRETTY_PRINT_FUNCTION_PARAMETER_NAME,
+    												"pretty print the error states of a model checking\n"
+    													+ "tool mode output", false));
+    	commandVariants.add(prettyPrintVariant);
+
     	
-    	System.out.println("\tTo generate a " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " file pair:");
-    	System.out.println("\t\t\tjava tlc2.TraceExplorer " + GENERATE_SPEC_FUNCTION_PARAMETER_NAME + " \\\n"
-				    			+ "\t\t\t\t[" + SOURCE_DIR_PARAMETER_NAME
-				    						  + "_directory_containing_prior_run_output_] \\\n"
-				    			+ "\t\t\t\t[" + GENERATE_SPEC_OVERWRITE_PARAMETER_NAME + "] \\\n"
-				    			+ "\t\t\t\tSpecName");
-    	System.out.println("\t\to source defaults to CWD if not specified.");
-    	System.out.println("\t\to if a " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + ".tla already exists and overwrite "
-    							+ "is not specified, execution will halt.");
-    	System.out.println("\t\to if no SpecName is specified, output will be expected to arrive via stdin; "
-    							+ SOURCE_DIR_PARAMETER_NAME + " will be ignored in this case.");
-    	
-    	System.out.println("");
-    	
-    	System.out.println("\tTo pretty print the error states of a previous run:");
-    	System.out.println("\t\t\tjava tlc2.TraceExplorer " + PRETTY_PRINT_FUNCTION_PARAMETER_NAME + " \\\n"
-				    			+ "\t\t\t\t[" + SOURCE_DIR_PARAMETER_NAME
-				    						  + "_directory_containing_prior_run_output_] \\\n"
-				    			+ "\t\t\t\tSpecName");
-		System.out.println("\t\to source defaults to CWD if not specified.");
-    	System.out.println("\t\to if no SpecName is specified, output will be expected to arrive via stdin; "
-								+ SOURCE_DIR_PARAMETER_NAME + " will be ignored in this case.");
+    	UsageGenerator.displayUsage(ToolIO.out, "TraceExplorer", TLCGlobals.versionOfTLC,
+    								"a tool for working with TLC tool output and exploring trace expressions",
+    								Messages.getString("TraceExplorerDescription"),
+    								commandVariants, null, '=');
     	
     	System.exit(-1);
     }
