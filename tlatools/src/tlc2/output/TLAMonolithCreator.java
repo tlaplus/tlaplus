@@ -38,6 +38,17 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 	private final List<File> modulesToNest;
 	
 	/**
+	 * This is the constructor for the version which embeds no dependent modules.
+	 * 
+	 * @param entireExtendsList the modules which the root ModuleNode or one of its sub-ModuleNodes (or one or their
+	 * 								sub-ModuleNodes and so on, turtles all the way down) has defined as EXTENDS-ing
+	 * 								in their spec.
+	 */
+	public TLAMonolithCreator(final String rootSpecName, final File sourceLocation, final Set<String> entireExtendsList) {
+		this(rootSpecName, sourceLocation, null, entireExtendsList, null);
+	}
+	
+	/**
 	 * @param rootSpecName
 	 * @param sourceLocation
 	 * @param extendeds these are modules which SANY logs that it has parsed; we expect to receive this in the order
@@ -46,52 +57,59 @@ public class TLAMonolithCreator extends AbstractTLACopier {
 	 * 								wrong order
 	 * @param entireExtendsList the modules which the root ModuleNode or one of its sub-ModuleNodes (or one or their
 	 * 								sub-ModuleNodes and so on, turtles all the way down) has defined as EXTENDS-ing
-	 * 								in their spec; this will get the Standard Modules filtered out of it prior to
-	 * 								usage in this class
+	 * 								in their spec; this will get the non Standard Modules filtered out of it prior to
+	 * 								usage in this class since those will get embedded as a dependent module.
 	 * @param allInstantiatedModules
 	 */
 	public TLAMonolithCreator(final String rootSpecName, final File sourceLocation, final List<File> extendeds,
 							  final Set<String> entireExtendsList, final Set<String> allInstantiatedModules) {
 		super(rootSpecName, ("tmp_" + System.currentTimeMillis() + "_monolith"), sourceLocation);
 		
-		final HashSet<String> instantiatedModules = new HashSet<>(allInstantiatedModules);
-		final Stack<File> embedStack = new Stack<>();
+		final boolean willEmbedDependents = (extendeds != null);
+		
 		moduleNamesBeingEmbedded = new HashSet<>();
-		for (final File f : extendeds) {
-			final String name = f.getName();
-			final int index = name.toLowerCase().indexOf(TLAConstants.Files.TLA_EXTENSION);
-			final boolean keep;
-			final String moduleName;
-			if (index == -1) {
-				// this should never be the case
-				keep = true;
-				moduleName = name;
-			} else {
-				moduleName = name.substring(0, index);
-
-				keep = !StandardModules.isDefinedInStandardModule(moduleName);
+		modulesToNest = new ArrayList<>();
+		modulesToEmbed = new ArrayList<>();
+		if (willEmbedDependents) {
+			final HashSet<String> instantiatedModules = new HashSet<>(allInstantiatedModules);
+			final Stack<File> embedStack = new Stack<>();
+			for (final File f : extendeds) {
+				final String name = f.getName();
+				final int index = name.toLowerCase().indexOf(TLAConstants.Files.TLA_EXTENSION);
+				final boolean keep;
+				final String moduleName;
+				if (index == -1) {
+					// this should never be the case
+					keep = true;
+					moduleName = name;
+				} else {
+					moduleName = name.substring(0, index);
+	
+					keep = !StandardModules.isDefinedInStandardModule(moduleName);
+				}
+				
+				if (keep) {
+					embedStack.push(f);
+					instantiatedModules.remove(moduleName);
+					moduleNamesBeingEmbedded.add(moduleName);
+				}
 			}
 			
-			if (keep) {
-				embedStack.push(f);
-				instantiatedModules.remove(moduleName);
-				moduleNamesBeingEmbedded.add(moduleName);
+			while (!embedStack.isEmpty()) {
+				modulesToEmbed.add(embedStack.pop());
 			}
-		}
-		modulesToEmbed = new ArrayList<>();
-		while (!embedStack.isEmpty()) {
-			modulesToEmbed.add(embedStack.pop());
-		}
-		
-		modulesToNest = new ArrayList<>();
-		for (final String module : instantiatedModules) {
-			if (!StandardModules.isDefinedInStandardModule(module)) {
-				modulesToNest.add(new File(sourceLocation, (module + TLAConstants.Files.TLA_EXTENSION)));
+			
+			for (final String module : instantiatedModules) {
+				if (!StandardModules.isDefinedInStandardModule(module)) {
+					modulesToNest.add(new File(sourceLocation, (module + TLAConstants.Files.TLA_EXTENSION)));
+				}
 			}
 		}
 		
 		modulesToSpecifyInExtends = new HashSet<>(entireExtendsList);
-		StandardModules.filterNonStandardModulesFromSet(modulesToSpecifyInExtends);
+		if (willEmbedDependents) {
+			StandardModules.filterNonStandardModulesFromSet(modulesToSpecifyInExtends);
+		}
 		// for TLC things
 		modulesToSpecifyInExtends.add(TLAConstants.BuiltInModules.TLC);
 		// for _TE things

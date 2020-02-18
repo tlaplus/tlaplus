@@ -136,6 +136,7 @@ public class TLC {
     private File specTETLAFile;
     private MCParserResults mcParserResults;
     private MCOutputPipeConsumer mcOutputConsumer;
+    private boolean avoidMonolithSpecTECreation;
     private final AtomicBoolean waitingOnGenerationCompletion;
     
     /**
@@ -162,6 +163,7 @@ public class TLC {
 
         fpSetConfiguration = new FPSetConfiguration();
         
+        avoidMonolithSpecTECreation = false;
         waitingOnGenerationCompletion = new AtomicBoolean(false);
 	}
 
@@ -225,6 +227,8 @@ public class TLC {
      *  				encountered during model checking; this will change
      *  				to tool mode regardless of whether '-tool' was
      *  				explicitly specified.
+     *  o -nomonolith: if generating a SpecTE, do not generate the monolith
+     *  				version
      *  o -checkpoint num: interval for check pointing (in minutes)
      *		Defaults to 30
      *  o -fpmem num: a value between 0 and 1, exclusive, representing the ratio
@@ -410,6 +414,9 @@ public class TLC {
             {
                 index++;
                 TLCGlobals.tool = true;
+            } else if (args[index].equals("-nomonolith")) {
+            	index++;
+            	avoidMonolithSpecTECreation = true;
             } else if (args[index].equals("-generateSpecTE")) {
                 index++;
             	
@@ -456,13 +463,22 @@ public class TLC {
 								mcOutFIS.close();
 								tempTLAFIS.close();
 								
-								final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
-								final TLAMonolithCreator monolithCreator
+								final TLAMonolithCreator monolithCreator;
+								if (avoidMonolithSpecTECreation) {
+									monolithCreator
+										= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
+																 mcOutputConsumer.getSourceDirectory(),
+																 mcParserResults.getAllExtendedModules());
+								} else {
+									final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
+									monolithCreator
 										= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
 																 mcOutputConsumer.getSourceDirectory(),
 																 extendedModules,
 																 mcParserResults.getAllExtendedModules(),
 																 mcParserResults.getAllInstantiatedModules());
+								}
+								
 								monolithCreator.copy();
 							}
 							
@@ -1394,6 +1410,12 @@ public class TLC {
     	sharedArguments.add(new UsageGenerator.Argument("-metadir", "path",
 														"specify the directory in which to store metadata; defaults to\n"
 															+ "SPEC-directory/states if not specified", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-nomonolith",
+														"if -generateSpecTE was specified and a SpecTE is created due\n"
+    														+ "to errors encountered, this flag specifies not to create a\n"
+															+ "monolithic SpecTE that embeds all non-Standard-Module\n"
+    														+ "dependent TLA modules - rather, include them via a\n"
+															+ "complete EXTENDS list", true));
     	sharedArguments.add(new UsageGenerator.Argument("-nowarning",
 														"disable all warnings; defaults to reporting warnings", true));
     	sharedArguments.add(new UsageGenerator.Argument("-recover", "id",
@@ -1443,9 +1465,7 @@ public class TLC {
     				+ "model values to start with a non-numeral and rerun the model check to generate a new SpecTE.");
     	tips.add("If, while checking a SpecTE created via '-generateSpecTE', you get a warning concerning\n"
 					+ "duplicate operator definitions, this is likely due to the 'monolith' specification\n"
-					+ "creation. Until a 'disable monolith creation' flag is added to TLC, provide the tool\n"
-					+ "output of your model checking to tlc2.TraceExplorer to have it generate a non-monolithic\n"
-					+ "specification.");
+					+ "creation. Try re-running TLC adding the -nomonolith flag.");
     	
     	UsageGenerator.displayUsage(ToolIO.out, "TLC", TLCGlobals.versionOfTLC,
     								"provides model checking and simulation of TLA+ specifications",

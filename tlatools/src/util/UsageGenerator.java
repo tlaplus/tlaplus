@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -315,6 +316,29 @@ public class UsageGenerator {
 
 		public String getDescription() {
 			return description;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(argumentName);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			
+			if (obj == null) {
+				return false;
+			}
+			
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			
+			final Argument other = (Argument) obj;
+			return Objects.equals(argumentName, other.argumentName);
 		}
 	}
 }
