@@ -13,6 +13,7 @@ import java.util.Map;
 
 import tlc2.output.EC;
 import tlc2.output.TeeOutputStream;
+import tlc2.tool.fp.FPSetFactory;
 
 /**
  * Originally i was attempting to run the model check in the same JVM in which {@link TraceExplorer} was invoked (and 
@@ -29,16 +30,14 @@ import tlc2.output.TeeOutputStream;
  * In light of that, i've written this class to spin off a new JVM for the model check.
  */
 class TLCRunner {
+	static List<String> JVM_ARGUMENTS;
 	private static final String TLC_CLASS = TLC.class.getName();
-	private static List<String> JVM_ARGUMENTS;
 	
 	static {
 		JVM_ARGUMENTS = new ArrayList<>();
-		JVM_ARGUMENTS.add("-XX:MaxDirectMemorySize=5120m");
-		JVM_ARGUMENTS.add("-Xmx2560m");
 		JVM_ARGUMENTS.add("-XX:+UseParallelGC");
 		JVM_ARGUMENTS.add("-Dfile.encoding=UTF-8");
-		JVM_ARGUMENTS.add("-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet");
+		JVM_ARGUMENTS.add("-Dtlc2.tool.fp.FPSet.impl=" + FPSetFactory.getImplementationDefault());
 	}
 	
 	

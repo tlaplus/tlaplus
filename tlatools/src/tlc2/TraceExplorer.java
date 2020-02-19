@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,10 +52,11 @@ public class TraceExplorer {
 	private static final String QUASI_REPL_PARAMETER_NAME = "-replBis";
 	private static final String TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME = "-traceExpressions";
 
-    private static final String EXPRESSIONS_FILE_PARAMETER_NAME = "-expressionsFile=";
-    private static final String MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME = "-tlcArguments=";
+    private static final String EXPRESSIONS_FILE_PARAMETER_NAME = "-expressionsFile";
+    private static final String MODEL_CHECK_JVM_ARGUMENTS_PARAMETER_NAME = "-jvmArguments";
+    private static final String MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME = "-tlcArguments";
 
-    private static final String SOURCE_DIR_PARAMETER_NAME = "-source=";
+    private static final String SOURCE_DIR_PARAMETER_NAME = "-source";
     private static final String GENERATE_SPEC_OVERWRITE_PARAMETER_NAME = "-overwrite";
     
     static final String SPEC_TE_INIT_ID = "_SpecTEInit";
@@ -223,17 +225,18 @@ public class TraceExplorer {
 					continue;
 				}
 				
-				if (nextArg.startsWith(SOURCE_DIR_PARAMETER_NAME)) {
-					final String runDirectory = nextArg.substring(SOURCE_DIR_PARAMETER_NAME.length());
+				if (SOURCE_DIR_PARAMETER_NAME.equals(nextArg)) {
+					index++;
+					final String runDirectory = args[index++];
             		final File f = new File(runDirectory);
             		
             		if (!f.exists()) {
-            			printErrorMessage("Error: specified source directory does not exist.");
+            			printErrorMessage("specified source directory does not exist.");
             			return;
             		}
             		
             		if (!f.isDirectory()) {
-            			printErrorMessage("Error: specified source directory is not a directory.");
+            			printErrorMessage("specified source directory is not a directory.");
             			return;
             		}
             		specGenerationSourceDirectory = f;
@@ -243,12 +246,19 @@ public class TraceExplorer {
 					overwriteGeneratedFiles = true;
 					
 					index++;
-				} else if (nextArg.startsWith(EXPRESSIONS_FILE_PARAMETER_NAME)) {
-					expressionsSourceFilename = nextArg.substring(EXPRESSIONS_FILE_PARAMETER_NAME.length());
-					
+				} else if (EXPRESSIONS_FILE_PARAMETER_NAME.equals(nextArg)) {
 					index++;
-				} else if (nextArg.startsWith(MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME)) {
-					final String argumentList = nextArg.substring(MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME.length());
+
+					expressionsSourceFilename = args[index++];
+				} else if (MODEL_CHECK_JVM_ARGUMENTS_PARAMETER_NAME.equals(nextArg)) {
+					index++;
+
+					final String argumentList = args[index++];
+					final String[] arguments = argumentList.split(" ");
+					TLCRunner.JVM_ARGUMENTS.addAll(Arrays.asList(arguments));
+				} else if (MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME.equals(nextArg)) {
+					index++;
+					final String argumentList = args[index++];
 					final String[] arguments = argumentList.split(" ");
 					int argIndex = 0;
 					
@@ -266,8 +276,6 @@ public class TraceExplorer {
 						
 						argIndex++;
 					}
-					
-					index++;
 				} else {
     				consumedAdditionalParameters = false;
 				}
@@ -278,7 +286,7 @@ public class TraceExplorer {
 		
 		if (RunMode.TRACE_EXPLORATION.equals(runMode) || RunMode.QUASI_REPL.equals(runMode)) {
 			if (expressionsSourceFilename == null) {
-    			printErrorMessage("Error: no expressions file specified.");
+    			printErrorMessage("no expressions file specified.");
 				runMode = null;
 				return;
 			}
@@ -291,9 +299,14 @@ public class TraceExplorer {
 			} else if (absoluteFile.exists()) {
 				f = absoluteFile;
 			} else {
-				printErrorMessage("Error: an expressions file could be found at neither "
-										+ sourceDirFile.getAbsolutePath()
-										+ " nor " + absoluteFile.getAbsolutePath());
+				final String errorMessageSuffix;
+				if (sourceDirFile.getAbsolutePath().equals(absoluteFile.getAbsolutePath())) {
+					errorMessageSuffix = sourceDirFile.getAbsolutePath();
+				} else {
+					errorMessageSuffix = sourceDirFile.getAbsolutePath()
+													+ " nor " + absoluteFile.getAbsolutePath();
+				}
+				printErrorMessage("an expressions file could not be found at " + errorMessageSuffix);
 				runMode = null;
 				return;
 			}
@@ -303,11 +316,15 @@ public class TraceExplorer {
 				try (final BufferedReader br = new BufferedReader(new FileReader(f))) {
 					String line;
 					while ((line = br.readLine()) != null) {
-						expressions.add(line);
+						final String trimmed = line.trim();
+						
+						if (trimmed.length() > 0) {
+							expressions.add(trimmed);
+						}
 					}
 				}
 			} catch (final IOException e) {
-				printErrorMessage("Error: encountered an exception reading from expressions file "
+				printErrorMessage("encountered an exception reading from expressions file "
 									+ f.getAbsolutePath() + " :: " + e.getMessage());
 				runMode = null;
 				return;
@@ -599,7 +616,7 @@ public class TraceExplorer {
     		filename = specGenerationOriginalSpecName + TLAConstants.Files.OUTPUT_EXTENSION;
     		final File outputFile = new File(specGenerationSourceDirectory, filename);
     		if (!outputFile.exists()) {
-    			printErrorMessage("Error: source directory (" + specGenerationSourceDirectory + ") does not contain "
+    			printErrorMessage("source directory (" + specGenerationSourceDirectory + ") does not contain "
     					+ filename);
     			
     			runMode = null;
@@ -611,7 +628,7 @@ public class TraceExplorer {
 			filename = specGenerationOriginalSpecName + TLAConstants.Files.TLA_EXTENSION;
 			final File tlaFile = new File(specGenerationSourceDirectory, filename);
 			if (!tlaFile.exists()) {
-				printErrorMessage("Error: source directory (" + specGenerationSourceDirectory + ") does not contain "
+				printErrorMessage("source directory (" + specGenerationSourceDirectory + ") does not contain "
 						+ filename);
 				
 				runMode = null;
@@ -621,7 +638,7 @@ public class TraceExplorer {
 			filename = specGenerationOriginalSpecName + TLAConstants.Files.CONFIG_EXTENSION;
 			final File configFile = new File(specGenerationSourceDirectory, filename);
 			if (!configFile.exists()) {
-				printErrorMessage("Error: source directory (" + specGenerationSourceDirectory + ") does not contain "
+				printErrorMessage("source directory (" + specGenerationSourceDirectory + ") does not contain "
 						+ filename);
 				
 				runMode = null;
@@ -634,7 +651,7 @@ public class TraceExplorer {
 							(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION));
 
 					if (specTETLA.exists()) {
-						printErrorMessage("Error: specified source directory already contains " + specTETLA.getName()
+						printErrorMessage("specified source directory already contains " + specTETLA.getName()
 								+ "; specify '" + GENERATE_SPEC_OVERWRITE_PARAMETER_NAME + "' to overwrite.");
 
 						runMode = null;
@@ -647,7 +664,7 @@ public class TraceExplorer {
 								(TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION));
 
 					if (teTLA.exists()) {
-						printErrorMessage("Error: specified source directory already contains " + teTLA.getName()
+						printErrorMessage("specified source directory already contains " + teTLA.getName()
 								+ "; specify '" + GENERATE_SPEC_OVERWRITE_PARAMETER_NAME + "' to overwrite.");
 
 						runMode = null;
@@ -671,6 +688,20 @@ public class TraceExplorer {
     
     private static void printUsageAndExit() {
     	final List<List<UsageGenerator.Argument>> commandVariants = new ArrayList<>();
+    	final UsageGenerator.Argument expressionFile
+				= new UsageGenerator.Argument(EXPRESSIONS_FILE_PARAMETER_NAME, "file",
+											 "expressions specified, one per line if being used in conjunction\n"
+													+ "with " + TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME
+													+ " and just one if being used with "
+													+ QUASI_REPL_PARAMETER_NAME
+													+ "\nthis file must be in the source "
+													+ "directory or specified by\nfull path", false);
+    	final UsageGenerator.Argument jvmArguments
+				= new UsageGenerator.Argument(MODEL_CHECK_JVM_ARGUMENTS_PARAMETER_NAME,
+											  "\"-Xmx3072m -Xms512m\"",
+											  "these arguments will be passed on to the TLC JVM when performing\n"
+													+ "the model check",
+											  true);
     	final UsageGenerator.Argument overwrite
 	    		= new UsageGenerator.Argument(GENERATE_SPEC_OVERWRITE_PARAMETER_NAME,
 	    									  "if specified, and if a SpecTE, or TE, file pair already exists,\n"
@@ -682,6 +713,11 @@ public class TraceExplorer {
 													+ "checking; defaults to CWD. This will be ignored if no SpecName\n"
 													+ "has been specified (and so tool output will be expected to\n"
 													+ "arrive on stdin)", true);
+    	final UsageGenerator.Argument spec
+				= new UsageGenerator.Argument("SpecName",
+											  "if no spec name is specified, tool output will be expected to arrive\n"
+													+ "via stdin and any " + SOURCE_DIR_PARAMETER_NAME
+													+ " definition will be ignored.", false);
     	final UsageGenerator.Argument tlcArguments
 				= new UsageGenerator.Argument(MODEL_CHECK_TLC_ARGUMENTS_PARAMETER_NAME,
 											  "\"-some -other 2 -tlc arguments\"",
@@ -689,21 +725,9 @@ public class TraceExplorer {
 													+ "model check; -config, -tool, and -metadir will be ignored,\n"
 													+ "if specified",
 											  true);
-    	final UsageGenerator.Argument spec
-    			= new UsageGenerator.Argument("SpecName",
-    										  "if no spec name is specified, tool output will be expected to arrive\n"
-    												+ "via stdin and any " + SOURCE_DIR_PARAMETER_NAME
-    												+ " definition will be ignored.", false);
-    	final UsageGenerator.Argument expressionFile
-    			= new UsageGenerator.Argument(EXPRESSIONS_FILE_PARAMETER_NAME, "file",
-											 "expressions specified, one per line if being used in conjunction\n"
-    												+ "with " + TRACE_EXPRESSIONS_FUNCTION_PARAMETER_NAME
-    												+ " and just one if being used with "
-    												+ QUASI_REPL_PARAMETER_NAME
-    												+ "\nthis file must be in the source "
-													+ "directory or specified by\nfull path", false);
     	
     	final List<UsageGenerator.Argument> traceExpressionsVariant = new ArrayList<>();
+    	traceExpressionsVariant.add(jvmArguments);
     	traceExpressionsVariant.add(overwrite);
     	traceExpressionsVariant.add(sourceDirectory);
     	traceExpressionsVariant.add(tlcArguments);
@@ -721,6 +745,7 @@ public class TraceExplorer {
 
     	
     	final List<UsageGenerator.Argument> replBisVariant = new ArrayList<>();
+    	replBisVariant.add(jvmArguments);
     	replBisVariant.add(tlcArguments);
     	replBisVariant.add(new UsageGenerator.Argument(
     												QUASI_REPL_PARAMETER_NAME,
@@ -735,8 +760,8 @@ public class TraceExplorer {
     	generateSpecVariant.add(spec);
     	generateSpecVariant.add(new UsageGenerator.Argument(
     												GENERATE_SPEC_FUNCTION_PARAMETER_NAME,
-    												"generate a SpecTE tla/cfg pair from a model checking\n"
-    													+ "tool mode output", false));
+    												"generate a SpecTE tla/cfg pair from a model checking tool mode\n"
+    													+ "output", false));
     	commandVariants.add(generateSpecVariant);
 
     	
@@ -745,15 +770,15 @@ public class TraceExplorer {
     	prettyPrintVariant.add(spec);
     	prettyPrintVariant.add(new UsageGenerator.Argument(
     												PRETTY_PRINT_FUNCTION_PARAMETER_NAME,
-    												"pretty print the error states of a model checking\n"
-    													+ "tool mode output", false));
+    												"pretty print the error states of a model checking tool mode\n"
+    													+ "output", false));
     	commandVariants.add(prettyPrintVariant);
 
     	
     	UsageGenerator.displayUsage(ToolIO.out, "TraceExplorer", TLCGlobals.versionOfTLC,
     								"a tool for working with TLC tool output and exploring trace expressions",
     								Messages.getString("TraceExplorerDescription"),
-    								commandVariants, null, '=');
+    								commandVariants, null, ' ');
     	
     	System.exit(-1);
     }
