@@ -223,9 +223,8 @@ public class TLC {
      *  o -generateSpecTE: will generate SpecTE assets if error-states are
      *  				encountered during model checking; this will change
      *  				to tool mode regardless of whether '-tool' was
-     *  				explicitly specified.
-     *  o -nomonolith: if generating a SpecTE, do not generate the monolith
-     *  				version
+     *  				explicitly specified; add on 'nomonolith' to not
+     *  				embed the dependencies in the SpecTE
      *  o -checkpoint num: interval for check pointing (in minutes)
      *		Defaults to 30
      *  o -fpmem num: a value between 0 and 1, exclusive, representing the ratio
@@ -411,13 +410,15 @@ public class TLC {
             {
                 index++;
                 TLCGlobals.tool = true;
-            } else if (args[index].equals("-nomonolith")) {
-            	index++;
-            	avoidMonolithSpecTECreation = true;
             } else if (args[index].equals("-generateSpecTE")) {
                 index++;
             	
                 TLCGlobals.tool = true;
+                
+                if (args[index].equals("nomonolith")) {
+                	index++;
+                	avoidMonolithSpecTECreation = true;
+                }
 				try {
 					temporaryMCOutputLogFile = File.createTempFile("mcout_", ".out");
 					temporaryMCOutputLogFile.deleteOnExit();
@@ -544,7 +545,7 @@ public class TLC {
             } else if (args[index].equals("-dump"))
             {
                 index++; // consume "-dump".
-                if (index + 1 < args.length && args[index].startsWith("dot"))
+                if (((index + 1) < args.length) && args[index].startsWith("dot"))
                 {
                 	final String dotArgs = args[index].toLowerCase();
                 	index++; // consume "dot...".
@@ -1381,7 +1382,13 @@ public class TLC {
     	sharedArguments.add(new UsageGenerator.Argument("-debug",
 														"print various debugging information - not for production use\n",
 														true));
-    	sharedArguments.add(new UsageGenerator.Argument("-dump", "file", "dump all states into the specified file", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-dump", "file",
+    													"dump all states into the specified file; this parameter takes\n"
+    														+ "optional parameters for dot graph generation. Specifying\n"
+    														+ "'dot' allows further options, comma delimited, of zero\n"
+    														+ "or more of 'actionlabels', 'colorize', 'snapshot' to be\n"
+    														+ "specified before the '.dot'-suffixed filename", true,
+    													"dot actionlabels,colorize,snapshot"));
     	sharedArguments.add(new UsageGenerator.Argument("-fp", "N",
     													"use the Nth irreducible polynomial from the list stored\n"
     														+ "in the class FP64", true));
@@ -1392,11 +1399,16 @@ public class TLC {
 														"a value in (0.0,1.0) representing the ratio of total\n"
 															+ "physical memory to devote to storing the fingerprints\n"
 															+ "of found states; defaults to 0.25", true));
-    	sharedArguments.add(new UsageGenerator.Argument("-generateSpecTE",
+    	sharedArguments.add(new UsageGenerator.Argument("-generateSpecTE", null,
 														"if errors are encountered during model checking, generate\n"
-															+ "a SpecTE tla/cfg file pair which encapsulates Init-\n"
-															+ "Next definitions to specify the state conditions\n"
-															+ "of the error state; this enables 'tool' mode", true));
+															+ "a SpecTE tla/cfg file pair which encapsulates Init-Next\n"
+															+ "definitions to specify the state conditions of the error\n"
+															+ "state; this enables 'tool' mode. The generated SpecTE\n"
+															+ "will include tool output as well as all non-Standard-\n"
+															+ "Modules dependencies embeded in the module. To prevent\n"
+															+ "the embedding of dependencies, add the parameter\n"
+															+ "'nomonolith' to this declaration", true,
+															"nomonolith"));
     	sharedArguments.add(new UsageGenerator.Argument("-gzip",
 														"control if gzip is applied to value input/output streams;\n"
 															+ "defaults to 'off'", true));
@@ -1407,12 +1419,6 @@ public class TLC {
     	sharedArguments.add(new UsageGenerator.Argument("-metadir", "path",
 														"specify the directory in which to store metadata; defaults to\n"
 															+ "SPEC-directory/states if not specified", true));
-    	sharedArguments.add(new UsageGenerator.Argument("-nomonolith",
-														"if -generateSpecTE was specified and a SpecTE is created due\n"
-    														+ "to errors encountered, this flag specifies not to create a\n"
-															+ "monolithic SpecTE that embeds all non-Standard-Module\n"
-    														+ "dependent TLA modules - rather, include them via a\n"
-															+ "complete EXTENDS list", true));
     	sharedArguments.add(new UsageGenerator.Argument("-nowarning",
 														"disable all warnings; defaults to reporting warnings", true));
     	sharedArguments.add(new UsageGenerator.Argument("-recover", "id",
@@ -1451,8 +1457,14 @@ public class TLC {
     														+ "random long pulled from a pseudo-RNG", true));
     	simulateVariant.add(new UsageGenerator.Argument("-aril", "num",
 														"adjust the seed for random simulation; defaults to 0", true));
-    	simulateVariant.add(new UsageGenerator.Argument("-simulate",
-													  	"run in simulation mode", false));
+    	simulateVariant.add(new UsageGenerator.Argument("-simulate", null,
+													  	"run in simulation mode; optional parameters may be specified\n"
+	    													+ "comma delimited: 'num=X' where X is the maximum number of\n"
+	    													+ "total traces to generate and/or 'file=Y' where Y is the\n"
+	    													+ "absolute-pathed prefix for trace file modules to be written\n"
+	    													+ "by the simulation workers; for example Y='/a/b/c/tr' would\n"
+	    													+ "produce, e.g, '/a/b/c/tr_1_15'", false,
+	    												"file=X,num=Y"));
     	commandVariants.add(simulateVariant);
 
     	
@@ -1465,7 +1477,8 @@ public class TLC {
     				+ "model values to start with a non-numeral and rerun the model check to generate a new SpecTE.");
     	tips.add("If, while checking a SpecTE created via '-generateSpecTE', you get a warning concerning\n"
 					+ "duplicate operator definitions, this is likely due to the 'monolith' specification\n"
-					+ "creation. Try re-running TLC adding the -nomonolith flag.");
+					+ "creation. Try re-running TLC adding the 'nomonolith' option to the '-generateSpecTE'\n"
+					+ "parameter.");
     	
     	UsageGenerator.displayUsage(ToolIO.out, "TLC", TLCGlobals.versionOfTLC,
     								"provides model checking and simulation of TLA+ specifications",

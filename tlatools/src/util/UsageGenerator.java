@@ -166,19 +166,30 @@ public class UsageGenerator {
 			}
 			
 			for (final Argument arg : nonShortArguments) {
-				sb.append(" [").append(markupWord(("-" + arg.getDashlessArgumentName()), true)).append(']');
+				sb.append(" [").append(markupWord(("-" + arg.getDashlessArgumentName()), true));
+				if (arg.hasSubOptions()) {
+					sb.append(" [").append(arg.getSubOptions()).append("]");
+				}
+				sb.append(']');
 			}
 		}
 		
 		if (optionalDoubleDashValueless.size() > 0) {
 			for (final Argument arg : optionalDoubleDashValueless) {
-				sb.append(" [").append(markupWord(arg.getArgumentName(), true)).append(']');
+				sb.append(" [").append(markupWord(arg.getArgumentName(), true));
+				if (arg.hasSubOptions()) {
+					sb.append(" [").append(arg.getSubOptions()).append("]");
+				}
+				sb.append(']');
 			}
 		}
 		
 		if (optionalValued.size() > 0) {
 			for (final Argument arg : optionalValued) {
 				sb.append(" [").append(markupWord(arg.getArgumentName(), true)).append(valuedArgumentsSeparator);
+				if (arg.hasSubOptions()) {
+					sb.append("[").append(arg.getSubOptions()).append("] ");
+				}
 				sb.append(markupWord(arg.getSampleValue(), false)).append(']');
 			}
 		}
@@ -193,6 +204,9 @@ public class UsageGenerator {
 		if (requiredValueless.size() > 0) {
 			for (final Argument arg : requiredValueless) {
 				sb.append(" ").append(arg.getArgumentName());
+				if (arg.hasSubOptions()) {
+					sb.append(" [").append(arg.getSubOptions()).append("]");
+				}
 			}
 		}
 		
@@ -238,6 +252,7 @@ public class UsageGenerator {
 		private final String sampleValue;
 		private final String description;
 		private final boolean optional;
+		private final String subOptions;
 		
 		/**
 		 * This calls {@code this(key, optionDescription, false);}
@@ -262,10 +277,16 @@ public class UsageGenerator {
 		
 		public Argument(final String key, final String exampleValue, final String optionDescription,
 						final boolean isOptional) {
+			this(key, exampleValue, optionDescription, isOptional, null);
+		}
+		
+		public Argument(final String key, final String exampleValue, final String optionDescription,
+						final boolean isOptional, final String concatenatedSuboptions) {
 			argumentName = key;
 			sampleValue = exampleValue;
 			description = optionDescription;
 			optional = isOptional;
+			subOptions = concatenatedSuboptions;
 		}
 		
 		public boolean isOptional() {
@@ -293,6 +314,10 @@ public class UsageGenerator {
 		public boolean isShortArgument() {
 			return ((isDashArgument() && (argumentName.length() == 2)) || (argumentName.length() == 1));
 		}
+		
+		public boolean hasSubOptions() {
+			return (subOptions != null);
+		}
 
 		public String getArgumentName() {
 			return argumentName;
@@ -316,6 +341,10 @@ public class UsageGenerator {
 
 		public String getDescription() {
 			return description;
+		}
+		
+		public String getSubOptions() {
+			return subOptions;
 		}
 
 		@Override
