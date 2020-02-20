@@ -27,8 +27,11 @@ public interface FilenameToStream
 	 */
 	@SuppressWarnings("serial")
 	public static class TLAFile extends File {
+		// The following regex is concerned with determining whether the provided 'parent' string to our
+		//	parent/child constructor looks like the start of a legal absolute file path potentially including
+		//	a drive letter.
 		private static final String ROOT_PATH_REGEX
-								= "^([A-Z]+:)?" + ((File.separatorChar == '\\') ? "\\\\" : File.separator);
+								= "^([a-zA-Z]+:)?" + ((File.separatorChar == '\\') ? "\\\\" : File.separator);
 		private static final Pattern ROOT_PATH_PATTERN = Pattern.compile(ROOT_PATH_REGEX);
 		
 		
