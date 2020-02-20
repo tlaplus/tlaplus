@@ -3,6 +3,7 @@
 package util;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 
 /**
@@ -24,7 +25,13 @@ public interface FilenameToStream
 	 * SimpleFilenameToStream). Thus, capture this information at module load
 	 * time when it is known where a module was loaded from.
 	 */
+	@SuppressWarnings("serial")
 	public static class TLAFile extends File {
+		private static final String ROOT_PATH_REGEX
+								= "^([A-Z]+:)?" + ((File.separatorChar == '\\') ? "\\\\" : File.separator);
+		private static final Pattern ROOT_PATH_PATTERN = Pattern.compile(ROOT_PATH_REGEX);
+		
+		
 		private final boolean isLibraryModule;
 		private transient final FilenameToStream resolver;
 
@@ -39,7 +46,10 @@ public interface FilenameToStream
 		}
 
 		public TLAFile(String parent, String child, FilenameToStream fts) {
-			super(parent, child);
+			super(parent,
+				  ((ROOT_PATH_PATTERN.matcher(parent).find() && child.startsWith(parent))
+						  ? child.substring(parent.length())
+					      : child));
 			this.isLibraryModule = false;
 			this.resolver = fts;
 		}
