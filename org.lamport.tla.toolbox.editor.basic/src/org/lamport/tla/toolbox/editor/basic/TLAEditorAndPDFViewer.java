@@ -24,6 +24,7 @@ import org.eclipse.ui.INavigationLocation;
 import org.eclipse.ui.INavigationLocationProvider;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -62,6 +63,7 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
     /* (non-Javadoc)
      * @see org.eclipse.ui.forms.editor.FormEditor#addPages()
      */
+    @Override
     protected void addPages()
     {
         try
@@ -71,7 +73,16 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
             // This makes them more obvious to the user.
             if (getContainer() instanceof CTabFolder)
             {
-                ((CTabFolder) getContainer()).setTabPosition(SWT.TOP);
+                final CTabFolder cTabFolder = (CTabFolder) getContainer();
+				cTabFolder.setTabPosition(SWT.TOP);
+				
+				// If there is only the editor but no PDF shown next to it, the tab bar of the
+				// ctabfolder just wastes screen estate.
+				if (cTabFolder.getItemCount() <= 1) {
+					cTabFolder.setTabHeight(0);
+				} else {
+					cTabFolder.setTabHeight(-1);
+				}
             }
 
             tlaEditor = new TLAEditor();
@@ -83,9 +94,43 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
 
         } catch (PartInitException e)
         {
+        	// I hope you don't choke swallowing all those exceptions...
             e.printStackTrace();
         }
     }
+    
+	
+	@Override
+	public int addPage(IFormPage page) throws PartInitException {
+		final int idx = super.addPage(page);
+		
+		if (getContainer() instanceof CTabFolder) {
+			final CTabFolder cTabFolder = (CTabFolder) getContainer();
+			// If there is only the editor but no PDF shown next to it, the tab bar of the
+			// ctabfolder just wastes screen estate.
+			if (cTabFolder.getItemCount() <= 1) {
+				cTabFolder.setTabHeight(0);
+			} else {
+				cTabFolder.setTabHeight(-1);
+			}
+		}
+		return idx;
+	}
+
+	@Override
+	public void removePage(int pageIndex) {
+		super.removePage(pageIndex);
+		if (getContainer() instanceof CTabFolder) {
+			final CTabFolder cTabFolder = (CTabFolder) getContainer();
+			// If there is only the editor but no PDF shown next to it, the tab bar of the
+			// ctabfolder just wastes screen estate.
+			if (cTabFolder.getItemCount() <= 1) {
+				cTabFolder.setTabHeight(0);
+			} else {
+				cTabFolder.setTabHeight(-1);
+			}
+		}
+	}
 
     /* (non-Javadoc)
      * @see org.eclipse.ui.forms.editor.FormEditor#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
@@ -105,7 +150,7 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
 					// MAK 04/2019: Strip off filename extension to align with Toolbox's Spec
 					// Explorer which doesn't show the extension either.  The Toolbox only has
 					// two editors (TLA+ specs and TLC models).  Showing the extension thus
-					// provides little value to users.  Aslo the editor description shows the
+					// provides little value to users.  Also, the editor description shows the
 					// full path to the actual file on disk right below where the part name
 					// is shown.
                     this.setPartName(file.getName().replaceFirst(".tla$", ""));
