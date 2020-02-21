@@ -90,8 +90,6 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
             addPage(tlaEditorIndex, tlaEditor, tlaEditorInput);
             setPageText(tlaEditorIndex, "TLA Module");
 
-            setDescription();
-
         } catch (PartInitException e)
         {
         	// I hope you don't choke swallowing all those exceptions...
@@ -283,7 +281,6 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
                         {
                             FileEditorInput fin = (FileEditorInput) newInput;
                             setPartName(fin.getFile().getName());
-                            setDescription();
                         }
                     }
                 }
@@ -348,26 +345,24 @@ public class TLAEditorAndPDFViewer extends FormEditor implements INavigationLoca
     {
         return tlaEditor;
     }
+    
+	@Override
+	public void setFocus() {
+		super.setFocus();
 
-    /**
-     * Sets the text that appears above the text viewer.
-     * Currently, this is the full file path.
-     */
-    private void setDescription()
-    {
-        IEditorInput input = getEditorInput();
-        if (input != null)
-        {
-            if (input instanceof FileEditorInput)
-            {
-                FileEditorInput fin = (FileEditorInput) input;
-                setContentDescription(fin.getPath().toOSString());
-            } else
-            {
-                setContentDescription(input.getName());
-            }
-        }
-    }
+		// Show the OS's location of this spec in the Toolbox's status line (bottom
+		// left). Before, this was shown in this editor's content description but this
+		// wastes too much space.
+		final IEditorInput input = getEditorInput();
+		if (input != null) {
+			if (input instanceof FileEditorInput) {
+				FileEditorInput fin = (FileEditorInput) input;
+				tlaEditor.setStatusMessage(String.format("%s [ %s ]", getPartName(), fin.getPath().toOSString()));
+			} else {
+				tlaEditor.setStatusMessage(input.getName());
+			}
+		}
+	}
     
     /**
      * Sets the TLA module editor as the active
