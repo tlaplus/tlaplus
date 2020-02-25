@@ -22,6 +22,7 @@ import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
 
+@SuppressWarnings("serial")
 public class SetEnumValue extends EnumerableValue
 implements Enumerable, Reducible {
   public ValueVec elems;         // the elements of the set

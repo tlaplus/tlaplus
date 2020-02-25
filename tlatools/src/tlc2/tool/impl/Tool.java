@@ -7,6 +7,7 @@
 package tlc2.tool.impl;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 
 import tla2sany.parser.SyntaxTreeNode;
@@ -21,6 +22,7 @@ import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
@@ -61,8 +63,10 @@ import tlc2.value.impl.FcnLambdaValue;
 import tlc2.value.impl.FcnParams;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.LazyValue;
+import tlc2.value.impl.MVPerm;
 import tlc2.value.impl.MVPerms;
 import tlc2.value.impl.MethodValue;
+import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.OpLambdaValue;
 import tlc2.value.impl.OpValue;
 import tlc2.value.impl.RecordValue;
@@ -3206,45 +3210,60 @@ public abstract class Tool
     if (!(fcns instanceof Enumerable) || !(fcns instanceof SetEnumValue)) {
       Assert.fail("The symmetry operator must specify a set of functions.");
     }
-    // In the case where the config defines more than one set which is symmetric, they will pass through the
-    //		enumerable size() check even if they are single element sets
-    final StringBuilder cardinalityOneSetList = new StringBuilder();
-    final SetEnumValue sev = (SetEnumValue)fcns;
-    final List<Value> values = sev.elements().all();
-    final int valuesCount = values.size();
-    final ExprOrOpArgNode[] operands = ((OpApplNode)opDef.getBody()).getArgs();
-    int offenderCount = 0;
-    for (int i = 0; i < valuesCount; i++) {
-    	final Value v = values.get(0);
+    final List<Value> values = ((SetEnumValue)fcns).elements().all();
+    for (final Value v : values) {
     	if (!(v instanceof FcnRcdValue)) {
     		Assert.fail("The symmetry values must be function records.");
     	}
-    	
-    	if (((FcnRcdValue)v).nonNormalizedSize() < 2) {
-      	    final ExprOrOpArgNode operand = operands[i];
-      	    final SyntaxTreeNode tn = (SyntaxTreeNode)operand.getTreeNode();
-      	    // If this is part of a union of symmetry sets, the image will contain the permutations operator
-      	    final String image = tn.getHumanReadableImage();
-      	    final String constantAlias;
-      	    if (image.startsWith(TLAConstants.BuiltInOperators.PERMUTATIONS)) {
-      		  final int imageLength = image.length();
-      		  constantAlias = image.substring((TLAConstants.BuiltInOperators.PERMUTATIONS.length() + 1),
-      				  						  (imageLength - 1));
-      	    } else {
-      		  constantAlias = image;
-      	    }
-      	    final String specDefinitionName = this.config.getOverridenSpecNameForConfigName(constantAlias);
-      	    
-      	    if (specDefinitionName != null) {
-      	      if (offenderCount > 0) {
-        		  cardinalityOneSetList.append(", and ");
-      	      }
-      	      
-      	      cardinalityOneSetList.append(specDefinitionName);
-      	      offenderCount++;
-      	    }
+    }
+    final ExprOrOpArgNode[] argNodes = ((OpApplNode)opDef.getBody()).getArgs();
+    // In the case where the config defines more than one set which is symmetric, they will pass through the
+    //		enumerable size() check even if they are single element sets
+    final StringBuilder cardinalityOneSetList = new StringBuilder();
+    int offenderCount = 0;
+    if (argNodes.length == values.size()) {
+    	// We have as many values as we have permuted sets => we have all 1-element sets
+    	//		else, we may still have one or more 1-element sets which we will catch below.
+    	for (final ExprOrOpArgNode node : argNodes) {
+			addToOneSizedSymmetrySetList(node, cardinalityOneSetList);
+			offenderCount++;
     	}
     }
+    
+    final IMVPerm[] subgroup;
+    if (offenderCount == 0) {
+        subgroup = MVPerms.permutationSubgroup((Enumerable)fcns);
+        final HashSet<ModelValue> subgroupMembers = new HashSet<>();
+        for (final IMVPerm imvp : subgroup) {
+        	if (imvp instanceof MVPerm) { // should always be the case
+        		subgroupMembers.addAll(((MVPerm)imvp).getAllModelValues());
+        	}
+        }
+        for (final ExprOrOpArgNode node : argNodes) {
+        	final SetEnumValue enumValue = getSetEnumValueFromArgumentNode(node);
+        	
+        	if (enumValue != null) {
+        		final ValueEnumeration ve = enumValue.elements();
+        		
+        		boolean found = false;
+        		Value v;
+        		while ((v = ve.nextElement()) != null) {
+        			if ((v instanceof ModelValue) && subgroupMembers.contains(v)) {
+        				found = true;
+        				break;
+        			}
+        		}
+        		
+        		if (!found) {
+    				addToOneSizedSymmetrySetList(node, cardinalityOneSetList);
+    				offenderCount++;
+        		}
+        	}
+        }
+    } else {
+    	subgroup = null;
+    }
+    
     if (offenderCount > 0) {
       final String plurality = (offenderCount > 1) ? "s" : "";
       final String antiPlurality = (offenderCount > 1) ? "" : "s";
@@ -3253,7 +3272,68 @@ public abstract class Tool
       Assert.fail(EC.TLC_SYMMETRY_SET_TOO_SMALL,
     		  	  new String[] { plurality, cardinalityOneSetList.toString(), toHaveConjugation, antiPlurality });
     }
-    return MVPerms.permutationSubgroup((Enumerable)fcns);
+    
+    return subgroup;
+  }
+  
+  /**
+   * Teases the original spec name for the set out of node and appends it to the {@code StringBuilder} instance.
+   */
+  private void addToOneSizedSymmetrySetList(final ExprOrOpArgNode node, final StringBuilder cardinalityOneSetList) {
+		final SyntaxTreeNode tn = (SyntaxTreeNode)node.getTreeNode();
+		final String image = tn.getHumanReadableImage();
+		final String alias;
+	    if (image.startsWith(TLAConstants.BuiltInOperators.PERMUTATIONS)) {
+		  final int imageLength = image.length();
+		  alias = image.substring((TLAConstants.BuiltInOperators.PERMUTATIONS.length() + 1),
+				  						  (imageLength - 1));
+	    } else {
+	    	alias = image;
+	    }
+		final String specDefinitionName = this.config.getOverridenSpecNameForConfigName(alias);
+		final String displayDefinition = (specDefinitionName != null) ? specDefinitionName : alias;
+		
+		if (cardinalityOneSetList.length() > 0) {
+			cardinalityOneSetList.append(", and ");
+		}
+
+		cardinalityOneSetList.append(displayDefinition);
+  }
+  
+  /**
+   * @param node
+   * @return if the node represents a permutation, this will return the {@link SetEnumValue} instance contains its
+   * 					model values
+   */
+  private SetEnumValue getSetEnumValueFromArgumentNode(final ExprOrOpArgNode node) {
+	  if (node instanceof OpApplNode) {
+		  final OpApplNode permutationNode = (OpApplNode)node;
+		  if (permutationNode.getOperator() instanceof OpDefNode) {
+			  final OpDefNode operator = (OpDefNode)permutationNode.getOperator();
+			  if (TLAConstants.BuiltInOperators.PERMUTATIONS.equals(operator.getName().toString())) {
+				  final ExprOrOpArgNode[] operands = permutationNode.getArgs();
+				  if ((operands.length == 1)
+						  && (operands[0] instanceof OpApplNode)
+						  && (((OpApplNode)operands[0]).getOperator() instanceof OpDefOrDeclNode)) {
+					  final Object o = ((OpDefOrDeclNode)((OpApplNode)operands[0]).getOperator()).getToolObject(toolId);
+					  
+					  if (o instanceof SetEnumValue) {
+						  return (SetEnumValue)o;
+					  } else if (o instanceof WorkerValue) {
+						  // If TLC was started with a -workers N specification, N > 1, o will be a WorkerValue instance
+						  final WorkerValue wv = (WorkerValue)o;
+						  final Object unwrapped = WorkerValue.mux(wv);
+						  
+						  if (unwrapped instanceof SetEnumValue) {
+							  return (SetEnumValue)unwrapped;
+						  }
+					  }
+				  }
+			  }
+		  }
+	  }
+
+	  return null;
   }
 
   @Override

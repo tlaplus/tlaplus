@@ -5,6 +5,9 @@
 
 package tlc2.value.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tlc2.value.IMVPerm;
 import tlc2.value.IModelValue;
 import tlc2.value.IValue;
@@ -91,6 +94,24 @@ public final class MVPerm implements IMVPerm {
       }
     }
     return res;
+  }
+  
+  /**
+   * Consider caching if this method is used frequently; currently it is used once per instance per
+   * 	execution of TLC, during initial state setup / expansion.
+   * 
+   * @return a {@code List} of all {@link ModelValue} instances held by this permutation.
+   */
+  public List<ModelValue> getAllModelValues() {
+	  final List<ModelValue> values = new ArrayList<>();
+	  
+	  for (int i = 0; i < elems.length; i++) {
+		  if (elems[i] != null) {
+			  values.add(elems[i]);
+		  }
+	  }
+	  
+	  return values;
   }
 
   public final String toString() {
