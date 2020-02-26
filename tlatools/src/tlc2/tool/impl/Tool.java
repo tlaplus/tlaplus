@@ -3221,11 +3221,11 @@ public abstract class Tool
     //		enumerable size() check even if they are single element sets
     final StringBuilder cardinalityOneSetList = new StringBuilder();
     int offenderCount = 0;
-    if (argNodes.length == values.size()) {
-    	// We have as many values as we have permuted sets => we have all 1-element sets
-    	//		else, we may still have one or more 1-element sets which we will catch below.
+    if (argNodes.length >= values.size()) {
+    	// If equal, we have as many values as we have permuted sets => we have all 1-element sets;
+    	//		if greater than, then we have a heterogenous cardinality of sets, including 0 element sets.
     	for (final ExprOrOpArgNode node : argNodes) {
-			addToOneSizedSymmetrySetList(node, cardinalityOneSetList);
+			addToSubTwoSizedSymmetrySetList(node, cardinalityOneSetList);
 			offenderCount++;
     	}
     }
@@ -3255,7 +3255,7 @@ public abstract class Tool
         		}
         		
         		if (!found) {
-    				addToOneSizedSymmetrySetList(node, cardinalityOneSetList);
+    				addToSubTwoSizedSymmetrySetList(node, cardinalityOneSetList);
     				offenderCount++;
         		}
         	}
@@ -3269,8 +3269,8 @@ public abstract class Tool
       final String antiPlurality = (offenderCount > 1) ? "" : "s";
       final String toHaveConjugation = (offenderCount > 1) ? "have" : "has";
       
-      Assert.fail(EC.TLC_SYMMETRY_SET_TOO_SMALL,
-    		  	  new String[] { plurality, cardinalityOneSetList.toString(), toHaveConjugation, antiPlurality });
+      MP.printWarning(EC.TLC_SYMMETRY_SET_TOO_SMALL,
+    		  	  	  new String[] { plurality, cardinalityOneSetList.toString(), toHaveConjugation, antiPlurality });
     }
     
     return subgroup;
@@ -3279,7 +3279,7 @@ public abstract class Tool
   /**
    * Teases the original spec name for the set out of node and appends it to the {@code StringBuilder} instance.
    */
-  private void addToOneSizedSymmetrySetList(final ExprOrOpArgNode node, final StringBuilder cardinalityOneSetList) {
+  private void addToSubTwoSizedSymmetrySetList(final ExprOrOpArgNode node, final StringBuilder cardinalityOneSetList) {
 		final SyntaxTreeNode tn = (SyntaxTreeNode)node.getTreeNode();
 		final String image = tn.getHumanReadableImage();
 		final String alias;
