@@ -175,9 +175,19 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			fail(e.getMessage());
 		}
 	}
+
+	protected void beforeTearDown() {
+		// No-op
+	}
 	
 	@After
-	public void assertExitStatus() {
+	public void tearDown() {
+		beforeTearDown();
+		
+		assertExitStatus();
+	}
+	
+	protected void assertExitStatus() {
 		assertEquals(expectedExitStatus, actualExitStatus);
 	}
 	
