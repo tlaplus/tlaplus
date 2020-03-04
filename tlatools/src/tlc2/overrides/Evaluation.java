@@ -61,4 +61,12 @@ public @interface Evaluation {
 	 * @see tlc2.tool.impl.SpecProcessor.processConstantDefns()
 	 */
 	int minLevel() default 0;
+	
+	/**
+	 * @return true if a warning should be printed when a EV cannot be mapped to the
+	 *         given TLA+ definition in module.
+	 * @see Evaluation#definition()
+	 * @see Evaluation#module()
+	 */
+	boolean warn() default true;
 }

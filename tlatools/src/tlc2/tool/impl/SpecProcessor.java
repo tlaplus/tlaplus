@@ -589,15 +589,14 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 							
 							final ModuleNode moduleNode = modSet.get(evaluation.module());
 							if (moduleNode == null) {
-								// If the module, for which the operator has been defined, isn't part of the spec,
-								// it is probably intentional and thus confusing to warn the user. This e.g.
-								// happen with CommunitModules which has a bunch of operators spread over a set
-								// modules and a user only uses a subset in her spec.
+								if (evaluation.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
+										evaluation.module() + "!" + evaluation.definition(),
+										c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
 								continue LOOP;
 							}
 							final OpDefNode opDef = moduleNode.getOpDef(evaluation.definition());
 							if (opDef == null) {
-								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
+								if (evaluation.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
 										evaluation.module() + "!" + evaluation.definition(),
 										c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
 								continue LOOP;
@@ -619,24 +618,24 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 						if (opOverrideCandidate != null) {
 							final ModuleNode moduleNode = modSet.get(opOverrideCandidate.module());
 							if (moduleNode == null) {
-								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
+								if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
 										opOverrideCandidate.identifier(), opOverrideCandidate.module(), m.toString());
 								continue LOOP;
 							}
 							final OpDefNode opDef = moduleNode.getOpDef(opOverrideCandidate.identifier());
 							if (opDef == null) {
-								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
+								if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
 										opOverrideCandidate.identifier(), opOverrideCandidate.module(), m.toString());
 								continue LOOP;
 							}
 
 							final Value val = MethodValue.get(m, opOverrideCandidate.minLevel());
 							if (opDef.getArity() != m.getParameterCount()) {
-								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
+								if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
 										opDef.getName().toString(), c.getName(), val.toString());
 								continue LOOP;
 							} else {
-								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+								if (opOverrideCandidate.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
 										opDef.getName().toString(), c.getName(),
 										val instanceof MethodValue ? val.toString() : val.getClass().getName()); // toString of non-MethodValue instances can be expensive.
 							}

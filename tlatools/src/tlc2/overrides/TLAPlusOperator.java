@@ -52,4 +52,9 @@ public @interface TLAPlusOperator {
 	 * @see tlc2.overrides.Evaluation.minLevel()
 	 */
 	int minLevel() default 0;
+	
+	/**
+	 * @return tlc2.overrides.Evaluation.warn()
+	 */
+	boolean warn() default true;
 }
