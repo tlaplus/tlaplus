@@ -241,7 +241,7 @@ public class Context implements ExploreNode {
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class "template" (or one of its subclasses)
    */
-  public Vector<SymbolNode> getByClass( Class template ) {
+  public Vector<SymbolNode> getByClass( Class<?> template ) {
     Vector<SymbolNode> result = new Vector<>();
     Enumeration<Pair> list = table.elements();
     while (list.hasMoreElements()) {
@@ -360,72 +360,72 @@ public class Context implements ExploreNode {
    * The original implementation added the elements of Context ct to
    * this context in the inverse order as they appear in ct.  It was
    * changed on 12 Mar 2013 by LL to add them in the same order.
+   * 
+   * Note that the return value is never used in our code base. (2020.03.06)
    */
-  public boolean mergeExtendContext(Context ct) {
-    boolean erc = true;
+	public boolean mergeExtendContext(final Context ct) {
+		if (ct.lastPair == null) {
+			// If the context represents an inner module that defines no EXTENDS, ct.lastPair will be null
+			return true;
+		}
+		
+		boolean erc = true;
+		// check locality, and multiplicity
+		// the .reversePairList was added to the following statement
+		// by LL on 12 Mar 2013
+		Pair p = ct.lastPair.reversePairList();
+		while (p != null) {
+			// Walk back along the list of pairs added to Context "ct"
+			SymbolNode sn = p.info;
 
-    // check locality, and multiplicity
-    // the .reversePairList was added to the following statement
-    // by LL on 12 Mar 2013
-    Pair p = ct.lastPair.reversePairList();
-    while (p != null) {
-      // Walk back along the list of pairs added to Context "ct"
-      SymbolNode sn = p.info;
+			// Ignore local symbols in Context "ct"
+			if (!sn.isLocal()) {
+				Object sName;
+				if (sn instanceof ModuleNode) {
+					sName = new SymbolTable.ModuleName(sn.getName());
+				} else {
+					sName = sn.getName();
+				}
 
-      // Ignore local symbols in Context "ct"
-      if (!sn.isLocal()) {
-	Object sName;
-	if (sn instanceof ModuleNode) {
-	  sName = new SymbolTable.ModuleName(sn.getName());
-	}
-	else {
-	  sName = sn.getName();
-	}
-
-        if (!table.containsKey(sName)) {
-	  // If this context DOES NOT contain this name, add it:
-	  table.put(sName, new Pair(sn));
-        }
-	else {
-	  // If this Context DOES contain this name
-          SymbolNode symbol = ((Pair)table.get(sName)).info;
-          if (symbol != sn) {
-	    // if the two SymbolNodes with the same name are distinct nodes,
-	    // We issue a warning or do nothing if they are instances of the same Java
-        // class--i.e. FormalParamNode, OpDeclNode, OpDefNode, or ModuleNode--doing
-        // nothing if they are both definitions coming from the same module.
-	    // otherwise, it is considered to be an error.
-        // Option of doing nothing if from same module added by LL on 31 Oct 2012 to
-        // fix problem caused by the same module being both EXTENDed and imported with
-        // a LOCAL INSTANCE.  Previously, it always added the warning.
-	    if (symbol.getClass() == sn.getClass()) {
-	        if (! symbol.sameOriginallyDefinedInModule(sn)) {
-              errors.addWarning( sn.getTreeNode().getLocation(),
-                                 "Warning: the " + kindOfNode(symbol) +  " of '" +
-                                 sName.toString() +
-                                 "' conflicts with \nits " + kindOfNode(symbol) + " at " +
-                                 symbol.getTreeNode().getLocation() + ".");
-	        }
-         }
-	    else {
-              errors.addError( sn.getTreeNode().getLocation(),
-                               "The " + kindOfNode(symbol) +  " of '" +
-                               sName.toString() +
-                               "' conflicts with \nits " + kindOfNode(symbol) + " at " +
-                               symbol.getTreeNode().getLocation() + ".");
+				if (!table.containsKey(sName)) {
+					// If this context DOES NOT contain this name, add it:
+					table.put(sName, new Pair(sn));
+				} else {
+					// If this Context DOES contain this name
+					SymbolNode symbol = ((Pair) table.get(sName)).info;
+					if (symbol != sn) {
+						// if the two SymbolNodes with the same name are distinct nodes,
+						// We issue a warning or do nothing if they are instances of the same Java
+						// class--i.e. FormalParamNode, OpDeclNode, OpDefNode, or ModuleNode--doing
+						// nothing if they are both definitions coming from the same module.
+						// otherwise, it is considered to be an error.
+						// Option of doing nothing if from same module added by LL on 31 Oct 2012 to
+						// fix problem caused by the same module being both EXTENDed and imported with
+						// a LOCAL INSTANCE. Previously, it always added the warning.
+						if (symbol.getClass() == sn.getClass()) {
+							if (!symbol.sameOriginallyDefinedInModule(sn)) {
+								errors.addWarning(sn.getTreeNode().getLocation(),
+										"Warning: the " + kindOfNode(symbol) + " of '" + sName.toString()
+												+ "' conflicts with \nits " + kindOfNode(symbol) + " at "
+												+ symbol.getTreeNode().getLocation() + ".");
+							}
+						} else {
+							errors.addError(sn.getTreeNode().getLocation(),
+									"The " + kindOfNode(symbol) + " of '" + sName.toString() + "' conflicts with \nits "
+											+ kindOfNode(symbol) + " at " + symbol.getTreeNode().getLocation() + ".");
 
 //                               "Incompatible multiple definitions of symbol '" +
 //                               sName.toString() +
 //                               "'; \nthe conflicting declaration is at " +
 //                               symbol.getTreeNode().getLocation()+ ".");
-              erc = false;
-            } //end else
-          } // end if
-        } // end else
-      }
-      p  = p.link;
-    }
-    return erc;
+							erc = false;
+						} // end else
+					} // end if
+				} // end else
+			}
+			p = p.link;
+		}
+		return erc;
   }
 
   private static String kindOfNode(SymbolNode symbol) {
