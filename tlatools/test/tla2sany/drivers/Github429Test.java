@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import tla2sany.modanalyzer.SpecObj;
+import tlc2.tool.CommonTestCase;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
 
@@ -15,7 +16,7 @@ public class Github429Test {
 	@Before
 	public void setUp() throws Exception {
 		// create a model and initialize
-		moduleSpec = new SpecObj("test-model/Github429.tla", new SimpleFilenameToStream());
+		moduleSpec = new SpecObj(CommonTestCase.BASE_PATH + "Github429.tla", new SimpleFilenameToStream());
 		SANY.frontEndInitialize(moduleSpec, ToolIO.out);
 	}
 
