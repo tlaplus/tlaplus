@@ -1,5 +1,9 @@
 package org.lamport.tla.toolbox.tool.tla2tex;
 
+import java.io.File;
+
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.lamport.tla.toolbox.AbstractTLCActivator;
@@ -12,12 +16,13 @@ import com.abstratt.graphviz.GraphVizActivator.DotMethod;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class TLA2TeXActivator extends AbstractTLCActivator
-{
-
+public class TLA2TeXActivator extends AbstractTLCActivator {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.lamport.tla.toolbox.tool.tlatex";
 
+    private static final boolean IS_WINDOWS = Platform.OS_WIN32.equals(Platform.getOS());
+    private static final String USR_LOCAL_BIN_PATH = "/usr/local/bin/dot";
+    
     // The shared instance
     private static TLA2TeXActivator plugin;
 
@@ -36,17 +41,7 @@ public class TLA2TeXActivator extends AbstractTLCActivator
 	private IPropertyChangeListener listener = new IPropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent event) {
 			if (ITLA2TeXPreferenceConstants.DOT_COMMAND.equals(event.getProperty())) {
-				final String dotCommand = (String) event.getNewValue();
-				if ("dot".equals(dotCommand)) {
-					// Setting it to "dot" implies auto lookup.
-					TLA2TeXActivator.this.logInfo("dot command set to automatic lookup.");
-					GraphVizActivator.getInstance().setDotSearchMethod(DotMethod.AUTO);
-				} else {
-					// Explicit path is given.
-					TLA2TeXActivator.this.logInfo("dot command set to: " + dotCommand);
-					GraphVizActivator.getInstance().setDotSearchMethod(DotMethod.MANUAL);
-					GraphVizActivator.getInstance().setManualDotPath(dotCommand);
-				}
+				configureGraphViz((String)event.getNewValue());
 			}
 		}
 	};
@@ -54,8 +49,7 @@ public class TLA2TeXActivator extends AbstractTLCActivator
     /**
      * The constructor
      */
-    public TLA2TeXActivator()
-    {
+    public TLA2TeXActivator() {
     	super(PLUGIN_ID);
     }
 
@@ -63,12 +57,13 @@ public class TLA2TeXActivator extends AbstractTLCActivator
      * (non-Javadoc)
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
      */
-    public void start(BundleContext context) throws Exception
-    {
+    public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
         
-		getPreferenceStore().addPropertyChangeListener(listener);
+		final IPreferenceStore preferenceStore = getPreferenceStore();
+		preferenceStore.addPropertyChangeListener(listener);
+		configureGraphViz(preferenceStore.getString(ITLA2TeXPreferenceConstants.DOT_COMMAND));
     }
 
     /*
@@ -89,5 +84,33 @@ public class TLA2TeXActivator extends AbstractTLCActivator
     public static TLA2TeXActivator getDefault()
     {
         return plugin;
+    }
+    
+    private void configureGraphViz(final String dotLocationPreferenceValue) {
+    	// This will be blank if the user has never entered a value in the preference panel
+		String dotCommand = dotLocationPreferenceValue;
+		
+		// Per GitHub #412
+		if (!IS_WINDOWS
+					&& ((dotCommand == null)
+							|| (dotCommand.trim().length() == 0)
+							|| "dot".equals(dotCommand))) {
+			final File f = new File(USR_LOCAL_BIN_PATH);
+			
+			if (f.exists() && f.canExecute()) {
+				dotCommand = USR_LOCAL_BIN_PATH;
+			}
+		}
+		
+		if ("dot".equals(dotCommand)) {
+			// Setting it to "dot" implies auto lookup.
+			logInfo("dot command set to automatic lookup.");
+			GraphVizActivator.getInstance().setDotSearchMethod(DotMethod.AUTO);
+		} else {
+			// Explicit path is given.
+			logInfo("dot command set to: " + dotCommand);
+			GraphVizActivator.getInstance().setDotSearchMethod(DotMethod.MANUAL);
+			GraphVizActivator.getInstance().setManualDotPath(dotCommand);
+		}
     }
 }
