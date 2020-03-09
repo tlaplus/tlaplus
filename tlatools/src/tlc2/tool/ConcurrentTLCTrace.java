@@ -77,6 +77,10 @@ public class ConcurrentTLCTrace extends TLCTrace {
 	 * @see TLCTrace#getTrace(LongVec)
 	 */
 	public TLCStateInfo[] getTrace(final TLCState state) throws IOException {
+		if (state.isInitial()) {
+			return new TLCStateInfo[] {new TLCStateInfo(state)};
+		}
+		
 		final LongVec fps = new LongVec();
 
 		// Starting at the given start fingerprint (which is the end of the
