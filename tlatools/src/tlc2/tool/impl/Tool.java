@@ -1640,6 +1640,9 @@ public abstract class Tool
             if (alen == 0) {
               if (val instanceof MethodValue) {
                 res = ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
+              } else if (val instanceof EvaluatingValue) {
+            	  // Allow EvaluatingValue overwrites to have zero arity.
+            	  res = ((EvaluatingValue) val).eval(this, args, c, s0, s1, control, cm);
               }
             }
             else if (val instanceof Evaluator) {
