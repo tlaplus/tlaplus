@@ -415,7 +415,7 @@ public class TLC {
             	
                 TLCGlobals.tool = true;
                 
-                if (args[index].equals("nomonolith")) {
+                if ((index < args.length) && args[index].equals("nomonolith")) {
                 	index++;
                 	avoidMonolithSpecTECreation = true;
                 }
