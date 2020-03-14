@@ -27,58 +27,58 @@
 
 	<modules>
 		<!-- non-OSGi jars -->
-		<module>tlatools</module>
+		<module>tlatools/org.lamport.tlatools</module>
 
 		<!-- OSGi based multi invocation worker (model check > 1 spec in a single runtime -->
-		<module>org.lamport.tlatools.api</module>
-		<module>org.lamport.tlatools.impl.distributed</module>
-		<module>org.lamport.tlatools.consumer.distributed</module>
+		<module>tlatools/org.lamport.tlatools.api</module>
+		<module>tlatools/org.lamport.tlatools.impl.distributed</module>
+		<module>tlatools/org.lamport.tlatools.consumer.distributed</module>
 
 		<!-- bundles -->
-		<module>org.lamport.tla.toolbox.rss</module>
-		<module>org.lamport.tla.toolbox</module>
-		<module>org.lamport.tla.toolbox.jclouds</module>
-		<module>org.lamport.tla.toolbox.jnlp</module>
-		<module>org.lamport.tla.toolbox.doc</module>
-		<module>org.lamport.tla.toolbox.editor.basic</module>
-		<module>org.lamport.tla.toolbox.tool.prover</module>
-		<module>org.lamport.tla.toolbox.tool.tla2tex</module>
-		<module>org.lamport.tla.toolbox.tool.tlc</module>
-		<module>org.lamport.tla.toolbox.tool.tlc.ui</module>
-		<module>org.lamport.tla.toolbox.product.standalone</module>
+		<module>toolbox/org.lamport.tla.toolbox.rss</module>
+		<module>toolbox/org.lamport.tla.toolbox</module>
+		<module>toolbox/org.lamport.tla.toolbox.jclouds</module>
+		<module>toolbox/org.lamport.tla.toolbox.jnlp</module>
+		<module>toolbox/org.lamport.tla.toolbox.doc</module>
+		<module>toolbox/org.lamport.tla.toolbox.editor.basic</module>
+		<module>toolbox/org.lamport.tla.toolbox.tool.prover</module>
+		<module>toolbox/org.lamport.tla.toolbox.tool.tla2tex</module>
+		<module>toolbox/org.lamport.tla.toolbox.tool.tlc</module>
+		<module>toolbox/org.lamport.tla.toolbox.tool.tlc.ui</module>
+		<module>toolbox/org.lamport.tla.toolbox.product.standalone</module>
 
 		<!-- Junit tests -->
-		<module>org.lamport.tla.toolbox.test</module>
-		<module>org.lamport.tla.toolbox.tool.tlc.test</module>
-		<module>org.lamport.tla.toolbox.tool.tlc.ui.test</module>
+		<module>toolbox/org.lamport.tla.toolbox.test</module>
+		<module>toolbox/org.lamport.tla.toolbox.tool.tlc.test</module>
+		<module>toolbox/org.lamport.tla.toolbox.tool.tlc.ui.test</module>
 
 		<!-- SWTBot tests -->
-		<module>org.lamport.tla.toolbox.uitest</module>
-		<module>org.lamport.tla.toolbox.tool.tla2tex.uitest</module>
-		<module>org.lamport.tla.toolbox.tool.tlc.ui.uitest</module>
+		<module>toolbox/org.lamport.tla.toolbox.uitest</module>
+		<module>toolbox/org.lamport.tla.toolbox.tool.tla2tex.uitest</module>
+		<module>toolbox/org.lamport.tla.toolbox.tool.tlc.ui.uitest</module>
 
 		<!-- features -->
-		<module>org.lamport.tlatools.feature</module>
-		<module>org.lamport.tla.toolbox.feature.base</module>
-		<module>org.lamport.tla.toolbox.feature.editor</module>
-		<module>org.lamport.tla.toolbox.feature.jnlp</module>
-		<module>org.lamport.tla.toolbox.feature.jclouds</module>
-		<module>org.lamport.tla.toolbox.feature.help</module>
-		<module>org.lamport.tla.toolbox.feature.prover</module>
-		<module>org.lamport.tla.toolbox.feature.tla2tex</module>
-		<module>org.lamport.tla.toolbox.feature.tlc</module>
-		<module>org.lamport.tla.toolbox.feature.uitest</module>
-		<module>org.lamport.tla.toolbox.feature.branding</module>
-		<module>org.lamport.tla.toolbox.feature.standalone</module>
+		<module>tlatools/org.lamport.tlatools.feature</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.base</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.editor</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.jnlp</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.jclouds</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.help</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.prover</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.tla2tex</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.tlc</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.uitest</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.branding</module>
+		<module>toolbox/org.lamport.tla.toolbox.feature.standalone</module>
 
 		<!-- p2 repository for updates -->
-		<module>org.lamport.tla.toolbox.p2repository</module>
+		<module>toolbox/org.lamport.tla.toolbox.p2repository</module>
 
 		<!-- product related -->
-		<module>org.lamport.tla.toolbox.product.product</module>
+		<module>toolbox/org.lamport.tla.toolbox.product.product</module>
 
 		<!-- Finally run UI tests on fully built product (AUT) -->
-		<module>org.lamport.tla.toolbox.product.uitest</module>
+		<module>toolbox/org.lamport.tla.toolbox.product.uitest</module>
 	</modules>
 
 	<!-- tycho requires maven >= 3.0 -->
@@ -100,7 +100,7 @@
 
         <!-- These properties define a dummy certificate store that is used unless the developer passes overwrites to maven -->
         <!-- see http://stackoverflow.com/a/3620575 for how such an overwrite would look like. -->
-  	    <keystore.path>${project.basedir}/../keystore</keystore.path>
+  	    <keystore.path>${project.basedir}/../../keystore</keystore.path>
 	    <keystore.alias>msr</keystore.alias>
         <keystore.store.password>secret</keystore.store.password>
         <keystore.key.password>secret</keystore.key.password>
