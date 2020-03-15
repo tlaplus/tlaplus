@@ -1,13 +1,56 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    # Sequence of patterns matched against refs/heads
+    branches:    
+      - master         # Push events on master branch
 
 jobs:
-  build:
+  release:
 
+    name: Create Github Release
     runs-on: ubuntu-latest
+    steps:
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
+    - name: Create Github Release
+      run: |
+           ## Install jq to easily parse API responses (it's pre-installed).
+           #sudo apt-get install jq --no-install-recommends -y
+
+           ## Get id of existing draft release with given name.
+           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.draft==true and .name=="The Aristotle release") | .id')
+           echo $DRAFT_RELEASE
+
+           ## Remove any old assets before we upload new ones in subsequent jobs/steps.
+           ASSETS=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json" | jq '.[]| .id')
+           for id in $(echo "$ASSETS"); do
+              ## DELETE /repos/:owner/:repo/releases/assets/:asset_id
+              curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$id
+           done
+
+  build:
+    needs: [release]
+    runs-on: ${{ matrix.operating-system }}
+    strategy: 
+      matrix:
+        operating-system: [ubuntu-latest, macos-latest]
+        include: 
+        - operating-system: macos-latest
+          MVN_COMMAND: mvn -Dmaven.test.skip=true
+          GITHUB_RELEASE_NAME: The Aristotle release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.6.1-macosx.cocoa.x86_64.zip
+
+        - operating-system: ubuntu-latest
+          MVN_COMMAND: xvfb-run mvn -Dtest.skip=true
+          GITHUB_RELEASE_NAME: The Aristotle release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.6.1-linux.gtk.x86_64.zip
+          TOOLBOX_PRODUCT_ZIP_WIN: TLAToolbox-1.6.1-win32.win32.x86_64.zip
 
     steps:
+
     - uses: actions/checkout@v2
       with:
         # Number of commits to fetch. 0 indicates all history.
@@ -19,11 +62,143 @@ jobs:
       with:
         java-version: 11.0.3
 
+      ## 
+      ## Speed-up build with a cached ~/.m2/repository (300+ MB).
+      ##
     - uses: actions/cache@v1
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
             ${{ runner.os }}-maven-
-    - name: Build with Maven
-      run: mvn -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
+
+      ##
+      ## Configure GPG key (apt repo below)
+      ##
+    - name: Set up GNUPG private key
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: 'echo "$GPG_PRIVATE_KEY" > key.gpg && gpg --import key.gpg && rm key.gpg'
+      shell: bash
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+
+      ##
+      ## Set up Comodo code signing cert/key and configure maven (settings.xml) to 
+      ## have CODESIGN_KEYSTOREPASS_KEY, path to ComodoCertificate.p12, and the alias
+      ## of the cert/key in ComodoCertificate.p12.
+      ##
+    - name: Set up maven credentials
+      run: 'echo "$MVN_SETTINGS_XML" > ~/.m2/settings.xml'
+      shell: bash
+      env:
+        MVN_SETTINGS_XML: ${{ secrets.MVN_SETTINGS_XML }}
+    - name: Set up Comodo Codesign keystore part I
+      run: 'echo "$COMODO_CODESIGN_COMBINED_PEM" > ComodoCertificate.pem'
+      shell: bash
+      env:
+        COMODO_CODESIGN_COMBINED_PEM: ${{ secrets.COMODO_CODESIGN_COMBINED_PEM }}
+    - name: Set up Comodo Codesign keystore part II
+      run: |
+           openssl pkcs12 -export -name ComodoCertificate -out ComodoCertificate.p12 -passout pass:${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -in ComodoCertificate.pem
+           rm ComodoCertificate.pem
+           keytool -importkeystore -srckeystore ComodoCertificate.p12 -srcstoretype pkcs12 -srcstorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}  -deststoretype pkcs12 -destkeystore ~/.m2/ComodoCertificate.jks -destkeypass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -deststorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}
+           rm ComodoCertificate.p12
+
+      ##
+      ## Build TLC and Toolbox (logger reduces verbosity).
+      ##
+    - name: Build with Maven (Linux)
+      run: ${{ matrix.MVN_COMMAND }} -Pcodesigning -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
+
+      ##
+      ## Create signed apt repository out of Linux Toolbox zip.
+      ##
+    - name: Create apt repository
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           chmod -x toolbox/org.lamport.tla.toolbox.product.product/createAptRepo.sh
+           cp toolbox/org.lamport.tla.toolbox.product.product/target/*.deb toolbox/org.lamport.tla.toolbox.product.product/target/repository/
+           cd toolbox/org.lamport.tla.toolbox.product.product/target/repository/
+           bash -x ../../createAptRepo.sh .
+
+      ##
+      ## Create RPM out of Linux Toolbox zip.
+      ##
+    - name: Create RPM (RedHat/CentOS package)
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           sudo apt-get install alien --no-install-recommends -y
+           cd toolbox/org.lamport.tla.toolbox.product.product/target/
+           fakeroot alien --to-rpm --scripts TLAToolbox-?.?.?-linux.gtk.amd64.deb
+           cp TLA*.rpm products/
+
+      ## 
+      ## Upload Linux and Windows Toolbox zip and tla2tools.jar to Github release.
+      ##
+    - name: Upload release assets
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           ## Crawl release id
+           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.draft==true and .name=="${{ matrix.GITHUB_RELEASE_NAME }}") | .id')
+           ## Upload assets
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=tla2tools.jar --upload-file tlatools/org.lamport.tlatools/dist/tla2tools.jar
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}}
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{matrix.TOOLBOX_PRODUCT_ZIP}} --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP}}
+           ## Generate changelog
+           cd general/docs/changelogs
+           ## Append sha1 sum to changelog (last line of changelog has the table header).
+           echo "$(sha1sum ../../../tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_6_1.md
+           echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}}" >> ch1_6_1.md
+           echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP}}" >> ch1_6_1.md
+           echo "TBD|macOS" >> ch1_6_1.md
+           ## Two above as one-liner without intermediate file.
+           $(jq -n --argjson changelog "$(cat ch1_6_1.md | jq  --raw-input --slurp .)" -f gh-1_6_1.jq > gh-1_6_1.json)
+           ## Update draft release with latest changelog in case it changed.
+           ## https://developer.github.com/v3/repos/releases/#edit-a-release
+           curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_6_1.json -X PATCH --header "Content-Type: application/json"
+
+      ################################# macOS #################################
+
+      ##
+      ## Sign Toolbox macOS zip file.
+      ##
+    - name: Set up Apple Certs
+      if: matrix.operating-system == 'macos-latest'
+      run: 'echo "$APPLE_CODESIGN_CERTS" > certs.pem'
+      shell: bash
+      env:
+        APPLE_CODESIGN_CERTS: ${{ secrets.APPLE_CODESIGN_CERTS }}
+    - name: Set up Apple Key (submission)
+      if: matrix.operating-system == 'macos-latest'
+      run: 'echo "$APPLE_CODESIGN_SUBMISSION_PRIVKEY" > submission.pem'
+      shell: bash
+      env:
+        APPLE_CODESIGN_SUBMISSION_PRIVKEY: ${{ secrets.APPLE_CODESIGN_SUBMISSION_PRIVKEY }}
+    - name: Set up Apple Key (dev)
+      if: matrix.operating-system == 'macos-latest'
+      run: 'echo "$APPLE_CODESIGN_DEVELOPER_PRIVKEY" > dev.pem'
+      shell: bash
+      env:
+        APPLE_CODESIGN_DEVELOPER_PRIVKEY: ${{ secrets.APPLE_CODESIGN_DEVELOPER_PRIVKEY }}
+    - name: Create macOS keychain, unzip, sign, and zip up TLA+ Toolbox for macOS
+      if: matrix.operating-system == 'macos-latest'
+      run: |
+           ## Convert pems stored as Github secrets to .p12 files that 'security import' accepts.
+           openssl pkcs12 -export -inkey submission.pem -in certs.pem -out submission.p12 -passin pass:${{ secrets.APPLE_CERT_PASSWORD }} -passout pass:${{ secrets.APPLE_CERT_PASSWORD }}
+           openssl pkcs12 -export -inkey dev.pem -in certs.pem -out dev.p12 -passin pass:${{ secrets.APPLE_CERT_PASSWORD }} -passout pass:${{ secrets.APPLE_CERT_PASSWORD }}
+           ## Create a fresh keychain "tla" and import certs and keys into it.
+           security create-keychain -p ${{ secrets.APPLE_CERT_PASSWORD }} tla
+           security import certs.pem -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
+           security import submission.p12 -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
+           security import dev.p12 -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
+           ## Listing the keychain once is apparently required for codesign to work.
+           security list-keychains -s tla
+           ## Not sure what this is for, but hey: https://stackoverflow.com/a/40039594
+           security set-key-partition-list -S apple-tool:,apple: -s -k ${{ secrets.APPLE_CERT_PASSWORD }} tla
+           ## Unzip, sign, and zip up the TLA Toolbox.
+           unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/${{ matrix.TOOLBOX_PRODUCT_ZIP }}
+           codesign --keychain tla --deep --display --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
+           ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
+           ## Upload signed TLAToolbox zip to Github release.
+           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.draft==true and .name=="${{ matrix.GITHUB_RELEASE_NAME }}") | .id')
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{ matrix.TOOLBOX_PRODUCT_ZIP }} --upload-file ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
