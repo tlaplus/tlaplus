@@ -67,7 +67,7 @@ public class HelpPDFHandler extends AbstractHandler implements IHandler {
 				try {
 					final File pdfFile = getDocFile("/pdfs/" + pdf);
 					if (osOpensPDF) {
-						final String openCommand = "open " + pdfFile.getAbsolutePath();
+						final String[] openCommand = { "open", pdfFile.getAbsolutePath() };
 						
 						Runtime.getRuntime().exec(openCommand);
 					} else if (useEmbeddedViewer) {
