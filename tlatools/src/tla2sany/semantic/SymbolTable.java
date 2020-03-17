@@ -2,8 +2,9 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import tla2sany.utilities.Stack;
-import tla2sany.utilities.Vector;
+import java.util.Stack;
+import java.util.Vector;
+
 import util.UniqueString;
 
 // The Symbol Table builds the stack of context tables.  The stack

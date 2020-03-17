@@ -19,15 +19,15 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Stack;
+import java.util.Vector;
 
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Stack;
 import tla2sany.utilities.Strings;
-import tla2sany.utilities.Vector;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import util.UniqueString;

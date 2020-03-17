@@ -2,8 +2,9 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.modanalyzer;
 
+import java.util.Vector;
+
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Vector;
 
 /**
  * An instance of this class is a "pointer" to a module used during

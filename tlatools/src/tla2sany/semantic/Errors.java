@@ -21,9 +21,9 @@
 ***************************************************************************/
 package tla2sany.semantic;
 
-import tla2sany.st.Location;
-import tla2sany.utilities.Vector;
+import java.util.Vector;
 
+import tla2sany.st.Location;
 
 public class Errors {
 
