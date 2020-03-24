@@ -9,6 +9,13 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import tlc2.TLC;
 import tlc2.TLCGlobals;
@@ -210,26 +217,57 @@ public class LiveCheck implements ILiveCheck {
 		final BlockingQueue<ILiveChecker> queue = new ArrayBlockingQueue<ILiveChecker>(checker.length);
 		queue.addAll(Arrays.asList(checker));
 
-		int slen = checker.length;
-		int wNum = Math.min(slen, TLCGlobals.getNumWorkers());
+		
+		/*
+		 * A LiveWorker below can either complete a unit of work a) without finding a
+		 * liveness violation, b) finds a violation, or c) fails to check because of an
+		 * exception/error (such as going out of memory). In case an LW fails to check,
+		 * we still wait for all other LWs to complete. A subset of the LWs might have
+		 * found a violation. In other words, the OOM of an LW has lower precedence than
+		 * a violation found by another LW. However, if any LW fails to check, we terminate
+		 * model checking after all LWs completed.
+		 */
+		final int wNum = Math.min(checker.length, TLCGlobals.getNumWorkers());
+		final ExecutorService pool = Executors.newFixedThreadPool(wNum);
+		// CS is really just a container around the set of Futures returned by the pool. It saves us from
+		// creating a low-level array.
+		final CompletionService<Boolean> completionService = new ExecutorCompletionService<Boolean>(pool);
 
-		if (wNum == 1) {
-			LiveWorker worker = new LiveWorker(tool, 0, 1, this, queue, finalCheck);
-			worker.run();
-		} else {
-			final LiveWorker[] workers = new LiveWorker[wNum];
-			for (int i = 0; i < wNum; i++) {
-				workers[i] = new LiveWorker(tool, i, wNum, this, queue, finalCheck);
-				workers[i].start();
-			}
-			for (int i = 0; i < wNum; i++) {
-				workers[i].join();
+		for (int i = 0; i < wNum; i++) {
+			completionService.submit(new LiveWorker(tool, i, wNum, this, queue, finalCheck));
+		}
+		// Wait for all LWs to complete.
+		pool.shutdown();
+		pool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS); // wait forever
+
+		// Check if any one of the LWs found a violation (ignore failures for now).
+		ExecutionException ee = null;
+		for (int i = 0; i < wNum; i++) {
+			try {
+				final Future<Boolean> future = completionService.take();
+				if (future.get()) {
+					MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS_END,
+							TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
+					return EC.TLC_TEMPORAL_PROPERTY_VIOLATED;
+				}
+			} catch (final ExecutionException e) {
+				// handled below!
+				ee = e;
 			}
 		}
-
-		if (LiveWorker.hasErrFound()) {
-			MP.printMessage(EC.TLC_CHECKING_TEMPORAL_PROPS_END, TLC.convertRuntimeToHumanReadable(System.currentTimeMillis() - startTime));
-			return EC.TLC_TEMPORAL_PROPERTY_VIOLATED;
+		// Terminate if any one of the LWs failed c)
+		if (ee != null) {
+			final Throwable cause = ee.getCause();
+			if (cause instanceof OutOfMemoryError) {
+				MP.printError(EC.SYSTEM_OUT_OF_MEMORY_LIVENESS, cause);
+			} else if (cause instanceof StackOverflowError) {
+				MP.printError(EC.SYSTEM_STACK_OVERFLOW, cause);
+			} else if (cause != null) {
+				MP.printError(EC.GENERAL, cause);
+			} else {
+				MP.printError(EC.GENERAL, ee);
+			}
+			System.exit(1);
 		}
 		
 		// Reset after checking unless it's the final check:

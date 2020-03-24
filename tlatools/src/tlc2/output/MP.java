@@ -339,6 +339,11 @@ public class MP
                     + "pool (heap) may fix this.  But it won't help if some state has an enormous\n"
                     + "number of successor states, or if TLC must compute the value of a huge set.");
             break;
+        case EC.SYSTEM_OUT_OF_MEMORY_LIVENESS:
+            b.append("Java ran out of memory during liveness checking.  Running Java with a larger memory\n"
+                    + "allocation pool (heap) may fix this.  But it won't help if paths in the liveness graph\n"
+                    + "have an enormous number of states.");
+            break;
         case EC.SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT:
             b.append("Out Of Memory. There are probably too many initial states.");
             break;
