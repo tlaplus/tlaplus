@@ -202,18 +202,28 @@ public class LiveWorker implements Callable<Boolean> {
 		final int slen = this.oos.getCheckState().length;
 		final int alen = this.oos.getCheckAction().length;
 		
-		// Tarjan's stack
-		// Append thread id to name for unique disk files during concurrent SCC search
-		final IntStack dfsStack = getStack(liveCheck.getMetaDir(), "dfs" + this.id);
 		
-		// comStack is only being added to during the deep first search. It is passed
-		// to the checkComponent method while in DFS though. Note that the nodes pushed
-		// onto comStack don't necessarily form a strongly connected component (see
-		// comment above this.checkComponent(...) below for more details).
-		//
-		// See tlc2.tool.liveness.LiveWorker.DetailedFormatter.toString(MemIntStack)
-		// which is useful during debugging.
-		final IntStack comStack = getStack(liveCheck.getMetaDir(), "com" + this.id);
+		// Synchronize all LiveWorker instances to consistently read free
+		// memory. This method is only called during initialization of SCC
+		// search, thus synchronization should not cause significant thread
+		// contention. We want a single LW to successfully allocate both
+		// dfsStack *and* comStack.
+		final IntStack dfsStack;
+		final IntStack comStack;
+		synchronized (LiveWorker.class) {
+			// Tarjan's stack
+			// Append thread id to name for unique disk files during concurrent SCC search
+			dfsStack = getStack(liveCheck.getMetaDir(), "dfs" + this.id);
+			
+			// comStack is only being added to during the deep first search. It is passed
+			// to the checkComponent method while in DFS though. Note that the nodes pushed
+			// onto comStack don't necessarily form a strongly connected component (see
+			// comment above this.checkComponent(...) below for more details).
+			//
+			// See tlc2.tool.liveness.LiveWorker.DetailedFormatter.toString(MemIntStack)
+			// which is useful during debugging.
+			comStack = getStack(liveCheck.getMetaDir(), "com" + this.id);
+		}
 
 		// Generate the SCCs and check if they contain a "bad" cycle.
 		while (nodeQueue.size() > 0) {
@@ -462,35 +472,29 @@ public class LiveWorker implements Callable<Boolean> {
 	}
 
 	private IntStack getStack(final String metaDir, final String name) throws IOException {
-		// Synchronize all LiveWorker instances to consistently read free
-		// memory. This method is only called during initialization of SCC
-		// search, thus synchronization should not cause significant thread
-		// contention.
-		synchronized (LiveWorker.class) {
-			// It is unlikely that the stacks will fit into memory if the
-			// size of the behavior graph is larger relative to the available
-			// memory. Also take the total number of simultaneously running
-			// workers into account that have to share the available memory
-			// among each other.
-			final double freeMemoryInBytes = (Runtime.getRuntime().freeMemory() / (numWorkers * 1d));
-			final long graphSizeInBytes = this.dg.getSizeOnDisk();
-			final double ratio = graphSizeInBytes / freeMemoryInBytes;
-			if (ratio > TLCGlobals.livenessGraphSizeThreshold) {
-				// Double SDIS's bufSize/pageSize by how much the graph size
-				// overshoots the free memory size, but limit page size to 1gb.
-				// Also, don't allocate more than what is available.
-				final int capacityInBytes = SynchronousDiskIntStack.BufSize << Math.min((int) ratio, 5);
-				if (capacityInBytes < freeMemoryInBytes) {
-					return new SynchronousDiskIntStack(metaDir, name, capacityInBytes);
-				} else {
-					// Use default SDIS which is 32mb of in-memory size
-					return new SynchronousDiskIntStack(metaDir, name);
-				}
+		// It is unlikely that the stacks will fit into memory if the
+		// size of the behavior graph is larger relative to the available
+		// memory. Also take the total number of simultaneously running
+		// workers into account that have to share the available memory
+		// among each other.
+		final double freeMemoryInBytes = (Runtime.getRuntime().freeMemory() / (numWorkers * 1d));
+		final long graphSizeInBytes = this.dg.getSizeOnDisk();
+		final double ratio = graphSizeInBytes / freeMemoryInBytes;
+		if (ratio > TLCGlobals.livenessGraphSizeThreshold) {
+			// Double SDIS's bufSize/pageSize by how much the graph size
+			// overshoots the free memory size, but limit page size to 1gb.
+			// Also, don't allocate more than what is available.
+			final int capacityInBytes = SynchronousDiskIntStack.BufSize << Math.min((int) ratio, 5);
+			if (capacityInBytes < freeMemoryInBytes) {
+				return new SynchronousDiskIntStack(metaDir, name, capacityInBytes);
+			} else {
+				// Use default SDIS which is 32mb of in-memory size
+				return new SynchronousDiskIntStack(metaDir, name);
 			}
-			// If the disk graph as a whole fits into memory, do not use a
-			// disk-backed SynchronousDiskIntStack.
-			return new MemIntStack(metaDir, name);
 		}
+		// If the disk graph as a whole fits into memory, do not use a
+		// disk-backed SynchronousDiskIntStack.
+		return new MemIntStack(metaDir, name);
 	}
 
 	/**
