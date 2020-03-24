@@ -55,7 +55,7 @@ public class SynchronousDiskIntStack implements IntStack {
 	
 	public SynchronousDiskIntStack(String diskdir, String name, int capacity) {
 		// Hard-limit capacity to 1gb per page file
-		capacity = Math.min(BufSizeMax, Math.max(capacity, BufSize));
+		capacity = Math.min(BufSizeMax, capacity);
 		this.filePrefix = diskdir + FileUtil.separator + name;
 		this.bufSize = capacity;
 		this.buf = new int[capacity];

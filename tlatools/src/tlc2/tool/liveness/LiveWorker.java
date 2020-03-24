@@ -477,24 +477,37 @@ public class LiveWorker implements Callable<Boolean> {
 		// memory. Also take the total number of simultaneously running
 		// workers into account that have to share the available memory
 		// among each other.
-		final double freeMemoryInBytes = (Runtime.getRuntime().freeMemory() / (numWorkers * 1d));
-		final long graphSizeInBytes = this.dg.getSizeOnDisk();
-		final double ratio = graphSizeInBytes / freeMemoryInBytes;
-		if (ratio > TLCGlobals.livenessGraphSizeThreshold) {
-			// Double SDIS's bufSize/pageSize by how much the graph size
-			// overshoots the free memory size, but limit page size to 1gb.
-			// Also, don't allocate more than what is available.
-			final int capacityInBytes = SynchronousDiskIntStack.BufSize << Math.min((int) ratio, 5);
-			if (capacityInBytes < freeMemoryInBytes) {
-				return new SynchronousDiskIntStack(metaDir, name, capacityInBytes);
-			} else {
-				// Use default SDIS which is 32mb of in-memory size
-				return new SynchronousDiskIntStack(metaDir, name);
+		try {
+			final double freeMemoryInBytes = (Runtime.getRuntime().freeMemory() / (numWorkers * 1d));
+			final long graphSizeInBytes = this.dg.getSizeOnDisk();
+			final double ratio = graphSizeInBytes / freeMemoryInBytes;
+			if (ratio > TLCGlobals.livenessGraphSizeThreshold) {
+				// Double SDIS's bufSize/pageSize by how much the graph size
+				// overshoots the free memory size, but limit page size to 1gb.
+				// Also, don't allocate more than what is available.
+				final int capacityInBytes = SynchronousDiskIntStack.BufSize << Math.min((int) ratio, 5);
+				if (capacityInBytes < freeMemoryInBytes) {
+					return new SynchronousDiskIntStack(metaDir, name, capacityInBytes);
+				} else {
+					// Use default SDIS which is 32mb of in-memory size
+					return new SynchronousDiskIntStack(metaDir, name);
+				}
 			}
+			// If the disk graph as a whole fits into memory, do not use a
+			// disk-backed SynchronousDiskIntStack.
+			return new MemIntStack(metaDir, name);
+		} catch (final OutOfMemoryError oom) {
+			System.gc();
+			// If the allocation above failed, be more conservative. If it fails to
+			// allocate even 16mb, TLC will subsequently terminate with a message about insufficient
+			// memory. 
+			final SynchronousDiskIntStack sdis = new SynchronousDiskIntStack(metaDir, name,
+					SynchronousDiskIntStack.BufSize / 2);
+			MP.printWarning(EC.GENERAL,
+					"Liveness checking will be extremely slow because TLC is running low on memory.\n"
+							+ "Try allocating more memory to the Java pool (heap) in future TLC runs.");
+			return sdis;
 		}
-		// If the disk graph as a whole fits into memory, do not use a
-		// disk-backed SynchronousDiskIntStack.
-		return new MemIntStack(metaDir, name);
 	}
 
 	/**
