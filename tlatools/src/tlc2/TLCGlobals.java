@@ -52,7 +52,11 @@ public class TLCGlobals
 	public static String lnCheck = "default";
 	
 	public static boolean doLiveness() {
-		return !lnCheck.equals("final");
+		return !(lnCheck.equals("final") || lnCheck.equals("seqfinal"));
+	}
+
+	public static boolean doSequentialLiveness() {
+		return lnCheck.startsWith("seq");
 	}
 
 	public synchronized static void setNumWorkers(int n)

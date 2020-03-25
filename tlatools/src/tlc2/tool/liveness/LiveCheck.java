@@ -227,7 +227,7 @@ public class LiveCheck implements ILiveCheck {
 		 * a violation found by another LW. However, if any LW fails to check, we terminate
 		 * model checking after all LWs completed.
 		 */
-		final int wNum = Math.min(checker.length, TLCGlobals.getNumWorkers());
+		final int wNum = TLCGlobals.doSequentialLiveness() ? 1 : Math.min(checker.length, TLCGlobals.getNumWorkers());
 		final ExecutorService pool = Executors.newFixedThreadPool(wNum);
 		// CS is really just a container around the set of Futures returned by the pool. It saves us from
 		// creating a low-level array.
