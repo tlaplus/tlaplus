@@ -1,6 +1,6 @@
 //def labels = ['windows', 'master', 'macos'] // labels for Jenkins node types we will build on
 def labels = ['master', 'macos']
-def branch = "mku-subdir"
+def branch = "master"
 def builders = [:]
 for (x in labels) {
     def label = x // Need to bind the label variable before the closure - can't do 'for (label in labels)'
