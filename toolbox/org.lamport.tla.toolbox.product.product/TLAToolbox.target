@@ -57,7 +57,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0"/>
-<repository id="abstratt" location="jar:https://raw.githubusercontent.com/tlaplus/tlaplus/mku-subdir/toolbox/org.lamport.tla.toolbox.product.product/cachedTargetPlatform/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
+<repository id="abstratt" location="jar:https://raw.githubusercontent.com/tlaplus/tlaplus/master/toolbox/org.lamport.tla.toolbox.product.product/cachedTargetPlatform/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="0.0.0"/>
