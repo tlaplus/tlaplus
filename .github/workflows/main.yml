@@ -157,6 +157,19 @@ jobs:
            ## https://developer.github.com/v3/repos/releases/#edit-a-release
            curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_6_1.json -X PATCH --header "Content-Type: application/json"
 
+      ##
+      ## Upload tla2tools.jar to Github maven packages.
+      ##
+    - name: Upload to Github maven packages
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           cd tlatools/org.lamport.tlatools/
+           ## Strip packages from the tla2tools.jar fatjar that are declared dependencies of the maven package (see github.xml).
+           zip -d dist/tla2tools.jar javax/\* com/\* META-INF/mailcap META-INF/javamail*
+           ## github.xml replaces the Tycho pom.xml with a specific one to publish tla2tools.jar.
+           cp github.xml pom.xml
+           mvn -Dgithub.packages.username=${{ github.actor }} -Dgithub.packages.password=${{ secrets.GITHUB_TOKEN }} deploy -Dfile=dist/tla2tools.jar
+
       ################################# macOS #################################
 
       ##
