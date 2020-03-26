@@ -21,7 +21,7 @@ jobs:
            #sudo apt-get install jq --no-install-recommends -y
 
            ## Get id of existing draft release with given name.
-           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.draft==true and .name=="The Aristotle release") | .id')
+           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.name=="The Aristotle release") | .id')
            echo $DRAFT_RELEASE
 
            ## Remove any old assets before we upload new ones in subsequent jobs/steps.
@@ -139,7 +139,7 @@ jobs:
       if: matrix.operating-system == 'ubuntu-latest'
       run: |
            ## Crawl release id
-           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.draft==true and .name=="${{ matrix.GITHUB_RELEASE_NAME }}") | .id')
+           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.name=="${{ matrix.GITHUB_RELEASE_NAME }}") | .id')
            ## Upload assets
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=tla2tools.jar --upload-file tlatools/org.lamport.tlatools/dist/tla2tools.jar
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}}
@@ -213,5 +213,5 @@ jobs:
            codesign --keychain tla --deep --display --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
            ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
            ## Upload signed TLAToolbox zip to Github release.
-           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.draft==true and .name=="${{ matrix.GITHUB_RELEASE_NAME }}") | .id')
+           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.name=="${{ matrix.GITHUB_RELEASE_NAME }}") | .id')
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{ matrix.TOOLBOX_PRODUCT_ZIP }} --upload-file ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
