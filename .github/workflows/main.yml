@@ -167,8 +167,7 @@ jobs:
            ## Strip packages from the tla2tools.jar fatjar that are declared dependencies of the maven package (see github.xml).
            zip -d dist/tla2tools.jar javax/\* com/\* META-INF/mailcap META-INF/javamail*
            ## github.xml replaces the Tycho pom.xml with a specific one to publish tla2tools.jar.
-           cp github.xml pom.xml
-           mvn -Dgithub.packages.username=${{ github.actor }} -Dgithub.packages.password=${{ secrets.GITHUB_TOKEN }} deploy -Dfile=dist/tla2tools.jar
+           mvn deploy:deploy-file -Dgithub.packages.username=${{ github.actor }} -Dgithub.packages.password=${{ secrets.GITHUB_TOKEN }} -Dfile=dist/tla2tools.jar -Durl=https://maven.pkg.github.com/${{ github.repository }} -DpomFile=github.xml -DrepositoryId=github -f github.xml
 
       ################################# macOS #################################
 
