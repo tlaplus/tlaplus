@@ -30,10 +30,6 @@ jobs:
               ## DELETE /repos/:owner/:repo/releases/assets/:asset_id
               curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$id
            done
-    - uses: actions/delete-package-versions@v1
-      with:
-        package-name: 'org.lamport.tla2tools'
-        num-old-versions-to-delete: 3
 
   build:
     needs: [release]
