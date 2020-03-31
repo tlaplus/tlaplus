@@ -64,6 +64,7 @@ jobs:
     ## git sha of this build.
     ## 
     - name: Update tags
+      if: matrix.operating-system == 'ubuntu-latest'
       run: |
         git config --local user.email "tlaplus-action@github.com"
         git config --local user.name "TLA+ GitHub Action"
