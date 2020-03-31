@@ -102,7 +102,7 @@ public class ConcurrentTLCTrace extends TLCTrace {
 	}
 	
 	public TLCStateInfo[] getTrace(final TLCState from, final TLCState to) throws IOException {
-		if (to.isInitial()) {
+		if (to.isInitial() || from.equals(to)) {
 			return new TLCStateInfo[] {new TLCStateInfo(to)};
 		}
 		
