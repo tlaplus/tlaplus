@@ -271,7 +271,11 @@ public class TLCTrace {
 	 * to offer additional API s.t. the seed of RandomEnumerableValues gets
 	 * passed as part of the method call.
 	 */
-	protected final TLCStateInfo[] getTrace(LongVec fps) {
+	protected final TLCStateInfo[] getTrace(final LongVec fps) {
+		return getTrace(null, fps);
+	}
+
+	protected final TLCStateInfo[] getTrace(TLCStateInfo sinfo, final LongVec fps) {
 		// Re-Initialize the rng with the seed value recorded and used during the model
 		// checking phase. Otherwise, we won't be able to reconstruct the error trace
 		// because the set of initial states is likely to be different.
@@ -293,18 +297,15 @@ public class TLCTrace {
 		final int len = fps.size();
 		final TLCStateInfo[] res = new TLCStateInfo[len];
 		if (len > 0) {
-			// Recover initial state from its fingerprint.
-			long fp = fps.elementAt(len - 1);
-			TLCStateInfo sinfo = this.tool.getState(fp);
 			if (sinfo == null) {
-				MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
-				MP.printError(EC.TLC_BUG, "1 " + Long.toString(fp));
-				System.exit(1);
+				// Recreate initial state from its fingerprint.
+				final long fp = fps.elementAt(fps.size() - 1);
+				sinfo = this.tool.getState(fp);
 			}
 			// Recover successor states from its predecessor and its fingerprint.
 			res[stateNum++] = sinfo;
 			for (int i = len - 2; i >= 0; i--) {
-				fp = fps.elementAt(i);
+				long fp = fps.elementAt(i);
 				sinfo = this.tool.getState(fp, sinfo.state);
 				if (sinfo == null) {
 					/*

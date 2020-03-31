@@ -589,4 +589,19 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 		vos.assign(res, index);
 		return res;
 	}
+
+	public TLCState toState() {
+		final TLCState state = TLCState.Empty.createEmpty();
+		final OpDeclNode[] vars = state.getVars();
+		for (int i = 0; i < vars.length; i++) {
+			final UniqueString name = vars[i].getName();
+			int rlen = this.names.length;
+			for (int j = 0; j < rlen; j++) {
+				if (name.equals(this.names[j])) {
+					state.bind(name, this.values[j]);
+				}
+			}
+		}
+		return state;
+	}
 }

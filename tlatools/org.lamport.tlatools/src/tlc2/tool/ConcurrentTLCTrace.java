@@ -100,6 +100,31 @@ public class ConcurrentTLCTrace extends TLCTrace {
 		
 		return getTrace(fps);
 	}
+	
+	public TLCStateInfo[] getTrace(final TLCState from, final TLCState to) throws IOException {
+		if (to.isInitial()) {
+			return new TLCStateInfo[] {new TLCStateInfo(to)};
+		}
+		
+		final LongVec fps = new LongVec();
+
+		// Starting at the given start fingerprint (which is the end of the
+		// trace from the point of the initial states), the sequence of
+		// predecessors fingerprints are reconstructed from the trace files up to
+		// an initial state.
+		synchronized (this) {
+			Record record = Record.getPredecessor(to, this.workers);
+			while (record.fp != from.fingerPrint()) {
+				fps.addElement(record.fp);
+				record = record.getPredecessor();
+			}
+			// The fp of the final initial state.
+			fps.addElement(record.fp);
+			assert 0 <= fps.size() && fps.size() <= getLevel();
+		}
+		
+		return getTrace(new TLCStateInfo(from), fps);
+	}
 
 	/**
 	 * Write out a sequence of states that reaches s2 from an initial state,
