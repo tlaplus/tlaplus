@@ -62,7 +62,7 @@ jobs:
       ## Configure SSH privkey (INRIA upload below)
       ##
     - name: Set up SSH private key
-      run: 'echo "$INRIA_SSH_PRIVKEY" > ~/.ssh/id_rsa'
+      run: 'mkdir -p ~/.ssh && echo "$INRIA_SSH_PRIVKEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa'
       shell: bash
       env:
         INRIA_SSH_PRIVKEY: ${{ secrets.INRIA_SSH_PRIVKEY }}
