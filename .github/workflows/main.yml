@@ -59,6 +59,15 @@ jobs:
         GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       ##
+      ## Configure SSH privkey (INRIA upload below)
+      ##
+    - name: Set up SSH private key
+      run: 'echo "$INRIA_SSH_PRIVKEY" > ~/.ssh/id_rsa'
+      shell: bash
+      env:
+        INRIA_SSH_PRIVKEY: ${{ secrets.INRIA_SSH_PRIVKEY }}
+
+      ##
       ## Set up Comodo code signing cert/key and configure maven (settings.xml) to 
       ## have CODESIGN_KEYSTOREPASS_KEY, path to ComodoCertificate.p12, and the alias
       ## of the cert/key in ComodoCertificate.p12.
@@ -150,7 +159,13 @@ jobs:
            ## Update draft release with latest changelog in case it changed.
            ## https://developer.github.com/v3/repos/releases/#edit-a-release
            curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_6_1.json -X PATCH --header "Content-Type: application/json"
- 
+
+    - name: Upload assets to INRIA
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           ## Upload p2 and apt repository to INRIA machine.
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -av toolbox/org.lamport.tla.toolbox.product.product/target/repository/ github@upload.tlapl.us:
+
     ## 
     ## Update all git tags to make the download urls work, i.e.
     ## //github.com/tlaplus/tlaplus/releases/download/nightly/tla2tools.jar
