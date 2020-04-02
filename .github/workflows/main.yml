@@ -109,13 +109,13 @@ jobs:
       ##
       ## Create RPM out of Linux Toolbox zip.
       ##
-    - name: Create RPM (RedHat/CentOS package)
-      if: matrix.operating-system == 'ubuntu-latest'
-      run: |
-           sudo apt-get install alien --no-install-recommends -y
-           cd toolbox/org.lamport.tla.toolbox.product.product/target/
-           fakeroot alien --to-rpm --scripts TLAToolbox-?.?.?-linux.gtk.amd64.deb
-           cp TLA*.rpm products/
+#    - name: Create RPM (RedHat/CentOS package)
+#      if: matrix.operating-system == 'ubuntu-latest'
+#      run: |
+#           sudo apt-get install alien --no-install-recommends -y
+#           cd toolbox/org.lamport.tla.toolbox.product.product/target/
+#           fakeroot alien --to-rpm --scripts TLAToolbox-?.?.?-linux.gtk.amd64.deb
+#           cp TLA*.rpm products/
 
       ## 
       ## Upload Linux and Windows Toolbox zip and tla2tools.jar to Github release.
