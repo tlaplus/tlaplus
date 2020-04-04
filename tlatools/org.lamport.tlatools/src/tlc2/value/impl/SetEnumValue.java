@@ -54,6 +54,10 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 	  this(new ValueVec(0), true);
   }
   
+  public SetEnumValue(final Value elem) {
+	  this(new Value[] {elem}, true); // single element is normalized by definition.
+  }
+  
   public SetEnumValue(CostModel cm) {
 	  this();
 	  this.cm = cm;
