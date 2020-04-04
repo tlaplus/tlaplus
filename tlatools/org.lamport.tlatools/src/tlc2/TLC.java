@@ -1374,8 +1374,11 @@ public class TLC {
 														"interval between the collection of coverage information;\n"
     														+ "if not specified, no coverage will be collected", true));
     	sharedArguments.add(new UsageGenerator.Argument("-deadlock",
-														"if specified DO NOT CHECK FOR DEADLOCK; default\n"
-															+ "behavior is to check for deadlock", true));
+														"if specified DO NOT CHECK FOR DEADLOCK. Setting the flag is\n"
+															+ "the same as setting CHECK_DEADLOCK to FALSE in config\n"
+															+ "file. When the flag is specified, config entry is\n"
+															+ "ignored; default behavior is to check for deadlock",
+														true));
     	sharedArguments.add(new UsageGenerator.Argument("-difftrace",
 														"show only the differences between successive states when\n"
 															+ "printing trace information; defaults to printing\n"
