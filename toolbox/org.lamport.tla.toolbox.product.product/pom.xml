@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>parent</artifactId>
+    <groupId>tlatoolbox</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+  <groupId>tlatoolbox</groupId>
+  <artifactId>org.lamport.tla.toolbox.product.product</artifactId>
+  <!-- Release version goes here. -->
+  <version>1.4.0-SNAPSHOT</version>
+  <packaging>eclipse-repository</packaging>
+  
+  <properties>
+    <product.version>${toolbox.version}</product.version>
+    <!-- Format build timestamp to adhere to the Debian package guidelines -->
+    <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+    <product.build>${maven.build.timestamp}</product.build>
+    <!-- Do not include non-code project in Sonar reporting. -->
+    <sonar.skip>true</sonar.skip>
+  </properties>
+  
+  <build>
+	<plugins>
+		<!-- attach the .target file definition to is artifact so it can be referred 
+			to below in the target-platform-configuration -->
+		<plugin>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>build-helper-maven-plugin</artifactId>
+			<version>1.3</version>
+			<executions>
+				<execution>
+					<id>attach-artifacts</id>
+					<phase>package</phase>
+					<goals>
+						<goal>attach-artifact</goal>
+					</goals>
+					<configuration>
+						<artifacts>
+							<artifact>
+								<file>TLAToolbox.target</file>
+								<type>target</type>
+								<classifier>TLAToolbox</classifier>
+							</artifact>
+						</artifacts>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+		<plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-director-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <executions>
+          <execution>
+            <!-- install the product for all configured os/ws/arch environments 
+              using p2 director -->
+            <id>materialize-products</id>
+            <phase>package</phase>
+            <goals>
+              <goal>materialize-products</goal>
+            </goals>
+          </execution>
+            <!-- (optional) create product zips (one per os/ws/arch) -->
+          <execution>
+            <id>archive-products</id>
+			<phase>verify</phase>
+            <goals>
+              <goal>archive-products</goal>
+            </goals>
+          </execution>
+        </executions>
+        <!-- (optional) customize the root folder name of the product zip -->
+        <configuration>
+          <products>
+            <product>
+              <id>org.lamport.tla.toolbox.product.product</id>
+              <!-- archiveFileName sets the prefix of the resulting toolbox
+                   zip files. It also has to contain the version because the
+                   Tycho developers choose adherence to administrative processes
+                   over features. The version segment has to be manually increment
+                   upon a release.  
+                   see https://bugs.eclipse.org/bugs/show_bug.cgi?id=357503#c22 -->
+              <archiveFileName>TLAToolbox-${product.version}</archiveFileName>
+              <rootFolder>toolbox</rootFolder>
+			   <!-- This causes the Toolbox to be packaged as a single Application Bundle 
+					on Mac. Applciation Bundles are the default packaging for Mac where the single 
+					file can simply be dropped into "Applications". -->
+              <rootFolders><macosx>TLA+ Toolbox.app</macosx></rootFolders>
+            </product>
+          </products>
+        </configuration>
+      </plugin>
+      
+      <!-- Package Toolbox's Linux zip for Debian/Ubuntu -->
+		<plugin>
+			<artifactId>jdeb</artifactId>
+			<groupId>org.vafer</groupId>
+			<version>1.5</version>
+			<executions>
+				<execution>
+					<phase>package</phase>
+					<goals>
+						<goal>jdeb</goal>
+					</goals>
+					<configuration>
+					    <deb>${project.build.directory}/TLAToolbox-${product.version}-linux.gtk.amd64.deb</deb>
+						<snapshotExpand>true</snapshotExpand>
+						<verbose>false</verbose>
+						<dataSet>
+						    <data>
+						        <src>src/deb/usr/share/applications/tla+toolbox.desktop</src>
+						        <type>file</type>
+								<mapper>
+									<type>perm</type>
+									<prefix>/usr/share/applications/</prefix>
+									<user>root</user>
+									<group>root</group>
+								</mapper>
+						    </data>
+						    <data>
+						        <src>src/deb/usr/share/mime/packages/tla+toolbox.xml</src>
+						        <type>file</type>
+								<mapper>
+									<type>perm</type>
+									<prefix>/usr/share/mime/packages/</prefix>
+									<user>root</user>
+									<group>root</group>
+								</mapper>
+						    </data>
+						    <data>
+						        <src>src/deb/usr/share/icons/hicolor/32x32/apps/tla+toolbox.png</src>
+						        <type>file</type>
+								<mapper>
+									<type>perm</type>
+									<prefix>/usr/share/icons/hicolor/32x32/apps/</prefix>
+									<user>root</user>
+									<group>root</group>
+								</mapper>
+						    </data>
+						    <data>
+						        <src>src/deb/usr/share/icons/hicolor/48x48/apps/tla+toolbox.png</src>
+						        <type>file</type>
+								<mapper>
+									<type>perm</type>
+									<prefix>/usr/share/icons/hicolor/48x48/apps/</prefix>
+									<user>root</user>
+									<group>root</group>
+								</mapper>
+						    </data>
+							<data>
+								<src>${project.build.directory}/products/org.lamport.tla.toolbox.product.product/linux/gtk/x86_64/toolbox</src>
+								<type>directory</type>
+								<!-- Disable Toolbox's built-in update 
+                                     manager. Using the .deb archives
+                                     is mutually exclusive with the 
+                                     built-in updater.
+                                     
+                                     Technically, simply remove p2's
+                                     complete metadata from final
+                                     installation.
+                                 -->
+                  				<excludes>p2/</excludes>
+								<mapper>
+									<type>perm</type>
+									<prefix>/opt/TLA+Toolbox</prefix>
+									<user>root</user>
+									<group>root</group>
+								</mapper>
+							</data>
+						</dataSet>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+    </plugins>
+  </build>
+</project>

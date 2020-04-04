@@ -39,7 +39,7 @@
 #  - mvn -B -V --settings .travis-settings.xml -Dmaven.test.halt=true verify
 
  script:
-  - ant -f tlatools/customBuild.xml -Dmaven.test.halt=true compile compile-test dist test-dist
+  - ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dmaven.test.halt=true compile compile-test dist test-dist
 
  after_failure:
   - dmesg
