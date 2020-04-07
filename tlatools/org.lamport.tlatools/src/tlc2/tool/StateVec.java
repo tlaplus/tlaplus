@@ -72,6 +72,10 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
 	  return this.elementAt(size() - 1) == state;
   }
   
+  public TLCState first() {
+	return elementAt(0);
+  }
+
   public final void clear() {
     this.size = 0;
   }

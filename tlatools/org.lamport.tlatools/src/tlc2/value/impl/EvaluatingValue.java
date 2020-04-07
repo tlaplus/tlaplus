@@ -44,10 +44,16 @@ import util.Assert.TLCRuntimeException;
 import util.WrongInvocationException;
 
 public class EvaluatingValue extends OpValue implements Applicable {
-  private final MethodHandle mh;
-  private final Method md;
-  private final int minLevel;
+  protected final MethodHandle mh;
+  protected final Method md;
+  protected final int minLevel;
 
+  protected EvaluatingValue(final MethodHandle mh, final Method md, final int minLevel) {
+	  this.mh = mh;
+	  this.md = md;
+	  this.minLevel = minLevel;
+  }
+  
   /* Constructor */
 	public EvaluatingValue(final Method md, final int minLevel) {
 		this.md = md;

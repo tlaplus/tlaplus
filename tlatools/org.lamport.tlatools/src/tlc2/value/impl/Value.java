@@ -129,6 +129,19 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
   public boolean hasSource() {
 	  return source != null;
   }
+  
+  public boolean hasData() {
+	  return false;
+  }
+  
+  public Object getData() {
+	  return null;
+  }
+  
+  public Object setData(final Object obj) {
+		throw new WrongInvocationException("Value: Can not set data\n" +
+			    Values.ppr(toString()));
+  }
 
   public final boolean isEmpty() {
     try {

@@ -5,6 +5,8 @@
 
 package tlc2.util;
 
+import java.util.function.Function;
+
 import tla2sany.semantic.SymbolNode;
 
 // Context is used two times:
@@ -79,6 +81,28 @@ public final class Context {
 			cur = cur.next;
 		}
 		return null; // On Empty Context (end of chain), return null value
+	}
+	
+	public final Object lookup(final Function<SymbolNode, Boolean> f) {
+		Context cur = this;
+		while (cur != Empty) {
+			if (f.apply(cur.name)) {
+				return cur.value;
+			}
+			cur = cur.next;
+		}
+		return null;
+	}
+
+	public final SymbolNode lookupName(final Function<SymbolNode, Boolean> f) {
+		Context cur = this;
+		while (cur != Empty) {
+			if (f.apply(cur.name)) {
+				return cur.name;
+			}
+			cur = cur.next;
+		}
+		return null;
 	}
 
 	/**

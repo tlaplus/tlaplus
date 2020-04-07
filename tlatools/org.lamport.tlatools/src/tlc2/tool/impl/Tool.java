@@ -749,10 +749,14 @@ public abstract class Tool
    */
   @Override
   public final StateVec getNextStates(Action action, TLCState state) {
+	  return getNextStates(action, action.con, state);
+  }
+  
+  public final StateVec getNextStates(final Action action, final Context ctx, final TLCState state) {
     ActionItemList acts = ActionItemList.Empty;
     TLCState s1 = TLCState.Empty.createEmpty();
     StateVec nss = new StateVec(0);
-    this.getNextStates(action, action.pred, acts, action.con, state, s1, nss, action.cm);
+    this.getNextStates(action, action.pred, acts, ctx, state, s1, nss, action.cm);
     if (coverage) { action.cm.incInvocations(nss.size()); }
     return nss;
   }

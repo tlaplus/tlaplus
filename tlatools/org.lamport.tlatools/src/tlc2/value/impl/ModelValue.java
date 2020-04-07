@@ -337,5 +337,23 @@ public class ModelValue extends Value implements IModelValue {
     }
   }
 
+	// The presence of this field is justified by a small number of ModelValue
+	// instances being created overall.
+	private Object data;
 
+	@Override
+	public boolean hasData() {
+		return data != null;
+	}
+
+	@Override
+	public Object getData() {
+		return data;
+	}
+
+	@Override
+	public Object setData(final Object obj) {
+		this.data = obj;
+		return obj;
+	}
 }

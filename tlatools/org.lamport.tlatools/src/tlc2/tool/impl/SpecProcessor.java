@@ -66,12 +66,14 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.overrides.Evaluation;
 import tlc2.overrides.ITLCOverrides;
+import tlc2.overrides.TLAPlusCallable;
 import tlc2.overrides.TLAPlusOperator;
 import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
 import tlc2.tool.EvalException;
 import tlc2.tool.Specs;
+import tlc2.tool.TLAPlusExecutorState;
 import tlc2.tool.TLCStateMut;
 import tlc2.tool.ToolGlobals;
 import tlc2.util.Context;
@@ -81,6 +83,7 @@ import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.CallableValue;
 import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
@@ -373,9 +376,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             varNames[i].setLoc(i);
         }
 
-        // set variables to the static filed in the state
-        TLCStateMut.setVariables(this.variablesNodes);
-
         // SZ 11.04.2009: set the number of variables
         UniqueString.setVariableCount(varDecls.length);
 
@@ -573,6 +573,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		// the complete classpath). The convention is to name the index class
 		// "tlc2.overrides.TLCOverrides":
         //TODO: Support multiple loader classes (MyTLCOverrides, AnotherTLCOverrides, ...).
+        boolean hasCallableValue = false;
 		final Class<?> idx = this.tlaClass.loadClass("tlc2.overrides.TLCOverrides");
 		if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {
 			try {
@@ -608,6 +609,38 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 							// Print success of loading the module override.
 							MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
 									evaluation.module() + "!" + evaluation.definition(),
+									c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+		                    
+		                    // continue with next method (don't try to also load Execution annotation below).
+		                    continue LOOP;
+						}
+						
+						final TLAPlusCallable jev = m.getAnnotation(TLAPlusCallable.class);
+						if (jev != null) {
+							final Value val = new CallableValue(m, jev.minLevel());
+							
+							final ModuleNode moduleNode = modSet.get(jev.module());
+							if (moduleNode == null) {
+								if (jev.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
+										jev.module() + "!" + jev.definition(),
+										c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+								continue LOOP;
+							}
+							final OpDefNode opDef = moduleNode.getOpDef(jev.definition());
+							if (opDef == null) {
+								if (jev.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
+										jev.module() + "!" + jev.definition(),
+										c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+								continue LOOP;
+							}
+							
+							opDef.getBody().setToolObject(toolId, val);
+		                    this.defns.put(jev.definition(), val);
+		                    hasCallableValue = true;
+		                    
+							// Print success of loading the module override.
+							MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+									jev.module() + "!" + jev.definition(),
 									c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
 		                    
 		                    // continue with next method (don't try to also load Execution annotation below).
@@ -674,6 +707,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 this.defns.put(lhs, myVal);
                 overriden.add(lhs.toString());
             }
+        }
+
+        // set variables to the static filed in the state
+        if (hasCallableValue) {
+        	TLAPlusExecutorState.setVariables(this.variablesNodes);
+        } else {
+            TLCStateMut.setVariables(this.variablesNodes);
         }
 
         // Apply config file overrides to operator definitions:

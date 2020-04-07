@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SymbolNode;
@@ -114,4 +115,13 @@ public abstract class TLCState implements Cloneable, Serializable {
   /* Returns a string representation of this state.  */
   public abstract String toString();
   public abstract String toString(TLCState lastState);
+  
+  public Object execCallable() throws Exception {
+	  // no-op - see TLAPlusExecutorState
+	  return null;
+  }
+  
+  public void setCallable(Callable<?> cl) {
+	  // no-op - see TLAPlusExecutorState
+  }
 }

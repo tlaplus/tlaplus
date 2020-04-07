@@ -48,7 +48,7 @@ public class ContextTest {
 		assertNull(Context.Empty.lookup(new DummySymbolNode()));
 		assertNull(Context.Empty.lookup(new DummySymbolNode(), true));
 		assertNull(Context.Empty.lookup(new DummySymbolNode(), false));
-		assertNull(Context.Empty.lookup(null));
+		assertNull(Context.Empty.lookup((SymbolNode)null));
 		assertNull(Context.Empty.lookup(null, true));
 		assertNull(Context.Empty.lookup(null, false));
 	}
@@ -60,7 +60,7 @@ public class ContextTest {
 		assertNull(ctx.lookup(new DummySymbolNode()));
 		assertNull(ctx.lookup(new DummySymbolNode(), true));
 		assertNull(ctx.lookup(new DummySymbolNode(), false));
-		assertNull(ctx.lookup(null));
+		assertNull(ctx.lookup((SymbolNode)null));
 		assertNull(ctx.lookup(null, false));
 		assertNull(ctx.lookup(null, true));
 	}
@@ -68,7 +68,7 @@ public class ContextTest {
 	@Test
 	public void testLookupSymbolNodeNull() {
 		final Context ctx = Context.branch(Context.Empty);
-		assertNull(ctx.lookup(null));
+		assertNull(ctx.lookup((SymbolNode)null));
 	}
 	
 	@Test
