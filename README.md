@@ -10,6 +10,6 @@ License
 -------
 
 Copyright (c) 199?-2003 HP Corporation  
-Copyright (c) 2003-2017 Microsoft Corporation  
+Copyright (c) 2003-2020 Microsoft Corporation
 
 Licensed under the [MIT License](http://lamport.azurewebsites.net/tla/license.html)
