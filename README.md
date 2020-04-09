@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/tlaplus/tlaplus.svg?branch=master)](https://travis-ci.org/tlaplus/tlaplus)
 
-For more information, visit https://research.microsoft.com/en-us/um/people/lamport/tla/tla.html
+For more information, visit http://lamport.azurewebsites.net/tla/tla.html
 
 Contributing
 ------------
