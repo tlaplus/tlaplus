@@ -812,7 +812,7 @@ public class TLC {
                     }
                 } else
                 {
-                    printErrorMsg("Error: expect an integer for -workers option.");
+                    printErrorMsg("Error: expect an integer for -fp option.");
                     return false;
                 }
             } else if (args[index].equals("-fpmem"))
