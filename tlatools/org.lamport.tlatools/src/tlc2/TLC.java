@@ -747,7 +747,9 @@ public class TLC {
                 {
                     try
                     {
-                        int num = Integer.parseInt(args[index]);
+                        int num = args[index].strip().toLowerCase().equals("auto")
+                                ? Runtime.getRuntime().availableProcessors()
+                                : Integer.parseInt(args[index]);
                         if (num < 1)
                         {
                             printErrorMsg("Error: at least one worker required.");
@@ -757,12 +759,12 @@ public class TLC {
                         index++;
                     } catch (Exception e)
                     {
-                        printErrorMsg("Error: worker number required. But encountered " + args[index]);
+                        printErrorMsg("Error: worker number or 'auto' required. But encountered " + args[index]);
                         return false;
                     }
                 } else
                 {
-                    printErrorMsg("Error: expect an integer for -workers option.");
+                    printErrorMsg("Error: expect an integer or 'auto' for -workers option.");
                     return false;
                 }
             } else if (args[index].equals("-dfid"))
@@ -1438,7 +1440,9 @@ public class TLC {
 														"an absolute path to a file in which to log user output (for\n"
     														+ "example, that which is produced by Print)", true));
     	sharedArguments.add(new UsageGenerator.Argument("-workers", "num",
-														"the number of TLC worker threads; defaults to 1", true));
+														"the number of TLC worker threads; defaults to 1. Use 'auto'\n"
+    														+ "to automatically select the number of threads based on the\n"
+    														+ "number of available cores.", true));
     	
     	sharedArguments.add(new UsageGenerator.Argument("SPEC", null));
     	
