@@ -502,6 +502,9 @@ public abstract class Tool
           if (alen == 0) {
             if (val instanceof MethodValue) {
               bval = ((MethodValue)val).apply(EmptyArgs, EvalControl.Init);
+            } else if (val instanceof EvaluatingValue) {
+              // Allow EvaluatingValue overwrites to have zero arity.
+              bval = ((EvaluatingValue) val).eval(this, args, c, ps, TLCState.Empty, EvalControl.Init, cm);
             }
           }
           else {
@@ -1649,10 +1652,6 @@ public abstract class Tool
             	  res = ((EvaluatingValue) val).eval(this, args, c, s0, s1, control, cm);
               }
             }
-            else if (val instanceof Evaluator) {
-            	  Evaluator evaluator = (Evaluator) val;
-            	  res = evaluator.eval(this, args, c, s0, s1, control, cm);
-            } 
             else {
               if (val instanceof OpValue) {
             	  res = ((OpValue) val).eval(this, args, c, s0, s1, control, cm);
@@ -2624,6 +2623,8 @@ public abstract class Tool
             if (val instanceof MethodValue)
             {
               bval = ((MethodValue) val).apply(EmptyArgs, EvalControl.Clear); // EvalControl.Clear is ignored by MethodValuea#apply
+            } else if (val instanceof EvaluatingValue) {
+              bval = ((EvaluatingValue) val).eval(this, args, c, s0, s1, EvalControl.Enabled, cm);
             }
           } else
           {

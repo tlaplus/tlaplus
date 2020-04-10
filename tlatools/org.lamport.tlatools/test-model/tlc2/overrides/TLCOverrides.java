@@ -25,6 +25,8 @@
  ******************************************************************************/
 package tlc2.overrides;
 
+import tlc2.tool.EvaluatingValueTest;
+
 public class TLCOverrides implements ITLCOverrides {
 
 	/* (non-Javadoc)
@@ -32,7 +34,7 @@ public class TLCOverrides implements ITLCOverrides {
 	 */
 	@Override
 	public Class[] get() {
-		return new Class[] { UserModuleOverrideAnnotationImpl.class };
+		return new Class[] { EvaluatingValueTest.class, UserModuleOverrideAnnotationImpl.class };
 	}
 
 }

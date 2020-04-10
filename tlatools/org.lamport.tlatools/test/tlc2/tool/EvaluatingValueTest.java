@@ -28,6 +28,8 @@ package tlc2.tool;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tlc2.output.EC;
@@ -41,6 +43,7 @@ import tlc2.value.impl.IntValue;
 import tlc2.value.impl.Value;
 import util.UniqueString;
 
+@RunWith(BlockJUnit4ClassRunner.class)
 public class EvaluatingValueTest extends ModelCheckerTestCase {
 
 	public EvaluatingValueTest() {
@@ -50,7 +53,7 @@ public class EvaluatingValueTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		// Two states: x = 1 and x = 42
+		// Two states: x = 1 and x = 42 (see action method below).
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "2", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
 
@@ -65,7 +68,7 @@ public class EvaluatingValueTest extends ModelCheckerTestCase {
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) {
 
 		// Set value of x variable of successor state to 42. 
-		s1.bind(UniqueString.uniqueStringOf("x"), IntValue.gen(42));
+		s1.bind(UniqueString.of("x"), IntValue.gen(42));
 		
 		return BoolValue.ValTrue;
 	}

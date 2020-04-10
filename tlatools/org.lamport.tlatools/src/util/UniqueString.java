@@ -261,6 +261,10 @@ public final class UniqueString implements Serializable
         return internTbl.put(str);
     }
 
+	public static UniqueString of(String str) {
+		return uniqueStringOf(str);
+	}
+
     /**
      * If there exists a UniqueString object obj such that obj.getTok()
      * equals tok, then uidToUniqueString(i) returns obj; otherwise,    
@@ -324,5 +328,4 @@ public final class UniqueString implements Serializable
     {
         internTbl.setSource(source);
     }
-
 }

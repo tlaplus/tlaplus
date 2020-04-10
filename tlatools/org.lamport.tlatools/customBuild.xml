@@ -379,6 +379,7 @@
 					<!-- Just fail because of Quarantine runner. -->
 					<exclude name="tlc2/TLCTest.java"/>
 					<exclude name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
+					<exclude name="tlc2/tool/EvaluatingValueTest.java" />
 					<exclude name="tlc2/tool/UserModuleOverrideTest.java" />
 					<exclude name="tlc2/tool/UserModuleOverrideFromJarTest.java" />
 					<exclude name="tlc2/tool/UserModuleOverrideAnnotationTest.java" />
@@ -414,6 +415,11 @@
 					<exclude name="**/DetlefsTest.java" />
 					<exclude name="**/StarkMutexTest.java" />
 					<exclude name="**/SimpleMultiProcTest.java" />
+				</fileset>
+			</batchtest>
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${test.dir}">
+					<include name="tlc2/tool/EvaluatingValueTest.java" />
 				</fileset>
 			</batchtest>
 			<batchtest fork="yes" todir="${test.reports}">
