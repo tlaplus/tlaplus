@@ -97,13 +97,6 @@ public class OpApplNode extends ExprNode implements ExploreNode {
      // T.L. it is not clear to me if this array ranges over either of the
      // sets or over both of them. There can be a mixed set of bound variables.
 
-  public SymbolNode subExpressionOf = null ;
-    /***********************************************************************
-    * For an expression that is constructed as a subexpression of a        *
-    * UserDefinedOpNode or ThmOrAssumpDefNode, this field equals that      *
-    * node.                                                                *
-    ***********************************************************************/
-
 /***************************************************************************
 * For now, the boundSymbolLevel field is not needed.  To see why it might  *
 * be needed, search for the comment beginning:                             *

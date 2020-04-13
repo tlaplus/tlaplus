@@ -111,7 +111,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 
 		try {
 			// TEST_MODEL is where TLC should look for user defined .tla files
-			ToolIO.setUserDir(BASE_DIR + TEST_MODEL + path);
+			ToolIO.setUserDir(BASE_PATH + path);
 			
 			MP.setRecorder(recorder);
 			

@@ -375,8 +375,11 @@ public abstract class Tool
             Subst[] subs = init1.getSubsts();
             Context c1 = c;
             for (int i = 0; i < subs.length; i++) {
-              Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
+              final Subst sub = subs[i];
+              // See comments in SpecProcessor#processConfigSpec(ExprNode, Context, List) circa line 1068
+              if (c1.lookup(sub.getOp()) == null) {
+            	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
+              }
             }
             this.getInitStates(init1.getBody(), acts, c1, ps, states, cm);
             return;
@@ -813,8 +816,11 @@ public abstract class Tool
   	int slen = subs.length;
   	Context c1 = c;
   	for (int i = 0; i < slen; i++) {
-  	  Subst sub = subs[i];
-  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
+  	  final Subst sub = subs[i];
+  	  // See comments in SpecProcessor#processConfigSpec(ExprNode, Context, List) circa line 1068
+  	  if (c1.lookup(sub.getOp()) == null) {
+  		  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
+  	  }
   	}
   	return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }

@@ -1047,6 +1047,53 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                                     new String[] { opNode.getName().toString(), val.toString(), "spec" });
                 }
                 return;
+            } else {
+            	// ldq Apr 2020: this is a half-aimed dart throw to address the problem of a parameterized instantiation
+            	//					being a custom action defined as the SPECIFICATION
+            	
+				final SymbolNode opNode = pred1.getOperator();
+				final Object val = symbolNodeValueLookupProvider.lookup(opNode, c, false, toolId);
+				if (val instanceof OpDefNode) {
+					final ExprNode body = ((OpDefNode) val).getBody();
+					if (body instanceof SubstInNode) {
+						final ExprNode innerBody = ((SubstInNode) body).getBody();
+						if (innerBody instanceof OpApplNode) {
+							// We need to ensure that here, while we have the parameterized value in hand, that
+							//		we map it (via the Context) to the correct variable name so that it can
+							//		be resolved in model checking eval()s later.
+							final OpDeclNode[] variables = ((SubstInNode) ((OpDefNode) pred1.subExpressionOf).getBody())
+									.getInstantiatedModule().getVariableDecls();
+							Context c1 = c;
+							for (int i = 0; i < variables.length; i++) {
+								// We are wary of double mapping; the first time we do the mapping here of the value
+								//		from the spec, it is the correct mapping - however, we end up here again
+								//		in subsequent calls in use cases where the Specification defines an X-junctive
+								//		case involving parameterized instantiations (for example SpecB in the
+								//		ParameterizedInstantiation unit test) If we do not do the following check
+								//		for pre-existence, a blank lazy value mapping will be put into the context
+								//		for the parameterized value's key-name.
+								// It seems like a legitimate worry that this may break valid functionality, probably
+								//		not here, but perhaps in:
+								//	 Tool#getNextStatesImplSubstInKind(Action, SubstInNode, ActionItemList, Context,
+								//									   TLCState, TLCState, INextStateFunctor, CostModel)
+								//		or maybe:
+								//	 Tool#getInitStates(SemanticNode, ActionItemList, Context, TLCState, IStateFunctor,
+								//						CostModel)
+								if (c1.lookup(variables[i]) == null) {
+									c1 = c1.cons(variables[i],
+											symbolNodeValueLookupProvider.getVal(args[i], c, false, toolId));
+								}
+							}
+							if (symbolNodeValueLookupProvider.getLevelBound(body, c, toolId) == 1) {
+								initPredVec.addElement(new Action(Specs.addSubsts(body, subs), c1, ((OpDefNode) val)));
+							} else {
+								processConfigSpec(body, c1, subs);
+							}
+							
+							return;
+						}
+					}
+				}
             }
 
             int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getName());
