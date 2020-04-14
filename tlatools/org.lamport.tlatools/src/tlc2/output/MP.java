@@ -405,7 +405,7 @@ public class MP
         case EC.SYSTEM_METADIR_EXISTS:
             b.append("TLC writes its files to a directory whose name is generated from the current "
                     + "time.\nThis directory should be %1%, but that directory already exists.\n"
-                    + "Trying to run TLC again will probably fix this problem.");
+                    + "Running with the argument '-Dutil.FileUtil.milliseconds=true' should address this.");
             break;
 
         case EC.SYSTEM_METADIR_CREATION_ERROR:
