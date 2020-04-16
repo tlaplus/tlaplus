@@ -10,14 +10,13 @@ import util.ConfigCreatingModelCheckerTestCase;
 /**
  * This is the unit test for ParameterizedInstantiation.tla's SpecC.
  */
-public class ParameterizedSpecC extends ConfigCreatingModelCheckerTestCase {
-	public ParameterizedSpecC() {
+public class ParameterizedSpecCTest extends ConfigCreatingModelCheckerTestCase {
+	public ParameterizedSpecCTest() {
 		super("ParameterizedInstantiation", "SPECIFICATION\nSpecC\n");
 	}
 	
 	@Test
 	public void testSpecC() throws Exception {
-		assertTrue(recorder.recorded(EC.TLC_CONFIG_SPEC_IS_TRIVIAL));
-		setExitStatus(151);
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 	}
 }

@@ -10,8 +10,8 @@ import util.ConfigCreatingModelCheckerTestCase;
 /**
  * This is the unit test for ParameterizedInstantiation.tla's SpecB case plus a failing temporal check.
  */
-public class ParameterizedSpecBPrime extends ConfigCreatingModelCheckerTestCase {
-	public ParameterizedSpecBPrime() {
+public class ParameterizedSpecBPrimeTest extends ConfigCreatingModelCheckerTestCase {
+	public ParameterizedSpecBPrimeTest() {
 		super("ParameterizedInstantiation", "SPECIFICATION\nSpecB\nPROPERTY\nFalseAECheck\n");
 	}
 	

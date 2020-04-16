@@ -10,8 +10,8 @@ import util.ConfigCreatingModelCheckerTestCase;
 /**
  * This is the unit test for ParameterizedInstantiation.tla's Init-Next case.
  */
-public class ParameterizedInitNext extends ConfigCreatingModelCheckerTestCase {
-	public ParameterizedInitNext() {
+public class ParameterizedInitNextTest extends ConfigCreatingModelCheckerTestCase {
+	public ParameterizedInitNextTest() {
 		super("ParameterizedInstantiation", "INIT\nInit\nNEXT\nNext\n");
 	}
 	

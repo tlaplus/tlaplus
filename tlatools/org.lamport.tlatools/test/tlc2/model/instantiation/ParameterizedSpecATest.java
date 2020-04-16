@@ -10,8 +10,8 @@ import util.ConfigCreatingModelCheckerTestCase;
 /**
  * This is the unit test for ParameterizedInstantiation.tla's SpecA case.
  */
-public class ParameterizedSpecA extends ConfigCreatingModelCheckerTestCase {
-	public ParameterizedSpecA() {
+public class ParameterizedSpecATest extends ConfigCreatingModelCheckerTestCase {
+	public ParameterizedSpecATest() {
 		super("ParameterizedInstantiation", "SPECIFICATION\nSpecA\n");
 	}
 	
