@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/tlaplus/tlaplus.svg?branch=master)](https://travis-ci.org/tlaplus/tlaplus)
+[![TLC Build Status](https://travis-ci.org/tlaplus/tlaplus.svg?branch=master)](https://travis-ci.org/tlaplus/tlaplus)
+[![Toolbox Build Status](https://github.com/tlaplus/tlaplus/workflows/CI/badge.svg?branch=master)](https://github.com/tlaplus/tlaplus/actions?query=workflow%3ACI)
 
 For more information, visit http://lamport.azurewebsites.net/tla/tla.html
 
