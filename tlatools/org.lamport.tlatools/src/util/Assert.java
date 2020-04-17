@@ -4,6 +4,7 @@
 
 package util;
 
+import tlc2.output.EC;
 import tlc2.output.MP;
 
 /**
@@ -101,7 +102,7 @@ public class Assert
     {
         if (!condition) 
         {
-            throw new TLCRuntimeException(MP.getMessage(errorCode));
+            throw new TLCRuntimeException(errorCode, MP.getMessage(errorCode));
         }
     }
 
@@ -135,7 +136,7 @@ public class Assert
 
 		public TLCRuntimeException(String errorMsg) {
 			super(errorMsg);
-			this.errorCode = -1; // Unknown error code.
+			this.errorCode = EC.GENERAL; // Unknown error code.
 		}
 		
 		public TLCRuntimeException(int errorCode, String message) {
