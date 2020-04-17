@@ -542,6 +542,7 @@
 												
 						<exclude name="**/PCalTest.java" />
 						<exclude name="**/CommonTestCase.java" />
+						<exclude name="**/ConfigCreatingModelCheckerTestCase.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
 						<exclude name="**/PCalModelCheckerTestCase.java" />
 						<exclude name="**/SuiteTestCase.java" />
