@@ -167,35 +167,16 @@
 			<!-- Compress Toolbox plugins -->
 			<plugin>
 				<groupId>org.eclipse.tycho.extras</groupId>
-				<artifactId>tycho-pack200b-plugin</artifactId>
+				<artifactId>tycho-pack200a-plugin</artifactId>
 				<version>${tycho-version}</version>
 				<executions>
 					<execution>
 						<id>pack200-pack</id>
 						<goals>
-							<goal>pack</goal>
+							<goal>normalize</goal>
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<!-- Then, alter p2-metadata to make the .pack.gz
-			artifact visible from other modules -->
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-p2-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<executions>
-					<execution>
-						<id>p2-metadata</id>
-						<goals>
-							<goal>p2-metadata</goal>
-						</goals>
-						<phase>package</phase>
-					</execution>
-				</executions>
-				<configuration>
-					<defaultP2Metadata>false</defaultP2Metadata>
-				</configuration>
 			</plugin>
 			<plugin>
 			<groupId>org.eclipse.tycho</groupId>
@@ -244,6 +225,39 @@
 			                </goals>
 			            </execution>
 			         </executions>
+			</plugin>
+			<!-- Compress Toolbox plugins -->
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-pack200b-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>pack200-pack</id>
+						<goals>
+							<goal>pack</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Then, alter p2-metadata to make the .pack.gz
+			artifact visible from other modules -->
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>p2-metadata</id>
+						<goals>
+							<goal>p2-metadata</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<defaultP2Metadata>false</defaultP2Metadata>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
