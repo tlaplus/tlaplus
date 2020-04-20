@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.6.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.7.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.lamport.tla.toolbox.product.standalone/images/splash_small.png"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.6.1 of Day Month 20?? and includes:
-  - SANY Version 2.1 of 23 July 2017
-  - TLC Version 2.14 of 10 July 2019
-  - PlusCal Version 1.9 of 10 July 2019
+This is Version 1.7.0 of 20 April 2020 and includes:
+  - SANY Version 2.2 of 20 April 2020
+  - TLC Version 2.15 of 20 April 2020
+  - PlusCal Version 1.10 of 20 April 2020
   - TLATeX Version 1.0 of 20 September 2017
 
 Don&apos;t forget to click on help.  You can learn about features that you never knew about or have forgotten.
@@ -84,9 +84,9 @@ openFile
       <plugin id="com.jcraft.jsch" autoStart="true" startLevel="4" />
       <plugin id="ec2" autoStart="true" startLevel="4" />
       <plugin id="jclouds-core" autoStart="true" startLevel="4" />
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
-      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.http.jetty" autoStart="true" startLevel="3" />
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
@@ -95,11 +95,11 @@ openFile
       <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
       <plugin id="packet" autoStart="true" startLevel="4" />
       <plugin id="sts" autoStart="true" startLevel="4" />
-      <property name="eclipse.buildId" value="1.6.1" />
+      <property name="eclipse.buildId" value="1.7.0" />
    </configurations>
 
    <repositories>
-      <repository location="http://lamport.org/tlatoolbox/branches/1.6.1/toolboxUpdate/" enabled="true" />
+      <repository location="http://lamport.org/tlatoolbox/branches/1.7.0/toolboxUpdate/" enabled="true" />
       <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
    </repositories>
 

@@ -10,7 +10,7 @@
 	<groupId>org.lamport</groupId>
 	<artifactId>tla2tools</artifactId>
 	<name>TLA+ Tools</name>
-	<version>1.6.1-SNAPSHOT</version>
+	<version>1.7.0-SNAPSHOT</version>
 	<description>The TLC model checker, the syntax and semantic checker SANY, the PlusCal translator, and the LaTeX pretty printer.</description>
 	<packaging>jar</packaging>
 

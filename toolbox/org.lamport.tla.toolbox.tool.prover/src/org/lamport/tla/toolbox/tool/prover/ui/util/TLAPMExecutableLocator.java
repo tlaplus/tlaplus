@@ -120,7 +120,7 @@ public class TLAPMExecutableLocator {
 				
 				if (tlapm == null) {
 					// In some miraculous case the ProcessBuilder would get a different PATH environment and then
-					//		find this, but as of 1.6.1 this is moot and will result in the menu items able to launch
+					//		find this, but as of 1.7.0 this is moot and will result in the menu items able to launch
 					//		the prover not being enabled anyway...
 					tlapm = new Path(NIX_EXECUTABLE_NAME);
 				}

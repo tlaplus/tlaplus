@@ -40,7 +40,7 @@ public class IndexServlet extends URLHttpServlet {
 		writer.println(
 				"<p style=\"margin: 12px 20px;\">" +
 				"<b>Please note:</b> " +
-				"Starting with the 1.6.1 release of the Toolbox, we have removed the JNLP functionality previously " +
+				"Starting with the 1.7.0 release of the Toolbox, we have removed the JNLP functionality previously " +
 				"found on this page. This is due to our move towards full Java 11+ usage (support for Java WebStart " +
 				"was removed beginning with Java 9.)" + 
 				"<br/>" +
