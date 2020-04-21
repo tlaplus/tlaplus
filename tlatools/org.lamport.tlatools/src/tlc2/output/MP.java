@@ -780,15 +780,15 @@ public class MP
             break;
 
         case EC.TLC_MODULE_BAG_UNION1:
-            b.append("Attemtped to apply BagUnion to the following set, whose\nelement is not a bag:\n%1%");
+            b.append("Attempted to apply BagUnion to the following set, whose\nelement is not a bag:\n%1%");
             break;
 
         case EC.TLC_MODULE_TRANSITIVE_CLOSURE:
-            b.append("Attemtped to apply TransitiveClosure to a set containing\nthe following value:\n%1%");
+            b.append("Attempted to apply TransitiveClosure to a set containing\nthe following value:\n%1%");
             break;
 
         case EC.TLC_MODULE_COMPUTING_CARDINALITY:
-            b.append("Attemtped to compute cardinality of the value\n%1%");
+            b.append("Attempted to compute cardinality of the value\n%1%");
             break;
         case EC.TLC_MODULE_EVALUATING:
             b.append("Evaluating an expression of the form %1% when s is not a %2%:\n%3%");
