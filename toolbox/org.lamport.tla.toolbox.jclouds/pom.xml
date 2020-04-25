@@ -32,7 +32,7 @@
               <outputDirectory>${project.build.directory}/../files/</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${project.build.directory}/../../tlatools/dist/</directory>
+                  <directory>${project.build.directory}/../../../tlatools/org.lamport.tlatools/dist/</directory>
                   <include>tla2tools.jar</include>
                 </resource>
               </resources>
