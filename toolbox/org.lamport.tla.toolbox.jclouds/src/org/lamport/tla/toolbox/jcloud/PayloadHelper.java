@@ -46,11 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.jar.Pack200;
-import java.util.jar.Pack200.Packer;
-import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -145,27 +141,27 @@ public class PayloadHelper {
 		 * modification times to a single value deflate: ignore all JAR deflation hints
 		 * in original archive
 		 */
-		final Packer packer = Pack200.newPacker();
-		final Map<String, String> p = packer.properties();
-		p.put(Packer.EFFORT, "9");
-		p.put(Packer.SEGMENT_LIMIT, "-1");
-		p.put(Packer.MODIFICATION_TIME, Packer.LATEST);
-		p.put(Packer.DEFLATE_HINT, Packer.FALSE);
-
-		// Do not reorder which changes package names. Pkg name changes e.g. break
-		// SimpleFilenameToStream.
-		p.put(Packer.KEEP_FILE_ORDER, Packer.TRUE);
-
-		// Throw an error if any of the above attributes is unrecognized.
-		p.put(Packer.UNKNOWN_ATTRIBUTE, Packer.ERROR);
-
-		final File packTempFile = File.createTempFile("tla2tools", ".pack.gz");
-		try (final JarFile jarFile = new JarFile(tempFile);
-				final GZIPOutputStream fos = new GZIPOutputStream(new FileOutputStream(packTempFile));) {
-			packer.pack(jarFile, fos);
-		} catch (IOException ioe) {
-			throw new RuntimeException("Failed to pack200 the tla2tools.jar file", ioe);
-		}
+//		final Packer packer = Pack200.newPacker();
+//		final Map<String, String> p = packer.properties();
+//		p.put(Packer.EFFORT, "9");
+//		p.put(Packer.SEGMENT_LIMIT, "-1");
+//		p.put(Packer.MODIFICATION_TIME, Packer.LATEST);
+//		p.put(Packer.DEFLATE_HINT, Packer.FALSE);
+//
+//		// Do not reorder which changes package names. Pkg name changes e.g. break
+//		// SimpleFilenameToStream.
+//		p.put(Packer.KEEP_FILE_ORDER, Packer.TRUE);
+//
+//		// Throw an error if any of the above attributes is unrecognized.
+//		p.put(Packer.UNKNOWN_ATTRIBUTE, Packer.ERROR);
+//
+//		final File packTempFile = File.createTempFile("tla2tools", ".pack.gz");
+//		try (final JarFile jarFile = new JarFile(tempFile);
+//				final GZIPOutputStream fos = new GZIPOutputStream(new FileOutputStream(packTempFile));) {
+//			packer.pack(jarFile, fos);
+//		} catch (IOException ioe) {
+//			throw new RuntimeException("Failed to pack200 the tla2tools.jar file", ioe);
+//		}
 
 		/*
 		 * Convert the customized tla2tools.jar into a jClouds payload object. This is
@@ -174,7 +170,7 @@ public class PayloadHelper {
 		 */
 		Payload jarPayLoad = null;
 		try {
-			final InputStream openStream = new FileInputStream(packTempFile);
+			final InputStream openStream = new FileInputStream(tempFile);
 			jarPayLoad = Payloads.newInputStreamPayload(openStream);
 			// manually set length of content to prevent a NPE bug
 			jarPayLoad.getContentMetadata().setContentLength(Long.valueOf(openStream.available()));
