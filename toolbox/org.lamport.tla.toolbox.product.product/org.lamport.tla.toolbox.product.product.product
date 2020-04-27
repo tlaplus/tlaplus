@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.7.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="TLA+ Toolbox" uid="org.lamport.tla.toolbox.product.product" id="org.lamport.tla.toolbox.product.standalone.product" application="org.lamport.tla.toolbox.application" version="1.7.1.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.lamport.tla.toolbox.product.standalone/images/splash_small.png"/>
       <text>
          TLA+ Toolbox provides a user interface for TLA+ Tools. 
 
-This is Version 1.7.0 of 20 April 2020 and includes:
+This is Version 1.7.1 of Day Month Year and includes:
   - SANY Version 2.2 of 20 April 2020
   - TLC Version 2.15 of 20 April 2020
   - PlusCal Version 1.10 of 20 April 2020
@@ -95,11 +95,11 @@ openFile
       <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
       <plugin id="packet" autoStart="true" startLevel="4" />
       <plugin id="sts" autoStart="true" startLevel="4" />
-      <property name="eclipse.buildId" value="1.7.0" />
+      <property name="eclipse.buildId" value="1.7.1" />
    </configurations>
 
    <repositories>
-      <repository location="http://lamport.org/tlatoolbox/branches/1.7.0/toolboxUpdate/" enabled="true" />
+      <repository location="http://lamport.org/tlatoolbox/branches/1.7.1/toolboxUpdate/" enabled="true" />
       <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
    </repositories>
 
