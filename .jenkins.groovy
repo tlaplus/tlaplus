@@ -46,7 +46,7 @@ for (x in labels) {
 		      }
 	   	      // the macosx zip on the master node to have it signed with the Apple certificate on macosx.  However, only master
 		      // has the lamport certificate to sign the individual toolbox bundles.
-		      stash includes: 'toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip', name: 'toolbox'
+		      stash includes: 'toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip', name: 'toolbox'
                     } else {
 			  withMaven(
 			    // Maven installation declared in the Jenkins "Global Tool Configuration"
@@ -153,7 +153,7 @@ node ('master') {
    }
    
    stage('RenderChangelog') { // Render the github flavord markdown to html
-       sh 'grip --context=tlaplus/tlaplus --export ${WORKSPACE}/general/docs/changelogs/ch1_7_0.md ${WORKSPACE}/general/docs/changelogs/changelog.html'
+       sh 'grip --context=tlaplus/tlaplus --export ${WORKSPACE}/general/docs/changelogs/ch1_7_1.md ${WORKSPACE}/general/docs/changelogs/changelog.html'
    }
 }
 
@@ -162,11 +162,11 @@ node ('macos') {
         sh 'rm -rf *'
         unstash 'toolbox'
         sh 'ls -lah'
-        sh 'unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip'
+        sh 'unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip'
         sh 'codesign -f -s "Developer ID Application: M K (3PCM4M3RWK)" -v "TLA+ Toolbox.app" --deep'
-        sh 'ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip'
-        sh 'mv TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip toolbox/org.lamport.tla.toolbox.product.product/target/products/'
-        stash includes: 'toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip', name: 'signed'
+        sh 'ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip'
+        sh 'mv TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip toolbox/org.lamport.tla.toolbox.product.product/target/products/'
+        stash includes: 'toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip', name: 'signed'
     }
 }
 
@@ -188,21 +188,21 @@ node ('master') {
            cd ${WORKSPACE}/general/docs/changelogs
 
            ## Append sha1 sum to changelog (last line of changelog has the table header).
-           echo "$(sha1sum ${WORKSPACE}/tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_7_0.md
-           echo "$(sha1sum ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-win32.win32.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.7.0-win32.win32.x86_64.zip" >> ch1_7_0.md
-           echo "$(sha1sum ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip" >> ch1_7_0.md     
-           echo "$(sha1sum ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-linux.gtk.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.7.0-linux.gtk.x86_64.zip" >> ch1_7_0.md
+           echo "$(sha1sum ${WORKSPACE}/tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_7_1.md
+           echo "$(sha1sum ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-win32.win32.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.7.1-win32.win32.x86_64.zip" >> ch1_7_1.md
+           echo "$(sha1sum ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip" >> ch1_7_1.md     
+           echo "$(sha1sum ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-linux.gtk.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.7.1-linux.gtk.x86_64.zip" >> ch1_7_1.md
            
            ## Two above as one-liner without intermediate file.
-           $(jq -n --argjson changelog "$(cat ch1_7_0.md | jq  --raw-input --slurp .)" -f gh-1_7_0.jq > gh-1_7_0.json)
+           $(jq -n --argjson changelog "$(cat ch1_7_1.md | jq  --raw-input --slurp .)" -f gh-1_7_1.jq > gh-1_7_1.json)
 
            ## Get id of existing draft release with given name.
-           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/tlaplus/tlaplus/releases --header "Content-Type: application/json" | jq '.[]| select(.draft==true and .name=="The Aristotle release") | .id')
+           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/tlaplus/tlaplus/releases --header "Content-Type: application/json" | jq '.[]| select(.draft==true and .name=="The Brontinus release") | .id')
            echo $DRAFT_RELEASE
 
            ## Update draft release with latest changelog in case it changed.
            ## https://developer.github.com/v3/repos/releases/#edit-a-release
-           curl -sS -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE -d @gh-1_7_0.json -X PATCH --header "Content-Type: application/json"
+           curl -sS -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE -d @gh-1_7_1.json -X PATCH --header "Content-Type: application/json"
 
            ## Remove old assets otherwise upload below will error.
            ASSETS=$(curl -sS -H "Authorization: token ${GITHUB_TOKEN}" https://api.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json" | jq '.[]| .id')
@@ -216,15 +216,15 @@ node ('master') {
             ## tla2tools.jar
             curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=tla2tools.jar --upload-file ${WORKSPACE}/tlatools/org.lamport.tlatools/dist/tla2tools.jar
             ## macOS
-            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip
+            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip
             ## win32
-            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.0-win32.win32.x86_64.zip --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-win32.win32.x86_64.zip
+            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.1-win32.win32.x86_64.zip --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-win32.win32.x86_64.zip
             ## Linux
-            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.0-linux.gtk.x86_64.zip --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.0-linux.gtk.x86_64.zip
+            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.1-linux.gtk.x86_64.zip --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-linux.gtk.x86_64.zip
             ## deb
-            #curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.0-linux.gtk.amd64.deb --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/repository/TLAToolbox-1.7.0-linux.gtk.amd64.deb
+            #curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.1-linux.gtk.amd64.deb --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/repository/TLAToolbox-1.7.1-linux.gtk.amd64.deb
             ## RPM
-            #curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.0-linux.gtk.amd64.rpm --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLA\\+Toolbox-1.7.0~*.x86_64.rpm
+            #curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${GITHUB_TOKEN}" https://uploads.github.com/repos/tlaplus/tlaplus/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.1-linux.gtk.amd64.rpm --upload-file ${WORKSPACE}/toolbox/org.lamport.tla.toolbox.product.product/target/products/TLA\\+Toolbox-1.7.1~*.x86_64.rpm
          '''
         }
    }

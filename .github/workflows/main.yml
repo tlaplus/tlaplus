@@ -16,14 +16,14 @@ jobs:
         include: 
         - operating-system: macos-latest
           MVN_COMMAND: mvn -Dmaven.test.skip=true
-          GITHUB_RELEASE_NAME: The Aristotle release
-          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.0-macosx.cocoa.x86_64.zip
+          GITHUB_RELEASE_NAME: The Brontinus release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip
 
         - operating-system: ubuntu-latest
           MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true 
-          GITHUB_RELEASE_NAME: The Aristotle release
-          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.0-linux.gtk.x86_64.zip
-          TOOLBOX_PRODUCT_ZIP_WIN: TLAToolbox-1.7.0-win32.win32.x86_64.zip
+          GITHUB_RELEASE_NAME: The Brontinus release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.1-linux.gtk.x86_64.zip
+          TOOLBOX_PRODUCT_ZIP_WIN: TLAToolbox-1.7.1-win32.win32.x86_64.zip
 
     steps:
 
@@ -139,9 +139,9 @@ jobs:
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{matrix.TOOLBOX_PRODUCT_ZIP}} --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP}}
 
-           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "TLAToolbox-1.7.0.deb") | .id')
+           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "TLAToolbox-1.7.1.deb") | .id')
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
-           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.0.deb --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/TLAToolbox-1.7.0-linux.gtk.amd64.deb
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.7.1.deb --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/TLAToolbox-1.7.1-linux.gtk.amd64.deb
 
            ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "p2repository.zip") | .id')
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
@@ -150,15 +150,15 @@ jobs:
            ## Generate changelog
            cd general/docs/changelogs
            ## Append sha1 sum to changelog (last line of changelog has the table header).
-           echo "$(sha1sum ../../../tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_7_0.md
-           echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}}" >> ch1_7_0.md
-           echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP}}" >> ch1_7_0.md
-           echo "TBD|macOS" >> ch1_7_0.md
+           echo "$(sha1sum ../../../tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_7_1.md
+           echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}}" >> ch1_7_1.md
+           echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP}}" >> ch1_7_1.md
+           echo "TBD|macOS" >> ch1_7_1.md
            ## Two above as one-liner without intermediate file.
-           $(jq -n --argjson changelog "$(cat ch1_7_0.md | jq  --raw-input --slurp .)" -f gh-1_7_0.jq > gh-1_7_0.json)
+           $(jq -n --argjson changelog "$(cat ch1_7_1.md | jq  --raw-input --slurp .)" -f gh-1_7_1.jq > gh-1_7_1.json)
            ## Update draft release with latest changelog in case it changed.
            ## https://developer.github.com/v3/repos/releases/#edit-a-release
-           curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_7_0.json -X PATCH --header "Content-Type: application/json"
+           curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_7_1.json -X PATCH --header "Content-Type: application/json"
 
     - name: Upload assets to INRIA
       if: matrix.operating-system == 'ubuntu-latest'
@@ -180,7 +180,7 @@ jobs:
         git config --local user.email "tlaplus-action@github.com"
         git config --local user.name "TLA+ GitHub Action"
         git tag -f nightly
-        git tag -f v1.7.0
+        git tag -f v1.7.1
         git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --follow-tags --tags --force
 
       ##
