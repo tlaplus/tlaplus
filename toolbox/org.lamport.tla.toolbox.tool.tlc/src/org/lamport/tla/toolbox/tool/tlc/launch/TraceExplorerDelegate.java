@@ -651,7 +651,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addTraceFunction(trace);
 
         // variables declarations for trace explorer expressions
-        writer.addVariablesAndDefinitions(traceExpressionData, TLAConstants.TraceExplore.TRACE_EXPLORE_EXPRESSIONS, false);
+        writer.addVariablesAndDefinitions(traceExpressionData, TLAConstants.TraceExplore.TRACE_EXPLORE_EXPRESSIONS, true);
 
         // add init and next
         writer.addInitNext(trace, traceExpressionData, initId, nextId, actionConstraintId);

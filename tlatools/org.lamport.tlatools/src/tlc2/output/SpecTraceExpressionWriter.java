@@ -265,7 +265,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 						initAndNext.append(TLAConstants.TRACE_NA);
 					} else {
 	                    // add the actual expression if it is not temporal level
-						initAndNext.append(expressionInfo.getExpression());
+						initAndNext.append(expressionInfo.getIdentifier());
 	                }
 	
 					initAndNext.append(TLAConstants.CR).append(TLAConstants.INDENT).append(TLAConstants.INDENT);
@@ -453,7 +453,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	                    subActionsAndConstraint.append(expressionInfo.getVariableName()).append(TLAConstants.PRIME);
 	                    subActionsAndConstraint.append(TLAConstants.EQ).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
 	                    subActionsAndConstraint.append(TRI_INDENT);
-	                    subActionsAndConstraint.append(expressionInfo.getExpression()).append(TLAConstants.CR);
+	                    subActionsAndConstraint.append(expressionInfo.getIdentifier()).append(TLAConstants.CR);
 	                    subActionsAndConstraint.append(TRI_INDENT).append(TLAConstants.R_PAREN);
 	
 						if (expressionInfo.getLevel() < 2) {

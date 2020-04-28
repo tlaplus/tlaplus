@@ -1,5 +1,7 @@
 package tlc2.output;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -122,6 +124,33 @@ public class SpecTraceExpressionWriterTest {
 		final List<Formula> expressions = new ArrayList<>();
 		expressions.add(new Formula("ENABLED XIncr"));
 		expressions.add(new Formula("y # 7"));
+		final TraceExpressionInformationHolder[] traceExpressions
+						= writer.createAndAddVariablesAndDefinitions(expressions, "writerTestTraceExpressions");
+		writer.addInitNext(trace, traceExpressions, "STEWInit", "STEWNext", "STEWAC", TRIVIAL_TWO_STATE_DEADLOCK_NEXT[0]);
+		
+		concludeTest();
+	}
+
+	
+	@Test
+	public void testMultilineTraceExpression() throws Exception {
+		final List<MCState> trace = generateStatesForDeadlockCondition();
+		writer.addTraceFunction(trace);
+
+		final List<Formula> expressions = new ArrayList<>();
+		expressions.add(new Formula("\n"
+				+ "/\\ y # 7\n"
+				+ "/\\ \\/ TRUE\n"
+				+ " \\* Comment"
+				+ "   \\/ FALSE"));
+		// Named expression
+		final Formula e = new Formula("namedExpression == \n"
+				+ "  (* A commend \n over two lines*)"
+				+ "  /\\ \\/ TRUE\n"
+				+ " \\* Comment"
+				+ "     \\/ FALSE");
+		assertTrue(e.isNamed());
+		expressions.add(e);
 		final TraceExpressionInformationHolder[] traceExpressions
 						= writer.createAndAddVariablesAndDefinitions(expressions, "writerTestTraceExpressions");
 		writer.addInitNext(trace, traceExpressions, "STEWInit", "STEWNext", "STEWAC", TRIVIAL_TWO_STATE_DEADLOCK_NEXT[0]);
