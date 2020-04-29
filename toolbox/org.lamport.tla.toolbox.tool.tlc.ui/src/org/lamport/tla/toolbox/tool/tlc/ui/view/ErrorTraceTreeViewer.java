@@ -193,24 +193,27 @@ class ErrorTraceTreeViewer {
 											return;
 										}
 										
-										final String init = ((TLCState) selection).getConjunctiveDescription(false);
-										final String next;
-										if (specType == IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_SPEC_CLOSED) {
-											next = m.getAttribute(
-													IModelConfigurationConstants.MODEL_BEHAVIOR_CLOSED_SPECIFICATION,
-													"");
-										} else {
-											next = null;
-										}
 										final MainModelPage page = (MainModelPage)modelEditor.findPage(MainModelPage.ID);
-										page.setInitNextBehavior(init, next);
-										modelEditor.setActivePage(MainModelPage.ID);
-										
-										Display.getDefault().asyncExec(() -> {
-											MessageDialog.openInformation(null, "Model Reconfigured",
-													"The model has been set up to begin checking from the selected "
-														+ "state; please review the model parameters and run the checker.");
-										});										
+										final String init = ((TLCState) selection).getConjunctiveDescription(false);
+										if (specType == IModelConfigurationDefaults.MODEL_BEHAVIOR_TYPE_SPEC_CLOSED) {
+											page.setInitNextBehavior(init, "");
+											modelEditor.setActivePage(MainModelPage.ID);
+											
+											Display.getDefault().asyncExec(() -> {
+												MessageDialog.openInformation(null, "Model Reconfigured",
+														"The model has been set up to begin checking from the selected "
+																+ "state; please enter the next-state relation (usually Next), review the model parameters and run the checker.");
+											});
+										} else {
+											page.setInitNextBehavior(init, null);
+											modelEditor.setActivePage(MainModelPage.ID);
+											
+											Display.getDefault().asyncExec(() -> {
+												MessageDialog.openInformation(null, "Model Reconfigured",
+														"The model has been set up to begin checking from the selected "
+															+ "state; please review the model parameters and run the checker.");
+											});										
+										}
 
 		// We previously handled the config alteration and model check launch behind the
 		//	scenes but have since stopped doing that. I'm leaving a portion of this here,
