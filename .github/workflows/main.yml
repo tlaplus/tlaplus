@@ -164,9 +164,9 @@ jobs:
       if: matrix.operating-system == 'ubuntu-latest'
       run: |
            ## Upload p2 and apt repository to INRIA machine.
-           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -av tlatools/org.lamport.tlatools/dist/tla2tools.jar github@upload.tlapl.us:dist/
-           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -av toolbox/org.lamport.tla.toolbox.product.product/target/products/*.zip github@upload.tlapl.us:products/
-           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" -av toolbox/org.lamport.tla.toolbox.product.product/target/repository/ github@upload.tlapl.us:repository/
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av tlatools/org.lamport.tlatools/dist/tla2tools.jar github@upload.tlapl.us:dist/
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.product.product/target/products/*.zip github@upload.tlapl.us:products/
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.product.product/target/repository/ github@upload.tlapl.us:repository/
 
     ## 
     ## Update all git tags to make the download urls work, i.e.
