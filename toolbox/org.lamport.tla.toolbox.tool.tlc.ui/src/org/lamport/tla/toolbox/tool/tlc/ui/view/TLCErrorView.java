@@ -111,11 +111,11 @@ public class TLCErrorView extends ViewPart
 
     private static final String NO_VALUE_VIEWER_TEXT
 			= "\u2022 Select a line in Error Trace to show its value here.\n"
-				+ "\u2022 Double-click on a line to go to corresponding action in spec \u2014 "
+				+ "\u2022 Double+Click on a line to go to corresponding action in spec \u2014 "
 				+ "or while holding down " + (Platform.getOS().equals(Platform.OS_MACOSX) ? "\u2318" : "CTRL")
 				+ " to go to the original PlusCal code, if present.\n"
 				+ "\u2022 Click on a variable while holding down ALT to hide the variable from view.\n"
-				+ "\u2022 Right-click on a location row for a context menu.";
+				+ "\u2022 Right+Click on a location row for a context menu.";
 
     /**
      * This is the pattern of an error message resulting from evaluating the constant
@@ -1013,7 +1013,7 @@ public class TLCErrorView extends ViewPart
 	private class FilterErrorTrace extends Action {
 		private static final String DEFAULT_TOOL_TIP_TEXT
 					= "Click to select variables and expressions to omit from the trace display; "
-									+ "ALT-click on an individual item below to omit it immediately.";
+									+ "ALT+Click on an individual item below to omit it immediately.";
 		private static final String SELECTED_TOOL_TIP_TEXT = "Click to display all variables and expressions.";
 		
 		FilterErrorTrace() {
@@ -1126,7 +1126,7 @@ public class TLCErrorView extends ViewPart
 	private class ExportErrorTrace2Clipboard extends ShiftClickAction implements ISelectionChangedListener {
 		private static final String DEFAULT_TOOL_TIP_TEXT
 			= "Click to export error-trace to clipboard as\nsequence of records. "
-					+ "Shift-click to \nomit the action's position ("
+					+ "Shift+Click to \nomit the action's position ("
 					+ TLAConstants.TraceExplore.POSITION + "), \nname, and location.";
 		
 		
