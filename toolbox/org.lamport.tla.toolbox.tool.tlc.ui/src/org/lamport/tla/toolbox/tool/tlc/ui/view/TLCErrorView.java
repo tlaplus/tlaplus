@@ -147,7 +147,6 @@ public class TLCErrorView extends ViewPart
     private SourceViewer errorViewer;
     private ErrorTraceTreeViewer errorTraceTreeViewer;
     private RecordToSourceCoupler stackTraceActionListener;
-    private SyncStackTraversal syncStackTraversalAction;
     private Button valueReflectsFiltering;
     private SourceViewer valueViewer;
     private ModelEditor modelEditor;
@@ -155,7 +154,6 @@ public class TLCErrorView extends ViewPart
     
     private TLCError unfilteredInput;
     private final HashMap<TLCState, Integer> filteredStateIndexMap;
-    private FilterErrorTrace filterErrorTraceAction;
     private Set<TLCVariable> currentErrorTraceFilterSet;
     
     @SuppressWarnings("unused")  // held onto for a nicer object graph
@@ -460,10 +458,13 @@ public class TLCErrorView extends ViewPart
 				RecordToSourceCoupler.FocusRetentionPolicy.ARROW_KEY_TRAVERSAL);
 		tree.addMouseListener(stackTraceActionListener);
 		tree.addKeyListener(stackTraceActionListener);
-		tree.addDisposeListener((event) -> {
-			final IDialogSettings ids = Activator.getDefault().getDialogSettings();
-			ids.put(SYNCED_TRAVERSAL_KEY, syncStackTraversalAction.isChecked());
-        });
+        
+        // Make it possible to expand and collapse the error trace with the push of a button.
+		final ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
+		final ToolBar toolbar = toolBarManager.createControl(errorTraceSection);
+		toolBarManager.add(new ExportErrorTrace2Clipboard(display));
+		
+		final FilterErrorTrace filterErrorTraceAction = new FilterErrorTrace();
 		tree.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseUp(final MouseEvent event) {
@@ -488,10 +489,8 @@ public class TLCErrorView extends ViewPart
         		}
         	}
         });
-        
-        // Make it possible to expand and collapse the error trace with the push of a button.
-		final ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT);
-		final ToolBar toolbar = toolBarManager.createControl(errorTraceSection);
+		toolBarManager.add(filterErrorTraceAction);
+		
 		final ShiftClickAction action = new ShiftClickAction(
 				"Toggle between expand and collapse all (Shift+Click to restore the default two-level expansion)",
 				TLCUIActivator.getImageDescriptor("icons/elcl16/toggle_expand_state.png"), display) {
@@ -513,12 +512,14 @@ public class TLCErrorView extends ViewPart
 				}
 			}
 		};
-		toolBarManager.add(new ExportErrorTrace2Clipboard(display));
-		filterErrorTraceAction = new FilterErrorTrace();
-		toolBarManager.add(filterErrorTraceAction);
 		toolBarManager.add(action);
-		syncStackTraversalAction = new SyncStackTraversal();
+		
+		final SyncStackTraversal syncStackTraversalAction = new SyncStackTraversal();
 		toolBarManager.add(syncStackTraversalAction);
+		tree.addDisposeListener((event) -> {
+			final IDialogSettings ids = Activator.getDefault().getDialogSettings();
+			ids.put(SYNCED_TRAVERSAL_KEY, syncStackTraversalAction.isChecked());
+        });
 		toolBarManager.update(true);
 		errorTraceSection.setTextClient(toolbar);
 
