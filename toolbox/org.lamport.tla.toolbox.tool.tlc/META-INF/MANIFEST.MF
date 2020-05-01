@@ -16,7 +16,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text;bundle-version="3.5.0",
  org.lamport.tla.toolbox.product.standalone,
  org.apache.commons.io;bundle-version="2.0.1"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.lamport.tla.toolbox.tool.tlc,
  org.lamport.tla.toolbox.tool.tlc.job,
