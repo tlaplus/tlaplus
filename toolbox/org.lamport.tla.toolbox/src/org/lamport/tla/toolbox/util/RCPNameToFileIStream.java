@@ -175,7 +175,7 @@ public class RCPNameToFileIStream implements FilenameToStream
 	private File getFromArchive(String prefix, String name) {
 		final File outputFile = new TLAFile(TMPDIR + File.separator + name, true, this);
 		outputFile.deleteOnExit(); // Written to TMPDIR which is likely deleted regularly anyway.
-		try (FileSystem fileSystem = FileSystems.newFileSystem(new File(prefix).toPath(), null)) {
+		try (FileSystem fileSystem = FileSystems.newFileSystem(new File(prefix).toPath(), (ClassLoader) null)) {
 	        Path fileToExtract = fileSystem.getPath(name);
 	        Files.copy(fileToExtract, outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	        return outputFile;
