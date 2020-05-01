@@ -78,7 +78,7 @@
     <repository
         url="http://download.eclipse.org/technology/swtbot/releases/latest/"/>
     <repository
-        url="http://download.eclipse.org/tools/ajdt/48/dev/update/"/>
+        url="http://download.eclipse.org/tools/ajdt/410/dev/update/"/>
     <repository
         url="http://download.eclipse.org/technology/m2e/releases/"/>
     <repository
@@ -86,7 +86,7 @@
     <repository
         url="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.5.201812/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
     <repository
-        url="https://download.eclipse.org/rcptt/release/2.4.3/repository/"/>
+        url="https://download.eclipse.org/rcptt/release/2.5.1/repository/"/>
     <repository
         url="http://andrei.gmxhome.de/eclipse/"/>
     <description>Install the tools needed in the IDE to work with the source code for ${scope.project.label}</description>
