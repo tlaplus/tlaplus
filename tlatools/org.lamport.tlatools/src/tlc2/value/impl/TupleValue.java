@@ -126,12 +126,12 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value apply(Value arg, int control) {
     try {
       if (!(arg instanceof IntValue)) {
-        Assert.fail("Attempted to apply tuple to a non-integer argument.");
+        Assert.fail("Attempted to access tuple at a non integral index: " + Values.ppr(arg.toString()));
       }
       int idx = ((IntValue)arg).val;
       if (idx <= 0 || idx > this.elems.length) {
-        Assert.fail("Attempted to apply tuple\n" + Values.ppr(this.toString()) +
-        "\nto integer " + idx + " which is out of domain.");
+        Assert.fail("Attempted to access index " + idx + " of tuple\n"
+            + Values.ppr(this.toString()) + "\nwhich is out of bounds.");
       }
       return (Value) this.elems[idx-1];
     }
@@ -145,7 +145,7 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value apply(Value[] args, int control) {
     try {
       if (args.length != 1) {
-        Assert.fail("Attetmpted to apply tuple with wrong number of arguments.");
+        Assert.fail("Attempted to access tuple with " + args.length + " arguments when it expects 1.");
       }
       return this.apply(args[0], EvalControl.Clear);
     }
@@ -159,8 +159,7 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value select(Value arg) {
     try {
       if (!(arg instanceof IntValue)) {
-        Assert.fail("Attempted to apply tuple to a non-integer argument " +
-        Values.ppr(arg.toString()) + ".");
+        Assert.fail("Attempted to access tuple at a non integral index: " + Values.ppr(arg.toString()));
       }
       int idx = ((IntValue)arg).val;
       if (idx > 0 && idx <= this.elems.length) {
