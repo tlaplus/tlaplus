@@ -232,8 +232,7 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   public final Value apply(Value arg, int control) {
     try {
       if (!(arg instanceof StringValue)) {
-        Assert.fail("Attempted to apply record to a non-string value " +
-        Values.ppr(arg.toString()) + ".");
+        Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()));
       }
       UniqueString name = ((StringValue)arg).getVal();
       int rlen = this.names.length;
@@ -242,8 +241,8 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
           return this.values[i];
         }
       }
-      Assert.fail("Attempted to apply the record\n" + Values.ppr(this.toString()) +
-      "\nto nonexistent record field " + name + ".");
+      Assert.fail("Attempted to access nonexistent field '" + name +
+          "' of record\n" + Values.ppr(this.toString()));
       return null;    // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -271,8 +270,7 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   public final Value select(Value arg) {
     try {
       if (!(arg instanceof StringValue)) {
-        Assert.fail("Attempted to apply record to a non-string argument " +
-        Values.ppr(arg.toString()) + ".");
+        Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()));
       }
       UniqueString name = ((StringValue)arg).getVal();
       int rlen = this.names.length;

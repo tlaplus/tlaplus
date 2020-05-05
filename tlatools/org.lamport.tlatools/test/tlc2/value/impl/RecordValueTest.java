@@ -78,4 +78,28 @@ public class RecordValueTest {
 		assertTrue(deepCopy.values[0].equals(bVal));
 		assertTrue(deepCopy.values[1].equals(aVal));
 	}
+
+	@Test
+	public void testErrorMessages() {
+		final Value aVal = new StringValue("aVal");
+		final RecordValue recVal = new RecordValue(UniqueString.of("a"), aVal);
+
+		try{
+			recVal.apply(new StringValue("b"), 0);
+		} catch(util.Assert.TLCRuntimeException ex){
+			assertTrue(ex.getMessage().contains("Attempted to access nonexistent field 'b' of record\n[a |-> \"aVal\"]"));
+		}
+
+		try{
+			recVal.apply(IntValue.gen(0), 0);
+		} catch(util.Assert.TLCRuntimeException ex){
+			assertTrue(ex.getMessage().contains("Attempted to access record by a non-string argument: 0"));
+		}
+
+		try{
+			recVal.select(IntValue.gen(0));
+		} catch(util.Assert.TLCRuntimeException ex){
+			assertTrue(ex.getMessage().contains("Attempted to access record by a non-string argument: 0"));
+		}
+	}
 }
