@@ -783,7 +783,7 @@ public class TLC {
                         index++;
                     } catch (Exception e)
                     {
-                        printErrorMsg("Errorexpect a nonnegative integer for -dfid option. " + "But encountered "
+                        printErrorMsg("Error: expect a nonnegative integer for -dfid option. " + "But encountered "
                                 + args[index]);
                         return false;
                     }
