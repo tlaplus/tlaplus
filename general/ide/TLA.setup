@@ -84,7 +84,7 @@
     <repository
         url="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
     <repository
-        url="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.5.201812/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
+        url="jar:https://raw.githubusercontent.com/tlaplus/tlaplus/master/toolbox/org.lamport.tla.toolbox.product.product/cachedTargetPlatform/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
     <repository
         url="https://download.eclipse.org/rcptt/release/2.5.1/repository/"/>
     <repository
