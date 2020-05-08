@@ -104,8 +104,10 @@ public abstract class Tool
     extends Spec
     implements ValueConstants, ToolGlobals, ITool
 {
-	
+
   public static final Value[] EmptyArgs = new Value[0];
+
+  public static TLCState currentState = null;
 
   protected final Action[] actions;     // the list of TLA actions.
   private Vect<Action> actionVec = new Vect<>(10);
@@ -116,7 +118,7 @@ public abstract class Tool
   public Tool(String specFile, String configFile) {
 	  this(new File(specFile), specFile, configFile, null);
   }
-  
+
   public Tool(String specFile, String configFile, FilenameToStream resolver) {
 	  this(new File(specFile), specFile, configFile, resolver);
   }
@@ -125,14 +127,14 @@ public abstract class Tool
   {
 	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver);
   }
-  
+
   public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver)
   {
       super(specDir, specFile, configFile, resolver);
 
       // Initialize state.
       TLCStateMut.setTool(this);
-      
+
 		Action next = this.getNextStateSpec();
 		if (next == null) {
 			this.actions = new Action[0];
@@ -745,7 +747,7 @@ public abstract class Tool
           }
         }
   }
-  
+
   /**
    * This method returns the set of next states when taking the action
    * in the given state.
@@ -754,7 +756,7 @@ public abstract class Tool
   public final StateVec getNextStates(Action action, TLCState state) {
 	  return getNextStates(action, action.con, state);
   }
-  
+
   public final StateVec getNextStates(final Action action, final Context ctx, final TLCState state) {
     ActionItemList acts = ActionItemList.Empty;
     TLCState s1 = TLCState.Empty.createEmpty();
@@ -763,7 +765,7 @@ public abstract class Tool
     if (coverage) { action.cm.incInvocations(nss.size()); }
     return nss;
   }
-  
+
   @Override
   public final boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
 	  for (int i = 0; i < actions.length; i++) {
@@ -776,7 +778,7 @@ public abstract class Tool
 
   protected abstract TLCState getNextStates(final Action action, SemanticNode pred, ActionItemList acts, Context c,
                                        TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm);
-  
+
   protected final TLCState getNextStatesImpl(final Action action, SemanticNode pred, ActionItemList acts, Context c,
               TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm) {
         switch (pred.getKind()) {
@@ -825,7 +827,7 @@ public abstract class Tool
   	}
   	return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
-  
+
   @ExpectInlined
   private final TLCState getNextStatesImplApSubstInKind(final Action action, APSubstInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, INextStateFunctor nss, final CostModel cm) {
   	Subst[] subs = pred1.getSubsts();
@@ -837,7 +839,7 @@ public abstract class Tool
   	}
   	return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
-  
+
   @ExpectInlined
   private final TLCState getNextStates(final Action action, ActionItemList acts, final TLCState s0, final TLCState s1,
           final INextStateFunctor nss, CostModel cm) {
@@ -885,7 +887,7 @@ public abstract class Tool
     }
     return s1;
   }
-  
+
   private final TLCState getNextStatesAllAssigned(final Action action, ActionItemList acts, final TLCState s0, final TLCState s1,
 		  								final INextStateFunctor nss, final CostModel cm) {
 	  int kind = acts.carKind();
@@ -929,7 +931,7 @@ public abstract class Tool
   @ExpectInlined
   protected abstract TLCState getNextStatesAppl(final Action action, OpApplNode pred, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, INextStateFunctor nss, final CostModel cm);
-  
+
   protected final TLCState getNextStatesApplImpl(final Action action, final OpApplNode pred, final ActionItemList acts, final Context c,
                                            final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
         final ExprOrOpArgNode[] args = pred.getArgs();
@@ -970,7 +972,7 @@ public abstract class Tool
             val = lv.getValue();
           }
 
-          //TODO If all eval/apply in getNextStatesApplEvalAppl would be side-effect free (ie. not mutate args, c, s0,...), 
+          //TODO If all eval/apply in getNextStatesApplEvalAppl would be side-effect free (ie. not mutate args, c, s0,...),
           // this call could be moved into the if(opcode==0) branch below. However, opcode!=0 will only be the case if
           // OpDefNode above has been substed with a built-in operator. In other words, a user defines an operator Op1,
           // and re-defines Op1 with a TLA+ built-in one in a TLC model (not assumed to be common). => No point in trying
@@ -986,7 +988,7 @@ public abstract class Tool
 
         return getNextStatesApplSwitch(action, pred, acts, c, s0, s1, nss, cm, args, alen, opcode);
   }
-  
+
   private final Object getNextStatesApplEvalAppl(final int alen, final ExprOrOpArgNode[] args, final Context c,
 			final TLCState s0, final TLCState s1, final CostModel cm, final Object val) {
 	      if (alen == 0) {
@@ -1269,13 +1271,13 @@ public abstract class Tool
 	  }
 	}
   }
-  
+
   /* processUnchanged */
 
   @ExpectInlined
   protected abstract TLCState processUnchanged(final Action action, SemanticNode expr, ActionItemList acts, Context c,
                                           TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm);
-  
+
   protected final TLCState processUnchangedImpl(final Action action, SemanticNode expr, ActionItemList acts, Context c,
           TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm) {
     if (coverage){cm = cm.get(expr);}
@@ -1316,7 +1318,7 @@ public abstract class Tool
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm,
 			final SymbolNode opNode, final UniqueString opName) {
 		final Object val = this.lookup(opNode, c, false);
-	
+
 		if (val instanceof OpDefNode) {
 		  return this.processUnchanged(action, ((OpDefNode)val).getBody(), acts, c, s0, s1, nss, cm);
 		}
@@ -1349,7 +1351,7 @@ public abstract class Tool
   	}
   	return this.getNextStates(action, acts, s0, s1, nss, cm);
   }
-  
+
   @ExpectInlined
   private final TLCState processUnchangedImplVar(final Action action, SemanticNode expr, ActionItemList acts, TLCState s0, TLCState s1, INextStateFunctor nss,
   		SymbolNode var, final CostModel cm) {
@@ -1379,7 +1381,7 @@ public abstract class Tool
           }
           return resState;
   }
-    
+
   /* eval */
 
   /* Special version of eval for state expressions. */
@@ -1387,7 +1389,7 @@ public abstract class Tool
   public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
     return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, cm);
   }
-  
+
 	  @Override
 	public final IValue eval(SemanticNode expr, Context c, TLCState s0,
               TLCState s1, final int control) {
@@ -1399,7 +1401,7 @@ public abstract class Tool
    */
   public abstract Value eval(SemanticNode expr, Context c, TLCState s0,
                           TLCState s1, final int control, final CostModel cm);
-  
+
   @ExpectInlined
   protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
           final TLCState s1, final int control, CostModel cm) {
@@ -1480,7 +1482,7 @@ public abstract class Tool
   	}
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
-    
+
   @ExpectInlined
   private final Value evalImplApSubstInKind(APSubstInNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
   	Subst[] subs = expr1.getSubsts();
@@ -1492,7 +1494,7 @@ public abstract class Tool
   	}
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
-  
+
   @ExpectInlined
   private final Value evalImplOpArgKind(OpArgNode expr1, Context c, TLCState s0, TLCState s1, final CostModel cm) {
   	SymbolNode opNode = expr1.getOp();
@@ -1502,9 +1504,9 @@ public abstract class Tool
   	}
   	return (Value)val;
   }
-  
+
   /* evalAppl */
-  
+
   @ExpectInlined
   protected abstract Value evalAppl(final OpApplNode expr, Context c, TLCState s0,
           TLCState s1, final int control, final CostModel cm);
@@ -1546,58 +1548,58 @@ public abstract class Tool
 						// If init-states are being generated, level has to be <= ConstantLevel for
 						// caching/LazyValue to be allowed. If next-states are being generated, level
 						// has to be <= VariableLevel. The level indicates if the expression to be
-						// evaluated contains only constants, constants & variables, constants & 
+						// evaluated contains only constants, constants & variables, constants &
 						// variables and primed variables (thus action) or is a temporal formula.
 						//
 						// This restriction is in place to fix Github issue 113
-						// (https://github.com/tlaplus/tlaplus/issues/113) - 
+						// (https://github.com/tlaplus/tlaplus/issues/113) -
 						// TLC can generate invalid sets of init or next-states caused by broken
 						// LazyValue evaluation. The related tests are AssignmentInit* and
 						// AssignmentNext*. Without this fix TLC essentially reuses a stale lv.val when
 						// it needs to re-evaluate res because the actual operands to eval changed.
 						// Below is Leslie's formal description of the bug:
-						// 
+						//
 						// The possible initial values of some variable  var  are specified by a subformula
-						// 
+						//
 						// F(..., var, ...)
-						// 
+						//
 						// in the initial predicate, for some operator F such that expanding the
 						// definition of F results in a formula containing more than one occurrence of
 						// var , not all occurring in separate disjuncts of that formula.
-						// 
+						//
 						// The possible next values of some variable  var  are specified by a subformula
-						// 
+						//
 						// F(..., var', ...)
-						// 
+						//
 						// in the next-state relation, for some operator F such that expanding the
 						// definition of F results in a formula containing more than one occurrence of
 						// var' , not all occurring in separate disjuncts of that formula.
-						// 
+						//
 						// An example of the first case is an initial predicate  Init  defined as follows:
-						// 
+						//
 						// VARIABLES x, ...
 						// F(var) == \/ var \in 0..99 /\ var % 2 = 0
 						//           \/ var = -1
 						// Init == /\ F(x)
 						//         /\ ...
-						// 
+						//
 						// The error would not appear if  F  were defined by:
-						// 
+						//
 						// F(var) == \/ var \in {i \in 0..99 : i % 2 = 0}
 						//           \/ var = -1
-						// 
+						//
 						// or if the definition of  F(x)  were expanded in  Init :
-						// 
+						//
 						// Init == /\ \/ x \in 0..99 /\ x % 2 = 0
 						//            \/ x = -1
 						//         /\ ...
-						// 
+						//
 						// A similar example holds for case 2 with the same operator F and the
 						// next-state formula
-						// 
+						//
 						// Next == /\ F(x')
 						//         /\ ...
-						// 
+						//
 						// The workaround is to rewrite the initial predicate or next-state relation so
 						// it is not in the form that can cause the bug. The simplest way to do that is
 						// to expand (in-line) the definition of F in the definition of the initial
@@ -1623,7 +1625,7 @@ public abstract class Tool
 							// caching. There is no measurable performance difference even though the change
 							// for issue 113 reduces the cache hits from ~13 billion to ~4 billion. This was
 							// measured with an instrumented version of TLC.
-							// [1] general/performance/PaxosCommit/  
+							// [1] general/performance/PaxosCommit/
 							lv.setValue(res);
 						}
 						val = res;
@@ -1638,6 +1640,9 @@ public abstract class Tool
             opcode = BuiltInOPs.getOpCode(opDef.getName());
             if (opcode == 0) {
               Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
+              if (s0 instanceof TLCStateFun == false) {
+                  currentState = s0;
+              }
               res = this.eval(opDef.getBody(), c1, s0, s1, control, cm);
             }
           }
@@ -1655,7 +1660,7 @@ public abstract class Tool
             else {
               if (val instanceof OpValue) {
             	  res = ((OpValue) val).eval(this, args, c, s0, s1, control, cm);
-               } 
+               }
             }
           }
           /*********************************************************************
@@ -1701,7 +1706,7 @@ public abstract class Tool
             //
             // was replaced by the following by LL on 7 Mar 2012.  This fix has not yet received
             // the blessing of Yuan Yu, so it should be considered to be provisional.
-            // 
+            //
             //     Value convertedVal = inVal.ToSetEnum();
             //       if (convertedVal != null) {
             //         inVal = convertedVal;
@@ -1709,7 +1714,7 @@ public abstract class Tool
             //         inVal.normalize();
             //     }
             // end of fix.
-            
+
             // MAK 09/22/2018:
 			// The old fix above has the undesired side effect of enumerating inVal. In
 			// other words, e.g. a SUBSET 1..8 would be enumerated and normalized into a
@@ -1721,7 +1726,7 @@ public abstract class Tool
 			// for elements to be normalized explicit. Implementor of Enumerable, such as
 			// SubsetValue are then free to implement elements that returns elements in
 			// normalized order without converting SubsetValue into SetEnumValue first.
-            
+
             inVal.normalize();
 
             ValueEnumeration enumSet = ((Enumerable)inVal).elements(Enumerable.Ordering.NORMALIZED);
@@ -2291,7 +2296,7 @@ public abstract class Tool
         case OPCODE_prime:
           {
         	  // MAK 03/2019:  Cannot reproduce this but without this check the nested evaluation
-        	  // fails with a NullPointerException which subsequently is swallowed. This makes it 
+        	  // fails with a NullPointerException which subsequently is swallowed. This makes it
         	  // impossible for a user to diagnose what is going on.  Since I cannot reproduce the
         	  // actual expression, I leave this commented for.  I recall an expression along the
         	  // lines of:
@@ -2443,23 +2448,23 @@ public abstract class Tool
     }
     return true;
   }
-  
+
   @Override
   public final boolean hasStateOrActionConstraints() {
 	  return this.getModelConstraints().length > 0 || this.getActionConstraints().length > 0;
   }
-  
+
   @Override
   public final TLCState enabled(SemanticNode pred, Context c, TLCState s0, TLCState s1) {
 		  return enabled(pred, ActionItemList.Empty, c, s0, s1, CostModel.DO_NOT_RECORD);
   }
-  
+
   @Override
   public final TLCState enabled(SemanticNode pred, Context c, TLCState s0, TLCState s1, ExprNode subscript, final int ail) {
       ActionItemList acts = (ActionItemList) ActionItemList.Empty.cons(subscript, c, CostModel.DO_NOT_RECORD, ail);
 	  return enabled(pred, acts, c, s0, s1, CostModel.DO_NOT_RECORD);
   }
-  
+
   @Override
   public final TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1) {
 		  return enabled(pred, acts, c, s0, s1, CostModel.DO_NOT_RECORD);
@@ -2971,7 +2976,7 @@ public abstract class Tool
 
   protected abstract TLCState enabledUnchanged(SemanticNode expr, ActionItemList acts,
                                           Context c, TLCState s0, TLCState s1, CostModel cm);
-  
+
   protected final TLCState enabledUnchangedImpl(SemanticNode expr, ActionItemList acts,
             Context c, TLCState s0, TLCState s1, CostModel cm) {
 	    if (coverage) {cm = cm.get(expr);}
@@ -3034,15 +3039,15 @@ public abstract class Tool
         final Value v0 = this.eval(expr, c, s0, TLCState.Empty, EvalControl.Enabled, cm);
         // We are in ENABLED and primed but why pass only primed? This appears to
         // be the only place where we call eval from the ENABLED scope without
-        // additionally passing EvalControl.Enabled. Not passing Enabled allows a 
+        // additionally passing EvalControl.Enabled. Not passing Enabled allows a
         // cached LazyValue could be used (see comments above on line 1384).
-        // 
+        //
         // The current scope is a nested UNCHANGED in an ENABLED and evaluation is set
         // to primed. However, UNCHANGED e equals e' = e , so anything primed in e
         // becomes double-primed in ENABLED UNCHANGED e. This makes it illegal TLA+
         // which is rejected by SANY's level checking. A perfectly valid spec - where
         // e is not primed - but that also causes this code path to be taken is 23 below:
-        // 
+        //
         // -------- MODULE 23 ---------
         // VARIABLE t
         // op(var) == var
@@ -3050,12 +3055,12 @@ public abstract class Tool
         //         /\ (t'= t)
         // Spec == (t = 0) /\ [][Next]_t
         // ============================
-        // 
+        //
         // However, spec 23 causes the call to this.eval(...) below to throw an
         // EvalException either with EvalControl.Primed. The exception's message is
         // "In evaluation, the identifier t is either undefined or not an operator."
         // indicating that this code path is buggy.
-        // 
+        //
         // If this bug is ever fixed to make TLC accept spec 23, EvalControl.Primed
         // should likely be rewritten to EvalControl.setPrimed(EvalControl.Enabled)
         // to disable reusage of LazyValues on line ~1384 above.
@@ -3237,7 +3242,7 @@ public abstract class Tool
 			offenderCount++;
     	}
     }
-    
+
     final IMVPerm[] subgroup;
     if (offenderCount == 0) {
         subgroup = MVPerms.permutationSubgroup((Enumerable)fcns);
@@ -3249,10 +3254,10 @@ public abstract class Tool
         }
         for (final ExprOrOpArgNode node : argNodes) {
         	final SetEnumValue enumValue = getSetEnumValueFromArgumentNode(node);
-        	
+
         	if (enumValue != null) {
         		final ValueEnumeration ve = enumValue.elements();
-        		
+
         		boolean found = false;
         		Value v;
         		while ((v = ve.nextElement()) != null) {
@@ -3261,7 +3266,7 @@ public abstract class Tool
         				break;
         			}
         		}
-        		
+
         		if (!found) {
     				addToSubTwoSizedSymmetrySetList(node, cardinalityOneSetList);
     				offenderCount++;
@@ -3271,19 +3276,19 @@ public abstract class Tool
     } else {
     	subgroup = null;
     }
-    
+
     if (offenderCount > 0) {
       final String plurality = (offenderCount > 1) ? "s" : "";
       final String antiPlurality = (offenderCount > 1) ? "" : "s";
       final String toHaveConjugation = (offenderCount > 1) ? "have" : "has";
-      
+
       MP.printWarning(EC.TLC_SYMMETRY_SET_TOO_SMALL,
     		  	  	  new String[] { plurality, cardinalityOneSetList.toString(), toHaveConjugation, antiPlurality });
     }
-    
+
     return subgroup;
   }
-  
+
   /**
    * Teases the original spec name for the set out of node and appends it to the {@code StringBuilder} instance.
    */
@@ -3300,14 +3305,14 @@ public abstract class Tool
 	    }
 		final String specDefinitionName = this.config.getOverridenSpecNameForConfigName(alias);
 		final String displayDefinition = (specDefinitionName != null) ? specDefinitionName : alias;
-		
+
 		if (cardinalityOneSetList.length() > 0) {
 			cardinalityOneSetList.append(", and ");
 		}
 
 		cardinalityOneSetList.append(displayDefinition);
   }
-  
+
   /**
    * @param node
    * @return if the node represents a permutation, this will return the {@link SetEnumValue} instance contains its
@@ -3324,14 +3329,14 @@ public abstract class Tool
 						  && (operands[0] instanceof OpApplNode)
 						  && (((OpApplNode)operands[0]).getOperator() instanceof OpDefOrDeclNode)) {
 					  final Object o = ((OpDefOrDeclNode)((OpApplNode)operands[0]).getOperator()).getToolObject(toolId);
-					  
+
 					  if (o instanceof SetEnumValue) {
 						  return (SetEnumValue)o;
 					  } else if (o instanceof WorkerValue) {
 						  // If TLC was started with a -workers N specification, N > 1, o will be a WorkerValue instance
 						  final WorkerValue wv = (WorkerValue)o;
 						  final Object unwrapped = WorkerValue.mux(wv);
-						  
+
 						  if (unwrapped instanceof SetEnumValue) {
 							  return (SetEnumValue)unwrapped;
 						  }
@@ -3444,7 +3449,7 @@ public abstract class Tool
           TLCState s1, final int control) {
 	  return contexts(appl, c, s0, s1, control, CostModel.DO_NOT_RECORD);
   }
-  
+
   /* A context enumerator for an operator application. */
   public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
                                           TLCState s1, final int control, CostModel cm) {
@@ -3483,18 +3488,18 @@ public abstract class Tool
 
     // These three are expected by implementing the {@link ITool} interface; they used
     //		to mirror exactly methods that our parent class ({@link Spec}) implemented
-    //		however those methods have changed signature with refactoring done for 
+    //		however those methods have changed signature with refactoring done for
     //		Issue #393
 	@Override
 	public Context getOpContext(OpDefNode odn, ExprOrOpArgNode[] args, Context ctx, boolean b) {
 		return getOpContext(odn, args, ctx, b, toolId);
 	}
-	
+
 	@Override
 	public Object lookup(SymbolNode opNode, Context con, boolean b) {
 		return lookup(opNode, con, b, toolId);
 	}
-	
+
 	@Override
 	public Object getVal(ExprOrOpArgNode expr, Context con, boolean b) {
 		return getVal(expr, con, b, toolId);
