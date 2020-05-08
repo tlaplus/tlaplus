@@ -183,12 +183,12 @@ public class DotStateWriter extends StateWriter {
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean, tlc2.util.IStateWriter.Visualization)
+	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean, tlc2.util.IStateWriter.Visualization, tlc2.tool.Action)
 	 */
 	public synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew,
 			Visualization visualization, Action action) {
 		final String successorsFP = Long.toString(successor.fingerPrint());
-		
+
 		// Write the transition edge.
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" -> ");

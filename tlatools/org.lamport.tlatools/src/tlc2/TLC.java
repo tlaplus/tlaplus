@@ -162,10 +162,15 @@ public class TLC {
         traceDepth = 100;
 
         fpSetConfiguration = new FPSetConfiguration();
-        
+
         avoidMonolithSpecTECreation = false;
         waitingOnGenerationCompletion = new AtomicBoolean(false);
 	}
+
+    public TLC(IStateWriter stateWriter) {
+        this();
+        this.stateWriter = stateWriter;
+    }
 
     /*
      * This TLA checker (TLC) provides the following functionalities:

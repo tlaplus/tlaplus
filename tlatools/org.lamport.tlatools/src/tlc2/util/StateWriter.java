@@ -103,11 +103,20 @@ public class StateWriter implements IStateWriter
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
 	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int to, boolean successorStateIsNew,
-			Visualization visulation) {
+			Visualization visualization) {
     	if (successorStateIsNew) {
     		this.writeState(state);
     	}
 	}
+
+    /* (non-Javadoc)
+     * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean, tlc2.util.IStateWriter.Visualization, tlc2.tool.Action)
+     */
+    public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int to, boolean successorStateIsNew, Visualization visualization, Action action) {
+    	if (successorStateIsNew) {
+            this.writeState(state);
+    	}
+    }
 
 	@Override
 	public void snapshot() throws IOException {
