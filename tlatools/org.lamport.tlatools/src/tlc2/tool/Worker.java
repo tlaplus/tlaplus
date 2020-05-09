@@ -98,7 +98,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 				final long preNext = this.statesGenerated;
 				try {
 					this.tool.getNextStates(this, curState);
-				} catch (TLCRuntimeException e) {
+				} catch (TLCRuntimeException | EvalException e) {
 					// The next-state relation couldn't be evaluated.
 					this.tlc.doNextFailed(curState, null, e);
 				}
