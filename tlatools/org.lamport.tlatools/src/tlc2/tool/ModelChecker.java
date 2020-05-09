@@ -282,6 +282,10 @@ public class ModelChecker extends AbstractChecker
                 } catch (FingerprintException e)
                 {
                     result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
+                } catch (EvalException e) {
+                	// Do not replace the actual error code, such as assert violation, with TLC_NESTED_EXPRESSION.
+	                MP.printError(EC.TLC_NESTED_EXPRESSION, cTool.toString());
+	                result = e.getErrorCode();
                 } catch (Throwable e)
                 {
                     // Assert.printStack(e);
@@ -635,6 +639,9 @@ public class ModelChecker extends AbstractChecker
 			} else if (e instanceof AssertionError)
 			{
 				ec = EC.TLC_BUG;
+			} else if (e instanceof EvalException)
+			{
+				ec = ((EvalException) e).getErrorCode();
 			} else
 			{
 				ec = EC.GENERAL;
@@ -644,7 +651,15 @@ public class ModelChecker extends AbstractChecker
 		    {
 				if (!(ec == EC.GENERAL && e.getMessage() == null))
 		        {
-					MP.printError(ec, e);
+					if (e instanceof EvalException && ((EvalException) e).hasParameters()) {
+						// An EvalException pretty-prints itself in its constructor, i.e. converts the
+						// parameters into the human readable string. However, MP.print* will
+						// pretty-print it a second time, which is why we pass the original parameters
+						// instead of the EvalException itself.  Exception handling in TLC is a mess!
+						MP.printError(ec, ((EvalException) e).getParameters(), e);
+					} else {
+						MP.printError(ec, e);
+					}
 		        }
 				this.trace.printTrace(curState, succState);
 				this.theStateQueue.finishAll();
