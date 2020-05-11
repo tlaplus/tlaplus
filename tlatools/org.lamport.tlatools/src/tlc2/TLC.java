@@ -747,7 +747,7 @@ public class TLC {
                 {
                     try
                     {
-                        int num = args[index].strip().toLowerCase().equals("auto")
+                        int num = args[index].trim().toLowerCase().equals("auto")
                                 ? Runtime.getRuntime().availableProcessors()
                                 : Integer.parseInt(args[index]);
                         if (num < 1)
