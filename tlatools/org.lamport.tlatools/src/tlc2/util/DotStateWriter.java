@@ -295,7 +295,7 @@ public class DotStateWriter extends StateWriter {
 		sb.append(String.format("node [ labeljust=\"l\",colorscheme=\"%s\",style=filled,shape=record ]\n",
 				dotColorScheme));
 		for (String action : actions) {
-			String str = String.format("%s [label=\"%s\",fillcolor=%d]", action, action,
+			String str = String.format("%s [label=\"%s\",fillcolor=%d]", action.replaceAll("!", ":"), action,
 					this.actionToColors.get(action));
 			sb.append(str);
 			sb.append("\n");
