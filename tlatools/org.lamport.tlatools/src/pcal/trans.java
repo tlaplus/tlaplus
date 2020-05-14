@@ -1924,6 +1924,14 @@ class trans {
                 }
                 next = next + 1;
             }
+            // The following line is a hack to eliminate a rare bug that caused 
+            // the translation to loop forever if a line ended with a symbol
+            // that is the prefix of a legal BUILT_IN token and that is not
+            // a legal token but has a prefix that is a legal token--for
+            // example "(+" and "::" (since ::= is a legal operator).
+            // It was added by LL on 13 May 2020            
+            newLine = newLine + " ";
+            
             newVec.add(newLine);
         }
 
