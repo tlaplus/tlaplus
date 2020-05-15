@@ -57,7 +57,13 @@ public class TLCModelFactory implements IAdapterFactory, ILaunchConfigurationLis
 	public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
 		if (IResource.class.equals(adapterType) && adaptableObject instanceof Model) {
 			// Convert a Model instance to an IResource (to connect SpecExplorer with ShowInSystemExplorerHandler).
-			return (T) ((Model) adaptableObject).getFile();
+			final Model model = (Model) adaptableObject;
+			if (model.getFolder().exists()) {
+				// Before a model has been checked or validated, the model folder doesn't exist. If it exists,
+				// a user is likely more interested to open the folder.
+				return (T) model.getFolder();
+			}
+			return (T) model.getFile();
 		}
 		if (!Model.class.equals(adapterType)) {
 			return null;
