@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -24,18 +25,17 @@ import tla2sany.st.Location;
 /**
  * A toolkit with adapter methods
  * @author Simon Zambrovski
- * @version $Id$
  */
 public class AdapterFactory implements IAdapterFactory
 {
     // list of supported targets
-    private static final Class[] CLASSES = new Class[] { IWorkbenchAdapter.class };
+    private static final Class<?>[] CLASSES = new Class[] { IWorkbenchAdapter.class, IResource.class };
 
     /*
      * (non-Javadoc)
      * @see org.eclipse.core.runtime.IAdapterFactory#getAdapterList()
      */
-    public Class[] getAdapterList()
+    public Class<?>[] getAdapterList()
     {
         return CLASSES;
     }
@@ -44,15 +44,22 @@ public class AdapterFactory implements IAdapterFactory
      * (non-Javadoc)
      * @see org.eclipse.core.runtime.IAdapterFactory#getAdapter(java.lang.Object, java.lang.Class)
      */
-    public Object getAdapter(Object adaptableObject, Class adapterType)
+    @SuppressWarnings("unchecked")
+	public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
     {
         if (adapterType == IWorkbenchAdapter.class)
         {
             if (adaptableObject instanceof Spec)
             {
-                return new SpecWorkbenchAdapter();
+                return (T) new SpecWorkbenchAdapter();
             }
         }
+		if (IResource.class.equals(adapterType) && adaptableObject instanceof Module) {
+			return (T) ((Module) adaptableObject).getResource();
+		}
+		if (IResource.class.equals(adapterType) && adaptableObject instanceof Spec) {
+			return (T) ((Spec) adaptableObject).getRootFile();
+		}
         return null;
     }
 

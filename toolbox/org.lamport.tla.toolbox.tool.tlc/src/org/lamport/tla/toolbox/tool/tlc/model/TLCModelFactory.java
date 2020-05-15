@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdapterFactory;
@@ -54,6 +55,10 @@ public class TLCModelFactory implements IAdapterFactory, ILaunchConfigurationLis
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+		if (IResource.class.equals(adapterType) && adaptableObject instanceof Model) {
+			// Convert a Model instance to an IResource (to connect SpecExplorer with ShowInSystemExplorerHandler).
+			return (T) ((Model) adaptableObject).getFile();
+		}
 		if (!Model.class.equals(adapterType)) {
 			return null;
 		}
@@ -77,7 +82,7 @@ public class TLCModelFactory implements IAdapterFactory, ILaunchConfigurationLis
 	 * @see org.eclipse.core.runtime.IAdapterFactory#getAdapterList()
 	 */
 	public Class<?>[] getAdapterList() {
-		return new Class[] {ILaunchConfiguration.class};
+		return new Class[] {ILaunchConfiguration.class, IResource.class};
 	}
 
 	/* (non-Javadoc)

@@ -371,6 +371,10 @@
             id="org.lamport.tla.toolbox.history"
             name="Module History">
       </command>
+      <command
+            id="org.lamport.tla.toolbox.systemExplorer"
+            name="System Explorer">
+      </command>
    </extension>
 <!-- 
  Key bindings
@@ -790,6 +794,11 @@
                label="Show in History"
                style="push">
          </command>
+         <command
+               commandId="org.lamport.tla.toolbox.systemExplorer"
+               label="Open in File Manager"
+               style="push">
+         </command>
       </menuContribution>
 
       <menuContribution
@@ -1065,6 +1074,29 @@
                </and>
          </enabledWhen>
       </handler>
+      <handler
+            class="org.eclipse.ui.internal.ide.handlers.ShowInSystemExplorerHandler"
+            commandId="org.lamport.tla.toolbox.systemExplorer">
+         <enabledWhen>
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <with
+                        variable="selection">
+                     <iterate
+                           ifEmpty="false"
+                           operator="or">
+                        <not>
+                        <instanceof
+                              value="org.lamport.tla.toolbox.ui.provider.IGroup">
+                        </instanceof>
+                        </not>
+                     </iterate>
+                  </with>
+               </and>
+         </enabledWhen>
+      </handler>
    </extension>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
@@ -1191,6 +1223,16 @@
             class="org.lamport.tla.toolbox.util.AdapterFactory">
          <adapter
                type="org.eclipse.ui.model.IWorkbenchAdapter">
+         </adapter>
+         <adapter
+               type="org.eclipse.core.resources.IResource">
+         </adapter>
+      </factory>
+      <factory
+            adaptableType="org.lamport.tla.toolbox.spec.Module"
+            class="org.lamport.tla.toolbox.util.AdapterFactory">
+         <adapter
+               type="org.eclipse.core.resources.IResource">
          </adapter>
       </factory>
    </extension>

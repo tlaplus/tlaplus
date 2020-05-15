@@ -172,6 +172,13 @@
                type="org.lamport.tla.toolbox.tool.tlc.model.Model">
          </adapter>
       </factory>
+      <factory
+            adaptableType="org.lamport.tla.toolbox.tool.tlc.model.Model"
+            class="org.lamport.tla.toolbox.tool.tlc.model.TLCModelFactory">
+         <adapter
+               type="org.eclipse.core.resources.IResource">
+         </adapter>
+      </factory>
    </extension>
    <extension
          point="org.eclipse.core.runtime.adapters">
