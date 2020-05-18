@@ -34,5 +34,5 @@ public interface ILivenessStateWriter extends IStateWriter {
 
 	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew);
 
-	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visulation);
+	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visualization);
 }

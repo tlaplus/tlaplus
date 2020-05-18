@@ -54,11 +54,11 @@ public interface IStateWriter {
 	
 	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Action action);
 
-	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visulation);
+	void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization);
 	
 	void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew);
 
-	void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visulation);
+	void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visualization);
 	
 	void close();
 
