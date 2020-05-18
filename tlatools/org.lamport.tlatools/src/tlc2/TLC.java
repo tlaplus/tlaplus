@@ -1260,6 +1260,10 @@ public class TLC {
         this.resolver = resolver;
         ToolIO.setDefaultResolver(resolver);
     }
+    
+    public void setStateWriter(IStateWriter sw) {
+    	this.stateWriter = sw;
+    }
 
     /**
      * Print out an error message, with usage hint
