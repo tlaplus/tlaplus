@@ -4,6 +4,11 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,6 +96,7 @@ import org.lamport.tla.toolbox.tool.tlc.ui.view.TLCErrorView;
 import org.lamport.tla.toolbox.tool.tlc.util.ChangedSpecModulesGatheringDeltaVisitor;
 import org.lamport.tla.toolbox.tool.tlc.util.ModelHelper;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
+import org.lamport.tla.toolbox.ui.view.PDFBrowser;
 import org.lamport.tla.toolbox.ui.view.PDFBrowserEditor;
 import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.UIHelper;
@@ -665,6 +671,30 @@ public class ModelEditor extends FormEditor {
 	}
     
 	public void addOrUpdateStateGraphEditor(final IFile stateGraphDotDump) throws CoreException {
+		// -Dorg.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor.dotWebView=true
+		if (Boolean.getBoolean(ModelEditor.class.getName() + ".dotWebView")) {
+			try {
+				
+				final Path path = stateGraphDotDump.getLocation().toFile().toPath();
+				//TODO: This might be too large to handle.
+				final String dotString =  new String(Files.readAllBytes(path), StandardCharsets.US_ASCII);
+				final String urlEncodedDotString = URLEncoder.encode(dotString, StandardCharsets.UTF_8.toString())
+		                .replaceAll("\\+", "%20") // Something about Java and JavaScript incompatibilities...
+		                .replaceAll("\\%21", "!")
+		                .replaceAll("\\%27", "'")
+		                .replaceAll("\\%28", "(")
+		                .replaceAll("\\%29", ")")
+		                .replaceAll("\\%7E", "~");
+				//TODO: Choose engine based on size of input string (there are cheaper layouts than 'dot').
+				final String url = "https://edotor.net/?engine=dot#" + urlEncodedDotString;
+
+				final PDFBrowser browser = (PDFBrowser) UIHelper.openView(PDFBrowser.ID);
+				browser.setInput(model.getName(), url);
+				return;
+			} catch (IOException e) {
+				throw new CoreException(new Status(IStatus.ERROR, TLCActivator.PLUGIN_ID, e.getMessage(), e));
+			}
+		}
 		// For historical reasons this preference is found in the tlatex bundle. Thus,
 		// we read the value from there, but don't refer to the corresponding string
 		// constants to not introduce a plugin dependency.
