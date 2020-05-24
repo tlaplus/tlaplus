@@ -243,7 +243,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
                 if (!domain.member(elems[argn])) {
                   Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                         ",\nthe argument number " + (argn+1) + " is:\n" +
-                        Values.ppr(elems[argn].toString()) + "\nwhich is not in its domain.\n");
+                        Values.ppr(elems[argn].toString()) + "\nwhich is not in the function's domain " + this.getDomain().toString() +".\n");
                 }
                 c1 = c1.cons(ids[j], elems[argn++]);
               }
