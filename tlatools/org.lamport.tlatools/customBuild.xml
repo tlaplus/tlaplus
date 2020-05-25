@@ -137,6 +137,7 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
+				<pathelement location="lib/jline-3.14.1.jar" />
 			</classpath>
 		</javac>
 
@@ -249,7 +250,12 @@
 			</patternset>
 		</unzip>
 		<touch file="target/classes/META-INF/javamail.default.address.map"/>
-		
+
+		<unzip src="lib/jline-3.14.1.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
 
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
@@ -479,6 +485,7 @@
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
+				<pathelement location="lib/jline-3.14.1.jar" />
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
