@@ -137,6 +137,8 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
+				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
+				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 			</classpath>
 		</javac>
 
@@ -249,7 +251,26 @@
 			</patternset>
 		</unzip>
 		<touch file="target/classes/META-INF/javamail.default.address.map"/>
-		
+
+		<unzip src="lib/jline/jline-terminal-3.14.1.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
+		<unzip src="lib/jline/jline-reader-3.14.1.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
+		<!-- Include the jline LICENSE file -->
+		<copy todir="${class.dir}">
+			<fileset dir="lib/jline">
+				<include name="jline-LICENSE.txt" />
+			</fileset>
+		</copy>
+
 
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
@@ -361,6 +382,8 @@
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
+				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
+				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
@@ -485,6 +508,8 @@
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
+				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
+				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
