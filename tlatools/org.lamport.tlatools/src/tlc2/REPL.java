@@ -7,6 +7,8 @@ import org.jline.terminal.TerminalBuilder;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
+import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.FastTool;
@@ -55,7 +57,7 @@ public class REPL {
     public String processInput(String evalExpr) {
 
         // The modules we will extend in the REPL environment.
-        String moduleExtends = "Naturals,Reals,Sequences,Bags,FiniteSets,TLC";
+        String moduleExtends = "Reals,Sequences,Bags,FiniteSets,TLC,Randomization";
         if (specFile != null) {
             String mainModuleName = specFile.getName().replaceFirst(TLAConstants.Files.TLA_EXTENSION + "$", "");
             moduleExtends += ("," + mainModuleName);
@@ -157,7 +159,8 @@ public class REPL {
             REPL repl = new REPL(tempDir);
             // TODO: Allow external spec file to be loaded into REPL context.
             System.out.println("Welcome to the TLA+ REPL!");
-            System.out.println("Enter any TLA+ expression.");
+            MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
+            System.out.println("Enter a constant-level TLA+ expression.");
             repl.runREPL();
         } catch (Exception e) {
             e.printStackTrace();
