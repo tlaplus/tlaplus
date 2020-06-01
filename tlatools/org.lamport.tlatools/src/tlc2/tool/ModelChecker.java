@@ -863,9 +863,11 @@ public class ModelChecker extends AbstractChecker
 
         MP.printMessage(EC.TLC_STATS, new String[] { String.valueOf(getStatesGenerated()),
                 String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size()) });
+        // The depth used to only be reported on success, but this seems bogus since TLC reports
+        // the number states above.
+        MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForReporting()));
         if (success)
         {
-            MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForReporting()));
 			
         	// Aggregate outdegree from statistics maintained by individual workers. 
         	final BucketStatistics aggOutDegree = new BucketStatistics("State Graph OutDegree");

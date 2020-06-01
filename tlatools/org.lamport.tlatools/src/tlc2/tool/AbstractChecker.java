@@ -11,7 +11,6 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.coverage.CostModelCreator;
-import tlc2.tool.impl.FastTool;
 import tlc2.tool.liveness.AddAndCheckLiveCheck;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
@@ -141,7 +140,7 @@ public abstract class AbstractChecker
      * Set the error state. 
      * <strong>Note:</note> this method must be protected by lock 
      */
-    public boolean setErrState(TLCState curState, TLCState succState, boolean keep, int errorCode)
+    public boolean setErrState(TLCState curState, TLCState succState, boolean keepCallStack, int errorCode)
     {
        assert Thread.holdsLock(this) : "Caller thread has to hold monitor!";
        if (!TLCGlobals.continuation && this.done)
@@ -151,9 +150,17 @@ public abstract class AbstractChecker
         this.errState = (succState == null) ? curState : succState;
         this.errorCode = errorCode;
         this.done = true;
-        this.keepCallStack = keep;
+        this.keepCallStack = keepCallStack;
         return true;
     }
+
+	public void setError(boolean keepCallStack, int errorCode) {
+		assert Thread.holdsLock(this) : "Caller thread has to hold monitor!";
+		IdThread.resetCurrentState();
+		this.errorCode = errorCode;
+		this.done = true;
+		this.keepCallStack = keepCallStack;
+	}
 
     /**
      * Responsible for printing the coverage information
@@ -461,11 +468,14 @@ public abstract class AbstractChecker
         {
             workers[i].join();
         }
-        // Check if a worker explicitly set errorCode.
-        if (this.errorCode != EC.NO_ERROR && result == EC.NO_ERROR) {
-        	result = this.errorCode;
-        }
-        return result != EC.NO_ERROR ? result : EC.NO_ERROR;
+		if (!this.keepCallStack) {
+			// A worker explicitly set an errorCode (without interrupting
+			// state-space exploration) and doesn't request to keep the call-stack.
+			// (If a call-stack is requested, this has to return NO_ERROR to not
+			// intercept the outer logic)
+			return this.errorCode != EC.NO_ERROR ? this.errorCode : EC.NO_ERROR;
+		}
+		return EC.NO_ERROR;
     }
     
 	public final void setAllValues(int idx, IValue val) {
