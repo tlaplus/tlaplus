@@ -1006,6 +1006,10 @@ public class ModelChecker extends AbstractChecker
 		return useByteArrayQueue() ? "DiskByteArrayQueue" : "DiskStateQueue";
 	}
 
+	/* (non-Javadoc)
+	 * @see tlc2.tool.AbstractChecker#getStatesGenerated()
+	 */
+	@Override
     public long getStatesGenerated() {
     	long sum = numberOfInitialStates;
     	for (final IWorker worker : workers) {

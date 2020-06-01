@@ -560,4 +560,8 @@ public abstract class AbstractChecker
 	public long getDistinctStatesGenerated() {
 		return -1;
 	}
+
+	public long getStatesGenerated() {
+		return -1;
+	}
 }
