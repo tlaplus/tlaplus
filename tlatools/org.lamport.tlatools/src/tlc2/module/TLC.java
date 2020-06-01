@@ -157,7 +157,7 @@ public class TLC implements ValueConstants
                 } else if (TLCGlobals.mainChecker != null)
                 {
                     res = (Value) tlc2.TLCGlobals.mainChecker.getValue(0, idx);
-                } else 
+                } else if (tlc2.TLCGlobals.simulator != null)
                 {	
                     res = (Value) tlc2.TLCGlobals.simulator.getLocalValue(idx);
                 }
