@@ -130,9 +130,11 @@ public abstract class AbstractChecker
 		});
     }
 
-    public final void setDone()
+    public final boolean setDone()
     {
+    	boolean old = this.done;
         this.done = true;
+        return old;
     }
 
     /**
@@ -459,7 +461,11 @@ public abstract class AbstractChecker
         {
             workers[i].join();
         }
-        return EC.NO_ERROR;
+        // Check if a worker explicitly set errorCode.
+        if (this.errorCode != EC.NO_ERROR && result == EC.NO_ERROR) {
+        	result = this.errorCode;
+        }
+        return result != EC.NO_ERROR ? result : EC.NO_ERROR;
     }
     
 	public final void setAllValues(int idx, IValue val) {

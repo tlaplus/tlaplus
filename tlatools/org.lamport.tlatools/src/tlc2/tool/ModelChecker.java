@@ -842,6 +842,10 @@ public class ModelChecker extends AbstractChecker
     		FileUtil.deleteDir(this.metadir, success);
     	}
 	}
+    
+    public final void printSummary(boolean success) throws IOException {
+    	printSummary(success, startTime);
+    }
 
     public final void printSummary(boolean success, final long startTime) throws IOException
     {
