@@ -485,9 +485,19 @@ public class FileUtil
         return new DataOutputStream(new FileOutputStream(new File(filename)));
     }
 
-
-
-
-
-
+	public static File createTempFile(final String fileName) {
+		final File file;
+		// Create the temp file in Java's temp dir unless TLC's metaDir has been set. The
+		// latter won't be the case when SANY is invoked directly or during the early
+		// startup phase of TLC.
+		if (TLCGlobals.metaDir != null) {
+			file = new File(TLCGlobals.metaDir + separatorChar + fileName);
+		} else {
+			final String tDir = System.getProperty("java.io.tmpdir");
+			file = new File(tDir + separatorChar + fileName);
+		}
+		// Let's get rid of the file when TLC terminates.
+		file.deleteOnExit();
+		return file;
+	}
 }

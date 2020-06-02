@@ -43,7 +43,7 @@ import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.ModelValue;
 import util.Assert;
 import util.FilenameToStream;
-import util.TLAConstants;
+import util.MonolithSpecExtractor;
 import util.UniqueString;
 
 // Note that we use all of the {@code default} defined functionality in our
@@ -89,7 +89,7 @@ abstract class Spec
         // SZ Mar 9, 2009: added initialization of the modelValue class
         ModelValue.init();
         this.configFile = configFile;
-        this.config = new ModelConfig(configFile + TLAConstants.Files.CONFIG_EXTENSION, resolver);
+        this.config = new ModelConfig(MonolithSpecExtractor.getConfig(configFile), resolver);
         this.config.parse();
         ModelValue.setValues(); // called after seeing all model values
 

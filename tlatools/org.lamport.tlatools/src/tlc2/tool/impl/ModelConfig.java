@@ -7,6 +7,7 @@ package tlc2.tool.impl;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Hashtable;
 
@@ -29,6 +30,7 @@ import tlc2.value.impl.Value;
 import tlc2.value.impl.ValueVec;
 import util.FileUtil;
 import util.FilenameToStream;
+import util.MonolithSpecExtractor;
 import util.SimpleFilenameToStream;
 import util.TLAConstants;
 
@@ -145,11 +147,16 @@ public class ModelConfig implements ValueConstants, Serializable {
         try
         {
             // SZ 23.02.2009: separated file resolution from stream retrieval
-            FileInputStream fis = FileUtil.newFIS(resolver.resolve(this.configFileName, false));
+            InputStream fis = FileUtil.newFIS(resolver.resolve(this.configFileName, false));
             if (fis == null)
             {
                 throw new ConfigFileException(EC.CFG_ERROR_READING_FILE, new String[] { this.configFileName,
                         "File not found." });
+            }
+            if (this.configFileName.endsWith(TLAConstants.Files.TLA_EXTENSION)) {
+				fis = MonolithSpecExtractor.config(fis,
+						// strip ".tla" from this.configFileName.
+						this.configFileName.replace(TLAConstants.Files.TLA_EXTENSION, ""));
             }
             SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);
             TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
