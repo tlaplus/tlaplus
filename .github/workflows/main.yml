@@ -93,7 +93,7 @@ jobs:
       ## Build TLC and Toolbox (logger reduces verbosity).
       ##
     - name: Build with Maven (Linux)
-      run: ${{ matrix.MVN_COMMAND }} -Pcodesigning -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
+      run: ${{ matrix.MVN_COMMAND }} -Pcodesigning -Dtycho.disableP2Mirrors=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
 
       ##
       ## Create signed apt repository out of Linux Toolbox zip.
