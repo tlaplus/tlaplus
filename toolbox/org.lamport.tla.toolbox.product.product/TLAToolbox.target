@@ -25,7 +25,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.jclouds.feature.feature.group" version="0.0.0"/>
-<repository location="http://lemmy.github.com/jclouds2p2/"/>
+<repository id="github-jclouds" location="http://lemmy.github.com/jclouds2p2/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.help.feature.group" version="0.0.0"/>
@@ -45,15 +45,15 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/egit/updates/"/>
+<repository id="eclipse-egit" location="http://download.eclipse.org/egit/updates/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
-<repository location="http://lemmy.github.com/Pdf4Eclipse/"/>
+<repository id="github-pdf4eclipse" location="http://lemmy.github.com/Pdf4Eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
 <unit id="org.lamport.openjdk.feature.feature.group" version="0.0.0"/>
-<repository location="http://lemmy.github.com/eclipse-jdk-bundles/"/>
+<repository id="github-jdk" location="http://lemmy.github.com/eclipse-jdk-bundles/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0"/>
@@ -61,16 +61,16 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/releases/2018-09/201809191000"/>
+<repository id="eclipse-rcp" location="http://download.eclipse.org/releases/2018-09/201809191000"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.mylyn.commons.notifications.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/mylyn/releases/3.24"/>
+<repository id="eclipse-mylyn" location="http://download.eclipse.org/mylyn/releases/3.24"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.e4.tools.spies.feature.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
+<repository id="eclipse-e4" location="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
 </location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
