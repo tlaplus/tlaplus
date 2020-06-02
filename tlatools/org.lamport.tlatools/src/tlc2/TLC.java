@@ -1129,7 +1129,12 @@ public class TLC {
 			// readable runtime (days, hours, minutes, ...).
 			final long runtime = System.currentTimeMillis() - startTime;
 			MP.printMessage(EC.TLC_FINISHED,
-					TLCGlobals.tool ? Long.toString(runtime) + "ms" : convertRuntimeToHumanReadable(runtime));
+					// If TLC runs without -tool output it might still be useful to
+					// report overall runtime in a machine-readable format (milliseconds)
+					// instead of in a human-readable one.
+					TLCGlobals.tool || Boolean.getBoolean(TLC.class.getName() + ".asMilliSeconds")
+							? Long.toString(runtime) + "ms"
+							: convertRuntimeToHumanReadable(runtime));
 			MP.flush();
 			
 	        while (waitingOnGenerationCompletion.get()) {
