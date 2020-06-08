@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import java.io.File;
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
@@ -157,6 +158,23 @@ public class ConcurrentTLCTrace extends TLCTrace {
 		for (Worker worker : workers) {
 			worker.commitChkpt();
 		}
+		// MAK 06/08/2020:
+		// Touch MC.st.chkpt (in addition to the worker-created MC-${N}.chkpt files)
+		// that (single-worker) TLCTrace creates. The Toolbox checks for the existence
+		// of checkpoints by looking for this file (see
+		// org.lamport.tla.toolbox.tool.tlc.model.Model.getCheckpoints(boolean)). If 
+		// the Toolbox check fails, a user cannot resume/restart model-checking from
+		// the checkpoint. Addresses Github issue #469 at
+		// https://github.com/tlaplus/tlaplus/issues/469
+		//
+		// We create an empty file here instead of changing the Toolbox in case 3rd party
+		// integrations and scripts rely on the file's existence.  Reading the empty
+		// MC.st.chkpt with an older TLC release will crash and thus make a user aware
+		// that recovery fails.
+		//
+		// createNewFile is safe to call periodically when a checkpoint get taken
+		// because it does *not* throw an exception if the file already exists.
+		new File(filename + ".chkpt").createNewFile();
 	}
 
 	public void recover() throws IOException { 

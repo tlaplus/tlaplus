@@ -24,7 +24,7 @@ import util.FileUtil;
 public class TLCTrace {
 
 	static final String EXT = ".st";
-	private static String filename;
+	protected static String filename;
 	private final BufferedRandomAccessFile raf;
 	private long lastPtr;
 	private TraceApp tool;
