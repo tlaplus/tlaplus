@@ -270,7 +270,12 @@ public class TLC implements ValueConstants
         	final StringValue sv = (StringValue) vidx;
         	if (EXIT == sv.val) {
         		if (val == BoolValue.ValTrue) {
-        			TLCGlobals.mainChecker.stop();
+        			if (TLCGlobals.mainChecker != null) {
+        				TLCGlobals.mainChecker.stop();
+        			}
+        			if (TLCGlobals.simulator != null) {
+        				TLCGlobals.simulator.stop();
+        			}
         		}
         		return BoolValue.ValTrue;
         	} else if (PAUSE == sv.val) {
