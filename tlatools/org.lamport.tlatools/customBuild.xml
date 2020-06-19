@@ -275,6 +275,12 @@
 					src/tla2sany/parser/Token.09-09-07,
 					src/tla2sany/parser/TokenMgrError.09-09-07"/>
 			<fileset dir="${doc.dir}" includes="License.txt"/>
+			<fileset dir="${test.class.dir}">
+				<include name="**/tlc2/tool/CommonTestCase*.class" />
+				<include name="**/tlc2/tool/liveness/ModelCheckerTestCase*.class" />
+				<include name="**/tlc2/TestMPRecorder*.class" />
+				<include name="**/util/IsolatedTestCaseRunner*.class" />
+			</fileset>
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Build-Tag" value="${env.BUILD_TAG}" />
