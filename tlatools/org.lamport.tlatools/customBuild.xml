@@ -310,7 +310,7 @@
 	</target>
 
 	<!-- Compiles the TLA+ tools *test* code -->
-	<target name="compile-test" unless="test.skip">
+	<target name="compile-test">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
 		<javac includeantruntime="false" srcdir="${test.dir}" destdir="${test.class.dir}" debug="true" verbose="false" source="1.8" target="1.8">
