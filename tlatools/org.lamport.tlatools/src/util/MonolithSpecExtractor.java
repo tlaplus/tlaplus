@@ -96,6 +96,10 @@ public class MonolithSpecExtractor {
 				}
 			}
 			pw.close();
+			if (!active) {
+				// Not found in uber-spec.
+				return null;
+			}
 			return new NamedInputStream(out.getName(), moduleName, out);
 		}
 	}
