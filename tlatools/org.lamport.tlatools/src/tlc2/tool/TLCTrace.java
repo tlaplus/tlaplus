@@ -27,7 +27,7 @@ public class TLCTrace {
 	protected static String filename;
 	private final BufferedRandomAccessFile raf;
 	private long lastPtr;
-	private TraceApp tool;
+	protected TraceApp tool;
 
 	public TLCTrace(String metadir, String specFile, TraceApp tool) throws IOException {
 		filename = metadir + FileUtil.separator + specFile + EXT;
@@ -299,7 +299,7 @@ public class TLCTrace {
 		if (len > 0) {
 			if (sinfo == null) {
 				// Recreate initial state from its fingerprint.
-				final long fp = fps.elementAt(fps.size() - 1);
+				final long fp = fps.elementAt(len - 1);
 				sinfo = this.tool.getState(fp);
 			}
 			// Recover successor states from its predecessor and its fingerprint.
