@@ -1035,7 +1035,7 @@ public class SpecObj
         			break;
             	case NO_TRANSLATION_EXISTS:
 					ToolIO.out.println("PlusCal was found in the specification for " + parseUnit.getName()
-							+ " but no TLA+ translation block for it could be found.");
+							+ " but no TLA+ translation could be found.");
 
             		break;
             	case DIVERGENCE_EXISTS:

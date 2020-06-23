@@ -44,9 +44,10 @@ public class Validator {
 	
 	static protected boolean PRE_TRIM_VALIDATION_CONTENT = true;
 	
-	static final Pattern PCAL_CHECKSUM_PATTERN = Pattern.compile(PcalParams.PCAL_CHECKSUM_KEYWORD + "[0-9a-f]+$");
+	private static final String MATCH_GROUP = "hash";
+	static final Pattern PCAL_CHECKSUM_PATTERN = Pattern.compile(PcalParams.PCAL_CHECKSUM_KEYWORD + "(?<" + MATCH_GROUP + ">[0-9a-f]+)");
 	static final Pattern TRANSLATED_PCAL_CHECKSUM_PATTERN
-									= Pattern.compile(PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + "[0-9a-f]+$");
+									= Pattern.compile(PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + "(?<" + MATCH_GROUP + ">[0-9a-f]+)");
 
 	private static final Pattern MODULE_PREFIX_PATTERN = Pattern.compile(TLAConstants.MODULE_OPENING_PREFIX_REGEX);
 	private static final Pattern MODULE_CLOSING_PATTERN = Pattern.compile(TLAConstants.MODULE_CLOSING_REGEX);
@@ -207,14 +208,14 @@ public class Validator {
 			final String beginLine = deTabbedSpecification.get(translationLine);
         	Matcher m = Validator.PCAL_CHECKSUM_PATTERN.matcher(beginLine);
         	if (m.find()) {
-        		pcalMD5 = beginLine.substring(m.start() + PcalParams.PCAL_CHECKSUM_KEYWORD.length());
+        		pcalMD5 = m.group(MATCH_GROUP);
         	} else {
         		return ValidationResult.NO_CHECKSUMS_EXIST;
         	}
         	final String endLine = deTabbedSpecification.get(endTranslationLine);
         	m = Validator.TRANSLATED_PCAL_CHECKSUM_PATTERN.matcher(endLine);
         	if (m.find()) {
-        		translatedMD5 = endLine.substring(m.start() + PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD.length());
+        		translatedMD5 = m.group(MATCH_GROUP);
 
             	final Vector<String> translation = new Vector<>(specificationText.subList((translationLine + 1),
             																			   endTranslationLine));
