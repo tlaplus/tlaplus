@@ -202,6 +202,23 @@
             <artifactId>aspectjrt</artifactId>
             <version>1.9.1</version>
         </dependency>
+        <!-- REPL.java imports classes from org.jline.  The Toolbox (being an OSGi based Rich Client Platform) -->
+        <!-- does not see the jline jars references in customBuild.xml or .classpath.  It has to find jline    -->
+        <!-- elsewhere such as in the target platform (TLAToolbox.target) or on Maven Central.  For jline      -->
+        <!-- there exists no p2 repository that we could add to our target platform.  However, an OSGi-fied    -->
+        <!-- jline exists on Maven Central.                                                                    -->
+		<!-- https://mvnrepository.com/artifact/org.jline/jline-terminal -->
+		<dependency>
+		    <groupId>org.jline</groupId>
+		    <artifactId>jline-terminal</artifactId>
+		    <version>3.14.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.jline/jline-reader -->
+		<dependency>
+		    <groupId>org.jline</groupId>
+		    <artifactId>jline-reader</artifactId>
+		    <version>3.14.1</version>
+		</dependency>
       </dependencies>
 
       <!-- August 2014 - TL

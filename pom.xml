@@ -264,6 +264,13 @@
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
+				    <!-- Some dependencies such as jline referenced by org.lamport.tlatools   -->
+				    <!-- cannot be found in the Toolbox's target platform (TLAToolbox.target) -->
+				    <!-- because the dependencies are not made available in p2 repositories.  -->
+				    <!-- However, sometimes OSGi-fied dependencies are made available on      -->
+				    <!-- Maven Central.  'pomDependencies' makes this build look there too.    -->
+				    <!-- https://wiki.eclipse.org/Tycho/Target_Platform#.22POM_dependencies_consider.22 -->
+                    <pomDependencies>consider</pomDependencies>
 					<!-- recommended: use p2-based target platform resolver -->
 					<resolver>p2</resolver>
 					<ignoreTychoRepositories>true</ignoreTychoRepositories>
