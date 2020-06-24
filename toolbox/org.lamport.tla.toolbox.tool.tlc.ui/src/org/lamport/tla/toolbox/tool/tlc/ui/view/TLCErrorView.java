@@ -246,12 +246,23 @@ public class TLCErrorView extends ViewPart
              * seconds, so it is important to not reset the trace if it is not necessary.
              */
             final TLCError oldTrace = errorTraceTreeViewer.getCurrentTrace();
-            final boolean isNewTrace = (trace != null) && (oldTrace != null) && !(trace == oldTrace);
-            // update the trace information
-            if (isNewTrace)
-            {
-                this.setTraceInput(trace, true);
-            }
+            if (Boolean.getBoolean(TLCErrorView.class.getName() + ".noRestore")) {
+    			if (oldTrace.hasTrace() && !trace.hasTrace()) {
+    				// The trace evaluation failed. Don't replace the old trace but instead disable
+    				// the error trace.
+    				final Tree tree = errorTraceTreeViewer.getTreeViewer().getTree();
+    				tree.setBackground(tree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
+    			} else if (trace != oldTrace) {
+    				this.setTraceInput(trace, true);
+    			}
+    		} else {
+                final boolean isNewTrace = (trace != null) && (oldTrace != null) && !(trace == oldTrace);
+                // update the trace information
+                if (isNewTrace)
+                {
+                    this.setTraceInput(trace, true);
+                }
+    		}
             if (model.isSnapshot()) {
             	final String date = sdf.format(model.getSnapshotTimeStamp());
             	this.form.setText(model.getSnapshotFor().getName() + " (" + date + ")");

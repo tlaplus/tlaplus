@@ -732,6 +732,10 @@ public class TraceExplorerComposite
 			job.setUser(true);
 			job.schedule();
 			
+			if (Boolean.getBoolean(TLCErrorView.class.getName() + ".noRestore")) {
+				return;
+			}
+			
 	        tableViewer.getTable().setEnabled(false);
 	        
 	        buttonExplore.setEnabled(false);
@@ -760,6 +764,10 @@ public class TraceExplorerComposite
         buttonAdd.setEnabled(true);
         buttonEdit.setEnabled(true);
         buttonRemove.setEnabled(!((IStructuredSelection)tableViewer.getSelection()).isEmpty());
+
+        if (Boolean.getBoolean(TLCErrorView.class.getName() + ".noRestore")) {
+			return;
+		}
         
         buttonRestore.setEnabled(false);
     }
@@ -791,8 +799,12 @@ public class TraceExplorerComposite
         
         if (buttonExplore != null)
         {
-            buttonExplore.setEnabled((view.getTrace() != null) && !view.getTrace().isTraceEmpty()
-                    && (tableViewer.getCheckedElements().length> 0));
+			if (Boolean.getBoolean(TLCErrorView.class.getName() + ".noRestore")) {
+				buttonExplore.setEnabled(tableViewer.getCheckedElements().length> 0);
+			} else {
+	            buttonExplore.setEnabled((view.getTrace() != null) && !view.getTrace().isTraceEmpty()
+	                    && (tableViewer.getCheckedElements().length> 0));
+			}
         }
     }
 
