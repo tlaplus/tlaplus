@@ -335,6 +335,10 @@ public class SimulationWorker extends IdThread {
 			for (int i = 0; i < nextStates.size(); i++) {
 				numOfGenStates.increment();
 				final TLCState state = nextStates.elementAt(i);
+				// Any check below may terminate simulation, which then makes state the final
+				// state in the trace. To correctly print its state number, it needs to know its
+				// predecessor.
+				state.setPredecessor(curState);
 
 				if (!tool.isGoodState(state)) {
 					return Optional.of(new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, state,
@@ -379,7 +383,7 @@ public class SimulationWorker extends IdThread {
 			// iteration of the loop.
 			final TLCState s1 = randomState(localRng, nextStates);
 			inConstraints = (tool.isInModel(s1) && tool.isInActions(curState, s1));
-			s1.setPredecessor(curState);
+			s1.setPredecessor(curState); // Should be redundant but let's be safe anyway.
 			curState = s1;
 			setCurrentState(curState);
 		}
