@@ -671,7 +671,13 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         } else
         {
             // checking deadlock eliminates the need for the following
-            // writer.addInvariantForTraceExplorer(finalState);
+			// MAK 06/26/2020: write.addInvariant(finalState) below used to be commented
+			// with the comment above about deadlock checking taking care of it. The
+			// statement is wrong when when an error-trace is not the shortest possible
+			// trace, because bfs (run with TE) on such a trace might a) shorten it and b)
+			// no longer deadlocks. This is the possible with traces that can come out of
+			// simulation mode.
+            writer.addInvariant(finalState);
         }
 
         writer.writeFiles(tlaFile, cfgFile, monitor);
