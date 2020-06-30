@@ -673,10 +673,24 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
             // checking deadlock eliminates the need for the following
 			// MAK 06/26/2020: write.addInvariant(finalState) below used to be commented
 			// with the comment above about deadlock checking taking care of it. The
-			// statement is wrong when when an error-trace is not the shortest possible
-			// trace, because bfs (run with TE) on such a trace might a) shorten it and b)
-			// no longer deadlocks. This is the possible with traces that can come out of
+			// statement is wrong when an error-trace is not the shortest possible trace,
+			// because bfs (run with TE) on such a trace might a) shorten it and b) no
+			// longer deadlocks. This is the possible with traces that can come out of
 			// simulation mode.
+			// Assume any spec and an invariant such as TLCGet("level") < n for some n \in Nat
+        	// (larger n increase the probability of a behavior with a sequence of stuttering
+        	// steps). If the simulator happens to generate a behavior with a sequence of
+			// stuttering step, the generated TE.tla will define a behavior that allows infinite
+			// stuttering (for each stuttering step, there will be a disjunct in the disjuncts
+			// of the next-state relation), which is not a deadlock. We could require the
+        	// simulator to run with the "-difftrace" command-line parameter, which will remove
+        	// successive stuttering steps.  However, it seems like an unnecessary requirement
+        	// given that checking an invariant instead of deadlock has no drawback.
+			// I ran into this issue when I used the simulator to generate very long traces
+			// (1000+) for a spec (AsyncGameOfLife.tla) that models an Asynchronous Cellular
+			// Automaton (https://uhra.herts.ac.uk/bitstream/handle/2299/7041/102007.pdf),
+			// to use as input for Will Schultz's animation module (result at
+			// https://github.com/lemmy/tlaplus_specs/blob/master/AsyncGameOfLifeAnimBlinker.mp4).
             writer.addInvariant(finalState);
         }
 

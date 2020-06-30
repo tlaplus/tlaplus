@@ -307,15 +307,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	         * Next_123 == (x=1 /\ x'=2) \/ (x=2 /\ x'=3) \/ ... \/ (x=42 /\ x'=42)
 	         * 
 	         * At runtime, TLC created an Action for each sub-action of the next-state
-	         * relation (42 for the example above). For each state generated during
-	         * breadth-first search, all Actions were evaluated, but the assumption was
-	         * that only the one corresponding to the level of the current state would
-	         * generate a valid successor state. However, this is not true if a trace expression This poses two problems:
-	         * 1)  Actions may 
-	         * 
-	         * However, for some next-state relations
-	         * 
-	         * Non-determinism in trace expression
+	         * relation (42 for the example above).
 	         */
 	        final StringBuilder nextDisjunctBuffer = new StringBuilder();
 	        nextDisjunctBuffer.append(nextId).append(TLAConstants.DEFINES_CR);
