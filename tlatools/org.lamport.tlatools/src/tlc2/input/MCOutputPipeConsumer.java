@@ -53,21 +53,13 @@ public class MCOutputPipeConsumer extends AbstractMCOutputConsumer {
 	 * This will not return until all output has been read and the output has correctly ended (or if there is a read
 	 * 	error, or if the output is not proper tool message output.)
 	 * 
-	 * @param returnAllMessages if true, all consumed messages will be returned
-	 * @return null or a {@link List} of {@link MCOutputMessage} instances of all messages consumed
 	 * @throws Exception
 	 */
-	public List<MCOutputMessage> consumeOutput(final boolean returnAllMessages) throws IOException {
-		final ArrayList<MCOutputMessage> encounteredMessages = returnAllMessages ? new ArrayList<>() : null;
-		
+	public void consumeOutput() throws IOException {
 		try (final BufferedReader br = new BufferedReader(new InputStreamReader(sourceStream))) {
 			MCOutputMessage message;
 
 			while ((message = parseChunk(br)) != null) {
-				if (returnAllMessages) {
-					encounteredMessages.add(message);
-				}
-
 				if (message.getType() == MP.ERROR) {
 					consumeErrorMessageAndStates(br, message);
 				} else if (message.getCode() == EC.TLC_VERSION) {
@@ -79,13 +71,11 @@ public class MCOutputPipeConsumer extends AbstractMCOutputConsumer {
 		} catch (final IOException ioe) {
 			if (outputHadNoToolMessages()) {
 				// Either we threw this from handleUnknownReadLine(String), or the output was abortive.
-				return encounteredMessages;
+				return;
 			}
 			
 			throw ioe;
 		}
-		
-		return encounteredMessages;
 	}
 	
 	public boolean outputHadNoToolMessages() {

@@ -451,7 +451,7 @@ public class TLC {
 						boolean haveClosedOutputStream = false;
 						try {
 							waitingOnGenerationCompletion.register();
-							mcOutputConsumer.consumeOutput(false);
+							mcOutputConsumer.consumeOutput();
 							
 							bos.flush();
 							temporaryMCOutputStream.close();

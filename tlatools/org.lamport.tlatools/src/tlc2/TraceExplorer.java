@@ -498,7 +498,7 @@ public class TraceExplorer {
 		
 		MP.printMessage(EC.GENERAL, "TraceExplorer is expecting input on stdin...");
 
-		pipeConsumer.consumeOutput(false);
+		pipeConsumer.consumeOutput();
 		
 		if (pipeConsumer.outputHadNoToolMessages()) {
 			MP.printMessage(EC.GENERAL, "The output had no tool messages; was TLC not run with"
