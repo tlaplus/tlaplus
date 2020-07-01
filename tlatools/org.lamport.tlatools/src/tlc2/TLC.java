@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Phaser;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
@@ -137,7 +137,7 @@ public class TLC {
     private MCParserResults mcParserResults;
     private MCOutputPipeConsumer mcOutputConsumer;
     private boolean avoidMonolithSpecTECreation;
-    private final AtomicBoolean waitingOnGenerationCompletion;
+    private final Phaser waitingOnGenerationCompletion;
     
     /**
      * Initialization
@@ -164,7 +164,8 @@ public class TLC {
         fpSetConfiguration = new FPSetConfiguration();
         
         avoidMonolithSpecTECreation = false;
-        waitingOnGenerationCompletion = new AtomicBoolean(false);
+        waitingOnGenerationCompletion = new Phaser();
+        waitingOnGenerationCompletion.register();
 	}
 
     /*
@@ -438,7 +439,7 @@ public class TLC {
 					final Runnable r = () -> {
 						boolean haveClosedOutputStream = false;
 						try {
-							waitingOnGenerationCompletion.set(true);
+							waitingOnGenerationCompletion.register();
 							mcOutputConsumer.consumeOutput(false);
 							
 							bos.flush();
@@ -480,10 +481,7 @@ public class TLC {
 								monolithCreator.copy();
 							}
 							
-							waitingOnGenerationCompletion.set(false);
-							synchronized(this) {
-								notifyAll();
-							}
+							waitingOnGenerationCompletion.arriveAndDeregister();
 						} catch (final Exception e) {
 							MP.printMessage(EC.GENERAL,
 											"A model checking error occurred while parsing tool output; the execution "
@@ -1132,13 +1130,7 @@ public class TLC {
 					TLCGlobals.tool ? Long.toString(runtime) + "ms" : convertRuntimeToHumanReadable(runtime));
 			MP.flush();
 			
-	        while (waitingOnGenerationCompletion.get()) {
-	        	synchronized (this) {
-	        		try {
-	        			wait();
-	        		} catch (final InterruptedException ie) { }
-	        	}
-	        }
+			waitingOnGenerationCompletion.arriveAndAwaitAdvance();
         }
     }
     
