@@ -36,6 +36,7 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.ModelConfig;
+import tlc2.tool.impl.SpecProcessor;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
@@ -239,5 +240,7 @@ public interface ITool extends TraceApp {
 	List<File> getModuleFiles(FilenameToStream resolver);
 
 	ModelConfig getModelConfig();
+
+	SpecProcessor getSpecProcessor();
 
 }

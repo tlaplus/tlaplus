@@ -39,6 +39,7 @@ import tlc2.output.Messages;
 import tlc2.output.TLAMonolithCreator;
 import tlc2.output.TeeOutputStream;
 import tlc2.tool.DFIDModelChecker;
+import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
 import tlc2.tool.fp.FPSet;
@@ -1030,6 +1031,7 @@ public class TLC {
             }
             FP64.Init(fpIndex);
     		
+            final ITool tool;
     		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
             final int result;
@@ -1048,6 +1050,7 @@ public class TLC {
 				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
                         traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
+                tool = simulator.getTool();
                 result = simulator.simulate();
 			} else { // RunMode.MODEL_CHECK
 				if (noSeed) {
@@ -1063,7 +1066,7 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
-                final FastTool tool = new FastTool(mainFile, configFile, resolver);
+                tool = new FastTool(mainFile, configFile, resolver);
                 deadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
                 if (isBFS())
                 {
@@ -1078,20 +1081,20 @@ public class TLC {
 					result = TLCGlobals.mainChecker.modelCheck();
                 }
 
-                if ((mcOutputConsumer != null) && (mcOutputConsumer.getError() != null)) {
-            		final SpecProcessor sp = tool.getSpecProcessor();
-            		final ModelConfig mc = tool.getModelConfig();
-            		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
-            		final String originalSpecName = mcOutputConsumer.getSpecName();
-            		
-            		MP.printMessage(EC.GENERAL,
-    								"The model check run produced error-states - we will generate the "
-    										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " files now.");
-            		mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
-            		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
-            															mcParserResults, mcOutputConsumer.getError());
-            		specTETLAFile = files[0];
-                }
+            }
+            if ((mcOutputConsumer != null) && (mcOutputConsumer.getError() != null)) {
+        		final SpecProcessor sp = tool.getSpecProcessor();
+        		final ModelConfig mc = tool.getModelConfig();
+        		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
+        		final String originalSpecName = mcOutputConsumer.getSpecName();
+        		
+        		MP.printMessage(EC.GENERAL,
+								"The model check run produced error-states - we will generate the "
+										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " files now.");
+        		mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
+        		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
+        															mcParserResults, mcOutputConsumer.getError());
+        		specTETLAFile = files[0];
             }
             return result;
         } catch (Throwable e)

@@ -455,6 +455,10 @@ public class Simulator {
 		}
 	}
 
+	public final ITool getTool() {
+	    return this.tool;	
+	}
+	
 	/**
 	 * Reports progress information
 	 */
