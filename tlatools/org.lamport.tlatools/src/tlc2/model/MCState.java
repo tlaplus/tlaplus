@@ -30,13 +30,23 @@ public class MCState {
 			final String variableInputString = stateInputString.substring(index2 + 1);
 			vars = parseVariables(variableInputString);
 			
-			final String sublabel = label.substring(2, (label.length() - 1));
-			final int lineIndex = sublabel.indexOf(TLAConstants.LINE);
-			if (lineIndex != -1) {
-				name = sublabel.substring(0, (lineIndex - 1));
-				location = Location.parseLocation(sublabel.substring(lineIndex));
+			// The format of states in the output of depth-first (iterative deepening)
+			// obviously differs from BFS (why use one implementation when we can have 2 and
+			// more). Thus, take care of states that lack a label.
+			final String sublabel;
+			if (label.length() > 2) {
+				sublabel = label.substring(2, (label.length() - 1));
+
+				final int lineIndex = sublabel.indexOf(TLAConstants.LINE);
+				if (lineIndex != -1) {
+					name = sublabel.substring(0, (lineIndex - 1));
+					location = Location.parseLocation(sublabel.substring(lineIndex));
+				} else {
+					name = sublabel;
+					location = null;
+				}
 			} else {
-				name = sublabel;
+				name = null;
 				location = null;
 			}
 		} else {
