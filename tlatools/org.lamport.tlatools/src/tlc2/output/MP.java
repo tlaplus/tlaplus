@@ -1247,7 +1247,7 @@ public class MP
             break;
         case EC.TLC_ENVIRONMENT_JVM_GC:
 			b.append(
-					"Please run the Java VM which executes TLC with a throughput optimized garbage collector by passing the \"-XX:+UseParallelGC\" property.");
+					"Please run the Java VM, which executes TLC with a throughput optimized garbage collector, by passing the \"-XX:+UseParallelGC\" property.");
             break;
 
         /* ************************************************************************ */
