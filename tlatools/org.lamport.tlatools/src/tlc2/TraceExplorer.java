@@ -143,14 +143,10 @@ public class TraceExplorer {
 												  sourceDirectory, tlaBuffer.toString(), specExtendsTLC,
 												  specExtendsToolbox);
 		tlaCopier.copy();
-		MP.printMessage(EC.GENERAL,
-						"The file " + tlaCopier.getDestinationFile().getAbsolutePath() + " has been created.");
 		
 		final CFGCopier cfgCopier = new CFGCopier(originalSpecName, TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
 												  sourceDirectory, cfgBuffer.toString());
 		cfgCopier.copy();
-		MP.printMessage(EC.GENERAL,
-						"The file " + cfgCopier.getDestinationFile().getAbsolutePath() + " has been created.");
 		
 		return new File[] { tlaCopier.getDestinationFile(), cfgCopier.getDestinationFile() };
     }

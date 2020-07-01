@@ -54,7 +54,7 @@ abstract class AbstractMCOutputConsumer {
 		
 		MCOutputMessage message = parseChunk(reader);
 		if ((message == null) || (message.getType() != MP.ERROR)) {
-			throw new IOException("Expected a useless error message like "
+			throw new IOException("Expected an error message like "
 									+ "'The behavior up to this point is...' but didn't find one after"
 									+ "[" + currentError.getMessage() + "]");
 		}

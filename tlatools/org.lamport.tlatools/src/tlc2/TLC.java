@@ -466,9 +466,6 @@ public class TLC {
 				        		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
 				        		final String originalSpecName = mcOutputConsumer.getSpecName();
 				        		
-				        		MP.printMessage(EC.GENERAL,
-												"The model check run produced error-states - we will generate the "
-														+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " files now.");
 				        		final MCParserResults mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
 				        		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
 				        															mcParserResults, mcOutputConsumer.getError());
@@ -524,10 +521,6 @@ public class TLC {
 						}
 					};
 					new Thread(r).start();
-					
-					MP.printMessage(EC.GENERAL,
-									"Will generate a " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
-										+ " file pair if error states are encountered.");
 				} catch (final IOException ioe) {
 					printErrorMsg("Failed to set up piped output consumers; no potential "
 										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " will be generated: "
