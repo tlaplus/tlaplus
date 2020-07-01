@@ -199,7 +199,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	 * @return an array of length 2, the first element is a buffer containing all trace expression subaction
 	 * 				declarations followed by the action constraint definition; the second element is a buffer
 	 * 				containing a potential VARIABLE stub for the trace expression variable, followed by the
-	 * 				definitions for Init and finally Next. This will return null if {@code trace.size() == 0}
+	 * 				definitions for Init and finally Next.
 	 */
 	public static StringBuilder[] addInitNextToBuffers(final StringBuilder cfgBuffer,
 													   final List<MCState> trace,
@@ -496,7 +496,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	        return new StringBuilder[] { subActionsAndConstraint, initAndNext };
 	    }
 		
-		return null;
+		return new StringBuilder[] { new StringBuilder(), new StringBuilder() };
 	}
 
 	public static void addTraceFunctionToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
