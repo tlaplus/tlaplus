@@ -132,12 +132,7 @@ public class TLC {
     
     private FPSetConfiguration fpSetConfiguration;
     
-    private File temporaryMCOutputLogFile;
-    private FileOutputStream temporaryMCOutputStream;
-    private File specTETLAFile;
-    private MCParserResults mcParserResults;
-    private MCOutputPipeConsumer mcOutputConsumer;
-    private boolean avoidMonolithSpecTECreation;
+    private volatile ITool tool;
     private final Phaser waitingOnGenerationCompletion;
     
     /**
@@ -164,7 +159,6 @@ public class TLC {
 
         fpSetConfiguration = new FPSetConfiguration();
         
-        avoidMonolithSpecTECreation = false;
         waitingOnGenerationCompletion = new Phaser();
         waitingOnGenerationCompletion.register();
 	}
@@ -417,20 +411,30 @@ public class TLC {
             	
                 TLCGlobals.tool = true;
                 
+                final boolean avoidMonolithSpecTECreation;
                 if ((index < args.length) && args[index].equals("nomonolith")) {
                 	index++;
                 	avoidMonolithSpecTECreation = true;
+                } else {
+                	avoidMonolithSpecTECreation = false;
                 }
+                	
+				// This reads the output (ToolIO.out) on stdout of all other TLC threads. The
+				// output is parsed to reconstruct the error trace, from which the code below
+				// generates the SpecTE file. It might seem as if it would have been easier to
+				// reuse the MPRecorder to collect the output that's written to ToolIO, but this
+				// would work with two TLC processes where the first runs model-checking and
+				// pipes its output to the second.
 				try {
-					temporaryMCOutputLogFile = File.createTempFile("mcout_", ".out");
+				    final File temporaryMCOutputLogFile = File.createTempFile("mcout_", ".out");
 					temporaryMCOutputLogFile.deleteOnExit();
-					temporaryMCOutputStream = new FileOutputStream(temporaryMCOutputLogFile);
+					final FileOutputStream temporaryMCOutputStream = new FileOutputStream(temporaryMCOutputLogFile);
 					final BufferedOutputStream bos = new BufferedOutputStream(temporaryMCOutputStream);
 					final PipedInputStream pis = new PipedInputStream();
 					final TeeOutputStream tos1 = new TeeOutputStream(bos, new PipedOutputStream(pis));
 					final TeeOutputStream tos2 = new TeeOutputStream(ToolIO.out, tos1);
 					ToolIO.out = new PrintStream(tos2);
-					mcOutputConsumer = new MCOutputPipeConsumer(pis, null);
+					final MCOutputPipeConsumer mcOutputConsumer = new MCOutputPipeConsumer(pis, null);
 					
 					// Note, this runnable's thread will not finish consuming output until just
 					// 	before the app exits and we will use the output consumer in the TLC main
@@ -447,12 +451,26 @@ public class TLC {
 							temporaryMCOutputStream.close();
 							haveClosedOutputStream = true;
 							
-							if (mcOutputConsumer.getError() != null) {
+				            if ((mcOutputConsumer != null) && (mcOutputConsumer.getError() != null)) {
+								// We need not synchronize the access to tool (which might appear racy), because
+								// the consumeOutput above will block until TLC's finish message, which is written
+								// *after* tool has been created.
+								final SpecProcessor sp = tool.getSpecProcessor();
+				        		final ModelConfig mc = tool.getModelConfig();
+				        		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
+				        		final String originalSpecName = mcOutputConsumer.getSpecName();
+				        		
+				        		MP.printMessage(EC.GENERAL,
+												"The model check run produced error-states - we will generate the "
+														+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " files now.");
+				        		final MCParserResults mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
+				        		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
+				        															mcParserResults, mcOutputConsumer.getError());
 								final File tempTLA = File.createTempFile("temp_tlc_tla_", ".tla");
 								tempTLA.deleteOnExit();
-								FileUtil.copyFile(specTETLAFile, tempTLA);
+								FileUtil.copyFile(files[0], tempTLA);
 								
-								final FileOutputStream fos = new FileOutputStream(specTETLAFile);
+								final FileOutputStream fos = new FileOutputStream(files[0]);
 								final FileInputStream mcOutFIS = new FileInputStream(temporaryMCOutputLogFile);
 								copyStream(mcOutFIS, fos);
 								
@@ -482,7 +500,6 @@ public class TLC {
 								monolithCreator.copy();
 							}
 							
-							waitingOnGenerationCompletion.arriveAndDeregister();
 						} catch (final Exception e) {
 							MP.printMessage(EC.GENERAL,
 											"A model checking error occurred while parsing tool output; the execution "
@@ -496,9 +513,11 @@ public class TLC {
 									temporaryMCOutputStream.close();
 								} catch (final Exception e) { }
 							}
+							// Signal the main method to continue to termination.
+							waitingOnGenerationCompletion.arriveAndDeregister();
 						}
 					};
-					(new Thread(r)).start();
+					new Thread(r).start();
 					
 					MP.printMessage(EC.GENERAL,
 									"Will generate a " + TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
@@ -507,7 +526,6 @@ public class TLC {
 					printErrorMsg("Failed to set up piped output consumers; no potential "
 										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " will be generated: "
 										+ ioe.getMessage());
-					mcOutputConsumer = null;
 				}
             } else if (args[index].equals("-help") || args[index].equals("-h"))
             {
@@ -1029,7 +1047,6 @@ public class TLC {
             }
             FP64.Init(fpIndex);
     		
-            final ITool tool;
     		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
             final int result;
@@ -1080,21 +1097,7 @@ public class TLC {
                 }
 
             }
-            if ((mcOutputConsumer != null) && (mcOutputConsumer.getError() != null)) {
-        		final SpecProcessor sp = tool.getSpecProcessor();
-        		final ModelConfig mc = tool.getModelConfig();
-        		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
-        		final String originalSpecName = mcOutputConsumer.getSpecName();
-        		
-        		MP.printMessage(EC.GENERAL,
-								"The model check run produced error-states - we will generate the "
-										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " files now.");
-        		mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
-        		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
-        															mcParserResults, mcOutputConsumer.getError());
-        		specTETLAFile = files[0];
-            }
-            return result;
+			return result;
         } catch (Throwable e)
         {
             if (e instanceof StackOverflowError)
@@ -1137,7 +1140,7 @@ public class TLC {
 							? Long.toString(runtime) + "ms"
 							: convertRuntimeToHumanReadable(runtime));
 			MP.flush();
-			
+			// Wait for the SpecTE generation to complete before termination.
 			waitingOnGenerationCompletion.arriveAndAwaitAdvance();
         }
     }
