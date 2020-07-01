@@ -1611,15 +1611,12 @@ public class MP
      */
     public static void printState(int code, String[] parameters, TLCState state, int num)
     {
-		recorder.record(code, new TLCStateInfo(state, ""), num);
-        DebugPrinter.print("entering printState(String[])"); //$NON-NLS-1$
-        ToolIO.out.println(getMessage(STATE, code, parameters));
-        DebugPrinter.print("leaving printState(String[])"); //$NON-NLS-1$
+        printState(code, parameters, new TLCStateInfo(state, ""), num);
     }
     
     public static void printState(int code, String[] parameters, TLCStateInfo stateInfo, int num)
     {
-		recorder.record(code, (TLCStateInfo) stateInfo, num);
+		recorder.record(code, stateInfo, num);
         DebugPrinter.print("entering printState(String[])"); //$NON-NLS-1$
         ToolIO.out.println(getMessage(STATE, code, parameters));
         DebugPrinter.print("leaving printState(String[])"); //$NON-NLS-1$
