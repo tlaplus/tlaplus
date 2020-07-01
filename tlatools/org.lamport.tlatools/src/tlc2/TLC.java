@@ -419,6 +419,12 @@ public class TLC {
                 	avoidMonolithSpecTECreation = false;
                 }
                 	
+				// Don't start the shebang below twice, if a user accidentally passed
+				// '-generateSpecTE' twice.
+                if (waitingOnGenerationCompletion.getRegisteredParties() > 1) {
+                	continue;
+                }
+                
 				// This reads the output (ToolIO.out) on stdout of all other TLC threads. The
 				// output is parsed to reconstruct the error trace, from which the code below
 				// generates the SpecTE file. It might seem as if it would have been easier to
