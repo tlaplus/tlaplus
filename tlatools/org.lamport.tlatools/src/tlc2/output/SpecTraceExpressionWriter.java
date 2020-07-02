@@ -502,7 +502,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		return new StringBuilder[] { new StringBuilder(), new StringBuilder() };
 	}
 
-	public static void addTraceFunctionToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
+	public static String addTraceFunctionToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
 			final List<MCState> input) {
 		// Filter stuttering or back2state instances from trace.
 		final List<MCState> trace = input.stream()
@@ -510,7 +510,9 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 				.collect(Collectors.toList());
 		
 		if (trace.isEmpty()) {
-			return;
+			return addArrowAssignmentToBuffers(tlaBuffer, cfgBuffer,
+					new Assignment(TLAConstants.TraceExplore.TRACE, new String[0], TLAConstants.BEGIN_TUPLE + TLAConstants.END_TUPLE),
+					TLAConstants.Schemes.DEFOV_SCHEME);
 	    }
 		
 		// Trace
@@ -528,7 +530,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		traceFunctionDef.append(TLAConstants.CR).append(TLAConstants.END_TUPLE);
 		traceFunctionDef.append(CLOSING_SEP).append(TLAConstants.CR);
 		
-		addArrowAssignmentToBuffers(tlaBuffer, cfgBuffer,
+		return addArrowAssignmentToBuffers(tlaBuffer, cfgBuffer,
 				new Assignment(TLAConstants.TraceExplore.TRACE, new String[0], traceFunctionDef.toString()),
 				TLAConstants.Schemes.DEFOV_SCHEME);
 	}
@@ -791,8 +793,8 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 							 nextSubActionBasename, true);
 	}
 
-	public void addTraceFunction(final List<MCState> input) {
-		addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, input);
+	public String addTraceFunction(final List<MCState> input) {
+		return addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, input);
 	}
 	
     /**
