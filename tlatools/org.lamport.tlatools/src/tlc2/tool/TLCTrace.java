@@ -19,6 +19,11 @@ import tlc2.output.StatePrinter;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.LongVec;
 import tlc2.value.RandomEnumerableValues;
+import tlc2.value.ValueOutputStream;
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.Value;
+import util.Assert;
 import util.FileUtil;
 
 public class TLCTrace {
@@ -514,4 +519,24 @@ public class TLCTrace {
 		}
 	}
 
+	// Add *dead* TLCTrace#writeBehavior to serialize (long) behaviors to disk from
+	// which they can be read efficiently with IOUtils!IODeserialize.
+	// See https://github.com/tlaplus/tlaplus/issues/481 for context.
+	public static void writeBehavior(final File file, final TLCState state, final StateVec stateTrace) {
+		try {
+			final ValueOutputStream vos = new ValueOutputStream(file, true);
+
+			final Value[] v = new Value[stateTrace.size()];
+			for (int i = 0; i < stateTrace.size(); i++) {
+				v[i] = new RecordValue(stateTrace.elementAt(i));
+			}
+			
+			// Do not normalize TupleValue because normalization depends on the actual
+			// UniqueString#internTable.
+			new TupleValue(v).write(vos);
+			vos.close();
+		} catch (IOException e) {
+			Assert.fail(EC.SYSTEM_DISK_IO_ERROR_FOR_FILE, file.getName());
+		}
+	}
 }

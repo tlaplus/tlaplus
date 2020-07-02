@@ -5,6 +5,7 @@
 
 package tlc2.tool;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -328,7 +329,6 @@ public class Simulator {
 
 		return errorCode;
 	}
-
 
 	private final void printBehavior(final TLCRuntimeException exception, final TLCState state, final StateVec stateTrace) {
 		MP.printTLCRuntimeException(exception);
