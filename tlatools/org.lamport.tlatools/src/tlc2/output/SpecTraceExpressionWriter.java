@@ -485,6 +485,9 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 			initAndNext.append(TLAConstants.CR).append(TLAConstants.CR);
 	        
 			
+			/**
+			 * Action Constraint
+			 */
 			subActionsAndConstraint.append(TLAConstants.COMMENT).append("TRACE Action Constraint definition ");
 			subActionsAndConstraint.append(TLAConstants.TraceExplore.TRACE_EXPLORE_ACTION_CONSTRAINT);
 			subActionsAndConstraint.append(TLAConstants.CR).append(actionConstraintBuffer.toString());
@@ -766,8 +769,8 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	/**
 	 * @see #addInitNextToBuffers(StringBuilder, StringBuilder, List, TraceExpressionInformationHolder[])
 	 */
-	public String[] addInitNext(final List<MCState> trace, final TraceExpressionInformationHolder[] expressionData) {
-		return addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData);
+	public String[] addInitNext(final List<MCState> trace) {
+		return addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, null);
 	}
 
 	/**

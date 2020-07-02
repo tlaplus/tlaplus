@@ -466,7 +466,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         // add the initial state predicate and next state action without
         // the trace exploration expressions in order to determine if they parse
         // initNext[0] is the identifier for init, initNext[1] is the identifier for next
-        final String[] initNextActionConstraint = writer.addInitNext(trace, null);
+        final String[] initNextActionConstraint = writer.addInitNext(trace);
 		if (initNextActionConstraint != null) {
 			initId = initNextActionConstraint[0];
 			nextId = initNextActionConstraint[1];
