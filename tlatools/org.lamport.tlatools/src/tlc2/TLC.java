@@ -408,12 +408,12 @@ public class TLC {
             	
                 TLCGlobals.tool = true;
                 
-                final boolean avoidMonolithSpecTECreation;
+                final boolean createMonolithSpecTE;
                 if ((index < args.length) && args[index].equals("nomonolith")) {
                 	index++;
-                	avoidMonolithSpecTECreation = true;
+                	createMonolithSpecTE = false;
                 } else {
-                	avoidMonolithSpecTECreation = false;
+                	createMonolithSpecTE = true;
                 }
                 	
 				// Don't start the shebang below twice, if a user accidentally passed
@@ -475,10 +475,9 @@ public class TLC {
 				        		// This rewrites SpecTE.tla in an attempt to create a monolith spec.
 								// See https://github.com/tlaplus/tlaplus/issues/479 and
 								// https://github.com/tlaplus/tlaplus/issues/479 why this is broken.
-								final TLAMonolithCreator monolithCreator;
-								if (!avoidMonolithSpecTECreation) {
+								if (createMonolithSpecTE) {
 									final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
-									monolithCreator
+									final TLAMonolithCreator monolithCreator
 										= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
 																 mcOutputConsumer.getSourceDirectory(),
 																 extendedModules,
