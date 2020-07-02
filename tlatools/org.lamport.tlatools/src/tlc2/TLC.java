@@ -7,8 +7,9 @@ package tlc2;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -429,9 +430,7 @@ public class TLC {
 				// would work with two TLC processes where the first runs model-checking and
 				// pipes its output to the second.
 				try {
-				    final File temporaryMCOutputLogFile = File.createTempFile("mcout_", ".out");
-					temporaryMCOutputLogFile.deleteOnExit();
-					final FileOutputStream temporaryMCOutputStream = new FileOutputStream(temporaryMCOutputLogFile);
+					final ByteArrayOutputStream temporaryMCOutputStream = new ByteArrayOutputStream();
 					final BufferedOutputStream bos = new BufferedOutputStream(temporaryMCOutputStream);
 					final PipedInputStream pis = new PipedInputStream();
 					final TeeOutputStream tos1 = new TeeOutputStream(bos, new PipedOutputStream(pis));
@@ -491,11 +490,9 @@ public class TLC {
 								// is now MonolithMC, MonolithSpecTE, stdout/stderr. Most users won't care for
 								// stderr/stdout and want to look at SpecTE. Thus, SpecTE is at the top.
 								final FileOutputStream fos = new FileOutputStream(files[0], true);
-								final FileInputStream mcOutFIS = new FileInputStream(temporaryMCOutputLogFile);
-								FileUtil.copyStream(mcOutFIS, fos);
+								FileUtil.copyStream(new ByteArrayInputStream(temporaryMCOutputStream.toByteArray()), fos);
 								
 								fos.close();
-								mcOutFIS.close();
 				            }
 							
 						} catch (final Exception e) {
