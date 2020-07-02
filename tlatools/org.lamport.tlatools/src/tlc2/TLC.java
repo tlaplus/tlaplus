@@ -464,30 +464,19 @@ public class TLC {
 				        		final String originalSpecName = mcOutputConsumer.getSpecName();
 				        		
 				        		final MCParserResults mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
+
+				        		// Write the files SpecTE.tla and SpecTE.cfg
+				        		// At this point SpecTE.cfg contains the content of MC.cfg.
+				        		// SpecTE.tla contains the newly generated SpecTE and the content of MC.tla.
+				        		// See https://github.com/tlaplus/tlaplus/issues/475 for why copying MC.tla/MC.cfg is wrong.
 				        		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
 				        															mcParserResults, mcOutputConsumer.getError());
-								final File tempTLA = File.createTempFile("temp_tlc_tla_", ".tla");
-								tempTLA.deleteOnExit();
-								FileUtil.copyFile(files[0], tempTLA);
 								
-								final FileOutputStream fos = new FileOutputStream(files[0]);
-								final FileInputStream mcOutFIS = new FileInputStream(temporaryMCOutputLogFile);
-								FileUtil.copyStream(mcOutFIS, fos);
-								
-								final FileInputStream tempTLAFIS = new FileInputStream(tempTLA);
-								FileUtil.copyStream(tempTLAFIS, fos);
-								
-								fos.close();
-								mcOutFIS.close();
-								tempTLAFIS.close();
-								
+				        		// This rewrites SpecTE.tla in an attempt to create a monolith spec.
+								// See https://github.com/tlaplus/tlaplus/issues/479 and
+								// https://github.com/tlaplus/tlaplus/issues/479 why this is broken.
 								final TLAMonolithCreator monolithCreator;
-								if (avoidMonolithSpecTECreation) {
-									monolithCreator
-										= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
-																 mcOutputConsumer.getSourceDirectory(),
-																 mcParserResults.getAllExtendedModules());
-								} else {
+								if (!avoidMonolithSpecTECreation) {
 									final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
 									monolithCreator
 										= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
@@ -495,10 +484,20 @@ public class TLC {
 																 extendedModules,
 																 mcParserResults.getAllExtendedModules(),
 																 mcParserResults.getAllInstantiatedModules());
+									// Beware, this internally creates a temp file and re-reads SpecTE.tla from disk again. 
+									monolithCreator.copy();
 								}
+				        		
+								// *Append* TLC's stdout/stderr output to final SpecTE.tla. The content of SpecTE.tla
+								// is now MonolithMC, MonolithSpecTE, stdout/stderr. Most users won't care for
+								// stderr/stdout and want to look at SpecTE. Thus, SpecTE is at the top.
+								final FileOutputStream fos = new FileOutputStream(files[0], true);
+								final FileInputStream mcOutFIS = new FileInputStream(temporaryMCOutputLogFile);
+								FileUtil.copyStream(mcOutFIS, fos);
 								
-								monolithCreator.copy();
-							}
+								fos.close();
+								mcOutFIS.close();
+				            }
 							
 						} catch (final Exception e) {
 							MP.printMessage(EC.GENERAL,
