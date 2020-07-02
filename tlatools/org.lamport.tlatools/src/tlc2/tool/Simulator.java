@@ -330,12 +330,12 @@ public class Simulator {
 	}
 
 
-	public final void printBehavior(final TLCRuntimeException exception, final TLCState state, final StateVec stateTrace) {
+	private final void printBehavior(final TLCRuntimeException exception, final TLCState state, final StateVec stateTrace) {
 		MP.printTLCRuntimeException(exception);
 		printBehavior(state, stateTrace);
 	}
 
-	public final void printBehavior(SimulationWorkerError error) {
+	private final void printBehavior(SimulationWorkerError error) {
 		printBehavior(error.errorCode, error.parameters, error.state, error.stateTrace);
 	}
 
@@ -343,13 +343,13 @@ public class Simulator {
 	 * Prints out the simulation behavior, in case of an error. (unless we're at
 	 * maximum depth, in which case don't!)
 	 */
-	public final void printBehavior(final int errorCode, final String[] parameters, final TLCState state, final StateVec stateTrace) {
+	private final void printBehavior(final int errorCode, final String[] parameters, final TLCState state, final StateVec stateTrace) {
 		MP.printError(errorCode, parameters);
 		printBehavior(state, stateTrace);
 		this.printSummary();
 	}
 	
-	public final void printBehavior(final TLCState state, final StateVec stateTrace) {
+	private final void printBehavior(final TLCState state, final StateVec stateTrace) {
 		if (this.traceDepth == Long.MAX_VALUE) {
 			MP.printMessage(EC.TLC_ERROR_STATE);
 			StatePrinter.printState(state);
@@ -431,7 +431,7 @@ public class Simulator {
 	/**
 	 * Prints the summary
 	 */
-	public final void printSummary() {
+	private final void printSummary() {
 		this.reportCoverage();
 
 		/*
