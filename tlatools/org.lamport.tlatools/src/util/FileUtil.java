@@ -500,4 +500,29 @@ public class FileUtil
 		file.deleteOnExit();
 		return file;
 	}
+	
+	
+	/**
+	 * This is themed on commons-io-2.6's IOUtils.copyLarge(InputStream, OutputStream, byte[]) -
+	 * 	once we move to Java9+, dump this usage in favor of InputStream.transferTo(OutputStream)
+	 * 
+	 * @return the count of bytes copied
+	 */
+	public static long copyStream(final InputStream is, final OutputStream os) throws IOException {
+		final byte[] buffer = new byte[1024 * 4];
+		long byteCount = 0;
+		int n;
+		final BufferedInputStream bis = (is instanceof BufferedInputStream) ? (BufferedInputStream)is
+																			: new BufferedInputStream(is);
+		final BufferedOutputStream bos = (os instanceof BufferedOutputStream) ? (BufferedOutputStream)os
+																			  : new BufferedOutputStream(os);
+		while ((n = bis.read(buffer)) != -1) {
+			bos.write(buffer, 0, n);
+			byteCount += n;
+		}
+		
+		bos.flush();
+		
+		return byteCount;
+	}
 }
