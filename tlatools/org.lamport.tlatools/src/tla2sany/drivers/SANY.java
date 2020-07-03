@@ -77,6 +77,10 @@ public class SANY {
     // true <=> statistics about builtin operator usage 
     //          should be reported
 
+  private static boolean strictErrorCodes   = false;
+    // true <=> error level should be reported as the tools'
+    //          return value
+
   /**
    * The SANY.frontEndMain method Processes an entire TLA+ spec
    * that starts in the file named in "filename", including all files
@@ -143,7 +147,11 @@ public class SANY {
       syserr.println(e.toString());
       throw new FrontEndException(e);
     }
-    return 0;
+    if (strictErrorCodes) {
+      return spec.errorLevel;
+    } else {
+      return 0;
+    }
   }
 
   /** 
@@ -410,6 +418,8 @@ public class SANY {
            doDebugging        = !doDebugging;
       else if (args[i].equals("-STAT") || args[i].equals("-stat")) 
            doStats      = !doStats;      
+      else if (args[i].equals("-error-codes"))
+           strictErrorCodes = true;
       else {
         ToolIO.out.println("Illegal switch: " + args[i]);
         System.exit(-1);
