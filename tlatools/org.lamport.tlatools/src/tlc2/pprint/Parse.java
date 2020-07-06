@@ -607,7 +607,7 @@ public class Parse {
     
       // parse the first integer i
       if (! Character.isDigit(string.charAt(last)) ) return null;
-      while (Character.isDigit(string.charAt(last))) {
+      while (last < string.length() && Character.isDigit(string.charAt(last))) {
 	last++;
       }
 
