@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -93,7 +94,7 @@ public class TraceExplorer {
     	SpecTraceExpressionWriter.addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, trace);
     	tlaBuffer.append(tlaBuffers[1].toString());
     	
-    	final List<String> extendedModules = results.getOriginalExtendedModules();
+    	final Set<String> extendedModules = results.getOriginalExtendedModules();
     	final boolean specExtendsTLC = extendedModules.contains(TLAConstants.BuiltInModules.TLC);
     	final boolean specExtendsToolbox = extendedModules.contains(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
 		final TLACopier tlaCopier = new TLACopier(originalSpecName, TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,

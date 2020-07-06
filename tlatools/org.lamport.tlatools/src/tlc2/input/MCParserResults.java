@@ -13,7 +13,7 @@ public class MCParserResults {
 	private MCError error;
 	private List<MCOutputMessage> outputMessages;
 
-	private final List<String> immediateExtendedModules;
+	private final Set<String> immediateExtendedModules;
 	private final Set<String> allExtendedModules;
 	private final Set<String> modulesInstantiated;
 
@@ -25,7 +25,7 @@ public class MCParserResults {
 	
 	private final ModelConfig modelConfig;
 
-	MCParserResults(final String rootModuleName, final List<String> immediateExtendeds, final Set<String> allExtendeds,
+	MCParserResults(final String rootModuleName, final Set<String> immediateExtendeds, final Set<String> allExtendeds,
 			 		final Set<String> allInstantiated, final List<Location> initNextLocations,
 			 		final boolean wasInitNext, final String nextOrSpecName, final ModelConfig config) {
 		moduleName = rootModuleName;
@@ -45,7 +45,7 @@ public class MCParserResults {
 	}
 	
 	MCParserResults(final String rootModuleName, final MCError mcError, final List<MCOutputMessage> messages,
-					final List<String> immediateExtendeds, final Set<String> allExtendeds,
+					final Set<String> immediateExtendeds, final Set<String> allExtendeds,
 					final Set<String> allInstantiated, final List<Location> initNextLocations,
 					final boolean wasInitNext, final String nextOrSpecName, final ModelConfig config) {
 		this(rootModuleName, immediateExtendeds, allExtendeds, allInstantiated, initNextLocations, wasInitNext,
@@ -87,7 +87,7 @@ public class MCParserResults {
 	 * @return the {@link List} of all modules extended by the root spec explicitly - in other words, for example,
 	 * 				the X, Y, Z cited by a root spec's "EXTENDS X, Y, Z"
 	 */
-	public List<String> getOriginalExtendedModules() {
+	public Set<String> getOriginalExtendedModules() {
 		return immediateExtendedModules;
 	}
 	
