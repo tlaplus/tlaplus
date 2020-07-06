@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,10 +23,6 @@ import tlc2.output.MP;
 import tlc2.output.Messages;
 import tlc2.output.SpecTraceExpressionWriter;
 import tlc2.output.TLACopier;
-import tlc2.util.Vect;
-import tlc2.value.impl.SetEnumValue;
-import tlc2.value.impl.Value;
-import tlc2.value.impl.ValueEnumeration;
 import util.TLAConstants;
 import util.ToolIO;
 import util.UsageGenerator;
@@ -88,44 +83,6 @@ public class TraceExplorer {
     									  final MCParserResults results, final MCError error) throws IOException {
     	final StringBuilder tlaBuffer = new StringBuilder();
     	final StringBuilder cfgBuffer = new StringBuilder();
-    	
-    	final Vect<?> configDeclaredConstants = results.getModelConfig().getConstants();
-    	final HashSet<String> constantModelValuesToDeclare = new HashSet<>();
-    	final int constantsCount = configDeclaredConstants.size();
-    	for (int i = 0; i < constantsCount; i++) {
-    		final Vect<?> constantDeclaration = (Vect<?>)configDeclaredConstants.elementAt(i);
-    		final Object value = constantDeclaration.elementAt(1);
-    		if (value instanceof SetEnumValue) {
-    			final SetEnumValue sev = (SetEnumValue)value;
-    			final ValueEnumeration ve = sev.elements();
-    			Value v = ve.nextElement();
-    			while (v != null) {
-    				constantModelValuesToDeclare.add(v.toString());
-    				v = ve.nextElement();
-    			}
-    		}
-    	}
-    	if (constantModelValuesToDeclare.size() > 0) {
-	    	cfgBuffer.append(TLAConstants.KeyWords.CONSTANTS).append(TLAConstants.CR);
-	    	for (final String modelValue : constantModelValuesToDeclare) {
-	    		cfgBuffer.append(TLAConstants.INDENT).append(modelValue).append(TLAConstants.EQ);
-	    		cfgBuffer.append(modelValue).append(TLAConstants.CR);
-	    	}
-	    	cfgBuffer.append(TLAConstants.CR);
-	    	
-	    	tlaBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.CONSTANTS).append(' ');
-	    	boolean firstDone = false;
-	    	for (final String modelValue : constantModelValuesToDeclare) {
-	    		if (firstDone) {
-	    			tlaBuffer.append(", ");
-	    		} else {
-	    			firstDone = true;
-	    		}
-	    		
-	    		tlaBuffer.append(modelValue);
-	    	}
-	    	tlaBuffer.append(TLAConstants.CR).append(TLAConstants.CR);
-    	}
     	
     	final List<MCState> trace = error.getStates();
     	final StringBuilder[] tlaBuffers
