@@ -70,6 +70,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 import org.lamport.tla.toolbox.util.UIHelper;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.OpDefNode;
 import tlc2.model.Assignment;
 import tlc2.model.Formula;
@@ -438,7 +439,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 		writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()),
 				model.getTraceExplorerExtends());
 
-        writeModelInfo(config, writer);
+        writeModelInfo(model.getSpec().getValidRootModule(), config, writer);
         
         writer.addTraceFunction(trace);
 
@@ -646,7 +647,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 				model.getTraceExplorerExtends());
 
         // write constants, model values, new definitions, definition overrides
-        writeModelInfo(configuration, writer);
+        writeModelInfo(model.getSpec().getValidRootModule(), configuration, writer);
         
         writer.addTraceFunction(trace);
 
@@ -749,7 +750,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
      * @param writer
      * @throws CoreException
      */
-    private void writeModelInfo(final ILaunchConfiguration config, final AbstractSpecWriter writer) throws CoreException
+    private void writeModelInfo(final SpecObj specObj, final ILaunchConfiguration config, final AbstractSpecWriter writer) throws CoreException
     {
         // constants list
     	final List<Assignment> constants = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_CONSTANTS,
@@ -771,7 +772,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         List<Assignment> overrides = ModelHelper.deserializeAssignmentList(config.getAttribute(MODEL_PARAMETER_DEFINITIONS,
                 new ArrayList<String>()));
         writer.addFormulaList(SpecWriterUtilities.createOverridesContent(overrides, TLAConstants.Schemes.DEFOV_SCHEME,
-        		ToolboxHandle.getCurrentSpec().getValidRootModule()), TLAConstants.KeyWords.CONSTANT,
+        		specObj), TLAConstants.KeyWords.CONSTANT,
         		MODEL_PARAMETER_DEFINITIONS);
     }
 }
