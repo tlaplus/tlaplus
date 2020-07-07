@@ -196,6 +196,13 @@ public abstract class AbstractSpecWriter {
 		tlaBuffer.append(nextDefinition[1]).append(TLAConstants.CR);
 	}
 
+	public void addConstants(List<String> rawConstants) {
+		for (String constant : rawConstants) {
+			cfgBuffer.append(constant);	
+			cfgBuffer.append("\n");	
+		}
+	}
+
     /**
      * Documentation by SZ: Add constants declarations. 
      * 

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -23,7 +24,6 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.Messages;
 import tlc2.output.SpecTraceExpressionWriter;
-import tlc2.output.TLACopier;
 import util.TLAConstants;
 import util.ToolIO;
 import util.UsageGenerator;
@@ -80,33 +80,51 @@ public class TraceExplorer {
 	 *         destination TLA file, and the 1-index is that of the CFG file
 	 * @throws IOException
 	 */
-    public static File[] writeSpecTEFiles(final File sourceDirectory, final String originalSpecName,
+    public static File[] writeSpecTEFiles(final File sourceDirectory, final String osn,
     									  final MCParserResults results, final MCError error) throws IOException {
-    	final StringBuilder tlaBuffer = new StringBuilder();
-    	final StringBuilder cfgBuffer = new StringBuilder();
-    	
-    	final List<MCState> trace = error.getStates();
-    	final StringBuilder[] tlaBuffers
-    		= SpecTraceExpressionWriter.addInitNextToBuffers(cfgBuffer, trace, null, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID,
-    														 SPEC_TE_ACTION_CONSTRAINT_ID,
-    														 results.getOriginalNextOrSpecificationName(), true);
-    	tlaBuffer.append(tlaBuffers[0].toString());
-    	SpecTraceExpressionWriter.addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, trace);
-    	tlaBuffer.append(tlaBuffers[1].toString());
-    	
-    	final Set<String> extendedModules = results.getOriginalExtendedModules();
-    	final boolean specExtendsTLC = extendedModules.contains(TLAConstants.BuiltInModules.TLC);
-    	final boolean specExtendsToolbox = extendedModules.contains(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
-		final TLACopier tlaCopier = new TLACopier(originalSpecName, TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
-												  sourceDirectory, tlaBuffer.toString(), specExtendsTLC,
-												  specExtendsToolbox);
-		tlaCopier.copy();
+		final SpecTraceExpressionWriter writer = new SpecTraceExpressionWriter();
+
+		/**
+		 * Write content of config file (SpecTE).
+		 * <p>
+		 * Contrary to the Toolbox's TraceExplorerDelegate, which reads constants,
+		 * overrides, ... from the TLC model, this implementation copies all CONSTANT
+		 * and CONSTANTS verbatim from the existing config file with which TLC ran. The
+		 * definition that appear in the .tla file (e.g. MC.tla) don't have to be copied
+		 * because SpecTE extends MC.
+		 * (see TraceExplorerDelegate#writeModelInfo)
+		 */
+		final List<String> rawConstants = results.getModelConfig().getRawConstants();
+		writer.addConstants(rawConstants);
+
+		/**
+		 * Write SpecTE.
+		 */
+		final Set<String> extendedModules = new HashSet<>();
+		extendedModules.add(TLAConstants.BuiltInModules.TLC);
+		extendedModules.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
+
+		writer.addPrimer(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME, osn, extendedModules);
+
+		final List<MCState> trace = error.getStates();
+
+		writer.addTraceFunction(trace);
 		
-		final CFGCopier cfgCopier = new CFGCopier(originalSpecName, TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
-												  sourceDirectory, cfgBuffer.toString());
-		cfgCopier.copy();
-		
-		return new File[] { tlaCopier.getDestinationFile(), cfgCopier.getDestinationFile() };
+		writer.addProperties(trace);
+
+		writer.addInitNext(trace, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
+				results.getOriginalNextOrSpecificationName());
+				
+        /**
+         * Write actual files.
+         */
+		final File specTETLA = new File(sourceDirectory,
+				TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
+		final File specTECFG = new File(sourceDirectory,
+				TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + TLAConstants.Files.CONFIG_EXTENSION);
+		writer.writeFiles(specTETLA, specTECFG);
+
+		return new File[] { specTETLA, specTECFG };
     }
     
     

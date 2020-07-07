@@ -832,6 +832,11 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		addInitNextToBuffers(tlaBuffer, cfgBuffer, trace, expressionData, initId, nextId, actionConstraintId,
 							 nextSubActionBasename, true);
 	}
+	
+	public void addInitNext(final List<MCState> trace, final String initId, String nextId,
+			final String actionConstraintId, final String nextSubActionBasename) {
+		addInitNext(trace, null, initId, nextId, actionConstraintId, nextSubActionBasename);
+	}
 
 	public String addTraceFunction(final List<MCState> input) {
 		return addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, input);
