@@ -409,12 +409,16 @@ public class TLC {
             	
                 TLCGlobals.tool = true;
                 
-                final boolean createMonolithSpecTE;
+				// Never generate/create monolith spec, because approach is broken (e.g.
+				// https://github.com/tlaplus/tlaplus/issues/479).
+				// See util.MonolithSpecExtractor for more robust/simpler approach to generate
+				// monolith.
+                final boolean createMonolithSpecTE = false;
                 if ((index < args.length) && args[index].equals("nomonolith")) {
                 	index++;
-                	createMonolithSpecTE = false;
+                	//createMonolithSpecTE = false;
                 } else {
-                	createMonolithSpecTE = true;
+                	//createMonolithSpecTE = true;
                 }
                 	
 				// Don't start the shebang below twice, if a user accidentally passed
