@@ -39,6 +39,9 @@ Reasoning about TLA+ sequences currently mainly relies on the lemmas provided in
 
 Most conjectures that users attempt to prove during proof development are in fact not valid. For example, hypotheses needed to prove a step are not provided to the prover, the invariant may not be strong enough etc. When this is the case, the back-end provers time out but do not provide any useful information to the user. The objective of this work is to connect a model generator such as [Nunchaku](https://github.com/nunchaku-inria/nunchaku) to TLAPS that could provide an explanation to the user why the proof obligation is not valid. The main difficulty will be defining a translation from a useful sublanguage of TLA+ set-theoretic expressions to the input language of Nunchaku, which resembles a functional programming language.
 
+#### Warning about unexpanded definitions (difficulty: moderate) (skills: OCaml, TLA+)
+
+A common reason for a proof not to succeed is the failure to tell the prover to expand a definition that needs to be expanded (see section 6.1 of [Proving Safety Properties](https://lamport.azurewebsites.net/tla/proving-safety.pdf) for an example).  In some cases, simple heuristics could indicate that a definition needs to be expanded--for example, if a goal contains a symbol that does not appear in any formula being used to prove it.  The objective is to find and implement such heuristics in a command that the user can invoke to suggest what definitions may need to be expanded.  We believe that this would be an easy way to save users a lot of--especially beginning users.
 
 TLA Toolbox
 -----------
