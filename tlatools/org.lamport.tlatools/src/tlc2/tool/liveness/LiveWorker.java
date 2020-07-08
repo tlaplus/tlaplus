@@ -960,6 +960,9 @@ public class LiveWorker implements Callable<Boolean> {
 		if (sinfo.fingerPrint() == cycleState.fingerPrint()) {
 			StatePrinter.printStutteringState(stateNumber);
 		} else {
+			// The new sinfo.state is equivalent to cycleState after getState(..). The
+			// sinfo.info has the name of the action that closes the loop of the lasso/takes
+			// us back to cycleState.
 			sinfo = tool.getState(cycleState.fingerPrint(), sinfo);
 			// The print stmts below claim there is a cycle, thus assert that
 			// there is indeed one. Index-based lookup into states array is
