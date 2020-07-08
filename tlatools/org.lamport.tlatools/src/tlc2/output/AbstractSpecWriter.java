@@ -28,11 +28,15 @@ public abstract class AbstractSpecWriter {
      */
 	public static String addArrowAssignmentToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
 			final Assignment constant, final String schema) {
+		return addArrowAssignmentIdToBuffers(tlaBuffer, cfgBuffer, constant, SpecWriterUtilities.getValidIdentifier(schema));
+	}
+
+	public static String addArrowAssignmentIdToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
+			final Assignment constant, final String id) {
 		// constant instantiation
 		// to .cfg : foo <- <id>
 		// to _MC.tla : <id>(a, b, c)==
 		// <expression>
-		final String id = SpecWriterUtilities.getValidIdentifier(schema);
 		tlaBuffer.append(constant.getParametrizedLabel(id)).append(TLAConstants.DEFINES).append(TLAConstants.CR);
 		tlaBuffer.append(constant.getRight()).append(TLAConstants.CR);
 		
@@ -40,10 +44,8 @@ public abstract class AbstractSpecWriter {
 			cfgBuffer.append(TLAConstants.KeyWords.CONSTANT).append(TLAConstants.CR);
 			cfgBuffer.append(constant.getLabel()).append(TLAConstants.ARROW).append(id).append(TLAConstants.CR);
 		}
-		
 		return id;
 	}
-
 	
 	/**
 	 * Subclasses may implement this interface in order to invoke {@link #writeFiles(ContentWriter)} for cases
