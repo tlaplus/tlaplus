@@ -47,14 +47,14 @@ public class SANY {
 //    ***********************************************************************/
 //    "last modified on Tue  10 February 2011 at 11:49:54 PST by lamport";
 
-  private static String modDate = "24 February 2014";
+  private static String modDate = "08 July 2020";
 //                lastModified.substring(21, lastModified.indexOf(" at"));
     /***********************************************************************
     * The modification date.                                               *
     ***********************************************************************/
 
   public static String version = 
-    "Version 2.1 created " + modDate ; 
+    "Version 2.2 created " + modDate ; 
 
   private static boolean doParsing          = true;  
     // true <=> parsing should be done
@@ -76,6 +76,10 @@ public class SANY {
   private static boolean doStats            = false; 
     // true <=> statistics about builtin operator usage 
     //          should be reported
+
+  private static boolean doStrictErrorCodes   = false;
+    // true <=> error level should be reported as the tools'
+    //          return value
 
   /**
    * The SANY.frontEndMain method Processes an entire TLA+ spec
@@ -143,7 +147,11 @@ public class SANY {
       syserr.println(e.toString());
       throw new FrontEndException(e);
     }
-    return 0;
+    if (doStrictErrorCodes) {
+      return spec.errorLevel;
+    } else {
+      return 0;
+    }
   }
 
   /** 
@@ -410,6 +418,8 @@ public class SANY {
            doDebugging        = !doDebugging;
       else if (args[i].equals("-STAT") || args[i].equals("-stat")) 
            doStats      = !doStats;      
+      else if (args[i].toLowerCase().equals("-error-codes"))
+           doStrictErrorCodes = true;
       else {
         ToolIO.out.println("Illegal switch: " + args[i]);
         System.exit(-1);
