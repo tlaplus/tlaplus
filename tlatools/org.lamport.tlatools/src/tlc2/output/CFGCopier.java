@@ -92,7 +92,7 @@ public class CFGCopier extends AbstractCopier {
 	public static void main(final String[] args) throws Exception {
 		final String initNext = "INIT\ninit_abc_ldq\n\nNEXT\nnext_abc_ldq";
 		final CFGCopier copier = new CFGCopier(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME,
-											   TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
+											   TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
 											   new File(args[0]),
 											   initNext);
 		copier.copy();

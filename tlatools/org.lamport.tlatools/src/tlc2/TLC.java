@@ -481,7 +481,7 @@ public class TLC {
 								if (createMonolithSpecTE) {
 									final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
 									final TLAMonolithCreator monolithCreator
-										= new TLAMonolithCreator(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
+										= new TLAMonolithCreator(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
 																 mcOutputConsumer.getSourceDirectory(),
 																 extendedModules,
 																 mcParserResults.getAllExtendedModules(),
@@ -503,7 +503,7 @@ public class TLC {
 							MP.printMessage(EC.GENERAL,
 											"A model checking error occurred while parsing tool output; the execution "
 													+ "ended before the potential "
-													+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME
+													+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
 													+ " generation stage.");
 						} finally {
 							if (!haveClosedOutputStream) {
@@ -519,7 +519,7 @@ public class TLC {
 					new Thread(r).start();
 				} catch (final IOException ioe) {
 					printErrorMsg("Failed to set up piped output consumers; no potential "
-										+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " will be generated: "
+										+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " will be generated: "
 										+ ioe.getMessage());
 				}
             } else if (args[index].equals("-help") || args[index].equals("-h"))

@@ -104,7 +104,7 @@ public class TraceExplorer {
 		extendedModules.add(TLAConstants.BuiltInModules.TLC);
 		extendedModules.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
 
-		writer.addPrimer(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME, osn, extendedModules);
+		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME, osn, extendedModules);
 
 		final List<MCState> trace = error.getStates();
 
@@ -119,9 +119,9 @@ public class TraceExplorer {
          * Write actual files.
          */
 		final File specTETLA = new File(sourceDirectory,
-				TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
+				TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
 		final File specTECFG = new File(sourceDirectory,
-				TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + TLAConstants.Files.CONFIG_EXTENSION);
+				TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.CONFIG_EXTENSION);
 		writer.writeFiles(specTETLA, specTECFG);
 
 		return new File[] { specTETLA, specTECFG };
@@ -368,12 +368,12 @@ public class TraceExplorer {
     private int executeNonStreaming() throws Exception {
     	if (!performPreFlightFileChecks()) {
 			throw new IllegalStateException("There was an issue with the input, "
-												+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + ", or "
+												+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + ", or "
 												+ TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME + " file.");
     	}
     	
 		final boolean specifiedModuleIsSpecTE
-					= specGenerationOriginalSpecName.equals(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME);
+					= specGenerationOriginalSpecName.equals(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME);
 		final boolean needGenerateSpecTE = RunMode.GENERATE_SPEC_TE.equals(runMode) 
 											|| (!specifiedModuleIsSpecTE && RunMode.TRACE_EXPLORATION.equals(runMode));
     	if (needGenerateSpecTE) {
@@ -389,10 +389,10 @@ public class TraceExplorer {
     			final String msg;
     			if (RunMode.GENERATE_SPEC_TE.equals(runMode)) {
     				msg = "The output file contained no error-state messages, no "
-    							+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " will be produced.";
+    							+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " will be produced.";
     			} else {
     				msg = "The output file contained no error-state messages, no "
-								+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " nor "
+								+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " nor "
 								+ TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME + " will be produced, and, so, "
 								+ "no trace expressions will be evaluated.";
     			}
@@ -434,14 +434,14 @@ public class TraceExplorer {
 				specGenerationOriginalSpecName = consumer.getSpecName();
 				
 				final boolean specifiedModuleIsSpecTE
-							= specGenerationOriginalSpecName.equals(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME);
+							= specGenerationOriginalSpecName.equals(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME);
 				final boolean needGenerateSpecTE
 							= RunMode.GENERATE_SPEC_TE.equals(runMode)
 											|| (!specifiedModuleIsSpecTE && RunMode.TRACE_EXPLORATION.equals(runMode));
 
 				if (!performPreFlightFileChecks()) {
 					throw new IllegalStateException("There was an issue with the input, "
-														+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + ", or "
+														+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + ", or "
 														+ TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME + " file.");
 				}
 
@@ -482,7 +482,7 @@ public class TraceExplorer {
 		MP.printMessage(EC.GENERAL, "Have received the final output logging message - finishing TraceExplorer work.");
 
 		final boolean specifiedModuleIsSpecTE
-				= specGenerationOriginalSpecName.equals(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME);
+				= specGenerationOriginalSpecName.equals(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME);
 		final boolean needGenerateSpecTE
 				= RunMode.GENERATE_SPEC_TE.equals(runMode)
 								|| (!specifiedModuleIsSpecTE && RunMode.TRACE_EXPLORATION.equals(runMode));
@@ -491,10 +491,10 @@ public class TraceExplorer {
     			final String msg;
     			if (RunMode.GENERATE_SPEC_TE.equals(runMode)) {
     				msg = "The output contained no error-state messages, no "
-    							+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " will be produced.";
+    							+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " will be produced.";
     			} else {
     				msg = "The output contained no error-state messages, no "
-								+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + " nor "
+								+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " nor "
 								+ TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME + " will be produced, and, so, "
 								+ "no trace expressions will be evaluated.";
     			}
@@ -560,7 +560,7 @@ public class TraceExplorer {
 		final String configContent = writer.getConfigBuffer().toString();
 		writer.writeFiles(tlaFile, null);
 
-		final CFGCopier cfgCopier = new CFGCopier(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME,
+		final CFGCopier cfgCopier = new CFGCopier(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
 				TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME, specGenerationSourceDirectory, configContent);
 		cfgCopier.copy();
 
@@ -578,7 +578,7 @@ public class TraceExplorer {
 
     private boolean performPreFlightFileChecks() {
 		final boolean specifiedModuleIsSpecTE
-				= specGenerationOriginalSpecName.equals(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME);
+				= specGenerationOriginalSpecName.equals(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME);
 		final boolean outputShouldExist = !expectedOutputFromStdIn 
 											|| (specifiedModuleIsSpecTE && RunMode.TRACE_EXPLORATION.equals(runMode));
 
@@ -620,7 +620,7 @@ public class TraceExplorer {
 			if (!overwriteGeneratedFiles) {
 				if (!specifiedModuleIsSpecTE) {
 					final File specTETLA = new File(specGenerationSourceDirectory,
-							(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION));
+							(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION));
 
 					if (specTETLA.exists()) {
 						printErrorMessage("specified source directory already contains " + specTETLA.getName()

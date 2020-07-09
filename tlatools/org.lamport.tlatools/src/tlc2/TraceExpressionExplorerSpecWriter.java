@@ -90,7 +90,7 @@ public class TraceExpressionExplorerSpecWriter extends AbstractSpecWriter {
 		}
 		
 		addPrimer(TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME,
-				  TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME);
+				  TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME);
 		
 		declareExpressionVariables();
 		createInitNextWithExpressions();
