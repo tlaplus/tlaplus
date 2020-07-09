@@ -67,6 +67,10 @@ public class LongVec implements Cloneable, Serializable {
         return "Index: "+index+", Size: "+elementCount;
     }
 
+	public final boolean isEmpty() {
+		return this.elementCount == 0;
+	}
+
 	public final int size() {
 		return this.elementCount;
 	}
@@ -154,5 +158,31 @@ public class LongVec implements Cloneable, Serializable {
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+
+	/** 
+	 * Remove *consecutive* duplicates:
+	 * [1,2,2,1,1,3] -> [1,2,1,3]
+	 */
+	public LongVec pack() {
+		// so far only used to while printing a liveness error trace and thus not
+		// performance critical. Once performance matters, we should do it in-place.
+		final LongVec filtered = new LongVec(size());
+		for (int i = 0; i < elementCount; i++) {
+			long x = elementData[i];
+			if (filtered.elementCount == 0 || filtered.lastElement() != x) {
+				filtered.addElement(x);
+			}
+		}
+		this.elementCount = filtered.elementCount;
+		this.elementData = filtered.elementData;
+		return this;
+	}
+
+	public LongVec removeLastIf(long x) {
+		if (this.elementCount > 0 && this.lastElement() == x) {
+			this.elementCount = this.elementCount - 1;
+		}
+		return this;
 	}
 }

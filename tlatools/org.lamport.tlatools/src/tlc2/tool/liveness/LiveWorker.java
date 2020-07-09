@@ -902,7 +902,11 @@ public class LiveWorker implements Callable<Boolean> {
 		while (cycleStack.size() > 0) {
 			// Do not filter successive <<fp,tidx,permId>> here but do it below
 			// when the actual states get printed. See Test3.tla for reason why.
-			postfix.addElement(cycleStack.popLong());
+			long fp = cycleStack.popLong();
+			if (postfix.isEmpty() || postfix.lastElement() != fp) {
+				// See comment 4723xdf below.  This here just a minor optimization.
+				postfix.addElement(fp);
+			}
 			cycleStack.popInt(); // ignore tableau idx. The tableau idx is
 									// irrelevant as <<fpA, tidx1>> and <<fpA,
 									// tidx2>> both map to the same state in the
@@ -935,20 +939,21 @@ public class LiveWorker implements Callable<Boolean> {
 		 */
 		final TLCStateInfo cycleState = states.get(states.size() - 1);
 		
+		// 4723xdf:
+		// Only print the state if it differs from its predecessor. We don't
+		// want to print an identical state twice. This can happen if the
+		// loops A) and B) above added an identical state multiple times
+		// into cycleStack/postfix.
+		// The reason we don't simply compare the actual states is for
+		// efficiency reason. Regenerating the next state might be
+		// expensive.
+		postfix.pack().removeLastIf(cycleState.fp);
+		
 		TLCStateInfo sinfo = cycleState;
 		for (int i = postfix.size() - 1; i >= 0; i--) {
 			final long curFP = postfix.elementAt(i);
-			// Only print the state if it differs from its predecessor. We don't
-			// want to print an identical state twice. This can happen if the
-			// loops A) and B) above added an identical state multiple times
-			// into cycleStack/postfix.
-			// The reason we don't simply compare the actual states is for
-			// efficiency reason. Regenerating the next state might be
-			// expensive.
-			if (curFP != sinfo.fingerPrint()) {
-				sinfo = tool.getState(curFP, sinfo);
-				StatePrinter.printState(sinfo);
-			}
+			sinfo = tool.getState(curFP, sinfo);
+			StatePrinter.printState(sinfo);
 		}
 
 		/* All error trace states have been printed (prefix + cycleStack +
