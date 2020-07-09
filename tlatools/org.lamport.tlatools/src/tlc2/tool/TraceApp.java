@@ -16,5 +16,7 @@ public interface TraceApp {
   /* Reconstruct the info for the transition from s to s1. */
   public TLCStateInfo getState(TLCState s1, TLCState s);
 
+  public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor);
+
 }
 

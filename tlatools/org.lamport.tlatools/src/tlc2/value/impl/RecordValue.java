@@ -10,11 +10,14 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
@@ -589,17 +592,109 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 	}
 
 	public TLCState toState() {
-		final TLCState state = TLCState.Empty.createEmpty();
-		final OpDeclNode[] vars = state.getVars();
-		for (int i = 0; i < vars.length; i++) {
-			final UniqueString name = vars[i].getName();
-			int rlen = this.names.length;
-			for (int j = 0; j < rlen; j++) {
-				if (name.equals(this.names[j])) {
-					state.bind(name, this.values[j]);
+		return new PrintTLCState(this);
+	}
+	
+	private static final class PrintTLCState extends TLCState {
+
+		private final RecordValue rcd;
+
+		public PrintTLCState(RecordValue recordValue) {
+			this.rcd = recordValue;
+		}
+
+		@Override
+		public long fingerPrint() {
+			// fingerprinting normalizes names and values, which reorders the elements.
+			return new RecordValue(Arrays.copyOf(rcd.names, rcd.names.length),
+					Arrays.copyOf(rcd.values, rcd.values.length), false).fingerPrint(FP64.New());
+		}
+
+		@Override
+		public boolean allAssigned() {
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			final StringBuffer result = new StringBuffer();
+			int vlen = rcd.names.length;
+			if (vlen == 1) {
+				result.append(rcd.names[0].toString());
+				result.append(" = ");
+				result.append(Values.ppr(rcd.values[0]));
+				result.append("\n");
+			} else {
+				for (int i = 0; i < vlen; i++) {
+					UniqueString key = rcd.names[i];
+					result.append("/\\ ");
+					result.append(key.toString());
+					result.append(" = ");
+					result.append(Values.ppr(rcd.values[i]));
+					result.append("\n");
 				}
 			}
+			return result.toString();
 		}
-		return state;
+
+		@Override
+		public String toString(TLCState lastState) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TLCState bind(UniqueString name, IValue value) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TLCState bind(SymbolNode id, IValue value) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TLCState unbind(UniqueString name) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public IValue lookup(UniqueString var) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean containsKey(UniqueString var) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TLCState copy() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TLCState deepCopy() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public StateVec addToVec(StateVec states) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void deepNormalize() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Set<OpDeclNode> getUnassigned() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TLCState createEmpty() {
+			throw new UnsupportedOperationException();
+		}
 	}
 }

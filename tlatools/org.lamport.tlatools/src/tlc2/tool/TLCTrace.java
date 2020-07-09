@@ -350,20 +350,28 @@ public class TLCTrace {
 			// initial states is huge such as during inductive invariant checking. Instead
 			// use the two states s1 and s2 directly.
 			MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
-			StatePrinter.printState(new TLCStateInfo(s1));
-			if (s2 != null) {
+			if (s2 == null) {
+			    StatePrinter.printState(new TLCStateInfo(s1));
+			} else {
+				// Print initial state
+				StatePrinter.printState(this.tool.evalAlias(new TLCStateInfo(s1), s2), s1, 1);
+				
 				// Create TLCStateInfo instance to include corresponding action in output.
-				StatePrinter.printState(this.tool.getState(s2, s1), s1, 2);
+				TLCStateInfo state = this.tool.getState(s2, s1);
+				
+				// Print successor state.
+				StatePrinter.printState(this.tool.evalAlias(state, s2), s1, 2);
 			}
 			return;
 		}
 
 		MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
+		
 		// Print the prefix leading to s1:
 		TLCState lastState = null;
 		int idx = 0;
-		while (idx < prefix.length) {
-			StatePrinter.printState(prefix[idx], lastState, idx + 1);
+		while (idx < prefix.length - 1) {
+			StatePrinter.printState(this.tool.evalAlias(prefix[idx], prefix[idx + 1].state), lastState, idx + 1);
 			lastState = prefix[idx].state;
 			idx++;
 		}
@@ -381,8 +389,10 @@ public class TLCTrace {
 				System.exit(1);
 			}
 		} else {
-			TLCState s0 = prefix[prefix.length - 1].state;
-			sinfo = this.tool.getState(s1.fingerPrint(), s0);
+			TLCStateInfo s0 = prefix[prefix.length - 1];
+			StatePrinter.printState(this.tool.evalAlias(s0, s1), lastState, ++idx);
+			
+			sinfo = this.tool.getState(s1.fingerPrint(), s0.state);
 			if (sinfo == null) {
 				MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
 				MP.printError(EC.TLC_BUG, "4");
@@ -393,6 +403,7 @@ public class TLCTrace {
 		if (s2 == null) {
 			lastState = null;
 		}
+		sinfo = this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2);
 		StatePrinter.printState(sinfo, lastState, ++idx);
 		lastState = sinfo.state;
 
@@ -406,6 +417,7 @@ public class TLCTrace {
 				StatePrinter.printState(s2);
 				System.exit(1);
 			}
+			sinfo = this.tool.evalAlias(sinfo, s2);
 			StatePrinter.printState(sinfo, null, ++idx);
 		}
 	}

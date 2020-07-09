@@ -370,11 +370,13 @@ public class Simulator {
 			int omitted = 0;
 			for (int i = 0; i < stateTrace.size(); i++) {
 				final TLCState curState = stateTrace.elementAt(i);
+				// Last state's successor is itself.
+				final TLCState sucState = stateTrace.elementAt(Math.min(i + 1, stateTrace.size() - 1));
 				if (lastState != null) {
 					sinfo = this.tool.getState(curState, lastState);
 				} else {
 					sinfo = new TLCStateInfo(curState, "<Initial predicate>");
-					StatePrinter.printState(sinfo, lastState, curState.getLevel());
+					StatePrinter.printState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
 					lastState = curState;
 					continue;
 				}
@@ -399,7 +401,7 @@ public class Simulator {
 				} else {
 					// print the state's actual level and not a monotonically increasing state
 					// number => Numbering will have gaps with difftrace.
- 					StatePrinter.printState(sinfo, lastState, curState.getLevel());
+					StatePrinter.printState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
 				}
 				lastState = curState;
 			}

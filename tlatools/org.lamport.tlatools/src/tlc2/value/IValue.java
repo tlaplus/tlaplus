@@ -28,6 +28,7 @@ package tlc2.value;
 import java.io.IOException;
 
 import tla2sany.semantic.SemanticNode;
+import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
@@ -136,4 +137,5 @@ public interface IValue extends Comparable<Object> {
 		return true;
 	}
 
+	TLCState toState();
 }

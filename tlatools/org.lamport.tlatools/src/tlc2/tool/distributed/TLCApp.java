@@ -256,6 +256,10 @@ public class TLCApp extends DistApp {
 	public TLCStateInfo getState(TLCState s1, TLCState s) {
 		return this.tool.getState(s1, s);
 	}
+	
+	public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor) {
+		return this.tool.evalAlias(current, successor);
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#setCallStack()

@@ -62,7 +62,7 @@ public class ModelConfig implements ValueConstants, Serializable {
     private static final String Spec = TLAConstants.KeyWords.SPECIFICATION;
     private static final String Prop = TLAConstants.KeyWords.PROPERTY;
     private static final String Props = "PROPERTIES";
-    private static final String Type = "TYPE";
+    private static final String Alias = "ALIAS";
     private static final String TypeConstraint = "TYPE_CONSTRAINT";
     private static final String CheckDeadlock = "CHECK_DEADLOCK";
 
@@ -72,7 +72,7 @@ public class ModelConfig implements ValueConstants, Serializable {
      * All keywords used in the configuration file
      */
     public final static String[] ALL_KEYWORDS = { Constant, Constants, Constraint, Constraints, ActionConstraint,
-            ActionConstraints, Invariant, Invariants, Init, Next, View, Symmetry, Spec, Prop, Props, Type,
+            ActionConstraints, Invariant, Invariants, Init, Next, View, Symmetry, Spec, Prop, Props, Alias,
             TypeConstraint, CheckDeadlock };
 
     private Hashtable configTbl;
@@ -125,7 +125,7 @@ public class ModelConfig implements ValueConstants, Serializable {
         temp = new Vect<>();
         this.configTbl.put(Prop, temp);
         this.configTbl.put(Props, temp);
-        this.configTbl.put(Type, "");
+        this.configTbl.put(Alias, "");
         this.configTbl.put(TypeConstraint, "");
 
         this.modConstants = new Hashtable<>();
@@ -232,17 +232,17 @@ public class ModelConfig implements ValueConstants, Serializable {
                                 Symmetry });
                     }
                     tt = getNextToken(tmgr);
-                } else if (tval.equals(Type))
+                } else if (tval.equals(Alias))
                 {
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
-                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), Type });
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), Alias });
                     }
-                    String old = (String) this.configTbl.put(Type, tt.image);
+                    String old = (String) this.configTbl.put(Alias, tt.image);
                     if (old.length() != 0)
                     {
-                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), Type });
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), Alias });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(TypeConstraint))
@@ -596,9 +596,9 @@ public class ModelConfig implements ValueConstants, Serializable {
         return (Vect) this.configTbl.get(Prop);
     }
 
-    public synchronized final String getType()
+    public synchronized final String getAlias()
     {
-        return (String) this.configTbl.get(Type);
+        return (String) this.configTbl.get(Alias);
     }
 
     public synchronized final String getTypeConstraint()

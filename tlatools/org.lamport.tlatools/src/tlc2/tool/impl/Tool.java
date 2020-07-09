@@ -88,6 +88,7 @@ import tlc2.value.impl.ValueEnumeration;
 import tlc2.value.impl.ValueExcept;
 import tlc2.value.impl.ValueVec;
 import util.Assert;
+import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
 import util.TLAConstants;
 import util.UniqueString;
@@ -1382,6 +1383,27 @@ public abstract class Tool
     
   /* eval */
 
+  public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor) {
+		if ("".equals(this.config.getAlias())) {
+			return current;
+		}
+		
+		// see getState(..)
+		IdThread.setCurrentState(current.state);
+
+		try {
+			final TLCState alias = eval(getAliasSpec(), Context.Empty, current.state, successor, EvalControl.Clear).toState();
+			if (alias != null) {
+				return new TLCStateInfo(alias, current);
+			}
+		} catch (EvalException | TLCRuntimeException e) {
+			// Fall back to original state if eval fails.
+			return current;
+		}
+		
+		return current;
+  }
+  
   /* Special version of eval for state expressions. */
   @Override
   public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {

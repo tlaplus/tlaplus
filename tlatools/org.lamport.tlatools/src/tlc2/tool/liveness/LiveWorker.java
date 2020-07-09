@@ -869,8 +869,8 @@ public class LiveWorker implements Callable<Boolean> {
 				}
 
 				// Print the prefix in reverse order of previous loop:
-				for (int i = 0; i < states.size(); i++) {
-					StatePrinter.printState(states.get(i));
+				for (int i = 0; i < states.size() - 1; i++) {
+					StatePrinter.printState(tool.evalAlias(states.get(i), states.get(i + 1).state));
 				}
 				return states;
 			}
@@ -930,14 +930,15 @@ public class LiveWorker implements Callable<Boolean> {
 		
 		/*
 		 * At this point everything from the initial state up to the start state
-		 * of the SCC has been printed. Now, print the states in postfix. Obtain
-		 * the last state from the prefix (which corresponds to <<state, tidx>>)
-		 * to use it to generate the next state. Obviously, we have to wait for
-		 * the prefix thread to be done for two reasons: a) the trace has to be
-		 * printed and b) we need the TLCState instance to generate the
-		 * successor states in the cycle.
+		 * of the SCC has been printed. Now, print cycleState and the  states in
+		 * postfix. Obtain the last state from the prefix (which corresponds to
+		 * <<state, tidx>>) to use it to generate the next state. Obviously, we
+		 * have to wait for the prefix thread to be done for two reasons: a) the
+		 * trace has to be printed and b) we need the TLCState instance to generate
+		 * the successor states in the cycle.
 		 */
 		final TLCStateInfo cycleState = states.get(states.size() - 1);
+		TLCStateInfo sinfo = cycleState;
 		
 		// 4723xdf:
 		// Only print the state if it differs from its predecessor. We don't
@@ -947,13 +948,18 @@ public class LiveWorker implements Callable<Boolean> {
 		// The reason we don't simply compare the actual states is for
 		// efficiency reason. Regenerating the next state might be
 		// expensive.
-		postfix.pack().removeLastIf(cycleState.fp);
-		
-		TLCStateInfo sinfo = cycleState;
-		for (int i = postfix.size() - 1; i >= 0; i--) {
-			final long curFP = postfix.elementAt(i);
-			sinfo = tool.getState(curFP, sinfo);
-			StatePrinter.printState(sinfo);
+		if (postfix.isEmpty()) {
+			StatePrinter.printState(tool.evalAlias(cycleState, cycleState.state));
+		} else {
+			postfix.pack().removeLastIf(cycleState.fingerPrint());
+			
+			for (int i = postfix.size() - 1; i >= 0; i--) {
+				final long curFP = postfix.elementAt(i);
+				TLCStateInfo sucinfo = tool.getState(curFP, sinfo);
+				StatePrinter.printState(tool.evalAlias(sinfo, sucinfo.state));
+				sinfo = sucinfo;
+			}
+			StatePrinter.printState(tool.evalAlias(sinfo, cycleState.state));
 		}
 
 		/* All error trace states have been printed (prefix + cycleStack +

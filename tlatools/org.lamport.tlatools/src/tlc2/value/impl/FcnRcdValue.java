@@ -12,6 +12,7 @@ import java.util.Map;
 
 import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import tlc2.value.IFcnRcdValue;
@@ -572,8 +573,17 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       if (coverage) {cm.incSecondary(this.values.length);}
       return new RecordValue(vars, this.values, this.isNormalized(), cm);
   }
+  
+  @Override
+  public TLCState toState() {
+	  final Value rcd = toRcd();
+	  if (rcd != null) {
+		  return rcd.toState();
+	  }
+	  return super.toState();
+  }
 
-  	@Override
+    @Override
 	public final Value toFcnRcd() {
 		return this;
 	}

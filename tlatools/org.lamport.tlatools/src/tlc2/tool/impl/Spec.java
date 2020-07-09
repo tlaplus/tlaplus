@@ -201,10 +201,10 @@ abstract class Spec
         return def.getBody();
     }
 
-    /* Get the type declaration for the state variables. */
-    public final SemanticNode getTypeSpec()
+    /* Get the alias declaration for the state variables. */
+    public final SemanticNode getAliasSpec()
     {
-        String name = this.config.getType();
+        String name = this.config.getAlias();
         if (name.length() == 0)
         {
             Assert.fail(EC.TLC_CONFIG_NO_STATE_TYPE);
@@ -213,16 +213,16 @@ abstract class Spec
         Object type = this.defns.get(name);
         if (type == null)
         {
-            Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "type", name });
+            Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "alias", name });
         }
         if (!(type instanceof OpDefNode))
         {
-            Assert.fail(EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT, new String[] { "type", name });
+            Assert.fail(EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT, new String[] { "alias", name });
         }
         OpDefNode def = (OpDefNode) type;
         if (def.getArity() != 0)
         {
-            Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "type", name });
+            Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "alias", name });
         }
         return def.getBody();
     }
