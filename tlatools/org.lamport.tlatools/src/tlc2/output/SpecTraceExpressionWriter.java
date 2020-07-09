@@ -11,6 +11,7 @@ import tlc2.model.Formula;
 import tlc2.model.MCState;
 import tlc2.model.MCVariable;
 import tlc2.model.TraceExpressionInformationHolder;
+import tlc2.tool.impl.ModelConfig;
 import util.TLAConstants;
 
 /**
@@ -730,6 +731,13 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 			// https://github.com/lemmy/tlaplus_specs/blob/master/AsyncGameOfLifeAnimBlinker.mp4).
             addInvariant(finalState);
         }
+        
+		// Do not require to pass -deadlock on the command-line (properties assert that
+		// TLC re-finds the error-trace).
+		cfgBuffer.append(TLAConstants.COMMENT).append(ModelConfig.CheckDeadlock).append(" off because of PROPERTY or INVARIANT above.")
+				.append(TLAConstants.CR);
+		cfgBuffer.append(ModelConfig.CheckDeadlock).append(TLAConstants.SPACE).append(TLAConstants.FALSE);
+		cfgBuffer.append(TLAConstants.CR);
 	}
 
 	/**
@@ -759,7 +767,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 
 	/**
 	 * Adds the temporal property ~([]<>P /\ []<>Q), where P is the formula describing finalState and 
-	 * Q the formula describing backToState. The formating in the tla file is as follows:
+	 * Q the formula describing backToState. The formatting in the tla file is as follows:
 	 * 
 	 * prop_21321312 ==
 	 * ~(([]<>(

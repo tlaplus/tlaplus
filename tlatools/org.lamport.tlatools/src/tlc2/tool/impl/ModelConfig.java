@@ -67,7 +67,7 @@ public class ModelConfig implements ValueConstants, Serializable {
     private static final String Props = "PROPERTIES";
     private static final String Alias = "ALIAS";
     private static final String TypeConstraint = "TYPE_CONSTRAINT";
-    private static final String CheckDeadlock = "CHECK_DEADLOCK";
+    public static final String CheckDeadlock = "CHECK_DEADLOCK";
 
     private static final long serialVersionUID = 1L;
 
