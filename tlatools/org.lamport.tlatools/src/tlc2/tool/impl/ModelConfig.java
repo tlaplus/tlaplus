@@ -49,7 +49,8 @@ import util.TLAConstants;
  * @author Yuan Yu, Leslie Lamport
  */
 public class ModelConfig implements ValueConstants, Serializable {
-    // keywords of the configuration file
+    // keywords of the configuration file.
+	// CAREFUL: HAVE TO BE IN CONFIGTBL FOR PARSING TO WORK!
     private static final String Constant = TLAConstants.KeyWords.CONSTANT;
     private static final String Constants = TLAConstants.KeyWords.CONSTANTS;
     private static final String Constraint = "CONSTRAINT";
@@ -131,7 +132,8 @@ public class ModelConfig implements ValueConstants, Serializable {
         this.configTbl.put(Props, temp);
         this.configTbl.put(Alias, "");
         this.configTbl.put(TypeConstraint, "");
-
+        this.configTbl.put(CheckDeadlock, "undef");
+        
         this.modConstants = new Hashtable<>();
         this.modOverrides = new Hashtable<>();
         this.overrides = new Hashtable<>();
@@ -446,7 +448,7 @@ public class ModelConfig implements ValueConstants, Serializable {
                         throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] {
                             String.valueOf(scs.getBeginLine()), "TRUE or FALSE" });
                     }
-                    if (previous != null)
+                    if (previous != "undef")
                     {
                         throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), CheckDeadlock });
                     }
@@ -641,8 +643,9 @@ public class ModelConfig implements ValueConstants, Serializable {
 
     public synchronized final boolean getCheckDeadlock()
     {
-    	if (this.configTbl.containsKey(CheckDeadlock)) {
-    		return (boolean) this.configTbl.get(CheckDeadlock);
+    	Object object = this.configTbl.get(CheckDeadlock);
+    	if (object instanceof Boolean) {
+    		return (boolean) object;
     	}
     	return true;
     }
