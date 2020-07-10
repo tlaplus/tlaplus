@@ -118,6 +118,32 @@ public class TraceExplorer {
 		writer.addFooter();
 		
 		/**
+		 * Write commented definition of trace def override into new module.
+		 * A user simply has to provide the serialized trace and uncomment the module.
+		 */
+		final Set<String> extendedModulesWithIOUtils = new HashSet<>(extendedModules);
+		extendedModulesWithIOUtils.add("IOUtils");
+		
+		final SpecTraceExpressionWriter w = new SpecTraceExpressionWriter();
+		w.append(TLAConstants.CR);
+		w.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", osn,
+				extendedModulesWithIOUtils);
+		w.append(TLAConstants.COMMENT).append("Parsing and semantic processing can take forever with a long trace.")
+				.append(TLAConstants.CR);
+		w.append(TLAConstants.COMMENT).append("In this case, it is advised to serialize the trace to trace.bin.")
+				.append(TLAConstants.CR);
+		w.append(TLAConstants.COMMENT).append("To create trace.bin, replace your spec's invariant F with:")
+				.append(TLAConstants.CR);
+		w.append(TLAConstants.COMMENT).append("  IF F THEN TRUE ELSE ~IOSerialize(Trace, \"trace.bin\", TRUE)")
+				.append(TLAConstants.CR);
+		w.append(TLAConstants.COMMENT).append("(IOUtils and TLCExt from https://modules.tlapl.us/)")
+				.append(TLAConstants.CR);
+		w.append(traceFunctionId).append(TLAConstants.DEFINES).append("IODeserialize(\"trace.bin\", TRUE)\n\n");
+		w.addFooter();
+		// Users can uncomment the module if they wish to read the serialized trace.
+		writer.append(TLAConstants.CR + w.getComment() + TLAConstants.CR + TLAConstants.CR);
+		
+		/**
 		 * Write definition of trace def into new module.
 		 */
 		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", osn, extendedModules);

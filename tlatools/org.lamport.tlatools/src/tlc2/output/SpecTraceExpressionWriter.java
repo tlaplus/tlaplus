@@ -930,4 +930,12 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
             return formula.toString();
         }
     }
+
+	public StringBuilder append(String str) {
+		return tlaBuffer.append(str);
+	}
+
+	public String getComment() {
+		return tlaBuffer.toString().replaceFirst("^", "\\\\*").replaceAll("\n", "\n\\\\*");
+	}
 }
