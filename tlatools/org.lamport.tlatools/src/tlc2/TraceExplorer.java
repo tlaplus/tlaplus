@@ -107,14 +107,23 @@ public class TraceExplorer {
 		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME, osn, extendedModules);
 
 		final List<MCState> trace = error.getStates();
-
-		writer.addTraceFunction(trace);
+		
+		final String traceFunctionId = writer.addTraceFunctionInstance();
 		
 		writer.addProperties(trace);
 
 		writer.addInitNext(trace, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
 				results.getOriginalNextOrSpecificationName());
 				
+		writer.addFooter();
+		
+		/**
+		 * Write definition of trace def into new module.
+		 */
+		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", osn, extendedModules);
+
+		writer.addTraceFunction(trace, traceFunctionId);
+		
         /**
          * Write actual files.
          */

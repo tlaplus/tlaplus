@@ -504,16 +504,16 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	}
 
 	public static String addTraceFunctionToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
-			final List<MCState> input) {
+			final List<MCState> input, final String id) {
 		// Filter stuttering or back2state instances from trace.
 		final List<MCState> trace = input.stream()
 				.filter(state -> !state.isBackToState() && !state.isStuttering())
 				.collect(Collectors.toList());
 		
 		if (trace.isEmpty()) {
-			return addArrowAssignmentToBuffers(tlaBuffer, cfgBuffer,
+			return addArrowAssignmentIdToBuffers(tlaBuffer, cfgBuffer,
 					new Assignment(TLAConstants.TraceExplore.TRACE, new String[0], TLAConstants.BEGIN_TUPLE + TLAConstants.END_TUPLE),
-					TLAConstants.Schemes.DEFOV_SCHEME);
+					id);
 	    }
 		
 		// Trace
@@ -531,9 +531,9 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		traceFunctionDef.append(TLAConstants.CR).append(TLAConstants.END_TUPLE);
 		traceFunctionDef.append(CLOSING_SEP).append(TLAConstants.CR);
 		
-		return addArrowAssignmentToBuffers(tlaBuffer, cfgBuffer,
+		return addArrowAssignmentIdToBuffers(tlaBuffer, cfgBuffer,
 				new Assignment(TLAConstants.TraceExplore.TRACE, new String[0], traceFunctionDef.toString()),
-				TLAConstants.Schemes.DEFOV_SCHEME);
+				id);
 	}
 	
 	
@@ -599,6 +599,10 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 				extraExtendedModules.toArray(new String[extraExtendedModules.size()])));
 	}
 
+	public void addFooter() {
+		tlaBuffer.append(getTLAModuleClosingTag());
+	}
+	
 	/**
 	 * This only changes the tla file. This method adds a variable declaration
 	 * for each element of traceExpressionData and, if the flag addDefinitions is true,
@@ -847,7 +851,39 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	}
 
 	public String addTraceFunction(final List<MCState> input) {
-		return addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, input);
+		return addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, input,
+				SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.DEFOV_SCHEME));
+	}
+
+	public String addTraceFunction(final List<MCState> input, final String id) {
+		return addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, input, id);
+	}
+
+	/*
+	 * See https://github.com/tlaplus/tlaplus/issues/482 for why we create the
+	 * _SpecTETraceDef symbol. In short, it leads to faster evaluation because TLC's
+	 * caching kicks in.
+	 * 
+	 * The reason why the trace function is in a dedicated module (via monolith spec
+	 * functionality) is to make it easy for users to edit SpecTE to replace the
+	 * TLA+ encoded trace function with a significantly more efficient binary
+	 * encoding to work around deficiencies in SANY and semantic processing.
+	 */
+	public String addTraceFunctionInstance() {
+		/*
+		 * SpecTETraceDef == INSTANCE SpecTETraceDef
+		 * def_ov_15940964130543000 == SpecTETraceDef!def_ov_15940964130543000
+		 */
+		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME)
+				.append(" definition").append(TLAConstants.CR);
+		final String identifier = SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.DEFOV_SCHEME);
+		tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef == INSTANCE "
+				+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
+				+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME).append(TLAConstants.CR);
+		tlaBuffer.append(identifier).append(TLAConstants.DEFINES)
+				.append(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef!").append(identifier)
+				.append(TLAConstants.CR).append(TLAConstants.CR);
+		return identifier;
 	}
 	
     /**
