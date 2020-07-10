@@ -121,6 +121,15 @@ public class TraceExplorer {
 		 * Write commented definition of trace def override into new module.
 		 * A user simply has to provide the serialized trace and uncomment the module.
 		 */
+		writer.append(TLAConstants.CR);
+		writer.append("Parsing and semantic processing can take forever for a long trace below.")
+				.append(TLAConstants.CR);
+		writer.append("In this case, it is advised to deserialize the trace from a binary file.")
+				.append(TLAConstants.CR);
+		writer.append("To create the file, replace your spec's invariant F with:").append(TLAConstants.CR);
+		writer.append("  Inv == IF F THEN TRUE ELSE ~IOSerialize(Trace, \"file.bin\", TRUE)").append(TLAConstants.CR);
+		writer.append("(IOUtils and TLCExt modules from https://modules.tlapl.us/)");
+		
 		final Set<String> extendedModulesWithIOUtils = new HashSet<>(extendedModules);
 		extendedModulesWithIOUtils.add("IOUtils");
 		
@@ -128,17 +137,7 @@ public class TraceExplorer {
 		w.append(TLAConstants.CR);
 		w.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", osn,
 				extendedModulesWithIOUtils);
-		w.append(TLAConstants.COMMENT).append("Parsing and semantic processing can take forever with a long trace.")
-				.append(TLAConstants.CR);
-		w.append(TLAConstants.COMMENT).append("In this case, it is advised to serialize the trace to trace.bin.")
-				.append(TLAConstants.CR);
-		w.append(TLAConstants.COMMENT).append("To create trace.bin, replace your spec's invariant F with:")
-				.append(TLAConstants.CR);
-		w.append(TLAConstants.COMMENT).append("  IF F THEN TRUE ELSE ~IOSerialize(Trace, \"trace.bin\", TRUE)")
-				.append(TLAConstants.CR);
-		w.append(TLAConstants.COMMENT).append("(IOUtils and TLCExt from https://modules.tlapl.us/)")
-				.append(TLAConstants.CR);
-		w.append(traceFunctionId).append(TLAConstants.DEFINES).append("IODeserialize(\"trace.bin\", TRUE)\n\n");
+		w.append(traceFunctionId).append(TLAConstants.DEFINES).append("IODeserialize(\"file.bin\", TRUE)\n\n");
 		w.addFooter();
 		// Users can uncomment the module if they wish to read the serialized trace.
 		writer.append(TLAConstants.CR + w.getComment() + TLAConstants.CR + TLAConstants.CR);
