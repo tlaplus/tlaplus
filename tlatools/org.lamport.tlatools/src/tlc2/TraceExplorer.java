@@ -24,6 +24,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.Messages;
 import tlc2.output.SpecTraceExpressionWriter;
+import tlc2.tool.TLCState;
 import util.TLAConstants;
 import util.ToolIO;
 import util.UsageGenerator;
@@ -72,16 +73,12 @@ public class TraceExplorer {
     
     
     /**
-	 * @param sourceDirectory
-	 * @param originalSpecName
-	 * @param results
-	 * @param error
 	 * @return an array of length two; the 0-index is the location to the
 	 *         destination TLA file, and the 1-index is that of the CFG file
 	 * @throws IOException
 	 */
-    public static File[] writeSpecTEFiles(final File sourceDirectory, final String osn,
-    									  final MCParserResults results, final MCError error) throws IOException {
+	public static File[] writeSpecTEFiles(final File sourceDirectory, final String osn, final String[] vars,
+			final MCParserResults results, final MCError error) throws IOException {
 		final SpecTraceExpressionWriter writer = new SpecTraceExpressionWriter();
 
 		/**
@@ -112,8 +109,9 @@ public class TraceExplorer {
 		
 		writer.addProperties(trace);
 
-		writer.addInitNext(trace, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, SPEC_TE_ACTION_CONSTRAINT_ID,
-				results.getOriginalNextOrSpecificationName());
+		// Write Init and Next with vars instead of extracting the vars from trace to
+		// always write a syntactically correct behavior spec even if trace = <<>>.
+		writer.addInitNextTraceFunction(trace, vars, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID);
 				
 		writer.addFooter();
 		
@@ -683,9 +681,12 @@ public class TraceExplorer {
 		return true;
     }
     
-    private void writeSpecTEFiles(final MCParserResults results, final MCError error) throws IOException {
-    	writeSpecTEFiles(specGenerationSourceDirectory, specGenerationOriginalSpecName, results, error);
-    }
+	private void writeSpecTEFiles(final MCParserResults results, final MCError error) throws IOException {
+		writeSpecTEFiles(specGenerationSourceDirectory, specGenerationOriginalSpecName,
+				// Not sure TLCState.Empty is correctly initialized at this point, but I don't
+				// want to spend more time on it (screw you future Markus).
+				TLCState.Empty.getVarsAsStrings(), results, error);
+	}
     
     private void printErrorMessage(final String message) {
     	MP.printError(EC.GENERAL, message);

@@ -96,6 +96,14 @@ public abstract class TLCState implements Cloneable, Serializable {
   public final OpDeclNode[] getVars() {
 	  return vars;
   }
+  
+  public final String[] getVarsAsStrings() {
+	  String[] res = new String[vars.length];
+	  for (int i = 0; i < vars.length; i++) {
+		res[i] = vars[i].getName().toString();
+	  }
+	  return res;
+  }
 
   public final void setPredecessor(final TLCState predecessor) {
 	  if (predecessor.getLevel() == Integer.MAX_VALUE) {

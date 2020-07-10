@@ -40,6 +40,7 @@ import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
+import tlc2.tool.TLCState;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
@@ -472,8 +473,8 @@ public class TLC {
 				        		// At this point SpecTE.cfg contains the content of MC.cfg.
 				        		// SpecTE.tla contains the newly generated SpecTE and the content of MC.tla.
 				        		// See https://github.com/tlaplus/tlaplus/issues/475 for why copying MC.tla/MC.cfg is wrong.
-				        		final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
-				        															mcParserResults, mcOutputConsumer.getError());
+								final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
+										TLCState.Empty.getVarsAsStrings(), mcParserResults, mcOutputConsumer.getError());
 								
 				        		// This rewrites SpecTE.tla in an attempt to create a monolith spec.
 								// See https://github.com/tlaplus/tlaplus/issues/479 and

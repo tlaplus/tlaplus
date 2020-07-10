@@ -850,6 +850,99 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		addInitNext(trace, null, initId, nextId, actionConstraintId, nextSubActionBasename);
 	}
 
+	public void addInitNextTraceFunction(final List<MCState> trace, final String[] vars, final String initId, String nextId) {
+        /*******************************************************
+         * Add the init definition.                            *
+         *******************************************************/
+		if (cfgBuffer != null) {
+			cfgBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.INIT).append(" definition");
+			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.INIT).append(TLAConstants.CR);
+			cfgBuffer.append(initId).append(TLAConstants.CR);
+		}
+		
+		// Stub for trace expressions variable
+		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.VARIABLE).append(' ');
+		tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.CR).append(TLAConstants.CR);
+
+		tlaBuffer.append(TLAConstants.COMMENT).append("TRACE INIT definition ");
+		tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPLORE_INIT).append(TLAConstants.CR);
+		tlaBuffer.append(initId).append(TLAConstants.DEFINES_CR);
+        
+        // variables from spec
+		for (int i = 0; i < vars.length; i++) {
+            final String var = vars[i];
+            tlaBuffer.append(TLAConstants.INDENTED_CONJUNCTIVE);
+            tlaBuffer.append(var).append(TLAConstants.EQ).append("_TETrace[1].").append(var);
+            tlaBuffer.append(TLAConstants.CR);
+        }
+		
+		// Stub for trace expressions
+		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
+		tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.EQ);
+		tlaBuffer.append(TLAConstants.KeyWords.TRUE).append(TLAConstants.CR);
+
+		tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
+		
+        /************************************************
+         *  Now add the next state relation             *
+         ************************************************/
+		if (cfgBuffer != null) {
+			cfgBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.NEXT).append(" definition");
+			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.NEXT).append(TLAConstants.CR);
+			cfgBuffer.append(nextId).append(TLAConstants.CR);
+		}
+		
+		tlaBuffer.append(TLAConstants.COMMENT).append("TRACE NEXT definition ");
+		tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPLORE_NEXT).append(TLAConstants.CR);
+		// _SpecTENext == 
+		tlaBuffer.append(nextId).append(TLAConstants.DEFINES_CR);
+		if (trace.size() == 1) {
+			tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
+			tlaBuffer.append("FALSE").append(TLAConstants.CR);
+		} else {
+			tlaBuffer.append(TLAConstants.INDENTED_CONJUNCTIVE).append("\\E i,j \\in DOMAIN _TETrace:")
+					.append(TLAConstants.CR);
+			tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE).append(TLAConstants.TLA_OR).append(" j = i + 1")
+					.append(TLAConstants.CR);
+			// Back to state?
+			final MCState finalState = trace.get(trace.size() - 1);
+			final boolean isBackToState = finalState.isBackToState();
+			if (isBackToState) {
+				// Instead of this disjunct, we could append backToState to the trace function
+				// (_TETrace). Len(_TETrace) would however be off by one.
+				MCState backToState = trace.get(finalState.getStateNumber() - 1);
+				tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append("   ")
+						.append(TLAConstants.TLA_OR).append(TLAConstants.SPACE).append(TLAConstants.TLA_AND)
+						// Len(_TETrace) requires EXTENDS Sequences
+						.append(" i = ").append(trace.size() - 1).append(TLAConstants.CR);
+				tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append("  ")
+						.append(TLAConstants.INDENTED_CONJUNCTIVE).append("j = ").append(backToState.getStateNumber())
+						.append(TLAConstants.CR);
+			}
+			for (int i = 0; i < vars.length; i++) {
+	            final String var = vars[i];
+	            // x = _TETrace[_TEPosition].x
+				tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
+				tlaBuffer.append(var).append(" ").append(TLAConstants.EQ).append("_TETrace[i].")
+						.append(var);
+				tlaBuffer.append(TLAConstants.CR);
+
+				// x' = _TETrace[_TEPosition+1].x
+				tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
+				tlaBuffer.append(var).append(TLAConstants.PRIME);
+				tlaBuffer.append(TLAConstants.EQ).append("_TETrace[j].").append(var);
+				tlaBuffer.append(TLAConstants.CR);
+	        }
+
+			// stub for trace expressions.
+			tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.INDENT).append(TLAConstants.TLA_AND).append(' ');
+			tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.PRIME).append(TLAConstants.EQ);
+			tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.CR);
+		}
+
+		tlaBuffer.append(TLAConstants.CR).append(TLAConstants.CR);
+	}
+
 	public String addTraceFunction(final List<MCState> input) {
 		return addTraceFunctionToBuffers(tlaBuffer, cfgBuffer, input,
 				SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.DEFOV_SCHEME));
