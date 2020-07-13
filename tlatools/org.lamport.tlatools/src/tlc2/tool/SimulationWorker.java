@@ -414,4 +414,8 @@ public class SimulationWorker extends IdThread {
 		// Finished trace generation without any errors.
 		return Optional.empty();
 	}
+	
+	public final StateVec getTrace() {
+		return stateTrace;
+	}
 }
