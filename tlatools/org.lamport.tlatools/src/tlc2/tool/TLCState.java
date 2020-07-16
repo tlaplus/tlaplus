@@ -135,4 +135,14 @@ public abstract class TLCState implements Cloneable, Serializable {
   public void setCallable(Callable<?> cl) {
 	  // no-op - see TLAPlusExecutorState
   }
+
+	public int getActionId() {
+		  // no-op - see TLCStateMutSimulation
+		return 0;
+	}
+
+	public void setActionId(int actionId) {
+		  // no-op - see TLCStateMutSimulation
+	}
+
 }

@@ -5,11 +5,15 @@
 
 package tlc2.tool;
 
-import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
@@ -29,6 +33,7 @@ import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
 import tlc2.tool.liveness.NoOpLiveCheck;
+import tlc2.util.DotActionWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.IValue;
@@ -482,11 +487,81 @@ public class Simulator {
 						reportCoverage();
 						count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
 					}
+					
+					writeActionFlowGraph();
 				}
 			} catch (Exception e) {
 				// SZ Jul 10, 2009: changed from error to bug
 				MP.printTLCBug(EC.TLC_REPORTER_DIED, null);
 			}
+		}
+
+		private void writeActionFlowGraph() throws IOException {
+			// The number of actions is expected to be low (dozens commons and hundreds a
+			// rare). This is why the code below isn't optimized for performance.
+			final Action[] actions = Simulator.this.tool.getActions();
+			final int len = actions.length;
+			
+			// Clusters of actions that have the same context:
+			// CONSTANT Proc
+			// ...
+			// A(p) == p \in {...} /\ v' = 42...
+			// Next == \E p \in Proc : A(p)
+			final Map<String, Set<Integer>> clusters = new HashMap<>();
+			for (int i = 0; i < len; i++) {
+				final String con = actions[i].con.toString();
+				if (!clusters.containsKey(con)) {
+				   clusters.put(con, new HashSet<>());	
+				}
+				clusters.get(con).add(i);
+			}
+			
+			// Write clusters to dot file (override previous file).
+			final DotActionWriter dotActionWriter = new DotActionWriter(
+					Simulator.this.tool.getRootName() + "_actions.dot", "");
+			for (Entry<String, Set<Integer>> cluster : clusters.entrySet()) {
+				// key is a unique set of chars accepted/valid as a graphviz cluster id.
+				final String key = Integer.toString(Math.abs(cluster.getKey().hashCode()));
+				dotActionWriter.writeSubGraphStart(key, cluster.getKey().toString());
+
+				final Set<Integer> ids = cluster.getValue();
+				for (Integer id : ids) {
+					dotActionWriter.write(actions[id], id);
+				}
+				dotActionWriter.writeSubGraphEnd();
+			}					
+
+			// Element-wise sum the statistics from all workers.
+			long[][] aggregateActionStats = new long[len][len];
+			final List<SimulationWorker> workers = Simulator.this.workers;
+			for (SimulationWorker sw : workers) {
+				final long[][] s = sw.actionStats;
+				for (int i = 0; i < len; i++) {
+					for (int j = 0; j < len; j++) {
+						aggregateActionStats[i][j] += s[i][j];
+					}
+				}
+			}
+			
+			// Write stats to dot file as edges between the action vertices.
+			for (int i = 0; i < len; i++) {
+				for (int j = 0; j < len; j++) {
+					long l = aggregateActionStats[i][j];
+					if (l > 0L) {
+						// LogLog l (to keep the graph readable) and round to two decimal places (to not
+						// write a gazillion decimal places truncated by graphviz anyway).
+						final double loglogWeight = Math.log10(Math.log10(l+1)); // +1 to prevent negative inf.
+						dotActionWriter.write(actions[i], i, actions[j], j,
+								BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
+										.doubleValue());
+					} else {
+						dotActionWriter.write(actions[i], i, actions[j], j);
+					}
+				}
+			}
+			
+			// Close dot file.
+			dotActionWriter.close();
 		}
 	}
 
