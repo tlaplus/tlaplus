@@ -79,8 +79,6 @@ public class Simulator {
 		this.rng = rng;
 		this.seed = seed;
 		this.aril = 0;
-		this.numWorkers = numWorkers;
-		this.workers = new ArrayList<>(numWorkers);
 		// Initialization for liveness checking
 		if (this.checkLiveness) {
 			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
@@ -93,6 +91,14 @@ public class Simulator {
 			liveCheck = new NoOpLiveCheck(tool, specDir);
 		}
 
+		this.numWorkers = numWorkers;
+		this.workers = new ArrayList<>(numWorkers);
+		for (int i = 0; i < this.numWorkers; i++) {
+			this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
+					this.traceDepth, this.traceNum, this.checkDeadlock, this.traceFile, this.liveCheck,
+					this.numOfGenStates, this.numOfGenTraces));
+		}
+		
 		if (TLCGlobals.isCoverageEnabled()) {
         	CostModelCreator.create(this.tool);
         }
@@ -133,13 +139,6 @@ public class Simulator {
 	private final RandomGenerator rng;
 	private final long seed;
 	private long aril;
-	private IValue[] localValues = new IValue[4];
-
-	// The set of all initial states for the given spec. This should be only be
-	// computed once and re-used whenever a new random trace is generated. This
-	// variable should not be written to concurrently, but is allowed to be read
-	// concurrently.
-	private StateVec initStates = new StateVec(0);
 
 	// Each simulation worker pushes their results onto this shared queue.
 	private BlockingQueue<SimulationWorkerResult> workerResultQueue = new LinkedBlockingQueue<>();
@@ -183,24 +182,25 @@ public class Simulator {
 	public int simulate() throws Exception {
 		TLCState curState = null;
 
+		// The init states are calculated only ever once and never change
+		// in the loops below. Ideally the variable would be final.
+		StateVec initStates = this.tool.getInitStates();
+
 		//
 		// Compute the initial states.
 		//
 		try {
 
-			// The init states are calculated only ever once and never change
-			// in the loops below. Ideally the variable would be final.
-			this.initStates = this.tool.getInitStates();
 
 			// This counter should always be initialized at zero.
 			assert (this.numOfGenStates.longValue() == 0);
-			this.numOfGenStates.add(this.initStates.size());
+			this.numOfGenStates.add(initStates.size());
 			
 			MP.printMessage(EC.TLC_COMPUTING_INIT_PROGRESS, this.numOfGenStates.toString());
 
 			// Check all initial states for validity.
-			for (int i = 0; i < this.initStates.size(); i++) {
-				curState = this.initStates.elementAt(i);
+			for (int i = 0; i < initStates.size(); i++) {
+				curState = initStates.elementAt(i);
 				if (this.tool.isGoodState(curState)) {
 					for (int j = 0; j < this.invariants.length; j++) {
 						if (!this.tool.isValid(this.invariants[j], curState)) {
@@ -232,7 +232,7 @@ public class Simulator {
 
 		// It appears deepNormalize brings the states into a canonical form to
 		// speed up equality checks.
-		this.initStates.deepNormalize();
+		initStates.deepNormalize();
 
 		//
 		// Start progress report thread.
@@ -247,13 +247,9 @@ public class Simulator {
 		
 		// Start up multiple simulation worker threads, each with their own unique seed.
 		final Set<Integer> runningWorkers = new HashSet<>();
-		for (int i = 0; i < this.numWorkers; i++) {			
-			final SimulationWorker worker = new SimulationWorker(i, this.tool, initStates, this.workerResultQueue,
-					this.rng.nextLong(), this.traceDepth, this.traceNum, this.checkDeadlock, this.traceFile,
-					this.liveCheck, this.numOfGenStates, this.numOfGenTraces);		
-
-			worker.start();
-			workers.add(worker);
+		for (int i = 0; i < this.workers.size(); i++) {
+			SimulationWorker worker = workers.get(i);
+			worker.start(initStates);
 			runningWorkers.add(i);
 		}
 
@@ -421,19 +417,16 @@ public class Simulator {
 	}
 
 	public IValue getLocalValue(int idx) {
-		if (idx < this.localValues.length) {
-			return this.localValues[idx];
+		for (SimulationWorker w : workers) {
+			return w.getLocalValue(idx);
 		}
 		return null;
 	}
 
-	public void setLocalValue(int idx, IValue val) {
-		if (idx >= this.localValues.length) {
-			IValue[] vals = new IValue[idx + 1];
-			System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
-			this.localValues = vals;
+	public void setAllValues(int idx, IValue val) {
+		for (SimulationWorker w : workers) {
+			w.setLocalValue(idx, val);
 		}
-		this.localValues[idx] = val;
 	}
 
 	/**

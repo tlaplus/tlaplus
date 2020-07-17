@@ -68,7 +68,7 @@ public class SimulationWorker extends IdThread {
 	StateVec stateTrace;
 	
 	// The set of initial states for the spec. 
-	private final StateVec initStates;
+	private StateVec initStates;
 	
 	// The queue that the worker places its results onto.
 	private final BlockingQueue<SimulationWorkerResult> resultQueue;
@@ -184,7 +184,7 @@ public class SimulationWorker extends IdThread {
 	}
 	
 
-	public SimulationWorker(int id, ITool tool, StateVec initStates, BlockingQueue<SimulationWorkerResult> resultQueue,
+	public SimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue,
 			long seed, long maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces) {
 		super(id);
@@ -193,7 +193,6 @@ public class SimulationWorker extends IdThread {
 		this.maxTraceDepth = maxTraceDepth;
 		this.maxTraceNum = maxTraceNum;
 		this.resultQueue = resultQueue;
-		this.initStates = initStates;
 		this.checkDeadlock = checkDeadlock;
 		this.traceFile = traceFile;
 		this.liveCheck = liveCheck;
@@ -429,5 +428,10 @@ public class SimulationWorker extends IdThread {
 	
 	public final StateVec getTrace() {
 		return stateTrace;
+	}
+
+	public void start(StateVec initStates) {
+		this.initStates = initStates;
+		this.start();
 	}
 }
