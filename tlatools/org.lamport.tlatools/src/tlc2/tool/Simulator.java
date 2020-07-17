@@ -45,6 +45,7 @@ public class Simulator {
 
 	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean
 			.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
+	public static boolean actionStats = Boolean.getBoolean(tlc2.tool.Simulator.class.getName() + ".actionStats");
 
 	/* Constructors */
 
@@ -497,6 +498,9 @@ public class Simulator {
 		}
 
 		private void writeActionFlowGraph() throws IOException {
+			if (!actionStats) {
+				return;
+			}
 			// The number of actions is expected to be low (dozens commons and hundreds a
 			// rare). This is why the code below isn't optimized for performance.
 			final Action[] actions = Simulator.this.tool.getActions();

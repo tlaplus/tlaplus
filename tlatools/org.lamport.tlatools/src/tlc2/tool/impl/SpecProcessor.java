@@ -72,6 +72,7 @@ import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
 import tlc2.tool.EvalException;
+import tlc2.tool.Simulator;
 import tlc2.tool.Specs;
 import tlc2.tool.TLAPlusExecutorState;
 import tlc2.tool.TLCStateMut;
@@ -713,7 +714,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // set variables to the static filed in the state
         if (hasCallableValue) {
         	TLAPlusExecutorState.setVariables(this.variablesNodes);
-		} else if (Boolean.getBoolean(tlc2.tool.Simulator.class.getName() + ".actionStats")) {
+		} else if (Simulator.actionStats) {
 			TLCStateMutSimulation.setVariables(this.variablesNodes);
         } else {
             TLCStateMut.setVariables(this.variablesNodes);
