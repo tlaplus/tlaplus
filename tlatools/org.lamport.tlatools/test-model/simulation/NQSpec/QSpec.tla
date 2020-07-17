@@ -56,7 +56,9 @@ EndDeq(d) == /\ deq[d] = Busy
              /\ deq' = [deq EXCEPT ![d] = deqInner[d]]
              /\ UNCHANGED <<enq, queue, enqInner, deqInner>>
              
-Next == \/ \E e \in EnQers : BeginEnq(e) \/ DoEnq(e) \/ EndEnq(e)
+Next == 
+    /\ TLCSet(42, TLCGet(42))
+    /\  \/ \E e \in EnQers : BeginEnq(e) \/ DoEnq(e) \/ EndEnq(e)
         \/ \E d \in DeQers : BeginDeq(d) \/ DoDeq(d) \/ EndDeq(d)
         
 Spec == Init /\ [][Next]_vars

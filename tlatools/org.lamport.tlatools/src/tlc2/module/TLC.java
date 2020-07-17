@@ -252,7 +252,7 @@ public class TLC implements ValueConstants
                     TLCGlobals.mainChecker.setAllValues(idx, val);
                 } else 
                 {	
-                    tlc2.TLCGlobals.simulator.setLocalValue(idx, val);
+                    tlc2.TLCGlobals.simulator.setAllValues(idx, val);
                 }
                 return BoolValue.ValTrue;
             }

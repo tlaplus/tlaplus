@@ -1,5 +1,5 @@
 ------------------------------- MODULE NQSpec -------------------------------
-EXTENDS Integers, Sequences
+EXTENDS Integers, Sequences, TLC
 
 CONSTANTS EnQers, DeQers, Data, InitData, Ids, Busy, NoData
 
@@ -25,7 +25,9 @@ TypeOK == /\ enq \in [EnQers -> Data \cup {Done}]
           /\ after \in [elts -> SUBSET doneElts]
           /\ adding \in [EnQers -> Elements \cup {NotAnElement}]
 
-Init == /\ enq = [e \in EnQers |-> Done]
+Init ==         
+        /\ TLCSet(42, 1)
+        /\ enq = [e \in EnQers |-> Done]
         /\ deq = [d \in DeQers |-> InitData]
         /\ after = << >>
         /\ adding = [e \in EnQers |-> NotAnElement]
