@@ -20,6 +20,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.LongAdder;
 
+import tla2sany.semantic.ExprNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -320,6 +321,19 @@ public class Simulator {
 		
 		// Shut down all workers.
 		this.shutdownAndJoinWorkers(workers);
+		
+		if (errorCode == EC.NO_ERROR) {
+			// see tlc2.tool.Worker.doPostCheckAssumption()
+			final ExprNode sn = (ExprNode) this.tool.getPostConditionSpec();
+			try {
+				if (sn != null && !this.tool.isValid(sn)) {
+					MP.printError(EC.TLC_ASSUMPTION_FALSE, sn.toString());
+				}
+			} catch (Exception e) {
+				// tool.isValid(sn) failed to evaluate...
+				MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR, new String[] { sn.toString(), e.getMessage() });
+			}
+		}
 
 		// Do a final progress report.
 		report.isRunning = false;
