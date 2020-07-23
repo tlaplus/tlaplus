@@ -14,6 +14,7 @@ import tlc2.output.MP;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.ModelChecker;
+import tlc2.tool.SimulationWorker;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.TLARegistry;
 import tlc2.util.IdThread;
@@ -179,7 +180,21 @@ public class TLC implements ValueConstants
 		final StringValue sv = (StringValue) vidx;
 		if (DIAMETER == sv.val) {
 			try {
-				return IntValue.gen(TLCGlobals.mainChecker.getProgress());
+				if (TLCGlobals.mainChecker != null) {
+					return IntValue.gen(TLCGlobals.mainChecker.getProgress());
+				} else if (TLCGlobals.simulator != null) {
+					if (Thread.currentThread() instanceof SimulationWorker) {
+						// non-initial states.
+						final SimulationWorker sw = (SimulationWorker) Thread.currentThread();
+						final int traceCnt = sw.getTraceCnt();
+						return IntValue.gen(traceCnt);
+					} else {
+						// Called while evaluating the initial predicate/generating initial states.
+						return IntValue.gen(0);
+					}
+				} else {
+					throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
+				}
 			} catch (ArithmeticException e) {
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(TLCGlobals.mainChecker.getProgress()));

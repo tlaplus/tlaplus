@@ -426,6 +426,10 @@ public class SimulationWorker extends IdThread {
 		return Optional.empty();
 	}
 	
+	public final int getTraceCnt() {
+		return this.traceCnt + 1; // +1 to account the currently generated behavior. 
+	}
+	
 	public final StateVec getTrace() {
 		return stateTrace;
 	}
