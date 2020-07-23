@@ -49,15 +49,6 @@ jobs:
             ${{ runner.os }}-maven-
 
       ##
-      ## Install rng-tools and havege to feed entropy to /dev/random
-      ## in an attempt to fix intermittend build issues related to code signing.
-      ##
-    - name: Set up GNUPG private key
-      if: matrix.operating-system == 'ubuntu-latest'
-      run: 'sudo apt-get install haveged rng-tools -y'
-      shell: bash
-
-      ##
       ## Configure GPG key (apt repo below)
       ##
     - name: Set up GNUPG private key
