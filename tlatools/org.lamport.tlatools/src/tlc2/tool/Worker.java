@@ -84,7 +84,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 				if (curState == null) {
 					synchronized (this.tlc) {
 						if(!this.tlc.setDone()) {
-							doPostCheckAssumption();
+							doPostConditionCheck();
 						}
 						this.tlc.notify();
 					}
@@ -468,20 +468,8 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	}
 
 	// User request: http://discuss.tlapl.us/msg03658.html
-	//
-	// This is a quick'n'dirty prototype to have TLC evaluate a constant-level
-	// expression after state-space exploration. Not sure what this will be useful
-	// for except for the particular subset of hyperproperties such min/max/avg that
-	// are robust against being evaluated on non-distinct states.
-	private final void doPostCheckAssumption() {
-		// Hijack the unused/dormant type constraint (TYPE_CONSTRAINT) to make it
-		// possible to evaluate a given (constant-level) expression after state-space
-		// exploration ended.
-		// TODO: If useful, properly wire it to its own config keyword (instead of
-		// TYPE_CONSTRAINT).  The replacement of getTypeConstraintSpec should return
-		// ExprNode[] instead of SemanticNode for users to define multiple checks
-		// in the config file similar to action and state constraints.
-		final ExprNode sn = (ExprNode) this.tool.getTypeConstraintSpec();
+	private final void doPostConditionCheck() {
+		final ExprNode sn = (ExprNode) this.tool.getPostConditionSpec();
 		try {
 			if (sn != null && !this.tool.isValid(sn)) {
 				// It's not an assumption because the expression doesn't appear inside

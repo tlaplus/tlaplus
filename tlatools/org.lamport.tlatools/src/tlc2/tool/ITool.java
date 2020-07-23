@@ -235,6 +235,8 @@ public interface ITool extends TraceApp {
 
 	SemanticNode getViewSpec();
 
+	SemanticNode getPostConditionSpec();
+
 	int getId();
 
 	List<File> getModuleFiles(FilenameToStream resolver);

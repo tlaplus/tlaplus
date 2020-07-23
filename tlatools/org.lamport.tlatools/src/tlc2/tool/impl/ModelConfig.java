@@ -67,7 +67,7 @@ public class ModelConfig implements ValueConstants, Serializable {
     private static final String Prop = TLAConstants.KeyWords.PROPERTY;
     private static final String Props = "PROPERTIES";
     private static final String Alias = "ALIAS";
-    private static final String TypeConstraint = "TYPE_CONSTRAINT";
+    private static final String PostCondition = "POSTCONDITION";
     public static final String CheckDeadlock = "CHECK_DEADLOCK";
 
     private static final long serialVersionUID = 1L;
@@ -77,7 +77,7 @@ public class ModelConfig implements ValueConstants, Serializable {
      */
     public final static String[] ALL_KEYWORDS = { Constant, Constants, Constraint, Constraints, ActionConstraint,
             ActionConstraints, Invariant, Invariants, Init, Next, View, Symmetry, Spec, Prop, Props, Alias,
-            TypeConstraint, CheckDeadlock };
+            PostCondition, CheckDeadlock };
 
     private Hashtable configTbl;
     private Hashtable<String, String> overrides;
@@ -131,7 +131,7 @@ public class ModelConfig implements ValueConstants, Serializable {
         this.configTbl.put(Prop, temp);
         this.configTbl.put(Props, temp);
         this.configTbl.put(Alias, "");
-        this.configTbl.put(TypeConstraint, "");
+        this.configTbl.put(PostCondition, "");
         this.configTbl.put(CheckDeadlock, "undef");
         
         this.modConstants = new Hashtable<>();
@@ -253,19 +253,19 @@ public class ModelConfig implements ValueConstants, Serializable {
                         throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), Alias });
                     }
                     tt = getNextToken(tmgr);
-                } else if (tval.equals(TypeConstraint))
+                } else if (tval.equals(PostCondition))
                 {
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
                     {
                         throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc),
-                                TypeConstraint });
+                                PostCondition });
                     }
-                    String old = (String) this.configTbl.put(TypeConstraint, tt.image);
+                    String old = (String) this.configTbl.put(PostCondition, tt.image);
                     if (old.length() != 0)
                     {
                         throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc),
-                                TypeConstraint });
+                                PostCondition });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Constant) || tval.equals(Constants))
@@ -636,9 +636,9 @@ public class ModelConfig implements ValueConstants, Serializable {
         return (String) this.configTbl.get(Alias);
     }
 
-    public synchronized final String getTypeConstraint()
+    public synchronized final String getPostCondition()
     {
-        return (String) this.configTbl.get(TypeConstraint);
+        return (String) this.configTbl.get(PostCondition);
     }
 
     public synchronized final boolean getCheckDeadlock()

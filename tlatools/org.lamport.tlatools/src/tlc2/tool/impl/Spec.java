@@ -227,10 +227,9 @@ abstract class Spec
         return def.getBody();
     }
 
-    /* Get the type declaration for the state variables. */
-    public final SemanticNode getTypeConstraintSpec()
+    public final SemanticNode getPostConditionSpec()
     {
-        String name = this.config.getTypeConstraint();
+        String name = this.config.getPostCondition();
         if (name.length() == 0)
         {
             return null;
@@ -239,16 +238,16 @@ abstract class Spec
         Object type = this.defns.get(name);
         if (type == null)
         {
-            Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "type constraint", name });
+            Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "post assumption", name });
         }
         if (!(type instanceof OpDefNode))
         {
-            Assert.fail(EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT, new String[] { "type constraint", name });
+            Assert.fail(EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT, new String[] { "post assumption", name });
         }
         OpDefNode def = (OpDefNode) type;
         if (def.getArity() != 0)
         {
-            Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "type constraint", name });
+            Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "post assumption", name });
 
         }
         return def.getBody();
