@@ -1,19 +1,22 @@
 package pcal;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import pcal.exception.ParseAlgorithmException;
+import tla2sany.modanalyzer.ParseUnit;
+import tla2sany.st.Location;
 import util.TLAConstants;
 
 /**
@@ -42,72 +45,62 @@ public class Validator {
 	}
 	
 	
-	static protected boolean PRE_TRIM_VALIDATION_CONTENT = true;
-	
 	private static final String MATCH_GROUP = "hash";
 	static final Pattern PCAL_CHECKSUM_PATTERN = Pattern.compile(PcalParams.PCAL_CHECKSUM_KEYWORD + "(?<" + MATCH_GROUP + ">[0-9a-f]+)");
 	static final Pattern TRANSLATED_PCAL_CHECKSUM_PATTERN
 									= Pattern.compile(PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + "(?<" + MATCH_GROUP + ">[0-9a-f]+)");
 
-	private static final Pattern MODULE_PREFIX_PATTERN = Pattern.compile(TLAConstants.MODULE_OPENING_PREFIX_REGEX);
 	private static final Pattern MODULE_CLOSING_PATTERN = Pattern.compile(TLAConstants.MODULE_CLOSING_REGEX);
-	
-	/*
-	 * This regex is appropriate for only pre-MODULE-lines; the PlusCal specification states that the options line
-	 *  	may exist before the module, after the module, or within the module in a comment line or block. For our
-	 *  	purposes, we only care if it exists before the module and therefore the following regex.
-	 */
-	private static final Pattern PLUSCAL_OPTIONS = Pattern.compile("^[\\s]*PlusCal[\\s]+options",
-																   Pattern.CASE_INSENSITIVE);
 
-	/**
-	 * This method is a convenience wrapped around {@link #validate(List)}.
-	 * 
-	 * @param inputStream an stream to the entire specification to be validated; this stream is not closed.
-	 * @return the result of the validation, as enumerated by the inner enum of this class.
-	 */
-	public static ValidationResult validate(final InputStream inputStream)
+	public static ValidationResult validate(ParseUnit parseUnit, InputStream inputStream)
 			throws IOException {
-        final String specContents;
-    	final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    	final byte[] buffer = new byte[4096];
-    	final BufferedInputStream bis = (inputStream instanceof BufferedInputStream)
-    											? (BufferedInputStream)inputStream
-    											: new BufferedInputStream(inputStream);
-    	
-        int bytesRead;
-        while ((bytesRead = bis.read(buffer)) != -1) {
-        	baos.write(buffer, 0, bytesRead);
-        }
-        
-    	specContents = new String(baos.toByteArray(), "UTF-8");
-
-		final String[] lines = specContents.split("\\r?\\n");
-		int startLine = -1;
-		if (PRE_TRIM_VALIDATION_CONTENT) {
-			for (int i = 0; i < lines.length; i++) {
-				final Matcher m = MODULE_PREFIX_PATTERN.matcher(lines[i]);
-				if (m.find()) {
-					startLine = i;
-					break;
-				} else {
-					final Matcher m2 = PLUSCAL_OPTIONS.matcher(lines[i]);
-					if (m2.find()) {
-						startLine = i;
-						break;
-					}
+		final BufferedReader reader = new BufferedReader(
+				new InputStreamReader((inputStream instanceof BufferedInputStream) ? (BufferedInputStream) inputStream
+						: new BufferedInputStream(inputStream)));
+		return validate(parseUnit, reader);
+	}
+	
+	public static ValidationResult validate(final ParseUnit parseUnit, final BufferedReader reader)			throws IOException {
+		// Instead of matching the module start and end markers, whe while loop use SANY's
+		// parse tree that has the location of the start and end markers.
+		final Location loc = parseUnit.getParseTree().getLocation();
+		
+		// Pre-allocate the number of lines we will read below.
+		final List<String> lines = new ArrayList<>(loc.endLine() - loc.beginLine());
+		
+		// TODO It would be faster to let SANY look for a PlusCal algorithm when it
+		// parses the TLA+ spec (although SANY probably doesn't parse comments, it
+		// could look for the "--algorithm" or "--fair algorithm" tokens).
+		boolean seenAlgo = false;
+		int cnt = 1; // Location is 1-indexed.
+		String line;
+		while ((line = reader.readLine()) != null) {
+			// Skip lines that are not within the range given by location.
+			// This implies that this loop will miss "pluscal options" before
+			// or after the module's start and end markers.  While it is legal to
+			// put options there, I've decided we don't want to pay the price
+			// of parsing the lines preceding or after a module.  Users can
+			// put the options into a comment inside the module, which I
+			// believe to be the choice for most users anyway.
+			if (loc.beginLine() <= cnt && cnt <= loc.endLine()) {
+				if (line.indexOf(PcalParams.BeginAlg.substring(2)) > 0) {
+					seenAlgo = true;
 				}
+				lines.add(line);
+			} else if (cnt >= loc.endLine()) {
+				break;
 			}
+			cnt++;
 		}
-		if (startLine < 1) {
-			return validate(Arrays.asList(lines));
-		} else {
-			final int reducedLength = lines.length - startLine;
-			final String[] reducedLines = new String[reducedLength];
-
-			System.arraycopy(lines, startLine, reducedLines, 0, reducedLength);
-			return validate(Arrays.asList(reducedLines));
+		
+		if (!seenAlgo) {
+			// No "algorithm" string in the input => No PlusCal algorithm.
+			// The appearance of "algorithm", however, might be a false
+			// positive of which validate will take care of (I don't have
+			// time to move the logic up here).
+			return ValidationResult.NO_PLUSCAL_EXISTS;
 		}
+		return validate(lines);
 	}
 	
 	/**

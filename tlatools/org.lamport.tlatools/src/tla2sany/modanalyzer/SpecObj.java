@@ -1021,7 +1021,7 @@ public class SpecObj
     	final File f = parseUnit.getNis().sourceFile();
     	
     	try (final FileInputStream fis = new FileInputStream(f)) {
-    		final Validator.ValidationResult result = Validator.validate(fis);
+    		final Validator.ValidationResult result = Validator.validate(parseUnit, fis);
     		
             switch (result) {
             	case NO_PLUSCAL_EXISTS:
@@ -1067,5 +1067,9 @@ public class SpecObj
     {
         this.globalContextErrors = globalContextErrors;
     }
+
+	public ParseUnit getRootParseUnit() {
+		return this.parseUnitContext.get(this.getName());
+	}
 
 }

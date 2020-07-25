@@ -192,7 +192,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             final Validator.ValidationResult result;
 
             try (final InputStream is = rootModule.getContents()) {
-            	result = Validator.validate(is);
+				result = Validator.validate(model.getSpec().toSpec().getRootModule().getRootParseUnit(), is);
             } catch (final IOException e) {
             	monitor.done();
             	
