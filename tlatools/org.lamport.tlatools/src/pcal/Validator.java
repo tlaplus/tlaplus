@@ -45,7 +45,7 @@ public class Validator {
 	}
 	
 	
-	private static final String MATCH_GROUP = "hash";
+	static final String MATCH_GROUP = "hash";
 	static final Pattern PCAL_CHECKSUM_PATTERN = Pattern.compile(PcalParams.PCAL_CHECKSUM_KEYWORD + "(?<" + MATCH_GROUP + ">[0-9a-f]+)");
 	static final Pattern TRANSLATED_PCAL_CHECKSUM_PATTERN
 									= Pattern.compile(PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + "(?<" + MATCH_GROUP + ">[0-9a-f]+)");
@@ -254,7 +254,7 @@ public class Validator {
 		return ValidationResult.NO_DIVERGENCE;
 	}
     
-    static String calculateMD5(final Vector<String> lines) {
+    public static String calculateMD5(final Vector<String> lines) {
     	final StringBuilder sb = new StringBuilder();
     	for (final String str : lines) {
     		sb.append(str);

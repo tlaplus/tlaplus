@@ -570,6 +570,10 @@ class trans {
     // For some reason this method used to both mutate the argument, and then also returns that argument... ?
     //		Now we copy the argument, mutate the copy, and return that.
     public static List<String> performTranslation(final List<String> specificationText) {
+    	return performTranslation(specificationText, new ValidationCallBack.Noop());
+    }
+    
+    public static List<String> performTranslation(final List<String> specificationText, ValidationCallBack cb) {
         /**
          * Create the new TLAtoPCalMapping object, call it mapping
          * here and set PcalParams.tlaPcalMapping to point to it.
@@ -679,9 +683,10 @@ class trans {
     	final ArrayList<String> output = new ArrayList<>(specificationText);
 
         translationLine = findTokenPair(untabInputVec, 0, PcalParams.BeginXlation1, PcalParams.BeginXlation2);
+        int endTranslationLine = -1;
         if (translationLine != -1)
         {
-            int endTranslationLine = findTokenPair(untabInputVec, translationLine + 1,
+            endTranslationLine = findTokenPair(untabInputVec, translationLine + 1,
             									   PcalParams.EndXlation1, PcalParams.EndXlation2);
             if (endTranslationLine == -1)
             {
@@ -689,12 +694,13 @@ class trans {
                 return null;
             }
 
-            endTranslationLine--;
-            while (translationLine < endTranslationLine)
+            
+            int etl = endTranslationLine - 1;
+            while (translationLine < etl)
             {
-            	output.remove(endTranslationLine);
-                untabInputVec.remove(endTranslationLine);
-                endTranslationLine--;
+            	output.remove(etl);
+                untabInputVec.remove(etl);
+                etl--;
             }
         }
 
@@ -860,6 +866,16 @@ class trans {
         	final String originalEndLine = output.remove(translationLine + 1);
         	m = Validator.TRANSLATED_PCAL_CHECKSUM_PATTERN.matcher(originalEndLine);
         	if (m.find()) {
+				// Check if the existing TLA+ translation has been modified by the user and
+				// raise a warning (via cb) if translation should be cancelled to not
+				// lose/overwrite the user changes.
+				final String calculatedMD5 = Validator.calculateMD5(
+						new Vector<>(specificationText.subList((translationLine + 1), endTranslationLine)));
+				final String translatedMD5 = m.group(Validator.MATCH_GROUP);
+				if (!translatedMD5.equals(calculatedMD5) && cb.shouldCancel()) {
+					return null;
+				}
+
         		outputLine = TLA_TRANSLATION_COMMENT_LINE_PREFIX + " ";
         	} else {
         		outputLine = originalEndLine + " ";

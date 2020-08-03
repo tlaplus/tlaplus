@@ -33,7 +33,6 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.IDocument;
@@ -50,6 +49,7 @@ import org.lamport.tla.toolbox.util.pref.IPreferenceConstants;
 import org.lamport.tla.toolbox.util.pref.PreferenceStoreHelper;
 
 import pcal.Translator;
+import pcal.ValidationCallBack;
 
 public class PCalTranslator {
 	
@@ -62,8 +62,8 @@ public class PCalTranslator {
 		// call to the PlusCal translator call is forked off into a non-UI thread.
 		// However, we use a ProgressMonitorDialog to lock the UI from further
 		// modifications.
-		final IRunnableContext context = new ProgressMonitorDialog(tlaEditor.getEditorSite().getShell());
-		context.run(true, false, new IRunnableWithProgress() {
+		final IRunnableContext context = new ValidationProgressMonitorDialog(tlaEditor.getEditorSite().getShell());
+		context.run(true, true, new IRunnableWithProgress() {
 			public void run(final IProgressMonitor progressMonitor) throws InvocationTargetException, InterruptedException {
 				final IEditorInput editorInput = tlaEditor.getEditorInput();
 				final IDocument doc = tlaEditor.getDocumentProvider().getDocument(editorInput);
@@ -89,7 +89,7 @@ public class PCalTranslator {
 				// succeed, we know there are parser problems which we will use to marker the
 				// editor.
 				final Translator translator = new Translator(doc.get(), asList);
-				if (translator.translate()) {
+				if (translator.translate((ValidationCallBack) context)) {
 					// Update the mapping to/from TLA+ to PlusCal.
 					spec.setTpMapping(translator.getMapping(), file.getName(), progressMonitor);
 
