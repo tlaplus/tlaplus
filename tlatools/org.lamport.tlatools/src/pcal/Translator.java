@@ -62,14 +62,14 @@ public class Translator
      * @param args
      * @return 
      */
-	public boolean translate() {
+	public boolean translate(final ValidationCallBack cb) {
 		// The input .tla file might have unix or windows line ending. If we fail to
 		// properly split the input (a line per array cell), the pcal translator will
 		// silently fail as well.
 		final String[] lines = input.split("\\r?\\n");
 		final List<String> in = Arrays.asList(lines);
 		
-		final List<String> out = trans.performTranslation(in);
+		final List<String> out = trans.performTranslation(in, cb);
 		if (out != null) {
 			final StringBuilder buf = new StringBuilder();
 			final String lineSeparator = System.getProperty("line.separator");
