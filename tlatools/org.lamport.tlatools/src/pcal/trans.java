@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 
+import pcal.ValidationCallBack.Generate;
 import pcal.exception.FileToStringVectorException;
 import pcal.exception.ParseAlgorithmException;
 import pcal.exception.PcalResourceFileReaderException;
@@ -290,9 +291,9 @@ class trans {
     static final int STATUS_EXIT_WITH_ERRORS = -1;
     
     private static final String PCAL_TRANSLATION_COMMENT_LINE_PREFIX
-    		= "\\* " + PcalParams.BeginXlation1 + " " + PcalParams.BeginXlation2 + " " + PcalParams.BeginXlation3;
+    		= "\\* " + PcalParams.BeginXlation1 + " " + PcalParams.BeginXlation2;
     private static final String TLA_TRANSLATION_COMMENT_LINE_PREFIX
-    		= "\\* " + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2 + " " + PcalParams.EndXlation3;
+    		= "\\* " + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2;
     
     
     /**
@@ -750,7 +751,7 @@ class trans {
          */
         mapping.algColumn = algCol;
         mapping.algLine = algLine;
-        
+
         if (translationLine == -1) 
         {
            /****************************************************************
@@ -842,7 +843,7 @@ class trans {
                 return null ;
             } ;
             
-			output.add((ecLine + 1), (PCAL_TRANSLATION_COMMENT_LINE_PREFIX + " "));
+			output.add((ecLine + 1), (PCAL_TRANSLATION_COMMENT_LINE_PREFIX + " " + String.format(Validator.CHECKSUM_TEMPLATE, "ffffffff")));
             untabInputVec.insertElementAt(PCAL_TRANSLATION_COMMENT_LINE_PREFIX, (ecLine + 1));
             output.add((ecLine + 2), (TLA_TRANSLATION_COMMENT_LINE_PREFIX + " "));
             untabInputVec.insertElementAt(TLA_TRANSLATION_COMMENT_LINE_PREFIX, (ecLine + 2));
@@ -851,36 +852,18 @@ class trans {
 //System.out.println(ecLine + ", " + ecCol);
 //Debug.printVector(inputVec, "foo");
         }
-        else {
-        	// if it has an existing checksum suffix then get rid of it
-        	final String originalBeginLine = output.remove(translationLine);
-        	Matcher m = Validator.PCAL_CHECKSUM_PATTERN.matcher(originalBeginLine);
-        	String outputLine;
-        	if (m.find()) {
-        		outputLine = PCAL_TRANSLATION_COMMENT_LINE_PREFIX + " ";
-        	} else {
-        		outputLine = originalBeginLine + " ";
-        	}
-			output.add(translationLine, outputLine);
-			
-        	final String originalEndLine = output.remove(translationLine + 1);
-        	m = Validator.TRANSLATED_PCAL_CHECKSUM_PATTERN.matcher(originalEndLine);
-        	if (m.find()) {
-				// Check if the existing TLA+ translation has been modified by the user and
-				// raise a warning (via cb) if translation should be cancelled to not
-				// lose/overwrite the user changes.
-				final String calculatedMD5 = Validator.calculateMD5(
-						new Vector<>(specificationText.subList((translationLine + 1), endTranslationLine)));
-				final String translatedMD5 = m.group(Validator.MATCH_GROUP);
-				if (!translatedMD5.equals(calculatedMD5) && cb.shouldCancel()) {
+        else {			
+			// Check if the existing TLA+ translation has been modified by the user and
+			// raise a warning (via cb) if translation should be cancelled to not
+			// lose/overwrite the user changes.
+			final Matcher m = Validator.CHECKSUM_PATTERN.matcher(output.get(translationLine));
+			if (m.find() && m.group(Validator.TLA_CHECKSUM) != null) {
+				final String checksumTLATranslation = Validator
+						.checksum(new Vector<>(specificationText.subList((translationLine + 1), endTranslationLine)));
+				if (!m.group(Validator.TLA_CHECKSUM).equals(checksumTLATranslation) && cb.shouldCancel()) {
 					return null;
 				}
-
-        		outputLine = TLA_TRANSLATION_COMMENT_LINE_PREFIX + " ";
-        	} else {
-        		outputLine = originalEndLine + " ";
-        	}
-			output.add((translationLine + 1), outputLine);
+			}
         }
         
         /*
@@ -938,7 +921,6 @@ class trans {
         }
         PcalDebug.reportInfo("Parsing completed.");
         
-        final String pcalMD5 = Validator.calculateMD5(ast.toString());
 // tla-pcal debugging
 //System.out.println("Translation Output:");
 //System.out.println(ast.toString());
@@ -1011,13 +993,34 @@ class trans {
                 return null ; // added for testing
             }
         }
-        
-        final String beginLine = output.remove(mapping.tlaStartLine - 1);
-        output.add((mapping.tlaStartLine - 1), (beginLine + PcalParams.PCAL_CHECKSUM_KEYWORD + pcalMD5));
-        
-        final String translationMD5 = Validator.calculateMD5(translation);
-        final String endLine = output.remove(mapping.tlaStartLine);
-		output.add(mapping.tlaStartLine, (endLine + PcalParams.TRANSLATED_PCAL_CHECKSUM_KEYWORD + translationMD5));
+
+		final Matcher m = Validator.CHECKSUM_PATTERN.matcher(output.get(mapping.tlaStartLine - 1));
+		ValidationCallBack.Generate g = null;
+		if (m.find()) {
+			// Do TLA_CHECKSUM first because doing PCAL_CHECKSUM (at the front of the
+			// string) invalidates start end enf of the TLA_CHECKSUM match.
+			if (m.group(Validator.TLA_CHECKSUM) != null) {
+				output.set(mapping.tlaStartLine - 1,
+						new StringBuilder(output.get(mapping.tlaStartLine - 1)).replace(m.start(Validator.TLA_CHECKSUM),
+								m.end(Validator.TLA_CHECKSUM), Validator.checksum(translation)).toString());
+			}
+			if (m.group(Validator.PCAL_CHECKSUM) != null) {
+				output.set(mapping.tlaStartLine - 1,
+						new StringBuilder(output.get(mapping.tlaStartLine - 1))
+						.replace(m.start(Validator.PCAL_CHECKSUM), m.end(Validator.PCAL_CHECKSUM),
+								Validator.checksum(ast.toString()))
+						.toString());
+			}
+		} else if ((g = cb.shouldGenerate()) != Generate.NOT_NOW) {
+			if (g == Generate.DO_IT) {
+				output.set(mapping.tlaStartLine - 1,
+						output.get(mapping.tlaStartLine - 1) + " " + String.format(Validator.CHECKSUM_TEMPLATE,
+								Validator.checksum(ast.toString()), Validator.checksum(translation)));
+			} else {
+				output.set(mapping.tlaStartLine - 1,
+						output.get(mapping.tlaStartLine - 1) + " " + Validator.CHECKSUM_TEMPLATE_IGNORE);
+			}
+		}
 
         /*********************************************************************
         * Add the translation to outputVec.                                  *

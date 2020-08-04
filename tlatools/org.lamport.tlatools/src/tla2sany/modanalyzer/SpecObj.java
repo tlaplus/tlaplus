@@ -11,6 +11,7 @@ import java.util.Hashtable;
 import java.util.Set;
 
 import pcal.Validator;
+import pcal.Validator.ValidationResult;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
@@ -21,7 +22,6 @@ import util.FileUtil;
 import util.FilenameToStream;
 import util.MonolithSpecExtractor;
 import util.NamedInputStream;
-import util.TLAConstants;
 import util.ToolIO;
 
 /**
@@ -1021,30 +1021,44 @@ public class SpecObj
     	final File f = parseUnit.getNis().sourceFile();
     	
     	try (final FileInputStream fis = new FileInputStream(f)) {
-    		final Validator.ValidationResult result = Validator.validate(parseUnit, fis);
+    		final Set<ValidationResult> results = Validator.validate(parseUnit, fis);
     		
-            switch (result) {
-            	case NO_PLUSCAL_EXISTS:
-            	case NO_DIVERGENCE:
-            	case NO_CHECKSUMS_EXIST:
-            		break;
-            	case ERROR_ENCOUNTERED:
-					ToolIO.err.println("A Java problem was encountered attempting to validate the specification for "
-							+ parseUnit.getName());
-
-        			break;
-            	case NO_TRANSLATION_EXISTS:
-					ToolIO.out.println("PlusCal was found in the specification for " + parseUnit.getName()
-							+ " but no TLA+ translation could be found.");
-
-            		break;
-            	case DIVERGENCE_EXISTS:
-					ToolIO.out.println("!! WARNING: Either the PlusCal or its TLA+ translation has changed in the "
-							+ "specification for " + parseUnit.getName()
-							+ " since the last time translation was performed.");
-            		
-            		break;
-            }
+    		if (results.contains(ValidationResult.TLA_DIVERGENCE_EXISTS) && results.contains(ValidationResult.PCAL_DIVERGENCE_EXISTS)) {
+    		/* Both hashes are invalid.
+    	       This is probably a sequel to Case 3, in which the user has decided either
+    	       (1) she has fixed the bug or (2) wants to change the spec and will later
+    	       modify the translation.
+    	       TLC called: By default, a warning should be raised.  It should be considered
+    	          the same as Case 2. */
+				ToolIO.out.println(String.format(
+						"!! WARNING: The PlusCal algorithm and its TLA+ translation have changed in the "
+								+ "module %s since the last translation was performed. Replace equality with inequality signs on the BEGIN and END TRANSLATION lines to disable this warning.",
+						parseUnit.getName()));
+    		} else if (results.contains(ValidationResult.TLA_DIVERGENCE_EXISTS)) {
+      	      /* The algorithm hash is valid and the translation hash is invalid.
+     	       There are two reasons: (1) The user is debugging the spec, or
+     	       (2) She needed to modify the translation because she wants a spec that can't
+     	       be produced by PlusCal.  
+     	       TLC called: In both cases, no warning should be needed.  However,
+     	          in (1), she might have finished debugging and forgotten to run the 
+     	          translator.  To handle case (1), I suggest the default should be to run
+     	          TLC but raise a transient window with a warning that is easily ignored.  
+     	          For case (2), it should be possible to put something in a translation 
+     	          comment to disable the warning. */
+				ToolIO.out.println(String.format("!! WARNING: The TLA+ translation has changed in the "
+						+ "module %s since the last translation was performed. Replace equality with inequality sign on the END TRANSLATION line to disable this warning.", parseUnit.getName()));
+    		} else if (results.contains(ValidationResult.PCAL_DIVERGENCE_EXISTS)) {
+       	      /* The algorithm hash is invalid and the translation hash is valid.
+     	       TLC called: By default, a warning should be generated.  I see little reason 
+     	         for not generating the warning.  So, it doesn't matter if its inconvenient
+     	         to turn off the warning, but turning it off should affect only the current
+     	         spec; and it should be easy to turn back on. */
+				ToolIO.out.println(String.format("!! WARNING: The PlusCal algorithm has changed in the "
+						+ "module %s since the last translation was performed. Replace equality with inequality sign on the BEGIN TRANSLATION line to disable this warning.", parseUnit.getName()));
+    		} else if (results.contains(ValidationResult.ERROR_ENCOUNTERED)) {
+				ToolIO.err.println("A Java problem was encountered attempting to validate the specification for "
+						+ parseUnit.getName());
+    		}
     	} catch (final IOException e) {
     		ToolIO.err.println("Encountered an exception while attempt to validate " + f.getAbsolutePath() + " - "
     				+ e.getMessage());

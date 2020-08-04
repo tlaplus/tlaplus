@@ -156,7 +156,7 @@ public class ModuleParserLauncher
             SANY.frontEndInitialize(moduleSpec, outputStr);
             // should cancel?
             checkCancel(monitor);
-            SANY.frontEndParse(moduleSpec, outputStr);
+            SANY.frontEndParse(moduleSpec, outputStr, false);
             // should cancel?
             checkCancel(monitor);
             SANY.frontEndSemanticAnalysis(moduleSpec, outputStr, true);

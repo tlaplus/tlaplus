@@ -206,6 +206,10 @@ public class SANY {
   // Parse all of the files referred to by the top-level file in specification
   public static void frontEndParse(SpecObj spec, PrintStream syserr) 
   throws ParseException {
+	  frontEndParse(spec, syserr, true);
+  }
+  public static void frontEndParse(SpecObj spec, PrintStream syserr, boolean validatePCalTranslation) 
+  throws ParseException {
       /***********************************************************************
        * Modified on 12 May 2008 by LL to remove "throws AbortException",     *
        * since it catches all exceptions and turns them into                  *
@@ -214,7 +218,7 @@ public class SANY {
       try 
       {
           // Actual parsing method called from inside loadSpec()
-          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors, true)) 
+          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation)) 
           {
               // dead code SZ 02. Aug 2009
               /*

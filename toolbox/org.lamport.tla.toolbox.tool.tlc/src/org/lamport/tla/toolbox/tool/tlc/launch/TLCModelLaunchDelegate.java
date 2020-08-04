@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -22,7 +21,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.internal.resources.ResourceException;
@@ -54,12 +52,10 @@ import org.eclipse.debug.core.Launch;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -88,6 +84,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 
 import pcal.Validator;
+import pcal.Validator.ValidationResult;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
@@ -129,20 +126,6 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
      * Only generate the models but do not run TLC
      */
     public static final String MODE_GENERATE = "generate";
-    
-    private static final AtomicBoolean PERFORM_VALIDATION_BEFORE_LAUNCH = new AtomicBoolean(true);
-    
-    private static final Integer DIVERGENCE_CONTINUE_LAUNCH = Integer.valueOf(1);
-    private static final Integer DIVERGENCE_SHOW_HISTORY = Integer.valueOf(2);
-    private static final LinkedHashMap<String, Integer> DIVERGENCE_DIALOG_BUTTONS;
-    
-    static {
-    	DIVERGENCE_DIALOG_BUTTONS = new LinkedHashMap<>();
-    	DIVERGENCE_DIALOG_BUTTONS.put("&Abort Launch", Integer.valueOf(0));
-    	DIVERGENCE_DIALOG_BUTTONS.put("Continue &Launch", DIVERGENCE_CONTINUE_LAUNCH);
-    	DIVERGENCE_DIALOG_BUTTONS.put("Abort Launch && Show &History", DIVERGENCE_SHOW_HISTORY); // "&&" because "&" is mnemonic.
-    }
-
 
     // Mutex rule for the following jobs to run after each other
     protected MutexRule mutexRule = new MutexRule();
@@ -183,16 +166,16 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             return false;
         }
 
+		final AtomicBoolean success = new AtomicBoolean(true);
         final int specType = config.getAttribute(MODEL_BEHAVIOR_SPEC_TYPE, MODEL_BEHAVIOR_TYPE_DEFAULT);
         if ((specType != MODEL_BEHAVIOR_TYPE_NO_SPEC)
-        		&& PERFORM_VALIDATION_BEFORE_LAUNCH.get()
         		&& mode.equals(MODE_MODELCHECK)) {
             final Model model = config.getAdapter(Model.class);
             final IFile rootModule = model.getSpec().toSpec().getRootFile();
-            final Validator.ValidationResult result;
+            final Set<Validator.ValidationResult> results;
 
             try (final InputStream is = rootModule.getContents()) {
-				result = Validator.validate(model.getSpec().toSpec().getRootModule().getRootParseUnit(), is);
+				results = Validator.validate(model.getSpec().toSpec().getRootModule().getRootParseUnit(), is);
             } catch (final IOException e) {
             	monitor.done();
             	
@@ -200,90 +183,110 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
             }
             
     		final Display d = PlatformUI.getWorkbench().getDisplay();
-    		final AtomicInteger returnCode = new AtomicInteger(-1);
-            switch (result) {
-            	case NO_PLUSCAL_EXISTS:
-            	case NO_DIVERGENCE:
-            		break;
-            	case ERROR_ENCOUNTERED:
-            		d.syncExec(() -> {
-            			final MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(
-    							d.getActiveShell(), "Error encountered",
-    							"Something went wrong attempting to detect divergence between PlusCal and its translation, continue anyway?",
-    							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
-    							null, null);
-    					
-    					if (dialog.getToggleState()) {
-    						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
-    					}
-    					
-    					returnCode.set(dialog.getReturnCode());
-            		});
-					
-					if (returnCode.get() == IDialogConstants.NO_ID) {
-						return false;
-					}
-        			break;
-            	case NO_TRANSLATION_EXISTS:
-            		d.syncExec(() -> {
-            			final MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(
-    							d.getActiveShell(), "Translation missing",
-    							"Your spec appears to contain PlusCal but no TLA+ translation, are you sure you want to continue?",
-    							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
-    							null, null);
-    					
-    					if (dialog.getToggleState()) {
-    						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
-    					}
-    					
-    					returnCode.set(dialog.getReturnCode());
-            		});
-					
-					if (returnCode.get() == IDialogConstants.NO_ID) {
-						return false;
-					}
-        			break;
-            	case NO_CHECKSUMS_EXIST:
-            		d.syncExec(() -> {
-            			final MessageDialogWithToggle dialog = MessageDialogWithToggle.openInformation(
-    							d.getActiveShell(), "A note about your spec",
-    							"Your spec contains PlusCal and a TLA+ translation - but they have not been verified to "
-    									+ "be in sync; consider re-translating the PlusCal algorithm.",
-    							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
-    							null, null);
-    					
-    					if (dialog.getToggleState()) {
-    						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
-    					}
-            		});
-					
-            		break;
-            	case DIVERGENCE_EXISTS:
-            		d.syncExec(() -> {
-            			final MessageDialogWithToggle dialog = MessageDialogWithToggle.open(MessageDialogWithToggle.QUESTION,
-    							d.getActiveShell(), "PlusCal out of sync",
-    							"The PlusCal and TLA+ translation in your spec appear to be out of sync - would you like to"
-    									+ " stop the launch?",
-    							"Do not bug me about PlusCal verification during the rest of my Toolbox session.", false,
-    							null, null, SWT.NONE, DIVERGENCE_DIALOG_BUTTONS);
-    					
-    					if (dialog.getToggleState()) {
-    						PERFORM_VALIDATION_BEFORE_LAUNCH.set(false);
-    					}
-    					
-    					returnCode.set(dialog.getReturnCode());
-            		});
-					
-					if (returnCode.get() != DIVERGENCE_CONTINUE_LAUNCH.intValue()) {
-						if (returnCode.get() == DIVERGENCE_SHOW_HISTORY.intValue()) {
+    		if (results.contains(ValidationResult.TLA_DIVERGENCE_EXISTS) && results.contains(ValidationResult.PCAL_DIVERGENCE_EXISTS)) {
+    		/* Both hashes are invalid.
+    	       This is probably a sequel to Case 3, in which the user has decided either
+    	       (1) she has fixed the bug or (2) wants to change the spec and will later
+    	       modify the translation.
+    	       TLC called: By default, a warning should be raised.  It should be considered
+    	          the same as Case 2. */
+        		d.syncExec(() -> {
+					final MessageDialog md = new MessageDialog(d.getActiveShell(),
+							"The PlusCal algorithm and its translation have been modified after the last translation.",
+							null,
+							String.format(
+									"The PlusCal algorithm and its translation in module %s have been modified since the last translation (chksums mismatch).\n"
+									+ "\nTo permanently disable this warning, change the conjuncts on the \\* BEGIN TRANSLATION line to:\n"
+									+ "\n\t\tchksum(pcal) \\in STRING /\\ chksum(tla) \\in STRING\n"
+									+ "\nWould you like to abort model-checking?",
+									model.getSpec().getRootModuleName()),
+							MessageDialog.WARNING, new String[] { "&Abort Model-Checking", "Continue &Model-Checking",
+									"Abort && Show Spec &History" },
+							0);
+					final int open = md.open();
+        			if (open != 1) {
+        				success.set(false);
+        				if (open == 2) {
+    						final Module m = new Module(model.getSpec().getRootFile());
+    						ShowHistoryHandler.openHistoryForModule(m);
+        				}
+        			}
+        		});
+    		} else if (results.contains(ValidationResult.TLA_DIVERGENCE_EXISTS)) {
+      	      /* The algorithm hash is valid and the translation hash is invalid.
+     	       There are two reasons: (1) The user is debugging the spec, or
+     	       (2) She needed to modify the translation because she wants a spec that can't
+     	       be produced by PlusCal.  
+     	       TLC called: In both cases, no warning should be needed.  However,
+     	          in (1), she might have finished debugging and forgotten to run the 
+     	          translator.  To handle case (1), I suggest the default should be to run
+     	          TLC but raise a transient window with a warning that is easily ignored.  
+     	          For case (2), it should be possible to put something in a translation 
+     	          comment to disable the warning. */
+				/*
+				 * Raising a transient, modal dialog doesn't result in a good UX. Instead, it
+				 * would be best to annotate the model editor with a warning. Unfortunately,
+				 * this is not possible from this non-UI bundle and it's overkill to introduce a
+				 * new listener. Thus, we will raise just another non-modal dialog that informs
+				 * the user how to silence this warning. 
+				 */
+				d.syncExec(() -> {
+					final MessageDialog md = new MessageDialog(d.getActiveShell(),
+							"The TLA+ translation has been modified after the last translation.", null,
+							String.format(
+									"The TLA+ translation in module %s has changed since its last translation (chksum(tla) mismatch).\n"
+									+ "\nTo permanently disable this warning, change the second conjunct on the \\* BEGIN TRANSLATION line to:\n"
+									+ "\n\t\tchksum(tla) \\in STRING\n"
+									+ "\nWould you like to abort model-checking?",
+									model.getSpec().getRootModuleName()),
+							MessageDialog.INFORMATION, new String[] { "&Abort Model-Checking",
+									"Continue &Model-Checking", "Abort && Show Spec &History" },
+							1);
+					final int open = md.open();
+					if (open != 1) {
+						success.set(false);
+						if (open == 2) {
 							final Module m = new Module(model.getSpec().getRootFile());
 							ShowHistoryHandler.openHistoryForModule(m);
 						}
-						
-						return false;
 					}
-            		break;
-            }
+				});
+    		} else if (results.contains(ValidationResult.PCAL_DIVERGENCE_EXISTS)) {
+       	      /* The algorithm hash is invalid and the translation hash is valid.
+     	       TLC called: By default, a warning should be generated.  I see little reason 
+     	         for not generating the warning.  So, it doesn't matter if its inconvenient
+     	         to turn off the warning, but turning it off should affect only the current
+     	         spec; and it should be easy to turn back on. */
+				d.syncExec(() -> {
+					final MessageDialog md = new MessageDialog(d.getActiveShell(),
+							"PlusCal algorithm has changed but not re-translated", null,
+							String.format(
+									"The PlusCal algorithm in module %s has changed since its last translation (chksum(pcal) mismatch).\n"
+									+ "\nTo permanently disable this warning, change the first conjunct on the \\* BEGIN TRANSLATION line to:\n"
+									+ "\n\t\tchksum(pcal) \\in STRING\n"
+									+ "\nWould you like to abort model-checking?",
+									model.getSpec().getRootModuleName()),
+							MessageDialog.WARNING, new String[] { "&Abort Model-Checking", "Continue &Model-Checking",
+									"Abort && Show Spec &History" },
+							0);
+					final int open = md.open();
+					if (open != 1) {
+						success.set(false);
+						if (open == 2) {
+							final Module m = new Module(model.getSpec().getRootFile());
+							ShowHistoryHandler.openHistoryForModule(m);
+						}
+					}
+				});
+    		} else if (results.contains(ValidationResult.ERROR_ENCOUNTERED)) {
+        		d.syncExec(() -> {
+        			MessageDialogWithToggle.openWarning(
+							d.getActiveShell(), "Error encountered",
+							"Something went wrong attempting to detect divergence between PlusCal and its translation, continue anyway?");
+					
+    				success.set(false);
+        		});
+    		}
         }
         
 		try {
@@ -293,7 +296,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
 			monitor.done();
 		}
 
-        return true;
+        return success.get();
     }
 
     /**
