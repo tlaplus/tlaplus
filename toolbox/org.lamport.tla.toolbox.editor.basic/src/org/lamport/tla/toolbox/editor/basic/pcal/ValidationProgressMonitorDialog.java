@@ -25,6 +25,9 @@
  ******************************************************************************/
 package org.lamport.tla.toolbox.editor.basic.pcal;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
 import org.eclipse.jface.dialogs.ForkedProgressMonitorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -38,19 +41,10 @@ import org.eclipse.swt.widgets.Shell;
 import pcal.ValidationCallBack;
 
 public class ValidationProgressMonitorDialog extends ForkedProgressMonitorDialog implements IRunnableContext, ValidationCallBack {
-
-	private final Object lock = new Object();
-
-	private final Listener listener = new Listener() {
-		public void handleEvent(final Event e) {
-			// Nothing to do here except releasing the latch.
-			synchronized (lock) {
-				lock.notifyAll(); // Technically, notify would suffice.
-			};
-		}
-	};
 	
 	private Button continueButton;
+
+	private Button thirdButton;
 
 	public ValidationProgressMonitorDialog(final Shell parent) {
 		super(parent);
@@ -66,26 +60,47 @@ public class ValidationProgressMonitorDialog extends ForkedProgressMonitorDialog
 	@Override
 	protected void createButtonsForButtonBar(final Composite parent) {
 		// Create a second button with which the user can chose to continue.
+		thirdButton = createButton(parent, IDialogConstants.OK_ID, "&Overwrite Translation", true);
+		thirdButton.setEnabled(false); // disabled by default unless doIt explicitly called.
+		thirdButton.setVisible(false);
+		
+		// Create a second button with which the user can chose to continue.
 		continueButton = createButton(parent, IDialogConstants.OK_ID, "&Overwrite Translation", true);
 		continueButton.setEnabled(false); // disabled by default unless doIt explicitly called.
-		continueButton.addListener(SWT.Selection, listener);
 		
 		// Let superclass create the cancel button to which we attach our listener.
 		super.createButtonsForButtonBar(parent);
-		cancel.addListener(SWT.Selection, listener);
+		cancel.setText("&Abort");
 		
 		getShell().setDefaultButton(continueButton);
 	}
 	
 	@Override
 	public boolean shouldCancel() {
+
+		final Object lock = new Object();
+
+		final Listener listener = new Listener() {
+			public void handleEvent(final Event e) {
+				// Nothing to do here except releasing the latch.
+				synchronized (lock) {
+					lock.notifyAll(); // Technically, notify would suffice.
+				};
+			}
+		};
+
 		// Set the label on the dialog and enable the cancel and
 		// continue buttons.
 		getShell().getDisplay().syncExec(() -> {
+			getProgressMonitor().setTaskName("Overwrite modified TLA+ translation?");
 			getProgressMonitor().subTask(
-					"A hash mismatch has been found that indicates that the TLA+ translation has been modified manually since its last translation.  Click the \"Overwrite Translation\" button to replace the TLA+ translation anyway or \"Cancel\" to abort re-translation and keep the modified TLA+ translation.");
+					"The TLA+ translation has been manually modified since its last translation (chksum(tla) mismatch).  Click the \"Overwrite Translation\" button to replace the TLA+ translation anyway or \"Cancel\" to abort re-translation and keep the modified TLA+ translation.");
+			continueButton.setText("&Overwrite Translation");
 			continueButton.setEnabled(true);
+			continueButton.addListener(SWT.Selection, listener);
+			cancel.setText("&Abort");
 			cancel.setEnabled(true);
+			cancel.addListener(SWT.Selection, listener);
 		});
 		
 		// Block this thread until the user presses either the cancel or continue button.
@@ -100,5 +115,35 @@ public class ValidationProgressMonitorDialog extends ForkedProgressMonitorDialog
 		
 		// True if the user pressed cancel button, false if continue.
 		return getProgressMonitor().isCanceled();
+	}
+	
+	@Override
+	public Generate shouldGenerate() {
+		final BlockingQueue<Generate> q = new ArrayBlockingQueue<>(1);
+		
+		// Set the label on the dialog and enable the cancel and
+		// continue buttons.
+		getShell().getDisplay().syncExec(() -> {
+			getProgressMonitor().setTaskName("Add Checksums to TLA+ translation?");
+			getProgressMonitor().subTask(
+					"The PlusCal translator can add checksums to the \\* BEGIN TRANSLATION line of this spec to warn you before model-checking a stale TLA+ translation. Do you want to add checksums, never add checksums, or decide later?");
+			continueButton.setText("&Add Checksums");
+			continueButton.setEnabled(true);
+			continueButton.addListener(SWT.Selection,(e) -> q.offer(Generate.DO_IT));
+			cancel.setText("&Later");
+			cancel.setEnabled(true);
+			cancel.addListener(SWT.Selection,(e) -> q.offer(Generate.NOT_NOW));
+			thirdButton.setText("&Never Add");
+			thirdButton.setEnabled(true);
+			thirdButton.setVisible(true);
+			thirdButton.addListener(SWT.Selection,(e) -> q.offer(Generate.IGNORE));
+		});
+		
+		try {
+			return q.take();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			return Generate.NOT_NOW;
+		}
 	}
 }
