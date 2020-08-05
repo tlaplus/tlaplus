@@ -68,4 +68,12 @@ public class TestPrintStream extends PrintStream {
 		}
 		fail("Substring not found");
 	}
+	
+	public void assertNoSubstring(String substring) {
+		for (String string : strings) {
+			if (string.contains(substring)) {
+				fail("Substring not found");
+			}
+		}
+	}
 }

@@ -71,7 +71,12 @@ public class DivergenceTest extends PCalTest {
 				"\n" +
 				"\\* END TRANSLATION\n" +
 				"\n=========================");
-		test(filename, absolutePath, "Semantic processing of module " + filename);
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertNoSubstring("!! WARNING " + filename);
 	}
 
 	@Test
@@ -85,7 +90,7 @@ public class DivergenceTest extends PCalTest {
 				"begin\n" +
 				"  skip;\n" +
 				"end algorithm; *)\n" +
-				"\\* BEGIN TRANSLATION - the hash of the PCal code: PCal-6d2bf9f0e5d0cc207316a004ca8a0713\n" +
+				"\\* BEGIN TRANSLATION (chksum(PCal) \\in STRING /\\ chksum(TLA+) \\in STRING)\n" +
 				"VARIABLE pc\n" +
 				"\n" +
 				"vars == << pc >>\n" +
@@ -106,9 +111,14 @@ public class DivergenceTest extends PCalTest {
 				"\n" +
 				"Termination == <>(pc = \"Done\")\n" +
 				"\n" +
-				"\\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-c42acd1a2a013bcd259342cfe120880f\n" +
+				"\\* END TRANSLATION\n" +
 				"\n=========================");
-		test(filename, absolutePath, "Semantic processing of module " + filename);
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertNoSubstring("!! WARNING " + filename);
 	}
 
 	@Test
@@ -122,7 +132,7 @@ public class DivergenceTest extends PCalTest {
 				"begin\n" +
 				"  print \"msg\";\n" + // PlusCal diverged
 				"end algorithm; *)\n" +
-				"\\* BEGIN TRANSLATION - the hash of the PCal code: PCal-6d2bf9f0e5d0cc207316a004ca8a0713\n" +
+				"\\* BEGIN TRANSLATION (chksum(PCal) = \"4860ac97\" /\\ chksum(TLA+) = \"af3d9146\")\n" +
 				"VARIABLE pc\n" +
 				"\n" +
 				"vars == << pc >>\n" +
@@ -143,10 +153,16 @@ public class DivergenceTest extends PCalTest {
 				"\n" +
 				"Termination == <>(pc = \"Done\")\n" +
 				"\n" +
-				"\\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-c42acd1a2a013bcd259342cfe120880f\n" +
+				"\\* END TRANSLATION\n" +
 				"\n=========================");
-		test(filename, absolutePath, "!! WARNING: Either the PlusCal or its TLA+ translation has changed in the specification for "
-				+ filename + " since the last time translation was performed.");
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertSubstring(String.format(
+				"!! WARNING: The PlusCal algorithm in module %s has changed since its last translation.",
+				filename));
 	}
 
 	@Test
@@ -160,7 +176,7 @@ public class DivergenceTest extends PCalTest {
 				"begin\n" +
 				"  skip;\n" +
 				"end algorithm; *)\n" +
-				"\\* BEGIN TRANSLATION - the hash of the PCal code: PCal-6d2bf9f0e5d0cc207316a004ca8a0713\n" +
+				"\\* BEGIN TRANSLATION (checksum(PlusCal) = \"4860ac97\" /\\ ChkSum(tla+) = \"af3d9146\")\n" +
 				"VARIABLE pc\n" +
 				"\n" +
 				"vars == << pc >>\n" +
@@ -180,10 +196,16 @@ public class DivergenceTest extends PCalTest {
 				"\n" +
 				"Termination == <>(pc = \"Done\")\n" +
 				"\n" +
-				"\\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-c42acd1a2a013bcd259342cfe120880f\n" +
+				"\\* END TRANSLATION\n" +
 				"\n=========================");
-		test(filename, absolutePath, "!! WARNING: Either the PlusCal or its TLA+ translation has changed in the specification for "
-				+ filename + " since the last time translation was performed.");
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertSubstring(String.format(
+				"!! WARNING: The TLA+ translation in module %s has changed since its last translation.",
+				filename));
 	}
 
 	@Test
@@ -197,7 +219,7 @@ public class DivergenceTest extends PCalTest {
 				"begin\n" +
 				"  print \"msg\";\n" + // PlusCal diverged
 				"end algorithm; *)\n" +
-				"\\* BEGIN TRANSLATION - the hash of the PCal code: PCal-6d2bf9f0e5d0cc207316a004ca8a0713\n" +
+				"\\* BEGIN TRANSLATION   (checksum(PlusCal) = \"4860ac97\" /\\ ChkSum(tla+) = \"af3d9146\")  \n" +
 				"VARIABLE pc\n" +
 				"\n" +
 				"vars == << pc >>\n" +
@@ -217,40 +239,29 @@ public class DivergenceTest extends PCalTest {
 				"\n" +
 				"Termination == <>(pc = \"Done\")\n" +
 				"\n" +
-				"\\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-c42acd1a2a013bcd259342cfe120880f\n" +
+				"\\* END TRANSLATION\n" +
 				"\n=========================");
-		test(filename, absolutePath, "!! WARNING: Either the PlusCal or its TLA+ translation has changed in the specification for "
-				+ filename + " since the last time translation was performed.");
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertSubstring(String.format(
+				"!! WARNING: The PlusCal algorithm and its TLA+ translation in module %s filename since the last translation.",
+				filename));
 	}
-
 	@Test
 	public void divergenceTest05() throws IOException {
-		final String filename = "divergenceTest05" + System.currentTimeMillis();
+		final String filename = "divergenceTest04" + System.currentTimeMillis();
 		final String absolutePath = writeFile(System.getProperty("java.io.tmpdir") + File.separator + filename,
 				"---- MODULE " + filename + " ----\n" +
 				"\n" +
 				"(*\n" +
 				"--algorithm a\n" +
 				"begin\n" +
-				"  skip;\n" +
+				"  print \"msg\";\n" + // PlusCal diverged
 				"end algorithm; *)\n" +
-				"\n=========================");
-		test(filename, absolutePath, "PlusCal was found in the specification for "+ filename +" but no TLA+ translation could be found.");
-	}
-
-	@Test
-	@Ignore
-	public void divergenceTest06() throws IOException {
-		final String filename = "divergenceTest06" + System.currentTimeMillis();
-		final String absolutePath = writeFile(System.getProperty("java.io.tmpdir") + File.separator + filename,
-				"---- MODULE " + filename + " ----\n" +
-				"\n" +
-				"(*\n" +
-				"--algorithm a\n" +
-				"begin\n" +
-				"  skip;\n" +
-				"end algorithm; *)\n" +
-				"\\* BEGIN TRANSLATION\n" +
+				"\\* BEGIN TRANSLATION   (checksum(PlusCal) \\in  STRING /\\ ChkSum(tla+) \\in STRING)  \n" +
 				"VARIABLE pc\n" +
 				"\n" +
 				"vars == << pc >>\n" +
@@ -264,25 +275,41 @@ public class DivergenceTest extends PCalTest {
 				"(* Allow infinite stuttering to prevent deadlock on termination. *)\n" +
 				"Terminating == pc = \"Done\" /\\ UNCHANGED vars\n" +
 				"\n" +
-				"Next == Lbl_1\n" + // TLA+ diverged, but no hash.
+				"Next == Lbl_1\n" + // TLA+ diverged.
 				"\n" +
 				"Spec == Init /\\ [][Next]_vars\n" +
 				"\n" +
 				"Termination == <>(pc = \"Done\")\n" +
 				"\n" +
-				"\\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-c42acd1a2a013bcd259342cfe120880f\n" +
+				"\\* END TRANSLATION\n" +
 				"\n=========================");
-		test(filename, absolutePath, "!! WARNING: Either the PlusCal or its TLA+ translation has changed in the specification for "
-				+ filename + " since the last time translation was performed.");
-	}
-	
- 	private void test(final String filename, final String absolutePath, final String expected) {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
-		testPrintStream.assertSubstring(expected);
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertNoSubstring(String.format(
+				"!! WARNING:",
+				filename));
 	}
 
+	@Test
+	public void divergenceTest06() throws IOException {
+		final String filename = "divergenceTest05" + System.currentTimeMillis();
+		final String absolutePath = writeFile(System.getProperty("java.io.tmpdir") + File.separator + filename,
+				"---- MODULE " + filename + " ----\n" +
+				"\n" +
+				"(*\n" +
+				"--algorithm a\n" +
+				"begin\n" +
+				"  skip;\n" +
+				"end algorithm; *)\n" +
+				"\n=========================");
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertNoSubstring("!! WARNING " + filename);
+	}
 }
