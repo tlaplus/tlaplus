@@ -843,7 +843,8 @@ class trans {
                 return null ;
             } ;
             
-			output.add((ecLine + 1), (PCAL_TRANSLATION_COMMENT_LINE_PREFIX + " " + String.format(Validator.CHECKSUM_TEMPLATE, "ffffffff")));
+			output.add((ecLine + 1), (PCAL_TRANSLATION_COMMENT_LINE_PREFIX + " "
+					+ String.format(Validator.CHECKSUM_TEMPLATE, "ffffffff", "ffffffff")));
             untabInputVec.insertElementAt(PCAL_TRANSLATION_COMMENT_LINE_PREFIX, (ecLine + 1));
             output.add((ecLine + 2), (TLA_TRANSLATION_COMMENT_LINE_PREFIX + " "));
             untabInputVec.insertElementAt(TLA_TRANSLATION_COMMENT_LINE_PREFIX, (ecLine + 2));
