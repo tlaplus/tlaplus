@@ -296,7 +296,6 @@ public class SimulationWorker extends IdThread {
 	 *
 	 */
 	private Optional<SimulationWorkerError> simulateRandomTrace() throws Exception {
-		this.curState = null;
 		// TODO With the introduction of TLCStateMutSimulation, stateTrace could be
 		// eliminated and the predecessor state stored as a reference in its successor
 		// (linked list of states). It would also be advantageous if "-depth N" is >>
