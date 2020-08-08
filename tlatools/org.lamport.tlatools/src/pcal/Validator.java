@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 import pcal.exception.ParseAlgorithmException;
+import pcal.exception.RemoveNameConflictsException;
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.st.Location;
 import util.TLAConstants;
@@ -232,7 +233,14 @@ public class Validator {
 				final PcalCharReader reader = new PcalCharReader(deTabbedSpecification, algLine, algCol,
 						specificationText.size(), 0);
 				ast = ParseAlgorithm.getAlgorithm(reader, foundFairBegin);
-			} catch (ParseAlgorithmException e) {
+				
+				// The call translate mutates the ast in pcal.PcalTranslate.Explode(AST, PcalSymTab).
+				// I'm ignoring the PcalParams.tlcTranslation() alternative in trans.java
+				// because I doubt the "-spec" feature is used widely (if at all).
+		        final PCalTLAGenerator pcalTLAGenerator = new PCalTLAGenerator(ast);
+	            pcalTLAGenerator.removeNameConflicts();
+                pcalTLAGenerator.translate();
+			} catch (ParseAlgorithmException | RemoveNameConflictsException e) {
 				PcalDebug.reportError(e);
 				// The PlusCal algorithm doesn't parse because of a syntax error. This indicates
 				// that the algorithm has been modified since it wouldn't have been possible to
