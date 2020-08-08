@@ -1100,7 +1100,7 @@ public class MP
                         + NOT_APPLICABLE_VAL + " states left on queue.");
             } else
             {
-                b.append("Progress: %1% states checked.");
+                b.append("Progress: %1% states checked, %2% traces generated, average length of %3%");
             }
             break;
 

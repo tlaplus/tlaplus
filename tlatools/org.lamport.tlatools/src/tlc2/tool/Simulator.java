@@ -97,7 +97,7 @@ public class Simulator {
 		for (int i = 0; i < this.numWorkers; i++) {
 			this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 					this.traceDepth, this.traceNum, this.checkDeadlock, this.traceFile, this.liveCheck,
-					this.numOfGenStates, this.numOfGenTraces));
+					this.numOfGenStates, this.numOfGenTraces, this.sumLengthOfGenTraces));
 		}
 		
 		if (TLCGlobals.isCoverageEnabled()) {
@@ -124,6 +124,7 @@ public class Simulator {
 	// concurrently, so we use a LongAdder to reduce potential contention.
 	private final LongAdder numOfGenStates = new LongAdder();
 	private final LongAdder numOfGenTraces = new LongAdder();
+	private final LongAdder sumLengthOfGenTraces = new LongAdder();
 
 	// private Action[] actionTrace; // SZ: never read locally
 	private final String traceFile;
@@ -488,7 +489,16 @@ public class Simulator {
 					synchronized (this) {
 						this.wait(TLCGlobals.progressInterval);
 					}
-					MP.printMessage(EC.TLC_PROGRESS_SIMU, String.valueOf(numOfGenStates.longValue()));
+					final long genTrace = numOfGenTraces.longValue(); 
+					final long sumOfLengthOfAllTraces = sumLengthOfGenTraces.longValue();
+					MP.printMessage(EC.TLC_PROGRESS_SIMU, 
+							String.valueOf(numOfGenStates.longValue()),
+							String.valueOf(genTrace),
+							String.valueOf(Math.round(sumOfLengthOfAllTraces / (genTrace + 1d)))); // No div-by-zero if
+																									// we report before
+																									// a worker
+																									// generated the
+																									// first state.
 					if (count > 1) {
 						count--;
 					} else {

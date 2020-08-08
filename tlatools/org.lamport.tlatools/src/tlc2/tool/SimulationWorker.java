@@ -95,6 +95,7 @@ public class SimulationWorker extends IdThread {
 	// update it whenever it generates a new state or trace.
 	private final LongAdder numOfGenStates;
 	private final LongAdder numOfGenTraces;
+	private final LongAdder sumLengthOfGenTraces;
 
 	private final ITool tool;
 	private final ILiveCheck liveCheck;	
@@ -186,10 +187,16 @@ public class SimulationWorker extends IdThread {
 
 	}
 	
+	public SimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue,
+			long seed, int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
+			ILiveCheck liveCheck) {
+		this(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, checkDeadlock, traceFile, liveCheck,
+				new LongAdder(), new LongAdder(), new LongAdder());
+	}
 
 	public SimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue,
 			long seed, int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
-			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces) {
+			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces, LongAdder sumLengthLongAdder) {
 		super(id);
 		this.localRng = new RandomGenerator(seed);
 		this.tool = tool;
@@ -201,6 +208,7 @@ public class SimulationWorker extends IdThread {
 		this.liveCheck = liveCheck;
 		this.numOfGenStates = numOfGenStates;
 		this.numOfGenTraces = numOfGenTraces;
+		this.sumLengthOfGenTraces = sumLengthLongAdder;
 		this.stateTrace = new StateVec(maxTraceDepth);
 		
 		if (TLCState.Empty instanceof TLCStateMutSimulation) {
@@ -413,7 +421,9 @@ public class SimulationWorker extends IdThread {
 		// Check if the current trace satisfies liveness properties.
 		liveCheck.checkTrace(tool, stateTrace);
 		
-
+		final int traceLength = stateTrace.size();
+		this.sumLengthOfGenTraces.add(traceLength);
+		
 		// Write the trace out if desired. The trace is printed in the
 		// format of TLA module, so that it can be read by TLC again.
 		if (traceFile != null) {
