@@ -73,7 +73,7 @@ public class Simulator {
 			this.traceDepth = traceDepth;
 		} else {
 			// this.actionTrace = new Action[0]; // SZ: never read locally
-			this.traceDepth = Long.MAX_VALUE;
+			this.traceDepth = Integer.MAX_VALUE;
 		}
 		this.traceFile = traceFile;
 		this.traceNum = traceNum;
@@ -129,7 +129,7 @@ public class Simulator {
 	private final String traceFile;
 
 	// The maximum length of a simulated trace.
-	private final long traceDepth;
+	private final int traceDepth;
 
 	// The maximum number of total traces to generate.
 	private final long traceNum;

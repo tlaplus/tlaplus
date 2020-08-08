@@ -393,7 +393,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		BlockingQueue<SimulationWorkerResult> resultQueue = new LinkedBlockingQueue<>();
 
 		// At this trace depth, the worker should never find the invariant violation.
-		long traceDepth = 1;
+		int traceDepth = 1;
 		SimulationWorker worker = new SimulationWorker(0, tool, resultQueue, 0, traceDepth, 100, false,
 				null, liveCheck, new LongAdder(), new LongAdder());
 		worker.start(initStates);
@@ -416,7 +416,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		// Have the worker generate a specified number of traces of a fixed length.
 		LongAdder numOfGenStates = new LongAdder();
 		LongAdder numOfGenTraces = new LongAdder();
-		long traceDepth = 5;
+		int traceDepth = 5;
 		long traceNum = 5;
 		SimulationWorker worker = new SimulationWorker(0, tool, resultQueue, 0, traceDepth, traceNum, false,
 				null, liveCheck, numOfGenStates, numOfGenTraces);

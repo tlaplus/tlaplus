@@ -41,6 +41,14 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
     }
   }
 
+  public StateVec(final StateVec other) {
+	this(other.size);
+	this.size = other.size;
+	for (int i = 0; i < v.length; i++) {
+		this.v[i] = other.elementAt(i);
+	}
+  }
+  
   private StateVec(TLCState v[]) {
     this.v = v;
     this.size = v.length;
