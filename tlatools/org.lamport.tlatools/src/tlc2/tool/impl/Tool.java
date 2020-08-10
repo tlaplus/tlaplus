@@ -3119,6 +3119,28 @@ public abstract class Tool
     return ((BoolValue)val).val;
   }
 
+  @Override
+  public final int checkAssumptions() {
+      final ExprNode[] assumps = getAssumptions();
+      final boolean[] isAxiom = getAssumptionIsAxiom();
+      for (int i = 0; i < assumps.length; i++)
+      {
+          try
+          {
+              if ((!isAxiom[i]) && !isValid(assumps[i]))
+              {
+                  return MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
+              }
+          } catch (final Exception e)
+          {
+              // Assert.printStack(e);
+              return MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
+                      new String[] { assumps[i].toString(), e.getMessage() });
+          }
+      }
+      return EC.NO_ERROR;
+  }
+  
     /* Reconstruct the initial state whose fingerprint is fp. */
 	@Override
 	public final TLCStateInfo getState(final long fp) {
