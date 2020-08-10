@@ -28,6 +28,7 @@ package tlc2.tool;
 import java.io.PrintWriter;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
 import tlc2.output.EC;
@@ -95,7 +96,7 @@ public class SimulationWorker extends IdThread {
 	// update it whenever it generates a new state or trace.
 	private final LongAdder numOfGenStates;
 	private final LongAdder numOfGenTraces;
-	private final LongAdder sumLengthOfGenTraces;
+	private final AtomicLong welfordM2AndMean;
 
 	private final ITool tool;
 	private final ILiveCheck liveCheck;	
@@ -191,12 +192,12 @@ public class SimulationWorker extends IdThread {
 			long seed, int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck) {
 		this(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, checkDeadlock, traceFile, liveCheck,
-				new LongAdder(), new LongAdder(), new LongAdder());
+				new LongAdder(), new LongAdder(), new AtomicLong());
 	}
 
 	public SimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue,
 			long seed, int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
-			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces, LongAdder sumLengthLongAdder) {
+			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces, AtomicLong m2AndMean) {
 		super(id);
 		this.localRng = new RandomGenerator(seed);
 		this.tool = tool;
@@ -208,7 +209,7 @@ public class SimulationWorker extends IdThread {
 		this.liveCheck = liveCheck;
 		this.numOfGenStates = numOfGenStates;
 		this.numOfGenTraces = numOfGenTraces;
-		this.sumLengthOfGenTraces = sumLengthLongAdder;
+		this.welfordM2AndMean = m2AndMean;
 		this.stateTrace = new StateVec(maxTraceDepth);
 		
 		if (TLCState.Empty instanceof TLCStateMutSimulation) {
@@ -421,8 +422,17 @@ public class SimulationWorker extends IdThread {
 		// Check if the current trace satisfies liveness properties.
 		liveCheck.checkTrace(tool, stateTrace);
 		
-		final int traceLength = stateTrace.size();
-		this.sumLengthOfGenTraces.add(traceLength);
+		welfordM2AndMean.accumulateAndGet(stateTrace.size(), (acc, tl) -> {
+			// Welford's online algorithm (m2 and mean stuffed into high and low of the
+			// atomiclong because update concurrently by multiple workers).
+			// https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
+			int mean = (int) (acc & 0x00000000FFFFFFFFL);
+			long m2 = acc >>> 32;
+			final long delta = tl - mean;
+			mean += delta / (numOfGenTraces.longValue() + 1); //+1 prevent div-by-zero
+			m2 += delta * (tl - mean);
+			return m2 << 32 | (mean & 0xFFFFFFFFL);
+		});
 		
 		// Write the trace out if desired. The trace is printed in the
 		// format of TLA module, so that it can be read by TLC again.

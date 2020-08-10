@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.junit.After;
@@ -415,15 +416,18 @@ public class SimulationWorkerTest extends CommonTestCase {
 		// Have the worker generate a specified number of traces of a fixed length.
 		LongAdder numOfGenStates = new LongAdder();
 		LongAdder numOfGenTraces = new LongAdder();
+		AtomicLong m2AndMean = new AtomicLong();
 		int traceDepth = 5;
 		long traceNum = 5;
 		SimulationWorker worker = new SimulationWorker(0, tool, resultQueue, 0, traceDepth, traceNum, false,
-				null, liveCheck, numOfGenStates, numOfGenTraces, new LongAdder());
+				null, liveCheck, numOfGenStates, numOfGenTraces, m2AndMean);
 
 		worker.start(initStates);
 		worker.join();
 		assertFalse(worker.isAlive());
 		assertEquals(70, numOfGenStates.longValue());
 		assertEquals(5, numOfGenTraces.longValue());
+		// With traces all length 5, mean is 5 and m2 is 0, hence m2AndMean = 5
+		assertEquals(5, m2AndMean.get());
 	}
 }

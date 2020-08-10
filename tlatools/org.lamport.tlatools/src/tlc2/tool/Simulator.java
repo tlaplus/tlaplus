@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
 import tla2sany.semantic.ExprNode;
@@ -97,7 +98,7 @@ public class Simulator {
 		for (int i = 0; i < this.numWorkers; i++) {
 			this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 					this.traceDepth, this.traceNum, this.checkDeadlock, this.traceFile, this.liveCheck,
-					this.numOfGenStates, this.numOfGenTraces, this.sumLengthOfGenTraces));
+					this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 		}
 		
 		if (TLCGlobals.isCoverageEnabled()) {
@@ -124,7 +125,7 @@ public class Simulator {
 	// concurrently, so we use a LongAdder to reduce potential contention.
 	private final LongAdder numOfGenStates = new LongAdder();
 	private final LongAdder numOfGenTraces = new LongAdder();
-	private final LongAdder sumLengthOfGenTraces = new LongAdder();
+	private final AtomicLong welfordM2AndMean = new AtomicLong();
 
 	// private Action[] actionTrace; // SZ: never read locally
 	private final String traceFile;
@@ -489,16 +490,16 @@ public class Simulator {
 					synchronized (this) {
 						this.wait(TLCGlobals.progressInterval);
 					}
-					final long genTrace = numOfGenTraces.longValue(); 
-					final long sumOfLengthOfAllTraces = sumLengthOfGenTraces.longValue();
+					final long genTrace = numOfGenTraces.longValue();
+					final long m2AndMean = welfordM2AndMean.get();
+					final long mean = m2AndMean & 0x00000000FFFFFFFFL; // could be int.
+					final long m2 = m2AndMean >>> 32;
 					MP.printMessage(EC.TLC_PROGRESS_SIMU, 
 							String.valueOf(numOfGenStates.longValue()),
 							String.valueOf(genTrace),
-							String.valueOf(Math.round(sumOfLengthOfAllTraces / (genTrace + 1d)))); // No div-by-zero if
-																									// we report before
-																									// a worker
-																									// generated the
-																									// first state.
+							String.valueOf(mean),
+							String.valueOf(Math.round(m2 / (genTrace + 1d))), // Var(X),  +1 to prevent div-by-zero.
+							String.valueOf(Math.round(Math.sqrt(m2 / (genTrace + 1d))))); // SD, +1 to prevent div-by-zero.
 					if (count > 1) {
 						count--;
 					} else {
