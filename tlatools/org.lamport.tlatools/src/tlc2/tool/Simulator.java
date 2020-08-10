@@ -173,6 +173,11 @@ public class Simulator {
    * @return an error code, or <code>EC.NO_ERROR</code> on success
 	 */
 	public int simulate() throws Exception {
+		final int res = this.tool.checkAssumptions();
+		if (res != EC.NO_ERROR) {
+			return res;
+		}
+		
 		TLCState curState = null;
 
 		// The init states are calculated only ever once and never change

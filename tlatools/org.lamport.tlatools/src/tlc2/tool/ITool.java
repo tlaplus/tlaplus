@@ -161,6 +161,8 @@ public interface ITool extends TraceApp {
 
 	boolean[] getAssumptionIsAxiom();
 
+	int checkAssumptions();
+
 	String[] getInvNames();
 
 	String[] getImpliedActNames();

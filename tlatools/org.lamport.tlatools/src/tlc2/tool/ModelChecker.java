@@ -14,7 +14,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -327,24 +326,7 @@ public class ModelChecker extends AbstractChecker
      */
     public int checkAssumptions()
     {
-        ExprNode[] assumps = this.tool.getAssumptions();
-        boolean[] isAxiom = this.tool.getAssumptionIsAxiom();
-        for (int i = 0; i < assumps.length; i++)
-        {
-            try
-            {
-                if ((!isAxiom[i]) && !this.tool.isValid(assumps[i]))
-                {
-                    return MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
-                }
-            } catch (Exception e)
-            {
-                // Assert.printStack(e);
-                return MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
-                        new String[] { assumps[i].toString(), e.getMessage() });
-            }
-        }
-        return EC.NO_ERROR;
+    	return this.tool.checkAssumptions();
     }
 
     /**
