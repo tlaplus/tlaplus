@@ -35,7 +35,7 @@ import tlc2.output.EC;
 public class SimulationTestAssumption extends SuccessfulSimulationTestCase {
 
 	public SimulationTestAssumption() {
-		super("Test4", "/", new String[] { "-simulate", "num=1" });
+		super("Test4", "/", new String[] { "-simulate", "num=1" }, EC.ExitStatus.VIOLATION_ASSUMPTION);
 	}
 	
 	@Test
