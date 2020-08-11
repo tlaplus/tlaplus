@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
@@ -366,6 +367,8 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
     return result.toString();
   }
 
+    //*********//
+
 	private int actionId;
 
 	public int getActionId() {
@@ -375,4 +378,22 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
 	public void setActionId(int actionId) {
 		this.actionId = actionId;
 	}
+	
+    //*********//
+	
+	private Callable<?> callable;
+
+	@Override
+	public Object execCallable() throws Exception {
+		if (callable != null) {
+			return callable.call();
+		}
+		return null;
+	}
+
+	@Override
+	public void setCallable(Callable<?> f) {
+		this.callable = f;
+	}
+
 }

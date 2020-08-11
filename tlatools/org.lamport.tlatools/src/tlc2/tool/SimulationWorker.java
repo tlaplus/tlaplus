@@ -409,6 +409,10 @@ public class SimulationWorker extends IdThread {
 			inConstraints = (tool.isInModel(s1) && tool.isInActions(curState, s1));
 			s1.setPredecessor(curState); // Should be redundant but let's be safe anyway.
 			s1.setActionId(index);
+			
+			// Execute callable on the state that was selected from the set of succesor states.
+			s1.execCallable();
+			
 			// In case actionStats are off, we waste a few cycles to increment this counter
 			// nobody is going to look at.
 			this.actionStats[curState.getActionId()][s1.getActionId()]++;
