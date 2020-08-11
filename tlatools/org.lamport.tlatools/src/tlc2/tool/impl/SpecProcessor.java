@@ -1795,4 +1795,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	public Defns getUnprocessedDefns() {
 		return snapshot;
 	}
+	
+	public Defns getDefns() {
+		return defns;
+	}
 }

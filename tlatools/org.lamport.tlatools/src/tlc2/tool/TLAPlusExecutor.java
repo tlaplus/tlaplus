@@ -33,6 +33,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.tool.impl.FastTool;
 import tlc2.util.Context;
 import tlc2.value.IValue;
+import tlc2.value.impl.Value;
 import util.SimpleFilenameToStream;
 
 public class TLAPlusExecutor {
@@ -124,5 +125,9 @@ public class TLAPlusExecutor {
 
 	public ReentrantLock getLock() {
 		return lock;
+	}
+	
+	public Value getConstant(final String string) {
+		return (Value) this.tool.getSpecProcessor().getDefns().get(string);
 	}
 }
