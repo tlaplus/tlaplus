@@ -35,6 +35,7 @@ import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
 import tlc2.tool.TLCState;
 import tlc2.tool.ToolGlobals;
+import tlc2.tool.impl.Tool.Mode;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
@@ -78,7 +79,8 @@ abstract class Spec
     private final SpecProcessor specProcessor;
 
     // SZ Feb 20, 2009: added support to name resolver, to be able to run outside of the tool
-	public Spec(final String specDir, final String specFile, final String configFile, final FilenameToStream resolver) {
+	public Spec(final String specDir, final String specFile, final String configFile, final FilenameToStream resolver,
+			Mode mode) {
         this.specDir = specDir;
         this.rootFile = specFile;
         this.defns = new Defns();
@@ -93,7 +95,7 @@ abstract class Spec
         this.config.parse();
         ModelValue.setValues(); // called after seeing all model values
 
-        specProcessor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass);
+        specProcessor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass, mode);
         
         this.unprocessedDefns = specProcessor.getUnprocessedDefns();
     }

@@ -212,7 +212,7 @@ public class SimulationWorker extends IdThread {
 		this.welfordM2AndMean = m2AndMean;
 		this.stateTrace = new StateVec(maxTraceDepth);
 		
-		if (TLCState.Empty instanceof TLCStateMutSimulation) {
+		if (Simulator.actionStats) {
 			final Action[] actions = this.tool.getActions();
 			final int len = actions.length;
 			this.actionStats = new long[len][len];
@@ -415,7 +415,9 @@ public class SimulationWorker extends IdThread {
 			
 			// In case actionStats are off, we waste a few cycles to increment this counter
 			// nobody is going to look at.
-			this.actionStats[curState.getActionId()][s1.getActionId()]++;
+			if (Simulator.actionStats) {
+				this.actionStats[curState.getActionId()][s1.getActionId()]++;
+			}
 			curState = s1;
 			setCurrentState(curState);
 		}

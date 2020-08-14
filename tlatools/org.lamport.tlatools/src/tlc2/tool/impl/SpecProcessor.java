@@ -72,12 +72,12 @@ import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
 import tlc2.tool.EvalException;
-import tlc2.tool.Simulator;
 import tlc2.tool.Specs;
 import tlc2.tool.TLAPlusExecutorState;
 import tlc2.tool.TLCStateMut;
 import tlc2.tool.TLCStateMutSimulation;
 import tlc2.tool.ToolGlobals;
+import tlc2.tool.impl.Tool.Mode;
 import tlc2.util.Context;
 import tlc2.util.List;
 import tlc2.util.Vect;
@@ -148,7 +148,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     
 	public SpecProcessor(final String rootFile, final FilenameToStream resolver, final int toolId, final Defns defns,
 			final ModelConfig config, final SymbolNodeValueLookupProvider snvlp, final OpDefEvaluator ode,
-			final TLAClass tlaClass) {
+			final TLAClass tlaClass, Mode mode) {
 		super();
 		this.rootFile = rootFile;
 		this.resolver = resolver;
@@ -164,7 +164,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
 		// Parse and process this spec.
 		// It takes care of all overrides.
-		processSpec();
+		processSpec(mode);
 
 		snapshot = defns.snapshot();
 
@@ -311,9 +311,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
      * Processes the specification and collects information to be used
      * by tools. The processing tries to use any customized module (Java
      * class) to override the corresponding TLA+ module.
+     * @param mode 
      */
     // SZ Feb 20, 2009: added support for existing specObj
-    private final void processSpec()
+    private final void processSpec(final Mode mode)
     {
 
         // construct new specification object, if the
@@ -575,8 +576,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		// the complete classpath). The convention is to name the index class
 		// "tlc2.overrides.TLCOverrides":
         //TODO: Support multiple loader classes (MyTLCOverrides, AnotherTLCOverrides, ...).
-        boolean hasCallableValue = false;
 		final Class<?> idx = this.tlaClass.loadClass("tlc2.overrides.TLCOverrides");
+	    boolean hasCallableValue = false;
 		if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {
 			try {
 				final ITLCOverrides index = (ITLCOverrides) idx.newInstance();
@@ -711,14 +712,16 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             }
         }
 
-        // set variables to the static filed in the state
-        if (hasCallableValue) {
-        	TLAPlusExecutorState.setVariables(this.variablesNodes);
-		} else if (Simulator.actionStats) {
+		// set variables to the static filed in the state
+		if (mode == Mode.Simulation) {
 			TLCStateMutSimulation.setVariables(this.variablesNodes);
-        } else {
-            TLCStateMut.setVariables(this.variablesNodes);
-        }
+		} else if (hasCallableValue) {
+			assert mode == Mode.Executor;
+			TLAPlusExecutorState.setVariables(this.variablesNodes);
+		} else {
+			assert mode == Mode.MC;
+			TLCStateMut.setVariables(this.variablesNodes);
+		}
 
         // Apply config file overrides to operator definitions:
         for (int i = 0; i < rootOpDefs.length; i++)

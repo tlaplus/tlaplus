@@ -30,6 +30,7 @@ import tlc2.tool.SimulationWorker.SimulationWorkerError;
 import tlc2.tool.SimulationWorker.SimulationWorkerResult;
 import tlc2.tool.coverage.CostModelCreator;
 import tlc2.tool.impl.FastTool;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.LiveCheck1;
@@ -63,7 +64,7 @@ public class Simulator {
 		// SZ Mar 5, 2009: removed it again because of the bug in simulator
 		// ToolIO.setUserDir(specDir);
 
-		this.tool = new FastTool(specDir, specFile, configFile, resolver);
+		this.tool = new FastTool(specDir, specFile, configFile, resolver, Tool.Mode.Simulation);
 
 		this.checkDeadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
 		this.checkLiveness = !this.tool.livenessIsTrue();

@@ -47,8 +47,16 @@ public final class FastTool extends Tool {
 		super(mainFile, configFile, resolver);
 	}
 
+	public FastTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode) {
+		super(mainFile, configFile, resolver, mode);
+	}
+	
 	public FastTool(String specDir, String specFile, String configFile, FilenameToStream fts) {
 		super(specDir, specFile, configFile, fts);
+	}
+
+	public FastTool(String specDir, String specFile, String configFile, FilenameToStream fts, Mode mode) {
+		super(specDir, specFile, configFile, fts, mode);
 	}
 
 	// The methods below are supposed to be inlined during execution for performance

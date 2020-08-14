@@ -40,10 +40,12 @@ import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
+import tlc2.tool.TLAPlusExecutorState;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.TLCStateMut;
+import tlc2.tool.TLCStateMutSimulation;
 import tlc2.tool.ToolGlobals;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
@@ -105,6 +107,10 @@ public abstract class Tool
     extends Spec
     implements ValueConstants, ToolGlobals, ITool
 {
+
+  public enum Mode {
+	  Simulation, MC, Executor;
+  }
 	
   public static final Value[] EmptyArgs = new Value[0];
 
@@ -122,17 +128,38 @@ public abstract class Tool
 	  this(new File(specFile), specFile, configFile, resolver);
   }
 
+  public Tool(String specFile, String configFile, FilenameToStream resolver, Mode mode) {
+	  this(new File(specFile), specFile, configFile, resolver, mode);
+  }
+  
   private Tool(File specDir, String specFile, String configFile, FilenameToStream resolver)
   {
 	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver);
   }
   
+  private Tool(File specDir, String specFile, String configFile, FilenameToStream resolver, Mode mode)
+  {
+	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver, mode);
+  }
+  
   public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver)
   {
-      super(specDir, specFile, configFile, resolver);
+	  this(specDir, specFile, configFile, resolver, Mode.MC);
+  }
+  
+  public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver, Mode mode)
+  {
+      super(specDir, specFile, configFile, resolver, mode);
 
-      // Initialize state.
-      TLCStateMut.setTool(this);
+		// set variables to the static filed in the state
+		if (mode == Mode.Simulation) {
+			TLCStateMutSimulation.setTool(this);
+		} else if (mode == Mode.Executor) {
+			TLAPlusExecutorState.setTool(this);
+		} else {
+			// Initialize state.
+			TLCStateMut.setTool(this);
+		}
       
 		Action next = this.getNextStateSpec();
 		if (next == null) {
