@@ -393,11 +393,11 @@ public class Simulator {
 			TLCStateInfo sinfo;
 			int omitted = 0;
 			for (int i = 0; i < stateTrace.size(); i++) {
-				final TLCState curState = stateTrace.elementAt(i);
+				final TLCStateMutSimulation curState = (TLCStateMutSimulation) stateTrace.elementAt(i);
 				// Last state's successor is itself.
 				final TLCState sucState = stateTrace.elementAt(Math.min(i + 1, stateTrace.size() - 1));
 				if (lastState != null) {
-					sinfo = this.tool.getState(curState, lastState);
+					sinfo = new TLCStateInfo(curState, tool.getActions()[sucState.getActionId()].getLocation());
 				} else {
 					sinfo = new TLCStateInfo(curState, "<Initial predicate>");
 					StatePrinter.printState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
