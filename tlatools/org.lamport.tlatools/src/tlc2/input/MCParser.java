@@ -21,6 +21,7 @@ import tlc2.tool.impl.ModelConfig;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.SymbolNodeValueLookupProvider;
 import tlc2.tool.impl.TLAClass;
+import tlc2.tool.impl.Tool;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
 import util.TLAConstants;
@@ -202,7 +203,7 @@ public class MCParser {
 			if ((encounteredMessages == null) || (encounteredMessages.size() > 0)) {
 				final SymbolNodeValueLookupProvider defaultLookup = new SymbolNodeValueLookupProvider() {};
 				final SpecProcessor specProcessor = new SpecProcessor(specBaseName, resolver, TOOL_ID, defns,
-																	  configParser, defaultLookup, null, tlaClass);
+						configParser, defaultLookup, null, tlaClass, Tool.Mode.MC);
 				parserResults = generateResultsFromProcessorAndConfig(specProcessor, configParser);
 				
 				if (outputParser != null) {
