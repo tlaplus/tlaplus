@@ -99,7 +99,15 @@ public class TLCState implements IModuleLocatable
         {
             final TLCState state = BACK_TO_STATE(number, modelName);
             // See in MP.java case for EC.TLC_BACK_TO_STATE
-            state.setLocation(Location.parseLocation(label.substring((BACK_TO_STATE + ": ").length(), label.length()))); 
+            if (label.indexOf(BACK_TO_STATE + ": ") < 0) {
+				// LiveCheck1 of simulation mode didn't report the location of the back to
+				// state in a lasso trace.  Setting the location to nullLoc here means that
+            	// a double-click on "back to state..." in the error-trace explorer doesn't
+            	// select and reveal the action in the spec.
+				state.setLocation(Location.nullLoc);
+            } else {
+            	state.setLocation(Location.parseLocation(label.substring((BACK_TO_STATE + ": ").length(), label.length()))); 
+            }
 			return state;
         } else
         {
