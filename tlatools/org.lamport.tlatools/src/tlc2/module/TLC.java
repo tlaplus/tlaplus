@@ -594,6 +594,10 @@ public class TLC implements ValueConstants
             }
             return new TupleValue(vals);
         }
+        case INTERVALVALUE: {
+        	final IntervalValue iv = (IntervalValue) val;
+        	return iv.randomElement();
+        }
         default: {
             SetEnumValue enumVal = (SetEnumValue) val.toSetEnum();
             if (enumVal == null)

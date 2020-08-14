@@ -13,6 +13,7 @@ import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
+import tlc2.value.RandomEnumerableValues;
 import tlc2.value.Values;
 import util.Assert;
 
@@ -379,5 +380,11 @@ implements Enumerable, Reducible {
 				return IntValue.gen(low + nextIndex());
 			}
 		};
+	}
+
+	public Value randomElement() {
+	     int sz = size();
+	     int index = (int) Math.floor(RandomEnumerableValues.get().nextDouble() * sz);
+	     return elementAt(index);
 	}
 }
