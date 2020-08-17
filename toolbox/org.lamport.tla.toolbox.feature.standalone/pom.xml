@@ -17,4 +17,30 @@
       <!-- Do not include non-code project in Sonar reporting. -->
       <sonar.skip>true</sonar.skip>
   </properties>
+  
+  
+	<build>
+		<plugins>
+  			<plugin>
+					<groupId>com.googlecode.maven-download-plugin</groupId>
+					<artifactId>download-maven-plugin</artifactId>
+					<version>1.4.1</version>
+				<executions>
+					<execution>
+						<phase>process-resources</phase>
+						<goals>
+								<goal>wget</goal>
+						</goals>
+						<configuration>
+								<url>https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules.jar</url>
+								<!-- We keep do not unpack with this plugin as we need do more than just unpack, so we might as well
+										keep all of that logic in the same configuration below. -->
+								<outputDirectory>${project.build.directory}</outputDirectory>
+								<outputFileName>CommunityModules.jar</outputFileName>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+		</plugins>
+	</build>
 </project>
