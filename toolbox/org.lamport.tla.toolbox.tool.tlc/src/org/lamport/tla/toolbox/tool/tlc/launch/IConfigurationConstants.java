@@ -70,6 +70,10 @@ public interface IConfigurationConstants
      */
     public static final String LAUNCH_VIEW = "view";
     /**
+     * the ALIAS to map from variables to values
+     */
+    public static final String LAUNCH_ALIAS = "alias";
+    /**
      * the POSTCONDITION to map from variables to values
      */
     public static final String LAUNCH_POST_CONDITION = "postCondition";

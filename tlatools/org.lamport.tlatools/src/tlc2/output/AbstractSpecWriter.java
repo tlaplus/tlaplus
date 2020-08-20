@@ -477,6 +477,22 @@ public abstract class AbstractSpecWriter {
 		}
 	}
 	
+	public void addAlias(final String aliasString, final String attributeName) {
+		if (aliasString.trim().length() != 0) {
+			final String id = SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.ALIAS_SCHEME);
+			
+			if (cfgBuffer != null) {
+				cfgBuffer.append(TLAConstants.COMMENT).append("ALIAS definition").append(TLAConstants.CR);
+				cfgBuffer.append("ALIAS").append(TLAConstants.CR).append(id).append(TLAConstants.CR);
+			}
+
+			tlaBuffer.append(TLAConstants.COMMENT).append("ALIAS definition ").append(TLAConstants.ATTRIBUTE);
+			tlaBuffer.append(attributeName).append(TLAConstants.CR);
+			tlaBuffer.append(id).append(TLAConstants.DEFINES).append(TLAConstants.CR).append(aliasString);
+			tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
+		}
+	}
+	
     /**
      * Assigns a right side to a label using an id generated from given schema
      * @param constant, constant containing the values

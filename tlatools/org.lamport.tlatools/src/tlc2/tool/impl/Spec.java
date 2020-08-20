@@ -212,6 +212,9 @@ abstract class Spec
             Assert.fail(EC.TLC_CONFIG_NO_STATE_TYPE);
         }
 
+        // A true constant-level alias such as such as [ x |-> "foo" ] will be evaluated
+        // eagerly and type be an instance of RecordValue.  It would be good to return a
+        // proper warning.
         Object type = this.defns.get(name);
         if (type == null)
         {

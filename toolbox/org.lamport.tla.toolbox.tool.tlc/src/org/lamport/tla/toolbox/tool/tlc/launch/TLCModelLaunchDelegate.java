@@ -592,6 +592,9 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                 
 				writer.addPostCondition(config.getAttribute(LAUNCH_POST_CONDITION, TLAConstants.EMPTY_STRING),
 						MODEL_PARAMETER_POST_CONDITION);
+				
+				writer.addAlias(config.getAttribute(LAUNCH_ALIAS, TLAConstants.EMPTY_STRING),
+						MODEL_PARAMETER_ALIAS);
             }
 
             // calculator expression

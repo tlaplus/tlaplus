@@ -83,6 +83,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 
     private SourceViewer m_viewSource;
     private SourceViewer postConditionSource;
+    private SourceViewer aliasSource;
 
     private Button m_depthFirstOptionCheckbox;
     private Button m_modelCheckModeOption;
@@ -401,6 +402,45 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gd.minimumWidth = 200;
         postConditionSource.getTextWidget().setLayoutData(gd);
         postConditionSource.getTextWidget().setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
+        
+        // label alias expression
+		final String aliasHelp = "TLC allows the cfg file to contain the statement ALIAS R\n" + 
+				"where R is the definition of a record in the spec or the model.  R's\n" + 
+				"component expressions can be formed from constant-, state-, and\n" + 
+				"action-level expressions.\n" + 
+				"When printing an error-trace, TLC evaluates the record R on every step\n" + 
+				"(pair or states s -> t) of the behavior that violated the property.\n" + 
+				"TLC prints the result r of the evaluation of R in place of s by formatting\n" +
+				"each component h_i of r as a conjunct s.t. (\"h_i\" = r[\"h_i\"]).\n" +
+				"If the evaluation of R fails for a step, TLC falls back to printing s.\n\n"
+				+ "Consider  ALIAS R  with\n" + 
+				"\n" + 
+				"   R == [x |-> x+1, sum |-> x + y', te |-> ENABLED A]\n" + 
+				"\n" + 
+				"for a state s with x = 42 and y = 24, a (successor) state t with\n" +
+			    "x = 23 and y = -42, and action A defined as x' \\in Nat /\\ y' \\in Nat\n" +
+				"will print s as\n" + 
+				"   \n" + 
+				"    /\\ x = 43\n" + 
+		        "    /\\ sum = 0\n" + 
+		        "    /\\ te = TRUE";
+        final Label aliasLabel = toolkit.createLabel(modeBody, "Alias:");
+        aliasLabel.setToolTipText(aliasHelp);
+        gd = new GridData();
+        gd.verticalAlignment = SWT.BEGINNING;
+        gd.horizontalIndent = 10;
+        aliasLabel.setLayoutData(gd);
+        // field view
+        aliasSource = FormHelper.createFormsSourceViewer(toolkit, modeBody, SWT.V_SCROLL);
+        aliasSource.getControl().setToolTipText(aliasHelp);
+        // layout of the source viewer
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.heightHint = 60;
+        gd.minimumWidth = 200;
+        aliasSource.getTextWidget().setLayoutData(gd);
+        aliasSource.getTextWidget().setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
        
         // Model checking mode
         m_modelCheckModeOption = toolkit.createButton(modeBody, "Model-checking mode", SWT.RADIO);
@@ -840,6 +880,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         
         updateEnabledStatesForAdvancedLaunchRadioSelection();
 
+        dm.bindAttribute(MODEL_PARAMETER_ALIAS, aliasSource, modePart);
         dm.bindAttribute(MODEL_PARAMETER_POST_CONDITION, postConditionSource, modePart);
         dm.bindAttribute(MODEL_PARAMETER_VIEW, m_viewSource, modePart);
         dm.bindAttribute(LAUNCH_RECOVER, m_checkpointRecoverCheckbox, featuresPart);
@@ -851,6 +892,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_modelCheckModeOption.addSelectionListener(modePartListener);
         m_viewSource.addTextListener(modePartListener);
         postConditionSource.addTextListener(modePartListener);
+        aliasSource.addTextListener(modePartListener);
         m_depthFirstOptionCheckbox.addSelectionListener(modePartListener);
         m_depthText.addModifyListener(modePartListener);
         m_simulationModeOption.addSelectionListener(modePartListener);
@@ -889,6 +931,10 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         final String view = model.getAttribute(LAUNCH_VIEW, EMPTY_STRING);
         m_viewSource.setDocument(new Document(view));
         
+    	// Alias Expression
+        final String alias = model.getAttribute(LAUNCH_ALIAS, EMPTY_STRING);
+        aliasSource.setDocument(new Document(alias));
+       
     	// Post Condition
         final String postCondition = model.getAttribute(LAUNCH_POST_CONDITION, EMPTY_STRING);
         postConditionSource.setDocument(new Document(postCondition));
@@ -1059,6 +1105,10 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         // post condition
         String postConditionFormula = FormHelper.trimTrailingSpaces(postConditionSource.getDocument().get());
         model.setAttribute(LAUNCH_POST_CONDITION, postConditionFormula);
+
+        // alias expression
+        String aliasFormula = FormHelper.trimTrailingSpaces(aliasSource.getDocument().get());
+        model.setAttribute(LAUNCH_ALIAS, aliasFormula);
 
 		// extra vm arguments (replace newlines which otherwise cause the
 		// process to ignore all args except the first one)
@@ -1281,6 +1331,21 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 								+ " because it contains a configuration file keyword.",
 						this.getId(), IMessageProvider.ERROR,
 						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_POST_CONDITION)));
+				setComplete(false);
+			}
+		}
+
+
+        // check if the alias expression field contains a cfg file keyword
+		final IDocument aliasDocument = aliasSource.getDocument();
+		if (aliasDocument != null) {
+			final String aliasString = FormHelper.trimTrailingSpaces(aliasDocument.get());
+			if (SemanticHelper.containsConfigFileKeyword(aliasString)) {
+				modelEditor.addErrorMessage(aliasString,
+						"The toolbox cannot handle the string " + aliasString
+								+ " because it contains a configuration file keyword.",
+						this.getId(), IMessageProvider.ERROR,
+						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_ALIAS)));
 				setComplete(false);
 			}
 		}
