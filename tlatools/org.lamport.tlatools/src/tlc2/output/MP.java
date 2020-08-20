@@ -1095,7 +1095,7 @@ public class MP
             if (TLCGlobals.tool)
             {
                 // same format as model checking progress reporting for easier parsing by the toolbox
-                b.append("Progress(" + NOT_APPLICABLE_VAL + ") at " + now()
+                b.append("Progress(%2%) at " + now()
                         + ": %1% states generated, " + NOT_APPLICABLE_VAL + " distinct states found, "
                         + NOT_APPLICABLE_VAL + " states left on queue.");
             } else
