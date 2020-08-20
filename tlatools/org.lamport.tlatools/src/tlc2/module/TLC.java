@@ -186,8 +186,11 @@ public class TLC implements ValueConstants
 					if (Thread.currentThread() instanceof SimulationWorker) {
 						// non-initial states.
 						final SimulationWorker sw = (SimulationWorker) Thread.currentThread();
-						final int traceCnt = sw.getTraceCnt();
-						return IntValue.gen(traceCnt);
+						final long traceCnt = sw.getTraceCnt();
+						if (traceCnt > Integer.MAX_VALUE) {
+							return IntValue.gen(Integer.MAX_VALUE);
+						}
+						return IntValue.gen((int) traceCnt);
 					} else {
 						// Called while evaluating the initial predicate/generating initial states.
 						return IntValue.gen(0);
