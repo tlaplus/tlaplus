@@ -317,7 +317,7 @@ public class TLC {
 		return true;
 	}
 
-	public static void setTraceNum(int aTraceNum) {
+	public static void setTraceNum(long aTraceNum) {
 		traceNum = aTraceNum;
 	}
 
@@ -357,7 +357,7 @@ public class TLC {
 					index++; // consume simulate args
 					for (String arg : simArgs) {
 						if (arg.startsWith("num=")) {
-							traceNum = Integer.parseInt(arg.replace("num=", ""));
+							traceNum = Long.parseLong(arg.replace("num=", ""));
 						} else if (arg.startsWith("file=")) {
 							traceFile = arg.replace("file=", "");
 						}

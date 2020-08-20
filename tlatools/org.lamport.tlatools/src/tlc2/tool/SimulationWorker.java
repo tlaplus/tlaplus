@@ -75,7 +75,7 @@ public class SimulationWorker extends IdThread {
 	private final BlockingQueue<SimulationWorkerResult> resultQueue;
 	
 	// Tracks the number of traces that have been generated so far.
-	private int traceCnt = 0;
+	private long traceCnt = 0;
 	
 	// The maximum number of traces this worker should generate before terminating.
 	private final long maxTraceNum;
@@ -460,7 +460,7 @@ public class SimulationWorker extends IdThread {
 		return Optional.empty();
 	}
 	
-	public final int getTraceCnt() {
+	public final long getTraceCnt() {
 		return this.traceCnt + 1; // +1 to account the currently generated behavior. 
 	}
 	
