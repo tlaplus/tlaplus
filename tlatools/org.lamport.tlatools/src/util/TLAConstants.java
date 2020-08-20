@@ -65,6 +65,7 @@ public final class TLAConstants {
 		public static final String INVARIANT_SCHEME = "inv";
 		public static final String PROP_SCHEME = "prop";
 		public static final String VIEW_SCHEME = "view";
+		public static final String POST_CONDITION_SCHEME = "postcondition";
 		public static final String CONSTANTEXPR_SCHEME = "const_expr";
 		public static final String TRACE_EXPR_VAR_SCHEME = "__trace_var";
 		public static final String TRACE_EXPR_DEF_SCHEME = "trace_def";

@@ -82,6 +82,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     private AtomicBoolean programmaticallySettingWorkerParameters;
 
     private SourceViewer m_viewSource;
+    private SourceViewer postConditionSource;
 
     private Button m_depthFirstOptionCheckbox;
     private Button m_modelCheckModeOption;
@@ -381,6 +382,26 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         gl.marginWidth = 2;
         modeBody.setLayout(gl);
         
+        // label post condition
+		final String postConditionHelp = "After executing the model, TLC evaluates the given constant-level, no-argument (zero-arity) operator.";
+        final Label postConditionLabel = toolkit.createLabel(modeBody, "Post Condition:");
+        postConditionLabel.setToolTipText(postConditionHelp);
+        gd = new GridData();
+        gd.verticalAlignment = SWT.BEGINNING;
+        gd.horizontalIndent = 10;
+        postConditionLabel.setLayoutData(gd);
+        // field view
+        postConditionSource = FormHelper.createFormsSourceViewer(toolkit, modeBody, SWT.V_SCROLL);
+        postConditionSource.getControl().setToolTipText(postConditionHelp);
+        // layout of the source viewer
+        gd = new GridData();
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        gd.heightHint = 60;
+        gd.minimumWidth = 200;
+        postConditionSource.getTextWidget().setLayoutData(gd);
+        postConditionSource.getTextWidget().setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
+       
         // Model checking mode
         m_modelCheckModeOption = toolkit.createButton(modeBody, "Model-checking mode", SWT.RADIO);
         gd = new GridData();
@@ -819,6 +840,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         
         updateEnabledStatesForAdvancedLaunchRadioSelection();
 
+        dm.bindAttribute(MODEL_PARAMETER_POST_CONDITION, postConditionSource, modePart);
         dm.bindAttribute(MODEL_PARAMETER_VIEW, m_viewSource, modePart);
         dm.bindAttribute(LAUNCH_RECOVER, m_checkpointRecoverCheckbox, featuresPart);
         
@@ -828,6 +850,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 
         m_modelCheckModeOption.addSelectionListener(modePartListener);
         m_viewSource.addTextListener(modePartListener);
+        postConditionSource.addTextListener(modePartListener);
         m_depthFirstOptionCheckbox.addSelectionListener(modePartListener);
         m_depthText.addModifyListener(modePartListener);
         m_simulationModeOption.addSelectionListener(modePartListener);
@@ -865,6 +888,10 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     	// view
         final String view = model.getAttribute(LAUNCH_VIEW, EMPTY_STRING);
         m_viewSource.setDocument(new Document(view));
+        
+    	// Post Condition
+        final String postCondition = model.getAttribute(LAUNCH_POST_CONDITION, EMPTY_STRING);
+        postConditionSource.setDocument(new Document(postCondition));
 
         // run mode mode
         final boolean isMCMode = model.getAttribute(LAUNCH_MC_MODE, LAUNCH_MC_MODE_DEFAULT);
@@ -1028,6 +1055,10 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         // view
         String viewFormula = FormHelper.trimTrailingSpaces(m_viewSource.getDocument().get());
         model.setAttribute(LAUNCH_VIEW, viewFormula);
+
+        // post condition
+        String postConditionFormula = FormHelper.trimTrailingSpaces(postConditionSource.getDocument().get());
+        model.setAttribute(LAUNCH_POST_CONDITION, postConditionFormula);
 
 		// extra vm arguments (replace newlines which otherwise cause the
 		// process to ignore all args except the first one)
@@ -1240,7 +1271,21 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			}
 		}
 
-        mm.setAutoUpdate(true);
+        // check if the post condition field contains a cfg file keyword
+		final IDocument postConditionDocument = postConditionSource.getDocument();
+		if (postConditionDocument != null) {
+			final String postConditionString = FormHelper.trimTrailingSpaces(postConditionDocument.get());
+			if (SemanticHelper.containsConfigFileKeyword(postConditionString)) {
+				modelEditor.addErrorMessage(postConditionString,
+						"The toolbox cannot handle the string " + postConditionString
+								+ " because it contains a configuration file keyword.",
+						this.getId(), IMessageProvider.ERROR,
+						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_POST_CONDITION)));
+				setComplete(false);
+			}
+		}
+
+		mm.setAutoUpdate(true);
 
                 
         // fpBits
@@ -1373,6 +1418,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		dm.unbindSectionAndAttribute(LAUNCH_NUMBER_OF_WORKERS);
 		dm.unbindSectionAndAttribute(LAUNCH_RECOVER);
 		dm.unbindSectionAndAttribute(MODEL_PARAMETER_VIEW);
+		dm.unbindSectionAndAttribute(MODEL_PARAMETER_POST_CONDITION);
 	}
     
     private String generateMemoryDisplayText () {

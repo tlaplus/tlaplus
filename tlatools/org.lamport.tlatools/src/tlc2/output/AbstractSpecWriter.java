@@ -461,6 +461,22 @@ public abstract class AbstractSpecWriter {
 		}
 	}
 	
+	public void addPostCondition(final String postConditionString, final String attributeName) {
+		if (postConditionString.trim().length() != 0) {
+			final String id = SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.POST_CONDITION_SCHEME);
+			
+			if (cfgBuffer != null) {
+				cfgBuffer.append(TLAConstants.COMMENT).append("POSTCONDITION definition").append(TLAConstants.CR);
+				cfgBuffer.append("POSTCONDITION").append(TLAConstants.CR).append(id).append(TLAConstants.CR);
+			}
+
+			tlaBuffer.append(TLAConstants.COMMENT).append("POSTCONDITION definition ").append(TLAConstants.ATTRIBUTE);
+			tlaBuffer.append(attributeName).append(TLAConstants.CR);
+			tlaBuffer.append(id).append(TLAConstants.DEFINES).append(TLAConstants.CR).append(postConditionString);
+			tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
+		}
+	}
+	
     /**
      * Assigns a right side to a label using an id generated from given schema
      * @param constant, constant containing the values
