@@ -1279,6 +1279,13 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		return this.launchConfig.hasAttribute(key);
 	}
 	
+	public long getAttribute(String key, long defaultValue) throws CoreException {
+		// TODO Replace this generic lookup method with real getters for the
+		// various keys. E.g. see getEvalExpression/unsavedSetEvalExpression
+		final String l = this.launchConfig.getAttribute(key, Long.toString(defaultValue));
+		return Long.valueOf(l);
+	}
+	
 	public int getAttribute(String key, int defaultValue) throws CoreException {
 		// TODO Replace this generic lookup method with real getters for the
 		// various keys. E.g. see getEvalExpression/unsavedSetEvalExpression
@@ -1311,6 +1318,10 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
 		} catch (CoreException shouldNotHappen) {
 			TLCActivator.logError(shouldNotHappen.getMessage(), shouldNotHappen);
 		}
+	}
+
+	public void setAttribute(String key, long value) {
+		setAttribute(key, Long.toString(value));
 	}
 
 	public void setAttribute(String key, String value) {

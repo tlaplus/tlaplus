@@ -78,6 +78,10 @@ public interface IConfigurationConstants
      */
     public static final String LAUNCH_DFID_DEPTH = "dfidDepth";
     /**
+     * the number of traces to generate by simulation.
+     */
+    public static final String LAUNCH_SIMU_NUM_TRACES = "simuNumTraces";
+    /**
      * the depth of simulation run 
      */
     public static final String LAUNCH_SIMU_DEPTH = "simuDepth";

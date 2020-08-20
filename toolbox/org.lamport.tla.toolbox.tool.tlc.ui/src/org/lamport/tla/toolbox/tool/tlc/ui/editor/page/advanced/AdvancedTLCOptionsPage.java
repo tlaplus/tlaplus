@@ -92,6 +92,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     private Text m_simulationDepthText;
     private Text m_simulationSeedText;
     private Text m_simulationArilText;
+    private Text m_simulationNumTracesText;
     
     // The widgets to display the checkpoint size and the delete button.
     private Button m_checkpointRecoverCheckbox;
@@ -450,8 +451,25 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			}
 		});
 
+        // label number of traces
+        final Label numTracesLabel = toolkit.createLabel(modeBody, "Maximum number of traces:");
+        numTracesLabel.setToolTipText("Leave empty to generate an unlimited number (2^64-1) of traces.");
+        gd = new GridData();
+        gd.horizontalIndent = 10;
+        numTracesLabel.setLayoutData(gd);
+        // field depth
+        m_simulationNumTracesText = toolkit.createText(modeBody, "");
+        m_simulationNumTracesText.setToolTipText("Leave empty to generate an unlimited number (2^64-1) of traces.");
+        gd = new GridData();
+        gd.minimumWidth = 100;
+        gd.horizontalAlignment = SWT.FILL;
+        gd.grabExcessHorizontalSpace = true;
+        m_simulationNumTracesText.setLayoutData(gd);
+        m_simulationNumTracesText.addFocusListener(focusListener);
+        m_simulationNumTracesText.setData(DataBindingManager.WIDGET_HAS_ENABLED_STATE_HANDLED_ELSEWHERE, new Object());
+        
         // label depth
-        final Label depthLabel = toolkit.createLabel(modeBody, "Maximum length of the trace:");
+        final Label depthLabel = toolkit.createLabel(modeBody, "Maximum length of each trace:");
         gd = new GridData();
         gd.horizontalIndent = 10;
         depthLabel.setLayoutData(gd);
@@ -813,6 +831,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_depthFirstOptionCheckbox.addSelectionListener(modePartListener);
         m_depthText.addModifyListener(modePartListener);
         m_simulationModeOption.addSelectionListener(modePartListener);
+        m_simulationNumTracesText.addModifyListener(modePartListener);
         m_simulationDepthText.addModifyListener(modePartListener);
         m_simulationSeedText.addModifyListener(modePartListener);
         m_simulationArilText.addModifyListener(modePartListener);
@@ -861,6 +880,14 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         m_depthFirstOptionCheckbox.setSelection(isDFIDMode);
         m_depthText.setEnabled(isDFIDMode);
 
+        // simulation number of traces
+        final long simuNumTraces = model.getAttribute(LAUNCH_SIMU_NUM_TRACES, LAUNCH_SIMU_NUM_TRACES_DEFAULT);
+        if (simuNumTraces == Long.MAX_VALUE) {
+        	m_simulationNumTracesText.setText("");
+        } else {
+        	m_simulationNumTracesText.setText("" + simuNumTraces);
+        }
+        
         // simulation depth
         final int simuDepth = model.getAttribute(LAUNCH_SIMU_DEPTH, LAUNCH_SIMU_DEPTH_DEFAULT);
         m_simulationDepthText.setText("" + simuDepth);
@@ -957,6 +984,14 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 
         // DFID depth
 		model.setAttribute(LAUNCH_DFID_DEPTH, dfidDepth);
+		// simulation number traces
+		final String simuNumTracesS = m_simulationNumTracesText.getText();
+		long simuNumTraces = Long.MAX_VALUE;
+		if (!"".equals(simuNumTracesS)) {
+			simuNumTraces = Long.parseLong(simuNumTracesS);
+		}
+		model.setAttribute(LAUNCH_SIMU_NUM_TRACES, simuNumTraces);
+		
         // simulation depth
 		model.setAttribute(LAUNCH_SIMU_DEPTH, simuDepth);
         // simulation aril
@@ -1104,9 +1139,29 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			expandSection(SEC_TLCOPT_CHECK_MODE);
 		}
 		try {
+			// no/empty value is default.
+			if (!"".equals(m_simulationNumTracesText.getText().trim())) {
+				long simuNumTraces = Long.parseLong(m_simulationNumTracesText.getText());
+				if (simuNumTraces <= 0) {
+					modelEditor.addErrorMessage("simuNumTraces1", "Length of the number of traces must be a positive long or empty for unlimited.",
+							this.getId(), IMessageProvider.ERROR, m_simulationNumTracesText);
+					setComplete(false);
+					expandSection(SEC_TLCOPT_CHECK_MODE);
+				} else {
+					modelEditor.removeErrorMessage("simuNumTraces1", m_simulationNumTracesText);
+				}
+				modelEditor.removeErrorMessage("simuNumTraces2", m_simulationNumTracesText);
+			}
+		} catch (NumberFormatException e) {
+			modelEditor.addErrorMessage("simuNumTraces2", "Length of the number of traces must be a positive long or empty for unlimited.",
+					this.getId(), IMessageProvider.ERROR, m_simulationNumTracesText);
+			setComplete(false);
+			expandSection(SEC_TLCOPT_CHECK_MODE);
+		}
+		try {
 			int simuDepth = Integer.parseInt(m_simulationDepthText.getText());
 			if (simuDepth <= 0) {
-				modelEditor.addErrorMessage("simuDepth1", "Length of the simulation tracemust be a positive integer",
+				modelEditor.addErrorMessage("simuDepth1", "Length of the simulation trace must be a positive integer.",
 						this.getId(), IMessageProvider.ERROR, m_simulationDepthText);
 				setComplete(false);
 				expandSection(SEC_TLCOPT_CHECK_MODE);
@@ -1117,7 +1172,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			// Call of removeErrorMessage added by LL on 21 Mar 2013
 			modelEditor.removeErrorMessage("simuDepth2", m_simulationDepthText);
 		} catch (NumberFormatException e) {
-			modelEditor.addErrorMessage("simuDepth2", "Length of the simulation trace must be a positive integer",
+			modelEditor.addErrorMessage("simuDepth2", "Length of the simulation trace must be a positive integer.",
 					this.getId(), IMessageProvider.ERROR, m_simulationDepthText);
 			setComplete(false);
 			expandSection(SEC_TLCOPT_CHECK_MODE);
@@ -1126,7 +1181,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 			try {
 				long simuAril = Long.parseLong(m_simulationArilText.getText());
 				if (simuAril <= 0) {
-					modelEditor.addErrorMessage("simuAril1", "The simulation aril must be a positive integer",
+					modelEditor.addErrorMessage("simuAril1", "The simulation aril must be a positive integer.",
 							this.getId(), IMessageProvider.ERROR, m_simulationArilText);
 					setComplete(false);
 				} else {
@@ -1136,7 +1191,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				// Call of removeErrorMessage added by LL on 21 Mar 2013
 				modelEditor.removeErrorMessage("simuAril2", m_simulationArilText);
 			} catch (NumberFormatException e) {
-				modelEditor.addErrorMessage("simuAril2", "The simulation aril must be a positive integer", this.getId(),
+				modelEditor.addErrorMessage("simuAril2", "The simulation aril must be a positive integer.", this.getId(),
 						IMessageProvider.ERROR, m_simulationArilText);
 				setComplete(false);
 				expandSection(SEC_TLCOPT_CHECK_MODE);
@@ -1149,7 +1204,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 				modelEditor.removeErrorMessage("simuSeed1", m_simulationSeedText);
 
 			} catch (NumberFormatException e) {
-				modelEditor.addErrorMessage("simuSeed1", "The simulation aril must be a positive integer", this.getId(),
+				modelEditor.addErrorMessage("simuSeed1", "The simulation aril must be a positive integer.", this.getId(),
 						IMessageProvider.ERROR, m_simulationSeedText);
 				expandSection(SEC_TLCOPT_CHECK_MODE);
 				setComplete(false);
@@ -1265,6 +1320,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
     		m_depthText.setEnabled(m_depthFirstOptionCheckbox.getSelection());
     	}
     	
+    	m_simulationNumTracesText.setEnabled(simulationMode);
     	m_simulationDepthText.setEnabled(simulationMode);
     	m_simulationSeedText.setEnabled(simulationMode);
     	m_simulationArilText.setEnabled(simulationMode);

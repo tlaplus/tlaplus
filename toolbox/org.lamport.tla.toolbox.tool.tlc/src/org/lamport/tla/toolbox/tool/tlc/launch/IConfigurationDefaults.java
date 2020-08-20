@@ -84,6 +84,10 @@ public interface IConfigurationDefaults
      */
     public static final int LAUNCH_DFID_DEPTH_DEFAULT = 100;
     /** 
+     * Default depth for Simulation is 0 
+     */
+    public static final long LAUNCH_SIMU_NUM_TRACES_DEFAULT = Long.MAX_VALUE;
+    /** 
      * Default depth for Simulation is 100 
      */
     public static final int LAUNCH_SIMU_DEPTH_DEFAULT = 100;
