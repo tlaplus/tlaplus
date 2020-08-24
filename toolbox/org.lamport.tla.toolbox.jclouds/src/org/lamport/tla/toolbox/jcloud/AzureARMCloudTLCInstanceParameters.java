@@ -176,7 +176,7 @@ public class AzureARMCloudTLCInstanceParameters extends AzureCloudTLCInstancePar
 		// https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest
 		return "echo \"deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list"
 				+ " && "
-				+ "apt-key adv --keyserver packages.microsoft.com --recv-keys BC528686B50D79E339D3721CEB3E94ADBE1229CF";
+				+ "curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null";
 	}
 
 	/* (non-Javadoc)
