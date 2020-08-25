@@ -31,4 +31,13 @@ public interface ValueEnumeration {
 			action.accept(elem);
 		}
 	}
+	
+	default SetEnumValue asSet() {
+		final ValueVec vv = new ValueVec();
+		Value elem;
+		while ((elem = nextElement()) != null) {
+			vv.addElement(elem);
+		}
+		return new SetEnumValue(vv, false);
+	}
 }

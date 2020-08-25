@@ -683,6 +683,20 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			this.elems.sort(true);
 			return this;
 		}
+		
+		@Override
+		public SetEnumValue asSet() {
+			final ValueVec vv = new ValueVec(numKSubsetElems);
+			Value elem;
+			while ((elem = nextElement()) != null) {
+				vv.addElement(elem);
+			}
+			return new SetEnumValue(vv, false);
+		}
+	}
+
+	public final Value kSubset(int k) {
+		return kElements(k).asSet();
 	}
 	
 	@Override
