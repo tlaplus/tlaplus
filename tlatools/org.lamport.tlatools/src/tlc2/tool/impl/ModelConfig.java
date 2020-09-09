@@ -350,7 +350,7 @@ public class ModelConfig implements ValueConstants, Serializable {
                                 while (true)
                                 {
                                     tt = getNextToken(tmgr, buf);
-                                    IValue arg = this.parseValue(tt, scs, tmgr);
+                                    IValue arg = this.parseValue(tt, scs, tmgr, buf);
                                     line.addElement(arg);
                                     tt = getNextToken(tmgr, buf);
                                     if (!tt.image.equals(","))
@@ -385,7 +385,7 @@ public class ModelConfig implements ValueConstants, Serializable {
                                             String.valueOf(scs.getBeginLine()), "]" });
                                 }
                                 tt = getNextToken(tmgr, buf);
-                                line.addElement(this.parseValue(tt, scs, tmgr));
+                                line.addElement(this.parseValue(tt, scs, tmgr, buf));
                                 Vect mConsts = (Vect) this.modConstants.get(modName);
                                 if (mConsts == null)
                                 {
@@ -396,7 +396,7 @@ public class ModelConfig implements ValueConstants, Serializable {
                             } else
                             {
                                 // This is a main module override:
-                                line.addElement(this.parseValue(tt, scs, tmgr));
+                                line.addElement(this.parseValue(tt, scs, tmgr, buf));
                                 constants.addElement(line);
                             }
                         }
@@ -470,7 +470,7 @@ public class ModelConfig implements ValueConstants, Serializable {
     /**
      * Parses a value (number, string, boolean and set)
      */
-    private Value parseValue(Token tt, SimpleCharStream scs, TLAplusParserTokenManager tmgr) throws IOException
+    private Value parseValue(Token tt, SimpleCharStream scs, TLAplusParserTokenManager tmgr, final StringBuffer buf) throws IOException
     {
         if (tt.kind == TLAplusParserConstants.NUMBER_LITERAL)
         {
@@ -489,17 +489,17 @@ public class ModelConfig implements ValueConstants, Serializable {
         } else if (tt.image.equals("{"))
         {
             ValueVec elems = new ValueVec();
-            tt = getNextToken(tmgr);
+            tt = getNextToken(tmgr, buf);
             if (!tt.image.equals("}"))
             {
                 while (true)
                 {
-                	Value elem = this.parseValue(tt, scs, tmgr);
+                	Value elem = this.parseValue(tt, scs, tmgr, buf);
                     elems.addElement(elem);
-                    tt = getNextToken(tmgr);
+                    tt = getNextToken(tmgr, buf);
                     if (!tt.image.equals(","))
                         break;
-                    tt = getNextToken(tmgr);
+                    tt = getNextToken(tmgr, buf);
                 }
             }
             if (!tt.image.equals("}"))
