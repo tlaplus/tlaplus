@@ -144,7 +144,7 @@ public class InliningTest extends ModelCheckerTestCase {
 				}
 			}
 			System.out.println(methodNameMatch);
-//			return false;
+			return false;
 		}
 		return true;
 	}
