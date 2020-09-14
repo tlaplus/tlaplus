@@ -145,7 +145,7 @@ public class Simulator {
 	private long aril;
 
 	// Each simulation worker pushes their results onto this shared queue.
-	private BlockingQueue<SimulationWorkerResult> workerResultQueue = new LinkedBlockingQueue<>();
+	private final BlockingQueue<SimulationWorkerResult> workerResultQueue = new LinkedBlockingQueue<>();
 	
     /**
      * Timestamp of when simulation started.
@@ -397,7 +397,13 @@ public class Simulator {
 				// Last state's successor is itself.
 				final TLCState sucState = stateTrace.elementAt(Math.min(i + 1, stateTrace.size() - 1));
 				if (lastState != null) {
-					sinfo = new TLCStateInfo(curState, tool.getActions()[sucState.getActionId()].getLocation());
+					// Contrary to BFS/ModelChecker, simulation remembers the action (its id) during
+					// trace exploration to print the error-trace without re-evaluating the
+					// next-state relation for lastStates -> cusState (tool.getState(curState,
+					// lastState)) to determine the action.  This would fail for specs whose next-state
+					// relation is probabilistic (ie. TLC!RandomElement or Randomization.tla). In other
+					// words, tool.getState(curState,lastState) would return for some pairs of states.
+					sinfo = new TLCStateInfo(curState, tool.getActions()[curState.getActionId()].getLocation());
 				} else {
 					sinfo = new TLCStateInfo(curState, "<Initial predicate>");
 					StatePrinter.printState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
