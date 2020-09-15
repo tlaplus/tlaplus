@@ -607,6 +607,10 @@
 						<exclude name="**/DetlefsTest.java" />
 						<exclude name="**/StarkMutexTest.java" />
 						<exclude name="**/SimpleMultiProcTest.java" />
+						<!-- The test checks if Tool/FastTool methods are correctly inlined during (long) 
+						     model-checking. It fails with this target but passes with test.  I assume
+						     this is because test-dist records coverage, which, perhaps, interferes with inlining. -->
+						<exclude name="**/InliningTest.java" />
 					</fileset>
 				</batchtest>
 				<batchtest fork="yes" todir="${test.reports}">
