@@ -375,11 +375,13 @@ public class SimulationWorker extends IdThread {
 					for (idx = 0; idx < this.tool.getInvariants().length; idx++) {
 						if (!tool.isValid(this.tool.getInvariants()[idx], state)) {
 							// We get here because of an invariant violation.
+							state.setActionId(index);
 							return Optional.of(new SimulationWorkerError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
 									new String[] { tool.getInvNames()[idx] }, state, stateTrace, null));
 						}
 					}
 				} catch (final Exception e) {
+					state.setActionId(index);
 					return Optional.of(new SimulationWorkerError(EC.TLC_INVARIANT_EVALUATION_FAILED,
 							new String[] { tool.getInvNames()[idx], e.getMessage() }, state, stateTrace, null));
 				}
@@ -389,11 +391,13 @@ public class SimulationWorker extends IdThread {
 					for (idx = 0; idx < this.tool.getImpliedActions().length; idx++) {
 						if (!tool.isValid(this.tool.getImpliedActions()[idx], curState, state)) {
 							// We get here because of implied-action violation.
+							state.setActionId(index);
 							return Optional.of(new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
 									new String[] { tool.getImpliedActNames()[idx] }, state, stateTrace, null));
 						}
 					}
 				} catch (final Exception e) {
+					state.setActionId(index);
 					return Optional.of(new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
 							new String[] { tool.getImpliedActNames()[idx], e.getMessage() }, state, stateTrace, null));
 				}
