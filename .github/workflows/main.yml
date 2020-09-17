@@ -167,6 +167,7 @@ jobs:
            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av tlatools/org.lamport.tlatools/dist/tla2tools.jar github@upload.tlapl.us:dist/
            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.product.product/target/products/*.zip github@upload.tlapl.us:products/
            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.product.product/target/repository/ github@upload.tlapl.us:repository/
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.doc/html/ github@upload.tlapl.us:doc/
 
     ## 
     ## Update all git tags to make the download urls work, i.e.
