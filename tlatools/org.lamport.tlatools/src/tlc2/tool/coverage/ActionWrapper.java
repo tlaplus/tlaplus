@@ -36,7 +36,7 @@ import tlc2.tool.Action;
 public final class ActionWrapper extends CostModelNode {
 
 	public enum Relation {
-		INIT, NEXT, PROP;
+		INIT, NEXT, PROP, CONSTRAINT;
 	}
 	
 	private final Action action;
@@ -146,6 +146,10 @@ public final class ActionWrapper extends CostModelNode {
 			// found and distinct states into the same counters.
 			MP.printMessage(EC.TLC_COVERAGE_INIT, new String[] { printLocation(), String.valueOf(getEvalCount()),
 					String.valueOf(getEvalCount() + this.secondary.getCount()) });
+		} else if (relation == Relation.CONSTRAINT) {
+			MP.printMessage(EC.TLC_COVERAGE_CONSTRAINT,
+					new String[] { printLocation(), String.valueOf(this.secondary.getCount()),
+							String.valueOf(getEvalCount() + this.secondary.getCount()) });
 		} else {
 			MP.printMessage(EC.TLC_COVERAGE_NEXT, new String[] { printLocation(),
 					String.valueOf(this.secondary.getCount()), String.valueOf(getEvalCount()) });

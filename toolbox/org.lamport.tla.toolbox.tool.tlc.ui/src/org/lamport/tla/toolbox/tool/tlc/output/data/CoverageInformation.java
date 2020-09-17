@@ -98,6 +98,7 @@ public class CoverageInformation {
 			return items.stream()
 					.filter(item -> ((item instanceof ActionInformationItem)
 							&& ((ActionInformationItem) item).getRelation() != Relation.PROP
+							&& ((ActionInformationItem) item).getRelation() != Relation.CONSTRAINT
 							&& (((ActionInformationItem) item).getCount() == 0)))
 					.map(item -> (ActionInformationItem) item).collect(Collectors.toList());
 		}
@@ -108,6 +109,7 @@ public class CoverageInformation {
 			return items.stream()
 					.filter(item -> ((item instanceof ActionInformationItem)
 							&& ((ActionInformationItem) item).getRelation() != Relation.PROP
+							&& ((ActionInformationItem) item).getRelation() != Relation.CONSTRAINT
 							&& (((ActionInformationItem) item).getCount() == 0)))
 					.findAny().isPresent();
 		}
@@ -117,7 +119,8 @@ public class CoverageInformation {
 		synchronized (items) {
 			return items.stream()
 					.filter(item -> ((item instanceof ActionInformationItem)
-							&& ((ActionInformationItem) item).getRelation() != Relation.PROP))
+							&& ((ActionInformationItem) item).getRelation() != Relation.PROP)
+							&& ((ActionInformationItem) item).getRelation() != Relation.CONSTRAINT)
 					.map(item -> (ActionInformationItem) item).collect(Collectors.toList());
 		}
 	}

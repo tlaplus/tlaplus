@@ -53,6 +53,10 @@ public class ActionInformationItem extends CoverageInformationItem {
 		return parseInitAndNext(Relation.NEXT, outputMessage, modelName);
 	}
 
+	public static ActionInformationItem parseConstraint(String outputMessage, String modelName) {
+		return parseInitAndNext(Relation.CONSTRAINT, outputMessage, modelName);
+	}
+	
 	private static ActionInformationItem parseInitAndNext(Relation rel, String outputMessage, String modelName) {
 		final Matcher matcher = pattern.matcher(outputMessage);
 		matcher.find();
@@ -140,7 +144,7 @@ public class ActionInformationItem extends CoverageInformationItem {
 
 	@Override
     public boolean includeInCounts() {
-		if (relation == Relation.PROP && count == 0) {
+		if ((relation == Relation.PROP && count == 0) || relation == Relation.CONSTRAINT) {
 			// Count should always be zero but better be safe than sorry. The reason to
 			// exclude PROP from counts is to prevent bogus zero coverage reports for
 			// properties. Consider the spec below:
@@ -277,6 +281,19 @@ public class ActionInformationItem extends CoverageInformationItem {
 				return String.format(
 						"Action %s%s:\n- %,d state%s found with %,d distinct (%.2f%%)\n- Contributes %.2f%% to total number of distinct states across all actions\n",
 						name, definition, getCount(), getCount() == 1 ? "" : "s", getUnseen(), overhead, ratio);
+			}
+		} else if (relation == Relation.CONSTRAINT) {
+			if (getCount() == getUnseen()) {
+				return String.format(
+						"Constraint %s%s:\n- Constraint did not restrict the state-space at all and accepted all states.\n",
+						name, definition);
+			} else if (getUnseen() == 0) {
+				return String.format(
+						"Constraint %s%s:\n- Constraint too restrictive because it did not accept any states.\n", name,
+						definition);
+			} else {
+				return String.format("Constraint %s%s:\n- Accepted %s out of %s state%s.\n", name, definition,
+						getUnseen(), getCount(), getCount() == 1 ? "" : "s");
 			}
 		} else if (relation == Relation.INIT) {
 			return String.format("Action %s%s (Init):\n- %,d state%s found", name, definition, getCount(),

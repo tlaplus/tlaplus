@@ -99,6 +99,8 @@ public class CoverageStatisticsTest extends AbstractCoverageTest {
 				"  line 42, col 8 to line 42, col 16 of module CoverageStatistics: 38\n" + 
 				"  |line 42, col 8 to line 42, col 8 of module CoverageStatistics: 19\n" + 
 				"  |line 42, col 14 to line 42, col 16 of module CoverageStatistics: 19\n" + 
-				"  line 42, col 21 to line 42, col 34 of module CoverageStatistics: 19");
+				"  line 42, col 21 to line 42, col 34 of module CoverageStatistics: 19\n"
+				+ "<Constraint line 48, col 1 to line 48, col 10 of module CoverageStatistics>: 97:98\n" + 
+				"  line 48, col 15 to line 48, col 20 of module CoverageStatistics: 98");
     }
 }

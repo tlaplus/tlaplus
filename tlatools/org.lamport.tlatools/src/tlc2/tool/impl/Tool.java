@@ -2490,11 +2490,21 @@ public abstract class Tool
   public final boolean isInModel(TLCState state) throws EvalException {
     ExprNode[] constrs = this.getModelConstraints();
     for (int i = 0; i < constrs.length; i++) {
-      IValue bval = this.eval(constrs[i], Context.Empty, state, CostModel.DO_NOT_RECORD);
+      final CostModel cm = coverage ? ((Action) constrs[i].getToolObject(toolId)).cm : CostModel.DO_NOT_RECORD;
+      IValue bval = this.eval(constrs[i], Context.Empty, state, cm);
       if (!(bval instanceof BoolValue)) {
         Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
       }
-      if (!((BoolValue)bval).val) return false;
+      if (!((BoolValue)bval).val) {
+  		  if (coverage) {
+  			  cm.incInvocations();
+		  }
+    	  return false;
+      } else {
+  		  if (coverage) {
+  			  cm.incSecondary();
+		  }
+      }
     }
     return true;
   }
@@ -2504,11 +2514,21 @@ public abstract class Tool
   public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
     ExprNode[] constrs = this.getActionConstraints();
     for (int i = 0; i < constrs.length; i++) {
-      Value bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, CostModel.DO_NOT_RECORD);
+      final CostModel cm = coverage ? ((Action) constrs[i].getToolObject(toolId)).cm : CostModel.DO_NOT_RECORD;
+      Value bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, cm);
       if (!(bval instanceof BoolValue)) {
         Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
       }
-      if (!((BoolValue)bval).val) return false;
+      if (!((BoolValue)bval).val) {
+  		  if (coverage) {
+			  cm.incInvocations();
+		  }
+    	  return false;
+      } else {
+  		  if (coverage) {
+  			  cm.incSecondary();
+		  }
+      }
     }
     return true;
   }

@@ -506,6 +506,10 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                     this.coverageInfo.add(ActionInformationItem.parseNext(outputMessage, getModelName()));
                     informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
                     break;
+                case EC.TLC_COVERAGE_CONSTRAINT:
+                    this.coverageInfo.add(ActionInformationItem.parseConstraint(outputMessage, getModelName()));
+                    informPresenter(ITLCModelLaunchDataPresenter.COVERAGE);
+                    break;
                 case EC.TLC_COVERAGE_VALUE_COST:
                     CoverageInformationItem item = CoverageInformationItem.parseCost(outputMessage, getModelName());
                     this.coverageInfo.add(item);

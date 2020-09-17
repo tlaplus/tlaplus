@@ -1418,7 +1418,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	            {
 	                Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "action constraint", name });
 	            }
-	            this.actionConstraints[idx++] = def.getBody();
+	            final ExprNode body = def.getBody();
+				// Remember OpDefNode of body because CostModelCreator needs it to correctly
+				// report state statistics (CostModelCreator#create will later replace it
+	            // with an Action instance).
+	            assert body.getToolObject(toolId) == null;
+	            body.setToolObject(toolId, def);
+	            this.actionConstraints[idx++] = body;
 	        } else if (constr != null)
 	        {
 	            if (!(constr instanceof IBoolValue) || !((BoolValue) constr).val)
@@ -1458,7 +1464,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	            {
 	                Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "constraint", name });
 	            }
-	            this.modelConstraints[idx++] = def.getBody();
+	            final ExprNode body = def.getBody();
+				// Remember OpDefNode of body because CostModelCreator needs it to correctly
+				// report state statistics (CostModelCreator#create will later replace it
+	            // with an Action instance).
+	            assert body.getToolObject(toolId) == null;
+	            body.setToolObject(toolId, def);
+				this.modelConstraints[idx++] = body;
 	        } else if (constr != null)
 	        {
 	            if (!(constr instanceof IBoolValue) || !((BoolValue) constr).val)

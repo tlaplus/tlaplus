@@ -247,4 +247,8 @@ public interface ITool extends TraceApp {
 
 	SpecProcessor getSpecProcessor();
 
+	ExprNode[] getActionConstraints();
+
+	ExprNode[] getModelConstraints();
+
 }

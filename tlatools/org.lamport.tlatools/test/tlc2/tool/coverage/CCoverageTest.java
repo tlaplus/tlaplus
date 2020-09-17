@@ -120,6 +120,8 @@ public class CCoverageTest extends AbstractCoverageTest {
 				"  ||line 60, col 15 to line 60, col 28 of module C: 21\n" + 
 				"  ||line 61, col 17 to line 62, col 27 of module C: 21\n" + 
 				"  |||line 61, col 32 to line 62, col 27 of module C: 105\n" + 
-				"  |||line 61, col 26 to line 61, col 29 of module C: 21");
+				"  |||line 61, col 26 to line 61, col 29 of module C: 21\n"
+				+ "<Constraint line 42, col 1 to line 42, col 10 of module C>: 252:253\n" + 
+				"  line 42, col 15 to line 42, col 20 of module C: 253");
     }
 }

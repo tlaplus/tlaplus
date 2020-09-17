@@ -393,6 +393,23 @@ public class CostModelCreator extends ExplorerVisitor {
 			invariant.cm = collector.getCM(invariant, Relation.PROP);
 		}
 		
+		// action constraints
+		final ExprNode[] actionConstraints = tool.getActionConstraints();
+		for (ExprNode exprNode : actionConstraints) {
+			final OpDefNode odn = (OpDefNode) exprNode.getToolObject(tool.getId());
+			final Action act = new Action(exprNode, Context.Empty, odn);
+			act.cm = collector.getCM(act, Relation.CONSTRAINT);
+			exprNode.setToolObject(tool.getId(), act);
+		}
+		// state constraints
+		final ExprNode[] modelConstraints = tool.getModelConstraints();
+		for (ExprNode exprNode : modelConstraints) {
+			final OpDefNode odn = (OpDefNode) exprNode.getToolObject(tool.getId());
+			final Action act = new Action(exprNode, Context.Empty, odn);
+			act.cm = collector.getCM(act, Relation.CONSTRAINT);
+			exprNode.setToolObject(tool.getId(), act);
+		}
+		
         // https://github.com/tlaplus/tlaplus/issues/413#issuecomment-577304602
         if (Boolean.getBoolean(CostModelCreator.class.getName() + ".implied")) {
     		for (Action impliedInits : tool.getImpliedInits()) {
@@ -438,7 +455,20 @@ public class CostModelCreator extends ExplorerVisitor {
         for (Action invariant : tool.getInvariants()) {
         	//TODO May need to be ordered similar to next-state actions above.
         	invariant.cm.report();
-		}	
+		}
+        
+		// action constraints
+		final ExprNode[] actionConstraints = tool.getActionConstraints();
+		for (ExprNode exprNode : actionConstraints) {
+			final Action act = (Action) exprNode.getToolObject(tool.getId());
+			act.cm.report();
+		}
+		// state constraints
+		final ExprNode[] modelConstraints = tool.getModelConstraints();
+		for (ExprNode exprNode : modelConstraints) {
+			final Action act = (Action) exprNode.getToolObject(tool.getId());
+			act.cm.report();
+		}
         
         // https://github.com/tlaplus/tlaplus/issues/413#issuecomment-577304602
         if (Boolean.getBoolean(CostModelCreator.class.getName() + ".implied")) {

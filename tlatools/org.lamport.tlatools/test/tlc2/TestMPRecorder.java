@@ -147,8 +147,10 @@ public class TestMPRecorder extends tlc2.output.MPRecorder {
 		final List<Object> init = getRecordsOrDefault(EC.TLC_COVERAGE_INIT, new ArrayList<>(0));
 		final List<Object> next = getRecordsOrDefault(EC.TLC_COVERAGE_NEXT, new ArrayList<>(0));
 		final List<Object> prop = getRecordsOrDefault(EC.TLC_COVERAGE_PROPERTY, new ArrayList<>(0));
+		final List<Object> con = getRecordsOrDefault(EC.TLC_COVERAGE_CONSTRAINT, new ArrayList<>(0));
 		init.addAll(next);
 		init.addAll(prop);
+		init.addAll(con);
 
 		return init.stream().map(o -> (String[]) o).map(a -> new Coverage(a)).filter(Coverage::isAction)
 				.collect(Collectors.toList());

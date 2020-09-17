@@ -1119,6 +1119,9 @@ public class MP
         case EC.TLC_COVERAGE_NEXT:
        		b.append("%1%: %2%:%3%");
             break;
+        case EC.TLC_COVERAGE_CONSTRAINT:
+       		b.append("%1%: %2%:%3%");
+            break;
         case EC.TLC_COVERAGE_PROPERTY:
        		b.append("%1%");
             break;
