@@ -707,7 +707,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	}
 
   @Override
-  public final ValueEnumeration elements() {
+  public ValueEnumeration elements() {
     try {
       if (this.pset == null || this.pset == SetEnumValue.DummyEnum) {
     	  // See note on SetEnumValue#convert for SubsetValue wrt
