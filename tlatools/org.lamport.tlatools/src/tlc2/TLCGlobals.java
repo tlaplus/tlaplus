@@ -113,7 +113,7 @@ public class TLCGlobals
     // Prints only the state difference in state traces
     public static boolean printDiffsOnly = false;
 
-    // Suppress warnings report if true
+    // Publish warnings report if true
     public static boolean warn = true;
 
     // The time interval to report progress (in milliseconds)

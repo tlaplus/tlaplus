@@ -133,6 +133,7 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 	@After
 	public void tearDown() {
 		System.setSecurityManager(securityManager);
+		MP.unsubscribeRecorder(recorder);
 	}
 	
 	private static class NoExitSecurityManager extends SecurityManager {

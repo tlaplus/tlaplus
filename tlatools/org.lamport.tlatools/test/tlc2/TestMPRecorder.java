@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 import tlc2.output.EC;
 
-public class TestMPRecorder extends tlc2.output.MPRecorder {
+public class TestMPRecorder implements tlc2.output.IMessagePrinterRecorder {
 	private final Map<Integer, List<Object>> records = new HashMap<Integer, List<Object>>();
 	
 	public void record(int code, Object... objects) {

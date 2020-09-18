@@ -88,7 +88,28 @@ public interface EC
 
     public static final int TLC_ERROR_STATE = 2120;
     public static final int TLC_BEHAVIOR_UP_TO_THIS_POINT = 2121;
-    public static final int TLC_BACK_TO_STATE = 2122;  // The "back to state" message from a liveness-error trace.
+    
+    /**
+     * This error code accompanies the final state in a liveness property
+     * counter-example trace, when the trace takes the form of a lasso
+     * (so the accompanied state is a state we are going "back to").
+     * For traces ending in stuttering, see {@link EC#TLC_STATE_PRINT3}.
+     * Note this code only accompanies the *final* state in the trace,
+     * and the prefix traces are accompanied by the
+     * {@link EC#TLC_STATE_PRINT2} code.
+     */
+    public static final int TLC_BACK_TO_STATE = 2122;
+
+    /**
+     * This error code accompanies the final state in a liveness property
+     * counter-example trace, when the trace ends in stuttering. For traces
+     * ending in a lasso, see {@link EC#TLC_BACK_TO_STATE}. Note this code
+     * only accompanies the *final* state in the trace, and the prefix
+     * traces are accompanied by the {@link EC#TLC_STATE_PRINT2} code.
+     */
+    public static final int TLC_STATE_PRINT3 = 2218;
+
+    public static final int TLC_SANY_END = 2219;
     public static final int TLC_FAILED_TO_RECOVER_INIT = 2123;
     public static final int TLC_REPORTER_DIED = 2124;
 
@@ -240,11 +261,23 @@ public interface EC
     public static final int TLC_EXPECTED_EXPRESSION_IN_COMPUTING2 = 2248;
     
     
-    // state printing
+    /**
+     * This error code is used in the following situations:
+     *  - During DFID model checking, when next state is not fully defined
+     *  - In the {@link tlc2.tool.CheckImpl} tool, when there is an invalid step
+     *  - During Simulation model checking, when maximum trace depth is reached
+     */
     public static final int TLC_STATE_PRINT1 = 2216;
+    
+    /**
+     * This error code is used in the following situations:
+     *  - Printing a safety invariant violation error trace
+     *  - Printing every state except the final state of a liveness error trace; the final state is printed with:
+     *    * {@link EC#TLC_BACK_TO_STATE} for liveness traces ending in a lasso
+     *    * {@link EC#TLC_STATE_PRINT3} for liveness traces ending in stuttering
+     */
     public static final int TLC_STATE_PRINT2 = 2217;
-    public static final int TLC_STATE_PRINT3 = 2218;  // This seems to be a "Stuttering" message from a liveness-error trace 
-    public static final int TLC_SANY_END = 2219;
+    
     public static final int TLC_SANY_START = 2220;
     public static final int TLC_COVERAGE_MISMATCH = 2776;
     public static final int TLC_COVERAGE_VALUE = 2221;
@@ -293,6 +326,10 @@ public interface EC
     
     public static final int TLC_ENVIRONMENT_JVM_GC = 2401;
 
+    // Codes for trace expression spec generation events
+    public static final int TLC_TE_SPEC_GENERATION_START = 2500;
+    public static final int TLC_TE_SPEC_GENERATION_END = 2501;
+    public static final int TLC_TE_SPEC_GENERATION_ERROR = 2502;
     
     //**************************************************************//
     // Mapping error constants above to process exit/return values. //

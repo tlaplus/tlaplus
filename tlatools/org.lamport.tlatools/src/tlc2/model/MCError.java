@@ -1,39 +1,90 @@
 package tlc2.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import util.TLAConstants;
 
+/**
+ * Class encapsulating information about an error trace found by TLC model checking.
+ */
 public class MCError {
+	
+	/**
+	 * Human-readable message describing cause of error trace.
+	 */
 	private final String message;
+	
+	/**
+	 * Nested error. It is uncertain whether or how nested errors ever occur.
+	 */
 	private final MCError cause;
+	
+	/**
+	 * Sequence of states which comprise the error trace.
+	 */
 	private final ArrayList<MCState> states;
 	
+	/**
+	 * Initializes a new instance of the {@link MCError} class.
+	 */
+	public MCError() {
+		this(null);
+	}
+	
+	/**
+	 * Initializes a new instance of the {@link MCError} class.
+	 * @param errorMessage Message describing the error.
+	 */
+	public MCError(final String errorMessage) {
+		this(null, errorMessage);
+	}
+	
+	/**
+	 * Initializes a new instance of the {@link MCError} class.
+	 * @param errorCause A nested error.
+	 * @param errorMessage Message describing the error.
+	 */
 	public MCError(final MCError errorCause, final String errorMessage) {
-		cause = errorCause;
-		message = errorMessage;
-		states = new ArrayList<>();
+		this.cause = errorCause;
+		this.message = errorMessage;
+		this.states = new ArrayList<>();
 	}
 	
+	/**
+	 * Adds a state to the error trace.
+	 * @param state The state to add to the trace.
+	 */
 	public void addState(final MCState state) {
-		states.add(state);
+		this.states.add(state);
 	}
 	
+	/**
+	 * Gets the ordered list of states in the error trace.
+	 * @return An ordered list of states comprising the error trace.
+	 */
 	public List<MCState> getStates() {
-		return states;
+		return this.states;
 	}
 	
+	/**
+	 * Gets the message describing the error.
+	 * @return A message describing the error.
+	 */
 	public String getMessage() {
-		return message;
+		return this.message;
 	}
 	
+	/**
+	 * Returns the nested error.
+	 * @return The nested error. Likely to be null.
+	 */
 	public MCError getCause() {
-		return cause;
+		return this.cause;
 	}
 	
-	public void updateStatesForTraceExpression(final HashMap<String, String> variableExpressionMap) {
+	public void updateStatesForTraceExpression(final Map<String, String> variableExpressionMap) {
 		for (final MCState state : states) {
 			for (final MCVariable variable : state.getVariables()) {
 				final String expression = variableExpressionMap.get(variable.getName());

@@ -377,7 +377,7 @@ public class Simulator {
 	private final void printBehavior(final TLCState state, final StateVec stateTrace) {
 		if (this.traceDepth == Long.MAX_VALUE) {
 			MP.printMessage(EC.TLC_ERROR_STATE);
-			StatePrinter.printState(state);
+			StatePrinter.printStandaloneErrorState(state);
 		} else {
 			if (!stateTrace.isLastElement(state)) {
 				// MAK 09/24/2019: this method is called with state being the stateTrace's
@@ -407,7 +407,7 @@ public class Simulator {
 					sinfo = new TLCStateInfo(curState, tool.getActions()[curState.getActionId()].getLocation());
 				} else {
 					sinfo = new TLCStateInfo(curState, "<Initial predicate>");
-					StatePrinter.printState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
+					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
 					lastState = curState;
 					continue;
 				}
@@ -432,7 +432,7 @@ public class Simulator {
 				} else {
 					// print the state's actual level and not a monotonically increasing state
 					// number => Numbering will have gaps with difftrace.
-					StatePrinter.printState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
+					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
 				}
 				lastState = curState;
 			}

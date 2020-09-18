@@ -42,7 +42,7 @@ import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.TestMPRecorder.Coverage;
 import tlc2.output.EC;
-import tlc2.output.MPRecorder;
+import tlc2.output.IMessagePrinterRecorder;
 import tlc2.tool.liveness.GraphNode;
 import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;
@@ -69,7 +69,7 @@ public abstract class CommonTestCase {
 	 * Asserts that the actual trace and the expected error trace are equal.
 	 * 
 	 * @param actual
-	 *            The actual trace as recorded by {@link MPRecorder}.
+	 *            The actual trace as recorded by {@link IMessagePrinterRecorder}.
 	 * @param expectedTrace
 	 *            The expected trace.
 	 */

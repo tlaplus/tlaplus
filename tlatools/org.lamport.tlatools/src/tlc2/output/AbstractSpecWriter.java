@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -97,6 +98,29 @@ public abstract class AbstractSpecWriter {
     	if (cfg != null) {
     		cfgBuffer.append(cfg);
     	}
+    }
+    
+    /**
+     * Writes the buffers to streams.
+     * @param tlaStream TLA stream; if null, nothing is written.
+     * @param cfgStream CFG stream; if null, nothing is written.
+     * @throws IOException If there is an error writing to stream.
+     */
+    public void writeStreams(final OutputStream tlaStream, final OutputStream cfgStream) throws IOException {
+    	final ContentWriter cw = (inputStream, forTlaFile) -> {
+    		final OutputStream outputStream = forTlaFile ? tlaStream : cfgStream;
+    		if (null != outputStream) {
+    			// If we upgrade to Java 9 we can use InputStream.transferTo()
+    			// For Java 8 compatibility we will copy the bytes manually
+    			final byte[] buffer = new byte[8192];
+    			int length;
+    			while ((length = inputStream.read(buffer)) > 0) {
+    				outputStream.write(buffer, 0, length);
+    			}
+    		}
+    	};
+    	
+    	writeFiles(cw);
     }
     
     /**

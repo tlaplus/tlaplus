@@ -48,7 +48,7 @@ public class LiveWorker implements Callable<Boolean> {
 	 */
 	private static final long SCC_MARKER = -42L;
 
-	public static final IBucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
+	public static final BucketStatistics STATS = new BucketStatistics("Histogram SCC sizes", LiveWorker.class
 			.getPackage().getName(), "StronglyConnectedComponent sizes");
 	
 	private static int errFoundByThread = -1;
@@ -77,7 +77,7 @@ public class LiveWorker implements Callable<Boolean> {
 		this.queue = queue;
 		this.isFinalCheck = finalCheck;
 	}
-
+	
 	/**
 	 * Returns true iff an error has already been found.
 	 */
@@ -870,7 +870,7 @@ public class LiveWorker implements Callable<Boolean> {
 
 				// Print the prefix in reverse order of previous loop:
 				for (int i = 0; i < states.size() - 1; i++) {
-					StatePrinter.printState(tool.evalAlias(states.get(i), states.get(i + 1).state));
+					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(states.get(i), states.get(i + 1).state));
 				}
 				return states;
 			}
@@ -949,17 +949,17 @@ public class LiveWorker implements Callable<Boolean> {
 		// efficiency reason. Regenerating the next state might be
 		// expensive.
 		if (postfix.isEmpty()) {
-			StatePrinter.printState(tool.evalAlias(cycleState, cycleState.state));
+			StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(cycleState, cycleState.state));
 		} else {
 			postfix.pack().removeLastIf(cycleState.fingerPrint());
 			
 			for (int i = postfix.size() - 1; i >= 0; i--) {
 				final long curFP = postfix.elementAt(i);
 				TLCStateInfo sucinfo = tool.getState(curFP, sinfo);
-				StatePrinter.printState(tool.evalAlias(sinfo, sucinfo.state));
+				StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucinfo.state));
 				sinfo = sucinfo;
 			}
-			StatePrinter.printState(tool.evalAlias(sinfo, cycleState.state));
+			StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, cycleState.state));
 		}
 
 		/* All error trace states have been printed (prefix + cycleStack +

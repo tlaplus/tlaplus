@@ -23,6 +23,12 @@ public class TLCStateInfo {
     this.state = s;
     this.info = info;
   }
+  
+  public TLCStateInfo(TLCState state, int stateOrdinal) {
+	  this.state = state;
+	  this.stateNumber = stateOrdinal;
+	  this.info = "";
+  }
 
   public TLCStateInfo(TLCState s, String info, int stateNum, long fp) {
 	  this(s, info);

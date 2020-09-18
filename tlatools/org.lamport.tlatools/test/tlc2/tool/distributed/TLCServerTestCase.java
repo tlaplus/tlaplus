@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -77,6 +78,11 @@ public abstract class TLCServerTestCase extends ModelCheckerTestCase {
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
+	}
+	
+	@After
+	public void tearDown() {
+		MP.unsubscribeRecorder(recorder);
 	}
 	
 	@SuppressWarnings("serial")

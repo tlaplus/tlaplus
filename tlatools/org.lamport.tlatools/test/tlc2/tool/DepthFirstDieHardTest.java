@@ -51,7 +51,8 @@ public class DepthFirstDieHardTest extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
 		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT1));
+		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT1));
+		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(7);
 		expectedTrace.add("/\\ action = \"nondet\"\n/\\ smallBucket = 0\n/\\ bigBucket = 0\n/\\ water_to_pour = 0");
 		expectedTrace.add("/\\ action = \"fill big\"\n/\\ smallBucket = 0\n/\\ bigBucket = 5\n/\\ water_to_pour = 0");
@@ -62,7 +63,7 @@ public class DepthFirstDieHardTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ action = \"fill big\"\n/\\ smallBucket = 2\n/\\ bigBucket = 5\n/\\ water_to_pour = 2");
 		
 		expectedTrace.add("/\\ action = \"pour big to small\"\n/\\ smallBucket = 3\n/\\ bigBucket = 4\n/\\ water_to_pour = 1");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT1), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		assertZeroUncovered();
 	}
 }

@@ -23,6 +23,7 @@ import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.CallStackTool;
 import tlc2.tool.liveness.LiveCheck;
+import tlc2.tool.liveness.LiveWorker;
 import tlc2.tool.queue.DiskByteArrayQueue;
 import tlc2.tool.queue.DiskStateQueue;
 import tlc2.tool.queue.IStateQueue;
@@ -311,6 +312,8 @@ public class ModelChecker extends AbstractChecker
 									LiveCheck.class.getPackage().getName(), "DiskGraphsInDegree")),
 							liveCheck.getOutDegreeStatistics());
 				}
+				
+				LiveWorker.STATS.unregister();
         	}
 
             this.cleanup(success);

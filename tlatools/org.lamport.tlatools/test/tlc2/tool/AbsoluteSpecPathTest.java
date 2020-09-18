@@ -38,5 +38,7 @@ public class AbsoluteSpecPathTest extends CommonTestCase {
 
 		// No 'general' errors recorded
 		assertFalse(recorder.recorded(EC.GENERAL));
+		
+		MP.unsubscribeRecorder(recorder);
 	}
 }

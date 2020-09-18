@@ -42,6 +42,8 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 	 * Human readable statistics name (used in toString())
 	 */
 	protected final String title;
+	
+	private BucketStatisticsMXWrapper mxWrapper;
 
 	public AbstractBucketStatistics(String aTitle) {
 		super();
@@ -60,8 +62,7 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 	public AbstractBucketStatistics(final String aTitle, final String pkg, final String name) {
 		this(aTitle);
 		try {
-			//TODO unregister somehow
-			new BucketStatisticsMXWrapper(this, name, pkg);
+			this.mxWrapper = new BucketStatisticsMXWrapper(this, name, pkg);
 		} catch (NotCompliantMBeanException e) {
 			// not expected to happen would cause JMX to be broken, hence just log and
 			// continue
@@ -71,6 +72,13 @@ public abstract class AbstractBucketStatistics implements IBucketStatistics {
 					e);
 			TLCStandardMBean.getNullTLCStandardMBean();
 		}
+	}
+	
+	/**
+	 * Unregisters statistics from server.
+	 */
+	public void unregister() {
+		this.mxWrapper.unregister();
 	}
 
 	public String toString() {

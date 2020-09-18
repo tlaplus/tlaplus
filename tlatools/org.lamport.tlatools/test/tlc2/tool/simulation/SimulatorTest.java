@@ -48,6 +48,7 @@ public class SimulatorTest extends CommonTestCase {
 	@After
 	public void tearDown() throws Exception{
         FileUtil.deleteDir(TLCGlobals.metaRoot, true);
+        MP.unsubscribeRecorder(recorder);
 	}
 	
 	/**
