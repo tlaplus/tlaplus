@@ -6,7 +6,6 @@ import util.TLAConstants;
 
 /**
  * Parses command line options.
- * Future work should examine using a command line parsing library.
  * 
  * Instructions for adding a new command line option:
  *  1. Add a field to this class (encapsulating type with Optional)
@@ -19,6 +18,52 @@ import util.TLAConstants;
  * the three stages (parsing, validation, use) together and the result was an enormous
  * unmaintainable, untestable confusing mess. It is best to keep these separate. It
  * is also best to avoid processing, interpreting, or transforming the user input.
+ * 
+ * Since this parsing code was all written in-house instead of using a standardized
+ * command line option parsing library, it has developed some odd semantics which
+ * must be preserved for backwards compatibility. For example, the TLA+ spec to
+ * model check is not identified with any sort of flag, like -spec. The user is also
+ * not required to give the spec path in a certain position, like at the end of all
+ * the options. Indeed, the user is not required to provide a TLA+ spec at all; TLC
+ * will automatically search the execution directory for a .jar if one is not given.
+ * This places some unfortunate restrictions on our parsing & error reporting
+ * abilities. For example, -lncheck requires a string argument after it; how are we
+ * to report an error if the user inputs this command?
+ * 
+ *     java.exe tlc2.TLC -lncheck Spec.tla
+ *     
+ * The -lncheck option greedily consumes Spec.tla as its string argument, leaving
+ * no TLA+ spec given as an option; TLC will search the current directory and
+ * (hopefully) find no .jar file to execute. Thus this manifests as a "Missing
+ * input TLA+ module" error instead of a -lncheck error. There is no general way
+ * to distinguish TLA+ spec arguments from -lncheck arguments.
+ * 
+ * Things are even worse with the -simulate flag, where the string argument is
+ * optional. Here the following semantics were chosen (or arose): greedily consume
+ * the next string as an optional argument to -simulate, unless it is the final
+ * string in the array of arguments, in which case do not consume it as it may
+ * be the specification file path. Thus we support this (common) command:
+ * 
+ *     java.exe tlc2.TLC -simulate Spec.tla
+ * 
+ * But do not support this (less common) command:
+ * 
+ *     java.exe tlc2.TLC -simulate num=1234
+ *
+ * where the user specifies the optional argument to -simulate, but does not provide
+ * a TLA+ spec (so TLC will look for a .jar in the current directory). Instead, the
+ * num=1234 argument will be interpreted as the TLA+ spec argument.
+ * 
+ * There's also a problem with this command:
+ * 
+ * 		java.exe tlc2.TLC Spec.tla -simulate num=1234
+ * 
+ * where the num=1234 argument is interpreted as a second TLA+ spec, so TLC outputs
+ * an error saying so.
+ * 
+ * The upshot of all of this is you are defining a new command line option, please
+ * do not give it an optional parameter like with -simulate. It will still have the
+ * error reporting issues outlined up above, but this is less bad.
  */
 public class CommandLineOptions
 {
@@ -50,17 +95,17 @@ public class CommandLineOptions
 	/**
 	 * Whether to check for deadlock.
 	 */
-	public Optional<Boolean> DoNotCheckDeadlock = Optional.empty();
+	public Optional<Boolean> CheckDeadlock = Optional.empty();
 	
 	/**
-	 * Cleans up the state directory.
+	 * Whether to clean states directory.
 	 */
-	public Optional<Boolean> CleanStateDirectory = Optional.empty();
+	public Optional<Boolean> CleanStatesDirectory = Optional.empty();
 	
 	/**
 	 * Whether to print warnings.
 	 */
-	public Optional<Boolean> DoNotPrintWarnings = Optional.empty();
+	public Optional<Boolean> PrintWarnings = Optional.empty();
 	
 	/**
 	 * Whether to apply GZip to input/output stream.
@@ -70,7 +115,7 @@ public class CommandLineOptions
 	/**
 	 * Whether to expand values in print statements.
 	 */
-	public Optional<Boolean> TerseOutput = Optional.empty();
+	public Optional<Boolean> ExpandValuesInPrintStatements = Optional.empty();
 	
 	/**
 	 * Whether to continue running after an invariant is violated.
@@ -243,15 +288,15 @@ public class CommandLineOptions
 			{
 				index++;
 				// Confusingly the -deadlock flag specifies *not* checking for deadlock.
-				options.DoNotCheckDeadlock = Optional.of(true);
+				options.CheckDeadlock = Optional.of(false);
 			} else if (args[index].equals("-cleanup"))
 			{
 				index++;
-				options.CleanStateDirectory = Optional.of(true);
+				options.CleanStatesDirectory = Optional.of(true);
 			} else if (args[index].equals("-nowarning"))
 			{
 				index++;
-				options.DoNotPrintWarnings = Optional.of(true);
+				options.PrintWarnings = Optional.of(false);
 			} else if (args[index].equals("-gzip"))
 			{
 				index++;
@@ -259,7 +304,7 @@ public class CommandLineOptions
 			} else if (args[index].equals("-terse"))
 			{
 				index++;
-				options.TerseOutput = Optional.of(true);
+				options.ExpandValuesInPrintStatements = Optional.of(false);
 			} else if (args[index].equals("-continue"))
 			{
 				index++;
@@ -296,8 +341,8 @@ public class CommandLineOptions
 				index++;
 				if (index < args.length)
 				{
-					index++;
 					options.LivenessCheck = Optional.of(args[index].toLowerCase());
+					index++;
 				} else
 				{
 					return ParseResult.ParseFailure(
