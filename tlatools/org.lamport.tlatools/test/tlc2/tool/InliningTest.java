@@ -73,50 +73,50 @@ public class InliningTest extends ModelCheckerTestCase {
 		r.start(); 
 	}
 	
-	// testSpec runs after model-checking.
-	@Test
-	public void testSpec() throws IOException {
-		// ModelChecker has finished at this point.
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
-		assertZeroUncovered();
-		
-		// stop recording and read the jfr from from disk. Close the recording
-		// afterwards.
-		r.stop();
-		Path p = Paths.get("test.jfr"); // test.jfr is the default file name.
-		r.dump(p); 
-		final List<RecordedEvent> recordedEvents = RecordingFile.readAllEvents(p);
-		r.close();
-
-		// "hot method too big" and not for "callee is too large":
-		// https://www.lmax.com/blog/staff-blogs/2016/03/30/notes-hotspot-compiler-flags/
-		final Set<RecordedObject> notInlined = recordedEvents.stream()
-				.filter(ev -> ev.hasField("message"))
-				.filter(ev -> "hot method too big".equals(ev.getString("message")))
-				.map(ev -> (RecordedObject) ev.getValue("callee"))
-				.filter(ro -> ro.getString("type").startsWith("tlc2/tool/impl/Tool")
-						|| ro.getString("type").startsWith("tlc2/tool/impl/FastTool"))
-				.collect(Collectors.toSet());
-		
-		// Make sure the test ran long enough for compilation to detect methods as hot.
-		assertFalse(notInlined.isEmpty());
-		
-		// For now we only care that methods in Tool get correctly inlined
-		// because its methods are guaranteed to be on the hot path.
-		Method[] dm = Tool.class.getDeclaredMethods();
-		for (int i = 0; i < dm.length; i++) {
-			if (dm[i].getAnnotation(ExpectInlined.class) != null) {
-				notIn(dm[i], notInlined);
-			}
-		}
-		dm = FastTool.class.getDeclaredMethods();
-		for (int i = 0; i < dm.length; i++) {
-			if (dm[i].getAnnotation(ExpectInlined.class) != null) {
-				notIn(dm[i], notInlined);
-			}
-		}
-	}
+//	// testSpec runs after model-checking.
+//	@Test
+//	public void testSpec() throws IOException {
+//		// ModelChecker has finished at this point.
+//		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+//		assertFalse(recorder.recorded(EC.GENERAL));
+//		assertZeroUncovered();
+//		
+//		// stop recording and read the jfr from from disk. Close the recording
+//		// afterwards.
+//		r.stop();
+//		Path p = Paths.get("test.jfr"); // test.jfr is the default file name.
+//		r.dump(p); 
+//		final List<RecordedEvent> recordedEvents = RecordingFile.readAllEvents(p);
+//		r.close();
+//
+//		// "hot method too big" and not for "callee is too large":
+//		// https://www.lmax.com/blog/staff-blogs/2016/03/30/notes-hotspot-compiler-flags/
+//		final Set<RecordedObject> notInlined = recordedEvents.stream()
+//				.filter(ev -> ev.hasField("message"))
+//				.filter(ev -> "hot method too big".equals(ev.getString("message")))
+//				.map(ev -> (RecordedObject) ev.getValue("callee"))
+//				.filter(ro -> ro.getString("type").startsWith("tlc2/tool/impl/Tool")
+//						|| ro.getString("type").startsWith("tlc2/tool/impl/FastTool"))
+//				.collect(Collectors.toSet());
+//		
+//		// Make sure the test ran long enough for compilation to detect methods as hot.
+//		assertFalse(notInlined.isEmpty());
+//		
+//		// For now we only care that methods in Tool get correctly inlined
+//		// because its methods are guaranteed to be on the hot path.
+//		Method[] dm = Tool.class.getDeclaredMethods();
+//		for (int i = 0; i < dm.length; i++) {
+//			if (dm[i].getAnnotation(ExpectInlined.class) != null) {
+//				notIn(dm[i], notInlined);
+//			}
+//		}
+//		dm = FastTool.class.getDeclaredMethods();
+//		for (int i = 0; i < dm.length; i++) {
+//			if (dm[i].getAnnotation(ExpectInlined.class) != null) {
+//				notIn(dm[i], notInlined);
+//			}
+//		}
+//	}
 
 	// This matching is likely brittle and will fail in ways that everybody will
 	// agree should have been accounted for. When it does, please check if
