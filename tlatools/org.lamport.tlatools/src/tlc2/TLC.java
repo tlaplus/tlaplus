@@ -125,6 +125,13 @@ public class TLC {
     private String traceFile = null;
     private int traceDepth;
     private FilenameToStream resolver;
+    
+    private String dumpFile = null;
+	private boolean asDot = false;
+	private boolean colorize = false;
+	private boolean actionLabels = false;
+	private boolean snapshot = false;
+		
 
     // flag if the welcome message is already printed
     private boolean welcomePrinted;
@@ -342,12 +349,6 @@ public class TLC {
 	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
 	public boolean handleParameters(String[] args, boolean unitTestMode)
     {
-		String dumpFile = null;
-		boolean asDot = false;
-	    boolean colorize = false;
-	    boolean actionLabels = false;
-		boolean snapshot = false;
-		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
         int index = 0;
@@ -433,6 +434,8 @@ public class TLC {
                 	//createMonolithSpecTE = true;
                 }
                 	
+                if (!unitTestMode) {
+                
 				// Don't start the shebang below twice, if a user accidentally passed
 				// '-generateSpecTE' twice.
                 if (waitingOnGenerationCompletion.getRegisteredParties() > 1) {
@@ -529,11 +532,14 @@ public class TLC {
 						}
 					};
 					new Thread(r).start();
+
 				} catch (final IOException ioe) {
 					printErrorMsg("Failed to set up piped output consumers; no potential "
 										+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " will be generated: "
 										+ ioe.getMessage());
 				}
+
+				} // end unitTestMode block
             } else if (args[index].equals("-help") || args[index].equals("-h"))
             {
                 printUsage();
@@ -933,7 +939,9 @@ public class TLC {
                 }
             }
         }
-                
+		
+		if (!unitTestMode) {
+
         startTime = System.currentTimeMillis();
 
 		if (mainFile == null) {
@@ -960,7 +968,7 @@ public class TLC {
 		// work. Original issues was https://github.com/tlaplus/tlaplus/issues/24.
 		final File f = new File(mainFile);
 		String specDir = "";
-		if (f.isAbsolute() && !unitTestMode) {
+		if (f.isAbsolute()) {
 			specDir = f.getParent() + FileUtil.separator;
 			mainFile = f.getName();
 			// Not setting user dir causes a ConfigFileException when the resolver
@@ -972,7 +980,7 @@ public class TLC {
 			configFile = mainFile;
 		}
 
-		if (cleanup && (fromChkpt == null) && !unitTestMode) {
+		if (cleanup && (fromChkpt == null)) {
 			// clean up the states directory only when not recovering
 			FileUtil.deleteDir(TLCGlobals.metaRoot, true);
 		}
@@ -986,7 +994,7 @@ public class TLC {
 			metadir = FileUtil.makeMetaDir(new Date(startTime), specDir, fromChkpt);
 		}
     	
-		if (dumpFile != null && !unitTestMode) {
+		if (dumpFile != null) {
 			if (dumpFile.startsWith("${metadir}")) {
 				// prefix dumpfile with the known value of this.metadir. There
 				// is no way to determine the actual value of this.metadir
@@ -1020,6 +1028,8 @@ public class TLC {
         
         // if no errors, print welcome message
         printWelcome();
+
+		} // end unitTestMode block
         
         return true;
 	}
@@ -1500,9 +1510,61 @@ public class TLC {
     public String getTraceFilePath() {
     	return this.traceFile;
     }
+    
+    public boolean isDeadlockCheckingEnabled() {
+    	return this.deadlock;
+    }
+    
+    public boolean isStatesDirectoryMarkedForCleanup() {
+    	return this.cleanup;
+    }
 
     public String getMainFile() {
-        return mainFile;
+        return this.mainFile;
+    }
+    
+    public String getConfigFile() {
+    	return this.configFile;
+    }
+
+    public String getDumpFile() {
+    	return this.dumpFile;
+    }
+    
+    public boolean isDumpDotFile() {
+    	return this.asDot;
+    }
+    
+    public boolean isDumpColorized() {
+    	return this.colorize;
+    }
+    
+    public boolean doesDumpHaveActionLabels() {
+    	return this.actionLabels;
+    }
+    
+    public boolean doesDumpIncludeSnapshots() {
+    	return this.snapshot;
+    }
+    
+    public int getTraceDepth() {
+    	return this.traceDepth;
+    }
+    
+    public boolean haveSeed() {
+    	return !this.noSeed;
+    }
+    
+    public long getSeed() {
+    	return this.seed;
+    }
+    
+    public long getAril() {
+    	return this.aril;
+    }
+    
+    public String getCheckpointRecoveryDirectory() {
+    	return this.fromChkpt;
     }
 
 	public String getModelName() {

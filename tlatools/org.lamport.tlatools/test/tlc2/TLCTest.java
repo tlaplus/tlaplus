@@ -5,10 +5,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.util.ArrayList;
+
 import org.junit.Test;
 
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
+import util.FileUtil;
 import util.TLAConstants;
 import util.TLCRuntime;
 
@@ -100,31 +103,35 @@ public class TLCTest {
 		final int progDefault = TLCGlobals.setBound;
 		
 		TLC tlc = new TLC();
-		assertFalse(tlc.handleParameters(new String[] {"-maxSetSize", "NaN", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME}));
+		String[] args = new String[] {"-maxSetSize", "NaN", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertFalse(tlc.handleParameters(args, true));
 		
 		tlc = new TLC();
-		assertFalse(tlc.handleParameters(new String[] {"-maxSetSize", "0", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME}));
-		tlc = new TLC();
-		assertFalse(tlc.handleParameters(new String[] {"-maxSetSize", "-1", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME}));
-		tlc = new TLC();
-		assertFalse(tlc.handleParameters(new String[] { "-maxSetSize", Integer.toString(Integer.MIN_VALUE),
-				TLAConstants.Files.MODEL_CHECK_FILE_BASENAME }));
-		
-		tlc = new TLC();
-		final String[] args = new String[] {"-maxSetSize", "1", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
-		assertTrue(tlc.handleParameters(args, true));
-		assertTrue(TLCGlobals.setBound == 1);
-		
+		args = new String[] {"-maxSetSize", "0", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertFalse(tlc.handleParameters(args, true));
 
 		tlc = new TLC();
-		final String[] args2 = new String[] { "-maxSetSize", Integer.toString(progDefault), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME };
-		assertTrue(tlc.handleParameters(args2, true));
-		assertTrue(TLCGlobals.setBound == progDefault);
+		args = new String[] {"-maxSetSize", "-1", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertFalse(tlc.handleParameters(args, true));
+
+		tlc = new TLC();
+		args = new String[] { "-maxSetSize", Integer.toString(Integer.MIN_VALUE), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME };
+		assertFalse(tlc.handleParameters(args, true));
+				
+		tlc = new TLC();
+		args = new String[] {"-maxSetSize", "1", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(1, TLCGlobals.setBound);
 		
 		tlc = new TLC();
-		final String[] args3 = new String[] { "-maxSetSize", Integer.toString(Integer.MAX_VALUE), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
-		assertTrue(tlc.handleParameters(args3, true));
-		assertTrue(TLCGlobals.setBound == Integer.MAX_VALUE);
+		args = new String[] { "-maxSetSize", Integer.toString(progDefault), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME };
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(progDefault, TLCGlobals.setBound);
+		
+		tlc = new TLC();
+		args = new String[] { "-maxSetSize", Integer.toString(Integer.MAX_VALUE), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(Integer.MAX_VALUE, TLCGlobals.setBound);
 	}
 	
 	@Test
@@ -159,5 +166,449 @@ public class TLCTest {
 		assertEquals(TLC.RunMode.SIMULATE, tlc.getRunMode());
 		assertEquals(expectedLimit, tlc.getSimulationBehaviorCountLimit());
 		assertEquals(expectedPath, tlc.getTraceFilePath());
+	}
+	
+	@Test
+	public void testDiffTraceOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-difftrace", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(TLCGlobals.printDiffsOnly);
+	}
+	
+	@Test
+	public void testDeadlockOptionSetsVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-deadlock", tlaFile};
+		assertTrue(tlc.isDeadlockCheckingEnabled());
+		assertTrue(tlc.handleParameters(args, true));
+		assertFalse(tlc.isDeadlockCheckingEnabled());
+	}
+	
+	@Test
+	public void testCleanupOptionSetsVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-cleanup", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(tlc.isStatesDirectoryMarkedForCleanup());
+	}
+	
+	@Test
+	public void testWarningOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-nowarning", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertFalse(TLCGlobals.warn);
+	}
+	
+	@Test
+	public void testGZipOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-gzip", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(TLCGlobals.useGZIP);
+	}
+	
+	@Test
+	public void testTerseOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-terse", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertFalse(TLCGlobals.expand);
+	}
+	
+	@Test
+	public void testContinueOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-continue", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(TLCGlobals.continuation);
+	}
+	
+	@Test
+	public void testViewOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-view", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(TLCGlobals.useView);
+	}
+	
+	@Test
+	public void testDebugOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-debug", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(TLCGlobals.debug);
+	}
+	
+	@Test
+	public void testToolOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-tool", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(TLCGlobals.tool);
+	}
+	
+	@Test
+	public void testGenerateSpecTeOptionSetsGlobalVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-generateSpecTE", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(TLCGlobals.tool);
+	}
+	
+	@Test
+	public void testLnCheckOptionSetsGlobalVariable()
+	{
+		final String inputValue = "someTestValue";
+		final String expectedValue = inputValue.toLowerCase();
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-lncheck", inputValue, tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertFalse(inputValue.equals(TLCGlobals.lnCheck));
+		assertEquals(expectedValue, TLCGlobals.lnCheck);
+	}
+	
+	@Test
+	public void testConfigOptionSetsVariable()
+	{
+		final String expected = "test.config";
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-config", expected, tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expected, tlc.getConfigFile());
+	}
+	
+	@Test
+	public void testDumpOptionSetsVariable()
+	{
+		final String input = "test";
+		final String expected = input + ".dump";
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-dump", expected, tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expected, tlc.getDumpFile());
+	}
+	
+	@Test
+	public void testMultipleDumpOptionsSetVariables()
+	{
+		final String[] possibleFlags = new String[]{"colorize", "actionlabels", "snapshot"};
+		final String inputFileValue = "dump";
+		final String expectedFileValue = inputFileValue + ".dot";
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		
+		// Iterate through all possibleFlags subsets of at least size 1
+		for (int bitmask = 0; bitmask < (1 << possibleFlags.length); bitmask++)
+		{
+			ArrayList<String> flagList = new ArrayList<String>(possibleFlags.length);
+			flagList.add("dot");
+
+			for (int i = 0; i < possibleFlags.length; i++)
+			{
+				if ((bitmask & (1 << i)) != 0)
+				{
+					flagList.add(possibleFlags[i]);
+				}
+			}
+			
+			final String flags = String.join(",", flagList);
+			final String[] args = new String[]{"-dump", flags, inputFileValue, tlaFile};
+			final TLC tlc = new TLC();
+			assertTrue(tlc.handleParameters(args, true));
+			assertEquals(expectedFileValue, tlc.getDumpFile());
+
+			if (flagList.contains("colorize"))
+			{
+				assertTrue(tlc.isDumpColorized());
+			}
+			else
+			{
+				assertFalse(tlc.isDumpColorized());
+			}
+			
+			if (flagList.contains("actionlabels"))
+			{
+				assertTrue(tlc.doesDumpHaveActionLabels());
+			}
+			else
+			{
+				assertFalse(tlc.doesDumpHaveActionLabels());
+			}
+			
+			if (flagList.contains("snapshot"))
+			{
+				assertTrue(tlc.doesDumpIncludeSnapshots());
+			}
+			else
+			{
+				assertFalse(tlc.doesDumpIncludeSnapshots());
+			}
+		}
+	}
+
+	@Test
+	public void testCoverageOptionSetsGlobalVariable()
+	{
+		final Integer inputValue = 23;
+		final int expectedValue = inputValue * 60 * 1000;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-coverage", inputValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue, TLCGlobals.coverageInterval);
+	}
+	
+	@Test
+	public void testInvalidCoverageOption()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-coverage", "-2", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		tlc = new TLC();
+		args = new String[] {"-coverage", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testCheckpointOptionSetsGlobalVariable()
+	{
+		final Integer inputValue = 23;
+		final int expectedValue = inputValue * 60 * 1000;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-checkpoint", inputValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue, TLCGlobals.chkptDuration);
+	}
+	
+	@Test
+	public void testInvalidCheckpointOption()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-checkpoint", "-2", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		tlc = new TLC();
+		args = new String[] {"-checkpoint", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+
+		tlc = new TLC();
+		args = new String[] {tlaFile, "-checkpoint"};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testDepthOptionSetsVariable()
+	{
+		final Integer expectedValue = 23;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-depth", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue.intValue(), tlc.getTraceDepth());
+	}
+	
+	@Test
+	public void testInvalidDepthOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-depth", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+
+		tlc = new TLC();
+		args = new String[] {tlaFile, "-depth"};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testSeedOptionSetsVariable()
+	{
+		final Long expectedValue = 23L;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-seed", expectedValue.toString(), tlaFile};
+		assertFalse(tlc.haveSeed());
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(tlc.haveSeed());
+		assertEquals(expectedValue.longValue(), tlc.getSeed());
+	}
+	
+	@Test
+	public void testInvalidSeedOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-seed", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+
+		tlc = new TLC();
+		args = new String[] {tlaFile, "-seed"};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testArilOptionSetsVariable()
+	{
+		final Long expectedValue = 23L;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-aril", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue.longValue(), tlc.getAril());
+	}
+	
+	@Test
+	public void testInvalidArilOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-aril", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+
+		tlc = new TLC();
+		args = new String[] {tlaFile, "-aril"};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testMaxSetSizeOptionSetsGlobalVariable()
+	{
+		final Integer expectedValue = 23;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-maxSetSize", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue.intValue(), TLCGlobals.setBound);
+	}
+	
+	@Test
+	public void testInvalidMaxSetSizeOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-maxSetSize", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+
+		tlc = new TLC();
+		args = new String[] {tlaFile, "-maxSetSize"};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testRecoverOptionSetsVariable()
+	{
+		final String inputValue = String.format("{0}some{0}file{0}path", FileUtil.separator);
+		final String expectedValue = inputValue + FileUtil.separator;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-recover", inputValue, tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue, tlc.getCheckpointRecoveryDirectory());
+	}
+	
+	@Test
+	public void testInvalidRecoverOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, "-recover"};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testMetadirOptionSetsGlobalVariable()
+	{
+		final String inputValue = String.format("{0}some{0}file{0}path", FileUtil.separator);
+		final String expectedValue = inputValue + FileUtil.separator;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-metadir", inputValue, tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue, TLCGlobals.metaDir);
+	}
+	
+	@Test
+	public void testInvalidMetadirOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, "-metadir"};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testWorkerOptionSetsGlobalVariable()
+	{
+		final Integer expectedValue = 4;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-workers", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue.intValue(), TLCGlobals.getNumWorkers());
+	}
+	
+	@Test
+	public void testInvalidWorkerOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, "-workers"};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-workers", "0", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testDfidOptionSetsGlobalVariable()
+	{
+		final Integer expectedValue = 4;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-dfid", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue.intValue(), TLCGlobals.DFIDMax);
+	}
+	
+	@Test
+	public void testInvalidDfidOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, "-dfid"};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-dfid", "-1", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
 	}
 }
