@@ -3,16 +3,13 @@ package tlc2;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
-import java.util.ArrayList;
-
 import org.junit.Test;
+import java.util.ArrayList;
 
 public class TestCommandLineOptions
 {
 	@Test
-	public void TestSimulateFlag()
+	public void testSimulateFlag()
 	{
 		String[] args = new String[]{"-simulate", "test.tla"};
 
@@ -30,7 +27,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestSimulateFlagWithBehaviorCountLimit()
+	public void testSimulateFlagWithBehaviorCountLimit()
 	{
 		final long expected = 1234;
 		String[] args = new String[]{"-simulate", "num=" + expected, "test.tla"};
@@ -49,7 +46,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestSimulateFlagWithTraceFile()
+	public void testSimulateFlagWithTraceFile()
 	{
 		final String expected = "/path/to/file";
 		String[] args = new String[]{"-simulate", "file=" + expected, "test.tla"};
@@ -68,7 +65,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestSimulateFlagWithBehaviorCountLimitAndTraceFile()
+	public void testSimulateFlagWithBehaviorCountLimitAndTraceFile()
 	{
 		final long expectedLimit = 1234;
 		final String expectedPath = "/path/to/file";
@@ -92,7 +89,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestSimulateFlagWithBehaviorCountLimitAndTraceFileReverse()
+	public void testSimulateFlagWithBehaviorCountLimitAndTraceFileReverse()
 	{
 		final long expectedLimit = 1234;
 		final String expectedPath = "/path/to/file";
@@ -120,7 +117,7 @@ public class TestCommandLineOptions
 	 * This is a regression test to ensure the strange -simulate parsing semantics
 	 * are maintained (see top comment in CommandLineOptions.java for details).
 	 */
-	public void TestOddSimulateSemantics()
+	public void testOddSimulateSemantics()
 	{
 		final long expectedLimit = 1234;
 		final String expectedPath = "/path/to/file";
@@ -143,7 +140,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestModelCheckFlag()
+	public void testModelCheckFlag()
 	{
 		String[] args = new String[]{"-modelcheck", "test.tla"};
 
@@ -158,7 +155,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestOnlyPrintStateTraceDiffsFlag()
+	public void testOnlyPrintStateTraceDiffsFlag()
 	{
 		String[] args = new String[]{"-difftrace", "test.tla"};
 
@@ -173,7 +170,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestDeadlockFlag()
+	public void testDeadlockFlag()
 	{
 		String[] args = new String[]{"-deadlock", "test.tla"};
 
@@ -188,7 +185,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestCleanStateDirectoryFlag()
+	public void testCleanStateDirectoryFlag()
 	{
 		String[] args = new String[]{"-cleanup", "test.tla"};
 
@@ -203,7 +200,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestNoWarningFlag()
+	public void testNoWarningFlag()
 	{
 		String[] args = new String[]{"-nowarning", "test.tla"};
 
@@ -218,7 +215,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestGZipFlag()
+	public void testGZipFlag()
 	{
 		String[] args = new String[]{"-gzip", "test.tla"};
 
@@ -233,7 +230,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestTerseOutputFlag()
+	public void testTerseOutputFlag()
 	{
 		String[] args = new String[]{"-terse", "test.tla"};
 
@@ -248,7 +245,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestContinueAfterInvariantViolationFlag()
+	public void testContinueAfterInvariantViolationFlag()
 	{
 		String[] args = new String[]{"-continue", "test.tla"};
 
@@ -263,7 +260,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestViewFlag()
+	public void testViewFlag()
 	{
 		String[] args = new String[]{"-view", "test.tla"};
 
@@ -278,7 +275,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestDebugFlag()
+	public void testDebugFlag()
 	{
 		String[] args = new String[]{"-debug", "test.tla"};
 
@@ -293,7 +290,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestToolOutputFlag()
+	public void testToolOutputFlag()
 	{
 		String[] args = new String[]{"-tool", "test.tla"};
 
@@ -308,7 +305,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestGenerateErrorTraceSpecFlag()
+	public void testGenerateErrorTraceSpecFlag()
 	{
 		String[] args = new String[]{"-generateSpecTE", "test.tla"};
 
@@ -325,7 +322,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestGenerateErrorTraceSpecFlagWithNoMonolithValue()
+	public void testGenerateErrorTraceSpecFlagWithNoMonolithValue()
 	{
 		String[] args = new String[]{"-generateSpecTE", "nomonolith", "test.tla"};
 
@@ -342,7 +339,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestHelpFlag()
+	public void testHelpFlag()
 	{
 		String[] args = new String[]{"-help"};
 
@@ -353,7 +350,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestShortHelpFlag()
+	public void testShortHelpFlag()
 	{
 		String[] args = new String[]{"-h"};
 
@@ -364,7 +361,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestHelpFlagWithGibberish()
+	public void testHelpFlagWithGibberish()
 	{
 		String[] args = new String[]{"-h", "NotAnOption", "AlsoNotAnOption"};
 
@@ -375,7 +372,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestLivenessCheckOption()
+	public void testLivenessCheckOption()
 	{
 		final String expectedValue = "final";
 		String[] args = new String[]{"-lncheck", expectedValue, "test.tla"};
@@ -391,7 +388,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestInvalidLivenessCheckOption()
+	public void testInvalidLivenessCheckOption()
 	{
 		String[] args = new String[]{"test.tla", "-lncheck"};
 
@@ -402,7 +399,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestConfigOption()
+	public void testConfigOption()
 	{
 		final String expectedValue = "configFile.cfg";
 		String[] args = new String[]{"-config", expectedValue, "test.tla"};
@@ -418,7 +415,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestInvalidConfigOption()
+	public void testInvalidConfigOption()
 	{
 		String[] args = new String[]{"test.tla", "-config"};
 
@@ -429,7 +426,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestDumpOption()
+	public void testDumpOption()
 	{
 		final String expectedValue = "dump.out";
 		String[] args = new String[]{"-dump", expectedValue, "test.tla"};
@@ -446,7 +443,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidDumpOption()
+	public void testInvalidDumpOption()
 	{
 		String[] args = new String[]{"test.tla", "-dump"};
 
@@ -457,7 +454,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestDumpFileControlsOption()
+	public void testDumpFileControlsOption()
 	{
 		final String[] possibleFlags = new String[]{"colorize", "actionlabels", "snapshot"};
 		final String expectedFileValue = "dump.out";
@@ -508,7 +505,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestCoverageOption()
+	public void testCoverageOption()
 	{
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-coverage", expectedValue.toString(), "test.tla"};
@@ -524,7 +521,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidCoverageOption()
+	public void testInvalidCoverageOption()
 	{
 		String[] args = new String[]{"test.tla", "-coverage"};
 
@@ -535,7 +532,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberCoverageOption()
+	public void testNotNumberCoverageOption()
 	{
 		String[] args = new String[]{"-coverage", "NotANumber", "test.tla"};
 
@@ -546,7 +543,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestCheckpointOption()
+	public void testCheckpointOption()
 	{
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-checkpoint", expectedValue.toString(), "test.tla"};
@@ -562,7 +559,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidCheckpointOption()
+	public void testInvalidCheckpointOption()
 	{
 		String[] args = new String[]{"test.tla", "-checkpoint"};
 
@@ -573,7 +570,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberCheckpointOption()
+	public void testNotNumberCheckpointOption()
 	{
 		String[] args = new String[]{"-checkpoint", "NotANumber", "test.tla"};
 
@@ -584,7 +581,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestDepthOption()
+	public void testDepthOption()
 	{
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-depth", expectedValue.toString(), "test.tla"};
@@ -600,7 +597,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidDepthOption()
+	public void testInvalidDepthOption()
 	{
 		String[] args = new String[]{"test.tla", "-depth"};
 
@@ -611,7 +608,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberDepthOption()
+	public void testNotNumberDepthOption()
 	{
 		String[] args = new String[]{"-depth", "NotANumber", "test.tla"};
 
@@ -622,7 +619,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestSeedOption()
+	public void testSeedOption()
 	{
 		final Long expectedValue = 2L;
 		String[] args = new String[]{"-seed", expectedValue.toString(), "test.tla"};
@@ -638,7 +635,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidSeedOption()
+	public void testInvalidSeedOption()
 	{
 		String[] args = new String[]{"test.tla", "-seed"};
 
@@ -649,7 +646,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberSeedOption()
+	public void testNotNumberSeedOption()
 	{
 		String[] args = new String[]{"-seed", "NotANumber", "test.tla"};
 
@@ -660,7 +657,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestArilOption()
+	public void testArilOption()
 	{
 		final Long expectedValue = 2L;
 		String[] args = new String[]{"-aril", expectedValue.toString(), "test.tla"};
@@ -676,7 +673,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidArilOption()
+	public void testInvalidArilOption()
 	{
 		String[] args = new String[]{"test.tla", "-aril"};
 
@@ -687,7 +684,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberArilOption()
+	public void testNotNumberArilOption()
 	{
 		String[] args = new String[]{"-aril", "NotANumber", "test.tla"};
 
@@ -698,7 +695,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestMaxSetSizeOption()
+	public void testMaxSetSizeOption()
 	{
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-maxSetSize", expectedValue.toString(), "test.tla"};
@@ -714,7 +711,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidMaxSetSizeOption()
+	public void testInvalidMaxSetSizeOption()
 	{
 		String[] args = new String[]{"test.tla", "-maxSetSize"};
 
@@ -725,7 +722,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberMaxSetSizeOption()
+	public void testNotNumberMaxSetSizeOption()
 	{
 		String[] args = new String[]{"-maxSetSize", "NotANumber", "test.tla"};
 
@@ -736,7 +733,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestRecoverOption()
+	public void testRecoverOption()
 	{
 		final String expectedValue = "somename";
 		String[] args = new String[]{"-recover", expectedValue, "test.tla"};
@@ -752,7 +749,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestInvalidRecoverOption()
+	public void testInvalidRecoverOption()
 	{
 		String[] args = new String[]{"test.tla", "-recover"};
 
@@ -763,7 +760,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestMetadataDirectoryOption()
+	public void testMetadataDirectoryOption()
 	{
 		final String expectedValue = "somename";
 		String[] args = new String[]{"-metadir", expectedValue, "test.tla"};
@@ -779,7 +776,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestInvalidMetadataDirectoryOption()
+	public void testInvalidMetadataDirectoryOption()
 	{
 		String[] args = new String[]{"test.tla", "-metadir"};
 
@@ -790,7 +787,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestUserFileOption()
+	public void testUserFileOption()
 	{
 		final String expectedValue = "somename";
 		String[] args = new String[]{"-userFile", expectedValue, "test.tla"};
@@ -806,7 +803,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestInvalidUserFileOption()
+	public void testInvalidUserFileOption()
 	{
 		String[] args = new String[]{"test.tla", "-userFile"};
 
@@ -817,7 +814,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestAutoWorkersOption()
+	public void testAutoWorkersOption()
 	{
 		final String expectedValue = "auto";
 		String[] args = new String[]{"-workers", expectedValue, "test.tla"};
@@ -834,7 +831,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestManualAutoWorkersOption()
+	public void testManualAutoWorkersOption()
 	{
 		final Integer expectedValue = 4;
 		String[] args = new String[]{"-workers", expectedValue.toString(), "test.tla"};
@@ -852,7 +849,7 @@ public class TestCommandLineOptions
 	}
 
 	@Test
-	public void TestInvalidWorkersOption()
+	public void testInvalidWorkersOption()
 	{
 		String[] args = new String[]{"test.tla", "-workers"};
 
@@ -874,7 +871,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestDfidOption()
+	public void testDfidOption()
 	{
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-dfid", expectedValue.toString(), "test.tla"};
@@ -890,7 +887,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidDfidOption()
+	public void testInvalidDfidOption()
 	{
 		String[] args = new String[]{"test.tla", "-dfid"};
 
@@ -901,7 +898,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberDfidOption()
+	public void testNotNumberDfidOption()
 	{
 		String[] args = new String[]{"-dfid", "NotANumber", "test.tla"};
 
@@ -912,7 +909,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestFpOption()
+	public void testFpOption()
 	{
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-fp", expectedValue.toString(), "test.tla"};
@@ -928,7 +925,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidFpOption()
+	public void testInvalidFpOption()
 	{
 		String[] args = new String[]{"test.tla", "-fp"};
 
@@ -939,7 +936,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberFpOption()
+	public void testNotNumberFpOption()
 	{
 		String[] args = new String[]{"-fp", "NotANumber", "test.tla"};
 
@@ -950,7 +947,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestFpMemOption()
+	public void testFpMemOption()
 	{
 		final Double expectedValue = 1.0;
 		String[] args = new String[]{"-fpmem", expectedValue.toString(), "test.tla"};
@@ -966,7 +963,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidFpMemOption()
+	public void testInvalidFpMemOption()
 	{
 		String[] args = new String[]{"test.tla", "-fpmem"};
 
@@ -977,7 +974,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberFpMemOption()
+	public void testNotNumberFpMemOption()
 	{
 		String[] args = new String[]{"-fpmem", "NotANumber", "test.tla"};
 
@@ -988,7 +985,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestFpBitsOption()
+	public void testFpBitsOption()
 	{
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-fpbits", expectedValue.toString(), "test.tla"};
@@ -1004,7 +1001,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestInvalidFpBitsOption()
+	public void testInvalidFpBitsOption()
 	{
 		String[] args = new String[]{"test.tla", "-fpbits"};
 
@@ -1015,7 +1012,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestNotNumberFpBitsOption()
+	public void testNotNumberFpBitsOption()
 	{
 		String[] args = new String[]{"-fpbits", "NotANumber", "test.tla"};
 
@@ -1026,7 +1023,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestMainSpecOption()
+	public void testMainSpecOption()
 	{
 		final String expectedValue = "test.tla";
 		String[] args = new String[]{expectedValue};
@@ -1041,7 +1038,7 @@ public class TestCommandLineOptions
 	}
 	
 	@Test
-	public void TestTwoMainSpecs()
+	public void testTwoMainSpecs()
 	{
 		String[] args = new String[]{"first.tla", "second.tla"};
 

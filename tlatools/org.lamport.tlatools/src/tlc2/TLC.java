@@ -82,7 +82,7 @@ import util.UsageGenerator;
 public class TLC {
     private static boolean MODEL_PART_OF_JAR = false;
     
-    private enum RunMode {
+    public enum RunMode {
     	MODEL_CHECK, SIMULATE;
     }
     
@@ -328,8 +328,19 @@ public class TLC {
      * @throws IOException 
      */
     // SZ Feb 23, 2009: added return status to indicate the error in parsing
-	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
 	public boolean handleParameters(String[] args)
+	{
+		return this.handleParameters(args, false);
+	}
+	
+	/**
+	 * Parses command line parameters and sets up variables
+	 * @param args The command line parameters to parse
+	 * @param unitTestMode Whether to avoid doing things like writing files
+	 * @return
+	 */
+	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
+	public boolean handleParameters(String[] args, boolean unitTestMode)
     {
 		String dumpFile = null;
 		boolean asDot = false;
@@ -949,7 +960,7 @@ public class TLC {
 		// work. Original issues was https://github.com/tlaplus/tlaplus/issues/24.
 		final File f = new File(mainFile);
 		String specDir = "";
-		if (f.isAbsolute()) {
+		if (f.isAbsolute() && !unitTestMode) {
 			specDir = f.getParent() + FileUtil.separator;
 			mainFile = f.getName();
 			// Not setting user dir causes a ConfigFileException when the resolver
@@ -961,7 +972,7 @@ public class TLC {
 			configFile = mainFile;
 		}
 
-		if (cleanup && (fromChkpt == null)) {
+		if (cleanup && (fromChkpt == null) && !unitTestMode) {
 			// clean up the states directory only when not recovering
 			FileUtil.deleteDir(TLCGlobals.metaRoot, true);
 		}
@@ -970,9 +981,12 @@ public class TLC {
 		// absolute, the parent gets used as TLC's meta directory (where it stores
 		// states...). Otherwise, no meta dir is set causing states etc. to be stored in
 		// the current directory.
-    	metadir = FileUtil.makeMetaDir(new Date(startTime), specDir, fromChkpt);
+		if (!unitTestMode)
+		{
+			metadir = FileUtil.makeMetaDir(new Date(startTime), specDir, fromChkpt);
+		}
     	
-		if (dumpFile != null) {
+		if (dumpFile != null && !unitTestMode) {
 			if (dumpFile.startsWith("${metadir}")) {
 				// prefix dumpfile with the known value of this.metadir. There
 				// is no way to determine the actual value of this.metadir
@@ -1476,7 +1490,15 @@ public class TLC {
     }
     
     public RunMode getRunMode() {
-    	return runMode;
+    	return this.runMode;
+    }
+    
+    public long getSimulationBehaviorCountLimit() {
+    	return TLC.traceNum;
+    }
+    
+    public String getTraceFilePath() {
+    	return this.traceFile;
     }
 
     public String getMainFile() {

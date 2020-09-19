@@ -1,6 +1,9 @@
 package tlc2;
 
 import java.util.Optional;
+
+import tlc2.tool.fp.MultiFPSet;
+import tlc2.util.FP64;
 import util.FileUtil;
 import util.TLAConstants;
 
@@ -339,7 +342,7 @@ public class CommandLineOptions
 			{
 				index++;
 				// Immediately halt parsing and return if help flag detected
-				return ParseResult.ParseHelpRequest();
+				return ParseResult.HelpRequest();
 			} else if (args[index].equals("-lncheck"))
 			{
 				index++;
@@ -349,7 +352,7 @@ public class CommandLineOptions
 					index++;
 				} else
 				{
-					return ParseResult.ParseFailure(
+					return ParseResult.Failure(
 							"Error: expect a strategy such as final for -lncheck option.");
 				}
 			} else if (args[index].equals("-config"))
@@ -361,7 +364,7 @@ public class CommandLineOptions
 					index++;
 				} else
 				{
-					return ParseResult.ParseFailure(
+					return ParseResult.Failure(
 							"Error: expect a file name for -config option.");
 				}
 			} else if (args[index].equals("-dump"))
@@ -386,7 +389,7 @@ public class CommandLineOptions
 					index++;
 				} else
 				{
-					return ParseResult.ParseFailure(
+					return ParseResult.Failure(
 							"Error: A file name for dumping states required.");
 				}
 			} else if (args[index].equals("-coverage"))
@@ -401,12 +404,12 @@ public class CommandLineOptions
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: An integer for coverage report interval required; encountered: " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: coverage report interval required.");
                 }
             } else if (args[index].equals("-checkpoint"))
@@ -421,12 +424,12 @@ public class CommandLineOptions
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: An integer for checkpoint interval is required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: checkpoint interval required.");
                 }
             } else if (args[index].equals("-depth"))
@@ -441,12 +444,12 @@ public class CommandLineOptions
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: An integer for trace depth required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: trace depth required.");
                 }
             } else if (args[index].equals("-seed"))
@@ -461,12 +464,12 @@ public class CommandLineOptions
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: An integer for seed required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: seed required.");
                 }
             } else if (args[index].equals("-aril"))
@@ -481,12 +484,12 @@ public class CommandLineOptions
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: An integer for aril required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: aril required.");
                 }
             } else if (args[index].equals("-maxSetSize"))
@@ -501,11 +504,11 @@ public class CommandLineOptions
                     	index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure("Error: An integer for maxSetSize required; encountered " + args[index]);
+                        return ParseResult.Failure("Error: An integer for maxSetSize required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure("Error: maxSetSize required.");
+                    return ParseResult.Failure("Error: maxSetSize required.");
                 }
             } else if (args[index].equals("-recover"))
             {
@@ -516,7 +519,7 @@ public class CommandLineOptions
                     index++;
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: need to specify the metadata directory for recovery.");
                 }
             } else if (args[index].equals("-metadir"))
@@ -528,7 +531,7 @@ public class CommandLineOptions
                     index++;
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: need to specify the metadata directory (metadir).");
                 }
             } else if (args[index].equals("-userFile"))
@@ -540,7 +543,7 @@ public class CommandLineOptions
                 	index++;
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: need to specify the full qualified userFile.");
                 }
             } else if (args[index].equals("-workers"))
@@ -558,12 +561,12 @@ public class CommandLineOptions
 						index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: number of workers or 'auto' required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: expect an integer or 'auto' for -workers option.");
                 }
             } else if (args[index].equals("-dfid"))
@@ -578,12 +581,12 @@ public class CommandLineOptions
                     	index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: expect a nonnegative integer for -dfid option; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: expect a nonnegative integer for -dfid option.");
                 }
             } else if (args[index].equals("-fp"))
@@ -598,12 +601,12 @@ public class CommandLineOptions
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: A number for -fp is required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure("Error: expect an integer for -fp option.");
+                    return ParseResult.Failure("Error: expect an integer for -fp option.");
                 }
             } else if (args[index].equals("-fpmem"))
             {
@@ -617,12 +620,12 @@ public class CommandLineOptions
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: An positive integer or a fraction for fpset memory size/percentage required (-fpmem); encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: fpset memory size required for -fpmem.");
                 }
             } else if (args[index].equals("-fpbits"))
@@ -637,26 +640,26 @@ public class CommandLineOptions
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.ParseFailure(
+                        return ParseResult.Failure(
                         		"Error: An integer for fpbits required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: fpbits required.");
                 }
             } else
             {
             	if (args[index].charAt(0) == '-')
                 {
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: unrecognized option: " + args[index]);
                 }
 
                 if (options.MainSpecFilePath.isPresent())
                 {
                 	final String value = options.MainSpecFilePath.get();
-                    return ParseResult.ParseFailure(
+                    return ParseResult.Failure(
                     		"Error: more than one input files: " + value + " and " + args[index]);
                 }
 
@@ -665,24 +668,117 @@ public class CommandLineOptions
             }
 		}
 		
-		return ParseResult.ParseSuccess(options);
+		return ParseResult.Success(options);
 	}
 	
-	public static boolean Validate(CommandLineOptions options)
+	/**
+	 * Validates provided options are within acceptable hard-coded bounds.
+	 * @param options The options to validate.
+	 * @return Whether the options passed validation.
+	 */
+	public static ValidationResult Validate(CommandLineOptions options)
 	{
-		// Ensure coverage interval is positive integer
+		// Ensure coverage interval is a non-negative integer
 		if (options.CoverageIntervalInMinutes.isPresent())
 		{
-			int value = options.CoverageIntervalInMinutes.get();
+			final int value = options.CoverageIntervalInMinutes.get();
 			if (value < 0)
 			{
-				return false;
+				return ValidationResult.Failure(
+						"Error: expect a nonnegative integer for -coverage option.");
 			}
 		}
 		
-		return true;
+		// Ensure checkpoint interval is a non-negative integer
+		if (options.CheckpointIntervalInMinutes.isPresent())
+		{
+			final int value = options.CheckpointIntervalInMinutes.get();
+			if (value < 0)
+			{
+				return ValidationResult.Failure(
+						"Error: expect a nonnegative integer for -checkpoint option.");
+			}
+		}
+		
+		// Ensures maximum set size is within required range
+		if (options.MaxSetSize.isPresent())
+		{
+			final int value = options.MaxSetSize.get();
+			final int lowerBound = 1;
+			final int upperBound = Integer.MAX_VALUE;
+			if (value < lowerBound)
+			{
+				return ValidationResult.Failure(
+						String.format(
+								"Error: Value in interval [{0}, {1}] for maxSetSize required; encountered {2}",
+								lowerBound,
+								upperBound,
+								value));
+			}
+		}
+		
+		// Ensures DFID max is non-negative integer
+		if (options.DfidStartingDepth.isPresent())
+		{
+			final int value = options.DfidStartingDepth.get();
+			if (value < 0)
+			{
+				return ValidationResult.Failure(
+						"Error: expect a nonnegative integer for -dfid option.");
+			}
+		}
+		
+		// Ensures fingerprint function index is within range
+		if (options.FingerprintFunctionIndex.isPresent())
+		{
+			final int value = options.FingerprintFunctionIndex.get();
+			final int lowerBound = 0;
+			final int upperBound = FP64.Polys.length - 1;
+			if (value < lowerBound || value > upperBound)
+			{
+				return ValidationResult.Failure(
+						String.format(
+								"Error: The number for -fp must be between {0} and {1} (inclusive).",
+								lowerBound,
+								upperBound));
+			}
+		}
+		
+		// Ensures fingerprint set memory ratio is non-negative
+		if (options.FingerprintSetMemoryUsePercentage.isPresent())
+		{
+			final double value = options.FingerprintSetMemoryUsePercentage.get();
+			if (value < 0)
+			{
+				return ValidationResult.Failure(
+						"Error: An positive integer or a fraction for fpset memory size/percentage required; encountered " + value);
+			}
+		}
+		
+		// Ensures fingerprint bits setting is within range
+		if (options.FingerprintBits.isPresent())
+		{
+			final int value = options.FingerprintBits.get();
+			final int lowerBound = 0;
+			final int upperBound = MultiFPSet.MAX_FPBITS;
+			if (value < lowerBound || value > upperBound)
+			{
+				return ValidationResult.Failure(
+						String.format(
+								"Error: Value in interval [{0}, {1}] for fpbits required; encountered {2}",
+								lowerBound,
+								upperBound,
+								value));
+			}
+		}
+		
+		return ValidationResult.Success();
 	}
 	
+	/**
+	 * Performs transformations on the given options.
+	 * @param options The options on which to perform transformations.
+	 */
 	public static void Transform(CommandLineOptions options)
 	{
 		// Convert liveness check parameter to lower case
@@ -708,6 +804,13 @@ public class CommandLineOptions
 		// Appends system-dependent separator to metadata directory option
 		options.MetadataDirectoryPath = options.MetadataDirectoryPath.map(
 				(String path) -> path + FileUtil.separator);
+		
+		// Removes .tla extension from main TLA+ spec
+		options.MainSpecFilePath = options.MainSpecFilePath.map(
+				(String path) -> path.endsWith(TLAConstants.Files.TLA_EXTENSION)
+					? path.substring(0, (path.length() - TLAConstants.Files.TLA_EXTENSION.length()))
+					: path
+		);
 	}
 	
 	/**
@@ -773,6 +876,47 @@ public class CommandLineOptions
 	}
 	
 	/**
+	 * The result of validating the command line arguments.
+	 */
+	public static class ValidationResult
+	{
+		/**
+		 * Whether the validation succeeded.
+		 */
+		public boolean Success;
+		
+		/**
+		 * The error message, in case of validation failure.
+		 */
+		public Optional<String> ErrorMessage;
+		
+		/**
+		 * Creates a validation report in case of success.
+		 * @return A successful validation report.
+		 */
+		public static ValidationResult Success()
+		{
+			ValidationResult result = new ValidationResult();
+			result.Success = true;
+			result.ErrorMessage = Optional.empty();
+			return result;
+		}
+		
+		/**
+		 * Creates a validation report in case of failure.
+		 * @param errorMessage Message to attach to report.
+		 * @return A failed validation report.
+		 */
+		public static ValidationResult Failure(String errorMessage)
+		{
+			ValidationResult result = new ValidationResult();
+			result.Success = false;
+			result.ErrorMessage = Optional.of(errorMessage);
+			return result;
+		}
+	}
+	
+	/**
 	 * The result of parsing the command line arguments.
 	 */
 	public static class ParseResult
@@ -802,7 +946,7 @@ public class CommandLineOptions
 		 * @param options The parse command line options.
 		 * @return A successful parser report.
 		 */
-		public static ParseResult ParseSuccess(CommandLineOptions options)
+		public static ParseResult Success(CommandLineOptions options)
 		{
 			ParseResult result = new ParseResult();
 			result.Success = true;
@@ -816,7 +960,7 @@ public class CommandLineOptions
 		 * Creates a parse result in case user requests help text.
 		 * @return A help text parser report.
 		 */
-		public static ParseResult ParseHelpRequest()
+		public static ParseResult HelpRequest()
 		{
 			ParseResult result = new ParseResult();
 			result.Success = true;
@@ -831,7 +975,7 @@ public class CommandLineOptions
 		 * @param errorMessage The parse error message.
 		 * @return A failed parser report.
 		 */
-		public static ParseResult ParseFailure(String errorMessage)
+		public static ParseResult Failure(String errorMessage)
 		{
 			ParseResult result = new ParseResult();
 			result.Success = false;

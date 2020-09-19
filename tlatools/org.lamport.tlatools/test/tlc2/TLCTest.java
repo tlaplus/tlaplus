@@ -38,7 +38,8 @@ public class TLCTest {
 	@Test
 	public void testHandleParametersAllocateLowerBound() {
 		final TLC tlc = new TLC();
-		assertTrue(tlc.handleParameters(new String[] {"-fpmem", "0", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME}));
+		final String[] args = new String[] {"-fpmem", "0", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertTrue(tlc.handleParameters(args, true));
 		final FPSetConfiguration fpSetConfiguration = tlc.getFPSetConfiguration();
 		assumeTrue(FPSetFactory.allocatesOnHeap(fpSetConfiguration.getImplementation()));
 		assertEquals("Allocating to little should result in min default",
@@ -52,8 +53,8 @@ public class TLCTest {
 	@Test
 	public void testHandleParametersAllocateUpperBound() {
 		final TLC tlc = new TLC();
-		assertTrue(tlc.handleParameters(new String[] {"-fpmem", Long.toString(Long.MAX_VALUE),
-				TLAConstants.Files.MODEL_CHECK_FILE_BASENAME}));
+		final String[] args = new String[] {"-fpmem", Long.toString(Long.MAX_VALUE), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertTrue(tlc.handleParameters(args, true));
         final long maxMemory = (long) (Runtime.getRuntime().maxMemory() * 0.75d);
         final FPSetConfiguration fpSetConfiguration = tlc.getFPSetConfiguration();
 		assumeTrue(FPSetFactory.allocatesOnHeap(fpSetConfiguration.getImplementation()));
@@ -67,7 +68,8 @@ public class TLCTest {
 	@Test
 	public void testHandleParametersAllocateHalf() {
 		final TLC tlc = new TLC();
-		assertTrue(tlc.handleParameters(new String[] {"-fpmem", ".5", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME}));
+		final String[] args = new String[] {"-fpmem", ".5", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertTrue(tlc.handleParameters(args, true));
         final long maxMemory = (long) (Runtime.getRuntime().maxMemory() * 0.50d);
         final FPSetConfiguration fpSetConfiguration = tlc.getFPSetConfiguration();
 		assumeTrue(FPSetFactory.allocatesOnHeap(fpSetConfiguration.getImplementation()));
@@ -81,7 +83,8 @@ public class TLCTest {
 	@Test
 	public void testHandleParametersAllocate90() {
 		final TLC tlc = new TLC();
-		assertTrue(tlc.handleParameters(new String[] {"-fpmem", ".99", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME}));
+		final String[] args = new String[] {"-fpmem", ".99", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertTrue(tlc.handleParameters(args, true));
         final long maxMemory = (long) (Runtime.getRuntime().maxMemory() * 0.99d);
 		final FPSetConfiguration fpSetConfiguration = tlc.getFPSetConfiguration();
 		assumeTrue(FPSetFactory.allocatesOnHeap(fpSetConfiguration.getImplementation()));
@@ -108,18 +111,19 @@ public class TLCTest {
 				TLAConstants.Files.MODEL_CHECK_FILE_BASENAME }));
 		
 		tlc = new TLC();
-		assertTrue(tlc.handleParameters(new String[] {"-maxSetSize", "1", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME}));
+		final String[] args = new String[] {"-maxSetSize", "1", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertTrue(tlc.handleParameters(args, true));
 		assertTrue(TLCGlobals.setBound == 1);
 		
 
 		tlc = new TLC();
-		assertTrue(tlc.handleParameters(
-				new String[] { "-maxSetSize", Integer.toString(progDefault), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME }));
+		final String[] args2 = new String[] { "-maxSetSize", Integer.toString(progDefault), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME };
+		assertTrue(tlc.handleParameters(args2, true));
 		assertTrue(TLCGlobals.setBound == progDefault);
 		
 		tlc = new TLC();
-		assertTrue(tlc.handleParameters(new String[] { "-maxSetSize", Integer.toString(Integer.MAX_VALUE),
-				TLAConstants.Files.MODEL_CHECK_FILE_BASENAME }));
+		final String[] args3 = new String[] { "-maxSetSize", Integer.toString(Integer.MAX_VALUE), TLAConstants.Files.MODEL_CHECK_FILE_BASENAME};
+		assertTrue(tlc.handleParameters(args3, true));
 		assertTrue(TLCGlobals.setBound == Integer.MAX_VALUE);
 	}
 	
@@ -131,5 +135,29 @@ public class TLCTest {
 		assertEquals("1d 23h", TLC.convertRuntimeToHumanReadable(169200000L));
 		assertEquals("2d 23h", TLC.convertRuntimeToHumanReadable(255600000L));
 		assertEquals("99d 23h", TLC.convertRuntimeToHumanReadable(8636400000L));
+	}
+	
+	@Test
+	public void testSimulateFlagSetsRunMode()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-simulate", tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(TLC.RunMode.SIMULATE, tlc.getRunMode());
+	}
+	
+	@Test
+	public void testSimulateFlagWithOptionsSetsVariables()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final long expectedLimit = 1234;
+		final String expectedPath = "/path/to/file";
+		final String[] args = new String[]{"-simulate", "file=" + expectedPath + ",num=" + expectedLimit, tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(TLC.RunMode.SIMULATE, tlc.getRunMode());
+		assertEquals(expectedLimit, tlc.getSimulationBehaviorCountLimit());
+		assertEquals(expectedPath, tlc.getTraceFilePath());
 	}
 }
