@@ -10,7 +10,10 @@ import util.TLAConstants;
  * Instructions for adding a new command line option:
  *  1. Add a field to this class (encapsulating type with Optional)
  *  2. Add parsing logic to the Parse method
- *  3. Add tests for your new command line option
+ *  3. Add validation logic to the Validate method (if required)
+ *  4. Add transformation logic to the Transform method (if required)
+ *  5. Add tests for your new option for all of those methods
+ *  6. Add text describing your option to the help output
  * 
  * Try to keep the Parse method focused on content-unaware parsing, not validation.
  * For example, if your option requires an integer in a certain range, this constraint
@@ -148,11 +151,6 @@ public class CommandLineOptions
 	public Optional<Boolean> CreateMonolithErrorTraceSpec = Optional.empty();
 	
 	/**
-	 * Whether to print the help text.
-	 */
-	public Optional<Boolean> PrintHelpText = Optional.empty();
-	
-	/**
 	 * TODO: find out what this does.
 	 */
 	public Optional<String> LivenessCheck = Optional.empty();
@@ -236,6 +234,11 @@ public class CommandLineOptions
 	 * Percentage of physical computer memory to commit to fingerprint set.
 	 */
 	public Optional<Double> FingerprintSetMemoryUsePercentage = Optional.empty();
+	
+	/**
+	 * Used for creating nested fingerprint sets.
+	 */
+	public Optional<Integer> FingerprintBits = Optional.empty();
 	
 	/**
 	 * Path to main TLA+ spec file.
@@ -335,13 +338,14 @@ public class CommandLineOptions
 			} else if (args[index].equals("-help") || args[index].equals("-h"))
 			{
 				index++;
-				options.PrintHelpText = Optional.of(true);
+				// Immediately halt parsing and return if help flag detected
+				return ParseResult.ParseHelpRequest();
 			} else if (args[index].equals("-lncheck"))
 			{
 				index++;
 				if (index < args.length)
 				{
-					options.LivenessCheck = Optional.of(args[index].toLowerCase());
+					options.LivenessCheck = Optional.of(args[index]);
 					index++;
 				} else
 				{
@@ -353,15 +357,8 @@ public class CommandLineOptions
 				index++;
 				if (index < args.length)
 				{
-					String configFilePath = args[index];
-					if (configFilePath.endsWith(TLAConstants.Files.CONFIG_EXTENSION))
-					{
-						configFilePath = configFilePath.substring(0,
-								(configFilePath.length() - TLAConstants.Files.CONFIG_EXTENSION.length()));
-					}
-
+					options.ConfigurationFilePath = Optional.of(args[index]);
 					index++;
-					options.ConfigurationFilePath = Optional.of(configFilePath);
 				} else
 				{
 					return ParseResult.ParseFailure(
@@ -374,19 +371,18 @@ public class CommandLineOptions
 				{
 					final String dotArgs = args[index].toLowerCase();
 					index++; // consume "dot...".
+
 					DumpFileControls controls = new DumpFileControls(
 							dotArgs.contains("colorize"),
 							dotArgs.contains("actionlabels"),
 							dotArgs.contains("snapshot"));
-
 					options.DumpFileOptions = Optional.of(controls);
-					String name = args[index];
-					options.DumpFilePath = Optional.of(name.endsWith(".dot") ? name : name + ".dot");
+
+					options.DumpFilePath = Optional.of(args[index]);
 					index++;
 				} else if (index < args.length)
 				{
-					String name = args[index];
-					options.DumpFilePath = Optional.of(name.endsWith(".dump") ? name : name + ".dump");
+					options.DumpFilePath = Optional.of(args[index]);
 					index++;
 				} else
 				{
@@ -446,12 +442,12 @@ public class CommandLineOptions
                     } catch (NumberFormatException e)
                     {
                         return ParseResult.ParseFailure(
-                        		"Error: An integer for trace length required; encountered " + args[index]);
+                        		"Error: An integer for trace depth required; encountered " + args[index]);
                     }
                 } else
                 {
                     return ParseResult.ParseFailure(
-                    		"Error: trace length required.");
+                    		"Error: trace depth required.");
                 }
             } else if (args[index].equals("-seed"))
             {
@@ -460,7 +456,8 @@ public class CommandLineOptions
                 {
                     try
                     {
-                        options.Seed = Optional.of(Long.parseLong(args[index]));
+                    	final Long seed = Long.parseLong(args[index]);
+                        options.Seed = Optional.of(seed);
                         index++;
                     } catch (NumberFormatException e)
                     {
@@ -479,7 +476,8 @@ public class CommandLineOptions
                 {
                     try
                     {
-                        options.Aril = Optional.of(Long.parseLong(args[index]));
+                    	final Long aril = Long.parseLong(args[index]);
+                        options.Aril = Optional.of(aril);
                         index++;
                     } catch (NumberFormatException e)
                     {
@@ -514,7 +512,7 @@ public class CommandLineOptions
                 index++;
                 if (index < args.length)
                 {
-                    options.RecoveryId = Optional.of(args[index] + FileUtil.separator);
+                    options.RecoveryId = Optional.of(args[index]);
                     index++;
                 } else
                 {
@@ -526,12 +524,12 @@ public class CommandLineOptions
                 index++;
                 if (index < args.length)
                 {
-                    options.MetadataDirectoryPath = Optional.of(args[index] + FileUtil.separator);
+                    options.MetadataDirectoryPath = Optional.of(args[index]);
                     index++;
                 } else
                 {
                     return ParseResult.ParseFailure(
-                    		"Error: need to specify the metadata directory.");
+                    		"Error: need to specify the metadata directory (metadir).");
                 }
             } else if (args[index].equals("-userFile"))
             {
@@ -543,7 +541,7 @@ public class CommandLineOptions
                 } else
                 {
                     return ParseResult.ParseFailure(
-                    		"Error: need to specify the full qualified user file.");
+                    		"Error: need to specify the full qualified userFile.");
                 }
             } else if (args[index].equals("-workers"))
             {
@@ -561,7 +559,7 @@ public class CommandLineOptions
                     } catch (NumberFormatException e)
                     {
                         return ParseResult.ParseFailure(
-                        		"Error: worker number or 'auto' required. But encountered " + args[index]);
+                        		"Error: number of workers or 'auto' required; encountered " + args[index]);
                     }
                 } else
                 {
@@ -620,12 +618,12 @@ public class CommandLineOptions
                     } catch (NumberFormatException e)
                     {
                         return ParseResult.ParseFailure(
-                        		"Error: An positive integer or a fraction for fpset memory size/percentage required; encountered " + args[index]);
+                        		"Error: An positive integer or a fraction for fpset memory size/percentage required (-fpmem); encountered " + args[index]);
                     }
                 } else
                 {
                     return ParseResult.ParseFailure(
-                    		"Error: fpset memory size required.");
+                    		"Error: fpset memory size required for -fpmem.");
                 }
             } else if (args[index].equals("-fpbits"))
             {
@@ -635,6 +633,7 @@ public class CommandLineOptions
                     try
                     {
                     	final int value = Integer.parseInt(args[index]);
+                    	options.FingerprintBits = Optional.of(value);
                         index++;
                     } catch (NumberFormatException e)
                     {
@@ -667,6 +666,48 @@ public class CommandLineOptions
 		}
 		
 		return ParseResult.ParseSuccess(options);
+	}
+	
+	public static boolean Validate(CommandLineOptions options)
+	{
+		// Ensure coverage interval is positive integer
+		if (options.CoverageIntervalInMinutes.isPresent())
+		{
+			int value = options.CoverageIntervalInMinutes.get();
+			if (value < 0)
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public static void Transform(CommandLineOptions options)
+	{
+		// Convert liveness check parameter to lower case
+		options.LivenessCheck = options.LivenessCheck.map((String val) -> val.toLowerCase());
+		
+		// Trim file extension from configuration file path
+		options.ConfigurationFilePath = options.ConfigurationFilePath.map(
+				(String path) -> path.endsWith(TLAConstants.Files.CONFIG_EXTENSION)
+					? path.substring(0, (path.length() - TLAConstants.Files.CONFIG_EXTENSION.length()))
+					: path
+		);
+		
+		// Append .dump or .dot to dump file name
+		options.DumpFilePath = options.DumpFileOptions.isPresent()
+				?  options.DumpFilePath.map(
+						(String path) -> path.endsWith(".dot") ? path : path + ".dot")
+				:  options.DumpFilePath.map(
+						(String path) -> path.endsWith(".dump") ? path : path + ".dump");
+
+		// Appends system-dependent separator to recovery option
+		options.RecoveryId = options.RecoveryId.map((String path) -> path + FileUtil.separator);
+
+		// Appends system-dependent separator to metadata directory option
+		options.MetadataDirectoryPath = options.MetadataDirectoryPath.map(
+				(String path) -> path + FileUtil.separator);
 	}
 	
 	/**
@@ -742,6 +783,11 @@ public class CommandLineOptions
 		public boolean Success;
 		
 		/**
+		 * Whether user requested to print help text.
+		 */
+		public boolean HelpRequest;
+		
+		/**
 		 * The parsed command line options, if successful.
 		 */
 		public Optional<CommandLineOptions> Options;
@@ -760,7 +806,22 @@ public class CommandLineOptions
 		{
 			ParseResult result = new ParseResult();
 			result.Success = true;
+			result.HelpRequest = false;
 			result.Options = Optional.of(options);
+			result.ErrorMessage = Optional.empty();
+			return result;
+		}
+		
+		/**
+		 * Creates a parse result in case user requests help text.
+		 * @return A help text parser report.
+		 */
+		public static ParseResult ParseHelpRequest()
+		{
+			ParseResult result = new ParseResult();
+			result.Success = true;
+			result.HelpRequest = true;
+			result.Options = Optional.empty();
 			result.ErrorMessage = Optional.empty();
 			return result;
 		}
@@ -774,6 +835,7 @@ public class CommandLineOptions
 		{
 			ParseResult result = new ParseResult();
 			result.Success = false;
+			result.HelpRequest = false;
 			result.Options = Optional.empty();
 			result.ErrorMessage = Optional.of(errorMessage);
 			return result;
