@@ -32,4 +32,8 @@ public interface INextStateFunctor extends IStateFunctor {
 	public static class InvariantViolatedException extends RuntimeException {
 		
 	}
+
+	default boolean hasStates() {
+		throw new UnsupportedOperationException();
+	}
 }

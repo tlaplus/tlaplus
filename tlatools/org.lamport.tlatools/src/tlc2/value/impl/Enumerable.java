@@ -36,5 +36,8 @@ public interface Enumerable extends IValue {
   ValueEnumeration elements(final int k);
   EnumerableValue getRandomSubset(final int k);
   Value isSubsetEq(Value other);
+  default ValueEnumeration unorderedElements(int prime) {
+	  return elements();
+  }
 }
 

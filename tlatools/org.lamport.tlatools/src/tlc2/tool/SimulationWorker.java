@@ -281,7 +281,7 @@ public class SimulationWorker extends IdThread {
 	 * This method returns a state that is randomly chosen from the set of states.
 	 * It returns null if the set of states is empty.
 	 */
-	private final TLCState randomState(RandomGenerator rng, StateVec states) throws EvalException {
+	private final TLCState randomState(RandomGenerator rng, StateVec states) {
 		final int len = states.size();
 		if (len > 0) {
 			final int index = (int) Math.floor(rng.nextDouble() * len);
@@ -475,5 +475,9 @@ public class SimulationWorker extends IdThread {
 	public void start(StateVec initStates) {
 		this.initStates = initStates;
 		this.start();
+	}
+	
+	public final RandomGenerator getRNG() {
+		return this.localRng;
 	}
 }

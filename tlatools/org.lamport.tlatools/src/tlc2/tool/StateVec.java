@@ -211,4 +211,8 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
 	}
     return res.toArray(new Value[res.size()]);
   }
+  
+  public final boolean hasStates() {
+	  return !isEmpty();
+  }
 }

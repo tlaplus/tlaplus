@@ -51,6 +51,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.ExpectInlined;
 import tlc2.util.IdThread;
+import tlc2.util.RandomGenerator;
 import tlc2.util.Vect;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
@@ -107,6 +108,25 @@ public abstract class Tool
     extends Spec
     implements ValueConstants, ToolGlobals, ITool
 {
+
+  	/*
+	 * Prototype, do *not* activate when checking safety or liveness!!!:
+	 * For simulation that is not meant as a substitute of exhaustive checking for too
+	 * large models, it can be useful to generate behaviors as quickly as possible,
+	 * i.e. without checking all successor states along the states of the behavior.
+	 * This flag activates the code path that efficiently generate only a single 
+	 * successor state during simulation.  It does not let the user parameterize
+	 * the code with a particular distribution, but instead draws from the uniform
+	 * distribution.  
+	 * 
+	 * In its current form, it only handles non-determinism expressed with opcode
+	 * OPCODE_be (bounded exist), i.e. (which simply happened to be the primary
+	 * expression that we encountered in the SWIM spec during this work):
+	 * 
+	 * VARIABLE x
+	 * \E n \in S: x' = n
+	 */
+  private static final boolean PROBABLISTIC = Boolean.getBoolean(Tool.class.getName() + ".probabilistic");
 
   public enum Mode {
 	  Simulation, MC, Executor;
@@ -1074,11 +1094,27 @@ public abstract class Tool
 	case OPCODE_be:     // BoundedExists
 	  {
 	    SemanticNode body = args[0];
-	    ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
-	    Context c1;
-	    while ((c1 = Enum.nextElement()) != null) {
-	      resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
+	    
+	    if (PROBABLISTIC) {
+		    // probabilistic (return after a state has been generated, ordered is randomized)
+		    final tlc2.tool.SimulationWorker simWorker = (tlc2.tool.SimulationWorker) Thread.currentThread();
+			final RandomizingContextEnumerator Enum = this.randomizingContexts(simWorker.getRNG(), pred, c, s0, s1, EvalControl.Clear, cm);
+			Context c1;
+		    while ((c1 = Enum.nextElement()) != null) {
+				resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
+				if (nss.hasStates()) {
+					return resState;
+				}
+		    }
+	    } else {
+	    	// non-deterministically generate successor states (potentially many)
+	    	ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
+	    	Context c1;
+	    	while ((c1 = Enum.nextElement()) != null) {
+	    		resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
+	    	}
 	    }
+
 	    return resState;
 	  }
 	case OPCODE_bf:     // BoundedForall
@@ -3554,6 +3590,41 @@ public abstract class Tool
   public final IContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
           TLCState s1, final int control) {
 	  return contexts(appl, c, s0, s1, control, CostModel.DO_NOT_RECORD);
+  }
+
+  public final RandomizingContextEnumerator randomizingContexts(RandomGenerator rnd, OpApplNode appl, Context c, TLCState s0,
+          TLCState s1, final int control, CostModel cm) {
+	    final FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
+	    final boolean[] isTuples = appl.isBdedQuantATuple();
+	    final ExprNode[] domains = appl.getBdedQuantBounds();
+
+	    final int flen = formals.length;
+	    int alen = 0;
+	    for (int i = 0; i < flen; i++) {
+	      alen += (isTuples[i]) ? 1 : formals[i].length;
+	    }
+	    final Object[] vars = new Object[alen];
+	    final ValueEnumeration[] enums = new ValueEnumeration[alen];
+	    int idx = 0;
+	    for (int i = 0; i < flen; i++) {
+	      final Value boundSet = this.eval(domains[i], c, s0, s1, control, cm);
+	      if (!(boundSet instanceof Enumerable)) {
+	        Assert.fail("TLC encountered a non-enumerable quantifier bound\n" +
+	                    Values.ppr(boundSet.toString()) + ".\n" + domains[i]);
+	      }
+	      final FormalParamNode[] farg = formals[i];
+	      if (isTuples[i]) {
+	        vars[idx] = farg;
+	        enums[idx++] = ((Enumerable)boundSet).unorderedElements(rnd.nextPrime());
+	      }
+	      else {
+	        for (int j = 0; j < farg.length; j++) {
+	          vars[idx] = farg[j];
+	          enums[idx++] = ((Enumerable)boundSet).unorderedElements(rnd.nextPrime());
+	        }
+	      }
+	    }
+	    return new RandomizingContextEnumerator(vars, enums, c);
   }
   
   /* A context enumerator for an operator application. */
