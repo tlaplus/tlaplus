@@ -37,6 +37,14 @@ public class FPSetConfiguration implements Serializable {
 		this.ratio = aRatio;
 		this.implementation = implementation;
 	}
+	
+	public FPSetConfiguration(FPSetConfiguration other)
+	{
+		this.fpBits = other.fpBits;
+		this.memoryInBytes = other.memoryInBytes;
+		this.ratio = other.ratio;
+		this.implementation = other.implementation;
+	}
 
 	public boolean allowsNesting() {
 		return getFpBits() > 0;

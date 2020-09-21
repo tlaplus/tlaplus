@@ -132,6 +132,7 @@ public class TLC {
 	private boolean actionLabels = false;
 	private boolean snapshot = false;
 		
+	private String userFile = null;
 
     // flag if the welcome message is already printed
     private boolean welcomePrinted;
@@ -757,17 +758,10 @@ public class TLC {
                 index++;
                 if (index < args.length)
                 {
-                    try {
-						// Most problems will only show when TLC eventually tries
-						// to write to the file.
-						tlc2.module.TLC.OUTPUT = new BufferedWriter(new FileWriter(new File(args[index++])));
-        			} catch (IOException e) {
-                        printErrorMsg("Error: Failed to create user output log file.");
-                        return false;
-        			}
-                } else
-                {
-                    printErrorMsg("Error: need to specify the full qualified file.");
+					this.userFile = args[index];
+					index++;
+                } else {
+                    printErrorMsg("Error: need to specify the full qualified userFile.");
                     return false;
                 }
             } else if (args[index].equals("-workers"))
@@ -978,6 +972,18 @@ public class TLC {
 
 		if (configFile == null) {
 			configFile = mainFile;
+		}
+		
+		if (this.userFile != null) {
+			try
+			{
+				// Most problems will only show when TLC eventually tries
+				// to write to the file.
+				tlc2.module.TLC.OUTPUT = new BufferedWriter(new FileWriter(new File(this.userFile)));
+			} catch (IOException e) {
+				printErrorMsg("Error: Failed to create user output log file.");
+				return false;
+			}
 		}
 
 		if (cleanup && (fromChkpt == null)) {
@@ -1526,6 +1532,10 @@ public class TLC {
     public String getConfigFile() {
     	return this.configFile;
     }
+    
+    public String getUserFile() {
+    	return this.userFile;
+    }
 
     public String getDumpFile() {
     	return this.dumpFile;
@@ -1565,6 +1575,14 @@ public class TLC {
     
     public String getCheckpointRecoveryDirectory() {
     	return this.fromChkpt;
+    }
+    
+    public int getFingerprintFunctionIndex() {
+    	return this.fpIndex;
+    }
+    
+    public FPSetConfiguration getFingerprintSetConfiguration() {
+    	return new FPSetConfiguration(this.fpSetConfiguration);
     }
 
 	public String getModelName() {

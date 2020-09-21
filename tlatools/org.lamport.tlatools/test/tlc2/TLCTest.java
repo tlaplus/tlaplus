@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.fp.MultiFPSet;
+import tlc2.util.FP64;
 import util.FileUtil;
 import util.TLAConstants;
 import util.TLCRuntime;
@@ -51,7 +53,7 @@ public class TLCTest {
 	}
 	
 	/**
-	 * Overallocating should result in max default
+	 * Over-allocating should result in max default
 	 */
 	@Test
 	public void testHandleParametersAllocateUpperBound() {
@@ -567,6 +569,26 @@ public class TLCTest {
 	}
 
 	@Test
+	public void testUserFileOptionSetsVariable()
+	{
+		final String expectedValue = "someFileName";
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-userFile", expectedValue, tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue, tlc.getUserFile());
+	}
+	
+	@Test
+	public void testInvalidUserFileOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, "-userFile"};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
 	public void testWorkerOptionSetsGlobalVariable()
 	{
 		final Integer expectedValue = 4;
@@ -586,6 +608,9 @@ public class TLCTest {
 		assertFalse(tlc.handleParameters(args, true));
 		
 		args = new String[] {"-workers", "0", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-workers", "NotANumber", tlaFile};
 		assertFalse(tlc.handleParameters(args, true));
 	}
 
@@ -609,6 +634,123 @@ public class TLCTest {
 		assertFalse(tlc.handleParameters(args, true));
 		
 		args = new String[] {"-dfid", "-1", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-dfid", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testFpOptionSetsVariable()
+	{
+		final Integer expectedValue = FP64.Polys.length - 1;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-fp", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue.intValue(), tlc.getFingerprintFunctionIndex());
+	}
+	
+	@Test
+	public void testInvalidFpOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, "-fp"};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-fp", "-1", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		final Integer inputValue = FP64.Polys.length + 1;
+		args = new String[] {"-fp", inputValue.toString(), tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-fp", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testFpMemOptionSetsVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final Double expectedValue = 0.8;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-fpmem", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(expectedValue.doubleValue() == tlc.getFingerprintSetConfiguration().getRatio());
+		
+		final Double inputValue = 2048d;
+		tlc = new TLC();
+		args = new String[] {"-fpmem", inputValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertTrue(1.0d == tlc.getFingerprintSetConfiguration().getRatio());
+	}
+	
+	@Test
+	public void testInvalidFpMemOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, "-fpmem"};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-fpmem", "-1", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-fpmem", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testFpBitsOptionSetsVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final Integer expectedValue = 16;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-fpbits", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue.intValue(), tlc.getFingerprintSetConfiguration().getFpBits());
+	}
+	
+	@Test
+	public void testInvalidFpBitsOptions()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, "-fpbits"};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-fpbits", "-1", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		final Integer inputValue = MultiFPSet.MAX_FPBITS + 1;
+		args = new String[] {"-fpbits", inputValue.toString(), tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-fpbits", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+	}
+
+	@Test
+	public void testMainTlaFileSetsVariable()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(tlaFile, tlc.getMainFile());
+	}
+
+	@Test
+	public void testInvalidMainTlaFile()
+	{
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {tlaFile, tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+
+		args = new String[] {"-"};
 		assertFalse(tlc.handleParameters(args, true));
 	}
 }
