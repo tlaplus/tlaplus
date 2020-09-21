@@ -4,10 +4,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+
+import tlc2.tool.fp.MultiFPSet;
+import tlc2.util.FP64;
+import util.FileUtil;
+import util.TLAConstants;
+
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class TestCommandLineOptions
 {
+	/**
+	 * Unit tests for CommandLineOptions.Parse function
+	 */
+
 	@Test
 	public void testSimulateFlag()
 	{
@@ -1044,5 +1055,234 @@ public class TestCommandLineOptions
 
 		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
 		assertFalse(result.Success);
+	}
+	
+	/**
+	 * Unit tests for CommandLineOptions.Validate function
+	 */
+	
+	@Test
+	public void testCoverageIntervalValidation()
+	{
+		Integer inputValue = 12;
+		CommandLineOptions options = new CommandLineOptions();
+		options.CoverageIntervalInMinutes = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
+		assertTrue(result.Success);
+		assertTrue(result.ErrorMessage.isEmpty());
+		
+		inputValue = -1;
+		options.CoverageIntervalInMinutes = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("coverage"));
+	}
+	
+	@Test
+	public void testCheckpointIntervalValidation()
+	{
+		Integer inputValue = 12;
+		CommandLineOptions options = new CommandLineOptions();
+		options.CheckpointIntervalInMinutes = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
+		assertTrue(result.Success);
+		assertTrue(result.ErrorMessage.isEmpty());
+		
+		inputValue = -1;
+		options.CheckpointIntervalInMinutes = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("checkpoint"));
+	}
+	
+	@Test
+	public void testDfidValidation()
+	{
+		Integer inputValue = 12;
+		CommandLineOptions options = new CommandLineOptions();
+		options.DfidStartingDepth = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
+		assertTrue(result.Success);
+		assertTrue(result.ErrorMessage.isEmpty());
+		
+		inputValue = -1;
+		options.DfidStartingDepth = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("dfid"));
+	}
+	
+	@Test
+	public void testFpSetValidation()
+	{
+		Double inputValue = 0.5;
+		CommandLineOptions options = new CommandLineOptions();
+		options.FingerprintSetMemoryUsePercentage = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
+		assertTrue(result.Success);
+		assertTrue(result.ErrorMessage.isEmpty());
+		
+		inputValue = -0.5;
+		options.FingerprintSetMemoryUsePercentage = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("fpset"));
+	}
+	
+	@Test
+	public void testMaxSetSizeValidation()
+	{
+		Integer inputValue = 1;
+		CommandLineOptions options = new CommandLineOptions();
+		options.MaxSetSize = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
+		assertTrue(result.Success);
+		assertTrue(result.ErrorMessage.isEmpty());
+		
+		inputValue = 0;
+		options.MaxSetSize = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("maxSetSize"));
+	}
+	
+	@Test
+	public void testFpFunctionIndexValidation()
+	{
+		Integer inputValue = 0;
+		CommandLineOptions options = new CommandLineOptions();
+		options.FingerprintFunctionIndex = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
+		assertTrue(result.Success);
+		assertTrue(result.ErrorMessage.isEmpty());
+		
+		inputValue = -1;
+		options.FingerprintFunctionIndex = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("fp"));
+
+		inputValue = FP64.Polys.length;
+		options.FingerprintFunctionIndex = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("fp"));
+	}
+	
+	@Test
+	public void testFpBitsValidation()
+	{
+		Integer inputValue = 0;
+		CommandLineOptions options = new CommandLineOptions();
+		options.FingerprintBits = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
+		assertTrue(result.Success);
+		assertTrue(result.ErrorMessage.isEmpty());
+		
+		inputValue = -1;
+		options.FingerprintBits = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("fpbits"));
+
+		inputValue = MultiFPSet.MAX_FPBITS + 1;
+		options.FingerprintBits = Optional.of(inputValue);
+		result = CommandLineOptions.Validate(options);
+		assertFalse(result.Success);
+		assertTrue(result.ErrorMessage.isPresent());
+		assertTrue(result.ErrorMessage.get().contains("fpbits"));
+	}
+	
+	/**
+	 * Unit tests for CommandLineOptions.Transform function
+	 */
+	
+	@Test
+	public void testLivenessCheckTransform()
+	{
+		final String inputValue = "SomeStringWithCapitalLetters";
+		final String expectedValue = inputValue.toLowerCase();
+		CommandLineOptions options = new CommandLineOptions();
+		options.LivenessCheck = Optional.of(inputValue);
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.LivenessCheck.get());
+	}
+	
+	@Test
+	public void testConfigFileTransform()
+	{
+		final String expectedValue = "ConfigFile";
+		final String inputValue = expectedValue + TLAConstants.Files.CONFIG_EXTENSION;
+		CommandLineOptions options = new CommandLineOptions();
+		options.ConfigurationFilePath = Optional.of(inputValue);
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.ConfigurationFilePath.get());
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.ConfigurationFilePath.get());
+	}
+	
+	@Test
+	public void testDumpFileTransform()
+	{
+		final String inputValue = "dumpFile";
+		String expectedValue = inputValue + ".dump";
+		CommandLineOptions options = new CommandLineOptions();
+		options.DumpFilePath = Optional.of(inputValue);
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.DumpFilePath.get());
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.DumpFilePath.get());
+		
+		expectedValue = inputValue + ".dot";
+		options = new CommandLineOptions();
+		options.DumpFilePath = Optional.of(inputValue);
+		options.DumpFileOptions = Optional.of(new CommandLineOptions.DumpFileControls(false, false, false));
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.DumpFilePath.get());
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.DumpFilePath.get());
+	}
+	
+	@Test
+	public void testRecoveryIdTransform()
+	{		
+		final String inputValue = String.format("{0}path{0}to{0}file", FileUtil.separator);
+		final String expectedValue = inputValue + FileUtil.separator;
+		CommandLineOptions options = new CommandLineOptions();
+		options.RecoveryId = Optional.of(inputValue);
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.RecoveryId.get());
+	}
+	
+	@Test
+	public void testMetadataPathTransform()
+	{
+		final String inputValue = String.format("{0}path{0}to{0}file", FileUtil.separator);
+		final String expectedValue = inputValue + FileUtil.separator;
+		CommandLineOptions options = new CommandLineOptions();
+		options.MetadataDirectoryPath = Optional.of(inputValue);
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.MetadataDirectoryPath.get());
+	}
+	
+	@Test
+	public void testMainSpecFileTransform()
+	{
+		final String expectedValue = "Spec";
+		final String inputValue = expectedValue + TLAConstants.Files.TLA_EXTENSION;
+		CommandLineOptions options = new CommandLineOptions();
+		options.MainSpecFilePath = Optional.of(inputValue);
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.MainSpecFilePath.get());
+		CommandLineOptions.Transform(options);
+		assertEquals(expectedValue, options.MainSpecFilePath.get());
 	}
 }

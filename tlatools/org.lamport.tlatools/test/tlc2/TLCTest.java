@@ -662,7 +662,7 @@ public class TLCTest {
 		args = new String[] {"-fp", "-1", tlaFile};
 		assertFalse(tlc.handleParameters(args, true));
 		
-		final Integer inputValue = FP64.Polys.length + 1;
+		final Integer inputValue = FP64.Polys.length;
 		args = new String[] {"-fp", inputValue.toString(), tlaFile};
 		assertFalse(tlc.handleParameters(args, true));
 		

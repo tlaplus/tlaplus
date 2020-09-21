@@ -678,98 +678,98 @@ public class CommandLineOptions
 	 */
 	public static ValidationResult Validate(CommandLineOptions options)
 	{
-		// Ensure coverage interval is a non-negative integer
-		if (options.CoverageIntervalInMinutes.isPresent())
+		try
 		{
-			final int value = options.CoverageIntervalInMinutes.get();
-			if (value < 0)
+			// Ensure coverage interval is a non-negative integer
+			options.CoverageIntervalInMinutes.ifPresent((value) ->
 			{
-				return ValidationResult.Failure(
-						"Error: expect a nonnegative integer for -coverage option.");
-			}
-		}
+				if (value < 0)
+				{
+					throw new IllegalArgumentException(
+							"Error: expect a nonnegative integer for -coverage option.");
+				}
+			});
+
+			// Ensure checkpoint interval is a non-negative integer
+			options.CheckpointIntervalInMinutes.ifPresent((value) ->
+			{
+				if (value < 0)
+				{
+					throw new IllegalArgumentException(
+							"Error: expect a nonnegative integer for -checkpoint option.");
+				}
+			});
 		
-		// Ensure checkpoint interval is a non-negative integer
-		if (options.CheckpointIntervalInMinutes.isPresent())
-		{
-			final int value = options.CheckpointIntervalInMinutes.get();
-			if (value < 0)
+			// Ensures DFID max is non-negative integer
+			options.DfidStartingDepth.ifPresent((value) ->
 			{
-				return ValidationResult.Failure(
-						"Error: expect a nonnegative integer for -checkpoint option.");
-			}
-		}
+				if (value < 0)
+				{
+					throw new IllegalArgumentException(
+							"Error: expect a nonnegative integer for -dfid option.");
+				}
+			});
 		
-		// Ensures maximum set size is within required range
-		if (options.MaxSetSize.isPresent())
-		{
-			final int value = options.MaxSetSize.get();
-			final int lowerBound = 1;
-			final int upperBound = Integer.MAX_VALUE;
-			if (value < lowerBound)
+			// Ensures fingerprint set memory ratio is non-negative
+			options.FingerprintSetMemoryUsePercentage.ifPresent((value) ->
 			{
-				return ValidationResult.Failure(
-						String.format(
-								"Error: Value in interval [{0}, {1}] for maxSetSize required; encountered {2}",
-								lowerBound,
-								upperBound,
-								value));
-			}
-		}
+				if (value < 0)
+				{
+					throw new IllegalArgumentException(
+							"Error: An positive integer or a fraction for fpset memory size/percentage required; encountered " + value);
+				}
+			});
 		
-		// Ensures DFID max is non-negative integer
-		if (options.DfidStartingDepth.isPresent())
-		{
-			final int value = options.DfidStartingDepth.get();
-			if (value < 0)
+			// Ensures maximum set size is within required range
+			options.MaxSetSize.ifPresent((value) ->
 			{
-				return ValidationResult.Failure(
-						"Error: expect a nonnegative integer for -dfid option.");
-			}
-		}
+				final int lowerBound = 1;
+				final int upperBound = Integer.MAX_VALUE;
+				if (value < lowerBound)
+				{
+					throw new IllegalArgumentException(
+							String.format(
+									"Error: Value in interval [{0}, {1}] for maxSetSize required; encountered {2}",
+									lowerBound,
+									upperBound,
+									value));
+				}
+			});
 		
-		// Ensures fingerprint function index is within range
-		if (options.FingerprintFunctionIndex.isPresent())
-		{
-			final int value = options.FingerprintFunctionIndex.get();
-			final int lowerBound = 0;
-			final int upperBound = FP64.Polys.length - 1;
-			if (value < lowerBound || value > upperBound)
+			// Ensures fingerprint function index is within range
+			options.FingerprintFunctionIndex.ifPresent((value) ->
 			{
-				return ValidationResult.Failure(
-						String.format(
-								"Error: The number for -fp must be between {0} and {1} (inclusive).",
-								lowerBound,
-								upperBound));
-			}
-		}
+				final int lowerBound = 0;
+				final int upperBound = FP64.Polys.length - 1;
+				if (value < lowerBound || value > upperBound)
+				{
+					throw new IllegalArgumentException(
+							String.format(
+									"Error: The number for -fp must be between {0} and {1} (inclusive).",
+									lowerBound,
+									upperBound));
+				}
+			});
 		
-		// Ensures fingerprint set memory ratio is non-negative
-		if (options.FingerprintSetMemoryUsePercentage.isPresent())
-		{
-			final double value = options.FingerprintSetMemoryUsePercentage.get();
-			if (value < 0)
+			// Ensures fingerprint bits setting is within range
+			options.FingerprintBits.ifPresent((value) ->
 			{
-				return ValidationResult.Failure(
-						"Error: An positive integer or a fraction for fpset memory size/percentage required; encountered " + value);
-			}
+				final int lowerBound = 0;
+				final int upperBound = MultiFPSet.MAX_FPBITS;
+				if (value < lowerBound || value > upperBound)
+				{
+					throw new IllegalArgumentException(
+							String.format(
+									"Error: Value in interval [{0}, {1}] for fpbits required; encountered {2}",
+									lowerBound,
+									upperBound,
+									value));
+				}
+			});
 		}
-		
-		// Ensures fingerprint bits setting is within range
-		if (options.FingerprintBits.isPresent())
+		catch (IllegalArgumentException e)
 		{
-			final int value = options.FingerprintBits.get();
-			final int lowerBound = 0;
-			final int upperBound = MultiFPSet.MAX_FPBITS;
-			if (value < lowerBound || value > upperBound)
-			{
-				return ValidationResult.Failure(
-						String.format(
-								"Error: Value in interval [{0}, {1}] for fpbits required; encountered {2}",
-								lowerBound,
-								upperBound,
-								value));
-			}
+			return ValidationResult.Failure(e.getMessage());
 		}
 		
 		return ValidationResult.Success();
