@@ -24,17 +24,17 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-simulate", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.SimulationMode.isPresent());
-		assertTrue(actual.SimulationBehaviorCountLimit.isEmpty());
-		assertTrue(actual.SimulationTraceFile.isEmpty());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationBehaviorCountLimit.isEmpty());
+		assertTrue(actual.simulationTraceFile.isEmpty());
 
-		assertTrue(actual.SimulationMode.get());
+		assertTrue(actual.simulationMode.get());
 	}
 
 	@Test
@@ -43,17 +43,17 @@ public class TestCommandLineOptions
 		final long expected = 1234;
 		String[] args = new String[]{"-simulate", "num=" + expected, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 		
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.SimulationMode.isPresent());
-		assertTrue(actual.SimulationTraceFile.isEmpty());
-		assertTrue(actual.SimulationMode.get());
-		assertTrue(actual.SimulationBehaviorCountLimit.isPresent());
-		assertEquals(expected, actual.SimulationBehaviorCountLimit.get().longValue());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationTraceFile.isEmpty());
+		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationBehaviorCountLimit.isPresent());
+		assertEquals(expected, actual.simulationBehaviorCountLimit.get().longValue());
 	}
 	
 	@Test
@@ -62,17 +62,17 @@ public class TestCommandLineOptions
 		final String expected = "/path/to/file";
 		String[] args = new String[]{"-simulate", "file=" + expected, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 		
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.SimulationMode.isPresent());
-		assertTrue(actual.SimulationMode.get());
-		assertTrue(actual.SimulationBehaviorCountLimit.isEmpty());
-		assertTrue(actual.SimulationTraceFile.isPresent());
-		assertEquals(expected, actual.SimulationTraceFile.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationBehaviorCountLimit.isEmpty());
+		assertTrue(actual.simulationTraceFile.isPresent());
+		assertEquals(expected, actual.simulationTraceFile.get());
 	}
 	
 	@Test
@@ -82,21 +82,21 @@ public class TestCommandLineOptions
 		final String expectedPath = "/path/to/file";
 		String[] args = new String[]{"-simulate", "file=" + expectedPath + ",num=" + expectedLimit, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 		
-		assertTrue(actual.SimulationMode.isPresent());
-		assertTrue(actual.SimulationMode.get());
-		assertTrue(actual.SimulationTraceFile.isPresent());
-		assertEquals(expectedPath, actual.SimulationTraceFile.get());
+		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationTraceFile.isPresent());
+		assertEquals(expectedPath, actual.simulationTraceFile.get());
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.SimulationMode.isPresent());
-		assertTrue(actual.SimulationMode.get());
-		assertTrue(actual.SimulationBehaviorCountLimit.isPresent());
-		assertEquals(expectedLimit, actual.SimulationBehaviorCountLimit.get().longValue());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationBehaviorCountLimit.isPresent());
+		assertEquals(expectedLimit, actual.simulationBehaviorCountLimit.get().longValue());
 	}
 
 	@Test
@@ -106,21 +106,21 @@ public class TestCommandLineOptions
 		final String expectedPath = "/path/to/file";
 		String[] args = new String[]{"-simulate", "num=" + expectedLimit + ",file=" + expectedPath, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 		
-		assertTrue(actual.SimulationMode.isPresent());
-		assertTrue(actual.SimulationMode.get());
-		assertTrue(actual.SimulationTraceFile.isPresent());
-		assertEquals(expectedPath, actual.SimulationTraceFile.get());
+		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationTraceFile.isPresent());
+		assertEquals(expectedPath, actual.simulationTraceFile.get());
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.SimulationMode.isPresent());
-		assertTrue(actual.SimulationMode.get());
-		assertTrue(actual.SimulationBehaviorCountLimit.isPresent());
-		assertEquals(expectedLimit, actual.SimulationBehaviorCountLimit.get().longValue());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationBehaviorCountLimit.isPresent());
+		assertEquals(expectedLimit, actual.simulationBehaviorCountLimit.get().longValue());
 	}
 	
 	@Test
@@ -134,20 +134,20 @@ public class TestCommandLineOptions
 		final String expectedPath = "/path/to/file";
 		String[] args = new String[]{"-simulate", "num=" + expectedLimit + ",file=" + expectedPath};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.SimulationMode.isPresent());
-		assertTrue(actual.SimulationBehaviorCountLimit.isEmpty());
-		assertTrue(actual.SimulationTraceFile.isEmpty());
-		assertTrue(actual.MainSpecFilePath.isPresent());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationBehaviorCountLimit.isEmpty());
+		assertTrue(actual.simulationTraceFile.isEmpty());
+		assertTrue(actual.mainSpecFilePath.isPresent());
 		
 		args = new String[]{"test.tla", "-simulate", "num=" + expectedLimit + ",file=" + expectedPath};
-		result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
+		result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
 	}
 
 	@Test
@@ -155,14 +155,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-modelcheck", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.ModelCheck.isPresent());
-		assertTrue(actual.ModelCheck.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.modelCheck.isPresent());
+		assertTrue(actual.modelCheck.get());
 	}
 	
 	@Test
@@ -170,14 +170,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-difftrace", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.OnlyPrintStateTraceDiffs.isPresent());
-		assertTrue(actual.OnlyPrintStateTraceDiffs.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.onlyPrintStateTraceDiffs.isPresent());
+		assertTrue(actual.onlyPrintStateTraceDiffs.get());
 	}
 
 	@Test
@@ -185,14 +185,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-deadlock", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.CheckDeadlock.isPresent());
-		assertFalse(actual.CheckDeadlock.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.checkDeadlock.isPresent());
+		assertFalse(actual.checkDeadlock.get());
 	}
 	
 	@Test
@@ -200,14 +200,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-cleanup", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.CleanStatesDirectory.isPresent());
-		assertTrue(actual.CleanStatesDirectory.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.cleanStatesDirectory.isPresent());
+		assertTrue(actual.cleanStatesDirectory.get());
 	}
 
 	@Test
@@ -215,14 +215,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-nowarning", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.PrintWarnings.isPresent());
-		assertFalse(actual.PrintWarnings.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.printWarnings.isPresent());
+		assertFalse(actual.printWarnings.get());
 	}
 
 	@Test
@@ -230,14 +230,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-gzip", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.UseGZip.isPresent());
-		assertTrue(actual.UseGZip.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.useGZip.isPresent());
+		assertTrue(actual.useGZip.get());
 	}
 
 	@Test
@@ -245,14 +245,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-terse", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.ExpandValuesInPrintStatements.isPresent());
-		assertFalse(actual.ExpandValuesInPrintStatements.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.expandValuesInPrintStatements.isPresent());
+		assertFalse(actual.expandValuesInPrintStatements.get());
 	}
 
 	@Test
@@ -260,14 +260,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-continue", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.ContinueAfterInvariantViolation.isPresent());
-		assertTrue(actual.ContinueAfterInvariantViolation.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.continueAfterInvariantViolation.isPresent());
+		assertTrue(actual.continueAfterInvariantViolation.get());
 	}
 
 	@Test
@@ -275,14 +275,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-view", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.UseView.isPresent());
-		assertTrue(actual.UseView.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.useView.isPresent());
+		assertTrue(actual.useView.get());
 	}
 
 	@Test
@@ -290,14 +290,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-debug", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.Debug.isPresent());
-		assertTrue(actual.Debug.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.debug.isPresent());
+		assertTrue(actual.debug.get());
 	}
 
 	@Test
@@ -305,14 +305,14 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-tool", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.UseToolOutputFormat.isPresent());
-		assertTrue(actual.UseToolOutputFormat.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.useToolOutputFormat.isPresent());
+		assertTrue(actual.useToolOutputFormat.get());
 	}
 
 	@Test
@@ -320,16 +320,16 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-generateSpecTE", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.GenerateErrorTraceSpec.isPresent());
-		assertTrue(actual.GenerateErrorTraceSpec.get());
-		assertTrue(actual.CreateMonolithErrorTraceSpec.isPresent());
-		assertTrue(actual.CreateMonolithErrorTraceSpec.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.generateErrorTraceSpec.isPresent());
+		assertTrue(actual.generateErrorTraceSpec.get());
+		assertTrue(actual.createMonolithErrorTraceSpec.isPresent());
+		assertTrue(actual.createMonolithErrorTraceSpec.get());
 	}
 
 	@Test
@@ -337,16 +337,16 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-generateSpecTE", "nomonolith", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.GenerateErrorTraceSpec.isPresent());
-		assertTrue(actual.GenerateErrorTraceSpec.get());
-		assertTrue(actual.CreateMonolithErrorTraceSpec.isPresent());
-		assertFalse(actual.CreateMonolithErrorTraceSpec.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.generateErrorTraceSpec.isPresent());
+		assertTrue(actual.generateErrorTraceSpec.get());
+		assertTrue(actual.createMonolithErrorTraceSpec.isPresent());
+		assertFalse(actual.createMonolithErrorTraceSpec.get());
 	}
 
 	@Test
@@ -354,10 +354,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-help"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.HelpRequest);
-		assertTrue(result.Options.isEmpty());
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.helpRequest);
+		assertTrue(result.options.isEmpty());
 	}
 
 	@Test
@@ -365,10 +365,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-h"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.HelpRequest);
-		assertTrue(result.Options.isEmpty());
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.helpRequest);
+		assertTrue(result.options.isEmpty());
 	}
 
 	@Test
@@ -376,10 +376,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-h", "NotAnOption", "AlsoNotAnOption"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.HelpRequest);
-		assertTrue(result.Options.isEmpty());
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.helpRequest);
+		assertTrue(result.options.isEmpty());
 	}
 
 	@Test
@@ -388,14 +388,14 @@ public class TestCommandLineOptions
 		final String expectedValue = "final";
 		String[] args = new String[]{"-lncheck", expectedValue, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.LivenessCheck.isPresent());
-		assertEquals(expectedValue, actual.LivenessCheck.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.livenessCheck.isPresent());
+		assertEquals(expectedValue, actual.livenessCheck.get());
 	}
 
 	@Test
@@ -403,10 +403,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-lncheck"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("lncheck"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("lncheck"));
 	}
 
 	@Test
@@ -415,14 +415,14 @@ public class TestCommandLineOptions
 		final String expectedValue = "configFile.cfg";
 		String[] args = new String[]{"-config", expectedValue, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.ConfigurationFilePath.isPresent());
-		assertEquals(expectedValue, actual.ConfigurationFilePath.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.configurationFilePath.isPresent());
+		assertEquals(expectedValue, actual.configurationFilePath.get());
 	}
 
 	@Test
@@ -430,10 +430,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-config"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("config"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("config"));
 	}
 	
 	@Test
@@ -442,15 +442,15 @@ public class TestCommandLineOptions
 		final String expectedValue = "dump.out";
 		String[] args = new String[]{"-dump", expectedValue, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.DumpFilePath.isPresent());
-		assertEquals(expectedValue, actual.DumpFilePath.get());
-		assertTrue(actual.DumpFileOptions.isEmpty());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.dumpFilePath.isPresent());
+		assertEquals(expectedValue, actual.dumpFilePath.get());
+		assertTrue(actual.dumpFileOptions.isEmpty());
 	}
 	
 	@Test
@@ -458,10 +458,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-dump"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("dump"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("dump"));
 	}
 	
 	@Test
@@ -487,30 +487,30 @@ public class TestCommandLineOptions
 			final String flags = String.join(",", flagList);
 			final String[] args = new String[]{"-dump", flags, expectedFileValue, "test.tla"};
 
-			CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-			assertTrue(result.Success);
-			assertTrue(result.Options.isPresent());
-			CommandLineOptions actual = result.Options.get();
+			CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+			assertTrue(result.success);
+			assertTrue(result.options.isPresent());
+			CommandLineOptions actual = result.options.get();
 
-			assertTrue(actual.MainSpecFilePath.isPresent());
-			assertTrue(actual.DumpFilePath.isPresent());
-			assertEquals(expectedFileValue, actual.DumpFilePath.get());
-			assertTrue(actual.DumpFileOptions.isPresent());
-			CommandLineOptions.DumpFileControls actualControls = actual.DumpFileOptions.get();
+			assertTrue(actual.mainSpecFilePath.isPresent());
+			assertTrue(actual.dumpFilePath.isPresent());
+			assertEquals(expectedFileValue, actual.dumpFilePath.get());
+			assertTrue(actual.dumpFileOptions.isPresent());
+			CommandLineOptions.DumpFileControls actualControls = actual.dumpFileOptions.get();
 			
 			if (flagList.contains("colorize"))
 			{
-				assertTrue(actualControls.Colorize);
+				assertTrue(actualControls.colorize);
 			}
 			
 			if (flagList.contains("actionlabels"))
 			{
-				assertTrue(actualControls.ActionLabels);
+				assertTrue(actualControls.actionLabels);
 			}
 			
 			if (flagList.contains("snapshot"))
 			{
-				assertTrue(actualControls.Snapshot);
+				assertTrue(actualControls.snapshot);
 			}
 		}
 	}
@@ -521,14 +521,14 @@ public class TestCommandLineOptions
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-coverage", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.CoverageIntervalInMinutes.isPresent());
-		assertEquals(expectedValue, actual.CoverageIntervalInMinutes.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.coverageIntervalInMinutes.isPresent());
+		assertEquals(expectedValue, actual.coverageIntervalInMinutes.get());
 	}
 	
 	@Test
@@ -536,10 +536,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-coverage"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("coverage"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("coverage"));
 	}
 	
 	@Test
@@ -547,10 +547,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-coverage", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("coverage"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("coverage"));
 	}
 	
 	@Test
@@ -559,14 +559,14 @@ public class TestCommandLineOptions
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-checkpoint", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.CheckpointIntervalInMinutes.isPresent());
-		assertEquals(expectedValue, actual.CheckpointIntervalInMinutes.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.checkpointIntervalInMinutes.isPresent());
+		assertEquals(expectedValue, actual.checkpointIntervalInMinutes.get());
 	}
 	
 	@Test
@@ -574,10 +574,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-checkpoint"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("checkpoint"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("checkpoint"));
 	}
 	
 	@Test
@@ -585,10 +585,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-checkpoint", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("checkpoint"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("checkpoint"));
 	}
 	
 	@Test
@@ -597,14 +597,14 @@ public class TestCommandLineOptions
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-depth", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.SimulationTraceDepthLimit.isPresent());
-		assertEquals(expectedValue, actual.SimulationTraceDepthLimit.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.simulationTraceDepthLimit.isPresent());
+		assertEquals(expectedValue, actual.simulationTraceDepthLimit.get());
 	}
 	
 	@Test
@@ -612,10 +612,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-depth"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("depth"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("depth"));
 	}
 	
 	@Test
@@ -623,10 +623,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-depth", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("depth"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("depth"));
 	}
 	
 	@Test
@@ -635,14 +635,14 @@ public class TestCommandLineOptions
 		final Long expectedValue = 2L;
 		String[] args = new String[]{"-seed", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.Seed.isPresent());
-		assertEquals(expectedValue, actual.Seed.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.seed.isPresent());
+		assertEquals(expectedValue, actual.seed.get());
 	}
 	
 	@Test
@@ -650,10 +650,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-seed"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("seed"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("seed"));
 	}
 	
 	@Test
@@ -661,10 +661,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-seed", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("seed"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("seed"));
 	}
 	
 	@Test
@@ -673,14 +673,14 @@ public class TestCommandLineOptions
 		final Long expectedValue = 2L;
 		String[] args = new String[]{"-aril", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.Aril.isPresent());
-		assertEquals(expectedValue, actual.Aril.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.aril.isPresent());
+		assertEquals(expectedValue, actual.aril.get());
 	}
 	
 	@Test
@@ -688,10 +688,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-aril"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("aril"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("aril"));
 	}
 	
 	@Test
@@ -699,10 +699,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-aril", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("aril"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("aril"));
 	}
 	
 	@Test
@@ -711,14 +711,14 @@ public class TestCommandLineOptions
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-maxSetSize", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.MaxSetSize.isPresent());
-		assertEquals(expectedValue, actual.MaxSetSize.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.maxSetSize.isPresent());
+		assertEquals(expectedValue, actual.maxSetSize.get());
 	}
 	
 	@Test
@@ -726,10 +726,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-maxSetSize"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("maxSetSize"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("maxSetSize"));
 	}
 	
 	@Test
@@ -737,10 +737,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-maxSetSize", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("maxSetSize"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("maxSetSize"));
 	}
 
 	@Test
@@ -749,14 +749,14 @@ public class TestCommandLineOptions
 		final String expectedValue = "somename";
 		String[] args = new String[]{"-recover", expectedValue, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.RecoveryId.isPresent());
-		assertEquals(expectedValue, actual.RecoveryId.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.recoveryId.isPresent());
+		assertEquals(expectedValue, actual.recoveryId.get());
 	}
 
 	@Test
@@ -764,10 +764,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-recover"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("recover"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("recover"));
 	}
 
 	@Test
@@ -776,14 +776,14 @@ public class TestCommandLineOptions
 		final String expectedValue = "somename";
 		String[] args = new String[]{"-metadir", expectedValue, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.MetadataDirectoryPath.isPresent());
-		assertEquals(expectedValue, actual.MetadataDirectoryPath.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.metadataDirectoryPath.isPresent());
+		assertEquals(expectedValue, actual.metadataDirectoryPath.get());
 	}
 
 	@Test
@@ -791,10 +791,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-metadir"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("metadir"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("metadir"));
 	}
 
 	@Test
@@ -803,14 +803,14 @@ public class TestCommandLineOptions
 		final String expectedValue = "somename";
 		String[] args = new String[]{"-userFile", expectedValue, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.UserOutputFilePath.isPresent());
-		assertEquals(expectedValue, actual.UserOutputFilePath.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.userOutputFilePath.isPresent());
+		assertEquals(expectedValue, actual.userOutputFilePath.get());
 	}
 
 	@Test
@@ -818,10 +818,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-userFile"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("userFile"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("userFile"));
 	}
 
 	@Test
@@ -830,15 +830,15 @@ public class TestCommandLineOptions
 		final String expectedValue = "auto";
 		String[] args = new String[]{"-workers", expectedValue, "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.TlcWorkerThreadOptions.isPresent());
-		assertTrue(actual.TlcWorkerThreadOptions.get().Automatic);
-		assertTrue(actual.TlcWorkerThreadOptions.get().ThreadCount.isEmpty());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.tlcWorkerThreadOptions.isPresent());
+		assertTrue(actual.tlcWorkerThreadOptions.get().automatic);
+		assertTrue(actual.tlcWorkerThreadOptions.get().threadCount.isEmpty());
 	}
 
 	@Test
@@ -847,16 +847,16 @@ public class TestCommandLineOptions
 		final Integer expectedValue = 4;
 		String[] args = new String[]{"-workers", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.TlcWorkerThreadOptions.isPresent());
-		assertFalse(actual.TlcWorkerThreadOptions.get().Automatic);
-		assertTrue(actual.TlcWorkerThreadOptions.get().ThreadCount.isPresent());
-		assertEquals(expectedValue, actual.TlcWorkerThreadOptions.get().ThreadCount.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.tlcWorkerThreadOptions.isPresent());
+		assertFalse(actual.tlcWorkerThreadOptions.get().automatic);
+		assertTrue(actual.tlcWorkerThreadOptions.get().threadCount.isPresent());
+		assertEquals(expectedValue, actual.tlcWorkerThreadOptions.get().threadCount.get());
 	}
 
 	@Test
@@ -864,10 +864,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-workers"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("workers"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("workers"));
 	}
 
 	@Test
@@ -875,10 +875,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-workers", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("workers"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("workers"));
 	}
 	
 	@Test
@@ -887,14 +887,14 @@ public class TestCommandLineOptions
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-dfid", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.DfidStartingDepth.isPresent());
-		assertEquals(expectedValue, actual.DfidStartingDepth.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.dfidStartingDepth.isPresent());
+		assertEquals(expectedValue, actual.dfidStartingDepth.get());
 	}
 	
 	@Test
@@ -902,10 +902,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-dfid"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("dfid"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("dfid"));
 	}
 	
 	@Test
@@ -913,10 +913,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-dfid", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("dfid"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("dfid"));
 	}
 	
 	@Test
@@ -925,14 +925,14 @@ public class TestCommandLineOptions
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-fp", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.FingerprintFunctionIndex.isPresent());
-		assertEquals(expectedValue, actual.FingerprintFunctionIndex.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.fingerprintFunctionIndex.isPresent());
+		assertEquals(expectedValue, actual.fingerprintFunctionIndex.get());
 	}
 	
 	@Test
@@ -940,10 +940,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-fp"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fp"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fp"));
 	}
 	
 	@Test
@@ -951,10 +951,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-fp", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fp"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fp"));
 	}
 	
 	@Test
@@ -963,14 +963,14 @@ public class TestCommandLineOptions
 		final Double expectedValue = 1.0;
 		String[] args = new String[]{"-fpmem", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.FingerprintSetMemoryUsePercentage.isPresent());
-		assertEquals(expectedValue, actual.FingerprintSetMemoryUsePercentage.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.fingerprintSetMemoryUsePercentage.isPresent());
+		assertEquals(expectedValue, actual.fingerprintSetMemoryUsePercentage.get());
 	}
 	
 	@Test
@@ -978,10 +978,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-fpmem"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fpmem"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fpmem"));
 	}
 	
 	@Test
@@ -989,10 +989,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-fpmem", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fpmem"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fpmem"));
 	}
 	
 	@Test
@@ -1001,14 +1001,14 @@ public class TestCommandLineOptions
 		final Integer expectedValue = 2;
 		String[] args = new String[]{"-fpbits", expectedValue.toString(), "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertTrue(actual.FingerprintBits.isPresent());
-		assertEquals(expectedValue, actual.FingerprintBits.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertTrue(actual.fingerprintBits.isPresent());
+		assertEquals(expectedValue, actual.fingerprintBits.get());
 	}
 	
 	@Test
@@ -1016,10 +1016,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"test.tla", "-fpbits"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fpbits"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fpbits"));
 	}
 	
 	@Test
@@ -1027,10 +1027,10 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"-fpbits", "NotANumber", "test.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fpbits"));
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fpbits"));
 	}
 	
 	@Test
@@ -1039,13 +1039,13 @@ public class TestCommandLineOptions
 		final String expectedValue = "test.tla";
 		String[] args = new String[]{expectedValue};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertTrue(result.Success);
-		assertTrue(result.Options.isPresent());
-		CommandLineOptions actual = result.Options.get();
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertTrue(result.success);
+		assertTrue(result.options.isPresent());
+		CommandLineOptions actual = result.options.get();
 
-		assertTrue(actual.MainSpecFilePath.isPresent());
-		assertEquals(expectedValue, actual.MainSpecFilePath.get());
+		assertTrue(actual.mainSpecFilePath.isPresent());
+		assertEquals(expectedValue, actual.mainSpecFilePath.get());
 	}
 	
 	@Test
@@ -1053,8 +1053,8 @@ public class TestCommandLineOptions
 	{
 		String[] args = new String[]{"first.tla", "second.tla"};
 
-		CommandLineOptions.ParseResult result = CommandLineOptions.Parse(args);
-		assertFalse(result.Success);
+		CommandLineOptions.ParseResult result = CommandLineOptions.parse(args);
+		assertFalse(result.success);
 	}
 	
 	/**
@@ -1066,17 +1066,17 @@ public class TestCommandLineOptions
 	{
 		Integer inputValue = 12;
 		CommandLineOptions options = new CommandLineOptions();
-		options.CoverageIntervalInMinutes = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
-		assertTrue(result.Success);
-		assertTrue(result.ErrorMessage.isEmpty());
+		options.coverageIntervalInMinutes = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
+		assertTrue(result.success);
+		assertTrue(result.errorMessage.isEmpty());
 		
 		inputValue = -1;
-		options.CoverageIntervalInMinutes = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("coverage"));
+		options.coverageIntervalInMinutes = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("coverage"));
 	}
 	
 	@Test
@@ -1084,17 +1084,17 @@ public class TestCommandLineOptions
 	{
 		Integer inputValue = 12;
 		CommandLineOptions options = new CommandLineOptions();
-		options.CheckpointIntervalInMinutes = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
-		assertTrue(result.Success);
-		assertTrue(result.ErrorMessage.isEmpty());
+		options.checkpointIntervalInMinutes = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
+		assertTrue(result.success);
+		assertTrue(result.errorMessage.isEmpty());
 		
 		inputValue = -1;
-		options.CheckpointIntervalInMinutes = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("checkpoint"));
+		options.checkpointIntervalInMinutes = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("checkpoint"));
 	}
 	
 	@Test
@@ -1102,17 +1102,17 @@ public class TestCommandLineOptions
 	{
 		Integer inputValue = 12;
 		CommandLineOptions options = new CommandLineOptions();
-		options.DfidStartingDepth = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
-		assertTrue(result.Success);
-		assertTrue(result.ErrorMessage.isEmpty());
+		options.dfidStartingDepth = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
+		assertTrue(result.success);
+		assertTrue(result.errorMessage.isEmpty());
 		
 		inputValue = -1;
-		options.DfidStartingDepth = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("dfid"));
+		options.dfidStartingDepth = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("dfid"));
 	}
 	
 	@Test
@@ -1120,17 +1120,17 @@ public class TestCommandLineOptions
 	{
 		Double inputValue = 0.5;
 		CommandLineOptions options = new CommandLineOptions();
-		options.FingerprintSetMemoryUsePercentage = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
-		assertTrue(result.Success);
-		assertTrue(result.ErrorMessage.isEmpty());
+		options.fingerprintSetMemoryUsePercentage = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
+		assertTrue(result.success);
+		assertTrue(result.errorMessage.isEmpty());
 		
 		inputValue = -0.5;
-		options.FingerprintSetMemoryUsePercentage = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fpset"));
+		options.fingerprintSetMemoryUsePercentage = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fpset"));
 	}
 	
 	@Test
@@ -1138,17 +1138,17 @@ public class TestCommandLineOptions
 	{
 		Integer inputValue = 1;
 		CommandLineOptions options = new CommandLineOptions();
-		options.MaxSetSize = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
-		assertTrue(result.Success);
-		assertTrue(result.ErrorMessage.isEmpty());
+		options.maxSetSize = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
+		assertTrue(result.success);
+		assertTrue(result.errorMessage.isEmpty());
 		
 		inputValue = 0;
-		options.MaxSetSize = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("maxSetSize"));
+		options.maxSetSize = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("maxSetSize"));
 	}
 	
 	@Test
@@ -1156,24 +1156,24 @@ public class TestCommandLineOptions
 	{
 		Integer inputValue = 0;
 		CommandLineOptions options = new CommandLineOptions();
-		options.FingerprintFunctionIndex = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
-		assertTrue(result.Success);
-		assertTrue(result.ErrorMessage.isEmpty());
+		options.fingerprintFunctionIndex = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
+		assertTrue(result.success);
+		assertTrue(result.errorMessage.isEmpty());
 		
 		inputValue = -1;
-		options.FingerprintFunctionIndex = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fp"));
+		options.fingerprintFunctionIndex = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fp"));
 
 		inputValue = FP64.Polys.length;
-		options.FingerprintFunctionIndex = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fp"));
+		options.fingerprintFunctionIndex = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fp"));
 	}
 	
 	@Test
@@ -1181,24 +1181,24 @@ public class TestCommandLineOptions
 	{
 		Integer inputValue = 0;
 		CommandLineOptions options = new CommandLineOptions();
-		options.FingerprintBits = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.Validate(options);
-		assertTrue(result.Success);
-		assertTrue(result.ErrorMessage.isEmpty());
+		options.fingerprintBits = Optional.of(inputValue);
+		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
+		assertTrue(result.success);
+		assertTrue(result.errorMessage.isEmpty());
 		
 		inputValue = -1;
-		options.FingerprintBits = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fpbits"));
+		options.fingerprintBits = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fpbits"));
 
 		inputValue = MultiFPSet.MAX_FPBITS + 1;
-		options.FingerprintBits = Optional.of(inputValue);
-		result = CommandLineOptions.Validate(options);
-		assertFalse(result.Success);
-		assertTrue(result.ErrorMessage.isPresent());
-		assertTrue(result.ErrorMessage.get().contains("fpbits"));
+		options.fingerprintBits = Optional.of(inputValue);
+		result = CommandLineOptions.validate(options);
+		assertFalse(result.success);
+		assertTrue(result.errorMessage.isPresent());
+		assertTrue(result.errorMessage.get().contains("fpbits"));
 	}
 	
 	/**
@@ -1211,9 +1211,9 @@ public class TestCommandLineOptions
 		final String inputValue = "SomeStringWithCapitalLetters";
 		final String expectedValue = inputValue.toLowerCase();
 		CommandLineOptions options = new CommandLineOptions();
-		options.LivenessCheck = Optional.of(inputValue);
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.LivenessCheck.get());
+		options.livenessCheck = Optional.of(inputValue);
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.livenessCheck.get());
 	}
 	
 	@Test
@@ -1222,11 +1222,11 @@ public class TestCommandLineOptions
 		final String expectedValue = "ConfigFile";
 		final String inputValue = expectedValue + TLAConstants.Files.CONFIG_EXTENSION;
 		CommandLineOptions options = new CommandLineOptions();
-		options.ConfigurationFilePath = Optional.of(inputValue);
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.ConfigurationFilePath.get());
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.ConfigurationFilePath.get());
+		options.configurationFilePath = Optional.of(inputValue);
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.configurationFilePath.get());
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.configurationFilePath.get());
 	}
 	
 	@Test
@@ -1235,20 +1235,20 @@ public class TestCommandLineOptions
 		final String inputValue = "dumpFile";
 		String expectedValue = inputValue + ".dump";
 		CommandLineOptions options = new CommandLineOptions();
-		options.DumpFilePath = Optional.of(inputValue);
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.DumpFilePath.get());
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.DumpFilePath.get());
+		options.dumpFilePath = Optional.of(inputValue);
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.dumpFilePath.get());
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.dumpFilePath.get());
 		
 		expectedValue = inputValue + ".dot";
 		options = new CommandLineOptions();
-		options.DumpFilePath = Optional.of(inputValue);
-		options.DumpFileOptions = Optional.of(new CommandLineOptions.DumpFileControls(false, false, false));
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.DumpFilePath.get());
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.DumpFilePath.get());
+		options.dumpFilePath = Optional.of(inputValue);
+		options.dumpFileOptions = Optional.of(new CommandLineOptions.DumpFileControls(false, false, false));
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.dumpFilePath.get());
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.dumpFilePath.get());
 	}
 	
 	@Test
@@ -1257,9 +1257,9 @@ public class TestCommandLineOptions
 		final String inputValue = String.format("{0}path{0}to{0}file", FileUtil.separator);
 		final String expectedValue = inputValue + FileUtil.separator;
 		CommandLineOptions options = new CommandLineOptions();
-		options.RecoveryId = Optional.of(inputValue);
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.RecoveryId.get());
+		options.recoveryId = Optional.of(inputValue);
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.recoveryId.get());
 	}
 	
 	@Test
@@ -1268,9 +1268,9 @@ public class TestCommandLineOptions
 		final String inputValue = String.format("{0}path{0}to{0}file", FileUtil.separator);
 		final String expectedValue = inputValue + FileUtil.separator;
 		CommandLineOptions options = new CommandLineOptions();
-		options.MetadataDirectoryPath = Optional.of(inputValue);
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.MetadataDirectoryPath.get());
+		options.metadataDirectoryPath = Optional.of(inputValue);
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.metadataDirectoryPath.get());
 	}
 	
 	@Test
@@ -1279,10 +1279,10 @@ public class TestCommandLineOptions
 		final String expectedValue = "Spec";
 		final String inputValue = expectedValue + TLAConstants.Files.TLA_EXTENSION;
 		CommandLineOptions options = new CommandLineOptions();
-		options.MainSpecFilePath = Optional.of(inputValue);
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.MainSpecFilePath.get());
-		CommandLineOptions.Transform(options);
-		assertEquals(expectedValue, options.MainSpecFilePath.get());
+		options.mainSpecFilePath = Optional.of(inputValue);
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.mainSpecFilePath.get());
+		CommandLineOptions.transform(options);
+		assertEquals(expectedValue, options.mainSpecFilePath.get());
 	}
 }

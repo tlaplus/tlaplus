@@ -12,18 +12,19 @@ import util.TLAConstants;
  * 
  * Instructions for adding a new command line option:
  *  1. Add a field to this class (encapsulating type with Optional)
- *  2. Add parsing logic to the Parse method
- *  3. Add validation logic to the Validate method (if required)
- *  4. Add transformation logic to the Transform method (if required)
+ *  2. Add parsing logic to the parse method
+ *  3. Add validation logic to the validate method (if required)
+ *  4. Add transformation logic to the transform method (if required)
  *  5. Add tests for your new option for all of those methods
  *  6. Add text describing your option to the help output
  * 
- * Try to keep the Parse method focused on content-unaware parsing, not validation.
+ * Try to keep the parse method focused on content-unaware parsing, not validation.
  * For example, if your option requires an integer in a certain range, this constraint
  * should not be checked & enforced during the parsing process. The old method mixed
  * the three stages (parsing, validation, use) together and the result was an enormous
  * unmaintainable, untestable confusing mess. It is best to keep these separate. It
- * is also best to avoid processing, interpreting, or transforming the user input.
+ * is also best to avoid processing, interpreting, or transforming the user input
+ * outside of the transform function.
  * 
  * Since this parsing code was all written in-house instead of using a standardized
  * command line option parsing library, it has developed some odd semantics which
@@ -76,184 +77,184 @@ public class CommandLineOptions
 	/**
 	 * Whether to run TLC in simulation mode.
 	 */
-	public Optional<Boolean> SimulationMode = Optional.empty();
+	public Optional<Boolean> simulationMode = Optional.empty();
 	
 	/**
 	 * The maximum number of traces/behaviors to generate in simulation mode.
 	 */
-	public Optional<Long> SimulationBehaviorCountLimit = Optional.empty();
+	public Optional<Long> simulationBehaviorCountLimit = Optional.empty();
 	
 	/**
 	 * File to which to write simulation traces.
 	 */
-	public Optional<String> SimulationTraceFile = Optional.empty();
+	public Optional<String> simulationTraceFile = Optional.empty();
 	
 	/**
 	 * Whether to model check the spec (ignored).
 	 */
-	public Optional<Boolean> ModelCheck = Optional.empty();
+	public Optional<Boolean> modelCheck = Optional.empty();
 	
 	/**
 	 * Whether to only print state differences in traces.
 	 */
-	public Optional<Boolean> OnlyPrintStateTraceDiffs = Optional.empty();
+	public Optional<Boolean> onlyPrintStateTraceDiffs = Optional.empty();
 	
 	/**
 	 * Whether to check for deadlock.
 	 */
-	public Optional<Boolean> CheckDeadlock = Optional.empty();
+	public Optional<Boolean> checkDeadlock = Optional.empty();
 	
 	/**
 	 * Whether to clean states directory.
 	 */
-	public Optional<Boolean> CleanStatesDirectory = Optional.empty();
+	public Optional<Boolean> cleanStatesDirectory = Optional.empty();
 	
 	/**
 	 * Whether to print warnings.
 	 */
-	public Optional<Boolean> PrintWarnings = Optional.empty();
+	public Optional<Boolean> printWarnings = Optional.empty();
 	
 	/**
 	 * Whether to apply GZip to input/output stream.
 	 */
-	public Optional<Boolean> UseGZip = Optional.empty();
+	public Optional<Boolean> useGZip = Optional.empty();
 	
 	/**
 	 * Whether to expand values in print statements.
 	 */
-	public Optional<Boolean> ExpandValuesInPrintStatements = Optional.empty();
+	public Optional<Boolean> expandValuesInPrintStatements = Optional.empty();
 	
 	/**
 	 * Whether to continue running after an invariant is violated.
 	 */
-	public Optional<Boolean> ContinueAfterInvariantViolation = Optional.empty();
+	public Optional<Boolean> continueAfterInvariantViolation = Optional.empty();
 	
 	/**
 	 * Whether to apply a VIEW when printing out states.
 	 */
-	public Optional<Boolean> UseView = Optional.empty();
+	public Optional<Boolean> useView = Optional.empty();
 	
 	/**
 	 * Whether to print debugging information.
 	 */
-	public Optional<Boolean> Debug = Optional.empty();
+	public Optional<Boolean> debug = Optional.empty();
 	
 	/**
 	 * Whether to output messages in an easily-parsed format.
 	 */
-	public Optional<Boolean> UseToolOutputFormat = Optional.empty();
+	public Optional<Boolean> useToolOutputFormat = Optional.empty();
 	
 	/**
 	 * Whether to generate a spec to re-execute any encountered error trace.
 	 */
-	public Optional<Boolean> GenerateErrorTraceSpec = Optional.empty();
+	public Optional<Boolean> generateErrorTraceSpec = Optional.empty();
 	
 	/**
 	 * Whether to create a monolithic error trace spec.
 	 */
-	public Optional<Boolean> CreateMonolithErrorTraceSpec = Optional.empty();
+	public Optional<Boolean> createMonolithErrorTraceSpec = Optional.empty();
 	
 	/**
 	 * TODO: find out what this does.
 	 */
-	public Optional<String> LivenessCheck = Optional.empty();
+	public Optional<String> livenessCheck = Optional.empty();
 	
 	/**
 	 * Path to the model checking configuration file.
 	 */
-	public Optional<String> ConfigurationFilePath = Optional.empty();
+	public Optional<String> configurationFilePath = Optional.empty();
 	
 	/**
 	 * Path to the state dump file.
 	 */
-	public Optional<String> DumpFilePath = Optional.empty();
+	public Optional<String> dumpFilePath = Optional.empty();
 	
 	/**
 	 * Options controlling how states are dumped to file.
 	 */
-	public Optional<DumpFileControls> DumpFileOptions = Optional.empty();
+	public Optional<DumpFileControls> dumpFileOptions = Optional.empty();
 	
 	/**
 	 * Number of minutes between collection of coverage information.
 	 */
-	public Optional<Integer> CoverageIntervalInMinutes = Optional.empty();
+	public Optional<Integer> coverageIntervalInMinutes = Optional.empty();
 	
 	/**
 	 * Number of minutes between checkpoints.
 	 */
-	public Optional<Integer> CheckpointIntervalInMinutes = Optional.empty();
+	public Optional<Integer> checkpointIntervalInMinutes = Optional.empty();
 	
 	/**
 	 * Depth limit on traces in simulation mode.
 	 */
-	public Optional<Integer> SimulationTraceDepthLimit = Optional.empty();
+	public Optional<Integer> simulationTraceDepthLimit = Optional.empty();
 	
 	/**
 	 * Seed for random simulation.
 	 */
-	public Optional<Long> Seed = Optional.empty();
+	public Optional<Long> seed = Optional.empty();
 	
 	/**
 	 * Adjust seed for random simulation.
 	 */
-	public Optional<Long> Aril = Optional.empty();
+	public Optional<Long> aril = Optional.empty();
 	
 	/**
 	 * Size of largest set which TLC will enumerate.
 	 */
-	public Optional<Integer> MaxSetSize = Optional.empty();
+	public Optional<Integer> maxSetSize = Optional.empty();
 	
 	/**
 	 * ID of checkpoint from which to recover.
 	 */
-	public Optional<String> RecoveryId = Optional.empty();
+	public Optional<String> recoveryId = Optional.empty();
 	
 	/**
 	 * Path to metadata directory.
 	 */
-	public Optional<String> MetadataDirectoryPath = Optional.empty();
+	public Optional<String> metadataDirectoryPath = Optional.empty();
 	
 	/**
 	 * Path to file to which to log user output (print statements, etc.)
 	 */
-	public Optional<String> UserOutputFilePath = Optional.empty();
+	public Optional<String> userOutputFilePath = Optional.empty();
 	
 	/**
 	 * Options controlling number of TLC worker threads.
 	 */
-	public Optional<TlcWorkerThreadControls> TlcWorkerThreadOptions = Optional.empty();
+	public Optional<TlcWorkerThreadControls> tlcWorkerThreadOptions = Optional.empty();
 	
 	/**
 	 * Controls starting depth for depth-first iterative deepening.
 	 */
-	public Optional<Integer> DfidStartingDepth = Optional.empty();
+	public Optional<Integer> dfidStartingDepth = Optional.empty();
 	
 	/**
 	 * Controls which irreducible polynomial to use from the list stored in the class FP64.
 	 */
-	public Optional<Integer> FingerprintFunctionIndex = Optional.empty();
+	public Optional<Integer> fingerprintFunctionIndex = Optional.empty();
 
 	/**
 	 * Percentage of physical computer memory to commit to fingerprint set.
 	 */
-	public Optional<Double> FingerprintSetMemoryUsePercentage = Optional.empty();
+	public Optional<Double> fingerprintSetMemoryUsePercentage = Optional.empty();
 	
 	/**
 	 * Used for creating nested fingerprint sets.
 	 */
-	public Optional<Integer> FingerprintBits = Optional.empty();
+	public Optional<Integer> fingerprintBits = Optional.empty();
 	
 	/**
 	 * Path to main TLA+ spec file.
 	 */
-	public Optional<String> MainSpecFilePath = Optional.empty();
+	public Optional<String> mainSpecFilePath = Optional.empty();
 	
 	/**
 	 * Attempts to parse the command line arguments.
 	 * @param args The command line arguments.
 	 * @return Either the parsed options or a failure message.
 	 */
-	public static ParseResult Parse(String[] args)
+	public static ParseResult parse(String[] args)
 	{
 		CommandLineOptions options = new CommandLineOptions();
 		int index = 0;
@@ -262,7 +263,7 @@ public class CommandLineOptions
 			if (args[index].equals("-simulate"))
 			{
 				index++;
-				options.SimulationMode = Optional.of(true);
+				options.simulationMode = Optional.of(true);
 				
 				// Simulation args can be:
 				// file=/path/to/file,num=4711 or num=4711,file=/path/to/file or num=4711 or
@@ -274,10 +275,10 @@ public class CommandLineOptions
 					index++; // consume simulate args
 					for (String arg : simArgs) {
 						if (arg.startsWith("num=")) {
-							options.SimulationBehaviorCountLimit =
+							options.simulationBehaviorCountLimit =
 									Optional.of(Long.parseLong(arg.replace("num=", "")));
 						} else if (arg.startsWith("file=")) {
-							options.SimulationTraceFile =
+							options.simulationTraceFile =
 									Optional.of(arg.replace("file=", ""));
 						}
 					}
@@ -285,74 +286,74 @@ public class CommandLineOptions
 			} else if (args[index].equals("-modelcheck"))
 			{
 				index++;
-				options.ModelCheck = Optional.of(true);
+				options.modelCheck = Optional.of(true);
 			} else if (args[index].equals("-difftrace"))
 			{
 				index++;
-				options.OnlyPrintStateTraceDiffs = Optional.of(true);
+				options.onlyPrintStateTraceDiffs = Optional.of(true);
 			} else if (args[index].equals("-deadlock"))
 			{
 				index++;
 				// Confusingly the -deadlock flag specifies *not* checking for deadlock.
-				options.CheckDeadlock = Optional.of(false);
+				options.checkDeadlock = Optional.of(false);
 			} else if (args[index].equals("-cleanup"))
 			{
 				index++;
-				options.CleanStatesDirectory = Optional.of(true);
+				options.cleanStatesDirectory = Optional.of(true);
 			} else if (args[index].equals("-nowarning"))
 			{
 				index++;
-				options.PrintWarnings = Optional.of(false);
+				options.printWarnings = Optional.of(false);
 			} else if (args[index].equals("-gzip"))
 			{
 				index++;
-				options.UseGZip = Optional.of(true);
+				options.useGZip = Optional.of(true);
 			} else if (args[index].equals("-terse"))
 			{
 				index++;
-				options.ExpandValuesInPrintStatements = Optional.of(false);
+				options.expandValuesInPrintStatements = Optional.of(false);
 			} else if (args[index].equals("-continue"))
 			{
 				index++;
-				options.ContinueAfterInvariantViolation = Optional.of(true);
+				options.continueAfterInvariantViolation = Optional.of(true);
 			} else if (args[index].equals("-view"))
 			{
 				index++;
-				options.UseView = Optional.of(true);
+				options.useView = Optional.of(true);
 			} else if (args[index].equals("-debug"))
 			{
 				index++;
-				options.Debug = Optional.of(true);
+				options.debug = Optional.of(true);
 			} else if (args[index].equals("-tool"))
 			{
 				index++;
-				options.UseToolOutputFormat = Optional.of(true);
+				options.useToolOutputFormat = Optional.of(true);
 			} else if (args[index].equals("-generateSpecTE"))
 			{
 				index++;
-				options.GenerateErrorTraceSpec = Optional.of(true);
+				options.generateErrorTraceSpec = Optional.of(true);
 				
 				if ((index < args.length) && args[index].equals("nomonolith")) {
 					index++;
-					options.CreateMonolithErrorTraceSpec = Optional.of(false);
+					options.createMonolithErrorTraceSpec = Optional.of(false);
 				} else {
-					options.CreateMonolithErrorTraceSpec = Optional.of(true);
+					options.createMonolithErrorTraceSpec = Optional.of(true);
 				}
 			} else if (args[index].equals("-help") || args[index].equals("-h"))
 			{
 				index++;
 				// Immediately halt parsing and return if help flag detected
-				return ParseResult.HelpRequest();
+				return ParseResult.helpRequest();
 			} else if (args[index].equals("-lncheck"))
 			{
 				index++;
 				if (index < args.length)
 				{
-					options.LivenessCheck = Optional.of(args[index]);
+					options.livenessCheck = Optional.of(args[index]);
 					index++;
 				} else
 				{
-					return ParseResult.Failure(
+					return ParseResult.failure(
 							"Error: expect a strategy such as final for -lncheck option.");
 				}
 			} else if (args[index].equals("-config"))
@@ -360,11 +361,11 @@ public class CommandLineOptions
 				index++;
 				if (index < args.length)
 				{
-					options.ConfigurationFilePath = Optional.of(args[index]);
+					options.configurationFilePath = Optional.of(args[index]);
 					index++;
 				} else
 				{
-					return ParseResult.Failure(
+					return ParseResult.failure(
 							"Error: expect a file name for -config option.");
 				}
 			} else if (args[index].equals("-dump"))
@@ -379,17 +380,17 @@ public class CommandLineOptions
 							dotArgs.contains("colorize"),
 							dotArgs.contains("actionlabels"),
 							dotArgs.contains("snapshot"));
-					options.DumpFileOptions = Optional.of(controls);
+					options.dumpFileOptions = Optional.of(controls);
 
-					options.DumpFilePath = Optional.of(args[index]);
+					options.dumpFilePath = Optional.of(args[index]);
 					index++;
 				} else if (index < args.length)
 				{
-					options.DumpFilePath = Optional.of(args[index]);
+					options.dumpFilePath = Optional.of(args[index]);
 					index++;
 				} else
 				{
-					return ParseResult.Failure(
+					return ParseResult.failure(
 							"Error: A file name for dumping states required.");
 				}
 			} else if (args[index].equals("-coverage"))
@@ -400,16 +401,16 @@ public class CommandLineOptions
                     try
                     {
                     	final int interval = Integer.parseInt(args[index]);
-                    	options.CoverageIntervalInMinutes = Optional.of(interval);
+                    	options.coverageIntervalInMinutes = Optional.of(interval);
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: An integer for coverage report interval required; encountered: " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: coverage report interval required.");
                 }
             } else if (args[index].equals("-checkpoint"))
@@ -420,16 +421,16 @@ public class CommandLineOptions
                     try
                     {
                     	final int interval = Integer.parseInt(args[index]);
-                    	options.CheckpointIntervalInMinutes = Optional.of(interval);
+                    	options.checkpointIntervalInMinutes = Optional.of(interval);
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: An integer for checkpoint interval is required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: checkpoint interval required.");
                 }
             } else if (args[index].equals("-depth"))
@@ -440,16 +441,16 @@ public class CommandLineOptions
                     try
                     {
                     	final int traceDepth = Integer.parseInt(args[index]);
-                    	options.SimulationTraceDepthLimit = Optional.of(traceDepth);
+                    	options.simulationTraceDepthLimit = Optional.of(traceDepth);
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: An integer for trace depth required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: trace depth required.");
                 }
             } else if (args[index].equals("-seed"))
@@ -460,16 +461,16 @@ public class CommandLineOptions
                     try
                     {
                     	final Long seed = Long.parseLong(args[index]);
-                        options.Seed = Optional.of(seed);
+                        options.seed = Optional.of(seed);
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: An integer for seed required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: seed required.");
                 }
             } else if (args[index].equals("-aril"))
@@ -480,16 +481,16 @@ public class CommandLineOptions
                     try
                     {
                     	final Long aril = Long.parseLong(args[index]);
-                        options.Aril = Optional.of(aril);
+                        options.aril = Optional.of(aril);
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: An integer for aril required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: aril required.");
                 }
             } else if (args[index].equals("-maxSetSize"))
@@ -500,26 +501,26 @@ public class CommandLineOptions
                     try
                     {
                         final int bound = Integer.parseInt(args[index]);
-                        options.MaxSetSize = Optional.of(bound);
+                        options.maxSetSize = Optional.of(bound);
                     	index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure("Error: An integer for maxSetSize required; encountered " + args[index]);
+                        return ParseResult.failure("Error: An integer for maxSetSize required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure("Error: maxSetSize required.");
+                    return ParseResult.failure("Error: maxSetSize required.");
                 }
             } else if (args[index].equals("-recover"))
             {
                 index++;
                 if (index < args.length)
                 {
-                    options.RecoveryId = Optional.of(args[index]);
+                    options.recoveryId = Optional.of(args[index]);
                     index++;
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: need to specify the metadata directory for recovery.");
                 }
             } else if (args[index].equals("-metadir"))
@@ -527,11 +528,11 @@ public class CommandLineOptions
                 index++;
                 if (index < args.length)
                 {
-                    options.MetadataDirectoryPath = Optional.of(args[index]);
+                    options.metadataDirectoryPath = Optional.of(args[index]);
                     index++;
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: need to specify the metadata directory (metadir).");
                 }
             } else if (args[index].equals("-userFile"))
@@ -539,11 +540,11 @@ public class CommandLineOptions
                 index++;
                 if (index < args.length)
                 {
-                	options.UserOutputFilePath = Optional.of(args[index]);
+                	options.userOutputFilePath = Optional.of(args[index]);
                 	index++;
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: need to specify the full qualified userFile.");
                 }
             } else if (args[index].equals("-workers"))
@@ -554,19 +555,19 @@ public class CommandLineOptions
                     try
                     {
 						final String token = args[index];
-						options.TlcWorkerThreadOptions =
+						options.tlcWorkerThreadOptions =
 								token.trim().toLowerCase().equals("auto")
-								? Optional.of(TlcWorkerThreadControls.Auto())
-								: Optional.of(TlcWorkerThreadControls.Manual(Integer.parseInt(token)));
+								? Optional.of(TlcWorkerThreadControls.auto())
+								: Optional.of(TlcWorkerThreadControls.manual(Integer.parseInt(token)));
 						index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: number of workers or 'auto' required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: expect an integer or 'auto' for -workers option.");
                 }
             } else if (args[index].equals("-dfid"))
@@ -577,16 +578,16 @@ public class CommandLineOptions
                     try
                     {
                     	final int value = Integer.parseInt(args[index]);
-                    	options.DfidStartingDepth = Optional.of(value);
+                    	options.dfidStartingDepth = Optional.of(value);
                     	index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: expect a nonnegative integer for -dfid option; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: expect a nonnegative integer for -dfid option.");
                 }
             } else if (args[index].equals("-fp"))
@@ -597,16 +598,16 @@ public class CommandLineOptions
                     try
                     {
                     	final int value = Integer.parseInt(args[index]);
-                    	options.FingerprintFunctionIndex = Optional.of(value);
+                    	options.fingerprintFunctionIndex = Optional.of(value);
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: A number for -fp is required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure("Error: expect an integer for -fp option.");
+                    return ParseResult.failure("Error: expect an integer for -fp option.");
                 }
             } else if (args[index].equals("-fpmem"))
             {
@@ -616,16 +617,16 @@ public class CommandLineOptions
                     try
                     {
                         final double value = Double.parseDouble(args[index]);
-                        options.FingerprintSetMemoryUsePercentage = Optional.of(value);
+                        options.fingerprintSetMemoryUsePercentage = Optional.of(value);
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: An positive integer or a fraction for fpset memory size/percentage required (-fpmem); encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: fpset memory size required for -fpmem.");
                 }
             } else if (args[index].equals("-fpbits"))
@@ -636,39 +637,39 @@ public class CommandLineOptions
                     try
                     {
                     	final int value = Integer.parseInt(args[index]);
-                    	options.FingerprintBits = Optional.of(value);
+                    	options.fingerprintBits = Optional.of(value);
                         index++;
                     } catch (NumberFormatException e)
                     {
-                        return ParseResult.Failure(
+                        return ParseResult.failure(
                         		"Error: An integer for fpbits required; encountered " + args[index]);
                     }
                 } else
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: fpbits required.");
                 }
             } else
             {
             	if (args[index].charAt(0) == '-')
                 {
-                    return ParseResult.Failure(
+                    return ParseResult.failure(
                     		"Error: unrecognized option: " + args[index]);
                 }
 
-                if (options.MainSpecFilePath.isPresent())
+                if (options.mainSpecFilePath.isPresent())
                 {
-                	final String value = options.MainSpecFilePath.get();
-                    return ParseResult.Failure(
+                	final String value = options.mainSpecFilePath.get();
+                    return ParseResult.failure(
                     		"Error: more than one input files: " + value + " and " + args[index]);
                 }
 
-                options.MainSpecFilePath = Optional.of(args[index]);
+                options.mainSpecFilePath = Optional.of(args[index]);
                 index++;
             }
 		}
 		
-		return ParseResult.Success(options);
+		return ParseResult.success(options);
 	}
 	
 	/**
@@ -676,12 +677,12 @@ public class CommandLineOptions
 	 * @param options The options to validate.
 	 * @return Whether the options passed validation.
 	 */
-	public static ValidationResult Validate(CommandLineOptions options)
+	public static ValidationResult validate(CommandLineOptions options)
 	{
 		try
 		{
 			// Ensure coverage interval is a non-negative integer
-			options.CoverageIntervalInMinutes.ifPresent((value) ->
+			options.coverageIntervalInMinutes.ifPresent((value) ->
 			{
 				if (value < 0)
 				{
@@ -691,7 +692,7 @@ public class CommandLineOptions
 			});
 
 			// Ensure checkpoint interval is a non-negative integer
-			options.CheckpointIntervalInMinutes.ifPresent((value) ->
+			options.checkpointIntervalInMinutes.ifPresent((value) ->
 			{
 				if (value < 0)
 				{
@@ -701,7 +702,7 @@ public class CommandLineOptions
 			});
 		
 			// Ensures DFID max is non-negative integer
-			options.DfidStartingDepth.ifPresent((value) ->
+			options.dfidStartingDepth.ifPresent((value) ->
 			{
 				if (value < 0)
 				{
@@ -711,7 +712,7 @@ public class CommandLineOptions
 			});
 		
 			// Ensures fingerprint set memory ratio is non-negative
-			options.FingerprintSetMemoryUsePercentage.ifPresent((value) ->
+			options.fingerprintSetMemoryUsePercentage.ifPresent((value) ->
 			{
 				if (value < 0)
 				{
@@ -721,7 +722,7 @@ public class CommandLineOptions
 			});
 		
 			// Ensures maximum set size is within required range
-			options.MaxSetSize.ifPresent((value) ->
+			options.maxSetSize.ifPresent((value) ->
 			{
 				final int lowerBound = 1;
 				final int upperBound = Integer.MAX_VALUE;
@@ -737,7 +738,7 @@ public class CommandLineOptions
 			});
 		
 			// Ensures fingerprint function index is within range
-			options.FingerprintFunctionIndex.ifPresent((value) ->
+			options.fingerprintFunctionIndex.ifPresent((value) ->
 			{
 				final int lowerBound = 0;
 				final int upperBound = FP64.Polys.length - 1;
@@ -752,7 +753,7 @@ public class CommandLineOptions
 			});
 		
 			// Ensures fingerprint bits setting is within range
-			options.FingerprintBits.ifPresent((value) ->
+			options.fingerprintBits.ifPresent((value) ->
 			{
 				final int lowerBound = 0;
 				final int upperBound = MultiFPSet.MAX_FPBITS;
@@ -769,44 +770,44 @@ public class CommandLineOptions
 		}
 		catch (IllegalArgumentException e)
 		{
-			return ValidationResult.Failure(e.getMessage());
+			return ValidationResult.failure(e.getMessage());
 		}
 		
-		return ValidationResult.Success();
+		return ValidationResult.success();
 	}
 	
 	/**
 	 * Performs transformations on the given options.
 	 * @param options The options on which to perform transformations.
 	 */
-	public static void Transform(CommandLineOptions options)
+	public static void transform(CommandLineOptions options)
 	{
 		// Convert liveness check parameter to lower case
-		options.LivenessCheck = options.LivenessCheck.map((String val) -> val.toLowerCase());
+		options.livenessCheck = options.livenessCheck.map((String val) -> val.toLowerCase());
 		
 		// Trim file extension from configuration file path
-		options.ConfigurationFilePath = options.ConfigurationFilePath.map(
+		options.configurationFilePath = options.configurationFilePath.map(
 				(String path) -> path.endsWith(TLAConstants.Files.CONFIG_EXTENSION)
 					? path.substring(0, (path.length() - TLAConstants.Files.CONFIG_EXTENSION.length()))
 					: path
 		);
 		
 		// Append .dump or .dot to dump file name
-		options.DumpFilePath = options.DumpFileOptions.isPresent()
-				?  options.DumpFilePath.map(
+		options.dumpFilePath = options.dumpFileOptions.isPresent()
+				?  options.dumpFilePath.map(
 						(String path) -> path.endsWith(".dot") ? path : path + ".dot")
-				:  options.DumpFilePath.map(
+				:  options.dumpFilePath.map(
 						(String path) -> path.endsWith(".dump") ? path : path + ".dump");
 
 		// Appends system-dependent separator to recovery option
-		options.RecoveryId = options.RecoveryId.map((String path) -> path + FileUtil.separator);
+		options.recoveryId = options.recoveryId.map((String path) -> path + FileUtil.separator);
 
 		// Appends system-dependent separator to metadata directory option
-		options.MetadataDirectoryPath = options.MetadataDirectoryPath.map(
+		options.metadataDirectoryPath = options.metadataDirectoryPath.map(
 				(String path) -> path + FileUtil.separator);
 		
 		// Removes .tla extension from main TLA+ spec
-		options.MainSpecFilePath = options.MainSpecFilePath.map(
+		options.mainSpecFilePath = options.mainSpecFilePath.map(
 				(String path) -> path.endsWith(TLAConstants.Files.TLA_EXTENSION)
 					? path.substring(0, (path.length() - TLAConstants.Files.TLA_EXTENSION.length()))
 					: path
@@ -819,17 +820,17 @@ public class CommandLineOptions
 	 */
 	public static class DumpFileControls
 	{
-		public boolean Colorize;
+		public boolean colorize;
 		
-		public boolean ActionLabels;
+		public boolean actionLabels;
 		
-		public boolean Snapshot;
+		public boolean snapshot;
 		
 		public DumpFileControls(boolean colorize, boolean actionLabels, boolean snapshot)
 		{
-			this.Colorize = colorize;
-			this.ActionLabels = actionLabels;
-			this.Snapshot = snapshot;
+			this.colorize = colorize;
+			this.actionLabels = actionLabels;
+			this.snapshot = snapshot;
 		}
 	}
 	
@@ -842,22 +843,22 @@ public class CommandLineOptions
 		/**
 		 * Set the number of threads to the number available on this machine.
 		 */
-		public boolean Automatic;
+		public boolean automatic;
 		
 		/**
 		 * Number of threads to use, if explicitly specified.
 		 */
-		public Optional<Integer> ThreadCount;
+		public Optional<Integer> threadCount;
 		
 		/**
 		 * Constructs an instance specifying automatic thread count setting.
 		 * @return A new TlcWorkerThreadControls instance.
 		 */
-		public static TlcWorkerThreadControls Auto()
+		public static TlcWorkerThreadControls auto()
 		{
 			TlcWorkerThreadControls controls = new TlcWorkerThreadControls();
-			controls.Automatic = true;
-			controls.ThreadCount = Optional.empty();
+			controls.automatic = true;
+			controls.threadCount = Optional.empty();
 			return controls;
 		}
 		
@@ -866,11 +867,11 @@ public class CommandLineOptions
 		 * @param threadCount The number of threads to use.
 		 * @return A new TlcWorkerThreadControls instance.
 		 */
-		public static TlcWorkerThreadControls Manual(int threadCount)
+		public static TlcWorkerThreadControls manual(int threadCount)
 		{
 			TlcWorkerThreadControls controls = new TlcWorkerThreadControls();
-			controls.Automatic = false;
-			controls.ThreadCount = Optional.of(threadCount);
+			controls.automatic = false;
+			controls.threadCount = Optional.of(threadCount);
 			return controls;
 		}
 	}
@@ -883,22 +884,22 @@ public class CommandLineOptions
 		/**
 		 * Whether the validation succeeded.
 		 */
-		public boolean Success;
+		public boolean success;
 		
 		/**
 		 * The error message, in case of validation failure.
 		 */
-		public Optional<String> ErrorMessage;
+		public Optional<String> errorMessage;
 		
 		/**
 		 * Creates a validation report in case of success.
 		 * @return A successful validation report.
 		 */
-		public static ValidationResult Success()
+		public static ValidationResult success()
 		{
 			ValidationResult result = new ValidationResult();
-			result.Success = true;
-			result.ErrorMessage = Optional.empty();
+			result.success = true;
+			result.errorMessage = Optional.empty();
 			return result;
 		}
 		
@@ -907,11 +908,11 @@ public class CommandLineOptions
 		 * @param errorMessage Message to attach to report.
 		 * @return A failed validation report.
 		 */
-		public static ValidationResult Failure(String errorMessage)
+		public static ValidationResult failure(String errorMessage)
 		{
 			ValidationResult result = new ValidationResult();
-			result.Success = false;
-			result.ErrorMessage = Optional.of(errorMessage);
+			result.success = false;
+			result.errorMessage = Optional.of(errorMessage);
 			return result;
 		}
 	}
@@ -924,35 +925,35 @@ public class CommandLineOptions
 		/**
 		 * Whether the parsing succeeded.
 		 */
-		public boolean Success;
+		public boolean success;
 		
 		/**
 		 * Whether user requested to print help text.
 		 */
-		public boolean HelpRequest;
+		public boolean helpRequest;
 		
 		/**
 		 * The parsed command line options, if successful.
 		 */
-		public Optional<CommandLineOptions> Options;
+		public Optional<CommandLineOptions> options;
 		
 		/**
 		 * The error message, in case of parse failure.
 		 */
-		public Optional<String> ErrorMessage;
+		public Optional<String> errorMessage;
 		
 		/**
 		 * Creates a parse report in case of success.
 		 * @param options The parse command line options.
 		 * @return A successful parser report.
 		 */
-		public static ParseResult Success(CommandLineOptions options)
+		public static ParseResult success(CommandLineOptions options)
 		{
 			ParseResult result = new ParseResult();
-			result.Success = true;
-			result.HelpRequest = false;
-			result.Options = Optional.of(options);
-			result.ErrorMessage = Optional.empty();
+			result.success = true;
+			result.helpRequest = false;
+			result.options = Optional.of(options);
+			result.errorMessage = Optional.empty();
 			return result;
 		}
 		
@@ -960,13 +961,13 @@ public class CommandLineOptions
 		 * Creates a parse result in case user requests help text.
 		 * @return A help text parser report.
 		 */
-		public static ParseResult HelpRequest()
+		public static ParseResult helpRequest()
 		{
 			ParseResult result = new ParseResult();
-			result.Success = true;
-			result.HelpRequest = true;
-			result.Options = Optional.empty();
-			result.ErrorMessage = Optional.empty();
+			result.success = true;
+			result.helpRequest = true;
+			result.options = Optional.empty();
+			result.errorMessage = Optional.empty();
 			return result;
 		}
 		
@@ -975,13 +976,13 @@ public class CommandLineOptions
 		 * @param errorMessage The parse error message.
 		 * @return A failed parser report.
 		 */
-		public static ParseResult Failure(String errorMessage)
+		public static ParseResult failure(String errorMessage)
 		{
 			ParseResult result = new ParseResult();
-			result.Success = false;
-			result.HelpRequest = false;
-			result.Options = Optional.empty();
-			result.ErrorMessage = Optional.of(errorMessage);
+			result.success = false;
+			result.helpRequest = false;
+			result.options = Optional.empty();
+			result.errorMessage = Optional.of(errorMessage);
 			return result;
 		}
 	}
