@@ -30,11 +30,9 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationModeFlag);
 		assertTrue(actual.simulationBehaviorCountLimit.isEmpty());
 		assertTrue(actual.simulationTraceFile.isEmpty());
-
-		assertTrue(actual.simulationMode.get());
 	}
 
 	@Test
@@ -49,9 +47,8 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 		
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationModeFlag);
 		assertTrue(actual.simulationTraceFile.isEmpty());
-		assertTrue(actual.simulationMode.get());
 		assertTrue(actual.simulationBehaviorCountLimit.isPresent());
 		assertEquals(expected, actual.simulationBehaviorCountLimit.get().longValue());
 	}
@@ -68,8 +65,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 		
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.simulationMode.isPresent());
-		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationModeFlag);
 		assertTrue(actual.simulationBehaviorCountLimit.isEmpty());
 		assertTrue(actual.simulationTraceFile.isPresent());
 		assertEquals(expected, actual.simulationTraceFile.get());
@@ -87,14 +83,12 @@ public class TestCommandLineOptions
 		assertTrue(result.options.isPresent());
 		CommandLineOptions actual = result.options.get();
 		
-		assertTrue(actual.simulationMode.isPresent());
-		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationModeFlag);
 		assertTrue(actual.simulationTraceFile.isPresent());
 		assertEquals(expectedPath, actual.simulationTraceFile.get());
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.simulationMode.isPresent());
-		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationModeFlag);
 		assertTrue(actual.simulationBehaviorCountLimit.isPresent());
 		assertEquals(expectedLimit, actual.simulationBehaviorCountLimit.get().longValue());
 	}
@@ -111,14 +105,12 @@ public class TestCommandLineOptions
 		assertTrue(result.options.isPresent());
 		CommandLineOptions actual = result.options.get();
 		
-		assertTrue(actual.simulationMode.isPresent());
-		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationModeFlag);
 		assertTrue(actual.simulationTraceFile.isPresent());
 		assertEquals(expectedPath, actual.simulationTraceFile.get());
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.simulationMode.isPresent());
-		assertTrue(actual.simulationMode.get());
+		assertTrue(actual.simulationModeFlag);
 		assertTrue(actual.simulationBehaviorCountLimit.isPresent());
 		assertEquals(expectedLimit, actual.simulationBehaviorCountLimit.get().longValue());
 	}
@@ -140,7 +132,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.simulationMode.isPresent());
+		assertTrue(actual.simulationModeFlag);
 		assertTrue(actual.simulationBehaviorCountLimit.isEmpty());
 		assertTrue(actual.simulationTraceFile.isEmpty());
 		assertTrue(actual.mainSpecFilePath.isPresent());
@@ -161,8 +153,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.modelCheck.isPresent());
-		assertTrue(actual.modelCheck.get());
+		assertTrue(actual.modelCheckFlag);
 	}
 	
 	@Test
@@ -176,8 +167,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.onlyPrintStateTraceDiffs.isPresent());
-		assertTrue(actual.onlyPrintStateTraceDiffs.get());
+		assertTrue(actual.onlyPrintStateTraceDiffsFlag);
 	}
 
 	@Test
@@ -191,8 +181,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.checkDeadlock.isPresent());
-		assertFalse(actual.checkDeadlock.get());
+		assertTrue(actual.doNotCheckDeadlockFlag);
 	}
 	
 	@Test
@@ -206,8 +195,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.cleanStatesDirectory.isPresent());
-		assertTrue(actual.cleanStatesDirectory.get());
+		assertTrue(actual.cleanStatesDirectoryFlag);
 	}
 
 	@Test
@@ -221,8 +209,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.printWarnings.isPresent());
-		assertFalse(actual.printWarnings.get());
+		assertTrue(actual.doNotPrintWarningsFlag);
 	}
 
 	@Test
@@ -236,8 +223,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.useGZip.isPresent());
-		assertTrue(actual.useGZip.get());
+		assertTrue(actual.useGZipFlag);
 	}
 
 	@Test
@@ -251,8 +237,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.expandValuesInPrintStatements.isPresent());
-		assertFalse(actual.expandValuesInPrintStatements.get());
+		assertTrue(actual.terseOutputFlag);
 	}
 
 	@Test
@@ -266,8 +251,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.continueAfterInvariantViolation.isPresent());
-		assertTrue(actual.continueAfterInvariantViolation.get());
+		assertTrue(actual.continueAfterInvariantViolationFlag);
 	}
 
 	@Test
@@ -281,8 +265,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.useView.isPresent());
-		assertTrue(actual.useView.get());
+		assertTrue(actual.useViewFlag);
 	}
 
 	@Test
@@ -296,8 +279,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.debug.isPresent());
-		assertTrue(actual.debug.get());
+		assertTrue(actual.debugFlag);
 	}
 
 	@Test
@@ -311,8 +293,7 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.useToolOutputFormat.isPresent());
-		assertTrue(actual.useToolOutputFormat.get());
+		assertTrue(actual.useToolOutputFormatFlag);
 	}
 
 	@Test
@@ -326,10 +307,8 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.generateErrorTraceSpec.isPresent());
-		assertTrue(actual.generateErrorTraceSpec.get());
-		assertTrue(actual.createMonolithErrorTraceSpec.isPresent());
-		assertTrue(actual.createMonolithErrorTraceSpec.get());
+		assertTrue(actual.generateErrorTraceSpecFlag);
+		assertFalse(actual.noMonolithErrorTraceSpecFlag);
 	}
 
 	@Test
@@ -343,10 +322,8 @@ public class TestCommandLineOptions
 		CommandLineOptions actual = result.options.get();
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
-		assertTrue(actual.generateErrorTraceSpec.isPresent());
-		assertTrue(actual.generateErrorTraceSpec.get());
-		assertTrue(actual.createMonolithErrorTraceSpec.isPresent());
-		assertFalse(actual.createMonolithErrorTraceSpec.get());
+		assertTrue(actual.generateErrorTraceSpecFlag);
+		assertTrue(actual.noMonolithErrorTraceSpecFlag);
 	}
 
 	@Test

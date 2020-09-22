@@ -11,7 +11,8 @@ import util.TLAConstants;
  * Parses command line options.
  * 
  * Instructions for adding a new command line option:
- *  1. Add a field to this class (encapsulating type with Optional)
+ *  1. Add a field to this class representing your option
+ *  	- Use boolean for flags and Optional for parameters
  *  2. Add parsing logic to the parse method
  *  3. Add validation logic to the validate method (if required)
  *  4. Add transformation logic to the transform method (if required)
@@ -77,7 +78,7 @@ public class CommandLineOptions
 	/**
 	 * Whether to run TLC in simulation mode.
 	 */
-	public Optional<Boolean> simulationMode = Optional.empty();
+	public boolean simulationModeFlag = false;
 	
 	/**
 	 * The maximum number of traces/behaviors to generate in simulation mode.
@@ -92,67 +93,67 @@ public class CommandLineOptions
 	/**
 	 * Whether to model check the spec (ignored).
 	 */
-	public Optional<Boolean> modelCheck = Optional.empty();
+	public boolean modelCheckFlag = false;
 	
 	/**
 	 * Whether to only print state differences in traces.
 	 */
-	public Optional<Boolean> onlyPrintStateTraceDiffs = Optional.empty();
+	public boolean onlyPrintStateTraceDiffsFlag = false;
 	
 	/**
 	 * Whether to check for deadlock.
 	 */
-	public Optional<Boolean> checkDeadlock = Optional.empty();
+	public boolean doNotCheckDeadlockFlag = false;
 	
 	/**
 	 * Whether to clean states directory.
 	 */
-	public Optional<Boolean> cleanStatesDirectory = Optional.empty();
+	public boolean cleanStatesDirectoryFlag = false;
 	
 	/**
 	 * Whether to print warnings.
 	 */
-	public Optional<Boolean> printWarnings = Optional.empty();
+	public boolean doNotPrintWarningsFlag = false;
 	
 	/**
 	 * Whether to apply GZip to input/output stream.
 	 */
-	public Optional<Boolean> useGZip = Optional.empty();
+	public boolean useGZipFlag = false;
 	
 	/**
 	 * Whether to expand values in print statements.
 	 */
-	public Optional<Boolean> expandValuesInPrintStatements = Optional.empty();
+	public boolean terseOutputFlag = false;
 	
 	/**
 	 * Whether to continue running after an invariant is violated.
 	 */
-	public Optional<Boolean> continueAfterInvariantViolation = Optional.empty();
+	public boolean continueAfterInvariantViolationFlag = false;
 	
 	/**
 	 * Whether to apply a VIEW when printing out states.
 	 */
-	public Optional<Boolean> useView = Optional.empty();
+	public boolean useViewFlag = false;
 	
 	/**
 	 * Whether to print debugging information.
 	 */
-	public Optional<Boolean> debug = Optional.empty();
+	public boolean debugFlag = false;
 	
 	/**
 	 * Whether to output messages in an easily-parsed format.
 	 */
-	public Optional<Boolean> useToolOutputFormat = Optional.empty();
+	public boolean useToolOutputFormatFlag = false;
 	
 	/**
 	 * Whether to generate a spec to re-execute any encountered error trace.
 	 */
-	public Optional<Boolean> generateErrorTraceSpec = Optional.empty();
+	public boolean generateErrorTraceSpecFlag = false;
 	
 	/**
 	 * Whether to create a monolithic error trace spec.
 	 */
-	public Optional<Boolean> createMonolithErrorTraceSpec = Optional.empty();
+	public boolean noMonolithErrorTraceSpecFlag = false;
 	
 	/**
 	 * TODO: find out what this does.
@@ -263,7 +264,7 @@ public class CommandLineOptions
 			if (args[index].equals("-simulate"))
 			{
 				index++;
-				options.simulationMode = Optional.of(true);
+				options.simulationModeFlag = true;
 				
 				// Simulation args can be:
 				// file=/path/to/file,num=4711 or num=4711,file=/path/to/file or num=4711 or
@@ -286,59 +287,58 @@ public class CommandLineOptions
 			} else if (args[index].equals("-modelcheck"))
 			{
 				index++;
-				options.modelCheck = Optional.of(true);
+				options.modelCheckFlag = true;
 			} else if (args[index].equals("-difftrace"))
 			{
 				index++;
-				options.onlyPrintStateTraceDiffs = Optional.of(true);
+				options.onlyPrintStateTraceDiffsFlag = true;
 			} else if (args[index].equals("-deadlock"))
 			{
 				index++;
 				// Confusingly the -deadlock flag specifies *not* checking for deadlock.
-				options.checkDeadlock = Optional.of(false);
+				options.doNotCheckDeadlockFlag = true;
 			} else if (args[index].equals("-cleanup"))
 			{
 				index++;
-				options.cleanStatesDirectory = Optional.of(true);
+				options.cleanStatesDirectoryFlag = true;
 			} else if (args[index].equals("-nowarning"))
 			{
 				index++;
-				options.printWarnings = Optional.of(false);
+				options.doNotPrintWarningsFlag = true;
 			} else if (args[index].equals("-gzip"))
 			{
 				index++;
-				options.useGZip = Optional.of(true);
+				options.useGZipFlag = true;
 			} else if (args[index].equals("-terse"))
 			{
 				index++;
-				options.expandValuesInPrintStatements = Optional.of(false);
+				options.terseOutputFlag = true;
 			} else if (args[index].equals("-continue"))
 			{
 				index++;
-				options.continueAfterInvariantViolation = Optional.of(true);
+				options.continueAfterInvariantViolationFlag = true;
 			} else if (args[index].equals("-view"))
 			{
 				index++;
-				options.useView = Optional.of(true);
+				options.useViewFlag = true;
 			} else if (args[index].equals("-debug"))
 			{
 				index++;
-				options.debug = Optional.of(true);
+				options.debugFlag = true;
 			} else if (args[index].equals("-tool"))
 			{
 				index++;
-				options.useToolOutputFormat = Optional.of(true);
+				options.useToolOutputFormatFlag = true;
 			} else if (args[index].equals("-generateSpecTE"))
 			{
 				index++;
-				options.generateErrorTraceSpec = Optional.of(true);
+				options.generateErrorTraceSpecFlag = true;
 				
 				if ((index < args.length) && args[index].equals("nomonolith")) {
 					index++;
-					options.createMonolithErrorTraceSpec = Optional.of(false);
-				} else {
-					options.createMonolithErrorTraceSpec = Optional.of(true);
+					options.noMonolithErrorTraceSpecFlag = true;
 				}
+
 			} else if (args[index].equals("-help") || args[index].equals("-h"))
 			{
 				index++;
@@ -816,7 +816,7 @@ public class CommandLineOptions
 	
 	/**
 	 * Encapsulates settings related to dump files.
-	 * This would be best written as a Java record once that feature is out of preview.
+	 * This would be best written as a Java record once that feature is main-lined.
 	 */
 	public static class DumpFileControls
 	{
@@ -836,7 +836,7 @@ public class CommandLineOptions
 	
 	/**
 	 * Encapsulates settings related to TLC worker threads.
-	 * This would be best written as a Java record once that feature is out of preview.
+	 * This should be broken up into different classes once pattern matching is main-lined.
 	 */
 	public static class TlcWorkerThreadControls
 	{
@@ -878,6 +878,7 @@ public class CommandLineOptions
 	
 	/**
 	 * The result of validating the command line arguments.
+	 * This should be broken up into different classes once pattern matching is main-lined.
 	 */
 	public static class ValidationResult
 	{
@@ -919,6 +920,7 @@ public class CommandLineOptions
 	
 	/**
 	 * The result of parsing the command line arguments.
+	 * This should be broken up into different classes once pattern matching is main-lined.
 	 */
 	public static class ParseResult
 	{

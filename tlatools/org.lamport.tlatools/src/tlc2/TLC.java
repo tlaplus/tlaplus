@@ -92,7 +92,7 @@ public class TLC {
 
     private RunMode runMode;
     private boolean cleanup;
-    private boolean deadlock;
+    private boolean checkDeadlock;
 
     private boolean noSeed;
     private long seed;
@@ -150,7 +150,7 @@ public class TLC {
         
         runMode = RunMode.MODEL_CHECK;
         cleanup = false;
-        deadlock = true;
+        checkDeadlock = true;
         
         noSeed = true;
         seed = 0;
@@ -350,498 +350,179 @@ public class TLC {
 	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
 	public boolean handleParameters(String[] args, boolean unitTestMode)
     {
+		// Parse command line options
+		CommandLineOptions.ParseResult parseResult = CommandLineOptions.parse(args);
+
+		if (!parseResult.success)
+		{
+			this.printErrorMsg(parseResult.errorMessage.get());
+			return false;
+		}
+		
+		if (parseResult.helpRequest)
+		{
+			this.printUsage();
+			return false;
+		}
+		
+		// Validate command line options
+		CommandLineOptions options = parseResult.options.get();
+		CommandLineOptions.ValidationResult validationResult = CommandLineOptions.validate(options);
+
+		if (!validationResult.success)
+		{
+			this.printErrorMsg(validationResult.errorMessage.get());
+			return false;
+		}
+		
+		// Transform command line options
+		CommandLineOptions.transform(options);
+		
+		// Apply command line options
+		if (options.simulationModeFlag)
+		{
+			this.runMode = RunMode.SIMULATE;
+			options.simulationBehaviorCountLimit.ifPresent(value -> {
+				TLC.traceNum = value;
+			});
+			options.simulationTraceFile.ifPresent(value -> {
+				this.traceFile = value;
+			});
+		}
+		
+		if (options.onlyPrintStateTraceDiffsFlag)
+		{
+			TLCGlobals.printDiffsOnly = true;
+		}
+		
+		if (options.doNotCheckDeadlockFlag)
+		{
+			this.checkDeadlock = false;
+		}
+		
+		if (options.cleanStatesDirectoryFlag)
+		{
+			this.cleanup = true;
+		}
+		
+		if (options.doNotPrintWarningsFlag)
+		{
+			TLCGlobals.warn = false;
+		}
+		
+		if (options.useGZipFlag)
+		{
+			TLCGlobals.useGZIP = true;
+		}
+		
+		if (options.terseOutputFlag)
+		{
+			TLCGlobals.expand = false;
+		}
+		
+		if (options.continueAfterInvariantViolationFlag)
+		{
+			TLCGlobals.continuation = true;
+		}
+		
+		if (options.useViewFlag)
+		{
+			TLCGlobals.useView = true;
+		}
+		
+		if (options.debugFlag)
+		{
+			TLCGlobals.debug = true;
+		}
+		
+		if (options.useToolOutputFormatFlag)
+		{
+			TLCGlobals.tool = true;
+		}
+		
+		if (options.generateErrorTraceSpecFlag)
+		{
+			TLCGlobals.tool = true;
+		}
+		
+		options.livenessCheck.ifPresent(value -> {
+			TLCGlobals.lnCheck = value;
+		});
+		
+		options.configurationFilePath.ifPresent(value -> {
+			this.configFile = value;
+		});
+		
+		options.dumpFilePath.ifPresent(value -> {
+			this.dumpFile = value;
+			options.dumpFileOptions.ifPresent(dumpOptions ->
+			{
+				this.asDot = true;
+				this.colorize = dumpOptions.colorize;
+				this.actionLabels = dumpOptions.actionLabels;
+				this.snapshot = dumpOptions.snapshot;
+			});
+		});
+		
+		options.coverageIntervalInMinutes.ifPresent(value -> {
+			// Convert minutes to milliseconds
+			TLCGlobals.coverageInterval = value * 60 * 1000;
+		});
+		
+		options.checkpointIntervalInMinutes.ifPresent(value -> {
+			// Convert minutes to milliseconds
+			TLCGlobals.chkptDuration = value * 60 * 1000;
+		});
+		
+		options.simulationTraceDepthLimit.ifPresent(value -> {
+			this.traceDepth = value;
+		});
+		
+		options.seed.ifPresent(value -> {
+			this.seed = value;
+		});
+		
+		options.aril.ifPresent(value -> {
+			this.aril = value;
+		});
+		
+		options.maxSetSize.ifPresent(value -> {
+			TLCGlobals.setBound = value;
+		});
+		
+		options.recoveryId.ifPresent(value -> {
+			this.fromChkpt = value;
+		});
+		
+		options.metadataDirectoryPath.ifPresent(value -> {
+			TLCGlobals.metaDir = value;
+		});
+		
+		options.userOutputFilePath.ifPresent(value -> {
+			this.userFile = value;
+		});
+		
+		options.tlcWorkerThreadOptions.ifPresent(workerOptions -> {
+			int workerCount = workerOptions.automatic
+					? Runtime.getRuntime().availableProcessors()
+					: workerOptions.threadCount.get();
+			TLCGlobals.setNumWorkers(workerCount);
+		});
+		
+		options.dfidStartingDepth.ifPresent(value -> {
+			TLCGlobals.DFIDMax = value;
+		});
+		
+		options.fingerprintFunctionIndex.ifPresent(value -> {
+			this.fpIndex = value;
+		});
+		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
         int index = 0;
 		while (index < args.length)
         {
-            if (args[index].equals("-simulate"))
-            {
-            	runMode = RunMode.SIMULATE;
-                index++;
-                
-				// Simulation args can be:
-				// file=/path/to/file,num=4711 or num=4711,file=/path/to/file or num=4711 or
-				// file=/path/to/file
-				// "file=..." and "num=..." are only relevant for simulation which is why they
-				// are args to "-simulate".
-				if (((index + 1) < args.length) && (args[index].contains("file=") || args[index].contains("num="))) {
-					final String[] simArgs = args[index].split(",");
-					index++; // consume simulate args
-					for (String arg : simArgs) {
-						if (arg.startsWith("num=")) {
-							traceNum = Long.parseLong(arg.replace("num=", ""));
-						} else if (arg.startsWith("file=")) {
-							traceFile = arg.replace("file=", "");
-						}
-					}
-				}
-			} else if (args[index].equals("-modelcheck")) {
-				index++;
-            } else if (args[index].equals("-difftrace"))
-            {
-                index++;
-                TLCGlobals.printDiffsOnly = true;
-            } else if (args[index].equals("-deadlock"))
-            {
-                index++;
-                deadlock = false;
-            } else if (args[index].equals("-cleanup"))
-            {
-                index++;
-                cleanup = true;
-            } else if (args[index].equals("-nowarning"))
-            {
-                index++;
-                TLCGlobals.warn = false;
-            } else if (args[index].equals("-gzip"))
-            {
-                index++;
-                TLCGlobals.useGZIP = true;
-            } else if (args[index].equals("-terse"))
-            {
-                index++;
-                TLCGlobals.expand = false;
-            } else if (args[index].equals("-continue"))
-            {
-                index++;
-                TLCGlobals.continuation = true;
-            } else if (args[index].equals("-view"))
-            {
-                index++;
-                TLCGlobals.useView = true;
-            } else if (args[index].equals("-debug"))
-            {
-                index++;
-                TLCGlobals.debug = true;
-            } else if (args[index].equals("-tool"))
-            {
-                index++;
-                TLCGlobals.tool = true;
-            } else if (args[index].equals("-generateSpecTE")) {
-                index++;
-            	
-                TLCGlobals.tool = true;
-                
-				// Never generate/create monolith spec, because approach is broken (e.g.
-				// https://github.com/tlaplus/tlaplus/issues/479).
-				// See util.MonolithSpecExtractor for more robust/simpler approach to generate
-				// monolith.
-                final boolean createMonolithSpecTE = false;
-                if ((index < args.length) && args[index].equals("nomonolith")) {
-                	index++;
-                	//createMonolithSpecTE = false;
-                } else {
-                	//createMonolithSpecTE = true;
-                }
-                	
-                if (!unitTestMode) {
-                
-				// Don't start the shebang below twice, if a user accidentally passed
-				// '-generateSpecTE' twice.
-                if (waitingOnGenerationCompletion.getRegisteredParties() > 1) {
-                	continue;
-                }
-                
-				// This reads the output (ToolIO.out) on stdout of all other TLC threads. The
-				// output is parsed to reconstruct the error trace, from which the code below
-				// generates the SpecTE file. It might seem as if it would have been easier to
-				// reuse the MPRecorder to collect the output that's written to ToolIO, but this
-				// would work with two TLC processes where the first runs model-checking and
-				// pipes its output to the second.
-				try {
-					final ByteArrayOutputStream temporaryMCOutputStream = new ByteArrayOutputStream();
-					final BufferedOutputStream bos = new BufferedOutputStream(temporaryMCOutputStream);
-					final PipedInputStream pis = new PipedInputStream();
-					final TeeOutputStream tos1 = new TeeOutputStream(bos, new PipedOutputStream(pis));
-					final TeeOutputStream tos2 = new TeeOutputStream(ToolIO.out, tos1);
-					ToolIO.out = new PrintStream(tos2);
-					final MCOutputPipeConsumer mcOutputConsumer = new MCOutputPipeConsumer(pis, null);
-					
-					// Note, this runnable's thread will not finish consuming output until just
-					// 	before the app exits and we will use the output consumer in the TLC main
-					//	thread while it is still consuming (but at a point where the model checking
-					//	itself has finished and so the consumer is as populated as we need it to be
-					//	- but prior to the output consumer encountering the EC.TLC_FINISHED message.)
-					final Runnable r = () -> {
-						boolean haveClosedOutputStream = false;
-						try {
-							waitingOnGenerationCompletion.register();
-							mcOutputConsumer.consumeOutput();
-							
-							bos.flush();
-							temporaryMCOutputStream.close();
-							haveClosedOutputStream = true;
-							
-				            if ((mcOutputConsumer != null) && (mcOutputConsumer.getError() != null)) {
-								// We need not synchronize the access to tool (which might appear racy), because
-								// the consumeOutput above will block until TLC's finish message, which is written
-								// *after* tool has been created.
-								final SpecProcessor sp = tool.getSpecProcessor();
-				        		final ModelConfig mc = tool.getModelConfig();
-				        		final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
-				        		final String originalSpecName = mcOutputConsumer.getSpecName();
-				        		
-				        		final MCParserResults mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
-
-				        		// Write the files SpecTE.tla and SpecTE.cfg
-				        		// At this point SpecTE.cfg contains the content of MC.cfg.
-				        		// SpecTE.tla contains the newly generated SpecTE and the content of MC.tla.
-				        		// See https://github.com/tlaplus/tlaplus/issues/475 for why copying MC.tla/MC.cfg is wrong.
-								final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
-										TLCState.Empty.getVarsAsStrings(), mcParserResults, mcOutputConsumer.getError());
-								
-				        		// This rewrites SpecTE.tla in an attempt to create a monolith spec.
-								// See https://github.com/tlaplus/tlaplus/issues/479 and
-								// https://github.com/tlaplus/tlaplus/issues/479 why this is broken.
-								if (createMonolithSpecTE) {
-									final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
-									final TLAMonolithCreator monolithCreator
-										= new TLAMonolithCreator(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
-																 mcOutputConsumer.getSourceDirectory(),
-																 extendedModules,
-																 mcParserResults.getAllExtendedModules(),
-																 mcParserResults.getAllInstantiatedModules());
-									// Beware, this internally creates a temp file and re-reads SpecTE.tla from disk again. 
-									monolithCreator.copy();
-								}
-				        		
-								// *Append* TLC's stdout/stderr output to final SpecTE.tla. The content of SpecTE.tla
-								// is now MonolithMC, MonolithSpecTE, stdout/stderr. Most users won't care for
-								// stderr/stdout and want to look at SpecTE. Thus, SpecTE is at the top.
-								final FileOutputStream fos = new FileOutputStream(files[0], true);
-								FileUtil.copyStream(new ByteArrayInputStream(temporaryMCOutputStream.toByteArray()), fos);
-								
-								fos.close();
-				            }
-							
-						} catch (final Exception e) {
-							MP.printMessage(EC.GENERAL,
-											"A model checking error occurred while parsing tool output; the execution "
-													+ "ended before the potential "
-													+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
-													+ " generation stage.");
-						} finally {
-							if (!haveClosedOutputStream) {
-								try {
-									bos.flush();
-									temporaryMCOutputStream.close();
-								} catch (final Exception e) { }
-							}
-							// Signal the main method to continue to termination.
-							waitingOnGenerationCompletion.arriveAndDeregister();
-						}
-					};
-					new Thread(r).start();
-
-				} catch (final IOException ioe) {
-					printErrorMsg("Failed to set up piped output consumers; no potential "
-										+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " will be generated: "
-										+ ioe.getMessage());
-				}
-
-				} // end unitTestMode block
-            } else if (args[index].equals("-help") || args[index].equals("-h"))
-            {
-                printUsage();
-                return false;
-            } else if (args[index].equals("-lncheck"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    TLCGlobals.lnCheck = args[index].toLowerCase();
-                    index++;
-                } else
-                {
-                    printErrorMsg("Error: expect a strategy such as final for -lncheck option.");
-                    return false;
-                }
-           } else if (args[index].equals("-config"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    configFile = args[index];
-					if (configFile.endsWith(TLAConstants.Files.CONFIG_EXTENSION)) {
-						configFile = configFile.substring(0,
-								(configFile.length() - TLAConstants.Files.CONFIG_EXTENSION.length()));
-					}
-                    index++;
-                } else
-                {
-                    printErrorMsg("Error: expect a file name for -config option.");
-                    return false;
-                }
-            } else if (args[index].equals("-dump"))
-            {
-                index++; // consume "-dump".
-                if (((index + 1) < args.length) && args[index].startsWith("dot"))
-                {
-                	final String dotArgs = args[index].toLowerCase();
-                	index++; // consume "dot...".
-                	asDot = true;
-                	colorize = dotArgs.contains("colorize");
-                	actionLabels = dotArgs.contains("actionlabels");
-                	snapshot = dotArgs.contains("snapshot");
-					dumpFile = getDumpFile(args[index++], ".dot");
-                }
-                else if (index < args.length)
-                {
-					dumpFile = getDumpFile(args[index++], ".dump");
-                } else
-                {
-                    printErrorMsg("Error: A file name for dumping states required.");
-                    return false;
-                }
-            } else if (args[index].equals("-coverage"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        TLCGlobals.coverageInterval = Integer.parseInt(args[index]) * 60 * 1000;
-                        if (TLCGlobals.coverageInterval < 0)
-                        {
-                            printErrorMsg("Error: expect a nonnegative integer for -coverage option.");
-                            return false;
-                        }
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        
-                        printErrorMsg("Error: An integer for coverage report interval required." + " But encountered "
-                                + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: coverage report interval required.");
-                    return false;
-                }
-            } else if (args[index].equals("-checkpoint"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        TLCGlobals.chkptDuration = Integer.parseInt(args[index]) * 1000 * 60;
-                        if (TLCGlobals.chkptDuration < 0)
-                        {
-                            printErrorMsg("Error: expect a nonnegative integer for -checkpoint option.");
-                            return false;
-                        }
-                        
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: An integer for checkpoint interval is required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: checkpoint interval required.");
-                    return false;
-                }
-            } else if (args[index].equals("-depth"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        traceDepth = Integer.parseInt(args[index]);
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: An integer for trace length required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: trace length required.");
-                    return false;
-                }
-            } else if (args[index].equals("-seed"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        seed = Long.parseLong(args[index]);
-                        index++;
-                        noSeed = false;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: An integer for seed required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: seed required.");
-                    return false;
-                }
-            } else if (args[index].equals("-aril"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        aril = Long.parseLong(args[index]);
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: An integer for aril required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: aril required.");
-                    return false;
-                }
-            } else if (args[index].equals("-maxSetSize"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        int bound = Integer.parseInt(args[index]);
-                        
-                    	// make sure it's in valid range
-                    	if (!TLCGlobals.isValidSetSize(bound)) {
-                    		int maxValue = Integer.MAX_VALUE;
-                    		printErrorMsg("Error: Value in interval [0, " + maxValue + "] for maxSetSize required. But encountered " + args[index]);
-                    		return false;
-                    	}
-                    	TLCGlobals.setBound = bound;
-
-                    	index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: An integer for maxSetSize required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: maxSetSize required.");
-                    return false;
-                }
-            } else if (args[index].equals("-recover"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    fromChkpt = args[index++] + FileUtil.separator;
-                } else
-                {
-                    printErrorMsg("Error: need to specify the metadata directory for recovery.");
-                    return false;
-                }
-            } else if (args[index].equals("-metadir"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    TLCGlobals.metaDir = args[index++] + FileUtil.separator;
-                } else
-                {
-                    printErrorMsg("Error: need to specify the metadata directory.");
-                    return false;
-                }
-            } else if (args[index].equals("-userFile"))
-            {
-                index++;
-                if (index < args.length)
-                {
-					this.userFile = args[index];
-					index++;
-                } else {
-                    printErrorMsg("Error: need to specify the full qualified userFile.");
-                    return false;
-                }
-            } else if (args[index].equals("-workers"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        int num = args[index].trim().toLowerCase().equals("auto")
-                                ? Runtime.getRuntime().availableProcessors()
-                                : Integer.parseInt(args[index]);
-                        if (num < 1)
-                        {
-                            printErrorMsg("Error: at least one worker required.");
-                            return false;
-                        }
-                        TLCGlobals.setNumWorkers(num);
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: worker number or 'auto' required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: expect an integer or 'auto' for -workers option.");
-                    return false;
-                }
-            } else if (args[index].equals("-dfid"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        TLCGlobals.DFIDMax = Integer.parseInt(args[index]);
-                        if (TLCGlobals.DFIDMax < 0)
-                        {
-                            printErrorMsg("Error: expect a nonnegative integer for -dfid option.");
-                            return false;
-                        }
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: expect a nonnegative integer for -dfid option. " + "But encountered "
-                                + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: expect a nonnegative integer for -dfid option.");
-                    return false;
-                }
-            } else if (args[index].equals("-fp"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        fpIndex = Integer.parseInt(args[index]);
-                        if (fpIndex < 0 || fpIndex >= FP64.Polys.length)
-                        {
-                            printErrorMsg("Error: The number for -fp must be between 0 and " + (FP64.Polys.length - 1)
-                                    + " (inclusive).");
-                            return false;
-                        }
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: A number for -fp is required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: expect an integer for -fp option.");
-                    return false;
-                }
-            } else if (args[index].equals("-fpmem"))
+            if (args[index].equals("-fpmem"))
             {
                 index++;
                 if (index < args.length)
@@ -986,6 +667,109 @@ public class TLC {
 			}
 		}
 
+		if (options.generateErrorTraceSpecFlag & waitingOnGenerationCompletion.getRegisteredParties() <= 1)
+		{
+			// Don't start the shebang below twice, if a user accidentally passed
+			// '-generateSpecTE' twice.
+			
+			// This reads the output (ToolIO.out) on stdout of all other TLC threads. The
+			// output is parsed to reconstruct the error trace, from which the code below
+			// generates the SpecTE file. It might seem as if it would have been easier to
+			// reuse the MPRecorder to collect the output that's written to ToolIO, but this
+			// would work with two TLC processes where the first runs model-checking and
+			// pipes its output to the second.
+			try {
+				final ByteArrayOutputStream temporaryMCOutputStream = new ByteArrayOutputStream();
+				final BufferedOutputStream bos = new BufferedOutputStream(temporaryMCOutputStream);
+				final PipedInputStream pis = new PipedInputStream();
+				final TeeOutputStream tos1 = new TeeOutputStream(bos, new PipedOutputStream(pis));
+				final TeeOutputStream tos2 = new TeeOutputStream(ToolIO.out, tos1);
+				ToolIO.out = new PrintStream(tos2);
+				final MCOutputPipeConsumer mcOutputConsumer = new MCOutputPipeConsumer(pis, null);
+				
+				// Note, this runnable's thread will not finish consuming output until just
+				// 	before the app exits and we will use the output consumer in the TLC main
+				//	thread while it is still consuming (but at a point where the model checking
+				//	itself has finished and so the consumer is as populated as we need it to be
+				//	- but prior to the output consumer encountering the EC.TLC_FINISHED message.)
+				final Runnable r = () -> {
+					boolean haveClosedOutputStream = false;
+					try {
+						waitingOnGenerationCompletion.register();
+						mcOutputConsumer.consumeOutput();
+						
+						bos.flush();
+						temporaryMCOutputStream.close();
+						haveClosedOutputStream = true;
+						
+						if ((mcOutputConsumer != null) && (mcOutputConsumer.getError() != null)) {
+							// We need not synchronize the access to tool (which might appear racy), because
+							// the consumeOutput above will block until TLC's finish message, which is written
+							// *after* tool has been created.
+							final SpecProcessor sp = tool.getSpecProcessor();
+							final ModelConfig mc = tool.getModelConfig();
+							final File sourceDirectory = mcOutputConsumer.getSourceDirectory();
+							final String originalSpecName = mcOutputConsumer.getSpecName();
+							
+							final MCParserResults mcParserResults = MCParser.generateResultsFromProcessorAndConfig(sp, mc);
+
+							// Write the files SpecTE.tla and SpecTE.cfg
+							// At this point SpecTE.cfg contains the content of MC.cfg.
+							// SpecTE.tla contains the newly generated SpecTE and the content of MC.tla.
+							// See https://github.com/tlaplus/tlaplus/issues/475 for why copying MC.tla/MC.cfg is wrong.
+							final File[] files = TraceExplorer.writeSpecTEFiles(sourceDirectory, originalSpecName,
+									TLCState.Empty.getVarsAsStrings(), mcParserResults, mcOutputConsumer.getError());
+							
+							// This rewrites SpecTE.tla in an attempt to create a monolith spec.
+							// See https://github.com/tlaplus/tlaplus/issues/479 and
+							// https://github.com/tlaplus/tlaplus/issues/479 why this is broken.
+							if (!options.noMonolithErrorTraceSpecFlag) {
+								final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
+								final TLAMonolithCreator monolithCreator
+									= new TLAMonolithCreator(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
+															 mcOutputConsumer.getSourceDirectory(),
+															 extendedModules,
+															 mcParserResults.getAllExtendedModules(),
+															 mcParserResults.getAllInstantiatedModules());
+								// Beware, this internally creates a temp file and re-reads SpecTE.tla from disk again. 
+								monolithCreator.copy();
+							}
+							
+							// *Append* TLC's stdout/stderr output to final SpecTE.tla. The content of SpecTE.tla
+							// is now MonolithMC, MonolithSpecTE, stdout/stderr. Most users won't care for
+							// stderr/stdout and want to look at SpecTE. Thus, SpecTE is at the top.
+							final FileOutputStream fos = new FileOutputStream(files[0], true);
+							FileUtil.copyStream(new ByteArrayInputStream(temporaryMCOutputStream.toByteArray()), fos);
+							
+							fos.close();
+						}
+						
+					} catch (final Exception e) {
+						MP.printMessage(EC.GENERAL,
+										"A model checking error occurred while parsing tool output; the execution "
+												+ "ended before the potential "
+												+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
+												+ " generation stage.");
+					} finally {
+						if (!haveClosedOutputStream) {
+							try {
+								bos.flush();
+								temporaryMCOutputStream.close();
+							} catch (final Exception e) { }
+						}
+						// Signal the main method to continue to termination.
+							waitingOnGenerationCompletion.arriveAndDeregister();
+						}
+					};
+					new Thread(r).start();
+
+				} catch (final IOException ioe) {
+					printErrorMsg("Failed to set up piped output consumers; no potential "
+										+ TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + " will be generated: "
+										+ ioe.getMessage());
+				}
+		}
+		
 		if (cleanup && (fromChkpt == null)) {
 			// clean up the states directory only when not recovering
 			FileUtil.deleteDir(TLCGlobals.metaRoot, true);
@@ -1089,7 +873,7 @@ public class TLC {
                 }
 				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				
-				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
+				Simulator simulator = new Simulator(mainFile, configFile, traceFile, checkDeadlock, traceDepth, 
                         traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
                 tool = simulator.getTool();
@@ -1109,17 +893,17 @@ public class TLC {
 				
             	// model checking
                 tool = new FastTool(mainFile, configFile, resolver);
-                deadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
+                checkDeadlock = checkDeadlock && tool.getModelConfig().getCheckDeadlock();
                 if (isBFS())
                 {
-					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt,
+					TLCGlobals.mainChecker = new ModelChecker(tool, metadir, stateWriter, checkDeadlock, fromChkpt,
 							FPSetFactory.getFPSetInitialized(fpSetConfiguration, metadir, new File(mainFile).getName()),
 							startTime);
 					modelCheckerMXWrapper = new ModelCheckerMXWrapper((ModelChecker) TLCGlobals.mainChecker, this);
 					result = TLCGlobals.mainChecker.modelCheck();
                 } else
                 {
-					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, deadlock, fromChkpt, startTime);
+					TLCGlobals.mainChecker = new DFIDModelChecker(tool, metadir, stateWriter, checkDeadlock, fromChkpt, startTime);
 					result = TLCGlobals.mainChecker.modelCheck();
                 }
 
@@ -1518,7 +1302,7 @@ public class TLC {
     }
     
     public boolean isDeadlockCheckingEnabled() {
-    	return this.deadlock;
+    	return this.checkDeadlock;
     }
     
     public boolean isStatesDirectoryMarkedForCleanup() {
