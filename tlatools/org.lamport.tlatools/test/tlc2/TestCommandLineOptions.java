@@ -817,8 +817,10 @@ public class TestCommandLineOptions
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
 		assertTrue(actual.tlcWorkerThreadOptions.isPresent());
-		assertTrue(actual.tlcWorkerThreadOptions.get().automatic);
-		assertTrue(actual.tlcWorkerThreadOptions.get().threadCount.isEmpty());
+		actual.tlcWorkerThreadOptions.ifPresent(options ->
+		{
+			options.ifPresent(auto -> { }, manual -> { fail(); });
+		});
 	}
 
 	@Test
@@ -834,9 +836,12 @@ public class TestCommandLineOptions
 
 		assertTrue(actual.mainSpecFilePath.isPresent());
 		assertTrue(actual.tlcWorkerThreadOptions.isPresent());
-		assertFalse(actual.tlcWorkerThreadOptions.get().automatic);
-		assertTrue(actual.tlcWorkerThreadOptions.get().threadCount.isPresent());
-		assertEquals(expectedValue, actual.tlcWorkerThreadOptions.get().threadCount.get());
+		actual.tlcWorkerThreadOptions.ifPresent(options ->
+		{
+			options.ifPresent(
+					auto -> { fail(); },
+					manual -> { assertEquals(expectedValue.intValue(), manual.workerThreadCount); });
+		});
 	}
 
 	@Test
@@ -1126,16 +1131,16 @@ public class TestCommandLineOptions
 	{
 		Integer inputValue = 1;
 		CommandLineOptions options = new CommandLineOptions();
-		CommandLineOptions.TlcWorkerThreadControls controls =
-				CommandLineOptions.TlcWorkerThreadControls.manual(inputValue);
-		options.tlcWorkerThreadOptions = Optional.of(controls);
+		CommandLineOptions.ManuallySetTlcWorkerThreadCount controls =
+				new CommandLineOptions.ManuallySetTlcWorkerThreadCount(inputValue);
+		options.tlcWorkerThreadOptions = Optional.of(Either.right(controls));
 		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
 				CommandLineOptions.validate(options);
 		result.ifPresent((failure) -> {fail();}, (success) -> {});
 		
 		inputValue = 0;
-		controls = CommandLineOptions.TlcWorkerThreadControls.manual(inputValue);
-		options.tlcWorkerThreadOptions = Optional.of(controls);
+		controls = new CommandLineOptions.ManuallySetTlcWorkerThreadCount(inputValue);
+		options.tlcWorkerThreadOptions = Optional.of(Either.right(controls));
 		result = CommandLineOptions.validate(options);
 		result.ifPresent((failure) -> {failure.errorMessage.contains("workers");}, (success) -> {fail();});
 	}

@@ -262,6 +262,11 @@ public class TLC {
             System.exit(1);
         }
         
+        if (!tlc.initialize(args))
+        {
+        	System.exit(1);
+        }
+        
         if (!tlc.checkEnvironment()) {
             System.exit(1);
         }
@@ -335,26 +340,12 @@ public class TLC {
 		traceNum = aTraceNum;
 	}
 
-    /**
-     * This method handles parameter arguments and prepares the actual call
-     * <strong>Note:</strong> This method set ups the static TLCGlobals variables
-     * @return status of parsing: true iff parameter check was ok, false otherwise
-     * @throws IOException 
-     */
-    // SZ Feb 23, 2009: added return status to indicate the error in parsing
-	public boolean handleParameters(String[] args)
-	{
-		return this.handleParameters(args, false);
-	}
-	
 	/**
-	 * Parses command line parameters and sets up variables
+	 * Parses command line parameters and sets up class & global variables
 	 * @param args The command line parameters to parse
-	 * @param unitTestMode Whether to avoid doing things like writing files
-	 * @return
+	 * @return True IFF there were no parsing or input validation errors
 	 */
-	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
-	public boolean handleParameters(String[] args, boolean unitTestMode)
+	public boolean handleParameters(String[] args)
     {
 		// Parse command line options
 		CommandLineOptions.ParseResult parseResult = CommandLineOptions.parse(args);
@@ -383,16 +374,14 @@ public class TLC {
 				},
 				(success) -> {
 					CommandLineOptions.transform(options);
-					this.setVariables(options);
+					this.setClassVariables(options);
+					this.setGlobalVariables(options);
 					return true;
 				});
     }
 	
-	/**
-	 * Applies the command line options to various variables.
-	 * @param options The parsed command line options.
-	 */
-	public void setVariables(CommandLineOptions options)
+	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
+	private void setClassVariables(CommandLineOptions options)
 	{
 		if (options.simulationModeFlag)
 		{
@@ -405,11 +394,6 @@ public class TLC {
 			});
 		}
 		
-		if (options.onlyPrintStateTraceDiffsFlag)
-		{
-			TLCGlobals.printDiffsOnly = true;
-		}
-		
 		if (options.doNotCheckDeadlockFlag)
 		{
 			this.checkDeadlock = false;
@@ -418,6 +402,106 @@ public class TLC {
 		if (options.cleanStatesDirectoryFlag)
 		{
 			this.cleanup = true;
+		}
+		
+		if (options.generateErrorTraceSpecFlag)
+		{
+			TLCGlobals.tool = true;
+			this.generateErrorTraceSpec = true;
+			if (options.noMonolithErrorTraceSpecFlag)
+			{
+				this.requireMonolithicErrorTraceSpec = false;
+			}
+		}
+
+		options.configurationFilePath.ifPresent(value -> {
+			this.configFile = value;
+		});
+		
+		options.dumpFilePath.ifPresent(value -> {
+			this.dumpFile = value;
+			options.dumpFileOptions.ifPresent(dumpOptions ->
+			{
+				this.asDot = true;
+				this.colorize = dumpOptions.colorize;
+				this.actionLabels = dumpOptions.actionLabels;
+				this.snapshot = dumpOptions.snapshot;
+			});
+		});
+
+		options.simulationTraceDepthLimit.ifPresent(value -> {
+			this.traceDepth = value;
+		});
+		
+		options.seed.ifPresent(value -> {
+			this.noSeed = false;
+			this.seed = value;
+		});
+		
+		options.aril.ifPresent(value -> {
+			this.aril = value;
+		});
+
+		options.recoveryId.ifPresent(value -> {
+			this.fromChkpt = value;
+		});
+		
+		options.userOutputFilePath.ifPresent(value -> {
+			this.userFile = value;
+		});
+		
+		options.fingerprintFunctionIndex.ifPresent(value -> {
+			this.fpIndex = value;
+		});
+		
+		options.fingerprintSetMemoryUsePercentage.ifPresent(value -> {
+			// -fpmem can be used in two ways:
+			// a) to set the relative memory to be used for fingerprints (being machine independent)
+			// b) to set the absolute memory to be used for fingerprints
+			//
+			// In order to set memory relatively, a value in the domain [0.0, 1.0] is interpreted as a fraction.
+			// A value in the [2, Double.MaxValue] domain allocates memory absolutely.
+			//
+			// Independently of relative or absolute mem allocation,
+			// a user cannot allocate more than JVM heap space
+			// available. Conversely there is the lower hard limit TLC#MinFpMemSize.
+			if (value > 1)
+			{
+				// For legacy reasons we allow users to set the
+				// absolute amount of memory. If this is the case,
+				// we know the user intends to allocate all 100% of
+				// the absolute memory to the fpset.
+				ToolIO.out.println(
+						"Using -fpmem with an abolute memory value has been deprecated. " +
+						"Please allocate memory for the TLC process via the JVM mechanisms " +
+						"and use -fpmem to set the fraction to be used for fingerprint storage.");
+				this.fpSetConfiguration.setMemory((long)value.doubleValue());
+				this.fpSetConfiguration.setRatio(1.0d);
+				
+			} else
+			{
+				this.fpSetConfiguration.setRatio(value);
+			}
+		});
+		
+		options.fingerprintBits.ifPresent(value -> {
+			this.fpSetConfiguration.setFpBits(value);
+		});
+		
+		options.mainSpecFilePath.ifPresent(value -> {
+			this.mainFile = value;
+		});
+	}
+	
+	/**
+	 * Applies the command line options to various variables.
+	 * @param options The parsed command line options.
+	 */
+	private void setGlobalVariables(CommandLineOptions options)
+	{
+		if (options.onlyPrintStateTraceDiffsFlag)
+		{
+			TLCGlobals.printDiffsOnly = true;
 		}
 		
 		if (options.doNotPrintWarningsFlag)
@@ -455,33 +539,8 @@ public class TLC {
 			TLCGlobals.tool = true;
 		}
 		
-		if (options.generateErrorTraceSpecFlag)
-		{
-			TLCGlobals.tool = true;
-			this.generateErrorTraceSpec = true;
-			if (options.noMonolithErrorTraceSpecFlag)
-			{
-				this.requireMonolithicErrorTraceSpec = false;
-			}
-		}
-		
 		options.livenessCheck.ifPresent(value -> {
 			TLCGlobals.lnCheck = value;
-		});
-		
-		options.configurationFilePath.ifPresent(value -> {
-			this.configFile = value;
-		});
-		
-		options.dumpFilePath.ifPresent(value -> {
-			this.dumpFile = value;
-			options.dumpFileOptions.ifPresent(dumpOptions ->
-			{
-				this.asDot = true;
-				this.colorize = dumpOptions.colorize;
-				this.actionLabels = dumpOptions.actionLabels;
-				this.snapshot = dumpOptions.snapshot;
-			});
 		});
 		
 		options.coverageIntervalInMinutes.ifPresent(value -> {
@@ -494,33 +553,12 @@ public class TLC {
 			TLCGlobals.chkptDuration = value * 60 * 1000;
 		});
 		
-		options.simulationTraceDepthLimit.ifPresent(value -> {
-			this.traceDepth = value;
-		});
-		
-		options.seed.ifPresent(value -> {
-			this.noSeed = false;
-			this.seed = value;
-		});
-		
-		options.aril.ifPresent(value -> {
-			this.aril = value;
-		});
-		
 		options.maxSetSize.ifPresent(value -> {
 			TLCGlobals.setBound = value;
 		});
 		
-		options.recoveryId.ifPresent(value -> {
-			this.fromChkpt = value;
-		});
-		
 		options.metadataDirectoryPath.ifPresent(value -> {
 			TLCGlobals.metaDir = value;
-		});
-		
-		options.userOutputFilePath.ifPresent(value -> {
-			this.userFile = value;
 		});
 		
 		options.tlcWorkerThreadOptions.ifPresent(either -> {
@@ -536,54 +574,10 @@ public class TLC {
 		options.dfidStartingDepth.ifPresent(value -> {
 			TLCGlobals.DFIDMax = value;
 		});
-		
-		options.fingerprintFunctionIndex.ifPresent(value -> {
-			this.fpIndex = value;
-		});
-		
-		options.fingerprintSetMemoryUsePercentage.ifPresent(value -> {
-			// -fpmem can be used in two ways:
-			// a) to set the relative memory to be used for fingerprints (being machine independent)
-			// b) to set the absolute memory to be used for fingerprints
-			//
-			// In order to set memory relatively, a value in the domain [0.0, 1.0] is interpreted as a fraction.
-			// A value in the [2, Double.MaxValue] domain allocates memory absolutely.
-			//
-			// Independently of relative or absolute mem allocation,
-			// a user cannot allocate more than JVM heap space
-			// available. Conversely there is the lower hard limit TLC#MinFpMemSize.
-			if (value > 1)
-			{
-				// For legacy reasons we allow users to set the
-				// absolute amount of memory. If this is the case,
-				// we know the user intends to allocate all 100% of
-				// the absolute memory to the fpset.
-				ToolIO.out.println(
-						"Using -fpmem with an abolute memory value has been deprecated. " +
-						"Please allocate memory for the TLC process via the JVM mechanisms " +
-						"and use -fpmem to set the fraction to be used for fingerprint storage.");
-				fpSetConfiguration.setMemory((long)value.doubleValue());
-				fpSetConfiguration.setRatio(1.0d);
-				
-			} else
-			{
-				fpSetConfiguration.setRatio(value);
-			}
-		});
-		
-		options.fingerprintBits.ifPresent(value -> {
-			this.fpSetConfiguration.setFpBits(value);
-		});
-		
-		options.mainSpecFilePath.ifPresent(value -> {
-			this.mainFile = value;
-		});
 	}
 	
-	public boolean OldParse(String[] args, boolean unitTestMode)
+	public boolean initialize(String[] args)
 	{
-		if (!unitTestMode) {
-
         startTime = System.currentTimeMillis();
 
 		if (mainFile == null) {
@@ -746,10 +740,7 @@ public class TLC {
 		// absolute, the parent gets used as TLC's meta directory (where it stores
 		// states...). Otherwise, no meta dir is set causing states etc. to be stored in
 		// the current directory.
-		if (!unitTestMode)
-		{
-			metadir = FileUtil.makeMetaDir(new Date(startTime), specDir, fromChkpt);
-		}
+		metadir = FileUtil.makeMetaDir(new Date(startTime), specDir, fromChkpt);
     	
 		if (dumpFile != null) {
 			if (dumpFile.startsWith("${metadir}")) {
@@ -786,8 +777,6 @@ public class TLC {
         // if no errors, print welcome message
         printWelcome();
 
-		} // end unitTestMode block
-        
         return true;
 	}
 
@@ -1290,6 +1279,10 @@ public class TLC {
 
     public String getDumpFile() {
     	return this.dumpFile;
+    }
+    
+    public boolean willGenerateErrorTraceSpec() {
+    	return this.generateErrorTraceSpec;
     }
     
     public boolean isDumpDotFile() {
