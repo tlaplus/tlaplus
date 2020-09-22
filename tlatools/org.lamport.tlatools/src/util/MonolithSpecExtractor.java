@@ -58,7 +58,7 @@ public class MonolithSpecExtractor {
 
 			String line = "";
 			while ((line = reader.readLine()) != null) {
-				if (!config.isEmpty() && line.matches("=====.*")) {
+				if (!config.isEmpty() && line.matches("====.*")) {
 					break;
 				}
 				if (config.isEmpty() && line.matches("-----*\\s*CONFIG\\s+" + configName + "\\s*-----*")) {
@@ -82,7 +82,7 @@ public class MonolithSpecExtractor {
 
 			String line = "";
 			while ((line = reader.readLine()) != null) {
-				if (active && line.matches("=====.*")) {
+				if (active && line.matches("====.*")) {
 					pw.println(line); // include end marker.
 					break;
 				}
