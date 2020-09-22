@@ -591,10 +591,15 @@ public class TLCTest {
 	@Test
 	public void testWorkerOptionSetsGlobalVariable()
 	{
-		final Integer expectedValue = 4;
+		Integer expectedValue = 4;
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
-		final String[] args = new String[] {"-workers", expectedValue.toString(), tlaFile};
+		String[] args = new String[] {"-workers", expectedValue.toString(), tlaFile};
+		assertTrue(tlc.handleParameters(args, true));
+		assertEquals(expectedValue.intValue(), TLCGlobals.getNumWorkers());
+		
+		expectedValue = 1;
+		args = new String[] {"-workers", expectedValue.toString(), tlaFile};
 		assertTrue(tlc.handleParameters(args, true));
 		assertEquals(expectedValue.intValue(), TLCGlobals.getNumWorkers());
 	}
@@ -608,6 +613,9 @@ public class TLCTest {
 		assertFalse(tlc.handleParameters(args, true));
 		
 		args = new String[] {"-workers", "0", tlaFile};
+		assertFalse(tlc.handleParameters(args, true));
+		
+		args = new String[] {"-workers", "-1", tlaFile};
 		assertFalse(tlc.handleParameters(args, true));
 		
 		args = new String[] {"-workers", "NotANumber", tlaFile};

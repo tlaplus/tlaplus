@@ -6,6 +6,7 @@ import tlc2.tool.fp.MultiFPSet;
 import tlc2.util.FP64;
 import util.FileUtil;
 import util.TLAConstants;
+import util.Either;
 
 /**
  * Parses command line options.
@@ -223,7 +224,8 @@ public class CommandLineOptions
 	/**
 	 * Options controlling number of TLC worker threads.
 	 */
-	public Optional<TlcWorkerThreadControls> tlcWorkerThreadOptions = Optional.empty();
+	public Optional<Either<AutomaticallySetTlcWorkerThreadCount, ManuallySetTlcWorkerThreadCount>> tlcWorkerThreadOptions =
+			Optional.empty();
 	
 	/**
 	 * Controls starting depth for depth-first iterative deepening.
@@ -555,10 +557,11 @@ public class CommandLineOptions
                     try
                     {
 						final String token = args[index];
-						options.tlcWorkerThreadOptions =
+						Either<AutomaticallySetTlcWorkerThreadCount, ManuallySetTlcWorkerThreadCount> workerOption =
 								token.trim().toLowerCase().equals("auto")
-								? Optional.of(TlcWorkerThreadControls.auto())
-								: Optional.of(TlcWorkerThreadControls.manual(Integer.parseInt(token)));
+								? Either.left(new AutomaticallySetTlcWorkerThreadCount())
+								: Either.right(new ManuallySetTlcWorkerThreadCount(Integer.parseInt(token)));
+						options.tlcWorkerThreadOptions = Optional.of(workerOption);
 						index++;
                     } catch (NumberFormatException e)
                     {
@@ -677,7 +680,7 @@ public class CommandLineOptions
 	 * @param options The options to validate.
 	 * @return Whether the options passed validation.
 	 */
-	public static ValidationResult validate(CommandLineOptions options)
+	public static Either<FailedValidationResult, SuccessfulValidationResult> validate(CommandLineOptions options)
 	{
 		try
 		{
@@ -736,6 +739,19 @@ public class CommandLineOptions
 									value));
 				}
 			});
+			
+			// Ensures at least one TLC worker thread was specified
+			options.tlcWorkerThreadOptions.ifPresent(either ->
+			{
+				either.ifPresent((auto) -> {}, (manual) ->
+				{
+					if (manual.workerThreadCount < 1)
+					{
+						throw new IllegalArgumentException(
+								"Error: require at least 1 TLC worker for -workers option");
+					}
+				});
+			});
 		
 			// Ensures fingerprint function index is within range
 			options.fingerprintFunctionIndex.ifPresent((value) ->
@@ -770,10 +786,12 @@ public class CommandLineOptions
 		}
 		catch (IllegalArgumentException e)
 		{
-			return ValidationResult.failure(e.getMessage());
+			FailedValidationResult result = new FailedValidationResult(e.getMessage());
+			return Either.left(result);
 		}
 		
-		return ValidationResult.success();
+		SuccessfulValidationResult result = new SuccessfulValidationResult();
+		return Either.right(result);
 	}
 	
 	/**
@@ -835,86 +853,40 @@ public class CommandLineOptions
 	}
 	
 	/**
-	 * Encapsulates settings related to TLC worker threads.
-	 * This should be broken up into different classes once pattern matching is main-lined.
+	 * Represents the option to automatically set number of TLC worker threads.
+	 * Should be rewritten as a record once that feature is main-lined.
 	 */
-	public static class TlcWorkerThreadControls
+	public static class AutomaticallySetTlcWorkerThreadCount { }
+	
+	/**
+	 * Represents the option to manually set number of TLC worker threads.
+	 */
+	public static class ManuallySetTlcWorkerThreadCount
 	{
-		/**
-		 * Set the number of threads to the number available on this machine.
-		 */
-		public boolean automatic;
+		public int workerThreadCount;
 		
-		/**
-		 * Number of threads to use, if explicitly specified.
-		 */
-		public Optional<Integer> threadCount;
-		
-		/**
-		 * Constructs an instance specifying automatic thread count setting.
-		 * @return A new TlcWorkerThreadControls instance.
-		 */
-		public static TlcWorkerThreadControls auto()
+		public ManuallySetTlcWorkerThreadCount(int workerThreadCount)
 		{
-			TlcWorkerThreadControls controls = new TlcWorkerThreadControls();
-			controls.automatic = true;
-			controls.threadCount = Optional.empty();
-			return controls;
-		}
-		
-		/**
-		 * Constructs an instance specifying manual thread count setting.
-		 * @param threadCount The number of threads to use.
-		 * @return A new TlcWorkerThreadControls instance.
-		 */
-		public static TlcWorkerThreadControls manual(int threadCount)
-		{
-			TlcWorkerThreadControls controls = new TlcWorkerThreadControls();
-			controls.automatic = false;
-			controls.threadCount = Optional.of(threadCount);
-			return controls;
+			this.workerThreadCount = workerThreadCount;
 		}
 	}
 	
 	/**
-	 * The result of validating the command line arguments.
-	 * This should be broken up into different classes once pattern matching is main-lined.
+	 * Represents a successful command line options validation result.
 	 */
-	public static class ValidationResult
+	public static class SuccessfulValidationResult { }
+	
+	/**
+	 * Represents a failed command line options validation result.
+	 * Should be rewritten as a record once that feature is main-lined.
+	 */
+	public static class FailedValidationResult
 	{
-		/**
-		 * Whether the validation succeeded.
-		 */
-		public boolean success;
+		public String errorMessage;
 		
-		/**
-		 * The error message, in case of validation failure.
-		 */
-		public Optional<String> errorMessage;
-		
-		/**
-		 * Creates a validation report in case of success.
-		 * @return A successful validation report.
-		 */
-		public static ValidationResult success()
+		public FailedValidationResult(String errorMessage)
 		{
-			ValidationResult result = new ValidationResult();
-			result.success = true;
-			result.errorMessage = Optional.empty();
-			return result;
-		}
-		
-		/**
-		 * Creates a validation report in case of failure.
-		 * @param errorMessage Message to attach to report.
-		 * @return A failed validation report.
-		 */
-		public static ValidationResult failure(String errorMessage)
-		{
-			ValidationResult result = new ValidationResult();
-			result.success = false;
-			result.errorMessage = Optional.of(errorMessage);
-			return result;
+			this.errorMessage = errorMessage;
 		}
 	}
 	

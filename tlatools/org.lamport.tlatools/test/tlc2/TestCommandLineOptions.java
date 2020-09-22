@@ -3,12 +3,15 @@ package tlc2;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 import tlc2.tool.fp.MultiFPSet;
 import tlc2.util.FP64;
 import util.FileUtil;
 import util.TLAConstants;
+import util.Either;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -1044,16 +1047,14 @@ public class TestCommandLineOptions
 		Integer inputValue = 12;
 		CommandLineOptions options = new CommandLineOptions();
 		options.coverageIntervalInMinutes = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
-		assertTrue(result.success);
-		assertTrue(result.errorMessage.isEmpty());
+		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
+				CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {fail();}, (success) -> {});
 		
 		inputValue = -1;
 		options.coverageIntervalInMinutes = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("coverage"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("coverage");}, (success) -> {fail();});
 	}
 	
 	@Test
@@ -1062,16 +1063,14 @@ public class TestCommandLineOptions
 		Integer inputValue = 12;
 		CommandLineOptions options = new CommandLineOptions();
 		options.checkpointIntervalInMinutes = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
-		assertTrue(result.success);
-		assertTrue(result.errorMessage.isEmpty());
+		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
+				CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {fail();}, (success) -> {});
 		
 		inputValue = -1;
 		options.checkpointIntervalInMinutes = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("checkpoint"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("checkpoint");}, (success) -> {fail();});
 	}
 	
 	@Test
@@ -1080,16 +1079,14 @@ public class TestCommandLineOptions
 		Integer inputValue = 12;
 		CommandLineOptions options = new CommandLineOptions();
 		options.dfidStartingDepth = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
-		assertTrue(result.success);
-		assertTrue(result.errorMessage.isEmpty());
+		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
+				CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {fail();}, (success) -> {});
 		
 		inputValue = -1;
 		options.dfidStartingDepth = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("dfid"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("dfid");}, (success) -> {fail();});
 	}
 	
 	@Test
@@ -1098,16 +1095,14 @@ public class TestCommandLineOptions
 		Double inputValue = 0.5;
 		CommandLineOptions options = new CommandLineOptions();
 		options.fingerprintSetMemoryUsePercentage = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
-		assertTrue(result.success);
-		assertTrue(result.errorMessage.isEmpty());
+		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
+				CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {fail();}, (success) -> {});
 		
 		inputValue = -0.5;
 		options.fingerprintSetMemoryUsePercentage = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("fpset"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("fpset");}, (success) -> {fail();});
 	}
 	
 	@Test
@@ -1116,16 +1111,33 @@ public class TestCommandLineOptions
 		Integer inputValue = 1;
 		CommandLineOptions options = new CommandLineOptions();
 		options.maxSetSize = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
-		assertTrue(result.success);
-		assertTrue(result.errorMessage.isEmpty());
+		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
+				CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {fail();}, (success) -> {});
 		
 		inputValue = 0;
 		options.maxSetSize = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("maxSetSize"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("maxSetSize");}, (success) -> {fail();});
+	}
+	
+	@Test
+	public void testWorkerValidation()
+	{
+		Integer inputValue = 1;
+		CommandLineOptions options = new CommandLineOptions();
+		CommandLineOptions.TlcWorkerThreadControls controls =
+				CommandLineOptions.TlcWorkerThreadControls.manual(inputValue);
+		options.tlcWorkerThreadOptions = Optional.of(controls);
+		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
+				CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {fail();}, (success) -> {});
+		
+		inputValue = 0;
+		controls = CommandLineOptions.TlcWorkerThreadControls.manual(inputValue);
+		options.tlcWorkerThreadOptions = Optional.of(controls);
+		result = CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {failure.errorMessage.contains("workers");}, (success) -> {fail();});
 	}
 	
 	@Test
@@ -1134,23 +1146,19 @@ public class TestCommandLineOptions
 		Integer inputValue = 0;
 		CommandLineOptions options = new CommandLineOptions();
 		options.fingerprintFunctionIndex = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
-		assertTrue(result.success);
-		assertTrue(result.errorMessage.isEmpty());
+		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
+				CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {fail();}, (success) -> {});
 		
 		inputValue = -1;
 		options.fingerprintFunctionIndex = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("fp"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("fp");}, (success) -> {fail();});
 
 		inputValue = FP64.Polys.length;
 		options.fingerprintFunctionIndex = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("fp"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("fp");}, (success) -> {fail();});
 	}
 	
 	@Test
@@ -1159,23 +1167,19 @@ public class TestCommandLineOptions
 		Integer inputValue = 0;
 		CommandLineOptions options = new CommandLineOptions();
 		options.fingerprintBits = Optional.of(inputValue);
-		CommandLineOptions.ValidationResult result = CommandLineOptions.validate(options);
-		assertTrue(result.success);
-		assertTrue(result.errorMessage.isEmpty());
+		Either<CommandLineOptions.FailedValidationResult, CommandLineOptions.SuccessfulValidationResult> result =
+				CommandLineOptions.validate(options);
+		result.ifPresent((failure) -> {fail();}, (success) -> {});
 		
 		inputValue = -1;
 		options.fingerprintBits = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("fpbits"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("fpbits");}, (success) -> {fail();});
 
 		inputValue = MultiFPSet.MAX_FPBITS + 1;
 		options.fingerprintBits = Optional.of(inputValue);
 		result = CommandLineOptions.validate(options);
-		assertFalse(result.success);
-		assertTrue(result.errorMessage.isPresent());
-		assertTrue(result.errorMessage.get().contains("fpbits"));
+		result.ifPresent((failure) -> {failure.errorMessage.contains("fpbits");}, (success) -> {fail();});
 	}
 	
 	/**

@@ -68,6 +68,7 @@ import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
 import util.UsageGenerator;
+import util.Either;
 
 /**
  * Main TLC starter class.
@@ -93,6 +94,9 @@ public class TLC {
     private RunMode runMode;
     private boolean cleanup;
     private boolean checkDeadlock;
+
+    private boolean generateErrorTraceSpec;
+    private boolean requireMonolithicErrorTraceSpec;
 
     private boolean noSeed;
     private long seed;
@@ -151,6 +155,8 @@ public class TLC {
         runMode = RunMode.MODEL_CHECK;
         cleanup = false;
         checkDeadlock = true;
+        this.generateErrorTraceSpec = false;
+        this.requireMonolithicErrorTraceSpec = false;
         
         noSeed = true;
         seed = 0;
@@ -367,18 +373,27 @@ public class TLC {
 		
 		// Validate command line options
 		CommandLineOptions options = parseResult.options.get();
-		CommandLineOptions.ValidationResult validationResult = CommandLineOptions.validate(options);
-
-		if (!validationResult.success)
-		{
-			this.printErrorMsg(validationResult.errorMessage.get());
-			return false;
-		}
-		
-		// Transform command line options
-		CommandLineOptions.transform(options);
-		
-		// Apply command line options
+		Either<CommandLineOptions.FailedValidationResult,
+				CommandLineOptions.SuccessfulValidationResult> validationResult =
+					CommandLineOptions.validate(options);
+		return validationResult.map(
+				(failure) -> {
+					this.printErrorMsg(failure.errorMessage);
+					return false;
+				},
+				(success) -> {
+					CommandLineOptions.transform(options);
+					this.setVariables(options);
+					return true;
+				});
+    }
+	
+	/**
+	 * Applies the command line options to various variables.
+	 * @param options The parsed command line options.
+	 */
+	public void setVariables(CommandLineOptions options)
+	{
 		if (options.simulationModeFlag)
 		{
 			this.runMode = RunMode.SIMULATE;
@@ -443,6 +458,11 @@ public class TLC {
 		if (options.generateErrorTraceSpecFlag)
 		{
 			TLCGlobals.tool = true;
+			this.generateErrorTraceSpec = true;
+			if (options.noMonolithErrorTraceSpecFlag)
+			{
+				this.requireMonolithicErrorTraceSpec = false;
+			}
 		}
 		
 		options.livenessCheck.ifPresent(value -> {
@@ -479,6 +499,7 @@ public class TLC {
 		});
 		
 		options.seed.ifPresent(value -> {
+			this.noSeed = false;
 			this.seed = value;
 		});
 		
@@ -502,11 +523,14 @@ public class TLC {
 			this.userFile = value;
 		});
 		
-		options.tlcWorkerThreadOptions.ifPresent(workerOptions -> {
-			int workerCount = workerOptions.automatic
-					? Runtime.getRuntime().availableProcessors()
-					: workerOptions.threadCount.get();
-			TLCGlobals.setNumWorkers(workerCount);
+		options.tlcWorkerThreadOptions.ifPresent(either -> {
+			either.ifPresent(auto -> {
+				// TODO: validate this call result
+				int workerCount = Runtime.getRuntime().availableProcessors();
+				TLCGlobals.setNumWorkers(workerCount);
+			}, manual -> {
+				TLCGlobals.setNumWorkers(manual.workerThreadCount);
+			});
 		});
 		
 		options.dfidStartingDepth.ifPresent(value -> {
@@ -517,104 +541,47 @@ public class TLC {
 			this.fpIndex = value;
 		});
 		
-        // SZ Feb 20, 2009: extracted this method to separate the 
-        // parameter handling from the actual processing
-        int index = 0;
-		while (index < args.length)
-        {
-            if (args[index].equals("-fpmem"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	// -fpmem can be used in two ways:
-                    	// a) to set the relative memory to be used for fingerprints (being machine independent)
-                    	// b) to set the absolute memory to be used for fingerprints
-                    	//
-                    	// In order to set memory relatively, a value in the domain [0.0, 1.0] is interpreted as a fraction.
-                    	// A value in the [2, Double.MaxValue] domain allocates memory absolutely.
-                    	//
-						// Independently of relative or absolute mem allocation,
-						// a user cannot allocate more than JVM heap space
-						// available. Conversely there is the lower hard limit TLC#MinFpMemSize.
-                        double fpMemSize = Double.parseDouble(args[index]);
-                        if (fpMemSize < 0) {
-                            printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
-                            return false;
-                        } else if (fpMemSize > 1) {
-							// For legacy reasons we allow users to set the
-							// absolute amount of memory. If this is the case,
-							// we know the user intends to allocate all 100% of
-							// the absolute memory to the fpset.
-                    		ToolIO.out
-            				.println("Using -fpmem with an abolute memory value has been deprecated. " +
-            						"Please allocate memory for the TLC process via the JVM mechanisms " +
-            						"and use -fpmem to set the fraction to be used for fingerprint storage.");
-                        	fpSetConfiguration.setMemory((long) fpMemSize);
-                        	fpSetConfiguration.setRatio(1.0d);
-                        } else {
-                    		fpSetConfiguration.setRatio(fpMemSize);
-                        }
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: An positive integer or a fraction for fpset memory size/percentage required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: fpset memory size required.");
-                    return false;
-                }
-            } else if (args[index].equals("-fpbits"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	int fpBits = Integer.parseInt(args[index]);
-
-                    	// make sure it's in valid range
-                    	if (!FPSet.isValid(fpBits)) {
-                    		printErrorMsg("Error: Value in interval [0, 30] for fpbits required. But encountered " + args[index]);
-                    		return false;
-                    	}
-                    	fpSetConfiguration.setFpBits(fpBits);
-                    	
-                        index++;
-                    } catch (Exception e)
-                    {
-                        printErrorMsg("Error: An integer for fpbits required. But encountered " + args[index]);
-                        return false;
-                    }
-                } else
-                {
-                    printErrorMsg("Error: fpbits required.");
-                    return false;
-                }
-            } else
-            {
-                if (args[index].charAt(0) == '-')
-                {
-                    printErrorMsg("Error: unrecognized option: " + args[index]);
-                    return false;
-                }
-                if (mainFile != null)
-                {
-                    printErrorMsg("Error: more than one input files: " + mainFile + " and " + args[index]);
-                    return false;
-                }
-                mainFile = args[index++];
-                if (mainFile.endsWith(TLAConstants.Files.TLA_EXTENSION))
-                {
-                    mainFile = mainFile.substring(0, (mainFile.length() - TLAConstants.Files.TLA_EXTENSION.length()));
-                }
-            }
-        }
+		options.fingerprintSetMemoryUsePercentage.ifPresent(value -> {
+			// -fpmem can be used in two ways:
+			// a) to set the relative memory to be used for fingerprints (being machine independent)
+			// b) to set the absolute memory to be used for fingerprints
+			//
+			// In order to set memory relatively, a value in the domain [0.0, 1.0] is interpreted as a fraction.
+			// A value in the [2, Double.MaxValue] domain allocates memory absolutely.
+			//
+			// Independently of relative or absolute mem allocation,
+			// a user cannot allocate more than JVM heap space
+			// available. Conversely there is the lower hard limit TLC#MinFpMemSize.
+			if (value > 1)
+			{
+				// For legacy reasons we allow users to set the
+				// absolute amount of memory. If this is the case,
+				// we know the user intends to allocate all 100% of
+				// the absolute memory to the fpset.
+				ToolIO.out.println(
+						"Using -fpmem with an abolute memory value has been deprecated. " +
+						"Please allocate memory for the TLC process via the JVM mechanisms " +
+						"and use -fpmem to set the fraction to be used for fingerprint storage.");
+				fpSetConfiguration.setMemory((long)value.doubleValue());
+				fpSetConfiguration.setRatio(1.0d);
+				
+			} else
+			{
+				fpSetConfiguration.setRatio(value);
+			}
+		});
 		
+		options.fingerprintBits.ifPresent(value -> {
+			this.fpSetConfiguration.setFpBits(value);
+		});
+		
+		options.mainSpecFilePath.ifPresent(value -> {
+			this.mainFile = value;
+		});
+	}
+	
+	public boolean OldParse(String[] args, boolean unitTestMode)
+	{
 		if (!unitTestMode) {
 
         startTime = System.currentTimeMillis();
@@ -667,7 +634,7 @@ public class TLC {
 			}
 		}
 
-		if (options.generateErrorTraceSpecFlag & waitingOnGenerationCompletion.getRegisteredParties() <= 1)
+		if (this.generateErrorTraceSpec & waitingOnGenerationCompletion.getRegisteredParties() <= 1)
 		{
 			// Don't start the shebang below twice, if a user accidentally passed
 			// '-generateSpecTE' twice.
@@ -723,7 +690,7 @@ public class TLC {
 							// This rewrites SpecTE.tla in an attempt to create a monolith spec.
 							// See https://github.com/tlaplus/tlaplus/issues/479 and
 							// https://github.com/tlaplus/tlaplus/issues/479 why this is broken.
-							if (!options.noMonolithErrorTraceSpecFlag) {
+							if (this.requireMonolithicErrorTraceSpec) {
 								final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
 								final TLAMonolithCreator monolithCreator
 									= new TLAMonolithCreator(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
