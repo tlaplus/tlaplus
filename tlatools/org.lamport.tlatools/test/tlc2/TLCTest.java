@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -345,32 +346,33 @@ public class TLCTest {
 			final TLC tlc = new TLC();
 			assertTrue(tlc.handleParameters(args));
 			assertEquals(expectedFileValue, tlc.getDumpFile());
+			DumpFileOptions actual = tlc.getDumpFileOptions();
 
 			if (flagList.contains("colorize"))
 			{
-				assertTrue(tlc.isDumpColorized());
+				assertTrue(actual.colorize);
 			}
 			else
 			{
-				assertFalse(tlc.isDumpColorized());
+				assertFalse(actual.colorize);
 			}
 			
 			if (flagList.contains("actionlabels"))
 			{
-				assertTrue(tlc.doesDumpHaveActionLabels());
+				assertTrue(actual.actionLabels);
 			}
 			else
 			{
-				assertFalse(tlc.doesDumpHaveActionLabels());
+				assertFalse(actual.actionLabels);
 			}
 			
 			if (flagList.contains("snapshot"))
 			{
-				assertTrue(tlc.doesDumpIncludeSnapshots());
+				assertTrue(actual.snapshot);
 			}
 			else
 			{
-				assertFalse(tlc.doesDumpIncludeSnapshots());
+				assertFalse(actual.snapshot);
 			}
 		}
 	}
@@ -606,10 +608,31 @@ public class TLCTest {
 	}
 	
 	@Test
-	public void testInvalidWorkerOptions()
+	public void testWorkerAutoOptionSetsGlobalVariable()
 	{
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
-		TLC tlc = new TLC();
+
+		final Integer expectedValue = 128;
+		Supplier<Integer> hostProcessorCount = () -> expectedValue;
+		TLC tlc = new TLC(hostProcessorCount);
+		String[] args = new String[] {"-workers", "auto", tlaFile};
+		assertTrue(tlc.handleParameters(args));
+		assertEquals(expectedValue.intValue(), TLCGlobals.getNumWorkers());
+		
+		final Integer edgeCaseValue = 1;
+		hostProcessorCount = () -> edgeCaseValue;
+		tlc = new TLC(hostProcessorCount);
+		args = new String[] {"-workers", "auto", tlaFile};
+		assertTrue(tlc.handleParameters(args));
+		assertEquals(edgeCaseValue.intValue(), TLCGlobals.getNumWorkers());
+	}
+	
+	@Test
+	public void testInvalidWorkerOptions()
+	{
+		final Supplier<Integer> hostProcessorCount = () -> 0;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		final TLC tlc = new TLC(hostProcessorCount);
 		String[] args = new String[] {tlaFile, "-workers"};
 		assertFalse(tlc.handleParameters(args));
 		
@@ -620,6 +643,9 @@ public class TLCTest {
 		assertFalse(tlc.handleParameters(args));
 		
 		args = new String[] {"-workers", "NotANumber", tlaFile};
+		assertFalse(tlc.handleParameters(args));
+
+		args = new String[] {"-workers", "auto", tlaFile};
 		assertFalse(tlc.handleParameters(args));
 	}
 

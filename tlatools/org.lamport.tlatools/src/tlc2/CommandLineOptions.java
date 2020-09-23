@@ -1,19 +1,26 @@
 package tlc2;
 
+import java.text.ParseException;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import tlc2.tool.fp.MultiFPSet;
 import tlc2.util.FP64;
 import util.FileUtil;
 import util.TLAConstants;
 import util.Either;
+import util.OneOf;
 
 /**
  * Parses command line options.
  * 
  * Instructions for adding a new command line option:
  *  1. Add a field to this class representing your option
- *  	- Use boolean for flags and Optional for parameters
+ *  	- Use boolean for flags
+ *  	- Use Optional<T> for parameters with a single value type
+ *  	- Use Optional<Either<L,R>> for parameters with two possible value types
+ *  	- Use Optional<OneOf<T1,T2,T3>> for parameters with three possible value types
+ *  	- Write your own OneOf implementation if you need more possible value types
  *  2. Add parsing logic to the parse method
  *  3. Add validation logic to the validate method (if required)
  *  4. Add transformation logic to the transform method (if required)
@@ -147,7 +154,7 @@ public class CommandLineOptions
 	public boolean useToolOutputFormatFlag = false;
 	
 	/**
-	 * Whether to generate a spec to re-execute any encountered error trace.
+	 * Whether to generate a specification to re-execute any encountered error trace.
 	 */
 	public boolean generateErrorTraceSpecFlag = false;
 	
@@ -157,7 +164,7 @@ public class CommandLineOptions
 	public boolean noMonolithErrorTraceSpecFlag = false;
 	
 	/**
-	 * TODO: find out what this does.
+	 * Whether to perform liveness checking.
 	 */
 	public Optional<String> livenessCheck = Optional.empty();
 	
@@ -174,7 +181,7 @@ public class CommandLineOptions
 	/**
 	 * Options controlling how states are dumped to file.
 	 */
-	public Optional<DumpFileControls> dumpFileOptions = Optional.empty();
+	public Optional<DumpFileOptions> dumpFileOptions = Optional.empty();
 	
 	/**
 	 * Number of minutes between collection of coverage information.
@@ -255,432 +262,465 @@ public class CommandLineOptions
 	/**
 	 * Attempts to parse the command line arguments.
 	 * @param args The command line arguments.
-	 * @return Either the parsed options or a failure message.
+	 * @return Either the parsed options, a print help request, or a failure message.
 	 */
-	public static ParseResult parse(String[] args)
+	public static OneOf<FailedParseResult, HelpRequestParseResult, SuccessfulParseResult> parse(String[] args)
 	{
 		CommandLineOptions options = new CommandLineOptions();
-		int index = 0;
-		while (index < args.length)
+		try
 		{
-			if (args[index].equals("-simulate"))
+			int index = 0;
+			while (index < args.length)
 			{
-				index++;
-				options.simulationModeFlag = true;
-				
-				// Simulation args can be:
-				// file=/path/to/file,num=4711 or num=4711,file=/path/to/file or num=4711 or
-				// file=/path/to/file
-				// "file=..." and "num=..." are only relevant for simulation which is why they
-				// are args to "-simulate".
-				if (((index + 1) < args.length) && (args[index].contains("file=") || args[index].contains("num="))) {
-					final String[] simArgs = args[index].split(",");
-					index++; // consume simulate args
-					for (String arg : simArgs) {
-						if (arg.startsWith("num=")) {
-							options.simulationBehaviorCountLimit =
-									Optional.of(Long.parseLong(arg.replace("num=", "")));
-						} else if (arg.startsWith("file=")) {
-							options.simulationTraceFile =
-									Optional.of(arg.replace("file=", ""));
+				if (args[index].equals("-simulate"))
+				{
+					index++;
+					options.simulationModeFlag = true;
+					
+					// Simulation args can be:
+					// file=/path/to/file,num=4711 or num=4711,file=/path/to/file or num=4711 or
+					// file=/path/to/file
+					// "file=..." and "num=..." are only relevant for simulation which is why they
+					// are args to "-simulate".
+					if (((index + 1) < args.length) && (args[index].contains("file=") || args[index].contains("num="))) {
+						final String[] simArgs = args[index].split(",");
+						index++; // consume simulate args
+						for (String arg : simArgs) {
+							if (arg.startsWith("num=")) {
+								options.simulationBehaviorCountLimit =
+										Optional.of(Long.parseLong(arg.replace("num=", "")));
+							} else if (arg.startsWith("file=")) {
+								options.simulationTraceFile =
+										Optional.of(arg.replace("file=", ""));
+							}
 						}
 					}
-				}
-			} else if (args[index].equals("-modelcheck"))
-			{
-				index++;
-				options.modelCheckFlag = true;
-			} else if (args[index].equals("-difftrace"))
-			{
-				index++;
-				options.onlyPrintStateTraceDiffsFlag = true;
-			} else if (args[index].equals("-deadlock"))
-			{
-				index++;
-				// Confusingly the -deadlock flag specifies *not* checking for deadlock.
-				options.doNotCheckDeadlockFlag = true;
-			} else if (args[index].equals("-cleanup"))
-			{
-				index++;
-				options.cleanStatesDirectoryFlag = true;
-			} else if (args[index].equals("-nowarning"))
-			{
-				index++;
-				options.doNotPrintWarningsFlag = true;
-			} else if (args[index].equals("-gzip"))
-			{
-				index++;
-				options.useGZipFlag = true;
-			} else if (args[index].equals("-terse"))
-			{
-				index++;
-				options.terseOutputFlag = true;
-			} else if (args[index].equals("-continue"))
-			{
-				index++;
-				options.continueAfterInvariantViolationFlag = true;
-			} else if (args[index].equals("-view"))
-			{
-				index++;
-				options.useViewFlag = true;
-			} else if (args[index].equals("-debug"))
-			{
-				index++;
-				options.debugFlag = true;
-			} else if (args[index].equals("-tool"))
-			{
-				index++;
-				options.useToolOutputFormatFlag = true;
-			} else if (args[index].equals("-generateSpecTE"))
-			{
-				index++;
-				options.generateErrorTraceSpecFlag = true;
-				
-				if ((index < args.length) && args[index].equals("nomonolith")) {
+				} else if (args[index].equals("-modelcheck"))
+				{
 					index++;
-					options.noMonolithErrorTraceSpecFlag = true;
-				}
-
-			} else if (args[index].equals("-help") || args[index].equals("-h"))
-			{
-				index++;
-				// Immediately halt parsing and return if help flag detected
-				return ParseResult.helpRequest();
-			} else if (args[index].equals("-lncheck"))
-			{
-				index++;
-				if (index < args.length)
+					options.modelCheckFlag = true;
+				} else if (args[index].equals("-difftrace"))
 				{
-					options.livenessCheck = Optional.of(args[index]);
 					index++;
-				} else
+					options.onlyPrintStateTraceDiffsFlag = true;
+				} else if (args[index].equals("-deadlock"))
 				{
-					return ParseResult.failure(
-							"Error: expect a strategy such as final for -lncheck option.");
-				}
-			} else if (args[index].equals("-config"))
-			{
-				index++;
-				if (index < args.length)
-				{
-					options.configurationFilePath = Optional.of(args[index]);
 					index++;
-				} else
+					// Confusingly the -deadlock flag specifies *not* checking for deadlock.
+					options.doNotCheckDeadlockFlag = true;
+				} else if (args[index].equals("-cleanup"))
 				{
-					return ParseResult.failure(
-							"Error: expect a file name for -config option.");
-				}
-			} else if (args[index].equals("-dump"))
-			{
-				index++; // consume "-dump".
-				if (((index + 1) < args.length) && args[index].startsWith("dot"))
-				{
-					final String dotArgs = args[index].toLowerCase();
-					index++; // consume "dot...".
-
-					DumpFileControls controls = new DumpFileControls(
-							dotArgs.contains("colorize"),
-							dotArgs.contains("actionlabels"),
-							dotArgs.contains("snapshot"));
-					options.dumpFileOptions = Optional.of(controls);
-
-					options.dumpFilePath = Optional.of(args[index]);
 					index++;
-				} else if (index < args.length)
+					options.cleanStatesDirectoryFlag = true;
+				} else if (args[index].equals("-nowarning"))
 				{
-					options.dumpFilePath = Optional.of(args[index]);
 					index++;
-				} else
+					options.doNotPrintWarningsFlag = true;
+				} else if (args[index].equals("-gzip"))
 				{
-					return ParseResult.failure(
-							"Error: A file name for dumping states required.");
-				}
-			} else if (args[index].equals("-coverage"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	final int interval = Integer.parseInt(args[index]);
-                    	options.coverageIntervalInMinutes = Optional.of(interval);
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: An integer for coverage report interval required; encountered: " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: coverage report interval required.");
-                }
-            } else if (args[index].equals("-checkpoint"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	final int interval = Integer.parseInt(args[index]);
-                    	options.checkpointIntervalInMinutes = Optional.of(interval);
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: An integer for checkpoint interval is required; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: checkpoint interval required.");
-                }
-            } else if (args[index].equals("-depth"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	final int traceDepth = Integer.parseInt(args[index]);
-                    	options.simulationTraceDepthLimit = Optional.of(traceDepth);
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: An integer for trace depth required; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: trace depth required.");
-                }
-            } else if (args[index].equals("-seed"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	final Long seed = Long.parseLong(args[index]);
-                        options.seed = Optional.of(seed);
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: An integer for seed required; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: seed required.");
-                }
-            } else if (args[index].equals("-aril"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	final Long aril = Long.parseLong(args[index]);
-                        options.aril = Optional.of(aril);
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: An integer for aril required; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: aril required.");
-                }
-            } else if (args[index].equals("-maxSetSize"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        final int bound = Integer.parseInt(args[index]);
-                        options.maxSetSize = Optional.of(bound);
-                    	index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure("Error: An integer for maxSetSize required; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure("Error: maxSetSize required.");
-                }
-            } else if (args[index].equals("-recover"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    options.recoveryId = Optional.of(args[index]);
-                    index++;
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: need to specify the metadata directory for recovery.");
-                }
-            } else if (args[index].equals("-metadir"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    options.metadataDirectoryPath = Optional.of(args[index]);
-                    index++;
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: need to specify the metadata directory (metadir).");
-                }
-            } else if (args[index].equals("-userFile"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                	options.userOutputFilePath = Optional.of(args[index]);
-                	index++;
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: need to specify the full qualified userFile.");
-                }
-            } else if (args[index].equals("-workers"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-						final String token = args[index];
-						Either<AutomaticallySetTlcWorkerThreadCount, ManuallySetTlcWorkerThreadCount> workerOption =
-								token.trim().toLowerCase().equals("auto")
-								? Either.left(new AutomaticallySetTlcWorkerThreadCount())
-								: Either.right(new ManuallySetTlcWorkerThreadCount(Integer.parseInt(token)));
-						options.tlcWorkerThreadOptions = Optional.of(workerOption);
+					index++;
+					options.useGZipFlag = true;
+				} else if (args[index].equals("-terse"))
+				{
+					index++;
+					options.terseOutputFlag = true;
+				} else if (args[index].equals("-continue"))
+				{
+					index++;
+					options.continueAfterInvariantViolationFlag = true;
+				} else if (args[index].equals("-view"))
+				{
+					index++;
+					options.useViewFlag = true;
+				} else if (args[index].equals("-debug"))
+				{
+					index++;
+					options.debugFlag = true;
+				} else if (args[index].equals("-tool"))
+				{
+					index++;
+					options.useToolOutputFormatFlag = true;
+				} else if (args[index].equals("-generateSpecTE"))
+				{
+					index++;
+					options.generateErrorTraceSpecFlag = true;
+					
+					if ((index < args.length) && args[index].equals("nomonolith")) {
 						index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: number of workers or 'auto' required; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: expect an integer or 'auto' for -workers option.");
-                }
-            } else if (args[index].equals("-dfid"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	final int value = Integer.parseInt(args[index]);
-                    	options.dfidStartingDepth = Optional.of(value);
-                    	index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: expect a nonnegative integer for -dfid option; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: expect a nonnegative integer for -dfid option.");
-                }
-            } else if (args[index].equals("-fp"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	final int value = Integer.parseInt(args[index]);
-                    	options.fingerprintFunctionIndex = Optional.of(value);
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: A number for -fp is required; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure("Error: expect an integer for -fp option.");
-                }
-            } else if (args[index].equals("-fpmem"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                        final double value = Double.parseDouble(args[index]);
-                        options.fingerprintSetMemoryUsePercentage = Optional.of(value);
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: An positive integer or a fraction for fpset memory size/percentage required (-fpmem); encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: fpset memory size required for -fpmem.");
-                }
-            } else if (args[index].equals("-fpbits"))
-            {
-                index++;
-                if (index < args.length)
-                {
-                    try
-                    {
-                    	final int value = Integer.parseInt(args[index]);
-                    	options.fingerprintBits = Optional.of(value);
-                        index++;
-                    } catch (NumberFormatException e)
-                    {
-                        return ParseResult.failure(
-                        		"Error: An integer for fpbits required; encountered " + args[index]);
-                    }
-                } else
-                {
-                    return ParseResult.failure(
-                    		"Error: fpbits required.");
-                }
-            } else
-            {
-            	if (args[index].charAt(0) == '-')
-                {
-                    return ParseResult.failure(
-                    		"Error: unrecognized option: " + args[index]);
-                }
+						options.noMonolithErrorTraceSpecFlag = true;
+					}
 
-                if (options.mainSpecFilePath.isPresent())
-                {
-                	final String value = options.mainSpecFilePath.get();
-                    return ParseResult.failure(
-                    		"Error: more than one input files: " + value + " and " + args[index]);
-                }
+				} else if (args[index].equals("-help") || args[index].equals("-h"))
+				{
+					index++;
+					// Immediately halt parsing and return if help flag detected
+					HelpRequestParseResult result = new HelpRequestParseResult();
+					return OneOf.second(result);
+				} else if (args[index].equals("-lncheck"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						options.livenessCheck = Optional.of(args[index]);
+						index++;
+					} else
+					{
+						throw new ParseException(
+								"Error: expect a strategy such as final for -lncheck option.",
+								index);
+					}
+				} else if (args[index].equals("-config"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						options.configurationFilePath = Optional.of(args[index]);
+						index++;
+					} else
+					{
+						throw new ParseException(
+								"Error: expect a file name for -config option.",
+								index);
+					}
+				} else if (args[index].equals("-dump"))
+				{
+					index++; // consume "-dump".
+					if (((index + 1) < args.length) && args[index].startsWith("dot"))
+					{
+						final String dotArgs = args[index].toLowerCase();
+						index++; // consume "dot...".
 
-                options.mainSpecFilePath = Optional.of(args[index]);
-                index++;
-            }
+						DumpFileOptions controls = new DumpFileOptions(
+								dotArgs.contains("colorize"),
+								dotArgs.contains("actionlabels"),
+								dotArgs.contains("snapshot"));
+						options.dumpFileOptions = Optional.of(controls);
+
+						options.dumpFilePath = Optional.of(args[index]);
+						index++;
+					} else if (index < args.length)
+					{
+						options.dumpFilePath = Optional.of(args[index]);
+						index++;
+					} else
+					{
+						throw new ParseException(
+								"Error: A file name for dumping states required.",
+								index);
+					}
+				} else if (args[index].equals("-coverage"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final int interval = Integer.parseInt(args[index]);
+							options.coverageIntervalInMinutes = Optional.of(interval);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: An integer for coverage report interval required; encountered: " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException(
+								"Error: coverage report interval required.",
+								index);
+					}
+				} else if (args[index].equals("-checkpoint"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final int interval = Integer.parseInt(args[index]);
+							options.checkpointIntervalInMinutes = Optional.of(interval);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: An integer for checkpoint interval is required; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException(
+								"Error: checkpoint interval required.",
+								index);
+					}
+				} else if (args[index].equals("-depth"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final int traceDepth = Integer.parseInt(args[index]);
+							options.simulationTraceDepthLimit = Optional.of(traceDepth);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: An integer for trace depth required; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException(
+								"Error: trace depth required.",
+								index);
+					}
+				} else if (args[index].equals("-seed"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final Long seed = Long.parseLong(args[index]);
+							options.seed = Optional.of(seed);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: An integer for seed required; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException("Error: seed required.", index);
+					}
+				} else if (args[index].equals("-aril"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final Long aril = Long.parseLong(args[index]);
+							options.aril = Optional.of(aril);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: An integer for aril required; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException("Error: aril required.", index);
+					}
+				} else if (args[index].equals("-maxSetSize"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final int bound = Integer.parseInt(args[index]);
+							options.maxSetSize = Optional.of(bound);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: An integer for maxSetSize required; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException("Error: maxSetSize required.", index);
+					}
+				} else if (args[index].equals("-recover"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						options.recoveryId = Optional.of(args[index]);
+						index++;
+					} else
+					{
+						throw new ParseException(
+								"Error: need to specify the metadata directory for recovery.",
+								index);
+					}
+				} else if (args[index].equals("-metadir"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						options.metadataDirectoryPath = Optional.of(args[index]);
+						index++;
+					} else
+					{
+						throw new ParseException(
+								"Error: need to specify the metadata directory (metadir).",
+								index);
+					}
+				} else if (args[index].equals("-userFile"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						options.userOutputFilePath = Optional.of(args[index]);
+						index++;
+					} else
+					{
+						throw new ParseException(
+								"Error: need to specify the full qualified userFile.",
+								index);
+					}
+				} else if (args[index].equals("-workers"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final String token = args[index];
+							Either<AutomaticallySetTlcWorkerThreadCount, ManuallySetTlcWorkerThreadCount> workerOption =
+									token.trim().toLowerCase().equals("auto")
+									? Either.left(new AutomaticallySetTlcWorkerThreadCount())
+									: Either.right(new ManuallySetTlcWorkerThreadCount(Integer.parseInt(token)));
+							options.tlcWorkerThreadOptions = Optional.of(workerOption);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: number of workers or 'auto' required; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException(
+								"Error: expect an integer or 'auto' for -workers option.",
+								index);
+					}
+				} else if (args[index].equals("-dfid"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final int value = Integer.parseInt(args[index]);
+							options.dfidStartingDepth = Optional.of(value);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: expect a nonnegative integer for -dfid option; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException(
+								"Error: expect a nonnegative integer for -dfid option.",
+								index);
+					}
+				} else if (args[index].equals("-fp"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final int value = Integer.parseInt(args[index]);
+							options.fingerprintFunctionIndex = Optional.of(value);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: A number for -fp is required; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException("Error: expect an integer for -fp option.", index);
+					}
+				} else if (args[index].equals("-fpmem"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final double value = Double.parseDouble(args[index]);
+							options.fingerprintSetMemoryUsePercentage = Optional.of(value);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: An positive integer or a fraction for fpset memory size/percentage required (-fpmem); encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException(
+								"Error: fpset memory size required for -fpmem.",
+								index);
+					}
+				} else if (args[index].equals("-fpbits"))
+				{
+					index++;
+					if (index < args.length)
+					{
+						try
+						{
+							final int value = Integer.parseInt(args[index]);
+							options.fingerprintBits = Optional.of(value);
+							index++;
+						} catch (NumberFormatException e)
+						{
+							throw new ParseException(
+									"Error: An integer for fpbits required; encountered " + args[index],
+									index);
+						}
+					} else
+					{
+						throw new ParseException("Error: fpbits required.", index);
+					}
+				} else
+				{
+					if (args[index].charAt(0) == '-')
+					{
+						throw new ParseException("Error: unrecognized option: " + args[index], index);
+					}
+
+					if (options.mainSpecFilePath.isPresent())
+					{
+						final String value = options.mainSpecFilePath.get();
+						throw new ParseException(
+								"Error: more than one input files: " + value + " and " + args[index],
+								index);
+					}
+
+					options.mainSpecFilePath = Optional.of(args[index]);
+					index++;
+				}
+			}
+		} catch (ParseException e)
+		{
+			FailedParseResult result = new FailedParseResult(e.getMessage(), e.getErrorOffset());
+			return OneOf.first(result);
 		}
 		
-		return ParseResult.success(options);
+		SuccessfulParseResult result = new SuccessfulParseResult(options);
+		return OneOf.third(result);
 	}
 	
 	/**
 	 * Validates provided options are within acceptable hard-coded bounds.
 	 * @param options The options to validate.
+	 * @param hostProcessorCount A method returning the number of processors on the host system
 	 * @return Whether the options passed validation.
 	 */
-	public static Either<FailedValidationResult, SuccessfulValidationResult> validate(CommandLineOptions options)
+	public static Either<FailedValidationResult, SuccessfulValidationResult> validate(
+			CommandLineOptions options,
+			Supplier<Integer> hostProcessorCount)
 	{
 		try
 		{
@@ -743,14 +783,26 @@ public class CommandLineOptions
 			// Ensures at least one TLC worker thread was specified
 			options.tlcWorkerThreadOptions.ifPresent(either ->
 			{
-				either.ifPresent((auto) -> {}, (manual) ->
-				{
-					if (manual.workerThreadCount < 1)
+				either.ifPresent(
+					(auto) ->
 					{
-						throw new IllegalArgumentException(
-								"Error: require at least 1 TLC worker for -workers option");
-					}
-				});
+						final int workerCount = hostProcessorCount.get();
+						if (workerCount < 1)
+						{
+							throw new IllegalArgumentException(
+									String.format(
+											"Error: auto-detection of host processor count for TLC workers returned [{0}]; require at least 1",
+											workerCount));
+						}
+					},
+					(manual) ->
+					{
+						if (manual.workerThreadCount < 1)
+						{
+							throw new IllegalArgumentException(
+									"Error: require at least 1 TLC worker for -workers option");
+						}
+					});
 			});
 		
 			// Ensures fingerprint function index is within range
@@ -798,58 +850,38 @@ public class CommandLineOptions
 	 * Performs transformations on the given options.
 	 * @param options The options on which to perform transformations.
 	 */
-	public static void transform(CommandLineOptions options)
+	public void transform()
 	{
 		// Convert liveness check parameter to lower case
-		options.livenessCheck = options.livenessCheck.map((String val) -> val.toLowerCase());
+		this.livenessCheck = this.livenessCheck.map((String val) -> val.toLowerCase());
 		
 		// Trim file extension from configuration file path
-		options.configurationFilePath = options.configurationFilePath.map(
+		this.configurationFilePath = this.configurationFilePath.map(
 				(String path) -> path.endsWith(TLAConstants.Files.CONFIG_EXTENSION)
 					? path.substring(0, (path.length() - TLAConstants.Files.CONFIG_EXTENSION.length()))
 					: path
 		);
 		
 		// Append .dump or .dot to dump file name
-		options.dumpFilePath = options.dumpFileOptions.isPresent()
-				?  options.dumpFilePath.map(
+		this.dumpFilePath = this.dumpFileOptions.isPresent()
+				?  this.dumpFilePath.map(
 						(String path) -> path.endsWith(".dot") ? path : path + ".dot")
-				:  options.dumpFilePath.map(
+				:  this.dumpFilePath.map(
 						(String path) -> path.endsWith(".dump") ? path : path + ".dump");
 
 		// Appends system-dependent separator to recovery option
-		options.recoveryId = options.recoveryId.map((String path) -> path + FileUtil.separator);
+		this.recoveryId = this.recoveryId.map((String path) -> path + FileUtil.separator);
 
 		// Appends system-dependent separator to metadata directory option
-		options.metadataDirectoryPath = options.metadataDirectoryPath.map(
+		this.metadataDirectoryPath = this.metadataDirectoryPath.map(
 				(String path) -> path + FileUtil.separator);
 		
 		// Removes .tla extension from main TLA+ spec
-		options.mainSpecFilePath = options.mainSpecFilePath.map(
+		this.mainSpecFilePath = this.mainSpecFilePath.map(
 				(String path) -> path.endsWith(TLAConstants.Files.TLA_EXTENSION)
 					? path.substring(0, (path.length() - TLAConstants.Files.TLA_EXTENSION.length()))
 					: path
 		);
-	}
-	
-	/**
-	 * Encapsulates settings related to dump files.
-	 * This would be best written as a Java record once that feature is main-lined.
-	 */
-	public static class DumpFileControls
-	{
-		public boolean colorize;
-		
-		public boolean actionLabels;
-		
-		public boolean snapshot;
-		
-		public DumpFileControls(boolean colorize, boolean actionLabels, boolean snapshot)
-		{
-			this.colorize = colorize;
-			this.actionLabels = actionLabels;
-			this.snapshot = snapshot;
-		}
 	}
 	
 	/**
@@ -863,8 +895,15 @@ public class CommandLineOptions
 	 */
 	public static class ManuallySetTlcWorkerThreadCount
 	{
+		/**
+		 * The number of worker threads TLC should use.
+		 */
 		public int workerThreadCount;
 		
+		/**
+		 * Creates a new ManuallySetTlcWorkerThreadCount instance.
+		 * @param workerThreadCount The number of worker threads TLC should use.
+		 */
 		public ManuallySetTlcWorkerThreadCount(int workerThreadCount)
 		{
 			this.workerThreadCount = workerThreadCount;
@@ -882,8 +921,15 @@ public class CommandLineOptions
 	 */
 	public static class FailedValidationResult
 	{
+		/**
+		 * The human-readable error message.
+		 */
 		public String errorMessage;
 		
+		/**
+		 * Creates a new FailedValidationResult
+		 * @param errorMessage The human-readable error message.
+		 */
 		public FailedValidationResult(String errorMessage)
 		{
 			this.errorMessage = errorMessage;
@@ -891,73 +937,56 @@ public class CommandLineOptions
 	}
 	
 	/**
-	 * The result of parsing the command line arguments.
-	 * This should be broken up into different classes once pattern matching is main-lined.
+	 * Represents a successful parse result.
+	 * Should be rewritten as a record once that feature is main-lined.
 	 */
-	public static class ParseResult
+	public static class SuccessfulParseResult
 	{
 		/**
-		 * Whether the parsing succeeded.
+		 * The parsed command line options.
 		 */
-		public boolean success;
+		public CommandLineOptions options;
 		
 		/**
-		 * Whether user requested to print help text.
+		 * Creates a new SuccessfulParseResult instance.
+		 * @param options The parsed command line options.
 		 */
-		public boolean helpRequest;
-		
-		/**
-		 * The parsed command line options, if successful.
-		 */
-		public Optional<CommandLineOptions> options;
-		
-		/**
-		 * The error message, in case of parse failure.
-		 */
-		public Optional<String> errorMessage;
-		
-		/**
-		 * Creates a parse report in case of success.
-		 * @param options The parse command line options.
-		 * @return A successful parser report.
-		 */
-		public static ParseResult success(CommandLineOptions options)
+		public SuccessfulParseResult(CommandLineOptions options)
 		{
-			ParseResult result = new ParseResult();
-			result.success = true;
-			result.helpRequest = false;
-			result.options = Optional.of(options);
-			result.errorMessage = Optional.empty();
-			return result;
+			this.options = options;
 		}
+	}
+	
+	/**
+	 * Represents a request to print command line option help.
+	 */
+	public static class HelpRequestParseResult { }
+	
+	/**
+	 * Represents a failed parse result.
+	 * Should be rewritten as a record once that feature is main-lined.
+	 */
+	public static class FailedParseResult
+	{
+		/**
+		 * The human-readable error message.
+		 */
+		public String errorMessage;
 		
 		/**
-		 * Creates a parse result in case user requests help text.
-		 * @return A help text parser report.
+		 * The index in the args array where parsing failed.
 		 */
-		public static ParseResult helpRequest()
-		{
-			ParseResult result = new ParseResult();
-			result.success = true;
-			result.helpRequest = true;
-			result.options = Optional.empty();
-			result.errorMessage = Optional.empty();
-			return result;
-		}
+		public int index;
 		
 		/**
-		 * Creates a parse report in case of failure.
-		 * @param errorMessage The parse error message.
-		 * @return A failed parser report.
+		 * Creates a new FailedParseResult instance.
+		 * @param errorMessage The human-readable error message.
+		 * @param index The index in the args array where parsing failed.
 		 */
-		public static ParseResult failure(String errorMessage)
+		public FailedParseResult(String errorMessage, int index)
 		{
-			ParseResult result = new ParseResult();
-			result.success = false;
-			result.helpRequest = false;
-			result.options = Optional.empty();
-			result.errorMessage = Optional.of(errorMessage);
-			return result;
+			this.errorMessage = errorMessage;
+			this.index = index;
 		}
 	}
 }

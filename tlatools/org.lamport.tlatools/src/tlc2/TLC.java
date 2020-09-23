@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.Phaser;
+import java.util.function.Supplier;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
@@ -69,6 +70,7 @@ import util.ToolIO;
 import util.UniqueString;
 import util.UsageGenerator;
 import util.Either;
+import util.OneOf;
 
 /**
  * Main TLC starter class.
@@ -81,32 +83,82 @@ import util.Either;
  * @author Simon Zambrovski
  */
 public class TLC {
+	/**
+	 * Whether the TLA+ spec is encoded in a .jar file, not a TLA+ text file.
+	 */
     private static boolean MODEL_PART_OF_JAR = false;
     
+    /**
+     * Possible TLC run modes: either model checking or simulation.
+     */
     public enum RunMode {
     	MODEL_CHECK, SIMULATE;
     }
     
-
     // SZ Feb 20, 2009: the class has been 
     // transformed from static to dynamic
 
-    private RunMode runMode;
-    private boolean cleanup;
-    private boolean checkDeadlock;
-
-    private boolean generateErrorTraceSpec;
-    private boolean requireMonolithicErrorTraceSpec;
-
-    private boolean noSeed;
-    private long seed;
-    private long aril;
+    /**
+     * Whether to run in model checking or simulation mode.
+     * Defaults to model checking.
+     */
+    private RunMode runMode = RunMode.MODEL_CHECK;
     
+    /**
+     * Whether to clean up the states directory.
+     */
+    private boolean cleanup = false;
+    
+    /**
+     * Whether to check for deadlock.
+     */
+    private boolean checkDeadlock = true;
+
+    /**
+     * Whether to generate an error trace spec.
+     */
+    private boolean generateErrorTraceSpec = false;
+    
+    /**
+     * Whether the generated error trace spec should be monolithic.
+     */
+    private boolean requireMonolithicErrorTraceSpec = false;
+
+    /**
+     * Whether a seed for the random number generator was provided.
+     */
+    private boolean noSeed = true;
+    
+    /**
+     * The seed for the random number generator.
+     */
+    private long seed = 0;
+    
+    /**
+     * Adjustment for random number generator seed.
+     */
+    private long aril = 0;
+    
+    /**
+     * TLC processing start time.
+     */
 	private long startTime;
 
-    private String mainFile;
-    private String configFile;
+	/**
+	 * Name of main TLA+ specification file.
+	 */
+    private String mainFile = null;
+    
+    /**
+     * Name of TLC configuration file.
+     */
+    private String configFile = null;
+    
+    /**
+     * Name of directory into which to write metadata.
+     */
 	private String metadir;
+
     /**
 	 * If instantiated with a non-Noop* instance, the trace will be written to the
 	 * user provided file (-dump parameter).
@@ -119,61 +171,85 @@ public class TLC {
 	 */
     private IStateWriter stateWriter = new NoopStateWriter();
 
-    private String fromChkpt;
+    /**
+     * Name of checkpoint from which TLC should recover.
+     */
+    private String fromChkpt = null;
 
-    private int fpIndex;
+    /**
+     * Fingerprint set function index to use.
+     * By default one is picked at random.
+     */
+    private int fpIndex = new Random().nextInt(FP64.Polys.length);
+
     /**
      * The number of traces/behaviors to generate in simulation mode
      */
     private static long traceNum = Long.MAX_VALUE;
-    private String traceFile = null;
-    private int traceDepth;
-    private FilenameToStream resolver;
-    
-    private String dumpFile = null;
-	private boolean asDot = false;
-	private boolean colorize = false;
-	private boolean actionLabels = false;
-	private boolean snapshot = false;
-		
-	private String userFile = null;
-
-    // flag if the welcome message is already printed
-    private boolean welcomePrinted;
-    
-    private FPSetConfiguration fpSetConfiguration;
-    
-    private volatile ITool tool;
-    private final Phaser waitingOnGenerationCompletion;
     
     /**
-     * Initialization
+     * Name of the file to which to write state traces.
+     */
+    private String traceFile = null;
+    
+    /**
+     * Maximum state trace depth. Set to 100 by default.
+     */
+    private int traceDepth = 100;
+    
+    private FilenameToStream resolver = null;
+    
+    /**
+     * Name of dump file.
+     */
+    private String dumpFile = null;
+    
+    /**
+     * Dump file options.
+     */
+    private DumpFileOptions dumpFileOptions = null;
+		
+    /**
+     * Name of user file.
+     */
+	private String userFile = null;
+
+	/**
+	 * Whether welcome message has already been printed.
+	 */
+    private boolean welcomePrinted = false;
+    
+    /**
+     * Fingerprint set configuration.
+     */
+    private FPSetConfiguration fpSetConfiguration = new FPSetConfiguration();
+    
+    /**
+     * Function returning host processor count.
+     * This function can be injected for unit testing purposes.
+     */
+    private Supplier<Integer> hostProcessorCount =
+    		() -> Runtime.getRuntime().availableProcessors();
+    
+    private volatile ITool tool;
+
+    private final Phaser waitingOnGenerationCompletion = new Phaser();
+    
+    /**
+     * Initializes a new instance of TLC.
      */
 	public TLC() {
-        welcomePrinted = false;
-        
-        runMode = RunMode.MODEL_CHECK;
-        cleanup = false;
-        checkDeadlock = true;
-        this.generateErrorTraceSpec = false;
-        this.requireMonolithicErrorTraceSpec = false;
-        
-        noSeed = true;
-        seed = 0;
-        aril = 0;
-        
-        mainFile = null;
-        configFile = null;
-        fromChkpt = null;
-        resolver = null;
-
-        fpIndex = new Random().nextInt(FP64.Polys.length);
-        traceDepth = 100;
-
-        fpSetConfiguration = new FPSetConfiguration();
-        
-        waitingOnGenerationCompletion = new Phaser();
-        waitingOnGenerationCompletion.register();
+        this.waitingOnGenerationCompletion.register();
+	}
+	
+	/**
+	 * Initializes a new instance of TLC.
+	 * @param hostProcessorCount Injected function for returning host processor count.
+	 */
+	public TLC(Supplier<Integer> getHostProcessorCount)
+	{
+		this();
+		this.hostProcessorCount = getHostProcessorCount;
 	}
 
     /*
@@ -348,38 +424,38 @@ public class TLC {
 	public boolean handleParameters(String[] args)
     {
 		// Parse command line options
-		CommandLineOptions.ParseResult parseResult = CommandLineOptions.parse(args);
-
-		if (!parseResult.success)
-		{
-			this.printErrorMsg(parseResult.errorMessage.get());
-			return false;
-		}
-		
-		if (parseResult.helpRequest)
-		{
-			this.printUsage();
-			return false;
-		}
-		
-		// Validate command line options
-		CommandLineOptions options = parseResult.options.get();
-		Either<CommandLineOptions.FailedValidationResult,
-				CommandLineOptions.SuccessfulValidationResult> validationResult =
-					CommandLineOptions.validate(options);
-		return validationResult.map(
-				(failure) -> {
-					this.printErrorMsg(failure.errorMessage);
-					return false;
-				},
-				(success) -> {
-					CommandLineOptions.transform(options);
-					this.setClassVariables(options);
-					this.setGlobalVariables(options);
-					return true;
-				});
+		return CommandLineOptions.parse(args).map(
+			parseFailure -> {
+				this.printErrorMsg(parseFailure.errorMessage);
+				return false;
+			},
+			helpRequest -> {
+				this.printUsage();
+				return false;
+			},
+			parseSuccess ->
+				// Validate command line options
+				CommandLineOptions.validate(parseSuccess.options, this.hostProcessorCount).map(
+					validationFailure -> {
+						this.printErrorMsg(validationFailure.errorMessage);
+						return false;
+					},
+					validationSuccess -> {
+						// Transform command line options
+						parseSuccess.options.transform();;
+						// Set variables from options
+						this.setClassVariables(parseSuccess.options);
+						this.setGlobalVariables(parseSuccess.options);
+						return true;
+					}
+				)
+		);
     }
 	
+	/**
+	 * Consumes command line options to set values of class variables.
+	 * @param options The command line options.
+	 */
 	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
 	private void setClassVariables(CommandLineOptions options)
 	{
@@ -422,10 +498,7 @@ public class TLC {
 			this.dumpFile = value;
 			options.dumpFileOptions.ifPresent(dumpOptions ->
 			{
-				this.asDot = true;
-				this.colorize = dumpOptions.colorize;
-				this.actionLabels = dumpOptions.actionLabels;
-				this.snapshot = dumpOptions.snapshot;
+				this.dumpFileOptions = dumpOptions;
 			});
 		});
 
@@ -494,8 +567,8 @@ public class TLC {
 	}
 	
 	/**
-	 * Applies the command line options to various variables.
-	 * @param options The parsed command line options.
+	 * Consumes command line options to set values of global variables.
+	 * @param options The command line options.
 	 */
 	private void setGlobalVariables(CommandLineOptions options)
 	{
@@ -561,15 +634,14 @@ public class TLC {
 			TLCGlobals.metaDir = value;
 		});
 		
-		options.tlcWorkerThreadOptions.ifPresent(either -> {
-			either.ifPresent(auto -> {
-				// TODO: validate this call result
-				int workerCount = Runtime.getRuntime().availableProcessors();
+		options.tlcWorkerThreadOptions.ifPresent(either -> either.ifPresent(
+			auto -> {
+				final int workerCount = this.hostProcessorCount.get();
 				TLCGlobals.setNumWorkers(workerCount);
-			}, manual -> {
+			},
+			manual -> {
 				TLCGlobals.setNumWorkers(manual.workerThreadCount);
-			});
-		});
+			}));
 		
 		options.dfidStartingDepth.ifPresent(value -> {
 			TLCGlobals.DFIDMax = value;
@@ -751,8 +823,13 @@ public class TLC {
 				dumpFile = dumpFile.replace("${metadir}", metadir);
 			}
 			try {
-				if (asDot) {
-					this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels, snapshot);
+				if (null != this.dumpFileOptions) {
+					this.stateWriter =
+							new DotStateWriter(
+									this.dumpFile,
+									this.dumpFileOptions.colorize,
+									this.dumpFileOptions.actionLabels,
+									this.dumpFileOptions.snapshot);
 				} else {
 					this.stateWriter = new StateWriter(dumpFile);
 				}
@@ -1285,20 +1362,8 @@ public class TLC {
     	return this.generateErrorTraceSpec;
     }
     
-    public boolean isDumpDotFile() {
-    	return this.asDot;
-    }
-    
-    public boolean isDumpColorized() {
-    	return this.colorize;
-    }
-    
-    public boolean doesDumpHaveActionLabels() {
-    	return this.actionLabels;
-    }
-    
-    public boolean doesDumpIncludeSnapshots() {
-    	return this.snapshot;
+    public DumpFileOptions getDumpFileOptions() {
+    	return this.dumpFileOptions;
     }
     
     public int getTraceDepth() {
