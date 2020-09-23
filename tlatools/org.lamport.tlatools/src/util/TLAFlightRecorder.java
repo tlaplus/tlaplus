@@ -28,29 +28,29 @@ package util;
 // Label is only used by Mission control but not relevant for the recording itself.
 public class TLAFlightRecorder {
 	
-    //@jdk.jfr.Label("Progress")
-    //@jdk.jfr.Category({"TLC", "Progress"})
+    @jdk.jfr.Label("Progress")
+    @jdk.jfr.Category({"TLC", "Progress"})
     @jdk.jfr.StackTrace(false)// No need to capture the stack of the reporting (main) thread when it emits the event.
 	private static class ProgressEvent extends jdk.jfr.Event {
-		//@jdk.jfr.Label("States generated per minute")
+		@jdk.jfr.Label("States generated per minute")
 		@jdk.jfr.Unsigned
 		private long spm;
-		//@jdk.jfr.Label("Distinct states generated per minute")
+		@jdk.jfr.Label("Distinct states generated per minute")
 		@jdk.jfr.Unsigned
 		private long dspm;
-		//@jdk.jfr.Label("Unseen States")
+		@jdk.jfr.Label("Unseen States")
 		@jdk.jfr.Unsigned
 		private long unseen;
-		//@jdk.jfr.Label("Diameter")
+		@jdk.jfr.Label("Diameter")
 		@jdk.jfr.Unsigned
 		private int diameter;
-		//@jdk.jfr.Label("States Generated")
+		@jdk.jfr.Label("States Generated")
 		@jdk.jfr.Unsigned
 		private long states;
-		//@jdk.jfr.Label("Distinct States Generated")
+		@jdk.jfr.Label("Distinct States Generated")
 		@jdk.jfr.Unsigned
 		private long distStates;
-		//@jdk.jfr.Label("Model Checking done")
+		@jdk.jfr.Label("Model Checking done")
 		private boolean isFinal;
 	}
 
@@ -71,11 +71,11 @@ public class TLAFlightRecorder {
 		}
 	}
 	
-    //@jdk.jfr.Label("Message")
-    //@jdk.jfr.Category({"TLC"})
+    @jdk.jfr.Label("Message")
+    @jdk.jfr.Category({"TLC"})
     @jdk.jfr.StackTrace(false)// No need to capture the stack of the reporting (main) thread when it emits the event.
 	private static class MessageEvent extends jdk.jfr.Event {
-		//@jdk.jfr.Label("Message")
+		@jdk.jfr.Label("Message")
 		public String message;
     }
 
