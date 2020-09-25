@@ -767,8 +767,8 @@ public class TLC {
 									TLCState.Empty.getVarsAsStrings(), mcParserResults, mcOutputConsumer.getError());
 							
 							// This rewrites SpecTE.tla in an attempt to create a monolith spec.
-							// See https://github.com/tlaplus/tlaplus/issues/479 and
-							// https://github.com/tlaplus/tlaplus/issues/479 why this is broken.
+							// See https://github.com/tlaplus/tlaplus/issues/479 for why this is broken.
+							/*
 							if (this.requireMonolithicErrorTraceSpec) {
 								final List<File> extendedModules = mcOutputConsumer.getExtendedModuleLocations();
 								final TLAMonolithCreator monolithCreator
@@ -780,6 +780,7 @@ public class TLC {
 								// Beware, this internally creates a temp file and re-reads SpecTE.tla from disk again. 
 								monolithCreator.copy();
 							}
+							*/
 							
 							// *Append* TLC's stdout/stderr output to final SpecTE.tla. The content of SpecTE.tla
 							// is now MonolithMC, MonolithSpecTE, stdout/stderr. Most users won't care for
