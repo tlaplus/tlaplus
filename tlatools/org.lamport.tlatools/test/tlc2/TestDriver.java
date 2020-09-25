@@ -35,7 +35,7 @@ public class TestDriver
         TLC tlc = new TLC();
         report("tlc created " + tlc.toString());
         // handle parameters
-        if (tlc.handleParameters(args))
+        if (tlc.handleParameters(args) && tlc.initialize(args))
         {
             tlc.setResolver(new SimpleFilenameToStream());
 
@@ -57,6 +57,7 @@ public class TestDriver
             
             reportProgress();
         }
+
         report("leaving callTLC()");
     }
 
