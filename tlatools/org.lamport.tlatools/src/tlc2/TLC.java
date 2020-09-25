@@ -42,7 +42,6 @@ import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
 import tlc2.tool.TLCState;
-import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.FastTool;
@@ -69,8 +68,6 @@ import util.TLCRuntime;
 import util.ToolIO;
 import util.UniqueString;
 import util.UsageGenerator;
-import util.Either;
-import util.OneOf;
 
 /**
  * Main TLC starter class.
@@ -338,11 +335,6 @@ public class TLC {
             System.exit(1);
         }
         
-        if (!tlc.initialize(args))
-        {
-        	System.exit(1);
-        }
-        
         if (!tlc.checkEnvironment()) {
             System.exit(1);
         }
@@ -415,16 +407,30 @@ public class TLC {
 	public static void setTraceNum(long aTraceNum) {
 		traceNum = aTraceNum;
 	}
-
+	
 	/**
-	 * Parses command line parameters and sets up class & global variables
+	 * Parses command line parameters, sets up class & global variables,
+	 * and initializes various systems.
 	 * @param args The command line parameters to parse
 	 * @return True IFF there were no parsing or input validation errors
 	 */
 	public boolean handleParameters(String[] args)
+	{
+		return this.handleParameters(args, true);
+	}
+	
+	/**
+	 * Parses command line parameters, sets up class & global variables,
+	 * and initializes various systems. The latter is rendered optional
+	 * for unit testing purposes.
+	 * @param args The command line parameters to parse
+	 * @param initialize Whether to perform initialization
+	 * @return True IFF there were no parsing or input validation errors
+	 */
+	public boolean handleParameters(String[] args, boolean initialize)
     {
 		// Parse command line options
-		return CommandLineOptions.parse(args).map(
+		boolean success = CommandLineOptions.parse(args).map(
 			parseFailure -> {
 				this.printErrorMsg(parseFailure.errorMessage);
 				return false;
@@ -450,6 +456,13 @@ public class TLC {
 					}
 				)
 		);
+		
+		if (success & initialize)
+		{
+			return this.initialize(args);
+		}
+		
+		return success;
     }
 	
 	/**
@@ -648,7 +661,7 @@ public class TLC {
 		});
 	}
 	
-	public boolean initialize(String[] args)
+	private boolean initialize(String[] args)
 	{
         startTime = System.currentTimeMillis();
 

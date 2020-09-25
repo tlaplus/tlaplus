@@ -27,7 +27,6 @@ package tlc2.tool.liveness;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -166,9 +165,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			args.addAll(Arrays.asList(extraArguments));
 			
 			args.add(spec);
-			final String[] clArgs = args.toArray(new String[args.size()]);
-			assertTrue(tlc.handleParameters(clArgs));
-			assertTrue(tlc.initialize(clArgs));
+			tlc.handleParameters(args.toArray(new String[args.size()]));
 			
 			// Run the ModelChecker
 			final int errorCode = tlc.process();
