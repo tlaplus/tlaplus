@@ -299,10 +299,21 @@ public class TLCTest {
 	@Test
 	public void testConfigOptionSetsVariable()
 	{
-		final String expected = "test.config";
+		final String expected = "test";
+		final String inputValue = expected + TLAConstants.Files.CONFIG_EXTENSION;
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
-		final String[] args = new String[] {"-config", expected, tlaFile};
+		final String[] args = new String[] {"-config", inputValue, tlaFile};
+		assertTrue(tlc.handleParameters(args, false));
+		assertEquals(expected, tlc.getConfigFile());
+	}
+	
+	@Test
+	public void testConfigOptionWithTlaFileSetsVariable()
+	{
+		final String expected = "Spec" + TLAConstants.Files.TLA_EXTENSION;
+		final TLC tlc = new TLC();
+		final String[] args = new String[] {"-config", expected, expected};
 		assertTrue(tlc.handleParameters(args, false));
 		assertEquals(expected, tlc.getConfigFile());
 	}

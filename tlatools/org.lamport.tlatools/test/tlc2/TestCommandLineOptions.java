@@ -434,6 +434,27 @@ public class TestCommandLineOptions
 				parseSuccess -> false));
 	}
 	
+	/**
+	 * It is possible to embed a TLC config in a TLA file.
+	 */
+	@Test
+	public void testConfigAcceptsTlaFile()
+	{
+		final String expectedValue = "spec" + TLAConstants.Files.TLA_EXTENSION;
+		String[] args = new String[]{"-config", expectedValue, expectedValue};
+		assertTrue(CommandLineOptions.parse(args).map(
+				parseFailure -> false,
+				helpRequest -> false,
+				parseSuccess -> {
+					CommandLineOptions actual = parseSuccess.options;
+					assertTrue(actual.mainSpecFilePath.isPresent());
+					assertEquals(expectedValue, actual.mainSpecFilePath.get());
+					assertTrue(actual.configurationFilePath.isPresent());
+					assertEquals(expectedValue, actual.configurationFilePath.get());
+					return true;
+				}));
+	}
+	
 	@Test
 	public void testDumpOption()
 	{
@@ -1356,12 +1377,18 @@ public class TestCommandLineOptions
 	@Test
 	public void testConfigFileTransform()
 	{
-		final String expectedValue = "ConfigFile";
-		final String inputValue = expectedValue + TLAConstants.Files.CONFIG_EXTENSION;
+		String expectedValue = "ConfigFile";
+		String inputValue = expectedValue + TLAConstants.Files.CONFIG_EXTENSION;
 		CommandLineOptions options = new CommandLineOptions();
 		options.configurationFilePath = Optional.of(inputValue);
 		options.transform();
 		assertEquals(expectedValue, options.configurationFilePath.get());
+		options.transform();
+		assertEquals(expectedValue, options.configurationFilePath.get());
+		
+		// Test accept TLA file as config file
+		expectedValue = "Spec" + TLAConstants.Files.TLA_EXTENSION;
+		options.configurationFilePath = Optional.of(expectedValue);
 		options.transform();
 		assertEquals(expectedValue, options.configurationFilePath.get());
 	}
