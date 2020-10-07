@@ -104,9 +104,10 @@ ASSUME /\ \A nn \in N: nn \in Nat
 -----------------------------------------------------------------------------
 \* Invariant and helpers:
 
+\* SeqOfSeqsToSetOfSets(<< <<1>>, <<1,2>>, <<2,3,3>> >>) evals to {{1}, {1, 2}, {2, 3}}
 SeqOfSeqsToSetOfSets(seq) == LET (* The image of function f with Op applied to each element f[x]. *)
                                  ImageApply(f, Op(_)) == { Op(f[x]) : x \in DOMAIN f }
-                                 Image(f) == ImageApply(f, LAMBDA x : x) \* Lambda is just identy
+                                 Image(f) == ImageApply(f, LAMBDA x : x) \* Lambda is just identity
                              IN ImageApply(seq, Image)
 
 (* The set S of all k-subsets ks (Cardinality(ks) = k) for the range 0 to n - 1. 
