@@ -31,7 +31,7 @@ The Toolbox's nightly builds are also made available as a [cask](https://github.
 
 ```bash
 $ brew tap homebrew/cask-versions
-$ brew install tlaplus-toolbox-nightly
+$ brew install tla-plus-toolbox-nightly
 ```
 
 Quality Metrics
