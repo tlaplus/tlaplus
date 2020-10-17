@@ -235,7 +235,7 @@ jobs:
            security set-key-partition-list -S apple-tool:,apple: -s -k ${{ secrets.APPLE_CERT_PASSWORD }} tla
            ## Unzip, sign, and zip up the TLA Toolbox.
            unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/${{ matrix.TOOLBOX_PRODUCT_ZIP }}
-           codesign --keychain tla --deep --display --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
+           codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --display --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
            ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
            xcrun altool --notarize-app --primary-bundle-id "org.lamport.tla.toolbox.product.product" --username "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" --file "${{ matrix.TOOLBOX_PRODUCT_ZIP }}"
            ## Upload signed TLAToolbox zip to Github release.
