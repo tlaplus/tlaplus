@@ -163,6 +163,8 @@ jobs:
     - name: Upload assets to INRIA
       if: matrix.operating-system == 'ubuntu-latest'
       run: |
+           ## Thanks Apple for your walled garden! Delete the *unsigned* Toolbox maxOS zip created by the Linux/ubuntu job.  The macOS job below creates and rsyncs a *signed* zip file.
+           rm toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.1-macosx.cocoa.x86_64.zip
            ## Upload p2 and apt repository to INRIA machine.
            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av tlatools/org.lamport.tlatools/dist/tla2tools.jar github@upload.tlapl.us:dist/
            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.product.product/target/products/*.zip github@upload.tlapl.us:products/
@@ -243,3 +245,5 @@ jobs:
            ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "${{ matrix.TOOLBOX_PRODUCT_ZIP }}") | .id')
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{ matrix.TOOLBOX_PRODUCT_ZIP }} --upload-file ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
+           ## Upload p2 and apt repository to INRIA machine.
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av ${{ matrix.TOOLBOX_PRODUCT_ZIP }} github@upload.tlapl.us:products/
