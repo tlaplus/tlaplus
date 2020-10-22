@@ -804,6 +804,9 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         } else if (attributeName.equals(MODEL_PARAMETER_POST_CONDITION))
         {
             return "Post Condition";
+        } else if (attributeName.equals(MODEL_PARAMETER_ALIAS))
+        {
+            return "Alias Expression";
         } else if (attributeName.equals(Model.MODEL_EXPRESSION_EVAL))
         {
             return "Expression";

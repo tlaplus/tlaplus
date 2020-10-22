@@ -1484,6 +1484,7 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		dm.unbindSectionAndAttribute(LAUNCH_RECOVER);
 		dm.unbindSectionAndAttribute(MODEL_PARAMETER_VIEW);
 		dm.unbindSectionAndAttribute(MODEL_PARAMETER_POST_CONDITION);
+		dm.unbindSectionAndAttribute(MODEL_PARAMETER_ALIAS);
 	}
     
     private String generateMemoryDisplayText () {

@@ -90,7 +90,7 @@ public interface IModelConfigurationConstants extends IConfigurationConstants {
     /**
      * alias
      */
-    public static final String MODEL_PARAMETER_ALIAS  = "modelParameterAlias ";
+    public static final String MODEL_PARAMETER_ALIAS  = "modelParameterAlias";
     /**
      * constant expression to be evaluated
      */
