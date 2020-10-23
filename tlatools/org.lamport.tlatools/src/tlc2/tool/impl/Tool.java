@@ -809,6 +809,7 @@ public abstract class Tool
     StateVec nss = new StateVec(0);
     this.getNextStates(action, action.pred, acts, ctx, state, s1, nss, action.cm);
     if (coverage) { action.cm.incInvocations(nss.size()); }
+    if (PROBABLISTIC && nss.size() > 1) {System.err.println("Simulator generated more than one next state");}
     return nss;
   }
   
@@ -1086,9 +1087,23 @@ public abstract class Tool
 	case OPCODE_dl:     // DisjList
 	case OPCODE_lor:
 	  {
-	    for (int i = 0; i < alen; i++) {
-	      resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
-	    }
+		if (PROBABLISTIC) {
+			// probabilistic (return after a state has been generated, ordered is randomized)
+			final tlc2.tool.SimulationWorker simWorker = (tlc2.tool.SimulationWorker) Thread.currentThread();
+			int index = (int) Math.floor(simWorker.getRNG().nextDouble() * alen);
+			final int p = simWorker.getRNG().nextPrime();
+		    for (int i = 0; i < alen; i++) {
+			      resState = this.getNextStates(action, args[index], acts, c, s0, resState, nss, cm);
+				  if (nss.hasStates()) {
+						return resState;
+				  }
+				  index = (index + p) % alen;
+			}
+		} else {
+		    for (int i = 0; i < alen; i++) {
+		      resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
+		    }
+		}
 	    return resState;
 	  }
 	case OPCODE_be:     // BoundedExists
@@ -1196,6 +1211,11 @@ public abstract class Tool
 	case OPCODE_case:   // Case
 	  {
 	    SemanticNode other = null;
+		if (PROBABLISTIC) {
+			// See Bounded exists above!
+			throw new UnsupportedOperationException(
+							"Probabilistic evaluation of next-state relation not implemented for CASE yet.");
+		}
 	    for (int i = 0; i < alen; i++) {
 	      OpApplNode pair = (OpApplNode)args[i];
 	      ExprOrOpArgNode[] pairArgs = pair.getArgs();
@@ -1265,6 +1285,13 @@ public abstract class Tool
 	          Assert.fail("In computing next states, the right side of \\IN" +
 	                      " is not enumerable.\n" + pred);
 	        }
+	        
+			if (PROBABLISTIC) {
+				// See Bounded exists above!
+				throw new UnsupportedOperationException(
+								"Probabilistic evaluation of next-state relation not implemented for \\in yet.");
+			}
+
 	        ValueEnumeration Enum = ((Enumerable)rval).elements();
 	        Value elem;
 	        while ((elem = Enum.nextElement()) != null) {
