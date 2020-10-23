@@ -5,6 +5,7 @@ package tlc2.value;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import tlc2.TLCGlobals;
@@ -27,12 +28,17 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 
   private final BufferedDataInputStream dis;
   private final HandleTable handles;
+  
+  public ValueInputStream(InputStream in) throws IOException 
+  {
+      // SZ Feb 24, 2009: FileUtil refactoring
+    this.dis = new BufferedDataInputStream(in);
+    this.handles = new HandleTable();
+  }
 
   public ValueInputStream(File file, final boolean compressed) throws IOException 
   {
-      // SZ Feb 24, 2009: FileUtil refactoring
-    this.dis = FileUtil.newBdFIS(compressed, file);
-    this.handles = new HandleTable();
+	  this(FileUtil.newBdFIS(compressed, file));
   }
   
   public ValueInputStream(File file) throws IOException 

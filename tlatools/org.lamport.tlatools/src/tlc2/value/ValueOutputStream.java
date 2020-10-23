@@ -22,12 +22,16 @@ public final class ValueOutputStream implements IValueOutputStream {
   }
 
   public ValueOutputStream(File file, final boolean compress) throws IOException {
+	  this(new FileOutputStream(file), compress);
+  }
+  
+  public ValueOutputStream(final OutputStream out, final boolean compress) throws IOException {
     if (compress) {
-      OutputStream os = new GZIPOutputStream(new FileOutputStream(file));
+      OutputStream os = new GZIPOutputStream(out);
       this.dos = new BufferedDataOutputStream(os);
     }
     else {
-      this.dos = new BufferedDataOutputStream(file);
+      this.dos = new BufferedDataOutputStream(out);
     }
     this.handles = new HandleTable();
   }
