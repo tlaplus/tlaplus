@@ -251,4 +251,6 @@ public interface ITool extends TraceApp {
 
 	ExprNode[] getModelConstraints();
 
+	TLCState evalAlias(TLCState curState, TLCState sucState);
+
 }

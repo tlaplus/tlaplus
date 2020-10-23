@@ -1445,6 +1445,25 @@ public abstract class Tool
   }
     
   /* eval */
+  public TLCState evalAlias(TLCState current, TLCState successor) {
+		if ("".equals(this.config.getAlias())) {
+			return current;
+		}
+		// see getState(..)
+		IdThread.setCurrentState(current);
+
+		try {
+			final TLCState alias = eval(getAliasSpec(), Context.Empty, current, successor, EvalControl.Clear).toState();
+			if (alias != null) {
+				return alias;
+			}
+		} catch (EvalException | TLCRuntimeException e) {
+			// Fall back to original state if eval fails.
+			return current;
+		}
+		
+		return current;
+  }
 
   public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor) {
 		if ("".equals(this.config.getAlias())) {

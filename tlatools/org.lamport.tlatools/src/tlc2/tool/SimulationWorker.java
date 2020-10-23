@@ -416,6 +416,7 @@ public class SimulationWorker extends IdThread {
 			
 			// Execute callable on the state that was selected from the set of succesor states.
 			s1.execCallable();
+			//System.out.printf("%s\n", tool.evalAlias(curState, s1));
 			
 			// In case actionStats are off, we waste a few cycles to increment this counter
 			// nobody is going to look at.
