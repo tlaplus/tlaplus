@@ -153,8 +153,10 @@ public class AtNode extends ExprNode {
    */
   @Override
   public final void walkGraph(Hashtable<Integer, ExploreNode> h, ExplorerVisitor visitor) {
+	    visitor.preVisit(this);
   // Empty because there are no nodes reachable through an AtNode that are not
   // reachable by other paths through the semantic graph.
+	    visitor.postVisit(this);
   } // end walkGraph()
 
 
