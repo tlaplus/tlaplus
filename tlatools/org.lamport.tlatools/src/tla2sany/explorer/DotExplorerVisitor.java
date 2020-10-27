@@ -104,6 +104,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 				final String loc = sn.getLocation().toString();
 				this.writer.append("\n");
 				this.writer.append(loc.replace("of module", "\n"));
+				this.writer.append("\n" + sn.getClass().getSimpleName());
 			}
 			this.writer.append("\"]");
 			this.writer.append(";\n");
