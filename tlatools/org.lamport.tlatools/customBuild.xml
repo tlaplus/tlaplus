@@ -264,10 +264,14 @@
 			</patternset>
 		</unzip>
 
-		<!-- Include the jline LICENSE file -->
+		<!-- Include a few LICENSE files -->
 		<copy todir="${class.dir}">
 			<fileset dir="lib/jline">
 				<include name="jline-LICENSE.txt" />
+			</fileset>
+			<fileset dir="src/org/apache/commons/math3/">
+				<include name="CommonsMath-NOTICE.txt" />
+				<include name="CommonsMath-LICENSE.txt" />
 			</fileset>
 		</copy>
 
