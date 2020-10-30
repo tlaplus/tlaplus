@@ -47,22 +47,22 @@ public class RandomSubsetNextTest extends ModelCheckerTestCase {
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.TLC_BUG));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "67321", "7732", "999"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "67291", "7729", "999"));
 
 		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
 		
 		final List<String> expectedTrace = new ArrayList<String>(11);
-		expectedTrace.add("/\\ x = 43\n/\\ y = 0");
-		expectedTrace.add("/\\ x = 2\n/\\ y = 1");
-		expectedTrace.add("/\\ x = 95\n/\\ y = 2");
-		expectedTrace.add("/\\ x = 40\n/\\ y = 3");
-		expectedTrace.add("/\\ x = 6\n/\\ y = 4");
-		expectedTrace.add("/\\ x = 168\n/\\ y = 5");
-		expectedTrace.add("/\\ x = 225\n/\\ y = 6");
-		expectedTrace.add("/\\ x = 93\n/\\ y = 7");
-		expectedTrace.add("/\\ x = 42\n/\\ y = 8");
-		expectedTrace.add("/\\ x = 8\n/\\ y = 9");
-		expectedTrace.add("/\\ x = 30\n/\\ y = 10");
+		expectedTrace.add("/\\ x = 23\n/\\ y = 0");
+		expectedTrace.add("/\\ x = 26\n/\\ y = 1");
+		expectedTrace.add("/\\ x = 18\n/\\ y = 2");
+		expectedTrace.add("/\\ x = 29\n/\\ y = 3");
+		expectedTrace.add("/\\ x = 189\n/\\ y = 4");
+		expectedTrace.add("/\\ x = 19\n/\\ y = 5");
+		expectedTrace.add("/\\ x = 92\n/\\ y = 6");
+		expectedTrace.add("/\\ x = 250\n/\\ y = 7");
+		expectedTrace.add("/\\ x = 41\n/\\ y = 8");
+		expectedTrace.add("/\\ x = 52\n/\\ y = 9");
+		expectedTrace.add("/\\ x = 78\n/\\ y = 10");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		assertZeroUncovered();

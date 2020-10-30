@@ -226,5 +226,12 @@ public class RandomGenerator extends Random {
     }
     return primes[index];
   }
-  
+
+	public static int nextPrime(Random r) {
+		int index = primes.length;
+		while (index == primes.length) {
+			index = (int) Math.floor(r.nextDouble() * index);
+		}
+		return primes[index];
+	}
 }

@@ -28,6 +28,6 @@ package tlc2.tool;
 public class RandomSubsetATest extends RandomSubset {
 
 	public RandomSubsetATest() {
-		super(15041980L, 47567, 100000003);
+		super(15041980L, 1730011, 100000002);
 	}
 }
