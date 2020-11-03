@@ -43,6 +43,7 @@ import org.junit.Test;
 
 import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
+import tlc2.value.impl.Enumerable.Ordering;
 import tlc2.value.impl.SubsetValue.CoinTossingSubsetEnumerator;
 import tlc2.value.impl.SubsetValue.KElementEnumerator;
 import tlc2.value.impl.SubsetValue.SubsetEnumerator;
@@ -548,5 +549,83 @@ public class SubsetValueTest {
         final Value normalized = subset.toSetEnum().normalize();
         
         assertEquals(normalized, unnormalized);
+	}
+
+	@Test
+	public void testRandomSubsetGeneratorK0() {
+		final Set<Value> values = new HashSet<>();
+		final SubsetValue subsetValue = new TestSubsetValue(new IntervalValue(1, 10), 0);
+		final ValueEnumeration elements = subsetValue.elements(Ordering.RANDOMIZED);
+		for (int i = 0; i < 100; i++) {
+			final Value nextElement = elements.nextElement();
+			values.add(nextElement);
+		}
+		assertEquals(1, values.size()); //empty set
+	}
+	
+	@Test
+	public void testRandomSubsetGeneratorKNegative() {
+		try {
+			new TestSubsetValue(new IntervalValue(1, 2), -1).elements(Ordering.RANDOMIZED);
+		} catch (IllegalArgumentException e) {
+			return;
+		}
+		fail("Expected an IllegalArgumentException");
+	}
+	
+	@Test
+	public void testRandomSubsetGeneratorKNplus1() {
+		try {
+			new TestSubsetValue(new IntervalValue(1, 2), 3).elements(Ordering.RANDOMIZED);
+		} catch (IllegalArgumentException e) {
+			return;
+		}
+		fail("Expected an IllegalArgumentException");
+	}
+	
+	@Test
+	public void testRandomSubsetGeneratorN10() {
+		final Set<Value> values = new HashSet<>();
+		final SubsetValue subsetValue = new TestSubsetValue(new IntervalValue(1, 10), 3);
+		final ValueEnumeration elements = subsetValue.elements(Ordering.RANDOMIZED);
+		for (int i = 0; i < 100; i++) {
+			final Value nextElement = elements.nextElement();
+			values.add(nextElement);
+		}
+		// for the given seed, the impl happens to generate 71 unique sets, which is
+		// close enough approximation of a uniform distribution.
+		assertEquals(71, values.size());
+	}
+
+	// N100 would overflow default implementation in SubsetValue.
+	@Test
+	public void testRandomSubsetGeneratorN100() {
+		final Set<Value> values = new HashSet<>();
+		final SubsetValue subsetValue = new TestSubsetValue(new IntervalValue(1, 100), 3);
+		final ValueEnumeration elements = subsetValue.elements(Ordering.RANDOMIZED);
+		for (int i = 0; i < 100; i++) {
+			final Value nextElement = elements.nextElement();
+			values.add(nextElement);
+		}
+		assertEquals(100, values.size());
+	}
+
+	@SuppressWarnings("serial")
+	private static class TestSubsetValue extends SubsetValue {
+
+		private final int k;
+
+		public TestSubsetValue(Value set, final int k) {
+			super(set);
+			this.k = k;
+		}
+
+		@Override
+		public ValueEnumeration elements(Ordering ordering) {
+			if (ordering == Ordering.RANDOMIZED) {
+				return new RandomSubsetGenerator(k);
+			}
+			return super.elements(ordering);
+		}
 	}
 }

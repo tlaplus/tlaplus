@@ -883,4 +883,84 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			return numOfPicks;
 		}
 	}
+
+	// This enumerator violates the expected behavior of ValueEnumeration to
+	// terminate once all elements have been enumerated, which implies that it also
+	// returns duplicates.  Its advantage over the other, stateful enumerators -that
+	// guarantee termination- is that it is very cheap.  If we ever need this, a
+	// terminating enumerator can be implemented with SubsetValue#getUnrank combined
+	// with EnumerableValue.SubsetValueEnumerator, i.e. optimally parameterizing an
+	// LCG with period m = NcK (n choose k) where NcK = n!/k!(n-k)! to pseudo-randomly
+	// generate all values (indices) in the range [0, NcK)) and generating the 
+	// subset for each index with Unrank#subsetAt.
+	// ASSUME tlc2.tool.impl.Tool.PROBABLISTIC = TRUE
+	public class RandomSubsetGenerator implements ValueEnumeration {
+		
+		private final int k;
+		private final Random random;
+		private final SetEnumValue s;
+		private int n;
+
+		public RandomSubsetGenerator(final int k) {
+			this.k = k;
+			
+			this.s = (SetEnumValue) set.toSetEnum();
+			this.s.normalize();
+			this.n = this.s.elems.size();
+
+			if (k < 0 || k > n) {
+				throw new IllegalArgumentException(String.format("k=%s and n=%s", k, n));
+			}
+			
+			this.random = RandomEnumerableValues.get();
+		}
+		
+		@Override
+		public void reset() {
+			// This enumerator is stateless and, thus, reset is a no-op.
+		}
+
+		@Override
+		public Value nextElement() {
+			// This is Algorithm S introduced in volume 2 "Seminumerical Algorithms" in
+			// Knuth's TAOCP. It iterates over the elements in S once while gradually
+			// increasing the probability p of including an element at the current index
+			// in the result. Compare with reservoir sampling discussed in section 3.4.2 of
+			// TAOCP.
+			// For more sophisticated algorithms see:
+			// https://dl.acm.org/doi/10.1145/358105.893
+			// https://dl.acm.org/doi/10.1145/23002.23003
+			// https://dl.acm.org/doi/10.1145/3147.3165
+
+			final ValueVec vec = new ValueVec(k);
+
+            for (int t = 0; t < n; t++) {
+				final double p = (k - vec.size()) / ((n - t) * 1d);
+
+				if (random.nextDouble() <= p) {
+					vec.addElement(s.elems.elementAt(t));
+				}
+				
+				if (vec.size() == k) {
+					break;
+				}
+			}
+
+			// This variant reduces the number of calls to the random number generator by
+			// allocating a bit set to remember the previously drawn elements.
+//			final BitSet bs = new BitSet(n);
+//			while (vec.size() < k) {
+//				final int i = random.nextInt(n);
+//				if (!bs.get(i)) {
+//					bs.set(i);
+//					vec.addElement(s.elems.elementAt(i));
+//				}
+//			}
+
+			// This assertion holds because even with an imaginary Random#nextDouble that
+			// returns 1 the probability p of the last k values will be 1.
+            assert vec.size() == k;
+			return new SetEnumValue(vec, false);
+		}
+	}
 }
