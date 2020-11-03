@@ -452,6 +452,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     int index = 0;
 
     public Enumerator() {
+    	normalize();
     }
 
     @Override
