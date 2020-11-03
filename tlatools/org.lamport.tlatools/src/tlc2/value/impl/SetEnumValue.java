@@ -436,17 +436,6 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
      int index = (int) Math.floor(RandomEnumerableValues.get().nextDouble() * sz);
      return this.elems.elementAt(index);
   }
-  
-  @Override
-  public final ValueEnumeration unorderedElements(int prime) {
-    try {
-	return new Enumerator(prime);
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
 
   @Override
   public final ValueEnumeration elements() {
@@ -461,14 +450,8 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 
   final class Enumerator implements ValueEnumeration {
     int index = 0;
-    int p = 0;
 
     public Enumerator() {
-    	this(0);
-    }
-    public Enumerator(int i) {
-    	normalize();
-    	p = i;
     }
 
     @Override
@@ -479,16 +462,6 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     	if (coverage) { cm.incSecondary(); }
       if (this.index < elems.size()) {
         return elems.elementAt(this.index++);
-      }
-      return null;
-    }
-    
-    @Override
-    public final Value someElement() {
-    	if (coverage) { cm.incSecondary(); }
-      if (this.index < elems.size()) {
-    	  int idx = (p + this.index++) % elems.size();
-        return elems.elementAt(idx);
       }
       return null;
     }
@@ -505,6 +478,14 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     		vec.addElement(v);
     	}
     	return new SetEnumValue(vec, false, cm);
+	}
+
+	@Override
+	public ValueEnumeration elements(Ordering ordering) {
+		if (ordering == Ordering.RANDOMIZED) {
+			return elements(size());
+		}
+		return super.elements(ordering);
 	}
 
 	@Override

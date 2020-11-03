@@ -701,18 +701,12 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	
 	@Override
 	public ValueEnumeration elements(final Ordering ordering) {
+		if (ordering == Ordering.RANDOMIZED) {
+			return ((SetEnumValue) toSetEnum()).elements(ordering);
+		}
 		// Use elementsNormalized regardless of requested ordering. Even for ordering
 		// UNDEFINED, elementsNormalized is fastest.
 		return elements();
-	}
-
-	@Override
-	public ValueEnumeration unorderedElements(final int prime) {
-		// SubsetValue doesn't support unorderedElements as of yet. For now, convert
-		// (enumerate!) SubsetValue to a SetEnumValue that has support for
-		// unorderedElements.
-		final SetEnumValue setEnum = (SetEnumValue) this.toSetEnum();
-		return setEnum.unorderedElements(prime);
 	}
 
   @Override

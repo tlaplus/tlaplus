@@ -15,7 +15,14 @@ public interface Enumerable extends IValue {
 		 * The normalized order is the order of elements when a Value gets
 		 * fingerprinted (@see {@link Value#fingerPrint(long)}.
 		 */
-		NORMALIZED
+		NORMALIZED,
+		/**
+		 * A randomized ordering of the elements returned by this enumerator. Contrary
+		 * to the other orderings, the enumerator is *not* guaranteed to enumerate all
+		 * elements but only enumerates all of them with increasing probability
+		 * eventually.
+		 */
+		RANDOMIZED
     }
 	
   @Override
@@ -36,8 +43,5 @@ public interface Enumerable extends IValue {
   ValueEnumeration elements(final int k);
   EnumerableValue getRandomSubset(final int k);
   Value isSubsetEq(Value other);
-  default ValueEnumeration unorderedElements(int prime) {
-	  return elements();
-  }
 }
 

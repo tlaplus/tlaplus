@@ -40,8 +40,4 @@ public interface ValueEnumeration {
 		}
 		return new SetEnumValue(vv, false);
 	}
-		
-	default Value someElement() {
-		return nextElement();
-	}
 }

@@ -51,7 +51,6 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.ExpectInlined;
 import tlc2.util.IdThread;
-import tlc2.util.RandomGenerator;
 import tlc2.util.Vect;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
@@ -61,6 +60,7 @@ import tlc2.value.Values;
 import tlc2.value.impl.Applicable;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.Enumerable;
+import tlc2.value.impl.Enumerable.Ordering;
 import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.FcnLambdaValue;
 import tlc2.value.impl.FcnParams;
@@ -1112,8 +1112,7 @@ public abstract class Tool
 	    
 	    if (PROBABLISTIC) {
 		    // probabilistic (return after a state has been generated, ordered is randomized)
-		    final tlc2.tool.SimulationWorker simWorker = (tlc2.tool.SimulationWorker) Thread.currentThread();
-			final RandomizingContextEnumerator Enum = this.randomizingContexts(simWorker.getRNG(), pred, c, s0, s1, EvalControl.Clear, cm);
+			final ContextEnumerator Enum = this.contexts(Ordering.RANDOMIZED, pred, c, s0, s1, EvalControl.Clear, cm);
 			Context c1;
 		    while ((c1 = Enum.nextElement()) != null) {
 				resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
@@ -3638,76 +3637,46 @@ public abstract class Tool
 	  return contexts(appl, c, s0, s1, control, CostModel.DO_NOT_RECORD);
   }
 
-  public final RandomizingContextEnumerator randomizingContexts(RandomGenerator rnd, OpApplNode appl, Context c, TLCState s0,
-          TLCState s1, final int control, CostModel cm) {
-	    final FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
-	    final boolean[] isTuples = appl.isBdedQuantATuple();
-	    final ExprNode[] domains = appl.getBdedQuantBounds();
+  /* A context enumerator for an operator application. */
+  public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
+                                          TLCState s1, final int control, CostModel cm) {
+    return contexts(Ordering.NORMALIZED, appl, c, s0, s1, control, cm);
+  }
 
-	    final int flen = formals.length;
+	private final ContextEnumerator contexts(Ordering ordering, OpApplNode appl, Context c, TLCState s0, TLCState s1, final int control,
+			CostModel cm) {
+		FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
+	    boolean[] isTuples = appl.isBdedQuantATuple();
+	    ExprNode[] domains = appl.getBdedQuantBounds();
+	
+	    int flen = formals.length;
 	    int alen = 0;
 	    for (int i = 0; i < flen; i++) {
 	      alen += (isTuples[i]) ? 1 : formals[i].length;
 	    }
-	    final Object[] vars = new Object[alen];
-	    final ValueEnumeration[] enums = new ValueEnumeration[alen];
+	    Object[] vars = new Object[alen];
+	    ValueEnumeration[] enums = new ValueEnumeration[alen];
 	    int idx = 0;
 	    for (int i = 0; i < flen; i++) {
-	      final Value boundSet = this.eval(domains[i], c, s0, s1, control, cm);
+	      Value boundSet = this.eval(domains[i], c, s0, s1, control, cm);
 	      if (!(boundSet instanceof Enumerable)) {
 	        Assert.fail("TLC encountered a non-enumerable quantifier bound\n" +
 	                    Values.ppr(boundSet.toString()) + ".\n" + domains[i]);
 	      }
-	      final FormalParamNode[] farg = formals[i];
+	      FormalParamNode[] farg = formals[i];
 	      if (isTuples[i]) {
 	        vars[idx] = farg;
-	        enums[idx++] = ((Enumerable)boundSet).unorderedElements(rnd.nextPrime());
+	        enums[idx++] = ((Enumerable)boundSet).elements(ordering);
 	      }
 	      else {
 	        for (int j = 0; j < farg.length; j++) {
 	          vars[idx] = farg[j];
-	          enums[idx++] = ((Enumerable)boundSet).unorderedElements(rnd.nextPrime());
+	          enums[idx++] = ((Enumerable)boundSet).elements(ordering);
 	        }
 	      }
 	    }
-	    return new RandomizingContextEnumerator(vars, enums, c);
-  }
-  
-  /* A context enumerator for an operator application. */
-  public final ContextEnumerator contexts(OpApplNode appl, Context c, TLCState s0,
-                                          TLCState s1, final int control, CostModel cm) {
-    FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
-    boolean[] isTuples = appl.isBdedQuantATuple();
-    ExprNode[] domains = appl.getBdedQuantBounds();
-
-    int flen = formals.length;
-    int alen = 0;
-    for (int i = 0; i < flen; i++) {
-      alen += (isTuples[i]) ? 1 : formals[i].length;
-    }
-    Object[] vars = new Object[alen];
-    ValueEnumeration[] enums = new ValueEnumeration[alen];
-    int idx = 0;
-    for (int i = 0; i < flen; i++) {
-      Value boundSet = this.eval(domains[i], c, s0, s1, control, cm);
-      if (!(boundSet instanceof Enumerable)) {
-        Assert.fail("TLC encountered a non-enumerable quantifier bound\n" +
-                    Values.ppr(boundSet.toString()) + ".\n" + domains[i]);
-      }
-      FormalParamNode[] farg = formals[i];
-      if (isTuples[i]) {
-        vars[idx] = farg;
-        enums[idx++] = ((Enumerable)boundSet).elements();
-      }
-      else {
-        for (int j = 0; j < farg.length; j++) {
-          vars[idx] = farg[j];
-          enums[idx++] = ((Enumerable)boundSet).elements();
-        }
-      }
-    }
-    return new ContextEnumerator(vars, enums, c);
-  }
+	    return new ContextEnumerator(vars, enums, c);
+	}
 
     // These three are expected by implementing the {@link ITool} interface; they used
     //		to mirror exactly methods that our parent class ({@link Spec}) implemented

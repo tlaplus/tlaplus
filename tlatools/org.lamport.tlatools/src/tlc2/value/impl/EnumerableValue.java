@@ -82,6 +82,8 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 			if (enumerated != null) {
 				return ((Enumerable) enumerated.normalize()).elements();
 			}
+		} else if (ordering == Ordering.RANDOMIZED) {
+			elements(size());
 		}
 		return elements();
 	}
