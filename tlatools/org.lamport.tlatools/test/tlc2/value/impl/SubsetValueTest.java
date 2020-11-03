@@ -554,7 +554,7 @@ public class SubsetValueTest {
 	@Test
 	public void testRandomSubsetGeneratorK0() {
 		final Set<Value> values = new HashSet<>();
-		final SubsetValue subsetValue = new TestSubsetValue(new IntervalValue(1, 10), 0);
+		final SubsetValue subsetValue = new KSubsetValue(0, new IntervalValue(1, 10));
 		final ValueEnumeration elements = subsetValue.elements(Ordering.RANDOMIZED);
 		for (int i = 0; i < 100; i++) {
 			final Value nextElement = elements.nextElement();
@@ -566,7 +566,7 @@ public class SubsetValueTest {
 	@Test
 	public void testRandomSubsetGeneratorKNegative() {
 		try {
-			new TestSubsetValue(new IntervalValue(1, 2), -1).elements(Ordering.RANDOMIZED);
+			new KSubsetValue(-1, new IntervalValue(1, 2)).elements(Ordering.RANDOMIZED);
 		} catch (IllegalArgumentException e) {
 			return;
 		}
@@ -576,7 +576,7 @@ public class SubsetValueTest {
 	@Test
 	public void testRandomSubsetGeneratorKNplus1() {
 		try {
-			new TestSubsetValue(new IntervalValue(1, 2), 3).elements(Ordering.RANDOMIZED);
+			new KSubsetValue(3, new IntervalValue(1, 2)).elements(Ordering.RANDOMIZED);
 		} catch (IllegalArgumentException e) {
 			return;
 		}
@@ -586,46 +586,81 @@ public class SubsetValueTest {
 	@Test
 	public void testRandomSubsetGeneratorN10() {
 		final Set<Value> values = new HashSet<>();
-		final SubsetValue subsetValue = new TestSubsetValue(new IntervalValue(1, 10), 3);
+		final SubsetValue subsetValue = new KSubsetValue(3, new IntervalValue(1, 10));
 		final ValueEnumeration elements = subsetValue.elements(Ordering.RANDOMIZED);
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 1000; i++) {
 			final Value nextElement = elements.nextElement();
 			values.add(nextElement);
 		}
-		// for the given seed, the impl happens to generate 71 unique sets, which is
-		// close enough approximation of a uniform distribution.
-		assertEquals(71, values.size());
+		// Eventually, the impl generates all values with high probability.
+		assertEquals(subsetValue.numberOfKElements(3), values.size());
 	}
 
 	// N100 would overflow default implementation in SubsetValue.
 	@Test
 	public void testRandomSubsetGeneratorN100() {
 		final Set<Value> values = new HashSet<>();
-		final SubsetValue subsetValue = new TestSubsetValue(new IntervalValue(1, 100), 3);
+		final SubsetValue subsetValue = new KSubsetValue(3, new IntervalValue(1, 100));
 		final ValueEnumeration elements = subsetValue.elements(Ordering.RANDOMIZED);
 		for (int i = 0; i < 100; i++) {
 			final Value nextElement = elements.nextElement();
 			values.add(nextElement);
 		}
+		// For large input sets, generating a small number of subsets doesn't cause
+		// significant duplicates.
 		assertEquals(100, values.size());
 	}
-
-	@SuppressWarnings("serial")
-	private static class TestSubsetValue extends SubsetValue {
-
-		private final int k;
-
-		public TestSubsetValue(Value set, final int k) {
-			super(set);
-			this.k = k;
-		}
-
-		@Override
-		public ValueEnumeration elements(Ordering ordering) {
-			if (ordering == Ordering.RANDOMIZED) {
-				return new RandomSubsetGenerator(k);
-			}
-			return super.elements(ordering);
-		}
-	}
 }
+
+/*
+
+A spec by Jack Vanlightly as an eyeball test to empirically measures the distributions. 
+
+---- CONFIG ksubsets_ex_quant ----
+SPECIFICATION Spec
+=====
+
+------------------------------ MODULE ksubsets_ex_quant ------------------------------
+EXTENDS Naturals, Randomization, FiniteSets, TLC, FiniteSetsExt
+
+Elements == 1..500
+Limit == 1000
+
+VARIABLES counts,
+          total
+
+vars == <<counts, total >>
+
+AddSubset ==
+    /\ total < Limit 
+    \* /\ \E ss \in SUBSET Elements : 
+    \*     /\ Cardinality(ss) = 3 
+    /\ \E ss \in kSubset(3, Elements) : 
+        /\ IF ss \in DOMAIN counts
+            THEN counts' = [counts EXCEPT ![ss] = @ + 1]
+            ELSE counts' = counts @@ (ss :> 1)
+        /\ total' = total + 1
+
+PrintDist ==
+    /\ total = Limit
+    /\ total' = Limit + 1
+    /\ UNCHANGED <<counts>>
+    /\ \A ss \in DOMAIN counts : PrintT(<<total, ss, counts[ss]>>)
+    /\ PrintT(<<"RESULT", Cardinality(DOMAIN counts)>>)
+
+Init == 
+    /\ counts = [ss \in {} |-> 0]
+    /\ total = 0
+
+Next ==
+    \/ AddSubset
+    \/ PrintDist
+
+Spec == Init /\ [][Next]_vars  
+
+=============================================================================
+\* Modification History
+\* Last modified Wed Oct 28 09:08:31 PDT 2020 by markus
+\* Last modified Tue Oct 27 17:24:00 CET 2020 by jvanlightly
+\* Created Tue Oct 27 09:55:35 CET 2020 by jvanlightly
+*/
