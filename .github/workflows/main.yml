@@ -203,7 +203,7 @@ jobs:
     - name: Integration tests with CommunityModules
       if: matrix.operating-system == 'ubuntu-latest'
       uses: peter-evans/repository-dispatch@v1
-        with:
+      with:
           token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
           repository: tlaplus/CommunityModules
           event-type: tlaplus-dispatch
