@@ -197,6 +197,17 @@ jobs:
            ## github.xml replaces the Tycho pom.xml with a specific one to publish tla2tools.jar.
            mvn deploy:deploy-file -Dgithub.packages.username=${{ github.actor }} -Dgithub.packages.password=${{ secrets.GITHUB_TOKEN }} -Dfile=dist/tla2tools.jar -Durl=https://maven.pkg.github.com/${{ github.repository }} -DpomFile=github.xml -DrepositoryId=github -f github.xml
 
+      ##
+      ## Trigger build of CommunityModule as integration tests.
+      ##
+    - name: Integration tests with CommunityModules
+      if: matrix.operating-system == 'ubuntu-latest'
+      uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
+          repository: tlaplus/CommunityModules
+          event-type: tlaplus-dispatch
+
       ################################# macOS #################################
 
       ##
