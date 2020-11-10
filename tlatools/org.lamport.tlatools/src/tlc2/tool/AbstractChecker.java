@@ -3,8 +3,11 @@ package tlc2.tool;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 
 import tlc2.TLC;
 import tlc2.TLCGlobals;
@@ -482,6 +485,10 @@ public abstract class AbstractChecker
 		for (int i = 0; i < this.workers.length; i++) {
 			workers[i].setLocalValue(idx, val);
 		}
+	}
+
+	public final List<IValue> getAllValues(final int idx) {
+		return Arrays.asList(workers).stream().map(w -> w.getLocalValue(idx)).collect(Collectors.toList());
 	}
 
 	public final IValue getValue(int i, int idx) {

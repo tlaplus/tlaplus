@@ -20,6 +20,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprNode;
 import tlc2.TLCGlobals;
@@ -455,6 +456,10 @@ public class Simulator {
 		for (SimulationWorker w : workers) {
 			w.setLocalValue(idx, val);
 		}
+	}
+
+	public List<IValue> getAllValues(int idx) {
+		return workers.stream().map(w -> w.getLocalValue(idx)).collect(Collectors.toList());
 	}
 
 	/**
