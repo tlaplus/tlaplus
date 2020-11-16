@@ -41,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Vector;
 
 import util.ToolIO;
@@ -566,7 +567,7 @@ private static void InnerWriteAlignmentFile(Token[][] spec,
       line = line + 1;
     } ;   
 
-   PosAndCol.sort(posCols);
+   Arrays.sort(posCols);
 
    /************************************************************************
    * Compute preSpace fields for tokens in the order they appear in the    *
