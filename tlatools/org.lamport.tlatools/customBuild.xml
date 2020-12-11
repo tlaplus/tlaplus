@@ -316,6 +316,7 @@
 				<!-- The jar files contains many main classes (SANY, TEX, pcal, ...) --> 
                 <!-- but lets consider TLC the one users primarily use. --> 
 				<attribute name="Main-class" value="tlc2.TLC" />
+				<attribute name="Class-Path" value="CommunityModules-deps.jar" />
 				<attribute name="Class-Path" value="CommunityModules.jar" />
 				<!-- Git revision -->
 				<attribute name="X-Git-Branch" value="${git.branch}" />
