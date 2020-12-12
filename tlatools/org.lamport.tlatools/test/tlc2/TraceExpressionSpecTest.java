@@ -31,7 +31,7 @@ import tlc2.model.MCState;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 
 /**
- * Tests for {@link tlc2.TraceExpressionSpec}, both in isolation and
+ * Tests for {@link tlc2.TraceExplorationSpec}, both in isolation and
  * integrated with {@link tlc2.TLC}.
  */
 public class TraceExpressionSpecTest {
@@ -283,7 +283,7 @@ public class TraceExpressionSpecTest {
 	public void testSetOutputDirectory() {
 		Path expected = Paths.get("trace");
 		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
-		TraceExpressionSpec teSpec = new TraceExpressionSpec(expected, recorder);
+		TraceExplorationSpec teSpec = new TraceExplorationSpec(expected, recorder);
 		assertEquals(expected, teSpec.getOutputDirectory());
 	}
 	
@@ -295,19 +295,19 @@ public class TraceExpressionSpecTest {
 		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
 
 		FakeStreamProvider stream = new FakeStreamProvider(null, null, ThrowException.TLA_FILENOTFOUND);
-		TraceExpressionSpec teSpec = new TraceExpressionSpec(stream, recorder);
+		TraceExplorationSpec teSpec = new TraceExplorationSpec(stream, recorder);
 		assertFalse(teSpec.generate(null, null, null, null));
 
 		stream = new FakeStreamProvider(null, null, ThrowException.TLA_SECURITY);
-		teSpec = new TraceExpressionSpec(stream, recorder);
+		teSpec = new TraceExplorationSpec(stream, recorder);
 		assertFalse(teSpec.generate(null, null, null, null));
 
 		stream = new FakeStreamProvider(null, null, ThrowException.CFG_FILENOTFOUND);
-		teSpec = new TraceExpressionSpec(stream, recorder);
+		teSpec = new TraceExplorationSpec(stream, recorder);
 		assertFalse(teSpec.generate(null, null, null, null));
 
 		stream = new FakeStreamProvider(null, null, ThrowException.CFG_SECURITY);
-		teSpec = new TraceExpressionSpec(stream, recorder);
+		teSpec = new TraceExplorationSpec(stream, recorder);
 		assertFalse(teSpec.generate(null, null, null, null));
 	}
 	
@@ -531,7 +531,7 @@ public class TraceExpressionSpecTest {
 	/**
 	 * Helper class to inject IO exceptions into the TE generation code.
 	 */
-	private class FakeStreamProvider implements TraceExpressionSpec.IStreamProvider {
+	private class FakeStreamProvider implements TraceExplorationSpec.IStreamProvider {
 		
 		private ByteArrayOutputStream tlaStream;
 		

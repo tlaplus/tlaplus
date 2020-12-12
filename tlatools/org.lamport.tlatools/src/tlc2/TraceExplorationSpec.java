@@ -25,7 +25,7 @@ import util.TLAConstants;
 /**
  * Logic for generating a trace expression (TE) spec.
  */
-public class TraceExpressionSpec {
+public class TraceExplorationSpec {
 	
 	/**
 	 * Directory to which TE spec is written.
@@ -43,11 +43,11 @@ public class TraceExpressionSpec {
 	private ErrorTraceMessagePrinterRecorder recorder;
 	
 	/**
-	 * Initializes a new instance of the {@link TraceExpressionSpec} class.
+	 * Initializes a new instance of the {@link TraceExplorationSpec} class.
 	 * @param outputDirectory Directory to which to output the TE spec.
 	 * @param recorder Recorder to record TLC as it runs; assumed to already be subscribed.
 	 */
-	public TraceExpressionSpec(
+	public TraceExplorationSpec(
 			Path outputDirectory,
 			ErrorTraceMessagePrinterRecorder recorder) {
 		this.outputDirectory = outputDirectory;
@@ -56,12 +56,12 @@ public class TraceExpressionSpec {
 	}
 	
 	/**
-	 * Initializes a new instance of the {@link TraceExpressionSpec} class.
+	 * Initializes a new instance of the {@link TraceExplorationSpec} class.
 	 * This constructor is usually used for dependency injection by tests.
 	 * @param streamProvider Provides output streams to which to write TE files.
 	 * @param recorder Recorder to record TLC as it runs; assumed to already be subscribed.
 	 */
-	public TraceExpressionSpec(
+	public TraceExplorationSpec(
 			IStreamProvider streamProvider,
 			ErrorTraceMessagePrinterRecorder recorder) {
 		this.outputDirectory = Paths.get(".");
