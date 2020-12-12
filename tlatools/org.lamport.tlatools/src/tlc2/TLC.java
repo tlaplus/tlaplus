@@ -79,10 +79,9 @@ public class TLC {
     /**
      * Possible TLC run modes: either model checking or simulation.
      */
-    private enum RunMode {
+    public enum RunMode {
     	MODEL_CHECK, SIMULATE;
     }
-    
 
     // SZ Feb 20, 2009: the class has been 
     // transformed from static to dynamic
@@ -142,6 +141,21 @@ public class TLC {
      * Name of TLC configuration file.
      */
     private String configFile;
+    
+    /**
+     * Name of dump file.
+     */
+    private String dumpFile = null;
+    
+    /**
+     * Dump file options.
+     */
+    private DumpFileOptions dumpFileOptions = null;
+    
+    /**
+     * Name of user file.
+     */
+	private String userFile = null;
     
     /**
      * Name of directory into which to write metadata.
@@ -382,7 +396,7 @@ public class TLC {
 	public static void setTraceNum(long aTraceNum) {
 		traceNum = aTraceNum;
 	}
-
+	
     /**
      * This method handles parameter arguments and prepares the actual call
      * <strong>Note:</strong> This method set ups the static TLCGlobals variables
@@ -393,12 +407,6 @@ public class TLC {
 	@SuppressWarnings("deprecation")	// we're emitting a warning to the user, but still accepting fpmem values > 1
 	public boolean handleParameters(String[] args)
     {
-		String dumpFile = null;
-		boolean asDot = false;
-	    boolean colorize = false;
-	    boolean actionLabels = false;
-		boolean snapshot = false;
-
 		boolean generateTESpec = true;
 		Optional<Path> teSpecOutDir = Optional.empty();
 		
@@ -535,15 +543,15 @@ public class TLC {
                 {
                 	final String dotArgs = args[index].toLowerCase();
                 	index++; // consume "dot...".
-                	asDot = true;
-                	colorize = dotArgs.contains("colorize");
-                	actionLabels = dotArgs.contains("actionlabels");
-                	snapshot = dotArgs.contains("snapshot");
-					dumpFile = getDumpFile(args[index++], ".dot");
+                	boolean colorize = dotArgs.contains("colorize");
+                	boolean actionLabels = dotArgs.contains("actionlabels");
+                	boolean snapshot = dotArgs.contains("snapshot");
+                	this.dumpFileOptions = new DumpFileOptions(colorize, actionLabels, snapshot);
+					this.dumpFile = getDumpFile(args[index++], ".dot");
                 }
                 else if (index < args.length)
                 {
-					dumpFile = getDumpFile(args[index++], ".dump");
+					this.dumpFile = getDumpFile(args[index++], ".dump");
                 } else
                 {
                     printErrorMsg("Error: A file name for dumping states required.");
@@ -716,7 +724,9 @@ public class TLC {
                     try {
 						// Most problems will only show when TLC eventually tries
 						// to write to the file.
-						tlc2.module.TLC.OUTPUT = new BufferedWriter(new FileWriter(new File(args[index++])));
+                    	this.userFile = args[index];
+						tlc2.module.TLC.OUTPUT = new BufferedWriter(new FileWriter(new File(this.userFile)));
+						index++;
         			} catch (IOException e) {
                         printErrorMsg("Error: Failed to create user output log file.");
                         return false;
@@ -734,7 +744,7 @@ public class TLC {
                     try
                     {
                         int num = args[index].trim().toLowerCase().equals("auto")
-                                ? Runtime.getRuntime().availableProcessors()
+                                ? this.hostProcessorCount.get()
                                 : Integer.parseInt(args[index]);
                         if (num < 1)
                         {
@@ -956,22 +966,26 @@ public class TLC {
 		// the current directory.
     	metadir = FileUtil.makeMetaDir(new Date(startTime), specDir, fromChkpt);
     	
-		if (dumpFile != null) {
-			if (dumpFile.startsWith("${metadir}")) {
+		if (this.dumpFile != null) {
+			if (this.dumpFile.startsWith("${metadir}")) {
 				// prefix dumpfile with the known value of this.metadir. There
 				// is no way to determine the actual value of this.metadir
 				// before TLC startup and thus it's impossible to make the
 				// dumpfile end up in the metadir if desired.
-				dumpFile = dumpFile.replace("${metadir}", metadir);
+				this.dumpFile = this.dumpFile.replace("${metadir}", metadir);
 			}
 			try {
-				if (asDot) {
-					this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels, snapshot);
+				if (null != this.dumpFileOptions) {
+					this.stateWriter = new DotStateWriter(
+							this.dumpFile,
+							this.dumpFileOptions.colorize,
+							this.dumpFileOptions.actionLabels,
+							this.dumpFileOptions.snapshot);
 				} else {
-					this.stateWriter = new StateWriter(dumpFile);
+					this.stateWriter = new StateWriter(this.dumpFile);
 				}
 			} catch (IOException e) {
-				printErrorMsg(String.format("Error: Given file name %s for dumping states invalid.", dumpFile));
+				printErrorMsg(String.format("Error: Given file name %s for dumping states invalid.", this.dumpFile));
 				return false;
 			}
 		}
@@ -1476,21 +1490,85 @@ public class TLC {
     }
 
     FPSetConfiguration getFPSetConfiguration() {
-    	return fpSetConfiguration;
+    	return new FPSetConfiguration(this.fpSetConfiguration);
     }
     
     public RunMode getRunMode() {
     	return runMode;
     }
 
-    public String getMainFile() {
-        return mainFile;
+    public long getSimulationBehaviorCountLimit() {
+    	return TLC.traceNum;
+    }
+    
+    public String getTraceFilePath() {
+    	return this.traceFile;
+    }
+    
+    public boolean isDeadlockCheckingEnabled() {
+    	return this.checkDeadlock;
+    }
+    
+    public boolean isStatesDirectoryMarkedForCleanup() {
+    	return this.cleanup;
     }
 
+    public String getMainFile() {
+        return this.mainFile;
+    }
+    
+    public String getConfigFile() {
+    	return this.configFile;
+    }
+    
+    public String getUserFile() {
+    	return this.userFile;
+    }
+
+    public String getDumpFile() {
+    	return this.dumpFile;
+    }
+    
+    public boolean willGenerateTraceExpressionSpec() {
+    	return this.teSpec.isPresent();
+    }
+    
+    public Optional<Path> getTraceExpressionOutputDirectory() {
+    	return this.teSpec.map(spec -> spec.getOutputDirectory());
+    }
+    
     public Optional<MCError> getErrorTrace() {
     	return this.recorder.getMCErrorTrace();
     }
-
+    
+    public DumpFileOptions getDumpFileOptions() {
+    	return this.dumpFileOptions;
+    }
+    
+    public int getTraceDepth() {
+    	return this.traceDepth;
+    }
+    
+    public boolean haveSeed() {
+    	return !this.noSeed;
+    }
+    
+    public long getSeed() {
+    	return this.seed;
+    }
+    
+    public long getAril() {
+    	return this.aril;
+    }
+    
+    public String getCheckpointRecoveryDirectory() {
+    	return this.fromChkpt;
+    }
+    
+    public int getFingerprintFunctionIndex() {
+    	return this.fpIndex;
+    }
+    
 	public String getModelName() {
 		return System.getProperty(MailSender.MODEL_NAME, this.mainFile);
 	}
