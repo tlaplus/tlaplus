@@ -1400,16 +1400,16 @@ public class TLC {
 														"a value in (0.0,1.0) representing the ratio of total\n"
 															+ "physical memory to devote to storing the fingerprints\n"
 															+ "of found states; defaults to 0.25", true));
-    	sharedArguments.add(new UsageGenerator.Argument("-generateSpecTE", null,
-														"if errors are encountered during model checking, generate\n"
-															+ "a SpecTE tla/cfg file pair which encapsulates Init-Next\n"
-															+ "definitions to specify the state conditions of the error\n"
-															+ "state; this enables 'tool' mode. The generated SpecTE\n"
-															+ "will include tool output as well as all non-Standard-\n"
-															+ "Modules dependencies embeded in the module. To prevent\n"
-															+ "the embedding of dependencies, add the parameter\n"
-															+ "'nomonolith' to this declaration", true,
-															"nomonolith"));
+    	sharedArguments.add(new UsageGenerator.Argument("-noGenerateSpecTE",
+														"Whether to skip generating a trace expression (TE) spec in\n"
+															+ "the event of TLC finding a state or behavior that does\n"
+															+ "not satisfy the invariants; TLC's default behavior is to\n"
+															+ "generate this spec.", true));
+		sharedArguments.add(new UsageGenerator.Argument("-teSpecOutDir", "some-dir-name",
+														"Directory to which to output the TE spec if TLC generates\n"
+															+ "an error trace. Can be a relative (to root spec dir)\n"
+															+ "or absolute path. By default the TE spec is output\n"
+															+ "to the same directory as the main spec.", true));
     	sharedArguments.add(new UsageGenerator.Argument("-gzip",
 														"control if gzip is applied to value input/output streams;\n"
 															+ "defaults to 'off'", true));
