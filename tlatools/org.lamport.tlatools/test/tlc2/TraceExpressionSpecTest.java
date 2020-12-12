@@ -77,8 +77,7 @@ public class TraceExpressionSpecTest {
 	@Test
 	public void integrationTestSafetyViolationTESpec() {
 		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
-			"-workers 4",
-			"-tool"
+			"-workers 4"
 		}));
 		
 		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
@@ -95,8 +94,7 @@ public class TraceExpressionSpecTest {
 	@Test
 	public void integrationTestDeadlockViolationTESpec() {
 		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
-			"-workers 4",
-			"-tool"
+			"-workers 4"
 		}));
 		
 		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
@@ -123,8 +121,7 @@ public class TraceExpressionSpecTest {
 	@Test
 	public void integrationTestPlusCalAssertTESpec() {
 		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
-			"-workers 4",
-			"-tool"
+			"-workers 4"
 		}));
 		
 		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
@@ -139,13 +136,7 @@ public class TraceExpressionSpecTest {
 	 */
 	@Test
 	public void integrationTestStutteringTESpec() {
-		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
-			"-tool"
-		}));
-		
-		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
-			assertTrue(integrationTestStutteringLivenessViolation(args));
-		}
+		assertTrue(integrationTestStutteringLivenessViolation());
 	}
 	
 	/**
@@ -154,13 +145,7 @@ public class TraceExpressionSpecTest {
 	 */
 	@Test
 	public void integrationTestLassoTESpec() {
-		Set<String> possibleArgs = new HashSet<String>(Arrays.asList(new String[] {
-			"-tool"
-		}));
-		
-		for (String[] args : SubsetHelper.toArgsSubsets(SubsetHelper.getSubsetsOf(possibleArgs))) {
-			assertTrue(integrationTestLassoLivenessViolation(args));
-		}
+		assertTrue(integrationTestLassoLivenessViolation());
 	}
 	
 	/**

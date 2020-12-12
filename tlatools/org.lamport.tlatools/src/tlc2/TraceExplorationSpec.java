@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -135,6 +136,23 @@ public class TraceExplorationSpec {
 					});
 			return false;
 		}
+	}
+	
+	/**
+	 * Determines whether the given spec is a TE spec.
+	 * @param tlaFilePath Path to the TLA file.
+	 * @return Whether the given spec is a TE spec.
+	 */
+	public static boolean isTESpecFile(String tlaFilePath) {
+		if (null == tlaFilePath) {
+			return false;
+		}
+		
+		try {
+			// TODO: branch based on something better than the filename
+			String filename = Paths.get(tlaFilePath).getFileName().toString();
+			return filename.startsWith(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME);
+		} catch (InvalidPathException e) { return false; }
 	}
 	
 	/**
