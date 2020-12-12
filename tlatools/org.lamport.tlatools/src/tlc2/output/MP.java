@@ -1270,14 +1270,11 @@ public class MP
             break;
             
         /* ************************************************************************ */
-        case EC.TLC_TE_SPEC_GENERATION_START:
-        	b.append("Generating trace expression spec reproducing error behavior (skip this with -noGenerateSpecTE flag)");
-        	break;
-        case EC.TLC_TE_SPEC_GENERATION_END:
-        	b.append("Successfully generated trace expression spec in %1% directory");
+        case EC.TLC_TE_SPEC_GENERATION_COMPLETE:
+        	b.append("Trace exploration spec output in %1% directory");
         	break;
         case EC.TLC_TE_SPEC_GENERATION_ERROR:
-        	b.append("Failed to generate trace expression spec");
+        	b.append("Failed to generate trace exploration spec");
         	break;
             
         /* ************************************************************************ */

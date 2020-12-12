@@ -24,7 +24,7 @@ import tlc2.tool.impl.SpecProcessor;
 import util.TLAConstants;
 
 /**
- * Logic for generating a trace expression (TE) spec.
+ * Logic for generating a trace exploration (TE) spec.
  */
 public class TraceExplorationSpec {
 	
@@ -84,7 +84,6 @@ public class TraceExplorationSpec {
 	 */
 	public void generate(ITool specInfo) {
 		this.recorder.getMCErrorTrace().ifPresent(errorTrace -> {
-			MP.printMessage(EC.TLC_TE_SPEC_GENERATION_START);
 			ModelConfig cfg = specInfo.getModelConfig();
 			SpecProcessor spec = specInfo.getSpecProcessor();
 			String originalSpecName = specInfo.getRootName();
@@ -92,7 +91,7 @@ public class TraceExplorationSpec {
 			MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(spec, cfg);
 			List<String> constants = parserResults.getModelConfig().getRawConstants();
 			if (this.generate(originalSpecName, constants, variables, errorTrace)) {
-				MP.printMessage(EC.TLC_TE_SPEC_GENERATION_END, this.getOutputDirectory().toString());
+				MP.printMessage(EC.TLC_TE_SPEC_GENERATION_COMPLETE, this.getOutputDirectory().toString());
 			} else {
 				MP.printMessage(EC.TLC_TE_SPEC_GENERATION_ERROR);
 			}

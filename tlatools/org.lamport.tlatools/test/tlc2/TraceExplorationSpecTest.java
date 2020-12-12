@@ -34,7 +34,7 @@ import tlc2.output.ErrorTraceMessagePrinterRecorder;
  * Tests for {@link tlc2.TraceExplorationSpec}, both in isolation and
  * integrated with {@link tlc2.TLC}.
  */
-public class TraceExpressionSpecTest {
+public class TraceExplorationSpecTest {
 	
 	/**
 	 * Whether to print TLC console output while running tests.
