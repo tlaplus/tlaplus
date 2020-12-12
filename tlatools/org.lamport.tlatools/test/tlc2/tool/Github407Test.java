@@ -25,14 +25,21 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
@@ -41,10 +48,12 @@ import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class Github407Test extends ModelCheckerTestCase {
+	
+	private static final Path dumpFilePath = Paths.get(System.getProperty("java.io.tmpdir"), "Github407.dump");
 
 	public Github407Test() {
 		super("Github407",
-				new String[] { "-dump", System.getProperty("java.io.tmpdir") + File.separator + "Github407" },
+				new String[] { "-dump", Github407Test.dumpFilePath.toString() },
 				ExitStatus.SUCCESS);
 	}
 
@@ -54,12 +63,23 @@ public class Github407Test extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "4", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
 		
-		final File dumpFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "Github407.dump");
-		assertTrue(dumpFile.exists());
+		assertTrue(Files.exists(Github407Test.dumpFilePath));
 		
 		// If the file exist, simply compare it to a correct and manually checked version.
-		final InputStream master = getClass().getResourceAsStream("Github407.dump");
-		assertTrue(Arrays.equals(DumpAsDotTest.getBytes(master), DumpAsDotTest.getBytes(new FileInputStream(dumpFile))));
+		try (
+			final InputStream expected = getClass().getResourceAsStream("Github407.dump");
+			final FileInputStream actual = new FileInputStream(Github407Test.dumpFilePath.toFile());
+			) {
+			BufferedReader expectedReader = new BufferedReader(new InputStreamReader(expected));
+			BufferedReader actualReader = new BufferedReader(new InputStreamReader(actual));
+			while (expectedReader.ready() && actualReader.ready()) {
+				String expectedLine = expectedReader.readLine();
+				String actualLine = actualReader.readLine();
+				assertEquals(expectedLine, actualLine);
+			}
+
+			assertEquals(expectedReader.ready(), actualReader.ready());
+		}
 
 		assertZeroUncovered();
 		
