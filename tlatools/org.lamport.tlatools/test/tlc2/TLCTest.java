@@ -284,7 +284,7 @@ public class TLCTest {
 		final String[] args = new String[] {"-continue", tlaFile};
 		assertTrue(tlc.handleParameters(args));
 		assertTrue(TLCGlobals.continuation);
-		assertFalse(tlc.willGenerateTraceExpressionSpec());
+		assertFalse(tlc.willGenerateTraceExplorationSpec());
 		TLCGlobals.continuation = ogValue;
 	}
 	
@@ -327,8 +327,8 @@ public class TLCTest {
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-generateSpecTE", tlaFile};
 		assertTrue(tlc.handleParameters(args));
-		assertTrue(tlc.willGenerateTraceExpressionSpec());
-		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertTrue(tlc.willGenerateTraceExplorationSpec());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isPresent());
 	}
 	
 	@Test
@@ -338,62 +338,82 @@ public class TLCTest {
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-generateSpecTE", "nomonolith", tlaFile};
 		assertTrue(tlc.handleParameters(args));
-		assertTrue(tlc.willGenerateTraceExpressionSpec());
-		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertTrue(tlc.willGenerateTraceExplorationSpec());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isPresent());
 	}
 
 	@Test
-	public void testNoGenerateTraceExpressionSpecOptionSetsVariable()
+	public void testNoGenerateTraceExplorationSpecOptionSetsVariable()
 	{
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-noGenerateSpecTE", tlaFile};
 		assertTrue(tlc.handleParameters(args));
-		assertFalse(tlc.willGenerateTraceExpressionSpec());
-		assertTrue(tlc.getTraceExpressionOutputDirectory().isEmpty());
+		assertFalse(tlc.willGenerateTraceExplorationSpec());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isEmpty());
 	}
 	
 	@Test
-	public void testNoGenerateTraceExpressionSpecOverridesGenerateTraceExpressionSpec()
+	public void testNoGenerateTraceExplorationSpecOverridesGenerateTraceExplorationSpec()
 	{
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final String[] args = new String[] {"-generateSpecTE", "-noGenerateSpecTE", tlaFile};
 		assertTrue(tlc.handleParameters(args));
-		assertFalse(tlc.willGenerateTraceExpressionSpec());
-		assertTrue(tlc.getTraceExpressionOutputDirectory().isEmpty());
+		assertFalse(tlc.willGenerateTraceExplorationSpec());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isEmpty());
 	}
 	
 	@Test
-	public void testTraceExpressionOutDirSetsVariable()
+	public void testTraceExplorationOutDirSetsVariable()
 	{
 		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
 		final TLC tlc = new TLC();
 		final Path expectedPath = Paths.get("some", "file", "path");
 		final String[] args = new String[] {"-teSpecOutDir", expectedPath.toString(), tlaFile};
-		assertFalse(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertFalse(tlc.getTraceExplorationSpecOutputDirectory().isPresent());
 		assertTrue(tlc.handleParameters(args));
-		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
-		assertEquals(expectedPath, tlc.getTraceExpressionOutputDirectory().get());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isPresent());
+		assertEquals(expectedPath, tlc.getTraceExplorationSpecOutputDirectory().get());
 	}
 	
 	@Test
-	public void testTraceExpressionOutDirDefault()
+	public void testTraceExplorationOutDirDefault()
 	{
 		Path tlaPath = Paths.get("some", "file", "path", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME);
 		TLC tlc = new TLC();
 		String[] args = new String[] {tlaPath.toString()};
-		assertFalse(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertFalse(tlc.getTraceExplorationSpecOutputDirectory().isPresent());
 		assertTrue(tlc.handleParameters(args));
-		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
-		assertEquals(tlaPath.getParent(), tlc.getTraceExpressionOutputDirectory().get());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isPresent());
+		assertEquals(tlaPath.getParent(), tlc.getTraceExplorationSpecOutputDirectory().get());
 
 		tlc = new TLC();
 		args = new String[] { TLAConstants.Files.MODEL_CHECK_FILE_BASENAME };
-		assertFalse(tlc.getTraceExpressionOutputDirectory().isPresent());
+		assertFalse(tlc.getTraceExplorationSpecOutputDirectory().isPresent());
 		assertTrue(tlc.handleParameters(args));
-		assertTrue(tlc.getTraceExpressionOutputDirectory().isPresent());
-		assertEquals(Paths.get("."), tlc.getTraceExpressionOutputDirectory().get());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isPresent());
+		assertEquals(Paths.get("."), tlc.getTraceExplorationSpecOutputDirectory().get());
+	}
+	
+	@Test
+	public void testNoGenerateTESpecWithContinueOrTool() {
+		boolean ogValue = TLCGlobals.continuation;
+		final String tlaFile = TLAConstants.Files.MODEL_CHECK_FILE_BASENAME;
+		TLC tlc = new TLC();
+		String[] args = new String[] {"-continue", tlaFile};
+		assertTrue(tlc.handleParameters(args));
+		assertFalse(tlc.willGenerateTraceExplorationSpec());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isEmpty());
+		TLCGlobals.continuation = ogValue;
+		
+		ogValue = TLCGlobals.tool;
+		tlc = new TLC();
+		args = new String[] {"-tool", tlaFile};
+		assertTrue(tlc.handleParameters(args));
+		assertFalse(tlc.willGenerateTraceExplorationSpec());
+		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isEmpty());
+		TLCGlobals.tool = ogValue;
 	}
 
 	@Test

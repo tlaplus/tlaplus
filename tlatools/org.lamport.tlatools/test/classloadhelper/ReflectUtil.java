@@ -18,11 +18,11 @@ public class ReflectUtil {
 	 * @param classHandle Handle to the class to construct.
 	 * @return An instance of the constructed class.
 	 */
-    public static Object construct(Class<?> classHandle) {
+    public static Object construct(Class<?> classHandle) throws InvocationTargetException {
     	try {
 			Constructor<?> constructorHandle = classHandle.getConstructor();
 			return constructorHandle.newInstance();
-    	} catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+    	} catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
     		throw new RuntimeException(e);
     	}
     }
@@ -35,11 +35,14 @@ public class ReflectUtil {
      * @param params Parameters to give to constructor.
      * @return An instance of the constructed class.
      */
-    public static Object constructWithParams(Class<?> classHandle, Class<?>[] paramTypes, Object[] params) {
+    public static Object constructWithParams(
+    		Class<?> classHandle,
+    		Class<?>[] paramTypes,
+    		Object[] params) throws InvocationTargetException {
     	try {
 			Constructor<?> constructorHandle = classHandle.getConstructor(paramTypes);
 			return constructorHandle.newInstance(params);
-    	} catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+    	} catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
     		throw new RuntimeException(e);
     	}
     }
@@ -54,11 +57,11 @@ public class ReflectUtil {
     public static Object invokeMethod(
     		Class<?> classHandle,
     		String methodName,
-    		Object classInstance) {
+    		Object classInstance) throws InvocationTargetException {
     	try {
     		Method methodHandle = classHandle.getMethod(methodName);
     		return methodHandle.invoke(classInstance);
-    	} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+    	} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
     		throw new RuntimeException(e);
     	}
     }
@@ -78,11 +81,11 @@ public class ReflectUtil {
     		String methodName,
     		Object classInstance,
     		Class<?>[] paramClassHandles,
-    		Object[] params) {
+    		Object[] params) throws InvocationTargetException {
     	try {
 			Method methodHandle = classHandle.getMethod(methodName, paramClassHandles);
 			return methodHandle.invoke(classInstance, params);
-    	} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+    	} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
     		throw new RuntimeException(e);
     	}
     }
@@ -102,7 +105,7 @@ public class ReflectUtil {
     		Class<?> classHandle,
     		String methodName,
     		Object classInstance,
-    		Object... params) {
+    		Object... params) throws InvocationTargetException {
     	try {
     		for (Method methodHandle : classHandle.getMethods()) {
     			if (methodHandle.getName().equals(methodName)) {
@@ -111,7 +114,7 @@ public class ReflectUtil {
     		}
     		
     		throw new NoSuchMethodException(methodName);
-    	} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+    	} catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException e) {
     		throw new RuntimeException(e);
     	}
     }
@@ -126,7 +129,7 @@ public class ReflectUtil {
      */
     public static Object invokeStaticMethod(
     		Class<?> classHandle,
-    		String methodName) {
+    		String methodName) throws InvocationTargetException {
     	return ReflectUtil.invokeMethod(classHandle, methodName, null);
     }
 
@@ -143,7 +146,7 @@ public class ReflectUtil {
     		Class<?> classHandle,
     		String methodName,
     		Class<?>[] paramClassHandles,
-    		Object[] params) {
+    		Object[] params) throws InvocationTargetException {
     	return ReflectUtil.invokeMethodWithParams(classHandle, methodName, null, paramClassHandles, params);
     }
     

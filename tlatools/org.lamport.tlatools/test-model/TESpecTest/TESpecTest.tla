@@ -40,4 +40,16 @@ LiveSpec ==
     /\ [][Next]_<<x, y>>
     /\ WF_<<x, y>>(Increment)
 
+EqAlias ==
+    [x |-> x,
+    y |-> y]
+
+SupersetAlias ==
+    [x |-> x,
+    y |-> y,
+    z |-> ~y]
+
+SubsetAlias ==
+    [x |-> x]
+
 ==============================================

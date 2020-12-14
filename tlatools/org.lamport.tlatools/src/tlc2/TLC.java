@@ -1136,7 +1136,7 @@ public class TLC {
 							? Long.toString(runtime) + "ms"
 							: convertRuntimeToHumanReadable(runtime));
 
-			// Generate trace expression spec if error occurred.
+			// Generate trace exploration spec if error occurred.
 			this.teSpec.ifPresent(spec -> spec.generate(this.tool));
 
 			MP.unsubscribeRecorder(this.recorder);
@@ -1401,7 +1401,7 @@ public class TLC {
 															+ "physical memory to devote to storing the fingerprints\n"
 															+ "of found states; defaults to 0.25", true));
     	sharedArguments.add(new UsageGenerator.Argument("-noGenerateSpecTE",
-														"Whether to skip generating a trace expression (TE) spec in\n"
+														"Whether to skip generating a trace exploration (TE) spec in\n"
 															+ "the event of TLC finding a state or behavior that does\n"
 															+ "not satisfy the invariants; TLC's default behavior is to\n"
 															+ "generate this spec.", true));
@@ -1529,11 +1529,11 @@ public class TLC {
     	return this.dumpFile;
     }
     
-    public boolean willGenerateTraceExpressionSpec() {
+    public boolean willGenerateTraceExplorationSpec() {
     	return this.teSpec.isPresent();
     }
     
-    public Optional<Path> getTraceExpressionOutputDirectory() {
+    public Optional<Path> getTraceExplorationSpecOutputDirectory() {
     	return this.teSpec.map(spec -> spec.getOutputDirectory());
     }
     

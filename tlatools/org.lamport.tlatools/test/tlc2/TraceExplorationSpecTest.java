@@ -131,6 +131,33 @@ public class TraceExplorationSpecTest {
 	}
 	
 	/**
+	 * Tests TE spec generation works with an identity function alias for
+	 * safety invariant violation.
+	 */
+	@Test
+	public void integrationTestEqAliasSafetyTESpec() {
+		assertTrue(integrationTestSafetyViolation("TESpecTest", "TESpecEqAliasSafetyTest"));
+	}
+	
+	/**
+	 * Tests TE spec generation works with superset alias for safety invariant
+	 * violation.
+	 */
+	@Test
+	public void integrationTestSupersetAliasSafetyTESpec() {
+		assertTrue(integrationTestSafetyViolation("TESpecTest", "TESpecSuperAliasSafetyTest"));
+	}
+	
+	/**
+	 * Tests TE spec generation works with subset alias for safety invariant
+	 * violation.
+	 */
+	@Test
+	public void integrationTestSubsetAliasSafetyTESpec() {
+		assertTrue(integrationTestSafetyViolation("TESpecTest", "TESpecSubAliasSafetyTest"));
+	}
+	
+	/**
 	 * Given a spec generating a simple stuttering error trace, tests
 	 * that the generated TE spec results in the same error trace.
 	 */

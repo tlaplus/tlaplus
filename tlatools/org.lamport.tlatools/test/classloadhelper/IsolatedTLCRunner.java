@@ -7,6 +7,7 @@ import tlc2.model.MCVariable;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -46,8 +47,12 @@ public class IsolatedTLCRunner {
 			this.loader = new DynamicClassLoader(tlaToolsDir);
 
 			// Initializes the TLC class in this isolated classloader
-			Class<?> tlcClassHandle = this.loader.load("tlc2.TLC");
-			this.tlcInstance = ReflectUtil.construct(tlcClassHandle);
+			try {
+				Class<?> tlcClassHandle = this.loader.load("tlc2.TLC");
+				this.tlcInstance = ReflectUtil.construct(tlcClassHandle);
+			} catch (InvocationTargetException e) {
+				e.getCause().printStackTrace();
+			}
 			
 			// Silences output as requested
 			if (!printConsoleOutput) {
@@ -71,23 +76,29 @@ public class IsolatedTLCRunner {
 		// Registers search directories with TLC
 		Class<?> tlcClassHandle = this.loader.load("tlc2.TLC");
 		Class<?> simpleResolverHandle = this.loader.load("util.SimpleFilenameToStream");
-		Object resolver = ReflectUtil.constructWithParams(
-				simpleResolverHandle,
-				new Class<?>[] { String[].class },
-				new Object[] { searchDirs });
-		ReflectUtil.invokeMethodByName(
-				tlcClassHandle,
-				"setResolver",
-				this.tlcInstance,
-				new Object[] { resolver });
+		try {
+			Object resolver = ReflectUtil.constructWithParams(
+					simpleResolverHandle,
+					new Class<?>[] { String[].class },
+					new Object[] { searchDirs });
+			ReflectUtil.invokeMethodByName(
+					tlcClassHandle,
+					"setResolver",
+					this.tlcInstance,
+					new Object[] { resolver });
+			
+			// Invokes the {@link tlc2.TLC#handleParameters} method
+			return (boolean)ReflectUtil.invokeMethodWithParams(
+					tlcClassHandle,
+					"handleParameters",
+					this.tlcInstance,
+					new Class<?>[] { String[].class },
+					new Object[] { args });
+		} catch (InvocationTargetException e) {
+			e.getCause().printStackTrace();
+		}
 		
-		// Invokes the {@link tlc2.TLC#handleParameters} method
-		return (boolean)ReflectUtil.invokeMethodWithParams(
-				tlcClassHandle,
-				"handleParameters",
-				this.tlcInstance,
-				new Class<?>[] { String[].class },
-				new Object[] { args });
+		return false;
 	}
 	
 	/**
@@ -98,15 +109,20 @@ public class IsolatedTLCRunner {
 	public Optional<MCError> run() {
 		// Invokes the {@link tlc2.TLC#process} method
 		Class<?> tlcClassHandle = this.loader.load("tlc2.TLC");
-		ReflectUtil.invokeMethod(tlcClassHandle, "process", this.tlcInstance);
+		try {
+			ReflectUtil.invokeMethod(tlcClassHandle, "process", this.tlcInstance);
+
+			// Retrieves (optional) error from TLC
+			Optional<Object> errorTrace = (Optional<Object>)ReflectUtil.invokeMethod(
+					tlcClassHandle,
+					"getErrorTrace",
+					this.tlcInstance);
+			return this.convertLoadedMCErrorToMCError(errorTrace);
+		} catch (InvocationTargetException e) {
+			e.getCause().printStackTrace();
+		}
 		
-		// Retrieves (optional) error from TLC
-		Optional<Object> errorTrace = (Optional<Object>)ReflectUtil.invokeMethod(
-				tlcClassHandle,
-				"getErrorTrace",
-				this.tlcInstance);
-		
-		return this.convertLoadedMCErrorToMCError(errorTrace);
+		return Optional.empty();
 	}
 	
 	/**
@@ -125,21 +141,26 @@ public class IsolatedTLCRunner {
 			Class<?> mcVariableHandle = this.loader.load("tlc2.model.MCVariable");
 
 			MCError errorTrace = new MCError();
-			List<Object> dMCStates = (List<Object>)ReflectUtil.invokeMethod(mcErrorClassHandle, "getStates", dErrorTrace);
-			for (Object dMCState : dMCStates) {
-				int stateNumber = (int)ReflectUtil.invokeMethod(mcStateHandle, "getStateNumber", dMCState);
-				boolean isStuttering = (boolean)ReflectUtil.invokeMethod(mcStateHandle, "isStuttering", dMCState);
-				boolean isBackToState = (boolean)ReflectUtil.invokeMethod(mcStateHandle, "isBackToState", dMCState);
-				Object[] dMCVars = (Object[])ReflectUtil.invokeMethod(mcStateHandle, "getVariables", dMCState);
-				MCVariable[] vars = new MCVariable[dMCVars.length];
-				for (int i = 0; i < dMCVars.length; i++) {
-					String varName = (String)ReflectUtil.invokeMethod(mcVariableHandle, "getName", dMCVars[i]);
-					String varValue = (String)ReflectUtil.invokeMethod(mcVariableHandle, "getValueAsString", dMCVars[i]);
-					vars[i] = new MCVariable(varName, varValue);
+			try {
+				List<Object> dMCStates = (List<Object>)ReflectUtil.invokeMethod(mcErrorClassHandle, "getStates", dErrorTrace);
+				for (Object dMCState : dMCStates) {
+					int stateNumber = (int)ReflectUtil.invokeMethod(mcStateHandle, "getStateNumber", dMCState);
+					boolean isStuttering = (boolean)ReflectUtil.invokeMethod(mcStateHandle, "isStuttering", dMCState);
+					boolean isBackToState = (boolean)ReflectUtil.invokeMethod(mcStateHandle, "isBackToState", dMCState);
+					Object[] dMCVars = (Object[])ReflectUtil.invokeMethod(mcStateHandle, "getVariables", dMCState);
+					MCVariable[] vars = new MCVariable[dMCVars.length];
+					for (int i = 0; i < dMCVars.length; i++) {
+						String varName = (String)ReflectUtil.invokeMethod(mcVariableHandle, "getName", dMCVars[i]);
+						String varValue = (String)ReflectUtil.invokeMethod(mcVariableHandle, "getValueAsString", dMCVars[i]);
+						vars[i] = new MCVariable(varName, varValue);
+					}
+					
+					MCState state = new MCState(vars, "", "", null, isStuttering, isBackToState, stateNumber);
+					errorTrace.addState(state);
 				}
-				
-				MCState state = new MCState(vars, "", "", null, isStuttering, isBackToState, stateNumber);
-				errorTrace.addState(state);
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+				return Optional.<MCError>empty();
 			}
 
 			return Optional.of(errorTrace);
