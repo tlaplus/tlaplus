@@ -5,6 +5,7 @@
 
 package tlc2.util;
 
+import java.util.Iterator;
 import java.util.function.Function;
 
 import tla2sany.semantic.SymbolNode;
@@ -25,7 +26,7 @@ import tla2sany.semantic.SymbolNode;
 //
 // The contrived spec at the bottom exhibits this problem. Increasing the level,
 // the number of lookups go through the roof.
-public final class Context {
+public final class Context implements Iterator<Context> {
 	/**
 	 * A link list of name and value pairs. When adding <name, value> to the
 	 * context, we assume that name != null.
@@ -162,6 +163,24 @@ public final class Context {
 		sb = this.toString(sb);
 		sb.append("]");
 		return sb.toString();
+	}
+
+	@Override
+	public boolean hasNext() {
+		return this.next != null;
+	}
+
+	@Override
+	public Context next() {
+		return this.next;
+	}
+
+	public final SymbolNode getName() {
+		return name;
+	}
+
+	public final Object getValue() {
+		return value;
 	}
 }
 /*

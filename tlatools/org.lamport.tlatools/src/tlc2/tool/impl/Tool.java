@@ -1552,7 +1552,7 @@ public abstract class Tool
                           TLCState s1, final int control, final CostModel cm);
   
   @ExpectInlined
-  protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
+  protected Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0,
           final TLCState s1, final int control, CostModel cm) {
         switch (expr.getKind()) {
         /***********************************************************************
