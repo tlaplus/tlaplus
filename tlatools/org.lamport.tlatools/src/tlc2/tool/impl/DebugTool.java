@@ -29,6 +29,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.debug.IDebugTarget;
 import tlc2.tool.Action;
+import tlc2.tool.EvalControl;
 import tlc2.tool.IActionItemList;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.TLCState;
@@ -49,9 +50,14 @@ public class DebugTool extends Tool {
 		this.level = 0;
 	}
 
+	// 8888888888888888888888888888888888888888888888888888888888888888888888888//
+
 	@Override
 	public final Value eval(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, final CostModel cm) {
+		if (EvalControl.isDebug(control)) {
+			return evalImpl(expr, c, s0, s1, control, cm);
+		}
 		target.pushFrame(this, level++, expr, c, control);
 		final Value v = evalImpl(expr, c, s0, s1, control, cm);
 		target.popFrame(this, v, level--, expr, c, control);
@@ -61,6 +67,9 @@ public class DebugTool extends Tool {
 	@Override
 	protected Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
+		if (EvalControl.isDebug(control)) {
+			return super.evalImpl(expr, c, s0, s1, control, cm);
+		}
 		target.pushFrame(this, level++, expr, c, control);
 		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
 		target.popFrame(this, v, level--, expr, c, control);

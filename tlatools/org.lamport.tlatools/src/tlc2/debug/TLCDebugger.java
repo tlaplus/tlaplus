@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -429,7 +428,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 				if (val instanceof LazyValue) {
 					// unlazy/eval LazyValues
 					final LazyValue lv = (LazyValue) c.getValue();
-					val = tool.eval(lv.expr, lv.con, TLCState.Empty, null, EvalControl.Clear, lv.getCostModel());
+					val = tool.eval(lv.expr, lv.con, TLCState.Empty, null, EvalControl.Debug, lv.getCostModel());
 				}
 				variable.setValue(val.toString());
 
