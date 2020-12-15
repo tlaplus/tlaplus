@@ -239,12 +239,8 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
 		final ScopesResponse response = new ScopesResponse();
 
-		final Optional<TLCStackFrame> findFirst = stack.stream().filter(s -> s.node.myUID == args.getFrameId())
-				.findFirst();
-		if (findFirst.isPresent()) {
-			TLCStackFrame frame = findFirst.get();
-			response.setScopes(frame.getScopes());
-		}
+		stack.stream().filter(s -> s.node.myUID == args.getFrameId()).findFirst()
+				.ifPresent(frame -> response.setScopes(frame.getScopes()));
 
 		return CompletableFuture.completedFuture(response);
 	}
@@ -252,9 +248,6 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	@Override
 	public CompletableFuture<VariablesResponse> variables(VariablesArguments args) {
 		final int vr = args.getVariablesReference();
-
-//		Optional<TLCStackFrame> findFirst = this.stack.stream().filter(frame -> frame.getId() == vr).findFirst();
-//		findFirst.ifPresent(frame -> frame.getv);
 		
 		// TODO: It is wrong to lookup the variables in the top stack frame. Instead,
 		// the lookup of vr should be independent of any stack frame and, thus, done
