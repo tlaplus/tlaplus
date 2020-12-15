@@ -364,11 +364,6 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		// The spec has to have an "debugMe" operator.
 		final OpDefNode valueNode = module.getOpDef("debugMe");
 
-		// Register this instance at the debug target of the aspect that is woven into
-		// Tool. Do *not* register before processing the spec above because TLC eagerly
-		// tries to evaluate expressions that we don't want to debug.
-//		IDebugTarget.Factory.set(this);
-
 		// Make sure we pause/stop debugging initially.
 		targetLevel = Integer.MIN_VALUE;
 		step = Step.In;
