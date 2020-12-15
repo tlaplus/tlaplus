@@ -24,7 +24,6 @@ import tlc2.model.MCError;
 import tlc2.model.MCState;
 import tlc2.output.CFGCopier;
 import tlc2.output.EC;
-import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
 import tlc2.output.Messages;
 import tlc2.output.SpecTraceExpressionWriter;
@@ -63,6 +62,7 @@ public class TraceExplorer {
     static final String SPEC_TE_INIT_ID = "_SpecTEInit";
     static final String SPEC_TE_NEXT_ID = "_SpecTENext";
     private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "_SpecTEActionConstraint";
+    static final String SPEC_TE_TRACE_EXPRESSION = "TraceExpression";
     
     // <parameter name, whether the parameter takes an argument>
     private static final HashMap<String, Boolean> TLC_ARGUMENTS_TO_IGNORE;
@@ -152,6 +152,8 @@ public class TraceExplorer {
 		extendedModules.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
 
 		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME, originalSpecName, extendedModules);
+		
+		writer.addTraceExpressionStub(SPEC_TE_TRACE_EXPRESSION, variables);
 
 		final List<MCState> trace = error.getStates();
 		
@@ -196,6 +198,8 @@ public class TraceExplorer {
 		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", originalSpecName, extendedModules);
 
 		writer.addTraceFunction(trace, traceFunctionId);
+		
+		writer.addAliasToCfg(SPEC_TE_TRACE_EXPRESSION);
 		
         /**
          * Write to streams.

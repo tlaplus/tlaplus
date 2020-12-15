@@ -583,6 +583,9 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		addPrimer(moduleFilename, extendedModuleName, new HashSet<>());
 	}
 	
+	/**
+	 * Adds EXTENDS statements.
+	 */
 	public void addPrimer(
 			final String moduleFilename,
 			final String extendedModuleName,
@@ -600,6 +603,26 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		
 		tlaBuffer.append(SpecWriterUtilities.getExtendingModuleContent(moduleFilename,
 				extraExtendedModules.toArray(new String[extraExtendedModules.size()])));
+	}
+	
+	/**
+	 * Adds the trace expression stub to the TE spec.
+	 * This is an alias function which applies the identity transformation
+	 * to the spec's variables, with some comments explaining how to add
+	 * additional transformations for custom trace expressions.
+	 * @param teName Name of trace expression.
+	 * @param variables Spec variables; transformed by identity.
+	 */
+	public void addTraceExpressionStub(String teName, final List<String> variables) {
+		this.tlaBuffer.append(teName + TLAConstants.DEFINES + TLAConstants.L_SQUARE_BRACKET + TLAConstants.CR + TLAConstants.INDENT);
+		this.tlaBuffer.append(variables.stream()
+				.map(var -> var + TLAConstants.RECORD_ARROW + var)
+				.collect(Collectors.joining(TLAConstants.COMMA + TLAConstants.CR + TLAConstants.INDENT)));
+		this.tlaBuffer.append(TLAConstants.COMMENT_NS + TLAConstants.COMMA + TLAConstants.CR);
+		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.COMMENT + "Put additional trace expressions here; examples:" + TLAConstants.CR);
+		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.COMMENT + "x" + TLAConstants.RECORD_ARROW + TLAConstants.TLA_NOT + "y" + TLAConstants.PRIME + TLAConstants.COMMA + TLAConstants.CR);
+		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.COMMENT + "e" + TLAConstants.RECORD_ARROW + TLAConstants.KeyWords.ENABLED + TLAConstants.SPACE + "ActionName" + TLAConstants.CR);
+		this.tlaBuffer.append(TLAConstants.R_SQUARE_BRACKET + TLAConstants.CR + TLAConstants.CR);
 	}
 
 	public void addFooter() {
@@ -863,10 +886,6 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 			cfgBuffer.append(initId).append(TLAConstants.CR);
 		}
 		
-		// Stub for trace expressions variable
-		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.VARIABLE).append(' ');
-		tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.CR).append(TLAConstants.CR);
-
 		tlaBuffer.append(TLAConstants.COMMENT).append("TRACE INIT definition ");
 		tlaBuffer.append(TLAConstants.TraceExplore.TRACE_EXPLORE_INIT).append(TLAConstants.CR);
 		tlaBuffer.append(initId).append(TLAConstants.DEFINES_CR);
@@ -878,11 +897,6 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
             tlaBuffer.append(TLAConstants.CR);
         }
 		
-		// Stub for trace expressions
-		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
-		tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.EQ);
-		tlaBuffer.append(TLAConstants.KeyWords.TRUE).append(TLAConstants.CR);
-
 		tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
 		
         /************************************************
@@ -934,11 +948,6 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 				tlaBuffer.append(TLAConstants.EQ).append("_TETrace[j].").append(var);
 				tlaBuffer.append(TLAConstants.CR);
 	        }
-
-			// stub for trace expressions.
-			tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.INDENT).append(TLAConstants.TLA_AND).append(' ');
-			tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.PRIME).append(TLAConstants.EQ);
-			tlaBuffer.append(TRACE_EXPRESSION_VARIABLE).append(TLAConstants.CR);
 		}
 
 		tlaBuffer.append(TLAConstants.CR).append(TLAConstants.CR);

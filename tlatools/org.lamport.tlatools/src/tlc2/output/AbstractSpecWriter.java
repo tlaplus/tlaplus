@@ -504,16 +504,23 @@ public abstract class AbstractSpecWriter {
 	public void addAlias(final String aliasString, final String attributeName) {
 		if (aliasString.trim().length() != 0) {
 			final String id = SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.ALIAS_SCHEME);
-			
-			if (cfgBuffer != null) {
-				cfgBuffer.append(TLAConstants.COMMENT).append("ALIAS definition").append(TLAConstants.CR);
-				cfgBuffer.append("ALIAS").append(TLAConstants.CR).append(id).append(TLAConstants.CR);
-			}
+			this.addAliasToCfg(id);
 
 			tlaBuffer.append(TLAConstants.COMMENT).append("ALIAS definition ").append(TLAConstants.ATTRIBUTE);
 			tlaBuffer.append(attributeName).append(TLAConstants.CR);
 			tlaBuffer.append(id).append(TLAConstants.DEFINES).append(TLAConstants.CR).append(aliasString);
 			tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
+		}
+	}
+	
+	/**
+	 * Specifies an alias in the config file.
+	 * @param aliasName Name of the alias to specify.
+	 */
+	public void addAliasToCfg(final String aliasName) {
+		if (this.cfgBuffer != null) {
+			this.cfgBuffer.append(TLAConstants.COMMENT).append("ALIAS definition").append(TLAConstants.CR);
+			this.cfgBuffer.append("ALIAS").append(TLAConstants.CR).append(aliasName).append(TLAConstants.CR);
 		}
 	}
 	
