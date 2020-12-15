@@ -191,6 +191,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	
 	@Override
 	public CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
+		//TODO: Confirm breakpoint locations (see tlc2.debug.TLCDebugger.matches(SemanticNode))!!!
 		System.out.println("setBreakpoints");
 		SourceBreakpoint[] sbps = args.getBreakpoints();
 		breakpoints = new Breakpoint[sbps.length];
