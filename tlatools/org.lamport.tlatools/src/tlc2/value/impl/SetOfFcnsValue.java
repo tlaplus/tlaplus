@@ -8,6 +8,7 @@ package tlc2.value.impl;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Random;
 
 import tlc2.TLCGlobals;
 import tlc2.tool.FingerprintException;
@@ -535,5 +536,8 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
 			return new FcnRcdValue(domSet.elems, range, true);
 		}
+	}
+	public TLCVariable toTLCVariable(final TLCVariable variable, Random rnd) {
+		return super.toTLCVariable(variable, rnd);
 	}
 }

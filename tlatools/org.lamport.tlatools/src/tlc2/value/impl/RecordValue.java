@@ -8,8 +8,11 @@ package tlc2.value.impl;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
@@ -37,7 +40,7 @@ public class RecordValue extends Value implements Applicable {
   public final UniqueString[] names;   // the field names
   public final Value[] values;         // the field values
   private boolean isNorm;
-public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new Value[0], true);
+  public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new Value[0], true);
 
   /* Constructor */
   public RecordValue(UniqueString[] names, Value[] values, boolean isNorm) {
@@ -754,5 +757,19 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
 			public TLCState createEmpty() {
 				return this.state.createEmpty();
 			}
+		}
+
+		@Override
+		public List<TLCVariable> getTLCVariables(final TLCVariable prototype, Random rnd) {
+			final List<TLCVariable> nestedVars = new ArrayList<>(values.length);
+			for (int i = 0; i < names.length; i++) {
+				final UniqueString uniqueString = names[i];
+				final Value v = values[i];
+				final TLCVariable nested = prototype.newInstance(uniqueString.toString(), v, rnd);
+				nested.setValue(v.toString());
+				nested.setType(v.getClass().getSimpleName());
+				nestedVars.add(nested);
+			}
+			return nestedVars;
 		}
 }

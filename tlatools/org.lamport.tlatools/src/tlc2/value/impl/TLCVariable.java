@@ -23,20 +23,23 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tlc2.debug;
+package tlc2.value.impl;
 
-import tla2sany.semantic.SemanticNode;
-import tlc2.tool.impl.Tool;
-import tlc2.util.Context;
-import tlc2.value.impl.Value;
+import java.util.Random;
 
-public interface IDebugTarget {
+public interface TLCVariable {
 
-	public enum Step {
-		In, Out, Over
-	};
-
-	IDebugTarget pushFrame(Tool tool, int level, SemanticNode expr, Context c, int control);
+	void setInstance(final Value value);
 	
-	IDebugTarget popFrame(Tool tool, Value v, int level, SemanticNode expr, Context c, int control);
+	void setName(final String name);
+
+	void setValue(final String value);
+
+	void setType(final String type);
+
+	void setVariablesReference(final int variablesReference);
+
+	TLCVariable newInstance(String name, Value values, Random rnd);
+
+	TLCVariable newInstance(Value value, Random rnd);
 }

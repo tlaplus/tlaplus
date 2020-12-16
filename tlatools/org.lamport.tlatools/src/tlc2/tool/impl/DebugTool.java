@@ -55,26 +55,19 @@ public class DebugTool extends Tool {
 	@Override
 	public final Value eval(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, final CostModel cm) {
-		if (EvalControl.isDebug(control)) {
-			return evalImpl(expr, c, s0, s1, control, cm);
-		}
-		// TODO: Reset level to zero as was done in the AspectJ-based debugger?!
-		target.pushFrame(this, level++, expr, c, control);
-		final Value v = evalImpl(expr, c, s0, s1, control, cm);
-		target.popFrame(this, v, level--, expr, c, control);
-		return v;
+		return evalImpl(expr, c, s0, s1, control, cm);
 	}
 
 	@Override
 	protected Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
 		if (EvalControl.isDebug(control)) {
-			return super.evalImpl(expr, c, s0, s1, control, cm);
+			target.pushFrame(this, ++level, expr, c, control);
+			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
+			target.popFrame(this, v, --level, expr, c, control);
+			return v;
 		}
-		target.pushFrame(this, level++, expr, c, control);
-		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-		target.popFrame(this, v, level--, expr, c, control);
-		return v;
+		return super.evalImpl(expr, c, s0, s1, control, cm);
 	}
 
 	@Override

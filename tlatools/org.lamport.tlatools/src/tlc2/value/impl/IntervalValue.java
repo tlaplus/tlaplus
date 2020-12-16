@@ -7,6 +7,7 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
+import java.util.Random;
 
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
@@ -386,5 +387,12 @@ implements Enumerable, Reducible {
 	     int sz = size();
 	     int index = (int) Math.floor(RandomEnumerableValues.get().nextDouble() * sz);
 	     return elementAt(index);
+	}
+
+	@Override
+	public TLCVariable toTLCVariable(final TLCVariable variable, Random rnd) {
+		// TODO: This call is expensive for a large interval (it gets enumerated) but I don't
+		// expect this to be a problem initially.
+		return this.toSetEnum().toTLCVariable(variable, rnd);
 	}
 }

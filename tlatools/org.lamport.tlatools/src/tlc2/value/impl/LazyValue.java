@@ -11,7 +11,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import tla2sany.semantic.SemanticNode;
+import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.ITool;
+import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.value.IMVPerm;
@@ -292,4 +295,7 @@ public class LazyValue extends Value {
     }
   }
 
+  public Object eval(ITool tool) {
+		return tool.eval(expr, con, TLCState.Empty, null, EvalControl.Clear, getCostModel());
+  }
 }

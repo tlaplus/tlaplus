@@ -7,7 +7,10 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -414,5 +417,17 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
 		final Value res = new TupleValue(elems);
 		vos.assign(res, index);
 		return res;
+	}
+
+	@Override
+	public List<TLCVariable> getTLCVariables(TLCVariable prototype, Random rnd) {
+		final List<TLCVariable> nestedVars = new ArrayList<>(this.size());
+		for (Value value : elems) {
+			final TLCVariable nested = prototype.newInstance(value.toString(), value, rnd);
+			nested.setName(value.toString());
+			nested.setValue(value.toString());
+			nestedVars.add(nested);
+		}
+		return nestedVars;
 	}
 }

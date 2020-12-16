@@ -42,6 +42,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.debug.Breakpoint;
 import org.eclipse.lsp4j.debug.BreakpointLocation;
@@ -82,7 +84,10 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
+import tlc2.TLCGlobals;
+import tlc2.tool.EvalControl;
 import tlc2.tool.TLCState;
+import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -91,38 +96,6 @@ import tlc2.value.impl.Value;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
 
-
-/*
- * TODO:
- * 
- * - Debug state space exploration
- * -- Attach debugger to (running) TLC
- * -- Show current and next state in variables view
- * -- Map invariant-type breakpoint to existing breakpoints
- * --- How to parse TLA+ expressions after model checking has started?
- *
- * - Step forward/reverse state-space exploration in debugger 
- *
- * - Add support for line-based breakpoints
- * 
- * - Figure out how to debug PlusCal "code" (might not be possible)
- * 
- * - Launch TLC when user presses debug button in VSCode extension
- *
- * - Add some sort of testing (debugger itself and DAP)
- * 
- * - Figure out how to package DAP dependencies such as gson, aspectjrt, ...
- * -- Make dependencies a responsibility of the front-ends (Toolbox, VSCode, ...)
- * --- This would make building a pure command-line interface to the debugger inpractical
- * -- With loadtime weaving, we are staring down the barrel of 3 to 4 MBs of dependencies
- * -- Could adopt the same idea as CommunityModules and release two versions of tla2tools.jar (one with and one without deps)
- * --- big fat jar and a slim one with manually provided dependencies
- * - If we settle on runtime weaving (preferable for performance reasons), add aspectj weaving to the list of dependencies (jars)
- * https://www.eclipse.org/aspectj/doc/released/devguide/ltw-rules.html
- * https://github.com/google/gson/blob/master/LICENSE
- * 
- * - Add DAP front-end to Toolbox
- */
 public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
@@ -228,7 +201,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
 		final ScopesResponse response = new ScopesResponse();
 
-		stack.stream().filter(s -> s.node.myUID == args.getFrameId()).findFirst()
+		stack.stream().filter(s -> s.getId() == args.getFrameId()).findFirst()
 				.ifPresent(frame -> response.setScopes(frame.getScopes()));
 
 		return CompletableFuture.completedFuture(response);
@@ -237,22 +210,14 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	@Override
 	public CompletableFuture<VariablesResponse> variables(VariablesArguments args) {
 		final int vr = args.getVariablesReference();
-		
-		// TODO: It is wrong to lookup the variables in the top stack frame. Instead,
-		// the lookup of vr should be independent of any stack frame and, thus, done
-		// against the global pile of variables. The front-end uses the scopes request
-		// first to get the set of variables ids/refs for the current frame.
-		final Variable[] variables;
-		if (!this.stack.isEmpty()) {
-			final TLCStackFrame frame = this.stack.peek();
-			variables = frame.getVariables(vr);
-			if (vr == STACK_SCOPE) System.err.printf("STACK_SCOPE for %s, %s", frame.getName(), Arrays.toString(variables));
-		} else {
-			variables = new Variable[0];
-		}
 
-		VariablesResponse value = new VariablesResponse();
-		value.setVariables(variables);
+		final VariablesResponse value = new VariablesResponse();
+		
+		final List<Variable> collect = this.stack.stream().map(frame -> frame.getVariables(vr)).flatMap(Stream::of)
+				.collect(Collectors.toList());
+		
+		value.setVariables(collect.toArray(new Variable[collect.size()]));
+		
 		return CompletableFuture.completedFuture(value);
 	}
 
@@ -360,17 +325,18 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
 		// Kick off the evaluation of the expression in Tool in a different thread.
 		Executors.newSingleThreadExecutor().submit(() -> {
-			tool.eval(valueNode.getBody(), Context.Empty, TLCState.Empty);
+			// Expanding values causes them to be un-lazied/enumerated, which we don't want
+			// as a side-effect of the debugger.
+			TLCGlobals.expand = false;
+			
+			tool.eval(valueNode.getBody(), Context.Empty, TLCState.Empty, TLCState.Empty, EvalControl.Debug,
+					CostModel.DO_NOT_RECORD);
 		});
 
 		return CompletableFuture.completedFuture(null);
 	}
 
-	// 8888888888888888888888888888888888888888888888888888888888888888888888888//
-
-	static final int CONTEXT_SCOPE = 2913847;
-	
-	static final int STACK_SCOPE = 94290870;
+	// 8888888888888888888888888888888888888888888888888888888888888888888888888 //
 
 	//TODO: Instead of maintaining the stack here, we could evaluated with CallStackTool
 	// that will get the job done for us (tlc2.tool.impl.CallStackTool.callStack).
@@ -389,8 +355,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		System.out.printf("%s Call pushFrame: [%s], level: %s\n", new String(new char[level]).replace('\0', '#'), expr,
 				level);
 
-		TLCStackFrame frame = new TLCStackFrame(expr, c, tool);
-		stack.push(frame);
+		stack.push(new TLCStackFrame(expr, c, tool));
 
 		if (matches(step, targetLevel, level) || matches(expr)) {
 			System.err.println("loadSource -> stopped");
@@ -408,40 +373,12 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		return this;
 	}
 
-	/*
-            { f \in [S -> S] :
-                /\ S = { f[x] : x \in DOMAIN f }
-                /\ \E n, m \in DOMAIN f: /\ f[n] = a
-                                         /\ f[m] = b
-                                         /\ n - m \in {1, -1}               
-            }
-            
-	 */
-	/*
-	 * The SetEnumValue to which 'DOMAIN f' evaluates and the FcnRcdValue of '{ f[x]
-	 * : x \in DOMAIN f }' go through here.
-	 */
 	@Override
 	public IDebugTarget popFrame(Tool tool, Value v, int level, SemanticNode expr, Context c, int control) {
 		System.out.printf("%s Call popFrame: [%s], level: %s\n", new String(new char[level]).replace('\0', '#'), expr,
 				level);
 		final TLCStackFrame pop = stack.pop();
-		if (!stack.isEmpty()) {
-			final TLCStackFrame parent = stack.peek();
-			
-			final Variable var = new Variable();
-			if (v.hasSource()) {
-				var.setName(v.getSource().getHumanReadableImage());
-			} else {
-				var.setName(v.toString());
-			}
-			var.setValue(v.toString());
-			var.setType(v.getClass().getSimpleName());
-
-			parent.variableValues.put(STACK_SCOPE, new Variable[] {var});
-			System.out.printf("Attaching stack vars to %s\n", parent.getName());
-		}
-		assert expr == pop.node;
+		assert expr == pop.getNode();
 		return this;
 	}
 

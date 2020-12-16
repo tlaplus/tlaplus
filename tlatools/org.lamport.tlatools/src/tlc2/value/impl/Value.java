@@ -8,6 +8,10 @@ package tlc2.value.impl;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
@@ -360,4 +364,24 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
         else { throw e; }
       }
   }
+  
+	public TLCVariable toTLCVariable(final TLCVariable variable, Random rnd) {
+		variable.setInstance(this);
+		// TODO: Use Value#getKindString instead?
+		variable.setType(getClass().getSimpleName());
+		variable.setValue(toString());
+		if (this instanceof Enumerable || this instanceof FcnRcdValue || this instanceof RecordValue || this instanceof TupleValue) {
+			variable.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
+		}
+		return variable;
+	}
+
+	public List<TLCVariable> getTLCVariables(TLCVariable var, Random rnd) {
+		if (this instanceof Enumerable) {
+			Enumerable e = (Enumerable) this;
+			return e.elements().all().stream().map(value -> value.toTLCVariable(var.newInstance(value, rnd), rnd))
+					.collect(Collectors.toList());
+		}
+		return new ArrayList<>(0);
+	}
 }

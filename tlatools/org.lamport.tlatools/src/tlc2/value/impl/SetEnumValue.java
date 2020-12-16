@@ -7,7 +7,10 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
@@ -535,5 +538,19 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 		final Value res = new SetEnumValue(elems, isNorm);
 		vos.assign(res, index);
 		return res;
+	}
+
+	@Override
+	public List<TLCVariable> getTLCVariables(final TLCVariable prototype, Random rnd) {
+		final List<TLCVariable> nestedVars = new ArrayList<>(this.size());
+		ValueEnumeration elements = this.elements();
+		Value value;
+		while ((value = elements.nextElement()) != null) {
+			final TLCVariable nested = prototype.newInstance(value.toString(), value, rnd);
+			nested.setName(value.toString());
+			nested.setValue(value.toString());
+			nestedVars.add(nested);
+		}
+		return nestedVars;
 	}
 }

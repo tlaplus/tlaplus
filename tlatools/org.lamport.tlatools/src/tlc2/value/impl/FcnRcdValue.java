@@ -7,8 +7,11 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
@@ -960,5 +963,20 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 		}
 		vos.assign(res, index);
 		return res;
+	}
+
+	@Override
+	public List<TLCVariable> getTLCVariables(final TLCVariable prototype, Random rnd) {
+		final List<TLCVariable> nestedVars = new ArrayList<>(values.length);
+		final Value[] domains = getDomainAsValues();
+		for (int i = 0; i < domains.length; i++) {
+			Value dom = domains[i];
+			Value value = values[i];
+			final TLCVariable nested = prototype.newInstance(dom.toString(), value, rnd);
+			nested.setValue(value.toString());
+			nested.setType(value.getClass().getSimpleName());
+			nestedVars.add(nested);
+		}
+		return nestedVars;
 	}
 }

@@ -182,6 +182,10 @@ public final class Context implements Iterator<Context> {
 	public final Object getValue() {
 		return value;
 	}
+	
+	public final boolean isEmpty() {
+		return this == Empty;
+	}
 }
 /*
 ----------------------------- MODULE Scoping -----------------------------
