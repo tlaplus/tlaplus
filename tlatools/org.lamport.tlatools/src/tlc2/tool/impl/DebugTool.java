@@ -42,12 +42,10 @@ import util.FilenameToStream;
 public class DebugTool extends Tool {
 
 	private final IDebugTarget target;
-	private int level;
 
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, IDebugTarget target) {
 		super(mainFile, configFile, resolver);
 		this.target = target;
-		this.level = 0;
 	}
 
 	// 8888888888888888888888888888888888888888888888888888888888888888888888888//
@@ -62,9 +60,9 @@ public class DebugTool extends Tool {
 	protected Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
 		if (EvalControl.isDebug(control)) {
-			target.pushFrame(this, ++level, expr, c, control);
+			target.pushFrame(this, expr, c, control);
 			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, v, --level, expr, c, control);
+			target.popFrame(this, v, expr, c, control);
 			return v;
 		}
 		return super.evalImpl(expr, c, s0, s1, control, cm);

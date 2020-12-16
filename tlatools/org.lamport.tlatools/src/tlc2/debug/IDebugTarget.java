@@ -36,7 +36,7 @@ public interface IDebugTarget {
 		In, Out, Over
 	};
 
-	IDebugTarget pushFrame(Tool tool, int level, SemanticNode expr, Context c, int control);
+	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control);
 	
-	IDebugTarget popFrame(Tool tool, Value v, int level, SemanticNode expr, Context c, int control);
+	IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control);
 }

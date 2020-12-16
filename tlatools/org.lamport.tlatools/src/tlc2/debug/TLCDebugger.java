@@ -351,7 +351,8 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	private volatile Step step;
 
 	@Override
-	public IDebugTarget pushFrame(Tool tool, int level, SemanticNode expr, Context c, int control) {
+	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
+		final int level = this.stack.size();
 		System.out.printf("%s Call pushFrame: [%s], level: %s\n", new String(new char[level]).replace('\0', '#'), expr,
 				level);
 
@@ -374,7 +375,8 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	}
 
 	@Override
-	public IDebugTarget popFrame(Tool tool, Value v, int level, SemanticNode expr, Context c, int control) {
+	public IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control) {
+		final int level = this.stack.size();
 		System.out.printf("%s Call popFrame: [%s], level: %s\n", new String(new char[level]).replace('\0', '#'), expr,
 				level);
 		final TLCStackFrame pop = stack.pop();
