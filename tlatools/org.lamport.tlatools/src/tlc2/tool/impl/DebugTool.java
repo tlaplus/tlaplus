@@ -118,10 +118,41 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
+	protected void getInitStates(SemanticNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
+			CostModel cm) {
+		if (states instanceof WrapperStateFunctor) {
+			// Wrap the IStateFunctor so we can intercept Tool adding a new state to the
+			// functor. Without it, the debugger wouldn't show the fully assigned state and
+			// the variable that is assigned last will always be null.
+			super.getInitStates(init, acts, c, ps, states, cm);
+		} else {
+			super.getInitStates(init, acts, c, ps, new WrapperStateFunctor(states, target), cm);
+		}
+	}
+		
+	@Override
 	protected void getInitStatesAppl(OpApplNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
 			CostModel cm) {
 		target.pushFrame(this, init, c, ps);
 		super.getInitStatesAppl(init, acts, c, ps, states, cm);
 		target.popFrame(this, init, c, ps);
+	}
+	
+	private static class WrapperStateFunctor implements IStateFunctor {
+		private final IStateFunctor functor;
+		private final IDebugTarget target;
+
+		WrapperStateFunctor(IStateFunctor functor, IDebugTarget target) {
+			this.functor = functor;
+			this.target = target;
+		}
+		
+		@Override
+		public Object addElement(TLCState state) {
+			target.pushFrame(state);
+			Object addElement = functor.addElement(state);
+			target.popFrame(state);
+			return addElement;
+		}
 	}
 }

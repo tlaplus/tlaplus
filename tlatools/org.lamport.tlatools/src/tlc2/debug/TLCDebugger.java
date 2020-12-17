@@ -387,6 +387,20 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	}
 
 	@Override
+	public IDebugTarget pushFrame(TLCState state) {
+		TLCStackFrame f = this.stack.peek();
+		pushFrame(f.getTool(), f.getNode(), f.getContext(), state);
+		return this;
+	}
+
+	@Override
+	public IDebugTarget popFrame(TLCState state) {
+		TLCStackFrame f = this.stack.peek();
+		popFrame(f.getTool(), f.getNode(), f.getContext(), state);
+		return this;
+	}
+
+	@Override
 	public IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control) {
 		final int level = this.stack.size();
 		System.out.printf("%s Call popFrame: [%s], level: %s\n", new String(new char[level]).replace('\0', '#'), expr,

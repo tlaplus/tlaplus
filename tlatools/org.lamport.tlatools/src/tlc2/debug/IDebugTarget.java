@@ -44,4 +44,8 @@ public interface IDebugTarget {
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps);
 
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps);
+
+	IDebugTarget pushFrame(TLCState state);
+	
+	IDebugTarget popFrame(TLCState state);
 }

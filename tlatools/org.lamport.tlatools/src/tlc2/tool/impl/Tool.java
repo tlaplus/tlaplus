@@ -457,7 +457,7 @@ public abstract class Tool
         }
   }
 
-  private final void getInitStates(ActionItemList acts, TLCState ps, IStateFunctor states, CostModel cm) {
+  protected void getInitStates(ActionItemList acts, TLCState ps, IStateFunctor states, CostModel cm) {
 		if (acts.isEmpty()) {
 			if (coverage) {
 				cm.incInvocations();
