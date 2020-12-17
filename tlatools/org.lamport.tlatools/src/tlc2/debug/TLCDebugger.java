@@ -384,12 +384,14 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		return this;
 	}
 
-	//TODO: This is only working more or less for step.in.
+	// TODO: This is only working more or less for step.in.
 	private static boolean matches(Step dir, int targetLevel, int currentLevel) {
 		if (dir == Step.In) {
-			if (currentLevel >= targetLevel) {
+			// TODO With this conditional, step.in becomes continue when one steps into a
+			// leave frame.  The debuggers that I know don't continue in this case.
+//			if (currentLevel >= targetLevel) {
 				return true;
-			}
+//			}
 		} else if (dir == Step.Over) {
 			if (currentLevel == targetLevel) {
 				return true;
