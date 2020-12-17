@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 /**
  * Custom class loader for loading classes multiple times within the same JVM.
- * Derived from code written by Lê Anh Quân here (MIT licensed):
+ * Derived from code written by Le Anh Quan here (MIT licensed):
  * 	https://github.com/quanla/classreloading
  */
 public class DynamicClassLoader extends AggressiveClassLoader {

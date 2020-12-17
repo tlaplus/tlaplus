@@ -70,4 +70,4 @@ Second, testing these changes necessitated the creation of a classloader to re-i
 ## Remaining Work
 
 Not much work on TLC remains for this feature.
-Ensuring alias expressions are respected & translated into the generated TE spec is all that is left, along with addition of stub alias expressions for users to modify.
+Ensuring alias expressions are translated into the generated TE spec is all that is left.

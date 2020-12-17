@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 
 /**
  * Utility methods to easy operations via reflection.
- * Derived from code written by Lê Anh Quân here (MIT licensed):
+ * Derived from code written by Le Anh Quan here (MIT licensed):
  * 	https://github.com/quanla/classreloading
  */
 public class ReflectUtil {

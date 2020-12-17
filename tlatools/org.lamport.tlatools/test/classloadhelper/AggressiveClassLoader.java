@@ -8,7 +8,7 @@ import java.util.Set;
 
 /**
  * Load all the classes it can, leave rest to Parent ClassLoader.
- * Derived from code written by Lê Anh Quân here (MIT licensed):
+ * Derived from code written by Le Anh Quan here (MIT licensed):
  * 	https://github.com/quanla/classreloading
  */
 public abstract class AggressiveClassLoader extends ClassLoader {
