@@ -32,6 +32,7 @@ import tlc2.tool.Action;
 import tlc2.tool.EvalControl;
 import tlc2.tool.IActionItemList;
 import tlc2.tool.INextStateFunctor;
+import tlc2.tool.IStateFunctor;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
@@ -114,5 +115,13 @@ public class DebugTool extends Tool {
 	protected final TLCState processUnchanged(final Action action, final SemanticNode expr, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
 		return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
+	}
+
+	@Override
+	protected void getInitStatesAppl(OpApplNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
+			CostModel cm) {
+		target.pushFrame(this, init, c, ps);
+		super.getInitStatesAppl(init, acts, c, ps, states, cm);
+		target.popFrame(this, init, c, ps);
 	}
 }

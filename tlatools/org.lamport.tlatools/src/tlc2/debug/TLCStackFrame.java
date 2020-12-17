@@ -52,9 +52,9 @@ class TLCStackFrame extends StackFrame {
 	// It would be easier to use hashCode instead of passing a random generator
 	// around. However, calculating the hashCode for a TLC value calculates the
 	// value's fingerprint, which normalizes and, thus, enumerates the value.
-	private static final Random rnd = new Random();
+	protected static final Random rnd = new Random();
 
-	private transient final Map<Integer, DebugTLCVariable> nestedVariables = new HashMap<>();
+	protected transient final Map<Integer, DebugTLCVariable> nestedVariables = new HashMap<>();
 
 	private transient final SemanticNode node;
 	private transient final Context ctxt;
@@ -139,5 +139,13 @@ class TLCStackFrame extends StackFrame {
 	
 	public SemanticNode getNode() {
 		return node;
+	}
+
+	public Context getContext() {
+		return ctxt;
+	}
+
+	public Tool getTool() {
+		return tool;
 	}
 }

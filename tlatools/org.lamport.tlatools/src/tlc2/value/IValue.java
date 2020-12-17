@@ -26,6 +26,7 @@
 package tlc2.value;
 
 import java.io.IOException;
+import java.util.Random;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.TLCState;
@@ -34,6 +35,7 @@ import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.StringValue;
+import tlc2.value.impl.TLCVariable;
 
 public interface IValue extends Comparable<Object> {
 
@@ -138,4 +140,6 @@ public interface IValue extends Comparable<Object> {
 	}
 
 	TLCState toState();
+
+	TLCVariable toTLCVariable(TLCVariable variable, Random rnd);
 }

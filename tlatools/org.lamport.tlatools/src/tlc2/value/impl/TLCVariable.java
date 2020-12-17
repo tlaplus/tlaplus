@@ -42,4 +42,6 @@ public interface TLCVariable {
 	TLCVariable newInstance(String name, Value values, Random rnd);
 
 	TLCVariable newInstance(Value value, Random rnd);
+
+	TLCVariable[] getNested(Random rnd);
 }

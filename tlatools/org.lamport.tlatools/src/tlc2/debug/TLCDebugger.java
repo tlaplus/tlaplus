@@ -358,6 +358,19 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
 		stack.push(new TLCStackFrame(expr, c, tool));
 
+		pushFrame(expr, level);
+		return this;
+	}
+
+	@Override
+	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
+		final int level = this.stack.size();
+		stack.push(new TLCStateStackFrame(expr, c, tool, ps));
+		pushFrame(expr, level);
+		return this;
+	}
+
+	private void pushFrame(SemanticNode expr, final int level) {
 		if (matches(step, targetLevel, level) || matches(expr)) {
 			System.err.println("loadSource -> stopped");
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
@@ -371,7 +384,6 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 				java.lang.Thread.currentThread().interrupt();
 			}
 		}
-		return this;
 	}
 
 	@Override
@@ -379,6 +391,13 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		final int level = this.stack.size();
 		System.out.printf("%s Call popFrame: [%s], level: %s\n", new String(new char[level]).replace('\0', '#'), expr,
 				level);
+		final TLCStackFrame pop = stack.pop();
+		assert expr == pop.getNode();
+		return this;
+	}
+
+	@Override
+	public IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
 		final TLCStackFrame pop = stack.pop();
 		assert expr == pop.getNode();
 		return this;
