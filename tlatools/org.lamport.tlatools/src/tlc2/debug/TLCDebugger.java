@@ -394,7 +394,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 			if (currentLevel == targetLevel) {
 				return true;
 			}
-		} else {
+		} else if (dir == Step.Out) {
 			// When stepping out, level has to greater than or zero/0;
 			if (currentLevel < targetLevel || currentLevel == 0) {
 				return true;
