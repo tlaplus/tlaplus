@@ -296,6 +296,6 @@ public class LazyValue extends Value {
   }
 
   public Object eval(ITool tool) {
-		return tool.eval(expr, con, TLCState.Empty, null, EvalControl.Clear, getCostModel());
+		return tool.eval(expr, con, TLCState.Empty, null, EvalControl.Debug, getCostModel());
   }
 }

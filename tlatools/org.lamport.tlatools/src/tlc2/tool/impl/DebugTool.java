@@ -61,12 +61,12 @@ public class DebugTool extends Tool {
 	protected Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
 		if (EvalControl.isDebug(control)) {
-			target.pushFrame(this, expr, c, control);
-			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, v, expr, c, control);
-			return v;
+			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
-		return super.evalImpl(expr, c, s0, s1, control, cm);
+		target.pushFrame(this, expr, c, control);
+		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
+		target.popFrame(this, v, expr, c, control);
+		return v;
 	}
 
 	@Override
