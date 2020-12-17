@@ -347,8 +347,10 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
 	//TODO: This is a clutch; it's working but should be simplified!
 	private final ArrayBlockingQueue<IDebugTarget> queue = new ArrayBlockingQueue<>(1);
-	private volatile int targetLevel;
-	private volatile Step step;
+	
+	// Initialize the debugger to immediately halt on the first frame.
+	private volatile int targetLevel = 1;
+	private volatile Step step = Step.In;
 
 	@Override
 	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
@@ -358,7 +360,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
 		stack.push(new TLCStackFrame(expr, c, tool));
 
-		pushFrame(expr, level);
+		haltExecution(expr, level);
 		return this;
 	}
 
@@ -366,11 +368,11 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
 		final int level = this.stack.size();
 		stack.push(new TLCStateStackFrame(expr, c, tool, ps));
-		pushFrame(expr, level);
+		haltExecution(expr, level);
 		return this;
 	}
 
-	private void pushFrame(SemanticNode expr, final int level) {
+	private void haltExecution(SemanticNode expr, final int level) {
 		if (matches(step, targetLevel, level) || matches(expr)) {
 			System.err.println("loadSource -> stopped");
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
@@ -378,6 +380,8 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 			launcher.getRemoteProxy().stopped(eventArguments);
 
 			try {
+				// Halt TLC's evaluation by blocking on this (one-element) queue. The DAP
+				// front-end will add an element that will unblock us.
 				queue.take();
 			} catch (InterruptedException notExpectedToHappen) {
 				notExpectedToHappen.printStackTrace();
@@ -402,9 +406,8 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
 	@Override
 	public IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control) {
-		final int level = this.stack.size();
-		System.out.printf("%s Call popFrame: [%s], level: %s\n", new String(new char[level]).replace('\0', '#'), expr,
-				level);
+		System.out.printf("%s Call popFrame: [%s], level: %s\n",
+				new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size());
 		final TLCStackFrame pop = stack.pop();
 		assert expr == pop.getNode();
 		return this;
