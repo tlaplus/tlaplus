@@ -107,7 +107,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	public TLCDebugger() throws IOException, InterruptedException, ExecutionException {
 		try (ServerSocket serverSocket = new ServerSocket(4712)) {
 			while (true) {
-				System.out.printf("Debugger is listening on localhost:%s", serverSocket.getLocalPort());
+				System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
 				final Socket socket = serverSocket.accept();
 				final InputStream inputStream = socket.getInputStream();
 				final OutputStream outputStream = socket.getOutputStream();
