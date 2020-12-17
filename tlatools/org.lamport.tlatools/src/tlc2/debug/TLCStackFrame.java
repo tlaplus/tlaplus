@@ -60,6 +60,8 @@ class TLCStackFrame extends StackFrame {
 	private transient final Context ctxt;
 	private transient final Tool tool;
 
+	private final int stackId;
+
 	public TLCStackFrame(SemanticNode node, Context ctxt, final Tool tool) {
 		this.node = node;
 		Assert.check(node != null, EC.GENERAL);
@@ -85,6 +87,8 @@ class TLCStackFrame extends StackFrame {
 		final File moduleFile = tool.getResolver().resolve(node.getTreeNode().getFilename(), true);
 		source.setPath(moduleFile.getAbsolutePath().toString());
 		setSource(source);
+		
+		this.stackId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 
 	public Variable[] getVariables(final int vr) {
@@ -97,7 +101,7 @@ class TLCStackFrame extends StackFrame {
 		}
 
 		final List<Variable> vars = new ArrayList<>();
-		if (ctxt.hashCode() == vr) {
+		if (stackId == vr) {
 			Context c = this.ctxt;
 			while (c.hasNext()) {
 				Object val = c.getValue();
@@ -127,7 +131,7 @@ class TLCStackFrame extends StackFrame {
 		if (!ctxt.isEmpty()) {
 			final Scope scope = new Scope();
 			scope.setName("Context");
-			scope.setVariablesReference(ctxt.hashCode());
+			scope.setVariablesReference(stackId);
 			scopes.add(scope);
 		}
 		return scopes.toArray(new Scope[scopes.size()]);
