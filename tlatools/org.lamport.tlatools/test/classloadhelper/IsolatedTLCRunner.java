@@ -1,6 +1,7 @@
 package classloadhelper;
 
 import tlc2.TLC;
+import tlc2.TraceExplorationSpecGenerationReport;
 import tlc2.model.MCError;
 import tlc2.model.MCState;
 import tlc2.model.MCVariable;
@@ -107,9 +108,9 @@ public class IsolatedTLCRunner {
 	 */
 	@SuppressWarnings("unchecked")
 	public Optional<MCError> run() {
-		// Invokes the {@link tlc2.TLC#process} method
-		Class<?> tlcClassHandle = this.loader.load("tlc2.TLC");
 		try {
+			// Invokes the {@link tlc2.TLC#process} method
+			Class<?> tlcClassHandle = this.loader.load("tlc2.TLC");
 			ReflectUtil.invokeMethod(tlcClassHandle, "process", this.tlcInstance);
 
 			// Retrieves (optional) error from TLC
@@ -117,12 +118,37 @@ public class IsolatedTLCRunner {
 					tlcClassHandle,
 					"getErrorTrace",
 					this.tlcInstance);
-			return this.convertLoadedMCErrorToMCError(errorTrace);
+			return errorTrace.map(trace -> this.convertLoadedMCErrorToMCError(trace));
 		} catch (InvocationTargetException e) {
 			e.getCause().printStackTrace();
+			return Optional.empty();
 		}
-		
-		return Optional.empty();
+	}
+	
+	/**
+	 * Gets the TE spec generation report.
+	 * @return The TE spec generation report, if it exists.
+	 */
+	@SuppressWarnings("unchecked")
+	public Optional<TraceExplorationSpecGenerationReport> getTESpecGenerationReport() {
+		try {
+			Class<?> tlcClassHandle = this.loader.load("tlc2.TLC");
+			Optional<Object> opReport = (Optional<Object>)ReflectUtil.invokeMethod(
+					tlcClassHandle,
+					"getTraceExplorationSpecGenerationReport",
+					this.tlcInstance);
+
+			return opReport.map(clReport -> {
+				Class<?> reportClassHandle = this.loader.load("tlc2.TraceExplorationSpecGenerationReport");
+				MCError trace = convertLoadedMCErrorToMCError(ReflectUtil.getFieldValue(reportClassHandle, clReport, "errorTrace"));
+				Path tlaPath = (Path)ReflectUtil.getFieldValue(reportClassHandle, clReport, "teSpecTlaPath");
+				Path cfgPath = (Path)ReflectUtil.getFieldValue(reportClassHandle, clReport, "teSpecCfgPath");
+				return new TraceExplorationSpecGenerationReport(trace, tlaPath, cfgPath);
+			});
+		} catch (InvocationTargetException e) {
+			e.getCause().printStackTrace();
+			return Optional.empty();
+		}
 	}
 	
 	/**
@@ -130,40 +156,38 @@ public class IsolatedTLCRunner {
 	 * classloader is a completely different class (in Java's perspective)
 	 * from the MCError instance we have access to in the default classloader;
 	 * thus we must convert between them.
-	 * @param opErrorTrace The error trace from the dynamic classloader.
+	 * @param clErrorTrace The error trace from the dynamic classloader.
 	 * @return An equivalent error trace in the default classloader.
 	 */
 	@SuppressWarnings("unchecked")
-	private Optional<MCError> convertLoadedMCErrorToMCError(Optional<Object> opErrorTrace) {
-		return opErrorTrace.map(dErrorTrace -> {
+	private MCError convertLoadedMCErrorToMCError(Object clErrorTrace) {
+		try {
 			Class<?> mcErrorClassHandle = this.loader.load("tlc2.model.MCError");
 			Class<?> mcStateHandle = this.loader.load("tlc2.model.MCState");
 			Class<?> mcVariableHandle = this.loader.load("tlc2.model.MCVariable");
 
 			MCError errorTrace = new MCError();
-			try {
-				List<Object> dMCStates = (List<Object>)ReflectUtil.invokeMethod(mcErrorClassHandle, "getStates", dErrorTrace);
-				for (Object dMCState : dMCStates) {
-					int stateNumber = (int)ReflectUtil.invokeMethod(mcStateHandle, "getStateNumber", dMCState);
-					boolean isStuttering = (boolean)ReflectUtil.invokeMethod(mcStateHandle, "isStuttering", dMCState);
-					boolean isBackToState = (boolean)ReflectUtil.invokeMethod(mcStateHandle, "isBackToState", dMCState);
-					Object[] dMCVars = (Object[])ReflectUtil.invokeMethod(mcStateHandle, "getVariables", dMCState);
-					MCVariable[] vars = new MCVariable[dMCVars.length];
-					for (int i = 0; i < dMCVars.length; i++) {
-						String varName = (String)ReflectUtil.invokeMethod(mcVariableHandle, "getName", dMCVars[i]);
-						String varValue = (String)ReflectUtil.invokeMethod(mcVariableHandle, "getValueAsString", dMCVars[i]);
-						vars[i] = new MCVariable(varName, varValue);
-					}
-					
-					MCState state = new MCState(vars, "", "", null, isStuttering, isBackToState, stateNumber);
-					errorTrace.addState(state);
+			List<Object> dMCStates = (List<Object>)ReflectUtil.invokeMethod(mcErrorClassHandle, "getStates", clErrorTrace);
+			for (Object dMCState : dMCStates) {
+				int stateNumber = (int)ReflectUtil.invokeMethod(mcStateHandle, "getStateNumber", dMCState);
+				boolean isStuttering = (boolean)ReflectUtil.invokeMethod(mcStateHandle, "isStuttering", dMCState);
+				boolean isBackToState = (boolean)ReflectUtil.invokeMethod(mcStateHandle, "isBackToState", dMCState);
+				Object[] dMCVars = (Object[])ReflectUtil.invokeMethod(mcStateHandle, "getVariables", dMCState);
+				MCVariable[] vars = new MCVariable[dMCVars.length];
+				for (int i = 0; i < dMCVars.length; i++) {
+					String varName = (String)ReflectUtil.invokeMethod(mcVariableHandle, "getName", dMCVars[i]);
+					String varValue = (String)ReflectUtil.invokeMethod(mcVariableHandle, "getValueAsString", dMCVars[i]);
+					vars[i] = new MCVariable(varName, varValue);
 				}
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-				return Optional.<MCError>empty();
+				
+				MCState state = new MCState(vars, "", "", null, isStuttering, isBackToState, stateNumber);
+				errorTrace.addState(state);
 			}
-
-			return Optional.of(errorTrace);
-		}).orElse(Optional.<MCError>empty());
+			
+			return errorTrace;
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 }

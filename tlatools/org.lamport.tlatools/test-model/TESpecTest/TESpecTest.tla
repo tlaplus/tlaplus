@@ -44,6 +44,10 @@ EqAlias ==
     [x |-> x,
     y |-> y]
 
+MapAlias ==
+    [x |-> x + 1,
+    y |-> ~y]
+
 SupersetAlias ==
     [x |-> x,
     y |-> y,

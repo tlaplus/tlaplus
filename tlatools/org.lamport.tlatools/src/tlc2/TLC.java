@@ -111,6 +111,11 @@ public class TLC {
      * Trace exploration spec generator.
      */
     private Optional<TraceExplorationSpec> teSpec = Optional.empty();
+    
+    /**
+     * Details about TE spec generation, if it occurred.
+     */
+    private Optional<TraceExplorationSpecGenerationReport> teReport = Optional.empty();
 
     /**
      * Whether a seed for the random number generator was provided.
@@ -317,10 +322,6 @@ public class TLC {
             // This is a tool failure. We must exit with a non-zero exit
             // code or else we will mislead system tools and scripts into
             // thinking everything went smoothly.
-            //
-            // FIXME: handleParameters should return an error object (or
-            // null), where the error object contains an error message.
-            // This makes handleParameters a function we can test.
             System.exit(1);
         }
         
@@ -906,6 +907,8 @@ public class TLC {
             }
         }
 		
+        startTime = System.currentTimeMillis();
+
 		generateTESpec =
 				generateTESpec
 				&& !TLCGlobals.continuation
@@ -914,11 +917,9 @@ public class TLC {
                 
 		if (generateTESpec) {
 			Path specDir = teSpecOutDir.orElse(getTlaFileParentDir(mainFile));
-			this.teSpec = Optional.of(new TraceExplorationSpec(specDir, this.recorder));
+			this.teSpec = Optional.of(new TraceExplorationSpec(specDir, new Date(startTime), this.recorder));
 		}
 		
-        startTime = System.currentTimeMillis();
-
 		if (mainFile == null) {
 			// command line omitted name of spec file, take this as an
 			// indicator to check the in-jar model/ folder for a spec.
@@ -1137,7 +1138,19 @@ public class TLC {
 							: convertRuntimeToHumanReadable(runtime));
 
 			// Generate trace exploration spec if error occurred.
-			this.teSpec.ifPresent(spec -> spec.generate(this.tool));
+			this.teSpec.ifPresent(
+				spec -> spec.generate(this.tool).ifPresent(
+					either -> either.ifPresent(
+						report -> {
+							this.teReport = Optional.of(report);
+							MP.printMessage(EC.TLC_TE_SPEC_GENERATION_COMPLETE, report.teSpecTlaPath.toString());
+						},
+						error -> {
+							MP.printMessage(EC.TLC_TE_SPEC_GENERATION_ERROR, error);
+						}
+					)
+				)
+			);
 
 			MP.unsubscribeRecorder(this.recorder);
 			MP.flush();
@@ -1535,6 +1548,10 @@ public class TLC {
     
     public Optional<Path> getTraceExplorationSpecOutputDirectory() {
     	return this.teSpec.map(spec -> spec.getOutputDirectory());
+    }
+    
+    public Optional<TraceExplorationSpecGenerationReport> getTraceExplorationSpecGenerationReport() {
+    	return this.teReport;
     }
     
     public Optional<MCError> getErrorTrace() {

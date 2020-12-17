@@ -1271,10 +1271,10 @@ public class MP
             
         /* ************************************************************************ */
         case EC.TLC_TE_SPEC_GENERATION_COMPLETE:
-        	b.append("Trace exploration spec output in %1% directory");
+        	b.append("Trace exploration spec path: %1%");
         	break;
         case EC.TLC_TE_SPEC_GENERATION_ERROR:
-        	b.append("Failed to generate trace exploration spec");
+        	b.append("Failed to generate trace exploration spec; error message: %1%");
         	break;
             
         /* ************************************************************************ */

@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -140,6 +141,15 @@ public class TraceExplorationSpecTest {
 	}
 	
 	/**
+	 * Tests TE spec generation works with a mapping function alias for
+	 * safety invariant violation.
+	 */
+	@Test
+	public void integrationTestMapAliasSafetyTESpec() {
+		assertTrue(integrationTestSafetyViolation("TESpecTest", "TESpecMapAliasSafetyTest"));
+	}
+	
+	/**
 	 * Tests TE spec generation works with superset alias for safety invariant
 	 * violation.
 	 */
@@ -203,6 +213,7 @@ public class TraceExplorationSpecTest {
 		assertTrue(tlc.initialize(searchDirs, args));
 		Optional<MCError> ogError = tlc.run();
 		assertTrue(ogError.isPresent());
+		assertFalse(tlc.getTESpecGenerationReport().isPresent());
 		assertFalse(teSpecPath.toFile().exists());
 		
 		// Tests TE spec not generated when no invariant violation occurs
@@ -220,6 +231,7 @@ public class TraceExplorationSpecTest {
 		assertTrue(tlc.initialize(searchDirs, args));
 		ogError = tlc.run();
 		assertFalse(ogError.isPresent());
+		assertFalse(tlc.getTESpecGenerationReport().isPresent());
 		assertFalse(teSpecPath.toFile().exists());
 	}
 	
@@ -251,6 +263,7 @@ public class TraceExplorationSpecTest {
 		assertTrue(tlc.initialize(searchDirs, args));
 		Optional<MCError> ogError = tlc.run();
 		assertFalse(ogError.isPresent());
+		assertFalse(tlc.getTESpecGenerationReport().isPresent());
 		assertFalse(teSpecPath.toFile().exists());
 		
 		// Tests error trace not generated with CFG file doesn't exist
@@ -285,6 +298,7 @@ public class TraceExplorationSpecTest {
 		assertTrue(tlc.initialize(searchDirs, args));
 		ogError = tlc.run();
 		assertFalse(ogError.isPresent());
+		assertFalse(tlc.getTESpecGenerationReport().isPresent());
 		assertFalse(teSpecPath.toFile().exists());
 	}
 	
@@ -295,7 +309,7 @@ public class TraceExplorationSpecTest {
 	public void testSetOutputDirectory() {
 		Path expected = Paths.get("trace");
 		ErrorTraceMessagePrinterRecorder recorder = new FakeErrorRecorder(null);
-		TraceExplorationSpec teSpec = new TraceExplorationSpec(expected, recorder);
+		TraceExplorationSpec teSpec = new TraceExplorationSpec(expected, new Date(System.currentTimeMillis()), recorder);
 		assertEquals(expected, teSpec.getOutputDirectory());
 	}
 	
@@ -308,19 +322,19 @@ public class TraceExplorationSpecTest {
 
 		FakeStreamProvider stream = new FakeStreamProvider(null, null, ThrowException.TLA_FILENOTFOUND);
 		TraceExplorationSpec teSpec = new TraceExplorationSpec(stream, recorder);
-		assertFalse(teSpec.generate(null, null, null, null));
+		assertTrue(teSpec.generate(null, null, null, null).map(report -> false, error -> true));
 
 		stream = new FakeStreamProvider(null, null, ThrowException.TLA_SECURITY);
 		teSpec = new TraceExplorationSpec(stream, recorder);
-		assertFalse(teSpec.generate(null, null, null, null));
+		assertTrue(teSpec.generate(null, null, null, null).map(report -> false, error -> true));
 
 		stream = new FakeStreamProvider(null, null, ThrowException.CFG_FILENOTFOUND);
 		teSpec = new TraceExplorationSpec(stream, recorder);
-		assertFalse(teSpec.generate(null, null, null, null));
+		assertTrue(teSpec.generate(null, null, null, null).map(report -> false, error -> true));
 
 		stream = new FakeStreamProvider(null, null, ThrowException.CFG_SECURITY);
 		teSpec = new TraceExplorationSpec(stream, recorder);
-		assertFalse(teSpec.generate(null, null, null, null));
+		assertTrue(teSpec.generate(null, null, null, null).map(report -> false, error -> true));
 	}
 	
 	/**
@@ -495,16 +509,7 @@ public class TraceExplorationSpecTest {
 		final Path teDir = tempDir.resolve(UUID.randomUUID().toString());
 		final Path ogTlaPath = modelDir.resolve(tlaName + TLAConstants.Files.TLA_EXTENSION);
 		final Path ogCfgPath = modelDir.resolve(cfgName + TLAConstants.Files.CONFIG_EXTENSION);
-		final String teSpecName = TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION;
 
-		// Better error reporting for https://github.com/tlaplus/tlaplus/issues/545
-		// Remove below when issue #545 is fixed
-		Path zombieTeSpec = modelDir.resolve(teSpecName);
-		assertFalse("Zombie TE spec exists at " + zombieTeSpec.toString(), zombieTeSpec.toFile().exists());
-		zombieTeSpec = Paths.get(".", teSpecName);
-		assertFalse("Zombie TE spec exists at " + zombieTeSpec.toString(), zombieTeSpec.toFile().exists());
-		// Remove above when issue #545 is fixed
-		
 		// First run of TLC to generate error trace & TE spec
 		String[] searchDirs = new String[] { modelDir.toString() };
 		String[] baseArgs = new String[] {
@@ -523,17 +528,19 @@ public class TraceExplorationSpecTest {
 		assertTrue(tlc.initialize(searchDirs, args));
 		Optional<MCError> ogError = tlc.run();
 		assertTrue(Arrays.asList(args).toString(), ogError.isPresent());
+		Optional<TraceExplorationSpecGenerationReport> opReport = tlc.getTESpecGenerationReport();
+		assertTrue(opReport.isPresent());
+		TraceExplorationSpecGenerationReport report = opReport.get();
 
 		// Second run of TLC to run TE spec
 		final Path teStateDir = tempDir.resolve(UUID.randomUUID().toString());
-		final Path teTlaPath = teDir.resolve(teSpecName);
-		
 		searchDirs = new String[] { modelDir.toString(), teDir.toString() };
-		args = new String[] { "-metadir", teStateDir.toString(), teTlaPath.toString() };
+		args = new String[] { "-metadir", teStateDir.toString(), report.teSpecTlaPath.toString() };
 
 		tlc = new IsolatedTLCRunner(printTLCConsoleOutput);
 		assertTrue(tlc.initialize(searchDirs, args));
 		Optional<MCError> teError = tlc.run();
+		assertFalse(tlc.getTESpecGenerationReport().isPresent());
 		assertTrue(teError.isPresent());
 
 		// Tests equivalence of original error trace with TE error trace
@@ -561,7 +568,7 @@ public class TraceExplorationSpecTest {
 		}
 
 		@Override
-		public OutputStream getTlaStream() throws FileNotFoundException, SecurityException {
+		public OutputStream getTlaStream(String moduleName) throws FileNotFoundException, SecurityException {
 			switch (this.ex) {
 				case TLA_SECURITY:
 					throw new SecurityException("TLA_SECURITY");
@@ -573,7 +580,7 @@ public class TraceExplorationSpecTest {
 		}
 
 		@Override
-		public OutputStream getCfgStream() throws FileNotFoundException, SecurityException {
+		public OutputStream getCfgStream(String moduleName) throws FileNotFoundException, SecurityException {
 			switch (this.ex) {
 				case CFG_SECURITY:
 					throw new SecurityException("CFG_SECURITY");
@@ -582,6 +589,16 @@ public class TraceExplorationSpecTest {
 				default:
 					return this.cfgStream;
 			}
+		}
+
+		@Override
+		public Path getTlaPath(String moduleName) {
+			return null;
+		}
+
+		@Override
+		public Path getCfgPath(String moduleName) {
+			return null;
 		}
 	}
 	

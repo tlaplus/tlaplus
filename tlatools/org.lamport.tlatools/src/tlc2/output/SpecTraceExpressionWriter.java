@@ -584,7 +584,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	}
 	
 	/**
-	 * Adds EXTENDS statements.
+	 * Adds MODULE and EXTENDS statements.
 	 */
 	public void addPrimer(
 			final String moduleFilename,

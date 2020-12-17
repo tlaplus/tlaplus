@@ -150,6 +150,21 @@ public class ReflectUtil {
     	return ReflectUtil.invokeMethodWithParams(classHandle, methodName, null, paramClassHandles, params);
     }
     
+    /**
+     * Gets the field value from an instance of a class.
+     * @param classHandle Handle to the class containing the field.
+     * @param classInstance Instance of the class from which to get the field value.
+     * @param fieldName Name of the field in the class.
+     * @return The value of the field in the class instance.
+     */
+    public static Object getFieldValue(Class<?> classHandle, Object classInstance, String fieldName) {
+    	try {
+			Field fieldHandle = classHandle.getDeclaredField(fieldName);
+			return fieldHandle.get(classInstance);
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+    }
 	
     /**
      * Sets value of static field in a class.

@@ -415,6 +415,14 @@ public class TLCTest {
 		assertTrue(tlc.getTraceExplorationSpecOutputDirectory().isEmpty());
 		TLCGlobals.tool = ogValue;
 	}
+	
+	@Test
+	public void testNoGenerateTESpecFromTESpec() {
+		final TLC tlc = new TLC();
+		final String[] args = new String[] { TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "_ModuleName_02_07_1941" };
+		assertTrue(tlc.handleParameters(args));
+		assertFalse(tlc.willGenerateTraceExplorationSpec());
+	}
 
 	@Test
 	public void testLnCheckOptionSetsGlobalVariable()

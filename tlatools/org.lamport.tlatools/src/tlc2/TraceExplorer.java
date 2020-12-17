@@ -106,7 +106,14 @@ public class TraceExplorer {
 				FileOutputStream specTETLAOutStream = new FileOutputStream(specTETLA);
 				FileOutputStream specTECFGOutStream = new FileOutputStream(specTECFG)
 		) {
-			writeSpecTEStreams(osn, constants, variables, error, specTETLAOutStream, specTECFGOutStream);
+			writeSpecTEStreams(
+					TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
+					osn,
+					constants,
+					variables,
+					error,
+					specTETLAOutStream,
+					specTECFGOutStream);
 		}
 
 		return new File[] { specTETLA, specTECFG };
@@ -123,6 +130,7 @@ public class TraceExplorer {
 	 * @throws IOException
 	 */
 	public static void writeSpecTEStreams(
+			final String teSpecModuleName,
 			final String originalSpecName,
 			final List<String> constants,
 			final List<String> variables,
@@ -151,7 +159,7 @@ public class TraceExplorer {
 		extendedModules.add(TLAConstants.BuiltInModules.TLC);
 		extendedModules.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
 
-		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME, originalSpecName, extendedModules);
+		writer.addPrimer(teSpecModuleName, originalSpecName, extendedModules);
 		
 		writer.addTraceExpressionStub(SPEC_TE_TRACE_EXPRESSION, variables);
 
