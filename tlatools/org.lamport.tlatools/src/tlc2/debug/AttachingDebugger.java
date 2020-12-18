@@ -81,7 +81,7 @@ public class AttachingDebugger extends TLCDebugger {
 
 	@Override
 	public CompletableFuture<Void> launch(Map<String, Object> args) {
-		System.out.println("launch");
+		LOGGER.finer("launch");
 		Executors.newSingleThreadExecutor().submit(() -> {
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);
@@ -93,7 +93,7 @@ public class AttachingDebugger extends TLCDebugger {
 
 	@Override
 	protected void sendStopped() {
-		System.err.println("loadSource -> stopped");
+		LOGGER.finer("loadSource -> stopped");
 		if (launcher != null) {
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);

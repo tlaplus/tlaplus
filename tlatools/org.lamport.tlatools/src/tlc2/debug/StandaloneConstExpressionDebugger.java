@@ -81,7 +81,7 @@ public class StandaloneConstExpressionDebugger extends TLCDebugger {
 
 	@Override
 	public CompletableFuture<Void> launch(Map<String, Object> args) {
-		System.out.println("launch");
+		LOGGER.finer("launch");
 
 		final Path p = Paths.get((String) args.get("program"));
 		final String specPath = p.getParent().toAbsolutePath().toString();

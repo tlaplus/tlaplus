@@ -32,6 +32,7 @@ import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -76,15 +77,16 @@ import tlc2.util.Context;
 import tlc2.value.impl.Value;
 
 public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarget {
+	protected static Logger LOGGER = Logger.getLogger(TLCDebugger.class.getName());
 
 	protected Launcher<IDebugProtocolClient> launcher;
 
 	@Override
 	public CompletableFuture<Capabilities> initialize(InitializeRequestArguments args) {
-		System.out.println("initialize");
+		LOGGER.finer("initialize");
 
 		Executors.newSingleThreadExecutor().submit(() -> {
-			System.err.println("initialize -> initialized");
+			LOGGER.finer("initialize -> initialized");
 			// Signal the debugger that we are ready. It seem not relevant in what order the
 			// response below and the initialized signal arrive at the debugger.
 			launcher.getRemoteProxy().initialized();
@@ -103,13 +105,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<Void> configurationDone(ConfigurationDoneArguments args) {
-		System.out.println("configurationDone");
+		LOGGER.finer("configurationDone");
 		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
 	public CompletableFuture<BreakpointLocationsResponse> breakpointLocations(BreakpointLocationsArguments args) {
-		System.out.println("breakpointLocations");
+		LOGGER.finer("breakpointLocations");
 		final BreakpointLocationsResponse response = new BreakpointLocationsResponse();
 		BreakpointLocation breakpoint = new BreakpointLocation();
 		breakpoint.setColumn(args.getColumn());
@@ -126,7 +128,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
 		//TODO: Confirm breakpoint locations (see tlc2.debug.TLCDebugger.matches(SemanticNode))!!!
-		System.out.println("setBreakpoints");
+		LOGGER.finer("setBreakpoints");
 		SourceBreakpoint[] sbps = args.getBreakpoints();
 		breakpoints = new Breakpoint[sbps.length];
 		for (int j = 0; j < sbps.length; j++) {
@@ -143,7 +145,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<StackTraceResponse> stackTrace(StackTraceArguments args) {
-		System.out.printf("stackTrace frame: %s, levels: %s\n", args.getStartFrame(), args.getLevels());
+		LOGGER.finer(String.format("stackTrace frame: %s, levels: %s\n", args.getStartFrame(), args.getLevels()));
 
 		final List<StackFrame> frames = new ArrayList<>(stack.size());
 		for (int i = stack.size() - 1; i >= 0; i--) {
@@ -158,7 +160,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<ScopesResponse> scopes(ScopesArguments args) {
-		System.out.printf("scopes frame %s\n", args.getFrameId());
+		LOGGER.finer(String.format("scopes frame %s\n", args.getFrameId()));
 
 		final ScopesResponse response = new ScopesResponse();
 
@@ -184,13 +186,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<SetVariableResponse> setVariable(SetVariableArguments args) {
-		System.out.println("setVariable");
+		LOGGER.finer("setVariable");
 		return CompletableFuture.completedFuture(new SetVariableResponse());
 	}
 
 	@Override
 	public CompletableFuture<ThreadsResponse> threads() {
-		System.out.println("threads");
+		LOGGER.finer("threads");
 		Thread thread = new Thread();
 		thread.setId(0);
 		thread.setName("worker");
@@ -201,7 +203,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<ContinueResponse> continue_(ContinueArguments args) {
-		System.out.println("continue_");
+		LOGGER.finer("continue_");
 		targetLevel = -1;
 		step = Step.Continue;
 		queue.offer(this);
@@ -210,7 +212,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<Void> next(NextArguments args) {
-		System.out.println("next/stepOver");
+		LOGGER.finer("next/stepOver");
 		step = Step.Over;
 		queue.offer(this);
 		return CompletableFuture.completedFuture(null);
@@ -218,7 +220,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<Void> stepIn(StepInArguments args) {
-		System.out.println("stepIn");
+		LOGGER.finer("stepIn");
 		targetLevel++;
 		step = Step.In;
 		queue.offer(this);
@@ -227,7 +229,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<Void> stepOut(StepOutArguments args) {
-		System.out.println("stepOut");
+		LOGGER.finer("stepOut");
 		targetLevel--;
 		step = Step.Out;
 		queue.offer(this);
@@ -236,9 +238,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public CompletableFuture<Void> pause(PauseArguments args) {
-		System.out.println("pause");
+		LOGGER.finer("pause");
 		Executors.newSingleThreadExecutor().submit(() -> {
-			System.err.println("pause -> stopped");
+			LOGGER.finer("pause -> stopped");
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);
 			eventArguments.setReason("pause");
@@ -266,8 +268,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
 		final int level = this.stack.size();
-		System.out.printf("%s Call pushFrame: [%s], level: %s\n", new String(new char[level]).replace('\0', '#'), expr,
-				level);
+		LOGGER.finer(String.format("%s Call pushFrame: [%s], level: %s\n",
+				new String(new char[level]).replace('\0', '#'), expr, level));
 
 		stack.push(new TLCStackFrame(expr, c, tool));
 
@@ -317,8 +319,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control) {
-		System.out.printf("%s Call popFrame: [%s], level: %s\n",
-				new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size());
+		LOGGER.finer(String.format("%s Call popFrame: [%s], level: %s\n",
+				new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
 		final TLCStackFrame pop = stack.pop();
 		assert expr == pop.getNode();
 		return this;
@@ -352,7 +354,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	protected void sendStopped() {
-		System.err.println("loadSource -> stopped");
+		LOGGER.finer("loadSource -> stopped");
 		StoppedEventArguments eventArguments = new StoppedEventArguments();
 		eventArguments.setThreadId(0);
 		launcher.getRemoteProxy().stopped(eventArguments);
