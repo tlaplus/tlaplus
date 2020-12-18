@@ -40,11 +40,16 @@ import org.eclipse.lsp4j.debug.OutputEventArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
 import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 
+import tlc2.TLCGlobals;
 import util.ToolIO;
 
 public class AttachingDebugger extends TLCDebugger {
 
 	public AttachingDebugger() throws IOException, InterruptedException, ExecutionException {
+		// Expanding values causes them to be un-lazied/enumerated, which we don't want
+		// as a side-effect of the debugger.
+		TLCGlobals.expand = false;
+		
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
 		ToolIO.out = new PrintStream(System.out) {
 			@Override
