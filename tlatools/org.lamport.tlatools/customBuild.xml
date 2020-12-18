@@ -140,6 +140,8 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar" />
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar" />
 			</classpath>
 		</javac>
 

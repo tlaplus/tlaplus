@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="tlc2/tool/WorkerMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj" kind="src" path="src-aj"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" path="test-long"/>
+	<classpathentry kind="src" path="test-concurrent"/>
+	<classpathentry kind="src" path="test-verify"/>
+	<classpathentry kind="src" path="test-benchmark"/>
+	<classpathentry kind="src" path=".apt_generated">
+		<attributes>
+			<attribute name="optional" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -9,13 +21,6 @@
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry excluding="tlc2/tool/WorkerMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj" kind="src" path="src-aj"/>
-	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="src" path="test-long"/>
-	<classpathentry kind="src" path="test-concurrent"/>
-	<classpathentry kind="src" path="test-verify"/>
-	<classpathentry kind="src" path="test-benchmark"/>
 	<classpathentry kind="lib" path="lib/javax.mail/mailapi-1.6.3.jar"/>
 	<classpathentry kind="lib" path="lib/jline/jline-reader-3.14.1.jar"/>
 	<classpathentry kind="lib" path="lib/jline/jline-terminal-3.14.1.jar"/>
@@ -25,10 +30,5 @@
 	<classpathentry kind="lib" path="lib/gson/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar"/>
-	<classpathentry kind="src" path=".apt_generated">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="output" path="class"/>
 </classpath>
