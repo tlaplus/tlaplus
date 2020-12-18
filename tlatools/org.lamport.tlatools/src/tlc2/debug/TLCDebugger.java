@@ -160,7 +160,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		return CompletableFuture.completedFuture(response);
 	}
 
-	private volatile Breakpoint[] breakpoints;
+	private volatile Breakpoint[] breakpoints = new Breakpoint[0];
 	
 	@Override
 	public CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
