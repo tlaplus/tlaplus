@@ -23,6 +23,7 @@ import java.util.TimeZone;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
+import tlc2.debug.AttachingDebugger;
 import tlc2.output.EC;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
@@ -34,6 +35,7 @@ import tlc2.tool.Simulator;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
+import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.Tool.Mode;
 import tlc2.tool.management.ModelCheckerMXWrapper;
@@ -170,6 +172,8 @@ public class TLC {
      */
     private FPSetConfiguration fpSetConfiguration;
     
+    private boolean debugger = false;
+    
     /**
      * Interface to retrieve model properties.
      */
@@ -262,6 +266,7 @@ public class TLC {
      *  o -gzip: control if gzip is applied to value input/output stream.
      *		Defaults to off if not specified
      *  o -debug: debbuging information (non-production use)
+     *  o -debugger: Activate TLC debugger
      *  o -tool: tool mode (put output codes on console)
      *  o -generateSpecTE: will generate SpecTE assets if error-states are
      *  				encountered during model checking; this will change
@@ -452,6 +457,10 @@ public class TLC {
             {
                 index++;
                 TLCGlobals.debug = true;
+            } else if (args[index].equals("-debugger"))
+            {
+                index++;
+                debugger = true;
             } else if (args[index].equals("-tool"))
             {
                 index++;
@@ -1050,7 +1059,11 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
-                tool = new FastTool(mainFile, configFile, resolver);
+				if (debugger) {
+					tool = new DebugTool(mainFile, configFile, resolver, new AttachingDebugger());
+				} else {
+					tool = new FastTool(mainFile, configFile, resolver);
+				}
                 deadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
                 if (isBFS())
                 {
@@ -1362,6 +1375,8 @@ public class TLC {
     	sharedArguments.add(new UsageGenerator.Argument("-debug",
 														"print various debugging information - not for production use\n",
 														true));
+		sharedArguments.add(new UsageGenerator.Argument("-debugger",
+				"activate the TLC debugger\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-dump", "file",
     													"dump all states into the specified file; this parameter takes\n"
     														+ "optional parameters for dot graph generation. Specifying\n"
