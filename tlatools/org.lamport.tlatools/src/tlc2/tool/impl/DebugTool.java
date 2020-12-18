@@ -25,6 +25,11 @@
  ******************************************************************************/
 package tlc2.tool.impl;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.debug.IDebugTarget;
@@ -42,14 +47,15 @@ import util.FilenameToStream;
 @SuppressWarnings("serial")
 public class DebugTool extends Tool {
 
+	private static final Set<Integer> KINDS = new HashSet<>(
+			Arrays.asList(ASTConstants.NumeralKind, ASTConstants.DecimalKind, ASTConstants.StringKind));
+	
 	private final IDebugTarget target;
 
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, IDebugTarget target) {
 		super(mainFile, configFile, resolver);
 		this.target = target;
 	}
-
-	// 8888888888888888888888888888888888888888888888888888888888888888888888888//
 
 	@Override
 	public final Value eval(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
@@ -63,6 +69,18 @@ public class DebugTool extends Tool {
 		if (EvalControl.isDebug(control)) {
 			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
+		if (KINDS.contains(expr.getKind())) {
+			// These nodes don't seem interesting to users. They are leaves and we don't
+			// care to see how TLC figures out that then token 1 evaluates to the IntValue 1.
+			return super.evalImpl(expr, c, s0, s1, control, cm);
+		}
+//		if (c.isEmpty()) {
+//			// It is tempting to ignore also frames with an empty Context. However, ASSUMES
+//			// for example don't have a Context. Perhaps, we should track the level here and
+//			// ignore frames with empty Context for level greater than zero (or whatever the
+//			// base-level is).
+//			return super.evalImpl(expr, c, s0, s1, control, cm);
+//		}
 		target.pushFrame(this, expr, c, control);
 		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
 		target.popFrame(this, v, expr, c, control);
