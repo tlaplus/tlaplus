@@ -67,11 +67,29 @@ public class DebugTool extends Tool {
 	protected Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
 		if (EvalControl.isDebug(control)) {
+			// Skip debugging when evaluation was triggered by the debugger itself. For
+			// example, when LazyValues get unlazied.
 			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
 		if (KINDS.contains(expr.getKind())) {
 			// These nodes don't seem interesting to users. They are leaves and we don't
 			// care to see how TLC figures out that then token 1 evaluates to the IntValue 1.
+			return super.evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (expr.getChildren() == null || expr.getChildren().length == 0) {
+			// Skips N and Nat in:
+			//     CONSTANT N
+			//     ASSUME N \in Nat
+			// or the S, the f, and the 1..3 of:
+			//     LET FS == INSTANCE FiniteSets
+	        //              Perms(S, a, b) == 
+	        //                { f \in [S -> S] :
+	        //                      /\ S = { f[x] : x \in DOMAIN f }
+	        //                      /\ \E n, m \in DOMAIN f: /\ f[n] = a
+	        //                                  /\ f[m] = b
+	        //                                  /\ n - m \in {1, -1}               
+	        //                }
+	        //     IN FS!Cardinality(Perms(1..3, 1, 2)) = 4
 			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
 //		if (c.isEmpty()) {
