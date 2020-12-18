@@ -197,7 +197,7 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 
 		/* Examples */
 
-		final StyledText styledExamples = new StyledText(outerContainer, SWT.WRAP | SWT.CENTER);
+		final StyledText styledExamples = new StyledText(outerContainer, SWT.WRAP | SWT.LEFT);
 		styledExamples.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, false, 2, 1));
 		styledExamples.setBackground(backgroundColor);
 		String exampleText = "Clicking on one of the buttons below imports an introductory example into the "
