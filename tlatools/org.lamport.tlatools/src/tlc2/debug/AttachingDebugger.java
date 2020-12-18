@@ -65,6 +65,7 @@ public class AttachingDebugger extends TLCDebugger {
 		Executors.newSingleThreadExecutor().submit(() -> {
 			try (ServerSocket serverSocket = new ServerSocket(4712)) {
 				// Immediately re-open the debugger to front-end requests after a front-end disconnected.
+				//TODO: This doesn't terminate when TLC terminates.
 				while (true) {
 					System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
 					final Socket socket = serverSocket.accept();
