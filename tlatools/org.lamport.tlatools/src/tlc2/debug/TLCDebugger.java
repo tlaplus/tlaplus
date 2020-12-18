@@ -242,7 +242,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	public CompletableFuture<ContinueResponse> continue_(ContinueArguments args) {
 		System.out.println("continue_");
 		targetLevel = -1;
-		step = Step.Out;
+		step = Step.Continue;
 		queue.offer(this);
 		return CompletableFuture.completedFuture(new ContinueResponse());
 	}

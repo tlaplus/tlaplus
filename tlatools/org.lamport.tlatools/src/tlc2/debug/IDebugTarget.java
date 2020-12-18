@@ -34,7 +34,7 @@ import tlc2.value.impl.Value;
 public interface IDebugTarget {
 
 	public enum Step {
-		In, Out, Over
+		In, Out, Over, Continue
 	};
 
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control);
