@@ -41,12 +41,12 @@ import tlc2.util.Context;
 import tlc2.value.IValue;
 import util.UniqueString;
 
-public class TLCStateStackFrame extends TLCStackFrame {
+public class TLCInitStackFrame extends TLCStackFrame {
 
 	private transient final TLCState state;
 	private transient final int stateId;
 
-	public TLCStateStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state) {
+	public TLCInitStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state) {
 		super(node, ctxt, tool);
 		this.state = state;
 		

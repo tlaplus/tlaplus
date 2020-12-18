@@ -278,9 +278,43 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
 		final int level = this.stack.size();
-		stack.push(new TLCStateStackFrame(expr, c, tool, ps));
+		stack.push(new TLCInitStackFrame(expr, c, tool, ps));
 		haltExecution(expr, level);
 		return this;
+	}
+
+	@Override
+	public IDebugTarget pushFrame(TLCState state) {
+		TLCStackFrame f = this.stack.peek();
+		pushFrame(f.getTool(), f.getNode(), f.getContext(), state);
+		return this;
+	}
+
+	@Override
+	public IDebugTarget popFrame(TLCState state) {
+		TLCStackFrame f = this.stack.peek();
+		return popFrame(f.getTool(), f.getNode(), f.getContext(), state);
+	}
+
+	@Override
+	public IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control) {
+		System.out.printf("%s Call popFrame: [%s], level: %s\n",
+				new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size());
+		final TLCStackFrame pop = stack.pop();
+		assert expr == pop.getNode();
+		return this;
+	}
+
+	@Override
+	public IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
+		final TLCStackFrame pop = stack.pop();
+		assert expr == pop.getNode();
+		return this;
+	}
+
+	@Override
+	public IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
+		return popFrame(tool, expr, c, ps);
 	}
 
 	protected void haltExecution(SemanticNode expr, final int level) {
@@ -303,36 +337,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		StoppedEventArguments eventArguments = new StoppedEventArguments();
 		eventArguments.setThreadId(0);
 		launcher.getRemoteProxy().stopped(eventArguments);
-	}
-
-	@Override
-	public IDebugTarget pushFrame(TLCState state) {
-		TLCStackFrame f = this.stack.peek();
-		pushFrame(f.getTool(), f.getNode(), f.getContext(), state);
-		return this;
-	}
-
-	@Override
-	public IDebugTarget popFrame(TLCState state) {
-		TLCStackFrame f = this.stack.peek();
-		popFrame(f.getTool(), f.getNode(), f.getContext(), state);
-		return this;
-	}
-
-	@Override
-	public IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control) {
-		System.out.printf("%s Call popFrame: [%s], level: %s\n",
-				new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size());
-		final TLCStackFrame pop = stack.pop();
-		assert expr == pop.getNode();
-		return this;
-	}
-
-	@Override
-	public IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
-		final TLCStackFrame pop = stack.pop();
-		assert expr == pop.getNode();
-		return this;
 	}
 
 	// TODO: This is only working more or less for step.in.
