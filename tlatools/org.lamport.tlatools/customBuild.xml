@@ -303,6 +303,31 @@
 				<include name="CommonsMath-LICENSE.txt" />
 			</fileset>
 		</copy>
+		
+		<unzip src="lib/lsp/gson-2.8.6.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.10.0.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
+
 
 
 		<!-- create a JAR file for the users -->
