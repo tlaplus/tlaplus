@@ -815,7 +815,7 @@ public abstract class Tool
   }
   
   @Override
-  public final boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
+  public boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
 	  for (int i = 0; i < actions.length; i++) {
 			final Action action = actions[i];
 			this.getNextStates(action, action.pred, ActionItemList.Empty, action.con, state, TLCState.Empty.createEmpty(),

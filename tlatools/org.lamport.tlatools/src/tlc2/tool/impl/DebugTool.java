@@ -126,7 +126,10 @@ public class DebugTool extends Tool {
 	@Override
 	protected final TLCState getNextStatesAppl(final Action action, final OpApplNode pred, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
-		return getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
+		target.pushFrame(this, pred, c, s0, s1);
+		TLCState s = getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
+		target.popFrame(this, pred, c, s0, s1);
+		return s;
 	}
 
 	@Override
@@ -155,10 +158,19 @@ public class DebugTool extends Tool {
 		super.getInitStatesAppl(init, acts, c, ps, states, cm);
 		target.popFrame(this, init, c, ps);
 	}
+
+	@Override
+	public boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
+		if (functor instanceof WrapperNextStateFunctor) {
+			return super.getNextStates(functor, state);
+		} else {
+			return super.getNextStates(new WrapperNextStateFunctor(functor, target), state);
+		}
+	}
 	
 	private static class WrapperStateFunctor implements IStateFunctor {
-		private final IStateFunctor functor;
-		private final IDebugTarget target;
+		protected final IStateFunctor functor;
+		protected final IDebugTarget target;
 
 		WrapperStateFunctor(IStateFunctor functor, IDebugTarget target) {
 			this.functor = functor;
@@ -170,6 +182,21 @@ public class DebugTool extends Tool {
 			target.pushFrame(state);
 			Object addElement = functor.addElement(state);
 			target.popFrame(state);
+			return addElement;
+		}
+	}
+
+	private static class WrapperNextStateFunctor extends WrapperStateFunctor implements INextStateFunctor {
+
+		WrapperNextStateFunctor(INextStateFunctor functor, IDebugTarget target) {
+			super(functor, target);
+		}
+
+		@Override
+		public Object addElement(TLCState predecessor, Action a, TLCState state) {
+			target.pushFrame(predecessor, state);
+			Object addElement = ((INextStateFunctor) functor).addElement(predecessor, a, state);
+			target.popFrame(predecessor, state);
 			return addElement;
 		}
 	}

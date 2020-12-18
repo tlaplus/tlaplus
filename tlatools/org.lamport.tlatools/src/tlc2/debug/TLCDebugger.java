@@ -284,6 +284,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
+	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
+		final int level = this.stack.size();
+		stack.push(new TLCNextStackFrame(expr, c, tool, predecessor, ps));
+		haltExecution(expr, level);
+		return this;
+	}
+
+	@Override
 	public IDebugTarget pushFrame(TLCState state) {
 		TLCStackFrame f = this.stack.peek();
 		pushFrame(f.getTool(), f.getNode(), f.getContext(), state);
@@ -291,9 +299,20 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
+	public IDebugTarget pushFrame(TLCState predecessor, TLCState state) {
+		TLCStackFrame f = this.stack.peek();
+		return pushFrame(f.getTool(), f.getNode(), f.getContext(), state);
+	}
+
+	@Override
 	public IDebugTarget popFrame(TLCState state) {
 		TLCStackFrame f = this.stack.peek();
 		return popFrame(f.getTool(), f.getNode(), f.getContext(), state);
+	}
+
+	@Override
+	public IDebugTarget popFrame(TLCState predecessor, TLCState state) {
+		return popFrame(state);
 	}
 
 	@Override

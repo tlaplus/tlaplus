@@ -41,11 +41,19 @@ public interface IDebugTarget {
 	
 	IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control);
 
-	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps);
+	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState state);
 
-	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps);
+	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState state);
+
+	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
+
+	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
 
 	IDebugTarget pushFrame(TLCState state);
 	
 	IDebugTarget popFrame(TLCState state);
+
+	IDebugTarget pushFrame(TLCState predecessor, TLCState state);
+	
+	IDebugTarget popFrame(TLCState predecessor, TLCState state);
 }
