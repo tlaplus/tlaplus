@@ -25,22 +25,12 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,7 +46,6 @@ import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.ContinueResponse;
 import org.eclipse.lsp4j.debug.InitializeRequestArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
-import org.eclipse.lsp4j.debug.OutputEventArguments;
 import org.eclipse.lsp4j.debug.PauseArguments;
 import org.eclipse.lsp4j.debug.ScopesArguments;
 import org.eclipse.lsp4j.debug.ScopesResponse;
@@ -76,47 +65,19 @@ import org.eclipse.lsp4j.debug.ThreadsResponse;
 import org.eclipse.lsp4j.debug.Variable;
 import org.eclipse.lsp4j.debug.VariablesArguments;
 import org.eclipse.lsp4j.debug.VariablesResponse;
-import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 import org.eclipse.lsp4j.debug.services.IDebugProtocolClient;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 
-import tla2sany.semantic.ModuleNode;
-import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
-import tlc2.TLCGlobals;
-import tlc2.tool.EvalControl;
 import tlc2.tool.TLCState;
-import tlc2.tool.coverage.CostModel;
-import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
-import tlc2.util.FP64;
 import tlc2.value.impl.Value;
-import util.SimpleFilenameToStream;
-import util.ToolIO;
 
-public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
+public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 
-	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
-		new TLCDebugger();
-	}
-
-	private Launcher<IDebugProtocolClient> launcher;
-
-	public TLCDebugger() throws IOException, InterruptedException, ExecutionException {
-		try (ServerSocket serverSocket = new ServerSocket(4712)) {
-			while (true) {
-				System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
-				final Socket socket = serverSocket.accept();
-				final InputStream inputStream = socket.getInputStream();
-				final OutputStream outputStream = socket.getOutputStream();
-
-				launcher = DSPLauncher.createServerLauncher(this, inputStream, outputStream);
-				launcher.startListening().get();
-			}
-		}
-	}
+	protected Launcher<IDebugProtocolClient> launcher;
 
 	@Override
 	public CompletableFuture<Capabilities> initialize(InitializeRequestArguments args) {
@@ -286,56 +247,6 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		return CompletableFuture.completedFuture(null);
 	}
 
-	@Override
-	public CompletableFuture<Void> launch(Map<String, Object> args) {
-		System.out.println("launch");
-
-		final Path p = Paths.get((String) args.get("program"));
-		final String specPath = p.getParent().toAbsolutePath().toString();
-		final String specName = p.getFileName().toFile().toString();
-		final String moduleName = specName.replaceFirst(".tla$", "");
-
-		// IValue#hashCode calls below require fingerprints to be correctly initialized.
-		FP64.Init();
-
-		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
-		ToolIO.out = new PrintStream(System.out) {
-			@Override
-			public void println(String str) {
-				this.print(str + "\n");
-			}
-			@Override
-			public void print(String str) {
-				super.print(str);
-				final OutputEventArguments oea = new OutputEventArguments();
-				oea.setOutput(str);
-				launcher.getRemoteProxy().output(oea);
-			}
-		};
-		ToolIO.reset();
-		
-		final Tool tool = new DebugTool(moduleName, specName, new SimpleFilenameToStream(specPath), this);
-		final ModuleNode module = tool.getSpecProcessor().getRootModule();
-		// The spec has to have an "debugMe" operator.
-		final OpDefNode valueNode = module.getOpDef("debugMe");
-
-		// Make sure we pause/stop debugging initially.
-		targetLevel = Integer.MIN_VALUE;
-		step = Step.In;
-
-		// Kick off the evaluation of the expression in Tool in a different thread.
-		Executors.newSingleThreadExecutor().submit(() -> {
-			// Expanding values causes them to be un-lazied/enumerated, which we don't want
-			// as a side-effect of the debugger.
-			TLCGlobals.expand = false;
-			
-			tool.eval(valueNode.getBody(), Context.Empty, TLCState.Empty, TLCState.Empty, EvalControl.Debug,
-					CostModel.DO_NOT_RECORD);
-		});
-
-		return CompletableFuture.completedFuture(null);
-	}
-
 	// 8888888888888888888888888888888888888888888888888888888888888888888888888 //
 
 	//TODO: Instead of maintaining the stack here, we could evaluated with CallStackTool
@@ -372,12 +283,9 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		return this;
 	}
 
-	private void haltExecution(SemanticNode expr, final int level) {
+	protected void haltExecution(SemanticNode expr, final int level) {
 		if (matches(step, targetLevel, level) || matches(expr)) {
-			System.err.println("loadSource -> stopped");
-			StoppedEventArguments eventArguments = new StoppedEventArguments();
-			eventArguments.setThreadId(0);
-			launcher.getRemoteProxy().stopped(eventArguments);
+			sendStopped();
 
 			try {
 				// Halt TLC's evaluation by blocking on this (one-element) queue. The DAP
@@ -388,6 +296,13 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 				java.lang.Thread.currentThread().interrupt();
 			}
 		}
+	}
+
+	protected void sendStopped() {
+		System.err.println("loadSource -> stopped");
+		StoppedEventArguments eventArguments = new StoppedEventArguments();
+		eventArguments.setThreadId(0);
+		launcher.getRemoteProxy().stopped(eventArguments);
 	}
 
 	@Override
@@ -441,7 +356,7 @@ public class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 		return false;
 	}
 
-	private boolean matches(final SemanticNode expr) {
+	protected boolean matches(final SemanticNode expr) {
 		//TODO: Better match the location.  However, it shouldn't be done down here
 		// but in setBreakpoints above that lets the debuggee tell the front-end
 		// that a user-defined location is "corrected" to one that matches the bounds
