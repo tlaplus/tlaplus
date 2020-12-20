@@ -655,7 +655,7 @@ public class LiveCheck1 implements ILiveCheck {
 		// Print the prefix:
 		TLCState cycleState = null;
 		for (int i = 0; i < stateNum; i++) {
-			StatePrinter.printState(states[i], cycleState, i + 1);
+			StatePrinter.printInvariantViolationStateTraceState(states[i], cycleState, i + 1);
 			cycleState = states[i].state;
 		}
 
@@ -675,7 +675,7 @@ public class LiveCheck1 implements ILiveCheck {
 				if (sinfo == null) {
 					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 				}
-				StatePrinter.printState(sinfo, lastState, ++stateNum);
+				StatePrinter.printInvariantViolationStateTraceState(sinfo, lastState, ++stateNum);
 				lastState = sinfo.state;
 			}
 		}

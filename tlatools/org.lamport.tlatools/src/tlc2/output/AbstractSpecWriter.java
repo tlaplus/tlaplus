@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -97,6 +98,29 @@ public abstract class AbstractSpecWriter {
     	if (cfg != null) {
     		cfgBuffer.append(cfg);
     	}
+    }
+    
+    /**
+     * Writes the buffers to streams.
+     * @param tlaStream TLA stream; if null, nothing is written.
+     * @param cfgStream CFG stream; if null, nothing is written.
+     * @throws IOException If there is an error writing to stream.
+     */
+    public void writeStreams(final OutputStream tlaStream, final OutputStream cfgStream) throws IOException {
+    	final ContentWriter cw = (inputStream, forTlaFile) -> {
+    		final OutputStream outputStream = forTlaFile ? tlaStream : cfgStream;
+    		if (null != outputStream) {
+    			// If we upgrade to Java 9 we can use InputStream.transferTo()
+    			// For Java 8 compatibility we will copy the bytes manually
+    			final byte[] buffer = new byte[8192];
+    			int length;
+    			while ((length = inputStream.read(buffer)) > 0) {
+    				outputStream.write(buffer, 0, length);
+    			}
+    		}
+    	};
+    	
+    	writeFiles(cw);
     }
     
     /**
@@ -480,16 +504,23 @@ public abstract class AbstractSpecWriter {
 	public void addAlias(final String aliasString, final String attributeName) {
 		if (aliasString.trim().length() != 0) {
 			final String id = SpecWriterUtilities.getValidIdentifier(TLAConstants.Schemes.ALIAS_SCHEME);
-			
-			if (cfgBuffer != null) {
-				cfgBuffer.append(TLAConstants.COMMENT).append("ALIAS definition").append(TLAConstants.CR);
-				cfgBuffer.append("ALIAS").append(TLAConstants.CR).append(id).append(TLAConstants.CR);
-			}
+			this.addAliasToCfg(id);
 
 			tlaBuffer.append(TLAConstants.COMMENT).append("ALIAS definition ").append(TLAConstants.ATTRIBUTE);
 			tlaBuffer.append(attributeName).append(TLAConstants.CR);
 			tlaBuffer.append(id).append(TLAConstants.DEFINES).append(TLAConstants.CR).append(aliasString);
 			tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
+		}
+	}
+	
+	/**
+	 * Specifies an alias in the config file.
+	 * @param aliasName Name of the alias to specify.
+	 */
+	public void addAliasToCfg(final String aliasName) {
+		if (this.cfgBuffer != null) {
+			this.cfgBuffer.append(TLAConstants.COMMENT).append("ALIAS definition").append(TLAConstants.CR);
+			this.cfgBuffer.append("ALIAS").append(TLAConstants.CR).append(aliasName).append(TLAConstants.CR);
 		}
 	}
 	

@@ -2,8 +2,11 @@ package tlc2;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,6 +62,7 @@ public class TraceExplorer {
     static final String SPEC_TE_INIT_ID = "_SpecTEInit";
     static final String SPEC_TE_NEXT_ID = "_SpecTENext";
     private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "_SpecTEActionConstraint";
+    static final String SPEC_TE_TRACE_EXPRESSION = "TraceExpression";
     
     // <parameter name, whether the parameter takes an argument>
     private static final HashMap<String, Boolean> TLC_ARGUMENTS_TO_IGNORE;
@@ -75,10 +79,65 @@ public class TraceExplorer {
     /**
 	 * @return an array of length two; the 0-index is the location to the
 	 *         destination TLA file, and the 1-index is that of the CFG file
+	 */
+	public static File[] writeSpecTEFiles(
+			final File outputDirectory,
+			final String osn,
+			final String[] vars,
+			final MCParserResults results,
+			final MCError error)
+					throws FileNotFoundException,
+						SecurityException,
+						IOException {
+
+		final File specTETLA = new File(
+				outputDirectory,
+				TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
+				+ TLAConstants.Files.TLA_EXTENSION);
+		final File specTECFG = new File(
+				outputDirectory,
+				TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
+				+ TLAConstants.Files.CONFIG_EXTENSION);
+		
+		List<String> constants = results.getModelConfig().getRawConstants();
+		List<String> variables = Arrays.asList(vars);
+
+		try (
+				FileOutputStream specTETLAOutStream = new FileOutputStream(specTETLA);
+				FileOutputStream specTECFGOutStream = new FileOutputStream(specTECFG)
+		) {
+			writeSpecTEStreams(
+					TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
+					osn,
+					constants,
+					variables,
+					error,
+					specTETLAOutStream,
+					specTECFGOutStream);
+		}
+
+		return new File[] { specTETLA, specTECFG };
+	}
+	
+	/**
+	 * 
+	 * @param originalSpecName
+	 * @param originalSpecVariables
+	 * @param specInfo
+	 * @param error
+	 * @param specTETLAOutStream
+	 * @param specTECFGOutStream
 	 * @throws IOException
 	 */
-	public static File[] writeSpecTEFiles(final File sourceDirectory, final String osn, final String[] vars,
-			final MCParserResults results, final MCError error) throws IOException {
+	public static void writeSpecTEStreams(
+			final String teSpecModuleName,
+			final String originalSpecName,
+			final List<String> constants,
+			final List<String> variables,
+			final MCError error,
+			final OutputStream specTETLAOutStream,
+			final OutputStream specTECFGOutStream) throws IOException {
+
 		final SpecTraceExpressionWriter writer = new SpecTraceExpressionWriter();
 
 		/**
@@ -91,8 +150,7 @@ public class TraceExplorer {
 		 * because SpecTE extends MC.
 		 * (see TraceExplorerDelegate#writeModelInfo)
 		 */
-		final List<String> rawConstants = results.getModelConfig().getRawConstants();
-		writer.addConstants(rawConstants);
+		writer.addConstants(constants);
 
 		/**
 		 * Write SpecTE.
@@ -101,7 +159,9 @@ public class TraceExplorer {
 		extendedModules.add(TLAConstants.BuiltInModules.TLC);
 		extendedModules.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
 
-		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME, osn, extendedModules);
+		writer.addPrimer(teSpecModuleName, originalSpecName, extendedModules);
+		
+		writer.addTraceExpressionStub(SPEC_TE_TRACE_EXPRESSION, variables);
 
 		final List<MCState> trace = error.getStates();
 		
@@ -111,7 +171,7 @@ public class TraceExplorer {
 
 		// Write Init and Next with vars instead of extracting the vars from trace to
 		// always write a syntactically correct behavior spec even if trace = <<>>.
-		writer.addInitNextTraceFunction(trace, vars, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID);
+		writer.addInitNextTraceFunction(trace, variables, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID);
 				
 		writer.addFooter();
 		
@@ -133,7 +193,7 @@ public class TraceExplorer {
 		
 		final SpecTraceExpressionWriter w = new SpecTraceExpressionWriter();
 		w.append(TLAConstants.CR);
-		w.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", osn,
+		w.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", originalSpecName,
 				extendedModulesWithIOUtils);
 		w.append(traceFunctionId).append(TLAConstants.DEFINES).append("IODeserialize(\"file.bin\", TRUE)\n\n");
 		w.addFooter();
@@ -143,20 +203,16 @@ public class TraceExplorer {
 		/**
 		 * Write definition of trace def into new module.
 		 */
-		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", osn, extendedModules);
+		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", originalSpecName, extendedModules);
 
 		writer.addTraceFunction(trace, traceFunctionId);
 		
+		writer.addAliasToCfg(SPEC_TE_TRACE_EXPRESSION);
+		
         /**
-         * Write actual files.
+         * Write to streams.
          */
-		final File specTETLA = new File(sourceDirectory,
-				TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.TLA_EXTENSION);
-		final File specTECFG = new File(sourceDirectory,
-				TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + TLAConstants.Files.CONFIG_EXTENSION);
-		writer.writeFiles(specTETLA, specTECFG);
-
-		return new File[] { specTETLA, specTECFG };
+		writer.writeStreams(specTETLAOutStream, specTECFGOutStream);
     }
     
     

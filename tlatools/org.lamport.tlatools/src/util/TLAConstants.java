@@ -47,6 +47,7 @@ public final class TLAConstants {
 	    public static final String TRUE = "TRUE";
 	    public static final String UNION = "\\union";
 	    public static final String VARIABLE = "VARIABLE";
+	    public static final String ENABLED = "ENABLED";
 	}
 	
 	public final class LoggingAtoms {
@@ -118,7 +119,8 @@ public final class TLAConstants {
     public static final String RECORD_ARROW = " |-> ";
     public static final String DEFINES = " == ";
     public static final String DEFINES_CR = " ==\n";
-    public static final String COMMENT = "\\* ";
+    public static final String COMMENT_NS = "\\*";
+    public static final String COMMENT = COMMENT_NS + SPACE;
     public static final String ATTRIBUTE = "@";
     public static final String COLON = ":";
     public static final String EMPTY_STRING = "";

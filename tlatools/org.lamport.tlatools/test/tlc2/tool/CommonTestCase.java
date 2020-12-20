@@ -42,7 +42,6 @@ import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.TestMPRecorder.Coverage;
 import tlc2.output.EC;
-import tlc2.output.MPRecorder;
 import tlc2.tool.liveness.GraphNode;
 import tlc2.util.BitVector;
 import tlc2.util.BufferedRandomAccessFile;

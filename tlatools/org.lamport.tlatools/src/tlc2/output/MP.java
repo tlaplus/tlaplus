@@ -207,7 +207,7 @@ public class MP
     public static final String NOT_APPLICABLE_VAL = "-1";
 
     private static MP instance = null;
-	private static MPRecorder recorder = new MPRecorder();
+	private static BroadcastMessagePrinterRecorder recorder = new BroadcastMessagePrinterRecorder();
     private final Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
@@ -1268,7 +1268,15 @@ public class MP
         case EC.TLC_STATE_PRINT3:
             b.append("%1%:").append(TLAConstants.STUTTERING);
             break;
-
+            
+        /* ************************************************************************ */
+        case EC.TLC_TE_SPEC_GENERATION_COMPLETE:
+        	b.append("Trace exploration spec path: %1%");
+        	break;
+        case EC.TLC_TE_SPEC_GENERATION_ERROR:
+        	b.append("Failed to generate trace exploration spec; error message: %1%");
+        	break;
+            
         /* ************************************************************************ */
         // configuration file errors
         case EC.CFG_MISSING_ID:
@@ -1614,7 +1622,7 @@ public class MP
      */
     public static void printState(int code, String[] parameters, TLCState state, int num)
     {
-        printState(code, parameters, new TLCStateInfo(state, ""), num);
+        printState(code, parameters, new TLCStateInfo(state, num), num);
     }
     
     public static void printState(int code, String[] parameters, TLCStateInfo stateInfo, int num)
@@ -1757,8 +1765,12 @@ public class MP
         ToolIO.err.flush();
     }
 
-	public static void setRecorder(MPRecorder aRecorder) {
-		recorder = aRecorder;
+	public static void setRecorder(IMessagePrinterRecorder mpRecorder) {
+		recorder.subscribe(mpRecorder);
+	}
+	
+	public static void unsubscribeRecorder(IMessagePrinterRecorder mpRecorder) {
+		recorder.unsubscribe(mpRecorder);
 	}
 
     private static String now() {

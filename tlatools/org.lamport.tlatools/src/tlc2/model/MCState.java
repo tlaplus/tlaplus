@@ -1,13 +1,70 @@
 package tlc2.model;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import tla2sany.st.Location;
+import tlc2.tool.TLCStateInfo;
+import tlc2.value.IValue;
 import util.TLAConstants;
+import util.UniqueString;
 
+/**
+ * Encapsulates information about a TLC state.
+ */
 public class MCState {
+	
 	private static final String BACK_TO_STATE = " " + TLAConstants.BACK_TO_STATE;
+	
+	/**
+	 * The variables captured by this state.
+	 */
+	private final MCVariable[] variables;
+	
+	/**
+	 * The name of the next-state-relation taken to arrive in this state.
+	 */
+	private final String name;
+	
+	/**
+	 * The state label; takes form of <$name $location>
+	 */
+	private final String label;
+	
+	/**
+	 * The location of the next-state-relation, a parsed representation of (for example):
+	 * line 7, col 9 to line 11, col 23 of module Alias
+	 */
+	private final Location location;
+	
+	/**
+	 * Whether this state was reached by stuttering.
+	 * Found in behaviors witnessing a liveness property violation.
+	 */
+	private final boolean isStuttering;
+	
+	/**
+	 * Whether this state returns to a previous state in the behavior.
+	 * Found in behaviors witnessing a liveness property violation.
+	 */
+	private final boolean isBackToState;
+	
+	/**
+	 * The depth of this state in the behavior, counting from 1.
+	 */
+	private final int stateNumber;
 
+	/**
+	 * Parses a state from the standard TLC command line output format, for example:
+	 * 
+	 * 3: <Next line 7, col 9 to line 11, col 23 of module Alias>
+	 * /\ x = 3
+	 * /\ y = FALSE
+	 * 
+	 * @param stateInputString The unparsed state in TLC command line output format.
+	 * @return A parsed {@link MCState} instance.
+	 */
 	public static MCState parseState(final String stateInputString) {
 		// state number
 		final int index = stateInputString.indexOf(TLAConstants.COLON);
@@ -56,16 +113,7 @@ public class MCState {
 
 		return new MCState(vars, name, label, location, isStuttering, isBackToState, stateNumber);
 	}
-
 	
-	private final MCVariable[] variables;
-	private final String name;
-	private final String label;
-	private final Location location;
-	private final boolean isStuttering;
-	private final boolean isBackToState;
-	private final int stateNumber;
-
 	/**
 	 * @param vars            variables in this state.
 	 * @param stateName       the name for this state
@@ -75,8 +123,14 @@ public class MCState {
 	 * @param backToState     whether this is a back to state or not
 	 * @param ordinal         number of the state in the trace
 	 */
-	public MCState(final MCVariable[] vars, final String stateName, final String stateLabel,
-			final Location moduleLocation, final boolean stuttering, final boolean backToState, final int ordinal) {
+	public MCState(
+			final MCVariable[] vars,
+			final String stateName,
+			final String stateLabel,
+			final Location moduleLocation,
+			final boolean stuttering,
+			final boolean backToState,
+			final int ordinal) {
 		variables = vars;
 		name = stateName;
 		label = stateLabel;
@@ -85,25 +139,70 @@ public class MCState {
 		isBackToState = backToState;
 		stateNumber = ordinal;
 	}
+	
+	/**
+	 * Initializes a new instance of this class.
+	 * @param other The state from which to copy values.
+	 * @param isStuttering Whether to mark this state as stuttering.
+	 * @param isBackToState Whether to mark this state as the end of a lasso.
+	 */
+	public MCState(final MCState other, boolean isStuttering, boolean isBackToState) {
+		this.variables = other.variables;
+		this.name = other.name;
+		this.label = other.label;
+		this.location = other.location;
+		this.stateNumber = other.stateNumber;
+		this.isStuttering = isStuttering;
+		this.isBackToState = isBackToState;
+	}
+	
+	public MCState(TLCStateInfo tlcState) {
+		this.name = "";
+		this.label = "";
+		this.location = null;
+		this.isStuttering = false;
+		this.isBackToState = false;
+		this.stateNumber = (int)tlcState.stateNumber;
+
+		Map<UniqueString, IValue> variableMap = tlcState.state.getVals();
+		List<MCVariable> variableList = new ArrayList<MCVariable>();
+		for (UniqueString key : variableMap.keySet()) {
+			IValue value = variableMap.get(key);
+			MCVariable variable = new MCVariable(
+					key.toString(),
+					null == value ? "\"FILTERED BY ALIAS\"" : value.toString());
+			variableList.add(variable);
+		}
+		
+		this.variables = variableList.toArray(new MCVariable[variableList.size()]);
+	}
 
 	public MCVariable[] getVariables() {
-		return variables;
+		return this.variables;
 	}
 	
 	public String getLabel() {
-		 return label;
+		 return this.label;
+	}
+	
+	public String getName() {
+		return this.name;
 	}
 
 	public boolean isStuttering() {
-		return isStuttering;
+		return this.isStuttering;
 	}
 
 	public boolean isBackToState() {
-		return isBackToState;
+		return this.isBackToState;
 	}
 
 	public int getStateNumber() {
-		return stateNumber;
+		return this.stateNumber;
+	}
+	
+	public Location getLocation() {
+		return this.location;
 	}
 	
 	public String asRecord(final boolean includeHeader) {

@@ -11,99 +11,100 @@ import tlc2.tool.TLCStateInfo;
  */
 public class StatePrinter
 {
-    /**
-     * Prints the state information
-     * if the TLC runs in print-diff-only mode and the last state is set, it will print the diff only 
-     */
-    public static void printState(TLCState currentState, TLCState lastState, int num)
-    {
-        String stateString;
-        /* Added by rjoshi. */
-        if (lastState != null && TLCGlobals.printDiffsOnly)
-        {
-            stateString = currentState.toString(lastState);
-        } else
-        {
-            stateString = currentState.toString();
-        }
-        MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), stateString }, currentState, num);
-    }
-
-    /**
-     * Prints the state with number
-     */
-    public static void printState(TLCState currentState, int num)
+	/**
+	 * Prints a single state out of a larger error trace, when the error is not
+	 * related to invalidation of an invariant. This would be used if, for
+	 * example, TLC finds a step where not all variables have defined values.
+	 * @param currentState The single state in the trace.
+	 * @param num The index of the state in the trace, counting from one.
+	 */
+    public static void printRuntimeErrorStateTraceState(TLCState currentState, int num)
     {
         MP.printState(EC.TLC_STATE_PRINT1, new String[] { String.valueOf(num), currentState.toString() }, currentState, num);
     }
 
     /**
-     * Prints the state
+     * Prints a single state for error reporting purposes, for example if the
+     * state is invalid in some way. Not to be used when printing states just
+     * because an invariant has been violated.
+     * @param currentState The state to print.
      */
-    public static void printState(TLCState currentState)
+    public static void printStandaloneErrorState(TLCState currentState)
     {
         MP.printState(EC.TLC_STATE_PRINT1, new String[] { "", currentState.toString() }, currentState, -1);
     }
 
-    public static void printState(TLCStateInfo currentStateInfo) {
+    /**
+     * Prints a single state out of a larger state trace, for use when an
+     * invariant is violated.
+     * @param currentStateInfo
+     */
+    public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo) {
     	if (currentStateInfo.predecessorState == null) {
     		// It's an initial state
-			printState(currentStateInfo, null, (int) currentStateInfo.stateNumber);
+			StatePrinter.printInvariantViolationStateTraceState(currentStateInfo, null, (int) currentStateInfo.stateNumber);
     	} else {
-			printState(currentStateInfo, currentStateInfo.predecessorState.state, (int) currentStateInfo.stateNumber);
+			StatePrinter.printInvariantViolationStateTraceState(currentStateInfo, currentStateInfo.predecessorState.state, (int) currentStateInfo.stateNumber);
     	}
     }
     
     /**
-     * Prints the state information
-     * if the TLC runs in print-diff-only mode and the last state is set, it will print the diff only 
+     * Prints a single state out of a larger state trace, for use when an
+     * invariant is violated.
+     * If the {@link TLCGlobals#printDiffsOnly} flag is set, will print state
+     * diffs instead of full state.
+     * @param currentStateInfo Information about the single state in the trace.
+     * @param previousState The previous state in the trace for diff printing.
+     * @param num The index of the state in the trace, counting from one.
      */
-    public static void printState(TLCStateInfo currentStateInfo, TLCState lastState, int num)
+    public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo, TLCState previousState, int num)
     {
-        String stateString;
+        final String stateString =
+        		null != previousState && TLCGlobals.printDiffsOnly
+        		? currentStateInfo.state.toString(previousState)
+        		: currentStateInfo.state.toString();
+ 
+		// Fingerprint can't be calculated when state is incomplete; just use a random value.
+        final String fingerprint =
+        		currentStateInfo.state.allAssigned()
+        		? String.valueOf(currentStateInfo.fingerPrint())
+        		: "-1";
 
-        /* Added by rjoshi. */
-        if (lastState != null && TLCGlobals.printDiffsOnly)
-        {
-            stateString = currentStateInfo.state.toString(lastState);
-        } else
-        {
-            stateString = currentStateInfo.state.toString();
-        }
-        if (currentStateInfo.state.allAssigned()) {
-        	MP.printState(EC.TLC_STATE_PRINT2, new String[] { String.valueOf(num), currentStateInfo.info.toString(),
-        			stateString, String.valueOf(currentStateInfo.fingerPrint()) }, currentStateInfo, num);
-        } else {
-        	// fingerprint can't be calculated when state is incomplete, just return a random value.
-        	MP.printState(EC.TLC_STATE_PRINT2, new String[] { String.valueOf(num), currentStateInfo.info.toString(),
-        			stateString, "-1" }, currentStateInfo, num);
-        }
+        final String[] metadata = new String[] {
+				String.valueOf(num),
+				currentStateInfo.info.toString(),
+				stateString,
+				fingerprint
+        };
+
+		MP.printState(EC.TLC_STATE_PRINT2, metadata, currentStateInfo, num);
     }
 
     /**
-     * Reports that the state with a given number is stuttering
+     * Prints a marker for a stuttering state that concludes a liveness
+     * counterexample error trace.
+     * @param num The index of the state in the trace, counting from one.
      */
     public static void printStutteringState(int num)
     {
         MP.printState(EC.TLC_STATE_PRINT3, new String[] { String.valueOf(num + 1) }, (TLCState) null, num + 1);
     }
 
-	/**
-	 * Prints a marker (EC.TLC_BACK_TO_STATE) looping back to the state with the
-	 * given stateNum.
-	 * @param currentStateInfo 
-	 * 
-	 * @param stateNum
-	 */
-	public static void printBackToState(final TLCStateInfo currentStateInfo, final long stateNum) {
+    /**
+     * Prints a marker for a loopback (lasso) state that concludes a liveness
+     * counterexample error trace.
+     * @param currentStateInfo Info about the loopback state.
+     * @param stateNum The index of the state in the trace, counting from one.
+     */
+	public static void printBackToState(final TLCStateInfo currentStateInfo, final int stateNum) {
 		if (TLCGlobals.tool) {
 			//TODO If the unit test suite runs with -tool mode always turned on, many tests fail because of a NPE.  The NPE results
 			//from null passed here as TLCState, which eventually causes the NPE in tlc2.tool.TLCStateInfo.toString().  When I changed
 			//this from printState to printMessage, nothing obvious broke. However, I suspect some corner case in the Toolbox breaks,
 			//which is why I decided not to touch this. 
-			MP.printState(EC.TLC_BACK_TO_STATE, new String[] { "" + stateNum, currentStateInfo.info.toString() }, (TLCState) null, -1);
+			MP.printState(EC.TLC_BACK_TO_STATE, new String[] { Integer.toString(stateNum), currentStateInfo.info.toString() }, (TLCState)null, stateNum);
 		} else {
-			MP.printMessage(EC.TLC_BACK_TO_STATE, new String[] {"" + stateNum, currentStateInfo.info.toString()});
+			MP.printMessage(EC.TLC_BACK_TO_STATE, new String[] {Integer.toString(stateNum), currentStateInfo.info.toString()});
 		}
 	}
 }

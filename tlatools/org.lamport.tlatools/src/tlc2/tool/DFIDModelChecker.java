@@ -617,7 +617,14 @@ public class DFIDModelChecker extends AbstractChecker
 
     private final void printTrace(int errorCode, String[] parameters, TLCState s1, TLCState s2)
     {
-        ((DFIDWorker) this.workers[IdThread.GetId()]).printTrace(errorCode, parameters, s1, s2);
+    	if (EC.TLC_INVARIANT_VIOLATED_BEHAVIOR == errorCode)
+    	{
+			((DFIDWorker) this.workers[IdThread.GetId()]).printInvariantTrace(errorCode, parameters, s1, s2);
+    	}
+    	else
+    	{
+			((DFIDWorker) this.workers[IdThread.GetId()]).printErrorTrace(errorCode, parameters, s1, s2);
+    	}
     }
 
     /**

@@ -115,8 +115,8 @@ public abstract class CheckImpl extends ModelChecker {
     Action next = this.tool.getNextStateSpec();    
     if (!this.tool.isValid(next, s0, s1)) {
       ToolIO.out.println("The following transition is illegal: ");
-      StatePrinter.printState(s0);
-      StatePrinter.printState(s1);
+      StatePrinter.printStandaloneErrorState(s0);
+      StatePrinter.printStandaloneErrorState(s1);
       return false;
     }
     int cnt = this.tool.getImpliedActions().length;
@@ -124,8 +124,8 @@ public abstract class CheckImpl extends ModelChecker {
       if (!this.tool.isValid(this.tool.getImpliedActions()[i], s0, s1)) {
 	ToolIO.out.println("Error: Action property " + this.tool.getImpliedActNames()[i] +
 			   " is violated.");
-	StatePrinter.printState(s0);
-	StatePrinter.printState(s1);
+	StatePrinter.printStandaloneErrorState(s0);
+	StatePrinter.printStandaloneErrorState(s1);
 	return false;
       }
     }

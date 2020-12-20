@@ -139,6 +139,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 				args.add("-deadlock");
 			}
 			
+			args.add("-noGenerateSpecTE");
 			args.add("-fp");
 			args.add("0");
 			
