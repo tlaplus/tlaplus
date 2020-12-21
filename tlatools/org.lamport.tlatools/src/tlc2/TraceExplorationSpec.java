@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -34,22 +33,22 @@ public class TraceExplorationSpec {
 	/**
 	 * Directory to which TE spec is written.
 	 */
-	private Path outputDirectory;
+	private final Path outputDirectory;
 	
 	/**
 	 * Timestamp to include in TE spec module name.
 	 */
-	private Optional<Date> timestamp = Optional.empty();
+	private final Date timestamp;
 	
 	/**
 	 * Resolves TE spec files & provides output streams to them.
 	 */
-	private IStreamProvider streamProvider;
+	private final IStreamProvider streamProvider;
 	
 	/**
 	 * Records TLC output as it runs, capturing the error trace if one is found.
 	 */
-	private ErrorTraceMessagePrinterRecorder recorder;
+	private final ErrorTraceMessagePrinterRecorder recorder;
 	
 	/**
 	 * Initializes a new instance of the {@link TraceExplorationSpec} class.
@@ -62,22 +61,8 @@ public class TraceExplorationSpec {
 			Date timestamp,
 			ErrorTraceMessagePrinterRecorder recorder) {
 		this.outputDirectory = outputDirectory;
-		this.timestamp = Optional.of(timestamp);
+		this.timestamp = timestamp;
 		this.streamProvider = new FileStreamProvider(outputDirectory);
-		this.recorder = recorder;
-	}
-	
-	/**
-	 * Initializes a new instance of the {@link TraceExplorationSpec} class.
-	 * This constructor is usually used for dependency injection by tests.
-	 * @param streamProvider Provides output streams to which to write TE files.
-	 * @param recorder Recorder to record TLC as it runs; assumed to already be subscribed.
-	 */
-	public TraceExplorationSpec(
-			IStreamProvider streamProvider,
-			ErrorTraceMessagePrinterRecorder recorder) {
-		this.outputDirectory = Paths.get(".");
-		this.streamProvider = streamProvider;
 		this.recorder = recorder;
 	}
 	
@@ -151,13 +136,13 @@ public class TraceExplorationSpec {
 	 * @return The TE spec module name.
 	 */
 	private String deriveTESpecModuleName(String ogModuleName) {
-		SimpleDateFormat sdf = new SimpleDateFormat("_yy_MM_dd_HH_mm_ss");
-		String time = this.timestamp.map(t -> sdf.format(t)).orElse("");
+		// millis to seconds
+		final long secondsSinceEpoch = this.timestamp.getTime() / 1_000L;
 		return String.format(
-			"%s_%s%s",
-			TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
+			"%s_%s_%s",
 			ogModuleName,
-			time);
+			TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
+			Long.toString(secondsSinceEpoch));
 	}
 	
 	/**
@@ -173,7 +158,9 @@ public class TraceExplorationSpec {
 		try {
 			// TODO: branch based on something better than the filename
 			String filename = Paths.get(tlaFilePath).getFileName().toString();
-			return filename.startsWith(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME);
+			// see tlc2.TraceExplorationSpec.deriveTESpecModuleName(String)
+			return filename
+					.matches("^.*_" + TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "_\\d{10}(.tla)?$");
 		} catch (InvalidPathException e) { return false; }
 	}
 	
