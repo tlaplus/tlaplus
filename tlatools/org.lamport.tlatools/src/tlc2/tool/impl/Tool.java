@@ -1502,7 +1502,7 @@ public abstract class Tool
 		try {
 			final TLCState alias = eval(getAliasSpec(), Context.Empty, current.state, successor, EvalControl.Clear).toState();
 			if (alias != null) {
-				return new TLCStateInfo(alias, current);
+				return new AliasTLCStateInfo(alias, current);
 			}
 		} catch (EvalException | TLCRuntimeException e) {
 			// Fall back to original state if eval fails.

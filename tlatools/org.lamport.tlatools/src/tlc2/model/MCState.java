@@ -164,13 +164,11 @@ public class MCState {
 		this.isBackToState = false;
 		this.stateNumber = (int)tlcState.stateNumber;
 
-		Map<UniqueString, IValue> variableMap = tlcState.state.getVals();
+		Map<UniqueString, IValue> variableMap = tlcState.getOriginalState().getVals();
 		List<MCVariable> variableList = new ArrayList<MCVariable>();
 		for (UniqueString key : variableMap.keySet()) {
 			IValue value = variableMap.get(key);
-			MCVariable variable = new MCVariable(
-					key.toString(),
-					null == value ? "\"FILTERED BY ALIAS\"" : value.toString());
+			MCVariable variable = new MCVariable(key.toString(), value.toString());
 			variableList.add(variable);
 		}
 		

@@ -8,7 +8,7 @@ package tlc2.tool;
 public class TLCStateInfo {
   public TLCStateInfo predecessorState;
   public long stateNumber;
-  public TLCState state;
+  public final TLCState state;
   public Object info;
   public Long fp;
 
@@ -66,5 +66,9 @@ public class TLCStateInfo {
 
   public int hashCode() {
 	  return this.state.hashCode();
+  }
+
+  public TLCState getOriginalState() {
+	return state;
   }
 }

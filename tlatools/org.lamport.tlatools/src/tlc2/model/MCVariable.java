@@ -1,5 +1,8 @@
 package tlc2.model;
 
+import tlc2.output.EC;
+import util.Assert;
+
 public class MCVariable {
     private final String name;
     private final String valueAsString;
@@ -10,7 +13,9 @@ public class MCVariable {
 	 * @param value     TLC string representation of the variable value
 	 */
 	public MCVariable(final String varName, final String value) {
+		Assert.check(varName != null, EC.GENERAL);
 		name = varName;
+		Assert.check(value != null, EC.GENERAL);
 		valueAsString = value;
 		traceExpression = null;
 	}
