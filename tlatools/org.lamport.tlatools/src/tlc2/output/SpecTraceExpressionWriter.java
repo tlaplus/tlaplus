@@ -717,8 +717,9 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	
 	    tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.INVARIANT).append(" definition");
 	    tlaBuffer.append(TLAConstants.CR).append(id).append(TLAConstants.DEFINES_CR);
-	    tlaBuffer.append(TLAConstants.TLA_NOT).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
-	    tlaBuffer.append(getStateConjunction(finalState)).append(TLAConstants.CR).append(TLAConstants.R_PAREN);
+	    tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.TLA_NOT).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
+	    tlaBuffer.append(TLAConstants.INDENT).append(getStateConjunction(finalState)).append(TLAConstants.CR);
+	    tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.R_PAREN);
 	
 	    tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
 	}
@@ -1021,12 +1022,12 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
             final MCVariable[] vars = state.getVariables();
 			for (int i = 0; i < vars.length; i++) {
 				final MCVariable var = vars[i];
-				formula.append(var.getName()).append(TLAConstants.EQ).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
-				formula.append(var.getValueAsString()).append(TLAConstants.CR).append(TLAConstants.R_PAREN);
+				formula.append(TLAConstants.INDENT).append(var.getName()).append(TLAConstants.EQ).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
+				formula.append(TLAConstants.INDENT).append(var.getValueAsString()).append(TLAConstants.CR).append(TLAConstants.INDENT).append(TLAConstants.R_PAREN);
 
 				// append /\ except for the last variable
 				if (i != (vars.length - 1)) {
-                    formula.append(TLAConstants.TLA_AND).append(TLAConstants.CR);
+                    formula.append(TLAConstants.INDENT).append(TLAConstants.TLA_AND).append(TLAConstants.CR);
                 }
             }
 
