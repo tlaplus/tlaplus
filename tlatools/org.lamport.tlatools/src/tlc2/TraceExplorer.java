@@ -180,7 +180,7 @@ public class TraceExplorer {
 		 * A user simply has to provide the serialized trace and uncomment the module.
 		 */
 		writer.append(TLAConstants.CR);
-		writer.append("Parsing and semantic processing can take forever for a long trace below.")
+		writer.append("Parsing and semantic processing can take forever if the trace below is long.")
 				.append(TLAConstants.CR);
 		writer.append("In this case, it is advised to deserialize the trace from a binary file.")
 				.append(TLAConstants.CR);
