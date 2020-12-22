@@ -32,11 +32,11 @@
 								<goal>wget</goal>
 						</goals>
 						<configuration>
-								<url>https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules.jar</url>
+								<url>https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar</url>
 								<!-- We keep do not unpack with this plugin as we need do more than just unpack, so we might as well
 										keep all of that logic in the same configuration below. -->
 								<outputDirectory>${project.build.directory}</outputDirectory>
-								<outputFileName>CommunityModules.jar</outputFileName>
+								<outputFileName>CommunityModules-deps.jar</outputFileName>
 							</configuration>
 						</execution>
 					</executions>
