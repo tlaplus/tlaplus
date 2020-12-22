@@ -99,6 +99,8 @@ public final class TLAConstants {
 	     * The tuple of ordered sub-action names representing the trace states. 
 	     */
 	    public static final String TRACE_EXPLORE_ACTION_CONSTRAINT = "traceExploreActionConstraint";
+	    public static final String SPEC_TE_TRACE_EXPRESSION = "TraceExpression";
+	    public static final String SPEC_TE_TTRACE_EXPRESSION = "TTraceExpression";
 	}
 
 	

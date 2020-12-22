@@ -989,7 +989,24 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 				.append(TLAConstants.CR).append(TLAConstants.CR);
 		return identifier;
 	}
-	
+
+	public void addTraceExpressionInstance(final String moduleName) {
+		/* With EWD840_TE as moduleName:
+		   \* Trace Expression declaration
+           TTraceExpression == 
+               LET EWD840_TE == INSTANCE EWD840_TE 
+               IN EWD840_TE!TraceExpression
+		 */
+		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME)
+				.append(" declaration").append(TLAConstants.CR);
+		tlaBuffer
+				.append(String.format("%s ==%s%sLET %s == INSTANCE %s%s%sIN %s!%s",
+						TLAConstants.TraceExplore.SPEC_TE_TTRACE_EXPRESSION, TLAConstants.CR, TLAConstants.INDENT,
+						moduleName, moduleName, TLAConstants.CR, TLAConstants.INDENT, moduleName,
+						TLAConstants.TraceExplore.SPEC_TE_TRACE_EXPRESSION))
+				.append(TLAConstants.CR).append(TLAConstants.CR);
+	}
+
     /**
      * Returns a string representing the formula describing the state.
      * If the state has var1=expr1, var2 = expr2, and var3=expr3, then this returns:
@@ -1037,6 +1054,10 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 
 	public StringBuilder append(String str) {
 		return tlaBuffer.append(str);
+	}
+	
+	public String toString() {
+		return tlaBuffer.toString();
 	}
 
 	public String getComment() {

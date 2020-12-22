@@ -62,7 +62,6 @@ public class TraceExplorer {
     static final String SPEC_TE_INIT_ID = "_SpecTEInit";
     static final String SPEC_TE_NEXT_ID = "_SpecTENext";
     private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "_SpecTEActionConstraint";
-    static final String SPEC_TE_TRACE_EXPRESSION = "TraceExpression";
     
     // <parameter name, whether the parameter takes an argument>
     private static final HashMap<String, Boolean> TLC_ARGUMENTS_TO_IGNORE;
@@ -161,7 +160,8 @@ public class TraceExplorer {
 
 		writer.addPrimer(teSpecModuleName, originalSpecName, extendedModules);
 		
-		writer.addTraceExpressionStub(SPEC_TE_TRACE_EXPRESSION, variables);
+		writer.addTraceExpressionInstance(
+				String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME));
 
 		final List<MCState> trace = error.getStates();
 		
@@ -174,6 +174,19 @@ public class TraceExplorer {
 		writer.addInitNextTraceFunction(trace, variables, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID);
 				
 		writer.addFooter();
+		
+		/**
+		 * Write definition of trace expression into new module.
+		 */
+		writer.append(TLAConstants.CR);
+		
+		final SpecTraceExpressionWriter te = new SpecTraceExpressionWriter();
+		te.append(TLAConstants.CR);
+		te.addPrimer(String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME),
+				originalSpecName, extendedModules);
+		te.addTraceExpressionStub(TLAConstants.TraceExplore.SPEC_TE_TRACE_EXPRESSION, variables);
+		te.addFooter();
+		writer.append(TLAConstants.CR + te.toString() + TLAConstants.CR + TLAConstants.CR);
 		
 		/**
 		 * Write commented definition of trace def override into new module.
@@ -207,7 +220,7 @@ public class TraceExplorer {
 
 		writer.addTraceFunction(trace, traceFunctionId);
 		
-		writer.addAliasToCfg(SPEC_TE_TRACE_EXPRESSION);
+		writer.addAliasToCfg(TLAConstants.TraceExplore.SPEC_TE_TTRACE_EXPRESSION);
 		
         /**
          * Write to streams.
