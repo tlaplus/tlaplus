@@ -518,17 +518,17 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		
 		// Trace
 		final StringBuilder traceFunctionDef = new StringBuilder();
-		traceFunctionDef.append(TLAConstants.BEGIN_TUPLE).append(TLAConstants.CR);
+		traceFunctionDef.append(TLAConstants.INDENT).append(TLAConstants.BEGIN_TUPLE).append(TLAConstants.CR);
 		for (int j = 0; j < trace.size(); j++) {
 			final MCState state = trace.get(j);
 
-			traceFunctionDef.append(TLAConstants.L_PAREN).append(state.asSimpleRecord()).append(TLAConstants.R_PAREN);
+			traceFunctionDef.append(TLAConstants.INDENT).append(TLAConstants.L_PAREN).append(state.asSimpleRecord()).append(TLAConstants.R_PAREN);
 
 			if (j < trace.size() - 1) {
 				traceFunctionDef.append(TLAConstants.COMMA).append(TLAConstants.CR);
 			}
 		}
-		traceFunctionDef.append(TLAConstants.CR).append(TLAConstants.END_TUPLE);
+		traceFunctionDef.append(TLAConstants.CR).append(TLAConstants.INDENT).append(TLAConstants.END_TUPLE);
 		traceFunctionDef.append(CLOSING_SEP).append(TLAConstants.CR);
 		
 		return addArrowAssignmentIdToBuffers(tlaBuffer, cfgBuffer,

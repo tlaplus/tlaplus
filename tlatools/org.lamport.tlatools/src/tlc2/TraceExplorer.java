@@ -195,11 +195,11 @@ public class TraceExplorer {
 		writer.append(TLAConstants.CR);
 		writer.append("Parsing and semantic processing can take forever if the trace below is long.")
 				.append(TLAConstants.CR);
-		writer.append("In this case, it is advised to deserialize the trace from a binary file.")
+		writer.append(" In this case, it is advised to deserialize the trace from a binary file.")
 				.append(TLAConstants.CR);
-		writer.append("To create the file, replace your spec's invariant F with:").append(TLAConstants.CR);
+		writer.append(" To create the file, replace your spec's invariant F with:").append(TLAConstants.CR);
 		writer.append("  Inv == IF F THEN TRUE ELSE ~IOSerialize(Trace, \"file.bin\", TRUE)").append(TLAConstants.CR);
-		writer.append("(IOUtils and TLCExt modules from https://modules.tlapl.us/)");
+		writer.append(" (IOUtils and TLCExt modules from https://modules.tlapl.us/)");
 		
 		final Set<String> extendedModulesWithIOUtils = new HashSet<>(extendedModules);
 		extendedModulesWithIOUtils.add("IOUtils");
