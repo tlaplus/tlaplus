@@ -614,15 +614,17 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	 * @param variables Spec variables; transformed by identity.
 	 */
 	public void addTraceExpressionStub(String teName, final List<String> variables) {
-		this.tlaBuffer.append(teName + TLAConstants.DEFINES + TLAConstants.L_SQUARE_BRACKET + TLAConstants.CR + TLAConstants.INDENT);
-		this.tlaBuffer.append(variables.stream()
-				.map(var -> var + TLAConstants.RECORD_ARROW + var)
-				.collect(Collectors.joining(TLAConstants.COMMA + TLAConstants.CR + TLAConstants.INDENT)));
-		this.tlaBuffer.append(TLAConstants.COMMENT_NS + TLAConstants.COMMA + TLAConstants.CR);
-		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.COMMENT + "Put additional trace expressions here; examples:" + TLAConstants.CR);
-		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.COMMENT + "x" + TLAConstants.RECORD_ARROW + TLAConstants.TLA_NOT + "y" + TLAConstants.PRIME + TLAConstants.COMMA + TLAConstants.CR);
-		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.COMMENT + "e" + TLAConstants.RECORD_ARROW + TLAConstants.KeyWords.ENABLED + TLAConstants.SPACE + "ActionName" + TLAConstants.CR);
-		this.tlaBuffer.append(TLAConstants.R_SQUARE_BRACKET + TLAConstants.CR + TLAConstants.CR);
+		this.tlaBuffer.append(teName + TLAConstants.DEFINES + TLAConstants.CR);
+		this.tlaBuffer
+				.append(TLAConstants.INDENT + TLAConstants.L_SQUARE_BRACKET + TLAConstants.CR + TLAConstants.INDENT);
+		this.tlaBuffer.append(TLAConstants.INDENT
+				+ variables.stream().map(var -> var + TLAConstants.RECORD_ARROW + var).collect(Collectors
+						.joining(TLAConstants.CR + TLAConstants.INDENT + TLAConstants.INDENT + TLAConstants.COMMA)));
+		this.tlaBuffer.append(TLAConstants.CR);
+		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.INDENT + TLAConstants.COMMENT + "Put additional trace expressions here; examples:" + TLAConstants.CR);
+		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.INDENT + TLAConstants.COMMENT + TLAConstants.COMMA + "x" + TLAConstants.RECORD_ARROW + TLAConstants.TLA_NOT + "y" + TLAConstants.PRIME + TLAConstants.CR);
+		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.INDENT + TLAConstants.COMMENT + TLAConstants.COMMA + "e" + TLAConstants.RECORD_ARROW + TLAConstants.KeyWords.ENABLED + TLAConstants.SPACE + "ActionName" + TLAConstants.CR);
+		this.tlaBuffer.append(TLAConstants.INDENT + TLAConstants.R_SQUARE_BRACKET + TLAConstants.CR + TLAConstants.CR);
 	}
 
 	public void addFooter() {
