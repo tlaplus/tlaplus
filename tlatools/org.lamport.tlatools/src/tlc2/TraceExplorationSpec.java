@@ -156,7 +156,8 @@ public class TraceExplorationSpec {
 		}
 		
 		try {
-			// TODO: branch based on something better than the filename
+			// TODO: branch based on something better than the filename such as the module
+			// name that we choose above.
 			String filename = Paths.get(tlaFilePath).getFileName().toString();
 			// see tlc2.TraceExplorationSpec.deriveTESpecModuleName(String)
 			return filename

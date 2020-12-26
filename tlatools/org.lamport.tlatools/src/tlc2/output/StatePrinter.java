@@ -70,6 +70,8 @@ public class StatePrinter
         		? String.valueOf(currentStateInfo.fingerPrint())
         		: "-1";
 
+		// Metadata is the state number/ordinal and action name/location that is printed
+		// above the actual state (values to variables).
         final String[] metadata = new String[] {
 				String.valueOf(num),
 				currentStateInfo.info.toString(),
