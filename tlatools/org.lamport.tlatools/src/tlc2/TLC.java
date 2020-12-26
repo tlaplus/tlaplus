@@ -177,7 +177,7 @@ public class TLC {
     /**
      * Records errors as TLC runs.
      */
-    private ErrorTraceMessagePrinterRecorder recorder = new ErrorTraceMessagePrinterRecorder();
+    private final ErrorTraceMessagePrinterRecorder recorder = new ErrorTraceMessagePrinterRecorder();
     
     /**
      * Trace exploration spec generator.
@@ -1236,6 +1236,10 @@ public class TLC {
         ToolIO.setDefaultResolver(resolver);
     }
     
+    public FilenameToStream getResolver() {
+        return this.resolver;
+    }
+    
     public void setStateWriter(IStateWriter sw) {
     	this.stateWriter = sw;
     }
@@ -1472,6 +1476,10 @@ public class TLC {
 
     public String getMainFile() {
         return mainFile;
+    }
+    
+    public long getStartTime() {
+    	return startTime;
     }
 
 	public String getModelName() {

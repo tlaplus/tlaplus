@@ -421,6 +421,8 @@
 					<exclude name="**/CommonTestCase.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
 					<exclude name="**/PCalModelCheckerTestCase.java" />
+					<exclude name="**/TraceExpressionSpecTest.java" />
+					<exclude name="**/TraceExpressionSpecSafetyTest.java" />
 					<exclude name="**/SuiteTestCase.java" />
 					<exclude name="**/SuiteETestCase.java" />
 					<exclude name="**/DistributedTLCTestCase.java" />
@@ -584,6 +586,8 @@
 						<exclude name="**/CommonTestCase.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
 						<exclude name="**/PCalModelCheckerTestCase.java" />
+						<exclude name="**/TraceExpressionSpecTest.java" />
+						<exclude name="**/TraceExpressionSpecSafetyTest.java" />
 						<exclude name="**/SuiteTestCase.java" />
 						<exclude name="**/SuiteETestCase.java" />
 						<exclude name="**/DistributedTLCTestCase.java" />

@@ -45,6 +45,7 @@ import tlc2.output.MP;
 import tlc2.tool.CommonTestCase;
 import tlc2.tool.ModelChecker;
 import util.FileUtil;
+import util.FilenameToStream;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
 
@@ -120,10 +121,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			// state queue is empty and fail if not. This is only given 
 			// when liveness checking is executed when all states have been
 			// generated.
-			TLCGlobals.livenessThreshold = Double.MAX_VALUE;
+			TLCGlobals.livenessThreshold = getLivenessThreshold();
 			
 			tlc = new TLC();
-			tlc.setResolver(new SimpleFilenameToStream());
+			tlc.setResolver(getResolver());
 			// * We want *no* deadlock checking to find the violation of the
 			// temporal formula
 			// * We use (unless overridden) a single worker to simplify
@@ -139,9 +140,14 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 				args.add("-deadlock");
 			}
 			
-			args.add("-noGenerateSpecTE");
+			if (noGenerateSpec()) {
+				args.add("-noGenerateSpecTE");
+			}
 			args.add("-fp");
 			args.add("0");
+			// Deterministic simulation (order in which actions are explored).
+			args.add("-seed");
+			args.add("1");
 			
 			if (doCoverage()) {
 				args.add("-coverage");
@@ -175,6 +181,18 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
+	}
+
+	protected double getLivenessThreshold() {
+		return Double.MAX_VALUE;
+	}
+
+	protected FilenameToStream getResolver() {
+		return new SimpleFilenameToStream();
+	}
+
+	protected boolean noGenerateSpec() {
+		return true;
 	}
 
 	protected void beforeTearDown() {

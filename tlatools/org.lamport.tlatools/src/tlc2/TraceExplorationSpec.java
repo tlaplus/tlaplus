@@ -31,11 +31,6 @@ import util.TLAConstants;
 public class TraceExplorationSpec {
 	
 	/**
-	 * Directory to which TE spec is written.
-	 */
-	private final Path outputDirectory;
-	
-	/**
 	 * Timestamp to include in TE spec module name.
 	 */
 	private final Date timestamp;
@@ -43,7 +38,7 @@ public class TraceExplorationSpec {
 	/**
 	 * Resolves TE spec files & provides output streams to them.
 	 */
-	private final IStreamProvider streamProvider;
+	private IStreamProvider streamProvider;
 	
 	/**
 	 * Records TLC output as it runs, capturing the error trace if one is found.
@@ -60,18 +55,9 @@ public class TraceExplorationSpec {
 			Path outputDirectory,
 			Date timestamp,
 			ErrorTraceMessagePrinterRecorder recorder) {
-		this.outputDirectory = outputDirectory;
 		this.timestamp = timestamp;
 		this.streamProvider = new FileStreamProvider(outputDirectory);
 		this.recorder = recorder;
-	}
-	
-	/**
-	 * Returns path to directory to which TE spec will be written.
-	 * @return Path to directory to which TE spec will be written.
-	 */
-	public Path getOutputDirectory() {
-		return this.outputDirectory;
 	}
 	
 	/**
@@ -105,7 +91,7 @@ public class TraceExplorationSpec {
 			List<String> constants,
 			List<String> variables,
 			MCError errorTrace) {
-		String teSpecModuleName = this.deriveTESpecModuleName(ogModuleName);
+		String teSpecModuleName = deriveTESpecModuleName(ogModuleName, this.timestamp);
 		try (
 				OutputStream tlaStream = this.streamProvider.getTlaStream(teSpecModuleName);
 				OutputStream cfgStream = this.streamProvider.getCfgStream(teSpecModuleName);
@@ -130,19 +116,23 @@ public class TraceExplorationSpec {
 		return null;
 	}
 	
+	public static String teModuleId(Date timestamp) {
+		final long secondsSinceEpoch = timestamp.getTime() / 1_000L;
+		return Long.toString(secondsSinceEpoch);
+	}
+	
 	/**
 	 * Derives the TE spec module name.
 	 * @param ogModuleName Original module name.
 	 * @return The TE spec module name.
 	 */
-	private String deriveTESpecModuleName(String ogModuleName) {
+	public static String deriveTESpecModuleName(String ogModuleName, Date timestamp) {
 		// millis to seconds
-		final long secondsSinceEpoch = this.timestamp.getTime() / 1_000L;
 		return String.format(
 			"%s_%s_%s",
 			ogModuleName,
 			TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
-			Long.toString(secondsSinceEpoch));
+			teModuleId(timestamp));
 	}
 	
 	/**
