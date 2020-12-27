@@ -168,7 +168,9 @@ public class MCState {
 		List<MCVariable> variableList = new ArrayList<MCVariable>();
 		for (UniqueString key : variableMap.keySet()) {
 			IValue value = variableMap.get(key);
-			MCVariable variable = new MCVariable(key.toString(), value.toString());
+			// value is null if the successor state is not completely specified by the
+			// next-state relation. See e.g. IncompleteNextTest.java
+			MCVariable variable = new MCVariable(key.toString(), value != null ? value.toString() : "");
 			variableList.add(variable);
 		}
 		
