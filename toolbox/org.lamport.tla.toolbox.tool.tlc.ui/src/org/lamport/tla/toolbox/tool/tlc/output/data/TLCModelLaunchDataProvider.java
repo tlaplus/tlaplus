@@ -364,6 +364,18 @@ public class TLCModelLaunchDataProvider implements ITLCOutputListener
                 break;
             case MP.NONE:
 
+                if (messageCode == EC.TLC_COVERAGE_MISMATCH) {
+					// The Toolbox's error parser expects the error trace 2217 to directly follow
+					// the 2110 error marker. However, when TLC runs with multiple workers, 2217 and
+					// 2110 can be interleaved with 2776 if one or more workers have already started
+					// evaluating the next-state relation again before they receive the violation
+					// signal. See Github issue #538 for more details and in particular
+                	// https://github.com/tlaplus/tlaplus/issues/538#issuecomment-751945328
+                	// Bugs in the CostModelCreator that cause TCL_COVERAGE_MISMATCH should be fixed
+                	// separately.
+                	break;
+                }
+            	
                 if (lastDetectedError != null)
                 {
                     // something is detected which is not an error
