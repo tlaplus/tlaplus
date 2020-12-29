@@ -186,7 +186,9 @@ public class DFIDModelChecker extends AbstractChecker
                 result = this.runTLC(level);
 				// Recent done flag before after the workers have checked the
 				// current level in preparation for the next level.
-                this.done = false;
+                synchronized (this) {
+                	this.done = false;
+				}
                 if (result != EC.NO_ERROR)
                     return result;
 
