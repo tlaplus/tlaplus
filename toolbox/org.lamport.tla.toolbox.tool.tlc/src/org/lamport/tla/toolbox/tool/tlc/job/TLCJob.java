@@ -254,6 +254,10 @@ public abstract class TLCJob extends AbstractJob implements IModelConfigurationC
         // debugging only
         //arguments.put("-debug", null); 
         
+		// Keep TLC from generating a trace spec. For historic reasons, the Toolbox uses
+		// its own mechanism to generate a trace spec.
+        arguments.add("-noGenerateSpecTE");
+        
         // run in tool mode
         arguments.add("-tool");
         
