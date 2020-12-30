@@ -29,21 +29,22 @@ try -command {
 	get-menu -path $TLA-MENU-PATH-NEW-MODEL | click
 	get-window $TLA-DIALOG-TITLE-NEW-MODEL | get-button $TLA-BUTTON-OK | click
 	
+	// trigger divergence dialog and go to history
 	get-menu -path "TLC Model Checker/Run model" | click
-	with [get-window "PlusCal out of sync"] {
-		get-checkbox | click
-		get-button -index 2 | click  // don't seem to able to get by title, likely due to the ampersand in the text
+	with [get-window "PlusCal algorithm has changed but not re-translated"] {
+		get-button -index 1 | click  // don't seem to able to get by title, likely due to the ampersand in the text
 	}
 	get-view "History" | close
-
-	get-menu -path "TLC Model Checker/Run model" | click
 	
-	listen errorLog {
-		try {
-			get-window "PlusCal out of sync"
-			log -message "Found checksum warning dialog that shouldn't be shown." -severity error -plugin "org.lamport.tla.toolbox.product.uitests"
-		} -catch { }
-	} | assert-empty
+	// trigger divergence dialog again and abort (
+	get-menu -path "TLC Model Checker/Run model" | click
+	get-window "PlusCal algorithm has changed but not re-translated" | click  // Check abort is default
+
+	// trigger divergence dialog and abort
+	get-menu -path "TLC Model Checker/Run model" | click
+	with [get-window "PlusCal algorithm has changed but not re-translated"] {
+		get-button -index 0 | click  // don't seem to able to get by title, likely due to the ampersand in the text
+	}
 
 	wait -ms 1200	
 } -finally {
