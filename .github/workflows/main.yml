@@ -4,7 +4,7 @@ on:
   push:
     # Sequence of patterns matched against refs/heads
     branches:    
-      - master         # Push events on master branch
+      - v1.7.1         # Push events on master branch
 
 jobs:
 
@@ -182,7 +182,6 @@ jobs:
       run: |
         git config --local user.email "tlaplus-action@github.com"
         git config --local user.name "TLA+ GitHub Action"
-        git tag -f v1.7.1
         git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --follow-tags --tags --force
 
       ##
