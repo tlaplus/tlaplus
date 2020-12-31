@@ -18,8 +18,13 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "10 July 2019";
-    public static final String version = "1.9";
+    public static final String modDate = "31 December 2020";
+	// Can't increment 1.9 to 1.10 because VersionToNumber(str) calculates a lower
+	// numerical value for 1.10 than it does for 1.9. This breaks the FairSeq?Test
+    // tests. Until we switch from 1.xx to 2.0, increment versionWeight along with
+    // version.
+    public static final int versionWeight = 1902;
+    public static final String version = "1.11";
     /**
      * SZ Mar 9, 2009:
      * Added re-initialization method. Since PcalParams class
@@ -50,7 +55,7 @@ public final class PcalParams
         NoDoneDisjunct = false;
         optionsInFile = false;
         versionOption = null;
-        inputVersionNumber = VersionToNumber(PcalParams.version);
+        inputVersionNumber = PcalParams.versionWeight;
         PcalTLAGen.wrapColumn = 78;
         PcalTLAGen.ssWrapColumn = 45;
         tlaPcalMapping = null ;
@@ -247,7 +252,7 @@ public final class PcalParams
      // way because of the way the code evolved, and no intelligent
      // design has stepped in to fix it.
   public static String versionOption = null;
-  public static int inputVersionNumber = VersionToNumber(PcalParams.version);
+  public static int inputVersionNumber = PcalParams.versionWeight;
      // The input file's version number * 1000
 //  public static boolean readOnly = false; 
      // True iff this is a .pcal input file and the .tla file should 
@@ -310,7 +315,7 @@ public final class PcalParams
           PcalDebug.reportError("Illegal version " + ver + " specified."); 
           return false;
       }
-      if (vnum > VersionToNumber(PcalParams.version)) {
+      if (vnum > PcalParams.versionWeight) {
           PcalDebug.reportError("Specified version " + ver + 
                   " later than current version " + PcalParams.version);
           return false;
