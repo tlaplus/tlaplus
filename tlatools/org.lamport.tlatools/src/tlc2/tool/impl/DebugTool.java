@@ -101,7 +101,7 @@ public class DebugTool extends Tool {
 //		}
 		target.pushFrame(this, expr, c, control);
 		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-		target.popFrame(this, v, expr, c, control);
+		target.popFrame(this, expr, c, control);
 		return v;
 	}
 

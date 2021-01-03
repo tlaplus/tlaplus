@@ -29,7 +29,6 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
-import tlc2.value.impl.Value;
 
 public interface IDebugTarget {
 
@@ -39,7 +38,7 @@ public interface IDebugTarget {
 
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control);
 	
-	IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control);
+	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, int control);
 
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState state);
 
@@ -49,6 +48,8 @@ public interface IDebugTarget {
 
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
 
+	//------------------------ Wrapper --------------------------//
+	
 	IDebugTarget pushFrame(TLCState state);
 	
 	IDebugTarget popFrame(TLCState state);

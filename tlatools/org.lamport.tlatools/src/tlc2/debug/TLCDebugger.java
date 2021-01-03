@@ -74,7 +74,6 @@ import tla2sany.st.Location;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
-import tlc2.value.impl.Value;
 
 public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	protected static Logger LOGGER = Logger.getLogger(TLCDebugger.class.getName());
@@ -318,7 +317,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public IDebugTarget popFrame(Tool tool, Value v, SemanticNode expr, Context c, int control) {
+	public IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, int control) {
 		LOGGER.finer(String.format("%s Call popFrame: [%s], level: %s\n",
 				new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
 		final TLCStackFrame pop = stack.pop();
