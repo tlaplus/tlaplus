@@ -99,9 +99,9 @@ public class DebugTool extends Tool {
 //			// base-level is).
 //			return super.evalImpl(expr, c, s0, s1, control, cm);
 //		}
-		target.pushFrame(this, expr, c, control);
+		target.pushFrame(this, expr, c, s0, s1);
 		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-		target.popFrame(this, expr, c, control);
+		target.popFrame(this, expr, c, s0, s1);
 		return v;
 	}
 
