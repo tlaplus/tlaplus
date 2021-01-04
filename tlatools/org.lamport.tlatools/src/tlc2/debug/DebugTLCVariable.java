@@ -39,7 +39,7 @@ import tlc2.value.impl.Value;
 
 public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVariable {
 	
-	private transient Value value;
+	private transient Value tlcValue;
 	
 	public DebugTLCVariable(String lhs) {
 		this.setName(lhs);
@@ -50,12 +50,12 @@ public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVar
 	}
 
 	public DebugTLCVariable[] getNested(Random rnd) {
-		final List<TLCVariable> tlcVariables = this.value.getTLCVariables(this, rnd);
+		final List<TLCVariable> tlcVariables = this.tlcValue.getTLCVariables(this, rnd);
 		return tlcVariables.toArray(new DebugTLCVariable[tlcVariables.size()]);
 	}
 
 	public void setInstance(Value v) {
-		this.value = v;
+		this.tlcValue = v;
 	}
 
 	@Override
