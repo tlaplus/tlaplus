@@ -66,6 +66,11 @@ public class DebugTool extends Tool {
 	@Override
 	protected Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
+		if (target == null) {
+			// target is null during instantiation of super, ie. eager evaluation of
+			// operators in SpecProcessor.
+			return super.evalImpl(expr, c, s0, s1, control, cm);
+		}
 		if (EvalControl.isDebug(control)) {
 			// Skip debugging when evaluation was triggered by the debugger itself. For
 			// example, when LazyValues get unlazied.
@@ -99,11 +104,9 @@ public class DebugTool extends Tool {
 //			// base-level is).
 //			return super.evalImpl(expr, c, s0, s1, control, cm);
 //		}
-		// target is null during instantiation of super, ie. eager evaluation of
-		// operators in SpecProcessor.
-		if (target != null) target.pushFrame(this, expr, c, s0, s1);
+		target.pushFrame(this, expr, c, s0, s1);
 		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-		if (target != null) target.popFrame(this, expr, c, s0, s1);
+		target.popFrame(this, expr, c, s0, s1);
 		return v;
 	}
 
