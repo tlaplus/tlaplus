@@ -99,9 +99,11 @@ public class DebugTool extends Tool {
 //			// base-level is).
 //			return super.evalImpl(expr, c, s0, s1, control, cm);
 //		}
-		target.pushFrame(this, expr, c, s0, s1);
+		// target is null during instantiation of super, ie. eager evaluation of
+		// operators in SpecProcessor.
+		if (target != null) target.pushFrame(this, expr, c, s0, s1);
 		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-		target.popFrame(this, expr, c, s0, s1);
+		if (target != null) target.popFrame(this, expr, c, s0, s1);
 		return v;
 	}
 
