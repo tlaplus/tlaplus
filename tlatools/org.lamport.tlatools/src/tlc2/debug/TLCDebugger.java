@@ -26,7 +26,7 @@
 package tlc2.debug;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -122,23 +122,28 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return CompletableFuture.completedFuture(response);
 	}
 
-	private volatile Breakpoint[] breakpoints = new Breakpoint[0];
+	private final List<Breakpoint> breakpoints = Collections.synchronizedList(new ArrayList<>());
 	
 	@Override
 	public CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
 		//TODO: Confirm breakpoint locations (see tlc2.debug.TLCDebugger.matches(SemanticNode))!!!
 		LOGGER.finer("setBreakpoints");
-		SourceBreakpoint[] sbps = args.getBreakpoints();
-		breakpoints = new Breakpoint[sbps.length];
+		final SourceBreakpoint[] sbps = args.getBreakpoints();
+		
+		final ArrayList<Breakpoint> tmp = new ArrayList<>(sbps.length);
 		for (int j = 0; j < sbps.length; j++) {
-			breakpoints[j] = new Breakpoint();
-			breakpoints[j].setColumn(sbps[j].getColumn());
-			breakpoints[j].setLine(sbps[j].getLine());
-			breakpoints[j].setId(j);
-			breakpoints[j].setVerified(true);
+			Breakpoint breakpoint = new Breakpoint();
+			breakpoint.setColumn(sbps[j].getColumn());
+			breakpoint.setLine(sbps[j].getLine());
+			breakpoint.setId(j);
+			breakpoint.setVerified(true);
+			tmp.add(breakpoint);
 		}
-		SetBreakpointsResponse response = new SetBreakpointsResponse();
-		response.setBreakpoints(breakpoints);
+		breakpoints.clear();
+		breakpoints.addAll(tmp);
+		
+		final SetBreakpointsResponse response = new SetBreakpointsResponse();
+		response.setBreakpoints(breakpoints.toArray(new Breakpoint[breakpoints.size()]));
 		return CompletableFuture.completedFuture(response);
 	}
 
@@ -389,6 +394,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// i.e. best match for the given editor location.  The code here should then
 		// simple compare the two location instances.
 		final Location location = expr.getLocation();
-		return Arrays.asList(breakpoints).stream().anyMatch(b -> b.getLine() == location.beginLine());
+		return breakpoints.stream().anyMatch(b -> b.getLine() == location.beginLine());
 	}
 }
