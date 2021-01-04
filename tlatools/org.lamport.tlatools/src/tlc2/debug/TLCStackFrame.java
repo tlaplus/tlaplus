@@ -58,7 +58,7 @@ class TLCStackFrame extends StackFrame {
 
 	private transient final SemanticNode node;
 	private transient final Context ctxt;
-	private transient final Tool tool;
+	protected transient final Tool tool;
 
 	private final int stackId;
 
@@ -107,8 +107,7 @@ class TLCStackFrame extends StackFrame {
 				Object val = c.getValue();
 				if (val instanceof LazyValue) {
 					// unlazy/eval LazyValues
-					val = ((LazyValue) c.getValue()).eval(tool); // Do not pass EvalControl.Debug here because we don't
-																	// want to debug the un-lazying the value.
+					val = unlazy((LazyValue) c.getValue());
 				}
 				if (val instanceof Value) {
 					final Value value = (Value) val;
@@ -128,6 +127,11 @@ class TLCStackFrame extends StackFrame {
 			}
 		}
 		return vars.toArray(new Variable[vars.size()]);
+	}
+
+	protected Object unlazy(final LazyValue value) {
+		return value.eval(tool); // Do not pass EvalControl.Debug here because we don't
+		// want to debug the un-lazying the value.
 	}
 
 	public Scope[] getScopes() {

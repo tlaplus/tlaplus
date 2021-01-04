@@ -39,11 +39,12 @@ import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.IValue;
+import tlc2.value.impl.LazyValue;
 import util.UniqueString;
 
 public class TLCInitStackFrame extends TLCStackFrame {
 
-	private transient final TLCState state;
+	protected transient final TLCState state;
 	private transient final int stateId;
 
 	public TLCInitStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state) {
@@ -89,5 +90,11 @@ public class TLCInitStackFrame extends TLCStackFrame {
 		scopes.add(scope);
 		
 		return scopes.toArray(new Scope[scopes.size()]);
+	}
+
+	@Override
+	protected Object unlazy(LazyValue value) {
+		return value.eval(tool, state); // Do not pass EvalControl.Debug here because we don't
+		// want to debug the un-lazying the value.
 	}
 }
