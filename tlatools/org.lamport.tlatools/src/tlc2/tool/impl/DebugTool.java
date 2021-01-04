@@ -104,9 +104,36 @@ public class DebugTool extends Tool {
 //			// base-level is).
 //			return super.evalImpl(expr, c, s0, s1, control, cm);
 //		}
+		if (s0.noneAssigned()) {
+			assert !s1.noneAssigned();
+			// s0 and s1 can be dummies that are passed by some value instances or Tool
+			// during the evaluation of the init-predicate or other const-level expressions.
+			return constLevelEval(expr, c, s0, s1, control, cm);
+		} else if (s1.noneAssigned()) {
+			return stateLevelEval(expr, c, s0, s1, control, cm);
+		} else {
+			return actionLevelEval(expr, c, s0, s1, control, cm);
+		}
+	}
+
+	private Value actionLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
 		target.pushFrame(this, expr, c, s0, s1);
 		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
 		target.popFrame(this, expr, c, s0, s1);
+		return v;
+	}
+
+	private Value stateLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
+		target.pushFrame(this, expr, c, s0);
+		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
+		target.popFrame(this, expr, c, s0);
+		return v;
+	}
+
+	private Value constLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
+		target.pushFrame(this, expr, c, control);
+		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
+		target.popFrame(this, expr, c, control);
 		return v;
 	}
 
