@@ -116,6 +116,11 @@ class TLCStackFrame extends StackFrame {
 							.toTLCVariable(new DebugTLCVariable(c.getName().getName().toString()), rnd);
 					nestedVariables.put(variable.getVariablesReference(), variable);
 					vars.add(variable);
+				} else if (val instanceof SemanticNode) {
+					final Variable variable = new Variable();
+					variable.setName(c.getName().getSignature());
+					variable.setValue(((SemanticNode) val).getHumanReadableImage());
+					vars.add(variable);
 				} else {
 					System.err.println("This is interesting!!! What's this??? " + val.toString());
 				}
