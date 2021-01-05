@@ -26,14 +26,13 @@
 package tlc2.debug;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.debug.Breakpoint;
 import org.eclipse.lsp4j.debug.BreakpointLocation;
@@ -179,9 +178,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 		final VariablesResponse value = new VariablesResponse();
 		
-		final List<Variable> collect = this.stack.stream().map(frame -> frame.getVariables(vr)).flatMap(Stream::of)
-				.collect(Collectors.toList());
-		
+		final List<Variable> collect = new ArrayList<>(); 
+		for (TLCStackFrame frame : this.stack) {
+			collect.addAll(Arrays.asList(frame.getVariables(vr)));
+		}
 		value.setVariables(collect.toArray(new Variable[collect.size()]));
 		
 		return CompletableFuture.completedFuture(value);
