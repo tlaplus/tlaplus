@@ -216,6 +216,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<Void> next(NextArguments args) {
 		LOGGER.finer("next/stepOver");
+		targetLevel = this.stack.size() - 1;
 		step = Step.Over;
 		this.notify();
 		return CompletableFuture.completedFuture(null);
