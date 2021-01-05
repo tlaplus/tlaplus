@@ -118,7 +118,7 @@ public class REPL {
                 Tool tool = new FastTool(REPL_SPEC_NAME, REPL_SPEC_NAME, resolver);
                 ModuleNode module = tool.getSpecProcessor().getRootModule();
                 OpDefNode valueNode = module.getOpDef(replValueVarName);
-                Value exprVal = (Value) tool.eval(valueNode.getBody(), Context.Empty, TLCState.Empty);
+                Value exprVal = (Value) tool.eval(valueNode.getBody());
                 return exprVal.toString();
             } catch (Assert.TLCRuntimeException | EvalException exc) {
                 // TODO: Improve error messages with more specific detail.

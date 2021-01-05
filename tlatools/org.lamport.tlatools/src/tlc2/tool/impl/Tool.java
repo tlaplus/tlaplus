@@ -1427,6 +1427,10 @@ public abstract class Tool
 	    return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, CostModel.DO_NOT_RECORD);
 	  }
 
+  public final IValue eval(SemanticNode expr) {
+	    return this.eval(expr, Context.Empty, TLCState.Empty);
+	  }
+
   @ExpectInlined
   private final TLCState processUnchangedImplTuple(final Action action, ActionItemList acts, Context c, TLCState s0, TLCState s1, INextStateFunctor nss,
   		ExprOrOpArgNode[] args, int alen, CostModel cm, CostModel cmNested) {
