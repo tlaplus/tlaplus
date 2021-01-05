@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -81,7 +80,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	protected Launcher<IDebugProtocolClient> launcher;
 
 	@Override
-	public CompletableFuture<Capabilities> initialize(InitializeRequestArguments args) {
+	public synchronized CompletableFuture<Capabilities> initialize(InitializeRequestArguments args) {
 		LOGGER.finer("initialize");
 
 		Executors.newSingleThreadExecutor().submit(() -> {
@@ -98,18 +97,18 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public CompletableFuture<Void> cancel(CancelArguments args) {
+	public synchronized CompletableFuture<Void> cancel(CancelArguments args) {
 		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
-	public CompletableFuture<Void> configurationDone(ConfigurationDoneArguments args) {
+	public synchronized CompletableFuture<Void> configurationDone(ConfigurationDoneArguments args) {
 		LOGGER.finer("configurationDone");
 		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
-	public CompletableFuture<BreakpointLocationsResponse> breakpointLocations(BreakpointLocationsArguments args) {
+	public synchronized CompletableFuture<BreakpointLocationsResponse> breakpointLocations(BreakpointLocationsArguments args) {
 		LOGGER.finer("breakpointLocations");
 		final BreakpointLocationsResponse response = new BreakpointLocationsResponse();
 		BreakpointLocation breakpoint = new BreakpointLocation();
@@ -125,7 +124,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	private final List<Breakpoint> breakpoints = Collections.synchronizedList(new ArrayList<>());
 	
 	@Override
-	public CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
+	public synchronized CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
 		//TODO: Confirm breakpoint locations (see tlc2.debug.TLCDebugger.matches(SemanticNode))!!!
 		LOGGER.finer("setBreakpoints");
 		final SourceBreakpoint[] sbps = args.getBreakpoints();
@@ -148,7 +147,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public CompletableFuture<StackTraceResponse> stackTrace(StackTraceArguments args) {
+	public synchronized CompletableFuture<StackTraceResponse> stackTrace(StackTraceArguments args) {
 		LOGGER.finer(String.format("stackTrace frame: %s, levels: %s\n", args.getStartFrame(), args.getLevels()));
 
 		final List<StackFrame> frames = new ArrayList<>(stack.size());
@@ -163,7 +162,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public CompletableFuture<ScopesResponse> scopes(ScopesArguments args) {
+	public synchronized CompletableFuture<ScopesResponse> scopes(ScopesArguments args) {
 		LOGGER.finer(String.format("scopes frame %s\n", args.getFrameId()));
 
 		final ScopesResponse response = new ScopesResponse();
@@ -175,7 +174,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public CompletableFuture<VariablesResponse> variables(VariablesArguments args) {
+	public synchronized CompletableFuture<VariablesResponse> variables(VariablesArguments args) {
 		final int vr = args.getVariablesReference();
 
 		final VariablesResponse value = new VariablesResponse();
@@ -189,13 +188,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public CompletableFuture<SetVariableResponse> setVariable(SetVariableArguments args) {
+	public synchronized CompletableFuture<SetVariableResponse> setVariable(SetVariableArguments args) {
 		LOGGER.finer("setVariable");
 		return CompletableFuture.completedFuture(new SetVariableResponse());
 	}
 
 	@Override
-	public CompletableFuture<ThreadsResponse> threads() {
+	public synchronized CompletableFuture<ThreadsResponse> threads() {
 		LOGGER.finer("threads");
 		Thread thread = new Thread();
 		thread.setId(0);
@@ -206,42 +205,42 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public CompletableFuture<ContinueResponse> continue_(ContinueArguments args) {
+	public synchronized CompletableFuture<ContinueResponse> continue_(ContinueArguments args) {
 		LOGGER.finer("continue_");
 		targetLevel = -1;
 		step = Step.Continue;
-		queue.offer(this);
+		this.notify();
 		return CompletableFuture.completedFuture(new ContinueResponse());
 	}
 
 	@Override
-	public CompletableFuture<Void> next(NextArguments args) {
+	public synchronized CompletableFuture<Void> next(NextArguments args) {
 		LOGGER.finer("next/stepOver");
 		step = Step.Over;
-		queue.offer(this);
+		this.notify();
 		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
-	public CompletableFuture<Void> stepIn(StepInArguments args) {
+	public synchronized CompletableFuture<Void> stepIn(StepInArguments args) {
 		LOGGER.finer("stepIn");
 		targetLevel++;
 		step = Step.In;
-		queue.offer(this);
+		this.notify();
 		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
-	public CompletableFuture<Void> stepOut(StepOutArguments args) {
+	public synchronized CompletableFuture<Void> stepOut(StepOutArguments args) {
 		LOGGER.finer("stepOut");
 		targetLevel--;
 		step = Step.Out;
-		queue.offer(this);
+		this.notify();
 		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
-	public CompletableFuture<Void> pause(PauseArguments args) {
+	public synchronized CompletableFuture<Void> pause(PauseArguments args) {
 		LOGGER.finer("pause");
 		Executors.newSingleThreadExecutor().submit(() -> {
 			LOGGER.finer("pause -> stopped");
@@ -261,16 +260,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	// would have to make CST take a function that applies a transformation for the debugger
 	// and a different one when CST does its original job.
 	private final Stack<TLCStackFrame> stack = new Stack<>();
-
-	//TODO: This is a clutch; it's working but should be simplified!
-	private final ArrayBlockingQueue<IDebugTarget> queue = new ArrayBlockingQueue<>(1);
 	
 	// Initialize the debugger to immediately halt on the first frame.
 	private volatile int targetLevel = 1;
 	private volatile Step step = Step.In;
 
 	@Override
-	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
+	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
 		final int level = this.stack.size();
 		LOGGER.finer(String.format("%s Call pushFrame: [%s], level: %s\n",
 				new String(new char[level]).replace('\0', '#'), expr, level));
@@ -282,7 +278,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
+	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
 		final int level = this.stack.size();
 		stack.push(new TLCInitStackFrame(expr, c, tool, ps));
 		haltExecution(expr, level);
@@ -290,7 +286,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
+	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
 		final int level = this.stack.size();
 		stack.push(new TLCNextStackFrame(expr, c, tool, predecessor, ps));
 		haltExecution(expr, level);
@@ -298,31 +294,31 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public IDebugTarget pushFrame(TLCState state) {
+	public synchronized IDebugTarget pushFrame(TLCState state) {
 		TLCStackFrame f = this.stack.peek();
 		pushFrame(f.getTool(), f.getNode(), f.getContext(), state);
 		return this;
 	}
 
 	@Override
-	public IDebugTarget pushFrame(TLCState predecessor, TLCState state) {
+	public synchronized IDebugTarget pushFrame(TLCState predecessor, TLCState state) {
 		TLCStackFrame f = this.stack.peek();
 		return pushFrame(f.getTool(), f.getNode(), f.getContext(), state);
 	}
 
 	@Override
-	public IDebugTarget popFrame(TLCState state) {
+	public synchronized IDebugTarget popFrame(TLCState state) {
 		TLCStackFrame f = this.stack.peek();
 		return popFrame(f.getTool(), f.getNode(), f.getContext(), state);
 	}
 
 	@Override
-	public IDebugTarget popFrame(TLCState predecessor, TLCState state) {
+	public synchronized IDebugTarget popFrame(TLCState predecessor, TLCState state) {
 		return popFrame(state);
 	}
 
 	@Override
-	public IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, int control) {
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, int control) {
 		LOGGER.finer(String.format("%s Call popFrame: [%s], level: %s\n",
 				new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
 		final TLCStackFrame pop = stack.pop();
@@ -331,14 +327,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
 		final TLCStackFrame pop = stack.pop();
 		assert expr == pop.getNode();
 		return this;
 	}
 
 	@Override
-	public IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
 		return popFrame(tool, expr, c, ps);
 	}
 
@@ -349,7 +345,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			try {
 				// Halt TLC's evaluation by blocking on this (one-element) queue. The DAP
 				// front-end will add an element that will unblock us.
-				queue.take();
+				this.wait();
 			} catch (InterruptedException notExpectedToHappen) {
 				notExpectedToHappen.printStackTrace();
 				java.lang.Thread.currentThread().interrupt();
@@ -385,7 +381,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return false;
 	}
 
-	protected boolean matches(final SemanticNode expr) {
+	private boolean matches(final SemanticNode expr) {
 		//TODO: Better match the location.  However, it shouldn't be done down here
 		// but in setBreakpoints above that lets the debuggee tell the front-end
 		// that a user-defined location is "corrected" to one that matches the bounds
