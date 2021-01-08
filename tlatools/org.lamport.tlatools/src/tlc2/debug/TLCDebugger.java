@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.lsp4j.debug.Breakpoint;
@@ -271,10 +272,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
-		final int level = this.stack.size();
-		LOGGER.finer(String.format("%s Call pushFrame: [%s], level: %s\n",
-				new String(new char[level]).replace('\0', '#'), expr, level));
-
 		stack.push(new TLCStackFrame(expr, c, tool));
 
 		haltExecution(expr, level);
@@ -343,6 +340,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	protected void haltExecution(SemanticNode expr, final int level) {
+		if (LOGGER.isLoggable(Level.FINER)) {
+			LOGGER.finer(String.format("%s(%s): [%s]\n", new String(new char[level]).replace('\0', '#'), level, expr));
+		}
 		if (matches(step, targetLevel, level) || matches(expr)) {
 			sendStopped();
 
