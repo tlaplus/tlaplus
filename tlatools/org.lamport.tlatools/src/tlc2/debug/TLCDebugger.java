@@ -393,4 +393,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final Location location = expr.getLocation();
 		return breakpoints.stream().anyMatch(b -> b.getLine() == location.beginLine());
 	}
+	
+	public static class Factory {
+
+		public static TLCDebugger OVERRIDE;
+
+		public static TLCDebugger getInstance() throws Exception {
+			if (OVERRIDE != null) {
+				return OVERRIDE;
+			}
+			return new AttachingDebugger();
+		}
+	}
 }

@@ -43,6 +43,8 @@ import tlc2.value.impl.LazyValue;
 import util.UniqueString;
 
 public class TLCInitStackFrame extends TLCStackFrame {
+	
+	public static final String SCOPE = "State";
 
 	protected transient final TLCState state;
 	private transient final int stateId;
@@ -85,7 +87,7 @@ public class TLCInitStackFrame extends TLCStackFrame {
 		scopes.addAll(Arrays.asList(super.getScopes()));
 		
 		final Scope scope = new Scope();
-		scope.setName("State");
+		scope.setName(SCOPE);
 		scope.setVariablesReference(stateId);
 		scopes.add(scope);
 		

@@ -23,7 +23,7 @@ import java.util.TimeZone;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
-import tlc2.debug.AttachingDebugger;
+import tlc2.debug.TLCDebugger;
 import tlc2.output.EC;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
@@ -1060,7 +1060,8 @@ public class TLC {
 				
             	// model checking
 				if (debugger) {
-					tool = new DebugTool(mainFile, configFile, resolver, new AttachingDebugger());
+					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
+					tool = new DebugTool(mainFile, configFile, resolver, TLCDebugger.Factory.getInstance());
 				} else {
 					tool = new FastTool(mainFile, configFile, resolver);
 				}

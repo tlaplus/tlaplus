@@ -43,8 +43,10 @@ import tlc2.value.impl.LazyValue;
 import util.UniqueString;
 
 public class TLCNextStackFrame extends TLCInitStackFrame {
+	
+	public static final String SCOPE = "Predecessor";
 
-	private final TLCState predecessor;
+	protected final TLCState predecessor;
 	private final int predId;
 
 	public TLCNextStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps) {
@@ -85,7 +87,7 @@ public class TLCNextStackFrame extends TLCInitStackFrame {
 		scopes.addAll(Arrays.asList(super.getScopes()));
 		
 		final Scope scope = new Scope();
-		scope.setName("Predecessor");
+		scope.setName(SCOPE);
 		scope.setVariablesReference(predId);
 		scopes.add(scope);
 		

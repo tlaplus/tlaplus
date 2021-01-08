@@ -49,6 +49,8 @@ import util.Assert;
 
 class TLCStackFrame extends StackFrame {
 	
+	public static final String SCOPE = "Context";
+	
 	// It would be easier to use hashCode instead of passing a random generator
 	// around. However, calculating the hashCode for a TLC value calculates the
 	// value's fingerprint, which normalizes and, thus, enumerates the value.
@@ -139,7 +141,7 @@ class TLCStackFrame extends StackFrame {
 		
 		if (!ctxt.isEmpty()) {
 			final Scope scope = new Scope();
-			scope.setName("Context");
+			scope.setName(SCOPE);
 			scope.setVariablesReference(stackId);
 			scopes.add(scope);
 		}
@@ -156,5 +158,10 @@ class TLCStackFrame extends StackFrame {
 
 	public Tool getTool() {
 		return tool;
+	}
+
+	@Override
+	public String toString() {
+		return "TLCStackFrame [node=" + node + "]";
 	}
 }
