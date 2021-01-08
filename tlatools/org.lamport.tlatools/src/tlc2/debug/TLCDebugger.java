@@ -52,6 +52,7 @@ import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.SetBreakpointsResponse;
 import org.eclipse.lsp4j.debug.SetVariableArguments;
 import org.eclipse.lsp4j.debug.SetVariableResponse;
+import org.eclipse.lsp4j.debug.Source;
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.StackTraceArguments;
@@ -135,6 +136,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			breakpoint.setLine(sbps[j].getLine());
 			breakpoint.setId(j);
 			breakpoint.setVerified(true);
+			Source source = args.getSource();
+			breakpoint.setSource(source);
 			tmp.add(breakpoint);
 		}
 		breakpoints.clear();
@@ -391,7 +394,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// i.e. best match for the given editor location.  The code here should then
 		// simple compare the two location instances.
 		final Location location = expr.getLocation();
-		return breakpoints.stream().anyMatch(b -> b.getLine() == location.beginLine());
+		final String module = location.source();
+		return breakpoints.stream().anyMatch(b -> {
+			return b.getLine() == location.beginLine()
+					// TODO: Stripping off the file suffix here is a hack, but is this even
+					// necessary?
+					&& module.equals(b.getSource().getName().replaceFirst(".tla$", ""));
+		});
 	}
 	
 	public static class Factory {

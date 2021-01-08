@@ -86,6 +86,7 @@ class TLCStackFrame extends StackFrame {
 		setEndColumn(location.endColumn()+1);
 
 		final Source source = new Source();
+		source.setName(node.getLocation().source());
 		final File moduleFile = tool.getResolver().resolve(node.getTreeNode().getFilename(), true);
 		source.setPath(moduleFile.getAbsolutePath().toString());
 		setSource(source);
