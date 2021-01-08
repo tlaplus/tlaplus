@@ -220,7 +220,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<Void> next(NextArguments args) {
 		LOGGER.finer("next/stepOver");
-		targetLevel = this.stack.size() - 1;
+		targetLevel = this.stack.size();
 		step = Step.Over;
 		this.notify();
 		return CompletableFuture.completedFuture(null);
@@ -229,7 +229,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<Void> stepIn(StepInArguments args) {
 		LOGGER.finer("stepIn");
-		targetLevel++;
+		// matches(..) below does not take targetLevel into account, thus not changing
+		// it here. The reason is that it is surprising if step.in on a leaf-frame
+		// would amount to resume/continue.
 		step = Step.In;
 		this.notify();
 		return CompletableFuture.completedFuture(null);
@@ -238,7 +240,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<Void> stepOut(StepOutArguments args) {
 		LOGGER.finer("stepOut");
-		targetLevel--;
+		targetLevel = this.stack.size() - 1;
 		step = Step.Out;
 		this.notify();
 		return CompletableFuture.completedFuture(null);
@@ -273,24 +275,22 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
 		stack.push(new TLCStackFrame(expr, c, tool));
-
-		haltExecution(expr, level);
+		haltExecution(expr, this.stack.size());
 		return this;
 	}
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
-		final int level = this.stack.size();
 		stack.push(new TLCInitStackFrame(expr, c, tool, ps));
-		haltExecution(expr, level);
+		haltExecution(expr, this.stack.size());
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
-		final int level = this.stack.size();
+	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor,
+			TLCState ps) {
 		stack.push(new TLCNextStackFrame(expr, c, tool, predecessor, ps));
-		haltExecution(expr, level);
+		haltExecution(expr, this.stack.size());
 		return this;
 	}
 
@@ -364,7 +364,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		launcher.getRemoteProxy().stopped(eventArguments);
 	}
 
-	// TODO: This is only working more or less for step.in.
 	private static boolean matches(Step dir, int targetLevel, int currentLevel) {
 		if (dir == Step.In) {
 			// TODO With this conditional, step.in becomes continue when one steps into a
