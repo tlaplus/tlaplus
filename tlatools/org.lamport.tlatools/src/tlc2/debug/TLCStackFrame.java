@@ -67,6 +67,9 @@ class TLCStackFrame extends StackFrame {
 	public TLCStackFrame(SemanticNode node, Context ctxt, final Tool tool) {
 		this.node = node;
 		Assert.check(node != null, EC.GENERAL);
+		// Do not create a deep copy of ctxt (like it is done for state and predecessor
+		// in TLCInit|NextStackFrame. A TLCStackFrame will point to its corresponding
+		// node in the Context tree even if Context mutates.
 		this.ctxt = ctxt;
 		Assert.check(ctxt != null, EC.GENERAL);
 		this.tool = tool;

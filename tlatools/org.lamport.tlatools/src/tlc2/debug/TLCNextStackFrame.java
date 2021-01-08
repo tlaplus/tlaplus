@@ -51,7 +51,7 @@ public class TLCNextStackFrame extends TLCInitStackFrame {
 
 	public TLCNextStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps) {
 		super(expr, c , tool, ps);
-		this.predecessor = predecessor;
+		this.predecessor = predecessor.deepCopy();
 		
 		// Tempting to use state.fingerprint/hashCode, but would normalize all values as a side effect.
 		this.predId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
