@@ -279,28 +279,35 @@ public class SpecObj
         // See if ParseUnit "name" is already in parseUnitContext table
         parseUnit = (ParseUnit) parseUnitContext.get(name);
 
+        NamedInputStream nis;
+
         // if not, then we have to get it from the file system
         if (parseUnit == null)
         {
-            // if module "name" is not already in parseUnitContext table
+            // Try loading the module from a monolithic spec (one big .tla
+            // file consisting of multiple TLA+ modules and TLC configs) that is what is the
+            // rootModule here (compare tlc2.tool.impl.ModelConfig.parse()).
+            if (rootParseUnit != null &&
+                rootParseUnit.getNis() != null &&
+                rootParseUnit.getNis().sourceFile() != null) {
+                try {
+                    final File monolithSpec = rootParseUnit.getNis().sourceFile();
+                    nis = MonolithSpecExtractor.module(monolithSpec, name);
+                } catch (IOException e) {
+                    nis = null;
+                }
+            }
+            else {
+                nis = FileUtil.createNamedInputStream(name, this.resolver);
+            }
 
+            // if module "name" is not already in parseUnitContext table
             // find a file derived from the name and create a
             // NamedInputStream for it if possible
             // SZ 23.02.2009: split the name resolution from the stream retrieval
             // NamedInputStream nis = this.ntfis.toNIStream(name);
-            NamedInputStream nis = FileUtil.createNamedInputStream(name, this.resolver);
-            
-			if (nis == null && rootParseUnit != null && rootParseUnit.getNis() != null
-					&& rootParseUnit.getNis().sourceFile() != null) {
-				// Fall back and try loading the module from a monolithic spec (one big .tla
-				// file consisting of multiple TLA+ modules and TLC configs) that is what is the
-				// rootModule here (compare tlc2.tool.impl.ModelConfig.parse()).
-            	try {
-					final File monolithSpec = rootParseUnit.getNis().sourceFile();
-					nis = MonolithSpecExtractor.module(monolithSpec, name);
-            	} catch (IOException e) {
-            		nis = null;
-            	}
+            if (nis == null) {
+                nis = FileUtil.createNamedInputStream(name, this.resolver);
             }
 
             if (nis != null)
