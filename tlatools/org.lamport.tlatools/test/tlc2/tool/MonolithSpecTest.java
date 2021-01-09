@@ -27,21 +27,34 @@ package tlc2.tool;
 
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import util.TestPrintStream;
+import util.ToolIO;
 
 public class MonolithSpecTest extends ModelCheckerTestCase {
+        final TestPrintStream testPrintStream = new TestPrintStream();
 
 	public MonolithSpecTest() {
 		super("MonolithSpec", new String[] { "-config", "MonolithSpec.tla" /* note the extension */ });
 	}
 
+        @Before
+        public void beforeSetUp() {
+            ToolIO.err = testPrintStream;
+            ToolIO.reset();
+        }
+
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "214", "54", "0"));
+
+        // Check that the warning or inexistent file does not occur
+        testPrintStream.assertNoSubstring("File does not exist");
 
 		assertZeroUncovered();
 	}

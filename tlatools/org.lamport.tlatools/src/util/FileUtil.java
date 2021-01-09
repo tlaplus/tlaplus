@@ -257,8 +257,12 @@ public class FileUtil
         return metadir;
     }
 
-
     public static NamedInputStream createNamedInputStream(String name, FilenameToStream resolver)
+    {
+        return FileUtil.createNamedInputStream(name, resolver, null);
+    }
+
+    public static NamedInputStream createNamedInputStream(String name, FilenameToStream resolver, NamedInputStream rootFileNis)
     {
         // Strip off one NEWLINE and anything after it, if it is there
         int n;
@@ -302,7 +306,20 @@ public class FileUtil
                 return nis;
             } catch (FileNotFoundException e)
             {
-                ToolIO.out.println("***Internal error: Unable to create NamedInputStream" + " in toIStream method");
+                ToolIO.out.println("***Internal error: Unable to create NamedInputStream in toIStream method");
+            }
+        }
+
+        // Fall back and try loading the module from a monolithic spec (one big .tla
+        // file consisting of multiple TLA+ modules and TLC configs).
+        if (rootFileNis != null) {
+            File rootSourceFile = rootFileNis.sourceFile();
+            if (rootSourceFile != null) {
+                try {
+                    NamedInputStream nis = MonolithSpecExtractor.module(rootSourceFile, name);
+                    return nis;
+                } catch (IOException e) {
+                }
             }
         }
         /**
