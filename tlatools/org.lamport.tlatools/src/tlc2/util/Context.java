@@ -186,6 +186,16 @@ public final class Context implements Iterator<Context> {
 	public final boolean isEmpty() {
 		return this == Empty;
 	}
+
+	public final int depth() {
+		int depth = 1;
+		Context child = next();
+		while (child.hasNext()) {
+			depth++;
+			child = child.next();
+		}
+		return depth;
+	}
 }
 /*
 ----------------------------- MODULE Scoping -----------------------------

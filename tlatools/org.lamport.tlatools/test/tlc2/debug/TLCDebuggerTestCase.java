@@ -28,17 +28,25 @@ package tlc2.debug;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
 
 import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
+import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.Source;
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
@@ -47,6 +55,7 @@ import org.eclipse.lsp4j.debug.StackTraceArguments;
 import org.eclipse.lsp4j.debug.StepInArguments;
 import org.eclipse.lsp4j.debug.StepOutArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
+import org.eclipse.lsp4j.debug.Variable;
 import org.eclipse.lsp4j.debug.services.IDebugProtocolClient;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.jsonrpc.RemoteEndpoint;
@@ -55,6 +64,7 @@ import org.junit.Before;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.util.Context;
+import tlc2.value.impl.LazyValue;
 
 public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implements IDebugProtocolClient {
 
@@ -72,6 +82,11 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		// Register debugger and add a breakpoint *before* TLC gets started in setUp.
 		TLCDebugger.Factory.OVERRIDE = debugger;
 		debugger.setBreakpoints(initialBreakpoint);
+	}
+
+	@Override
+	protected boolean doDump() {
+		return !super.doDump();
 	}
 
 	@Override
@@ -115,53 +130,123 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		return arguments;
 	}
 
-	protected static void assertTLCNextFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
+	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
 			String spec, final OpDeclNode... unassigned) {
-		assertTLCNextFrame(stackFrame, beginLine, endLine, spec, Context.Empty, unassigned);
+		assertTLCActionFrame(stackFrame, beginLine, endLine, spec, Context.Empty, unassigned);
+	}
+	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
+			String spec, final Set<Variable> expected, final OpDeclNode... unassigned) {
+		assertTLCFrame0(stackFrame, beginLine, endLine, spec, null);
+		assertTrue(stackFrame instanceof TLCActionStackFrame);
+		final TLCActionStackFrame f = (TLCActionStackFrame) stackFrame;
+		// Showing variables in the debugger does *not* unlazy LazyValues, i.e.
+		// interferes with TLC's evaluation.
+		final List<LazyValue> lazies = new ArrayList<>();
+		Context context = f.getContext();
+		while (context != null) {
+			if (context.getValue() instanceof LazyValue) {
+				LazyValue lv = (LazyValue) context.getValue();
+				if (lv.getValue() == null) {
+					lazies.add(lv);
+				}
+			}
+			context = context.next();
+		}
+		
+		final List<Variable> variables = Arrays.asList(f.getVariables());
+		assertTrue(expected.size() <= variables.size());
+		NXT: for (Variable v : variables) {
+			for (Variable e : expected) {
+				if (e.getName().equals(v.getName()) && e.getValue().equals(v.getValue())
+						&& e.getType().equals(v.getType())) {
+					continue NXT;
+				}
+			}
+			fail();
+		}
+		lazies.forEach(lv -> assertNull(lv.getValue()));
 	}
 
-	protected static void assertTLCNextFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
+	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
 			String spec, final Context expectedContext, final OpDeclNode... unassigned) {
-		assertTLCFrame(stackFrame, beginLine, endLine, expectedContext, spec);
+		assertTLCFrame0(stackFrame, beginLine, endLine, spec, expectedContext);
 
-		assertTrue(stackFrame instanceof TLCNextStackFrame);
-		final TLCNextStackFrame f = (TLCNextStackFrame) stackFrame;
+		assertTrue(stackFrame instanceof TLCActionStackFrame);
+		final TLCActionStackFrame f = (TLCActionStackFrame) stackFrame;
 
-		assertTrue(Arrays.asList(f.getScopes()).stream().filter(s -> TLCNextStackFrame.SCOPE.equals(s.getName()))
+		assertTrue(Arrays.asList(f.getScopes()).stream().filter(s -> TLCActionStackFrame.SCOPE.equals(s.getName()))
 				.findAny().isPresent());
 
 		assertNotNull(f.predecessor);
 		assertTrue(f.predecessor.allAssigned());
 
-		assertTrue(f.nestedVariables.isEmpty());
+		if (expectedContext != null && expectedContext.isEmpty()) {
+			assertTrue(f.nestedVariables.isEmpty());
+		}
 
 		assertNotNull(f.state);
 		assertEquals(new HashSet<>(Arrays.asList(unassigned)), f.state.getUnassigned());
 	}
 
-	protected static void assertTLCInitFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
+	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
+			String spec, Map<String, String> expected) {
+		assertTLCFrame0(stackFrame, beginLine, endLine, spec, null);
+
+		assertTrue(stackFrame instanceof TLCStateStackFrame);
+		assertFalse(stackFrame instanceof TLCActionStackFrame);
+		final TLCStackFrame f = (TLCStackFrame) stackFrame;
+		
+		// Showing variables in the debugger does *not* unlazy LazyValues, i.e.
+		// interferes with TLC's evaluation.
+		final List<LazyValue> lazies = new ArrayList<>();
+		Context context = f.getContext();
+		while (context != null) {
+			if (context.getValue() instanceof LazyValue) {
+				LazyValue lv = (LazyValue) context.getValue();
+				if (lv.getValue() == null) {
+					lazies.add(lv);
+				}
+			}
+			context = context.next();
+		}
+		
+		final Variable[] variables = f.getVariables();
+		assertEquals(expected.size(), variables.length);
+		for (Variable variable : variables) {
+			assertEquals(expected.get(variable.getName()), variable.getValue());
+		}
+		
+		lazies.forEach(lv -> assertNull(lv.getValue()));
+	}
+
+	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
 			String spec) {
-		assertTLCInitFrame(stackFrame, beginLine, endLine, spec, new OpDeclNode[0]);
+		assertTLCStateFrame(stackFrame, beginLine, endLine, spec, new OpDeclNode[0]);
 	}
 
-	protected static void assertTLCInitFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
+	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
 			String spec, final OpDeclNode... unassigned) {
-		assertTLCInitFrame(stackFrame, beginLine, endLine, spec, Context.Empty, unassigned);
+		assertTLCStateFrame(stackFrame, beginLine, endLine, spec, Context.Empty, unassigned);
 	}
 
-	protected static void assertTLCInitFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
+	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
 			String spec, final Context expectedContext, final OpDeclNode... unassigned) {
-		assertTLCFrame(stackFrame, beginLine, endLine, expectedContext, spec);
+		assertTLCFrame0(stackFrame, beginLine, endLine, spec, expectedContext);
 
-		assertTrue(stackFrame instanceof TLCInitStackFrame);
-		final TLCInitStackFrame f = (TLCInitStackFrame) stackFrame;
+		assertTrue(stackFrame instanceof TLCStateStackFrame);
+		assertFalse(stackFrame instanceof TLCActionStackFrame);
+		final TLCStateStackFrame f = (TLCStateStackFrame) stackFrame;
 
-		assertEquals(expectedContext, f.getContext());
+		if (expectedContext != null) {
+			assertEquals(0, new ContextComparator().compare(expectedContext, f.getContext()));
+		}
 
-		assertTrue(Arrays.asList(f.getScopes()).stream().filter(s -> TLCInitStackFrame.SCOPE.equals(s.getName()))
+		assertTrue(Arrays.asList(f.getScopes()).stream().filter(s -> TLCStateStackFrame.SCOPE.equals(s.getName()))
 				.findAny().isPresent());
 
-		assertTrue(f.nestedVariables.isEmpty());
+		if (expectedContext != null && expectedContext.isEmpty()) {
+			assertTrue(f.nestedVariables.isEmpty());
+		}
 
 		assertNotNull(f.state);
 
@@ -170,27 +255,50 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 
 	protected static void assertTLCFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
 			String spec) {
-		assertTLCFrame(stackFrame, beginLine, endLine, Context.Empty, spec);
+		assertTLCFrame(stackFrame, beginLine, endLine, spec, Context.Empty);
 	}
 
 	protected static void assertTLCFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
-			final Context expectedContext, String spec) {
+			String spec, final Context expectedContext) {
+		assertTLCFrame0(stackFrame, beginLine, endLine, spec, expectedContext);
+		assertFalse(stackFrame instanceof TLCStateStackFrame);
+		assertFalse(stackFrame instanceof TLCActionStackFrame);
+	}
+
+	private static void assertTLCFrame0(final StackFrame stackFrame, final int beginLine, final int endLine,
+				String spec, final Context expectedContext) {
 		assertNotNull(stackFrame);
 		assertEquals(beginLine, stackFrame.getLine());
 		assertEquals(endLine, (int) stackFrame.getEndLine());
 		assertEquals(spec, stackFrame.getSource().getName());
 		assertTrue(stackFrame instanceof TLCStackFrame);
 		final TLCStackFrame f = (TLCStackFrame) stackFrame;
+		assertNotNull(f.getTool());
 
-		assertEquals(0, new ContextComparator().compare(expectedContext, f.getContext()));
 
-		final boolean present = Arrays.asList(f.getScopes()).stream()
-				.filter(s -> TLCStackFrame.SCOPE.equals(s.getName())).findAny().isPresent();
-		if (expectedContext == Context.Empty) {
-			assertFalse(present);
-		} else {
-			assertTrue(present);
+		final Optional<Scope> scope = Arrays.asList(f.getScopes()).stream()
+				.filter(s -> TLCStackFrame.SCOPE.equals(s.getName())).findAny();
+		if (expectedContext != null && expectedContext == Context.Empty) {
+			assertFalse(scope.isPresent());
+			return;
 		}
+		assertTrue(scope.isPresent());
+		
+		Scope sp = scope.get();
+		Variable[] variables = f.getVariables(sp.getVariablesReference());
+		assertNotNull(variables);
+		if (expectedContext!=null) {
+			assertEquals(0, new ContextComparator().compare(expectedContext, f.getContext()));
+			assertEquals(expectedContext.depth(), variables.length);
+		}
+	}
+
+	protected static Variable createVariable(String name, String value, String type) {
+		Variable e = new Variable();
+		e.setName(name);
+		e.setValue(value);
+		e.setType(type);
+		return e;
 	}
 
 	@Override
@@ -248,10 +356,16 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			return stackTrace();
 		}
 
-		public StackFrame[] stepIn() throws Exception {
+		public StackFrame[] stepIn(final int steps) throws Exception {
 			// Convenience methods
-			stepIn(new StepInArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
+			for (int i = 0; i < steps; i++) {
+				stepIn(new StepInArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
+			}
 			return stackTrace();
+		}
+
+		public StackFrame[] stepIn() throws Exception {
+			return stepIn(1);
 		}
 
 		public StackFrame[] continue_() throws Exception {

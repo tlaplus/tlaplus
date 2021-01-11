@@ -97,6 +97,10 @@ class TLCStackFrame extends StackFrame {
 		this.stackId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 
+	Variable[] getVariables() {
+		return getVariables(stackId);
+	}
+	
 	public Variable[] getVariables(final int vr) {
 		if (nestedVariables.containsKey(vr)) {
 			DebugTLCVariable[] nested = nestedVariables.get(vr).getNested(rnd);

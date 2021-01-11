@@ -281,7 +281,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
-		stack.push(new TLCInitStackFrame(expr, c, tool, ps));
+		stack.push(new TLCStateStackFrame(expr, c, tool, ps));
 		haltExecution(expr, this.stack.size());
 		return this;
 	}
@@ -289,7 +289,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor,
 			TLCState ps) {
-		stack.push(new TLCNextStackFrame(expr, c, tool, predecessor, ps));
+		stack.push(new TLCActionStackFrame(expr, c, tool, predecessor, ps));
 		haltExecution(expr, this.stack.size());
 		return this;
 	}

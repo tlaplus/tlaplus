@@ -42,14 +42,14 @@ import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
 import util.UniqueString;
 
-public class TLCNextStackFrame extends TLCInitStackFrame {
+public class TLCActionStackFrame extends TLCStateStackFrame {
 	
 	public static final String SCOPE = "Predecessor";
 
 	protected final TLCState predecessor;
 	private final int predId;
 
-	public TLCNextStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps) {
+	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps) {
 		super(expr, c , tool, ps);
 		this.predecessor = predecessor.deepCopy();
 		

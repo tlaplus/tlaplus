@@ -42,14 +42,14 @@ import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
 import util.UniqueString;
 
-public class TLCInitStackFrame extends TLCStackFrame {
+public class TLCStateStackFrame extends TLCStackFrame {
 	
 	public static final String SCOPE = "State";
 
 	protected transient final TLCState state;
 	private transient final int stateId;
 
-	public TLCInitStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state) {
+	public TLCStateStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state) {
 		super(node, ctxt, tool);
 		this.state = state.deepCopy();
 		
