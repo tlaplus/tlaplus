@@ -25,7 +25,6 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +47,9 @@ import tlc2.value.impl.Value;
 import util.Assert;
 
 class TLCStackFrame extends StackFrame {
+	
+	// Not thread-safe because TLCDebugger is assumed to take care of synchronization!
+	private static final Map<SemanticNode, String> PATH_CACHE = new HashMap<>();
 	
 	public static final String SCOPE = "Context";
 	
@@ -90,8 +92,10 @@ class TLCStackFrame extends StackFrame {
 
 		final Source source = new Source();
 		source.setName(node.getLocation().source());
-		final File moduleFile = tool.getResolver().resolve(node.getTreeNode().getFilename(), true);
-		source.setPath(moduleFile.getAbsolutePath().toString());
+		// resolve(..) triggers a file-system round-trip (IO), which is obviously too
+		// expensive!!! Thus, cache the result.
+		source.setPath(PATH_CACHE.computeIfAbsent(node,
+				n -> tool.getResolver().resolve(n.getTreeNode().getFilename(), true).getAbsolutePath().toString()));
 		setSource(source);
 		
 		this.stackId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
