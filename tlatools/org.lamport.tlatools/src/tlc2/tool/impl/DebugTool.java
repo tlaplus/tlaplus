@@ -28,6 +28,7 @@ package tlc2.tool.impl;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.OpApplNode;
@@ -41,6 +42,7 @@ import tlc2.tool.IStateFunctor;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
+import tlc2.value.IValue;
 import tlc2.value.impl.Value;
 import util.FilenameToStream;
 
@@ -52,14 +54,48 @@ public class DebugTool extends Tool {
 	
 	private final IDebugTarget target;
 
+	private EvalMode mode = EvalMode.Const;
+	
+	public enum EvalMode {
+		Const, State, Action, Debugger;
+	}
+	
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, IDebugTarget target) {
 		super(mainFile, configFile, resolver);
 		this.target = target;
 	}
 
+	// 88888888888888888888888888888888888888888888888888888888888888888888888888 //
+	
+	@Override
+	public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
+		mode = EvalMode.Const;
+		return this.evalImpl(expr, c, s0, TLCState.Empty, EvalControl.Clear, CostModel.DO_NOT_RECORD);
+	}
+
+	@Override
+	public IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
+		mode = EvalMode.State;
+		return this.evalImpl(expr, c, s0, TLCState.Empty, EvalControl.Clear, cm);
+	}
+
 	@Override
 	public final Value eval(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, final CostModel cm) {
+		if (mode == EvalMode.Debugger) {
+			return evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (s1 == null) {
+			mode = EvalMode.State;
+			return evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (mode == EvalMode.State && s1 != null && s1.noneAssigned()) {
+			return evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (mode == EvalMode.Const && s0.noneAssigned() && s1.noneAssigned()) {
+			return evalImpl(expr, c, s0, s1, control, cm);
+		}
+		mode = EvalMode.Action;
 		return evalImpl(expr, c, s0, s1, control, cm);
 	}
 
@@ -69,11 +105,6 @@ public class DebugTool extends Tool {
 		if (target == null) {
 			// target is null during instantiation of super, ie. eager evaluation of
 			// operators in SpecProcessor.
-			return super.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (EvalControl.isDebug(control)) {
-			// Skip debugging when evaluation was triggered by the debugger itself. For
-			// example, when LazyValues get unlazied.
 			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
 		if (KINDS.contains(expr.getKind())) {
@@ -104,12 +135,18 @@ public class DebugTool extends Tool {
 //			// base-level is).
 //			return super.evalImpl(expr, c, s0, s1, control, cm);
 //		}
-		if (s0.noneAssigned()) {
-			assert !s1.noneAssigned();
+		if (mode == EvalMode.Debugger) {
+			// Skip debugging when evaluation was triggered by the debugger itself. For
+			// example, when LazyValues get unlazied.
+			return super.evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (mode == EvalMode.Const) {
+			assert s0.noneAssigned() && s1.noneAssigned();
 			// s0 and s1 can be dummies that are passed by some value instances or Tool
 			// during the evaluation of the init-predicate or other const-level expressions.
 			return constLevelEval(expr, c, s0, s1, control, cm);
-		} else if (s1.noneAssigned()) {
+		} else if (mode == EvalMode.State) {
+			assert s1 == null || s1.noneAssigned();
 			return stateLevelEval(expr, c, s0, s1, control, cm);
 		} else {
 			return actionLevelEval(expr, c, s0, s1, control, cm);
@@ -170,12 +207,14 @@ public class DebugTool extends Tool {
 	@Override
 	protected final TLCState getNextStates(final Action action, final SemanticNode pred, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
+		mode = EvalMode.Action;
 		return getNextStatesImpl(action, pred, acts, c, s0, s1, nss, cm);
 	}
 
 	@Override
 	protected final TLCState getNextStatesAppl(final Action action, final OpApplNode pred, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
+		mode = EvalMode.Action;
 		target.pushFrame(this, pred, c, s0, s1);
 		TLCState s = getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
 		target.popFrame(this, pred, c, s0, s1);
@@ -191,6 +230,7 @@ public class DebugTool extends Tool {
 	@Override
 	protected void getInitStates(SemanticNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
 			CostModel cm) {
+		mode = EvalMode.State;
 		if (states instanceof WrapperStateFunctor) {
 			// Wrap the IStateFunctor so we can intercept Tool adding a new state to the
 			// functor. Without it, the debugger wouldn't show the fully assigned state and
@@ -204,6 +244,7 @@ public class DebugTool extends Tool {
 	@Override
 	protected void getInitStatesAppl(OpApplNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
 			CostModel cm) {
+		mode = EvalMode.State;
 		target.pushFrame(this, init, c, ps);
 		super.getInitStatesAppl(init, acts, c, ps, states, cm);
 		target.popFrame(this, init, c, ps);
@@ -211,6 +252,7 @@ public class DebugTool extends Tool {
 
 	@Override
 	public boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
+		mode = EvalMode.Action;
 		if (functor instanceof WrapperNextStateFunctor) {
 			return super.getNextStates(functor, state);
 		} else {
@@ -249,5 +291,25 @@ public class DebugTool extends Tool {
 			target.popFrame(predecessor, state);
 			return addElement;
 		}
+	}
+
+	@Override
+	public final <T> T eval(final Supplier<T> supplier) {
+		// Evaluate supplier in the context of the debugger. In other words, the
+		// evaluation is *not* intercepted by DebugTool. For example, Value#toString and
+		// LazyValue#eval should not be intercepted when the debugger triggers toString
+		// or eval.
+		final EvalMode old = setDebugger();
+		try {
+			return supplier.get();
+		} finally {
+			mode = old;
+		}
+	}
+	
+	public EvalMode setDebugger() {
+		final EvalMode old = this.mode;
+		this.mode = EvalMode.Debugger;
+		return old;
 	}
 }

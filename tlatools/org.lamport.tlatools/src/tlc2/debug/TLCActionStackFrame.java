@@ -28,8 +28,6 @@ package tlc2.debug;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
@@ -38,9 +36,7 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
-import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
-import util.UniqueString;
 
 public class TLCActionStackFrame extends TLCStateStackFrame {
 	
@@ -60,23 +56,9 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	@Override
 	public Variable[] getVariables(int vr) {
 		if (vr == predId) {
-			final List<Variable> vars = new ArrayList<>();
-			final Map<UniqueString, IValue> vals = predecessor.getVals();
-			for (final Entry<UniqueString, IValue> e : vals.entrySet()) {
-				final UniqueString key = e.getKey();
-				final IValue value = e.getValue();
-				final DebugTLCVariable variable;
-				if (value == null) {
-					variable = new DebugTLCVariable(key.toString());
-					variable.setValue("null");
-				} else {
-					variable = (DebugTLCVariable) value
-							.toTLCVariable(new DebugTLCVariable(key.toString()), rnd);
-					nestedVariables.put(variable.getVariablesReference(), variable);
-				}
-				vars.add(variable);
-			}
-			return vars.toArray(new Variable[vars.size()]);
+			return tool.eval(() -> {
+				return getStateVariables(predecessor);
+			});
 		}
 		return super.getVariables(vr);
 	}
@@ -95,8 +77,9 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	}
 
 	@Override
-	protected Object unlazy(LazyValue value) {
-		return value.eval(tool, predecessor, state); // Do not pass EvalControl.Debug here because we don't
-		// want to debug the un-lazying the value.
+	protected Object unlazy(final LazyValue lv) {
+		return tool.eval(() -> {
+			return lv.eval(tool, predecessor, state);
+		});
 	}
 }

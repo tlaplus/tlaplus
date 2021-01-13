@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.TLCState;
+import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.IValue;
@@ -60,25 +61,31 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	@Override
 	public Variable[] getVariables(int vr) {
 		if (vr == stateId) {
-			final List<Variable> vars = new ArrayList<>();
-			final Map<UniqueString, IValue> vals = state.getVals();
-			for (final Entry<UniqueString, IValue> e : vals.entrySet()) {
-				final UniqueString key = e.getKey();
-				final IValue value = e.getValue();
-				final DebugTLCVariable variable;
-				if (value == null) {
-					variable = new DebugTLCVariable(key.toString());
-					variable.setValue("null");
-				} else {
-					variable = (DebugTLCVariable) value
-							.toTLCVariable(new DebugTLCVariable(key.toString()), rnd);
-					nestedVariables.put(variable.getVariablesReference(), variable);
-				}
-				vars.add(variable);
-			}
-			return vars.toArray(new Variable[vars.size()]);
+			return ((DebugTool) tool).eval(() -> {
+				return getStateVariables(state);
+			});
 		}
 		return super.getVariables(vr);
+	}
+
+	protected Variable[] getStateVariables(final TLCState state) {
+		final List<Variable> vars = new ArrayList<>();
+		final Map<UniqueString, IValue> vals = state.getVals();
+		for (final Entry<UniqueString, IValue> e : vals.entrySet()) {
+			final UniqueString key = e.getKey();
+			final IValue value = e.getValue();
+			final DebugTLCVariable variable;
+			if (value == null) {
+				variable = new DebugTLCVariable(key.toString());
+				variable.setValue("null");
+			} else {
+				variable = (DebugTLCVariable) value
+						.toTLCVariable(new DebugTLCVariable(key.toString()), rnd);
+				nestedVariables.put(variable.getVariablesReference(), variable);
+			}
+			vars.add(variable);
+		}
+		return vars.toArray(new Variable[vars.size()]);
 	}
 
 	@Override
@@ -95,8 +102,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	@Override
-	protected Object unlazy(LazyValue value) {
-		return value.eval(tool, state); // Do not pass EvalControl.Debug here because we don't
-		// want to debug the un-lazying the value.
+	protected Object unlazy(LazyValue lv) {
+		return lv.eval(tool, state);
 	}
 }

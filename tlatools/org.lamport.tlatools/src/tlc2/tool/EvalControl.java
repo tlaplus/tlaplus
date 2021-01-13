@@ -27,8 +27,6 @@ public class EvalControl {
    */
   public static final int Init = 1 << 3;
   
-  public static final int Debug = 1 <<4;
-  
   public static final int Clear = 0;
   
   private static boolean isSet(final int control, final int constant) {
@@ -72,13 +70,5 @@ public class EvalControl {
 
   public static boolean isInit(int control) {
 	return isSet(control, Init);
-  }
-
-  public static int setDebug(int control) {
-	return  control | Debug;
-  }
-
-  public static boolean isDebug(int control) {
-	return isSet(control, Debug);
   }
 }

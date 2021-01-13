@@ -1423,7 +1423,7 @@ public abstract class Tool
   }
 
   @Override
-  public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
+  public IValue eval(SemanticNode expr, Context c, TLCState s0) {
 	    return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, CostModel.DO_NOT_RECORD);
 	  }
 
@@ -1539,7 +1539,7 @@ public abstract class Tool
   
   /* Special version of eval for state expressions. */
   @Override
-  public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
+  public IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
     return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, cm);
   }
   
@@ -3265,7 +3265,7 @@ public abstract class Tool
 
   @Override
   public final boolean isValid(ExprNode expr) {
-    IValue val = this.eval(expr, Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
+    IValue val = this.eval(expr);
     if (!(val instanceof BoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
     }

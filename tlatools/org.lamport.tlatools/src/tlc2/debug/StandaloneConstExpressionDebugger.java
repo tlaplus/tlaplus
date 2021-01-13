@@ -44,12 +44,8 @@ import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
-import tlc2.tool.EvalControl;
-import tlc2.tool.TLCState;
-import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
-import tlc2.util.Context;
 import tlc2.util.FP64;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
@@ -120,8 +116,7 @@ public class StandaloneConstExpressionDebugger extends TLCDebugger {
 			// as a side-effect of the debugger.
 			TLCGlobals.expand = false;
 			
-			tool.eval(valueNode.getBody(), Context.Empty, TLCState.Empty, TLCState.Empty, EvalControl.Debug,
-					CostModel.DO_NOT_RECORD);
+			tool.eval(valueNode.getBody());
 		});
 
 		return CompletableFuture.completedFuture(null);

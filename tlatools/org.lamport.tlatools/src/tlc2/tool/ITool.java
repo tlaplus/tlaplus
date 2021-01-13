@@ -27,6 +27,7 @@ package tlc2.tool;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.Supplier;
 
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
@@ -253,4 +254,7 @@ public interface ITool extends TraceApp {
 
 	TLCState evalAlias(TLCState curState, TLCState sucState);
 
+	default <T> T eval(Supplier<T> supplier) {
+		return supplier.get();
+	}
 }

@@ -13,9 +13,9 @@ import java.io.ObjectOutputStream;
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
-import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
+import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
@@ -295,15 +295,15 @@ public class LazyValue extends Value {
     }
   }
 
-  public Object eval(ITool tool) {
-	  return this.eval(tool, TLCState.Empty);
-  }
+  public IValue eval(Tool tool) {
+		return eval(tool, TLCState.Empty);
+	}
 
-  public Object eval(ITool tool, TLCState s0) {
-	  return this.eval(tool, s0, null);
-  }
+  public IValue eval(Tool tool, TLCState s0) {
+		return eval(tool, s0, null);
+	}
 
-  public Object eval(ITool tool, TLCState s0, TLCState s1) {
-		return tool.eval(expr, con, s0, s1, EvalControl.Debug, getCostModel());
-  }
+  public IValue eval(Tool tool, TLCState s0, TLCState s1) {
+		return tool.eval(expr, con, s0, s1, EvalControl.Clear, cm);
+	}
 }

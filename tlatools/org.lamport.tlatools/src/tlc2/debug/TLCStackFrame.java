@@ -106,46 +106,50 @@ class TLCStackFrame extends StackFrame {
 	}
 	
 	public Variable[] getVariables(final int vr) {
-		if (nestedVariables.containsKey(vr)) {
-			DebugTLCVariable[] nested = nestedVariables.get(vr).getNested(rnd);
-			for (DebugTLCVariable debugTLCVariable : nested) {
-				nestedVariables.put(debugTLCVariable.getVariablesReference(), debugTLCVariable);
+		return tool.eval(() -> {
+			if (nestedVariables.containsKey(vr)) {
+				DebugTLCVariable[] nested = nestedVariables.get(vr).getNested(rnd);
+				for (DebugTLCVariable debugTLCVariable : nested) {
+					nestedVariables.put(debugTLCVariable.getVariablesReference(), debugTLCVariable);
+				}
+				return nested;
 			}
-			return nested;
-		}
 
-		final List<Variable> vars = new ArrayList<>();
-		if (stackId == vr) {
-			Context c = this.ctxt;
-			while (c.hasNext()) {
-				Object val = c.getValue();
-				if (val instanceof LazyValue) {
-					// unlazy/eval LazyValues
-					val = unlazy((LazyValue) c.getValue());
+			final List<Variable> vars = new ArrayList<>();
+			if (stackId == vr) {
+				Context c = this.ctxt;
+				while (c.hasNext()) {
+					Object val = c.getValue();
+					if (val instanceof LazyValue) {
+						// unlazy/eval LazyValues
+						val = unlazy((LazyValue) c.getValue());
+					}
+					if (val instanceof Value) {
+						final Value value = (Value) val;
+						final DebugTLCVariable variable = (DebugTLCVariable) value
+								.toTLCVariable(new DebugTLCVariable(c.getName().getName().toString()), rnd);
+						nestedVariables.put(variable.getVariablesReference(), variable);
+						vars.add(variable);
+					} else if (val instanceof SemanticNode) {
+						final Variable variable = new Variable();
+						variable.setName(c.getName().getSignature());
+						variable.setValue(((SemanticNode) val).getHumanReadableImage());
+						vars.add(variable);
+					} else {
+						System.err.println("This is interesting!!! What's this??? " + val.toString());
+					}
+					c = c.next();
 				}
-				if (val instanceof Value) {
-					final Value value = (Value) val;
-					final DebugTLCVariable variable = (DebugTLCVariable) value
-							.toTLCVariable(new DebugTLCVariable(c.getName().getName().toString()), rnd);
-					nestedVariables.put(variable.getVariablesReference(), variable);
-					vars.add(variable);
-				} else if (val instanceof SemanticNode) {
-					final Variable variable = new Variable();
-					variable.setName(c.getName().getSignature());
-					variable.setValue(((SemanticNode) val).getHumanReadableImage());
-					vars.add(variable);
-				} else {
-					System.err.println("This is interesting!!! What's this??? " + val.toString());
-				}
-				c = c.next();
 			}
-		}
-		return vars.toArray(new Variable[vars.size()]);
+			
+			return vars.toArray(new Variable[vars.size()]);
+		});
 	}
 
-	protected Object unlazy(final LazyValue value) {
-		return value.eval(tool); // Do not pass EvalControl.Debug here because we don't
-		// want to debug the un-lazying the value.
+	protected Object unlazy(final LazyValue lv) {
+		return tool.eval(() -> {
+			return lv.eval(tool);
+		});
 	}
 
 	public Scope[] getScopes() {
