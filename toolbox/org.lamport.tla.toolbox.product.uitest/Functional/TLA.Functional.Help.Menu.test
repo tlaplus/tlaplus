@@ -5,8 +5,8 @@ Element-Type: testcase
 Element-Version: 3.0
 External-Reference: 
 Id: _y2T94AL0EemtrbArmQOOJA
-Runtime-Version: 2.4.0.201902010011
-Save-Time: 10/14/19, 12:05 PM
+Runtime-Version: 2.4.0.201903102359
+Save-Time: 1/13/21, 4:59 PM
 Testcase-Type: ecl
 
 ------=_.description-216f885c-d591-38ce-8ea2-e4f8cb4d6ffa
@@ -49,12 +49,12 @@ let [val checkView [get-by-os -macosx "yes" -default "no"]] {
 //			    | verify-true
 //		}
 		    
-		get-menu -path "Help/The TLA+ Cheat Sheet" | click
+		get-menu -path "Help/The Summary of TLA+" | click
 		if [$checkView | equals "yes"] {
-			get-view "TLA+ Cheat Sheet" | click
+			get-view "Summary of TLA+" | click
 		}
 		-else {
-			get-editor "TLA+ Cheat Sheet" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
+			get-editor "Summary of TLA+" | get-canvas | get-property className | equals "de.vonloesch.pdf4eclipse.PDFPageViewer" 
 			    | verify-true
 		}
 
@@ -63,12 +63,12 @@ let [val checkView [get-by-os -macosx "yes" -default "no"]] {
 		if [$checkView | equals "yes"] {
 //			get-view "Specifying Systems" | close
 //			get-view "PlusCal Manual" | close
-			get-view "TLA+ Cheat Sheet" | close
+			get-view "Summary of TLA+" | close
 		}
 		-else {
 //			get-editor "Specifying Systems" | close
 //			get-editor "PlusCal Manual" | close
-			get-editor "TLA+ Cheat Sheet" | close
+			get-editor "Summary of TLA+" | close
 		}
 
 		get-view "Help" | click
