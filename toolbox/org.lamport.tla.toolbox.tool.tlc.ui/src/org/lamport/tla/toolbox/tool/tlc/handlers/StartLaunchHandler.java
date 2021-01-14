@@ -120,7 +120,7 @@ public class StartLaunchHandler extends AbstractHandler {
 			if (model.isStale()) {
 				boolean unlock = MessageDialog
 						.openQuestion(shell, "Repair model?",
-								"The current model is stale and has to be repaird prior to launching. Should the model be repaired onw?");
+								"The current model is stale and has to be repaird prior to launching. Should the model be repaired now?");
 				if (unlock) {
 					model.recover();
 				} else {
