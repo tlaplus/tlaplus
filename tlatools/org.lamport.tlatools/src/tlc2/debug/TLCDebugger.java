@@ -44,6 +44,7 @@ import org.eclipse.lsp4j.debug.Capabilities;
 import org.eclipse.lsp4j.debug.ConfigurationDoneArguments;
 import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.ContinueResponse;
+import org.eclipse.lsp4j.debug.DisconnectArguments;
 import org.eclipse.lsp4j.debug.InitializeRequestArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
 import org.eclipse.lsp4j.debug.PauseArguments;
@@ -123,7 +124,19 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	private final List<Breakpoint> breakpoints = Collections.synchronizedList(new ArrayList<>());
-	
+
+	@Override
+	public synchronized CompletableFuture<Void> disconnect(DisconnectArguments args) {
+		LOGGER.finer("disconnect");
+		
+		breakpoints.clear();
+		targetLevel = -1;
+		step = Step.Continue;
+		this.notify();
+		
+		return CompletableFuture.completedFuture(null);
+	}
+
 	@Override
 	public synchronized CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
 		//TODO: Confirm breakpoint locations (see tlc2.debug.TLCDebugger.matches(SemanticNode))!!!
