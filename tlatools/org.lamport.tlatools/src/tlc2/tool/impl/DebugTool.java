@@ -110,8 +110,8 @@ public class DebugTool extends Tool {
 	protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
 		if (target == null) {
-			// target is null during instantiation of super, ie. eager evaluation of
-			// operators in SpecProcessor.
+			// target is null during instantiation of super (see constructor above), ie.
+			// eager evaluation of operators in SpecProcessor.
 			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
 		if (EvalControl.isEnabled(control) || EvalControl.isPrimed(control)) {
