@@ -5,7 +5,7 @@ const_143073460396411000 ==
 	2
 
 spec_143073460397412000 ==
-	Spec
+	Spec /\ ENABLED Next /\ ENABLED (SelectSeq([i \in 1..N+1 |-> i - 1], LAMBDA node: node = tpos ) = <<tpos>>)
 
 StateConstraint ==
 	\* For the tests to be interesting, this triggers the evaluation 

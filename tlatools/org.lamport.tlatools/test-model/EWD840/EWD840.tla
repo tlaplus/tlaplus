@@ -65,7 +65,7 @@ vars == <<active, color, tpos, tcolor>>
 
 Fairness == WF_vars(System)
 
-Spec == Init /\ [][Next]_vars (*/\ Fairness*)
+Spec == Init /\ [][Next]_vars /\ Fairness
 
 LInv == [][Next]_vars => WF_vars(System)
 

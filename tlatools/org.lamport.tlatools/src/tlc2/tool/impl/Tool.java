@@ -1427,8 +1427,14 @@ public abstract class Tool
 	    return this.eval(expr, c, s0, TLCState.Empty, EvalControl.Clear, CostModel.DO_NOT_RECORD);
 	  }
 
-  public final IValue eval(SemanticNode expr) {
-	    return this.eval(expr, Context.Empty, TLCState.Empty);
+  @Override
+  public IValue eval(SemanticNode expr, Context c) {
+	    return this.eval(expr, c, TLCState.Empty);
+	  }
+
+  @Override
+  public IValue eval(SemanticNode expr) {
+	    return this.eval(expr, Context.Empty);
 	  }
 
   @ExpectInlined

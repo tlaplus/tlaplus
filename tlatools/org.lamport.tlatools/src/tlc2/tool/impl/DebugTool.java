@@ -40,6 +40,7 @@ import tlc2.tool.IActionItemList;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateFun;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.value.IValue;
@@ -66,15 +67,21 @@ public class DebugTool extends Tool {
 	}
 
 	// 88888888888888888888888888888888888888888888888888888888888888888888888888 //
+
+	@Override
+	public final IValue eval(SemanticNode expr, Context ctxt) {
+		mode = EvalMode.Const;
+		return this.evalImpl(expr, Context.Empty, TLCState.Empty, TLCState.Empty, EvalControl.Clear,
+				CostModel.DO_NOT_RECORD);
+	}
 	
 	@Override
 	public final IValue eval(SemanticNode expr, Context c, TLCState s0) {
-		mode = EvalMode.Const;
-		return this.evalImpl(expr, c, s0, TLCState.Empty, EvalControl.Clear, CostModel.DO_NOT_RECORD);
+		return this.eval(expr, c, s0, CostModel.DO_NOT_RECORD);
 	}
 
 	@Override
-	public IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
+	public final IValue eval(SemanticNode expr, Context c, TLCState s0, CostModel cm) {
 		mode = EvalMode.State;
 		return this.evalImpl(expr, c, s0, TLCState.Empty, EvalControl.Clear, cm);
 	}
@@ -100,11 +107,25 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
-	protected Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
+	protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
 		if (target == null) {
 			// target is null during instantiation of super, ie. eager evaluation of
 			// operators in SpecProcessor.
+			return super.evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (EvalControl.isEnabled(control) || EvalControl.isPrimed(control)) {
+			// If EvalControl is set to primed or enabled, TLC is evaluating an ENABLED expr.
+			// TLCStateFun are passed in when enabled is evaluated. However, it is also
+			// possible for enabled to be replaced with primed. At any rate, there is no
+			// point evaluating ENABLED expr.
+			return super.evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (s0 instanceof TLCStateFun || s1 instanceof TLCStateFun) {
+			// If EvalControl is set to primed or enabled, TLC is evaluating an ENABLED expr.
+			// (see previous if branch).  However, if expr is built from an operator with a
+			// Java module override, control is cleared/reset and the only indicator that
+			// evaluation is in the scope of enabled, is TLCStateFunc.
 			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
 		if (KINDS.contains(expr.getKind())) {
