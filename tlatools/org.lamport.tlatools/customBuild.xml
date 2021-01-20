@@ -361,11 +361,11 @@
 		</copy>
 	</target>
 
-	<!-- Executes accompining unit tests -->
+	<!-- Executes accompanying unit tests -->
 	<target name="test" unless="test.skip">
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
-		<!-- forkmode used to be "perBatch" on Java 1.8 using the util.IsolatedTestCaseRunner.  
+		<!-- forkmode used to be "perBatch" on Java 1.8 using the util.IsolatedTestCaseRunner.
 		     This concept broken with Java11 for unknown reasons which is why forkmode has been
 		     changed to perTest to run each test in a separate VM.  This is slower compared to
 		     running all tests in a single VM. -->
@@ -539,7 +539,7 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<!-- Executes accompining unit tests on jar file -->
+	<!-- Executes accompanying unit tests on jar file -->
 	<target name="test-dist" unless="test.skip">
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJar" />
@@ -659,7 +659,7 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<!-- Executes accompining long-running unit tests on jar file -->
+	<!-- Executes accompanying long-running unit tests on jar file -->
 	<target name="test-dist-long" unless="test.skip">
 		<!-- compile unit tests -->
 		<mkdir dir="${test.class.dir}" />
