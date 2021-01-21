@@ -62,6 +62,8 @@ import org.eclipse.lsp4j.jsonrpc.RemoteEndpoint;
 import org.junit.Before;
 
 import tla2sany.semantic.OpDeclNode;
+import tlc2.TLCGlobals;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.util.Context;
 import tlc2.value.impl.LazyValue;
@@ -122,6 +124,13 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		phase.arriveAndAwaitAdvance();
 	}
 
+	protected OpDeclNode[] getVars() {
+		// The order of vars is expected to be deterministic across tests (local,
+		// because TLCState.Empty is null during ctor-time).
+		final Tool tool = (Tool) TLCGlobals.mainChecker.tool;
+		return tool.getSpecProcessor().getVariablesNodes();
+	}
+	
 	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line) {
 		final SetBreakpointsArguments arguments = new SetBreakpointsArguments();
 		final SourceBreakpoint breakpoint = new SourceBreakpoint();
@@ -132,6 +141,13 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		source.setName(spec);
 		arguments.setSource(source);
 		return arguments;
+	}
+
+	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
+			final int endLine, final int endColumn, String spec, final Context ctxt, final OpDeclNode... unassigned) {
+		assertTLCActionFrame(stackFrame, beginLine, endLine, spec, ctxt, unassigned);
+		assertEquals(beginColumn, stackFrame.getColumn());
+		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
 	}
 
 	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,

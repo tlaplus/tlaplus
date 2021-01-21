@@ -34,9 +34,7 @@ import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
 import tla2sany.semantic.OpDeclNode;
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
-import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.impl.IntValue;
 
@@ -63,10 +61,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertTLCFrame(stackFrames[1], 5, 5, RM);
 		assertTLCFrame(stackFrames[0], 5, 5, RM);
 
-		// The order of vars is expected to be deterministic across tests (local,
-		// because TLCState.Empty is null during ctor-time).
-		final Tool tool = (Tool) TLCGlobals.mainChecker.tool;
-		final OpDeclNode[] vars = tool.getSpecProcessor().getVariablesNodes();
+		final OpDeclNode[] vars = getVars();
 
 		// The spec has 16 initial states over which we will continue each time checking
 		// the stack frames:
@@ -206,6 +201,12 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(9, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 19, 21, MDL);
+		
+		// 8888888888888888888 Invariant Inv 8888888888888888888 //
+		debugger.setBreakpoints(RM, 94);
+		stackFrames = debugger.continue_();
+		assertEquals(10, stackFrames.length);
+		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

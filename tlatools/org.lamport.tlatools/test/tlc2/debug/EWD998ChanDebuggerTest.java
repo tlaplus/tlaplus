@@ -38,9 +38,7 @@ import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
 import tla2sany.semantic.OpDeclNode;
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
-import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.impl.IntValue;
 
@@ -69,10 +67,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCFrame(stackFrames[1], 11, 11, RM);
 		assertTLCFrame(stackFrames[0], 11, 11, RM);
 		
-		// The order of vars is expected to be deterministic across tests (local,
-		// because TLCState.Empty is null during ctor-time).
-		final Tool tool = (Tool) TLCGlobals.mainChecker.tool;
-		final OpDeclNode[] vars = tool.getSpecProcessor().getVariablesNodes();
+		final OpDeclNode[] vars = getVars();
 		
 		// Debug an operator that is evaluated as part of the refinement mapping and know to
 		// consist of a bunch of LazyValues.  LazyValues are tricky because the debugger
@@ -153,6 +148,18 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		variables.add(createVariable("i","1","IntValue"));
 		variables.add(createVariable("j","1","IntValue"));
 		assertTLCActionFrame(stackFrames[0], 120, 6, 120, 19, RM, variables);
+		
+		// 8888888888888888888 Invariant TypeOK 8888888888888888888 //
+		debugger.setBreakpoints(RM, 29);
+		stackFrames = debugger.continue_();
+		assertEquals(10, stackFrames.length);
+		assertTLCStateFrame(stackFrames[0], 29, 3, 37, 25, RM, Context.Empty);
+		
+		// 8888888888888888888 Invariant EWD998!Inv 8888888888888888888 //
+		debugger.setBreakpoints(FOLDER, 150);
+		stackFrames = debugger.continue_();
+		assertEquals(11, stackFrames.length);
+		assertTLCStateFrame(stackFrames[0], 150, 3, 162, 34, FOLDER, (Context) null); //TODO Assert context that contains the refinement mapping
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

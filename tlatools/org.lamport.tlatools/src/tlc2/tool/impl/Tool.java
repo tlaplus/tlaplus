@@ -3259,7 +3259,7 @@ public abstract class Tool
 
   /* Returns true iff the predicate is valid in the state. */
   @Override
-  public final boolean isValid(Action act, TLCState state) {
+  public boolean isValid(Action act, TLCState state) {
     return this.isValid(act, state, TLCState.Empty);
   }
 

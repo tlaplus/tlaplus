@@ -156,6 +156,27 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		
 		// 88888888888888 End of Echo's assumption 88888888888888 //
 		
+		// Debug type correctness property during Init //
+		debugger.setBreakpoints(RM, 167);
+		stackFrames = debugger.continue_();
+		assertEquals(11, stackFrames.length);
+		// Invariants are shown as TLCStateFrames, not TLCActionFrames, which would make
+		// the debugger show a predecessor state.
+		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
+
+		// Debug type correctness property during n0 (next-state relation)
+		// (Run to n0, then run to TypeOK)
+		debugger.unsetBreakpoints();
+		debugger.setBreakpoints(RM, 104);
+		stackFrames = debugger.continue_();
+		assertEquals(3, stackFrames.length);
+		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
+
+		debugger.setBreakpoints(RM, 167);
+		stackFrames = debugger.continue_();
+		assertEquals(10, stackFrames.length);
+		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
+		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();

@@ -70,6 +70,12 @@ public class DebugTool extends Tool {
 	// 88888888888888888888888888888888888888888888888888888888888888888888888888 //
 
 	@Override
+	public boolean isValid(Action act, TLCState state) {
+		mode = EvalMode.State;
+		return this.isValid(act, state, TLCState.Empty);
+	}
+
+	@Override
 	public final IValue eval(SemanticNode expr, Context ctxt) {
 		mode = EvalMode.Const;
 		return this.evalImpl(expr, Context.Empty, TLCState.Empty, TLCState.Empty, EvalControl.Clear,
