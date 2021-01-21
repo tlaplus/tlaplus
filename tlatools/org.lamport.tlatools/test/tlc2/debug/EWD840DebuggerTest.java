@@ -192,7 +192,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		stackFrames = debugger.stepIn(9);
 		assertEquals(11, stackFrames.length);
-		assertTLCStateFrame(stackFrames[0], 16, 16, MDL, Context.Empty.cons(null, IntValue.ValOne));
+		assertTLCStateFrame(stackFrames[0], 16, 58, 16, 68, MDL, Context.Empty.cons(null, IntValue.ValOne));
 		Variable[] contextVariables = ((TLCStateStackFrame) stackFrames[0]).getVariables();
 		assertNotNull(contextVariables);
 		assertEquals(1, contextVariables.length);

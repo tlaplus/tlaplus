@@ -229,6 +229,14 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		assertTLCStateFrame(stackFrame, beginLine, endLine, spec, Context.Empty, unassigned);
 	}
 
+	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
+			final int endLine, final int endColumn, String spec, final Context expectedContext,
+			final OpDeclNode... unassigned) {
+		assertTLCStateFrame(stackFrame, beginLine, endLine, spec, expectedContext, unassigned);
+		assertEquals(beginColumn, stackFrame.getColumn());
+		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
+	}
+
 	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
 			String spec, final Context expectedContext, final OpDeclNode... unassigned) {
 		assertTLCFrame0(stackFrame, beginLine, endLine, spec, expectedContext);
@@ -256,6 +264,20 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 	protected static void assertTLCFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
 			String spec) {
 		assertTLCFrame(stackFrame, beginLine, endLine, spec, Context.Empty);
+	}
+	
+	protected static void assertTLCFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
+			final int endLine, final int endColumn, String spec) {
+		assertTLCFrame(stackFrame, beginLine, endLine, spec);
+		assertEquals(beginColumn, stackFrame.getColumn());
+		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
+	}
+	
+	protected static void assertTLCFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
+			final int endLine, final int endColumn, String spec, final Context expectedContext) {
+		assertTLCFrame(stackFrame, beginLine, endLine, spec, expectedContext);
+		assertEquals(beginColumn, stackFrame.getColumn());
+		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
 	}
 
 	protected static void assertTLCFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
