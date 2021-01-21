@@ -110,32 +110,9 @@ public class DebugTool extends Tool {
 	@Override
 	protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
-		if (isInitialize() || isLiveness(control, s0, s1) || isLeaf(expr)) {
+		if (isInitialize() || isLiveness(control, s0, s1) || isLeaf(expr) || isBoring(expr, c)) {
 			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
-		if (expr.getChildren() == null || expr.getChildren().length == 0) {
-			// Skips N and Nat in:
-			//     CONSTANT N
-			//     ASSUME N \in Nat
-			// or the S, the f, and the 1..3 of:
-			//     LET FS == INSTANCE FiniteSets
-	        //              Perms(S, a, b) == 
-	        //                { f \in [S -> S] :
-	        //                      /\ S = { f[x] : x \in DOMAIN f }
-	        //                      /\ \E n, m \in DOMAIN f: /\ f[n] = a
-	        //                                  /\ f[m] = b
-	        //                                  /\ n - m \in {1, -1}               
-	        //                }
-	        //     IN FS!Cardinality(Perms(1..3, 1, 2)) = 4
-			return super.evalImpl(expr, c, s0, s1, control, cm);
-		}
-//		if (c.isEmpty()) {
-//			// It is tempting to ignore also frames with an empty Context. However, ASSUMES
-//			// for example don't have a Context. Perhaps, we should track the level here and
-//			// ignore frames with empty Context for level greater than zero (or whatever the
-//			// base-level is).
-//			return super.evalImpl(expr, c, s0, s1, control, cm);
-//		}
 		if (mode == EvalMode.Debugger) {
 			// Skip debugging when evaluation was triggered by the debugger itself. For
 			// example, when LazyValues get unlazied.
@@ -185,21 +162,30 @@ public class DebugTool extends Tool {
 		return false;
 	}
 
-	private boolean isBoring(final SemanticNode expr) {
-//		if (expr.getChildren() == null || expr.getChildren().length == 0) {
-//			if (expr instanceof OpApplNode) {
-//				final OpApplNode oan = (OpApplNode) expr;
-//				final Object op = oan.getOperator();//lookup(oan.getOperator());
-//				if (op instanceof OpDefNode) {
-//					final SymbolNode operator = oan.getOperator();
-//					if (operator.isBuiltIn()) {
-//						return true;
-//					}
-//					return false;
-//				}
-//			}
+	private boolean isBoring(final SemanticNode expr, Context c) {
+//		if (c.isEmpty()) {
+//		// It is tempting to ignore also frames with an empty Context. However, ASSUMES
+//		// for example don't have a Context. Perhaps, we should track the level here and
+//		// ignore frames with empty Context for level greater than zero (or whatever the
+//		// base-level is).
 //			return true;
 //		}
+		// Skips N and Nat in:
+		//     CONSTANT N
+		//     ASSUME N \in Nat
+		// or the S, the f, and the 1..3 of:
+		//     LET FS == INSTANCE FiniteSets
+        //              Perms(S, a, b) == 
+        //                { f \in [S -> S] :
+        //                      /\ S = { f[x] : x \in DOMAIN f }
+        //                      /\ \E n, m \in DOMAIN f: /\ f[n] = a
+        //                                  /\ f[m] = b
+        //                                  /\ n - m \in {1, -1}               
+        //                }
+        //     IN FS!Cardinality(Perms(1..3, 1, 2)) = 4
+		// TODO: For now, don't filter boring frames because we have not clear
+		// understanding of what constitutes a boring frame. Built-in operators
+		// are candidates, but for now I find this more confusing than helpful.'x'x
 		return false;
 	}
 

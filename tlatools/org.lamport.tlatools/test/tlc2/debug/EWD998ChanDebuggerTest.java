@@ -81,14 +81,17 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		debugger.setBreakpoints(UTILS, 13);
 		stackFrames = debugger.continue_();
 		
-		assertEquals(15, stackFrames.length);
-		assertTLCStateFrame(stackFrames[14], 43, 49, RM, vars);
-		assertTLCStateFrame(stackFrames[13], 43, 43, RM, vars);
-		assertTLCStateFrame(stackFrames[12], 44, 46, RM, vars[0], vars[1], vars[3]);
-		assertTLCStateFrame(stackFrames[11], 48, 48, RM, vars[0], vars[1]);
-		assertTLCStateFrame(stackFrames[10], 49, 49, RM, vars[1]);
-		assertTLCStateFrame(stackFrames[9], 49, 49, RM);
-		assertTLCStateFrame(stackFrames[8], 166, 180, RM);
+		int i = 17;
+		assertEquals(i, stackFrames.length);
+		assertTLCStateFrame(stackFrames[--i], 43, 49, RM, vars);
+		assertTLCStateFrame(stackFrames[--i], 43, 43, RM, vars);
+		assertTLCStateFrame(stackFrames[--i], 44, 46, RM, vars[0], vars[1], vars[3]);
+		assertTLCStateFrame(stackFrames[--i], 48, 48, RM, vars[0], vars[1]);
+		assertTLCStateFrame(stackFrames[--i], 49, 49, RM, vars[1]);
+		assertTLCStateFrame(stackFrames[--i], 49, 49, RM);
+		//186 186 EWD998Inv == EWD998!Inv
+		assertTLCStateFrame(stackFrames[--i], 186, 186, RM);
+		assertTLCStateFrame(stackFrames[--i], 166, 180, RM);
 
 		// action, counter, color, pending, and token are part of the context because
 		// this is debugging the refinement mapping.
@@ -99,22 +102,24 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		allVariables.put("N", "3");
 		allVariables.put("active", "(0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE)");
 		allVariables.put("color", "(0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\")");
-		assertTLCStateFrame(stackFrames[7], 150, 162, FOLDER, allVariables);
-		assertTLCStateFrame(stackFrames[6], 150, 150, FOLDER, allVariables);
-		assertTLCStateFrame(stackFrames[5], 150, 150, FOLDER, allVariables);
-		assertTLCStateFrame(stackFrames[4], 133, 133, FOLDER, allVariables);
+		assertTLCStateFrame(stackFrames[--i], 150, 162, FOLDER, allVariables);
+		assertTLCStateFrame(stackFrames[--i], 150, 150, FOLDER, allVariables);
+		assertTLCStateFrame(stackFrames[--i], 150, 150, FOLDER, allVariables);
+		//150 150  B in '/\ P0:: B = Reduce(sum, counter, 0, N-1, 0)'
+		assertTLCStateFrame(stackFrames[--i], 150, 150, FOLDER, allVariables);
+		assertTLCStateFrame(stackFrames[--i], 133, 133, FOLDER, allVariables);
 		
 		allVariables.put("op", "sum(a,b) == a+b");
 		allVariables.put("fun", "(0 :> 0 @@ 1 :> 0 @@ 2 :> 0)");
 		allVariables.put("from", "0");
 		allVariables.put("to", "2");
 		allVariables.put("base", "0");
-		assertTLCStateFrame(stackFrames[3], 11, 14, UTILS, allVariables);
+		assertTLCStateFrame(stackFrames[--i], 11, 14, UTILS, allVariables);
 		allVariables.put("reduced", "(0 :> 0 @@ 1 :> 0 @@ 2 :> 0)");
-		assertTLCStateFrame(stackFrames[2], 14, 14, UTILS, allVariables);
+		assertTLCStateFrame(stackFrames[--i], 14, 14, UTILS, allVariables);
 		allVariables.put("i", "2");
-		assertTLCStateFrame(stackFrames[1], 12, 13, UTILS, allVariables);
-		assertTLCStateFrame(stackFrames[0], 13, 13, UTILS, allVariables);
+		assertTLCStateFrame(stackFrames[--i], 12, 13, UTILS, allVariables);
+		assertTLCStateFrame(stackFrames[--i], 13, 13, UTILS, allVariables);
 		
 		// 88888888888888888888888888888888888888888888888888888888888888 //
 		
@@ -129,25 +134,25 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(9, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 119, 119, RM, context, vars[3]);
 
-		stackFrames = debugger.stepIn();
+		stackFrames = debugger.stepIn(3);
 		assertEquals(10, stackFrames.length);
 		Set<Variable> variables = new HashSet<>();
 		variables.add(createVariable("i","1","IntValue"));
 		variables.add(createVariable("j","1","IntValue"));
 		variables.add(createVariable("@","<<[type |-> \"pl\"]>>","TupleValue"));
 		variables.add(createVariable("s","<<[type |-> \"pl\"]>>","TupleValue"));
-		assertTLCActionFrame(stackFrames[0], 119, 119, RM, variables, vars[3]);
+		assertTLCActionFrame(stackFrames[0], 119, 44, 119, 57, RM, variables, vars[3]);
 
 		stackFrames = debugger.stepIn();
 		assertEquals(11, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 29, 29, UTILS, variables, vars[3]);
 
-		stackFrames = debugger.stepIn(6);
+		stackFrames = debugger.stepIn(13);
 		assertEquals(9, stackFrames.length);
 		variables = new HashSet<>();
 		variables.add(createVariable("i","1","IntValue"));
 		variables.add(createVariable("j","1","IntValue"));
-		assertTLCActionFrame(stackFrames[0], 120, 120, RM, variables);
+		assertTLCActionFrame(stackFrames[0], 120, 6, 120, 19, RM, variables);
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

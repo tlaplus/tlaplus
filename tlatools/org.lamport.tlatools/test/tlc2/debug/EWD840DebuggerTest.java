@@ -115,7 +115,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertTLCActionFrame(stackFrames[0], 26, 26, RM, vars);
 
 		// Fourth frame.
-		stackFrames = debugger.stepIn();
+		stackFrames = debugger.stepIn(2);
 		assertEquals(3, stackFrames.length);
 		assertTLCActionFrame(stackFrames[2], 26, 31, RM, vars);
 		assertTLCActionFrame(stackFrames[1], 26, 26, RM, vars);
@@ -175,14 +175,14 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		/*
 		        /\ color' = [color EXCEPT ![i] = IF j>i THEN "black" ELSE @]
 		 */
-		stackFrames = debugger.next();
-		assertEquals(6, stackFrames.length);
+		stackFrames = debugger.next(4);
+		assertEquals(7, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 47, 47, RM, context, vars[0], vars[2], vars[3]);
 
 		/*
   				/\ UNCHANGED <<tpos, tcolor>>
 		 */
-		stackFrames = debugger.stepIn(4);
+		stackFrames = debugger.stepIn(8);
 		assertEquals(7, stackFrames.length);
 		context = Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne);
 		assertTLCActionFrame(stackFrames[0], 48, 48, RM, context, vars[0], vars[2]);
@@ -190,16 +190,16 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		// 8888888888888888888 State Constraint 8888888888888888888 //
 		debugger.setBreakpoints(MDL, 16);
 		stackFrames = debugger.continue_();
-		stackFrames = debugger.stepIn(9);
+		stackFrames = debugger.stepIn(13);
 		assertEquals(11, stackFrames.length);
-		assertTLCStateFrame(stackFrames[0], 16, 58, 16, 68, MDL, Context.Empty.cons(null, IntValue.ValOne));
+		assertTLCStateFrame(stackFrames[0], 16, 58, 16, 68, MDL, Context.Empty.cons(null, IntValue.ValZero));
 		Variable[] contextVariables = ((TLCStateStackFrame) stackFrames[0]).getVariables();
 		assertNotNull(contextVariables);
 		assertEquals(1, contextVariables.length);
 		Variable variable = contextVariables[0];
 		assertEquals("node", variable.getName());
 		assertEquals("IntValue", variable.getType());
-		assertEquals("1", variable.getValue());
+		assertEquals("0", variable.getValue());
 		
 		// 8888888888888888888 Action Constraint 8888888888888888888 //
 		debugger.setBreakpoints(MDL, 19);
