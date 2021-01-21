@@ -33,6 +33,7 @@ import java.util.function.Supplier;
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
+import tlc2.TLCGlobals;
 import tlc2.debug.IDebugTarget;
 import tlc2.tool.Action;
 import tlc2.tool.EvalControl;
@@ -161,8 +162,9 @@ public class DebugTool extends Tool {
 
 	private boolean isInitialize() {
 		// target is null during instantiation of super (see constructor above), ie.
-		// eager evaluation of operators in SpecProcessor.
-		return target == null;
+		// eager evaluation of operators in SpecProcessor. mainChecker is null
+		// while SpecProcessor processes constant definitions, ...
+		return target == null || TLCGlobals.mainChecker == null;
 	}
 
 	private boolean isLiveness(int control, TLCState s0, TLCState s1) {
