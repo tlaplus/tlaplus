@@ -253,7 +253,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<Void> stepOut(StepOutArguments args) {
 		LOGGER.finer("stepOut");
-		targetLevel = this.stack.size() - 1;
+		targetLevel = this.stack.size();
 		step = Step.Out;
 		this.notify();
 		return CompletableFuture.completedFuture(null);
@@ -389,7 +389,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 				return true;
 			}
 		} else if (dir == Step.Out) {
-			// When stepping out, level has to greater than or zero/0;
+			// When stepping out, level has to be greater than or zero/0;
 			if (currentLevel < targetLevel || currentLevel == 0) {
 				return true;
 			}
