@@ -109,28 +109,7 @@ public class DebugTool extends Tool {
 	@Override
 	protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
-		if (target == null) {
-			// target is null during instantiation of super (see constructor above), ie.
-			// eager evaluation of operators in SpecProcessor.
-			return super.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (EvalControl.isEnabled(control) || EvalControl.isPrimed(control)) {
-			// If EvalControl is set to primed or enabled, TLC is evaluating an ENABLED expr.
-			// TLCStateFun are passed in when enabled is evaluated. However, it is also
-			// possible for enabled to be replaced with primed. At any rate, there is no
-			// point evaluating ENABLED expr.
-			return super.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (s0 instanceof TLCStateFun || s1 instanceof TLCStateFun) {
-			// If EvalControl is set to primed or enabled, TLC is evaluating an ENABLED expr.
-			// (see previous if branch).  However, if expr is built from an operator with a
-			// Java module override, control is cleared/reset and the only indicator that
-			// evaluation is in the scope of enabled, is TLCStateFunc.
-			return super.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (KINDS.contains(expr.getKind())) {
-			// These nodes don't seem interesting to users. They are leaves and we don't
-			// care to see how TLC figures out that then token 1 evaluates to the IntValue 1.
+		if (isInitialize() || isLiveness(control, s0, s1) || isLeaf(expr)) {
 			return super.evalImpl(expr, c, s0, s1, control, cm);
 		}
 		if (expr.getChildren() == null || expr.getChildren().length == 0) {
@@ -172,6 +151,54 @@ public class DebugTool extends Tool {
 		} else {
 			return actionLevelEval(expr, c, s0, s1, control, cm);
 		}
+	}
+
+	private boolean isLeaf(SemanticNode expr) {
+		// These nodes don't seem interesting to users. They are leaves and we don't
+		// care to see how TLC figures out that then token 1 evaluates to the IntValue 1.
+		return KINDS.contains(expr.getKind());
+	}
+
+	private boolean isInitialize() {
+		// target is null during instantiation of super (see constructor above), ie.
+		// eager evaluation of operators in SpecProcessor.
+		return target == null;
+	}
+
+	private boolean isLiveness(int control, TLCState s0, TLCState s1) {
+		if (EvalControl.isEnabled(control) || EvalControl.isPrimed(control)) {
+			// If EvalControl is set to primed or enabled, TLC is evaluating an ENABLED expr.
+			// TLCStateFun are passed in when enabled is evaluated. However, it is also
+			// possible for enabled to be replaced with primed. At any rate, there is no
+			// point evaluating ENABLED expr.
+			return true;
+		}
+		if (s0 instanceof TLCStateFun || s1 instanceof TLCStateFun) {
+			// If EvalControl is set to primed or enabled, TLC is evaluating an ENABLED expr.
+			// (see previous if branch).  However, if expr is built from an operator with a
+			// Java module override, control is cleared/reset and the only indicator that
+			// evaluation is in the scope of enabled, is TLCStateFunc.
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isBoring(final SemanticNode expr) {
+//		if (expr.getChildren() == null || expr.getChildren().length == 0) {
+//			if (expr instanceof OpApplNode) {
+//				final OpApplNode oan = (OpApplNode) expr;
+//				final Object op = oan.getOperator();//lookup(oan.getOperator());
+//				if (op instanceof OpDefNode) {
+//					final SymbolNode operator = oan.getOperator();
+//					if (operator.isBuiltIn()) {
+//						return true;
+//					}
+//					return false;
+//				}
+//			}
+//			return true;
+//		}
+		return false;
 	}
 
 	private Value actionLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
