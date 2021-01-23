@@ -357,9 +357,11 @@ abstract class Spec
             return result;
         }
 
-        result = s.lookup(opNode.getName());
-        if (result != null) {
-            return result;
+        if (opNode.getKind() == VariableDeclKind) {
+            result = s.lookup(opNode.getName());
+            if (result != null) {
+                return result;
+            }
         }
 
         return opNode;
