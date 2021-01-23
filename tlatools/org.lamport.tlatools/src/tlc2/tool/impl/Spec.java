@@ -348,19 +348,27 @@ abstract class Spec
      */
     public final Object lookup(SymbolNode opNode, Context c, TLCState s, boolean cutoff)
     {
-    	Object result = lookup(opNode, c, cutoff, toolId);
-    	if (result != opNode) {
-    		return result;
-    	}
-        result = s.lookup(opNode.getName());
-        if (result != null) {
-        	return result;
+        Object result = lookup(opNode, c, cutoff, toolId);
+        if (result != opNode) {
+            return result;
         }
+
+		// CalvinL/LL/MAK 02/2021: Added conditional as part of Github issue #362 Name
+		// clash between variable in refined spec and operator in instantiated spec. See
+		// releated test in Github362.java.
+        if (opNode.getKind() != UserDefinedOpKind) {
+			result = s.lookup(opNode.getName());
+			if (result != null) {
+				return result;
+			}
+		}
+
         return opNode;
     }
 
-    public final Object lookup(final SymbolNode opNode) {
-    	return lookup(opNode, Context.Empty, false, toolId);
+    public final Object lookup(final SymbolNode opNode)
+    {
+        return lookup(opNode, Context.Empty, false, toolId);
     }
 
     /**
