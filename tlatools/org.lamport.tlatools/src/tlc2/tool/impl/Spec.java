@@ -352,19 +352,22 @@ abstract class Spec
      */
     public final Object lookup(SymbolNode opNode, Context c, TLCState s, boolean cutoff)
     {
-    	Object result = lookup(opNode, c, cutoff, toolId);
-    	if (result != opNode) {
-    		return result;
-    	}
+        Object result = lookup(opNode, c, cutoff, toolId);
+        if (result != opNode) {
+            return result;
+        }
+
         result = s.lookup(opNode.getName());
         if (result != null) {
-        	return result;
+            return result;
         }
+
         return opNode;
     }
 
-    public final Object lookup(final SymbolNode opNode) {
-    	return lookup(opNode, Context.Empty, false, toolId);
+    public final Object lookup(final SymbolNode opNode)
+    {
+        return lookup(opNode, Context.Empty, false, toolId);
     }
 
     /**
