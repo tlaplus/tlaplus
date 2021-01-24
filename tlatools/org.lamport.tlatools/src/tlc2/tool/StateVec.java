@@ -193,10 +193,10 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
   
   public final Value[] toRecords(final TLCState append) {
 	final Value[] values = new Value[size + 1];
-	for (int i = 0; i < values.length; i++) {
+	for (int i = 0; i < size; i++) {
 		values[i] = new RecordValue(v[i]);
 	}
-	values[values.length] = new RecordValue(append);
+	values[values.length - 1] = new RecordValue(append);
     return values;
   }
   
