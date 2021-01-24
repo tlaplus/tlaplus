@@ -604,6 +604,16 @@ public class Simulator {
 		}
 	}
 
+	public final StateVec getTrace() {
+		if (Thread.currentThread() instanceof SimulationWorker) {
+			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
+			return w.getTrace();
+		} else {
+			assert numWorkers == 1 && workers.size() == numWorkers;
+			return workers.get(0).getTrace();
+		}
+	}
+	
 	public void stop() {
 		for (SimulationWorker worker : workers) {
 			worker.interrupt();
