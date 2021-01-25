@@ -40,7 +40,7 @@ public class Github362Test extends ModelCheckerTestCase {
   private TestPrintStream testPrintStream;
 
   public Github362Test() {
-    super("Github362", ExitStatus.SUCCESS);
+    super("Github362", new String[] {"-config", "Github362.tla"},ExitStatus.SUCCESS);
   }
 
   @Override
@@ -54,6 +54,11 @@ public class Github362Test extends ModelCheckerTestCase {
     testPrintStream.assertSubstring("<<\"Evaluated initial state in A; overloadedName is: \", \"fizzbuzz\">>");
     testPrintStream.assertSubstring("<<\"From A's perspective, B's overloadedName is: \", \"x\">>");
     testPrintStream.assertSubstring("<<\"Evaluating initial state in B; overloadedName is \", \"x\">>");
+
+    testPrintStream.assertSubstring("<<\"Evaluated initial state in A; overloadedConst is: \", 4711>>");
+    testPrintStream.assertSubstring("<<\"From A's perspective, B's overloadedConst is: \", 42>>");
+    testPrintStream.assertSubstring("<<\"Evaluating initial state in B; overloadedConst is \", 42>>");
+    
     assertTrue(recorder.recorded(EC.TLC_FINISHED));
     assertTrue(recorder.recorded(EC.TLC_SUCCESS));
   }

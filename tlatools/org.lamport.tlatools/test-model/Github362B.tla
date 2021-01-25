@@ -4,6 +4,8 @@
 
 EXTENDS TLC
 
+CONSTANT C
+
 VARIABLES x
 
 \* This name also exists in Github362.tla with a different definition (it is a
@@ -11,10 +13,15 @@ VARIABLES x
 \* should not conflict with this one.
 overloadedName == x
 
+overloadedConst == C
+
 Init ==
-    /\ Print(<<"Evaluating initial state in B; overloadedName is ", overloadedName>>, TRUE)
-    /\ overloadedName = "x"
+    /\ Print(<<"Evaluating initial state in B; overloadedName is ", overloadedName>>, TRUE) \* x
+    /\ overloadedName = "x" \* overloadedName -> variable x -> value "x"
     /\ x = "x"
+    /\ Print(<<"Evaluating initial state in B; overloadedConst is ", overloadedConst>>, TRUE) \* 42
+    /\ overloadedConst = 42 \* overloadedConst -> const C -> 42
+    /\ C = 42
 
 Next == UNCHANGED x
 Spec == Init /\ [][Next]_x
