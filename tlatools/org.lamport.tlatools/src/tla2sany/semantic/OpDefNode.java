@@ -1361,11 +1361,16 @@ public class OpDefNode extends OpDefOrDeclNode
 		buf.append("\n");
 		
 		TreeNode[] ones = getTreeNode().one();
-		for (TreeNode treeNode : ones) {
-			// TODO This omits all whitespaces from the definition and is thus hard to read.
-			// I couldn't figure out a better way to obtain the original image though.
-			buf.append(treeNode.getHumanReadableImage());
-			buf.append(" ");
+		if (ones != null) {
+			for (TreeNode treeNode : ones) {
+				// TODO This omits all whitespaces from the definition and is thus hard to read.
+				// I couldn't figure out a better way to obtain the original image though.
+				buf.append(treeNode.getHumanReadableImage());
+				buf.append(" ");
+			}
+		} else {
+			// In most cases, toString will print the nodes location.
+			buf.append(toString());
 		}
 		return buf.toString().trim();
 	}
