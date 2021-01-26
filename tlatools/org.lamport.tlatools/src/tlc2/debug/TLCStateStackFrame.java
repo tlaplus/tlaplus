@@ -103,6 +103,8 @@ public class TLCStateStackFrame extends TLCStackFrame {
 
 	@Override
 	protected Object unlazy(LazyValue lv) {
-		return lv.eval(tool, state);
+		return tool.eval(() -> {
+			return lv.eval(tool, state);
+		}
 	}
 }
