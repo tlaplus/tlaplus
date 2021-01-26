@@ -40,11 +40,13 @@ import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
 import tlc2.output.EC;
+import tlc2.tool.EvalException;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.Value;
 import util.Assert;
+import util.Assert.TLCRuntimeException;
 
 class TLCStackFrame extends StackFrame {
 	
@@ -135,6 +137,13 @@ class TLCStackFrame extends StackFrame {
 						variable.setName(c.getName().getSignature());
 						variable.setValue(((SemanticNode) val).getHumanReadableImage());
 						vars.add(variable);
+					} else if (val instanceof RuntimeException) {
+						final Variable variable = new Variable();
+						variable.setName(c.getName().getName().toString());
+						variable.setValue(c.getValue().toString());
+						final RuntimeException re = (RuntimeException) val;
+						variable.setType(re.getMessage());
+						vars.add(variable);
 					} else {
 						System.err.println("This is interesting!!! What's this??? " + val.toString());
 					}
@@ -147,9 +156,13 @@ class TLCStackFrame extends StackFrame {
 	}
 
 	protected Object unlazy(final LazyValue lv) {
-		return tool.eval(() -> {
-			return lv.eval(tool);
-		});
+		try {
+			return tool.eval(() -> {
+				return lv.eval(tool);
+			});
+		} catch (TLCRuntimeException | EvalException e) {
+			return e;
+		}
 	}
 
 	public Scope[] getScopes() {

@@ -33,10 +33,12 @@ import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.SemanticNode;
+import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.impl.LazyValue;
+import util.Assert.TLCRuntimeException;
 
 public class TLCActionStackFrame extends TLCStateStackFrame {
 	
@@ -79,7 +81,11 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	@Override
 	protected Object unlazy(final LazyValue lv) {
 		return tool.eval(() -> {
-			return lv.eval(tool, predecessor, state);
+			try {
+				return lv.eval(tool, predecessor, state);
+			} catch (TLCRuntimeException | EvalException e) {
+				return e;
+			}
 		});
 	}
 }
