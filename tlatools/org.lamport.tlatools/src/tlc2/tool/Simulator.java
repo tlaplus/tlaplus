@@ -57,15 +57,19 @@ public class Simulator {
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
 			long traceNum, RandomGenerator rng, long seed, FilenameToStream resolver,
 			int numWorkers) throws IOException {
+		this(new FastTool(extracted(specFile), configFile, resolver, Tool.Mode.Simulation), "", traceFile, deadlock,
+				traceDepth, traceNum, rng, seed, resolver, numWorkers);
+	}
+
+	private static String extracted(String specFile) {
 		int lastSep = specFile.lastIndexOf(FileUtil.separatorChar);
-		String specDir = (lastSep == -1) ? "" : specFile.substring(0, lastSep + 1);
-		specFile = specFile.substring(lastSep + 1);
+		return specFile.substring(lastSep + 1);
+	}
 
-		// SZ Feb 24, 2009: setup the user directory
-		// SZ Mar 5, 2009: removed it again because of the bug in simulator
-		// ToolIO.setUserDir(specDir);
-
-		this.tool = new FastTool(specDir, specFile, configFile, resolver, Tool.Mode.Simulation);
+	public Simulator(ITool tool, String metadir, String traceFile, boolean deadlock, int traceDepth,
+				long traceNum, RandomGenerator rng, long seed, FilenameToStream resolver,
+				int numWorkers) throws IOException {
+		this.tool = tool;
 
 		this.checkDeadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
 		this.checkLiveness = !this.tool.livenessIsTrue();
@@ -92,7 +96,7 @@ public class Simulator {
 				liveCheck = new LiveCheck1(this.tool);
 			}
 		} else {
-			liveCheck = new NoOpLiveCheck(tool, specDir);
+			liveCheck = new NoOpLiveCheck(tool, metadir);
 		}
 
 		this.numWorkers = numWorkers;

@@ -35,6 +35,7 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.FastTool;
+import tlc2.tool.impl.Tool.Mode;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.DotStateWriter;
@@ -1029,10 +1030,10 @@ public class TLC {
                 }
 				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				
-				Simulator simulator = new Simulator(mainFile, configFile, traceFile, deadlock, traceDepth, 
-                        traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
+				tool = new FastTool(mainFile, configFile, resolver, Mode.Simulation);
+				Simulator simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, traceNum, rng, seed,
+						resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
-                tool = simulator.getTool();
                 result = simulator.simulate();
 			} else { // RunMode.MODEL_CHECK
 				if (noSeed) {
