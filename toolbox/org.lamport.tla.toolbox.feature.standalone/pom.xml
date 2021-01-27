@@ -32,6 +32,7 @@
 								<goal>wget</goal>
 						</goals>
 						<configuration>
+								<skipCache>true</skipCache>
 								<url>https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar</url>
 								<!-- We keep do not unpack with this plugin as we need do more than just unpack, so we might as well
 										keep all of that logic in the same configuration below. -->
