@@ -26,6 +26,7 @@
 package tlc2.debug;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -153,6 +154,13 @@ class TLCStackFrame extends StackFrame {
 				}
 			}
 			
+			// Its nicer if the variables/constants are sorted lexicographically.
+			vars.sort(new Comparator<Variable>() {
+				@Override
+				public int compare(Variable o1, Variable o2) {
+					return o1.getName().compareTo(o2.getName());
+				}
+			});
 			return vars.toArray(new Variable[vars.size()]);
 		});
 	}
