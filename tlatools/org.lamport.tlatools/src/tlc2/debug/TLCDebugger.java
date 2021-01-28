@@ -165,15 +165,36 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<StackTraceResponse> stackTrace(StackTraceArguments args) {
 		LOGGER.finer(String.format("stackTrace frame: %s, levels: %s\n", args.getStartFrame(), args.getLevels()));
+		final StackTraceResponse res = new StackTraceResponse();
 
-		final List<StackFrame> frames = new ArrayList<>(stack.size());
-		for (int i = stack.size() - 1; i >= 0; i--) {
-			final TLCStackFrame stackFrame = stack.elementAt(i);
+		int from = stack.size() - 1;
+		if (args.getStartFrame() != null) {
+			int req = args.getStartFrame();
+			// within bounds.
+			if (req < 0 || stack.size() - 1 < req) {
+				res.setStackFrames(new StackFrame[0]);
+				return CompletableFuture.completedFuture(res);
+			}
+			from = from - req;
+		}
+
+		int to = 0;
+		if (args.getLevels() != null) {
+			int req = args.getLevels();
+			// If not within bounds, ignore levels.
+			if (req != 0 && req < from) {
+				to = from - (req - 1);
+			}
+		}
+		
+		final List<StackFrame> frames = new ArrayList<>(Math.max(from - to, 0));
+		for (; from >= to; from--) {
+			final TLCStackFrame stackFrame = stack.elementAt(from);
 			frames.add(stackFrame);
 		}
 
-		final StackTraceResponse res = new StackTraceResponse();
 		res.setStackFrames(frames.toArray(new StackFrame[frames.size()]));
+		res.setTotalFrames(stack.size());
 		return CompletableFuture.completedFuture(res);
 	}
 
@@ -279,7 +300,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	// However, CST only keeps the SemanticNode but skips the Context and the values. We
 	// would have to make CST take a function that applies a transformation for the debugger
 	// and a different one when CST does its original job.
-	private final Stack<TLCStackFrame> stack = new Stack<>();
+	protected final Stack<TLCStackFrame> stack = new Stack<>();
 	
 	// Initialize the debugger to immediately halt on the first frame.
 	private volatile int targetLevel = 1;

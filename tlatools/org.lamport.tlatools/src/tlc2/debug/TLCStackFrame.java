@@ -63,11 +63,21 @@ class TLCStackFrame extends StackFrame {
 
 	protected transient final Map<Integer, DebugTLCVariable> nestedVariables = new HashMap<>();
 
-	private transient final SemanticNode node;
-	private transient final Context ctxt;
+	protected transient final SemanticNode node;
+	protected transient final Context ctxt;
 	protected transient final Tool tool;
 
-	private final int stackId;
+	protected final int stackId;
+	
+	// Testing only!
+	TLCStackFrame(int id) {
+		super();
+		this.node = null;
+		this.ctxt = null;
+		this.tool = null;
+		this.stackId = -1;
+		this.setId(id);
+	}
 
 	public TLCStackFrame(SemanticNode node, Context ctxt, final Tool tool) {
 		this.node = node;
