@@ -84,7 +84,9 @@ class TLCStackFrame extends StackFrame {
 		} else {
 			setName(node.getHumanReadableImage());
 		}
-		setId(node.myUID);
+		// There is a 1:n mapping between SemanticNode and TLCStackFrames. For example,
+		// the same SN appears multiple times on the stack in case of recursion.
+		setId(node.myUID ^ rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
 
 		final Location location = node.getLocation();
 		setLine(location.beginLine());
