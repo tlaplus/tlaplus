@@ -45,6 +45,7 @@ import tlc2.tool.EvalException;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.impl.LazyValue;
+import tlc2.value.impl.TLCVariable;
 import tlc2.value.impl.Value;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
@@ -122,15 +123,17 @@ class TLCStackFrame extends StackFrame {
 	
 	public Variable[] getVariables(final int vr) {
 		return tool.eval(() -> {
+			final List<Variable> vars = new ArrayList<>();
+
 			if (nestedVariables.containsKey(vr)) {
-				DebugTLCVariable[] nested = nestedVariables.get(vr).getNested(rnd);
-				for (DebugTLCVariable debugTLCVariable : nested) {
-					nestedVariables.put(debugTLCVariable.getVariablesReference(), debugTLCVariable);
+				List<TLCVariable> nested = nestedVariables.get(vr).getNested(rnd);
+				for (TLCVariable n : nested) {
+					DebugTLCVariable d = (DebugTLCVariable) n;
+					nestedVariables.put(d.getVariablesReference(), d);
+					vars.add(d);
 				}
-				return nested;
 			}
 
-			final List<Variable> vars = new ArrayList<>();
 			if (stackId == vr) {
 				Context c = this.ctxt;
 				while (c.hasNext()) {

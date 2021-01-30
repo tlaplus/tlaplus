@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.value.impl;
 
+import java.util.List;
 import java.util.Random;
 
 public interface TLCVariable {
@@ -43,5 +44,5 @@ public interface TLCVariable {
 
 	TLCVariable newInstance(Value value, Random rnd);
 
-	TLCVariable[] getNested(Random rnd);
+	List<TLCVariable> getNested(Random rnd);
 }

@@ -49,11 +49,12 @@ public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVar
 		this.setName(value.toString());
 	}
 
-	public DebugTLCVariable[] getNested(Random rnd) {
-		final List<TLCVariable> tlcVariables = this.tlcValue.getTLCVariables(this, rnd);
-		return tlcVariables.toArray(new DebugTLCVariable[tlcVariables.size()]);
+	@Override
+	public List<TLCVariable> getNested(Random rnd) {
+		return this.tlcValue.getTLCVariables(this, rnd);
 	}
 
+	@Override
 	public void setInstance(Value v) {
 		this.tlcValue = v;
 	}
