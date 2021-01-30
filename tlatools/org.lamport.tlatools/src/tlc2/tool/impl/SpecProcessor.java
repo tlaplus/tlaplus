@@ -63,6 +63,7 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tlc2.TLCGlobals;
 import tlc2.module.BuiltInModuleHelper;
+import tlc2.module.TLCBuiltInOverrides;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.overrides.Evaluation;
@@ -532,10 +533,11 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     {
                         String name = TLARegistry.mapName(method.getName());
                         UniqueString uname = UniqueString.uniqueStringOf(name);
-                        if (method.getAnnotation(TLAPlusOperator.class) != null) {
-                        	// Skip, handled below with annotation based mechanism.
-                        	continue;
-                        }
+						if (method.getAnnotation(TLAPlusOperator.class) != null
+								|| method.getAnnotation(Evaluation.class) != null) {
+							// Skip, handled below with annotation based mechanism.
+							continue;
+						}
                     	final int acnt = method.getParameterCount();
                     	final Value val = MethodValue.get(method);
                         
@@ -581,7 +583,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // that implements tlc2.overrides.ITLCOverrides.  This is usually the tlc2.overrides.TLCOverrides
         // provided by the CommunityModules.
         boolean hasCallableValue = false;
-		final String tlcOverrides = System.getProperty("tlc2.overrides.TLCOverrides", "tlc2.overrides.TLCOverrides");
+		final String tlcOverrides = TLCBuiltInOverrides.class.getName() + File.pathSeparator
+				+ System.getProperty("tlc2.overrides.TLCOverrides", "tlc2.overrides.TLCOverrides");
 		for (String ovrde : tlcOverrides.split(File.pathSeparator)) {
 			final Class<?> idx = this.tlaClass.loadClass(ovrde);
 			if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {
@@ -616,9 +619,11 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 			                    this.defns.put(evaluation.definition(), val);
 			                    
 								// Print success of loading the module override.
-								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
-										evaluation.module() + "!" + evaluation.definition(),
-										c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+			                    if (!evaluation.silent()) {
+			                    	MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+			                    			evaluation.module() + "!" + evaluation.definition(),
+			                    			c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+			                    }
 			                    
 			                    // continue with next method (don't try to also load Execution annotation below).
 			                    continue LOOP;

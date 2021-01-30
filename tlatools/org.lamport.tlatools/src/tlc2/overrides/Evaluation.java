@@ -69,4 +69,9 @@ public @interface Evaluation {
 	 * @see Evaluation#module()
 	 */
 	boolean warn() default true;
+
+	/**
+	 * @return true if no message should be printed when this EV is successfully loaded.
+	 */
+	boolean silent() default false;
 }

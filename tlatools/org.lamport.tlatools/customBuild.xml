@@ -139,6 +139,7 @@
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
+				<pathelement location="lib/gson/gson-2.8.6.jar" />
 			</classpath>
 		</javac>
 
@@ -264,10 +265,19 @@
 			</patternset>
 		</unzip>
 
+		<unzip src="lib/gson/gson-2.8.6.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
 		<!-- Include a few LICENSE files -->
 		<copy todir="${class.dir}">
 			<fileset dir="lib/jline">
 				<include name="jline-LICENSE.txt" />
+			</fileset>
+			<fileset dir="lib/gson">
+				<include name="gson-LICENSE.txt" />
 			</fileset>
 			<fileset dir="src/org/apache/commons/math3/">
 				<include name="CommonsMath-NOTICE.txt" />
@@ -388,6 +398,7 @@
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
+				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
@@ -514,6 +525,7 @@
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
+				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
