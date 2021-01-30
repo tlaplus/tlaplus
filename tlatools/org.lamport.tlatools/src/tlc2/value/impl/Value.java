@@ -370,14 +370,18 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 		// TODO: Use Value#getKindString instead?
 		variable.setType(getClass().getSimpleName());
 		variable.setValue(toString());
-		if (this instanceof Enumerable || this instanceof FcnRcdValue || this instanceof RecordValue || this instanceof TupleValue) {
-			variable.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
+		if (this instanceof Enumerable || this instanceof FcnRcdValue || this instanceof RecordValue
+				|| this instanceof TupleValue) {
+			// Atomic values such as IntValue throw an exception on #isFinite.
+			if (this.isFinite()) {
+				variable.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
+			}
 		}
 		return variable;
 	}
 
 	public List<TLCVariable> getTLCVariables(TLCVariable var, Random rnd) {
-		if (this instanceof Enumerable) {
+		if (this instanceof Enumerable && this.isFinite()) {
 			Enumerable e = (Enumerable) this;
 			return e.elements().all().stream().map(value -> value.toTLCVariable(var.newInstance(value, rnd), rnd))
 					.collect(Collectors.toList());

@@ -30,7 +30,7 @@ import java.util.Random;
 
 public interface TLCVariable {
 
-	void setInstance(final Value value);
+	TLCVariable setInstance(final Value value);
 	
 	void setName(final String name);
 
