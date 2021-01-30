@@ -580,8 +580,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // the default is to load the first class on the classpath with name tlc2.overrides.TLCOverrides
         // that implements tlc2.overrides.ITLCOverrides.  This is usually the tlc2.overrides.TLCOverrides
         // provided by the CommunityModules.
+        // We also are appending a standard module overrides, so we are able to bring some modules
+        // from CommunityModules without any change, is this a good idea?
         boolean hasCallableValue = false;
-		final String tlcOverrides = System.getProperty("tlc2.overrides.TLCOverrides", "tlc2.overrides.TLCOverrides");
+        final String tlcOverrides = System.getProperty("tlc2.overrides.TLCOverrides", "tlc2.overrides.TLCOverrides") + File.pathSeparator + "tlc2.overrides.TLCStandardOverrides";        
 		for (String ovrde : tlcOverrides.split(File.pathSeparator)) {
 			final Class<?> idx = this.tlaClass.loadClass(ovrde);
 			if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {
