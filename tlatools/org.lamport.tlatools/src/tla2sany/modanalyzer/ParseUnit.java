@@ -34,6 +34,7 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import util.FileUtil;
 import util.FilenameToStream.TLAFile;
+import util.MonolithSpecExtractor;
 import util.NamedInputStream;
 import util.TLAConstants;
 import util.TLAFlightRecorder;
@@ -229,8 +230,10 @@ public class ParseUnit {
      * tree to see what other external modules must be found and parsed.
      * Finally, it writes result to a file if required by a command line
      * switch.
+     * We receive `rootParseUnit` so we are able to find the file location for a 
+     * module part of a monolith spec. 
      */
-    public final void parseFile(Errors errors, boolean firstCall) throws AbortException
+    public final void parseFile(Errors errors, boolean firstCall, String name, ParseUnit rootParseUnit) throws AbortException
     {
         // Has it already been parsed since last modified? If yes, then no need to parse again
         if (parseStamp > nis.sourceFile().lastModified())
@@ -264,10 +267,33 @@ public class ParseUnit {
         * more useful output for the GUI.                                      *
         ***********************************************************************/
         if (ToolIO.getMode() == ToolIO.SYSTEM)
-        {
-			ToolIO.out.println(TLAFlightRecorder.message(String.format("%s %s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath)));
-        } else
-        {
+        {            
+            // If `resolver.getLibraryPath` returns `null` or the file is not an instance of TLAFile
+            // (and as we didn't have errors in previous steps, the module
+            // really exists somewhere), then we assume that this file is part of a monolith file.
+            String originalFilePath = "";
+            String libraryPath = null;
+            // If we are a instance of a TLAFile then try to get some libary path.
+            if (nis.sourceFile() instanceof TLAFile) {
+                libraryPath = ((TLAFile) (nis.sourceFile())).getLibraryPath();
+            }            
+            if (libraryPath != null) {
+                originalFilePath = " (" + libraryPath + ")";                
+            } else if (rootParseUnit != null && rootParseUnit.getNis() != null) {
+                // We try to get the monolith file path.
+                File rootSourceFile = rootParseUnit.getNis().sourceFile();
+                if (rootSourceFile != null) {
+                    try {
+                        MonolithSpecExtractor.module(rootSourceFile, name);
+                        originalFilePath = " (" + rootSourceFile.getAbsolutePath() + ")";
+                    } catch (IOException e) {
+                        // This should never happen.
+                        e.printStackTrace();
+                    }
+                }
+            }
+			      ToolIO.out.println(TLAFlightRecorder.message(String.format("%s %s%s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath, originalFilePath)));            
+        } else {
             ToolIO.out.println(TLAFlightRecorder.message(String.format("Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath)));
         }
 

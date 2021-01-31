@@ -318,7 +318,7 @@ public class SpecObj
 
         // Actually parse the file named in "parseUnit" (or no-op if it
         // has already been parsed)
-        parseUnit.parseFile(errors, firstCall);
+        parseUnit.parseFile(errors, firstCall, name, rootParseUnit);        
 
         return parseUnit;
         // return a non-null "parseUnit" iff named module has been found,

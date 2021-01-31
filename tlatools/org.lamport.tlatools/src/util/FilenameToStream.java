@@ -37,6 +37,7 @@ public interface FilenameToStream
 		
 		private final boolean isLibraryModule;
 		private transient final FilenameToStream resolver;
+		private String libraryPath = null;
 
 		public TLAFile(String pathname, FilenameToStream fts) {
 			this(pathname, false, fts);
@@ -72,6 +73,18 @@ public interface FilenameToStream
 			}
 			return null;
 		}
+
+		/**
+		 * This method enables us to keep track of the original path (or library) 
+		 * of the module.
+		 */
+		public String getLibraryPath() {
+			return libraryPath;
+		}
+		
+		public void setLibraryPath(String libraryPath) {
+			this.libraryPath = libraryPath;
+		}
 	}
 	
     /**
@@ -86,8 +99,8 @@ public interface FilenameToStream
        * August 2014 - TL
        * Added this method which returns all the path locations stored in the resolver
       */
-    public String getFullPath();
-
+	public String getFullPath();
+	
     /**
      * Returns true iff moduleName is the name of a standard module, which
      * is identified by the directory in which its source file resides.

@@ -31,6 +31,8 @@ import static org.junit.Assert.fail;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TestPrintStream extends PrintStream {
 
@@ -66,11 +68,21 @@ public class TestPrintStream extends PrintStream {
 		}
 		fail("Substring not found");
 	}
+
+	public void assertRegex(String regex) {
+		Pattern pattern = Pattern.compile(regex);
+		for (String string : strings) {			
+			if (pattern.matcher(string).find()) {
+				return;
+			}
+		}
+		fail("Match not found for regex \"" + pattern.toString() + "\"");		
+	}
 	
 	public void assertNoSubstring(String substring) {
 		for (String string : strings) {
 			if (string.contains(substring)) {
-				fail("Substring not found");
+				fail("Substring was found");
 			}
 		}
 	}
