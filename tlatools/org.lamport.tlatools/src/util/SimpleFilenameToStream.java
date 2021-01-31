@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 
 
 /**
@@ -45,6 +46,16 @@ public class SimpleFilenameToStream implements FilenameToStream {
    * being the last element of this array.
    */
   private String[] libraryPaths;
+
+  private class LocateLibraryPathContainer {
+    final public File sourceFile;
+    final public String libraryPath;
+
+    public LocateLibraryPathContainer(File sourceFile, String libraryPath) {
+      this.sourceFile  = sourceFile;
+      this.libraryPath = libraryPath;
+    }
+  }
 
   public SimpleFilenameToStream() {
 	  libraryPaths = getLibraryPaths(getInstallationBasePath(), null);
@@ -111,6 +122,10 @@ public class SimpleFilenameToStream implements FilenameToStream {
     return buf.toString();
   }
 
+  public String getLibraryPath(String name) {
+    return locateLibraryPath(name).libraryPath;
+  }
+
   /**
    * August 2014 - TL
    * added functionality for supplying additional libraries.
@@ -158,9 +173,8 @@ public class SimpleFilenameToStream implements FilenameToStream {
    *
    *  @param  module name, used as basis of path name to the file that should contain it
    */
-  private final File locate(String name)
-  {
-
+  private final LocateLibraryPathContainer locateLibraryPath(String name)
+  { 
     String prefix      = "";                // directory to be prepended to file name before lookup
 
     File   sourceFile  = null;              // File object from fully-qualified name of file found by
@@ -189,10 +203,14 @@ public class SimpleFilenameToStream implements FilenameToStream {
     ***********************************************************************/
     int idx = 0;
     InputStream is;
+    String libraryPath = null;
     while (true)
     {
-        if ((idx == 0) && (ToolIO.getUserDir() != null)) {
-            sourceFile = new TLAFile(ToolIO.getUserDir(), name, this );
+        if ((idx == 0) && (ToolIO.getUserDir() != null)) {            
+            sourceFile  = new TLAFile(ToolIO.getUserDir(), name, this );
+            if (sourceFile.exists())  {
+                libraryPath = sourceFile.getAbsolutePath();
+            }
         }
         else
         {
@@ -202,37 +220,46 @@ public class SimpleFilenameToStream implements FilenameToStream {
         	//
         	// This would be a lot simpler if TLC would not depend on
         	// File but on InputStream instead
-        	if(FilenameToStream.isInJar(prefix)) {
-				is = cl.getResourceAsStream(STANDARD_MODULES + name);
-				if(is != null) {
-					sourceFile = read(name, is);
-				}
-        	} else {
-        		sourceFile = new TLAFile( prefix + name, true, this );
-        	}
+          if(FilenameToStream.isInJar(prefix)) {
+              is = cl.getResourceAsStream(STANDARD_MODULES + name);              
+              if(is != null) {
+                  sourceFile  = read(name, is);
+                  if (sourceFile.exists()) {
+                      libraryPath = cl.getResource(STANDARD_MODULES + name).toString();
+                  }
+              }
+          } else {
+              sourceFile  = new TLAFile( prefix + name, true, this );
+              if (sourceFile.exists()) {
+                  libraryPath = sourceFile.getAbsolutePath();
+              }
+          }
         }
         // Debug
         // System.out.println("Looking for file " + sourceFile);
         if ( sourceFile.exists() )  break;
         if (idx >= libraryPaths.length) {
-			// As a last resort, try to load resource from the Java classpath. Give up, if it
-			// fails.
-			// The use case for this strategy is to load additional TLA+ module collections
-			// - e.g. community-driven ones - which ship a single jar containing the .tla
-			// operator definitions as well as Java module overwrites as .class files.
-        	is = cl.getResourceAsStream(name);
-        	if(is != null) {
-				return read(name, is);
-			} else {
-				break;
-			}
+            // As a last resort, try to load resource from the Java classpath. Give up, if it
+            // fails.
+            // The use case for this strategy is to load additional TLA+ module collections
+            // - e.g. community-driven ones - which ship a single jar containing the .tla
+            // operator definitions as well as Java module overwrites as .class files.
+        	  is = cl.getResourceAsStream(name);
+        	  if(is != null) {                
+                sourceFile = read(name, is);
+                if (sourceFile.exists()) {
+                    libraryPath = cl.getResource(name).toString();
+                }
+				        return new LocateLibraryPathContainer(sourceFile, libraryPath);
+			      } else {
+				        break;
+		      	}
         }
         prefix = libraryPaths[idx++];
     } // end while
 
-    return sourceFile;
-
-  } // end locate()
+    return new LocateLibraryPathContainer(sourceFile, libraryPath);
+  } // end locateLibraryPath()
 
   private File read(String name, InputStream is) {
     final File sourceFile = new TLAFile(TMPDIR + File.separator + name, true, this);
@@ -295,7 +322,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
       // extract substrings with getProperty("path.separator");
       // repeat search for each substring until found.
       // locate() the file corresponding to the sourceFileName
-      return locate(sourceFileName);
+      return locateLibraryPath(sourceFileName).sourceFile;
   }
 
 	public File resolve(String name) {

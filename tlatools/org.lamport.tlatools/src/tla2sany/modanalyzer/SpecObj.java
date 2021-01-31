@@ -20,6 +20,7 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import util.FileUtil;
 import util.FilenameToStream;
+import util.MonolithSpecExtractor;
 import util.NamedInputStream;
 import util.ToolIO;
 
@@ -319,6 +320,25 @@ public class SpecObj
         // Actually parse the file named in "parseUnit" (or no-op if it
         // has already been parsed)
         parseUnit.parseFile(errors, firstCall);
+
+        // Log the real path of the module.
+        if(errors.isSuccess()) {
+            // If `resolver.getLibraryPath` returns `null` (and as we didn't have errors, the module
+            // really exists somewhere), then we assume this is part of a monolith file.
+            String libraryPath = this.resolver.getLibraryPath(name + ".tla");
+            if (libraryPath != null) {
+                ToolIO.out.println("(" + libraryPath + ")");
+            } else if (rootParseUnit != null && rootParseUnit.getNis() != null) {
+                File rootSourceFile = rootParseUnit.getNis().sourceFile();
+                if (rootSourceFile != null) {
+                    try {
+                        MonolithSpecExtractor.module(rootSourceFile, name);
+                        ToolIO.out.println("(" + rootSourceFile.getAbsolutePath() + ")");
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        }        
 
         return parseUnit;
         // return a non-null "parseUnit" iff named module has been found,

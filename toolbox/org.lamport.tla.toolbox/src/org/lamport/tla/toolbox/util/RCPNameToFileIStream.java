@@ -225,6 +225,10 @@ public class RCPNameToFileIStream implements FilenameToStream
 		}
 		return buf.toString();
 	}
+
+	public String getLibraryPath(String name) {
+		return "";
+	  }
     
 	/**
 	 * @return The set of the names of all modules found in the various

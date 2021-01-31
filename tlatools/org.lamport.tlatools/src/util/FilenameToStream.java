@@ -86,7 +86,9 @@ public interface FilenameToStream
        * August 2014 - TL
        * Added this method which returns all the path locations stored in the resolver
       */
-    public String getFullPath();
+	public String getFullPath();
+	
+	public String getLibraryPath(String name);
 
     /**
      * Returns true iff moduleName is the name of a standard module, which
