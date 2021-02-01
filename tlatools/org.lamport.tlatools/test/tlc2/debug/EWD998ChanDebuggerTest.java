@@ -41,6 +41,9 @@ import tla2sany.semantic.OpDeclNode;
 import tlc2.output.EC;
 import tlc2.util.Context;
 import tlc2.value.impl.IntValue;
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.SetOfRcdsValue;
+import tlc2.value.impl.TLCVariable;
 
 public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 
@@ -66,6 +69,68 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(2, stackFrames.length);
 		assertTLCFrame(stackFrames[1], 11, 11, RM);
 		assertTLCFrame(stackFrames[0], 11, 11, RM);
+		
+		// Check constant context of ASSUME.
+		TLCStackFrame stackFrame = (TLCStackFrame) stackFrames[1];
+		Variable[] constants = stackFrame.getConstants();
+		assertEquals(2, constants.length);
+		
+		// High-level spec constants (expected to be ordered lexicographically)
+		Variable[] consts = stackFrame.getVariables(constants[0].getVariablesReference());
+		assertEquals(3, consts.length);
+		
+		assertEquals("Color", consts[0].getName());
+		assertEquals("SetEnumValue", consts[0].getType());
+		assertEquals("{\"white\", \"black\"}", consts[0].getValue());
+		assertEquals(2, ((SetEnumValue) ((TLCVariable) consts[0]).getTLCValue()).elems.size());
+		// Can be expanded to two atomic values "white" and "black"
+		assertEquals(2, stackFrame.getVariables(consts[0].getVariablesReference()).length);
+		// Because we always order values lexicographically, the order changes from
+		// 'white, black' in the toString of SetEnumValue to 'b, w' in Variable.
+		assertEquals("\"black\"", stackFrame.getVariables(consts[0].getVariablesReference())[0].getValue());
+		assertEquals("\"white\"", stackFrame.getVariables(consts[0].getVariablesReference())[1].getValue());
+		
+		assertEquals("Nodes", consts[1].getName());
+		assertEquals("SetEnumValue", consts[1].getType());
+		assertEquals("{0, 1, 2}", consts[1].getValue());
+		assertEquals(3, ((SetEnumValue) ((TLCVariable) consts[1]).getTLCValue()).elems.size());
+		
+		// This one tests if we correctly handle infinite domains, i.e. the Int.
+		assertEquals("Token", consts[2].getName());
+		assertEquals("SetOfRcdsValue", consts[2].getType());
+		assertEquals("[color: {\"white\", \"black\"}, q: Int, pos: 0..2]", consts[2].getValue());
+		assertEquals(3, ((SetOfRcdsValue) ((TLCVariable) consts[2]).getTLCValue()).names.length);
+		
+		// nested of Token
+		consts = stackFrame.getVariables(consts[2].getVariablesReference());
+		// TODO For now, if one of the values has infinite domain, none of the values
+		// can be expanded.
+		assertEquals(0, consts.length);
+		
+		// Low-level spec constants
+		consts = stackFrame.getVariables(constants[1].getVariablesReference());
+		assertEquals(5, consts.length);
+		
+		assertEquals("BasicMsg", consts[0].getName());
+		assertEquals("SetOfRcdsValue", consts[0].getType());
+		assertEquals("{[type |-> \"pl\"]}", consts[0].getValue());
+		
+		assertEquals("Color", consts[1].getName());
+		assertEquals("SetEnumValue", consts[1].getType());
+		assertEquals("{\"white\", \"black\"}", consts[1].getValue());
+		
+		assertEquals("Message", consts[2].getName());
+		assertEquals("SetCupValue", consts[2].getType());
+		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int] \\cup {[type |-> \"pl\"]}", consts[2].getValue());
+		
+		assertEquals("Nodes", consts[3].getName());
+		assertEquals("SetEnumValue", consts[3].getType());
+		assertEquals("{0, 1, 2}", consts[3].getValue());
+		
+		assertEquals("TokenMsg", consts[4].getName());
+		assertEquals("SetOfRcdsValue", consts[4].getType());
+		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int]", consts[4].getValue());
+		
 		
 		final OpDeclNode[] vars = getVars();
 		

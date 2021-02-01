@@ -189,6 +189,11 @@ public final class UniqueString implements Serializable
     {
         return uniqueStringOf(this.toString() + uniqueString.toString());
     }
+    
+    public UniqueString concat(String string)
+    {
+        return uniqueStringOf(this.toString() + string);
+    }
 
     /**
      * Delivers the stored string 
@@ -265,6 +270,24 @@ public final class UniqueString implements Serializable
 		return uniqueStringOf(str);
 	}
 
+	public static UniqueString join(String delim, UniqueString... us) {
+		return join(delim, us.length, us);
+	}
+
+	public static UniqueString join(String delim, int n, UniqueString... us) {
+		assert 0 < n && n <= us.length;
+		UniqueString out = null;
+		for (int i = 0; i < n; i++) {
+			if (out == null) {
+				out = us[i];
+			} else {
+				out = out.concat("!");
+				out = out.concat(us[i]);
+			}
+		}
+		return out;
+	}
+	
     /**
      * If there exists a UniqueString object obj such that obj.getTok()
      * equals tok, then uidToUniqueString(i) returns obj; otherwise,    

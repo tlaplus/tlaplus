@@ -391,6 +391,8 @@ public class OpDefNode extends OpDefOrDeclNode
     private Hashtable labels = null ;
 
     private OpDefNode source = null ;
+    
+	private UniqueString[] compoundID = null;
       /*********************************************************************
       * If this OpDefNode was created through a chain of INSTANCEs, then   *
       * this field points to the original OpDefNode object from where it   *
@@ -499,6 +501,51 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
+   public OpDefNode(UniqueString us,
+           int k,                   // The kind
+           FormalParamNode[] parms,
+           boolean localness,
+           ExprNode exp,             // The body
+           ModuleNode oModNode,      // Originally defining module.
+           SymbolTable symbolTable,
+           TreeNode stn,
+           boolean defined,
+           OpDefNode src,             // The source
+           UniqueString[] compoundID
+          ) {
+	   this(us,k,parms,localness,exp,oModNode,symbolTable,stn,defined,src);
+	   this.compoundID = compoundID;
+   }
+   
+   final UniqueString[] getCompoundId() {
+	   if (compoundID != null) {
+		   return compoundID;
+	   }
+	   return new UniqueString[] {getName()};
+   }
+
+	public final UniqueString getLocalName() {
+		   if (compoundID != null) {
+			   return compoundID[compoundID.length - 1];
+		   }
+		   return getName();
+	}
+	
+	public final boolean hasPath() {
+		   if (compoundID != null) {
+			   return compoundID.length > 1;
+		   }
+		   return false;
+	}
+
+	public final UniqueString getPathName() {
+		   if (compoundID != null) {
+			   // drop last segment.
+			   return UniqueString.join("!", compoundID.length - 1, compoundID);
+		   }
+		   return UniqueString.of("");
+	}
+
   /* Used for ModuleInstance names */
   /*************************************************************************
   * This constructor is missing the following parameters that are present  *
@@ -605,6 +652,10 @@ public class OpDefNode extends OpDefOrDeclNode
   public final OpDefNode getSource() {
     return (this.source == null)? this : this.source ;
     }
+
+  public final boolean hasSource() {
+	  return this.source != null;
+  }
 
   /**
    * Returns true iff this definition is declared LOCAL; definitions

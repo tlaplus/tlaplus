@@ -30,18 +30,24 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.debug.Scope;
+import org.eclipse.lsp4j.debug.ScopePresentationHint;
 import org.eclipse.lsp4j.debug.Source;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
 
+import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
+import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.impl.LazyValue;
@@ -49,12 +55,14 @@ import tlc2.value.impl.TLCVariable;
 import tlc2.value.impl.Value;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
+import util.UniqueString;
 
 class TLCStackFrame extends StackFrame {
 	
 	// Not thread-safe because TLCDebugger is assumed to take care of synchronization!
 	private static final Map<SemanticNode, String> PATH_CACHE = new HashMap<>();
-	
+
+	public static final String CONSTANTS = "Constants";
 	public static final String SCOPE = "Context";
 	
 	// It would be easier to use hashCode instead of passing a random generator
@@ -63,11 +71,13 @@ class TLCStackFrame extends StackFrame {
 	protected static final Random rnd = new Random();
 
 	protected transient final Map<Integer, DebugTLCVariable> nestedVariables = new HashMap<>();
+	protected transient final Map<Integer, List<DebugTLCVariable>> nestedConstants = new HashMap<>();
 
 	protected transient final SemanticNode node;
 	protected transient final Context ctxt;
 	protected transient final Tool tool;
 
+	protected final int constantsId;
 	protected final int stackId;
 	
 	// Testing only!
@@ -76,6 +86,7 @@ class TLCStackFrame extends StackFrame {
 		this.node = null;
 		this.ctxt = null;
 		this.tool = null;
+		this.constantsId = -1;
 		this.stackId = -1;
 		this.setId(id);
 	}
@@ -115,10 +126,15 @@ class TLCStackFrame extends StackFrame {
 		setSource(source);
 		
 		this.stackId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
+		this.constantsId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 
 	Variable[] getVariables() {
 		return getVariables(stackId);
+	}
+
+	Variable[] getConstants() {
+		return getVariables(constantsId);
 	}
 	
 	public Variable[] getVariables(final int vr) {
@@ -132,6 +148,19 @@ class TLCStackFrame extends StackFrame {
 					nestedVariables.put(d.getVariablesReference(), d);
 					vars.add(d);
 				}
+			}
+
+			if (nestedConstants.containsKey(vr)) {
+				List<DebugTLCVariable> cntsts = nestedConstants.get(vr);
+				for (DebugTLCVariable c : cntsts) {
+					nestedVariables.put(c.getVariablesReference(), c);
+					List<TLCVariable> nested = c.getNested(rnd);
+					for (TLCVariable n : nested) {
+						DebugTLCVariable d = (DebugTLCVariable) n;
+						nestedVariables.put(d.getVariablesReference(), d);
+					}
+				}
+				vars.addAll(cntsts);
 			}
 
 			if (stackId == vr) {
@@ -165,6 +194,33 @@ class TLCStackFrame extends StackFrame {
 					}
 					c = c.next();
 				}
+			} else if (constantsId == vr) {
+				//TODO: This is evaluated for each TLCStackFrame instance even though the constantDefns
+				// never change.  Perhaps, this can be moved to a place where it's only evaluated once.
+				// On the other hand, the debug adapter protocol (DAP) might not like sharing
+				// DebugTLCVariables.
+				final SpecProcessor sp = this.tool.getSpecProcessor();
+				final Map<ModuleNode, Map<OpDefNode, Object>> constantDefns = sp.getConstantDefns();
+				for (final Entry<ModuleNode, Map<OpDefNode, Object>> e : constantDefns.entrySet()) {
+					final ModuleNode module = e.getKey();
+					
+					final Variable v = new Variable();
+					// Pick one of the OpDefNode and derive the name with which the definition
+					// appears in the spec, i.e. A!B!C!Op -> A!B!C.  Users then see the module
+					// name and instance path that appears in the instantiating module. getPathName
+					// equals the empty (unique) string if the module has no path.
+					v.setValue(e.getValue().keySet().stream().findAny().map(odn -> odn.getPathName())
+							.orElse(UniqueString.of(module.getSignature())).toString());
+					v.setName(module.getSignature());
+					v.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
+
+					nestedConstants.put(v.getVariablesReference(),
+							e.getValue().entrySet().stream().filter(f -> f.getValue() instanceof Value)
+									.map(f -> (DebugTLCVariable) ((Value) f.getValue())
+											.toTLCVariable(new DebugTLCVariable(f.getKey().getLocalName()), rnd))
+									.collect(Collectors.toList()));
+					vars.add(v);
+				}
 			}
 			
 			// Its nicer if the variables/constants are sorted lexicographically.
@@ -197,6 +253,15 @@ class TLCStackFrame extends StackFrame {
 			scope.setVariablesReference(stackId);
 			scopes.add(scope);
 		}
+		
+		if (!this.tool.getSpecProcessor().getConstantDefns().isEmpty()) {
+			final Scope scope = new Scope();
+			scope.setName(CONSTANTS);
+			scope.setVariablesReference(constantsId);
+			scope.setPresentationHint(ScopePresentationHint.REGISTERS);
+			scopes.add(scope);
+		}
+
 		return scopes.toArray(new Scope[scopes.size()]);
 	}
 	

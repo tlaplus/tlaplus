@@ -199,6 +199,12 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
     }
 
+    private final Map<ModuleNode, Map<OpDefNode, Object>> constantDefns = new HashMap<>();
+    
+    public final Map<ModuleNode, Map<OpDefNode, Object>> getConstantDefns() {
+    	return constantDefns;
+    }
+    
     /**
      * Converts the constant definitions in the corresponding value for the
      * module -- that is, it "converts" (which seems to mean calling deepNormalize)
@@ -238,6 +244,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             try {
             	Object defVal = WorkerValue.demux(opDefEvaluator, consts[i], opDef);
                 opDef.setToolObject(toolId, defVal);
+                constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefNode, Object>()).put(opDef, val);
             } catch (Assert.TLCRuntimeException | EvalException e) {
               final String addendum = (e instanceof EvalException) ? "" : (" - specifically: " + e.getMessage());
               Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
@@ -277,7 +284,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 opDef.setToolObject(toolId, val);
                 Object def = this.defns.get(opName);
                 if (def == opDef) {
-                  this.defns.put(opName, val);
+					this.defns.put(opName, val);
+					constantDefns.computeIfAbsent(
+							opDef.hasSource() ? opDef.getSource().getOriginallyDefinedInModuleNode() : moduleNode,
+							key -> new HashMap<OpDefNode, Object>()).put(opDef, val);
                 }
               }
               catch (Throwable swallow) {
