@@ -4,8 +4,10 @@
 
 package util;
 
+import tla2sany.semantic.SemanticNode;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.util.Context;
 
 /**
  * A toolkit for checking conditions and throwing unchecked exceptions if they are not met.
@@ -23,6 +25,24 @@ public class Assert
         throw new TLCRuntimeException(reason);
     }
 
+	public static void fail(String reason, SemanticNode expr) throws RuntimeException {
+    	if (expr == null) {
+    		// expr is null if Value#getSource returns null in Tool.
+    		fail(reason);
+    	} else {
+    		throw new TLCDetailedRuntimeException(reason, expr, Context.Empty);
+    	}
+	}
+
+    public static void fail(String reason, SemanticNode expr, Context ctxt) throws RuntimeException
+    {
+    	if (expr == null) {
+    		fail(reason);
+    	} else {
+    		throw new TLCDetailedRuntimeException(reason, expr, ctxt);
+    	}
+    }
+
     /**
      * Unconditioned way to throw an exception
      * @param errorCode error code of explanation
@@ -33,7 +53,25 @@ public class Assert
         throw new TLCRuntimeException(errorCode, parameters, MP.getMessage(errorCode, parameters));
     }
     
-    /**
+	  public static void fail(int errorCode, String[] parameters, SemanticNode expr)
+	  {
+	    	if (expr == null) {
+	    		fail(errorCode, parameters);
+	    	} else {
+	    		throw new TLCDetailedRuntimeException(errorCode, parameters, MP.getMessage(errorCode, parameters), expr, Context.Empty);
+	    	}
+	  }
+	  
+	  public static void fail(int errorCode, String[] parameters, SemanticNode expr, Context ctxt)
+	  {
+		  if (expr == null) {
+			  fail(errorCode, parameters);
+		  } else {
+			  throw new TLCDetailedRuntimeException(errorCode, parameters, MP.getMessage(errorCode, parameters), expr, ctxt);
+		  }
+	  }
+	  
+   /**
      * Unconditioned way to throw an exception
      * @param errorCode error code of explanation
      * @param parameter parameter for the message
@@ -43,6 +81,15 @@ public class Assert
         throw new TLCRuntimeException(errorCode, new String[] {parameter}, MP.getMessage(errorCode, parameter));
     }
 
+	    public static void fail(int errorCode, String parameter, SemanticNode expr, Context ctxt)
+	    {
+	    	if (expr == null) {
+	    		fail(errorCode, parameter);
+	    	} else {
+	    		throw new TLCDetailedRuntimeException(errorCode, new String[] {parameter}, MP.getMessage(errorCode, parameter), expr, ctxt);
+	    	}
+	    }
+	
     /**
      * Unconditioned way to throw an exception, the runtime will chain the cause
      * @param errorCode error code of explanation
@@ -152,6 +199,29 @@ public class Assert
 		public TLCRuntimeException(int errorCode, String[] parameters, String message) {
 			this(errorCode, message);
 			this.parameters = parameters;
+		}
+    }
+    
+    @SuppressWarnings("serial")
+    public static class TLCDetailedRuntimeException extends TLCRuntimeException {
+
+		public final SemanticNode expr;
+		public final Context ctxt;
+
+		public TLCDetailedRuntimeException(String errorMsg, SemanticNode expr, Context ctxt) {
+			this(EC.GENERAL, errorMsg, expr, ctxt);
+		}
+		
+		public TLCDetailedRuntimeException(int errorCode, String message, SemanticNode expr, Context ctxt) {
+			super(errorCode, message);
+			this.expr = expr;
+			this.ctxt = ctxt;
+		}
+		
+		public TLCDetailedRuntimeException(int errorCode, String[] parameters, String message, SemanticNode expr, Context ctxt) {
+			super(errorCode, parameters, message);
+			this.expr = expr;
+			this.ctxt = ctxt;
 		}
     }
 }

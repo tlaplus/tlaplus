@@ -121,7 +121,7 @@ public class RecordValue extends Value implements Applicable {
       if (rcd == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare record:\n" + Values.ppr(this.toString()) +
-        "\nwith non-record\n" + Values.ppr(obj.toString()));
+        "\nwith non-record\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
       rcd.normalize();
@@ -150,7 +150,7 @@ public class RecordValue extends Value implements Applicable {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
         Assert.fail("Attempted to check equality of record:\n" + Values.ppr(this.toString()) +
-        "\nwith non-record\n" + Values.ppr(obj.toString()));
+        "\nwith non-record\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
       rcd.normalize();
@@ -173,7 +173,7 @@ public class RecordValue extends Value implements Applicable {
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if element:\n" + Values.ppr(elem.toString()) +
-                  "\nis in the record:\n" + Values.ppr(this.toString()));
+                  "\nis in the record:\n" + Values.ppr(this.toString()), getSource());
       return false;    // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -275,7 +275,7 @@ public class RecordValue extends Value implements Applicable {
   public final Value apply(Value arg, int control) {
     try {
       if (!(arg instanceof StringValue)) {
-        Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()));
+        Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()), getSource());
       }
       UniqueString name = ((StringValue)arg).getVal();
       int rlen = this.names.length;
@@ -285,7 +285,7 @@ public class RecordValue extends Value implements Applicable {
         }
       }
       Assert.fail("Attempted to access nonexistent field '" + name +
-          "' of record\n" + Values.ppr(this.toString()));
+          "' of record\n" + Values.ppr(this.toString()), getSource());
       return null;    // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -298,7 +298,7 @@ public class RecordValue extends Value implements Applicable {
   public final Value apply(Value[] args, int control) {
     try {
       if (args.length != 1) {
-        Assert.fail("Attempted to apply record to more than one arguments.");
+        Assert.fail("Attempted to apply record to more than one arguments.", getSource());
       }
       return this.apply(args[0], control);
     }
@@ -313,7 +313,7 @@ public class RecordValue extends Value implements Applicable {
   public final Value select(Value arg) {
     try {
       if (!(arg instanceof StringValue)) {
-        Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()));
+        Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()), getSource());
       }
       UniqueString name = ((StringValue)arg).getVal();
       int rlen = this.names.length;
@@ -357,7 +357,7 @@ public class RecordValue extends Value implements Applicable {
           return false;
         }
       }
-      Assert.fail("Attempted to assign to nonexistent record field " + name + ".");
+      Assert.fail("Attempted to assign to nonexistent record field " + name + ".", getSource());
       return false;    // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -377,7 +377,7 @@ public class RecordValue extends Value implements Applicable {
         for (int i = 1; i < len; i++) {
           int cmp = this.names[0].compareTo(this.names[i]);
           if (cmp == 0) {
-            Assert.fail("Field name " + this.names[i] + " occurs multiple times in record.");
+            Assert.fail("Field name " + this.names[i] + " occurs multiple times in record.", getSource());
           }
           else if (cmp > 0) {
             UniqueString ts = this.names[0];
@@ -399,7 +399,7 @@ public class RecordValue extends Value implements Applicable {
             j--;
           }
           if (cmp == 0) {
-            Assert.fail("Field name " + this.names[i] + " occurs multiple times in record.");
+            Assert.fail("Field name " + this.names[i] + " occurs multiple times in record.", getSource());
           }
           this.names[j] = st;
           this.values[j] = val;

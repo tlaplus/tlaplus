@@ -27,7 +27,7 @@ public class UserValue extends Value {
       }
       if (!(obj instanceof ModelValue))
         Assert.fail("Attempted to compare overridden value " + Values.ppr(this.toString()) +
-        " with non-overridden value:\n" + Values.ppr(obj.toString()));
+        " with non-overridden value:\n" + Values.ppr(obj.toString()), getSource());
       return 1;
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -73,7 +73,7 @@ public class UserValue extends Value {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the overridden value " +
-        Values.ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".", getSource());
       }
       return ex.value;
     }
@@ -88,7 +88,7 @@ public class UserValue extends Value {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the overridden value " +
-        Values.ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".", getSource());
       }
       return this;
     }
@@ -102,7 +102,7 @@ public class UserValue extends Value {
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the overridden value " +
-      Values.ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".", getSource());
       return 0;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {

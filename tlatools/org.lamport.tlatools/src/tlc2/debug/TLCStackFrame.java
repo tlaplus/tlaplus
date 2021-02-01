@@ -54,6 +54,7 @@ import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.TLCVariable;
 import tlc2.value.impl.Value;
 import util.Assert;
+import util.Assert.TLCDetailedRuntimeException;
 import util.Assert.TLCRuntimeException;
 import util.UniqueString;
 
@@ -97,15 +98,23 @@ class TLCStackFrame extends StackFrame {
 	}
 
 	public TLCStackFrame(SemanticNode node, Context ctxt, Tool tool, RuntimeException e) {
-		this.node = node;
-		Assert.check(node != null, EC.GENERAL);
-		// Do not create a deep copy of ctxt (like it is done for state and predecessor
-		// in TLCInit|NextStackFrame. A TLCStackFrame will point to its corresponding
-		// node in the Context tree even if Context mutates.
-		this.ctxt = ctxt;
-		Assert.check(ctxt != null, EC.GENERAL);
 		this.tool = tool;
-		Assert.check(tool != null, EC.GENERAL);
+		Assert.check(this.tool != null, EC.GENERAL);
+		
+		if (e instanceof TLCDetailedRuntimeException) {
+			TLCDetailedRuntimeException dre = (TLCDetailedRuntimeException) e;
+			this.node = dre.expr;
+			this.ctxt = dre.ctxt;
+		} else {
+			this.node = node;
+			// Do not create a deep copy of ctxt (like it is done for state and predecessor
+			// in TLCInit|NextStackFrame. A TLCStackFrame will point to its corresponding
+			// node in the Context tree even if Context mutates.
+			this.ctxt = ctxt;
+		}
+		Assert.check(this.node != null, EC.GENERAL);
+		Assert.check(this.ctxt != null, EC.GENERAL);
+
 		this.exception = e; // e is nullable!
 
 		if (node instanceof NumeralNode) {

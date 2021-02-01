@@ -44,7 +44,7 @@ public class BoolValue extends Value implements IBoolValue {
       }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to compare boolean " + Values.ppr(this.toString()) +
-        " with non-boolean:\n" + Values.ppr(obj.toString()));
+        " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
       }
       return 1;
     }
@@ -61,7 +61,7 @@ public class BoolValue extends Value implements IBoolValue {
       }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to compare equality of boolean " + Values.ppr(this.toString()) +
-        " with non-boolean:\n" + Values.ppr(obj.toString()));
+        " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
       }
       return ((ModelValue) obj).modelValueEquals(this) ;
     }
@@ -75,7 +75,7 @@ public class BoolValue extends Value implements IBoolValue {
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
-      "\nis an element of the boolean " + Values.ppr(this.toString()));
+      "\nis an element of the boolean " + Values.ppr(this.toString()), getSource());
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -88,7 +88,7 @@ public class BoolValue extends Value implements IBoolValue {
   public final boolean isFinite() {
     try {
       Assert.fail("Attempted to check if the boolean " + Values.ppr(this.toString()) +
-      " is a finite set.");
+      " is a finite set.", getSource());
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -102,7 +102,7 @@ public class BoolValue extends Value implements IBoolValue {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the boolean " +
-        Values.ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".", getSource());
       }
       return ex.value;
     }
@@ -117,7 +117,7 @@ public class BoolValue extends Value implements IBoolValue {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the boolean " +
-        Values.ppr(this.toString()) + ".");
+        Values.ppr(this.toString()) + ".", getSource());
       }
       return this;
     }
@@ -131,7 +131,7 @@ public class BoolValue extends Value implements IBoolValue {
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the boolean " +
-      Values.ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".", getSource());
       return 0;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {

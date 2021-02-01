@@ -72,7 +72,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
         return true;
       }
       if (!this.set2.isFinite()) {
-        Assert.fail("Attempted to check if the set " + Values.ppr(this.toString()) + "is finite.");
+        Assert.fail("Attempted to check if the set " + Values.ppr(this.toString()) + "is finite.", getSource());
       }
       return false;
     }
@@ -86,7 +86,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return ex.value;
     }
@@ -100,7 +100,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return this;
     }
@@ -307,7 +307,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
       }
       else {
         Assert.fail("Attempted to enumerate S \\ T when S:\n" +
-              Values.ppr(set1.toString()) + "\nis not enumerable.");
+              Values.ppr(set1.toString()) + "\nis not enumerable.", getSource());
       }
     }
 

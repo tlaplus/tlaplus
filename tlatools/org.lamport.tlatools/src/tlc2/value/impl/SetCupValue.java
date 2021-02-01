@@ -86,7 +86,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return ex.value;
     }
@@ -100,7 +100,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return this;
     }
@@ -306,7 +306,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
       else {
         Assert.fail("Attempted to enumerate S \\cup T when S:\n" +
               Values.ppr(set1.toString()) + "\nand T:\n" + Values.ppr(set2.toString()) +
-              "\nare not both enumerable");
+              "\nare not both enumerable", getSource());
       }
     }
 

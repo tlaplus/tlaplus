@@ -88,7 +88,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       }
       else {
         Assert.fail("Attempted to check if the non-enumerable value\n" +
-        Values.ppr(val.toString()) + "\nis element of\n" + Values.ppr(this.toString()));
+        Values.ppr(val.toString()) + "\nis element of\n" + Values.ppr(this.toString()), getSource());
       }
       return true;
     }
@@ -130,7 +130,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return ex.value;
     }
@@ -144,7 +144,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return this;
     }

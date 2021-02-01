@@ -95,13 +95,13 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
           if (elem instanceof ModelValue)
             return ((ModelValue) elem).modelValueMember(this) ;
           Assert.fail("Attempted to check if non-tuple\n" + Values.ppr(elem.toString()) +
-                "\nis in the set of tuples:\n" + Values.ppr(this.toString()));
+                "\nis in the set of tuples:\n" + Values.ppr(this.toString()), getSource());
         }
         if (fcn.intv != null) return false;
         for (int i = 0; i < fcn.domain.length; i++) {
           if (!(fcn.domain[i] instanceof IntValue)) {
             Assert.fail("Attempted to check if non-tuple\n" + Values.ppr(elem.toString()) +
-                  "\nis in the set of tuples:\n" + Values.ppr(this.toString()));
+                  "\nis in the set of tuples:\n" + Values.ppr(this.toString()), getSource());
           }
         }
         return false;
@@ -142,7 +142,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT construct to the set of tuples:\n" +
-        Values.ppr(this.toString()));
+        Values.ppr(this.toString()), getSource());
       }
       return ex.value;
     }
@@ -157,7 +157,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT construct to the set of tuples:\n" +
-        Values.ppr(this.toString()));
+        Values.ppr(this.toString()), getSource());
       }
       return this;
     }
@@ -175,7 +175,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
         sz *= this.sets[i].size();
         if (sz < -2147483648 || sz > 2147483647) {
           Assert.fail("Overflow when computing the number of elements in " +
-                Values.ppr(this.toString()));
+                Values.ppr(this.toString()), getSource());
         }
       }
       return (int)sz;
@@ -415,7 +415,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
         }
         else {
           Assert.fail("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn," +
-                "\nbut can't enumerate s" + i + ":\n" + Values.ppr(sets[i].toString()));
+                "\nbut can't enumerate s" + i + ":\n" + Values.ppr(sets[i].toString()), getSource());
         }
       }
     }

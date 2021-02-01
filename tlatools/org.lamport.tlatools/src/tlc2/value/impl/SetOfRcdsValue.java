@@ -93,7 +93,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         if (elem instanceof ModelValue)
            return ((ModelValue) elem).modelValueMember(this) ;
         Assert.fail("Attempted to check if non-record\n" + elem + "\nis in the" +
-        " set of records:\n" + Values.ppr(this.toString()));
+        " set of records:\n" + Values.ppr(this.toString()), getSource());
       }
       rcd.normalize();
       if (this.names.length != rcd.names.length) {
@@ -132,7 +132,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     try {
       if (ex.idx < ex.path.length) {
         Assert.fail("Attempted to apply EXCEPT to the set of records:\n" +
-        Values.ppr(this.toString()));
+        Values.ppr(this.toString()), getSource());
       }
       return ex.value;
     }
@@ -147,7 +147,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     try {
       if (exs.length != 0) {
         Assert.fail("Attempted to apply EXCEPT to the set of records:\n" +
-        Values.ppr(this.toString()));
+        Values.ppr(this.toString()), getSource());
       }
       return this;
     }
@@ -250,7 +250,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       int cmp = this.names[0].compareTo(this.names[i]);
       if (cmp == 0) {
         Assert.fail("Field name " + this.names[0] + " occurs multiple times" +
-              " in set of records.");
+              " in set of records.", getSource());
       }
       else if (cmp > 0) {
         UniqueString ts = this.names[0];
@@ -273,7 +273,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       }
       if (cmp == 0) {
         Assert.fail("Field name " + this.names[i] + " occurs multiple times" +
-              " in set of records.");
+              " in set of records.", getSource());
       }
       this.names[j] = st;
       this.values[j] = val;
@@ -454,7 +454,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         else {
           Assert.fail("Attempted to enumerate a set of the form [l1 : v1, ..., ln : vn]," +
                 "\nbut can't enumerate the value of the `" + names[i] + "' field:\n" +
-                Values.ppr(values[i].toString()));
+                Values.ppr(values[i].toString()), getSource());
         }
       }
     }

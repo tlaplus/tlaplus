@@ -113,7 +113,7 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   @Override
   public final boolean member(Value elem) {
     try {
-      Assert.fail("Attempted to check set membership in a tuple value.");
+      Assert.fail("Attempted to check set membership in a tuple value.", getSource());
       return false;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -129,12 +129,12 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value apply(Value arg, int control) {
     try {
       if (!(arg instanceof IntValue)) {
-        Assert.fail("Attempted to access tuple at a non integral index: " + Values.ppr(arg.toString()));
+        Assert.fail("Attempted to access tuple at a non integral index: " + Values.ppr(arg.toString()), getSource());
       }
       int idx = ((IntValue)arg).val;
       if (idx <= 0 || idx > this.elems.length) {
         Assert.fail("Attempted to access index " + idx + " of tuple\n"
-            + Values.ppr(this.toString()) + "\nwhich is out of bounds.");
+            + Values.ppr(this.toString()) + "\nwhich is out of bounds.", getSource());
       }
       return (Value) this.elems[idx-1];
     }
@@ -148,7 +148,7 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value apply(Value[] args, int control) {
     try {
       if (args.length != 1) {
-        Assert.fail("Attempted to access tuple with " + args.length + " arguments when it expects 1.");
+        Assert.fail("Attempted to access tuple with " + args.length + " arguments when it expects 1.", getSource());
       }
       return this.apply(args[0], EvalControl.Clear);
     }
@@ -162,7 +162,7 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value select(Value arg) {
     try {
       if (!(arg instanceof IntValue)) {
-        Assert.fail("Attempted to access tuple at a non integral index: " + Values.ppr(arg.toString()));
+        Assert.fail("Attempted to access tuple at a non integral index: " + Values.ppr(arg.toString()), getSource());
       }
       int idx = ((IntValue)arg).val;
       if (idx > 0 && idx <= this.elems.length) {

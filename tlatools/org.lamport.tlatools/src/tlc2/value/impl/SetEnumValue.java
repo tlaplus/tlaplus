@@ -94,7 +94,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
-        " with the value:\n" + Values.ppr(obj.toString()));
+        " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
       set.normalize();
@@ -120,7 +120,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
         Assert.fail("Attempted to check equality of the set " + Values.ppr(this.toString()) +
-        " with the value:\n" + Values.ppr(obj.toString()));
+        " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
       set.normalize();
@@ -224,7 +224,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return ex.value;
     }
@@ -238,7 +238,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return this;
     }

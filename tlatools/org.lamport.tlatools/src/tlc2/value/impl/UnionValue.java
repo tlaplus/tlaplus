@@ -64,7 +64,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
       if (!(this.set instanceof Enumerable)) {
         Assert.fail("Attempted to check if:\n " + Values.ppr(elem.toString()) +
         "\nis an element of the non-enumerable set:\n " +
-        Values.ppr(this.toString()));
+        Values.ppr(this.toString()), getSource());
       }
       ValueEnumeration Enum = ((Enumerable)this.set).elements();
       Value val;
@@ -84,7 +84,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     try {
       if (!(this.set instanceof Enumerable)) {
         Assert.fail("Attempted to check if the nonenumerable set:\n" + Values.ppr(this.toString()) +
-        "\nis a finite set.");
+        "\nis a finite set.", getSource());
       }
       ValueEnumeration Enum = ((Enumerable)this.set).elements();
       Value val;
@@ -103,7 +103,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT to the set:\n" + Values.ppr(this.toString()));
+        Assert.fail("Attempted to apply EXCEPT to the set:\n" + Values.ppr(this.toString()), getSource());
       }
       return ex.value;
     }
@@ -117,7 +117,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT to the set:\n " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set:\n " + Values.ppr(this.toString()) + ".", getSource());
       }
       return this;
     }
@@ -356,13 +356,13 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     public Enumerator() {
       if (!(set instanceof Enumerable)) {
         Assert.fail("Attempted to enumerate the nonenumerable set:\n"+
-              Values.ppr(this.toString()));
+              Values.ppr(this.toString()), getSource());
       }
       this.Enum = ((Enumerable)set).elements();
       this.elemSet = this.Enum.nextElement();
       if (this.elemSet != null) {
         if (!(this.elemSet instanceof Enumerable)) {
-          Assert.fail("Attempted to enumerate UNION(s), but some element of s is nonenumerable.");
+          Assert.fail("Attempted to enumerate UNION(s), but some element of s is nonenumerable.", getSource());
         }
         this.elemSetEnum = ((Enumerable)this.elemSet).elements();
       }
@@ -385,7 +385,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
         if (!(this.elemSet instanceof Enumerable)) {
           Assert.fail("Attempted to enumerate the nonenumerable set:\n" +
                 Values.ppr(this.elemSet.toString()) +
-                "\nwhen enumerating:\n" + Values.ppr(this.toString()));
+                "\nwhen enumerating:\n" + Values.ppr(this.toString()), getSource());
         }
         this.elemSetEnum = ((Enumerable)this.elemSet).elements();
         val = this.nextElement();

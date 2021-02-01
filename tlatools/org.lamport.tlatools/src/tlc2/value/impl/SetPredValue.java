@@ -131,13 +131,13 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
             }
             else {
               Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
-              "\nis an element of a set of " + ids.length + "-tuples.");
+              "\nis an element of a set of " + ids.length + "-tuples.", getSource());
             }
           }
           Value  res = (Value) this.tool.eval(this.pred, con1, this.state, this.pstate, this.control);
           if (!(res instanceof IBoolValue)) {
             Assert.fail("The evaluation of predicate " + this.pred +
-                  " yielded non-Boolean value.");
+                  " yielded non-Boolean value.", getSource());
           }
           return ((BoolValue)res).val;
         }
@@ -145,7 +145,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       catch (EvalException e) {
         Assert.fail("Cannot decide if element:\n" + Values.ppr(elem.toString()) +
         "\n is element of:\n" + Values.ppr(this.inVal.toString()) +
-        "\nand satisfies the predicate " + this.pred);
+        "\nand satisfies the predicate " + this.pred, getSource());
       }
       return false;
     }
@@ -161,7 +161,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
       if (!(this.inVal.isFinite())) {
         Assert.fail("Attempted to check if expression of form {x \\in S : p(x)} is a " +
         "finite set, but cannot check if S:\n" + Values.ppr(this.inVal.toString()) +
-        "\nis finite.");
+        "\nis finite.", getSource());
       }
       return true;
     }
@@ -175,7 +175,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return ex.value;
     }
@@ -189,7 +189,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".");
+        Assert.fail("Attempted to apply EXCEPT to the set " + Values.ppr(this.toString()) + ".", getSource());
       }
       return this;
     }
@@ -377,7 +377,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     public Enumerator() {
       if (!(inVal instanceof Enumerable)) {
         Assert.fail("Attempted to enumerate { x \\in S : p(x) } when S:\n" +
-              Values.ppr(inVal.toString()) + "\nis not enumerable");
+              Values.ppr(inVal.toString()) + "\nis not enumerable", getSource());
       }
       this.Enum = ((Enumerable)inVal).elements();
     }
@@ -406,12 +406,12 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
           }
           else {
             Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
-            "\nis an element of a set of " + ids.length + "-tuples.");
+            "\nis an element of a set of " + ids.length + "-tuples.", getSource());
           }
         }
         Value  res = (Value) tool.eval(pred, con1, state, pstate, control, cm);
         if (!(res instanceof IBoolValue)) {
-          Assert.fail("Evaluating predicate " + pred + " yielded non-Boolean value.");
+          Assert.fail("Evaluating predicate " + pred + " yielded non-Boolean value.", getSource());
         }
         if (((BoolValue)res).val) return elem;
       }

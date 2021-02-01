@@ -35,7 +35,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final int compareTo(Object obj) {
     try {
       Assert.fail("Attempted to compare operator " + Values.ppr(this.toString()) +
-      " with value:\n" + Values.ppr(obj.toString()));
+      " with value:\n" + Values.ppr(obj.toString()), getSource());
       return 0;         // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -47,7 +47,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final boolean equals(Object obj) {
     try {
       Assert.fail("Attempted to check equality of operator " + Values.ppr(this.toString()) +
-      " with value:\n" + Values.ppr(obj.toString()));
+      " with value:\n" + Values.ppr(obj.toString()), getSource());
       return false;     // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -60,7 +60,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final boolean member(Value elem) {
     try {
       Assert.fail("Attempted to check if the value:\n" + Values.ppr(elem.toString()) +
-      "\nis an element of operator " + Values.ppr(this.toString()));
+      "\nis an element of operator " + Values.ppr(this.toString()), getSource());
       return false;     // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -73,7 +73,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final boolean isFinite() {
     try {
       Assert.fail("Attempted to check if the operator " + Values.ppr(this.toString()) +
-      " is a finite set.");
+      " is a finite set.", getSource());
       return false;     // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -117,7 +117,7 @@ public class OpRcdValue extends OpValue implements Applicable {
         Value[] vals = (Value[])this.domain.elementAt(i);
         if (args.length != vals.length) {
           Assert.fail("Attempted to apply the operator " + Values.ppr(this.toString()) +
-          "\nwith wrong number of arguments.");
+          "\nwith wrong number of arguments.", getSource());
         }
         boolean matched = true;
         for (int j = 0; j < vals.length; j++) {
@@ -135,7 +135,7 @@ public class OpRcdValue extends OpValue implements Applicable {
       for (int i = 1; i < args.length; i++) {
         msg += ", " + args[i];
       }
-      Assert.fail(msg +  "), which is undefined.");
+      Assert.fail(msg +  "), which is undefined.", getSource());
       return null;     // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -147,7 +147,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   @Override
   public final Value select(Value arg) {
     try {
-      Assert.fail("Attempted to call OpRcdValue.select(). This is a TLC bug.");
+      Assert.fail("Attempted to call OpRcdValue.select(). This is a TLC bug.", getSource());
       return null;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -160,7 +160,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final Value takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
-      Values.ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".", getSource());
       return null;     // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -173,7 +173,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final Value takeExcept(ValueExcept[] exs) {
     try {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
-      Values.ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".", getSource());
       return null;     // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -186,7 +186,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final Value getDomain() {
     try {
       Assert.fail("Attempted to compute the domain of the operator " +
-      Values.ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".", getSource());
       return SetEnumValue.EmptySet;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -199,7 +199,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   public final int size() {
     try {
       Assert.fail("Attempted to compute the number of elements in the operator " +
-      Values.ppr(this.toString()) + ".");
+      Values.ppr(this.toString()) + ".", getSource());
       return 0;         // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {

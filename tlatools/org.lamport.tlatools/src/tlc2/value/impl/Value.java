@@ -208,7 +208,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
             return spv.elements().nextElement() == null;
           }
         default:
-          Assert.fail("Shouldn't call isEmpty() on value " + Values.ppr(this.toString()));
+          Assert.fail("Shouldn't call isEmpty() on value " + Values.ppr(this.toString()), getSource());
           return false;
       }
 
@@ -229,7 +229,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
   public long fingerPrint(long fp) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
-      Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
+      Values.ppr(this.toString()), getSource()); // SZ Feb 24, 2009: changed to static access
       return 0;      // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -246,7 +246,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
   public IValue permute(IMVPerm perm) {
     try {
       Assert.fail("TLC has found a state in which the value of a variable contains " +
-      Values.ppr(this.toString())); // SZ Feb 24, 2009: changed to static access
+      Values.ppr(this.toString()), getSource()); // SZ Feb 24, 2009: changed to static access
       return null;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -280,7 +280,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
       for (int i = 0; i < path.length; i++) {
         if (!(result instanceof Applicable)) {
           Assert.fail("Attempted to apply EXCEPT construct to the value " +
-                Values.ppr(result.toString()) + ".");
+                Values.ppr(result.toString()) + ".", getSource());
         }
         Value elem = path[i];
         result = ((Applicable)result).select(elem);

@@ -272,7 +272,7 @@ public abstract class Tool
       }
     default:
       {
-        Assert.fail("The next state relation is not a boolean expression.\n" + next);
+        Assert.fail("The next state relation is not a boolean expression.\n" + next, next, con);
       }
     }
   }
@@ -394,11 +394,11 @@ public abstract class Tool
     StateVec states = new StateVec(0);
     this.getInitStates(pred, acts, Context.Empty, ps, states, acts.cm);
     if (states.size() != 1) {
-      Assert.fail("The predicate does not specify a unique state." + pred);
+      Assert.fail("The predicate does not specify a unique state." + pred, pred);
     }
     TLCState state = states.elementAt(0);
     if (!this.isGoodState(state)) {
-      Assert.fail("The state specified by the predicate is not complete." + pred);
+      Assert.fail("The state specified by the predicate is not complete." + pred, pred);
     }
     return state;
   }
@@ -452,7 +452,7 @@ public abstract class Tool
           }
         default:
           {
-            Assert.fail("The init state relation is not a boolean expression.\n" + init);
+            Assert.fail("The init state relation is not a boolean expression.\n" + init, init, c);
           }
         }
   }
@@ -477,7 +477,7 @@ public abstract class Tool
 				if (!(bval instanceof BoolValue)) {
 					//TODO Choose more fitting error message.
 					Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING,
-							new String[] { "initial states", "boolean", bval.toString(), acts.pred.toString() });
+							new String[] { "initial states", "boolean", bval.toString(), acts.pred.toString() }, acts.carPred(), acts.carContext());
 				}
 				if (!((BoolValue) bval).val) {
 					if (coverage) {
@@ -567,7 +567,7 @@ public abstract class Tool
             if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "initial states", "boolean",
-                        bval.toString(), init.toString() });
+                        bval.toString(), init.toString() }, init, c);
             }
             if (((BoolValue) bval).val)
             {
@@ -629,7 +629,7 @@ public abstract class Tool
             if (!(guard instanceof BoolValue)) {
               Assert.fail("In computing initial states, a non-boolean expression (" +
                           guard.getKindString() + ") was used as the condition " +
-                          "of an IF.\n" + init);
+                          "of an IF.\n" + init, init, c);
             }
             int idx = (((BoolValue)guard).val) ? 1 : 2;
             this.getInitStates(args[idx], acts, c, ps, states, cm);
@@ -649,7 +649,7 @@ public abstract class Tool
                 if (!(bval instanceof BoolValue)) {
                   Assert.fail("In computing initial states, a non-boolean expression (" +
                               bval.getKindString() + ") was used as a guard condition" +
-                              " of a CASE.\n" + pairArgs[1]);
+                              " of a CASE.\n" + pairArgs[1], pairArgs[1], c);
                 }
                 if (((BoolValue)bval).val) {
                   this.getInitStates(pairArgs[1], acts, c, ps, states, cm);
@@ -659,7 +659,7 @@ public abstract class Tool
             }
             if (other == null) {
               Assert.fail("In computing initial states, TLC encountered a CASE with no" +
-                          " conditions true.\n" + init);
+                          " conditions true.\n" + init, init, c);
             }
             this.getInitStates(other, acts, c, ps, states, cm);
             return;
@@ -678,7 +678,7 @@ public abstract class Tool
             }
             else if (!(fval instanceof Applicable)) {
               Assert.fail("In computing initial states, a non-function (" +
-                          fval.getKindString() + ") was applied as a function.\n" + init);
+                          fval.getKindString() + ") was applied as a function.\n" + init, init, c);
             }
             Applicable fcn = (Applicable) fval;
             Value argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
@@ -686,7 +686,7 @@ public abstract class Tool
             if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "initial states", "boolean",
-                      init.toString() });
+                      init.toString() }, args[1], c);
             }
             if (((BoolValue)bval).val) {
               this.getInitStates(acts, ps, states, cm);
@@ -737,7 +737,7 @@ public abstract class Tool
               if (lval == null) {
                 if (!(rval instanceof Enumerable)) {
                   Assert.fail("In computing initial states, the right side of \\IN" +
-                              " is not enumerable.\n" + init);
+                              " is not enumerable.\n" + init, init, c);
                 }
                 ValueEnumeration Enum = ((Enumerable)rval).elements();
                 Value elem;
@@ -762,7 +762,7 @@ public abstract class Tool
             Value lval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
             if (!(lval instanceof BoolValue)) {
               Assert.fail("In computing initial states of a predicate of form" +
-                          " P => Q, P was " + lval.getKindString() + "\n." + init);
+                          " P => Q, P was " + lval.getKindString() + "\n." + init, init, c);
             }
             if (((BoolValue)lval).val) {
               this.getInitStates(args[1], acts, c, ps, states, cm);
@@ -785,7 +785,7 @@ public abstract class Tool
             if (!(bval instanceof BoolValue)) {
 
               Assert.fail("In computing initial states, TLC expected a boolean expression," +
-                          "\nbut instead found " + bval + ".\n" + init);
+                          "\nbut instead found " + bval + ".\n" + init, init, c);
             }
             if (((BoolValue)bval).val) {
               this.getInitStates(acts, ps, states, cm);
@@ -858,7 +858,7 @@ public abstract class Tool
           }
         default:
           {
-            Assert.fail("The next state relation is not a boolean expression.\n" + pred);
+            Assert.fail("The next state relation is not a boolean expression.\n" + pred, pred, c);
           }
         }
     	return s1;
@@ -948,7 +948,7 @@ public abstract class Tool
 			  if (!(bval instanceof BoolValue)) {
 				  // TODO Choose more fitting error message.
 				  Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING,
-						  new String[] { "next states", "boolean", bval.toString(), acts.pred.toString() });
+						  new String[] { "next states", "boolean", bval.toString(), acts.pred.toString() }, pred, c);
 			  }
 			  if (!((BoolValue) bval).val) {
 				  return s1;
@@ -1059,7 +1059,7 @@ public abstract class Tool
 	if (!(bval instanceof BoolValue))
 	{
 	  Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
-	          bval.toString(), pred.toString() });
+	          bval.toString(), pred.toString() }, pred);
 	}
 	if (((BoolValue) bval).val)
 	{
@@ -1163,14 +1163,14 @@ public abstract class Tool
 	    }
 	    if (!(fval instanceof Applicable)) {
 	      Assert.fail("In computing next states, a non-function (" +
-	                  fval.getKindString() + ") was applied as a function.\n" + pred);
+	                  fval.getKindString() + ") was applied as a function.\n" + pred, pred, c);
 	    }
 	    Applicable fcn = (Applicable)fval;
 	    Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	    Value bval = fcn.apply(argVal, EvalControl.Clear);
 	    if (!(bval instanceof BoolValue)) {
 	      Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "next states", "boolean",
-	              pred.toString() });
+	              pred.toString() }, args[1], c);
 	    }
 	    if (((BoolValue)bval).val) {
 	      return this.getNextStates(action, acts, s0, s1, nss, cm);
@@ -1199,7 +1199,7 @@ public abstract class Tool
 	    if (!(guard instanceof BoolValue)) {
 	      Assert.fail("In computing next states, a non-boolean expression (" +
 	                  guard.getKindString() + ") was used as the condition of" +
-	                  " an IF." + pred);
+	                  " an IF." + pred, pred, c);
 	    }
 	    if (((BoolValue)guard).val) {
 	      return this.getNextStates(action, args[1], acts, c, s0, s1, nss, cm);
@@ -1227,7 +1227,7 @@ public abstract class Tool
 	        if (!(bval instanceof BoolValue)) {
 	          Assert.fail("In computing next states, a non-boolean expression (" +
 	                      bval.getKindString() + ") was used as a guard condition" +
-	                      " of a CASE.\n" + pairArgs[1]);
+	                      " of a CASE.\n" + pairArgs[1], pairArgs[1], c);
 	        }
 	        if (((BoolValue)bval).val) {
 	          return this.getNextStates(action, pairArgs[1], acts, c, s0, s1, nss, coverage ? cm.get(args[i]) : cm);
@@ -1236,7 +1236,7 @@ public abstract class Tool
 	    }
 	    if (other == null) {
 	      Assert.fail("In computing next states, TLC encountered a CASE with no" +
-	                  " conditions true.\n" + pred);
+	                  " conditions true.\n" + pred, pred, c);
 	    }
 	    return this.getNextStates(action, other, acts, c, s0, s1, nss, coverage ? cm.get(args[alen - 1]) : cm);
 	  }
@@ -1283,7 +1283,7 @@ public abstract class Tool
 	      if (lval == null) {
 	        if (!(rval instanceof Enumerable)) {
 	          Assert.fail("In computing next states, the right side of \\IN" +
-	                      " is not enumerable.\n" + pred);
+	                      " is not enumerable.\n" + pred, pred, c);
 	        }
 	        
 			if (PROBABLISTIC) {
@@ -1312,7 +1312,7 @@ public abstract class Tool
 	    Value bval = this.eval(args[0], c, s0, s1, EvalControl.Clear, cm);
 	    if (!(bval instanceof BoolValue)) {
 	      Assert.fail("In computing next states of a predicate of the form" +
-	                  " P => Q, P was\n" + bval.getKindString() + ".\n" + pred);
+	                  " P => Q, P was\n" + bval.getKindString() + ".\n" + pred, pred, c);
 	    }
 	    if (((BoolValue)bval).val) {
 	      return this.getNextStates(action, args[1], acts, c, s0, s1, nss, cm);
@@ -1327,7 +1327,7 @@ public abstract class Tool
 	  }
 	case OPCODE_cdot:
 	  {
-	    Assert.fail("The current version of TLC does not support action composition.");
+	    Assert.fail("The current version of TLC does not support action composition.", pred, c);
 	    /***
 	    TLCState s01 = TLCStateFun.Empty;
 	    StateVec iss = new StateVec(0);
@@ -1351,7 +1351,7 @@ public abstract class Tool
 	    Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
 	    if (!(bval instanceof BoolValue)) {
 	      Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "next states", "boolean",
-	              bval.toString(), pred.toString() });
+	              bval.toString(), pred.toString() }, pred, c);
 	    }
 	    if (((BoolValue)bval).val) {
 	      resState = this.getNextStates(action, acts, s0, s1, nss, cm);
@@ -1417,7 +1417,7 @@ public abstract class Tool
 		}
 		else {
 		  Assert.fail("In computing next states, TLC found the identifier\n" +
-		              opName + " undefined in an UNCHANGED expression at\n" + expr);
+		              opName + " undefined in an UNCHANGED expression at\n" + expr, expr, c);
 		}
 		return this.getNextStates(action, acts, s0, s1, nss, cm);
   }
@@ -1609,7 +1609,7 @@ public abstract class Tool
         default:
           {
             Assert.fail("Attempted to evaluate an expression that cannot be evaluated.\n" +
-                        expr);
+                        expr, expr, c);
             return null;     // make compiler happy
           }
         }
@@ -1836,7 +1836,7 @@ public abstract class Tool
           }
           else {
             Assert.fail(EC.TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR,
-                new String[] { opNode.getName().toString(), expr.toString() });
+                new String[] { opNode.getName().toString(), expr.toString() }, expr, c);
           }
           if (opcode == 0) {
             return res;
@@ -1851,7 +1851,7 @@ public abstract class Tool
             Value inVal = this.eval(inExpr, c, s0, s1, control, cm);
             if (!(inVal instanceof Enumerable)) {
               Assert.fail("Attempted to compute the value of an expression of\n" +
-                          "form CHOOSE x \\in S: P, but S was not enumerable.\n" + expr);
+                          "form CHOOSE x \\in S: P, but S was not enumerable.\n" + expr, expr, c);
             }
 
             // To fix Bugzilla Bug 279 : TLC bug caused by TLC's not preserving the semantics of CHOOSE
@@ -1897,7 +1897,7 @@ public abstract class Tool
                 if (tv == null || tv.size() != cnt) {
                   Assert.fail("Attempted to compute the value of an expression of form\n" +
                               "CHOOSE <<x1, ... , xN>> \\in S: P, but S was not a set\n" +
-                              "of N-tuples.\n" + expr);
+                              "of N-tuples.\n" + expr, expr, c);
                 }
                 Context c1 = c;
                 for (int i = 0; i < cnt; i++) {
@@ -1905,7 +1905,7 @@ public abstract class Tool
                 }
                 Value bval = this.eval(pred, c1, s0, s1, control, cm);
                 if (!(bval instanceof BoolValue)) {
-                  Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
+                  Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, pred, c1);
                 }
                 if (((BoolValue)bval).val) {
                   return (Value) val;
@@ -1920,7 +1920,7 @@ public abstract class Tool
                 Context c1 = c.cons(name, val);
                 Value bval = this.eval(pred, c1, s0, s1, control, cm);
                 if (!(bval instanceof BoolValue)) {
-                  Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
+                  Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, pred, c1);
                 }
                 if (((BoolValue)bval).val) {
                   return (Value) val;
@@ -1928,7 +1928,7 @@ public abstract class Tool
               }
             }
             Assert.fail("Attempted to compute the value of an expression of form\n" +
-                        "CHOOSE x \\in S: P, but no element of S satisfied P.\n" + expr);
+                        "CHOOSE x \\in S: P, but no element of S satisfied P.\n" + expr, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_be:     // BoundedExists
@@ -1939,7 +1939,7 @@ public abstract class Tool
             while ((c1 = Enum.nextElement()) != null) {
               Value bval = this.eval(body, c1, s0, s1, control, cm);
               if (!(bval instanceof BoolValue)) {
-                Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
+                Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, body, c1);
               }
               if (((BoolValue)bval).val) {
                 return BoolValue.ValTrue;
@@ -1955,7 +1955,7 @@ public abstract class Tool
             while ((c1 = Enum.nextElement()) != null) {
               Value bval = this.eval(body, c1, s0, s1, control, cm);
               if (!(bval instanceof BoolValue)) {
-                Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
+                Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, body, c1);
               }
               if (!((BoolValue)bval).val) {
                 return BoolValue.ValFalse;
@@ -1978,7 +1978,7 @@ public abstract class Tool
                 Value bval = this.eval(pairArgs[0], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
                 if (!(bval instanceof BoolValue)) {
                   Assert.fail("A non-boolean expression (" + bval.getKindString() +
-                              ") was used as a condition of a CASE. " + pairArgs[0]);
+                              ") was used as a condition of a CASE. " + pairArgs[0], pairArgs[0], c);
                 }
                 if (((BoolValue)bval).val) {
                   return this.eval(pairArgs[1], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
@@ -1986,7 +1986,7 @@ public abstract class Tool
               }
             }
             if (other == null) {
-              Assert.fail("Attempted to evaluate a CASE with no conditions true.\n" + expr);
+              Assert.fail("Attempted to evaluate a CASE with no conditions true.\n" + expr, expr, c);
             }
             return this.eval(other, c, s0, s1, control, cm);
           }
@@ -2006,7 +2006,7 @@ public abstract class Tool
               Value bval = this.eval(args[i], c, s0, s1, control, cm);
               if (!(bval instanceof BoolValue)) {
                 Assert.fail("A non-boolean expression (" + bval.getKindString() +
-                            ") was used as a formula in a conjunction.\n" + args[i]);
+                            ") was used as a formula in a conjunction.\n" + args[i], args[i], c);
               }
               if (!((BoolValue)bval).val) {
                 return BoolValue.ValFalse;
@@ -2021,7 +2021,7 @@ public abstract class Tool
               Value bval = this.eval(args[i], c, s0, s1, control, cm);
               if (!(bval instanceof BoolValue)) {
                 Assert.fail("A non-boolean expression (" + bval.getKindString() +
-                            ") was used as a formula in a disjunction.\n" + args[i]);
+                            ") was used as a formula in a disjunction.\n" + args[i], args[i], c);
               }
               if (((BoolValue)bval).val) {
                 return BoolValue.ValTrue;
@@ -2072,14 +2072,14 @@ public abstract class Tool
               Applicable fcn = (Applicable)fval;
               if (args.length != 2) {
                 Assert.fail("Attempted to evaluate an expression of form f[e1, ... , eN]" +
-                            "\nwith f a tuple or record and N > 1.\n" + expr);
+                            "\nwith f a tuple or record and N > 1.\n" + expr, expr, c);
               }
               Value aval = this.eval(args[1], c, s0, s1, control, cm);
               result = fcn.apply(aval, control);
             }
             else {
               Assert.fail("A non-function (" + fval.getKindString() + ") was applied" +
-                          " as a function.\n" + expr);
+                          " as a function.\n" + expr, expr, c);
             }
             return result;
           }
@@ -2116,7 +2116,7 @@ public abstract class Tool
             Value bval = this.eval(args[0], c, s0, s1, control, cm);
             if (!(bval instanceof BoolValue)) {
               Assert.fail("A non-boolean expression (" + bval.getKindString() +
-                          ") was used as the condition of an IF.\n" + expr);
+                          ") was used as the condition of an IF.\n" + expr, expr, c);
             }
             if (((BoolValue)bval).val) {
               return this.eval(args[1], c, s0, s1, control, cm);
@@ -2144,7 +2144,7 @@ public abstract class Tool
               Value result = (Value) ((RecordValue)rval).select(sval);
               if (result == null) {
                 Assert.fail("Attempted to select nonexistent field " + sval + " from the" +
-                            " record\n" + Values.ppr(rval.toString()) + "\n" + expr);
+                            " record\n" + Values.ppr(rval.toString()) + "\n" + expr, expr, c);
               }
               return result;
             }
@@ -2152,7 +2152,7 @@ public abstract class Tool
               FcnRcdValue fcn = (FcnRcdValue) rval.toFcnRcd();
               if (fcn == null) {
                 Assert.fail("Attempted to select field " + sval + " from a non-record" +
-                            " value " + Values.ppr(rval.toString()) + "\n" + expr);
+                            " value " + Values.ppr(rval.toString()) + "\n" + expr, expr, c);
               }
               return fcn.apply(sval, control);
             }
@@ -2219,7 +2219,7 @@ public abstract class Tool
                   Value bval = this.eval(pred, c1, s0, s1, control, cm);
                   if (!(bval instanceof BoolValue)) {
                     Assert.fail("Attempted to evaluate an expression of form {x \\in S : P(x)}" +
-                                " when P was " + bval.getKindString() + ".\n" + pred);
+                                " when P was " + bval.getKindString() + ".\n" + pred, pred, c1);
                   }
                   if (((BoolValue)bval).val) {
                     vals.addElement(elem);
@@ -2233,7 +2233,7 @@ public abstract class Tool
                   Value bval = this.eval(pred, c1, s0, s1, control, cm);
                   if (!(bval instanceof BoolValue)) {
                     Assert.fail("Attempted to evaluate an expression of form {x \\in S : P(x)}" +
-                                " when P was " + bval.getKindString() + ".\n" + pred);
+                                " when P was " + bval.getKindString() + ".\n" + pred, pred, c1);
                   }
                   if (((BoolValue)bval).val) {
                     vals.addElement(elem);
@@ -2262,21 +2262,21 @@ public abstract class Tool
           {
             Assert.fail("TLC attempted to evaluate an unbounded CHOOSE.\n" +
                         "Make sure that the expression is of form CHOOSE x \\in S: P(x).\n" +
-                        expr);
+                        expr, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_ue:     // UnboundedExists
           {
             Assert.fail("TLC attempted to evaluate an unbounded \\E.\n" +
                         "Make sure that the expression is of form \\E x \\in S: P(x).\n" +
-                        expr);
+                        expr, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_uf:     // UnboundedForall
           {
             Assert.fail("TLC attempted to evaluate an unbounded \\A.\n" +
                         "Make sure that the expression is of form \\A x \\in S: P(x).\n" +
-                        expr);
+                        expr, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_lnot:
@@ -2284,7 +2284,7 @@ public abstract class Tool
             Value arg = this.eval(args[0], c, s0, s1, control, cm);
             if (!(arg instanceof BoolValue)) {
               Assert.fail("Attempted to apply the operator ~ to a non-boolean\n(" +
-                          arg.getKindString() + ")\n" + expr);
+                          arg.getKindString() + ")\n" + expr, args[0], c);
             }
             return (((BoolValue)arg).val) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
@@ -2303,7 +2303,7 @@ public abstract class Tool
             Value arg = this.eval(args[0], c, s0, s1, control, cm);
             if (!(arg instanceof Applicable)) {
               Assert.fail("Attempted to apply the operator DOMAIN to a non-function\n(" +
-                          arg.getKindString() + ")\n" + expr);
+                          arg.getKindString() + ")\n" + expr, expr, c);
             }
             return setSource(expr, ((Applicable)arg).getDomain());
           }
@@ -2325,13 +2325,13 @@ public abstract class Tool
             Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
             if (!(arg1 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P /\\ Q" +
-                          " when P was\n" + arg1.getKindString() + ".\n" + expr);
+                          " when P was\n" + arg1.getKindString() + ".\n" + expr, expr, c);
             }
             if (((BoolValue)arg1).val) {
               Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
               if (!(arg2 instanceof BoolValue)) {
                 Assert.fail("Attempted to evaluate an expression of form P /\\ Q" +
-                            " when Q was\n" + arg2.getKindString() + ".\n" + expr);
+                            " when Q was\n" + arg2.getKindString() + ".\n" + expr, expr, c);
               }
               return arg2;
             }
@@ -2342,7 +2342,7 @@ public abstract class Tool
             Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
             if (!(arg1 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P \\/ Q" +
-                          " when P was\n" + arg1.getKindString() + ".\n" + expr);
+                          " when P was\n" + arg1.getKindString() + ".\n" + expr, expr, c);
             }
             if (((BoolValue)arg1).val) {
               return BoolValue.ValTrue;
@@ -2350,7 +2350,7 @@ public abstract class Tool
             Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             if (!(arg2 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P \\/ Q" +
-                          " when Q was\n" + arg2.getKindString() + ".\n" + expr);
+                          " when Q was\n" + arg2.getKindString() + ".\n" + expr, expr, c);
             }
             return arg2;
           }
@@ -2359,13 +2359,13 @@ public abstract class Tool
             Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
             if (!(arg1 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P => Q" +
-                          " when P was\n" + arg1.getKindString() + ".\n" + expr);
+                          " when P was\n" + arg1.getKindString() + ".\n" + expr, expr, c);
             }
             if (((BoolValue)arg1).val) {
               Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
               if (!(arg2 instanceof BoolValue)) {
                 Assert.fail("Attempted to evaluate an expression of form P => Q" +
-                            " when Q was\n" + arg2.getKindString() + ".\n" + expr);
+                            " when Q was\n" + arg2.getKindString() + ".\n" + expr, expr, c);
               }
               return arg2;
             }
@@ -2377,7 +2377,7 @@ public abstract class Tool
             Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             if (!(arg1 instanceof BoolValue) || !(arg2 instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form P <=> Q" +
-                          " when P or Q was not a boolean.\n" + expr);
+                          " when P or Q was not a boolean.\n" + expr, expr, c);
             }
             BoolValue bval1 = (BoolValue)arg1;
             BoolValue bval2 = (BoolValue)arg2;
@@ -2395,7 +2395,7 @@ public abstract class Tool
             Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             if (!(arg1 instanceof Enumerable)) {
               Assert.fail("Attempted to evaluate an expression of form S \\subseteq T," +
-                          " but S was not enumerable.\n" + expr);
+                          " but S was not enumerable.\n" + expr, expr, c);
             }
             return ((Enumerable) arg1).isSubsetEq(arg2);
           }
@@ -2478,7 +2478,7 @@ public abstract class Tool
             Value res = this.eval(args[0], c, s0, s1, control, cm);
             if (!(res instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form <A>_e," +
-                          " but A was not a boolean.\n" + expr);
+                          " but A was not a boolean.\n" + expr, expr, c);
             }
             if (!((BoolValue)res).val) {
               return BoolValue.ValFalse;
@@ -2492,7 +2492,7 @@ public abstract class Tool
             Value res = this.eval(args[0], c, s0, s1, control, cm);
             if (!(res instanceof BoolValue)) {
               Assert.fail("Attempted to evaluate an expression of form [A]_e," +
-                          " but A was not a boolean.\n" + expr);
+                          " but A was not a boolean.\n" + expr, expr, c);
             }
             if (((BoolValue)res).val) {
               return BoolValue.ValTrue;
@@ -2503,7 +2503,7 @@ public abstract class Tool
           }
         case OPCODE_cdot:
           {
-            Assert.fail("The current version of TLC does not support action composition.");
+            Assert.fail("The current version of TLC does not support action composition.", expr, c);
             /***
             TLCState s01 = TLCStateFun.Empty;
             StateVec iss = new StateVec(0);
@@ -2518,48 +2518,48 @@ public abstract class Tool
           }
         case OPCODE_sf:     // SF
           {
-            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"SF", expr.toString()});
+            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"SF", expr.toString()}, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_wf:     // WF
           {
-            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"WF", expr.toString()});
+            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"WF", expr.toString()}, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_te:     // TemporalExists
           {
-            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"\\EE", expr.toString()});
+            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"\\EE", expr.toString()}, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_tf:     // TemporalForAll
           {
-            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"\\AA", expr.toString()});
+            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"\\AA", expr.toString()}, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_leadto:
           {
-            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"a ~> b", expr.toString()});
+            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"a ~> b", expr.toString()}, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_arrow:
           {
-            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"a -+-> formula", expr.toString()});
+            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"a -+-> formula", expr.toString()}, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_box:
           {
-            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"[]A", expr.toString()});
+            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"[]A", expr.toString()}, expr, c);
             return null;    // make compiler happy
           }
         case OPCODE_diamond:
           {
-            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"<>A", expr.toString()});
+            Assert.fail(EC.TLC_ENCOUNTERED_FORMULA_IN_PREDICATE, new String[]{"<>A", expr.toString()}, expr, c);
             return null;    // make compiler happy
           }
 
         default:
           {
-            Assert.fail("TLC BUG: could not evaluate this expression.\n" + expr);
+            Assert.fail("TLC BUG: could not evaluate this expression.\n" + expr, expr, c);
             return null;
           }
         }
@@ -2585,7 +2585,7 @@ public abstract class Tool
       final CostModel cm = coverage ? ((Action) constrs[i].getToolObject(toolId)).cm : CostModel.DO_NOT_RECORD;
       IValue bval = this.eval(constrs[i], Context.Empty, state, cm);
       if (!(bval instanceof BoolValue)) {
-        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
+        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()}, constrs[i]);
       }
       if (!((BoolValue)bval).val) {
   		  if (coverage) {
@@ -2609,7 +2609,7 @@ public abstract class Tool
       final CostModel cm = coverage ? ((Action) constrs[i].getToolObject(toolId)).cm : CostModel.DO_NOT_RECORD;
       Value bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, cm);
       if (!(bval instanceof BoolValue)) {
-        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()});
+        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()}, constrs[i]);
       }
       if (!((BoolValue)bval).val) {
   		  if (coverage) {
@@ -2711,7 +2711,7 @@ public abstract class Tool
         default:
           {
             // We should not compute enabled on anything else.
-            Assert.fail("Attempted to compute ENABLED on a non-boolean expression.\n" + pred);
+            Assert.fail("Attempted to compute ENABLED on a non-boolean expression.\n" + pred, pred, c);
             return null;    // make compiler happy
           }
         }
@@ -2820,7 +2820,7 @@ public abstract class Tool
             if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "ENABLED", "boolean",
-                      bval.toString(), pred.toString() });
+                      bval.toString(), pred.toString() }, pred, c);
             }
             if (((BoolValue) bval).val)
             {
@@ -2883,7 +2883,7 @@ public abstract class Tool
                 if (!(bval instanceof BoolValue))
                 {
                   Assert.fail("In computing ENABLED, a non-boolean expression(" + bval.getKindString()
-                          + ") was used as a guard condition" + " of a CASE.\n" + pairArgs[1]);
+                          + ") was used as a guard condition" + " of a CASE.\n" + pairArgs[1], pairArgs[1], c);
                 }
                 if (((BoolValue) bval).val)
                 {
@@ -2893,7 +2893,7 @@ public abstract class Tool
             }
             if (other == null)
             {
-              Assert.fail("In computing ENABLED, TLC encountered a CASE with no" + " conditions true.\n" + pred);
+              Assert.fail("In computing ENABLED, TLC encountered a CASE with no" + " conditions true.\n" + pred, pred, c);
             }
             return this.enabled(other, acts, c, s0, s1, cm);
           }
@@ -2940,7 +2940,7 @@ public abstract class Tool
               if (!(bval instanceof BoolValue))
               {
                 Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "ENABLED", "boolean",
-                        pred.toString() });
+                        pred.toString() }, args[1], c);
               }
               if (!((BoolValue) bval).val) {
                 return null;
@@ -2948,7 +2948,7 @@ public abstract class Tool
             } else
             {
               Assert.fail("In computing ENABLED, a non-function (" + fval.getKindString()
-                      + ") was applied as a function.\n" + pred);
+                      + ") was applied as a function.\n" + pred, pred, c);
             }
             return this.enabled(acts, s0, s1, cm);
           }
@@ -2958,7 +2958,7 @@ public abstract class Tool
             if (!(guard instanceof BoolValue))
             {
               Assert.fail("In computing ENABLED, a non-boolean expression(" + guard.getKindString()
-                      + ") was used as the guard condition" + " of an IF.\n" + pred);
+                      + ") was used as the guard condition" + " of an IF.\n" + pred, pred, c);
             }
             int idx = (((BoolValue) guard).val) ? 1 : 2;
             return this.enabled(args[idx], acts, c, s0, s1, cm);
@@ -2974,45 +2974,45 @@ public abstract class Tool
         case OPCODE_te: // TemporalExists
         case OPCODE_tf: // TemporalForAll
           {
-            Assert.fail("In computing ENABLED, TLC encountered temporal quantifier.\n" + pred);
+            Assert.fail("In computing ENABLED, TLC encountered temporal quantifier.\n" + pred, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_uc: // UnboundedChoose
           {
             Assert.fail("In computing ENABLED, TLC encountered unbounded CHOOSE. "
-                    + "Make sure that the expression is of form CHOOSE x \\in S: P(x).\n" + pred);
+                    + "Make sure that the expression is of form CHOOSE x \\in S: P(x).\n" + pred, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_ue: // UnboundedExists
           {
             Assert.fail("In computing ENABLED, TLC encountered unbounded quantifier. "
-                    + "Make sure that the expression is of form \\E x \\in S: P(x).\n" + pred);
+                    + "Make sure that the expression is of form \\E x \\in S: P(x).\n" + pred, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_uf: // UnboundedForall
           {
             Assert.fail("In computing ENABLED, TLC encountered unbounded quantifier. "
-                    + "Make sure that the expression is of form \\A x \\in S: P(x).\n" + pred);
+                    + "Make sure that the expression is of form \\A x \\in S: P(x).\n" + pred, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_sf: // SF
           {
-            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[]{ "SF", pred.toString()});
+            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[]{ "SF", pred.toString()}, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_wf: // WF
           {
-            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "WF", pred.toString() });
+            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "WF", pred.toString() }, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_box:
           {
-            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "[]", pred.toString() });
+            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "[]", pred.toString() }, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_diamond:
           {
-            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "<>", pred.toString() });
+            Assert.fail(EC.TLC_ENABLED_WRONG_FORMULA, new String[] { "<>", pred.toString() }, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_unchanged:
@@ -3052,7 +3052,7 @@ public abstract class Tool
             if (!(bval instanceof BoolValue))
             {
               Assert.fail("While computing ENABLED of an expression of the form" + " P => Q, P was "
-                      + bval.getKindString() + ".\n" + pred);
+                      + bval.getKindString() + ".\n" + pred, pred, c);
             }
             if (((BoolValue) bval).val)
             {
@@ -3062,7 +3062,7 @@ public abstract class Tool
           }
         case OPCODE_cdot:
           {
-            Assert.fail("The current version of TLC does not support action composition.");
+            Assert.fail("The current version of TLC does not support action composition.", pred, c);
             /***
             TLCState s01 = TLCStateFun.Empty;
             StateVec iss = new StateVec(0);
@@ -3078,12 +3078,12 @@ public abstract class Tool
           }
         case OPCODE_leadto:
           {
-            Assert.fail("In computing ENABLED, TLC encountered a temporal formula" + " (a ~> b).\n" + pred);
+            Assert.fail("In computing ENABLED, TLC encountered a temporal formula" + " (a ~> b).\n" + pred, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_arrow:
           {
-            Assert.fail("In computing ENABLED, TLC encountered a temporal formula" + " (a -+-> formula).\n" + pred);
+            Assert.fail("In computing ENABLED, TLC encountered a temporal formula" + " (a -+-> formula).\n" + pred, pred, c);
             return null; // make compiler happy
           }
         case OPCODE_in:
@@ -3104,7 +3104,7 @@ public abstract class Tool
               {
                 if (!(rval instanceof Enumerable))
                 {
-                  Assert.fail("The right side of \\IN is not enumerable.\n" + pred);
+                  Assert.fail("The right side of \\IN is not enumerable.\n" + pred, pred, c);
                 }
                 ValueEnumeration Enum = ((Enumerable) rval).elements();
                 Value val;
@@ -3139,7 +3139,7 @@ public abstract class Tool
             if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING, new String[] { "ENABLED", "boolean",
-                      bval.toString(), pred.toString() });
+                      bval.toString(), pred.toString() }, pred, c);
             }
             if (((BoolValue) bval).val)
             {
@@ -3206,7 +3206,7 @@ public abstract class Tool
             }
             else if (val == null) {
               Assert.fail("In computing ENABLED, TLC found the undefined identifier\n" +
-                          opName + " in an UNCHANGED expression at\n" + expr);
+                          opName + " in an UNCHANGED expression at\n" + expr, expr ,c);
             }
             return this.enabled(acts, s0, s1, cm);
           }
@@ -3252,7 +3252,7 @@ public abstract class Tool
   public final boolean isValid(Action act, TLCState s0, TLCState s1) {
     Value val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear, act.cm);
     if (!(val instanceof BoolValue)) {
-      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()});
+      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()}, act.pred, act.con);
     }
     return ((BoolValue)val).val;
   }
@@ -3273,7 +3273,7 @@ public abstract class Tool
   public final boolean isValid(ExprNode expr) {
     IValue val = this.eval(expr);
     if (!(val instanceof BoolValue)) {
-      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()});
+      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, expr);
     }
     return ((BoolValue)val).val;
   }
@@ -3419,12 +3419,12 @@ public abstract class Tool
     // = n! where n is the capacity of the symmetry set.
     final IValue fcns = this.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
     if (!(fcns instanceof Enumerable) || !(fcns instanceof SetEnumValue)) {
-      Assert.fail("The symmetry operator must specify a set of functions.");
+      Assert.fail("The symmetry operator must specify a set of functions.", opDef.getBody());
     }
     final List<Value> values = ((SetEnumValue)fcns).elements().all();
     for (final Value v : values) {
     	if (!(v instanceof FcnRcdValue)) {
-    		Assert.fail("The symmetry values must be function records.");
+    		Assert.fail("The symmetry values must be function records.", opDef.getBody());
     	}
     }
     final ExprOrOpArgNode[] argNodes = ((OpApplNode)opDef.getBody()).getArgs();
@@ -3577,7 +3577,7 @@ public abstract class Tool
       if (!domains[0].member(argVal)) {
         Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
                     ",\nthe first argument is:\n" + Values.ppr(argVal.toString()) +
-                    "which is not in its domain.\n" + args[0]);
+                    "which is not in its domain.\n" + args[0], args[0], c);
       }
       if (isTuples[0]) {
         FormalParamNode[] ids = formals[0];
@@ -3585,7 +3585,7 @@ public abstract class Tool
         if (tv == null || argVal.size() != ids.length) {
           Assert.fail("In applying the function\n" + Values.ppr(this.toString()) +
                       ",\nthe argument is:\n" + Values.ppr(argVal.toString()) +
-                      "which does not match its formal parameter.\n" + args[0]);
+                      "which does not match its formal parameter.\n" + args[0], args[0], c);
         }
         Value[] elems = tv.elems;
         for (int i = 0; i < ids.length; i++) {
@@ -3600,7 +3600,7 @@ public abstract class Tool
       TupleValue tv = (TupleValue) argVal.toTuple();
       if (tv == null) {
         Assert.fail("Attempted to apply a function to an argument not in its" +
-                    " domain.\n" + args[0]);
+                    " domain.\n" + args[0], args[0], c);
       }
       int argn = 0;
       Value[] elems = tv.elems;
@@ -3612,14 +3612,14 @@ public abstract class Tool
             Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
                         ",\nthe argument number " + (argn+1) + " is:\n" +
                         Values.ppr(elems[argn].toString()) +
-                        "\nwhich is not in its domain.\n" + args[0]);
+                        "\nwhich is not in its domain.\n" + args[0], args[0], c);
           }
           TupleValue tv1 = (TupleValue) elems[argn++].toTuple();
           if (tv1 == null || tv1.size() != ids.length) {
             Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
                         ",\nthe argument number " + argn + " is:\n" +
                         Values.ppr(elems[argn-1].toString()) +
-                        "which does not match its formal parameter.\n" + args[0]);
+                        "which does not match its formal parameter.\n" + args[0], args[0], c);
           }
           Value[] avals = tv1.elems;
           for (int j = 0; j < ids.length; j++) {
@@ -3632,7 +3632,7 @@ public abstract class Tool
               Assert.fail("In applying the function\n" + Values.ppr(fcn.toString()) +
                           ",\nthe argument number " + (argn+1) + " is:\n" +
                           Values.ppr(elems[argn].toString()) +
-                          "which is not in its domain.\n" + args[0]);
+                          "which is not in its domain.\n" + args[0], args[0], c);
             }
             fcon = fcon.cons(ids[j], elems[argn++]);
           }
@@ -3672,7 +3672,7 @@ public abstract class Tool
 	      Value boundSet = this.eval(domains[i], c, s0, s1, control, cm);
 	      if (!(boundSet instanceof Enumerable)) {
 	        Assert.fail("TLC encountered a non-enumerable quantifier bound\n" +
-	                    Values.ppr(boundSet.toString()) + ".\n" + domains[i]);
+	                    Values.ppr(boundSet.toString()) + ".\n" + domains[i], domains[i], c);
 	      }
 	      FormalParamNode[] farg = formals[i];
 	      if (isTuples[i]) {
