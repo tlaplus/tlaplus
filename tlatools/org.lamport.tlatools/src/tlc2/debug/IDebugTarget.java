@@ -48,6 +48,14 @@ public interface IDebugTarget {
 
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
 
+	// No popExceptionFrame because TLC cannot recover from an exception!
+	IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, RuntimeException e);
+
+	IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState state, RuntimeException e);
+
+	IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state,
+			RuntimeException e);
+
 	//------------------------ Wrapper --------------------------//
 	
 	IDebugTarget pushFrame(TLCState state);

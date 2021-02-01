@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
@@ -74,8 +75,12 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 	protected final Phaser phase = new Phaser();
 
 	public TLCDebuggerTestCase(String spec, String path, final int exitStatus) {
-		super(spec, path, new String[] { "-debugger" }, exitStatus);
+		this(spec, path, new String[] {}, exitStatus);
+	}
 
+	public TLCDebuggerTestCase(String spec, String path, String[] extraArgs, final int exitStatus) {
+		super(spec, path, Stream.of(extraArgs, new String[] { "-debugger" }).flatMap(Stream::of).toArray(String[]::new),
+				exitStatus);
 		// (i) This/current/control/test thread and (ii) executor thread that runs TLC
 		// and is launched in setUp below.
 		phase.bulkRegister(2);
@@ -86,7 +91,12 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 
 	public TLCDebuggerTestCase(String spec, String path, final int exitStatus,
 			final SetBreakpointsArguments initialBreakpoint) {
-		this(spec, path, exitStatus);
+		this(spec, path, new String[] {}, exitStatus, initialBreakpoint);
+	}
+
+	public TLCDebuggerTestCase(String spec, String path, String[] extraArgs, final int exitStatus,
+			final SetBreakpointsArguments initialBreakpoint) {
+		this(spec, path, extraArgs, exitStatus);
 		debugger.setBreakpoints(initialBreakpoint);
 	}
 

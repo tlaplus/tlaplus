@@ -37,6 +37,7 @@ import tlc2.TLCGlobals;
 import tlc2.debug.IDebugTarget;
 import tlc2.tool.Action;
 import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
 import tlc2.tool.IActionItemList;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
@@ -46,6 +47,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.impl.Value;
+import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
 
 @SuppressWarnings("serial")
@@ -196,24 +198,39 @@ public class DebugTool extends Tool {
 	}
 
 	private Value actionLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
-		target.pushFrame(this, expr, c, s0, s1);
-		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-		target.popFrame(this, expr, c, s0, s1);
-		return v;
+		try {
+			target.pushFrame(this, expr, c, s0, s1);
+			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
+			target.popFrame(this, expr, c, s0, s1);
+			return v;
+		} catch (TLCRuntimeException | EvalException e) {
+			target.pushExceptionFrame(this, expr, c, s0, s1, e);
+			throw e;
+		}
 	}
 
 	private Value stateLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
-		target.pushFrame(this, expr, c, s0);
-		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-		target.popFrame(this, expr, c, s0);
-		return v;
+		try {
+			target.pushFrame(this, expr, c, s0);
+			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
+			target.popFrame(this, expr, c, s0);
+			return v;
+		} catch (TLCRuntimeException | EvalException e) {
+			target.pushExceptionFrame(this, expr, c, s0, e);
+			throw e;
+		}
 	}
 
 	private Value constLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
-		target.pushFrame(this, expr, c, control);
-		final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-		target.popFrame(this, expr, c, control);
-		return v;
+		try {
+			target.pushFrame(this, expr, c, control);
+			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
+			target.popFrame(this, expr, c, control);
+			return v;
+		} catch (TLCRuntimeException | EvalException e) {
+			target.pushExceptionFrame(this, expr, c, e);
+			throw e;
+		}
 	}
 
 	@Override

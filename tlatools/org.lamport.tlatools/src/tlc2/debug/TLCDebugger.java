@@ -47,6 +47,7 @@ import org.eclipse.lsp4j.debug.ContinueResponse;
 import org.eclipse.lsp4j.debug.DisconnectArguments;
 import org.eclipse.lsp4j.debug.InitializeRequestArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
+import org.eclipse.lsp4j.debug.OutputEventArguments;
 import org.eclipse.lsp4j.debug.PauseArguments;
 import org.eclipse.lsp4j.debug.ScopesArguments;
 import org.eclipse.lsp4j.debug.ScopesResponse;
@@ -373,21 +374,56 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return popFrame(tool, expr, c, ps);
 	}
 
-	protected void haltExecution(SemanticNode expr, final int level) {
+	@Override
+	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, RuntimeException e) {
+		return pushExceptionFrame(new TLCStackFrame(expr, c, tool, e), e);
+	}
+	
+	@Override
+	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c,
+			TLCState state, RuntimeException e) {
+		return pushExceptionFrame(new TLCStateStackFrame(expr, c, tool, state, e), e);
+	}
+	
+	@Override
+	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor,
+			TLCState state, RuntimeException e) {
+		return pushExceptionFrame(new TLCActionStackFrame(expr, c, tool, predecessor, state, e), e);
+	}
+
+	private IDebugTarget pushExceptionFrame(final TLCStackFrame frame, RuntimeException e) {
+		// Let the client print the exception in its debug output UI.
+		final OutputEventArguments oea = new OutputEventArguments();
+		oea.setOutput(e.getMessage());
+		if (launcher != null) {
+			launcher.getRemoteProxy().output(oea);
+		}
+		
+		stack.push(frame);
+		
+		haltExecution();
+		return this;
+	}
+
+	protected void haltExecution(final SemanticNode expr, final int level) {
 		if (LOGGER.isLoggable(Level.FINER)) {
 			LOGGER.finer(String.format("%s(%s): [%s]\n", new String(new char[level]).replace('\0', '#'), level, expr));
 		}
 		if (matches(step, targetLevel, level) || matches(expr)) {
-			sendStopped();
+			haltExecution();
+		}
+	}
 
-			try {
-				// Halt TLC's evaluation by blocking on this (one-element) queue. The DAP
-				// front-end will add an element that will unblock us.
-				this.wait();
-			} catch (InterruptedException notExpectedToHappen) {
-				notExpectedToHappen.printStackTrace();
-				java.lang.Thread.currentThread().interrupt();
-			}
+	protected void haltExecution() {
+		sendStopped();
+
+		try {
+			// Halt TLC's evaluation by blocking on this (one-element) queue. The DAP
+			// front-end will add an element that will unblock us.
+			this.wait();
+		} catch (InterruptedException notExpectedToHappen) {
+			notExpectedToHappen.printStackTrace();
+			java.lang.Thread.currentThread().interrupt();
 		}
 	}
 

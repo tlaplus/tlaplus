@@ -53,7 +53,11 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	private transient final int stateId;
 
 	public TLCStateStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state) {
-		super(node, ctxt, tool);
+		this(node, ctxt, tool, state, null);
+	}
+	
+	public TLCStateStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state, RuntimeException e) {
+		super(node, ctxt, tool, e);
 		this.state = state.deepCopy();
 		
 		// Tempting to use state.fingerprint/hashCode, but would normalize all values as a side effect.

@@ -62,6 +62,7 @@ class TLCStackFrame extends StackFrame {
 	// Not thread-safe because TLCDebugger is assumed to take care of synchronization!
 	private static final Map<SemanticNode, String> PATH_CACHE = new HashMap<>();
 
+	public static final String EXCEPTION = "Exception";
 	public static final String CONSTANTS = "Constants";
 	public static final String SCOPE = "Context";
 	
@@ -76,9 +77,11 @@ class TLCStackFrame extends StackFrame {
 	protected transient final SemanticNode node;
 	protected transient final Context ctxt;
 	protected transient final Tool tool;
+	protected transient final RuntimeException exception;
 
 	protected final int constantsId;
 	protected final int stackId;
+	private final int exceptionId;
 	
 	// Testing only!
 	TLCStackFrame(int id) {
@@ -86,12 +89,14 @@ class TLCStackFrame extends StackFrame {
 		this.node = null;
 		this.ctxt = null;
 		this.tool = null;
+		this.exception = null;
+		this.exceptionId = -1;
 		this.constantsId = -1;
 		this.stackId = -1;
 		this.setId(id);
 	}
 
-	public TLCStackFrame(SemanticNode node, Context ctxt, final Tool tool) {
+	public TLCStackFrame(SemanticNode node, Context ctxt, Tool tool, RuntimeException e) {
 		this.node = node;
 		Assert.check(node != null, EC.GENERAL);
 		// Do not create a deep copy of ctxt (like it is done for state and predecessor
@@ -101,6 +106,7 @@ class TLCStackFrame extends StackFrame {
 		Assert.check(ctxt != null, EC.GENERAL);
 		this.tool = tool;
 		Assert.check(tool != null, EC.GENERAL);
+		this.exception = e; // e is nullable!
 
 		if (node instanceof NumeralNode) {
 			setName(Integer.toString(((NumeralNode)node).val()));
@@ -127,6 +133,11 @@ class TLCStackFrame extends StackFrame {
 		
 		this.stackId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 		this.constantsId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
+		this.exceptionId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
+	}
+
+	public TLCStackFrame(SemanticNode node, Context ctxt, final Tool tool) {
+		this(node, ctxt, tool, null);
 	}
 
 	Variable[] getVariables() {
@@ -135,6 +146,10 @@ class TLCStackFrame extends StackFrame {
 
 	Variable[] getConstants() {
 		return getVariables(constantsId);
+	}
+	
+	Variable[] getException() {
+		return getVariables(exceptionId);
 	}
 	
 	public Variable[] getVariables(final int vr) {
@@ -161,6 +176,15 @@ class TLCStackFrame extends StackFrame {
 					}
 				}
 				vars.addAll(cntsts);
+			}
+			
+			if (vr == exceptionId) {
+				final Variable variable = new Variable();
+				variable.setName(getNode().getHumanReadableImage());
+				final RuntimeException re = (RuntimeException) exception;
+				variable.setValue(re.getMessage());
+				variable.setType(re.getClass().getSimpleName()); //TODO Is this useful?
+				vars.add(variable);
 			}
 
 			if (stackId == vr) {
@@ -262,6 +286,13 @@ class TLCStackFrame extends StackFrame {
 			scopes.add(scope);
 		}
 
+		if (this.exception != null) {
+			final Scope scope = new Scope();
+			scope.setName(EXCEPTION);
+			scope.setVariablesReference(exceptionId);
+			scopes.add(scope);
+		}
+		
 		return scopes.toArray(new Scope[scopes.size()]);
 	}
 	

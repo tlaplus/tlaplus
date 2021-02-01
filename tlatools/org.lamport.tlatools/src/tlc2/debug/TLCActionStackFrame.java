@@ -48,7 +48,11 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	private final int predId;
 
 	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps) {
-		super(expr, c , tool, ps);
+		this(expr, c , tool, predecessor, ps, null);
+	}
+	
+	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps, RuntimeException e) {
+		super(expr, c , tool, ps, e);
 		this.predecessor = predecessor.deepCopy();
 		
 		// Tempting to use state.fingerprint/hashCode, but would normalize all values as a side effect.
