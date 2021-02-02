@@ -236,39 +236,45 @@ public class SimulationWorker extends IdThread {
 	 * implement this manually but it's simpler to use the built-in mechanism.
 	 */
 	public final void run() {
-		while(true) {
-			try {
-				// The trace simulation method should do appropriately frequent interruption
-				// checks.
-				final Optional<SimulationWorkerError> res = simulateRandomTrace();
-				traceCnt++;
-				this.numOfGenTraces.increment();
-
-				// If we have an error result, place it on the output queue.
-				if (res.isPresent()) {
-					final SimulationWorkerError err = res.get();
-					resultQueue.put(SimulationWorkerResult.Error(this.myGetId(), err));
-					// One would assume to return from this branch to stop the worker from creating
-					// additional behaviors. However, this is at the discretion of Simulator, which
-					// checks if the user ran simulation with "-continue".  If not, Simulator
-					// will signal termination asynchronously.
-				}
-
-				// Abide by the maximum trace generation count.
-				if (traceCnt >= maxTraceNum) {
-					resultQueue.put(SimulationWorkerResult.OK(this.myGetId()));
-					return;
-				}
-			} catch (final InterruptedException e) {
-				// Gracefully terminate if we were interrupted.
-				resultQueue.offer(SimulationWorkerResult.OK(this.myGetId()));
-				return;
-			} catch (final Exception e) {
-				final SimulationWorkerError err = new SimulationWorkerError(0, null, this.curState, this.stateTrace, e);
-				resultQueue.offer(SimulationWorkerResult.Error(this.myGetId(), err));
-				return;
-			}	
+		boolean run = true;
+		while(run) {
+			run = simulateAndReport();
 		}
+	}
+
+	protected boolean simulateAndReport() {
+		try {
+			// The trace simulation method should do appropriately frequent interruption
+			// checks.
+			final Optional<SimulationWorkerError> res = simulateRandomTrace();
+			traceCnt++;
+			this.numOfGenTraces.increment();
+
+			// If we have an error result, place it on the output queue.
+			if (res.isPresent()) {
+				final SimulationWorkerError err = res.get();
+				resultQueue.put(SimulationWorkerResult.Error(this.myGetId(), err));
+				// One would assume to return from this branch to stop the worker from creating
+				// additional behaviors. However, this is at the discretion of Simulator, which
+				// checks if the user ran simulation with "-continue".  If not, Simulator
+				// will signal termination asynchronously.
+			}
+
+			// Abide by the maximum trace generation count.
+			if (traceCnt >= maxTraceNum) {
+				resultQueue.put(SimulationWorkerResult.OK(this.myGetId()));
+				return false;
+			}
+			return true;
+		} catch (final InterruptedException e) {
+			// Gracefully terminate if we were interrupted.
+			resultQueue.offer(SimulationWorkerResult.OK(this.myGetId()));
+			return false;
+		} catch (final Exception e) {
+			final SimulationWorkerError err = new SimulationWorkerError(0, null, this.curState, this.stateTrace, e);
+			resultQueue.offer(SimulationWorkerResult.Error(this.myGetId(), err));
+			return false;
+		}	
 	}
 
 	/**
@@ -491,8 +497,12 @@ public class SimulationWorker extends IdThread {
 		return trace;
 	}
 
-	public void start(StateVec initStates) {
+	public void setInitialStates(StateVec initStates) {
 		this.initStates = initStates;
+	}
+	
+	public void start(StateVec initStates) {
+		setInitialStates(initStates);
 		this.start();
 	}
 	

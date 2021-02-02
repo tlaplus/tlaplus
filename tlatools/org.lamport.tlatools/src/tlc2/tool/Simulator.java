@@ -150,14 +150,14 @@ public class Simulator {
 	private long aril;
 
 	// Each simulation worker pushes their results onto this shared queue.
-	private final BlockingQueue<SimulationWorkerResult> workerResultQueue = new LinkedBlockingQueue<>();
+	protected final BlockingQueue<SimulationWorkerResult> workerResultQueue = new LinkedBlockingQueue<>();
 	
     /**
      * Timestamp of when simulation started.
      */
 	private final long startTime = System.currentTimeMillis();
 	
-	private final List<SimulationWorker> workers;
+	protected final List<SimulationWorker> workers;
 		 
 	 /**
 	 * Returns whether a given error code is considered "continuable". That is, if
@@ -165,7 +165,7 @@ public class Simulator {
 	 * simulator. These errors are considered "fatal" since they most likely
 	 * indicate an error in the way the spec is written.
 	 */
-	private boolean isNonContinuableError(int ec) {
+	protected boolean isNonContinuableError(int ec) {
 		return ec == EC.TLC_INVARIANT_EVALUATION_FAILED || 
 			   ec == EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED ||
 			   ec == EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT;
@@ -184,7 +184,7 @@ public class Simulator {
 	/*
 	 * This method does random simulation on a TLA+ spec.
 	 * 
-	 * It runs until en error is encountered or we have generated the maximum number of traces.
+	 * It runs until an error is encountered or we have generated the maximum number of traces.
 	 * 
    * @return an error code, or <code>EC.NO_ERROR</code> on success
 	 */
@@ -259,6 +259,33 @@ public class Simulator {
 		//
 		this.aril = rng.getAril();
 		
+		int errorCode = simulate(initStates);
+		
+		if (errorCode == EC.NO_ERROR) {
+			// see tlc2.tool.Worker.doPostCheckAssumption()
+			final ExprNode sn = (ExprNode) this.tool.getPostConditionSpec();
+			try {
+				if (sn != null && !this.tool.isValid(sn)) {
+					MP.printError(EC.TLC_ASSUMPTION_FALSE, sn.toString());
+				}
+			} catch (Exception e) {
+				// tool.isValid(sn) failed to evaluate...
+				MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR, new String[] { sn.toString(), e.getMessage() });
+			}
+		}
+
+		// Do a final progress report.
+		report.isRunning = false;
+		synchronized (report) {
+			report.notify();
+		}
+		// Wait for the progress reporter thread to finish.
+		report.join();
+
+		return errorCode;
+	}
+
+	protected int simulate(final StateVec initStates) throws InterruptedException {
 		// Start up multiple simulation worker threads, each with their own unique seed.
 		final Set<Integer> runningWorkers = new HashSet<>();
 		for (int i = 0; i < this.workers.size(); i++) {
@@ -334,37 +361,15 @@ public class Simulator {
 		
 		// Shut down all workers.
 		this.shutdownAndJoinWorkers(workers);
-		
-		if (errorCode == EC.NO_ERROR) {
-			// see tlc2.tool.Worker.doPostCheckAssumption()
-			final ExprNode sn = (ExprNode) this.tool.getPostConditionSpec();
-			try {
-				if (sn != null && !this.tool.isValid(sn)) {
-					MP.printError(EC.TLC_ASSUMPTION_FALSE, sn.toString());
-				}
-			} catch (Exception e) {
-				// tool.isValid(sn) failed to evaluate...
-				MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR, new String[] { sn.toString(), e.getMessage() });
-			}
-		}
-
-		// Do a final progress report.
-		report.isRunning = false;
-		synchronized (report) {
-			report.notify();
-		}
-		// Wait for the progress reporter thread to finish.
-		report.join();
-
 		return errorCode;
 	}
 
-	private final void printBehavior(final TLCRuntimeException exception, final TLCState state, final StateVec stateTrace) {
+	protected final void printBehavior(final TLCRuntimeException exception, final TLCState state, final StateVec stateTrace) {
 		MP.printTLCRuntimeException(exception);
 		printBehavior(state, stateTrace);
 	}
 
-	private final void printBehavior(SimulationWorkerError error) {
+	protected final void printBehavior(SimulationWorkerError error) {
 		printBehavior(error.errorCode, error.parameters, error.state, error.stateTrace);
 	}
 
@@ -372,7 +377,7 @@ public class Simulator {
 	 * Prints out the simulation behavior, in case of an error. (unless we're at
 	 * maximum depth, in which case don't!)
 	 */
-	private final void printBehavior(final int errorCode, final String[] parameters, final TLCState state, final StateVec stateTrace) {
+	protected final void printBehavior(final int errorCode, final String[] parameters, final TLCState state, final StateVec stateTrace) {
 		MP.printError(errorCode, parameters);
 		printBehavior(state, stateTrace);
 		this.printSummary();
@@ -469,7 +474,7 @@ public class Simulator {
 	/**
 	 * Prints the summary
 	 */
-	private final void printSummary() {
+	protected final void printSummary() {
 		this.reportCoverage();
 
 		/*

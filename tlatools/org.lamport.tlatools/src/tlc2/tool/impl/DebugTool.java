@@ -65,7 +65,11 @@ public class DebugTool extends Tool {
 	}
 	
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, IDebugTarget target) {
-		super(mainFile, configFile, resolver);
+		this(mainFile, configFile, resolver, Mode.MC, target);
+	}
+	
+	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, IDebugTarget target) {
+		super(mainFile, configFile, resolver, mode);
 		this.target = target;
 	}
 
@@ -149,7 +153,7 @@ public class DebugTool extends Tool {
 		// target is null during instantiation of super (see constructor above), ie.
 		// eager evaluation of operators in SpecProcessor. mainChecker is null
 		// while SpecProcessor processes constant definitions, ...
-		return target == null || TLCGlobals.mainChecker == null;
+		return target == null || (TLCGlobals.mainChecker == null && TLCGlobals.simulator == null);
 	}
 
 	private boolean isLiveness(int control, TLCState s0, TLCState s1) {

@@ -32,12 +32,13 @@ import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
+import tlc2.tool.SingleThreadedSimulator;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
-import tlc2.tool.impl.Tool.Mode;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
 import tlc2.util.DotStateWriter;
@@ -1040,9 +1041,19 @@ public class TLC {
                 }
 				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				
-				tool = new FastTool(mainFile, configFile, resolver, Mode.Simulation);
-				Simulator simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, traceNum, rng, seed,
-						resolver, TLCGlobals.getNumWorkers());
+				Simulator simulator;
+				if (debugger) {
+					assert TLCGlobals.getNumWorkers() == 1
+							: "TLCDebugger does not support running with multiple workers.";
+					tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation,
+							TLCDebugger.Factory.getInstance());
+					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
+	                        traceNum, rng, seed, resolver);
+				} else {
+					tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation);
+					simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 
+	                        traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
+				}
                 TLCGlobals.simulator = simulator;
                 result = simulator.simulate();
 			} else { // RunMode.MODEL_CHECK
