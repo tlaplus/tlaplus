@@ -319,8 +319,14 @@ class ErrorTraceTreeViewer {
 				// TODO If ever comes up as a performance problem again, the
 				// nested TLCVariableValues could also be diffed lazily.
            		if (statesIndex > 0) {
-           			final TLCState predecessor = states.get(statesIndex - 1);
-           			predecessor.diff(child);
+           			if (error.isOrder(Order.OneToN)) {
+           				final TLCState predecessor = states.get(statesIndex - 1);
+           				predecessor.diff(child);
+           			} else {
+						// With Order NtoOne, the previous state is logically the child's successor.
+           				final TLCState successor = states.get(statesIndex - 1);
+           				child.diff(successor);
+           			}
            		}
 				treeViewer.replace(parent, viewerIndex, child);
 				// Always setHashChildren even if child has no children: This is

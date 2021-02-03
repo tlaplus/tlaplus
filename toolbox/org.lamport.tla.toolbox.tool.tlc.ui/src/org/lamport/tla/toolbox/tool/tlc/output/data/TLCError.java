@@ -234,6 +234,10 @@ public class TLCError
 		return stateSortDirection;
 	}
 
+	public boolean isOrder(Order o) {
+		return stateSortDirection == o;
+	}
+
 	private void orderTrace(Order order) {
 		if (stateSortDirection != order) {
 			Collections.reverse(states);
