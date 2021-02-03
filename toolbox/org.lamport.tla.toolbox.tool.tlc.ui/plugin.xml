@@ -888,6 +888,9 @@ Console Facory
                os="macosx"
                value="Helvetica Neue-regular-12">
          </fontValue>
+         <description>
+            The font used on the Error-Trace area in the TLC Error view.
+         </description>
       </fontDefinition>
    </extension>
    <extension point="org.eclipse.ui.bindings">
