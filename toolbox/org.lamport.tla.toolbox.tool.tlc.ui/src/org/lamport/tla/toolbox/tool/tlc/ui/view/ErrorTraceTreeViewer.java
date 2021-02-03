@@ -48,6 +48,7 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationDefaults;
 import org.lamport.tla.toolbox.tool.tlc.model.Model;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Order;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFcnElementVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCFunctionVariableValue;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
@@ -102,29 +103,41 @@ class ErrorTraceTreeViewer {
 			column.getColumn().setWidth(COLUMN_WIDTH[i]);
 			column.setLabelProvider(labelProvider);
 			resizer.setColumnForIndex(column, i);
-			column.getColumn().addSelectionListener(new SelectionAdapter() {
-				public void widgetSelected(final SelectionEvent e) {
-					// reverse the current trace
-					final TLCError error = (TLCError) treeViewer.getInput();
-					error.reverseTrace();
-					// Reset the viewer's selection to the empty selection. With empty
-					// selection, the subsequent refresh call does *not* invalidate the
-					// StateContentProvider's lazy policy.
-					// We know that the user clicked on the tree's column header
-					// and the real selection is of little importance.
-					treeViewer.setSelection(new ISelection() {
-						public boolean isEmpty() {
-							return true;
-						}
-					});
-					treeViewer.refresh(false);
-					
-					// remember the order for next trace shown
-					final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
-					dialogSettings.put(TLCModelLaunchDataProvider.STATESORTORDER,
-							!dialogSettings.getBoolean(TLCModelLaunchDataProvider.STATESORTORDER));
-				}
-			});
+			if (i == 1) {
+				// We consider the "Value" column of the tree to be the one that shows a state's
+				// number. In order to reverse the direction in which a trace is shown, a user
+				// can click the "Value" column. The convention on Win, macOS, and Linux is to
+				// place an arrow on the column to indicate the current direction.  Due to
+				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=133154, we cannot place an
+				// indicator on both columns.
+				treeViewer.getTree().setSortColumn(column.getColumn());
+				column.getColumn().addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						// reverse the current trace
+						final TLCError error = (TLCError) treeViewer.getInput();
+						error.reverseTrace();
+						
+						treeViewer.getTree().setSortDirection(error.getOrder() == Order.OneToN ? SWT.UP : SWT.DOWN);
+						
+						// Reset the viewer's selection to the empty selection. With empty
+						// selection, the subsequent refresh call does *not* invalidate the
+						// StateContentProvider's lazy policy.
+						// We know that the user clicked on the tree's column header
+						// and the real selection is of little importance.
+						treeViewer.setSelection(new ISelection() {
+							public boolean isEmpty() {
+								return true;
+							}
+						});
+						treeViewer.refresh(false);
+						
+						// remember the order for next trace shown
+						final IDialogSettings dialogSettings = Activator.getDefault().getDialogSettings();
+						dialogSettings.put(TLCModelLaunchDataProvider.STATESORTORDER,
+								!dialogSettings.getBoolean(TLCModelLaunchDataProvider.STATESORTORDER));
+					}
+				});
+			}
 		}
 		
         parent.addControlListener(resizer);

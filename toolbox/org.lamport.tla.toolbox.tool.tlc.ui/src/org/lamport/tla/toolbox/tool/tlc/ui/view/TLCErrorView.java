@@ -67,6 +67,7 @@ import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCModelLaunchDataProvider;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCState;
 import org.lamport.tla.toolbox.tool.tlc.output.data.TLCVariable;
+import org.lamport.tla.toolbox.tool.tlc.output.data.TLCError.Order;
 import org.lamport.tla.toolbox.tool.tlc.output.source.TLCOutputSourceRegistry;
 import org.lamport.tla.toolbox.tool.tlc.traceexplorer.TraceExplorerComposite;
 import org.lamport.tla.toolbox.tool.tlc.ui.TLCUIActivator;
@@ -853,6 +854,7 @@ public class TLCErrorView extends ViewPart
     	final TreeViewer treeViewer = errorTraceTreeViewer.getTreeViewer();
     	treeViewer.getTree().setItemCount(error.getTraceSize() + (error.isTraceRestricted() ? 1 : 0));
     	treeViewer.setInput(error);
+		treeViewer.getTree().setSortDirection(error.getOrder() == Order.OneToN ? SWT.UP : SWT.DOWN);
 		// If the number of states in the trace is sufficiently small, eagerly
 		// expand all root level items (which translates to the states
 		// variables). This causes the TreeViewer to correctly determine the
