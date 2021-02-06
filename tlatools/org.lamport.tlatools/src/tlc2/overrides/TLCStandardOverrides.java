@@ -25,6 +25,9 @@
  ******************************************************************************/
 package tlc2.overrides;
 
+import tlc2.overrides.internal.Json;
+import tlc2.overrides.internal.TLCExt;
+
 // tlc2.tool.impl.SpecProcessor's "api" only loads class
 // "tlc2.overrides.TLCOverrides".
 public class TLCStandardOverrides implements ITLCOverrides {

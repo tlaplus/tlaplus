@@ -583,7 +583,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // We also are appending a standard module overrides, so we are able to bring some modules
         // from CommunityModules without any change, is this a good idea?
         boolean hasCallableValue = false;
-        final String tlcOverrides = System.getProperty("tlc2.overrides.TLCOverrides", "tlc2.overrides.TLCOverrides") + File.pathSeparator + "tlc2.overrides.TLCStandardOverrides";        
+        final String tlcOverrides = "tlc2.overrides.TLCStandardOverrides" + File.pathSeparator + System.getProperty("tlc2.overrides.TLCOverrides", "tlc2.overrides.TLCOverrides");
 		for (String ovrde : tlcOverrides.split(File.pathSeparator)) {
 			final Class<?> idx = this.tlaClass.loadClass(ovrde);
 			if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {

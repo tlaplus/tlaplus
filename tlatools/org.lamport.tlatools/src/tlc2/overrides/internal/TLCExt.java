@@ -23,7 +23,7 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tlc2.overrides;
+package tlc2.overrides.internal;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -36,6 +36,8 @@ import tla2sany.semantic.StringNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.overrides.TLAPlusOperator;
+import tlc2.overrides.Evaluation;
 import tlc2.tool.Action;
 import tlc2.tool.ConcurrentTLCTrace;
 import tlc2.tool.EvalException;

@@ -1,4 +1,4 @@
-package tlc2.overrides;
+package tlc2.overrides.internal;
 /*******************************************************************************
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import tlc2.overrides.TLAPlusOperator;
 import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.FcnLambdaValue;
