@@ -50,6 +50,7 @@ import tlc2.tool.EvalException;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
+import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.TLCVariable;
 import tlc2.value.impl.Value;
@@ -123,7 +124,9 @@ class TLCStackFrame extends StackFrame {
 			setName(node.getHumanReadableImage());
 		}
 		// There is a 1:n mapping between SemanticNode and TLCStackFrames. For example,
-		// the same SN appears multiple times on the stack in case of recursion.
+		// the same SN appears multiple times on the stack in case of recursion. Thus,
+		// node.myUID doesn't suffice as a frame's id, which - by definition - has to
+		// be unique across all frames.
 		setId(node.myUID ^ rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
 
 		final Location location = node.getLocation();
@@ -147,6 +150,16 @@ class TLCStackFrame extends StackFrame {
 
 	public TLCStackFrame(SemanticNode node, Context ctxt, final Tool tool) {
 		this(node, ctxt, tool, null);
+	}
+
+	protected Variable getVariable(final IValue value, String varName) {
+		return getVariable(value, UniqueString.of(varName));
+	}
+	
+	protected Variable getVariable(final IValue value, UniqueString varName) {
+		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName), rnd);
+		nestedVariables.put(variable.getVariablesReference(), variable);
+		return variable;
 	}
 
 	Variable[] getVariables() {
@@ -205,11 +218,7 @@ class TLCStackFrame extends StackFrame {
 						val = unlazy((LazyValue) c.getValue());
 					}
 					if (val instanceof Value) {
-						final Value value = (Value) val;
-						final DebugTLCVariable variable = (DebugTLCVariable) value
-								.toTLCVariable(new DebugTLCVariable(c.getName().getName().toString()), rnd);
-						nestedVariables.put(variable.getVariablesReference(), variable);
-						vars.add(variable);
+						vars.add(getVariable((Value) val, c.getName().getName().toString()));
 					} else if (val instanceof SemanticNode) {
 						final Variable variable = new Variable();
 						variable.setName(c.getName().getSignature());
