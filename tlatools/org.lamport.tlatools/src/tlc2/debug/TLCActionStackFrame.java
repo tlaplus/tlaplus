@@ -42,28 +42,28 @@ import util.Assert.TLCRuntimeException;
 
 public class TLCActionStackFrame extends TLCStateStackFrame {
 	
-	public static final String SCOPE = "Predecessor";
+	public static final String SCOPE = "State'";
 
-	protected final TLCState predecessor;
-	private final int predId;
+	protected final TLCState succecessor;
+	private final int succId;
 
 	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps) {
 		this(expr, c , tool, predecessor, ps, null);
 	}
 	
 	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps, RuntimeException e) {
-		super(expr, c , tool, ps, e);
-		this.predecessor = predecessor.deepCopy();
+		super(expr, c , tool, predecessor, e);
+		this.succecessor = ps.deepCopy();
 		
 		// Tempting to use state.fingerprint/hashCode, but would normalize all values as a side effect.
-		this.predId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
+		this.succId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 
 	@Override
 	public Variable[] getVariables(int vr) {
-		if (vr == predId) {
+		if (vr == succId) {
 			return tool.eval(() -> {
-				return getStateVariables(predecessor);
+				return getStateVariables(succecessor, "'");
 			});
 		}
 		return super.getVariables(vr);
@@ -76,7 +76,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 		
 		final Scope scope = new Scope();
 		scope.setName(SCOPE);
-		scope.setVariablesReference(predId);
+		scope.setVariablesReference(succId);
 		scopes.add(scope);
 		
 		return scopes.toArray(new Scope[scopes.size()]);
@@ -86,7 +86,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	protected Object unlazy(final LazyValue lv) {
 		return tool.eval(() -> {
 			try {
-				return lv.eval(tool, predecessor, state);
+				return lv.eval(tool, state, succecessor);
 			} catch (TLCRuntimeException | EvalException e) {
 				return e;
 			}

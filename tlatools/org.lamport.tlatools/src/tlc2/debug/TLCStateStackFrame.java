@@ -75,6 +75,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	protected Variable[] getStateVariables(final TLCState state) {
+		return getStateVariables(state, "");
+	}
+
+	protected Variable[] getStateVariables(final TLCState state, final String prime) {
 		final List<Variable> vars = new ArrayList<>();
 		final Map<UniqueString, IValue> vals = state.getVals();
 		for (final Entry<UniqueString, IValue> e : vals.entrySet()) {
@@ -82,11 +86,11 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			final IValue value = e.getValue();
 			final DebugTLCVariable variable;
 			if (value == null) {
-				variable = new DebugTLCVariable(key.toString());
+				variable = new DebugTLCVariable(key.toString() + prime);
 				variable.setValue("null");
 			} else {
 				variable = (DebugTLCVariable) value
-						.toTLCVariable(new DebugTLCVariable(key.toString()), rnd);
+						.toTLCVariable(new DebugTLCVariable(key.toString() + prime), rnd);
 				nestedVariables.put(variable.getVariablesReference(), variable);
 			}
 			vars.add(variable);
