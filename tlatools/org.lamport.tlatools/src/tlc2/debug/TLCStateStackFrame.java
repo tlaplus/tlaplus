@@ -50,7 +50,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	public static final String SCOPE = "State";
 
 	protected transient final TLCState state;
-	private transient final int stateId;
+	protected transient final int stateId;
 
 	public TLCStateStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state) {
 		this(node, ctxt, tool, state, null);
@@ -75,10 +75,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	protected Variable[] getStateVariables(final TLCState state) {
-		return getStateVariables(state, "");
+		return toSortedArray(getStateVariables(state, ""));
 	}
 
-	protected Variable[] getStateVariables(final TLCState state, final String prime) {
+	protected List<Variable> getStateVariables(final TLCState state, final String prime) {
 		final List<Variable> vars = new ArrayList<>();
 		final Map<UniqueString, IValue> vals = state.getVals();
 		for (final Entry<UniqueString, IValue> e : vals.entrySet()) {
@@ -95,7 +95,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			}
 			vars.add(variable);
 		}
-		return vars.toArray(new Variable[vars.size()]);
+		return vars;
 	}
 
 	@Override

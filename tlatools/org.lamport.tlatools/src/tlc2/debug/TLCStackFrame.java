@@ -264,16 +264,19 @@ class TLCStackFrame extends StackFrame {
 					vars.add(v);
 				}
 			}
-			
-			// Its nicer if the variables/constants are sorted lexicographically.
-			vars.sort(new Comparator<Variable>() {
-				@Override
-				public int compare(Variable o1, Variable o2) {
-					return o1.getName().compareTo(o2.getName());
-				}
-			});
-			return vars.toArray(new Variable[vars.size()]);
+			return toSortedArray(vars);
 		});
+	}
+	
+	protected Variable[] toSortedArray(final List<Variable> vars) {
+		// Its nicer if the variables/constants are sorted lexicographically.
+		vars.sort(new Comparator<Variable>() {
+			@Override
+			public int compare(Variable o1, Variable o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+		return vars.toArray(new Variable[vars.size()]);
 	}
 
 	protected Object unlazy(final LazyValue lv) {

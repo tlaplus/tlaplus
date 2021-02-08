@@ -25,11 +25,8 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.SemanticNode;
@@ -42,10 +39,7 @@ import util.Assert.TLCRuntimeException;
 
 public class TLCActionStackFrame extends TLCStateStackFrame {
 	
-	public static final String SCOPE = "State'";
-
 	protected final TLCState succecessor;
-	private final int succId;
 
 	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps) {
 		this(expr, c , tool, predecessor, ps, null);
@@ -54,32 +48,18 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps, RuntimeException e) {
 		super(expr, c , tool, predecessor, e);
 		this.succecessor = ps.deepCopy();
-		
-		// Tempting to use state.fingerprint/hashCode, but would normalize all values as a side effect.
-		this.succId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 
 	@Override
 	public Variable[] getVariables(int vr) {
-		if (vr == succId) {
+		if (vr == stateId) {
 			return tool.eval(() -> {
-				return getStateVariables(succecessor, "'");
+				final List<Variable> vars = getStateVariables(succecessor, "'");
+				vars.addAll(getStateVariables(state, ""));
+				return toSortedArray(vars);
 			});
 		}
 		return super.getVariables(vr);
-	}
-
-	@Override
-	public Scope[] getScopes() {
-		final List<Scope> scopes = new ArrayList<>();
-		scopes.addAll(Arrays.asList(super.getScopes()));
-		
-		final Scope scope = new Scope();
-		scope.setName(SCOPE);
-		scope.setVariablesReference(succId);
-		scopes.add(scope);
-		
-		return scopes.toArray(new Scope[scopes.size()]);
 	}
 
 	@Override
