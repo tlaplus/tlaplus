@@ -45,6 +45,8 @@ import org.eclipse.lsp4j.debug.ConfigurationDoneArguments;
 import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.ContinueResponse;
 import org.eclipse.lsp4j.debug.DisconnectArguments;
+import org.eclipse.lsp4j.debug.EvaluateArguments;
+import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.InitializeRequestArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
 import org.eclipse.lsp4j.debug.OutputEventArguments;
@@ -96,7 +98,19 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// The capabilities define customizations how the debugger will interact with
 		// this debuggee. Declaring no capabilities causes the most simple protocol to
 		// be used.
-		return CompletableFuture.completedFuture(new Capabilities());
+		final Capabilities capabilities = new Capabilities();
+		capabilities.setSupportsEvaluateForHovers(true);
+		return CompletableFuture.completedFuture(capabilities);
+	}
+
+	@Override
+	public CompletableFuture<EvaluateResponse> evaluate(final EvaluateArguments args) {
+		// See https://github.com/alygin/vscode-tlaplus/blob/master/src/main.ts
+		if (args.getExpression().startsWith("tlaplus://")) {
+			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
+					.findAny().map(f -> f.get(args)).orElse(new EvaluateResponse()));
+		}
+		return CompletableFuture.completedFuture(new EvaluateResponse());
 	}
 
 	@Override

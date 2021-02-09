@@ -25,6 +25,8 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -34,6 +36,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.debug.EvaluateArguments;
+import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.ScopePresentationHint;
 import org.eclipse.lsp4j.debug.Source;
@@ -42,8 +46,10 @@ import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
+import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
@@ -277,6 +283,88 @@ class TLCStackFrame extends StackFrame {
 			}
 		});
 		return vars.toArray(new Variable[vars.size()]);
+	}
+	
+	protected Variable getVariable(Location location, final String symbol) {
+		SemanticNode sn = tool.getSpecProcessor().getNodeAt(location, symbol);
+		if (sn instanceof OpApplNode) {
+			sn = ((OpApplNode) sn).getOperator();
+		}
+		if (sn == null || !(sn instanceof SymbolNode)) {
+			return null;
+		}
+		// lookup might return sn, in which case hover will show the nodes location.
+		Object o = tool.lookup((SymbolNode) sn, this.ctxt, false);
+		
+		Variable variable = new Variable();
+		variable.setName(symbol.toString());
+		variable.setValue(o.toString());
+		variable.setType(o.getClass().getSimpleName());
+		return variable;
+	}
+
+	public EvaluateResponse get(final EvaluateArguments ea) {
+		// Lets assume a module R that extends B, which in turn instantiates module A,
+		// i.e., R e> B i> A where "e>" denotes extends and "i>" denotes
+		// instantiation.
+		// For two constants c defined in A and B, and foo defined in R, the DAP variable
+		// view shows a high-level "Constants" and a sub-node for A, B, and R, respectively:
+		//
+		// Constant
+		// - A
+		// -- c
+		// - B
+		// -- c
+		// - R
+		// -- foo
+		// -- ...
+		//
+		// A user might hover of the occurrence of constant c in R, which should be evaluated
+		// to the value of B!c.  She might also hover over the occurrence of I!c in R, assuming
+		// an named instantiation, i.e. I == INSTANCE A occurring in B.  If she opens module A,
+		// hovering over c should also show the value of A!c.  Hovering of c in B, on the other
+		// hand, has to show the value of B!c.
+		//
+		// Unless TLCDebugger declares the capability "EvaluateForHovers" [0], DAP uses a
+		// basic lookup mechanism that looks for symbols in the set of variables from which DAP
+		// populated its variables view.  This mechanism fails to resolve a symbol if it appears
+		// multiple times such as c above.  It also fails to handle the case of variables appearing
+		// in sub-nodes such as R.  That is, it doesn't not resolve foo because foo is one level
+		// too deep in the tree.  In other words, the lookup mechanism is coupled to how the view
+		// presents the data.  To address these issues, TLCDebugger declares the capability
+		// "EvaluateForHovers" and resolves variables manually.
+		// DAP does not provide the current (hovering) location (file, start/end line & column) as
+		// structured data [1].  Instead, we encode the location into the expression of
+		// EvaluateArguments as suggested privately by Andre Weinand of the VSCode team and
+		// partially demonstrated by vscode-mock-debug [2].
+		// 
+		//
+		// [0] https://microsoft.github.io/debug-adapter-protocol/specification#Requests_Evaluate
+		// [1] https://github.com/microsoft/vscode/issues/89084
+		// [2] https://github.com/microsoft/vscode-mock-debug/commit/27539c78c25aa316be6aa1ee03bfd1e87bf7faad#diff-04bba6a35cad1c794cbbe677678a51de13441b7a6ee8592b7b50be1f05c6f626
+
+		// Encode this file, token, and range into a URI with which parsing becomes a
+		// no-brainer but some might consider over-engineered, oh well...
+		// tlaplus:///home/markus/foo/bar.tla?A!c#4 3 1 2
+		final EvaluateResponse er = new EvaluateResponse();
+		try {
+			final URI u = URI.create(ea.getExpression());
+			// Unfortunately, we have to manually strip the extension because the lookup
+			// later is going to be on the module, not the file name.
+			final String moduleName = Paths.get(u.getPath()).getFileName().toString().replaceAll(".tla$", "");
+
+			final Variable v = getVariable(Location.parseCoordinates(moduleName, u.getFragment()), u.getQuery());
+			if (v != null) {
+				// Can be resolved to something. If not, the user hovered over something like a comment.
+				er.setResult(v.getValue());
+				er.setType(v.getType());
+				er.setVariablesReference(v.getVariablesReference());
+			}
+			
+			return er;
+		} catch (IllegalArgumentException e) {
+			return er;
+		}
 	}
 
 	protected Object unlazy(final LazyValue lv) {

@@ -30,10 +30,12 @@ import java.util.List;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.SemanticNode;
+import tla2sany.st.Location;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
+import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
 import util.Assert.TLCRuntimeException;
 
@@ -63,6 +65,21 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	}
 
 	@Override
+	protected Variable getVariable(Location location, final String symbol) {
+		final SemanticNode sn = tool.getSpecProcessor().getNodeAt(location, symbol);
+		if (isPrimed(sn)) {
+			final IValue value = succecessor.lookup(symbol);
+			if (value != null) {
+				return getVariable(value, symbol + "'");
+			}
+		}
+		return super.getVariable(location, symbol);
+	}
+
+	private boolean isPrimed(SemanticNode sn) {
+		return tool.getPrimedVar(sn, ctxt, false) != null;
+	}
+
 	protected Object unlazy(final LazyValue lv) {
 		return tool.eval(() -> {
 			try {

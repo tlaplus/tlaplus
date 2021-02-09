@@ -26,6 +26,7 @@
 package tlc2.debug;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
@@ -225,6 +227,51 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(11, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 150, 3, 162, 34, FOLDER, (Context) null); //TODO Assert context that contains the refinement mapping
+		
+		// 8888888888888888888 Test resolving a location (e.g. editor hovering) to a value 888888888888888 //
+		debugger.setBreakpoints(RM, 120);
+		debugger.continue_();
+		
+		// inbox
+		EvaluateResponse var = debugger.evaluate(RM, "inbox", 118, 14, 118, 19);
+		assertEquals("FcnRcdValue", var.getType());
+		assertNotEquals(0, var.getVariablesReference());
+		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<[type |-> \"pl\"]>> @@ 2 :> <<>>)", var.getResult());
+		var = debugger.evaluate(RM, "inbox", 119, 25, 119, 29);
+		assertEquals("FcnRcdValue", var.getType());
+		assertNotEquals(0, var.getVariablesReference());
+		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<[type |-> \"pl\"]>> @@ 2 :> <<>>)", var.getResult());
+		
+		// inbox'
+		var = debugger.evaluate(RM, "inbox", 119, 14, 119, 19);
+		assertEquals("FcnRcdValue", var.getType());
+		assertNotEquals(0, var.getVariablesReference());
+		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<>> @@ 2 :> <<>>)", var.getResult());
+
+		// i
+		var = debugger.evaluate(RM, "i", 109, 9, 109, 10);
+		assertEquals("IntValue", var.getType());
+		assertEquals(0, var.getVariablesReference());
+		assertEquals("1", var.getResult());
+		var = debugger.evaluate(RM, "i", 111, 35, 111, 36);
+		assertEquals("IntValue", var.getType());
+		assertEquals(0, var.getVariablesReference());
+		assertEquals("1", var.getResult());
+		var = debugger.evaluate(RM, "i", 115, 34, 115, 35);
+		assertEquals("IntValue", var.getType());
+		assertEquals(0, var.getVariablesReference());
+		assertEquals("1", var.getResult());
+		
+		// j in \E j \in ... no longer in the current scope (ctxt).
+		var = debugger.evaluate(RM, "j", 117, 9, 117, 10);
+		assertEquals("FormalParamNode", var.getType());
+		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
+		var = debugger.evaluate(RM, "j", 118, 23, 118, 24);
+		assertEquals("FormalParamNode", var.getType());
+		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
+		var = debugger.evaluate(RM, "j", 119, 56, 119, 57);
+		assertEquals("FormalParamNode", var.getType());
+		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

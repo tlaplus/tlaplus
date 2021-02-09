@@ -128,6 +128,10 @@ public class ExternalModuleTable implements ExploreNode {
     return mods;
   }
 
+  public final ModuleNode getModuleNode( String key ) {
+	  return getModuleNode(UniqueString.of(key));
+  }
+
   public final ModuleNode getModuleNode( UniqueString key ) {
     ExternalModuleTableEntry p = moduleHashTable.get(key);
     if (p == null) return null;

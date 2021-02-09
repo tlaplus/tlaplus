@@ -40,6 +40,8 @@ import java.util.Set;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
+import tla2sany.explorer.ExploreNode;
+import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.AssumeNode;
@@ -61,6 +63,7 @@ import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.module.BuiltInModuleHelper;
 import tlc2.module.TLCBuiltInOverrides;
@@ -1834,5 +1837,35 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	
 	public Defns getDefns() {
 		return defns;
+	}
+	
+	// Cache nodes because this it is prohibitively expensive to traverse the
+	// semantic graph for every call.
+	private final Map<Location, SemanticNode> allNodes = new HashMap<>();
+	
+	/**
+	 * @return <code>null</code> or a {@link SemanticNode} corresponding to the
+	 *         symbolName at the given location {@link Location}.
+	 */
+	public SemanticNode getNodeAt(final Location loc, final String symbolName) {
+		if (allNodes.isEmpty()) {
+			specObj.getRootModule().walkGraph(new Hashtable<>(), new ExplorerVisitor() {
+				@Override
+				public void preVisit(ExploreNode exploreNode) {
+					if (exploreNode instanceof SemanticNode) {
+						final SemanticNode sn = (SemanticNode) exploreNode;
+						allNodes.put(sn.getLocation().getAdjusted(), sn);
+					}
+					super.preVisit(exploreNode);
+				}
+			});
+		}
+		return allNodes.computeIfAbsent(loc, l -> {
+			final ModuleNode moduleNode = specObj.getExternalModuleTable().getModuleNode(l.source());
+			if (moduleNode == null) {
+				return null;
+			}
+			return moduleNode.getContext().getSymbol(UniqueString.of(symbolName));
+		});
 	}
 }

@@ -163,7 +163,7 @@ public class ModuleNode extends SymbolNode {
 *    an ExprNode[] array.                                                  *
 ***************************************************************************/
 
-  private Context      ctxt;
+  private final Context      ctxt;
     // The (flat) context with all names known in this module, including
     // builtin ops, and ops declared as CONSTANT or VARIABLE, ops
     // imported and made visible via EXTENDS, and ops created through

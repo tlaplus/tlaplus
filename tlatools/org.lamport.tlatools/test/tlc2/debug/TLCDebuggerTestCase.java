@@ -32,6 +32,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -46,6 +48,8 @@ import java.util.concurrent.Phaser;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.debug.ContinueArguments;
+import org.eclipse.lsp4j.debug.EvaluateArguments;
+import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.NextArguments;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
@@ -448,6 +452,17 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			// Convenience methods
 			continue_(new ContinueArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
 			return stackTrace();
+		}
+
+		public EvaluateResponse evaluate(final String module, final String symbol, final int beginLine,
+				final int beginColumn, final int endLine, final int endColumn) throws Exception {
+			final EvaluateArguments args = new EvaluateArguments();
+			// Resolve module to absolute path required by URI.
+			final URI uri = new URI("tlaplus", "", Paths.get(module).toAbsolutePath().toString(), symbol,
+					String.format("%s %s %s %s", beginLine, beginColumn, endLine, endColumn));
+			args.setExpression(uri.toASCIIString());
+			args.setFrameId(this.stack.peek().getId()); // Just use the id of the topmost frame.
+			return evaluate(args).get();
 		}
 
 		public class TestLauncher implements Launcher<IDebugProtocolClient> {

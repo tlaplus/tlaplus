@@ -34,7 +34,9 @@ import java.util.Map.Entry;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
 
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.st.Location;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.DebugTool;
@@ -72,6 +74,22 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			});
 		}
 		return super.getVariables(vr);
+	}
+	
+	@Override
+	protected Variable getVariable(Location location, final String symbol) {
+		// The SemanticNode, corresponding to a non-primed variable, is *not* found via
+		// tool.getSpecProcessor().getNodeAt(location) like how the lookup is done in
+		// TLCActionStackFrame.
+		final SemanticNode sn = tool.getSpecProcessor().getNodeAt(location, symbol);
+		if (sn instanceof OpDeclNode) {
+			assert ((OpDeclNode) sn).getName().equals(symbol);
+			final IValue value = state.lookup(symbol);
+			if (value != null) {
+				return getVariable(value, symbol);
+			}
+		}
+		return super.getVariable(location, symbol);
 	}
 
 	protected Variable[] getStateVariables(final TLCState state) {

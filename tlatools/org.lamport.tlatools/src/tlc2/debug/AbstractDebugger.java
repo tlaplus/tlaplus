@@ -178,13 +178,6 @@ public abstract class AbstractDebugger  implements IDebugProtocolServer{
 	}
 
 	@Override
-	public CompletableFuture<EvaluateResponse> evaluate(EvaluateArguments args) {
-		EvaluateResponse response = new EvaluateResponse();
-		response.setResult("EvaluateResponse#setResult");
-		return CompletableFuture.completedFuture(response);
-	}
-
-	@Override
 	public CompletableFuture<SetExpressionResponse> setExpression(SetExpressionArguments args) {
 		return CompletableFuture.completedFuture(new SetExpressionResponse());
 	}
