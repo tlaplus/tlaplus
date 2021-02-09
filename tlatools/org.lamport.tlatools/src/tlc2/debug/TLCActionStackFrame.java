@@ -71,6 +71,11 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 			final IValue value = succecessor.lookup(symbol);
 			if (value != null) {
 				return getVariable(value, symbol + "'");
+			} else {
+				Variable v = new Variable();
+				v.setName(symbol + "'");
+				v.setValue("null");
+				return v;
 			}
 		}
 		return super.getVariable(location, symbol);

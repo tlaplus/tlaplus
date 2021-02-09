@@ -272,7 +272,21 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		var = debugger.evaluate(RM, "j", 119, 56, 119, 57);
 		assertEquals("FormalParamNode", var.getType());
 		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
+
+		// PassToken
+		debugger.setBreakpoints(RM, 85);
+		debugger.continue_();
+
+		// inbox
+		var = debugger.evaluate(RM, "inbox", 80, 28, 80, 33);
+		assertEquals("FcnRcdValue", var.getType());
+		assertNotEquals(0, var.getVariablesReference());
+		assertEquals("(0 :> <<>> @@ 1 :> <<>> @@ 2 :> <<[color |-> \"white\", type |-> \"tok\", q |-> 0]>>)", var.getResult());
 		
+		// inbox' (not yet evaluated/"assigned")
+		var = debugger.evaluate(RM, "inbox", 80, 18, 80, 23);
+		assertEquals("null", var.getResult());
+
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();
