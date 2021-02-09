@@ -196,6 +196,13 @@ public final class Context implements Iterator<Context> {
 		}
 		return depth;
 	}
+
+	public Context deepCopy() {
+		if (this == Empty) {
+			return this;
+		}
+		return new Context(this.name, this.value, this.next.deepCopy());
+	}
 }
 /*
 ----------------------------- MODULE Scoping -----------------------------

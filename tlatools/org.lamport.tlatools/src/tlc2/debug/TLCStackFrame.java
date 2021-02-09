@@ -117,7 +117,7 @@ class TLCStackFrame extends StackFrame {
 			// Do not create a deep copy of ctxt (like it is done for state and predecessor
 			// in TLCInit|NextStackFrame. A TLCStackFrame will point to its corresponding
 			// node in the Context tree even if Context mutates.
-			this.ctxt = ctxt;
+			this.ctxt = ctxt; //ctxt.deepCopy();
 		}
 		Assert.check(this.node != null, EC.GENERAL);
 		Assert.check(this.ctxt != null, EC.GENERAL);
