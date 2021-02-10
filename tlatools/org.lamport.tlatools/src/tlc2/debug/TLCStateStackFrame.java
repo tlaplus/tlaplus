@@ -27,6 +27,7 @@ package tlc2.debug;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,9 +35,10 @@ import java.util.Map.Entry;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
 
-import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.ASTConstants;
+import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
-import tla2sany.st.Location;
+import tla2sany.semantic.SymbolNode;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.DebugTool;
@@ -77,24 +79,44 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 	
 	@Override
-	protected Variable getVariable(Location location, final String symbol) {
-		// The SemanticNode, corresponding to a non-primed variable, is *not* found via
-		// tool.getSpecProcessor().getNodeAt(location) like how the lookup is done in
-		// TLCActionStackFrame.
-		final SemanticNode sn = tool.getSpecProcessor().getNodeAt(location, symbol);
-		if (sn instanceof OpDeclNode) {
-			assert ((OpDeclNode) sn).getName().equals(symbol);
-			final IValue value = state.lookup(symbol);
-			if (value != null) {
-				return getVariable(value, symbol);
-			} else {
-				Variable v = new Variable();
-				v.setName(symbol);
-				v.setValue("null");
-				return v;
+	protected Variable getVariable(final LinkedList<SemanticNode> path) {
+		assert !path.isEmpty();
+		
+		if (!isPrimeScope(path)) {
+			SymbolNode var = tool.getVar(path.getFirst(), ctxt, false, tool.getId());
+			if (var != null) {
+				final IValue value = state.lookup(var.getName());
+				if (value != null) {
+					return getVariable(value, var.getName());
+				} else {
+					Variable v = new Variable();
+					v.setName(var.getName().toString());
+					v.setValue("null");
+					return v;
+				}
+			}
+		} else if (isPrimeScope(path)) {
+			// TLCStateStackFrame implies that there is no successor state, probably because
+			// the stack frame belongs to the evaluation of the initial predicate, an
+			// invariant, a state-constraint...  In this scope, a primed variable has no value.
+			final Variable variable = new Variable();
+			variable.setName(path.getFirst().getHumanReadableImage());
+			variable.setValue(path.getFirst().getLocation().toString());
+			return variable;
+		}
+		return super.getVariable(path);
+	}
+	
+	protected boolean isPrimeScope(LinkedList<SemanticNode> path) {
+		for (SemanticNode semanticNode : path) {
+			if (semanticNode instanceof OpApplNode) {
+				OpApplNode oan = (OpApplNode) semanticNode;
+				if (ASTConstants.OP_prime == oan.getOperator().getName()) {
+					return true;
+				}
 			}
 		}
-		return super.getVariable(location, symbol);
+		return false;
 	}
 
 	protected Variable[] getStateVariables(final TLCState state) {

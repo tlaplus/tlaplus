@@ -25,12 +25,13 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.SemanticNode;
-import tla2sany.st.Location;
+import tla2sany.semantic.SymbolNode;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
@@ -65,24 +66,26 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	}
 
 	@Override
-	protected Variable getVariable(Location location, final String symbol) {
-		final SemanticNode sn = tool.getSpecProcessor().getNodeAt(location, symbol);
-		if (isPrimed(sn)) {
-			final IValue value = succecessor.lookup(symbol);
-			if (value != null) {
-				return getVariable(value, symbol + "'");
-			} else {
-				Variable v = new Variable();
-				v.setName(symbol + "'");
-				v.setValue("null");
-				return v;
+	protected Variable getVariable(final LinkedList<SemanticNode> path) {
+		assert !path.isEmpty();
+		
+		if (isPrimeScope(path)) {
+			// No need to call getPrimedVar because sn.getFirst is the child of the
+			// OpApplNode that represents the prime.
+			final SymbolNode var = tool.getVar(path.getFirst(), ctxt, false, tool.getId());
+			if (var != null) {
+				final IValue value = succecessor.lookup(var.getName());
+				if (value != null) {
+					return getVariable(value, var.getName() + "'");
+				} else {
+					Variable v = new Variable();
+					v.setName(var.getName() + "'");
+					v.setValue("null");
+					return v;
+				}
 			}
 		}
-		return super.getVariable(location, symbol);
-	}
-
-	private boolean isPrimed(SemanticNode sn) {
-		return tool.getPrimedVar(sn, ctxt, false) != null;
+		return super.getVariable(path);
 	}
 
 	protected Object unlazy(final LazyValue lv) {

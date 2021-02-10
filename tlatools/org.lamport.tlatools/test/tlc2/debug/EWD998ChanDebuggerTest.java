@@ -152,8 +152,8 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCStateFrame(stackFrames[--i], 49, 49, RM, vars[1]);
 		assertTLCStateFrame(stackFrames[--i], 49, 49, RM);
 		//186 186 EWD998Inv == EWD998!Inv
-		assertTLCStateFrame(stackFrames[--i], 186, 186, RM);
-		assertTLCStateFrame(stackFrames[--i], 166, 180, RM);
+		assertTLCStateFrame(stackFrames[--i], 187, 187, RM);
+		assertTLCStateFrame(stackFrames[--i], 166, 181, RM);
 
 		// action, counter, color, pending, and token are part of the context because
 		// this is debugging the refinement mapping.
@@ -233,60 +233,88 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		debugger.continue_();
 		
 		// inbox
-		EvaluateResponse var = debugger.evaluate(RM, "inbox", 118, 14, 118, 19);
+		EvaluateResponse var = debugger.evaluate(RM, "inbox", 118, 14, 118, 18);
 		assertEquals("FcnRcdValue", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<[type |-> \"pl\"]>> @@ 2 :> <<>>)", var.getResult());
-		var = debugger.evaluate(RM, "inbox", 119, 25, 119, 29);
+		var = debugger.evaluate(RM, "inbox", 119, 24, 119, 28);
 		assertEquals("FcnRcdValue", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<[type |-> \"pl\"]>> @@ 2 :> <<>>)", var.getResult());
 		
 		// inbox'
-		var = debugger.evaluate(RM, "inbox", 119, 14, 119, 19);
+		var = debugger.evaluate(RM, "inbox", 119, 14, 119, 18);
 		assertEquals("FcnRcdValue", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<>> @@ 2 :> <<>>)", var.getResult());
 
 		// i
-		var = debugger.evaluate(RM, "i", 109, 9, 109, 10);
+		var = debugger.evaluate(RM, "i", 109, 9, 109, 9);
 		assertEquals("IntValue", var.getType());
 		assertEquals(0, var.getVariablesReference());
 		assertEquals("1", var.getResult());
-		var = debugger.evaluate(RM, "i", 111, 35, 111, 36);
+		var = debugger.evaluate(RM, "i", 111, 35, 111, 35);
 		assertEquals("IntValue", var.getType());
 		assertEquals(0, var.getVariablesReference());
 		assertEquals("1", var.getResult());
-		var = debugger.evaluate(RM, "i", 115, 34, 115, 35);
+		var = debugger.evaluate(RM, "i", 115, 34, 115, 34);
 		assertEquals("IntValue", var.getType());
 		assertEquals(0, var.getVariablesReference());
 		assertEquals("1", var.getResult());
 		
 		// j in \E j \in ... no longer in the current scope (ctxt).
-		var = debugger.evaluate(RM, "j", 117, 9, 117, 10);
+		var = debugger.evaluate(RM, "j", 117, 9, 117, 9);
 		assertEquals("FormalParamNode", var.getType());
 		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
-		var = debugger.evaluate(RM, "j", 118, 23, 118, 24);
+		var = debugger.evaluate(RM, "j", 118, 23, 118, 23);
 		assertEquals("FormalParamNode", var.getType());
 		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
-		var = debugger.evaluate(RM, "j", 119, 56, 119, 57);
+		var = debugger.evaluate(RM, "j", 119, 56, 119, 56);
 		assertEquals("FormalParamNode", var.getType());
 		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
 
 		// PassToken
+		debugger.setBreakpoints(RM, 81);
+		debugger.continue_();
+		
+		// inbox[i][j].type (record field)
+		var = debugger.evaluate(RM, "type", 77, 26, 77, 29);
+		// TODO Evaluating record fields is not yet supported. In case of
+		// inbox[i][j].type, we will even have to backtrack to the node representing
+		// inbox in the result of SemanticNode#pathTo(77 26 77 29), apply [i][j],
+		// resolve the StringNode representing type to its StringValue, and select it
+		// from the RecordValue.
+
 		debugger.setBreakpoints(RM, 85);
 		debugger.continue_();
 
 		// inbox
-		var = debugger.evaluate(RM, "inbox", 80, 28, 80, 33);
+		var = debugger.evaluate(RM, "inbox", 80, 28, 80, 32);
 		assertEquals("FcnRcdValue", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<>> @@ 1 :> <<>> @@ 2 :> <<[color |-> \"white\", type |-> \"tok\", q |-> 0]>>)", var.getResult());
 		
 		// inbox' (not yet evaluated/"assigned")
-		var = debugger.evaluate(RM, "inbox", 80, 18, 80, 23);
+		var = debugger.evaluate(RM, "inbox", 80, 18, 80, 22);
 		assertEquals("null", var.getResult());
+		
+		// lhs/rhs refinement mapping
+		debugger.setBreakpoints(RM, 179);
+		debugger.continue_();
+		// RHS shows the value of the active variable
+		var = debugger.evaluate(RM, "active", 166, 43, 166, 48);
+		assertEquals("FcnRcdValue", var.getType());
+		assertNotEquals(0, var.getVariablesReference());
+		assertEquals("(0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE)", var.getResult());
 
+		// LHS must not show the value of the active variable in the current state. In
+		// case of the test case, the value of active in EWD998 and EWD998Chan happens
+		// to be indeed identical, but in other refinement mappings this is not
+		// necessarily the case.  The token and pending variable don't match the case
+		// we want to test, which is identical variables in high- and low-level spec.
+		var = debugger.evaluate(RM, "active", 166, 33, 166, 40);
+		assertEquals("line 166, col 33 to line 166, col 40 of module EWD998Chan", var.getResult());
+		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();

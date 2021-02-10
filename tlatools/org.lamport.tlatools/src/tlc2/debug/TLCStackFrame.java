@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,6 +48,7 @@ import org.eclipse.lsp4j.debug.Variable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
@@ -285,20 +287,33 @@ class TLCStackFrame extends StackFrame {
 		return vars.toArray(new Variable[vars.size()]);
 	}
 	
-	protected Variable getVariable(Location location, final String symbol) {
-		SemanticNode sn = tool.getSpecProcessor().getNodeAt(location, symbol);
-		if (sn instanceof OpApplNode) {
-			sn = ((OpApplNode) sn).getOperator();
-		}
-		if (sn == null || !(sn instanceof SymbolNode)) {
-			return null;
-		}
-		// lookup might return sn, in which case hover will show the nodes location.
-		Object o = tool.lookup((SymbolNode) sn, this.ctxt, false);
+	protected Variable getVariable(final LinkedList<SemanticNode> path) {
+		assert !path.isEmpty();
 		
-		Variable variable = new Variable();
-		variable.setName(symbol.toString());
-		variable.setValue(o.toString());
+		SemanticNode sn = path.getFirst();
+		SymbolNode node = null;
+		if (sn instanceof OpArgNode) {
+			node = ((OpArgNode) sn).getOp();
+		} else if (sn instanceof OpApplNode) {
+			node = ((OpApplNode) sn).getOperator();
+		} else if (sn instanceof SymbolNode) {
+			node = (SymbolNode) sn;
+		}
+
+		Object o;
+		if (node != null) {
+			// lookup might return sn, in which case hover will show the nodes location.
+			o = tool.lookup(node, this.ctxt, false);
+		} else {
+			o = sn;
+		}
+
+		final Variable variable = new Variable();
+		if (o instanceof SymbolNode && ((SymbolNode)o).isBuiltIn()) {
+			variable.setValue(((SymbolNode)o).getLocation().toString());
+		} else {
+			variable.setValue(o.toString());
+		}
 		variable.setType(o.getClass().getSimpleName());
 		return variable;
 	}
@@ -353,7 +368,14 @@ class TLCStackFrame extends StackFrame {
 			// later is going to be on the module, not the file name.
 			final String moduleName = Paths.get(u.getPath()).getFileName().toString().replaceAll(".tla$", "");
 
-			final Variable v = getVariable(Location.parseCoordinates(moduleName, u.getFragment()), u.getQuery());
+			final Location location = Location.parseCoordinates(moduleName, u.getFragment());
+			final LinkedList<SemanticNode> path = tool.getModule(location.source()).pathTo(location);
+			if (path.isEmpty()) {
+				// Can be resolved to something. If not, the user hovered over something like a comment.
+				er.setResult(location.toString());
+				return er;
+			}
+			final Variable v = getVariable(path);
 			if (v != null) {
 				// Can be resolved to something. If not, the user hovered over something like a comment.
 				er.setResult(v.getValue());

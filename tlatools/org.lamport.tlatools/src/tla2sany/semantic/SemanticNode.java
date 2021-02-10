@@ -4,7 +4,11 @@
 // last modified on Fri 16 Mar 2007 at 17:22:54 PST by lamport
 package tla2sany.semantic;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.w3c.dom.Document;
@@ -171,6 +175,107 @@ public abstract class SemanticNode
   public SemanticNode[] getChildren() {
       return null;
   }
+
+	/**
+	 * @return Returns an empty list instead of null compared to getChildren.
+	 */
+	public List<SemanticNode> getListOfChildren() {
+		final SemanticNode[] children = getChildren();
+		if (children == null) {
+			return new ArrayList<>();
+		}
+		return Arrays.asList(children);
+	}
+  
+	public <T> ChildrenVisitor<T> walkChildren(final ChildrenVisitor<T> visitor) {
+		visitor.preVisit(this);
+		for (SemanticNode c : getListOfChildren()) {
+			if (visitor.preempt()) {
+				break;
+			}
+			c.walkChildren(visitor);
+		}
+		return visitor.postVisit(this);
+	}
+
+	public static class ChildrenVisitor<T> {
+		public void preVisit(final SemanticNode node) {
+		}
+
+		public boolean preempt() {
+			return true;
+		}
+
+		public ChildrenVisitor<T> postVisit(final SemanticNode node) {
+			return this;
+		}
+
+		public T get() {
+			return null;
+		}
+	}
+
+	/**
+	 * @return The path in the semantic tree up to the given {@link Location}
+	 *         starting from this node. An empty {@link LinkedList} if no reachable
+	 *         {@link SemanticNode} matches the given {@link Location}.
+	 *         <p>
+	 *         {@link LinkedList#getFirst()} is the {@link SemanticNode} matching
+	 *         {@link Location}.
+	 */
+	public LinkedList<SemanticNode> pathTo(final Location location) {
+		final ChildrenVisitor<LinkedList<SemanticNode>> visitor = walkChildren(
+				new ChildrenVisitor<LinkedList<SemanticNode>>() {
+					LinkedList<SemanticNode> pathToLoc;
+
+					@Override
+					public LinkedList<SemanticNode> get() {
+						if (pathToLoc == null) {
+							return new LinkedList<SemanticNode>();
+						}
+						return pathToLoc;
+					}
+
+					@Override
+					public void preVisit(final SemanticNode node) {
+						if (location.equals(node.getLocation())) {
+							// node will be added to pathToLoc in postVisit!
+							pathToLoc = new LinkedList<>();
+						} else if (node instanceof OpDefNode) {
+							final OpDefNode odn = (OpDefNode) node;
+							for (final SemanticNode param : odn.getParams()) {
+								if (location.equals(param.getLocation())) {
+									pathToLoc = new LinkedList<>();
+									pathToLoc.add(param);
+								}
+							}
+						} else if (node instanceof OpApplNode) {
+							final OpApplNode oan = (OpApplNode) node;
+							// TODO Include oan#range aka oan#getBded... in getQuantSymbolLists?
+							for (FormalParamNode fpn : oan.getQuantSymbolLists()) {
+								if (location.equals(fpn.getLocation())) {
+									pathToLoc = new LinkedList<>();
+									pathToLoc.add(fpn);
+								}
+							}
+						}
+					}
+
+					@Override
+					public boolean preempt() {
+						return pathToLoc != null;
+					}
+
+					@Override
+					public ChildrenVisitor<LinkedList<SemanticNode>> postVisit(final SemanticNode node) {
+						if (preempt()) {
+							pathToLoc.add(node);
+						}
+						return this;
+					}
+				});
+		return visitor.get();
+	}
 
   /**
    * Default implementations of walkGraph() to be inherited by subclasses

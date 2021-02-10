@@ -467,24 +467,4 @@ public final class Location implements Comparable<Location>
 	public String linesAndColumns() {
 		return toString().replaceAll(OF_MODULE + ".*", "");
 	}
-
-	public Location getAdjusted() {
-		// There is this bug (or feature) that locations can be "dimension-less", i.e..
-		// the begin and end line/column are identical. This seems to be the case for
-		// single-char identifiers such as i in "\E i \in {1,2}:...".  Some front-ends
-		// cannot deal with this and have to work with this corrected location. 
-		if (this == nullLoc) {
-			return this;
-		}
-		if (UniqueString.of("--TLA+ BUILTINS--").equals(name)) {
-			return this;
-		}
-		if (UniqueString.of(UNKNOWN_LOCATION).equals(name)) {
-			return this;
-		}
-		if (bLine != eLine || bColumn != eColumn) {
-			return this;
-		}
-		return new Location(name, bLine, bColumn, eLine, eColumn + 1);
-	}
 }

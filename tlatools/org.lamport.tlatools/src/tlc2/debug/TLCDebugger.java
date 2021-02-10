@@ -364,6 +364,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget popFrame(TLCState predecessor, TLCState state) {
+		//TODO This swallows the predecessor!
 		return popFrame(state);
 	}
 

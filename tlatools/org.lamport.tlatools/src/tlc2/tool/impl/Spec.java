@@ -21,6 +21,7 @@ import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.FrontEnd;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
+import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
@@ -633,6 +634,10 @@ abstract class Spec
     public int getId() {
     	return toolId;
     }
+
+	public ModuleNode getModule(final String moduleName) {
+		return getSpecProcessor().getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
+	}
 
 	public List<File> getModuleFiles(final FilenameToStream resolver) {
 		final List<File> result = new ArrayList<File>();

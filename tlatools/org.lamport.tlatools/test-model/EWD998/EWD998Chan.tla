@@ -163,7 +163,8 @@ tpos ==
 (***************************************************************************)
 (* EWD998 with channels refines EWD998 that models channels as sets.       *)
 (***************************************************************************)
-EWD998 == INSTANCE EWD998 WITH token <-
+EWD998 == INSTANCE EWD998 WITH  active <- active,
+								token <-
                                   LET tkn == CHOOSE i \in 1 .. Len(inbox[tpos]):
                                                      inbox[tpos][i].type = "tok"
                                   IN  [pos   |-> tpos, 
