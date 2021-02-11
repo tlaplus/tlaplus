@@ -413,10 +413,10 @@ public class MP
             break;
         /* ----------------------------------------------------------------- */
         case EC.WRONG_COMMANDLINE_PARAMS_TLC:
-            b.append("%1%\nUsage: java tlc2.TLC [-option] inputfile");
+            b.append("%1%\nUsage: java tlc2.TLC [-help] [-option] inputfile");
             break;
         case EC.WRONG_COMMANDLINE_PARAMS_SIMULATOR:
-            b.append("%1%\nUsage: java tlc2.Simulator [-option] inputfile");
+            b.append("%1%\nUsage: java tlc2.Simulator [-help] [-option] inputfile");
             break;
         /* ----------------------------------------------------------------- */
         case EC.TLC_VERSION:

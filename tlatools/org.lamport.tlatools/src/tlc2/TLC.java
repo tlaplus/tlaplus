@@ -484,6 +484,7 @@ public class TLC {
             	}
             } else if (args[index].equals("-help") || args[index].equals("-h"))
             {
+            	// See note referring to "-help" in MP#getMessage0 for EC.WRONG_COMMANDLINE_PARAMS_TLC.
                 printUsage();
                 return false;
             } else if (args[index].equals("-lncheck"))
