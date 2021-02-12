@@ -88,6 +88,8 @@ public class TLCStackFrame extends StackFrame {
 	protected transient final Context ctxt;
 	protected transient final Tool tool;
 	protected transient final RuntimeException exception;
+	// null if this is the root frame, i.e. the start of an evaluation.
+	protected transient TLCStackFrame parent;
 
 	protected final int constantsId;
 	protected final int ctxtId;
@@ -106,7 +108,8 @@ public class TLCStackFrame extends StackFrame {
 		this.setId(id);
 	}
 
-	public TLCStackFrame(SemanticNode node, Context ctxt, Tool tool, RuntimeException e) {
+	public TLCStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, Tool tool, RuntimeException e) {
+		this.parent = parent;
 		this.tool = tool;
 		Assert.check(this.tool != null, EC.GENERAL);
 		
@@ -156,8 +159,8 @@ public class TLCStackFrame extends StackFrame {
 		this.exceptionId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 
-	public TLCStackFrame(SemanticNode node, Context ctxt, final Tool tool) {
-		this(node, ctxt, tool, null);
+	public TLCStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, final Tool tool) {
+		this(parent, node, ctxt, tool, null);
 	}
 
 	protected Variable getVariable(final IValue value, String varName) {

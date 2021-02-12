@@ -319,14 +319,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
-		stack.push(new TLCStackFrame(expr, c, tool));
+		stack.push(new TLCStackFrame(stack.peek(), expr, c, tool));
 		haltExecution(expr, this.stack.size());
 		return this;
 	}
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
-		stack.push(new TLCStateStackFrame(expr, c, tool, ps));
+		stack.push(new TLCStateStackFrame(stack.peek(), expr, c, tool, ps));
 		haltExecution(expr, this.stack.size());
 		return this;
 	}
@@ -334,7 +334,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor,
 			TLCState ps) {
-		stack.push(new TLCActionStackFrame(expr, c, tool, predecessor, ps));
+		stack.push(new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, ps));
 		haltExecution(expr, this.stack.size());
 		return this;
 	}
@@ -410,19 +410,19 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, RuntimeException e) {
-		return pushExceptionFrame(new TLCStackFrame(expr, c, tool, e), e);
+		return pushExceptionFrame(new TLCStackFrame(stack.peek(), expr, c, tool, e), e);
 	}
 	
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c,
 			TLCState state, RuntimeException e) {
-		return pushExceptionFrame(new TLCStateStackFrame(expr, c, tool, state, e), e);
+		return pushExceptionFrame(new TLCStateStackFrame(stack.peek(), expr, c, tool, state, e), e);
 	}
 	
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor,
 			TLCState state, RuntimeException e) {
-		return pushExceptionFrame(new TLCActionStackFrame(expr, c, tool, predecessor, state, e), e);
+		return pushExceptionFrame(new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, state, e), e);
 	}
 
 	private IDebugTarget pushExceptionFrame(final TLCStackFrame frame, RuntimeException e) {

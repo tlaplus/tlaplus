@@ -44,12 +44,14 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	
 	protected final TLCState succecessor;
 
-	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps) {
-		this(expr, c , tool, predecessor, ps, null);
+	public TLCActionStackFrame(TLCStackFrame parent, SemanticNode expr, Context c, Tool tool, TLCState predecessor,
+			TLCState ps) {
+		this(parent, expr, c, tool, predecessor, ps, null);
 	}
-	
-	public TLCActionStackFrame(SemanticNode expr, Context c, Tool tool, TLCState predecessor, TLCState ps, RuntimeException e) {
-		super(expr, c , tool, predecessor, e);
+
+	public TLCActionStackFrame(TLCStackFrame parent, SemanticNode expr, Context c, Tool tool, TLCState predecessor,
+			TLCState ps, RuntimeException e) {
+		super(parent, expr, c, tool, predecessor, e);
 		this.succecessor = ps.deepCopy();
 	}
 

@@ -56,15 +56,17 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	protected transient final TLCState state;
 	protected transient final int stateId;
 
-	public TLCStateStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state) {
-		this(node, ctxt, tool, state, null);
+	public TLCStateStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, Tool tool, TLCState state) {
+		this(parent, node, ctxt, tool, state, null);
 	}
-	
-	public TLCStateStackFrame(SemanticNode node, Context ctxt, Tool tool, TLCState state, RuntimeException e) {
-		super(node, ctxt, tool, e);
+
+	public TLCStateStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, Tool tool, TLCState state,
+			RuntimeException e) {
+		super(parent, node, ctxt, tool, e);
 		this.state = state.deepCopy();
-		
-		// Tempting to use state.fingerprint/hashCode, but would normalize all values as a side effect.
+
+		// Tempting to use state.fingerprint/hashCode, but would normalize all values as
+		// a side effect.
 		this.stateId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 
