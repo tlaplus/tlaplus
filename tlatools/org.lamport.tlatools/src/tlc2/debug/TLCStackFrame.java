@@ -75,6 +75,7 @@ public class TLCStackFrame extends StackFrame {
 	public static final String EXCEPTION = "Exception";
 	public static final String CONSTANTS = "Constants";
 	public static final String SCOPE = "Context";
+	public static final String STACK = "Stack";
 	
 	// It would be easier to use hashCode instead of passing a random generator
 	// around. However, calculating the hashCode for a TLC value calculates the
@@ -91,9 +92,7 @@ public class TLCStackFrame extends StackFrame {
 	// null if this is the root frame, i.e. the start of an evaluation.
 	protected transient TLCStackFrame parent;
 
-	protected final int constantsId;
 	protected final int ctxtId;
-	private final int exceptionId;
 	
 	// Testing only!
 	TLCStackFrame(int id) {
@@ -102,8 +101,6 @@ public class TLCStackFrame extends StackFrame {
 		this.ctxt = null;
 		this.tool = null;
 		this.exception = null;
-		this.exceptionId = -1;
-		this.constantsId = -1;
 		this.ctxtId = -1;
 		this.setId(id);
 	}
@@ -155,8 +152,6 @@ public class TLCStackFrame extends StackFrame {
 		setSource(source);
 		
 		this.ctxtId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
-		this.constantsId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
-		this.exceptionId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 
 	public TLCStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, final Tool tool) {
@@ -178,11 +173,11 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	Variable[] getConstants() {
-		return getVariables(constantsId);
+		return getVariables(ctxtId + 1);
 	}
 	
 	Variable[] getException() {
-		return getVariables(exceptionId);
+		return getVariables(ctxtId + 2);
 	}
 	
 	public Variable[] getVariables(final int vr) {
@@ -211,7 +206,7 @@ public class TLCStackFrame extends StackFrame {
 				vars.addAll(cntsts);
 			}
 			
-			if (vr == exceptionId) {
+			if (vr == ctxtId + 2) {
 				final Variable variable = new Variable();
 				variable.setName(getNode().getHumanReadableImage());
 				final RuntimeException re = (RuntimeException) exception;
@@ -247,7 +242,7 @@ public class TLCStackFrame extends StackFrame {
 					}
 					c = c.next();
 				}
-			} else if (constantsId == vr) {
+			} else if (ctxtId + 1 == vr) {
 				//TODO: This is evaluated for each TLCStackFrame instance even though the constantDefns
 				// never change.  Perhaps, this can be moved to a place where it's only evaluated once.
 				// On the other hand, the debug adapter protocol (DAP) might not like sharing
@@ -415,7 +410,7 @@ public class TLCStackFrame extends StackFrame {
 		if (!this.tool.getSpecProcessor().getConstantDefns().isEmpty()) {
 			final Scope scope = new Scope();
 			scope.setName(CONSTANTS);
-			scope.setVariablesReference(constantsId);
+			scope.setVariablesReference(ctxtId + 1);
 			scope.setPresentationHint(ScopePresentationHint.REGISTERS);
 			scopes.add(scope);
 		}
@@ -423,7 +418,7 @@ public class TLCStackFrame extends StackFrame {
 		if (this.exception != null) {
 			final Scope scope = new Scope();
 			scope.setName(EXCEPTION);
-			scope.setVariablesReference(exceptionId);
+			scope.setVariablesReference(ctxtId + 2);
 			scopes.add(scope);
 		}
 		
