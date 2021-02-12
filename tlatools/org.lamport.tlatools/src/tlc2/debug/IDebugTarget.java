@@ -29,6 +29,7 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
+import tlc2.value.impl.Value;
 
 public interface IDebugTarget {
 
@@ -39,14 +40,20 @@ public interface IDebugTarget {
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control);
 	
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, int control);
+	
+	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, int control);
 
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState state);
+
+	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState state);
 
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState state);
 
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
 
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
+
+	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState predecessor, TLCState state);
 
 	// No popExceptionFrame because TLC cannot recover from an exception!
 	IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, RuntimeException e);

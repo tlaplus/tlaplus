@@ -67,7 +67,7 @@ import util.Assert.TLCDetailedRuntimeException;
 import util.Assert.TLCRuntimeException;
 import util.UniqueString;
 
-class TLCStackFrame extends StackFrame {
+public class TLCStackFrame extends StackFrame {
 	
 	// Not thread-safe because TLCDebugger is assumed to take care of synchronization!
 	private static final Map<SemanticNode, String> PATH_CACHE = new HashMap<>();
@@ -442,5 +442,9 @@ class TLCStackFrame extends StackFrame {
 	@Override
 	public String toString() {
 		return "TLCStackFrame [node=" + node + "]";
+	}
+
+	public Value setValue(Value v) {
+		return v;
 	}
 }

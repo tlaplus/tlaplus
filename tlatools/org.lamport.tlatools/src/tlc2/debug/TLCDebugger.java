@@ -78,6 +78,7 @@ import tla2sany.st.Location;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
+import tlc2.value.impl.Value;
 
 public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	protected static Logger LOGGER = Logger.getLogger(TLCDebugger.class.getName());
@@ -380,6 +381,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, int control) {
+		popFrame(tool, expr, c, control);
+		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
+		return this;
+	}
+
+	@Override
 	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
 		final TLCStackFrame pop = stack.pop();
 		assert expr == pop.getNode();
@@ -387,8 +395,22 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState ps) {
+		popFrame(tool, expr, c, ps);
+		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
+		return this;
+	}
+
+	@Override
 	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
 		return popFrame(tool, expr, c, ps);
+	}
+
+	@Override
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState predecessor, TLCState ps) {
+		popFrame(tool, expr, c, ps);
+		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
+		return this;
 	}
 
 	@Override

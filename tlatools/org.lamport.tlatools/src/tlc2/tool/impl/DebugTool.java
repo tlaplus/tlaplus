@@ -205,7 +205,7 @@ public class DebugTool extends Tool {
 		try {
 			target.pushFrame(this, expr, c, s0, s1);
 			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, expr, c, s0, s1);
+			target.popFrame(this, expr, c, v, s0, s1);
 			return v;
 		} catch (TLCRuntimeException | EvalException e) {
 			target.pushExceptionFrame(this, expr, c, s0, s1, e);
@@ -217,7 +217,7 @@ public class DebugTool extends Tool {
 		try {
 			target.pushFrame(this, expr, c, s0);
 			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, expr, c, s0);
+			target.popFrame(this, expr, c, v, s0);
 			return v;
 		} catch (TLCRuntimeException | EvalException e) {
 			target.pushExceptionFrame(this, expr, c, s0, e);
@@ -229,7 +229,7 @@ public class DebugTool extends Tool {
 		try {
 			target.pushFrame(this, expr, c, control);
 			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, expr, c, control);
+			target.popFrame(this, expr, c, v, control);
 			return v;
 		} catch (TLCRuntimeException | EvalException e) {
 			target.pushExceptionFrame(this, expr, c, e);
