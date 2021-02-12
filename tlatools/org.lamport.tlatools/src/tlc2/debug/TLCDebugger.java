@@ -370,8 +370,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, int control) {
-		LOGGER.finer(String.format("%s Call popFrame: [%s], level: %s\n",
-				new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
+		if (LOGGER.isLoggable(Level.FINER)) {
+			LOGGER.finer(String.format("%s Call popFrame: [%s], level: %s\n",
+					new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
+		}
 		final TLCStackFrame pop = stack.pop();
 		assert expr == pop.getNode();
 		return this;
