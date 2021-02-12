@@ -90,7 +90,7 @@ public class TLCStackFrame extends StackFrame {
 	protected transient final RuntimeException exception;
 
 	protected final int constantsId;
-	protected final int stackId;
+	protected final int ctxtId;
 	private final int exceptionId;
 	
 	// Testing only!
@@ -102,7 +102,7 @@ public class TLCStackFrame extends StackFrame {
 		this.exception = null;
 		this.exceptionId = -1;
 		this.constantsId = -1;
-		this.stackId = -1;
+		this.ctxtId = -1;
 		this.setId(id);
 	}
 
@@ -151,7 +151,7 @@ public class TLCStackFrame extends StackFrame {
 				n -> tool.getResolver().resolve(n.getTreeNode().getFilename(), true).getAbsolutePath().toString()));
 		setSource(source);
 		
-		this.stackId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
+		this.ctxtId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 		this.constantsId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 		this.exceptionId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
@@ -171,7 +171,7 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	Variable[] getVariables() {
-		return getVariables(stackId);
+		return getVariables(ctxtId);
 	}
 
 	Variable[] getConstants() {
@@ -217,7 +217,7 @@ public class TLCStackFrame extends StackFrame {
 				vars.add(variable);
 			}
 
-			if (stackId == vr) {
+			if (ctxtId == vr) {
 				Context c = this.ctxt;
 				while (c.hasNext()) {
 					Object val = c.getValue();
@@ -405,7 +405,7 @@ public class TLCStackFrame extends StackFrame {
 		if (!ctxt.isEmpty()) {
 			final Scope scope = new Scope();
 			scope.setName(SCOPE);
-			scope.setVariablesReference(stackId);
+			scope.setVariablesReference(ctxtId);
 			scopes.add(scope);
 		}
 		
