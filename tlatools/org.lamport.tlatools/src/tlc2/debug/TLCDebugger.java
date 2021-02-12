@@ -28,8 +28,8 @@ package tlc2.debug;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -183,7 +183,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		LOGGER.finer(String.format("stackTrace frame: %s, levels: %s\n", args.getStartFrame(), args.getLevels()));
 		final StackTraceResponse res = new StackTraceResponse();
 
-		int from = stack.size() - 1;
+		int from = 0;
 		if (args.getStartFrame() != null) {
 			int req = args.getStartFrame();
 			// within bounds.
@@ -191,24 +191,19 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 				res.setStackFrames(new StackFrame[0]);
 				return CompletableFuture.completedFuture(res);
 			}
-			from = from - req;
+			from = req;
 		}
 
-		int to = 0;
+		int to = stack.size(); // No decrement by one because subList is exclusive.
 		if (args.getLevels() != null) {
 			int req = args.getLevels();
 			// If not within bounds, ignore levels.
-			if (req != 0 && req < from) {
-				to = from - (req - 1);
+			if (req > 0 && from + req < to) {
+				to = from + req;
 			}
 		}
 		
-		final List<StackFrame> frames = new ArrayList<>(Math.max(from - to, 0));
-		for (; from >= to; from--) {
-			final TLCStackFrame stackFrame = stack.elementAt(from);
-			frames.add(stackFrame);
-		}
-
+		final List<TLCStackFrame> frames = stack.subList(from, to);
 		res.setStackFrames(frames.toArray(new StackFrame[frames.size()]));
 		res.setTotalFrames(stack.size());
 		return CompletableFuture.completedFuture(res);
@@ -316,7 +311,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	// However, CST only keeps the SemanticNode but skips the Context and the values. We
 	// would have to make CST take a function that applies a transformation for the debugger
 	// and a different one when CST does its original job.
-	protected final Stack<TLCStackFrame> stack = new Stack<>();
+	protected final LinkedList<TLCStackFrame> stack = new LinkedList<>();
 	
 	// Initialize the debugger to immediately halt on the first frame.
 	private volatile int targetLevel = 1;
