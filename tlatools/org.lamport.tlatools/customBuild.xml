@@ -494,8 +494,8 @@
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
 
-	<!-- Executes a single unit test. -->
-	<target name="test-single" unless="test.skip">
+	<!-- Executes a given set of unit test. -->
+	<target name="test-set" unless="test.skip">
 		<!-- run junit test -->
 		<junit printsummary="yes" haltonfailure="true" showoutput="no" haltonerror="true" forkmode="perTest" fork="yes">
 			<!-- enable all assertions -->
@@ -531,8 +531,14 @@
 
 			<!-- Print all output of the test to the screen. -->
 			<formatter type="plain" usefile="false" />
-			<!-- Run a single test case specified by its class name, by setting the property 'test.testcase'. -->
-			<test name="${test.testcase}" skipNonTests="true"/>
+			<!-- Run the given set of test case specified by the pattern, by setting the property 'test.testcase'. -->
+			<!-- For example, to run the tests whose filename constains 'Vec' in the util package: -->
+			<!-- ant -f customBuild.xml test-set -Dtest.testcases=tlc2/util/*Vec* -->
+			<batchtest fork="yes" todir="${test.reports}" skipNonTests="true">
+				<fileset dir="${test.dir}">
+					<include name="${test.testcases}"/>
+				</fileset>
+			</batchtest>
 		</junit>
 
 		<!-- remove copied class.dir -->
