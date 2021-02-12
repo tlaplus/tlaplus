@@ -37,11 +37,11 @@ public interface IDebugTarget {
 		In, Out, Over, Continue
 	};
 
-	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control);
+	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c);
 	
-	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, int control);
+	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c);
 	
-	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, int control);
+	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v);
 
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState state);
 

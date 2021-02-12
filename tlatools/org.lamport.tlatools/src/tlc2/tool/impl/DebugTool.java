@@ -227,9 +227,9 @@ public class DebugTool extends Tool {
 
 	private Value constLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
 		try {
-			target.pushFrame(this, expr, c, control);
+			target.pushFrame(this, expr, c);
 			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, expr, c, v, control);
+			target.popFrame(this, expr, c, v);
 			return v;
 		} catch (TLCRuntimeException | EvalException e) {
 			target.pushExceptionFrame(this, expr, c, e);

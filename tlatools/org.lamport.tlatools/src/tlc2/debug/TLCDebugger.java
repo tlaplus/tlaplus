@@ -318,38 +318,38 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	private volatile Step step = Step.In;
 
 	@Override
-	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, int control) {
+	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c) {
 		stack.push(new TLCStackFrame(stack.peek(), expr, c, tool));
 		haltExecution(expr, this.stack.size());
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
-		stack.push(new TLCStateStackFrame(stack.peek(), expr, c, tool, ps));
+	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState s) {
+		stack.push(new TLCStateStackFrame(stack.peek(), expr, c, tool, s));
 		haltExecution(expr, this.stack.size());
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor,
-			TLCState ps) {
-		stack.push(new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, ps));
+	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
+			TLCState t) {
+		stack.push(new TLCActionStackFrame(stack.peek(), expr, c, tool, s, t));
 		haltExecution(expr, this.stack.size());
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget pushFrame(TLCState state) {
+	public synchronized IDebugTarget pushFrame(TLCState s) {
 		TLCStackFrame f = this.stack.peek();
-		pushFrame(f.getTool(), f.getNode(), f.getContext(), state);
+		pushFrame(f.getTool(), f.getNode(), f.getContext(), s);
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget pushFrame(TLCState predecessor, TLCState state) {
+	public synchronized IDebugTarget pushFrame(TLCState s, TLCState t) {
 		TLCStackFrame f = this.stack.peek();
-		return pushFrame(f.getTool(), f.getNode(), f.getContext(), predecessor, state);
+		return pushFrame(f.getTool(), f.getNode(), f.getContext(), s, t);
 	}
 
 	@Override
@@ -359,13 +359,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public synchronized IDebugTarget popFrame(TLCState predecessor, TLCState state) {
+	public synchronized IDebugTarget popFrame(TLCState s, TLCState t) {
 		//TODO This swallows the predecessor!
-		return popFrame(state);
+		return popFrame(t);
 	}
 
 	@Override
-	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, int control) {
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c) {
 		if (LOGGER.isLoggable(Level.FINER)) {
 			LOGGER.finer(String.format("%s Call popFrame: [%s], level: %s\n",
 					new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
@@ -376,34 +376,34 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, int control) {
-		popFrame(tool, expr, c, control);
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v) {
+		popFrame(tool, expr, c);
 		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState ps) {
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState s) {
 		final TLCStackFrame pop = stack.pop();
 		assert expr == pop.getNode();
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState ps) {
-		popFrame(tool, expr, c, ps);
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState t) {
+		popFrame(tool, expr, c, v);
 		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState ps) {
-		return popFrame(tool, expr, c, ps);
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState s, TLCState t) {
+		return popFrame(tool, expr, c);
 	}
 
 	@Override
-	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState predecessor, TLCState ps) {
-		popFrame(tool, expr, c, ps);
+	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState s, TLCState t) {
+		popFrame(tool, expr, c, v);
 		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
 		return this;
 	}
@@ -420,9 +420,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 	
 	@Override
-	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor,
-			TLCState state, RuntimeException e) {
-		return pushExceptionFrame(new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, state, e), e);
+	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
+			TLCState t, RuntimeException e) {
+		return pushExceptionFrame(new TLCActionStackFrame(stack.peek(), expr, c, tool, s, t, e), e);
 	}
 
 	private IDebugTarget pushExceptionFrame(final TLCStackFrame frame, RuntimeException e) {
