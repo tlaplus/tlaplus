@@ -35,8 +35,6 @@ import org.eclipse.lsp4j.debug.DataBreakpointInfoResponse;
 import org.eclipse.lsp4j.debug.DisassembleArguments;
 import org.eclipse.lsp4j.debug.DisassembleResponse;
 import org.eclipse.lsp4j.debug.DisconnectArguments;
-import org.eclipse.lsp4j.debug.EvaluateArguments;
-import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.ExceptionInfoArguments;
 import org.eclipse.lsp4j.debug.ExceptionInfoResponse;
 import org.eclipse.lsp4j.debug.GotoArguments;

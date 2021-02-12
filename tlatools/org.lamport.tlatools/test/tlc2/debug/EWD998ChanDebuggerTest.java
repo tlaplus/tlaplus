@@ -29,8 +29,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -182,6 +184,44 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		allVariables.put("i", "2");
 		assertTLCStateFrame(stackFrames[--i], 12, 13, UTILS, allVariables);
 		assertTLCStateFrame(stackFrames[--i], 13, 13, UTILS, allVariables);
+		
+		// 88888888888888888888888 Check Stack Variables 888888888888888888888888 //
+		
+		// InitiateProbe sub-action
+		debugger.setBreakpoints(RM, 71);
+		stackFrames = debugger.continue_();
+		List<Variable> stackVariables = ((TLCStackFrame) stackFrames[5]).getStackVariables(new ArrayList<>());
+		assertEquals(1, stackVariables.size());
+		assertEquals("TRUE", stackVariables.get(0).getValue());
+		assertEquals("inbox[0][j].type=\"tok\"", stackVariables.get(0).getName());
+		assertEquals("BoolValue", stackVariables.get(0).getType());
+
+		stackVariables = ((TLCStackFrame) stackFrames[3]).getStackVariables(new ArrayList<>());
+		assertEquals(2, stackVariables.size());
+		assertEquals("TRUE", stackVariables.get(1).getValue());
+		assertEquals("inbox[0][j].type=\"tok\"", stackVariables.get(1).getName());
+		assertEquals("BoolValue", stackVariables.get(1).getType());
+		assertEquals("TRUE", stackVariables.get(0).getValue());
+		assertEquals("inbox[0][j].color=\"black\"", stackVariables.get(0).getName());
+		assertEquals("BoolValue", stackVariables.get(0).getType());
+		
+		// PassToken sub-action
+		debugger.setBreakpoints(RM, 85);
+		stackFrames = debugger.continue_();
+		stackVariables = ((TLCStackFrame) stackFrames[6]).getStackVariables(new ArrayList<>());
+		assertEquals(1, stackVariables.size());
+		assertEquals("TRUE", stackVariables.get(0).getValue());
+		assertEquals("~active[i]", stackVariables.get(0).getName());
+		assertEquals("BoolValue", stackVariables.get(0).getType());
+
+		stackVariables = ((TLCStackFrame) stackFrames[3]).getStackVariables(new ArrayList<>());
+		assertEquals(2, stackVariables.size());
+		assertEquals("TRUE", stackVariables.get(1).getValue());
+		assertEquals("~active[i]", stackVariables.get(1).getName());
+		assertEquals("BoolValue", stackVariables.get(1).getType());
+		assertEquals("TRUE", stackVariables.get(0).getValue());
+		assertEquals("inbox[i][j].type=\"tok\"", stackVariables.get(0).getName());
+		assertEquals("BoolValue", stackVariables.get(0).getType());
 		
 		// 88888888888888888888888888888888888888888888888888888888888888 //
 		

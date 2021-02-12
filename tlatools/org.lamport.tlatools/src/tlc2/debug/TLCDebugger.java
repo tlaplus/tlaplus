@@ -378,7 +378,25 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v) {
 		popFrame(tool, expr, c);
-		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
+
+		// Attach value to the parent (peeked) frame iff it matches the SemanticNode
+		// from which v was evaluated.  It shouldn't be possible for peeked to be
+		// null, but better be safe than sorry.
+		final TLCStackFrame peeked = stack.peek();
+		if (peeked != null && peeked.node.myUID == expr.myUID) {
+			// Consider setting the value's source to expr iff it's null otherwise. However,
+			// make sure that this doesn't introduce a regression because TLC branches
+			// somewhere based on whether Value#hasSource is true.  If we are sure that
+			// Value#hasSource is an invariant, tlc2.debug.TLCStackFrame.getStackVariables(List<Variable>)
+			// could derive the variable's name via ((SyntaxTreeNode) v.getSource().getTreeNode()).getHumanReadableImage(),
+			// which - in turn - would allow to attach values even to nodes where peeked.node.myUID != expr.myUID.
+			// Not sure, if this is ever necessary though.
+//			if (!v.hasSource()) {
+//				// TLC's test suite doesn't produce an error/failure with v.setSource(expr).
+//				v.setSource(expr);
+//			}
+			stack.peek().setValue(v);
+		}
 		return this;
 	}
 
@@ -392,7 +410,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState t) {
 		popFrame(tool, expr, c, v);
-		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
 		return this;
 	}
 
@@ -404,7 +421,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState s, TLCState t) {
 		popFrame(tool, expr, c, v);
-		stack.stream().filter(f -> f.node.myUID == expr.myUID).findAny().ifPresent(f -> f.setValue(v));
 		return this;
 	}
 

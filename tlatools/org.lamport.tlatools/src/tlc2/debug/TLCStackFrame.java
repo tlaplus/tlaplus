@@ -45,6 +45,7 @@ import org.eclipse.lsp4j.debug.Source;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
 
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.OpApplNode;
@@ -89,6 +90,9 @@ public class TLCStackFrame extends StackFrame {
 	protected transient final Context ctxt;
 	protected transient final Tool tool;
 	protected transient final RuntimeException exception;
+	// The Value this SemanticNode evaluated to eventually. null if this node has
+	// not been evaluated yet or it doesn't evaluate to a value.
+	protected transient Value v;
 	// null if this is the root frame, i.e. the start of an evaluation.
 	protected transient TLCStackFrame parent;
 
@@ -166,6 +170,31 @@ public class TLCStackFrame extends StackFrame {
 		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName), rnd);
 		nestedVariables.put(variable.getVariablesReference(), variable);
 		return variable;
+	}
+	
+	protected List<Variable> getStackVariables(final List<Variable> vars) {
+		if (this.v != null) {
+			Variable variable = getVariable(v, ((SyntaxTreeNode) node.getTreeNode()).getHumanReadableImage());
+			// TODO Somehow attach the variable's location too? getHumanReadableImage
+			// doesn't correctly create whitespaces, which might be confusing. However, the
+			// Toolbox's hover help also shows getHumanReadableImage, which is why fixing it
+			// would be desireable.
+			vars.add(variable);
+		}
+		if (parent != null) {
+			return parent.getStackVariables(vars);
+		}
+		return vars;
+	}
+	
+	protected boolean hasStackVariables() {
+		if (this.v != null) {
+			return true;
+		}
+		if (parent != null) {
+			return parent.hasStackVariables();
+		}
+		return false;
 	}
 
 	Variable[] getVariables() {
@@ -269,6 +298,11 @@ public class TLCStackFrame extends StackFrame {
 									.collect(Collectors.toList()));
 					vars.add(v);
 				}
+			} else if (ctxtId + 3 == vr) {
+				// Intentionally not sorting lexicographically because the order given by the
+				// stack is probably more useful.
+				final List<Variable> pVars = getStackVariables(new ArrayList<>());
+				return pVars.toArray(new Variable[pVars.size()]); 
 			}
 			return toSortedArray(vars);
 		});
@@ -422,6 +456,13 @@ public class TLCStackFrame extends StackFrame {
 			scopes.add(scope);
 		}
 		
+		if (hasStackVariables()) {
+			final Scope scope = new Scope();
+			scope.setName(STACK);
+			scope.setVariablesReference(ctxtId + 3);
+			scopes.add(scope);
+		}
+		
 		return scopes.toArray(new Scope[scopes.size()]);
 	}
 	
@@ -443,6 +484,8 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	public Value setValue(Value v) {
+		assert this.v == null;
+		this.v = v;
 		return v;
 	}
 }
