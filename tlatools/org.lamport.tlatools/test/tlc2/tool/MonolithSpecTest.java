@@ -36,7 +36,8 @@ import util.TestPrintStream;
 import util.ToolIO;
 
 public class MonolithSpecTest extends ModelCheckerTestCase {
-        final TestPrintStream testPrintStream = new TestPrintStream();
+        final TestPrintStream testPrintStreamErr = new TestPrintStream();
+		final TestPrintStream testPrintStreamOut = new TestPrintStream();
 
 	public MonolithSpecTest() {
 		super("MonolithSpec", new String[] { "-config", "MonolithSpec.tla" /* note the extension */ });
@@ -44,7 +45,8 @@ public class MonolithSpecTest extends ModelCheckerTestCase {
 
         @Before
         public void beforeSetUp() {
-            ToolIO.err = testPrintStream;
+            ToolIO.err = testPrintStreamErr;
+			ToolIO.out = testPrintStreamOut;
             ToolIO.reset();
         }
 
@@ -53,8 +55,17 @@ public class MonolithSpecTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "214", "54", "0"));
 
-        // Check that the warning or inexistent file does not occur
-        testPrintStream.assertNoSubstring("File does not exist");
+        // Check that the warning or inexistent file does not occur.
+        testPrintStreamErr.assertNoSubstring("File does not exist");
+
+		// Test that the library path appears between `( )` after parsing the file.		
+		testPrintStreamOut.assertRegex("Parsing file .*/test-model/MonolithSpec.tla \\(.*/test-model/MonolithSpec.tla\\)");
+		testPrintStreamOut.assertRegex("Parsing file .*/EWD840.tla \\(.*/test-model/MonolithSpec.tla\\)");
+		testPrintStreamOut.assertRegex("Parsing file .*/Mod4711.tla \\(.*/test-model/MonolithSpec.tla\\)");
+		testPrintStreamOut.assertRegex("Parsing file .*/Mod4712.tla \\(.*/test-model/MonolithSpec.tla\\)");
+		// For a standard module "Parsing file" message, the behaviour is different between the build jar and the test, 
+		// when running the built one, you would have something like "/private/var/folders/6r/vx4stgxd5yg6pbv_t_b2wttw0000gp/T/TLC.tla".
+		testPrintStreamOut.assertRegex("Parsing file .*/tla2sany/StandardModules/TLC.tla \\(.*/tla2sany/StandardModules/TLC.tla\\)");						
 
 		assertZeroUncovered();
 	}
