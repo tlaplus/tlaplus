@@ -63,9 +63,10 @@ public class MonolithSpecTest extends ModelCheckerTestCase {
 		testPrintStreamOut.assertRegex("Parsing file .*/EWD840.tla \\(.*/test-model/MonolithSpec.tla\\)");
 		testPrintStreamOut.assertRegex("Parsing file .*/Mod4711.tla \\(.*/test-model/MonolithSpec.tla\\)");
 		testPrintStreamOut.assertRegex("Parsing file .*/Mod4712.tla \\(.*/test-model/MonolithSpec.tla\\)");
-		// For a standard module "Parsing file" message, the behaviour is different between the build jar and the test, 
-		// when running the built one, you would have something like "/private/var/folders/6r/vx4stgxd5yg6pbv_t_b2wttw0000gp/T/TLC.tla".
-		testPrintStreamOut.assertRegex("Parsing file .*/tla2sany/StandardModules/TLC.tla \\(.*/tla2sany/StandardModules/TLC.tla\\)");						
+		// For a standard module "Parsing file" message, the behaviour is different between the build jar, the local test and the CI, 
+		// when running the built one (or in CI), you would have something like "/private/var/folders/6r/vx4stgxd5yg6pbv_t_b2wttw0000gp/T/TLC.tla"
+		// or "/tmp/TLC.tla".
+		testPrintStreamOut.assertRegex("Parsing file .*/TLC.tla \\(.*/tla2sany/StandardModules/TLC.tla\\)");						
 
 		assertZeroUncovered();
 	}
