@@ -138,8 +138,4 @@ public class RMIFilenameToStreamResolver implements FilenameToStream {
 		}
 		return buf.toString();
 	}
-
-	public String getLibraryPath(String name) {
-		return "";
-	}
 }

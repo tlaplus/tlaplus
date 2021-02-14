@@ -11,8 +11,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-
 
 /**
  * Defines a translation from names to NamedInputStream's that will be
@@ -46,16 +44,6 @@ public class SimpleFilenameToStream implements FilenameToStream {
    * being the last element of this array.
    */
   private String[] libraryPaths;
-
-  private class LocateLibraryPathContainer {
-    final public File sourceFile;
-    final public String libraryPath;
-
-    public LocateLibraryPathContainer(File sourceFile, String libraryPath) {
-      this.sourceFile  = sourceFile;
-      this.libraryPath = libraryPath;
-    }
-  }
 
   public SimpleFilenameToStream() {
 	  libraryPaths = getLibraryPaths(getInstallationBasePath(), null);
@@ -122,10 +110,6 @@ public class SimpleFilenameToStream implements FilenameToStream {
     return buf.toString();
   }
 
-  public String getLibraryPath(String name) {
-    return locateLibraryPath(name).libraryPath;
-  }
-
   /**
    * August 2014 - TL
    * added functionality for supplying additional libraries.
@@ -173,11 +157,11 @@ public class SimpleFilenameToStream implements FilenameToStream {
    *
    *  @param  module name, used as basis of path name to the file that should contain it
    */
-  private final LocateLibraryPathContainer locateLibraryPath(String name)
+  private final File locate(String name)
   { 
-    String prefix      = "";                // directory to be prepended to file name before lookup
+    String prefix       = "";                // directory to be prepended to file name before lookup
 
-    File   sourceFile  = null;              // File object from fully-qualified name of file found by
+    TLAFile sourceFile  = null;              // TLAFile object from fully-qualified name of file found by
                                             //   searching "libraryPath" for "name", as is done for PATHs and CLASSPATHs
 
     // The TLA standard modules are presumed to be in a directory tla2sany/StandardModules
@@ -202,14 +186,13 @@ public class SimpleFilenameToStream implements FilenameToStream {
     * field in util/ToolIO.                                                *
     ***********************************************************************/
     int idx = 0;
-    InputStream is;
-    String libraryPath = null;
+    InputStream is;    
     while (true)
     {
         if ((idx == 0) && (ToolIO.getUserDir() != null)) {            
             sourceFile  = new TLAFile(ToolIO.getUserDir(), name, this );
             if (sourceFile.exists())  {
-                libraryPath = sourceFile.getAbsolutePath();
+                sourceFile.setLibraryPath(sourceFile.getAbsolutePath());                
             }
         }
         else
@@ -225,13 +208,13 @@ public class SimpleFilenameToStream implements FilenameToStream {
               if(is != null) {
                   sourceFile  = read(name, is);
                   if (sourceFile.exists()) {
-                      libraryPath = cl.getResource(STANDARD_MODULES + name).toString();
+                      sourceFile.setLibraryPath(cl.getResource(STANDARD_MODULES + name).toString());
                   }
               }
           } else {
               sourceFile  = new TLAFile( prefix + name, true, this );
               if (sourceFile.exists()) {
-                  libraryPath = sourceFile.getAbsolutePath();
+                  sourceFile.setLibraryPath(sourceFile.getAbsolutePath());                  
               }
           }
         }
@@ -248,9 +231,9 @@ public class SimpleFilenameToStream implements FilenameToStream {
         	  if(is != null) {                
                 sourceFile = read(name, is);
                 if (sourceFile.exists()) {
-                    libraryPath = cl.getResource(name).toString();
+                    sourceFile.setLibraryPath(cl.getResource(name).toString());                    
                 }
-				        return new LocateLibraryPathContainer(sourceFile, libraryPath);
+				        return sourceFile;
 			      } else {
 				        break;
 		      	}
@@ -258,11 +241,11 @@ public class SimpleFilenameToStream implements FilenameToStream {
         prefix = libraryPaths[idx++];
     } // end while
 
-    return new LocateLibraryPathContainer(sourceFile, libraryPath);
-  } // end locateLibraryPath()
+    return sourceFile;
+  } // end locate()
 
-  private File read(String name, InputStream is) {
-    final File sourceFile = new TLAFile(TMPDIR + File.separator + name, true, this);
+  private TLAFile read(String name, InputStream is) {
+    final TLAFile sourceFile = new TLAFile(TMPDIR + File.separator + name, true, this);
 	sourceFile.deleteOnExit();
 	try {
 
@@ -322,7 +305,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
       // extract substrings with getProperty("path.separator");
       // repeat search for each substring until found.
       // locate() the file corresponding to the sourceFileName
-      return locateLibraryPath(sourceFileName).sourceFile;
+      return locate(sourceFileName);
   }
 
 	public File resolve(String name) {
