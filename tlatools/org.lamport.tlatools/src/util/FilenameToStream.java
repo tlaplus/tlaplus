@@ -74,10 +74,14 @@ public interface FilenameToStream
 			return null;
 		}
 
+		/**
+		 * This method enables us to keep track of the original path (or library) 
+		 * of the module.
+		 */
 		public String getLibraryPath() {
 			return libraryPath;
 		}
-
+		
 		public void setLibraryPath(String libraryPath) {
 			this.libraryPath = libraryPath;
 		}

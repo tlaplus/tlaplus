@@ -191,7 +191,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
     {
         if ((idx == 0) && (ToolIO.getUserDir() != null)) {            
             sourceFile  = new TLAFile(ToolIO.getUserDir(), name, this );
-            if (sourceFile.exists())  {
+            if (sourceFile.exists()) {
                 sourceFile.setLibraryPath(sourceFile.getAbsolutePath());                
             }
         }

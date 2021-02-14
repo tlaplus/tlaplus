@@ -230,6 +230,8 @@ public class ParseUnit {
      * tree to see what other external modules must be found and parsed.
      * Finally, it writes result to a file if required by a command line
      * switch.
+     * We receive `rootParseUnit` so we are able to find the file location for a 
+     * module part of a monolith spec. 
      */
     public final void parseFile(Errors errors, boolean firstCall, String name, ParseUnit rootParseUnit) throws AbortException
     {
