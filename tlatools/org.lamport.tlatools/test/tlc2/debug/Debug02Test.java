@@ -25,11 +25,13 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.lsp4j.debug.EvaluateResponse;
+import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -143,6 +145,15 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals("BoolValue", var.getType());
 		assertEquals("FALSE", var.getResult());
 
+		// Assert that constants of a single module spec (a spec without instantiation
+		// and variables declared only in one module) gets flattened in the variable view.
+		final TLCActionStackFrame f = (TLCActionStackFrame) debugger.stack.peek();
+		final Variable[] variables = f.getVariables(f.getConstantsId());
+		assertEquals(1, variables.length);
+		assertEquals("val", variables[0].getName());
+		assertEquals("42", variables[0].getValue());
+		assertArrayEquals(variables, f.getConstants());
+		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();

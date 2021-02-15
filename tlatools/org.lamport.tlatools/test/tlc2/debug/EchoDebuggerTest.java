@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.lsp4j.debug.StackFrame;
+import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -63,6 +64,33 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCFrame(stackFrames[0], 12, 21, RM);
 		// prefix depends on where the tests execute.
 		assertTrue(stackFrames[0].getSource().getPath().endsWith("test-model/Echo/Echo.tla"));
+		
+		TLCStackFrame f = (TLCStackFrame) stackFrames[0];
+		Variable[] constants = f.getConstants();
+		assertEquals(2, constants.length);
+		assertEquals("Echo", constants[0].getName());
+		Variable[] nested = f.getVariables(constants[0].getVariablesReference());
+		assertEquals(4, nested.length);
+		assertEquals("I1", nested[0].getName());
+		assertEquals("\"a\"", nested[0].getValue());
+		assertEquals("N1", nested[1].getName());
+		assertEquals("{\"a\", \"b\", \"c\"}", nested[1].getValue());
+		assertEquals("ProcSet", nested[2].getName());
+		assertEquals("{\"a\", \"b\", \"c\"}", nested[2].getValue());
+		assertEquals("R1", nested[3].getName());
+		assertEquals("(<<\"a\", \"a\">> :> FALSE @@ <<\"a\", \"b\">> :> TRUE @@ <<\"a\", \"c\">> :> TRUE @@ <<\"b\", \"a\">> :> TRUE @@ <<\"b\", \"b\">> :> FALSE @@ <<\"b\", \"c\">> :> TRUE @@ <<\"c\", \"a\">> :> TRUE @@ <<\"c\", \"b\">> :> TRUE @@ <<\"c\", \"c\">> :> FALSE)", nested[3].getValue());
+		
+		assertEquals("MCEcho", constants[1].getName());
+		nested = f.getVariables(constants[1].getVariablesReference());
+		assertEquals(4, nested.length);
+		assertEquals("I1", nested[0].getName());
+		assertEquals("\"a\"", nested[0].getValue());
+		assertEquals("N1", nested[1].getName());
+		assertEquals("{\"a\", \"b\", \"c\"}", nested[1].getValue());
+		assertEquals("R1", nested[2].getName());
+		assertEquals("(<<\"a\", \"a\">> :> FALSE @@ <<\"a\", \"b\">> :> TRUE @@ <<\"a\", \"c\">> :> TRUE @@ <<\"b\", \"a\">> :> TRUE @@ <<\"b\", \"b\">> :> FALSE @@ <<\"b\", \"c\">> :> TRUE @@ <<\"c\", \"a\">> :> TRUE @@ <<\"c\", \"b\">> :> TRUE @@ <<\"c\", \"c\">> :> FALSE)", nested[2].getValue());
+		assertEquals("R2", nested[3].getName());
+		assertEquals("(<<\"a\", \"a\">> :> FALSE @@ <<\"a\", \"b\">> :> FALSE @@ <<\"a\", \"c\">> :> TRUE @@ <<\"b\", \"a\">> :> FALSE @@ <<\"b\", \"b\">> :> FALSE @@ <<\"b\", \"c\">> :> TRUE @@ <<\"c\", \"a\">> :> TRUE @@ <<\"c\", \"b\">> :> TRUE @@ <<\"c\", \"c\">> :> FALSE)", nested[3].getValue());
 
 		// Step into the first conjunct!!! Debugger (VSCode) highlights the full assume
 		// before stepping in, because of which a user should understand why step over

@@ -278,26 +278,34 @@ public class TLCStackFrame extends StackFrame {
 				// DebugTLCVariables.
 				final SpecProcessor sp = this.tool.getSpecProcessor();
 				final Map<ModuleNode, Map<OpDefNode, Object>> constantDefns = sp.getConstantDefns();
-				for (final Entry<ModuleNode, Map<OpDefNode, Object>> e : constantDefns.entrySet()) {
-					final ModuleNode module = e.getKey();
-					
-					final Variable v = new Variable();
-					// Pick one of the OpDefNode and derive the name with which the definition
-					// appears in the spec, i.e. A!B!C!Op -> A!B!C.  Users then see the module
-					// name and instance path that appears in the instantiating module. getPathName
-					// equals the empty (unique) string if the module has no path.
-					v.setValue(e.getValue().keySet().stream().findAny().map(odn -> odn.getPathName())
-							.orElse(UniqueString.of(module.getSignature())).toString());
-					v.setName(module.getSignature());
-					v.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
-
-					nestedConstants.put(v.getVariablesReference(),
-							e.getValue().entrySet().stream().filter(f -> f.getValue() instanceof Value)
-									.map(f -> (DebugTLCVariable) ((Value) f.getValue())
-											.toTLCVariable(new DebugTLCVariable(f.getKey().getLocalName()), rnd))
-									.collect(Collectors.toList()));
-					vars.add(v);
-				}
+					for (final Entry<ModuleNode, Map<OpDefNode, Object>> e : constantDefns.entrySet()) {
+						if (constantDefns.size() == 1) {
+							// If there is only one module, do *not* organize the constants in the variable
+							// view by modules. In other words, constants get moved up by one level in the
+							// variable view iff there is only one module.
+							e.getValue().entrySet().stream().map(c -> getVariable((Value) c.getValue(), c.getKey().getName()))
+									.forEach(var -> vars.add(var));
+						} else {
+							final ModuleNode module = e.getKey();
+							
+							final Variable v = new Variable();
+							// Pick one of the OpDefNode and derive the name with which the definition
+							// appears in the spec, i.e. A!B!C!Op -> A!B!C.  Users then see the module
+							// name and instance path that appears in the instantiating module. getPathName
+							// equals the empty (unique) string if the module has no path.
+							v.setValue(e.getValue().keySet().stream().findAny().map(odn -> odn.getPathName())
+									.orElse(UniqueString.of(module.getSignature())).toString());
+							v.setName(module.getSignature());
+							v.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
+							
+							nestedConstants.put(v.getVariablesReference(),
+								e.getValue().entrySet().stream()
+										.map(f -> (DebugTLCVariable) ((Value) f.getValue())
+												.toTLCVariable(new DebugTLCVariable(f.getKey().getLocalName()), rnd))
+										.collect(Collectors.toList()));
+							vars.add(v);
+						}
+					}
 			} else if (ctxtId + 3 == vr) {
 				// Intentionally not sorting lexicographically because the order given by the
 				// stack is probably more useful.

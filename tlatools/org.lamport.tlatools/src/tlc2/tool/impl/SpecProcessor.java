@@ -244,7 +244,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             try {
             	Object defVal = WorkerValue.demux(opDefEvaluator, consts[i], opDef);
                 opDef.setToolObject(toolId, defVal);
-                constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefNode, Object>()).put(opDef, val);
+                constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefNode, Object>()).put(opDef, defVal);
             } catch (Assert.TLCRuntimeException | EvalException e) {
               final String addendum = (e instanceof EvalException) ? "" : (" - specifically: " + e.getMessage());
               Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,

@@ -61,6 +61,26 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertTLCFrame(stackFrames[1], 5, 5, RM);
 		assertTLCFrame(stackFrames[0], 5, 5, RM);
 
+		// Assert the constants of EWD840 and MC02.
+		final TLCStackFrame f = (TLCStackFrame) stackFrames[0];
+		final Variable[] variables = f.getVariables(f.getConstantsId());
+		assertEquals(2, variables.length);
+		assertEquals("EWD840", variables[0].getName());
+		Variable[] nested = f.getVariables(variables[0].getVariablesReference());
+		assertEquals(3, nested.length);
+		assertEquals("Color", nested[0].getName());
+		assertEquals("{\"white\", \"black\"}", nested[0].getValue());
+		assertEquals("Nodes", nested[1].getName());
+		assertEquals("{0, 1}", nested[1].getValue());
+		assertEquals("const_143073460396411000", nested[2].getName());
+		assertEquals("2", nested[2].getValue());
+		
+		assertEquals("MC02", variables[1].getName());
+		nested = f.getVariables(variables[1].getVariablesReference());
+		assertEquals(1, nested.length);
+		assertEquals("const_143073460396411000", nested[0].getName());
+		assertEquals("2", nested[0].getValue());
+		
 		final OpDeclNode[] vars = getVars();
 
 		// The spec has 16 initial states over which we will continue each time checking
