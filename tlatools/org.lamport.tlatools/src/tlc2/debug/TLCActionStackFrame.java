@@ -74,7 +74,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 		if (isPrimeScope(path)) {
 			// No need to call getPrimedVar because sn.getFirst is the child of the
 			// OpApplNode that represents the prime.
-			final SymbolNode var = tool.getVar(path.getFirst(), ctxt, false, tool.getId());
+			final SymbolNode var = tool.getPrimedVar(path.getFirst(), ctxt, false);
 			if (var != null) {
 				final IValue value = succecessor.lookup(var.getName());
 				if (value != null) {

@@ -283,7 +283,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<[type |-> \"pl\"]>> @@ 2 :> <<>>)", var.getResult());
 		
 		// inbox'
-		var = debugger.evaluate(RM, "inbox", 119, 14, 119, 18);
+		var = debugger.evaluate(RM, "inbox", 119, 14, 119, 19);
 		assertEquals("FcnRcdValue", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<>> @@ 2 :> <<>>)", var.getResult());
@@ -335,7 +335,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("(0 :> <<>> @@ 1 :> <<>> @@ 2 :> <<[color |-> \"white\", type |-> \"tok\", q |-> 0]>>)", var.getResult());
 		
 		// inbox' (not yet evaluated/"assigned")
-		var = debugger.evaluate(RM, "inbox", 80, 18, 80, 22);
+		var = debugger.evaluate(RM, "inbox", 80, 18, 80, 23);
 		assertEquals("null", var.getResult());
 		
 		// lhs/rhs refinement mapping

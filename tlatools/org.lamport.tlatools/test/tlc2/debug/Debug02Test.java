@@ -100,7 +100,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("TRUE", var.getResult());
-		var = debugger.evaluate(RM, "x", 7, 9, 7, 9);
+		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
 		assertEquals("null", var.getResult());
 
@@ -114,7 +114,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("TRUE", var.getResult());
-		var = debugger.evaluate(RM, "x", 7, 9, 7, 9);
+		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
 		assertEquals("null", var.getResult());
 
@@ -128,7 +128,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("TRUE", var.getResult());
-		var = debugger.evaluate(RM, "x", 7, 9, 7, 9);
+		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
 		assertEquals("null", var.getResult());
 
@@ -141,7 +141,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("TRUE", var.getResult());
-		var = debugger.evaluate(RM, "x", 7, 9, 7, 9);
+		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("FALSE", var.getResult());
 
