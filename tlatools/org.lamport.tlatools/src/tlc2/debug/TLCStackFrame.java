@@ -202,11 +202,11 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	Variable[] getConstants() {
-		return getVariables(ctxtId + 1);
+		return getVariables(getConstantsId());
 	}
 	
 	Variable[] getException() {
-		return getVariables(ctxtId + 2);
+		return getVariables(getExceptionId());
 	}
 	
 	public Variable[] getVariables(final int vr) {
@@ -235,7 +235,7 @@ public class TLCStackFrame extends StackFrame {
 				vars.addAll(cntsts);
 			}
 			
-			if (vr == ctxtId + 2) {
+			if (vr == getExceptionId()) {
 				final Variable variable = new Variable();
 				variable.setName(getNode().getHumanReadableImage());
 				final RuntimeException re = (RuntimeException) exception;
@@ -271,7 +271,7 @@ public class TLCStackFrame extends StackFrame {
 					}
 					c = c.next();
 				}
-			} else if (ctxtId + 1 == vr) {
+			} else if (getConstantsId() == vr) {
 				//TODO: This is evaluated for each TLCStackFrame instance even though the constantDefns
 				// never change.  Perhaps, this can be moved to a place where it's only evaluated once.
 				// On the other hand, the debug adapter protocol (DAP) might not like sharing
@@ -306,7 +306,7 @@ public class TLCStackFrame extends StackFrame {
 							vars.add(v);
 						}
 					}
-			} else if (ctxtId + 3 == vr) {
+			} else if (getStackId() == vr) {
 				// Intentionally not sorting lexicographically because the order given by the
 				// stack is probably more useful.
 				final List<Variable> pVars = getStackVariables(new ArrayList<>());
@@ -452,7 +452,7 @@ public class TLCStackFrame extends StackFrame {
 		if (!this.tool.getSpecProcessor().getConstantDefns().isEmpty()) {
 			final Scope scope = new Scope();
 			scope.setName(CONSTANTS);
-			scope.setVariablesReference(ctxtId + 1);
+			scope.setVariablesReference(getConstantsId());
 			scope.setPresentationHint(ScopePresentationHint.REGISTERS);
 			scopes.add(scope);
 		}
@@ -460,14 +460,14 @@ public class TLCStackFrame extends StackFrame {
 		if (this.exception != null) {
 			final Scope scope = new Scope();
 			scope.setName(EXCEPTION);
-			scope.setVariablesReference(ctxtId + 2);
+			scope.setVariablesReference(getExceptionId());
 			scopes.add(scope);
 		}
 		
 		if (hasStackVariables()) {
 			final Scope scope = new Scope();
 			scope.setName(STACK);
-			scope.setVariablesReference(ctxtId + 3);
+			scope.setVariablesReference(getStackId());
 			scopes.add(scope);
 		}
 		
@@ -495,5 +495,17 @@ public class TLCStackFrame extends StackFrame {
 		assert this.v == null;
 		this.v = v;
 		return v;
+	}
+	
+	public int getConstantsId() {
+		return this.ctxtId + 1;
+	}
+	
+	public int getStackId() {
+		return this.ctxtId + 3;
+	}
+	
+	public int getExceptionId() {
+		return this.ctxtId + 2;
 	}
 }
