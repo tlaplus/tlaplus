@@ -89,7 +89,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		}
 
 		// Debug the InitiateProbe action of the next-state relation.
-		debugger.setBreakpoints(RM, 26);
+		debugger.replaceAllBreakpointsWith(RM, 26);
 		stackFrames = debugger.continue_();
 
 		// First frame captures the complete action.
@@ -117,7 +117,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertTLCActionFrame(stackFrames[0], 27, 27, RM, vars);
 
 		// Debug the SendMsg action of the next-state relation.
-		debugger.setBreakpoints(RM, 46);
+		debugger.replaceAllBreakpointsWith(RM, 46);
 		stackFrames = debugger.continue_();
 		assertEquals(4, stackFrames.length);
 		Context context = Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne);
@@ -183,7 +183,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertTLCActionFrame(stackFrames[0], 48, 48, RM, context, vars[0], vars[2]);
 		
 		// 8888888888888888888 State Constraint 8888888888888888888 //
-		debugger.setBreakpoints(MDL, 16);
+		debugger.replaceAllBreakpointsWith(MDL, 16);
 		stackFrames = debugger.continue_();
 		stackFrames = debugger.stepIn(13);
 		assertEquals(11, stackFrames.length);
@@ -197,13 +197,13 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("0", variable.getValue());
 		
 		// 8888888888888888888 Action Constraint 8888888888888888888 //
-		debugger.setBreakpoints(MDL, 19);
+		debugger.replaceAllBreakpointsWith(MDL, 19);
 		stackFrames = debugger.continue_();
 		assertEquals(9, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 19, 21, MDL);
 		
 		// 8888888888888888888 Invariant Inv 8888888888888888888 //
-		debugger.setBreakpoints(RM, 94);
+		debugger.replaceAllBreakpointsWith(RM, 94);
 		stackFrames = debugger.continue_();
 		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);

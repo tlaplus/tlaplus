@@ -27,18 +27,16 @@ package tlc2.debug;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.lsp4j.debug.Breakpoint;
-import org.eclipse.lsp4j.debug.BreakpointLocation;
-import org.eclipse.lsp4j.debug.BreakpointLocationsArguments;
-import org.eclipse.lsp4j.debug.BreakpointLocationsResponse;
 import org.eclipse.lsp4j.debug.CancelArguments;
 import org.eclipse.lsp4j.debug.Capabilities;
 import org.eclipse.lsp4j.debug.ConfigurationDoneArguments;
@@ -125,22 +123,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return CompletableFuture.completedFuture(null);
 	}
 
-	@Override
-	public synchronized CompletableFuture<BreakpointLocationsResponse> breakpointLocations(BreakpointLocationsArguments args) {
-		LOGGER.finer("breakpointLocations");
-		final BreakpointLocationsResponse response = new BreakpointLocationsResponse();
-		BreakpointLocation breakpoint = new BreakpointLocation();
-		breakpoint.setColumn(args.getColumn());
-		breakpoint.setEndColumn(args.getEndColumn());
-		breakpoint.setEndLine(args.getEndLine());
-		breakpoint.setLine(args.getLine());
-		BreakpointLocation[] breakpoints = new BreakpointLocation[] { breakpoint };
-		response.setBreakpoints(breakpoints);
-		return CompletableFuture.completedFuture(response);
-	}
-
-	private final List<Breakpoint> breakpoints = Collections.synchronizedList(new ArrayList<>());
-
+	protected final Map<String, List<Breakpoint>> breakpoints = new HashMap<>();
+	
 	@Override
 	public synchronized CompletableFuture<Void> disconnect(DisconnectArguments args) {
 		LOGGER.finer("disconnect");
@@ -157,25 +141,31 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
 		//TODO: Confirm breakpoint locations (see tlc2.debug.TLCDebugger.matches(SemanticNode))!!!
 		LOGGER.finer("setBreakpoints");
-		final SourceBreakpoint[] sbps = args.getBreakpoints();
 		
-		final ArrayList<Breakpoint> tmp = new ArrayList<>(sbps.length);
-		for (int j = 0; j < sbps.length; j++) {
-			Breakpoint breakpoint = new Breakpoint();
-			breakpoint.setColumn(sbps[j].getColumn());
-			breakpoint.setLine(sbps[j].getLine());
-			breakpoint.setId(j);
-			breakpoint.setVerified(true);
-			Source source = args.getSource();
-			breakpoint.setSource(source);
-			tmp.add(breakpoint);
+		final String module = args.getSource().getName().replaceFirst(".tla$", "");
+		
+		if (args.getBreakpoints() != null && args.getBreakpoints().length > 0) {
+			breakpoints.computeIfAbsent(module, key -> new ArrayList<Breakpoint>()).clear();
+			
+			final SourceBreakpoint[] sbps = args.getBreakpoints();
+			for (int j = 0; j < sbps.length; j++) {
+				Breakpoint breakpoint = new Breakpoint();
+				breakpoint.setColumn(sbps[j].getColumn());
+				breakpoint.setLine(sbps[j].getLine());
+				breakpoint.setId(j);
+				breakpoint.setVerified(true);
+				Source source = args.getSource();
+				breakpoint.setSource(source);
+				breakpoints.get(module).add(breakpoint);
+			}
+			final SetBreakpointsResponse response = new SetBreakpointsResponse();
+			final List<Breakpoint> list = breakpoints.get(module);
+			response.setBreakpoints(list.toArray(new Breakpoint[list.size()]));
+			return CompletableFuture.completedFuture(response);
+		} else {
+			breakpoints.getOrDefault(module, new ArrayList<>()).clear();
+			return CompletableFuture.completedFuture(new SetBreakpointsResponse());
 		}
-		breakpoints.clear();
-		breakpoints.addAll(tmp);
-		
-		final SetBreakpointsResponse response = new SetBreakpointsResponse();
-		response.setBreakpoints(breakpoints.toArray(new Breakpoint[breakpoints.size()]));
-		return CompletableFuture.completedFuture(response);
 	}
 
 	@Override
@@ -514,7 +504,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// simple compare the two location instances.
 		final Location location = expr.getLocation();
 		final String module = location.source();
-		return breakpoints.stream().anyMatch(b -> {
+		// If no breakpoints are set, stream over an empty list.
+		return breakpoints.getOrDefault(module, new ArrayList<>()).stream().anyMatch(b -> {
 			return b.getLine() == location.beginLine()
 					// TODO: Stripping off the file suffix here is a hack, but is this even
 					// necessary?

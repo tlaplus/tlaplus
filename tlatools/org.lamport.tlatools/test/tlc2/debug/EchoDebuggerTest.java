@@ -147,7 +147,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCFrame(stackFrames[0], 18, 11, 18, 30, RM); // IsSymmetric(R, Node)
 
 		// Breakpoint takes precedence over manual steps.
-		debugger.setBreakpoints("Relation", 49);
+		debugger.replaceAllBreakpointsWith("Relation", 49);
 		stackFrames = debugger.next(2);
 		assertEquals(8, stackFrames.length);
 		assertTLCFrame(stackFrames[0], 49, 3, 50, 38, "Relation", null); //TODO Replace null with the expected Context.
@@ -157,7 +157,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		// 88888888888888 End of Echo's assumption 88888888888888 //
 		
 		// Debug type correctness property during Init //
-		debugger.setBreakpoints(RM, 167);
+		debugger.replaceAllBreakpointsWith(RM, 167);
 		stackFrames = debugger.continue_();
 		assertEquals(11, stackFrames.length);
 		// Invariants are shown as TLCStateFrames, not TLCActionFrames, which would make
@@ -167,12 +167,12 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		// Debug type correctness property during n0 (next-state relation)
 		// (Run to n0, then run to TypeOK)
 		debugger.unsetBreakpoints();
-		debugger.setBreakpoints(RM, 104);
+		debugger.replaceAllBreakpointsWith(RM, 104);
 		stackFrames = debugger.continue_();
 		assertEquals(3, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
 
-		debugger.setBreakpoints(RM, 167);
+		debugger.replaceAllBreakpointsWith(RM, 167);
 		stackFrames = debugger.continue_();
 		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);

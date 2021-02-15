@@ -142,7 +142,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// consist of a bunch of LazyValues.  LazyValues are tricky because the debugger
 		// unlazies them, which has to be ignored by DebugTool.  Otherwise, the debugger
 		// debugs itself and deadlocks.
-		debugger.setBreakpoints(UTILS, 13);
+		debugger.replaceAllBreakpointsWith(UTILS, 13);
 		stackFrames = debugger.continue_();
 		
 		int i = 17;
@@ -188,7 +188,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// 88888888888888888888888 Check Stack Variables 888888888888888888888888 //
 		
 		// InitiateProbe sub-action
-		debugger.setBreakpoints(RM, 71);
+		debugger.replaceAllBreakpointsWith(RM, 71);
 		stackFrames = debugger.continue_();
 		List<Variable> stackVariables = ((TLCStackFrame) stackFrames[5]).getStackVariables(new ArrayList<>());
 		assertEquals(1, stackVariables.size());
@@ -206,7 +206,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("BoolValue", stackVariables.get(0).getType());
 		
 		// PassToken sub-action
-		debugger.setBreakpoints(RM, 85);
+		debugger.replaceAllBreakpointsWith(RM, 85);
 		stackFrames = debugger.continue_();
 		stackVariables = ((TLCStackFrame) stackFrames[6]).getStackVariables(new ArrayList<>());
 		assertEquals(1, stackVariables.size());
@@ -226,7 +226,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// 88888888888888888888888888888888888888888888888888888888888888 //
 		
 		// Step through the evaluation of a mildly complex expression. 
-		debugger.setBreakpoints(RM, 119);
+		debugger.replaceAllBreakpointsWith(RM, 119);
 		stackFrames = debugger.continue_();
 		assertEquals(8, stackFrames.length);
 		Context context = Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne).cons(null, IntValue.ValOne);
@@ -257,19 +257,19 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCActionFrame(stackFrames[0], 120, 6, 120, 19, RM, variables);
 		
 		// 8888888888888888888 Invariant TypeOK 8888888888888888888 //
-		debugger.setBreakpoints(RM, 29);
+		debugger.replaceAllBreakpointsWith(RM, 29);
 		stackFrames = debugger.continue_();
 		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 29, 3, 37, 25, RM, Context.Empty);
 		
 		// 8888888888888888888 Invariant EWD998!Inv 8888888888888888888 //
-		debugger.setBreakpoints(FOLDER, 150);
+		debugger.replaceAllBreakpointsWith(FOLDER, 150);
 		stackFrames = debugger.continue_();
 		assertEquals(11, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 150, 3, 162, 34, FOLDER, (Context) null); //TODO Assert context that contains the refinement mapping
 		
 		// 8888888888888888888 Test resolving a location (e.g. editor hovering) to a value 888888888888888 //
-		debugger.setBreakpoints(RM, 120);
+		debugger.replaceAllBreakpointsWith(RM, 120);
 		debugger.continue_();
 		
 		// inbox
@@ -314,7 +314,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
 
 		// PassToken
-		debugger.setBreakpoints(RM, 81);
+		debugger.replaceAllBreakpointsWith(RM, 81);
 		debugger.continue_();
 		
 		// inbox[i][j].type (record field)
@@ -325,7 +325,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// resolve the StringNode representing type to its StringValue, and select it
 		// from the RecordValue.
 
-		debugger.setBreakpoints(RM, 85);
+		debugger.replaceAllBreakpointsWith(RM, 85);
 		debugger.continue_();
 
 		// inbox
@@ -339,7 +339,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("null", var.getResult());
 		
 		// lhs/rhs refinement mapping
-		debugger.setBreakpoints(RM, 179);
+		debugger.replaceAllBreakpointsWith(RM, 179);
 		debugger.continue_();
 		// RHS shows the value of the active variable
 		var = debugger.evaluate(RM, "active", 166, 43, 166, 48);

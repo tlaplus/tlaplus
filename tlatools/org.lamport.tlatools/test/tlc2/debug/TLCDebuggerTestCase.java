@@ -400,15 +400,26 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 
 	protected class TestTLCDebugger extends TLCDebugger {
 
-		public void setBreakpoints(final String rootModule, int line) {
+		/**
+		 * Replaces all existing breakpoints in all modules with the given one. Compared
+		 * to TLCDebugger.setBreakpoints(..), this does replace breakpoints even in
+		 * other modules.
+		 */
+		public void replaceAllBreakpointsWith(final String rootModule, int line) {
+			unsetBreakpoints();
+			// Set new breakpoint.
 			setBreakpoints(createBreakpointArgument(rootModule, line));
 		}
 
 		public void unsetBreakpoints() {
-			// Convenience methods
-			final SetBreakpointsArguments args = new SetBreakpointsArguments();
-			args.setBreakpoints(new SourceBreakpoint[0]);
-			setBreakpoints(args);
+			new HashSet<>(breakpoints.keySet()).forEach(module -> {
+				final SetBreakpointsArguments args = new SetBreakpointsArguments();
+				args.setBreakpoints(new SourceBreakpoint[0]);
+				final Source source = new Source();
+				source.setName(module);
+				args.setSource(source);
+				setBreakpoints(args);
+			});
 		}
 
 		public StackFrame[] stackTrace() throws Exception {
