@@ -68,6 +68,19 @@ public class LocationTest {
 	}
 	
 	@Test
+	public void testContains2() {
+		Location outer = Location.parseLocation("line 109, col 1 to line 120, col 19 of module EWD998Chan");
+		Location inner = Location.parseLocation("line 119, col 24 to line 119, col 28 of module EWD998Chan");
+		assertFalse(inner.includes(outer));
+		assertTrue(outer.includes(inner));
+		
+		outer = Location.parseLocation("line 6, col 1 to line 6, col 16 of module Debug02");
+		inner = Location.parseLocation("line 6, col 9 to line 6, col 9 of module Debug02");
+		assertFalse(inner.includes(outer));
+		assertTrue(outer.includes(inner));
+	}
+	
+	@Test
 	public void testComparator() {
 		final Location[] parsedLocations = Location.getParsedLocations(
 				  "line 15, col 9 to line 15, col 9 of module CostMetrics\n"

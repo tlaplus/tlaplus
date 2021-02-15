@@ -452,19 +452,15 @@ public final class Location implements Comparable<Location>
 		if (this.bLine > other.bLine) {
 			return false;
 		}
+		if (this.beginLine() == other.beginLine() && this.beginColumn() > other.beginColumn()) {
+			return false;
+		}
 		if (this.eLine < other.eLine) {
 			return false;
 		}
-		if (this.bColumn > other.bColumn) {
-			return false;
-		}
-		if (this.eColumn < other.eColumn) {
+		if (this.endLine() == other.endLine() && this.endColumn() < other.endColumn()) {
 			return false;
 		}
 		return true;
-	}
-
-	public String linesAndColumns() {
-		return toString().replaceAll(OF_MODULE + ".*", "");
 	}
 }

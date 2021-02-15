@@ -190,8 +190,8 @@ public abstract class SemanticNode
 	public <T> ChildrenVisitor<T> walkChildren(final ChildrenVisitor<T> visitor) {
 		visitor.preVisit(this);
 		for (SemanticNode c : getListOfChildren()) {
-			if (visitor.preempt()) {
-				break;
+			if (visitor.preempt(c)) {
+				continue;
 			}
 			c.walkChildren(visitor);
 		}
@@ -202,7 +202,7 @@ public abstract class SemanticNode
 		public void preVisit(final SemanticNode node) {
 		}
 
-		public boolean preempt() {
+		public boolean preempt(SemanticNode node) {
 			return true;
 		}
 
@@ -262,13 +262,14 @@ public abstract class SemanticNode
 					}
 
 					@Override
-					public boolean preempt() {
-						return pathToLoc != null;
+					public boolean preempt(SemanticNode node) {
+						return pathToLoc != null
+								|| !node.getLocation().includes(location);
 					}
 
 					@Override
 					public ChildrenVisitor<LinkedList<SemanticNode>> postVisit(final SemanticNode node) {
-						if (preempt()) {
+						if (pathToLoc != null) {
 							pathToLoc.add(node);
 						}
 						return this;
