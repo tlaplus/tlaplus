@@ -28,6 +28,8 @@ package tlc2.debug;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.debug.BreakpointLocationsArguments;
+import org.eclipse.lsp4j.debug.BreakpointLocationsResponse;
 import org.eclipse.lsp4j.debug.CompletionsArguments;
 import org.eclipse.lsp4j.debug.CompletionsResponse;
 import org.eclipse.lsp4j.debug.DataBreakpointInfoArguments;
@@ -208,5 +210,12 @@ public abstract class AbstractDebugger  implements IDebugProtocolServer{
 	@Override
 	public CompletableFuture<DisassembleResponse> disassemble(DisassembleArguments args) {
 		return IDebugProtocolServer.super.disassemble(args);
+	}
+
+	@Override
+	public synchronized CompletableFuture<BreakpointLocationsResponse> breakpointLocations(BreakpointLocationsArguments args) {
+		// https://microsoft.github.io/debug-adapter-protocol/specification#Requests_BreakpointLocations
+		// Requires Capabilities#setSupportBreakpointLocationsRequest(true) to be returned in TLCDebugger.initialize(..).
+		return IDebugProtocolServer.super.breakpointLocations(args);
 	}
 }
