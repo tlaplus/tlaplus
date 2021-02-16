@@ -440,16 +440,17 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	private IDebugTarget pushExceptionFrame(final TLCStackFrame frame, RuntimeException e) {
+		stack.push(frame);
+
 		// Let the client print the exception in its debug output UI.
 		final OutputEventArguments oea = new OutputEventArguments();
 		oea.setOutput(e.getMessage());
 		if (launcher != null) {
 			launcher.getRemoteProxy().output(oea);
+			// Only halt the execution if a front-end/debugger is connect?
+			haltExecution();
 		}
 		
-		stack.push(frame);
-		
-		haltExecution();
 		return this;
 	}
 

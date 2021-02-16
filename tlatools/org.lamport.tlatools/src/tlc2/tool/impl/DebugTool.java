@@ -245,7 +245,10 @@ public class DebugTool extends Tool {
 
 	@Override
 	protected final Value setSource(final SemanticNode expr, final Value value) {
-		value.setSource(expr);
+		// Calling Value#setSource here causes Tool to wrap TLCRuntimExceptions as
+		// FingerprintExceptions, which alters error reporting.  This causes some
+		// tests to fail (Github179*Test) that expect a specific output.  Note that
+		// Value#setSource doesn't have to be called here for DebugTool to work.
 		return value;
 	}
 

@@ -40,26 +40,35 @@ import org.eclipse.lsp4j.debug.OutputEventArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
 import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 
-import tlc2.TLCGlobals;
 import util.ToolIO;
 
 public class AttachingDebugger extends TLCDebugger {
 	
 	public AttachingDebugger(final Step s) throws IOException, InterruptedException, ExecutionException {
 		super(s);
-		// Expanding values causes them to be un-lazied/enumerated, which we don't want
-		// as a side-effect of the debugger.
-		TLCGlobals.expand = false;
-		
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
-		ToolIO.out = new PrintStream(System.out) {
+		ToolIO.out = new PrintStream(ToolIO.out) {
+			// ToolIO.out passed to PrintStream above is either System.out or one of TLC's
+			// ToolIO.ToolPrintStream, TestPrintStream, ..., which intercept print*
+			// invocations to store the string parameter.  This instance of a PrintStream
+			// is just a wrapper that -in turn- intercept the only two print methods that 
+			// TLC invokes.  We cannot simply call super.print* below, because PrintStream
+			// delegates those call to out.write instead of out.print.  In other words,
+			// ToolIO.ToolPrintStream, TestPrintStream, ..., would not be able to store
+			// the string parameters, which causes several tests to fail.
 			@Override
 			public void println(String str) {
-				this.print(str + "\n");
+				((PrintStream) out).println(str);
+				sendOutput(str);
 			}
+
 			@Override
 			public void print(String str) {
-				super.print(str);
+				((PrintStream) out).print(str);
+				sendOutput(str);
+			}
+
+			private void sendOutput(String str) {
 				final OutputEventArguments oea = new OutputEventArguments();
 				oea.setOutput(str);
 				if (launcher != null) {

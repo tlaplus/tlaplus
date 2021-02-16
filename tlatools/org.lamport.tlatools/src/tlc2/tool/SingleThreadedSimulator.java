@@ -34,6 +34,7 @@ import tlc2.tool.SimulationWorker.SimulationWorkerError;
 import tlc2.tool.SimulationWorker.SimulationWorkerResult;
 import tlc2.tool.liveness.LiveException;
 import tlc2.util.RandomGenerator;
+import tlc2.value.RandomEnumerableValues;
 import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
 
@@ -61,6 +62,18 @@ public class SingleThreadedSimulator extends Simulator {
 
 	@Override
 	protected int simulate(final StateVec initialStates) throws InterruptedException {
+		// Unless REV#reset is issued below, running simulation under the debugger will
+		// result in different error traces even under identical seeds. This would not
+		// necessarily be a bug but producing the same trace with and without the
+		// debugger provides a better user experience. The underlying technical issue is
+		// because the REV instance is thread-local, i.e., each SimulationWorker
+		// maintains its own instance. The main thread generates the initial states
+		// without the debugger, while a SimulationWorker generates the
+		// successor/next-states. With the debugger, the main thread generates both the
+		// initial- and the next-states. Thus, we reset the REV after generating the
+		// initial states.
+		RandomEnumerableValues.reset();
+		
 		final SimulationWorker simulationWorker = workers.get(0);
 		simulationWorker.setInitialStates(initialStates);
 

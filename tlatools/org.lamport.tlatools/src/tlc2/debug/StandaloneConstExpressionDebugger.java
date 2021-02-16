@@ -90,17 +90,26 @@ public class StandaloneConstExpressionDebugger extends TLCDebugger {
 		FP64.Init();
 
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
-		ToolIO.out = new PrintStream(System.out) {
+		ToolIO.out = new PrintStream(ToolIO.out) {
+			// See tlc2.debug.AttachingDebugger.AttachingDebugger(...).new PrintStream() {...}
 			@Override
 			public void println(String str) {
-				this.print(str + "\n");
+				((PrintStream) out).println(str);
+				sendOutput(str);
 			}
+
 			@Override
 			public void print(String str) {
-				super.print(str);
+				((PrintStream) out).print(str);
+				sendOutput(str);
+			}
+
+			private void sendOutput(String str) {
 				final OutputEventArguments oea = new OutputEventArguments();
 				oea.setOutput(str);
-				launcher.getRemoteProxy().output(oea);
+				if (launcher != null) {
+					launcher.getRemoteProxy().output(oea);
+				}
 			}
 		};
 		ToolIO.reset();
