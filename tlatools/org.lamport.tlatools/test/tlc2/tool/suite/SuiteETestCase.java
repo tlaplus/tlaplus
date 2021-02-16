@@ -25,20 +25,14 @@
  ******************************************************************************/
 
 package tlc2.tool.suite;
-import static org.junit.Assert.fail;
-
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import util.TestPrintStream;
 import util.ToolIO;
 
 public abstract class SuiteETestCase extends ModelCheckerTestCase {
 
-	private TestPrintStream testPrintStream = new TestPrintStream();
+	private final TestPrintStream testPrintStream = new TestPrintStream();
 
 	public SuiteETestCase() {
 		this(ExitStatus.SUCCESS);
@@ -72,29 +66,6 @@ public abstract class SuiteETestCase extends ModelCheckerTestCase {
 	
 	
 	protected void assertSubstring(String substring) {
-		for (String string : testPrintStream.strings) {
-			if (string.contains(substring)) {
-				return;
-			}
-		}
-		fail("Substring not found");
-	}
-
-	private static class TestPrintStream extends PrintStream {
-
-		private final List<String> strings = new ArrayList<String>();
-		
-		public TestPrintStream() {
-	        super(new PipedOutputStream());
-		}
-
-		/* (non-Javadoc)
-		 * @see java.io.PrintStream#println(java.lang.String)
-		 */
-		public void println(String x) {
-			strings.add(x);
-			System.out.println(x);
-			super.println(x);
-		}
+		testPrintStream.assertSubstring(substring);
 	}
 }
