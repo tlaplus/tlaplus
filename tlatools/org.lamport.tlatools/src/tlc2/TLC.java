@@ -1392,8 +1392,6 @@ public class TLC {
     	sharedArguments.add(new UsageGenerator.Argument("-debug",
 														"print various debugging information - not for production use\n",
 														true));
-		sharedArguments.add(new UsageGenerator.Argument("-debugger",
-				"activate the TLC debugger\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-dump", "file",
     													"dump all states into the specified file; this parameter takes\n"
     														+ "optional parameters for dot graph generation. Specifying\n"
@@ -1449,7 +1447,19 @@ public class TLC {
 														"the number of TLC worker threads; defaults to 1. Use 'auto'\n"
     														+ "to automatically select the number of threads based on the\n"
     														+ "number of available cores.", true));
-    	
+    	sharedArguments.add(new UsageGenerator.Argument("-debugger", "nosuspend",
+				"run simulation or model-checking in debug mode such that TLC's\n"
+    				+ "state-space exploration can be temporarily halted and variables\n"
+					+ "be inspected. The only debug front-end so far is the TLA+\n"
+    				+ "VSCode extension, which has to be downloaded and configured\n"
+					+ "separately. Specifying the optional parameter 'nosuspend' causes\n"
+					+ "TLC to start state-space exploration without waiting for the\n"
+					+ "debugger front-end to connect. Without 'nosuspend', TLC\n"
+					+ "halts state-space exploration before the first ASSUME is\n"
+					+ "evaluated (but after constants are processed)."
+					+ "", false,
+				"nosuspend"));
+  	
     	sharedArguments.add(new UsageGenerator.Argument("SPEC", null));
     	
     	
@@ -1479,6 +1489,8 @@ public class TLC {
 	    													+ "by the simulation workers; for example Y='/a/b/c/tr' would\n"
 	    													+ "produce, e.g, '/a/b/c/tr_1_15'", false,
 	    												"file=X,num=Y"));
+    	// implies workers 1
+    	// bfs and simulation only (no iddfs)
     	commandVariants.add(simulateVariant);
 
     	
