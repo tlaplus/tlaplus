@@ -28,7 +28,6 @@ package util;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,7 @@ public class TestPrintStream extends PrintStream {
 	private final List<String> strings = new ArrayList<String>();
 	
 	public TestPrintStream() {
-        super(new PipedOutputStream());
+        super(ToolIO.out);
 	}
 
 	/* (non-Javadoc)
@@ -48,7 +47,6 @@ public class TestPrintStream extends PrintStream {
 	public void println(String x) {
 		strings.add(x);
 		buf.append(x + "\n");
-		System.out.println(x);
 		super.println(x);
 	}
 	
