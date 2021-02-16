@@ -83,6 +83,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	protected Launcher<IDebugProtocolClient> launcher;
 
+	public TLCDebugger() {
+		this.step = Step.In;
+	}
+
+	public TLCDebugger(final Step s) {
+		this.step = s;
+	}
+
 	@Override
 	public synchronized CompletableFuture<Capabilities> initialize(InitializeRequestArguments args) {
 		LOGGER.finer("initialize");
@@ -517,11 +525,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 		public static TLCDebugger OVERRIDE;
 
-		public static TLCDebugger getInstance() throws Exception {
+		public static TLCDebugger getInstance(final boolean suspend) throws Exception {
 			if (OVERRIDE != null) {
 				return OVERRIDE;
 			}
-			return new AttachingDebugger();
+			if (suspend) {
+				return new AttachingDebugger(Step.In);
+			}
+			return new AttachingDebugger(Step.Continue);
 		}
 	}
 }

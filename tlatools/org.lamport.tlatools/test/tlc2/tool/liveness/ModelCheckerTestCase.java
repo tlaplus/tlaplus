@@ -140,6 +140,11 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 				args.add("-deadlock");
 			}
 			
+			if (getNumberOfThreads() == 1 && runWithDebugger()) {
+				args.add("-debugger");
+				args.add("nosuspend");
+			}
+			
 			if (noGenerateSpec()) {
 				args.add("-noGenerateSpecTE");
 			}
@@ -187,6 +192,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	}
 
 	protected boolean noRandomFPandSeed() {
+		return true;
+	}
+
+	protected boolean runWithDebugger() {
 		return true;
 	}
 

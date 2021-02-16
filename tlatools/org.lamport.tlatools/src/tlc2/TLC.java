@@ -174,6 +174,7 @@ public class TLC {
     private FPSetConfiguration fpSetConfiguration;
     
     private boolean debugger = false;
+    private boolean suspend = true;
     
     /**
      * Interface to retrieve model properties.
@@ -462,6 +463,10 @@ public class TLC {
             {
                 index++;
                 debugger = true;
+                if ((index < args.length) && args[index].equals("nosuspend")) {
+                	index++;
+                	suspend = false;
+                }
             } else if (args[index].equals("-tool"))
             {
                 index++;
@@ -1046,7 +1051,7 @@ public class TLC {
 					assert TLCGlobals.getNumWorkers() == 1
 							: "TLCDebugger does not support running with multiple workers.";
 					tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation,
-							TLCDebugger.Factory.getInstance());
+							TLCDebugger.Factory.getInstance(suspend));
 					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
 	                        traceNum, rng, seed, resolver);
 				} else {
@@ -1072,7 +1077,7 @@ public class TLC {
             	// model checking
 				if (debugger) {
 					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
-					tool = new DebugTool(mainFile, configFile, resolver, TLCDebugger.Factory.getInstance());
+					tool = new DebugTool(mainFile, configFile, resolver, TLCDebugger.Factory.getInstance(suspend));
 				} else {
 					tool = new FastTool(mainFile, configFile, resolver);
 				}

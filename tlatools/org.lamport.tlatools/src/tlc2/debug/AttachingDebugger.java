@@ -44,8 +44,9 @@ import tlc2.TLCGlobals;
 import util.ToolIO;
 
 public class AttachingDebugger extends TLCDebugger {
-
-	public AttachingDebugger() throws IOException, InterruptedException, ExecutionException {
+	
+	public AttachingDebugger(final Step s) throws IOException, InterruptedException, ExecutionException {
+		super(s);
 		// Expanding values causes them to be un-lazied/enumerated, which we don't want
 		// as a side-effect of the debugger.
 		TLCGlobals.expand = false;
