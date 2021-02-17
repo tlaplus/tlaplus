@@ -289,25 +289,30 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
             }
         }
         
-		final MainModelPage mmp = (MainModelPage) getModelEditor().getFormPage(MainModelPage.ID);
-		if (mmp.hasLivenessProperty()) {
-			if (!FormHelper.trimTrailingSpaces(constraintSource.getDocument().get()).isEmpty()) {
-				modelEditor.addErrorMessage("constraintSource", "Declaring state constraints during liveness checking is dangerous: "
-								+ "Please read\nsection 14.3.5 on page 247 of Specifying Systems (https://lamport.azurewebsites.net/tla/book.html)"
-								+ "\nand the optionally discussion at https://discuss.tlapl.us/msg00994.html for more details.",
-						this.getId(), IMessageProvider.INFORMATION,
-						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTRAINT)));
-				expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTRAINT));
-			}
-			if (!FormHelper.trimTrailingSpaces(actionConstraintSource.getDocument().get()).isEmpty()) {
-				modelEditor.addErrorMessage("actionConstraintSource", "Declaring action constraints during liveness checking is dangerous: "
-						+ "Please read\nsection 14.3.5 on page 247 of Specifying Systems (https://lamport.azurewebsites.net/tla/book.html)"
-						+ "\nand optionally the discussion at https://discuss.tlapl.us/msg00994.html for more details.",
-					this.getId(), IMessageProvider.INFORMATION,
-						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_ACTION_CONSTRAINT)));
-				expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT));
-			}
-		}
+		// LL: "[this message is] rather silly because it can obviously also cause TLC
+		// to fail to find violations of a safety property. I suggest removing that
+		// warning.
+//		final MainModelPage mmp = (MainModelPage) getModelEditor().getFormPage(MainModelPage.ID);
+//		if (mmp.hasLivenessProperty()) {
+//			if (!FormHelper.trimTrailingSpaces(constraintSource.getDocument().get()).isEmpty()) {
+//				modelEditor.addErrorMessage("constraintSource",
+//						"Declaring state constraints during liveness checking may cause TLC to fail to find violations: "
+//								+ "Please read\nsection 14.3.5 on page 247 of Specifying Systems (https://lamport.azurewebsites.net/tla/book.html)"
+//								+ "\nand the optionally discussion at https://discuss.tlapl.us/msg00994.html for more details.",
+//						this.getId(), IMessageProvider.INFORMATION,
+//						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_CONSTRAINT)));
+//				expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_CONSTRAINT));
+//			}
+//			if (!FormHelper.trimTrailingSpaces(actionConstraintSource.getDocument().get()).isEmpty()) {
+//				modelEditor.addErrorMessage("actionConstraintSource",
+//						"Declaring action constraints during liveness checking may cause TLC to fail to find violations: "
+//								+ "Please read\nsection 14.3.5 on page 247 of Specifying Systems (https://lamport.azurewebsites.net/tla/book.html)"
+//								+ "\nand optionally the discussion at https://discuss.tlapl.us/msg00994.html for more details.",
+//						this.getId(), IMessageProvider.INFORMATION,
+//						UIHelper.getWidget(dm.getAttributeControl(MODEL_PARAMETER_ACTION_CONSTRAINT)));
+//				expandSection(dm.getSectionForAttribute(MODEL_PARAMETER_ACTION_CONSTRAINT));
+//			}
+//		}
 
         mm.setAutoUpdate(true);
         
