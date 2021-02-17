@@ -27,6 +27,9 @@ package tlc2.tool;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.util.regex.Pattern;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,9 +62,10 @@ public class MonolithSpecTest extends ModelCheckerTestCase {
         testPrintStreamErr.assertNoSubstring("File does not exist");
 
 		// Test that the library path appears between `( )` after parsing the file.		
-		testPrintStreamOut.assertRegex("Parsing file .*/EWD840.tla \\(.*/test-model/MonolithSpec.tla\\)");
-		testPrintStreamOut.assertRegex("Parsing file .*/Mod4711.tla \\(.*/test-model/MonolithSpec.tla\\)");
-		testPrintStreamOut.assertRegex("Parsing file .*/Mod4712.tla \\(.*/test-model/MonolithSpec.tla\\)");
+		final String sep = Pattern.quote(File.separator);
+		testPrintStreamOut.assertRegex("Parsing file .*" + sep + "EWD840.tla \\(.*" + sep + "test-model" + sep + "MonolithSpec.tla\\)");
+		testPrintStreamOut.assertRegex("Parsing file .*" + sep + "Mod4711.tla \\(.*" + sep + "test-model" + sep + "MonolithSpec.tla\\)");
+		testPrintStreamOut.assertRegex("Parsing file .*" + sep + "Mod4712.tla \\(.*" + sep + "test-model" + sep + "MonolithSpec.tla\\)");
 
 		assertZeroUncovered();
 	}
