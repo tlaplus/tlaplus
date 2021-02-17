@@ -24,6 +24,7 @@ package tla2sany.modanalyzer;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.nio.file.Path;
 
 import tla2sany.semantic.AbortException;
@@ -272,13 +273,12 @@ public class ParseUnit {
             // (and as we didn't have errors in previous steps, the module
             // really exists somewhere), then we assume that this file is part of a monolith file.
             String originalFilePath = "";
-            String libraryPath = null;
-            // If we are a instance of a TLAFile then try to get some libary path.
-            if (nis.sourceFile() instanceof TLAFile) {
-                libraryPath = ((TLAFile) (nis.sourceFile())).getLibraryPath();
-            }            
-            if (libraryPath != null) {
-                originalFilePath = " (" + libraryPath + ")";                
+            // If we are a instance of a TLAFile then try to get some library path.
+            if (nis.sourceFile() instanceof TLAFile && ((TLAFile) (nis.sourceFile())).hasLibraryPath()) {
+                final URI libraryPath = ((TLAFile) (nis.sourceFile())).getLibraryPath();
+                if (!absoluteResolvedPath.toUri().getPath().equals(libraryPath.getPath())) {
+                	originalFilePath = " (" + libraryPath + ")";                
+                }
             } else if (rootParseUnit != null && rootParseUnit.getNis() != null) {
                 // We try to get the monolith file path.
                 File rootSourceFile = rootParseUnit.getNis().sourceFile();

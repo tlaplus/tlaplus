@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+
 /**
  * Defines a translation from names to NamedInputStream's that will be
  * used by most tools whose input comes from files.
@@ -158,10 +159,11 @@ public class SimpleFilenameToStream implements FilenameToStream {
    *  @param  module name, used as basis of path name to the file that should contain it
    */
   private final File locate(String name)
-  { 
-    String prefix       = "";                // directory to be prepended to file name before lookup
+  {
 
-    TLAFile sourceFile  = null;              // TLAFile object from fully-qualified name of file found by
+    String prefix      = "";                // directory to be prepended to file name before lookup
+
+    File   sourceFile  = null;              // File object from fully-qualified name of file found by
                                             //   searching "libraryPath" for "name", as is done for PATHs and CLASSPATHs
 
     // The TLA standard modules are presumed to be in a directory tla2sany/StandardModules
@@ -186,14 +188,11 @@ public class SimpleFilenameToStream implements FilenameToStream {
     * field in util/ToolIO.                                                *
     ***********************************************************************/
     int idx = 0;
-    InputStream is;    
+    InputStream is;
     while (true)
     {
-        if ((idx == 0) && (ToolIO.getUserDir() != null)) {            
-            sourceFile  = new TLAFile(ToolIO.getUserDir(), name, this );
-            if (sourceFile.exists()) {
-                sourceFile.setLibraryPath(sourceFile.getAbsolutePath());                
-            }
+        if ((idx == 0) && (ToolIO.getUserDir() != null)) {
+            sourceFile = new TLAFile(ToolIO.getUserDir(), name, this );
         }
         else
         {
@@ -203,49 +202,40 @@ public class SimpleFilenameToStream implements FilenameToStream {
         	//
         	// This would be a lot simpler if TLC would not depend on
         	// File but on InputStream instead
-          if(FilenameToStream.isInJar(prefix)) {
-              is = cl.getResourceAsStream(STANDARD_MODULES + name);              
-              if(is != null) {
-                  sourceFile  = read(name, is);
-                  if (sourceFile.exists()) {
-                      sourceFile.setLibraryPath(cl.getResource(STANDARD_MODULES + name).toString());
-                  }
-              }
-          } else {
-              sourceFile  = new TLAFile( prefix + name, true, this );
-              if (sourceFile.exists()) {
-                  sourceFile.setLibraryPath(sourceFile.getAbsolutePath());                  
-              }
-          }
+        	if(FilenameToStream.isInJar(prefix)) {
+				is = cl.getResourceAsStream(STANDARD_MODULES + name);
+				if(is != null) {
+					sourceFile = read(name, cl.getResource(STANDARD_MODULES + name), is);
+				}
+        	} else {
+        		sourceFile = new TLAFile( prefix + name, true, this );
+        	}
         }
         // Debug
         // System.out.println("Looking for file " + sourceFile);
         if ( sourceFile.exists() )  break;
         if (idx >= libraryPaths.length) {
-            // As a last resort, try to load resource from the Java classpath. Give up, if it
-            // fails.
-            // The use case for this strategy is to load additional TLA+ module collections
-            // - e.g. community-driven ones - which ship a single jar containing the .tla
-            // operator definitions as well as Java module overwrites as .class files.
-        	  is = cl.getResourceAsStream(name);
-        	  if(is != null) {                
-                sourceFile = read(name, is);
-                if (sourceFile.exists()) {
-                    sourceFile.setLibraryPath(cl.getResource(name).toString());                    
-                }
-				        return sourceFile;
-			      } else {
-				        break;
-		      	}
+			// As a last resort, try to load resource from the Java classpath. Give up, if it
+			// fails.
+			// The use case for this strategy is to load additional TLA+ module collections
+			// - e.g. community-driven ones - which ship a single jar containing the .tla
+			// operator definitions as well as Java module overwrites as .class files.
+        	is = cl.getResourceAsStream(name);
+        	if(is != null) {
+				return read(name, cl.getResource(name), is);
+			} else {
+				break;
+			}
         }
         prefix = libraryPaths[idx++];
     } // end while
 
     return sourceFile;
+
   } // end locate()
 
-  private TLAFile read(String name, InputStream is) {
-    final TLAFile sourceFile = new TLAFile(TMPDIR + File.separator + name, true, this);
+  private File read(String name, URL location, InputStream is) {
+    final File sourceFile = new TLAFile(TMPDIR + File.separator + name, location, true, this);
 	sourceFile.deleteOnExit();
 	try {
 

@@ -3,6 +3,9 @@
 package util;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.regex.Pattern;
 
 
@@ -37,7 +40,8 @@ public interface FilenameToStream
 		
 		private final boolean isLibraryModule;
 		private transient final FilenameToStream resolver;
-		private String libraryPath = null;
+		// may be null.
+		private final URI libraryPath;
 
 		public TLAFile(String pathname, FilenameToStream fts) {
 			this(pathname, false, fts);
@@ -46,6 +50,7 @@ public interface FilenameToStream
 		public TLAFile(String pathname, boolean isLibraryModule, FilenameToStream fts) {
 			super(pathname);
 			this.isLibraryModule = isLibraryModule;
+			this.libraryPath = this.exists() ? this.toURI() : null;
 			this.resolver = fts;
 		}
 
@@ -54,8 +59,30 @@ public interface FilenameToStream
 				  ((ROOT_PATH_PATTERN.matcher(parent).find() && child.startsWith(parent))
 						  ? child.substring(parent.length())
 					      : child));
+			this.libraryPath = this.exists() ? this.toURI() : null;
 			this.isLibraryModule = false;
 			this.resolver = fts;
+		}
+
+		public TLAFile(String pathname, URL location, boolean isLibraryModule, FilenameToStream fts) {
+			super(pathname);
+			// Do not check exists here like in the other ctors because it returns false
+			// before the file is actually read in util.SimpleFilenameToStream.read(String,
+			// URL, InputStream). Instead, assume that the file exists if we get here. After
+			// all, we know that its inputstream exists.
+			// If the conversion from URL to URI fails, we continue with null an hope that
+			// everything goes fine.
+			this.libraryPath = toNullOrURI(location);
+			this.isLibraryModule = isLibraryModule;
+			this.resolver = fts;
+		}
+
+		private static URI toNullOrURI(URL location) {
+	  		try {
+	  			return location.toURI();
+	  		} catch (URISyntaxException e) {
+	  			return null;
+	        }
 		}
 
 		public boolean isLibraryModule() {
@@ -78,12 +105,12 @@ public interface FilenameToStream
 		 * This method enables us to keep track of the original path (or library) 
 		 * of the module.
 		 */
-		public String getLibraryPath() {
+		public URI getLibraryPath() {
 			return libraryPath;
 		}
-		
-		public void setLibraryPath(String libraryPath) {
-			this.libraryPath = libraryPath;
+
+		public boolean hasLibraryPath() {
+			return libraryPath != null;
 		}
 	}
 	
@@ -99,8 +126,8 @@ public interface FilenameToStream
        * August 2014 - TL
        * Added this method which returns all the path locations stored in the resolver
       */
-	public String getFullPath();
-	
+    public String getFullPath();
+
     /**
      * Returns true iff moduleName is the name of a standard module, which
      * is identified by the directory in which its source file resides.

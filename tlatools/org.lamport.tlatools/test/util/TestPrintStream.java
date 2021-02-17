@@ -31,7 +31,6 @@ import static org.junit.Assert.fail;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TestPrintStream extends PrintStream {
