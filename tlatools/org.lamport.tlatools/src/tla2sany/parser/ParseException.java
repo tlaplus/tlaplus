@@ -112,7 +112,7 @@ public class ParseException extends Exception {
       tok = tok.next;
     }
 		retval += "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn
-				+ " and token \"" + add_escapes(currentToken.image) + "\" ";
+				+ " and token \"" + add_escapes(currentToken.image != null ? currentToken.image : "") + "\" ";
 	    return retval;
   }
 
