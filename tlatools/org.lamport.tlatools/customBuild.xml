@@ -502,10 +502,8 @@
 			<jvmarg value="-ea"/>
 			<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
 			<jvmarg value="-XX:+UseParallelGC"/>
-			<!-- Uncomment to open a debug port in each forked VM to remote attach your Eclipse at port 1044.
             <jvmarg value="-Xdebug" />
-	        <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044" />
-			-->
+	        <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=${test.suspend},address=1044" />
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
