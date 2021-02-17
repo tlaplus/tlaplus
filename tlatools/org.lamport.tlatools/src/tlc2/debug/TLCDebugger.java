@@ -85,10 +85,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	public TLCDebugger() {
 		this.step = Step.In;
+		this.halt = true;
 	}
 
-	public TLCDebugger(final Step s) {
+	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
+		this.halt = halt;
 	}
 
 	@Override
@@ -314,6 +316,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	// Initialize the debugger to immediately halt on the first frame.
 	private volatile int targetLevel = 1;
 	private volatile Step step = Step.In;
+	
+	private volatile boolean halt;
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c) {
@@ -448,6 +452,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		if (launcher != null) {
 			launcher.getRemoteProxy().output(oea);
 			// Only halt the execution if a front-end/debugger is connect?
+		}
+		
+		if (halt) {
 			haltExecution();
 		}
 		
@@ -526,14 +533,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 		public static TLCDebugger OVERRIDE;
 
-		public static TLCDebugger getInstance(final boolean suspend) throws Exception {
+		public static TLCDebugger getInstance(final boolean suspend, boolean halt) throws Exception {
 			if (OVERRIDE != null) {
 				return OVERRIDE;
 			}
 			if (suspend) {
-				return new AttachingDebugger(Step.In);
+				return new AttachingDebugger(Step.In, halt);
 			}
-			return new AttachingDebugger(Step.Continue);
+			return new AttachingDebugger(Step.Continue, halt);
 		}
 	}
 }

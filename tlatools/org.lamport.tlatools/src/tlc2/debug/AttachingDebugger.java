@@ -44,8 +44,8 @@ import util.ToolIO;
 
 public class AttachingDebugger extends TLCDebugger {
 	
-	public AttachingDebugger(final Step s) throws IOException, InterruptedException, ExecutionException {
-		super(s);
+	public AttachingDebugger(final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
+		super(s, halt);
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
 		ToolIO.out = new PrintStream(ToolIO.out) {
 			// ToolIO.out passed to PrintStream above is either System.out or one of TLC's

@@ -175,6 +175,7 @@ public class TLC {
     
     private boolean debugger = false;
     private boolean suspend = true;
+    private boolean halt = true;
     
     /**
      * Interface to retrieve model properties.
@@ -463,10 +464,11 @@ public class TLC {
             {
                 index++;
                 debugger = true;
-                if ((index < args.length) && args[index].equals("nosuspend")) {
-                	index++;
-                	suspend = false;
-                }
+				if ((index < args.length) && (args[index].contains("nosuspend") || args[index].contains("nohalt"))) {
+					suspend = !args[index].toLowerCase().contains("nosuspend");
+					halt = !args[index].toLowerCase().contains("nohalt");
+					index++;
+				}
             } else if (args[index].equals("-tool"))
             {
                 index++;
@@ -1051,7 +1053,7 @@ public class TLC {
 					assert TLCGlobals.getNumWorkers() == 1
 							: "TLCDebugger does not support running with multiple workers.";
 					tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation,
-							TLCDebugger.Factory.getInstance(suspend));
+							TLCDebugger.Factory.getInstance(suspend, halt));
 					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
 	                        traceNum, rng, seed, resolver);
 				} else {
@@ -1077,7 +1079,7 @@ public class TLC {
             	// model checking
 				if (debugger) {
 					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
-					tool = new DebugTool(mainFile, configFile, resolver, TLCDebugger.Factory.getInstance(suspend));
+					tool = new DebugTool(mainFile, configFile, resolver, TLCDebugger.Factory.getInstance(suspend, halt));
 				} else {
 					tool = new FastTool(mainFile, configFile, resolver);
 				}
@@ -1452,11 +1454,18 @@ public class TLC {
     				+ "state-space exploration can be temporarily halted and variables\n"
 					+ "be inspected. The only debug front-end so far is the TLA+\n"
     				+ "VSCode extension, which has to be downloaded and configured\n"
-					+ "separately. Specifying the optional parameter 'nosuspend' causes\n"
-					+ "TLC to start state-space exploration without waiting for the\n"
+					+ "separately, though other front-ends could be implemeted via the\n"
+    				+ "debug-adapter-protocol.\n"
+					+ "Specifying the optional parameter 'nosuspend' causes\n"
+					+ "TLC to start state-space exploration without waiting for a\n"
 					+ "debugger front-end to connect. Without 'nosuspend', TLC\n"
-					+ "halts state-space exploration before the first ASSUME is\n"
-					+ "evaluated (but after constants are processed)."
+					+ "suspends state-space exploration before the first ASSUME is\n"
+					+ "evaluated (but after constants are processed). With 'nohalt',\n"
+					+ "TLC does not halt state-space exploration when an evaluation\n"
+					+ "or runtime error is caught. Without 'nohalt', evaluation or\n"
+					+ "runtime errors can be inspected in the debugger before TLC\n"
+					+ "terminates.\n"
+					+ "Specifying '-debugger' implies '-workers 1'."
 					+ "", false,
 				"nosuspend"));
   	

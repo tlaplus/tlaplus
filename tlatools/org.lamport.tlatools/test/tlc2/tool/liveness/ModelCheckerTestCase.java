@@ -142,7 +142,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			
 			if (getNumberOfThreads() == 1 && runWithDebugger()) {
 				args.add("-debugger");
-				args.add("nosuspend");
+				args.add("nosuspend,nohalt");
 			}
 			
 			if (noGenerateSpec()) {

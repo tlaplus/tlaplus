@@ -103,6 +103,13 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		this(spec, path, extraArgs, exitStatus);
 		debugger.setBreakpoints(initialBreakpoint);
 	}
+	
+	@Override
+	protected boolean runWithDebugger() {
+		// TLCDebuggerTestCase configures the debugger explicitly! Especially, it
+		// doesn't pass 'nosuspend,nohalt'.
+		return false;
+	}
 
 	@Override
 	protected boolean doDump() {
