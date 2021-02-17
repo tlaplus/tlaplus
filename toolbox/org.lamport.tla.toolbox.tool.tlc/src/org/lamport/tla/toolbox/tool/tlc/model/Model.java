@@ -675,6 +675,16 @@ public class Model implements IModelConfigurationConstants, IAdaptable {
      */
 	public IMarker setMarker(Map<String, Object> properties, String markerType) {
 		try {
+			// Clear existing, identical markers before creating a new one. If we don't do
+			// this, reopening a model from the spec explorer will add the same TLC error
+			// again.
+			final IMarker[] existingMarkers = getFile().findMarkers(markerType, false, IResource.DEPTH_ZERO);
+			for (IMarker iMarker : existingMarkers) {
+				// markerType in findMarkers(..)
+				if (properties.equals(iMarker.getAttributes())) {
+					iMarker.delete();
+				}
+			}
 			IMarker marker = getFile().createMarker(markerType);
 			marker.setAttributes(properties);
 			return marker;
