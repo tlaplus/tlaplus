@@ -62,7 +62,7 @@ public class TestMPRecorder implements tlc2.output.IMessagePrinterRecorder {
 	}
 
 	public List<String[]> getRecordAsStringArray(int code) {
-		final List<Object> l = records.get(code);
+		final List<Object> l = records.getOrDefault(code, new ArrayList<>());
 		
 		final List<String[]> strs = new ArrayList<>(l.size());
 		for (Object o : l) {
