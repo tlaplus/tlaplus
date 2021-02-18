@@ -225,6 +225,18 @@
  		   <artifactId>gson</artifactId>
 		   <version>2.8.6</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.eclipse.lsp4j/org.eclipse.lsp4j.jsonrpc.debug -->
+		<dependency>
+		    <groupId>org.eclipse.lsp4j</groupId>
+		    <artifactId>org.eclipse.lsp4j.debug</artifactId>
+		    <version>0.10.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.eclipse.lsp4j/org.eclipse.lsp4j.jsonrpc -->
+		<dependency>
+		    <groupId>org.eclipse.lsp4j</groupId>
+		    <artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
+		    <version>0.10.0</version>
+		</dependency>
       </dependencies>
 
       <!-- August 2014 - TL
