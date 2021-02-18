@@ -63,6 +63,7 @@ import org.eclipse.lsp4j.debug.StackTraceResponse;
 import org.eclipse.lsp4j.debug.StepInArguments;
 import org.eclipse.lsp4j.debug.StepOutArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
+import org.eclipse.lsp4j.debug.TerminateArguments;
 import org.eclipse.lsp4j.debug.Thread;
 import org.eclipse.lsp4j.debug.ThreadsResponse;
 import org.eclipse.lsp4j.debug.Variable;
@@ -73,6 +74,7 @@ import org.eclipse.lsp4j.jsonrpc.Launcher;
 
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
+import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -109,6 +111,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// be used.
 		final Capabilities capabilities = new Capabilities();
 		capabilities.setSupportsEvaluateForHovers(true);
+		capabilities.setSupportsTerminateRequest(true);
 		return CompletableFuture.completedFuture(capabilities);
 	}
 
@@ -126,6 +129,23 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> cancel(CancelArguments args) {
 		return CompletableFuture.completedFuture(null);
 	}
+	
+	// See setSupportsTerminateRequest above.
+	@Override
+	public synchronized CompletableFuture<Void> terminate(TerminateArguments args) {
+		LOGGER.finer("terminate");
+		// TODO: In case the debugger is currently paused on an ASSUME, TLC will first
+		// generate the initial states before stopping.
+		if (TLCGlobals.mainChecker != null) {
+			TLCGlobals.mainChecker.stop();
+		}
+		if (TLCGlobals.simulator != null) {
+			TLCGlobals.simulator.stop();
+		}
+		
+		return disconnect(new DisconnectArguments());
+	}
+
 
 	@Override
 	public synchronized CompletableFuture<Void> configurationDone(ConfigurationDoneArguments args) {
@@ -139,6 +159,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> disconnect(DisconnectArguments args) {
 		LOGGER.finer("disconnect");
 		
+		// "Unlock" evaluation, i.e. set step to Continue and clear all breakpoints.
+		// Afterwards, resume TLC in case it's waiting for the debugger too.
 		breakpoints.clear();
 		targetLevel = -1;
 		step = Step.Continue;
