@@ -59,7 +59,7 @@ public class AttachingDebugger extends TLCDebugger {
 			@Override
 			public void println(String str) {
 				((PrintStream) out).println(str);
-				sendOutput(str);
+				sendOutput(str + "\n");
 			}
 
 			@Override
