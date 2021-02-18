@@ -23,7 +23,7 @@ public class TLCGlobals
 	public static final int DEFAULT_CHECKPOINT_DURATION = (30 * 60 * 1000) + 42;
 
 	// The current version of TLC
-    public static String versionOfTLC = "Version 2.15 of Day Month 20??";
+    public static String versionOfTLC = "Version 2.16 of Day Month 20??";
     
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
