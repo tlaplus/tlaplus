@@ -304,7 +304,7 @@
 			</fileset>
 		</copy>
 		
-		<unzip src="lib/lsp/gson-2.8.6.jar" dest="${class.dir}">
+		<unzip src="lib/gson/gson-2.8.6.jar" dest="${class.dir}">
 			<patternset>
 				<include name="**/*.class"/>
 			</patternset>

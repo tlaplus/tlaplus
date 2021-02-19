@@ -30,6 +30,5 @@
 	<classpathentry kind="lib" path="lib/gson/gson-2.8.6.jar"/>
 	<classpathentry kind="lib" path="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar"/>
-	<classpathentry kind="lib" path="lib/lsp/gson-2.8.6.jar"/>
 	<classpathentry kind="output" path="class"/>
 </classpath>
