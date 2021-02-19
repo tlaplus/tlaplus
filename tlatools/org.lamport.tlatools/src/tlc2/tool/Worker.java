@@ -23,7 +23,6 @@ import tlc2.util.IdThread;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.FixedSizedBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
-import util.Assert.TLCRuntimeException;
 import util.FileUtil;
 import util.WrongInvocationException;
 
@@ -103,9 +102,12 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 				final long preNext = this.statesGenerated;
 				try {
 					this.tool.getNextStates(this, curState);
-				} catch (TLCRuntimeException | EvalException e) {
-					// The next-state relation couldn't be evaluated.
-					this.tlc.doNextFailed(curState, null, e);
+				} catch (final WrappingRuntimeException e) {
+					// The next-state relation couldn't be evaluated. If doNextFailed itself throws
+					// a Throwable, the catch block below will handle it.
+					this.tlc.doNextFailed(curState, e.unwrapState(), e.unwrapExp());
+				} catch (final Throwable notExpectedToHappen) {
+					this.tlc.doNextFailed(curState, null, notExpectedToHappen);
 				}
 				
 				if (this.checkDeadlock && preNext == this.statesGenerated) {
@@ -373,7 +375,32 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			}
 			return this;
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			// We can't throw Exception here because it would violate the contract of
+			// tlc2.tool.INextStateFunctor.addElement(TLCState, Action, TLCState). Thus,
+			// wrap the exception regardless of whether it is a (unchecked) runtime
+			// exception or not. We expect the outer code in run(..) above to unwrap this
+			// exception.  As a bonus, we can attach succState and send it up the stack.
+			throw new WrappingRuntimeException(e, succState);
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	private static class WrappingRuntimeException extends RuntimeException {
+
+		private final Exception e;
+		private final TLCState state;
+
+		public WrappingRuntimeException(final Exception e, final TLCState state) {
+			this.e = e;
+			this.state = state;
+		}
+		
+		public TLCState unwrapState() {
+			return state;
+		}
+
+		public Exception unwrapExp() {
+			return e;
 		}
 	}
 
