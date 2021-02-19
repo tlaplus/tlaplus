@@ -289,6 +289,25 @@
 				<include name="**/*.*"/>
 			</patternset>
 		</unzip>
+		
+		<unzip src="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar" dest="target/classes">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar" dest="target/classes">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
+		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.10.0.jar" dest="target/classes">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
 
 		<!-- Include a few LICENSE files -->
 		<copy todir="${class.dir}">
