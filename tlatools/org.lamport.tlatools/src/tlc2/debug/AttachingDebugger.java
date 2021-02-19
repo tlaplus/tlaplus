@@ -86,7 +86,8 @@ public class AttachingDebugger extends TLCDebugger {
 				// Immediately re-open the debugger to front-end requests after a front-end disconnected.
 				//TODO: This doesn't terminate when TLC terminates.
 				while (true) {
-					System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
+					// No point printing the debugger port while it's hard-coded.
+//					System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
 					final Socket socket = serverSocket.accept();
 					final InputStream inputStream = socket.getInputStream();
 					final OutputStream outputStream = socket.getOutputStream();
@@ -125,8 +126,6 @@ public class AttachingDebugger extends TLCDebugger {
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);
 			launcher.getRemoteProxy().stopped(eventArguments);
-		} else {
-			System.out.printf("Debugger has halted TLC and is waiting for the DAP front-end to connect...\n");
 		}
 	}
 }
