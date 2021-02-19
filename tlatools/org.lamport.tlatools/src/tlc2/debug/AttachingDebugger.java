@@ -118,14 +118,4 @@ public class AttachingDebugger extends TLCDebugger {
 		
 		return CompletableFuture.completedFuture(null);
 	}
-
-	@Override
-	protected void sendStopped() {
-		LOGGER.finer("loadSource -> stopped");
-		if (launcher != null) {
-			StoppedEventArguments eventArguments = new StoppedEventArguments();
-			eventArguments.setThreadId(0);
-			launcher.getRemoteProxy().stopped(eventArguments);
-		}
-	}
 }

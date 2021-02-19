@@ -67,7 +67,7 @@ public class EWD840ErrorActionDebuggerTest extends TLCDebuggerTestCase {
 		// Assert the exception variable.
 		TLCStackFrame stackFrame = (TLCStackFrame) stackFrames[0];
 		assertNotNull(stackFrame.exception);
-		Variable[] expVar = stackFrame.getException();
+		Variable[] expVar = stackFrame.getExceptionAsVariable();
 		assertEquals(1, expVar.length);
 
 		assertEquals("line 13, col 69 to line 13, col 77 of module Error03", expVar[0].getName());

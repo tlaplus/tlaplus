@@ -164,6 +164,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		breakpoints.clear();
 		targetLevel = -1;
 		step = Step.Continue;
+		halt = false;
 		this.notify();
 		
 		return CompletableFuture.completedFuture(null);
@@ -343,23 +344,26 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c) {
-		stack.push(new TLCStackFrame(stack.peek(), expr, c, tool));
-		haltExecution(expr, this.stack.size());
+		final TLCStackFrame frame = new TLCStackFrame(stack.peek(), expr, c, tool);
+		stack.push(frame);
+		haltExecution(frame, this.stack.size());
 		return this;
 	}
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState s) {
-		stack.push(new TLCStateStackFrame(stack.peek(), expr, c, tool, s));
-		haltExecution(expr, this.stack.size());
+		final TLCStackFrame frame = new TLCStateStackFrame(stack.peek(), expr, c, tool, s);
+		stack.push(frame);
+		haltExecution(frame, this.stack.size());
 		return this;
 	}
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
 			TLCState t) {
-		stack.push(new TLCActionStackFrame(stack.peek(), expr, c, tool, s, t));
-		haltExecution(expr, this.stack.size());
+		final TLCStackFrame frame = new TLCActionStackFrame(stack.peek(), expr, c, tool, s, t);
+		stack.push(frame);
+		haltExecution(frame, this.stack.size());
 		return this;
 	}
 
@@ -477,23 +481,23 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		}
 		
 		if (halt) {
-			haltExecution();
+			haltExecution(frame);
 		}
 		
 		return this;
 	}
 
-	protected void haltExecution(final SemanticNode expr, final int level) {
+	protected void haltExecution(final TLCStackFrame frame, final int level) {
 		if (LOGGER.isLoggable(Level.FINER)) {
-			LOGGER.finer(String.format("%s(%s): [%s]\n", new String(new char[level]).replace('\0', '#'), level, expr));
+			LOGGER.finer(String.format("%s(%s): [%s]\n", new String(new char[level]).replace('\0', '#'), level, frame.getNode()));
 		}
-		if (matches(step, targetLevel, level) || matches(expr)) {
-			haltExecution();
+		if (matches(step, targetLevel, level) || matches(frame.getNode())) {
+			haltExecution(frame);
 		}
 	}
 
-	protected void haltExecution() {
-		sendStopped();
+	protected void haltExecution(final TLCStackFrame frame) {
+		sendStopped(frame);
 
 		try {
 			// Halt TLC's evaluation by blocking on this (one-element) queue. The DAP
@@ -505,11 +509,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		}
 	}
 
-	protected void sendStopped() {
+	protected void sendStopped(final TLCStackFrame frame) {
 		LOGGER.finer("loadSource -> stopped");
-		StoppedEventArguments eventArguments = new StoppedEventArguments();
-		eventArguments.setThreadId(0);
-		launcher.getRemoteProxy().stopped(eventArguments);
+		if (launcher != null) {
+			final StoppedEventArguments eventArguments = frame.getStoppedEventArgument();
+			eventArguments.setThreadId(0);
+			launcher.getRemoteProxy().stopped(eventArguments);
+		}
 	}
 
 	private static boolean matches(Step dir, int targetLevel, int currentLevel) {

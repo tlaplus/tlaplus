@@ -43,6 +43,8 @@ import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.ScopePresentationHint;
 import org.eclipse.lsp4j.debug.Source;
 import org.eclipse.lsp4j.debug.StackFrame;
+import org.eclipse.lsp4j.debug.StackFramePresentationHint;
+import org.eclipse.lsp4j.debug.StoppedEventArguments;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.parser.SyntaxTreeNode;
@@ -132,6 +134,9 @@ public class TLCStackFrame extends StackFrame {
 
 		if (node instanceof NumeralNode) {
 			setName(Integer.toString(((NumeralNode)node).val()));
+		} else if (e != null) {
+			setName(String.format("(Exception) %s", node.getHumanReadableImage()));
+			setPresentationHint(StackFramePresentationHint.SUBTLE);
 		} else {
 			setName(node.getHumanReadableImage());
 		}
@@ -205,8 +210,15 @@ public class TLCStackFrame extends StackFrame {
 		return getVariables(getConstantsId());
 	}
 	
-	Variable[] getException() {
-		return getVariables(getExceptionId());
+	// Keep this for the (legacy) unit-tests that expected the exception to appear
+	// in an artificial variable in the variable view.
+	Variable[] getExceptionAsVariable() {
+		final Variable variable = new Variable();
+		variable.setName(getNode().getHumanReadableImage());
+		final RuntimeException re = (RuntimeException) exception;
+		variable.setValue(re.getMessage());
+		variable.setType(re.getClass().getSimpleName()); //TODO Is this useful?
+		return new Variable[]{variable};
 	}
 	
 	public Variable[] getVariables(final int vr) {
@@ -233,15 +245,6 @@ public class TLCStackFrame extends StackFrame {
 					}
 				}
 				vars.addAll(cntsts);
-			}
-			
-			if (vr == getExceptionId()) {
-				final Variable variable = new Variable();
-				variable.setName(getNode().getHumanReadableImage());
-				final RuntimeException re = (RuntimeException) exception;
-				variable.setValue(re.getMessage());
-				variable.setType(re.getClass().getSimpleName()); //TODO Is this useful?
-				vars.add(variable);
 			}
 
 			if (ctxtId == vr) {
@@ -456,13 +459,6 @@ public class TLCStackFrame extends StackFrame {
 			scope.setPresentationHint(ScopePresentationHint.REGISTERS);
 			scopes.add(scope);
 		}
-
-		if (this.exception != null) {
-			final Scope scope = new Scope();
-			scope.setName(EXCEPTION);
-			scope.setVariablesReference(getExceptionId());
-			scopes.add(scope);
-		}
 		
 		if (hasStackVariables()) {
 			final Scope scope = new Scope();
@@ -504,8 +500,13 @@ public class TLCStackFrame extends StackFrame {
 	public int getStackId() {
 		return this.ctxtId + 3;
 	}
-	
-	public int getExceptionId() {
-		return this.ctxtId + 2;
+
+	public StoppedEventArguments getStoppedEventArgument() {
+		final StoppedEventArguments eventArguments = new StoppedEventArguments();
+		if (this.exception != null) {
+			eventArguments.setReason("exception");
+			eventArguments.setText(this.exception.getMessage());
+		}
+		return eventArguments;
 	}
 }
