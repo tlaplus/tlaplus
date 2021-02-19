@@ -104,9 +104,13 @@ public abstract class AbstractChecker
         		// raise warning...
 				MP.printWarning(EC.TLC_FEATURE_UNSUPPORTED_LIVENESS_SYMMETRY);
         	}
-        	if (tool.hasStateOrActionConstraints()) {
-				MP.printWarning(EC.TLC_FEATURE_LIVENESS_CONSTRAINTS);
-        	}
+    		// LL: "[this message is] rather silly because it can obviously also cause TLC
+    		// to fail to find violations of a safety property. I suggest removing that
+    		// warning.
+        	// Also see org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedModelPage.validatePage(boolean)
+//        	if (tool.hasStateOrActionConstraints()) {
+//				MP.printWarning(EC.TLC_FEATURE_LIVENESS_CONSTRAINTS);
+//        	}
             // Initialization for liveness checking:
             report("initializing liveness checking");
 			IBucketStatistics stats = new DummyBucketStatistics();

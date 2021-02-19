@@ -28,8 +28,6 @@ package tlc2.tool.liveness;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
 import tlc2.output.EC;
 
 public class LivenessConstraintWarning extends ModelCheckerTestCase {
@@ -37,8 +35,11 @@ public class LivenessConstraintWarning extends ModelCheckerTestCase {
 	public LivenessConstraintWarning() {
 		super("LivenessConstraintWarning");
 	}
-	
-	@Test
+
+    // See:
+	// tlc2.tool.AbstractChecker.AbstractChecker(ITool, String, IStateWriter, boolean, String, long)
+	// org.lamport.tla.toolbox.tool.tlc.ui.editor.page.advanced.AdvancedModelPage.validatePage(boolean)
+//	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recorded(EC.TLC_FEATURE_LIVENESS_CONSTRAINTS));

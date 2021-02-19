@@ -30,7 +30,6 @@ import org.lamport.tla.toolbox.tool.tlc.launch.IModelConfigurationConstants;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.DataBindingManager;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.ModelEditor;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.BasicFormPage;
-import org.lamport.tla.toolbox.tool.tlc.ui.editor.page.MainModelPage;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableOverridesSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.editor.part.ValidateableSectionPart;
 import org.lamport.tla.toolbox.tool.tlc.ui.util.DirtyMarkingListener;
@@ -292,6 +291,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
 		// LL: "[this message is] rather silly because it can obviously also cause TLC
 		// to fail to find violations of a safety property. I suggest removing that
 		// warning.
+        // Also see tlc2.tool.AbstractChecker.AbstractChecker(ITool, String, IStateWriter, boolean, String, long)
 //		final MainModelPage mmp = (MainModelPage) getModelEditor().getFormPage(MainModelPage.ID);
 //		if (mmp.hasLivenessProperty()) {
 //			if (!FormHelper.trimTrailingSpaces(constraintSource.getDocument().get()).isEmpty()) {
