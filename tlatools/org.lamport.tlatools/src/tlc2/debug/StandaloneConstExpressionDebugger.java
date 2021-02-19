@@ -55,6 +55,9 @@ import util.ToolIO;
  */
 public class StandaloneConstExpressionDebugger extends TLCDebugger {
 
+	// THIS SCED HASN'T BEEN UPDATED TO REFLECT WHAT IS GOING ON IN TLCDEBUGGER AND,
+	// THUS, PROBABLY DOESN'T WORK ANYMORE!!!
+	
 	public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 		new StandaloneConstExpressionDebugger();
 	}

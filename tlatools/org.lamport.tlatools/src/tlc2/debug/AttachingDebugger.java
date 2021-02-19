@@ -44,6 +44,8 @@ import util.ToolIO;
 
 public class AttachingDebugger extends TLCDebugger {
 	
+	private String buffer = "";
+	
 	public AttachingDebugger(final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
 		super(s, halt);
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
@@ -69,10 +71,12 @@ public class AttachingDebugger extends TLCDebugger {
 			}
 
 			private void sendOutput(String str) {
-				final OutputEventArguments oea = new OutputEventArguments();
-				oea.setOutput(str);
 				if (launcher != null) {
+					final OutputEventArguments oea = new OutputEventArguments();
+					oea.setOutput(str);
 					launcher.getRemoteProxy().output(oea);
+				} else {
+					buffer += str;
 				}
 			}
 		};
@@ -98,6 +102,14 @@ public class AttachingDebugger extends TLCDebugger {
 	public CompletableFuture<Void> launch(Map<String, Object> args) {
 		LOGGER.finer("launch");
 		Executors.newSingleThreadExecutor().submit(() -> {
+			if (!"".equals(buffer)) {
+				// Send buffered TLC output that was printed before the debugger connected.
+				final OutputEventArguments oea = new OutputEventArguments();
+				oea.setOutput(buffer);
+				launcher.getRemoteProxy().output(oea);
+				buffer = "";
+			}
+			
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);
 			launcher.getRemoteProxy().stopped(eventArguments);
