@@ -227,6 +227,23 @@
 			</patternset>
 		</unzip>
 		<touch file="${class.dir}/META-INF/javamail.default.address.map"/>
+		<unzip src="lib/jline/jline-terminal-3.14.1.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
+		<unzip src="lib/jline/jline-reader-3.14.1.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
+		<unzip src="lib/gson/gson-2.8.6.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
 
 		<!-- Extract javax.mail to maven classes folder. This script is triggered by -->
 		<!-- maven. However, maven compiles the code again to target/classes from -->
@@ -253,19 +270,19 @@
 		</unzip>
 		<touch file="target/classes/META-INF/javamail.default.address.map"/>
 
-		<unzip src="lib/jline/jline-terminal-3.14.1.jar" dest="${class.dir}">
+		<unzip src="lib/jline/jline-terminal-3.14.1.jar" dest="target/classes">
 			<patternset>
 				<include name="**/*.*"/>
 			</patternset>
 		</unzip>
 
-		<unzip src="lib/jline/jline-reader-3.14.1.jar" dest="${class.dir}">
+		<unzip src="lib/jline/jline-reader-3.14.1.jar" dest="target/classes">
 			<patternset>
 				<include name="**/*.*"/>
 			</patternset>
 		</unzip>
 
-		<unzip src="lib/gson/gson-2.8.6.jar" dest="${class.dir}">
+		<unzip src="lib/gson/gson-2.8.6.jar" dest="target/classes">
 			<patternset>
 				<include name="**/*.*"/>
 			</patternset>

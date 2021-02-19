@@ -100,6 +100,8 @@ public class TLCProcessJob extends TLCJob
 			final String libClasspath = runtimeClasspath + File.separator + "lib" + File.separator + "*";
 			final String libMailClasspath = runtimeClasspath + File.separator + "lib" + File.separator + "javax.mail"
 					+ File.separator + "*";
+			final String libJsonClasspath = runtimeClasspath + File.separator + "lib" + File.separator + "gson"
+					+ File.separator + "*";
 			// classpath during toolbox development within Eclipse (will simply not
 			// exist in packaged toolbox)
 			final String devClasspath = runtimeClasspath + File.separator + "class";
@@ -109,7 +111,7 @@ public class TLCProcessJob extends TLCJob
 			final Spec spec = Activator.getSpecManager().getSpecByName(specName);
 			final String libraryPathClassPath = spec.getTLALibraryPathAsClassPath();
 			
-			final String[] classPath = new String[] { runtimeClasspath, libClasspath, libMailClasspath, devClasspath, libraryPathClassPath };
+			final String[] classPath = new String[] { runtimeClasspath, libClasspath, libMailClasspath, devClasspath, libJsonClasspath, libraryPathClassPath };
 
             // arguments
             String[] arguments = constructProgramArguments();

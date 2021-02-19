@@ -17,6 +17,10 @@
 <repository id="eclipse-orbit" location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="com.google.gson" version="0.0.0"/>
+<repository id="eclipse-orbit-newer" location="http://download.eclipse.org/tools/orbit/downloads/drops/S20210216215844/repository/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.swtbot.ide.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.swtbot.eclipse.test.junit.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.swtbot.feature.group" version="0.0.0"/>
