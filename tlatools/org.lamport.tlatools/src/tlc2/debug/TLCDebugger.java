@@ -194,7 +194,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return CompletableFuture.completedFuture(null);
 	}
 
-	protected final Map<String, List<Breakpoint>> breakpoints = new HashMap<>();
+	protected final Map<String, List<SourceBreakpoint>> breakpoints = new HashMap<>();
 	
 	@Override
 	public synchronized CompletableFuture<Void> disconnect(DisconnectArguments args) {
@@ -212,20 +212,26 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public synchronized CompletableFuture<SetBreakpointsResponse> setBreakpoints(SetBreakpointsArguments args) {
+	public synchronized CompletableFuture<SetBreakpointsResponse> setBreakpoints(final SetBreakpointsArguments args) {
 		//TODO: Confirm breakpoint locations (see tlc2.debug.TLCDebugger.matches(SemanticNode))!!!
 		LOGGER.finer("setBreakpoints");
 		
 		final String module = args.getSource().getName().replaceFirst(".tla$", "");
 		
 		if (args.getBreakpoints() != null && args.getBreakpoints().length > 0) {
-			breakpoints.computeIfAbsent(module, key -> new ArrayList<Breakpoint>()).clear();
+			breakpoints.computeIfAbsent(module, key -> new ArrayList<SourceBreakpoint>()).clear();
 			
 			final SourceBreakpoint[] sbps = args.getBreakpoints();
+			final Breakpoint[] bp = new Breakpoint[sbps.length];
 			for (int j = 0; j < sbps.length; j++) {
-				Breakpoint breakpoint = new Breakpoint();
-				breakpoint.setColumn(sbps[j].getColumn());
-				breakpoint.setLine(sbps[j].getLine());
+				final SourceBreakpoint sbp = sbps[j];
+				breakpoints.get(module).add(sbp);
+				
+				// Create the response that communicates the result of setting the breakpoint.
+				// We could try to verify the location of breakpoints.
+				final Breakpoint breakpoint = new Breakpoint();
+				breakpoint.setColumn(sbp.getColumn());
+				breakpoint.setLine(sbp.getLine());
 				breakpoint.setId(j);
 				// TODO: Actually verify breakpoints. However, we only get the beginLine and
 				// beginColumn, but no endLine or endColumn. This means,we have to improve the
@@ -233,11 +239,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 				breakpoint.setVerified(true);
 				Source source = args.getSource();
 				breakpoint.setSource(source);
-				breakpoints.get(module).add(breakpoint);
+				bp[j] = breakpoint;
 			}
 			final SetBreakpointsResponse response = new SetBreakpointsResponse();
-			final List<Breakpoint> list = breakpoints.get(module);
-			response.setBreakpoints(list.toArray(new Breakpoint[list.size()]));
+			response.setBreakpoints(bp);
 			return CompletableFuture.completedFuture(response);
 		} else {
 			breakpoints.getOrDefault(module, new ArrayList<>()).clear();
@@ -535,7 +540,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		if (LOGGER.isLoggable(Level.FINER)) {
 			LOGGER.finer(String.format("%s(%s): [%s]\n", new String(new char[level]).replace('\0', '#'), level, frame.getNode()));
 		}
-		if (matches(step, targetLevel, level) || matches(frame.getNode())) {
+		if (matches(step, targetLevel, level) || matches(frame)) {
 			haltExecution(frame);
 		}
 	}
@@ -582,7 +587,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return false;
 	}
 
-	private boolean matches(final SemanticNode expr) {
+	private boolean matches(final TLCStackFrame frame) {
 		//TODO: Better match the location.  However, it shouldn't be done down here
 		// but in setBreakpoints above that lets the debuggee tell the front-end
 		// that a user-defined location is "corrected" to one that matches the bounds
@@ -590,15 +595,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// setBreakpoints should traverse the semantic graph trying to find the smallest
 		// i.e. best match for the given editor location.  The code here should then
 		// simple compare the two location instances.
-		final Location location = expr.getLocation();
-		final String module = location.source();
 		// If no breakpoints are set, stream over an empty list.
-		return breakpoints.getOrDefault(module, new ArrayList<>()).stream().anyMatch(b -> {
-			return b.getLine() == location.beginLine()
-					// TODO: Stripping off the file suffix here is a hack, but is this even
-					// necessary?
-					&& module.equals(b.getSource().getName().replaceFirst(".tla$", ""));
-		});
+		return breakpoints.getOrDefault(frame.getNode().getLocation().source(), new ArrayList<>()).stream()
+				.anyMatch(b -> {
+					return frame.matches(b);
+				});
 	}
 	
 	public static class Factory {

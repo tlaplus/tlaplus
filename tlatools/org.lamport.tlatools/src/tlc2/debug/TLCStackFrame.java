@@ -42,6 +42,7 @@ import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.ScopePresentationHint;
 import org.eclipse.lsp4j.debug.Source;
+import org.eclipse.lsp4j.debug.SourceBreakpoint;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.StackFramePresentationHint;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
@@ -516,5 +517,9 @@ public class TLCStackFrame extends StackFrame {
 			eventArguments.setText(this.exception.getMessage());
 		}
 		return eventArguments;
+	}
+
+	public boolean matches(SourceBreakpoint bp) {
+		return bp.getLine() == node.getLocation().beginLine();
 	}
 }
