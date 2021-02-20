@@ -142,7 +142,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 	vals[i] = val.deepCopy();
       }
     }
-    return new TLCStateMut(vals);
+	return deepCopy(new TLCStateMut(vals));
   }
 
   public final StateVec addToVec(StateVec states) {

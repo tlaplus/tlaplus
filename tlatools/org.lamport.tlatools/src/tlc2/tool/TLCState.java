@@ -83,6 +83,11 @@ public abstract class TLCState implements Cloneable, Serializable {
   public abstract boolean allAssigned();
   public abstract Set<OpDeclNode> getUnassigned();
   public abstract TLCState createEmpty();
+
+  protected TLCState deepCopy(TLCState copy) {
+	  copy.level = this.level;
+	  return copy;
+  }
   
   public boolean noneAssigned() {
 		// isEmpty just checks referential equality, which is broken when some code

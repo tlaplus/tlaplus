@@ -161,7 +161,7 @@ public final class TLAPlusExecutorState extends TLCState {
 		vals[i] = val.deepCopy();
 	      }
 	    }
-	    return new TLAPlusExecutorState(vals);
+	    return deepCopy(new TLAPlusExecutorState(vals));
 	  }
 
 	  public final StateVec addToVec(StateVec states) {

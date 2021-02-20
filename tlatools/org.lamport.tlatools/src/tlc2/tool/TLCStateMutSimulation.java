@@ -138,7 +138,7 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
 	vals[i] = val.deepCopy();
       }
     }
-    return new TLCStateMutSimulation(vals);
+	return deepCopy(new TLCStateMutSimulation(vals));
   }
 
   public final StateVec addToVec(StateVec states) {
