@@ -35,6 +35,10 @@ public abstract class TLCState implements Cloneable, Serializable {
   // Set by subclasses. Cannot set until we know what the variables are.
   public static TLCState Empty = null;
 
+  public static boolean isEmpty(final TLCState state) {
+	  return Empty == state;
+  }
+  
   // The state variables.
   protected static OpDeclNode[] vars = null;
 
