@@ -44,6 +44,7 @@ import org.eclipse.lsp4j.debug.ContinueResponse;
 import org.eclipse.lsp4j.debug.DisconnectArguments;
 import org.eclipse.lsp4j.debug.EvaluateArguments;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
+import org.eclipse.lsp4j.debug.ExceptionBreakpointsFilter;
 import org.eclipse.lsp4j.debug.InitializeRequestArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
 import org.eclipse.lsp4j.debug.OutputEventArguments;
@@ -52,6 +53,7 @@ import org.eclipse.lsp4j.debug.ScopesArguments;
 import org.eclipse.lsp4j.debug.ScopesResponse;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.SetBreakpointsResponse;
+import org.eclipse.lsp4j.debug.SetExceptionBreakpointsArguments;
 import org.eclipse.lsp4j.debug.SetVariableArguments;
 import org.eclipse.lsp4j.debug.SetVariableResponse;
 import org.eclipse.lsp4j.debug.Source;
@@ -116,7 +118,32 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// only useful if we wish to show the Java stack trace (which users don't care
 		// about).
 		capabilities.setSupportsExceptionInfoRequest(false);
+		// Let users flip at runtime the value of "nohalt" that they passed as a
+		// sub-command of the "-debugger" (see tlc2.TLC.java) command.
+		capabilities.setExceptionBreakpointFilters(getExceptionBreakpointFilters());
+		// Don't support more sophisticated configuration of exception breakpoint
+		// filters such as ignoring some exceptions. When TLC hits an exception, it
+		// terminates anyway.
+		capabilities.setSupportsExceptionOptions(false);
 		return CompletableFuture.completedFuture(capabilities);
+	}
+
+	private ExceptionBreakpointsFilter[] getExceptionBreakpointFilters() {
+		final ExceptionBreakpointsFilter filter = new ExceptionBreakpointsFilter();
+		filter.setDefault_(this.halt);
+		filter.setFilter("ExceptionBreakpointsFilter");
+		filter.setLabel("Halt (break) on exceptions");
+		return new ExceptionBreakpointsFilter[] {filter};
+	}
+
+	@Override
+	public synchronized CompletableFuture<Void> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
+		if (Arrays.asList(args.getFilters()).contains("ExceptionBreakpointsFilter")) {
+			this.halt = true;
+		} else {
+			this.halt = false;
+		}
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
