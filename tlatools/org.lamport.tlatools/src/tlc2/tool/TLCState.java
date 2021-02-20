@@ -84,6 +84,12 @@ public abstract class TLCState implements Cloneable, Serializable {
   public abstract Set<OpDeclNode> getUnassigned();
   public abstract TLCState createEmpty();
   
+  public boolean noneAssigned() {
+		// isEmpty just checks referential equality, which is broken when some code
+		// invokes TLCState#copy on the empty state (e.g. FcnRcdValue).
+		return getUnassigned().size() >= vars.length;
+  }
+
   /** 
    * Returns a mapping of variable names to their assigned values in this state.
    */ 
