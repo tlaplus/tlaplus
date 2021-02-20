@@ -120,7 +120,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public CompletableFuture<EvaluateResponse> evaluate(final EvaluateArguments args) {
+	public synchronized CompletableFuture<EvaluateResponse> evaluate(final EvaluateArguments args) {
 		// See https://github.com/alygin/vscode-tlaplus/blob/master/src/main.ts
 		if (args.getExpression().startsWith("tlaplus://")) {
 			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
