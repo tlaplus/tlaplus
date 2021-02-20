@@ -37,7 +37,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.lsp4j.debug.Breakpoint;
-import org.eclipse.lsp4j.debug.CancelArguments;
 import org.eclipse.lsp4j.debug.Capabilities;
 import org.eclipse.lsp4j.debug.ConfigurationDoneArguments;
 import org.eclipse.lsp4j.debug.ContinueArguments;
@@ -112,7 +111,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final Capabilities capabilities = new Capabilities();
 		capabilities.setSupportsEvaluateForHovers(true);
 		capabilities.setSupportsTerminateRequest(true);
-		capabilities.setSupportsExceptionInfoRequest(true);
+		// Don't support ExceptionInfo requests. The previous git commit of the one that
+		// introduces this message implements the request, and we learned that EI are
+		// only useful if we wish to show the Java stack trace (which users don't care
+		// about).
+		capabilities.setSupportsExceptionInfoRequest(false);
 		return CompletableFuture.completedFuture(capabilities);
 	}
 
@@ -124,38 +127,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 					.findAny().map(f -> f.get(args)).orElse(new EvaluateResponse()));
 		}
 		return CompletableFuture.completedFuture(new EvaluateResponse());
-	}
-
-	@Override
-	public synchronized CompletableFuture<ExceptionInfoResponse> exceptionInfo(ExceptionInfoArguments args) {
-		final ExceptionInfoResponse res = new ExceptionInfoResponse();
-		final TLCStackFrame frame = this.stack.peek();
-		if (frame != null && frame.hasException()) {
-			res.setBreakMode(this.halt ? ExceptionBreakMode.ALWAYS : ExceptionBreakMode.NEVER);
-			final Exception exception = frame.getException();
-			res.setExceptionId(Integer.toString(Math.abs(exception.hashCode())));
-			res.setDetails(expToExceptionDetail(exception));
-		}
-		return CompletableFuture.completedFuture(res);
-	}
-	
-	private static ExceptionDetails expToExceptionDetail(Throwable t) {
-		final ExceptionDetails ed = new ExceptionDetails();
-		ed.setFullTypeName(t.getClass().getName());
-		ed.setMessage(t.getMessage());
-		final StringWriter sw = new StringWriter();
-		t.printStackTrace(new PrintWriter(sw));
-		ed.setStackTrace(sw.toString());
-		final Throwable cause = t.getCause();
-		if (cause != null) {
-			ed.setInnerException(new ExceptionDetails[] {expToExceptionDetail(cause)});
-		}
-		return ed;
-	}
-
-	@Override
-	public CompletableFuture<SetExpressionResponse> setExpression(SetExpressionArguments args) {
-		return CompletableFuture.completedFuture(new SetExpressionResponse());
 	}
 	
 	// See setSupportsTerminateRequest above.
