@@ -99,7 +99,7 @@ public final class Location implements Comparable<Location>
 	}
 
 	public Location(final String fName, int bl, int bc, int el, int ec) {
-		this(UniqueString.uniqueStringOf(fName), bl, bc, ec, ec);
+		this(UniqueString.uniqueStringOf(fName), bl, bc, el, ec);
 	}
     
    /**
