@@ -70,7 +70,7 @@ public class DebugTool extends Tool {
 	
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, IDebugTarget target) {
 		super(mainFile, configFile, resolver, mode);
-		this.target = target;
+		this.target = target.setTool(this);
 	}
 
 	// 88888888888888888888888888888888888888888888888888888888888888888888888888 //

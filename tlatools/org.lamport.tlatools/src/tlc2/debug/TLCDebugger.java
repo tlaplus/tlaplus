@@ -73,7 +73,9 @@ import org.eclipse.lsp4j.debug.VariablesResponse;
 import org.eclipse.lsp4j.debug.services.IDebugProtocolClient;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 
+import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
@@ -85,6 +87,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	protected Launcher<IDebugProtocolClient> launcher;
 
+	private Tool tool;
+
 	public TLCDebugger() {
 		this.step = Step.In;
 		this.halt = true;
@@ -93,6 +97,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
 		this.halt = halt;
+	}
+	
+	@Override
+	public IDebugTarget setTool(final Tool tool) {
+		this.tool = tool;
+		return this;
 	}
 
 	@Override
@@ -182,15 +192,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		
 		return disconnect(new DisconnectArguments());
 	}
-
-
-	@Override
-	public synchronized CompletableFuture<Void> configurationDone(ConfigurationDoneArguments args) {
-		LOGGER.finer("configurationDone");
-		return CompletableFuture.completedFuture(null);
-	}
-
-	protected final Map<String, List<TLCSourceBreakpoint>> breakpoints = new HashMap<>();
 	
 	@Override
 	public synchronized CompletableFuture<Void> disconnect(DisconnectArguments args) {
@@ -208,6 +209,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
+	public synchronized CompletableFuture<Void> configurationDone(ConfigurationDoneArguments args) {
+		LOGGER.finer("configurationDone");
+		return CompletableFuture.completedFuture(null);
+	}
+
+	protected final Map<String, List<TLCSourceBreakpoint>> breakpoints = new HashMap<>();
+
+	@Override
 	public synchronized CompletableFuture<SetBreakpointsResponse> setBreakpoints(final SetBreakpointsArguments args) {
 		//TODO: Confirm breakpoint locations (see tlc2.debug.TLCDebugger.matches(SemanticNode))!!!
 		LOGGER.finer("setBreakpoints");
@@ -217,10 +226,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		if (args.getBreakpoints() != null && args.getBreakpoints().length > 0) {
 			breakpoints.computeIfAbsent(module, key -> new ArrayList<TLCSourceBreakpoint>()).clear();
 			
+			final ModuleNode moduleNode = tool.getModule(module);
+			
 			final SourceBreakpoint[] sbps = args.getBreakpoints();
 			final Breakpoint[] bp = new Breakpoint[sbps.length];
 			for (int j = 0; j < sbps.length; j++) {
-				final TLCSourceBreakpoint sbp = new TLCSourceBreakpoint(sbps[j]);
+				final TLCSourceBreakpoint sbp = new TLCSourceBreakpoint(module, sbps[j]);
 				breakpoints.get(module).add(sbp);
 				
 				// Create the response that communicates the result of setting the breakpoint.
@@ -229,11 +240,43 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 				breakpoint.setColumn(sbp.getColumn());
 				breakpoint.setLine(sbp.getLine());
 				breakpoint.setId(j);
-				// TODO: Actually verify breakpoints. However, we only get the beginLine and
-				// beginColumn, but no endLine or endColumn. This means,we have to improve the
-				// matching of locations in SemanticNode#pathTo(..)
-				breakpoint.setVerified(true);
-				Source source = args.getSource();
+				// Verify breakpoints. However, we only get the beginLine and
+				// (optionally) beginColumn, but not endLine or endColumn, which
+				// makes this fuzzy.  This doesn't matter though, as we
+				// still create the breakpoint; only the user sees a visual cue.
+				// I considered only to walk tool.getActions, tool.getInvariants,
+				// getStateConstraints, getActionConstraionts, ..., but this causes
+				// breakpoints in a high-level spec (refinement mapping) to
+				// incorrectly show breakpoints as unverified.
+				breakpoint.setVerified(
+						// moduleNode is null if the front-end has a spec open (with breakpoints) that is
+						// not part of the debugged spec and its modules.  For example, this might be a
+						// module in the current folder that is neither extended nor instantiated.
+						moduleNode == null || moduleNode.walkChildren(new SemanticNode.ChildrenVisitor<Boolean>() {
+							private boolean verified = false;
+
+							public void preVisit(final SemanticNode node) {
+								final Location location = node.getLocation();
+								// TODO: Include beginColumn/column here and where we handle breakpoints.
+								if (location.beginLine() == sbp.getLine() && location.endLine() == sbp.getLine()) {
+									this.verified = true;
+								}
+							}
+
+							public boolean preempt(SemanticNode node) {
+								return verified || !node.getLocation().includes(sbp.getLocation());
+							}
+
+							public Boolean get() {
+								return verified;
+							}
+						}).get());
+				// TODO: Set message why the breakpoint could not be set. E.g. would be useful
+				// if a user tries to add a breakpoint at a temporal property such as the
+				// behavior spec. The Next relation is another candidate when TLC decomposes it
+				// into sub-actions s.t. a breakpoint on Next will never hit.
+				
+				final Source source = args.getSource();
 				breakpoint.setSource(source);
 				bp[j] = breakpoint;
 			}

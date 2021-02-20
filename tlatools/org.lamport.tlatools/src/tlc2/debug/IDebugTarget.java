@@ -72,4 +72,6 @@ public interface IDebugTarget {
 	IDebugTarget pushFrame(TLCState predecessor, TLCState state);
 	
 	IDebugTarget popFrame(TLCState predecessor, TLCState state);
+
+	IDebugTarget setTool(Tool tool);
 }

@@ -26,6 +26,7 @@
 package tlc2.debug;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -35,6 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.StackFrame;
@@ -57,7 +60,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 	private static final String MDL = "EWD998Chan";
 
 	public EWD998ChanDebuggerTest() {
-		super(MDL, FOLDER, EC.ExitStatus.SUCCESS, createBreakpointArgument(UTILS,12));
+		super(MDL, FOLDER, EC.ExitStatus.SUCCESS);
 	}
 
 	@Test
@@ -135,6 +138,32 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("SetOfRcdsValue", consts[4].getType());
 		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int]", consts[4].getValue());
 		
+		
+		// *********************************************************** //
+		
+		// Assert breakpoints are correctly verified, which indicates to users where
+		// breakpoints can be placed.
+		final Set<Integer> lines = IntStream.of(11, 13, 14, 15, 24, 27, 28, 29, 30, 31, 36, 37, 39, 40, 41, 45, 47, 48,
+				49, 50, 51, 53, 57, 58, 59, 60, 61, 62, 64, 66, 67, 73, 75, 77, 80, 83, 84, 86, 88, 90, 91, 94, 95, 96,
+				98, 103, 105, 113, 114, 123, 124, 125, 126, 127, 128, 133, 140, 141, 144, 150, 153, 154, 155, 156, 158,
+				160, 162, 168).boxed().collect(Collectors.toSet());
+		lines.forEach(i -> {
+			assertTrue(String.format("line %s", i),
+					debugger.replaceAllBreakpointsWithUnchecked(FOLDER, i)[0].isVerified());
+		});
+		IntStream.rangeClosed(1, 171).filter(line -> !lines.contains(line)).forEach(i -> {
+			assertFalse(String.format("line %s", i),
+					debugger.replaceAllBreakpointsWithUnchecked(FOLDER, i)[0].isVerified());
+		});
+
+		assertTrue(debugger.replaceAllBreakpointsWith(RM, 102)[0].isVerified());
+		assertFalse(debugger.replaceAllBreakpointsWith(RM, 103)[0].isVerified());
+		assertTrue(debugger.replaceAllBreakpointsWith(RM, 104)[0].isVerified());
+		assertFalse(debugger.replaceAllBreakpointsWith(RM, 105)[0].isVerified());
+		assertFalse(debugger.replaceAllBreakpointsWith(RM, 105)[0].isVerified());
+		assertTrue(debugger.replaceAllBreakpointsWith(RM, 107)[0].isVerified());
+
+		// *********************************************************** //
 		
 		final OpDeclNode[] vars = getVars();
 		
@@ -265,7 +294,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// 8888888888888888888 Invariant EWD998!Inv 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(FOLDER, 150);
 		stackFrames = debugger.continue_();
-		assertEquals(11, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 150, 3, 162, 34, FOLDER, (Context) null); //TODO Assert context that contains the refinement mapping
 		
 		// 8888888888888888888 Test resolving a location (e.g. editor hovering) to a value 888888888888888 //

@@ -27,15 +27,23 @@ package tlc2.debug;
 
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
 
+import tla2sany.st.Location;
+
 public class TLCSourceBreakpoint extends SourceBreakpoint {
 
 	private final int hits;
+	private final Location location;
 	
-	public TLCSourceBreakpoint(final SourceBreakpoint s) {
+	public TLCSourceBreakpoint(final String module, final SourceBreakpoint s) {
 		setColumn(s.getColumn());
 		setLine(s.getLine());
+		// Create a location that's not a point.
+		final int column = getColumn() != null ? getColumn() : 1;
+		location = new Location(module, getLine() + 1, column, getLine(), column + 1);
+		
 		setCondition(s.getCondition());
 		setLogMessage(s.getLogMessage());
+		
 		setHitCondition(s.getHitCondition());
 		// Try to convert the input string that can be anything into a integer.
 		int h = 0;
@@ -50,5 +58,9 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 	
 	public int getHits() {
 		return hits;
+	}
+
+	public Location getLocation() {
+		return location;
 	}
 }
