@@ -153,6 +153,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
 					.findAny().map(f -> f.get(args)).orElse(new EvaluateResponse()));
 		}
+		// TODO: Users can enter (arbitrary) expressions in the front-end's "Debug
+		// Console". We could try to handle valid TLA+ expressions here, but SANY
+		// unfortunately lacks incremental parsing.  Study related discussion started
+		// in http://discuss.tlapl.us/msg01427.html and continued offline in the involved
+		// inboxes.
 		return CompletableFuture.completedFuture(new EvaluateResponse());
 	}
 	
