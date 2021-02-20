@@ -125,6 +125,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// filters such as ignoring some exceptions. When TLC hits an exception, it
 		// terminates anyway.
 		capabilities.setSupportsExceptionOptions(false);
+		// Breakpoints:
+		// TODO: Implementing hit counts would be straight forward. Is it useful though?
+		// Log points and conditional (expression-based) breakpoints require to parse
+		// TLA+ expressions after the spec has been parsed, which is not supported by
+		// SANY.
+		// TODO: Hit count might be more useful if corresponding to the length of the
+		// trace, i.e. break if the trace is N states long.
+		capabilities.setSupportsHitConditionalBreakpoints(false);
+		capabilities.setSupportsConditionalBreakpoints(false);
+		capabilities.setSupportsLogPoints(false);
 		return CompletableFuture.completedFuture(capabilities);
 	}
 
@@ -217,6 +227,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 				breakpoint.setColumn(sbps[j].getColumn());
 				breakpoint.setLine(sbps[j].getLine());
 				breakpoint.setId(j);
+				// TODO: Actually verify breakpoints. However, we only get the beginLine and
+				// beginColumn, but no endLine or endColumn. This means,we have to improve the
+				// matching of locations in SemanticNode#pathTo(..)
 				breakpoint.setVerified(true);
 				Source source = args.getSource();
 				breakpoint.setSource(source);
