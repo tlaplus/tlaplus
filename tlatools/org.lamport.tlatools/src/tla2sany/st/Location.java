@@ -97,6 +97,10 @@ public final class Location implements Comparable<Location>
 		this(UniqueString.uniqueStringOf(fName), Integer.valueOf(bl), Integer.valueOf(bc), Integer.valueOf(el),
 				Integer.valueOf(ec));
 	}
+
+	public Location(final String fName, int bl, int bc, int el, int ec) {
+		this(UniqueString.uniqueStringOf(fName), bl, bc, ec, ec);
+	}
     
    /**
      * Constructs a location
@@ -116,7 +120,7 @@ public final class Location implements Comparable<Location>
     }
 
     public Location(int bl, int bc, int el, int ec) {
-		this(null, bl, bc, el, ec);
+		this((UniqueString) null, bl, bc, el, ec);
 	}
 
 	
