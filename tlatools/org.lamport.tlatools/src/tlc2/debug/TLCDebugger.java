@@ -74,7 +74,6 @@ import org.eclipse.lsp4j.debug.services.IDebugProtocolClient;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 
 import tla2sany.semantic.SemanticNode;
-import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
@@ -126,13 +125,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// terminates anyway.
 		capabilities.setSupportsExceptionOptions(false);
 		// Breakpoints:
-		// TODO: Implementing hit counts would be straight forward. Is it useful though?
-		// Log points and conditional (expression-based) breakpoints require to parse
-		// TLA+ expressions after the spec has been parsed, which is not supported by
-		// SANY.
-		// TODO: Hit count might be more useful if corresponding to the length of the
-		// trace, i.e. break if the trace is N states long.
-		capabilities.setSupportsHitConditionalBreakpoints(false);
+		capabilities.setSupportsHitConditionalBreakpoints(true);
+		// TODO: Log points and conditional (expression-based) breakpoints require to
+		// parse TLA+ expressions after the spec has been parsed, which is not supported
+		// by SANY.
 		capabilities.setSupportsConditionalBreakpoints(false);
 		capabilities.setSupportsLogPoints(false);
 		return CompletableFuture.completedFuture(capabilities);
@@ -194,7 +190,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return CompletableFuture.completedFuture(null);
 	}
 
-	protected final Map<String, List<SourceBreakpoint>> breakpoints = new HashMap<>();
+	protected final Map<String, List<TLCSourceBreakpoint>> breakpoints = new HashMap<>();
 	
 	@Override
 	public synchronized CompletableFuture<Void> disconnect(DisconnectArguments args) {
@@ -219,12 +215,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final String module = args.getSource().getName().replaceFirst(".tla$", "");
 		
 		if (args.getBreakpoints() != null && args.getBreakpoints().length > 0) {
-			breakpoints.computeIfAbsent(module, key -> new ArrayList<SourceBreakpoint>()).clear();
+			breakpoints.computeIfAbsent(module, key -> new ArrayList<TLCSourceBreakpoint>()).clear();
 			
 			final SourceBreakpoint[] sbps = args.getBreakpoints();
 			final Breakpoint[] bp = new Breakpoint[sbps.length];
 			for (int j = 0; j < sbps.length; j++) {
-				final SourceBreakpoint sbp = sbps[j];
+				final TLCSourceBreakpoint sbp = new TLCSourceBreakpoint(sbps[j]);
 				breakpoints.get(module).add(sbp);
 				
 				// Create the response that communicates the result of setting the breakpoint.

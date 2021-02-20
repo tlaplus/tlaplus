@@ -150,7 +150,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		final List<Scope> scopes = new ArrayList<>();
 		scopes.addAll(Arrays.asList(super.getScopes()));
 		
-		final Scope scope = new Scope();
+		Scope scope = new Scope();
 		scope.setName(SCOPE);
 		scope.setVariablesReference(stateId);
 		scopes.add(scope);
@@ -167,5 +167,16 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		} catch (TLCRuntimeException | EvalException e) {
 			return e;
 		}
+	}
+
+	@Override
+	public boolean matches(final TLCSourceBreakpoint bp) {
+		if (super.matches(bp)) {
+			if (bp.getHits() > 0) {
+				return state.getLevel() >= bp.getHits(); 
+			}
+			return true;
+		}
+		return false;
 	}
 }

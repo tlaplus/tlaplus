@@ -42,7 +42,6 @@ import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.ScopePresentationHint;
 import org.eclipse.lsp4j.debug.Source;
-import org.eclipse.lsp4j.debug.SourceBreakpoint;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.StackFramePresentationHint;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
@@ -519,7 +518,12 @@ public class TLCStackFrame extends StackFrame {
 		return eventArguments;
 	}
 
-	public boolean matches(SourceBreakpoint bp) {
+	public boolean matches(final TLCSourceBreakpoint bp) {
+		// TODO: For const-level expression (TLCStackFrame),
+		// TLCSourceBreakpoint#getHits() should have the traditional meaning. Question
+		// is, where do we keep the hit count. A user would select the meaning by
+		// passing e.g. TLCGet("level") > 3 as the hit condition for state-level and a
+		// simple integer for const-level.
 		return bp.getLine() == node.getLocation().beginLine();
 	}
 }
