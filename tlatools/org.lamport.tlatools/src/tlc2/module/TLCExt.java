@@ -154,9 +154,13 @@ public class TLCExt {
 	}
 
 	@Evaluation(definition = "Trace", module = "TLCExt", minLevel = 1, warn = false, silent = true)
-	public synchronized static Value getTrace(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
+	public synchronized static TupleValue getTrace(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) throws IOException {
 
+		return getTrace(s0);
+	}
+
+	public synchronized static TupleValue getTrace(final TLCState s0) throws IOException {
 		if (!s0.allAssigned()) {
 			/*
 			 * Fail when Trace appears before the state is completely specified (see
@@ -190,7 +194,7 @@ public class TLCExt {
 	}
 
 	@Evaluation(definition = "TraceFrom", module = "TLCExt", minLevel = 1, warn = false, silent = true)
-	public synchronized static Value getTraceFrom(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
+	public synchronized static TupleValue getTraceFrom(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) throws IOException {
 
 		final Value v = tool.eval(args[0], c, s0, s1, control, cm);
@@ -215,7 +219,7 @@ public class TLCExt {
 		return getTrace0(s0, traceFile.getTrace(from, s0));
 	}
 
-	private static final Value getTrace0(final TLCState s0, final TLCStateInfo[] trace) {
+	private static final TupleValue getTrace0(final TLCState s0, final TLCStateInfo[] trace) {
 		final Value[] values = new Value[trace.length + 1];
 		for (int j = 0; j < (trace.length); j++) {
 			values[j] = new RecordValue(trace[j].state);
