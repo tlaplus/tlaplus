@@ -482,6 +482,14 @@ public class TLCStackFrame extends StackFrame {
 		return tool;
 	}
 
+	public boolean hasException() {
+		return exception != null;
+	}
+	
+	public Exception getException() {
+		return exception;
+	}
+
 	@Override
 	public String toString() {
 		return "TLCStackFrame [node=" + node + "]";

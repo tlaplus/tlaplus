@@ -112,6 +112,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final Capabilities capabilities = new Capabilities();
 		capabilities.setSupportsEvaluateForHovers(true);
 		capabilities.setSupportsTerminateRequest(true);
+		capabilities.setSupportsExceptionInfoRequest(true);
 		return CompletableFuture.completedFuture(capabilities);
 	}
 
@@ -126,8 +127,35 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public synchronized CompletableFuture<Void> cancel(CancelArguments args) {
-		return CompletableFuture.completedFuture(null);
+	public synchronized CompletableFuture<ExceptionInfoResponse> exceptionInfo(ExceptionInfoArguments args) {
+		final ExceptionInfoResponse res = new ExceptionInfoResponse();
+		final TLCStackFrame frame = this.stack.peek();
+		if (frame != null && frame.hasException()) {
+			res.setBreakMode(this.halt ? ExceptionBreakMode.ALWAYS : ExceptionBreakMode.NEVER);
+			final Exception exception = frame.getException();
+			res.setExceptionId(Integer.toString(Math.abs(exception.hashCode())));
+			res.setDetails(expToExceptionDetail(exception));
+		}
+		return CompletableFuture.completedFuture(res);
+	}
+	
+	private static ExceptionDetails expToExceptionDetail(Throwable t) {
+		final ExceptionDetails ed = new ExceptionDetails();
+		ed.setFullTypeName(t.getClass().getName());
+		ed.setMessage(t.getMessage());
+		final StringWriter sw = new StringWriter();
+		t.printStackTrace(new PrintWriter(sw));
+		ed.setStackTrace(sw.toString());
+		final Throwable cause = t.getCause();
+		if (cause != null) {
+			ed.setInnerException(new ExceptionDetails[] {expToExceptionDetail(cause)});
+		}
+		return ed;
+	}
+
+	@Override
+	public CompletableFuture<SetExpressionResponse> setExpression(SetExpressionArguments args) {
+		return CompletableFuture.completedFuture(new SetExpressionResponse());
 	}
 	
 	// See setSupportsTerminateRequest above.
