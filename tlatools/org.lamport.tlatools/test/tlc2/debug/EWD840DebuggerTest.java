@@ -45,7 +45,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 	private static final String MDL = "MC02";
 
 	public EWD840DebuggerTest() {
-		super(MDL, RM, EC.ExitStatus.SUCCESS, createBreakpointArgument(RM,23));
+		super(MDL, RM, EC.ExitStatus.SUCCESS);
 	}
 
 	@Test
@@ -82,6 +82,8 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("2", nested[0].getValue());
 		
 		final OpDeclNode[] vars = getVars();
+		
+		debugger.replaceAllBreakpointsWith(RM,23);
 
 		// The spec has 16 initial states over which we will continue each time checking
 		// the stack frames:

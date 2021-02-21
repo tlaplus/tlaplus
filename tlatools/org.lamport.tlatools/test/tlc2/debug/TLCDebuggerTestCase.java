@@ -47,6 +47,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.debug.Breakpoint;
 import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.EvaluateArguments;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
@@ -78,10 +79,6 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 	protected final TestTLCDebugger debugger = new TestTLCDebugger();
 	protected final Phaser phase = new Phaser();
 
-	public TLCDebuggerTestCase(String spec, String path, final int exitStatus) {
-		this(spec, path, new String[] {}, exitStatus);
-	}
-
 	public TLCDebuggerTestCase(String spec, String path, String[] extraArgs, final int exitStatus) {
 		super(spec, path, Stream.of(extraArgs, new String[] { "-debugger" }).flatMap(Stream::of).toArray(String[]::new),
 				exitStatus);
@@ -93,15 +90,8 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		TLCDebugger.Factory.OVERRIDE = debugger;
 	}
 
-	public TLCDebuggerTestCase(String spec, String path, final int exitStatus,
-			final SetBreakpointsArguments initialBreakpoint) {
-		this(spec, path, new String[] {}, exitStatus, initialBreakpoint);
-	}
-
-	public TLCDebuggerTestCase(String spec, String path, String[] extraArgs, final int exitStatus,
-			final SetBreakpointsArguments initialBreakpoint) {
-		this(spec, path, extraArgs, exitStatus);
-		debugger.setBreakpoints(initialBreakpoint);
+	public TLCDebuggerTestCase(String spec, String path, final int exitStatus) {
+		this(spec, path, new String[] {}, exitStatus);
 	}
 	
 	@Override
@@ -407,15 +397,29 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 
 	protected class TestTLCDebugger extends TLCDebugger {
 
+		public Breakpoint[] replaceAllBreakpointsWithUnchecked(final String rootModule, int line) {
+			unsetBreakpoints();
+			// Set new breakpoint.
+			try {
+				return setBreakpoints(rootModule, line);
+			} catch (Exception e) {
+				return new Breakpoint[0];
+			}
+		}
+
 		/**
 		 * Replaces all existing breakpoints in all modules with the given one. Compared
 		 * to TLCDebugger.setBreakpoints(..), this does replace breakpoints even in
 		 * other modules.
 		 */
-		public void replaceAllBreakpointsWith(final String rootModule, int line) {
+		public Breakpoint[] replaceAllBreakpointsWith(final String rootModule, int line) throws Exception {
 			unsetBreakpoints();
 			// Set new breakpoint.
-			setBreakpoints(createBreakpointArgument(rootModule, line));
+			return setBreakpoints(rootModule, line);
+		}
+		
+		public Breakpoint[] setBreakpoints(final String rootModule, int line) throws Exception {
+			return setBreakpoints(createBreakpointArgument(rootModule, line)).get().getBreakpoints();
 		}
 
 		public void unsetBreakpoints() {
