@@ -576,6 +576,14 @@ public abstract class AbstractChecker
 		}
 	}
 	
+	public TLCStateInfo[] getTraceInfo(final TLCState s) throws IOException {
+		throw new UnsupportedOperationException("getTraceInfo(TLCState) not implemented for this AbstractChecker");
+	}
+	
+	public TLCStateInfo[] getTraceInfo(final TLCState from, final TLCState s) throws IOException {
+		throw new UnsupportedOperationException("getTraceInfo(TLCState, TLCState) not implemented for this AbstractChecker");
+	}
+	
 	protected boolean isTimeBound() {
 		return Long.getLong(TLC.class.getName() + ".stopAfter", -1L) != -1;
 	}

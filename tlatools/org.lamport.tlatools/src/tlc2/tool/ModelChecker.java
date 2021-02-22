@@ -1046,6 +1046,16 @@ public class ModelChecker extends AbstractChecker
 		}
 	}
 
+	@Override
+	public TLCStateInfo[] getTraceInfo(TLCState s) throws IOException {
+		return trace.getTrace(s);
+	}
+
+	@Override
+	public TLCStateInfo[] getTraceInfo(final TLCState from, TLCState to) throws IOException {
+		return trace.getTrace(from, to);
+	}
+
 	/* (non-Javadoc)
 	 * @see tlc2.tool.AbstractChecker#getStateQueueSize()
 	 */

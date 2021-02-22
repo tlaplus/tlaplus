@@ -36,10 +36,9 @@ import tla2sany.semantic.StringNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
-import tlc2.overrides.TLAPlusOperator;
 import tlc2.overrides.Evaluation;
+import tlc2.overrides.TLAPlusOperator;
 import tlc2.tool.Action;
-import tlc2.tool.ConcurrentTLCTrace;
 import tlc2.tool.EvalException;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.SimulationWorker;
@@ -187,10 +186,7 @@ public class TLCExt {
 			// overrides for a specific tool mode.
 			return getTrace0(s0, TLCGlobals.simulator.getTraceInfo());
 		}
-		final ModelChecker mc = (ModelChecker) TLCGlobals.mainChecker;
-		final ConcurrentTLCTrace traceFile = mc.trace;
-
-		return getTrace0(s0, traceFile.getTrace(s0));
+		return getTrace0(s0, TLCGlobals.mainChecker.getTraceInfo(s0));
 	}
 
 	@Evaluation(definition = "TraceFrom", module = "TLCExt", minLevel = 1, warn = false, silent = true)
@@ -214,9 +210,7 @@ public class TLCExt {
 			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
 			return new TupleValue(w.getTrace().toRecords(from, s0));
 		}
-		final ModelChecker mc = (ModelChecker) TLCGlobals.mainChecker;
-		final ConcurrentTLCTrace traceFile = mc.trace;
-		return getTrace0(s0, traceFile.getTrace(from, s0));
+		return getTrace0(s0, TLCGlobals.mainChecker.getTraceInfo(from, s0));
 	}
 
 	private static final TupleValue getTrace0(final TLCState s0, final TLCStateInfo[] trace) {
