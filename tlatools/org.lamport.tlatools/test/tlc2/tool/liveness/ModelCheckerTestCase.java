@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.Before;
@@ -142,7 +143,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			
 			if (getNumberOfThreads() == 1 && runWithDebugger()) {
 				args.add("-debugger");
-				args.add("nosuspend,nohalt");
+				args.add(String.format("nosuspend,port=%s,nohalt", 1025 + new Random().nextInt(64540)));
 			}
 			
 			if (noGenerateSpec()) {

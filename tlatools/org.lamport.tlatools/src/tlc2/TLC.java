@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
@@ -173,7 +175,7 @@ public class TLC {
      */
     private FPSetConfiguration fpSetConfiguration;
     
-    private boolean debugger = false;
+    private int debugPort = -1;
     private boolean suspend = true;
     private boolean halt = true;
     
@@ -463,10 +465,16 @@ public class TLC {
             } else if (args[index].equals("-debugger"))
             {
                 index++;
-                debugger = true;
-				if ((index < args.length) && (args[index].contains("nosuspend") || args[index].contains("nohalt"))) {
+                debugPort = 4712;  //standard port.
+				if ((index < args.length) && (args[index].contains("port=") || args[index].contains("nosuspend")
+						|| args[index].contains("nohalt"))) {
 					suspend = !args[index].toLowerCase().contains("nosuspend");
 					halt = !args[index].toLowerCase().contains("nohalt");
+
+					final Matcher matcher = Pattern.compile(".*port=([0-9]{1,5}).*").matcher(args[index]);
+					if (matcher.find()) {
+						debugPort = Integer.parseInt(matcher.group(1));
+					}
 					index++;
 				}
             } else if (args[index].equals("-tool"))
@@ -1049,11 +1057,11 @@ public class TLC {
 				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				
 				Simulator simulator;
-				if (debugger) {
+				if (debugPort > 0) {
 					assert TLCGlobals.getNumWorkers() == 1
 							: "TLCDebugger does not support running with multiple workers.";
 					tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation,
-							TLCDebugger.Factory.getInstance(suspend, halt));
+							TLCDebugger.Factory.getInstance(debugPort, suspend, halt));
 					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
 	                        traceNum, rng, seed, resolver);
 				} else {
@@ -1077,9 +1085,9 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
-				if (debugger) {
+				if (debugPort > 0) {
 					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
-					tool = new DebugTool(mainFile, configFile, resolver, TLCDebugger.Factory.getInstance(suspend, halt));
+					tool = new DebugTool(mainFile, configFile, resolver, TLCDebugger.Factory.getInstance(debugPort, suspend, halt));
 				} else {
 					tool = new FastTool(mainFile, configFile, resolver);
 				}
@@ -1464,7 +1472,9 @@ public class TLC {
 					+ "TLC does not halt state-space exploration when an evaluation\n"
 					+ "or runtime error is caught. Without 'nohalt', evaluation or\n"
 					+ "runtime errors can be inspected in the debugger before TLC\n"
-					+ "terminates.\n"
+					+ "terminates. The optional parameter 'port=1274' makes the\n"
+					+ "debugger listen on port 1274 instead of on the standard\n"
+					+ "port 4712. Multiple optional parameters must be comma-separated.\n"
 					+ "Specifying '-debugger' implies '-workers 1'."
 					+ "", false,
 				"nosuspend"));

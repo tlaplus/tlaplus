@@ -46,7 +46,7 @@ public class AttachingDebugger extends TLCDebugger {
 	
 	private String buffer = "";
 	
-	public AttachingDebugger(final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
+	public AttachingDebugger(final int port, final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
 		super(s, halt);
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
 		ToolIO.out = new PrintStream(ToolIO.out) {
@@ -82,12 +82,12 @@ public class AttachingDebugger extends TLCDebugger {
 		};
 
 		Executors.newSingleThreadExecutor().submit(() -> {
-			try (ServerSocket serverSocket = new ServerSocket(4712)) {
+			try (ServerSocket serverSocket = new ServerSocket(port)) {
 				// Immediately re-open the debugger to front-end requests after a front-end disconnected.
 				//TODO: This doesn't terminate when TLC terminates.
 				while (true) {
 					// No point printing the debugger port while it's hard-coded.
-//					System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
+					System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
 					final Socket socket = serverSocket.accept();
 					final InputStream inputStream = socket.getInputStream();
 					final OutputStream outputStream = socket.getOutputStream();
