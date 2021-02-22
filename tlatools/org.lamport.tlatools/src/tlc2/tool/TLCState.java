@@ -86,6 +86,8 @@ public abstract class TLCState implements Cloneable, Serializable {
 
   protected TLCState deepCopy(TLCState copy) {
 	  copy.level = this.level;
+	  copy.workerId = this.workerId;
+	  copy.uid = this.uid;
 	  return copy;
   }
   
