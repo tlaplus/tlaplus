@@ -43,6 +43,7 @@ import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.ContinueResponse;
 import org.eclipse.lsp4j.debug.DisconnectArguments;
 import org.eclipse.lsp4j.debug.EvaluateArguments;
+import org.eclipse.lsp4j.debug.EvaluateArgumentsContext;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.ExceptionBreakpointsFilter;
 import org.eclipse.lsp4j.debug.InitializeRequestArguments;
@@ -165,15 +166,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<EvaluateResponse> evaluate(final EvaluateArguments args) {
 		// See https://github.com/alygin/vscode-tlaplus/blob/master/src/main.ts
-		if (args.getExpression().startsWith("tlaplus://")) {
+		if (EvaluateArgumentsContext.HOVER.equals(args.getContext()) && args.getExpression().startsWith("tlaplus://")) {
 			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
 					.findAny().map(f -> f.get(args)).orElse(new EvaluateResponse()));
+		} else if (EvaluateArgumentsContext.REPL.equals(args.getContext())) {
+			// TODO: Users can enter (arbitrary) expressions in the front-end's "Debug
+			// Console". We could try to handle valid TLA+ expressions here, but SANY
+			// unfortunately lacks incremental parsing.  Study related discussion started
+			// in http://discuss.tlapl.us/msg01427.html and continued offline in the involved
+			// inboxes.
 		}
-		// TODO: Users can enter (arbitrary) expressions in the front-end's "Debug
-		// Console". We could try to handle valid TLA+ expressions here, but SANY
-		// unfortunately lacks incremental parsing.  Study related discussion started
-		// in http://discuss.tlapl.us/msg01427.html and continued offline in the involved
-		// inboxes.
 		return CompletableFuture.completedFuture(new EvaluateResponse());
 	}
 	

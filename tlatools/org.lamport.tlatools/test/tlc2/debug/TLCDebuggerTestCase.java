@@ -50,6 +50,7 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.debug.Breakpoint;
 import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.EvaluateArguments;
+import org.eclipse.lsp4j.debug.EvaluateArgumentsContext;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.NextArguments;
 import org.eclipse.lsp4j.debug.Scope;
@@ -479,6 +480,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		public EvaluateResponse evaluate(final String module, final String symbol, final int beginLine,
 				final int beginColumn, final int endLine, final int endColumn) throws Exception {
 			final EvaluateArguments args = new EvaluateArguments();
+			args.setContext(EvaluateArgumentsContext.HOVER);
 			// Resolve module to absolute path required by URI.
 			final URI uri = new URI("tlaplus", "", Paths.get(module).toAbsolutePath().toString(), symbol,
 					String.format("%s %s %s %s", beginLine, beginColumn, endLine, endColumn));
