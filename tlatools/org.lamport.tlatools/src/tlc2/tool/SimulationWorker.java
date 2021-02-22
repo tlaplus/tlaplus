@@ -472,6 +472,16 @@ public class SimulationWorker extends IdThread {
 	public final StateVec getTrace() {
 		return stateTrace;
 	}
+	
+	public final TLCStateInfo[] getTraceInfo() {
+		final Action[] actions = this.tool.getActions();
+		final TLCStateInfo[] trace = new TLCStateInfo[stateTrace.size()];
+		for (int i = 0; i < stateTrace.size(); i++) {
+			final TLCStateMutSimulation s = (TLCStateMutSimulation) stateTrace.elementAt(i);
+			trace[i] = new TLCStateInfo(s, actions[s.getActionId()]);
+		}
+		return trace;
+	}
 
 	public void start(StateVec initStates) {
 		this.initStates = initStates;

@@ -617,6 +617,16 @@ public class Simulator {
 			return workers.get(0).getTrace();
 		}
 	}
+
+	public final TLCStateInfo[] getTraceInfo() {
+		if (Thread.currentThread() instanceof SimulationWorker) {
+			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
+			return w.getTraceInfo();
+		} else {
+			assert numWorkers == 1 && workers.size() == numWorkers;
+			return workers.get(0).getTraceInfo();
+		}
+	}
 	
 	public void stop() {
 		for (SimulationWorker worker : workers) {
