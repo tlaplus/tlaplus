@@ -524,6 +524,7 @@ public class TLCStackFrame extends StackFrame {
 		// is, where do we keep the hit count. A user would select the meaning by
 		// passing e.g. TLCGet("level") > 3 as the hit condition for state-level and a
 		// simple integer for const-level.
-		return bp.getLine() == node.getLocation().beginLine();
+		return bp.getLine() == node.getLocation().beginLine()
+				&& bp.getColumnAsInt() <= node.getLocation().beginColumn();
 	}
 }

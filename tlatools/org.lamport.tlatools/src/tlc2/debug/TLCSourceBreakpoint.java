@@ -59,6 +59,13 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 	public int getHits() {
 		return hits;
 	}
+	
+	public int getColumnAsInt() {
+		if (this.getColumn() != null) {
+			return this.getColumn();
+		}
+		return -1;
+	}
 
 	public Location getLocation() {
 		return location;
