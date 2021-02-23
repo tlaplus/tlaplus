@@ -66,6 +66,7 @@ import org.eclipse.lsp4j.debug.StepInArguments;
 import org.eclipse.lsp4j.debug.StepOutArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
 import org.eclipse.lsp4j.debug.TerminateArguments;
+import org.eclipse.lsp4j.debug.TerminatedEventArguments;
 import org.eclipse.lsp4j.debug.Thread;
 import org.eclipse.lsp4j.debug.ThreadsResponse;
 import org.eclipse.lsp4j.debug.Variable;
@@ -192,6 +193,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			TLCGlobals.simulator.stop();
 		}
 		
+		if (launcher != null) {
+			// Notify the front-end that the debugger has terminated. Do this before notify
+			// is called in disconnect to not create a race condition, i.e. failing to send
+			// terminated because TLC quit.
+			launcher.getRemoteProxy().terminated(new TerminatedEventArguments());
+		}
+
 		return disconnect(new DisconnectArguments());
 	}
 	
