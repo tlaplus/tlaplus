@@ -55,6 +55,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.StringNode;
 import tla2sany.semantic.Subst;
@@ -199,9 +200,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
     }
 
-    private final Map<ModuleNode, Map<OpDefNode, Object>> constantDefns = new HashMap<>();
+    private final Map<ModuleNode, Map<OpDefOrDeclNode, Object>> constantDefns = new HashMap<>();
     
-    public final Map<ModuleNode, Map<OpDefNode, Object>> getConstantDefns() {
+    public final Map<ModuleNode, Map<OpDefOrDeclNode, Object>> getConstantDefns() {
     	return constantDefns;
     }
     
@@ -229,6 +230,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
           // that val is either an atom (IValue#isAtom) or a set (of sets) of atoms (primarily
           // ModelValues).
 	      ((IValue)val).initialize();
+          constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(consts[i], val);
           // System.err.println(consts[i].getName() + ": " + val);
         } // The following else clause was added by LL on 17 March 2012.
         else if (val != null && val instanceof OpDefNode) {
@@ -244,7 +246,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             try {
             	Object defVal = WorkerValue.demux(opDefEvaluator, consts[i], opDef);
                 opDef.setToolObject(toolId, defVal);
-                constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefNode, Object>()).put(opDef, defVal);
+                constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(opDef, defVal);
             } catch (Assert.TLCRuntimeException | EvalException e) {
               final String addendum = (e instanceof EvalException) ? "" : (" - specifically: " + e.getMessage());
               Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
@@ -287,7 +289,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 					this.defns.put(opName, val);
 					constantDefns.computeIfAbsent(
 							opDef.hasSource() ? opDef.getSource().getOriginallyDefinedInModuleNode() : moduleNode,
-							key -> new HashMap<OpDefNode, Object>()).put(opDef, val);
+							key -> new HashMap<OpDefOrDeclNode, Object>()).put(opDef, val);
                 }
               }
               catch (Throwable swallow) {

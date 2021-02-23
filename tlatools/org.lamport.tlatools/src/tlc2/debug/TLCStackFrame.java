@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.eclipse.lsp4j.debug.EvaluateArguments;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
@@ -52,7 +52,9 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
@@ -279,36 +281,7 @@ public class TLCStackFrame extends StackFrame {
 				// never change.  Perhaps, this can be moved to a place where it's only evaluated once.
 				// On the other hand, the debug adapter protocol (DAP) might not like sharing
 				// DebugTLCVariables.
-				final SpecProcessor sp = this.tool.getSpecProcessor();
-				final Map<ModuleNode, Map<OpDefNode, Object>> constantDefns = sp.getConstantDefns();
-					for (final Entry<ModuleNode, Map<OpDefNode, Object>> e : constantDefns.entrySet()) {
-						if (constantDefns.size() == 1) {
-							// If there is only one module, do *not* organize the constants in the variable
-							// view by modules. In other words, constants get moved up by one level in the
-							// variable view iff there is only one module.
-							e.getValue().entrySet().stream().map(c -> getVariable((Value) c.getValue(), c.getKey().getName()))
-									.forEach(var -> vars.add(var));
-						} else {
-							final ModuleNode module = e.getKey();
-							
-							final Variable v = new Variable();
-							// Pick one of the OpDefNode and derive the name with which the definition
-							// appears in the spec, i.e. A!B!C!Op -> A!B!C.  Users then see the module
-							// name and instance path that appears in the instantiating module. getPathName
-							// equals the empty (unique) string if the module has no path.
-							v.setValue(e.getValue().keySet().stream().findAny().map(odn -> odn.getPathName())
-									.orElse(UniqueString.of(module.getSignature())).toString());
-							v.setName(module.getSignature());
-							v.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
-							
-							nestedConstants.put(v.getVariablesReference(),
-								e.getValue().entrySet().stream()
-										.map(f -> (DebugTLCVariable) ((Value) f.getValue())
-												.toTLCVariable(new DebugTLCVariable(f.getKey().getLocalName()), rnd))
-										.collect(Collectors.toList()));
-							vars.add(v);
-						}
-					}
+				getConstants(vars);
 			} else if (getStackId() == vr) {
 				// Intentionally not sorting lexicographically because the order given by the
 				// stack is probably more useful.
@@ -317,6 +290,51 @@ public class TLCStackFrame extends StackFrame {
 			}
 			return toSortedArray(vars);
 		});
+	}
+
+	private void getConstants(final List<Variable> vars) {
+		final SpecProcessor sp = this.tool.getSpecProcessor();
+		final Map<ModuleNode, Map<OpDefOrDeclNode, Object>> constantDefns = sp.getConstantDefns();
+			for (final Entry<ModuleNode, Map<OpDefOrDeclNode, Object>> e : constantDefns.entrySet()) {
+				if (constantDefns.size() == 1) {
+					// If there is only one module, do *not* organize the constants in the variable
+					// view by modules. In other words, constants get moved up by one level in the
+					// variable view iff there is only one module.
+					e.getValue().entrySet().stream().map(c -> getVariable((Value) c.getValue(), c.getKey().getName()))
+							.forEach(var -> vars.add(var));
+				} else {
+					final ModuleNode module = e.getKey();
+					
+					final Variable v = new Variable();
+					// Pick one of the OpDefNode and derive the name with which the definition
+					// appears in the spec, i.e. A!B!C!Op -> A!B!C.  Users then see the module
+					// name and instance path that appears in the instantiating module. getPathName
+					// equals the empty (unique) string if the module has no path.
+					v.setValue(e.getValue().keySet().stream().filter(OpDefNode.class::isInstance)
+							.map(OpDefNode.class::cast).map(OpDefNode::getPathName).findAny()
+							.orElse(UniqueString.of(module.getSignature())).toString());
+					v.setName(module.getSignature());
+					v.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
+					vars.add(v);
+					
+					final List<DebugTLCVariable> l = new ArrayList<>();
+					final Set<Entry<OpDefOrDeclNode,Object>> entrySet = e.getValue().entrySet();
+					for (Entry<OpDefOrDeclNode, Object> entry : entrySet) {
+						final OpDefOrDeclNode oddn = entry.getKey();
+						final Object value = entry.getValue();
+						if (oddn instanceof OpDefNode) {
+							final OpDefNode odn = (OpDefNode) oddn;
+							l.add((DebugTLCVariable) ((Value) value)
+									.toTLCVariable(new DebugTLCVariable(odn.getLocalName()), rnd));
+						} else {
+							final OpDeclNode odn = (OpDeclNode) oddn;
+							l.add((DebugTLCVariable) ((Value) value)
+									.toTLCVariable(new DebugTLCVariable(odn.getSignature()), rnd));
+						}
+					}
+					nestedConstants.put(v.getVariablesReference(), l);
+				}
+			}
 	}
 	
 	protected Variable[] toSortedArray(final List<Variable> vars) {

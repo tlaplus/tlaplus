@@ -116,7 +116,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		// Low-level spec constants
 		consts = stackFrame.getVariables(constants[1].getVariablesReference());
-		assertEquals(5, consts.length);
+		assertEquals(6, consts.length);
 		
 		assertEquals("BasicMsg", consts[0].getName());
 		assertEquals("SetOfRcdsValue", consts[0].getType());
@@ -130,13 +130,17 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("SetCupValue", consts[2].getType());
 		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int] \\cup {[type |-> \"pl\"]}", consts[2].getValue());
 		
-		assertEquals("Nodes", consts[3].getName());
-		assertEquals("SetEnumValue", consts[3].getType());
-		assertEquals("{0, 1, 2}", consts[3].getValue());
+		assertEquals("N", consts[3].getName());
+		assertEquals("IntValue", consts[3].getType());
+		assertEquals("3", consts[3].getValue());
 		
-		assertEquals("TokenMsg", consts[4].getName());
-		assertEquals("SetOfRcdsValue", consts[4].getType());
-		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int]", consts[4].getValue());
+		assertEquals("Nodes", consts[4].getName());
+		assertEquals("SetEnumValue", consts[4].getType());
+		assertEquals("{0, 1, 2}", consts[4].getValue());
+		
+		assertEquals("TokenMsg", consts[5].getName());
+		assertEquals("SetOfRcdsValue", consts[5].getType());
+		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int]", consts[5].getValue());
 		
 		
 		// *********************************************************** //
