@@ -90,12 +90,18 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 		return super.getVariable(path);
 	}
 
+	@Override
 	protected Object unlazy(final LazyValue lv) {
+		return unlazy(lv, null);
+	}
+	
+	@Override
+	protected Object unlazy(final LazyValue lv, final Object fallback) {
 		return tool.eval(() -> {
 			try {
 				return lv.eval(tool, state, succecessor);
 			} catch (TLCRuntimeException | EvalException e) {
-				return e;
+				return fallback == null ? e : fallback;
 			}
 		});
 	}

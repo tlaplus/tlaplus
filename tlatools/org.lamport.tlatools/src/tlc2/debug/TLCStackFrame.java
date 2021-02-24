@@ -48,10 +48,9 @@ import org.eclipse.lsp4j.debug.StoppedEventArguments;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
-import tla2sany.semantic.OpApplNode;
-import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.OpDefOrDeclNode;
@@ -352,28 +351,30 @@ public class TLCStackFrame extends StackFrame {
 		assert !path.isEmpty();
 		
 		SemanticNode sn = path.getFirst();
-		SymbolNode node = null;
-		if (sn instanceof OpArgNode) {
-			node = ((OpArgNode) sn).getOp();
-		} else if (sn instanceof OpApplNode) {
-			node = ((OpApplNode) sn).getOperator();
-		} else if (sn instanceof SymbolNode) {
-			node = (SymbolNode) sn;
-		}
-
 		Object o;
-		if (node != null) {
-			// lookup might return sn, in which case hover will show the nodes location.
-			o = tool.lookup(node, this.ctxt, false);
+		if (sn instanceof SymbolNode) {
+			o = tool.lookup((SymbolNode) sn, this.ctxt, false);
+		} else if (sn instanceof ExprOrOpArgNode) {
+			o = tool.getVal((ExprOrOpArgNode) sn, ctxt, false);
 		} else {
 			o = sn;
 		}
-
-		final Variable variable = new Variable();
-		if (o instanceof SymbolNode && ((SymbolNode)o).isBuiltIn()) {
-			variable.setValue(((SymbolNode)o).getLocation().toString());
+		
+		if (o instanceof LazyValue) {
+			// Unlazying might fail if the lazy value is not within the scope of this frame.
+			// In this case, fall-back to sn.
+			o = unlazy((LazyValue) o, o);
+		}
+		
+		final Variable variable;
+		if (o instanceof Value) {
+			variable = getVariable((IValue) o, sn.getHumanReadableImage());
 		} else {
-			variable.setValue(o.toString());
+			variable = new Variable();
+			variable.setValue(
+					// Print the location for built-in symbols instead of "-- TLA Builtin ---"
+					o instanceof SymbolNode && ((SymbolNode) o).isBuiltIn() ? ((SymbolNode) o).getLocation().toString()
+							: o.toString());
 		}
 		variable.setType(o.getClass().getSimpleName());
 		return variable;
@@ -451,12 +452,16 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	protected Object unlazy(final LazyValue lv) {
+		return unlazy(lv, null);
+	}
+
+	protected Object unlazy(final LazyValue lv, final Object fallback) {
 		try {
 			return tool.eval(() -> {
 				return lv.eval(tool);
 			});
 		} catch (TLCRuntimeException | EvalException e) {
-			return e;
+			return fallback == null ? e : fallback;
 		}
 	}
 

@@ -160,12 +160,17 @@ public class TLCStateStackFrame extends TLCStackFrame {
 
 	@Override
 	protected Object unlazy(LazyValue lv) {
+		return unlazy(lv, null);
+	}
+	
+	@Override
+	protected Object unlazy(final LazyValue lv, final Object fallback) {
 		try {
 			return tool.eval(() -> {
 				return lv.eval(tool, state);
 			});
 		} catch (TLCRuntimeException | EvalException e) {
-			return e;
+			return fallback == null ? e : fallback;
 		}
 	}
 
