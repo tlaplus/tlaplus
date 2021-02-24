@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -184,7 +185,16 @@ public abstract class SemanticNode
 		if (children == null) {
 			return new ArrayList<>();
 		}
-		return Arrays.asList(children);
+		// The OpDefNode#body of e.g. 'foo == INSTANCE Spec' is null, which is why
+		// getChildren returns a non-zero length array containing a null value.
+		//
+		//  SomeExpression ==
+		//    LET foo == INSTANCE Spec
+		//    IN foo!bar
+		//
+		// We filter null values here instead of in OpDefNode#getChildren because I
+		// don't know if some functionality relies on getChildren to return null values.
+		return Arrays.asList(children).stream().filter(c -> c != null).collect(Collectors.toList());
 	}
   
 	public <T> ChildrenVisitor<T> walkChildren(final ChildrenVisitor<T> visitor) {
