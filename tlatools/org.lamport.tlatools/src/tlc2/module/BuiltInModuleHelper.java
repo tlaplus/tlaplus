@@ -68,7 +68,13 @@ public class BuiltInModuleHelper {
 					return true;
 				} else if (clazz == Randomization.class && value == Randomization.serialVersionUID) {
 					return true;
+				} else if (clazz == Json.class && value == Json.serialVersionUID) {
+					return true;
+				} else if (clazz == TLCExt.class && value == TLCExt.serialVersionUID) {
+					return true;
 				}
+				// TODO Add Toolbox.class here too should Toolbox.tla module ever get a module
+				// override.
 			}
 		} catch (SecurityException e) {
 			return false;

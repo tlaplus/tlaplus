@@ -65,6 +65,8 @@ import util.UniqueString;
  * Module overrides for operators to read and write JSON.
  */
 public class Json {
+	
+	public static final long serialVersionUID = 20210223L;
 
   /**
    * Encodes the given value as a JSON string.

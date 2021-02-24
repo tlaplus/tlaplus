@@ -57,6 +57,7 @@ import util.Assert;
 import util.Assert.TLCRuntimeException;
 
 public class TLCExt {
+	public static final long serialVersionUID = 20210223L;
 
 	@Evaluation(definition = "AssertError", module = "TLCExt", warn = false, silent = true)
 	public synchronized static Value assertError(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
