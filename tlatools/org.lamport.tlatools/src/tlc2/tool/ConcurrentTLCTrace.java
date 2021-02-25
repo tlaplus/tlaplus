@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -140,7 +141,7 @@ public class ConcurrentTLCTrace extends TLCTrace {
 		// because the set of initial states is likely to be different.
 		// This is only necessary though, if TLCGlobals.enumFraction was < 1 during
 		// the generation of inits.
-		RandomEnumerableValues.reset();
+		final Random snapshot = RandomEnumerableValues.reset();
 		
 		// The vector of fingerprints is now being followed forward from the
 		// initial state (which is the last state in the long vector), to the
@@ -189,6 +190,7 @@ public class ConcurrentTLCTrace extends TLCTrace {
 				res[stateNum++] = sinfo;
 			}
 		}
+		RandomEnumerableValues.set(snapshot);
 		return res;
 	}
 

@@ -54,11 +54,22 @@ public abstract class RandomEnumerableValues {
 	
 	/**
 	 * Re-Initialize Random with the recorded seed value.
+	 * 
+	 * @return The previously used Random instance that can later be re-activate
+	 *         with {@link RandomEnumerableValues#set(Random)}.
 	 **/
-	public static void reset() {
+	public static Random reset() {
+		final Random random = get();
 		RANDOMS.remove();
+		return random;
 	}
 
+	public static Random set(Random random) {
+		final Random old = get();
+		RANDOMS.set(random);
+		return old;
+	}
+	
 	public static Random get() {
 		return RANDOMS.get();
 	}
