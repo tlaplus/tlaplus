@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +28,11 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.Messages;
 import tlc2.output.SpecTraceExpressionWriter;
+import tlc2.tool.Defns;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
+import tlc2.util.Vect;
+import tlc2.value.impl.ModelValue;
 import util.TLAConstants;
 import util.ToolIO;
 import util.UsageGenerator;
@@ -61,7 +66,6 @@ public class TraceExplorer {
     
     static final String SPEC_TE_INIT_ID = "_SpecTEInit";
     static final String SPEC_TE_NEXT_ID = "_SpecTENext";
-    private static final String SPEC_TE_ACTION_CONSTRAINT_ID = "_SpecTEActionConstraint";
     
     // <parameter name, whether the parameter takes an argument>
     private static final HashMap<String, Boolean> TLC_ARGUMENTS_TO_IGNORE;
@@ -98,7 +102,6 @@ public class TraceExplorer {
 				TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
 				+ TLAConstants.Files.CONFIG_EXTENSION);
 		
-		List<String> constants = results.getModelConfig().getRawConstants();
 		List<String> variables = Arrays.asList(vars);
 
 		try (
@@ -108,9 +111,10 @@ public class TraceExplorer {
 			writeSpecTEStreams(
 					TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME,
 					osn,
-					constants,
+					results,
 					variables,
 					error,
+					null,
 					specTETLAOutStream,
 					specTECFGOutStream);
 		}
@@ -120,10 +124,13 @@ public class TraceExplorer {
 	
 	/**
 	 * 
+	 * @param teSpecModuleName
 	 * @param originalSpecName
 	 * @param originalSpecVariables
-	 * @param specInfo
+	 * @param results
+	 * @param variables	 
 	 * @param error
+	 * @param specInfo
 	 * @param specTETLAOutStream
 	 * @param specTECFGOutStream
 	 * @throws IOException
@@ -131,13 +138,37 @@ public class TraceExplorer {
 	public static void writeSpecTEStreams(
 			final String teSpecModuleName,
 			final String originalSpecName,
-			final List<String> constants,
+			final MCParserResults results,
 			final List<String> variables,
 			final MCError error,
+			final ITool specInfo,
 			final OutputStream specTETLAOutStream,
 			final OutputStream specTECFGOutStream) throws IOException {
 
 		final SpecTraceExpressionWriter writer = new SpecTraceExpressionWriter();
+
+		// Each element in `constants` is a `Vect` with 2 elements.
+		// The first element of this `Vect` is the key (the constant) and 
+		// the second one is the value of the constant.
+		Vect<Vect<Object>> constants = (Vect<Vect<Object>>) results.getModelConfig().getConstants();			
+
+		// Get all reified constants;
+		List<String> reifiedConstants = new ArrayList<String>();		
+		for (Vect<Object> keyValuePair : (ArrayList<Vect<Object>>) Collections.list(constants.elements())) {
+			reifiedConstants.add(keyValuePair.elementAt(0).toString());			
+		}
+
+		// Add all the model values as constants, they have to be reified (to mean something) in a TLA module.
+		// First we set all the model values seen, the values will be at the static field ModelValue.mvs.
+		ModelValue.setValues();
+		List<String> mvsStr = new ArrayList<String>();
+		for (ModelValue mv : ModelValue.mvs) {
+			// Do not add the constant if it's already reified so we don't have 
+			// duplicated constants error.
+			if (!reifiedConstants.contains(mv.toString())) {
+				mvsStr.add(mv.toString());
+			}
+		}		
 
 		/**
 		 * Write content of config file (SpecTE).
@@ -147,31 +178,83 @@ public class TraceExplorer {
 		 * and CONSTANTS verbatim from the existing config file with which TLC ran. The
 		 * definition that appear in the .tla file (e.g. MC.tla) don't have to be copied
 		 * because SpecTE extends MC.
+		 * We also add the model values as constants so they can be used for the traces at
+		 * the TLA modules.
 		 * (see TraceExplorerDelegate#writeModelInfo)
 		 */
-		writer.addConstants(constants);
+		List<String> mvsConfigConstants = new ArrayList<String>();
+		for (String mv : mvsStr) {
+			mvsConfigConstants.add(SpecTraceExpressionWriter.indentString(String.format("%s = %s", mv, mv), 1));
+		}			
+
+		if(!constants.isEmpty()) {
+			List<String> indentedConstants = new ArrayList<String>();
+			// Add `CONSTANTS` header.
+			indentedConstants.add(TLAConstants.KeyWords.CONSTANTS);			
+			for (Vect<Object> keyValuePair : (ArrayList<Vect<Object>>) Collections.list(constants.elements())) {
+				String key = keyValuePair.elementAt(0).toString();
+				String value = keyValuePair.elementAt(1).toString();
+				indentedConstants.add(SpecTraceExpressionWriter.indentString(String.format("%s = %s", key, value), 1));
+			}
+
+			indentedConstants.addAll(mvsConfigConstants);
+			writer.addConstants(indentedConstants);
+		}
+
+		// If needed, create module which contain the reified constants.
+		// First we need to handle the case where a model value is defined in
+		// the config file, but, for some reason, it's not used in any of the
+		// model specs. E.g. I define `p1 = p1` in the `CONSTANTS` header of the
+		// config file, but I do not use it (through `CONSTANTS`) in the model spec.
+		// So we add these remaining constants to `mvsStr` so they are added to the 
+		// `TE` spec.
+		Defns defns = specInfo.getSpecProcessor().getDefns();
+		ArrayList<String> modConstants = new ArrayList<String>();
+		for (ModelValue mv : ModelValue.mvs) {
+			if (defns.get(mv.toString()) == null) {
+				modConstants.add(mv.toString());
+			}
+		}
+		final String teConstantSpecName = String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.SPEC_TECONSTANTS_NAME);
+		final Set<String> teConstantModuleHashSet = new HashSet<>();
+		teConstantModuleHashSet.add(TLAConstants.BuiltInModules.TLC);
+		String modelValuesAsConstants;
+		if (!modConstants.isEmpty()) {
+			teConstantModuleHashSet.add(teConstantSpecName);
+			modelValuesAsConstants = String.format("CONSTANTS %s\n", String.join(", ", modConstants));
+		}
+		else {
+			modelValuesAsConstants = "";
+		}
 
 		/**
 		 * Write SpecTE.
 		 */
-		final Set<String> extendedModules = new HashSet<>();
-		extendedModules.add(TLAConstants.BuiltInModules.TLC);
-		extendedModules.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
+		final Set<String> specTEExtendedModules = new HashSet<>();
+		// A TE spec has to extend Toolbox to have access to _TETrace and _TEPosition
+		// operators.
+		specTEExtendedModules.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
+		// Adds Json module so we can write a Json output.
+		specTEExtendedModules.add("Json");
+		specTEExtendedModules.add("TLCExt");
+		specTEExtendedModules.addAll(teConstantModuleHashSet);
+				
+		writer.addPrimer(teSpecModuleName, originalSpecName, specTEExtendedModules);		
 
-		writer.addPrimer(teSpecModuleName, originalSpecName, extendedModules);
-		
 		writer.addTraceExpressionInstance(
 				String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME));
 
 		final List<MCState> trace = error.getStates();
+
+		final String teTraceName = String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.SPEC_TETRACE_NAME);
 		
-		final String traceFunctionId = writer.addTraceFunctionInstance();
+		writer.addTraceFunctionInstance(teTraceName);
 		
-		writer.addProperties(trace);
+		writer.addProperties(trace, originalSpecName);
 
 		// Write Init and Next with vars instead of extracting the vars from trace to
 		// always write a syntactically correct behavior spec even if trace = <<>>.
-		writer.addInitNextTraceFunction(trace, variables, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID);
+		writer.addInitNextTraceFunction(trace, teSpecModuleName, variables, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, results);
 				
 		writer.addFooter();
 		
@@ -181,10 +264,16 @@ public class TraceExplorer {
 		writer.append(TLAConstants.CR);
 		
 		final SpecTraceExpressionWriter te = new SpecTraceExpressionWriter();
+		final String teModuleName = String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME);
 		te.append(TLAConstants.CR);
-		te.addPrimer(String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME),
-				originalSpecName, extendedModules);
-		te.addTraceExpressionStub(TLAConstants.TraceExplore.SPEC_TE_TRACE_EXPRESSION, variables);
+		
+		writer.append(String.format(" Note that you can extract this module `%s`", teModuleName)).append(TLAConstants.CR);
+		writer.append("  to a dedicated file to reuse `expression` (the module in the ").append(TLAConstants.CR);
+		writer.append(String.format("  dedicated `%s.tla` file takes precedence ", teModuleName)).append(TLAConstants.CR);
+		writer.append(String.format("  over the module `BlockingQueue_TEExpression` below).", teModuleName));
+			
+		te.addPrimer(teModuleName, originalSpecName, specTEExtendedModules);
+		te.addTraceExpressionStub(originalSpecName, TLAConstants.TraceExplore.SPEC_TE_TRACE_EXPRESSION, variables);		
 		te.addFooter();
 		writer.append(TLAConstants.CR + te.toString() + TLAConstants.CR + TLAConstants.CR);
 		
@@ -199,16 +288,16 @@ public class TraceExplorer {
 				.append(TLAConstants.CR);
 		writer.append(" To create the file, replace your spec's invariant F with:").append(TLAConstants.CR);
 		writer.append("  Inv == IF F THEN TRUE ELSE ~IOSerialize(Trace, \"file.bin\", TRUE)").append(TLAConstants.CR);
-		writer.append(" (IOUtils and TLCExt modules from https://modules.tlapl.us/)");
+		writer.append(" (IOUtils module is from https://modules.tlapl.us/)");
 		
-		final Set<String> extendedModulesWithIOUtils = new HashSet<>(extendedModules);
+		final Set<String> extendedModulesWithIOUtils = new HashSet<>();
 		extendedModulesWithIOUtils.add("IOUtils");
+		extendedModulesWithIOUtils.addAll(teConstantModuleHashSet);
 		
 		final SpecTraceExpressionWriter w = new SpecTraceExpressionWriter();
 		w.append(TLAConstants.CR);
-		w.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", originalSpecName,
-				extendedModulesWithIOUtils);
-		w.append(traceFunctionId).append(TLAConstants.DEFINES).append("IODeserialize(\"file.bin\", TRUE)\n\n");
+		w.addPrimer(teTraceName, originalSpecName, extendedModulesWithIOUtils);
+		w.append(TLAConstants.TraceExplore.SPEC_TETRACE_TRACE_DEF).append(TLAConstants.DEFINES).append("IODeserialize(\"file.bin\", TRUE)\n\n");
 		w.addFooter();
 		// Users can uncomment the module if they wish to read the serialized trace.
 		writer.append(TLAConstants.CR + w.getComment() + TLAConstants.CR + TLAConstants.CR);
@@ -216,18 +305,29 @@ public class TraceExplorer {
 		/**
 		 * Write definition of trace def into new module.
 		 */
-		writer.addPrimer(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "TraceDef", originalSpecName, extendedModules);
+		final Set<String> teTraceExtendedModules = new HashSet<>();
+		teTraceExtendedModules.addAll(teConstantModuleHashSet);
+		writer.addPrimer(teTraceName, originalSpecName, teTraceExtendedModules);
 
-		writer.addTraceFunction(trace, traceFunctionId);
+		writer.addTraceFunction(trace, TLAConstants.TraceExplore.SPEC_TETRACE_TRACE_DEF, TLAConstants.TraceExplore.SPEC_TETRACE_TRACE);
 		
-		writer.addAliasToCfg(TLAConstants.TraceExplore.SPEC_TE_TTRACE_EXPRESSION);
+		writer.addAliasToCfg(TLAConstants.TraceExplore.SPEC_TE_TTRACE_EXPRESSION);		
+
+		/**
+		 * Write TEConstants module, if needed.
+		 */
+		if (modelValuesAsConstants != "") {
+			writer.addFooter();
+			writer.append(TLAConstants.CR);
+			writer.addPrimer(teConstantSpecName, originalSpecName);
+			writer.append(modelValuesAsConstants).append(TLAConstants.CR);
+		}
 		
         /**
          * Write to streams.
          */
 		writer.writeStreams(specTETLAOutStream, specTECFGOutStream);
-    }
-    
+    }	    
     
     private enum RunMode {
     	GENERATE_SPEC_TE, PRETTY_PRINT, GENERATE_FROM_TLC_RUN, QUASI_REPL, TRACE_EXPLORATION;

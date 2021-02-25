@@ -27,7 +27,7 @@ To run a single test:
 
 ``` shell
 # Running the `tlc2.tool.MonolithSpecTest.java` test
-ant -f customBuild.xml test-single -Dtest.testcase tlc2.tool.MonolithSpecTest
+ant -f customBuild.xml test-set -Dtest.testcases="tlc2/tool/MonolithSpecTest*"
 ```
 
 One tip, if you want to record the output of some tlatool (like if you

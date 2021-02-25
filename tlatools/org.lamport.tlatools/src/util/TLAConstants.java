@@ -34,6 +34,7 @@ public final class TLAConstants {
 	
 	public final class KeyWords {
 		public static final String ACTION_CONSTRAINT = "ACTION_CONSTRAINT";
+		public static final String ASSUME = "ASSUME";
 	    public static final String CONSTANT = "CONSTANT";
 	    public static final String CONSTANTS = CONSTANT + 'S';
 	    public static final String EXTENDS = "EXTENDS";
@@ -76,7 +77,7 @@ public final class TLAConstants {
 	public final class TraceExplore {
 	    public static final String TRACE_EXPRESSION_MODULE_NAME = "TTrace";
 	    public static final String ERROR_STATES_MODULE_NAME = "TraceDef";
-	    public static final String EXPLORATION_MODULE_NAME = "TE";
+	    public static final String EXPLORATION_MODULE_NAME = "TEExpression";
 		public static final String ACTION = "_TEAction";
 		public static final String POSITION = "_TEPosition";
 		public static final String TRACE = "_TETrace";
@@ -99,8 +100,15 @@ public final class TLAConstants {
 	     * The tuple of ordered sub-action names representing the trace states. 
 	     */
 	    public static final String TRACE_EXPLORE_ACTION_CONSTRAINT = "traceExploreActionConstraint";
-	    public static final String SPEC_TE_TRACE_EXPRESSION = "TraceExpression";
-	    public static final String SPEC_TE_TTRACE_EXPRESSION = "TTraceExpression";
+	    public static final String SPEC_TE_TRACE_EXPRESSION = "expression";
+	    public static final String SPEC_TE_TTRACE_EXPRESSION = "_expression";
+		public static final String SPEC_TETRACE_TRACE_DEF = "trace";
+		public static final String SPEC_TETRACE_TRACE = "_trace";
+		public static final String SPEC_TETRACE_NAME = "TETrace";
+		public static final String SPEC_TECONSTANTS_NAME = "TEConstants";
+		public static final String SPEC_TE_INIT = "_init";
+		public static final String SPEC_TE_CONSTRAINT = "_constraint";
+		public static final String SPEC_TE_NEXT = "_next";
 	}
 
 	

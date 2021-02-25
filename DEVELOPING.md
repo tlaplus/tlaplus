@@ -44,6 +44,12 @@ To build and test the Toolbox (well, everything really), run:
 mvn verify
 ```
 
+To build without testing, run:
+
+``` sh
+mvn install -Dmaven.test.skip=true
+```
+
 On completion you'll find the toolbox distributables in `org.lamport.tla.toolbox.product.product/target/products/`
 
 ```
@@ -54,3 +60,8 @@ drwxr-xr-x 5 golly users      4096 May 19 09:20 org.lamport.tla.toolbox.product.
 -rw-r--r-- 1 golly users 160402860 May 19 09:21 TLAToolbox-1.5.8-macosx.cocoa.x86_64.zip
 -rw-r--r-- 1 golly users 161739828 May 19 09:21 TLAToolbox-1.5.8-win32.win32.x86_64.zip
 ```
+
+Debugging
+======================
+
+See guide at https://github.com/tlaplus/tlaplus/tree/master/general/ide.

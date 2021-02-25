@@ -72,8 +72,7 @@ public class TraceExplorationSpec {
 			String ogModuleName = specInfo.getRootName();
 			List<String> variables = Arrays.asList(TLCState.Empty.getVarsAsStrings());
 			MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(spec, cfg);
-			List<String> constants = parserResults.getModelConfig().getRawConstants();
-			return this.generate(ogModuleName, constants, variables, errorTrace);
+			return this.generate(ogModuleName, parserResults, variables, errorTrace, specInfo);
 		});
 	}
 
@@ -88,9 +87,10 @@ public class TraceExplorationSpec {
 	 */
 	public 	TraceExplorationSpecGenerationReport generate(
 			String ogModuleName,
-			List<String> constants,
+			MCParserResults parserResults,
 			List<String> variables,
-			MCError errorTrace) {
+			MCError errorTrace,
+			ITool specInfo) {
 		String teSpecModuleName = deriveTESpecModuleName(ogModuleName, this.timestamp);
 		try (
 				OutputStream tlaStream = this.streamProvider.getTlaStream(teSpecModuleName);
@@ -99,9 +99,10 @@ public class TraceExplorationSpec {
 			TraceExplorer.writeSpecTEStreams(
 					teSpecModuleName,
 					ogModuleName,
-					constants,
+					parserResults,
 					variables,
 					errorTrace,
+					specInfo,
 					tlaStream,
 					cfgStream);
 			TraceExplorationSpecGenerationReport report = new TraceExplorationSpecGenerationReport(

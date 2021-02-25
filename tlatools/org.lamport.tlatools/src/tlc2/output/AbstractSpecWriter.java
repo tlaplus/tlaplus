@@ -29,11 +29,12 @@ public abstract class AbstractSpecWriter {
      */
 	public static String addArrowAssignmentToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
 			final Assignment constant, final String schema) {
-		return addArrowAssignmentIdToBuffers(tlaBuffer, cfgBuffer, constant, SpecWriterUtilities.getValidIdentifier(schema));
+		final String identifier = SpecWriterUtilities.getValidIdentifier(schema);
+		return addArrowAssignmentIdToBuffers(tlaBuffer, cfgBuffer, constant, identifier, identifier);
 	}
 
 	public static String addArrowAssignmentIdToBuffers(final StringBuilder tlaBuffer, final StringBuilder cfgBuffer,
-			final Assignment constant, final String id) {
+			final Assignment constant, final String id, final String configId) {
 		// constant instantiation
 		// to .cfg : foo <- <id>
 		// to _MC.tla : <id>(a, b, c)==
@@ -42,8 +43,8 @@ public abstract class AbstractSpecWriter {
 		tlaBuffer.append(constant.getRight()).append(TLAConstants.CR);
 		
 		if (cfgBuffer != null) {
-			cfgBuffer.append(TLAConstants.KeyWords.CONSTANT).append(TLAConstants.CR);
-			cfgBuffer.append(constant.getLabel()).append(TLAConstants.ARROW).append(id).append(TLAConstants.CR);
+			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.CONSTANT).append(TLAConstants.CR);
+			cfgBuffer.append(TLAConstants.INDENT).append(constant.getLabel()).append(TLAConstants.ARROW).append(configId).append(TLAConstants.CR);
 		}
 		return id;
 	}
@@ -519,8 +520,9 @@ public abstract class AbstractSpecWriter {
 	 */
 	public void addAliasToCfg(final String aliasName) {
 		if (this.cfgBuffer != null) {
-			this.cfgBuffer.append(TLAConstants.COMMENT).append("ALIAS definition").append(TLAConstants.CR);
-			this.cfgBuffer.append("ALIAS").append(TLAConstants.CR).append(aliasName).append(TLAConstants.CR);
+			this.cfgBuffer.append(TLAConstants.CR);
+			this.cfgBuffer.append("ALIAS").append(TLAConstants.CR);
+			this.cfgBuffer.append(TLAConstants.INDENT).append(aliasName).append(TLAConstants.CR);
 		}
 	}
 	

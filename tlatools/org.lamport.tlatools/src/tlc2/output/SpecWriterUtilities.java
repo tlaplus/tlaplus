@@ -77,15 +77,15 @@ public final class SpecWriterUtilities {
     						  + TLAConstants.Schemes.PROP_SCHEME + ")_[0-9]{17,}");
 
     /**
-     * Creates a new valid unqiue identifier from given scheme
+     * Creates a new valid unqiue identifier with timestamp from given scheme.
      * @param scheme a naming scheme, one of the {@link TLAConstants.Schemes} constants
      * @return a valid identifier
      */
 	public static String getValidIdentifier(final String scheme) {
 		return String.format("%s_%s%s", scheme, System.currentTimeMillis(), 1000 * COUNTER.incrementAndGet());
-	}
-	
-	/**
+    }
+    
+    /**
      * Creates a new valid unqiue identifier without timestamp from given scheme. 
      * This was created to not mess with {@link getValidIdentifier} which is used by other classes. 
      * @param scheme a naming scheme, one of the {@link TLAConstants.Schemes} constants
