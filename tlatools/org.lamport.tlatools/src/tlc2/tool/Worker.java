@@ -346,7 +346,10 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			}
 			
 			// Check if state is excluded by a state or action constraint.
-			final boolean inModel = (this.tool.isInModel(succState) && this.tool.isInActions(curState, succState));
+			// Set the predecessor to make TLC!TLCGet("level") work in
+			// state constraints, i.e. isInModel.
+			final boolean inModel = (this.tool.isInModel(succState.setPredecessor(curState))
+					&& this.tool.isInActions(curState, succState));
 			
 			// Check if state is new or has been seen earlier.
 			boolean unseen = true;

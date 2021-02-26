@@ -122,7 +122,7 @@ public abstract class TLCState implements Cloneable, Serializable {
 	  return res;
   }
 
-  public final void setPredecessor(final TLCState predecessor) {
+  public final TLCState setPredecessor(final TLCState predecessor) {
 	  // This method only keeps the level instead of the predecessor, because a) we
 	  // don't need the predecessor and b) keeping predecessors would mean that we
 	  // eventually have all states of the state graph in memory.
@@ -130,6 +130,7 @@ public abstract class TLCState implements Cloneable, Serializable {
 		  Assert.fail(EC.TLC_TRACE_TOO_LONG, this.toString());
 	  }
 	  this.level = predecessor.getLevel() + 1;
+	  return this;
   }
 
   public final int getLevel() {
