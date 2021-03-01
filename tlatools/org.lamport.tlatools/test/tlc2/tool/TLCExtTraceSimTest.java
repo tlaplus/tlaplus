@@ -1,9 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2021 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2021 Microsoft Research. All rights reserved.
  *
  * The MIT License (MIT)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
@@ -11,8 +11,8 @@
  * so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. 
- * 
+ * copies or substantial portions of the Software.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -23,9 +23,8 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tlc2.module;
+package tlc2.tool;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -33,17 +32,15 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class TLCExtTraceTest extends ModelCheckerTestCase {
+public class TLCExtTraceSimTest extends ModelCheckerTestCase {
+    public TLCExtTraceSimTest() {
+        super("TLCExtTrace", new String[] { "-config", "TLCExtTrace.tla", "-simulate", "num=1" });
+    }
 
-	public TLCExtTraceTest() {
-		super("TLCExtTrace", new String[] {"-config", "TLCExtTrace.tla"});
-	}
-
-	@Test
-	public void test() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "10"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "10", "10", "0"));
-		assertFalse(recorder.recorded(EC.GENERAL));
-	}
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_PROGRESS_SIMU, "10", "1", "10", "0", "0"));
+        assertZeroUncovered();
+    }
 }

@@ -2,6 +2,7 @@
 
 SPECIFICATION Spec
 INVARIANT Inv
+CONSTRAINT Inv
 ===================
 
 ---- MODULE TLCExtTrace ----

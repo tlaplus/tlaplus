@@ -23,7 +23,8 @@ import util.UniqueString;
 
 public abstract class TLCState implements Cloneable, Serializable {
   public short workerId = Short.MAX_VALUE; // Must be set to a non-negative number. Valid worker ids \in [0,Short.MAX_VALUE] and start at 0.
-  public long uid = -1;   // Must be set to a non-negative number
+  public static final int INIT_UID = -1;
+  public long uid = INIT_UID;   // Must be set to a non-negative number
   // The level of an initial state is initialized with 1 to assert that
   // TLCGet("level") in the first evaluation of the next-state relation equals 1.
   // The successor states of initial states have level 2.  During the evaluation
