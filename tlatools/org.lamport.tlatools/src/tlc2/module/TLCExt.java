@@ -190,30 +190,6 @@ public class TLCExt {
 		return getTrace0(s0, TLCGlobals.mainChecker.getTraceInfo(s0));
 	}
 
-	@Evaluation(definition = "TraceFrom", module = "TLCExt", minLevel = 1, warn = false, silent = true)
-	public synchronized static TupleValue getTraceFrom(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
-			final TLCState s0, final TLCState s1, final int control, final CostModel cm) throws IOException {
-
-		final Value v = tool.eval(args[0], c, s0, s1, control, cm);
-		if (!(v instanceof RecordValue)) {
-			Assert.fail(EC.GENERAL, "In evaluating TLCExt!TraceFrom, a non-record expression (" + v.getKindString()
-					+ ") was used as the parameter.\n" + args[0]);
-		}
-		final TLCState from = ((RecordValue) v).toState();
-		Assert.check(from.allAssigned(), EC.GENERAL,
-				"In evaluating TLCExt!TraceFrom, the given parameter could not be converted into a valid state.");
-
-		if (s0.isInitial() || from.equals(s0)) {
-			return new TupleValue(new RecordValue(s0));
-		}
-
-		if (TLCGlobals.simulator != null) {
-			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
-			return new TupleValue(w.getTrace().toRecords(from, s0));
-		}
-		return getTrace0(s0, TLCGlobals.mainChecker.getTraceInfo(from, s0));
-	}
-
 	private static final TupleValue getTrace0(final TLCState s0, final TLCStateInfo[] trace) {
 		final Value[] values = new Value[trace.length + 1];
 		for (int j = 0; j < (trace.length); j++) {
