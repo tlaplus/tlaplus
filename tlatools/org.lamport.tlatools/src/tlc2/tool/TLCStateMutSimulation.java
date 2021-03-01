@@ -273,7 +273,19 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
     }
     return true;
   }
-  
+
+    @Override
+	public boolean noneAssigned() {
+		int len = this.values.length;
+		for (int i = 0; i < len; i++) {
+			if (values[i] != null) {
+				return false;
+			}
+		}
+		return true;
+	}
+ 
+    @Override
 	public final Set<OpDeclNode> getUnassigned() {
 		// Return sorted set (lexicographical).
 		final Set<OpDeclNode> unassignedVars = new TreeSet<OpDeclNode>(new Comparator<OpDeclNode>() {
