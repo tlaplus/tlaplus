@@ -398,7 +398,7 @@ public class Simulator {
 			TLCStateInfo sinfo;
 			int omitted = 0;
 			for (int i = 0; i < stateTrace.size(); i++) {
-				final TLCStateMutSimulation curState = (TLCStateMutSimulation) stateTrace.elementAt(i);
+				final TLCState curState = stateTrace.elementAt(i);
 				// Last state's successor is itself.
 				final TLCState sucState = stateTrace.elementAt(Math.min(i + 1, stateTrace.size() - 1));
 				if (lastState != null) {
@@ -408,7 +408,7 @@ public class Simulator {
 					// lastState)) to determine the action.  This would fail for specs whose next-state
 					// relation is probabilistic (ie. TLC!RandomElement or Randomization.tla). In other
 					// words, tool.getState(curState,lastState) would return for some pairs of states.
-					sinfo = new TLCStateInfo(curState, tool.getActions()[curState.getActionId()].getLocation());
+					sinfo = new TLCStateInfo(curState, curState.getAction().getLocation());
 				} else {
 					sinfo = new TLCStateInfo(curState, "<Initial predicate>");
 					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());

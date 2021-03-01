@@ -123,7 +123,7 @@ public abstract class TLCState implements Cloneable, Serializable {
 	  return res;
   }
 
-  public final TLCState setPredecessor(final TLCState predecessor) {
+  public TLCState setPredecessor(final TLCState predecessor) {
 	  // This method only keeps the level instead of the predecessor, because a) we
 	  // don't need the predecessor and b) keeping predecessors would mean that we
 	  // eventually have all states of the state graph in memory.
@@ -132,6 +132,10 @@ public abstract class TLCState implements Cloneable, Serializable {
 	  }
 	  this.level = predecessor.getLevel() + 1;
 	  return this;
+  }
+  
+  public TLCState getPredecessor() {
+	  return null;
   }
 
   public final int getLevel() {
@@ -155,13 +159,13 @@ public abstract class TLCState implements Cloneable, Serializable {
 	  // no-op - see TLAPlusExecutorState
   }
 
-	public int getActionId() {
-		  // no-op - see TLCStateMutSimulation
-		return 0;
+	public Action getAction() {
+		  // no-op - see TLCStateMutExt
+		return null;
 	}
 
-	public void setActionId(int actionId) {
-		  // no-op - see TLCStateMutSimulation
+	public TLCState setAction(Action action) {
+		  // no-op - see TLCStateMutExt
+		return this;
 	}
-
 }

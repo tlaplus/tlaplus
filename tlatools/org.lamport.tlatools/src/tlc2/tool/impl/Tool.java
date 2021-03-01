@@ -40,12 +40,11 @@ import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
-import tlc2.tool.TLAPlusExecutorState;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.TLCStateMut;
-import tlc2.tool.TLCStateMutSimulation;
+import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.ToolGlobals;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
@@ -172,10 +171,8 @@ public abstract class Tool
       super(specDir, specFile, configFile, resolver, mode);
 
 		// set variables to the static filed in the state
-		if (mode == Mode.Simulation) {
-			TLCStateMutSimulation.setTool(this);
-		} else if (mode == Mode.Executor) {
-			TLAPlusExecutorState.setTool(this);
+		if (mode == Mode.Simulation || mode == Mode.Executor) {
+			TLCStateMutExt.setTool(this);
 		} else {
 			// Initialize state.
 			TLCStateMut.setTool(this);

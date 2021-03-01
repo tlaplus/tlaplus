@@ -216,6 +216,9 @@ public class SimulationWorker extends IdThread {
 			final Action[] actions = this.tool.getActions();
 			final int len = actions.length;
 			this.actionStats = new long[len][len];
+			for (int i = 0; i < actions.length; i++) {
+				actions[i].setId(i);
+			}
 		} else {
 			// Write all statistics into a single cell that we will ignore.
 			this.actionStats = new long[1][1];
@@ -375,13 +378,11 @@ public class SimulationWorker extends IdThread {
 					for (idx = 0; idx < this.tool.getInvariants().length; idx++) {
 						if (!tool.isValid(this.tool.getInvariants()[idx], state)) {
 							// We get here because of an invariant violation.
-							state.setActionId(index);
 							return Optional.of(new SimulationWorkerError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
 									new String[] { tool.getInvNames()[idx] }, state, stateTrace, null));
 						}
 					}
 				} catch (final Exception e) {
-					state.setActionId(index);
 					return Optional.of(new SimulationWorkerError(EC.TLC_INVARIANT_EVALUATION_FAILED,
 							new String[] { tool.getInvNames()[idx], e.getMessage() }, state, stateTrace, null));
 				}
@@ -391,13 +392,11 @@ public class SimulationWorker extends IdThread {
 					for (idx = 0; idx < this.tool.getImpliedActions().length; idx++) {
 						if (!tool.isValid(this.tool.getImpliedActions()[idx], curState, state)) {
 							// We get here because of implied-action violation.
-							state.setActionId(index);
 							return Optional.of(new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
 									new String[] { tool.getImpliedActNames()[idx] }, state, stateTrace, null));
 						}
 					}
 				} catch (final Exception e) {
-					state.setActionId(index);
 					return Optional.of(new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
 							new String[] { tool.getImpliedActNames()[idx], e.getMessage() }, state, stateTrace, null));
 				}
@@ -412,7 +411,6 @@ public class SimulationWorker extends IdThread {
 			final TLCState s1 = randomState(localRng, nextStates);
 			inConstraints = (tool.isInModel(s1) && tool.isInActions(curState, s1));
 			s1.setPredecessor(curState); // Should be redundant but let's be safe anyway.
-			s1.setActionId(index);
 			
 			// Execute callable on the state that was selected from the set of succesor states.
 			s1.execCallable();
@@ -421,7 +419,7 @@ public class SimulationWorker extends IdThread {
 			// In case actionStats are off, we waste a few cycles to increment this counter
 			// nobody is going to look at.
 			if (Simulator.actionStats) {
-				this.actionStats[curState.getActionId()][s1.getActionId()]++;
+				this.actionStats[curState.getAction().getId()][s1.getAction().getId()]++;
 			}
 			curState = s1;
 			setCurrentState(curState);
@@ -474,11 +472,10 @@ public class SimulationWorker extends IdThread {
 	}
 	
 	public final TLCStateInfo[] getTraceInfo() {
-		final Action[] actions = this.tool.getActions();
 		final TLCStateInfo[] trace = new TLCStateInfo[stateTrace.size()];
 		for (int i = 0; i < stateTrace.size(); i++) {
-			final TLCStateMutSimulation s = (TLCStateMutSimulation) stateTrace.elementAt(i);
-			trace[i] = new TLCStateInfo(s, actions[s.getActionId()]);
+			final TLCState s = stateTrace.elementAt(i);
+			trace[i] = new TLCStateInfo(s, s.getAction());
 		}
 		return trace;
 	}

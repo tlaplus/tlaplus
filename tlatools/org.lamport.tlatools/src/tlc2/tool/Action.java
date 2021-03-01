@@ -24,6 +24,7 @@ public final class Action implements ToolGlobals, Serializable {
   public final Context con;           // Context of the action
   private final UniqueString actionName;
   private OpDefNode opDef = null;
+  private int id;
   public CostModel cm = CostModel.DO_NOT_RECORD;
 
   /* Constructors */
@@ -94,5 +95,12 @@ public final class Action implements ToolGlobals, Serializable {
 			}
 		}
 		return Location.nullLoc;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+	public int getId() {
+		return this.id;
 	}
 }

@@ -75,9 +75,8 @@ import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
 import tlc2.tool.EvalException;
 import tlc2.tool.Specs;
-import tlc2.tool.TLAPlusExecutorState;
 import tlc2.tool.TLCStateMut;
-import tlc2.tool.TLCStateMutSimulation;
+import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.ToolGlobals;
 import tlc2.tool.impl.Tool.Mode;
 import tlc2.util.Context;
@@ -726,10 +725,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
 		// set variables to the static filed in the state
 		if (mode == Mode.Simulation) {
-			TLCStateMutSimulation.setVariables(this.variablesNodes);
+			TLCStateMutExt.setVariables(this.variablesNodes);
 		} else if (hasCallableValue) {
 			assert mode == Mode.Executor;
-			TLAPlusExecutorState.setVariables(this.variablesNodes);
+			TLCStateMutExt.setVariables(this.variablesNodes);
 		} else {
 			assert mode == Mode.MC;
 			TLCStateMut.setVariables(this.variablesNodes);

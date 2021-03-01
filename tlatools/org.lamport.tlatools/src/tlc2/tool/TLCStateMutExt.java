@@ -27,9 +27,10 @@ import util.UniqueString;
 import util.WrongInvocationException;
 
 /**
- * Attention! Copy of TLCStateMut except for getter/setter and field action id.
+ * Attention! Copy of TLCStateMut except for getter/setter and fields callable,
+ * predecessor and action.
  */
-public final class TLCStateMutSimulation extends TLCState implements Cloneable, Serializable {
+public final class TLCStateMutExt extends TLCState implements Cloneable, Serializable {
   private IValue values[];
   private static ITool mytool = null;
 
@@ -45,13 +46,13 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
    */
   private static IMVPerm[] perms = null;
 
-  private TLCStateMutSimulation(IValue[] vals) { this.values = vals; }
+  private TLCStateMutExt(IValue[] vals) { this.values = vals; }
   
   public static void setVariables(OpDeclNode[] variables) 
   {
       vars = variables;
       IValue[] vals = new IValue[vars.length];
-      Empty = new TLCStateMutSimulation(vals);
+      Empty = new TLCStateMutExt(vals);
 
       // SZ 10.04.2009: since this method is called exactly one from Spec#processSpec
       // moved the call of UniqueString#setVariables to that place
@@ -72,13 +73,13 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
 
   public final TLCState createEmpty() {
 	  IValue[] vals = new IValue[vars.length];
-    return new TLCStateMutSimulation(vals);
+    return new TLCStateMutExt(vals);
   }
 
   //TODO equals without hashcode!
   public final boolean equals(Object obj) {
-    if (obj instanceof TLCStateMutSimulation) {
-      TLCStateMutSimulation state = (TLCStateMutSimulation)obj;
+    if (obj instanceof TLCStateMutExt) {
+      TLCStateMutExt state = (TLCStateMutExt)obj;
       for (int i = 0; i < this.values.length; i++) {
 	if (this.values[i] == null) {
 	  if (state.values[i] != null) return false;
@@ -126,7 +127,7 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
     for (int i = 0; i < len; i++) {
       vals[i] = this.values[i];
     }
-    return new TLCStateMutSimulation(vals);
+    return copyExt(new TLCStateMutExt(vals));
   }
 
   public final TLCState deepCopy() {
@@ -138,7 +139,7 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
 	vals[i] = val.deepCopy();
       }
     }
-	return deepCopy(new TLCStateMutSimulation(vals));
+	return deepCopy(new TLCStateMutExt(vals));
   }
 
   public final StateVec addToVec(StateVec states) {
@@ -256,9 +257,9 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
 			for (int i = 0; i < sz; i++) {
 				this.values[i].deepNormalize();
 			}
-			TLCStateMutSimulation state = this;
+			TLCStateMutExt state = this;
 			if (minVals != this.values) {
-				state = new TLCStateMutSimulation(minVals);
+				state = new TLCStateMutExt(minVals);
 			}
 			IValue val = mytool.eval(viewMap, Context.Empty, state);
 			fp = val.fingerPrint(fp);
@@ -352,7 +353,7 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
   /* Returns a string representation of this state.  */
   public final String toString(TLCState lastState) {
     StringBuffer result = new StringBuffer();
-    TLCStateMutSimulation lstate = (TLCStateMutSimulation)lastState;
+    TLCStateMutExt lstate = (TLCStateMutExt)lastState;
 
     int vlen = vars.length;
     if (vlen == 1) {
@@ -379,20 +380,52 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
     return result.toString();
   }
 
-    //*********//
+	// *********//
 
-	private int actionId;
+	private Action action;
 
-	public int getActionId() {
-		return actionId;
+	@Override
+	public Action getAction() {
+		return action;
 	}
 
-	public void setActionId(int actionId) {
-		this.actionId = actionId;
+	@Override
+	public TLCState setAction(final Action action) {
+		this.action = action;
+		return this;
 	}
-	
-    //*********//
-	
+
+	// *********//
+
+	private TLCState predecessor;
+
+	@Override
+	public TLCState setPredecessor(final TLCState predecessor) {
+		this.predecessor = predecessor;
+		return super.setPredecessor(predecessor);
+	}
+
+	public TLCState getPredecessor() {
+		return predecessor;
+	}
+
+	// *********//
+
+	@Override
+	protected TLCState deepCopy(final TLCState copy) {
+		super.deepCopy(copy);
+		return copyExt(copy);
+	}
+
+	private TLCState copyExt(TLCState copy) {
+		if (this.predecessor != null) {
+			copy.setPredecessor(this.predecessor);
+		}
+		return copy.setAction(getAction());
+	}
+
+	// *********//
+
 	private Callable<?> callable;
 
 	@Override
@@ -407,5 +440,4 @@ public final class TLCStateMutSimulation extends TLCState implements Cloneable, 
 	public void setCallable(Callable<?> f) {
 		this.callable = f;
 	}
-
 }

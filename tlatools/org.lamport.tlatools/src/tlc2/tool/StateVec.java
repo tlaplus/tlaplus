@@ -103,7 +103,7 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
   
   @Override
   public final StateVec addElement(TLCState predecessor, Action action, TLCState state) {
-	  return addElement(state);
+	  return addElement(state.setPredecessor(predecessor).setAction(action));
   }
  
   public final StateVec addElements(StateVec s1) {
