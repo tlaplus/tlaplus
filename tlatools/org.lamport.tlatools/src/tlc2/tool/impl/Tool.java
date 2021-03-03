@@ -1395,7 +1395,7 @@ public abstract class Tool
         }
 
         IValue v0 = this.eval(expr, c, s0, cm);
-        Value v1 = this.eval(expr, c, s1, null, EvalControl.Clear, cm);
+        Value v1 = this.eval(expr, c, s1, TLCState.Null, EvalControl.Clear, cm);
         if (v0.equals(v1)) {
           resState = this.getNextStates(action, acts, s0, s1, nss, cm);
         }
@@ -1690,7 +1690,7 @@ public abstract class Tool
 			if (val instanceof LazyValue) {
 				final LazyValue lv = (LazyValue) val;
 				if (s1 == null) {
-					val = this.eval(lv.expr, lv.con, s0, null, control, lv.getCostModel());
+					val = this.eval(lv.expr, lv.con, s0, TLCState.Null, control, lv.getCostModel());
 			    } else if (lv.isUncachable() || EvalControl.isEnabled(control)) {
 					// Never use cached LazyValues in an ENABLED expression. This is why all
 					// this.enabled* methods pass EvalControl.Enabled (the only exception being the
@@ -2465,12 +2465,12 @@ public abstract class Tool
 //                  Assert.fail("Attempted to evaluate the following expression," +
 //                          " but expression failed to evaluate.\n" + expr);
 //        	  }
-            return this.eval(args[0], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
+            return this.eval(args[0], c, s1, TLCState.Null, EvalControl.setPrimedIfEnabled(control), cm);
           }
         case OPCODE_unchanged:
           {
             Value v0 = this.eval(args[0], c, s0, TLCState.Empty, control, cm);
-            Value v1 = this.eval(args[0], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
+            Value v1 = this.eval(args[0], c, s1, TLCState.Null, EvalControl.setPrimedIfEnabled(control), cm);
             return (v0.equals(v1)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_aa:     // <A>_e
@@ -2484,7 +2484,7 @@ public abstract class Tool
               return BoolValue.ValFalse;
             }
             Value v0 = this.eval(args[1], c, s0, TLCState.Empty, control, cm);
-            Value v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
+            Value v1 = this.eval(args[1], c, s1, TLCState.Null, EvalControl.setPrimedIfEnabled(control), cm);
             return v0.equals(v1) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
         case OPCODE_sa:     // [A]_e
@@ -2498,7 +2498,7 @@ public abstract class Tool
               return BoolValue.ValTrue;
             }
             Value v0 = this.eval(args[1], c, s0, TLCState.Empty, control, cm);
-            Value v1 = this.eval(args[1], c, s1, null, EvalControl.setPrimedIfEnabled(control), cm);
+            Value v1 = this.eval(args[1], c, s1, TLCState.Null, EvalControl.setPrimedIfEnabled(control), cm);
             return (v0.equals(v1)) ? BoolValue.ValTrue : BoolValue.ValFalse;
           }
         case OPCODE_cdot:
@@ -2742,7 +2742,7 @@ public abstract class Tool
 	// We are now in ENABLED and primed state. Second TLCState parameter being null
 	// effectively disables LazyValue in evalAppl (same effect as
 	// EvalControl.setPrimed(EvalControl.Enabled)).
-    Value v2 = this.eval(pred, c, s1, null, EvalControl.Primed, cm);
+    Value v2 = this.eval(pred, c, s1, TLCState.Null, EvalControl.Primed, cm);
 
     if (v1.equals(v2)) return null;
     TLCState res = this.enabled(acts1, s0, s1, cm);

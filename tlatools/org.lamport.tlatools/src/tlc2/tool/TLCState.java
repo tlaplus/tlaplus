@@ -34,6 +34,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   private int level = INIT_LEVEL;
   
   // Set by subclasses. Cannot set until we know what the variables are.
+  public static final TLCState Null = null;
   public static TLCState Empty = null;
 
   public static boolean isEmpty(final TLCState state) {
