@@ -84,8 +84,18 @@ public final class SpecWriterUtilities {
 	public static String getValidIdentifier(final String scheme) {
 		return String.format("%s_%s%s", scheme, System.currentTimeMillis(), 1000 * COUNTER.incrementAndGet());
 	}
+	
+	/**
+     * Creates a new valid unqiue identifier without timestamp from given scheme. 
+     * This was created to not mess with {@link getValidIdentifier} which is used by other classes. 
+     * @param scheme a naming scheme, one of the {@link TLAConstants.Schemes} constants
+     * @return a valid identifier
+     */
+	public static String getValidIdentifierNoTimestamp(final String scheme) {
+		return String.format("_%s", scheme);
+	}
 
-    /**
+	/**
      * Converts formula list to a string representation
      * @param formulaList list of assignments
 	 * @param labelingScheme one of the {@link TLAConstants.Schemes} constants
