@@ -764,6 +764,8 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 			// https://github.com/lemmy/tlaplus_specs/blob/master/AsyncGameOfLifeAnimBlinker.mp4).
             addInvariant(finalState);
         }
+
+		tlaBuffer.append(CLOSING_SEP).append(TLAConstants.CR);
         
 		// Do not require to pass -deadlock on the command-line (properties assert that
 		// TLC re-finds the error-trace).
@@ -821,13 +823,18 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	
 	    tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.PROPERTY).append(" definition");
 	    tlaBuffer.append(TLAConstants.CR).append(id).append(TLAConstants.DEFINES_CR);
-	    tlaBuffer.append(TLAConstants.TLA_NOT).append(TLAConstants.L_PAREN).append(TLAConstants.L_PAREN);
-	    tlaBuffer.append(TLAConstants.TLA_INF_OFTEN).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
-	    tlaBuffer.append(getStateConjunction(finalState)).append(TLAConstants.CR).append(TLAConstants.R_PAREN);
-	    tlaBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.TLA_AND).append(TLAConstants.L_PAREN);
-	    tlaBuffer.append(TLAConstants.TLA_INF_OFTEN).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
-	    tlaBuffer.append(getStateConjunction(backToState)).append(TLAConstants.CR).append(TLAConstants.R_PAREN);
-	    tlaBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.R_PAREN).append(CLOSING_SEP).append(TLAConstants.CR);
+
+		StringBuilder localBuffer = new StringBuilder();
+	    localBuffer.append(TLAConstants.TLA_NOT).append(TLAConstants.L_PAREN).append(TLAConstants.L_PAREN);
+	    localBuffer.append(TLAConstants.TLA_INF_OFTEN).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
+	    localBuffer.append(getStateConjunction(finalState)).append(TLAConstants.CR).append(TLAConstants.R_PAREN);
+	    localBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.TLA_AND).append(TLAConstants.L_PAREN);
+	    localBuffer.append(TLAConstants.TLA_INF_OFTEN).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
+	    localBuffer.append(getStateConjunction(backToState)).append(TLAConstants.CR).append(TLAConstants.R_PAREN);
+	    localBuffer.append(TLAConstants.R_PAREN).append(TLAConstants.R_PAREN);
+
+		// Writes local buffer back to tla buffer with some indentation.
+		tlaBuffer.append(identString(localBuffer.toString(), 1));
 	}
 
 	/**
@@ -1064,5 +1071,13 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 
 	public String getComment() {
 		return tlaBuffer.toString().replaceFirst("^", "\\\\*").replaceAll("\n", "\n\\\\*");
+	}
+
+	/**
+	 * Indent n times a entire multiline string.
+	 */
+	private String identString(String s, int n) {
+		final String idnt = new String(new char[n]).replace("\0", TLAConstants.INDENT);
+		return idnt + String.join(TLAConstants.CR + idnt, s.split(TLAConstants.CR));
 	}
 }
