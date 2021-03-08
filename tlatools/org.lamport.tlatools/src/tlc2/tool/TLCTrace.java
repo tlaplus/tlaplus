@@ -345,7 +345,7 @@ public class TLCTrace {
 		printTrace(s1, s2, getTrace(s1.uid, false));
 	}
 	
-	protected synchronized final void printTrace(final TLCState s1, final TLCState s2, final TLCStateInfo[] prefix)
+	protected final void printTrace(final TLCState s1, final TLCState s2, final TLCStateInfo[] prefix)
 			throws IOException, WorkerException {
 		if (s1.isInitial()) {
 			// Do not recreate the potentially expensive error trace - e.g. when the set of
