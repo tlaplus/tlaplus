@@ -475,7 +475,17 @@ public class SimulationWorker extends IdThread {
 		final TLCStateInfo[] trace = new TLCStateInfo[stateTrace.size()];
 		for (int i = 0; i < stateTrace.size(); i++) {
 			final TLCState s = stateTrace.elementAt(i);
-			trace[i] = new TLCStateInfo(s, s.getAction());
+			trace[i] = s.isInitial() ? new TLCStateInfo(s) : new TLCStateInfo(s, s.getAction());
+		}
+		return trace;
+	}
+	
+	public final TLCStateInfo[] getTraceInfo(final int level) {
+		assert 0 < level && level <= stateTrace.size();
+		final TLCStateInfo[] trace = new TLCStateInfo[level];
+		for (int i = 0; i < trace.length; i++) {
+			final TLCState s = stateTrace.elementAt(i);
+			trace[i] = s.isInitial() ? new TLCStateInfo(s) : new TLCStateInfo(s, s.getAction());
 		}
 		return trace;
 	}
