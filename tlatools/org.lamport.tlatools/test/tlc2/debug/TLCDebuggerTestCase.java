@@ -69,8 +69,7 @@ import org.eclipse.lsp4j.jsonrpc.RemoteEndpoint;
 import org.junit.Before;
 
 import tla2sany.semantic.OpDeclNode;
-import tlc2.TLCGlobals;
-import tlc2.tool.impl.Tool;
+import tlc2.tool.TLCState;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.util.Context;
 import tlc2.value.impl.LazyValue;
@@ -137,10 +136,12 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 	}
 
 	protected OpDeclNode[] getVars() {
-		// The order of vars is expected to be deterministic across tests (local,
-		// because TLCState.Empty is null during ctor-time).
-		final Tool tool = (Tool) TLCGlobals.mainChecker.tool;
-		return tool.getSpecProcessor().getVariablesNodes();
+		// The order of vars is expected to be deterministic across tests!,
+		return TLCState.Empty.getVars();
+		// If this ever causes problems because Empty is still null during startup, an
+		// alternative is:
+		//		final Tool tool = (Tool) TLCGlobals.mainChecker.tool;
+		//		return tool.getSpecProcessor().getVariablesNodes();
 	}
 	
 	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line) {
