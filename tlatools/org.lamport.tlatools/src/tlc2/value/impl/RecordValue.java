@@ -111,6 +111,50 @@ public class RecordValue extends Value implements Applicable {
 		this.isNorm = false;
   }
 
+  public RecordValue(final TLCState state, String defVal) {
+	  this(state);
+		// if state.lookup in this returned null, replace null with defVal.
+		for (int i = 0; i < this.values.length; i++) {
+			if (this.values[i] == null) {
+				this.values[i] = new StringValue(defVal);
+			}
+		}
+  }
+
+  	/**
+	 * Create RecordValue out of pair of states (s, t) such that the variable names
+	 * of s become record keys as is and the variables of t become record keys with
+	 * a ' appended.
+	 */
+  public RecordValue(final TLCState state, final TLCState successor, final String defVal) {
+	  assert state.getVars().length == successor.getVars().length;
+	  
+		final OpDeclNode[] vars = state.getVars();
+		
+		this.names = new UniqueString[vars.length * 2];
+		this.values = new Value[vars.length * 2];
+
+		for (int i = 0; i < vars.length; i++) {
+			final int j = i * 2;
+			final UniqueString var = vars[i].getName();
+
+			this.names[j] = UniqueString.of(var + " ");
+			this.names[j+1] = UniqueString.of(var + "'");
+
+			this.values[j] = (Value) state.lookup(var);
+			if (this.values[j] == null) {
+				this.values[j] = new StringValue(defVal);
+			}
+			
+			this.values[j+1] = (Value) successor.lookup(var);
+			if (this.values[j+1] == null) {
+				this.values[j+1] = new StringValue(defVal);
+			}
+		}
+
+		this.isNorm = false;
+  }
+
   @Override
   public final byte getKind() { return RECORDVALUE; }
 
