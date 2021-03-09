@@ -82,7 +82,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 				} else {
 					Variable v = new Variable();
 					v.setName(var.getName() + "'");
-					v.setValue("null");
+					v.setValue(NOT_EVALUATED);
 					return v;
 				}
 			}

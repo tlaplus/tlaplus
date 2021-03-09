@@ -184,7 +184,7 @@ public class TLCStackFrame extends StackFrame {
 			// TODO Somehow attach the variable's location too? getHumanReadableImage
 			// doesn't correctly create whitespaces, which might be confusing. However, the
 			// Toolbox's hover help also shows getHumanReadableImage, which is why fixing it
-			// would be desireable.
+			// would be desirable.
 			vars.add(variable);
 		}
 		if (parent != null) {

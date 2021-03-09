@@ -369,7 +369,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		// inbox' (not yet evaluated/"assigned")
 		var = debugger.evaluate(RM, "inbox", 80, 18, 80, 23);
-		assertEquals("null", var.getResult());
+		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
 		
 		// lhs/rhs refinement mapping
 		debugger.replaceAllBreakpointsWith(RM, 179);

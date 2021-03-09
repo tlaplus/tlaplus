@@ -65,7 +65,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		final TLCStackFrame f = (TLCStackFrame) stackFrames[0];
 		final Variable[] variables = f.getVariables(f.getConstantsId());
 		assertEquals(2, variables.length);
-		assertEquals("EWD840", variables[0].getName());
+		assertEquals(RM, variables[0].getName());
 		Variable[] nested = f.getVariables(variables[0].getVariablesReference());
 		assertEquals(3, nested.length);
 		assertEquals("Color", nested[0].getName());
@@ -75,7 +75,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("const_143073460396411000", nested[2].getName());
 		assertEquals("2", nested[2].getValue());
 		
-		assertEquals("MC02", variables[1].getName());
+		assertEquals(MDL, variables[1].getName());
 		nested = f.getVariables(variables[1].getVariablesReference());
 		assertEquals(1, nested.length);
 		assertEquals("const_143073460396411000", nested[0].getName());

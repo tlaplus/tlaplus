@@ -51,6 +51,9 @@ import util.UniqueString;
 
 public class TLCStateStackFrame extends TLCStackFrame {
 	
+	// A placeholder for the value of a variable that has not yet been evaluated.
+	public static final String NOT_EVALUATED = "null";
+	
 	public static final String SCOPE = "State";
 
 	protected transient final TLCState state;
@@ -93,7 +96,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 				} else {
 					Variable v = new Variable();
 					v.setName(var.getName().toString());
-					v.setValue("null");
+					v.setValue(NOT_EVALUATED);
 					return v;
 				}
 			}
@@ -134,7 +137,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			final DebugTLCVariable variable;
 			if (value == null) {
 				variable = new DebugTLCVariable(key.toString() + prime);
-				variable.setValue("null");
+				variable.setValue(NOT_EVALUATED);
 			} else {
 				variable = (DebugTLCVariable) value
 						.toTLCVariable(new DebugTLCVariable(key.toString() + prime), rnd);
