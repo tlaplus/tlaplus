@@ -86,6 +86,7 @@ public class TLAMultiPageEditorActionBarContributor extends MultiPageEditorActio
         }
     }
 
+    @Override
     public void setActivePage(IEditorPart activeEditor)
     {
         if (this.activeEditor == activeEditor)
@@ -102,6 +103,20 @@ public class TLAMultiPageEditorActionBarContributor extends MultiPageEditorActio
             fContentAssistProposal.setAction(editor.getAction("ContentAssistProposal")); //$NON-NLS-1$
             fContentAssistTip.setAction(editor.getAction("ContentAssistTip")); //$NON-NLS-1$
 
+			// Make the current editor's undo/redo actions the actions that are executed
+			// when a user clicks Edit > Undo or Redo in the menu bar.  Without this, the
+            // undo (or redo) of the previous editor remains active, which means a user
+            // click undoes a change in the non-active editor.  To reproduce the old,
+            // broken behavior, a) comment the three lines below, b) open two editors
+            // in the Toolbox, c) make a change in the active editor (let's call it A),
+            // d) switch to the other editor B, e) click menu Edit > Undo, f) see how
+            // the change in A gets undone.
+            // Note that some recent change in Eclipse has caused this bug to surface:
+            // https://bugs.eclipse.org/571513
+            final IActionBars actionBars = getActionBars();
+			actionBars.setGlobalActionHandler("undo", editor.getAction("undo"));
+			actionBars.setGlobalActionHandler("redo", editor.getAction("redo"));
+			
             // the following code registers the eclipse folding actions globally
             // so that keystrokes can be used for them
             if (fFoldingExpand == null)
