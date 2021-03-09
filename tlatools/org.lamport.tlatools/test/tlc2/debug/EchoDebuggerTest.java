@@ -73,7 +73,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		Variable[] nested = f.getVariables(constants[0].getVariablesReference());
 		assertEquals(4, nested.length);
 		assertEquals("I1", nested[0].getName());
-		assertEquals("\"a\"", nested[0].getValue());
+		assertEquals("a", nested[0].getValue());
 		assertEquals("N1", nested[1].getName());
 		assertEquals("{\"a\", \"b\", \"c\"}", nested[1].getValue());
 		assertEquals("ProcSet", nested[2].getName());
@@ -85,7 +85,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		nested = f.getVariables(constants[1].getVariablesReference());
 		assertEquals(4, nested.length);
 		assertEquals("I1", nested[0].getName());
-		assertEquals("\"a\"", nested[0].getValue());
+		assertEquals("a", nested[0].getValue());
 		assertEquals("N1", nested[1].getName());
 		assertEquals("{\"a\", \"b\", \"c\"}", nested[1].getValue());
 		assertEquals("R1", nested[2].getName());

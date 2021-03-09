@@ -8,6 +8,7 @@ package tlc2.value.impl;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Random;
 
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
@@ -267,6 +268,14 @@ public class StringValue extends Value {
     }
    }
 
+  	@Override
+	public TLCVariable toTLCVariable(final TLCVariable variable, Random rnd) {
+		final TLCVariable stringVar = super.toTLCVariable(variable, rnd);
+		// Replace the quoted string from super.toTLCVariable(..) with an unquoted one.
+		// In the variable view of the debugger, we don't want quotes.
+		stringVar.setValue(toUnquotedString());
+		return stringVar;
+	}
 
   /* The string representation of the value. */
   @Override
