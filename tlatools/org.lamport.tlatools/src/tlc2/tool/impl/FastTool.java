@@ -59,6 +59,10 @@ public final class FastTool extends Tool {
 		super(specDir, specFile, configFile, fts, mode);
 	}
 
+	public FastTool(Tool tool) {
+		super(tool);
+	}
+
 	// The methods below are supposed to be inlined during execution for performance
 	// reasons, collapsing this class effectively into Tool. Later and in case of a
 	// violation, the FastTool instance will be exchanged for the CallStackTool

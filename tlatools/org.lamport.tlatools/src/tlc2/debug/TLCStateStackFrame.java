@@ -41,6 +41,7 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -67,8 +68,9 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			RuntimeException e) {
 		super(parent, node, ctxt, tool, e);
 		this.state = state.deepCopy();
-
-		// Tempting to use state.fingerprint/hashCode, but would normalize all values as
+		assert this.state instanceof TLCStateMutExt;
+		
+		// Tempting to use state.fingerprint/hashCode, but would normalize all values as(
 		// a side effect.
 		this.stateId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}

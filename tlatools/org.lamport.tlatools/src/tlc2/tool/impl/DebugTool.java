@@ -41,8 +41,10 @@ import tlc2.tool.EvalException;
 import tlc2.tool.IActionItemList;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
+import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.value.IValue;
@@ -57,19 +59,44 @@ public class DebugTool extends Tool {
 			Arrays.asList(ASTConstants.NumeralKind, ASTConstants.DecimalKind, ASTConstants.StringKind));
 	
 	private final IDebugTarget target;
+	
+	/**
+	 * The debugger doesn't handle the evaluation of all expressions. For example,
+	 * it ignores the evaluation of expression related to liveness. Instead of
+	 * inferring what calls correspond to liveness expressions, the liveness-related
+	 * code gets this FastTool.
+	 */
+	private final FastTool fastTool;
 
 	private EvalMode mode = EvalMode.Const;
 	
+	/**
+	 * Contrary to EvalControl, EvalMode does *not* determine the control path in
+	 * Tool. Its purpose is to infer if the debugger should create a TLCStackFrame,
+	 * TLCStateStackFrame, or a TLCActionStackFrame.
+	 * <p>
+	 * We considered to extend EvalControl and use e.g. its MSBs to store the
+	 * current scope such as constant-, state-, or action-level expressions.
+	 * However, Java module overrides always reset control to its default value
+	 * (EvalControl.Clear).
+	 */
 	public enum EvalMode {
 		Const, State, Action, Debugger;
 	}
 	
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, IDebugTarget target) {
-		this(mainFile, configFile, resolver, Mode.MC, target);
+		this(mainFile, configFile, resolver, Mode.MC_DEBUG, target);
 	}
 	
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, IDebugTarget target) {
 		super(mainFile, configFile, resolver, mode);
+		
+		// This and FastTool share state.  Do not evaluate things concurrently.
+		this.fastTool = new FastTool(this);
+		// Evaluation related to fingerprinting should not/cannot use DebugTool. There
+		// is nothing that a user could debug except, perhaps, for EvaluationExceptions.
+		TLCStateMutExt.setTool(this.fastTool);
+		
 		this.target = target.setTool(this);
 	}
 
@@ -99,13 +126,26 @@ public class DebugTool extends Tool {
 		return this.evalImpl(expr, c, s0, TLCState.Empty, EvalControl.Clear, cm);
 	}
 
+	/**
+	 * s0 might be a fully or partially evaluated state including TLCState.Empty.
+	 * s1 might be a fully or partially evaluated state including TLCState.Empty, or null.
+	 * control can be anything such as EvalControl.Init
+	 */
 	@Override
 	public final Value eval(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, final CostModel cm) {
 		if (mode == EvalMode.Debugger) {
-			return evalImpl(expr, c, s0, s1, control, cm);
+			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
 		}
-		if (s1 == null) {
+		if (s1 == null || EvalControl.isPrimed(control) || EvalControl.isEnabled(control)) {
+			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (mode == EvalMode.Action && s1.getAction() == null) {
+			// We are in mode action but s1 has no action. This is the case if the UNCHANGED
+			// of an action is evaluated. We could set mode to State or ignore these frames.
+			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (EvalControl.isInit(control)) {
 			mode = EvalMode.State;
 			return evalImpl(expr, c, s0, s1, control, cm);
 		}
@@ -122,13 +162,17 @@ public class DebugTool extends Tool {
 	@Override
 	protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
-		if (isInitialize() || isLiveness(control, s0, s1) || isLeaf(expr) || isBoring(expr, c)) {
+		if (isInitialize()) {
+			// Cannot delegate to fastTool that is null during initialization.
 			return super.evalImpl(expr, c, s0, s1, control, cm);
+		}
+		if (isLiveness(control, s0, s1) || isLeaf(expr) || isBoring(expr, c)) {
+			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
 		}
 		if (mode == EvalMode.Debugger) {
 			// Skip debugging when evaluation was triggered by the debugger itself. For
 			// example, when LazyValues get unlazied.
-			return super.evalImpl(expr, c, s0, s1, control, cm);
+			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
 		}
 		if (mode == EvalMode.Const) {
 			assert s0.noneAssigned() && s1.noneAssigned();
@@ -273,6 +317,9 @@ public class DebugTool extends Tool {
 	@Override
 	protected final TLCState getNextStates(final Action action, final SemanticNode pred, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
+		if (mode == EvalMode.Debugger) {
+			return fastTool.getNextStatesImpl(action, pred, acts, c, s0, s1, nss, cm);
+		}
 		mode = EvalMode.Action;
 		// In regular model-checking mode (no DebugTool), TLC sets the action and
 		// predecessor lazily, that is after the successor has been fully constructed
@@ -285,6 +332,9 @@ public class DebugTool extends Tool {
 	@Override
 	protected final TLCState getNextStatesAppl(final Action action, final OpApplNode pred, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
+		if (mode == EvalMode.Debugger) {
+			return fastTool.getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
+		}
 		mode = EvalMode.Action;
 		target.pushFrame(this, pred, c, s0, action, s1);
 		TLCState s = getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
@@ -301,12 +351,8 @@ public class DebugTool extends Tool {
 	@Override
 	protected void getInitStates(SemanticNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
 			CostModel cm) {
-		mode = EvalMode.State;
-		if (states instanceof WrapperStateFunctor) {
-			// Wrap the IStateFunctor so we can intercept Tool adding a new state to the
-			// functor. Without it, the debugger wouldn't show the fully assigned state and
-			// the variable that is assigned last will always be null.
-			super.getInitStates(init, acts, c, ps, states, cm);
+		if (mode == EvalMode.Debugger) {
+			fastTool.getInitStates(init, acts, c, ps, states, cm);
 		} else {
 			mode = EvalMode.State;
 			if (states instanceof WrapperStateFunctor) {
@@ -323,14 +369,21 @@ public class DebugTool extends Tool {
 	@Override
 	protected void getInitStatesAppl(OpApplNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
 			CostModel cm) {
-		mode = EvalMode.State;
-		target.pushFrame(this, init, c, ps);
-		super.getInitStatesAppl(init, acts, c, ps, states, cm);
-		target.popFrame(this, init, c, ps);
+		if (mode == EvalMode.Debugger) {
+			fastTool.getInitStatesAppl(init, acts, c, ps, states, cm);
+		} else {
+			mode = EvalMode.State;
+			target.pushFrame(this, init, c, ps);
+			super.getInitStatesAppl(init, acts, c, ps, states, cm);
+			target.popFrame(this, init, c, ps);
+		}
 	}
 
 	@Override
 	public boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
+		if (mode == EvalMode.Debugger) {
+			fastTool.getNextStates(functor, state);
+		}
 		mode = EvalMode.Action;
 		try {
 			if (functor instanceof WrapperNextStateFunctor) {
@@ -398,5 +451,10 @@ public class DebugTool extends Tool {
 		final EvalMode old = this.mode;
 		this.mode = EvalMode.Debugger;
 		return old;
+	}
+
+	@Override
+	public ITool getLiveness() {
+		return this.fastTool;
 	}
 }

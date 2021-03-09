@@ -132,7 +132,7 @@ public abstract class Tool
   private static final boolean PROBABLISTIC = Boolean.getBoolean(Tool.class.getName() + ".probabilistic");
 
   public enum Mode {
-	  Simulation, MC, Executor;
+	  Simulation, MC, MC_DEBUG, Executor;
   }
 	
   public static final Value[] EmptyArgs = new Value[0];
@@ -175,7 +175,7 @@ public abstract class Tool
       super(specDir, specFile, configFile, resolver, mode);
 
 		// set variables to the static filed in the state
-		if (mode == Mode.Simulation || mode == Mode.Executor) {
+		if (mode == Mode.Simulation || mode == Mode.Executor || mode == Mode.MC_DEBUG) {
 			TLCStateMutExt.setTool(this);
 		} else {
 			// Initialize state.

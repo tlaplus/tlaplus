@@ -255,7 +255,7 @@ public class ModelChecker extends AbstractChecker
                             MP.format(this.theStateQueue.size()) });
                 	
                     report("checking liveness");
-                    result = liveCheck.finalCheck(tool);
+                    result = liveCheck.finalCheck(tool.getLiveness());
                     report("liveness check complete");
                     if (result != EC.NO_ERROR)
                     {
@@ -680,7 +680,7 @@ public class ModelChecker extends AbstractChecker
             if (this.checkLiveness && (runtimeRatio < TLCGlobals.livenessRatio || forceLiveCheck))
             {
 				final long preLivenessChecking = System.currentTimeMillis();
-				final int result = liveCheck.check(tool, forceLiveCheck);
+				final int result = liveCheck.check(tool.getLiveness(), forceLiveCheck);
                 if (result != EC.NO_ERROR)
                 {
                     return result;
@@ -1147,7 +1147,7 @@ public class ModelChecker extends AbstractChecker
 
 						// build behavior graph for liveness checking
 						if (checkLiveness) {
-							liveCheck.addInitState(tool, curState, fp);
+							liveCheck.addInitState(tool.getLiveness(), curState, fp);
 						}
 					}
 				}

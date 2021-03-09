@@ -261,4 +261,8 @@ public interface ITool extends TraceApp {
 	default <T> T eval(Supplier<T> supplier) {
 		return supplier.get();
 	}
+
+	default ITool getLiveness() {
+		return this;
+	}
 }

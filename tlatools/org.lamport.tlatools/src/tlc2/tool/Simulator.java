@@ -91,9 +91,9 @@ public class Simulator {
 		if (this.checkLiveness) {
 			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
 				final String tmpDir = System.getProperty("java.io.tmpdir");
-				liveCheck = new LiveCheck(this.tool, tmpDir, new DummyBucketStatistics());
+				liveCheck = new LiveCheck(this.tool.getLiveness(), tmpDir, new DummyBucketStatistics());
 			} else {
-				liveCheck = new LiveCheck1(this.tool);
+				liveCheck = new LiveCheck1(this.tool.getLiveness());
 			}
 		} else {
 			liveCheck = new NoOpLiveCheck(tool, metadir);

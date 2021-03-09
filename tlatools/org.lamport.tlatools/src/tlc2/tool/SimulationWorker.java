@@ -436,7 +436,7 @@ public class SimulationWorker extends IdThread {
 		checkForInterrupt();
 
 		// Check if the current trace satisfies liveness properties.
-		liveCheck.checkTrace(tool, stateTrace);
+		liveCheck.checkTrace(tool.getLiveness(), stateTrace);
 		
 		welfordM2AndMean.accumulateAndGet(stateTrace.size(), (acc, tl) -> {
 			// Welford's online algorithm (m2 and mean stuffed into high and low of the
