@@ -79,6 +79,7 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
 import tlc2.TLCGlobals;
+import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -458,8 +459,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
-			TLCState t) {
-		final TLCStackFrame frame = new TLCActionStackFrame(stack.peek(), expr, c, tool, s, t);
+			Action a, TLCState t) {
+		final TLCStackFrame frame = new TLCActionStackFrame(stack.peek(), expr, c, tool, s, a, t);
 		stack.push(frame);
 		haltExecution(frame, this.stack.size());
 		return this;
@@ -473,9 +474,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public synchronized IDebugTarget pushFrame(TLCState s, TLCState t) {
+	public synchronized IDebugTarget pushFrame(TLCState s, Action a, TLCState t) {
 		TLCStackFrame f = this.stack.peek();
-		return pushFrame(f.getTool(), f.getNode(), f.getContext(), s, t);
+		return pushFrame(f.getTool(), f.getNode(), f.getContext(), s, a, t);
 	}
 
 	@Override
@@ -563,8 +564,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
-			TLCState t, RuntimeException e) {
-		return pushExceptionFrame(new TLCActionStackFrame(stack.peek(), expr, c, tool, s, t, e), e);
+			Action a, TLCState t, RuntimeException e) {
+		return pushExceptionFrame(new TLCActionStackFrame(stack.peek(), expr, c, tool, s, a, t, e), e);
 	}
 
 	private IDebugTarget pushExceptionFrame(final TLCStackFrame frame, RuntimeException e) {

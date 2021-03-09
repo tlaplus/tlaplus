@@ -409,6 +409,12 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
 		return predecessor;
 	}
 
+	@Override
+	public TLCState unsetPredecessor() {
+		this.predecessor = null;
+		return this;
+	}
+
 	// *********//
 
 	@Override

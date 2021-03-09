@@ -26,6 +26,7 @@
 package tlc2.debug;
 
 import tla2sany.semantic.SemanticNode;
+import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -49,7 +50,7 @@ public interface IDebugTarget {
 
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState state);
 
-	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
+	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state);
 
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
 
@@ -60,7 +61,7 @@ public interface IDebugTarget {
 
 	IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState state, RuntimeException e);
 
-	IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state,
+	IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state,
 			RuntimeException e);
 
 	//------------------------ Wrapper --------------------------//
@@ -69,7 +70,7 @@ public interface IDebugTarget {
 	
 	IDebugTarget popFrame(TLCState state);
 
-	IDebugTarget pushFrame(TLCState predecessor, TLCState state);
+	IDebugTarget pushFrame(TLCState predecessor, Action a, TLCState state);
 	
 	IDebugTarget popFrame(TLCState predecessor, TLCState state);
 

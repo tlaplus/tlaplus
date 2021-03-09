@@ -32,6 +32,7 @@ import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
+import tlc2.tool.Action;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
@@ -45,12 +46,12 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	protected final TLCState succecessor;
 
 	public TLCActionStackFrame(TLCStackFrame parent, SemanticNode expr, Context c, Tool tool, TLCState predecessor,
-			TLCState ps) {
-		this(parent, expr, c, tool, predecessor, ps, null);
+			Action a, TLCState ps) {
+		this(parent, expr, c, tool, predecessor, a, ps, null);
 	}
 
 	public TLCActionStackFrame(TLCStackFrame parent, SemanticNode expr, Context c, Tool tool, TLCState predecessor,
-			TLCState ps, RuntimeException e) {
+			Action a, TLCState ps, RuntimeException e) {
 		super(parent, expr, c, tool, predecessor, e);
 		this.succecessor = ps.deepCopy();
 	}
