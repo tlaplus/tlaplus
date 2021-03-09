@@ -80,7 +80,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 	protected final Phaser phase = new Phaser();
 
 	public TLCDebuggerTestCase(String spec, String path, String[] extraArgs, final int exitStatus) {
-		super(spec, path, Stream.of(extraArgs, new String[] { "-debugger" }).flatMap(Stream::of).toArray(String[]::new),
+		super(spec, path, Stream.of(extraArgs, new String[] { "-debugger", "-noGenerateSpecTE" }).flatMap(Stream::of).toArray(String[]::new),
 				exitStatus);
 		// (i) This/current/control/test thread and (ii) executor thread that runs TLC
 		// and is launched in setUp below.
