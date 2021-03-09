@@ -1,4 +1,4 @@
----- MODULE MC02 ----
+---- MODULE MC02Sim ----
 EXTENDS EWD840, TLC, Sequences
 
 const_143073460396411000 == 
@@ -22,7 +22,7 @@ ActionConstraint ==
 
 -----------------------------------------------------------------------------
 
-Stop == TLCGet("distinct") < 38
+Stop == TLCGet("level") < 5
 
 Alias ==
  	[

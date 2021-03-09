@@ -93,7 +93,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		// outer-most frame of Next => xx evaluated, xx' not yet
 		debugger.stepIn();
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
-		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).succecessor.allAssigned());
+		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("TRUE", var.getResult());
@@ -107,7 +107,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		// ... =~xx
 		debugger.stepIn();
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
-		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).succecessor.allAssigned());
+		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("TRUE", var.getResult());
@@ -121,7 +121,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		// xx' =~xx
 		debugger.stepIn();
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
-		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).succecessor.allAssigned());
+		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("TRUE", var.getResult());
@@ -134,7 +134,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 
 		debugger.stepIn();
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
-		assertTrue(((TLCActionStackFrame) debugger.stack.peek()).succecessor.allAssigned());
+		assertTrue(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
 		assertEquals("BoolValue", var.getType());
 		assertEquals("TRUE", var.getResult());

@@ -196,4 +196,7 @@ THEOREM Spec => EWD998Spec
 Stop ==
     LET T == INSTANCE TLC IN T!TLCSet("exit", T!TLCGet("distinct") > 500)
 
+ActionConstraint ==
+	counter \in [Nodes -> Int]
+
 =============================================================================

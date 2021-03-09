@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.util.Context;
+import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 
 public class EchoDebuggerTest extends TLCDebuggerTestCase {
@@ -192,6 +193,12 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		// Invariants are shown as TLCStateFrames, not TLCActionFrames, which would make
 		// the debugger show a predecessor state.
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
+		
+		TLCStateStackFrame frame = (TLCStateStackFrame) stackFrames[0];
+		Variable[] trace = frame.getTrace();
+		assertEquals(1, trace.length);
+		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) trace[0]).getTLCValue());
+		assertEquals("1: <Initial predicate>", trace[trace.length - 1].getName());
 
 		// Debug type correctness property during n0 (next-state relation)
 		// (Run to n0, then run to TypeOK)
@@ -205,20 +212,18 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
-		TLCStateStackFrame frame = (TLCStateStackFrame) stackFrames[0];
+		frame = (TLCStateStackFrame) stackFrames[0];
 		assertEquals(2, frame.state.getLevel());
 
 		// Replace the previous breakpoint with the same one except for a hit condition
 		// corresponding to a trace length of four states.
 		debugger.unsetBreakpoints();
 		SetBreakpointsArguments sba = createBreakpointArgument(RM, 104);
-		sba.getBreakpoints()[0].setHitCondition("4");
+		sba.getBreakpoints()[0].setHitCondition("5");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
 		assertEquals(3, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
-		frame = (TLCStateStackFrame) stackFrames[0];
-		assertEquals(4, frame.state.getLevel());
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

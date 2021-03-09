@@ -38,14 +38,15 @@ import tlc2.output.EC;
 import tlc2.util.Context;
 import tlc2.value.impl.IntValue;
 
-public class EWD840DebuggerTest extends TLCDebuggerTestCase {
+public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 
 	// MC02 is the spec that extends EWD840 and assigns values to constants for TLC.
 	private static final String RM = "EWD840";
-	private static final String MDL = "MC02";
+	private static final String MDL = "MC02Sim";
 
-	public EWD840DebuggerTest() {
-		super(MDL, RM, EC.ExitStatus.VIOLATION_SAFETY);
+	public EWD840DebuggerSimTest() {
+		super(MDL, RM, new String[] { "-config", "MC02.cfg", "-simulate", "num=1", "-seed", "111123", "-fp", "1" },
+				EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
@@ -208,7 +209,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		debugger.replaceAllBreakpointsWith(MDL, 16);
 		stackFrames = debugger.continue_();
 		stackFrames = debugger.stepIn(13);
-		assertEquals(11, stackFrames.length);
+		assertEquals(3, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 16, 58, 16, 68, MDL, Context.Empty.cons(null, IntValue.ValZero));
 		Variable[] contextVariables = ((TLCStateStackFrame) stackFrames[0]).getVariables();
 		assertNotNull(contextVariables);
@@ -221,45 +222,24 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		// 8888888888888888888 Action Constraint 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(MDL, 19);
 		stackFrames = debugger.continue_();
-		assertEquals(9, stackFrames.length);
+		assertEquals(1, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 19, 21, MDL);
 		
 		// 8888888888888888888 Invariant Inv 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(RM, 94);
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(1, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
 		
 		// 8888888888888888888 ALIAS Alias 8888888888888888888 //
 
-		// Error trace is six states long on which we evaluate the alias expression six
-		// times. By definition, an alias expression is evaluated on a pair of states.
-		// Let s1 be the initial state and let s2 to s6 be the successor states in the
-		// trace with s6 the state that violates the invariant.  The for loop below
-		// evaluates the alias expression for the pairs (s1, s2), (s2, s3), (s3, s4),
-		// (s4, s5), (s5, s6).  For s6, the alias expression is then evaluated on the
-		// pair (s6, s6).  This is done after the for loop.
 		debugger.replaceAllBreakpointsWith(MDL, 33);
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 6; i++) {
 			stackFrames = debugger.continue_();
-			assertEquals(7, stackFrames.length);
+			assertEquals(2, stackFrames.length);
 			assertTLCActionFrame(stackFrames[0], 33, 28, 33, 57, MDL);
 			assertTLCActionFrame(stackFrames[1], 28, 9, 34, 9, MDL);
-			assertTLCActionFrame(stackFrames[2], 53, 6, 53, 38, RM, context);
-			assertTLCActionFrame(stackFrames[3], 53, 6, 53, 38, RM, context, vars[0], vars[2], vars[3]);
-			assertTLCActionFrame(stackFrames[4], 52, 6, 52, 43, RM, context, vars);
-			assertTLCActionFrame(stackFrames[5], 51, 6, 51, 14, RM, context, vars);
-			assertTLCActionFrame(stackFrames[6], 51, 3, 53, 38, RM, context, vars);
 		}
-		stackFrames = debugger.continue_();
-		assertEquals(7, stackFrames.length);
-		assertTLCActionFrame(stackFrames[0], 33, 28, 33, 57, MDL);
-		assertTLCActionFrame(stackFrames[1], 28, 9, 34, 9, MDL);
-		assertTLCActionFrame(stackFrames[2], 53, 6, 53, 38, RM, context);
-		assertTLCActionFrame(stackFrames[3], 53, 6, 53, 38, RM, context, vars[0], vars[2], vars[3]);
-		assertTLCActionFrame(stackFrames[4], 52, 6, 52, 43, RM, context, vars);
-		assertTLCActionFrame(stackFrames[5], 51, 6, 51, 14, RM, context, vars);
-		assertTLCActionFrame(stackFrames[6], 51, 3, 53, 38, RM, context, vars);
 
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

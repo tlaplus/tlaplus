@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.eclipse.lsp4j.debug.EvaluateResponse;
+import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
@@ -150,7 +151,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		final Set<Integer> lines = IntStream.of(11, 13, 14, 15, 24, 27, 28, 29, 30, 31, 36, 37, 39, 40, 41, 45, 47, 48,
 				49, 50, 51, 53, 57, 58, 59, 60, 61, 62, 64, 66, 67, 73, 75, 77, 80, 83, 84, 86, 88, 90, 91, 94, 95, 96,
 				98, 103, 105, 113, 114, 123, 124, 125, 126, 127, 128, 133, 140, 141, 144, 150, 153, 154, 155, 156, 158,
-				160, 162, 168).boxed().collect(Collectors.toSet());
+				160, 162, 168, 171).boxed().collect(Collectors.toSet());
 		lines.forEach(i -> {
 			assertTrue(String.format("line %s", i),
 					debugger.replaceAllBreakpointsWithUnchecked(FOLDER, i)[0].isVerified());
@@ -170,6 +171,10 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// *********************************************************** //
 		
 		final OpDeclNode[] vars = getVars();
+
+		debugger.replaceAllBreakpointsWith(RM, 49);
+		stackFrames = debugger.continue_();
+		assertTLCStateFrame(stackFrames[0], 49, 49, RM, vars[1]);
 		
 		// Debug an operator that is evaluated as part of the refinement mapping and know to
 		// consist of a bunch of LazyValues.  LazyValues are tricky because the debugger
@@ -387,6 +392,31 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// we want to test, which is identical variables in high- and low-level spec.
 		var = debugger.evaluate(RM, "active", 166, 33, 166, 40);
 		assertEquals("line 166, col 33 to line 166, col 40 of module EWD998Chan", var.getResult());
+
+
+		debugger.unsetBreakpoints();
+		SetBreakpointsArguments sba = createBreakpointArgument(RM, 107);
+		sba.getBreakpoints()[0].setHitCondition("2");
+		debugger.setBreakpoints(sba);
+		
+		// before the UNCHANGED is evaluated
+		stackFrames = debugger.continue_();
+		assertEquals(6, stackFrames.length);
+		assertTLCActionFrame(stackFrames[0], 107, 6, 107, 32, RM, (Context) null, vars[0], vars[1]);
+
+		// evaluate the UNCHANGED
+		stackFrames = debugger.stepIn();
+		assertEquals(7, stackFrames.length);
+		assertTLCActionFrame(stackFrames[0], 107, 6, 107, 32, RM, (Context) null);
+
+		// Run to the state-constraint and a hit condition.
+		debugger.unsetBreakpoints();
+		sba = createBreakpointArgument(RM, 148);
+		sba.getBreakpoints()[0].setHitCondition("3");
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(8, stackFrames.length);
+		assertTLCStateFrame(stackFrames[0], 148, 3, 153, 45, RM, Context.Empty);
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

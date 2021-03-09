@@ -36,7 +36,9 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.debug.Breakpoint;
@@ -73,6 +76,9 @@ import tlc2.tool.TLCState;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.util.Context;
 import tlc2.value.impl.LazyValue;
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.StringValue;
+import tlc2.value.impl.Value;
 
 public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implements IDebugProtocolClient {
 
@@ -226,15 +232,39 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		assertTrue(Arrays.asList(f.getScopes()).stream().filter(s -> TLCActionStackFrame.SCOPE.equals(s.getName()))
 				.findAny().isPresent());
 
-		assertNotNull(f.state);
-		assertTrue(f.state.allAssigned());
+		assertNotNull(f.getS());
+		assertTrue(f.getS().allAssigned());
 
 		if (expectedContext != null && expectedContext.isEmpty()) {
 			assertTrue(f.nestedVariables.isEmpty());
 		}
 
-		assertNotNull(f.succecessor);
-		assertEquals(new HashSet<>(Arrays.asList(unassigned)), f.succecessor.getUnassigned());
+		assertNotNull(f.state);
+		assertEquals(new HashSet<>(Arrays.asList(unassigned)), f.state.getUnassigned());
+		
+		// Assert successor has an action set. This cannot be asserted for f.state
+		// because f.state might have been read from its persisted state
+		// (DiskStateQueue) that doesn't include f.state's action.
+		assertNotNull(f.state.getAction());
+
+		// Assert successor has a predecessor.
+		assertNotNull(f.state.getPredecessor());
+
+		assertStateVars(f, f.getS(), f.state);
+
+		// Assert successor has a trace leading to an initial state.
+		assertTrace(f, f.state);
+		
+		// Assert level of state and successor.
+		if (!f.isStuttering()) {
+			assertEquals(f.getS().getLevel() + 1, f.state.getLevel());
+		} else {
+			// TLA+ allows stuttering to occur.  By definition, stuttering steps do *not* increase the level,
+			// which is why tasf.successor has the same level of its predecessor.  If stuttering would be
+			// taken into account by TLCGet("level"), each state s1 to s6 above could have any level except
+			// level 1.  s1 would be the only state whose level would be 1 to inf. 
+			assertEquals(f.getS().getLevel(), f.state.getLevel());
+		}
 	}
 
 	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
@@ -308,6 +338,86 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		assertNotNull(f.state);
 
 		assertEquals(new HashSet<>(Arrays.asList(unassigned)), f.state.getUnassigned());
+		
+		assertStateVars(f, f.state);
+		assertTrace(f, f.state);
+	}
+
+	private static void assertTrace(final TLCStateStackFrame frame, final TLCState st) {
+		final Map<Integer, DebugTLCVariable> old = new HashMap<>(frame.nestedVariables);
+		try {
+			final List<DebugTLCVariable> trace = Arrays.asList(frame.getTrace()).stream()
+					.map(v -> (DebugTLCVariable) v).collect(Collectors.toList());
+			
+			// Assert that the trace is never empty.
+			assertTrue(trace.size() > 0);
+			
+			// Assert that the 0st (top/last/final) state is equal to st.
+			if (st.allAssigned()) {
+				assertEquals(new RecordValue(st), trace.get(0).getTLCValue());
+			} else {
+				// State st isn't fully evaluated yet. Thus, some variables will be 'null'.
+				assertEquals(new RecordValue(st, TLCStateStackFrame.NOT_EVALUATED), trace.get(0).getTLCValue());
+			}
+			
+			// Assert that the last state is an initial state.
+			assertEquals("1: <Initial predicate>", trace.get(trace.size() - 1).getName());
+			
+			// Reverse the trace to traverse from initial to end in the following loops
+			Collections.reverse(trace);
+			
+			// Assert that the variables' numbers in trace are strictly monotonic.
+			for (int i = 0; i < trace.size(); i++) {
+				assertTrue(trace.get(i).getName().startsWith(Integer.toString(i + 1) + ":"));
+			}
+
+			// Assert TLCState#allAssigned for all but the last state.
+			for (int i = 0; i < trace.size() - 1; i++) {
+				final Value tlcValue = trace.get(i).getTLCValue();
+				assertTrue(tlcValue instanceof RecordValue);
+				final RecordValue rv = (RecordValue) tlcValue;
+				for (Value val : rv.values) {
+					assertTrue(!(val instanceof StringValue) || !TLCStateStackFrame.NOT_EVALUATED.equals(((StringValue) val).toString()));
+				}
+			}
+		} finally {
+			// TLCStateStackFrame#getTrace has the side-effect of adding variables to the
+			// nested ones.
+			frame.nestedVariables.clear();
+			frame.nestedVariables.putAll(old);
+		}
+	}
+	
+	private static void assertStateVars(TLCStateStackFrame frame, final TLCState st) {
+		final Map<Integer, DebugTLCVariable> old = new HashMap<>(frame.nestedVariables);
+		try {
+			final Variable[] svs = frame.getStateVariables();
+			assertEquals(1, svs.length);
+			assertTrue(svs[0] instanceof DebugTLCVariable);
+			assertEquals(st.allAssigned() ? new RecordValue(st) : new RecordValue(st, TLCStateStackFrame.NOT_EVALUATED),
+					((DebugTLCVariable) svs[0]).getTLCValue());
+		} finally {
+			// TLCStateStackFrame#getStateVariables has the side-effect of adding variables to the
+			// nested ones.
+			frame.nestedVariables.clear();
+			frame.nestedVariables.putAll(old);
+		}
+	}
+	
+	private static void assertStateVars(TLCActionStackFrame frame, final TLCState s, final TLCState t) {
+		final Map<Integer, DebugTLCVariable> old = new HashMap<>(frame.nestedVariables);
+		try {
+			final Variable[] svs = frame.getStateVariables();
+			assertEquals(1, svs.length);
+			assertTrue(svs[0] instanceof DebugTLCVariable);
+			assertEquals(t.allAssigned() ? new RecordValue(s, t, "Should not be used") : new RecordValue(s, t, TLCStateStackFrame.NOT_EVALUATED),
+					((DebugTLCVariable) svs[0]).getTLCValue());
+		} finally {
+			// TLCStateStackFrame#getStateVariables has the side-effect of adding variables to the
+			// nested ones.
+			frame.nestedVariables.clear();
+			frame.nestedVariables.putAll(old);
+		}
 	}
 
 	protected static void assertTLCFrame(final StackFrame stackFrame, final int beginLine, final int endLine,

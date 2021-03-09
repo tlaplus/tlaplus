@@ -26,7 +26,6 @@
 package tlc2.debug;
 
 import java.util.LinkedList;
-import java.util.List;
 
 import org.eclipse.lsp4j.debug.Variable;
 
@@ -39,11 +38,17 @@ import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
+import tlc2.value.impl.RecordValue;
 import util.Assert.TLCRuntimeException;
 
 public class TLCActionStackFrame extends TLCStateStackFrame {
 	
-	protected final TLCState succecessor;
+	public static final String SCOPE = "Action";
+
+	@Override
+	protected String getScope() {
+		return SCOPE;
+	}
 
 	public TLCActionStackFrame(TLCStackFrame parent, SemanticNode expr, Context c, Tool tool, TLCState predecessor,
 			Action a, TLCState ps) {
@@ -52,20 +57,33 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 
 	public TLCActionStackFrame(TLCStackFrame parent, SemanticNode expr, Context c, Tool tool, TLCState predecessor,
 			Action a, TLCState ps, RuntimeException e) {
-		super(parent, expr, c, tool, predecessor, e);
-		this.succecessor = ps.deepCopy();
+		super(parent, expr, c, tool, ps /* super calls ps.deepCopy() */, e);
+		assert predecessor != null;
+		assert predecessor.allAssigned();
+		assert a != null;
+		assert ps != null;
+		assert ps.getPredecessor() != null;
+		assert ps.getPredecessor().allAssigned();
+	}
+	
+	@Override
+	protected TLCState getS() {
+		return state.getPredecessor();
+	}
+	
+	@Override
+	protected TLCState getT() {
+		return state;
 	}
 
+	public boolean isStuttering() {
+		// Best we can do it to compare all variable values.
+		return getS().getVals().equals(getT().getVals());
+	}
+	
 	@Override
-	public Variable[] getVariables(int vr) {
-		if (vr == stateId) {
-			return tool.eval(() -> {
-				final List<Variable> vars = getStateVariables(succecessor, "'");
-				vars.addAll(getStateVariables(state, ""));
-				return toSortedArray(vars);
-			});
-		}
-		return super.getVariables(vr);
+	protected RecordValue toRecordValue() {
+		return new RecordValue(getS(), getT(), NOT_EVALUATED);
 	}
 
 	@Override
@@ -77,7 +95,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 			// OpApplNode that represents the prime.
 			final SymbolNode var = tool.getPrimedVar(path.getFirst(), ctxt, false);
 			if (var != null) {
-				final IValue value = succecessor.lookup(var.getName());
+				final IValue value = getT().lookup(var.getName());
 				if (value != null) {
 					return getVariable(value, var.getName() + "'");
 				} else {
@@ -100,7 +118,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	protected Object unlazy(final LazyValue lv, final Object fallback) {
 		return tool.eval(() -> {
 			try {
-				return lv.eval(tool, state, succecessor);
+				return lv.eval(tool, getS(), getT());
 			} catch (TLCRuntimeException | EvalException e) {
 				return fallback == null ? e : fallback;
 			}

@@ -167,4 +167,7 @@ Inv ==
 Liveness ==
   Termination ~> terminationDetected
 
+ActionConstraint ==
+	token \in Token \* Some non-constant expression that would otherwise optimized out.
+
 =============================================================================
