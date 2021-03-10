@@ -168,6 +168,17 @@ public class TLCStackFrame extends StackFrame {
 		this(parent, node, ctxt, tool, null);
 	}
 
+	protected Variable getStateAsVariable(final IValue value, String varName) {
+		final Variable variable = getVariable(value, UniqueString.of(varName));
+		// Because we convert the TLCState (getT) to a RecordValue to re-use the
+		// getVariable(..) implementation, the type (shown when hovering over the
+		// variable in the debugger's variable view) would be RecordValue. This would be
+		// bogus and is, thus, corrected to TLCState here.
+		//TODO: Is it useful to report the level, action, ... here?
+		variable.setType("State");
+		return variable;
+	}
+
 	protected Variable getVariable(final IValue value, String varName) {
 		return getVariable(value, UniqueString.of(varName));
 	}
@@ -373,14 +384,15 @@ public class TLCStackFrame extends StackFrame {
 		final Variable variable;
 		if (o instanceof Value) {
 			variable = getVariable((IValue) o, sn.getHumanReadableImage());
+			variable.setType(((Value) o).getTypeString());
 		} else {
 			variable = new Variable();
 			variable.setValue(
 					// Print the location for built-in symbols instead of "-- TLA Builtin ---"
 					o instanceof SymbolNode && ((SymbolNode) o).isBuiltIn() ? ((SymbolNode) o).getLocation().toString()
 							: o.toString());
+			variable.setType(o.getClass().getSimpleName());
 		}
-		variable.setType(o.getClass().getSimpleName());
 		return variable;
 	}
 

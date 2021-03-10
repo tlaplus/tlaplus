@@ -32,6 +32,7 @@ import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import tlc2.value.impl.TupleValue;
 
 public class EWD998TraceDebuggerTest extends TLCDebuggerTestCase {
 
@@ -49,7 +50,7 @@ public class EWD998TraceDebuggerTest extends TLCDebuggerTestCase {
 		debugger.continue_();
 		
 		EvaluateResponse var = debugger.evaluate(MDL, "_TETrace", 66, 22, 66, 29);
-		assertEquals("TupleValue", var.getType());
+		assertEquals(TupleValue.EmptyTuple.getTypeString(), var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals(
 				"<<[color |-> (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\" @@ 4 :> \"white\"), pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0 @@ 4 :> 0), active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> FALSE @@ 4 :> FALSE), counter |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0 @@ 4 :> 0), token |-> [color |-> \"black\", pos |-> 0, q |-> 0]], [color |-> (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\" @@ 4 :> \"white\"), pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0 @@ 4 :> 0), active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> FALSE @@ 4 :> FALSE), counter |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0 @@ 4 :> 0), token |-> [color |-> \"white\", pos |-> 4, q |-> 0]]>>",

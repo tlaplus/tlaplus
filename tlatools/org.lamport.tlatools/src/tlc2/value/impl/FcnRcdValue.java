@@ -974,7 +974,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 			Value value = values[i];
 			final TLCVariable nested = prototype.newInstance(dom.toString(), value, rnd);
 			nested.setValue(value.toString());
-			nested.setType(value.getClass().getSimpleName());
+			nested.setType(value.getTypeString());
 			nestedVars.add(nested);
 		}
 		return nestedVars;

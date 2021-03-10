@@ -216,7 +216,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		assertEquals(1, contextVariables.length);
 		Variable variable = contextVariables[0];
 		assertEquals("node", variable.getName());
-		assertEquals("IntValue", variable.getType());
+		assertEquals(IntValue.ValZero.getTypeString(), variable.getType());
 		assertEquals("0", variable.getValue());
 		
 		// 8888888888888888888 Action Constraint 8888888888888888888 //

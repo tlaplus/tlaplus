@@ -368,7 +368,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	public TLCVariable toTLCVariable(final TLCVariable variable, Random rnd) {
 		variable.setInstance(this);
 		// TODO: Use Value#getKindString instead?
-		variable.setType(getClass().getSimpleName());
+		variable.setType(getTypeString());
 		variable.setValue(toString());
 		if (this instanceof Enumerable || this instanceof FcnRcdValue || this instanceof RecordValue
 				|| this instanceof TupleValue) {
@@ -378,6 +378,10 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 			}
 		}
 		return variable;
+	}
+
+	public String getTypeString() {
+		return String.format("%s: %s", getClass().getSimpleName(), getKindString());
 	}
 
 	public List<TLCVariable> getTLCVariables(TLCVariable var, Random rnd) {

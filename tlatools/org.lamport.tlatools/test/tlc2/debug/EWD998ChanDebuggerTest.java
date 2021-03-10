@@ -49,10 +49,12 @@ import tla2sany.semantic.OpDeclNode;
 import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.output.EC;
 import tlc2.util.Context;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.SetOfRcdsValue;
 import tlc2.value.impl.TLCVariable;
+import tlc2.value.impl.TupleValue;
 
 public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 
@@ -89,7 +91,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(3, consts.length);
 		
 		assertEquals("Color", consts[0].getName());
-		assertEquals("SetEnumValue", consts[0].getType());
+		assertEquals(SetEnumValue.EmptySet.getTypeString(), consts[0].getType());
 		assertEquals("{\"white\", \"black\"}", consts[0].getValue());
 		assertEquals(2, ((SetEnumValue) ((TLCVariable) consts[0]).getTLCValue()).elems.size());
 		// Can be expanded to two atomic values "white" and "black"
@@ -100,13 +102,13 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("\"white\"", stackFrame.getVariables(consts[0].getVariablesReference())[1].getValue());
 		
 		assertEquals("Nodes", consts[1].getName());
-		assertEquals("SetEnumValue", consts[1].getType());
+		assertEquals(SetEnumValue.EmptySet.getTypeString(), consts[1].getType());
 		assertEquals("{0, 1, 2}", consts[1].getValue());
 		assertEquals(3, ((SetEnumValue) ((TLCVariable) consts[1]).getTLCValue()).elems.size());
 		
 		// This one tests if we correctly handle infinite domains, i.e. the Int.
 		assertEquals("Token", consts[2].getName());
-		assertEquals("SetOfRcdsValue", consts[2].getType());
+		assertEquals("SetOfRcdsValue: a set of the form [d1 : S1, ... , dN : SN]", consts[2].getType());
 		assertEquals("[color: {\"white\", \"black\"}, q: Int, pos: 0..2]", consts[2].getValue());
 		assertEquals(3, ((SetOfRcdsValue) ((TLCVariable) consts[2]).getTLCValue()).names.length);
 		
@@ -121,27 +123,27 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(6, consts.length);
 		
 		assertEquals("BasicMsg", consts[0].getName());
-		assertEquals("SetOfRcdsValue", consts[0].getType());
+		assertEquals("SetOfRcdsValue: a set of the form [d1 : S1, ... , dN : SN]", consts[0].getType());
 		assertEquals("{[type |-> \"pl\"]}", consts[0].getValue());
 		
 		assertEquals("Color", consts[1].getName());
-		assertEquals("SetEnumValue", consts[1].getType());
+		assertEquals(SetEnumValue.EmptySet.getTypeString(), consts[1].getType());
 		assertEquals("{\"white\", \"black\"}", consts[1].getValue());
 		
 		assertEquals("Message", consts[2].getName());
-		assertEquals("SetCupValue", consts[2].getType());
+		assertEquals("SetCupValue: a set of the form S \\cup T", consts[2].getType());
 		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int] \\cup {[type |-> \"pl\"]}", consts[2].getValue());
 		
 		assertEquals("N", consts[3].getName());
-		assertEquals("IntValue", consts[3].getType());
+		assertEquals(IntValue.ValZero.getTypeString(), consts[3].getType());
 		assertEquals("3", consts[3].getValue());
 		
 		assertEquals("Nodes", consts[4].getName());
-		assertEquals("SetEnumValue", consts[4].getType());
+		assertEquals(SetEnumValue.EmptySet.getTypeString(), consts[4].getType());
 		assertEquals("{0, 1, 2}", consts[4].getValue());
 		
 		assertEquals("TokenMsg", consts[5].getName());
-		assertEquals("SetOfRcdsValue", consts[5].getType());
+		assertEquals("SetOfRcdsValue: a set of the form [d1 : S1, ... , dN : SN]", consts[5].getType());
 		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int]", consts[5].getValue());
 		
 		
@@ -233,16 +235,16 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(1, stackVariables.size());
 		assertEquals("TRUE", stackVariables.get(0).getValue());
 		assertEquals("inbox[0][j].type=\"tok\"", stackVariables.get(0).getName());
-		assertEquals("BoolValue", stackVariables.get(0).getType());
+		assertEquals(BoolValue.ValFalse.getTypeString(), stackVariables.get(0).getType());
 
 		stackVariables = ((TLCStackFrame) stackFrames[3]).getStackVariables(new ArrayList<>());
 		assertEquals(2, stackVariables.size());
 		assertEquals("TRUE", stackVariables.get(1).getValue());
 		assertEquals("inbox[0][j].type=\"tok\"", stackVariables.get(1).getName());
-		assertEquals("BoolValue", stackVariables.get(1).getType());
+		assertEquals(BoolValue.ValFalse.getTypeString(), stackVariables.get(1).getType());
 		assertEquals("TRUE", stackVariables.get(0).getValue());
 		assertEquals("inbox[0][j].color=\"black\"", stackVariables.get(0).getName());
-		assertEquals("BoolValue", stackVariables.get(0).getType());
+		assertEquals(BoolValue.ValFalse.getTypeString(), stackVariables.get(0).getType());
 		
 		// PassToken sub-action
 		debugger.replaceAllBreakpointsWith(RM, 85);
@@ -251,16 +253,16 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(1, stackVariables.size());
 		assertEquals("TRUE", stackVariables.get(0).getValue());
 		assertEquals("~active[i]", stackVariables.get(0).getName());
-		assertEquals("BoolValue", stackVariables.get(0).getType());
+		assertEquals(BoolValue.ValFalse.getTypeString(), stackVariables.get(0).getType());
 
 		stackVariables = ((TLCStackFrame) stackFrames[3]).getStackVariables(new ArrayList<>());
 		assertEquals(2, stackVariables.size());
 		assertEquals("TRUE", stackVariables.get(1).getValue());
 		assertEquals("~active[i]", stackVariables.get(1).getName());
-		assertEquals("BoolValue", stackVariables.get(1).getType());
+		assertEquals(BoolValue.ValFalse.getTypeString(), stackVariables.get(1).getType());
 		assertEquals("TRUE", stackVariables.get(0).getValue());
 		assertEquals("inbox[i][j].type=\"tok\"", stackVariables.get(0).getName());
-		assertEquals("BoolValue", stackVariables.get(0).getType());
+		assertEquals(BoolValue.ValFalse.getTypeString(), stackVariables.get(0).getType());
 		
 		// 88888888888888888888888888888888888888888888888888888888888888 //
 		
@@ -278,10 +280,10 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.stepIn(3);
 		assertEquals(10, stackFrames.length);
 		Set<Variable> variables = new HashSet<>();
-		variables.add(createVariable("i","1","IntValue"));
-		variables.add(createVariable("j","1","IntValue"));
-		variables.add(createVariable("@","<<[type |-> \"pl\"]>>","TupleValue"));
-		variables.add(createVariable("s","<<[type |-> \"pl\"]>>","TupleValue"));
+		variables.add(createVariable("i","1",IntValue.ValZero.getTypeString()));
+		variables.add(createVariable("j","1",IntValue.ValZero.getTypeString()));
+		variables.add(createVariable("@","<<[type |-> \"pl\"]>>",TupleValue.EmptyTuple.getTypeString()));
+		variables.add(createVariable("s","<<[type |-> \"pl\"]>>",TupleValue.EmptyTuple.getTypeString()));
 		assertTLCActionFrame(stackFrames[0], 119, 44, 119, 57, RM, variables, vars[3]);
 
 		stackFrames = debugger.stepIn();
@@ -291,8 +293,8 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.stepIn(13);
 		assertEquals(9, stackFrames.length);
 		variables = new HashSet<>();
-		variables.add(createVariable("i","1","IntValue"));
-		variables.add(createVariable("j","1","IntValue"));
+		variables.add(createVariable("i","1",IntValue.ValZero.getTypeString()));
+		variables.add(createVariable("j","1",IntValue.ValZero.getTypeString()));
 		assertTLCActionFrame(stackFrames[0], 120, 6, 120, 19, RM, variables);
 		
 		// 8888888888888888888 Invariant TypeOK 8888888888888888888 //
@@ -313,31 +315,31 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		// inbox
 		EvaluateResponse var = debugger.evaluate(RM, "inbox", 118, 14, 118, 18);
-		assertEquals("FcnRcdValue", var.getType());
+		assertEquals("FcnRcdValue: a function  of the form (d1 :> e1 @@ ... @@ dN :> eN)", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<[type |-> \"pl\"]>> @@ 2 :> <<>>)", var.getResult());
 		var = debugger.evaluate(RM, "inbox", 119, 24, 119, 28);
-		assertEquals("FcnRcdValue", var.getType());
+		assertEquals("FcnRcdValue: a function  of the form (d1 :> e1 @@ ... @@ dN :> eN)", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<[type |-> \"pl\"]>> @@ 2 :> <<>>)", var.getResult());
 		
 		// inbox'
 		var = debugger.evaluate(RM, "inbox", 119, 14, 119, 19);
-		assertEquals("FcnRcdValue", var.getType());
+		assertEquals("FcnRcdValue: a function  of the form (d1 :> e1 @@ ... @@ dN :> eN)", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<[color |-> \"black\", type |-> \"tok\", q |-> 0]>> @@ 1 :> <<>> @@ 2 :> <<>>)", var.getResult());
 
 		// i
 		var = debugger.evaluate(RM, "i", 109, 9, 109, 9);
-		assertEquals("IntValue", var.getType());
+		assertEquals(IntValue.ValZero.getTypeString(), var.getType());
 		assertEquals(0, var.getVariablesReference());
 		assertEquals("1", var.getResult());
 		var = debugger.evaluate(RM, "i", 111, 35, 111, 35);
-		assertEquals("IntValue", var.getType());
+		assertEquals(IntValue.ValZero.getTypeString(), var.getType());
 		assertEquals(0, var.getVariablesReference());
 		assertEquals("1", var.getResult());
 		var = debugger.evaluate(RM, "i", 115, 34, 115, 34);
-		assertEquals("IntValue", var.getType());
+		assertEquals(IntValue.ValZero.getTypeString(), var.getType());
 		assertEquals(0, var.getVariablesReference());
 		assertEquals("1", var.getResult());
 		
@@ -346,10 +348,10 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("FormalParamNode", var.getType());
 		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
 		var = debugger.evaluate(RM, "j", 118, 23, 118, 23);
-		assertEquals("LazyValue", var.getType());
+		assertEquals("LazyValue: a value represented in lazy form", var.getType());
 		assertEquals("<LAZY line 118, col 23 to line 118, col 23 of module EWD998Chan>", var.getResult());
 		var = debugger.evaluate(RM, "j", 119, 56, 119, 56);
-		assertEquals("LazyValue", var.getType());
+		assertEquals("LazyValue: a value represented in lazy form", var.getType());
 		assertEquals("<LAZY line 119, col 56 to line 119, col 56 of module EWD998Chan>", var.getResult());
 
 		// PassToken
@@ -369,7 +371,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 
 		// inbox
 		var = debugger.evaluate(RM, "inbox", 80, 28, 80, 32);
-		assertEquals("FcnRcdValue", var.getType());
+		assertEquals("FcnRcdValue: a function  of the form (d1 :> e1 @@ ... @@ dN :> eN)", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> <<>> @@ 1 :> <<>> @@ 2 :> <<[color |-> \"white\", type |-> \"tok\", q |-> 0]>>)", var.getResult());
 		
@@ -382,7 +384,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		debugger.continue_();
 		// RHS shows the value of the active variable
 		var = debugger.evaluate(RM, "active", 166, 43, 166, 48);
-		assertEquals("FcnRcdValue", var.getType());
+		assertEquals("FcnRcdValue: a function  of the form (d1 :> e1 @@ ... @@ dN :> eN)", var.getType());
 		assertNotEquals(0, var.getVariablesReference());
 		assertEquals("(0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE)", var.getResult());
 

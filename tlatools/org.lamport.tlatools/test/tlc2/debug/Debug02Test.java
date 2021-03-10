@@ -36,6 +36,7 @@ import org.junit.Test;
 
 import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.output.EC;
+import tlc2.value.impl.BoolValue;
 
 public class Debug02Test extends TLCDebuggerTestCase {
 
@@ -80,11 +81,11 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertTrue(debugger.stack.peek() instanceof TLCStateStackFrame);
 		// xx in Init
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		// xx in Next
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		// xx' in Next
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 9);
@@ -96,10 +97,10 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
 		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
@@ -110,10 +111,10 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
 		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
@@ -124,10 +125,10 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
 		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
@@ -137,13 +138,13 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
 		assertTrue(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
-		assertEquals("BoolValue", var.getType());
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("FALSE", var.getResult());
 
 		// Assert that constants of a single module spec (a spec without instantiation

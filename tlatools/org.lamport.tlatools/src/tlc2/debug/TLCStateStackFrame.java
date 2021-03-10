@@ -71,6 +71,19 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
 			return sb.append("?");
 		}
+		
+		@Override
+		public String getKindString() {
+			// Let's not NPE if somebody ever calls getKindString.
+			return getTypeString();
+		}
+
+		@Override
+		public String getTypeString() {
+			// Don't show the meaningless string "DebuggerValue" but "Evaluation pending" if
+			// a user hovers over this value in the variables view.
+			return "Evaluation pending... (value has not be determined yet)";
+		}
 	}
 	
 	public static final DebuggerValue NOT_EVAL = new DebuggerValue();
@@ -127,12 +140,12 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						// No need to re-construct a trace if this.state is an initial state. Note that
 						// getTrace(s)/getTraceInfo(s) below would return a trace, but a check at the
 						// beginning seems easier.
-						return new Variable[] { getVariable(new RecordValue(t, NOT_EVAL), "1: <Initial predicate>") };
+						return new Variable[] { getStateAsVariable(new RecordValue(t, NOT_EVAL), "1: <Initial predicate>") };
 					}
 					
 					final Deque<Variable> trace = new ArrayDeque<>();
 					trace.add(
-							getVariable(new RecordValue(t, NOT_EVAL), t.getLevel() + ": " + t.getAction().getLocation()));
+							getStateAsVariable(new RecordValue(t, NOT_EVAL), t.getLevel() + ": " + t.getAction().getLocation()));
 
 					final TLCStateInfo[] prefix;
 					if (TLCGlobals.simulator != null) {
@@ -144,10 +157,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						TLCState s = t;
 						while ((s = s.getPredecessor()) != null) {
 							if (s.isInitial()) {
-								trace.add(getVariable(new RecordValue(s, NOT_EVAL), "1: <Initial predicate>"));
+								trace.add(getStateAsVariable(new RecordValue(s, NOT_EVAL), "1: <Initial predicate>"));
 								return trace.toArray(new Variable[trace.size()]);
 							}
-							trace.add(getVariable(new RecordValue(s, NOT_EVAL),
+							trace.add(getStateAsVariable(new RecordValue(s, NOT_EVAL),
 									s.getLevel() + ": " + s.getAction().getLocation()));
 							last = s;
 						}
@@ -165,7 +178,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 					// nodes, it almost reads like a regular trace.
 					for (int i = prefix.length - 1; i >= 0; i--) {
 						final TLCStateInfo ti = prefix[i];
-						trace.add(getVariable(new RecordValue(ti.state),
+						trace.add(getStateAsVariable(new RecordValue(ti.state),
 								// The name of the variable has to be unique for all states to show up in the
 								// variable view. Otherwise, the variable view will silently discard all but on
 								// of the variable with the same name. Thus, we prepend the state number, which
@@ -184,10 +197,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	protected Variable toVariable() {
-		return getVariable(toRecordValue(), getActionName(getT()));
+		return getStateAsVariable(toRecordValue(), getActionName(getT()));
 	}
 
-	protected String getActionName(final TLCState state) {
+	private String getActionName(final TLCState state) {
 		if (state.getAction() == null) {
 			return "<Initial predicate>";
 		}

@@ -811,7 +811,7 @@ public class RecordValue extends Value implements Applicable {
 				final Value v = values[i];
 				final TLCVariable nested = prototype.newInstance(uniqueString.toString(), v, rnd);
 				nested.setValue(v.toString());
-				nested.setType(v.getClass().getSimpleName());
+				nested.setType(v.getTypeString());
 				nestedVars.add(nested);
 			}
 			return nestedVars;
