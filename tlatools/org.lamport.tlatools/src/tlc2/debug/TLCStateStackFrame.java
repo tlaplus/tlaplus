@@ -41,6 +41,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
+import tlc2.tool.Action;
 import tlc2.tool.EvalException;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
@@ -187,7 +188,11 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	protected String getActionName(final TLCState state) {
-		return state.getAction() == null ? "<Initial predicate>" : state.getAction().getLocation();
+		if (state.getAction() == null) {
+			return "<Initial predicate>";
+		}
+		final Action a = state.getAction();
+		return a.getName() == null ? "Action" : a.getName().toString();
 	}
 	
 	protected RecordValue toRecordValue() {
