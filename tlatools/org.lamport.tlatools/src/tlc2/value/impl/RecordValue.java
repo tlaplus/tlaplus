@@ -111,12 +111,12 @@ public class RecordValue extends Value implements Applicable {
 		this.isNorm = false;
   }
 
-  public RecordValue(final TLCState state, String defVal) {
+  public RecordValue(final TLCState state, final Value defVal) {
 	  this(state);
 		// if state.lookup in this returned null, replace null with defVal.
 		for (int i = 0; i < this.values.length; i++) {
 			if (this.values[i] == null) {
-				this.values[i] = new StringValue(defVal);
+				this.values[i] = defVal;
 			}
 		}
   }
@@ -126,7 +126,7 @@ public class RecordValue extends Value implements Applicable {
 	 * of s become record keys as is and the variables of t become record keys with
 	 * a ' appended.
 	 */
-  public RecordValue(final TLCState state, final TLCState successor, final String defVal) {
+  public RecordValue(final TLCState state, final TLCState successor, final Value defVal) {
 	  assert state.getVars().length == successor.getVars().length;
 	  
 		final OpDeclNode[] vars = state.getVars();
@@ -143,12 +143,12 @@ public class RecordValue extends Value implements Applicable {
 
 			this.values[j] = (Value) state.lookup(var);
 			if (this.values[j] == null) {
-				this.values[j] = new StringValue(defVal);
+				this.values[j] = defVal;
 			}
 			
 			this.values[j+1] = (Value) successor.lookup(var);
 			if (this.values[j+1] == null) {
-				this.values[j+1] = new StringValue(defVal);
+				this.values[j+1] = defVal;
 			}
 		}
 

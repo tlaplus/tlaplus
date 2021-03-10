@@ -51,12 +51,28 @@ import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.StringValue;
 import util.Assert.TLCRuntimeException;
+import util.UniqueString;
 
 public class TLCStateStackFrame extends TLCStackFrame {
 	
-	// A placeholder for the value of a variable that has not yet been evaluated.
-	public static final String NOT_EVALUATED = "null";
+	@SuppressWarnings("serial")
+	public static class DebuggerValue extends StringValue {
+		// A placeholder for the value of a variable that has not yet been evaluated.
+		static final String NOT_EVALUATED = "?";
+
+		private DebuggerValue() {
+			super(UniqueString.of(DebuggerValue.NOT_EVALUATED));
+		}
+
+		@Override
+		public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
+			return sb.append("?");
+		}
+	}
+	
+	public static final DebuggerValue NOT_EVAL = new DebuggerValue();
 	
 	public static final String SCOPE = "State";
 
@@ -110,12 +126,12 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						// No need to re-construct a trace if this.state is an initial state. Note that
 						// getTrace(s)/getTraceInfo(s) below would return a trace, but a check at the
 						// beginning seems easier.
-						return new Variable[] { getVariable(new RecordValue(t, NOT_EVALUATED), "1: <Initial predicate>") };
+						return new Variable[] { getVariable(new RecordValue(t, NOT_EVAL), "1: <Initial predicate>") };
 					}
 					
 					final Deque<Variable> trace = new ArrayDeque<>();
 					trace.add(
-							getVariable(new RecordValue(t, NOT_EVALUATED), t.getLevel() + ": " + t.getAction().getLocation()));
+							getVariable(new RecordValue(t, NOT_EVAL), t.getLevel() + ": " + t.getAction().getLocation()));
 
 					final TLCStateInfo[] prefix;
 					if (TLCGlobals.simulator != null) {
@@ -127,10 +143,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						TLCState s = t;
 						while ((s = s.getPredecessor()) != null) {
 							if (s.isInitial()) {
-								trace.add(getVariable(new RecordValue(s, NOT_EVALUATED), "1: <Initial predicate>"));
+								trace.add(getVariable(new RecordValue(s, NOT_EVAL), "1: <Initial predicate>"));
 								return trace.toArray(new Variable[trace.size()]);
 							}
-							trace.add(getVariable(new RecordValue(s, NOT_EVALUATED),
+							trace.add(getVariable(new RecordValue(s, NOT_EVAL),
 									s.getLevel() + ": " + s.getAction().getLocation()));
 							last = s;
 						}
@@ -175,7 +191,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 	
 	protected RecordValue toRecordValue() {
-		return new RecordValue(getT(), NOT_EVALUATED);
+		return new RecordValue(getT(), NOT_EVAL);
 	}
 
 	Variable[] getStateVariables() {
@@ -195,7 +211,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 				} else {
 					Variable v = new Variable();
 					v.setName(var.getName().toString());
-					v.setValue(NOT_EVALUATED);
+					v.setValue(DebuggerValue.NOT_EVALUATED);
 					return v;
 				}
 			}

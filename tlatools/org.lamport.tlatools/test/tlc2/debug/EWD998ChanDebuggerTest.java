@@ -46,6 +46,7 @@ import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
 import tla2sany.semantic.OpDeclNode;
+import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.output.EC;
 import tlc2.util.Context;
 import tlc2.value.impl.IntValue;
@@ -374,7 +375,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		// inbox' (not yet evaluated/"assigned")
 		var = debugger.evaluate(RM, "inbox", 80, 18, 80, 23);
-		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 		
 		// lhs/rhs refinement mapping
 		debugger.replaceAllBreakpointsWith(RM, 179);

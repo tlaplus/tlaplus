@@ -83,7 +83,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	
 	@Override
 	protected RecordValue toRecordValue() {
-		return new RecordValue(getS(), getT(), NOT_EVALUATED);
+		return new RecordValue(getS(), getT(), NOT_EVAL);
 	}
 
 	@Override
@@ -101,7 +101,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 				} else {
 					Variable v = new Variable();
 					v.setName(var.getName() + "'");
-					v.setValue(NOT_EVALUATED);
+					v.setValue(DebuggerValue.NOT_EVALUATED);
 					return v;
 				}
 			}

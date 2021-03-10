@@ -72,6 +72,7 @@ import org.eclipse.lsp4j.jsonrpc.RemoteEndpoint;
 import org.junit.Before;
 
 import tla2sany.semantic.OpDeclNode;
+import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.tool.TLCState;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 import tlc2.util.Context;
@@ -357,7 +358,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 				assertEquals(new RecordValue(st), trace.get(0).getTLCValue());
 			} else {
 				// State st isn't fully evaluated yet. Thus, some variables will be 'null'.
-				assertEquals(new RecordValue(st, TLCStateStackFrame.NOT_EVALUATED), trace.get(0).getTLCValue());
+				assertEquals(new RecordValue(st, TLCStateStackFrame.NOT_EVAL), trace.get(0).getTLCValue());
 			}
 			
 			// Assert that the last state is an initial state.
@@ -377,7 +378,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 				assertTrue(tlcValue instanceof RecordValue);
 				final RecordValue rv = (RecordValue) tlcValue;
 				for (Value val : rv.values) {
-					assertTrue(!(val instanceof StringValue) || !TLCStateStackFrame.NOT_EVALUATED.equals(((StringValue) val).toString()));
+					assertTrue(!(val instanceof StringValue) || !DebuggerValue.NOT_EVALUATED.equals(((StringValue) val).toString()));
 				}
 			}
 		} finally {
@@ -394,7 +395,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			final Variable[] svs = frame.getStateVariables();
 			assertEquals(1, svs.length);
 			assertTrue(svs[0] instanceof DebugTLCVariable);
-			assertEquals(st.allAssigned() ? new RecordValue(st) : new RecordValue(st, TLCStateStackFrame.NOT_EVALUATED),
+			assertEquals(st.allAssigned() ? new RecordValue(st) : new RecordValue(st, TLCStateStackFrame.NOT_EVAL),
 					((DebugTLCVariable) svs[0]).getTLCValue());
 		} finally {
 			// TLCStateStackFrame#getStateVariables has the side-effect of adding variables to the
@@ -410,7 +411,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			final Variable[] svs = frame.getStateVariables();
 			assertEquals(1, svs.length);
 			assertTrue(svs[0] instanceof DebugTLCVariable);
-			assertEquals(t.allAssigned() ? new RecordValue(s, t, "Should not be used") : new RecordValue(s, t, TLCStateStackFrame.NOT_EVALUATED),
+			assertEquals(t.allAssigned() ? new RecordValue(s, t, new StringValue("Should not be used")) : new RecordValue(s, t, TLCStateStackFrame.NOT_EVAL),
 					((DebugTLCVariable) svs[0]).getTLCValue());
 		} finally {
 			// TLCStateStackFrame#getStateVariables has the side-effect of adding variables to the

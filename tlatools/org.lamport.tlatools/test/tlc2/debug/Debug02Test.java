@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
+import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.output.EC;
 
 public class Debug02Test extends TLCDebuggerTestCase {
@@ -51,11 +52,11 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		// xx in Init
 		EvaluateResponse var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
 		assertEquals(null, var.getType());
-		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 		// xx in Next
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
 		assertEquals(null, var.getType());
-		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 		// xx' in Next
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 9);
 		assertEquals(null, var.getType());
@@ -66,10 +67,10 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertTrue(debugger.stack.peek() instanceof TLCStateStackFrame);
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
 		assertEquals(null, var.getType());
-		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
 		assertEquals(null, var.getType());
-		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 9);
 		assertEquals(null, var.getType());
 		assertEquals("line 7, col 9 to line 7, col 9 of module Debug02", var.getResult());
@@ -102,7 +103,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
-		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 
 		// ... =~xx
 		debugger.stepIn();
@@ -116,7 +117,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
-		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 
 		// xx' =~xx
 		debugger.stepIn();
@@ -130,7 +131,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
-		assertEquals(TLCStateStackFrame.NOT_EVALUATED, var.getResult());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 
 		debugger.stepIn();
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
