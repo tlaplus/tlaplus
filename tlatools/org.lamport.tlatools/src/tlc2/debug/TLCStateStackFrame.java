@@ -167,7 +167,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	protected Variable toVariable() {
-		return getVariable(toRecordValue(), getT().getLevel() + ": " + getActionName(getT()));
+		return getVariable(toRecordValue(), getActionName(getT()));
 	}
 
 	protected String getActionName(final TLCState state) {
