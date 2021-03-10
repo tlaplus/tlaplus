@@ -270,8 +270,12 @@ public class TLCStackFrame extends StackFrame {
 						final RuntimeException re = (RuntimeException) val;
 						variable.setType(re.getMessage());
 						vars.add(variable);
+					} else if (val == null && c.getName() == null) {
+						// When evaluating e.g. ENABLED, the context contains
+						// tlc2.util.Context.BaseBranch elements for which val and name are null. For
+						// now, we simply ignore them.
 					} else {
-						System.err.println("This is interesting!!! What's this??? " + val.toString());
+						System.err.println("This is interesting!!! What's this??? " + val);
 					}
 					c = c.next();
 				}
