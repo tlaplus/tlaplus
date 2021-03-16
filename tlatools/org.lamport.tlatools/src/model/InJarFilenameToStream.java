@@ -23,7 +23,7 @@ public class InJarFilenameToStream extends SimpleFilenameToStream implements
 		InputStream is = InJarFilenameToStream.class.getResourceAsStream(prefix + name);
 		if(is != null) {
 			try {
-				File sourceFile = new TLAFile(TMPDIR + File.separator + name, this);
+				File sourceFile = new TLAFile(TMPDIR + File.separator + name, InJarFilenameToStream.class.getResource(prefix + name), false, this);				
 				sourceFile.deleteOnExit();
 				
 				FileOutputStream fos = new FileOutputStream(sourceFile);
