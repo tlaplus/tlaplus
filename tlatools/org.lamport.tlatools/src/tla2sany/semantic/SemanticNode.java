@@ -393,4 +393,18 @@ public abstract class SemanticNode
         throw ee;
       }
     }
+  
+  	public static final SemanticNode nullSN = new NullSemanticNode();
+  
+	private static class NullSemanticNode extends SemanticNode {
+
+		private NullSemanticNode() {
+			super(Integer.MIN_VALUE, SyntaxTreeNode.nullSTN);
+		}
+
+		@Override
+		public String levelDataToString() {
+			return Integer.toString(Integer.MIN_VALUE);
+		}
+	}
 }

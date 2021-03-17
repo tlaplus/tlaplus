@@ -36,12 +36,22 @@ Animation(e1,e2) == "e1: " \o ToString(e1) \o " e2: " \o ToString(e2)
 \* - additional trace expressions
 \* TLC ignores the original state if the evaluation of
 \* Alias fails.
-Alias == [y |-> y, \* x and y reordered.
+Alias == IF TLCGet("mode") = "Simulation" THEN
+         [y |-> y, \* x and y reordered.
+          x |-> x, 
+          a |-> x' - x, 
+          b |-> x' = x,
+          anim |-> Animation(x, y), \* Animation
+          te |-> ENABLED Next,      \* Trace Expression
+          TLCGetAction |-> TLCGet("action")]
+         ELSE 
+         [y |-> y, \* x and y reordered.
           x |-> x, 
           a |-> x' - x, 
           b |-> x' = x,
           anim |-> Animation(x, y), \* Animation
           te |-> ENABLED Next]      \* Trace Expression
+         
 
 =======================
 \* FairSpec => []Inv

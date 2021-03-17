@@ -17,6 +17,8 @@ import util.UniqueString;
 public final class Action implements ToolGlobals, Serializable {
 	private static final UniqueString UNNAMED_ACTION = UniqueString.uniqueStringOf("UnnamedAction");
 
+	public static final Action UNKNOWN = new Action(SemanticNode.nullSN, Context.Empty, UNNAMED_ACTION);
+
   /* A TLA+ action.   */
 
   /* Fields  */
@@ -95,6 +97,10 @@ public final class Action implements ToolGlobals, Serializable {
 			}
 		}
 		return Location.nullLoc;
+	}
+
+	public final Location getDefinition() {
+	   return pred.getLocation();
 	}
 
 	public void setId(int id) {

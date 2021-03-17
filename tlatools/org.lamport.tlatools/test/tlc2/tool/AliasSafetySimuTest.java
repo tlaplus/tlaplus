@@ -55,10 +55,34 @@ public class AliasSafetySimuTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(7);
 		// Trace prefix
-		expectedTrace.add("/\\ y = FALSE\n/\\ x = 1\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 1 e2: FALSE\"\n/\\ te = TRUE");
-		expectedTrace.add("/\\ y = TRUE\n/\\ x = 2\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 2 e2: TRUE\"\n/\\ te = TRUE");
-		expectedTrace.add("/\\ y = FALSE\n/\\ x = 3\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 3 e2: FALSE\"\n/\\ te = TRUE");
-		expectedTrace.add("/\\ y = TRUE\n/\\ x = 4\n/\\ a = 0\n/\\ b = TRUE\n/\\ anim = \"e1: 4 e2: TRUE\"\n/\\ te = TRUE");
+		expectedTrace.add("/\\ y = FALSE\n/\\ x = 1\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 1 e2: FALSE\"\n/\\ te = TRUE\n/\\ TLCGetAction = [ name |-> \"UnnamedAction\",\n"
+				+ "  location |->\n"
+				+ "      [ beginLine |-> 20,\n"
+				+ "        beginColumn |-> 9,\n"
+				+ "        endLine |-> 20,\n"
+				+ "        endColumn |-> 13,\n"
+				+ "        module |-> \"Alias\" ] ]");
+		expectedTrace.add("/\\ y = TRUE\n/\\ x = 2\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 2 e2: TRUE\"\n/\\ te = TRUE\n/\\ TLCGetAction = [ name |-> \"Next\",\n"
+				+ "  location |->\n"
+				+ "      [ beginLine |-> 14,\n"
+				+ "        beginColumn |-> 9,\n"
+				+ "        endLine |-> 18,\n"
+				+ "        endColumn |-> 23,\n"
+				+ "        module |-> \"Alias\" ] ]");
+		expectedTrace.add("/\\ y = FALSE\n/\\ x = 3\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 3 e2: FALSE\"\n/\\ te = TRUE\n/\\ TLCGetAction = [ name |-> \"Next\",\n"
+				+ "  location |->\n"
+				+ "      [ beginLine |-> 14,\n"
+				+ "        beginColumn |-> 9,\n"
+				+ "        endLine |-> 18,\n"
+				+ "        endColumn |-> 23,\n"
+				+ "        module |-> \"Alias\" ] ]");
+		expectedTrace.add("/\\ y = TRUE\n/\\ x = 4\n/\\ a = 0\n/\\ b = TRUE\n/\\ anim = \"e1: 4 e2: TRUE\"\n/\\ te = TRUE\n/\\ TLCGetAction = [ name |-> \"Next\",\n"
+				+ "  location |->\n"
+				+ "      [ beginLine |-> 14,\n"
+				+ "        beginColumn |-> 9,\n"
+				+ "        endLine |-> 18,\n"
+				+ "        endColumn |-> 23,\n"
+				+ "        module |-> \"Alias\" ] ]");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 	}
 }

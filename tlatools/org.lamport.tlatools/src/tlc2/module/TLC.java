@@ -11,6 +11,7 @@ import java.io.IOException;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.Action;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.ModelChecker;
@@ -18,6 +19,7 @@ import tlc2.tool.SimulationWorker;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.TLARegistry;
 import tlc2.util.IdThread;
+import tlc2.util.Vect;
 import tlc2.value.IBoolValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
@@ -50,6 +52,7 @@ public class TLC implements ValueConstants
 	private static final UniqueString EXIT = UniqueString.uniqueStringOf("exit");
 	private static final UniqueString PAUSE = UniqueString.uniqueStringOf("pause");
 	private static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
+	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
 
 	public static final long serialVersionUID = 20160822L;
 
@@ -280,6 +283,57 @@ public class TLC implements ValueConstants
 			} else {
 				return new StringValue("BFS");
 			}
+		} else if (ACTION == sv.val) {
+			/*
+			    Add operator `TLC!TLCGet("action")`.
+				
+				```tla
+				TLC!TLCGet("action") ==
+				  LET LOCATIONS ==
+				       [ beginLine: Nat,
+				         beginColumn: Nat,
+				         endLine: Nat,
+				         endColumn: Nat,
+				         module: STRING ]
+				  IN CHOOSE act \in
+				       [ name: STRING,
+				         location : LOCATIONS ]: TRUE
+				```
+				
+				If `TLCGet("action")` is evaluated outside the scope of a TLA+ action of
+				a behavior spec or if the action is unknown for technical reasons, the
+				records (name/location) are set to dummy values.
+				
+				For `TLCGet("action")` to return non-dummy values, TLC internally has to
+				use its extended state implementation (`tlc2.tool.TLCStateMutExt.java`).
+				For now, this is the case when TLC runs with "-debugger" or "-simulate".
+				
+				Note that `TLCGet("action")` remains undocumented in `TLC.tla` until we
+				have more confidence in its usefulness.
+			 */
+			final TLCState s = IdThread.getCurrentState();
+			if (s != null) {
+				if (s.getAction() != null) {
+					return new RecordValue(s.getAction());
+				} else if (s.isInitial() && TLCGlobals.simulator != null) {
+					// For an undeclared initial-predicate such as 
+					//
+					//   Spec == x = 1 /\ y = FALSE /\ [][Next]_vars/
+					//
+					// initSpec contains two Actions:
+					//
+					//   x = 1
+					//   y = FALSE
+					//
+					// Here, we - best-effort style - return whatever is the first element.
+					final Vect<Action> initSpec = TLCGlobals.simulator.getTool().getInitStateSpec();
+					return new RecordValue(initSpec.elementAt(0));
+				} else if (s.isInitial() && TLCGlobals.mainChecker != null) {
+					final Vect<Action> initSpec = TLCGlobals.mainChecker.tool.getInitStateSpec();
+					return new RecordValue(initSpec.elementAt(0));
+				}
+			}
+			return new RecordValue(Action.UNKNOWN);
 		}
 		throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 	}

@@ -188,6 +188,7 @@ public class TLCExt {
 		}
 		
 		if (s0.uid == TLCState.INIT_UID) {
+			// The state s0 has not been written do disk, i.e. the trace file.
 			// This is the case where Trace is evaluated in a state-constraint when the
 			// trace up to s0 hasn't been constructed yet.  Consequently, we cannot 
 			// re-construct the trace up to s0.  Instead, we re-construct the trace up

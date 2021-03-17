@@ -14,8 +14,10 @@ import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SymbolNode;
+import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.Action;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
@@ -55,6 +57,41 @@ public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], 
   
   public RecordValue(UniqueString name, Value v) {
 	  this(new UniqueString[] {name}, new Value[] {v}, false);
+  }
+
+  public RecordValue(final Location location) {
+		this.names = new UniqueString[5];
+		this.values = new Value[5];
+
+		this.names[0] = UniqueString.of("beginLine");
+		this.values[0] = IntValue.gen(location.beginLine());
+
+		this.names[1] = UniqueString.of("beginColumn");
+		this.values[1] = IntValue.gen(location.beginColumn());
+
+		this.names[2] = UniqueString.of("endLine");
+		this.values[2] = IntValue.gen(location.endLine());
+
+		this.names[3] = UniqueString.of("endColumn");
+		this.values[3] = IntValue.gen(location.endColumn());
+		
+		this.names[4] = UniqueString.of("module");
+		this.values[4] = new StringValue(location.source());
+		
+		this.isNorm = false;
+  }
+
+  public RecordValue(final Action action) {
+		this.names = new UniqueString[2];
+		this.values = new Value[2];
+
+		this.names[0] = UniqueString.of("name");
+		this.values[0] = new StringValue(action.getName());
+		
+		this.names[1] = UniqueString.of("location");
+		this.values[1] = new RecordValue(action.getDefinition());
+		
+		this.isNorm = false;
   }
 
   public RecordValue(final TLCState state) {
