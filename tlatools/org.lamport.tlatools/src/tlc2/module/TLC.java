@@ -49,6 +49,7 @@ public class TLC implements ValueConstants
 	private static final UniqueString DIAMETER = UniqueString.uniqueStringOf("diameter");
 	private static final UniqueString EXIT = UniqueString.uniqueStringOf("exit");
 	private static final UniqueString PAUSE = UniqueString.uniqueStringOf("pause");
+	private static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
 
 	public static final long serialVersionUID = 20160822L;
 
@@ -259,6 +260,25 @@ public class TLC implements ValueConstants
 				// evaluated as part of the initial predicate where the level - by definition -
 				// is 0 (see TLCState#level).
 				return IntValue.gen(TLCState.INIT_LEVEL - 1);
+			}
+		} else if (MODE == sv.val) {
+			/*
+				Add operator `TLC!TLCGet("mode")`.
+				
+				```tla
+				TLCGet("mode") == CHOOSE s \in STRING: TRUE
+				```
+				
+				Breadth-first model-checking: "BFS"
+				Simulation: "Simulation"
+				
+				Note that `TLCGet("mode")` remains undocumented in `TLC.tla` until we
+				have more confidence in its usefulness.
+			 */
+			if (TLCGlobals.simulator != null) {
+				return new StringValue("Simulation");
+			} else {
+				return new StringValue("BFS");
 			}
 		}
 		throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
