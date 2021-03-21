@@ -4372,7 +4372,7 @@ SyntaxTreeNode
 Junctions () : {
   BStack.newReference(getToken(1).endColumn, getToken(1).kind);
     /***********************************************************************
-    * Pushes onto BStack an element of the appropriate kind with offest    *
+    * Pushes onto BStack an element of the appropriate kind with offset    *
     * equal to the column of the last character in the /\ or \/ token.     *
     ***********************************************************************/
     
