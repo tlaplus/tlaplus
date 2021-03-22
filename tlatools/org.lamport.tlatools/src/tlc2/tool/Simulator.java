@@ -643,4 +643,13 @@ public class Simulator {
 			worker.interrupt();
 		}
 	}
+
+	public RandomGenerator getRNG() {
+		if (Thread.currentThread() instanceof SimulationWorker) {
+			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
+			return w.getRNG();
+		} else {
+			return this.rng;
+		}
+	}
 }

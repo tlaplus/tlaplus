@@ -28,6 +28,7 @@ import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
@@ -50,6 +51,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.ExpectInlined;
 import tlc2.util.IdThread;
+import tlc2.util.RandomGenerator;
 import tlc2.util.Vect;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
@@ -124,6 +126,8 @@ public abstract class Tool
 	 * 
 	 * VARIABLE x
 	 * \E n \in S: x' = n
+	 * 
+	 * Activate with: -Dtlc2.tool.impl.Tool.probabilistic=true
 	 */
   private static final boolean PROBABLISTIC = Boolean.getBoolean(Tool.class.getName() + ".probabilistic");
 
@@ -1086,9 +1090,9 @@ public abstract class Tool
 	  {
 		if (PROBABLISTIC) {
 			// probabilistic (return after a state has been generated, ordered is randomized)
-			final tlc2.tool.SimulationWorker simWorker = (tlc2.tool.SimulationWorker) Thread.currentThread();
-			int index = (int) Math.floor(simWorker.getRNG().nextDouble() * alen);
-			final int p = simWorker.getRNG().nextPrime();
+			final RandomGenerator rng = TLCGlobals.simulator.getRNG();
+			int index = (int) Math.floor(rng.nextDouble() * alen);
+			final int p = rng.nextPrime();
 		    for (int i = 0; i < alen; i++) {
 			      resState = this.getNextStates(action, args[index], acts, c, s0, resState, nss, cm);
 				  if (nss.hasStates()) {
