@@ -6,6 +6,8 @@
 package tlc2.tool;
 
 public class TLCStateInfo {
+  public static final String INITIAL_PREDICATE = "<Initial predicate>";
+  
   public TLCStateInfo predecessorState;
   public long stateNumber;
   public final TLCState state;
@@ -14,7 +16,7 @@ public class TLCStateInfo {
 
 	public TLCStateInfo(TLCState initialState) {
 		this.state = initialState;
-		this.info = "<Initial predicate>";
+		this.info = INITIAL_PREDICATE;
 		this.stateNumber = 1;
 		this.fp = initialState.fingerPrint();
 	}
@@ -28,6 +30,11 @@ public class TLCStateInfo {
 	  this.state = state;
 	  this.stateNumber = stateOrdinal;
 	  this.info = "";
+  }
+
+  public TLCStateInfo(TLCState s, String info, int stateNum) {
+	  this(s, info);
+	  stateNumber = stateNum;
   }
 
   public TLCStateInfo(TLCState s, String info, int stateNum, long fp) {

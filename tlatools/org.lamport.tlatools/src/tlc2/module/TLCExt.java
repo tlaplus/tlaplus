@@ -206,12 +206,12 @@ public class TLCExt {
 
 			final TLCState currentState = IdThread.getCurrentState();
 			if (currentState.isInitial()) {
-				trace.add(new TLCStateInfo(currentState));
-				trace.add(new TLCStateInfo(s0));
+				trace.add(new TLCStateInfo(currentState, TLCStateInfo.INITIAL_PREDICATE, 1));
+				trace.add(new TLCStateInfo(s0, Action.UNKNOWN));
 			} else {
 				trace.addAll(Arrays.asList(TLCGlobals.mainChecker.getTraceInfo(currentState)));
-				trace.add(new TLCStateInfo(currentState));
-				trace.add(new TLCStateInfo(s0));
+				trace.add(new TLCStateInfo(currentState, Action.UNKNOWN));
+				trace.add(new TLCStateInfo(s0, Action.UNKNOWN));
 				// A side-effect of getTraceInfo are nested calls to setCurrentState. Thus, we
 				// have to reset to currentState after we are done with our getTraceInfo business.
 				IdThread.setCurrentState(currentState);
