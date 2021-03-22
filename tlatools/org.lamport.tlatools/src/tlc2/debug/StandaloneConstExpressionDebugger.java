@@ -62,20 +62,8 @@ public class StandaloneConstExpressionDebugger extends TLCDebugger {
 		new StandaloneConstExpressionDebugger();
 	}
 
-	public StandaloneConstExpressionDebugger() throws IOException, InterruptedException, ExecutionException {
+	public StandaloneConstExpressionDebugger() {
 		super();
-		try (ServerSocket serverSocket = new ServerSocket(4712)) {
-			// Immediately re-open the debugger to front-end requests after a front-end disconnected.
-			while (true) {
-				System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
-				final Socket socket = serverSocket.accept();
-				final InputStream inputStream = socket.getInputStream();
-				final OutputStream outputStream = socket.getOutputStream();
-
-				launcher = DSPLauncher.createServerLauncher(this, inputStream, outputStream);
-				launcher.startListening().get(); // This blocks until the front-end disconnects.
-			}
-		}
 	}
 
 	@Override
@@ -132,5 +120,10 @@ public class StandaloneConstExpressionDebugger extends TLCDebugger {
 		});
 
 		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
+	public TLCDebugger listen(int debugPort) {
+		throw new UnsupportedOperationException("implement me!");
 	}
 }

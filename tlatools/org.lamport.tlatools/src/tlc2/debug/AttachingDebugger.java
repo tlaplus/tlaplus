@@ -46,7 +46,7 @@ public class AttachingDebugger extends TLCDebugger {
 	
 	private String buffer = "";
 	
-	public AttachingDebugger(final int port, final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
+	public AttachingDebugger(final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
 		super(s, halt);
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
 		ToolIO.out = new PrintStream(ToolIO.out) {
@@ -80,7 +80,10 @@ public class AttachingDebugger extends TLCDebugger {
 				}
 			}
 		};
+	}
 
+	@Override
+	public TLCDebugger listen(final int port) {
 		Executors.newSingleThreadExecutor().submit(() -> {
 			try (ServerSocket serverSocket = new ServerSocket(port)) {
 				// Immediately re-open the debugger to front-end requests after a front-end disconnected.
@@ -97,6 +100,7 @@ public class AttachingDebugger extends TLCDebugger {
 				}
 			}
 		});
+		return this;
 	}
 
 	@Override

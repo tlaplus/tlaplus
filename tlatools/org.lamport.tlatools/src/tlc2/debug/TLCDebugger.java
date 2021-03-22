@@ -102,6 +102,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.halt = halt;
 	}
 	
+	public abstract TLCDebugger listen(int debugPort);
+
 	@Override
 	public IDebugTarget setTool(final Tool tool) {
 		this.tool = tool;
@@ -656,14 +658,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 		public static TLCDebugger OVERRIDE;
 
-		public static TLCDebugger getInstance(final int port, final boolean suspend, boolean halt) throws Exception {
+		public static TLCDebugger getInstance(final boolean suspend, boolean halt) throws Exception {
 			if (OVERRIDE != null) {
 				return OVERRIDE;
 			}
 			if (suspend) {
-				return new AttachingDebugger(port, Step.In, halt);
+				return new AttachingDebugger(Step.In, halt);
 			}
-			return new AttachingDebugger(port, Step.Continue, halt);
+			return new AttachingDebugger(Step.Continue, halt);
 		}
 	}
 }
