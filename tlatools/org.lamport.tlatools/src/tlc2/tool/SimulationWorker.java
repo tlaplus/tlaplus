@@ -412,7 +412,8 @@ public class SimulationWorker extends IdThread {
 			inConstraints = (tool.isInModel(s1) && tool.isInActions(curState, s1));
 			s1.setPredecessor(curState); // Should be redundant but let's be safe anyway.
 			
-			// Execute callable on the state that was selected from the set of succesor states.
+			// Execute callable on the state that was selected from the set of successor
+			// states.  See TLCExt!TLCDefer operator for context.
 			s1.execCallable();
 			//System.out.printf("%s\n", tool.evalAlias(curState, s1));
 			
@@ -433,7 +434,7 @@ public class SimulationWorker extends IdThread {
 		
 		welfordM2AndMean.accumulateAndGet(stateTrace.size(), (acc, tl) -> {
 			// Welford's online algorithm (m2 and mean stuffed into high and low of the
-			// atomiclong because update concurrently by multiple workers).
+			// atomiclong because welfordM2AndMean is updated concurrently by multiple workers).
 			// https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
 			int mean = (int) (acc & 0x00000000FFFFFFFFL);
 			long m2 = acc >>> 32;
