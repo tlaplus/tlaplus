@@ -219,12 +219,6 @@ jobs:
       shell: bash
       env:
         APPLE_CODESIGN_CERTS: ${{ secrets.APPLE_CODESIGN_CERTS }}
-    - name: Set up Apple Key (submission)
-      if: matrix.operating-system == 'macos-latest'
-      run: 'echo "$APPLE_CODESIGN_SUBMISSION_PRIVKEY" > submission.pem'
-      shell: bash
-      env:
-        APPLE_CODESIGN_SUBMISSION_PRIVKEY: ${{ secrets.APPLE_CODESIGN_SUBMISSION_PRIVKEY }}
     - name: Set up Apple Key (dev)
       if: matrix.operating-system == 'macos-latest'
       run: 'echo "$APPLE_CODESIGN_DEVELOPER_PRIVKEY" > dev.pem'
@@ -235,12 +229,10 @@ jobs:
       if: matrix.operating-system == 'macos-latest'
       run: |
            ## Convert pems stored as Github secrets to .p12 files that 'security import' accepts.
-           openssl pkcs12 -export -inkey submission.pem -in certs.pem -out submission.p12 -passin pass:${{ secrets.APPLE_CERT_PASSWORD }} -passout pass:${{ secrets.APPLE_CERT_PASSWORD }}
            openssl pkcs12 -export -inkey dev.pem -in certs.pem -out dev.p12 -passin pass:${{ secrets.APPLE_CERT_PASSWORD }} -passout pass:${{ secrets.APPLE_CERT_PASSWORD }}
            ## Create a fresh keychain "tla" and import certs and keys into it.
            security create-keychain -p ${{ secrets.APPLE_CERT_PASSWORD }} tla
            security import certs.pem -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
-           security import submission.p12 -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
            security import dev.p12 -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
            ## Listing the keychain once is apparently required for codesign to work.
            security list-keychains -s tla
