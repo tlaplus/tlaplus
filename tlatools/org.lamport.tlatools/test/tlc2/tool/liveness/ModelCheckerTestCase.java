@@ -143,11 +143,14 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			if (noGenerateSpec()) {
 				args.add("-noGenerateSpecTE");
 			}
-			args.add("-fp");
-			args.add("0");
-			// Deterministic simulation (order in which actions are explored).
-			args.add("-seed");
-			args.add("1");
+			
+			if (noRandomFPandSeed()) {
+				args.add("-fp");
+				args.add("0");
+				// Deterministic simulation (order in which actions are explored).
+				args.add("-seed");
+				args.add("1");
+			}
 			
 			if (doCoverage()) {
 				args.add("-coverage");
@@ -181,6 +184,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
+	}
+
+	protected boolean noRandomFPandSeed() {
+		return true;
 	}
 
 	protected double getLivenessThreshold() {

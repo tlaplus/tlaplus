@@ -106,6 +106,15 @@ public abstract class CommonTestCase {
 	}
 
 	/**
+	 * Asserts that the error trace loops back to some predecessor state.
+	 */
+	protected void assertBackToState() {
+		assertTrue(recorder.recorded(EC.TLC_BACK_TO_STATE));
+		final List<Object> loop = recorder.getRecords(EC.TLC_BACK_TO_STATE);
+		assertTrue(loop.size() > 0);
+	}
+
+	/**
 	 * Asserts that the error trace loops back to the state with the given
 	 * number.
 	 * 
