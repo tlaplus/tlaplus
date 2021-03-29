@@ -120,7 +120,11 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	            // Finally, add curState into the behavior graph for liveness checking:
 	            if (this.checkLiveness)
 	            {
-					doNextCheckLiveness(curState, setOfStates);
+	            	try {
+	            		doNextCheckLiveness(curState, setOfStates);
+					} catch (final Throwable e) {
+						this.tlc.doNextFailed(curState, null, e);
+	            	}
 	            }
 				
 				this.outDegree.addSample(unseenSuccessorStates);
