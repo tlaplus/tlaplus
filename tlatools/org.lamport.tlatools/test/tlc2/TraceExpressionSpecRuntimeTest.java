@@ -114,13 +114,5 @@ public class TraceExpressionSpecRuntimeTest extends TraceExpressionSpecTest {
 
 		assertNotNull(tool.getModelConfig().getAlias());
 		assertFalse(tool.getModelConfig().getCheckDeadlock());
-		
-		// Assert that all three sub-modules exist
-		final ExternalModuleTable moduleTbl = specProcessor.getModuleTbl();
-		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TE_SPEC_TEST)));
-		assertNotNull(moduleTbl.getModuleNode(
-				UniqueString.of(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME)));
-		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
-				+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME)));
 	}
 }

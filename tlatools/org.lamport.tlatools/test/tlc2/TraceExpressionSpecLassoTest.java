@@ -90,8 +90,7 @@ public class TraceExpressionSpecLassoTest extends TraceExpressionSpecTest {
 		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TE_SPEC_TEST)));
 		assertNotNull(moduleTbl.getModuleNode(
 				UniqueString.of(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME)));
-		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME
-				+ TLAConstants.TraceExplore.ERROR_STATES_MODULE_NAME)));
+		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.SPEC_TETRACE_NAME)));
 
 		final LiveCheck1 lc = new LiveCheck1(tool);
 		lc.init(tool, tool.getActions(), "states");
