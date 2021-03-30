@@ -304,6 +304,10 @@ public class LazyValue extends Value {
 	}
 
   public IValue eval(Tool tool, TLCState s0, TLCState s1) {
-		return tool.eval(expr, con, s0, s1, EvalControl.Clear, cm);
+		final Value eval = tool.eval(expr, con, s0, s1, EvalControl.Clear, cm);
+		if (!eval.hasSource()) {
+			eval.setSource(this.expr);
+		}
+		return eval;
 	}
 }

@@ -179,6 +179,13 @@ public class TLCStackFrame extends StackFrame {
 		return variable;
 	}
 
+	private Variable getVariable(final IValue val, final SymbolNode expr) {
+		if (!val.hasSource()) {
+			val.setSource(expr);
+		}
+		return getVariable(val, expr.getName());
+	}
+
 	protected Variable getVariable(final IValue value, String varName) {
 		return getVariable(value, UniqueString.of(varName));
 	}
@@ -268,7 +275,7 @@ public class TLCStackFrame extends StackFrame {
 						val = unlazy((LazyValue) c.getValue());
 					}
 					if (val instanceof Value) {
-						vars.add(getVariable((Value) val, c.getName().getName().toString()));
+						vars.add(getVariable((Value) val, c.getName()));
 					} else if (val instanceof SemanticNode) {
 						final Variable variable = new Variable();
 						variable.setName(c.getName().getSignature());

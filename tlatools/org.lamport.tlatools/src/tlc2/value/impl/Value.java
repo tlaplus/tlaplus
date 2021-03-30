@@ -368,7 +368,11 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	public TLCVariable toTLCVariable(final TLCVariable variable, Random rnd) {
 		variable.setInstance(this);
 		// TODO: Use Value#getKindString instead?
-		variable.setType(getTypeString());
+//		if (hasSource()) {
+//			variable.setType(String.format("%s at %s", getTypeString(), getSource()));
+//		} else {
+			variable.setType(getTypeString());
+//		}
 		variable.setValue(toString());
 		if (this instanceof Enumerable || this instanceof FcnRcdValue || this instanceof RecordValue
 				|| this instanceof TupleValue) {
