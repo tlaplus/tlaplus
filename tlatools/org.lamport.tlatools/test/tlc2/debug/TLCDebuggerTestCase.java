@@ -257,7 +257,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		assertTrace(f, f.state);
 		
 		// Assert level of state and successor.
-		if (!f.isStuttering()) {
+		if (!isStuttering(f.getS(), f.getT())) {
 			assertEquals(f.getS().getLevel() + 1, f.state.getLevel());
 		} else {
 			// TLA+ allows stuttering to occur.  By definition, stuttering steps do *not* increase the level,
@@ -266,6 +266,17 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			// level 1.  s1 would be the only state whose level would be 1 to inf. 
 			assertEquals(f.getS().getLevel(), f.state.getLevel());
 		}
+	}
+
+	private static boolean isStuttering(TLCState s, TLCState t) {
+		// Iff s and t have all variables assigned, i.e., are fully evaluated, best we
+		// can do is to compare all variable values.
+		if (s.allAssigned() && t.allAssigned()) {
+			// Evaluating equals, when not all variables are assigned, would cause a
+			// NullPointerException in Value#equals.
+			return s.getVals().equals(t.getVals());
+		}
+		return false;
 	}
 
 	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int endLine,

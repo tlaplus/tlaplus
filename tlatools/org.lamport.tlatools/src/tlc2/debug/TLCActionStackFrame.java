@@ -75,11 +75,6 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 	protected TLCState getT() {
 		return state;
 	}
-
-	public boolean isStuttering() {
-		// Best we can do it to compare all variable values.
-		return getS().getVals().equals(getT().getVals());
-	}
 	
 	@Override
 	protected RecordValue toRecordValue() {
