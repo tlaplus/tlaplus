@@ -29,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -83,6 +84,10 @@ public class AliasSafetySimuTest extends ModelCheckerTestCase {
 				+ "        endLine |-> 18,\n"
 				+ "        endColumn |-> 23,\n"
 				+ "        module |-> \"Alias\" ] ]");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		final List<String> expectedActions = new ArrayList<>();
+		expectedActions.add("<Initial predicate line 20, col 18 to line 20, col 26 of module Alias>");
+		expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1,
+				"<Next line 14, col 9 to line 18, col 23 of module Alias>"));
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions );
 	}
 }

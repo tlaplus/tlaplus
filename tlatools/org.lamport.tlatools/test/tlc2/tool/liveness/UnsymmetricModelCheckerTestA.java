@@ -36,6 +36,7 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
+import tlc2.tool.TLCStateInfo;
 
 public class UnsymmetricModelCheckerTestA extends ModelCheckerTestCase {
 
@@ -62,7 +63,14 @@ public class UnsymmetricModelCheckerTestA extends ModelCheckerTestCase {
 		final List<String> expectedTrace = new ArrayList<String>(2);
 		expectedTrace.add("x = a");
 		expectedTrace.add("x = 1");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		
+		final List<String> expectedActions = new ArrayList<>();
+		expectedActions.add(isExtendedTLCState()
+				? "<Init line 5, col 10 to line 5, col 16 of module Unsymmetric>"
+				: TLCStateInfo.INITIAL_PREDICATE);
+		expectedActions.add("<NextA line 17, col 13 to line 19, col 36 of module Unsymmetric>");
+
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 
 		assertBackToState(1);
 

@@ -27,6 +27,8 @@
 package tlc2.tool;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -64,6 +66,10 @@ public abstract class CommonTestCase {
 		recorder = testMPRecorder;
 	}
 
+	protected boolean isExtendedTLCState() {
+		return TLCState.Empty instanceof TLCStateMutExt;
+	}
+
 	/**
 	 * Asserts that the actual trace and the expected error trace are equal.
 	 * 
@@ -78,16 +84,34 @@ public abstract class CommonTestCase {
 			final Object[] objs = (Object[]) actual.get(i);
 			final TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
 			final String info = (String) stateInfo.info;
-			if (i == 0) {
+			if (i == 0 && !isExtendedTLCState()) {
 				// The first state has to be an initial state.
-				"<Initial predicate>".equals(info);
+				assertEquals("<Initial predicate>", info);
 			} else {
 				// ... all others are reachable via an action.
-				info.startsWith("<Action");
+				//TODO: Assert actual action names.
+				assertNotEquals("<Initial predicate>", info);
+				assertFalse(info.startsWith("<Action"));
 			}
 			assertEquals(expectedTrace.get(i), 
 					   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
 			assertEquals(i+1, objs[1]);
+		}
+	}
+	
+	/**
+	 * @see assertTraceWith above except that this method also asserts matching names for the initial predicate and the sub-actions of the next-state relation.
+	 */
+	protected void assertTraceWith(final List<Object> actual, final List<String> expectedTrace, final List<String> expectedActions) {
+		assertEquals(expectedTrace.size(), actual.size());
+		for (int i = 0; i < expectedTrace.size(); i++) {
+			final Object[] objs = (Object[]) actual.get(i);
+			final TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
+			final String info = (String) stateInfo.info;
+			assertEquals(expectedActions.get(i), info);
+			assertEquals(expectedTrace.get(i), stateInfo.toString().trim()); // trimmed to remove any newlines or
+																				// whitespace
+			assertEquals(i + 1, objs[1]);
 		}
 	}
 

@@ -64,7 +64,11 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 		assertEquals(2, actual.size());
 		
 		final TLCStateInfo first = (TLCStateInfo) ((Object[]) actual.get(0))[0];
-		assertTrue(((String) first.info).startsWith("<Initial predicate>"));
+		if (isExtendedTLCState()) {
+			assertEquals("<Init line 6, col 9 to line 8, col 19 of module RandomSubset>", first.info);
+		} else {
+			assertTrue(((String) first.info).startsWith("<Initial predicate>"));
+		}
 		final Map<UniqueString, IValue> firstState = first.state.getVals();
 		assertEquals(3, firstState.size());
 		

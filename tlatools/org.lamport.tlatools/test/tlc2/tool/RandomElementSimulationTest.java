@@ -29,6 +29,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -64,7 +65,12 @@ public class RandomElementSimulationTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 550\n/\\ y = 9");
 		expectedTrace.add("/\\ x = 318\n/\\ y = 10");
 		List<Object> actualTrace = recorder.getRecords(EC.TLC_STATE_PRINT2);
-		assertTraceWith(actualTrace, expectedTrace);
+		final List<String> expectedActions = new ArrayList<>();
+		expectedActions.add(
+				TLCStateInfo.INITIAL_PREDICATE/* "<Init line 6, col 9 to line 7, col 16 of module RandomElement>" */);
+		expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1,
+				"<Next line 9, col 9 to line 11, col 21 of module RandomElement>"));
+		assertTraceWith(actualTrace, expectedTrace, expectedActions);
 
 		assertZeroUncovered();
 	}
