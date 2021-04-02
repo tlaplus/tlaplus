@@ -54,11 +54,19 @@ public final class Action implements ToolGlobals, Serializable {
 
   public final String getLocation() {
 	  // It is possible that actionName is "Action" but lets ignore it for now.
-	  if (actionName != UNNAMED_ACTION && actionName != null && !"".equals(actionName.toString())) {
+	  if (isNamed()) {
 		  // If known, print the action name instead of the generic string "Action".
-	      return "<" + actionName + " " +  pred.getLocation() + ">";
+	      return getLocation(actionName.toString());
 	  }
-	  return "<Action " + pred.getLocation() + ">";
+	  return getLocation("Action");
+  }
+  
+  public final String getLocation(final String actionName) {
+      return "<" + actionName + " " +  pred.getLocation() + ">";
+  }
+  
+  public final boolean isNamed() {
+	  return actionName != UNNAMED_ACTION && actionName != null && !"".equals(actionName.toString());
   }
   
   /**

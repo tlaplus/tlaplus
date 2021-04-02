@@ -173,4 +173,8 @@ public abstract class TLCState implements Cloneable, Serializable {
 		  // no-op - see TLCStateMutExt
 		return this;
 	}
+
+	public boolean hasAction() {
+		return getAction() != null;
+	}
 }

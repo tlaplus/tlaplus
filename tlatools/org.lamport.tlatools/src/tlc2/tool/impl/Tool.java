@@ -3274,7 +3274,8 @@ public abstract class Tool
 
   @Override
   public final boolean isValid(ExprNode expr) {
-    IValue val = this.eval(expr);
+    IValue val = this.eval(expr, Context.Empty, TLCState.Empty, TLCState.Empty, 
+    		EvalControl.Const, CostModel.DO_NOT_RECORD);
     if (!(val instanceof BoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, expr);
     }
@@ -3341,10 +3342,12 @@ public abstract class Tool
 		// during ModelChecker#doInit.
 		final InitStateSelectorFunctor functor = new InitStateSelectorFunctor(fp);
 		this.getInitStates(functor);
-		if (functor.state != null) {
-			final String info = "<Initial predicate>";
-			final TLCStateInfo tlcStateInfo = new TLCStateInfo(functor.state, info, 1, fp);
-			return tlcStateInfo;
+		final TLCState state = functor.state;
+		if (state != null) {
+			assert state.isInitial();
+			final TLCStateInfo info = new TLCStateInfo(state);
+			info.fp = fp;
+			return info;
 		}
 		return null;
 	}
@@ -3380,7 +3383,8 @@ public abstract class Tool
         long nfp = state.fingerPrint();
         if (fp == nfp) {
         	state.setPredecessor(s);
-          return new TLCStateInfo(state, curAction.getLocation());
+        	assert !state.isInitial();
+          return new TLCStateInfo(state, curAction);
         }
       }
     }
@@ -3398,7 +3402,8 @@ public abstract class Tool
         TLCState state = nextStates.elementAt(j);
         if (s1.equals(state)) {
         	state.setPredecessor(s);
-          return new TLCStateInfo(state, curAction.getLocation());
+        	assert !state.isInitial();
+          return new TLCStateInfo(state, curAction);
         }
       }
     }

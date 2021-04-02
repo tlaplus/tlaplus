@@ -413,10 +413,11 @@ public class Simulator {
 					// lastState)) to determine the action.  This would fail for specs whose next-state
 					// relation is probabilistic (ie. TLC!RandomElement or Randomization.tla). In other
 					// words, tool.getState(curState,lastState) would return for some pairs of states.
-					sinfo = new TLCStateInfo(curState, curState.getAction().getLocation());
+					sinfo = new TLCStateInfo(curState);
 				} else {
-					sinfo = new TLCStateInfo(curState, "<Initial predicate>");
-					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
+					sinfo = new TLCStateInfo(curState);
+					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState,
+							curState.getLevel());
 					lastState = curState;
 					continue;
 				}

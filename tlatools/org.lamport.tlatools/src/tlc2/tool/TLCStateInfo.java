@@ -5,46 +5,68 @@
 
 package tlc2.tool;
 
+// TLCStateInfo is largely obsolete and should be replaced in favor of
+// TLCStateMutExt, which has support for storing the predecessor, action,
+// and level (stateNum), but doesn't have to be created after the fact,
+// that is from an existing TLCState trace, but gets created by Tool/
+// TLCTrace. However, TLCStateInfo is used in too many places, which makes
+// this particular refactoring too expensive right now.  Also, TLCStateMutExt
+// doesn't get used in throughput-optimized BFS search (unless TLC runs in
+// '-debugger' mode).
 public class TLCStateInfo {
-  public static final String INITIAL_PREDICATE = "<Initial predicate>";
+  private static final String INITIAL_PREDICATE_NO_ANGLE_BRACKET = "Initial predicate";
+
+  public static final String INITIAL_PREDICATE = "<" + INITIAL_PREDICATE_NO_ANGLE_BRACKET + ">";
   
   public TLCStateInfo predecessorState;
   public long stateNumber;
-  public final TLCState state;
   public Object info;
+  public final TLCState state;
   public Long fp;
 
-	public TLCStateInfo(TLCState initialState) {
-		this.state = initialState;
+  public TLCStateInfo(final TLCState state) {
+	this.state = state;
+	this.stateNumber = state.getLevel();
+	
+	if (state.hasAction()) {
+		// In simulation mode or when TLC runs with "-debugger", states have the Action
+		// attached.
+		this.info = toInfo(state.isInitial(), state.getAction());
+	} else {
+		// Traditionally (hail legacy), the name and location of the initial predicate is unknown.
+		// See e.g. https://github.com/tlaplus/tlaplus/issues/305
 		this.info = INITIAL_PREDICATE;
-		this.stateNumber = 1;
-		this.fp = initialState.fingerPrint();
 	}
+  }
 
-  public TLCStateInfo(TLCState s, Object info) {
-    this.state = s;
-    this.info = info;
+  public TLCStateInfo(final TLCState state, final Action action) {
+	this.state = state;
+	this.stateNumber = state.getLevel();
+	
+	this.info = toInfo(state.isInitial(), action);
   }
   
-  public TLCStateInfo(TLCState state, int stateOrdinal) {
-	  this.state = state;
-	  this.stateNumber = stateOrdinal;
-	  this.info = "";
-  }
-
-  public TLCStateInfo(TLCState s, String info, int stateNum) {
-	  this(s, info);
-	  stateNumber = stateNum;
-  }
-
-  public TLCStateInfo(TLCState s, String info, int stateNum, long fp) {
-	  this(s, info);
-	  stateNumber = stateNum;
-	  this.fp = fp;
+  private static String toInfo(final boolean isInitial, final Action a) {
+	  if (isInitial && !a.isNamed()) {
+		  // It is possible for an action to have no name, yet to have a location. Instead
+		  // of showing <Action loc ...>, we show <Initial Predicate loc...> for legacy
+	      // reasons.
+		  return a.getLocation(INITIAL_PREDICATE_NO_ANGLE_BRACKET);
+	  }
+	  return a.getLocation();
   }
   
-  public TLCStateInfo(TLCState s, TLCStateInfo info) {
-	  this(s, info.info);
+  // Legacy (DFID & MP)
+  public TLCStateInfo(final TLCState state, final int stateOrdinal) {
+		this.state = state;
+		this.stateNumber = stateOrdinal;
+		this.info = "";
+  }
+  
+  // AliasTLCStateInfo
+  protected TLCStateInfo(final TLCState s, final TLCStateInfo info) {
+	  this.state = s;
+	  this.info = info.info;
 	  this.stateNumber = info.stateNumber;
 	  this.fp = info.fp;
   }

@@ -59,9 +59,9 @@ public class AliasSafetySimuTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ y = FALSE\n/\\ x = 1\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 1 e2: FALSE\"\n/\\ te = TRUE\n/\\ TLCGetAction = [ name |-> \"UnnamedAction\",\n"
 				+ "  location |->\n"
 				+ "      [ beginLine |-> 20,\n"
-				+ "        beginColumn |-> 9,\n"
+				+ "        beginColumn |-> 18,\n"
 				+ "        endLine |-> 20,\n"
-				+ "        endColumn |-> 13,\n"
+				+ "        endColumn |-> 26,\n"
 				+ "        module |-> \"Alias\" ] ]");
 		expectedTrace.add("/\\ y = TRUE\n/\\ x = 2\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 2 e2: TRUE\"\n/\\ te = TRUE\n/\\ TLCGetAction = [ name |-> \"Next\",\n"
 				+ "  location |->\n"
