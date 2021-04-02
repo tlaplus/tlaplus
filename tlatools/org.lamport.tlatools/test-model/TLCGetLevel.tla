@@ -1,16 +1,26 @@
 --------------------------- MODULE TLCGetLevel ----------------------------
 EXTENDS Integers, TLC
 
-VARIABLES x, y
+VARIABLES x, y, yb
 
 ASSUME(TLCGet("level") = 0)
 
-Init == /\ x = 0
-        /\ y = TLCGet("level")
+Init ==
+   /\ yb = TLCGet("level")
+   /\ x = 0
+   /\ y = TLCGet("level")
 
-Next == /\ x < 3 
-        /\ x' = x + 1
-        /\ y' = TLCGet("level")
-        
-Prop == <>[](x = 2)
+Next == 
+   /\ yb' = TLCGet("level")
+   /\ x < 3 
+   /\ x' = x + 1
+   /\ y' = TLCGet("level")
+
+Inv ==
+   /\ y = yb
+
+ActionConstraint ==
+   /\ Assert(TLCGet("level") + 1 = TLCGet("level")', "Failure action constraint")
+
+Prop == <>[](x = 2) /\ [][y' > y /\ yb' > yb]_<<x, y, yb>>
 =============================================================================

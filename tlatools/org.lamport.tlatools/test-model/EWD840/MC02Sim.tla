@@ -22,7 +22,7 @@ ActionConstraint ==
 
 -----------------------------------------------------------------------------
 
-Stop == TLCGet("level") < 5
+Stop == TLCGet("level") < 6
 
 Alias ==
  	[

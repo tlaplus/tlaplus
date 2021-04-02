@@ -22,10 +22,16 @@ public class EvalControl {
   public static final int Enabled = 1 << 2;
   /**
    * Evaluation in the scope of {@link ITool#getInitStates()} or
-   * {@link ITool#getInitStates(IStateFunctor)}. In other words set during the
+   * {@link ITool#getInitStates(IStateFunctor)}. In other words, set during the
    * generation of initial states.
    */
   public static final int Init = 1 << 3;
+	/**
+	 * Evaluation in the scope of {@link ITool#checkAssumptions() or
+	 * {@link Worker#doPostConditionCheck}. In other words, set during the
+	 * evaluation of ASSUME/ASSUMPTIONS or POSTCONDITION.
+	 */
+	public static final int Const = 1 << 4;
   
   public static final int Clear = 0;
   
@@ -71,4 +77,8 @@ public class EvalControl {
   public static boolean isInit(int control) {
 	return isSet(control, Init);
   }
+	
+	public static boolean isConst(int control) {
+		return isSet(control, Const);
+	}
 }

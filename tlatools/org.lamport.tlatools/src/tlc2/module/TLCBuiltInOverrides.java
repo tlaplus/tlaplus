@@ -34,6 +34,6 @@ public class TLCBuiltInOverrides implements ITLCOverrides {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Class[] get() {		
-		return new Class[] { TLCExt.class, Json.class };
+		return new Class[] { TLCGetSet.class, TLCExt.class, Json.class };
 	}
 }
