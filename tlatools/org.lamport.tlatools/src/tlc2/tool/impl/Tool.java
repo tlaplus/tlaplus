@@ -370,7 +370,7 @@ public abstract class Tool
   @Override
   public final void getInitStates(IStateFunctor functor) {
 	  Vect<Action> init = this.getInitStateSpec();
-	  ActionItemList acts = ActionItemList.Empty;
+	  ActionItemList acts = ActionItemListExt.Empty;
       // MAK 09/11/2018: Tail to head iteration order cause the first elem added with
       // acts.cons to be acts tail. This fixes the bug/funny behavior that the init
       // predicate Init == A /\ B /\ C /\ D was evaluated in the order A, D, C, B (A
@@ -382,6 +382,9 @@ public abstract class Tool
 	  if (init.size() != 0) {
 		  Action elem = (Action)init.elementAt(0);
 		  TLCState ps = TLCState.Empty.createEmpty();
+		  if (acts.isEmpty()) {
+			  acts.setAction(elem);
+		  }
 		  this.getInitStates(elem.pred, acts, elem.con, ps, functor, elem.cm);
 	  }
   }
@@ -463,7 +466,7 @@ public abstract class Tool
 				cm.incInvocations();
 				cm.getRoot().incInvocations();
 			}
-			states.addElement(ps.copy());
+			states.addElement(ps.copy().setAction(acts.getAction()));
 			return;
 		} else if (ps.allAssigned()) {
 			// MAK 05/25/2018: If all values of the initial state have already been
@@ -493,7 +496,7 @@ public abstract class Tool
 				cm.incInvocations();
 				cm.getRoot().incInvocations();
 			}
-			states.addElement(ps.copy());
+			states.addElement(ps.copy().setAction(acts.getAction()));
 			return;
 		}
 		// Assert.check(act.kind > 0 || act.kind == -1);

@@ -66,8 +66,7 @@ public class RandomElementSimulationTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 318\n/\\ y = 10");
 		List<Object> actualTrace = recorder.getRecords(EC.TLC_STATE_PRINT2);
 		final List<String> expectedActions = new ArrayList<>();
-		expectedActions.add(
-				TLCStateInfo.INITIAL_PREDICATE/* "<Init line 6, col 9 to line 7, col 16 of module RandomElement>" */);
+		expectedActions.add("<Init line 6, col 9 to line 7, col 16 of module RandomElement>");
 		expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1,
 				"<Next line 9, col 9 to line 11, col 21 of module RandomElement>"));
 		assertTraceWith(actualTrace, expectedTrace, expectedActions);

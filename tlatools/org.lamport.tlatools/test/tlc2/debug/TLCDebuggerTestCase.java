@@ -373,7 +373,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			}
 			
 			// Assert that the last state is an initial state.
-			assertEquals("1: <Initial predicate>", trace.get(trace.size() - 1).getName());
+			assertTrue(trace.get(trace.size() - 1).getName().startsWith("1: "));
 			
 			// Reverse the trace to traverse from initial to end in the following loops
 			Collections.reverse(trace);

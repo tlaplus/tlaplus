@@ -11,7 +11,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 
 class ActionItemList implements IActionItemList {
-	private static final boolean coverage = TLCGlobals.isCoverageEnabled();
+	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
 	/**
    * We assume that this.pred is null iff the list is empty.
    */
@@ -25,7 +25,7 @@ class ActionItemList implements IActionItemList {
     Empty = new ActionItemList(null, null, 0, null, null);
   
   /* Constructors */
-  private ActionItemList(SemanticNode pred, Context con,
+  protected ActionItemList(SemanticNode pred, Context con,
 			 int kind, ActionItemList next, CostModel cm) {
     this.pred = pred;
     this.con = con;
@@ -47,9 +47,9 @@ class ActionItemList implements IActionItemList {
    */
   public final int carKind() { return this.kind; }
 
-  public final ActionItemList cdr() { return this.next; }
+  public ActionItemList cdr() { return this.next; }
 
-  public final IActionItemList cons(SemanticNode pred,
+  public IActionItemList cons(SemanticNode pred,
 				   Context con, CostModel cm, int kind) {
     return new ActionItemList(pred, con, kind, this, coverage ? cm.get(pred) : cm);
   }
@@ -58,6 +58,14 @@ class ActionItemList implements IActionItemList {
 	return new ActionItemList(act.pred, act.con, kind, this, coverage ? act.cm.get(pred) : act.cm);
   }
 
-  public final boolean isEmpty() { return this == Empty; }
+  public boolean isEmpty() { return this == Empty; }
   
+  public void setAction(Action action) {
+	  // no-op here, but overridden by subclass.
+  }
+  
+  public Action getAction() {
+	  // no-op here, but overridden by subclass.
+	  return null;
+  }
 }
