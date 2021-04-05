@@ -176,9 +176,11 @@ public abstract class Tool
 
 		// set variables to the static filed in the state
 		if (mode == Mode.Simulation || mode == Mode.Executor || mode == Mode.MC_DEBUG) {
+			assert TLCState.Empty instanceof TLCStateMutExt;
 			TLCStateMutExt.setTool(this);
 		} else {
 			// Initialize state.
+			assert TLCState.Empty instanceof TLCStateMut;
 			TLCStateMut.setTool(this);
 		}
       
