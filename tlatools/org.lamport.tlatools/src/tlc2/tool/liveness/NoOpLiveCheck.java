@@ -27,6 +27,7 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import tlc2.output.EC;
 import tlc2.tool.ITool;
@@ -80,7 +81,7 @@ public class NoOpLiveCheck implements ILiveCheck {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#checkTrace(tlc2.tool.StateVec)
 	 */
-	public void checkTrace(ITool tool, StateVec trace) throws IOException, InterruptedException {
+	public void checkTrace(ITool tool, Supplier<StateVec> trace) throws IOException, InterruptedException {
 	}
 
 	/* (non-Javadoc)

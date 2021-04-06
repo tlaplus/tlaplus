@@ -49,7 +49,7 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
 	}
   }
   
-  private StateVec(TLCState v[]) {
+  public StateVec(TLCState v[]) {
     this.v = v;
     this.size = v.length;
   }
@@ -100,7 +100,7 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
     this.v[this.size++] = state;
     return this;
   }
-  
+
   @Override
   public final StateVec addElement(TLCState predecessor, Action action, TLCState state) {
 	  return addElement(state.setPredecessor(predecessor).setAction(action));

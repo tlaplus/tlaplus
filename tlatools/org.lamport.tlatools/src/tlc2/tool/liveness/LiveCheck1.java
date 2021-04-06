@@ -6,6 +6,7 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -484,8 +485,8 @@ public class LiveCheck1 implements ILiveCheck {
 	 * Checks if the behavior graph constructed from a state trace contains any
 	 * "bad" cycle.
 	 */
-	public synchronized void checkTrace(ITool tool, final StateVec trace) {
-		stateTrace = trace;
+	public synchronized void checkTrace(ITool tool, final Supplier<StateVec> trace) {
+		stateTrace = trace.get();
 		for (int soln = 0; soln < solutions.length; soln++) {
 			OrderOfSolution os = solutions[soln];
 			Vect<BEGraphNode> initNodes = constructBEGraph(tool, os);

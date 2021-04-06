@@ -26,6 +26,7 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
@@ -94,7 +95,7 @@ public interface ILiveCheck {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	void checkTrace(ITool tool, final StateVec trace) throws IOException, InterruptedException;
+	void checkTrace(ITool tool, final Supplier<StateVec> trace) throws IOException, InterruptedException;
 	
 	/* auxiliary methods */
 	

@@ -26,6 +26,7 @@ import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.Tool;
+import tlc2.tool.impl.Tool.Mode;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import util.FileUtil;
@@ -63,7 +64,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 
 	@Test
 	public void testSuccessfulRun() throws Exception {
-		Tool tool = new FastTool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream());
+		Tool tool = new FastTool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream(), Mode.Simulation);
 
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		StateVec initStates = tool.getInitStates();
@@ -79,7 +80,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testInvariantViolation() throws Exception {
-		Tool tool = new FastTool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream());
+		Tool tool = new FastTool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
 		StateVec initStates = tool.getInitStates();
@@ -154,7 +155,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testActionPropertyViolation() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", "MCActionProp", new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", "MCActionProp", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -201,7 +202,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testInvariantBadEval() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", "MCBadInvNonInitState", new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", "MCBadInvNonInitState", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -229,7 +230,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testActionPropertyBadEval() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", "MCActionPropBadEval", new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", "MCActionPropBadEval", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -250,7 +251,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testUnderspecifiedNext() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", "MCUnderspecNext", new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", "MCUnderspecNext", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -278,7 +279,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testDeadlock() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -323,7 +324,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testModelStateConstraint() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", "MCWithConstraint", new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", "MCWithConstraint", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -340,7 +341,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testModelActionConstraint() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", "MCWithActionConstraint", new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", "MCWithActionConstraint", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -357,7 +358,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testWorkerInterruption() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -386,7 +387,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 
 	@Test
 	public void testTraceDepthObeyed() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", "MCInv", new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
@@ -407,7 +408,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	
 	@Test
 	public void testStateAndTraceGenerationCount() throws Exception {
-		ITool tool = new FastTool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream());
+		ITool tool = new FastTool("", "BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, new SimpleFilenameToStream(), Mode.Simulation);
 		
 		StateVec initStates = tool.getInitStates();
 		ILiveCheck liveCheck =  new NoOpLiveCheck(tool, "BasicMultiTrace");
