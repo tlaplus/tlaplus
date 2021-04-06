@@ -140,7 +140,8 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						// No need to re-construct a trace if this.state is an initial state. Note that
 						// getTrace(s)/getTraceInfo(s) below would return a trace, but a check at the
 						// beginning seems easier.
-						return new Variable[] { getStateAsVariable(new RecordValue(t, NOT_EVAL), "1: <Initial predicate>") };
+						return new Variable[] { getStateAsVariable(new RecordValue(t, NOT_EVAL), "1: "
+								+ (t.hasAction() ? t.getAction().getLocation() : TLCStateInfo.INITIAL_PREDICATE)) };
 					}
 					
 					final Deque<Variable> trace = new ArrayDeque<>();
@@ -157,7 +158,9 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						TLCState s = t;
 						while ((s = s.getPredecessor()) != null) {
 							if (s.isInitial()) {
-								trace.add(getStateAsVariable(new RecordValue(s, NOT_EVAL), "1: <Initial predicate>"));
+								trace.add(getStateAsVariable(new RecordValue(s, NOT_EVAL),
+										"1: " + (s.hasAction() ? s.getAction().getLocation()
+												: TLCStateInfo.INITIAL_PREDICATE)));
 								return trace.toArray(new Variable[trace.size()]);
 							}
 							trace.add(getStateAsVariable(new RecordValue(s, NOT_EVAL),
