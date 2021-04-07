@@ -110,7 +110,8 @@ public abstract class Tool
     implements ValueConstants, ToolGlobals, ITool
 {
 
-  	/*
+  	public static final String PROBABLISTIC_KEY = Tool.class.getName() + ".probabilistic";
+    /*
 	 * Prototype, do *not* activate when checking safety or liveness!!!:
 	 * For simulation that is not meant as a substitute of exhaustive checking for too
 	 * large models, it can be useful to generate behaviors as quickly as possible,
@@ -129,7 +130,7 @@ public abstract class Tool
 	 * 
 	 * Activate with: -Dtlc2.tool.impl.Tool.probabilistic=true
 	 */
-  private static final boolean PROBABLISTIC = Boolean.getBoolean(Tool.class.getName() + ".probabilistic");
+  private static final boolean PROBABLISTIC = Boolean.getBoolean(PROBABLISTIC_KEY);
 
   public enum Mode {
 	  Simulation, MC, MC_DEBUG, Executor;

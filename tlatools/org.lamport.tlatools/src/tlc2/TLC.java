@@ -403,8 +403,11 @@ public class TLC {
         int index = 0;
 		while (index < args.length)
         {
-            if (args[index].equals("-simulate"))
+            if (args[index].equals("-simulate") || args[index].equals("-generate"))
             {
+            	if (args[index].equals("-generate")) {
+					System.setProperty(Tool.class.getName() + ".probabilistic", Boolean.TRUE.toString());
+            	}
             	runMode = RunMode.SIMULATE;
                 index++;
                 
