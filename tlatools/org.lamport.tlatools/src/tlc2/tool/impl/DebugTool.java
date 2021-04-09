@@ -67,6 +67,7 @@ public class DebugTool extends Tool {
 	 * code gets this FastTool.
 	 */
 	private final FastTool fastTool;
+	private final Mode toolMode;
 
 	private EvalMode mode = EvalMode.Const;
 	
@@ -90,6 +91,7 @@ public class DebugTool extends Tool {
 	
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, IDebugTarget target) {
 		super(mainFile, configFile, resolver, mode);
+		this.toolMode = mode;
 		
 		// This and FastTool share state.  Do not evaluate things concurrently.
 		this.fastTool = new FastTool(this);
@@ -400,7 +402,10 @@ public class DebugTool extends Tool {
 			// TLCStateStackFrame#getTrace to function correctly in all cases. Here, we null
 			// the predecessor again. Otherwise, TLC would keep the list of predecessors up
 			// to the initial states (unless a TLCState is persisted to disk in the StateQueue).
-			state.unsetPredecessor();
+			if (this.toolMode == Mode.MC_DEBUG) {
+				// Do *not* unset the predecessor if running simulation that maintains the current behavior as a linked list of TLCStateMutExt.
+				state.unsetPredecessor();
+			}
 		}
 	}
 	
