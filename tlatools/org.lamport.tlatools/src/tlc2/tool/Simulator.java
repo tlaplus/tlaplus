@@ -195,26 +195,27 @@ public class Simulator {
 		}
 		
 		TLCState curState = null;
-
-		// The init states are calculated only ever once and never change
-		// in the loops below. Ideally the variable would be final.
-		StateVec initStates = this.tool.getInitStates();
+		//TODO: Refactor to check validity and inModel via IStateFunctor.
+		final StateVec initStates;
 
 		//
 		// Compute the initial states.
 		//
 		try {
-
+			// The init states are calculated only ever once and never change
+			// in the loops below. Ideally the variable would be final.
+			final StateVec inits = this.tool.getInitStates();
+			initStates = new StateVec(inits.size());
 
 			// This counter should always be initialized at zero.
 			assert (this.numOfGenStates.longValue() == 0);
-			this.numOfGenStates.add(initStates.size());
+			this.numOfGenStates.add(inits.size());
 			
 			MP.printMessage(EC.TLC_COMPUTING_INIT_PROGRESS, this.numOfGenStates.toString());
 
 			// Check all initial states for validity.
-			for (int i = 0; i < initStates.size(); i++) {
-				curState = initStates.elementAt(i);
+			for (int i = 0; i < inits.size(); i++) {
+				curState = inits.elementAt(i);
 				if (this.tool.isGoodState(curState)) {
 					for (int j = 0; j < this.invariants.length; j++) {
 						if (!this.tool.isValid(this.invariants[j], curState)) {
@@ -225,6 +226,10 @@ public class Simulator {
 					}
 				} else {
 					return MP.printError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_INITIAL, curState.toString());
+				}
+				
+				if (tool.isInModel(curState)) {
+					initStates.addElement(curState);
 				}
 			}
 		} catch (Exception e) {
