@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
 import tlc2.output.EC;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
@@ -58,7 +59,7 @@ import util.FileUtil;
  * OK result onto its result queue. This acts as a way to signal external
  * clients that this thread has terminated.
  */
-public class SimulationWorker extends IdThread {
+public class SimulationWorker extends IdThread implements INextStateFunctor {
 	
 	// This worker's local source of randomness.
 	private final RandomGenerator localRng;
@@ -105,7 +106,10 @@ public class SimulationWorker extends IdThread {
 	/**
 	 * Encapsulates information about an error produced by a simulation worker.
 	 */
-	 public static class SimulationWorkerError {
+	 public static class SimulationWorkerError extends RuntimeException {
+		public SimulationWorkerError(int errorCode, String[] parameters, TLCState state, StateVec stateTrace) {
+			this(errorCode, parameters, state, stateTrace, null);
+		}
 		
 		public SimulationWorkerError(int errorCode, String[] parameters, TLCState state, StateVec stateTrace,
 				Exception e) {
@@ -293,6 +297,69 @@ public class SimulationWorker extends IdThread {
 		return null;
 	}
 
+	@Override
+	public Object addElement(final TLCState s, final Action a, final TLCState t) {
+		numOfGenStates.increment();
+
+		// Any check below may terminate simulation, which then makes state the final
+		// state in the trace. To correctly print its state number, it needs to know its
+		// predecessor.
+		t.setPredecessor(s).setAction(a);
+
+		if (!tool.isGoodState(t)) {
+			throw new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, t, getTrace());
+		}
+
+		// Check invariants.
+		int idx = 0;
+		try {
+			for (idx = 0; idx < this.tool.getInvariants().length; idx++) {
+				if (!tool.isValid(this.tool.getInvariants()[idx], t)) {
+					// We get here because of an invariant violation.
+					throw new SimulationWorkerError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
+							new String[] { tool.getInvNames()[idx] }, t, getTrace());
+				}
+			}
+		} catch (final Exception e) {
+			if (e instanceof SimulationWorkerError) {
+				throw e;
+			}
+			throw new SimulationWorkerError(EC.TLC_INVARIANT_EVALUATION_FAILED,
+					new String[] { tool.getInvNames()[idx], e.getMessage() }, t, getTrace());
+		}
+
+		// Check action properties.
+		try {
+			for (idx = 0; idx < this.tool.getImpliedActions().length; idx++) {
+				if (!tool.isValid(this.tool.getImpliedActions()[idx], curState, t)) {
+					// We get here because of implied-action violation.
+					throw new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
+							new String[] { tool.getImpliedActNames()[idx] }, t, getTrace());
+				}
+			}
+		} catch (final Exception e) {
+			if (e instanceof SimulationWorkerError) {
+				throw e;
+			}
+			throw new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
+					new String[] { tool.getImpliedActNames()[idx], e.getMessage() }, t, getTrace());
+		}
+		
+		if ((tool.isInModel(t) && tool.isInActions(s, t))) {
+			return nextStates.addElement(t);
+		}
+
+		return this;
+	}
+	
+	@Override
+	public boolean hasStates() {
+		assert Tool.isProbabilistic();
+		return !nextStates.isEmpty();
+	}
+	
+	private final StateVec nextStates = new StateVec(1);
+
 	/**
 	 * Generates a single random trace.
 	 *
@@ -313,8 +380,6 @@ public class SimulationWorker extends IdThread {
 		curState = randomState(this.localRng, initStates);
 		setCurrentState(curState);
 		
-		boolean inConstraints = tool.isInModel(curState);
-		
 		final Action[] actions = this.tool.getActions();
 		final int len = actions.length;
 
@@ -325,73 +390,27 @@ public class SimulationWorker extends IdThread {
 			// loop.
 			checkForInterrupt();
 
-			// Make sure this state satisfies the model constraints.
-			if (!inConstraints) {
-				break;
-			}
-
 			// b) Get the current state's successor states.
-			StateVec nextStates = null;
+			nextStates.clear();
 			int index = (int) Math.floor(this.localRng.nextDouble() * len);
 			final int p = this.localRng.nextPrime();
 			for (int i = 0; i < len; i++) {
-				nextStates = this.tool.getNextStates(actions[index], curState);
+				try {
+					this.tool.getNextStates(this, curState, actions[index]);
+				} catch (SimulationWorkerError swe) {
+					return Optional.of(swe);
+				}
 				if (!nextStates.empty()) {
 					break;
 				}
 				index = (index + p) % len;
 			}
-			if (nextStates == null || nextStates.empty()) {
+			if (nextStates.empty()) {
 				if (checkDeadlock) {
 					// We get here because of deadlock.
 					return Optional.of(new SimulationWorkerError(EC.TLC_DEADLOCK_REACHED, null, curState, getTrace(), null));
 				}
 				break;
-			}
-
-			// c) Check all generated next states before all but one are discarded.
-			for (int i = 0; i < nextStates.size(); i++) {
-				numOfGenStates.increment();
-				final TLCState state = nextStates.elementAt(i);
-				// Any check below may terminate simulation, which then makes state the final
-				// state in the trace. To correctly print its state number, it needs to know its
-				// predecessor.
-				state.setPredecessor(curState);
-
-				if (!tool.isGoodState(state)) {
-					return Optional.of(new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, state,
-							getTrace(), null));
-				}
-
-				// Check invariants.
-				int idx = 0;
-				try {
-					for (idx = 0; idx < this.tool.getInvariants().length; idx++) {
-						if (!tool.isValid(this.tool.getInvariants()[idx], state)) {
-							// We get here because of an invariant violation.
-							return Optional.of(new SimulationWorkerError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
-									new String[] { tool.getInvNames()[idx] }, state, getTrace(), null));
-						}
-					}
-				} catch (final Exception e) {
-					return Optional.of(new SimulationWorkerError(EC.TLC_INVARIANT_EVALUATION_FAILED,
-							new String[] { tool.getInvNames()[idx], e.getMessage() }, state, getTrace(), null));
-				}
-
-				// Check action properties.
-				try {
-					for (idx = 0; idx < this.tool.getImpliedActions().length; idx++) {
-						if (!tool.isValid(this.tool.getImpliedActions()[idx], curState, state)) {
-							// We get here because of implied-action violation.
-							return Optional.of(new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
-									new String[] { tool.getImpliedActNames()[idx] }, state, getTrace(), null));
-						}
-					}
-				} catch (final Exception e) {
-					return Optional.of(new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
-							new String[] { tool.getImpliedActNames()[idx], e.getMessage() }, state, getTrace(), null));
-				}
-
 			}
 
 			// At this point all generated successor states have been checked for
@@ -400,7 +419,6 @@ public class SimulationWorker extends IdThread {
 			// d) Randomly select one of them and make it the current state for the next
 			// iteration of the loop.
 			final TLCState s1 = randomState(localRng, nextStates);
-			inConstraints = (tool.isInModel(s1) && tool.isInActions(curState, s1));
 			
 			// Execute callable on the state that was selected from the set of successor
 			// states.  See TLCExt!TLCDefer operator for context.

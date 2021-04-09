@@ -209,7 +209,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		debugger.replaceAllBreakpointsWith(MDL, 16);
 		stackFrames = debugger.continue_();
 		stackFrames = debugger.stepIn(13);
-		assertEquals(3, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 16, 58, 16, 68, MDL, Context.Empty.cons(null, IntValue.ValZero));
 		Variable[] contextVariables = ((TLCStateStackFrame) stackFrames[0]).getVariables();
 		assertNotNull(contextVariables);
@@ -222,13 +222,13 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		// 8888888888888888888 Action Constraint 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(MDL, 19);
 		stackFrames = debugger.continue_();
-		assertEquals(1, stackFrames.length);
+		assertEquals(8, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 19, 21, MDL);
 		
 		// 8888888888888888888 Invariant Inv 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(RM, 94);
 		stackFrames = debugger.continue_();
-		assertEquals(1, stackFrames.length);
+		assertEquals(8, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
 		
 		// 8888888888888888888 ALIAS Alias 8888888888888888888 //
@@ -236,7 +236,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		debugger.replaceAllBreakpointsWith(MDL, 33);
 		for (int i = 0; i < 6; i++) {
 			stackFrames = debugger.continue_();
-			assertEquals(2, stackFrames.length);
+			assertEquals(11, stackFrames.length);
 			assertTLCActionFrame(stackFrames[0], 33, 28, 33, 57, MDL);
 			assertTLCActionFrame(stackFrames[1], 28, 9, 34, 9, MDL);
 		}
