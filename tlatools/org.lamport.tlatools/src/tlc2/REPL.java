@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -118,11 +119,17 @@ public class REPL {
                 OpDefNode valueNode = module.getOpDef(replValueVarName);
                 Value exprVal = (Value) tool.eval(valueNode.getBody());
                 return exprVal.toString();
-            } catch (Assert.TLCRuntimeException | EvalException exc) {
+            } catch (EvalException exc) {
                 // TODO: Improve error messages with more specific detail.
-                System.out.println("Error evaluating expression: '" + evalExpr + "'");
+            	System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr, exc);
+            } catch (Assert.TLCRuntimeException exc) {
+            	if (exc.parameters != null) {
+					System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr,
+							Arrays.toString(exc.parameters));
+            	} else {
+            		System.out.printf("Error evaluating expression: '%s'%n", evalExpr);
+            	}
             }
-
         } catch (IOException pe) {
             pe.printStackTrace();
         }

@@ -365,10 +365,15 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // since failed parsing is not marked by an exception,
         // check the status of the spec
         // check if the specification has been successfully created
-        if (!specObj.initErrors.isSuccess() || !specObj.parseErrors.isSuccess() || !specObj.semanticErrors.isSuccess())
-        {
-            Assert.fail(EC.TLC_PARSING_FAILED);
-        }
+		if (!specObj.initErrors.isSuccess()) {
+			Assert.fail(EC.TLC_PARSING_FAILED, specObj.initErrors.getErrors());
+		}
+		if (!specObj.parseErrors.isSuccess()) {
+			Assert.fail(EC.TLC_PARSING_FAILED, specObj.parseErrors.getErrors());
+		}
+		if (!specObj.semanticErrors.isSuccess()) {
+			Assert.fail(EC.TLC_PARSING_FAILED, specObj.semanticErrors.getErrors());
+		}
 
         // Set the rootModule:
         this.moduleTbl = specObj.getExternalModuleTable();
