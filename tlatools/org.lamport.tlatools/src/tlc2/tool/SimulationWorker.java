@@ -64,7 +64,7 @@ public class SimulationWorker extends IdThread {
 	private final RandomGenerator localRng;
 
 	// The state currently being processed.
-	TLCState curState;
+	private TLCState curState;
 
 	// The set of initial states for the spec. 
 	private StateVec initStates;
@@ -401,7 +401,6 @@ public class SimulationWorker extends IdThread {
 			// iteration of the loop.
 			final TLCState s1 = randomState(localRng, nextStates);
 			inConstraints = (tool.isInModel(s1) && tool.isInActions(curState, s1));
-			s1.setPredecessor(curState); // Should be redundant but let's be safe anyway.
 			
 			// Execute callable on the state that was selected from the set of successor
 			// states.  See TLCExt!TLCDefer operator for context.
