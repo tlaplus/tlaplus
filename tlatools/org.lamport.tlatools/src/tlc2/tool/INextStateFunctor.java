@@ -33,6 +33,10 @@ public interface INextStateFunctor extends IStateFunctor {
 		
 	}
 
+	default Object addElement(TLCState state) {
+		throw new UnsupportedOperationException();
+	}
+
 	default boolean hasStates() {
 		throw new UnsupportedOperationException();
 	}

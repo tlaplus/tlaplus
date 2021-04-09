@@ -79,6 +79,8 @@ public interface ITool extends TraceApp {
 	
 	boolean getNextStates(final INextStateFunctor functor, final TLCState state);
 
+	boolean getNextStates(final INextStateFunctor functor, final TLCState state, final Action action);
+	
 	IValue eval(SemanticNode expr);
 
 	IValue eval(SemanticNode expr, Context c);

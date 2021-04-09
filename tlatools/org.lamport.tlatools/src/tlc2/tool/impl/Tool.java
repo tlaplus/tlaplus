@@ -823,13 +823,17 @@ public abstract class Tool
   @Override
   public boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
 	  for (int i = 0; i < actions.length; i++) {
-			final Action action = actions[i];
-			this.getNextStates(action, action.pred, ActionItemList.Empty, action.con, state, TLCState.Empty.createEmpty(),
-					functor, action.cm);
+			this.getNextStates(functor, state, actions[i]);
 		}
 		return false;
   }
 
+  public boolean getNextStates(final INextStateFunctor functor, final TLCState state, final Action action) {
+		this.getNextStates(action, action.pred, ActionItemList.Empty, action.con, state, TLCState.Empty.createEmpty(),
+				functor, action.cm);
+		return false;
+  }
+  
   protected abstract TLCState getNextStates(final Action action, SemanticNode pred, ActionItemList acts, Context c,
                                        TLCState s0, TLCState s1, INextStateFunctor nss, CostModel cm);
   
@@ -3717,5 +3721,9 @@ public abstract class Tool
 	@Override
 	public Object getVal(ExprOrOpArgNode expr, Context con, boolean b) {
 		return getVal(expr, con, b, toolId);
+	}
+
+	public static boolean isProbabilistic() {
+		return PROBABLISTIC;
 	}
 }
