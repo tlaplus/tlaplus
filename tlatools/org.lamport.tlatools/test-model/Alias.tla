@@ -36,7 +36,7 @@ Animation(e1,e2) == "e1: " \o ToString(e1) \o " e2: " \o ToString(e2)
 \* - additional trace expressions
 \* TLC ignores the original state if the evaluation of
 \* Alias fails.
-Alias == IF TLCGet("mode") = "Simulation" THEN
+Alias == IF TLCGet("config").mode = "simulate" THEN
          [y |-> y, \* x and y reordered.
           x |-> x, 
           a |-> x' - x, 

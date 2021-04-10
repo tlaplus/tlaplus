@@ -62,7 +62,7 @@ public class TLCGetSet implements ValueConstants {
 	private static final UniqueString DIAMETER = UniqueString.uniqueStringOf("diameter");
 	private static final UniqueString EXIT = UniqueString.uniqueStringOf("exit");
 	private static final UniqueString PAUSE = UniqueString.uniqueStringOf("pause");
-	private static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
+	private static final UniqueString CONFIG = UniqueString.uniqueStringOf("config");
 	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
 
 	public static final long serialVersionUID = 20210330L;
@@ -164,21 +164,43 @@ public class TLCGetSet implements ValueConstants {
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(((System.currentTimeMillis() - startTime) / 1000L)));
 			}
-		} else if (MODE == sv.val) {
+		} else if (CONFIG == sv.val) {
 			/*
-			 * Add operator `TLC!TLCGet("mode")`.
+			 * Add operator `TLC!TLCGet("config")`.
 			 * 
-			 * ```tla TLCGet("mode") == CHOOSE s \in STRING: TRUE ```
+				```tla
+				TLC!TLCGet("config") ==
+				    CHOOSE cfg \in
+				       [ mode: STRING,
+				          depth : Nat ] \cup [mode: STRING]: TRUE
+				```
 			 * 
-			 * Breadth-first model-checking: "BFS" Simulation: "Simulation"
-			 * 
-			 * Note that `TLCGet("mode")` remains undocumented in `TLC.tla` until we have
+			 * Note that `TLCGet("config")` remains undocumented in `TLC.tla` until we have
 			 * more confidence in its usefulness.
+			 * 
+			 * TODO: The config record remains mostly incomplete:
+			 *       - worker id
+			 *       - number of traces to generate/simulate
+			 *       - deadlock checking yes/no
+			 * 
+			 * TODO: Initialize the RecordValue (config) eagerly to minimize the runtime
+			 *       overhead.
 			 */
 			if (TLCGlobals.simulator != null) {
-				return new StringValue("Simulation");
+				final Value[] values = new Value[2];
+				final UniqueString[] names = new UniqueString[2];
+				names[0] = UniqueString.of("mode");
+				if (Tool.isProbabilistic()) {
+					values[0] = new StringValue("generate");
+				} else {
+					values[0] = new StringValue("simulate");
+				}
+				names[1] = UniqueString.of("depth");
+				values[1] = IntValue.gen(TLCGlobals.simulator.getTraceDepth());
+				return new RecordValue(names, values, false);
 			} else {
-				return new StringValue("BFS");
+				assert TLCGlobals.mainChecker != null;
+				return new RecordValue(UniqueString.of("mode"), new StringValue("bfs"));
 			}
 		} else if (LEVEL == sv.val) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"

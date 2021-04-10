@@ -663,4 +663,8 @@ public class Simulator {
 			return this.rng;
 		}
 	}
+
+	public int getTraceDepth() {
+		return this.traceDepth;
+	}
 }
