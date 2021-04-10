@@ -170,7 +170,7 @@ public class MCState {
 			IValue value = variableMap.get(key);
 			// value is null if the successor state is not completely specified by the
 			// next-state relation. See e.g. IncompleteNextTest.java
-			MCVariable variable = new MCVariable(key.toString(), value != null ? value.toString() : "");
+			MCVariable variable = new MCVariable(key.toString(), value);
 			variableList.add(variable);
 		}
 		

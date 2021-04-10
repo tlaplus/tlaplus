@@ -1,11 +1,13 @@
 package tlc2.model;
 
 import tlc2.output.EC;
+import tlc2.value.IValue;
 import util.Assert;
 
 public class MCVariable {
     private final String name;
     private final String valueAsString;
+	private final IValue tlcValue;
     private String traceExpression;
 
 	/**
@@ -18,10 +20,28 @@ public class MCVariable {
 		Assert.check(value != null, EC.GENERAL);
 		valueAsString = value;
 		traceExpression = null;
+		this.tlcValue = null;
+	}
+
+	/**
+	 * @param varName  name of the variable
+	 * @param tlcValue Original TLC representation of the value
+	 */
+	public MCVariable(final String varName, final IValue tlcValue) {
+		Assert.check(varName != null, EC.GENERAL);
+		name = varName;
+		valueAsString = tlcValue != null ? tlcValue.toString() : "";
+		traceExpression = null;
+		this.tlcValue = tlcValue;
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	// `tlcValue` may be null.
+	public IValue getTLCValue() {
+		return tlcValue;
 	}
 
     /**
