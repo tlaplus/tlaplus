@@ -78,7 +78,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	 * @param expressionData data on trace explorer expressions, can be null
 	 * @param initId the identifier to be used for the initial state predicate, cannot be null
 	 * @param nextId the identifier to be used for the next-state action, cannot be null
-	 * @param actionConstraintId the indentified used for the action constraint
+	 * @param actionConstraintId the identifier used for the action constraint
 	 * @param nextSubActionBasename the base string to be used as the prefix to unique names for next sub-actions
 	 * @param leaveStubsForTraceExpression if true, then a variable will be defined {@link TRACE_EXPRESSION_VARIABLE},
 	 * 						yet commented out, and similarly conjoined, but commented out in the SpecTE Init and Next
@@ -1002,13 +1002,20 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	        }
 		}
 
+		String jsonComment = TLAConstants.COMMENT;
+		if (System.getProperty("TLC_TRACE_EXPLORER_JSON_UNCOMMENTED") != null) {
+			// For tests, it's valuable to check the json output, so we remove the
+			// comment through a JVM property.
+			jsonComment = "";
+		}
+
 		tlaBuffer.append(TLAConstants.CR).append(TLAConstants.COMMENT)
 			.append("Uncomment the ASSUME below to write the states of the error trace").append(TLAConstants.CR);
 		tlaBuffer.append(TLAConstants.COMMENT).append("to the given file in Json format. Note that you can pass any tuple").append(TLAConstants.CR);
 		tlaBuffer.append(TLAConstants.COMMENT).append("to `JsonSerialize`. For example, a sub-sequence of _TETrace.").append(TLAConstants.CR);
-		tlaBuffer.append(TLAConstants.COMMENT).append(TLAConstants.KeyWords.ASSUME).append(TLAConstants.CR);
-		tlaBuffer.append(TLAConstants.COMMENT + TLAConstants.INDENT).append("LET J == INSTANCE Json").append(TLAConstants.CR);
-		tlaBuffer.append(TLAConstants.COMMENT + TLAConstants.INDENT + TLAConstants.INDENT)
+		tlaBuffer.append(jsonComment).append(TLAConstants.KeyWords.ASSUME).append(TLAConstants.CR);
+		tlaBuffer.append(jsonComment + TLAConstants.INDENT).append("LET J == INSTANCE Json").append(TLAConstants.CR);
+		tlaBuffer.append(jsonComment + TLAConstants.INDENT + TLAConstants.INDENT)
 			.append(String.format("IN J!JsonSerialize(\"%s.json\", _TETrace)", teSpecModuleName)).append(TLAConstants.CR);		
 
 		tlaBuffer.append(TLAConstants.CR);

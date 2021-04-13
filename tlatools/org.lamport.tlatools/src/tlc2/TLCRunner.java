@@ -29,8 +29,8 @@ import tlc2.tool.fp.FPSetFactory;
  * 
  * In light of that, i've written this class to spin off a new JVM for the model check.
  */
-class TLCRunner {
-	static List<String> JVM_ARGUMENTS;
+public class TLCRunner {
+	public static List<String> JVM_ARGUMENTS;
 	private static final String TLC_CLASS = TLC.class.getName();
 	
 	static {
@@ -47,7 +47,7 @@ class TLCRunner {
 	
 	private boolean silenceStdOut;
 
-	TLCRunner(final List<String> tlcArguments, final File logfileDestination) {
+	public TLCRunner(final List<String> tlcArguments, final File logfileDestination) {
 		outputLogfile = logfileDestination;
 		outputOutputStream = null;
 		arguments = tlcArguments;
@@ -55,7 +55,7 @@ class TLCRunner {
 		silenceStdOut = false;
 	}
 
-	TLCRunner(final List<String> tlcArguments, final OutputStream logfileOutputStream) {
+	public TLCRunner(final List<String> tlcArguments, final OutputStream logfileOutputStream) {
 		outputLogfile = null;
 		outputOutputStream = logfileOutputStream;
 		arguments = tlcArguments;
@@ -75,7 +75,7 @@ class TLCRunner {
 	 * @return the exit value of the TLC process
 	 * @throws IOException
 	 */
-	int run() throws IOException {
+	public int run() throws IOException {
 		final ProcessBuilder processBuilder = createProcess();
 		final Process p = processBuilder.start();
 		final BufferedInputStream stdOutReader = new BufferedInputStream(p.getInputStream());

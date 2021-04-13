@@ -40,7 +40,11 @@ public abstract class TraceExpressionSpecTest extends ModelCheckerTestCase {
 	private static final String OUTPUT_PATH = "states"; // Rest of tests dump stuff here.
 
 	public TraceExpressionSpecTest(final String specName, final String configName, String mode, int exitStatus) {
-		super(specName, "TESpecTest",
+		this(specName, "TESpecTest", configName, mode, exitStatus);
+	}
+
+	public TraceExpressionSpecTest(final String specName, final String path, final String configName, String mode, int exitStatus) {
+		super(specName, path,
 				new String[] { "-generateSpecTE", "-config", configName, "-teSpecOutDir", OUTPUT_PATH, mode },
 				exitStatus);
 	}

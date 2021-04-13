@@ -9,13 +9,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import tlc2.input.MCOutputParser;
 import tlc2.input.MCOutputPipeConsumer;
@@ -31,7 +32,6 @@ import tlc2.output.SpecTraceExpressionWriter;
 import tlc2.tool.Defns;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.util.Vect;
 import tlc2.value.impl.ModelValue;
 import util.TLAConstants;
 import util.ToolIO;
@@ -147,15 +147,28 @@ public class TraceExplorer {
 
 		final SpecTraceExpressionWriter writer = new SpecTraceExpressionWriter();
 
-		// Each element in `constants` is a `Vect` with 2 elements.
-		// The first element of this `Vect` is the key (the constant) and 
-		// the second one is the value of the constant.
-		Vect<Vect<Object>> constants = (Vect<Vect<Object>>) results.getModelConfig().getConstants();			
+		// We use `getRawConstants` instead of `getConstants` because the last
+		// does not really returns all constants (e.g. replacements which use `<-`).
+		// TODO: (Paulo) This processing should be moved to ModelConfig and a new
+		// getProcessedRawConstants (whatever) be added. Also, it warrants a (unit) test
+		// with extensive documentation of what is going on.
+		List<List<String>> constants= results
+			.getModelConfig()
+			.getRawConstants()
+			.stream()
+			.map(s -> s.split("\n"))
+			.flatMap(Stream::of)
+			.map(s -> s.trim())			
+			.filter(s -> !(s.equals("CONSTANT") || s.equals("CONSTANTS")))
+			// We can set by `=` or `<-`, we only split for the first as the last is
+			// a replacement and we don't need to deal with it.
+			.map(s -> Arrays.asList(s.split("=")))
+			.collect(Collectors.toList());	
 
 		// Get all reified constants;
 		List<String> reifiedConstants = new ArrayList<String>();		
-		for (Vect<Object> keyValuePair : (ArrayList<Vect<Object>>) Collections.list(constants.elements())) {
-			reifiedConstants.add(keyValuePair.elementAt(0).toString());			
+		for (List<String> keyValuePair : constants) {
+			reifiedConstants.add(keyValuePair.get(0).toString().trim());			
 		}
 
 		// Add all the model values as constants, they have to be reified (to mean something) in a TLA module.
@@ -191,10 +204,15 @@ public class TraceExplorer {
 			List<String> indentedConstants = new ArrayList<String>();
 			// Add `CONSTANTS` header.
 			indentedConstants.add(TLAConstants.KeyWords.CONSTANTS);			
-			for (Vect<Object> keyValuePair : (ArrayList<Vect<Object>>) Collections.list(constants.elements())) {
-				String key = keyValuePair.elementAt(0).toString();
-				String value = keyValuePair.elementAt(1).toString();
-				indentedConstants.add(SpecTraceExpressionWriter.indentString(String.format("%s = %s", key, value), 1));
+			for (List<String> keyValuePair : constants) {
+				if(keyValuePair.size() > 1) {
+					String key = keyValuePair.get(0).toString();
+					String value = keyValuePair.get(1).toString();
+					indentedConstants.add(SpecTraceExpressionWriter.indentString(String.format("%s=%s", key, value), 1));
+				} else {
+					String line = keyValuePair.get(0).toString();
+					indentedConstants.add(SpecTraceExpressionWriter.indentString(line, 1));
+				}
 			}
 
 			indentedConstants.addAll(mvsConfigConstants);
@@ -237,6 +255,14 @@ public class TraceExplorer {
 		// Adds Json module so we can write a Json output.
 		specTEExtendedModules.add("Json");
 		specTEExtendedModules.add("TLCExt");
+		// EXTEND Naturals for next-state relation:
+		//   _next ==
+		//    /\ \E i,j \in DOMAIN _TETrace:
+		//        /\ \/ j = i + 1    \* <--- Here!
+		//        /\ x  = _TETrace[i].x
+		//        /\ x' = _TETrace[j].x
+		//
+		specTEExtendedModules.add("Naturals");
 		specTEExtendedModules.addAll(teConstantModuleHashSet);
 				
 		writer.addPrimer(teSpecModuleName, originalSpecName, specTEExtendedModules);		

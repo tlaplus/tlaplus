@@ -118,6 +118,10 @@ public class TraceExplorationSpec {
 	}
 	
 	public static String teModuleId(Date timestamp) {
+		String traceExplorerTimestamp = System.getProperty("TLC_TRACE_EXPLORER_TIMESTAMP");
+		if (traceExplorerTimestamp != null) {
+			return traceExplorerTimestamp;
+		}
 		final long secondsSinceEpoch = timestamp.getTime() / 1_000L;
 		return Long.toString(secondsSinceEpoch);
 	}
