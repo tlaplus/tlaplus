@@ -115,9 +115,13 @@ public abstract class TraceExpressionTestCase extends ModelCheckerTestCase {
     }
 
     private void testJson() {
+        if (!this.options.containsKey("expectedJsonPath")) {
+            return;
+        }
+
         try {
             Gson gson = new Gson();
-            Object expectedJson = gson.fromJson(new FileReader(BASE_PATH + "GeneratedTESpecs" + File.separator + "EWD840_TTrace_JsonOutput.json"), Object.class);
+            Object expectedJson = gson.fromJson(new FileReader((String)this.options.get("expectedJsonPath")), Object.class);
             Object jsonObject = gson.fromJson(new FileReader(System.getProperty("user.dir") + File.separator + this.TESpec + ".json"), Object.class);
             assertTrue(expectedJson.equals(jsonObject));
         } catch (FileNotFoundException exception) {
@@ -134,10 +138,8 @@ public abstract class TraceExpressionTestCase extends ModelCheckerTestCase {
 
     @Override
     protected void beforeTearDown() {
-        if (this.options.containsKey("expectedJsonPath")) {
-            testJson();
-        }
-        //this.removeGeneratedFiles();
+        testJson();
+        this.removeGeneratedFiles();
     }
 
     @Override

@@ -29,7 +29,9 @@ package tlc2.tool.liveness;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Test;
@@ -44,7 +46,10 @@ import tlc2.output.EC.ExitStatus;
 public class CodePlexBug08EWD840FL2TETraceTest extends TraceExpressionTestCase {
 
 	public CodePlexBug08EWD840FL2TETraceTest() {
-		super("EWD840MC2", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+		super("EWD840MC2", "CodePlexBug08", new String[] {}, ExitStatus.VIOLATION_LIVENESS,
+			new HashMap<String, Object>() {{
+				put("expectedJsonPath", BASE_PATH + "CodePlexBug08" + File.separator + "EWD840MC2_TTrace_2000000000_Expected.json");                
+			}});
 	}
 	
 	@Test
