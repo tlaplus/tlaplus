@@ -67,6 +67,6 @@ public class AliasLivenessLassoTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ y = TRUE\n/\\ x = 4\n/\\ a = -3\n/\\ b = FALSE\n/\\ anim = \"e1: 4 e2: TRUE\"\n/\\ te = TRUE");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		assertBackToState(1, "<Next line 14, col 9 to line 18, col 23 of module Alias>");
+		assertBackToState(1, "<B line 20, col 1 to line 22, col 9 of module Alias>");
 	}
 }

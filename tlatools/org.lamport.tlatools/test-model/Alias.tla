@@ -11,11 +11,17 @@ EXTENDS Integers, TLC, Sequences
 VARIABLES x, y
 vars == <<x,y>>
 
-Next == /\ y' = ~y
-        /\ \/ /\ x < 4
-              /\ x' = x + 1
-           \/ /\ x = 4
-              /\ x' = 1
+A ==
+/\ y' = ~y
+/\ x < 4
+/\ x' = x + 1
+
+B ==
+/\ y' = ~y
+/\ x = 4
+/\ x' = 1             
+
+Next == A \/ B
 
 Spec == x = 1 /\ y = FALSE /\ [][Next]_vars
 
