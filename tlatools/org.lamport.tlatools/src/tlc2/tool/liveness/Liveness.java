@@ -10,6 +10,7 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LetInNode;
+import tla2sany.semantic.LevelConstants;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.Subst;
@@ -37,16 +38,16 @@ import util.ToolIO;
 public class Liveness implements ToolGlobals, ASTConstants {
 
 	private static LiveExprNode astToLive(ITool tool, ExprNode expr, Context con, int level) {
-		if (level == 0) {
+		if (level == LevelConstants.ConstantLevel) {
 			IValue val = tool.eval(expr, con, TLCState.Empty);
 			if (!(val instanceof IBoolValue)) {
 				Assert.fail(EC.TLC_EXPECTED_VALUE, new String[] { "boolean", expr.toString() });
 			}
 			return ((IBoolValue) val).getVal() ? LNBool.TRUE : LNBool.FALSE;
-		} else if (level == 1) {
+		} else if (level == LevelConstants.VariableLevel) {
 			return new LNStateAST(expr, con);
 		} else {
-			// Assert.check(level == 2);
+			// Assert.check(level == LevelConstants.ActionLevel;
 			return new LNAction(expr, con);
 		}
 	}
@@ -82,7 +83,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		}
 		default: {
 			int level = Specs.getLevel(expr, con);
-			if (level > 2) {
+			if (level > LevelConstants.ActionLevel) {
 				Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 			}
 			return astToLive(tool, expr, con, level);
@@ -115,7 +116,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 						}
 						LiveExprNode res = astToLive(tool, opDef.getBody(), con1);
 						int level = res.getLevel();
-						if (level > 2) {
+						if (level > LevelConstants.ActionLevel) {
 							return res;
 						}
 						return astToLive(tool, expr, con, level);
@@ -128,7 +129,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 
 			if (opcode == 0) {
 				int level = Specs.getLevel(expr, con);
-				if (level > 2) {
+				if (level > LevelConstants.ActionLevel) {
 					Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 				}
 				return astToLive(tool, expr, con, level);
@@ -148,7 +149,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 					res.addDisj(kid);
 				}
 				int level = res.getLevel();
-				if (level > 2) {
+				if (level > LevelConstants.ActionLevel) {
 					return res;
 				}
 				return astToLive(tool, expr, con, level);
@@ -156,7 +157,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				// Catching Exception here seem dangerous
 				// Assert.printStack(e);
 				int level = Specs.getLevel(expr, con);
-				if (level > 2) {
+				if (level > LevelConstants.ActionLevel) {
 					Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 					;
 				}
@@ -175,7 +176,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 					res.addConj(kid);
 				}
 				int level = res.getLevel();
-				if (level > 2) {
+				if (level > LevelConstants.ActionLevel) {
 					return res;
 				}
 				return astToLive(tool, expr, con, level);
@@ -183,7 +184,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				// Catching Exception here seem dangerous
 				// Assert.printStack(e);
 				int level = Specs.getLevel(expr, con);
-				if (level > 2) {
+				if (level > LevelConstants.ActionLevel) {
 					if (e instanceof Assert.TLCRuntimeException) {
 						Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, new String[] {expr.toString(), e.getMessage()});
 					} else {
@@ -201,7 +202,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				lnConj.addConj(kid);
 			}
 			int level = lnConj.getLevel();
-			if (level > 2) {
+			if (level > LevelConstants.ActionLevel) {
 				return lnConj;
 			}
 			return astToLive(tool, expr, con, level);
@@ -214,7 +215,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				lnDisj.addDisj(kid);
 			}
 			int level = lnDisj.getLevel();
-			if (level > 2) {
+			if (level > LevelConstants.ActionLevel) {
 				return lnDisj;
 			}
 			return astToLive(tool, expr, con, level);
@@ -239,7 +240,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				// Swallowing Exception here seem dangerous
 			}
 			int level = expr.getLevel();
-			if (level > 2) {
+			if (level > LevelConstants.ActionLevel) {
 				Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 			}
 			return astToLive(tool, expr, con, level);
@@ -253,7 +254,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			LiveExprNode conj2 = new LNConj(new LNNeg(guard), e2);
 			LiveExprNode res = new LNDisj(conj1, conj2);
 			int level = res.getLevel();
-			if (level > 2) {
+			if (level > LevelConstants.ActionLevel) {
 				return res;
 			}
 			return astToLive(tool, expr, con, level);
@@ -261,7 +262,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		case OPCODE_lnot: {
 			LiveExprNode lnArg = astToLive(tool, (ExprNode) args[0], con);
 			int level = lnArg.getLevel();
-			if (level > 2) {
+			if (level > LevelConstants.ActionLevel) {
 				return new LNNeg(lnArg);
 			}
 			return astToLive(tool, expr, con, level);
@@ -270,7 +271,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			LiveExprNode lnLeft = astToLive(tool, (ExprNode) args[0], con);
 			LiveExprNode lnRight = astToLive(tool, (ExprNode) args[1], con);
 			int level = Math.max(lnLeft.getLevel(), lnRight.getLevel());
-			if (level > 2) {
+			if (level > LevelConstants.ActionLevel) {
 				return new LNDisj(new LNNeg(lnLeft), lnRight);
 			}
 			return astToLive(tool, expr, con, level);
@@ -317,7 +318,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			return new LNEven(lnArg);
 		}
 		case OPCODE_aa: { // AngleAct <A>_e
-			assert Specs.getLevel(expr, con) == 2;
+			assert Specs.getLevel(expr, con) == LevelConstants.ActionLevel;
 			final ExprNode body = (ExprNode) args[0]; // the A in <<A>>_e
 			final ExprNode subs = (ExprNode) args[1]; // the e in <<A>>_e
 			return new LNAction(body, con, subs, false);
@@ -344,7 +345,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			// the subscript related branch in LNAction#eval(Tool, TLCState, TLCState). This
 			// poses no problem though because Tool#evalAppl eventually checks if e' = e.
 			int level = Specs.getLevel(expr, con);
-			if (level > 2) {
+			if (level > LevelConstants.ActionLevel) {
 				Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
 			}
 			return astToLive(tool, expr, con, level);
@@ -602,7 +603,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			LiveExprNode ln1 = ((LNEven) ln).getBody();
 			if (ln1 instanceof LNAll) {
 				LiveExprNode ln2 = ((LNAll) ln1).getBody();
-				if (ln2.getLevel() < 3) {
+				if (ln2.getLevel() < LevelConstants.TemporalLevel) {
 					pem.EAAction.addElement(ln2);
 					return;
 				}
@@ -612,11 +613,11 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			if (ln1 instanceof LNEven) {
 				LiveExprNode ln2 = ((LNEven) ln1).getBody();
 				int level = ln2.getLevel();
-				if (level <= 1) {
+				if (level <= LevelConstants.VariableLevel) {
 					pem.AEState.addElement(ln2);
 					return;
 				}
-				if (level == 2) {
+				if (level == LevelConstants.ActionLevel) {
 					pem.AEAction.addElement(ln2);
 					return;
 				}
