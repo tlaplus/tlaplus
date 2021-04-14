@@ -91,6 +91,17 @@ public class TraceExplorationSpec {
 			List<String> variables,
 			MCError errorTrace,
 			ITool specInfo) {
+
+		// If TLC throwed an exception, it's possible that the trace to be generated
+		// be degenerated and in this case have only one state, so we don't want
+		// to handle these cases, besides, TE is not very useful for one state traces anyway.
+		// Also, if TLC started from a checkpoint (`-recover`), we don't want to generate
+		// a TE spec.
+		if ((TLCGlobals.throwedException && errorTrace.getStates().size() <= 1) ||
+			(TLCGlobals.mainChecker != null && TLCGlobals.mainChecker.getFromChktp() != null)) {
+			return null;
+		}
+
 		String teSpecModuleName = deriveTESpecModuleName(ogModuleName, this.timestamp);
 		try (
 				OutputStream tlaStream = this.streamProvider.getTlaStream(teSpecModuleName);
@@ -156,7 +167,7 @@ public class TraceExplorationSpec {
 			String filename = Paths.get(tlaFilePath).getFileName().toString();
 			// see tlc2.TraceExplorationSpec.deriveTESpecModuleName(String)
 			return filename
-					.matches("^.*_" + TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "_\\d{10}(.tla)?$");
+					.matches("^.*_" + TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + ".*(.tla)?$");
 		} catch (InvalidPathException e) { return false; }
 	}
 	

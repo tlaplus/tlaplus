@@ -44,6 +44,8 @@ public class NoSymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
 		// ModelChecker intends to check liveness
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "2"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED1, "8", "s"));
+
+		assertNoTESpec();
 		
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));

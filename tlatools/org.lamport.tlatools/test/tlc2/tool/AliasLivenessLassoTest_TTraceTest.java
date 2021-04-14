@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2020 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -23,41 +23,43 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-
-package tlc2.tool.liveness;
+package tlc2.tool;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
+import tlc2.tool.liveness.ModelCheckerTestCase;
 
-/**
- * Identical to {@link LoopTest}, except that liveness checking uses
- * {@link AddAndCheckLiveCheck}. This way, TLC correctly produces the shortest
- * possible counterexample.
- */
-public class LoopForcedPartialTETraceTest extends TraceExpressionTestCase {
+@RunWith(BlockJUnit4ClassRunner.class)
+public class AliasLivenessLassoTest_TTraceTest extends ModelCheckerTestCase {
 
-	public LoopForcedPartialTETraceTest() {
-        super("SystemLoop", "Loop", new String[] {}, EC.ExitStatus.VIOLATION_LIVENESS, 
-            new HashMap<String, Object>() {{
-                put("LIVENESS_TESTING_IMPLEMENTATION", true);
-            }});
+    @Override
+    protected boolean isTESpec() {
+		return true;
 	}
 
+	public AliasLivenessLassoTest_TTraceTest() {
+		super("Alias", new String[] {}, EC.ExitStatus.VIOLATION_LIVENESS);
+	}
+
+	// ALIAS modifies the output of the original spec, do we need to worry
+	// about these cases and also create a ALIAS in our TE spec?
+    @Ignore("TESpec Bug")
 	@Test
 	public void testSpec() {
-		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1", "1", "0"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "4", "0"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "4"));
+
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		// Assert it has found the temporal violation and also a counter example
@@ -66,15 +68,14 @@ public class LoopForcedPartialTETraceTest extends TraceExpressionTestCase {
 
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>(4);
-		expectedTrace.add("x = 0");
+		final List<String> expectedTrace = new ArrayList<String>(7);
+		// Trace prefix
+		expectedTrace.add("/\\ y = FALSE\n/\\ x = 1\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 1 e2: FALSE\"\n/\\ te = TRUE");
+		expectedTrace.add("/\\ y = TRUE\n/\\ x = 2\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 2 e2: TRUE\"\n/\\ te = TRUE");
+		expectedTrace.add("/\\ y = FALSE\n/\\ x = 3\n/\\ a = 1\n/\\ b = FALSE\n/\\ anim = \"e1: 3 e2: FALSE\"\n/\\ te = TRUE");
+		expectedTrace.add("/\\ y = TRUE\n/\\ x = 4\n/\\ a = -3\n/\\ b = FALSE\n/\\ anim = \"e1: 4 e2: TRUE\"\n/\\ te = TRUE");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		// Stuttering after the init state.
-		assertStuttering(2);
-
-        // By Markus: The trace test reports some sub-actions as not covered because the minimal
-        // counter-example <<x=1>> does not cover the actions Two, Three, and Back in module SystemLoop.
-        // So we don't assert for 0 coverage here.
+		assertBackToState(1, "<B line 20, col 1 to line 22, col 9 of module Alias>");
 	}
 }

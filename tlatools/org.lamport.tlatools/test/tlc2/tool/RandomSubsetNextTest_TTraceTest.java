@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -23,8 +23,7 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-
-package tlc2.tool.liveness;
+package tlc2.tool;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -34,45 +33,43 @@ import java.util.List;
 
 import org.junit.Test;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import util.TLAConstants;
+import tlc2.tool.liveness.ModelCheckerTestCase;
 
-/**
- * see http://tlaplus.codeplex.com/workitem/8
- */
-public class CodePlexBug08TETraceTest extends TraceExpressionTestCase {
+public class RandomSubsetNextTest_TTraceTest extends ModelCheckerTestCase {
 
-	public CodePlexBug08TETraceTest() {
-		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+    @Override
+    protected boolean isTESpec() {
+		return true;
 	}
-	
+
+	public RandomSubsetNextTest_TTraceTest() {
+		super("RandomSubsetNext", ExitStatus.VIOLATION_SAFETY);
+	}
+
 	@Test
 	public void testSpec() {
-		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6", "6", "0"));
-		assertFalse(recorder.recorded(EC.GENERAL));
-	
-		// Assert it has found the temporal violation and also a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+		assertFalse(recorder.recorded(EC.TLC_BUG));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "11", "0"));
+
+		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
 		
-		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>(4);
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 2");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 3");
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 3");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 4");
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 4");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 5");
+		final List<String> expectedTrace = new ArrayList<String>(11);
+		expectedTrace.add("/\\ x = 23\n/\\ y = 0");
+		expectedTrace.add("/\\ x = 26\n/\\ y = 1");
+		expectedTrace.add("/\\ x = 18\n/\\ y = 2");
+		expectedTrace.add("/\\ x = 29\n/\\ y = 3");
+		expectedTrace.add("/\\ x = 189\n/\\ y = 4");
+		expectedTrace.add("/\\ x = 19\n/\\ y = 5");
+		expectedTrace.add("/\\ x = 92\n/\\ y = 6");
+		expectedTrace.add("/\\ x = 250\n/\\ y = 7");
+		expectedTrace.add("/\\ x = 41\n/\\ y = 8");
+		expectedTrace.add("/\\ x = 52\n/\\ y = 9");
+		expectedTrace.add("/\\ x = 78\n/\\ y = 10");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
-
-		assertStuttering(7);
-
-	assertZeroUncovered();
+		
+		assertZeroUncovered();
 	}
 }
-

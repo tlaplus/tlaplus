@@ -444,6 +444,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 		// A TE spec has to extend Toolbox to have access to _TETrace and _TEPosition
 		// operators.
 		traceExplorerExtends.add("Toolbox");
+        // Add `Naturals` for infix operators like `+` or `-`.
+        traceExplorerExtends.add("Naturals");
 		writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()),
 				traceExplorerExtends);
 
@@ -657,6 +659,8 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
 		// A TE spec has to extend Toolbox to have access to _TETrace and _TEPosition
 		// operators.
 		traceExplorerExtends.add("Toolbox");
+        // Add `Naturals` for infix operators like `+` or `-`.
+        traceExplorerExtends.add("Naturals");
 		writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()),
 				traceExplorerExtends);
 

@@ -66,7 +66,7 @@ public abstract class TraceExpressionSpecTest extends ModelCheckerTestCase {
 	@Override
 	protected boolean noGenerateSpec() {
 		return false;
-	}
+	}	
 
 	@Test
 	public void testSpec() throws Exception {

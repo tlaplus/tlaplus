@@ -189,7 +189,7 @@ public class TLC {
      * Records errors as TLC runs.
      */
     private final ErrorTraceMessagePrinterRecorder recorder = new ErrorTraceMessagePrinterRecorder();
-    
+
     /**
      * Trace exploration spec generator.
      */

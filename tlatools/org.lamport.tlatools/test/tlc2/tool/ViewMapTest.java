@@ -43,6 +43,7 @@ public class ViewMapTest extends ModelCheckerTestCase {
 		super("ViewMap", new String[] { "-view" }, ExitStatus.VIOLATION_SAFETY);
 	}
 
+
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));

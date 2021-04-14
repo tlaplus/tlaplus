@@ -50,7 +50,7 @@ public class FingerprintExceptionNextTest extends ModelCheckerTestCase {
 		String arg1 = "1) line 8, col 51 to line 8, col 63 of module FingerprintExceptionNext\n"
 			+ "0) line 8, col 44 to line 8, col 64 of module FingerprintExceptionNext\n";
 		String arg2 = "Overflow when computing the number of elements in:\n"
-			+ "SUBSET 1..32";
+			+ "SUBSET(1..32)";
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_FINGERPRINT_EXCEPTION, arg1, arg2));
 		
 		assertUncovered("line 8, col 71 to line 8, col 76 of module FingerprintExceptionNext: 0\n");

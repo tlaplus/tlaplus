@@ -1,9 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2021 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2021 Microsoft Research. All rights reserved.
  *
  * The MIT License (MIT)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
@@ -11,8 +11,8 @@
  * so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. 
- * 
+ * copies or substantial portions of the Software.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -49,7 +49,9 @@ public class Github317Test extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		
+
+		assertNoTESpec();
+
 		// Assert there is a trace.
 		assertFalse(recorder.getRecords(EC.TLC_STATE_PRINT2).isEmpty());
 
@@ -64,7 +66,7 @@ public class Github317Test extends ModelCheckerTestCase {
 
 		// Assert error stack has only been printed once by one of the workers.
 		assertEquals(1, recorder.getRecords(EC.TLC_NESTED_EXPRESSION).size());
-		
+
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_LIVE,
 				"b", "line 5, col 13 to line 5, col 13 of module Github317"));
 	}

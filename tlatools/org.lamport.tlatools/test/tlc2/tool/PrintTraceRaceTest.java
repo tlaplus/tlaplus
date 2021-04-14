@@ -44,7 +44,7 @@ public class PrintTraceRaceTest extends ModelCheckerTestCase {
 	public PrintTraceRaceTest() {
 		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "PrintTraceRace", ExitStatus.FAILURE_SAFETY_EVAL);
 	}
-	
+
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
