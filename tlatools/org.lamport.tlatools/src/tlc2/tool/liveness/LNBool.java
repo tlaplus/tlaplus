@@ -5,6 +5,7 @@
 
 package tlc2.tool.liveness;
 
+import tla2sany.semantic.LevelConstants;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 
@@ -23,7 +24,7 @@ class LNBool extends LiveExprNode {
 	}
 
 	public final int getLevel() {
-		return 0;
+		return LevelConstants.ConstantLevel;
 	}
 
 	public final boolean containAction() {

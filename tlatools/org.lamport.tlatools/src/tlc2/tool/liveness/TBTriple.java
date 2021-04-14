@@ -34,10 +34,14 @@ public class TBTriple {
 	}
 
 	public final boolean isAlpha() {
+		// TODO Comment above says that O[]p is part of alpha too, but LNNext (with
+		// nested LNAll) does not appear.
 		return ((this.fa instanceof LNConj) || (this.fa instanceof LNAll));
 	}
 
 	public final boolean isBeta() {
+		// TODO Comment above says that O<>p is part of beta too, but LNNext (with
+		// nested LNEven) does not appear.
 		return ((this.fa instanceof LNDisj) || (this.fa instanceof LNEven));
 	}
 

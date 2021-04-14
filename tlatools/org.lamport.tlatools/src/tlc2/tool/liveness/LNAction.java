@@ -6,6 +6,7 @@
 package tlc2.tool.liveness;
 
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.LevelConstants;
 import tlc2.output.EC;
 import tlc2.tool.EvalControl;
 import tlc2.tool.ITool;
@@ -52,7 +53,7 @@ public class LNAction extends LiveExprNode {
 	}
 
 	public final int getLevel() {
-		return 2;
+		return LevelConstants.ActionLevel;
 	}
 
 	public final boolean containAction() {

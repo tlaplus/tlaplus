@@ -5,6 +5,7 @@
 
 package tlc2.tool.liveness;
 
+import tla2sany.semantic.LevelConstants;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 
@@ -36,6 +37,7 @@ public abstract class LiveExprNode {
 	 * getLevel() = 0 --> constant getLevel() = 1 --> state expression
 	 * getLevel() = 2 --> action expression getLevel() = 3 --> temporal
 	 * expression
+	 * @see {@link LevelConstants}
 	 */
 	public abstract int getLevel();
 
@@ -102,8 +104,26 @@ public abstract class LiveExprNode {
 
 
 	/**
-	 * The method simplify does some simple simplifications before starting any
-	 * real work. It will get rid of any boolean constants (of type LNBool).
+	 * The method simplify does some simple simplifications before starting any real
+	 * work. It will get rid of any boolean constants (of type LNBool).
+	 * <p>
+	 * MAK 04/15/2021: The comment above claims to get rid of LNBools, but this is
+	 * not always true.  A property such as `<>[]TRUE => TRUE` is indeed simplified
+	 * to FALSE, but a property such as `FALSE /\ P ~> Q` is not simplified
+	 * to `P ~> Q`; the `(FALSE /\ P)` part is represented by an OpApplNode (SANY)
+	 * instance, which is nested in a LNStateAST.  Also, the current TLC test suite
+	 * has only a single test (tlc2.tool.liveness.EmptyOrderOfSolutionsTest) that
+	 * fails if the simplification is skipped.  All of this isn't too interesting,
+	 * however, the trivial property `<>TRUE`, obviously, cannot be and is not
+	 * simplified for the LNBool to be removed (and is also not identified as a
+	 * tautology in Liveness.processLiveness). Perhaps, an earlier stage of the
+	 * liveness implementation made this assumption. This would explain the bug
+	 * that TLC produces a bogus counterexample for `<>TRUE`, unless LNBool
+	 * instances are added to the statePredicates (in addition to LNState) in
+	 * TBGraphNode::new. Another example is `TRUE ~> Q` where Q is either constant-
+	 * or state-level.
+	 * 
+	 * See Github issue #604 and the test Github604.tla
 	 */
 	public LiveExprNode simplify() {
 		// for the remaining types, simply negate:

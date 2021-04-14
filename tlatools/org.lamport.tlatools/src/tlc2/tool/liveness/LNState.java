@@ -5,6 +5,7 @@
 
 package tlc2.tool.liveness;
 
+import tla2sany.semantic.LevelConstants;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.util.Context;
@@ -18,7 +19,7 @@ abstract class LNState extends LiveExprNode {
 	}
 
 	public final int getLevel() {
-		return 1;
+		return LevelConstants.VariableLevel;
 	}
 
 	public final boolean containAction() {
@@ -37,7 +38,7 @@ abstract class LNState extends LiveExprNode {
 		return this.tag;
 	}
 
-	public final void setTag(int t) {
+	private final void setTag(int t) {
 		this.tag = t;
 	}
 

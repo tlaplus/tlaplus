@@ -38,3 +38,4 @@ test.jfr
 *_TTrace_2000000000.json
 tlatools/org.lamport.tlatools/test-model/GeneratedTESpecs/
 tlatools/org.lamport.tlatools/test-model/test.out
+.tlacache/

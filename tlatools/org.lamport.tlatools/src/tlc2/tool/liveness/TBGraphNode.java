@@ -5,6 +5,7 @@
 
 package tlc2.tool.liveness;
 
+import tla2sany.semantic.LevelConstants;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.util.SetOfLong;
@@ -39,13 +40,24 @@ public class TBGraphNode {
 		TBPar preds = new TBPar(par.size());
 		for (int i = 0; i < par.size(); i++) {
 			LiveExprNode ln = par.exprAt(i);
-			if (ln instanceof LNState) {
+			// MAK 04/15/2021: See MAK 04/15/2021 notes in comment of
+			// tlc2.tool.liveness.LiveExprNode.simplify().
+			// The conditional below has been changed in two dimension:
+			// a) Instead of checking the concrete ln's type with instanceof, we check the
+			// ln's level.
+			// b) The check has been changed to accept ConstantLevel *and* VariableLevel,
+			// which used to be just VariableLevel.
+			// Obviously, constant-level expressions may appear in places where
+			// VariableLevel (state-level) expressions are allowed. Ignoring a
+			// constant-level expression here, causes bogus counterexamples reported for
+			// properties such as `<>TRUE` or `FALSE ~> x#x` (see Github604.tla/java for
+			// more details). Widening the check below to include constant-level expressions
+			// causes additional state predicates to be created. If one of more of those
+			// state predicates evaluate to false for a given state in
+			// tlc2.tool.liveness.TBGraphNode.isConsistent(TLCState, ITool), the state gets
+			// excluded from the behavior graph.
+			if (ln.getLevel() <= LevelConstants.VariableLevel) {
 				preds.addElement(ln);
-			} else if (ln instanceof LNNeg) {
-				LiveExprNode body = ((LNNeg) ln).getBody();
-				if (body instanceof LNState) {
-					preds.addElement(ln);
-				}
 			}
 		}
 		this.statePreds = new LiveExprNode[preds.size()];

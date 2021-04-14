@@ -524,6 +524,10 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		
 		lexpr = lexpr.simplify().toDNF();
 		if ((lexpr instanceof LNBool) && !((LNBool) lexpr).b) {
+			// This branch is only reachable for a handful of properties, such as
+			// `<>[]TRUE => TRUE` -- simplify/toDNF move the LNBool to the top.
+			// However, simplify/toDNF does not work for other properties to be
+			// identified as tautologies (`<>TRUE`, `<>[]TRUE`, ...).  
 			return new OrderOfSolution[0]; // must be unsatisfiable
 		}
 		final LNDisj dnf = (lexpr instanceof LNDisj) ? (LNDisj) lexpr : (new LNDisj(lexpr));

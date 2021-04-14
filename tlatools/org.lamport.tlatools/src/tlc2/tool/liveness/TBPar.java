@@ -117,6 +117,8 @@ public class TBPar extends Vect<LiveExprNode> {
 	private TBParVec particleClosure(TBPar terms, Vect alphas, Vect betas) {
 		// if terms is not locally consistent, then terminate.
 		if (!terms.isLocallyConsistent()) {
+			// TODO: The calling code does not seem to terminate if the term is
+			// inconsistent.
 			return new TBParVec(0);
 		}
 		// if terms is not alpha-closed, then close it.
