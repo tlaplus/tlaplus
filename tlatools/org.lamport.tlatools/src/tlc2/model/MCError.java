@@ -127,4 +127,11 @@ public class MCError {
 		buf.append(TLAConstants.END_TUPLE);
 		return buf.toString();
 	}
+
+	public boolean isLasso() {
+		if (this.states.isEmpty()) {
+			return false;
+		}
+		return this.states.get(this.states.size() - 1).isBackToState();
+	}
 }

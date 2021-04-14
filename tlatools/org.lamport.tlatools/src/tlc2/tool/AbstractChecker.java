@@ -651,4 +651,8 @@ public abstract class AbstractChecker
 
 		return new RecordValue(n, v, false);
 	}
+
+    public final boolean isRecovery() {
+        return this.fromChkpt != null;
+    }
 }

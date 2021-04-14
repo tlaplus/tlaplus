@@ -219,6 +219,12 @@ public abstract class CommonTestCase {
 	protected void assertZeroUncovered() {
 		assertTrue(recorder.getZeroCoverage().isEmpty());
 	}
+
+	// Assert that no TE spec was generated.
+	protected void assertNoTESpec() {
+		assertFalse("A TE spec was generated, but it shouldn't", 
+			recorder.recorded(EC.TLC_TE_SPEC_GENERATION_COMPLETE));
+	}
 	
 	protected void assertCoverage(final String expectedCoverage) {
 		// Lines can be reported multiple times if invoked from different actions!!!

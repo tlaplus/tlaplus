@@ -34,30 +34,36 @@ import java.util.List;
 
 import org.junit.Test;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
  */
-public class CodePlexBug08EWD840FL1TETraceTest extends TraceExpressionTestCase {
+public class CodePlexBug08EWD840FL2Test_TTraceTest extends ModelCheckerTestCase {
 
-	public CodePlexBug08EWD840FL1TETraceTest() {
-		super("EWD840MC1", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+    @Override
+    protected boolean isTESpec() {
+		return true;
+	}
+
+	public CodePlexBug08EWD840FL2Test_TTraceTest() {
+		super("EWD840MC2", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "10", "0"));
-		assertFalse(recorder.recorded(EC.GENERAL));
-		
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "10","0"));
+        assertFalse(recorder.recorded(EC.GENERAL));
+	
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-
+		
+		assertNodeAndPtrSizes(296L, 160L);
+		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>();
@@ -102,9 +108,8 @@ public class CodePlexBug08EWD840FL1TETraceTest extends TraceExpressionTestCase {
 		                + "/\\ tcolor = \"black\"\n"
 		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
-
+		
+		// last state points back to state 1
 		assertBackToState(1);
-
-	assertZeroUncovered();
 	}
 }

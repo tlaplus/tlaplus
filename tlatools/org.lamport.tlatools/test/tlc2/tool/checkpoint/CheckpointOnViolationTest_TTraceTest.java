@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -23,51 +23,49 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
+package tlc2.tool.checkpoint;
 
-package tlc2.tool.liveness;
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
+import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class ChooseTableauSymmetryATETraceTest extends TraceExpressionTestCase {
+public class CheckpointOnViolationTest_TTraceTest extends ModelCheckerTestCase {
 
-	public ChooseTableauSymmetryATETraceTest() {
-		super("ChooseTableauSymmetryMCa", "symmetry", ExitStatus.VIOLATION_LIVENESS);
+    @Override
+    protected boolean isTESpec() {
+		return true;
 	}
-	
+
+	public CheckpointOnViolationTest_TTraceTest() {
+		super("DieHard", ExitStatus.VIOLATION_SAFETY);
+	}
+
 	@Test
 	public void testSpec() {
+		// ModelChecker has finished and generated the expected amount of states. 
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6", "5", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
-
-		// Assert it has found the temporal violation and also a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-
-		// Assert the error trace
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "7", "7", "0"));
+		
+		// Check the violation
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>(7);
-		// Trace prefix
-		expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"ready\")");
-		expectedTrace.add("arr = (a :> \"busy\" @@ b :> \"ready\")");
-		expectedTrace.add("arr = (a :> \"busy\" @@ b :> \"busy\")");
-		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"busy\")");
-		expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"busy\")");
+		assertEquals(7, recorder.getRecords(EC.TLC_STATE_PRINT2).size());
 		
-		// Remove expected actions here (in comparison with the original test).
-		
-		assertBackToState(3, "<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryMCa_TTrace_2000000000>");
+		assertZeroUncovered();
+	}
 
-	assertZeroUncovered();
+	@Override
+	protected int doCheckpoint() {
+		// Request checkpoints but make it highly unlike for the test to ever create a
+		// checkpoint because the checkpoint interval was exceeded. We want to test
+		// TLC's functionality to take a checkpoint when time-bound model-checking is on
+		// and/or a violation has been found.
+		return (Integer.MAX_VALUE / 60000);
 	}
 }

@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import tlc2.input.MCOutputParser;
 import tlc2.input.MCOutputPipeConsumer;
@@ -83,7 +82,7 @@ public class TraceExplorer {
 	 * @return an array of length two; the 0-index is the location to the
 	 *         destination TLA file, and the 1-index is that of the CFG file
 	 */
-	public static File[] writeSpecTEFiles(
+	private static File[] writeSpecTEFiles(
 			final File outputDirectory,
 			final String osn,
 			final String[] vars,
@@ -122,19 +121,6 @@ public class TraceExplorer {
 		return new File[] { specTETLA, specTECFG };
 	}
 	
-	/**
-	 * 
-	 * @param teSpecModuleName
-	 * @param originalSpecName
-	 * @param originalSpecVariables
-	 * @param results
-	 * @param variables	 
-	 * @param error
-	 * @param specInfo
-	 * @param specTETLAOutStream
-	 * @param specTECFGOutStream
-	 * @throws IOException
-	 */
 	public static void writeSpecTEStreams(
 			final String teSpecModuleName,
 			final String originalSpecName,
@@ -145,43 +131,32 @@ public class TraceExplorer {
 			final OutputStream specTETLAOutStream,
 			final OutputStream specTECFGOutStream) throws IOException {
 
+		final List<MCState> trace = error.getStates();
+
 		final SpecTraceExpressionWriter writer = new SpecTraceExpressionWriter();
 
-		// We use `getRawConstants` instead of `getConstants` because the last
-		// does not really returns all constants (e.g. replacements which use `<-`).
-		// TODO: (Paulo) This processing should be moved to ModelConfig and a new
-		// getProcessedRawConstants (whatever) be added. Also, it warrants a (unit) test
-		// with extensive documentation of what is going on.
-		List<List<String>> constants= results
-			.getModelConfig()
-			.getRawConstants()
-			.stream()
-			.map(s -> s.split("\n"))
-			.flatMap(Stream::of)
-			.map(s -> s.trim())			
-			.filter(s -> !(s.equals("CONSTANT") || s.equals("CONSTANTS")))
-			// We can set by `=` or `<-`, we only split for the first as the last is
-			// a replacement and we don't need to deal with it.
-			.map(s -> Arrays.asList(s.split("=")))
-			.collect(Collectors.toList());	
+		// It is tempting to lookup the constant defns in the SpecProcessor instead of
+		// going through the mumbo-jumbo of parsing and converting entries in
+		// ModelConfig. However, the constant defns have already been evaluated by
+		// SpecProcessor and turned into IValue instances. Serializing those IValue
+		// instances via their toString method will probably cause invalid config
+		// values. Additionally, the constant defns are a superset of what is in
+		// declared and defined in ModelConfig.
+		final List<List<String>> constants = results.getModelConfig().getConstantsAsList();
 
-		// Get all reified constants;
-		List<String> reifiedConstants = new ArrayList<String>();		
-		for (List<String> keyValuePair : constants) {
-			reifiedConstants.add(keyValuePair.get(0).toString().trim());			
-		}
-
+		// The original spec might declare model-values implicitly by just declaring a
+		// set of model-values. This works for the original spec as long as those
+		// model-values do not appear explicitly. However, the model-values will
+		// likely appear in the error-trace, which is why the trace spec has to
+		// declare them. Imagine, for example, a CONSTANT P in the spec and a CONSTANT P
+		// = {p1,p2} in the config (e.g. modeling a set of two processes) and an
+		// error-trace that shows one process to enter some critical section.
 		// Add all the model values as constants, they have to be reified (to mean something) in a TLA module.
 		// First we set all the model values seen, the values will be at the static field ModelValue.mvs.
 		ModelValue.setValues();
-		List<String> mvsStr = new ArrayList<String>();
-		for (ModelValue mv : ModelValue.mvs) {
-			// Do not add the constant if it's already reified so we don't have 
-			// duplicated constants error.
-			if (!reifiedConstants.contains(mv.toString())) {
-				mvsStr.add(mv.toString());
-			}
-		}		
+		final Set<String> declaredConstantNames = constants.stream().map(l -> l.get(0)).collect(Collectors.toSet());
+		final Set<ModelValue> reifiedConstants = Set.of(ModelValue.mvs).stream()
+				.filter(m -> !declaredConstantNames.contains(m.toString())).collect(Collectors.toSet());
 
 		/**
 		 * Write content of config file (SpecTE).
@@ -195,29 +170,33 @@ public class TraceExplorer {
 		 * the TLA modules.
 		 * (see TraceExplorerDelegate#writeModelInfo)
 		 */
-		List<String> mvsConfigConstants = new ArrayList<String>();
-		for (String mv : mvsStr) {
-			mvsConfigConstants.add(SpecTraceExpressionWriter.indentString(String.format("%s = %s", mv, mv), 1));
-		}			
 
-		if(!constants.isEmpty()) {
-			List<String> indentedConstants = new ArrayList<String>();
-			// Add `CONSTANTS` header.
-			indentedConstants.add(TLAConstants.KeyWords.CONSTANTS);			
-			for (List<String> keyValuePair : constants) {
-				if(keyValuePair.size() > 1) {
-					String key = keyValuePair.get(0).toString();
-					String value = keyValuePair.get(1).toString();
-					indentedConstants.add(SpecTraceExpressionWriter.indentString(String.format("%s=%s", key, value), 1));
-				} else {
-					String line = keyValuePair.get(0).toString();
-					indentedConstants.add(SpecTraceExpressionWriter.indentString(line, 1));
-				}
+		List<String> indentedConstants = new ArrayList<String>();
+		// Ordinary constants:
+		for (List<String> keyValuePair : constants) {
+			if(keyValuePair.size() > 1) {
+				String key = keyValuePair.get(0).toString();
+				String value = keyValuePair.get(1).toString();
+				indentedConstants.add(SpecTraceExpressionWriter.indentString(String.format("%s = %s", key, value), 1));
+			} else {
+				String line = keyValuePair.get(0).toString();
+				indentedConstants.add(SpecTraceExpressionWriter.indentString(line, 1));
 			}
-
-			indentedConstants.addAll(mvsConfigConstants);
-			writer.addConstants(indentedConstants);
 		}
+
+		// Reified model-values:
+		for (ModelValue mv : reifiedConstants) {
+			indentedConstants.add(SpecTraceExpressionWriter.indentString(String.format("%s = %s", mv, mv), 1));
+		}
+		
+		// If it has a lasso, add the TTrace lasso constants to the configuration file.
+		if (error.isLasso()) {
+			indentedConstants.add(TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_START + " = " + trace.get(trace.size() - 1).getStateNumber());
+			indentedConstants.add(TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_END + " = " + (trace.size() - 1));
+		}
+		
+
+		writer.addConstants(indentedConstants);
 
 		// If needed, create module which contain the reified constants.
 		// First we need to handle the case where a model value is defined in
@@ -233,6 +212,14 @@ public class TraceExplorer {
 				modConstants.add(mv.toString());
 			}
 		}
+		// If it has a lasso, add the TTrace lasso constants to the modules constants
+		// so we can have it in a more convenient place (so other tools, like the Toolbox,
+		// can, for example, highlight the lasso).
+		if (error.isLasso()) {
+			modConstants.add(TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_START);
+			modConstants.add(TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_END);			
+		}
+		// Create TEConstant module.
 		final String teConstantSpecName = String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.SPEC_TECONSTANTS_NAME);
 		final Set<String> teConstantModuleHashSet = new HashSet<>();
 		teConstantModuleHashSet.add(TLAConstants.BuiltInModules.TLC);
@@ -268,9 +255,7 @@ public class TraceExplorer {
 		writer.addPrimer(teSpecModuleName, originalSpecName, specTEExtendedModules);		
 
 		writer.addTraceExpressionInstance(
-				String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME));
-
-		final List<MCState> trace = error.getStates();
+				String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME));		
 
 		final String teTraceName = String.format("%s_%s", originalSpecName, TLAConstants.TraceExplore.SPEC_TETRACE_NAME);
 		

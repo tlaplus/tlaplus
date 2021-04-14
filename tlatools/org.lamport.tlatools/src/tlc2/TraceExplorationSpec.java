@@ -85,12 +85,22 @@ public class TraceExplorationSpec {
 	 * 	example value: { "x", "y" }
 	 * @param errorTrace The error trace.
 	 */
-	public 	TraceExplorationSpecGenerationReport generate(
+	private	TraceExplorationSpecGenerationReport generate(
 			String ogModuleName,
 			MCParserResults parserResults,
 			List<String> variables,
 			MCError errorTrace,
 			ITool specInfo) {
+
+		// TODO Handle the case that TLC threw an unexpected exception, which generally
+		// translates into EC.General and should be interceptable with a
+		// tlc2.output.IMessagePrinterRecorder.
+		// If TLC started from a checkpoint (`-recover`), we don't want to generate a TE spec.
+		if ((errorTrace.getStates().size() <= 1)
+				|| (TLCGlobals.mainChecker != null && TLCGlobals.mainChecker.isRecovery())) {
+			return null;
+		}
+
 		String teSpecModuleName = deriveTESpecModuleName(ogModuleName, this.timestamp);
 		try (
 				OutputStream tlaStream = this.streamProvider.getTlaStream(teSpecModuleName);
@@ -156,7 +166,7 @@ public class TraceExplorationSpec {
 			String filename = Paths.get(tlaFilePath).getFileName().toString();
 			// see tlc2.TraceExplorationSpec.deriveTESpecModuleName(String)
 			return filename
-					.matches("^.*_" + TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "_\\d{10}(.tla)?$");
+					.matches("^.*_" + TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + ".*(.tla)?$");
 		} catch (InvalidPathException e) { return false; }
 	}
 	

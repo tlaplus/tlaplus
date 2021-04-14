@@ -224,6 +224,11 @@ public abstract class AbstractSpecWriter {
 	}
 
 	public void addConstants(List<String> rawConstants) {
+		if (rawConstants.isEmpty()) {
+			return;
+		}
+		cfgBuffer.append(TLAConstants.KeyWords.CONSTANTS);
+		cfgBuffer.append("\n");	
 		for (String constant : rawConstants) {
 			cfgBuffer.append(constant);	
 			cfgBuffer.append("\n");	

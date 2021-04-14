@@ -33,9 +33,9 @@ junit[0-9]*.properties
 junitvmwatcher[0-9]*.properties
 test.jfr
 *.jfr
-*_TTrace_2000000000.tla
-*_TTrace_2000000000.cfg
-*_TTrace_2000000000.json
+*_TTrace_2000000000*.tla
+*_TTrace_2000000000*.cfg
+*_TTrace_2000000000*.json
 tlatools/org.lamport.tlatools/test-model/GeneratedTESpecs/
 tlatools/org.lamport.tlatools/test-model/test.out
 .tlacache/

@@ -110,6 +110,8 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2334", "1566","0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
+
+		assertNoTESpec();
 	
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));

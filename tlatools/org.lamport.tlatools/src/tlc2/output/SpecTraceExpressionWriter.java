@@ -639,7 +639,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 			localBuffer.append(TLAConstants.COMMENT + TLAConstants.INDENT).append(String.format("IN J!ToJson(%s)", someVar))
 				.append(TLAConstants.CR).append(TLAConstants.CR);
 			
-			localBuffer.append(TLAConstants.COMMENT).append("Lastly, you may build expression over arbitrary sets of states by").append(TLAConstants.CR);
+			localBuffer.append(TLAConstants.COMMENT).append("Lastly, you may build expressions over arbitrary sets of states by").append(TLAConstants.CR);
 			localBuffer.append(TLAConstants.COMMENT).append("leveraging the _TETrace operator.  For example, this is how to").append(TLAConstants.CR);
 			localBuffer.append(TLAConstants.COMMENT).append("count the number of times a spec variable changed up to the current").append(TLAConstants.CR);
 			localBuffer.append(TLAConstants.COMMENT).append("state in the trace.").append(TLAConstants.CR);
@@ -980,11 +980,12 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 				// (_TETrace). Len(_TETrace) would however be off by one.
 				MCState backToState = trace.get(finalState.getStateNumber() - 1);
 				tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append("   ")
-						.append(TLAConstants.TLA_OR).append(TLAConstants.SPACE).append(TLAConstants.TLA_AND)
-						// Len(_TETrace) requires EXTENDS Sequences
-						.append(" i = ").append(trace.size() - 1).append(TLAConstants.CR);
+						.append(TLAConstants.TLA_OR).append(TLAConstants.SPACE).append(TLAConstants.TLA_AND)						
+						// `_TTraceLassoEnd` is a constant which contains the last state of the lasso.
+						.append(" i = ").append(TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_END).append(TLAConstants.CR);
 				tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append("  ")
-						.append(TLAConstants.INDENTED_CONJUNCTIVE).append("j = ").append(backToState.getStateNumber())
+						// `_TTraceLassoStart` is a constant which contains the first state of the lasso.
+						.append(TLAConstants.INDENTED_CONJUNCTIVE).append("j = ").append(TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_START)
 						.append(TLAConstants.CR);
 			}
 			for (String var : vars) {
@@ -1002,7 +1003,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	        }
 		}
 
-		String jsonComment = TLAConstants.COMMENT;
+		String jsonComment = TLAConstants.INDENT + TLAConstants.COMMENT;
 		if (System.getProperty("TLC_TRACE_EXPLORER_JSON_UNCOMMENTED") != null) {
 			// For tests, it's valuable to check the json output, so we remove the
 			// comment through a JVM property.
