@@ -1,5 +1,5 @@
 --------------------------- MODULE UserModuleOverrideAnnotation -----------------------
-EXTENDS Naturals
+EXTENDS Naturals, TLC
 VARIABLES x
 
 Get == FALSE
@@ -11,5 +11,5 @@ Next == x' = Get2
 
 Spec == Init /\ [][Next]_<<x>>
 
-Prop == [](x = TRUE)
+Prop == <>[](Print(x, x = TRUE))
 =============================================================================

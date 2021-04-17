@@ -1,5 +1,5 @@
 --------------------------- MODULE UserModuleOverrideBase -----------------------
-EXTENDS Naturals, UserModuleOverrideFromJar
+EXTENDS Naturals, UserModuleOverrideFromJar, TLC
 VARIABLES x
 
 Init == x = Get
@@ -8,5 +8,5 @@ Next == x' = Get2
 
 Spec == Init /\ [][Next]_<<x>>
 
-Prop == [](x = TRUE)
+Prop == <>[](Print(x, x = TRUE))
 =============================================================================

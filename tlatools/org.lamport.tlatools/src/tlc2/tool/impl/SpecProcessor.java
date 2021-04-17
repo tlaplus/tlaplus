@@ -49,6 +49,7 @@ import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
+import tla2sany.semantic.LevelConstants;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.OpApplNode;
@@ -274,7 +275,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
           Object realDef = symbolNodeValueLookupProvider.lookup(opDef, Context.Empty, false, toolId);
           if (realDef instanceof OpDefNode) {
             opDef = (OpDefNode)realDef;
-            if (symbolNodeValueLookupProvider.getLevelBound(opDef.getBody(), Context.Empty, toolId) == 0) {
+            if (symbolNodeValueLookupProvider.getLevelBound(opDef.getBody(), Context.Empty, toolId) == LevelConstants.ConstantLevel) {
               try {
                 UniqueString opName = opDef.getName();
                 if (isVetoed(opName)) {

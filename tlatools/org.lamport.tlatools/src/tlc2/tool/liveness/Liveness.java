@@ -32,14 +32,91 @@ import tlc2.util.Vect;
 import tlc2.value.IBoolValue;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IValue;
+import tlc2.value.impl.EvaluatingValue;
+import tlc2.value.impl.MethodValue;
 import util.Assert;
 import util.ToolIO;
 
 public class Liveness implements ToolGlobals, ASTConstants {
 
 	private static LiveExprNode astToLive(ITool tool, ExprNode expr, Context con, int level) {
+		/*
+		 * MAK 04/16/2021: Arguments of a non-zero arity operator that do not appear on
+		 * the operator's right-hand side (commonly called ignored arguments), are
+		 * ignored by level-checking, regardless of what the arguments are replaced with
+		 * in places where the operator is evaluated. For example, the operator `Op`
+		 * below has constant-level because its `a` argument does not appear in `Op`'s
+		 * definition, even though it is evaluated in `Prop` with the state-level
+		 * variable `v`.
+		 * 
+		 * ----- MODULE Frob ------
+		 * 
+		 * EXTENDS Naturals
+		 * 
+		 * VARIABLE v
+		 * 
+		 * Op(a,b) == b = 42
+		 * 
+		 * Spec == v = 0 /\ [][UNCHANGED v]_v
+		 * 
+		 * Prop == <>Op(v, 42)
+		 * 
+		 * ======
+		 * 
+		 * This causes the following error, iff the operator appears in a (temporal)
+		 * property and has a Java module override (even if the module override ignores
+		 * the argument(s) as well):
+		 * 
+		 * "In evaluation, the identifier v is either undefined or not an operator."
+		 * 
+		 * The reason is that Tool.java passes all arguments to the Java module
+		 * overrides; even ignored ones (the signature of the Java module override has
+		 * to match the signature of the TLA+ operator for the override to be loaded).
+		 * 
+		 * Below is a excerpt of operators, from the (extended) list of standard
+		 * operators, that are affected when evaluated with > *constant-level* arguments
+		 * in a (liveness) property:
+		 * 
+		 * `TLC!Print` (when `out` argument has state-level), `TLC!PrintT`,
+		 * `TLC!Assert`, `TLC!TLCGet`, `TLC!TLCSet`
+		 * 
+		 * Some more examples of modules that lack proper definitions from the
+		 * CommunityModules:
+		 * 
+		 * CSV.tla, IOUtils.tla, SVG.tla (`SVGElemToString`, `NodeOfRingNetwork`), ...
+		 * 
+		 * Obviously, we could mandate all operators to be properly defined. However,
+		 * the definitions in TLC.tla would have to become e.g.:
+		 * 
+		 * `PrintT(out) == out = out` or `TLCGet(i) == CHOOSE n : i = i`
+		 * 
+		 * The standard modules are defined in the book "Specifying Systems", which is
+		 * one reason not to change them. Another is that the definitions look funny.
+		 * 
+		 * We could also choose to declare this a corner case and move on. After all,
+		 * the bug is limited to operators with Java module overrides, which may not
+		 * commonly occur in liveness properties. However, the community has started to
+		 * embrace module overrides to speed up model-checking, and it is not uncommon
+		 * for operators with Java module overrides to be defined as TRUE.
+		 * 
+		 * Thus, the if block below takes the level of the arguments in the operator
+		 * application into account. The overhead of this change is negligible and only
+		 * incurred at startup (during the construction of the liveness tableau).
+		 * Additionally, it only checks the level for MethodValues and EvaluatingValues.
+		 */
+		if (level == LevelConstants.ConstantLevel && expr instanceof OpApplNode) {
+			final Object realDef = tool.lookup(((OpApplNode) expr).getOperator(), Context.Empty, false);
+			if (realDef instanceof MethodValue || realDef instanceof EvaluatingValue) {
+				// The current level is determined by the maximum level of the arguments in the
+				// operator's application.
+				for (SymbolNode p : expr.getAllParams()) {
+					level = Math.max(level, p.getLevel());
+				}
+			}
+		}
+
 		if (level == LevelConstants.ConstantLevel) {
-			IValue val = tool.eval(expr, con, TLCState.Empty);
+			final IValue val = tool.eval(expr, con, TLCState.Empty);
 			if (!(val instanceof IBoolValue)) {
 				Assert.fail(EC.TLC_EXPECTED_VALUE, new String[] { "boolean", expr.toString() });
 			}
