@@ -53,11 +53,11 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
-<repository id="github-pdf4eclipse" location="http://lemmy.github.com/Pdf4Eclipse/"/>
+<repository id="github-pdf4eclipse" location="http://lemmster.de/Pdf4Eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
 <unit id="org.lamport.openjdk.feature.feature.group" version="0.0.0"/>
-<repository id="github-jdk" location="http://lemmy.github.com/eclipse-jdk-bundles/"/>
+<repository id="github-jdk" location="http://lemmster.de/eclipse-jdk-bundles/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0"/>
