@@ -44,6 +44,10 @@ public abstract class LiveExprNode {
 	/* Returns true iff the expression contains action. */
 	public abstract boolean containAction();
 
+	boolean isPositiveForm() {
+		return true;
+	}
+
 	/**
 	 * @param s1 First state
 	 * @param s2 Second (successor) state
@@ -85,9 +89,17 @@ public abstract class LiveExprNode {
 		return true;
 	}
 
-	/* This method pushes a negation all the way down to the atoms. */
+	/* This method pushes a negation all the way down to the atoms.
+	 * It uses the subset of rewriting rules on p. 452 of Manna & Pnueli that apply
+	 * to operators that exist in TLA.
+	 * @see tlc2.tool.liveness.LiveExprNodeTest
+	 */
 	public LiveExprNode pushNeg() {
 		// for the remaining types, simply negate:
+		// Note that this causes a StackOverflow if pushing negation into ~()P to ()~P
+		// (see tests in LiveExprNodeTests). This is no problem though, because LNNext
+		// nodes are created after negation has been pushed as part of the conversion to
+		// disjunct normal form (DNF) with LiveExprNode#toDNF.
 		return new LNNeg(this);
 	}
 
@@ -164,6 +176,9 @@ public abstract class LiveExprNode {
 	 * tags in its depth-first traversal.
 	 */
 	public int tagExpr(int tag) {
+		// Non-trivially overridden in:
+		// - LNState
+		// - LNAction
 		return tag;
 	}
 
@@ -177,11 +192,30 @@ public abstract class LiveExprNode {
 	 */
 	public void extractPromises(TBPar promises) {
 		// Finally, for the remaining kinds, there is nothing to do.
+		// Except for LNEven, all LiveExprNode sub-classes have either trivial overrides
+		// or none at all.
 		return;
 	}
 
 	public String toDotViz() {
 		// By default just return the regular toString rep.
 		return toString();
+	}
+
+	/**
+	 * This doesn't mutate the LiveExprNode hierarchy it is called on. This is the
+	 * entry point for callers. @see LiveExprNode#extractPromises(TBPar) for details
+	 * what actually happens.
+	 */
+	public final LNEven[] extractPromises() {
+		final TBPar promises = new TBPar(10);
+		extractPromises(promises);
+		
+		final LNEven[] prms = new LNEven[promises.size()];
+		for (int j = 0; j < promises.size(); j++) {
+			prms[j] = (LNEven) promises.exprAt(j);
+		}
+
+		return prms;
 	}
 }

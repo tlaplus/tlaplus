@@ -27,10 +27,27 @@ public class TBGraph extends Vect<TBGraphNode> {
 	 */
 	public TBGraph(final LiveExprNode tf) {
 		this.tf = tf;
+		// The following assert follows from comments and has been validated with the
+		// TLC test suite.  It is commented to not cause regressions if for some reason
+		// the comments are wrong.  That would be fatal, though, because the tableau
+		// method in Manna & Pnueli book does not consider actions because it is for LTL.
+		//assert !tf.containAction();
+		
 		this.initCnt = 0;
 		
 		final TBPar initTerms = new TBPar(1);
 		initTerms.addElement(tf);
+		
+		// TBPar#particleClosure implements the tableau construction method described on
+		// page 452 of the Manna & Pnueli book, which works under the assumption that
+		// the temporal formulae (tf) are in positive form, i.e., negation is only
+		// applies to/is pushed down to the (state) formulas (atoms).  The tf here has been
+		// brought into positive form in Liveness.java during the conversion into disjunct
+		// normal form (DNF).  Thus, we should probably assert that tf is in positive form.
+		// Unfortunately, neither the TLC test suite nor the TLA+ examples have properties
+		// that are locally inconsistent.  In other words, the test coverage WRT to local
+		// consistency is zero.
+		//assert tf.isPositiveForm();
 		final TBParVec pars = initTerms.particleClosure();
 
 		for (int i = 0; i < pars.size(); i++) {

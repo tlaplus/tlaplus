@@ -27,6 +27,11 @@ class LNNext extends LiveExprNode {
 	public final boolean containAction() {
 		return this.body.containAction();
 	}
+	
+	@Override
+	public final boolean isPositiveForm() {
+		return this.body.isPositiveForm();
+	}
 
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		return this.body.eval(tool, s2, TLCState.Empty);

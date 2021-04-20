@@ -26,6 +26,14 @@ public class LNNeg extends LiveExprNode {
 	public final boolean containAction() {
 		return this.body.containAction();
 	}
+	
+	@Override
+	public final boolean isPositiveForm() {
+		if (this.body instanceof LNBool || this.body instanceof LNState) {
+			return true;
+		}
+		return false;
+	}
 
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		return !this.body.eval(tool, s1, s2);

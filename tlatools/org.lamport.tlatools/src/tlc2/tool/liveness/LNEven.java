@@ -36,6 +36,11 @@ class LNEven extends LiveExprNode {
 	public final boolean containAction() {
 		return this.body.containAction();
 	}
+	
+	@Override
+	public final boolean isPositiveForm() {
+		return this.body.isPositiveForm();
+	}
 
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		Assert.fail(EC.TLC_LIVE_CANNOT_EVAL_FORMULA, EVENTUALLY);

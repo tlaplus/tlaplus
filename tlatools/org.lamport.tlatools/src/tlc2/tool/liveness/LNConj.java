@@ -75,6 +75,17 @@ class LNConj extends LiveExprNode {
 	public final boolean containAction() {
 		return (this.info & 8) > 0;
 	}
+	
+	@Override
+	public final boolean isPositiveForm() {
+		for (int i = 0; i < conjs.size(); i++) {
+			LiveExprNode lexpr = (LiveExprNode) conjs.elementAt(i);
+			if (!lexpr.isPositiveForm()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		int sz = this.conjs.size();

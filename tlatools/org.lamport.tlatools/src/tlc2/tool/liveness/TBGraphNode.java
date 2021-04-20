@@ -56,6 +56,14 @@ public class TBGraphNode {
 			// state predicates evaluate to false for a given state in
 			// tlc2.tool.liveness.TBGraphNode.isConsistent(TLCState, ITool), the state gets
 			// excluded from the behavior graph.
+			// The assertion with msg "Found LNAction(s) in temporal formulae." in
+			// Liveness.java implies that the LiveExprNode sub-types that we can encounter
+			// here won't include LNActions. The comment of
+			// tlc2.tool.liveness.TBPar.positiveClosure() confirms it too.
+			// However, ln.getLevel might still be action or temporal because of e.g. formulae
+			// such as `[]~someStatePredicate` as negation of `<>someStatePredicate`, or
+			// `()[]~(someStatePredicate)` as a particle of `[]-someStatePredicate` with `()`
+			// denoting LNNext/LTL's next operator.
 			if (ln.getLevel() <= LevelConstants.VariableLevel) {
 				preds.addElement(ln);
 			}

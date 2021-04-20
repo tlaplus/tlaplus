@@ -27,7 +27,12 @@ import util.Assert;
  * with p. 43 fig. 0.15), thus it uses the PART-TAB algorithm (p. 456) for the
  * tableau construction.
  */
+@SuppressWarnings("serial")
 public class TBPar extends Vect<LiveExprNode> {
+
+	TBPar() {
+		super(0);
+	}
 
 	public TBPar(int i) {
 		super(i);
@@ -46,7 +51,7 @@ public class TBPar extends Vect<LiveExprNode> {
 	 * This method tests whether or not an expression is in a list of
 	 * expressions.
 	 */
-	public final boolean member(LiveExprNode e) {
+	final boolean member(LiveExprNode e) {
 		for (int i = 0; i < this.size(); i++) {
 			if (e.equals(this.exprAt(i))) {
 				return true;
@@ -58,7 +63,7 @@ public class TBPar extends Vect<LiveExprNode> {
 	/**
 	 * This method tests whether a particle par is a subset of this particle.
 	 */
-	public final boolean contains(TBPar par) {
+	private final boolean contains(TBPar par) {
 		for (int i = 0; i < par.size(); i++) {
 			if (!this.member(par.exprAt(i))) {
 				return false;
@@ -68,7 +73,8 @@ public class TBPar extends Vect<LiveExprNode> {
 	}
 
 	/* This method returns the unions of two particles. */
-	public final TBPar union(TBPar par) {
+	@SuppressWarnings("unused")
+	private final TBPar union(TBPar par) {
 		TBPar res = new TBPar(this.size() + par.size());
 		for (int i = 0; i < this.size(); i++) {
 			if (!par.member(this.exprAt(i))) {
@@ -82,7 +88,7 @@ public class TBPar extends Vect<LiveExprNode> {
 	}
 
 	/* This method appends an expression to the tail of Par. */
-	public final TBPar append(LiveExprNode ln) {
+	private final TBPar append(LiveExprNode ln) {
 		TBPar res = new TBPar(this.size() + 1);
 		for (int i = 0; i < this.size(); i++) {
 			res.addElement(this.exprAt(i));
@@ -92,7 +98,7 @@ public class TBPar extends Vect<LiveExprNode> {
 	}
 
 	/* This method appends two expressions to the tail of Par. */
-	public final TBPar append(LiveExprNode ln1, LiveExprNode ln2) {
+	private final TBPar append(LiveExprNode ln1, LiveExprNode ln2) {
 		TBPar res = new TBPar(this.size() + 2);
 		for (int i = 0; i < this.size(); i++) {
 			res.addElement(this.exprAt(i));
@@ -114,8 +120,8 @@ public class TBPar extends Vect<LiveExprNode> {
 		return particleClosure(this, alphas, betas);
 	}
 
-	private TBParVec particleClosure(TBPar terms, Vect alphas, Vect betas) {
-		// if terms is not locally consistent, then terminate.
+	private TBParVec particleClosure(final TBPar terms, final Vect<TBTriple> alphas, final Vect<TBTriple> betas) {
+		// if terms is not locally consistent, then terminate .
 		if (!terms.isLocallyConsistent()) {
 			// TODO: The calling code does not seem to terminate if the term is
 			// inconsistent.
@@ -149,7 +155,7 @@ public class TBPar extends Vect<LiveExprNode> {
 				}
 			}
 		}
-		// second, try alpha^-1 expansion
+		// second, try alpha^-1 expansion (inverse expansion)
 		boolean done;
 		do {
 			done = true;
@@ -168,7 +174,7 @@ public class TBPar extends Vect<LiveExprNode> {
 		return particleClosureBeta(terms1, alphas, betas);
 	}
 
-	private TBParVec particleClosureBeta(TBPar terms, Vect alphas, Vect betas) {
+	private TBParVec particleClosureBeta(final TBPar terms, final Vect<TBTriple> alphas, final Vect<TBTriple> betas) {
 		// try a beta expansion. See MP page 403 
 		// figure 5.1. for beta expansion rules.
 		for (int i = 0; i < terms.size(); i++) {
@@ -210,7 +216,7 @@ public class TBPar extends Vect<LiveExprNode> {
 	 * closed. All junctions must have been binarified at this stage by
 	 * makeBinary, otherwise it may give the wrong answer and crash.
 	 */
-	public final Vect<TBTriple> alphaTriples() {
+	private final Vect<TBTriple> alphaTriples() {
 		Vect<TBTriple> ts = new Vect<>();
 		for (int i = 0; i < this.size(); i++) {
 			LiveExprNode ln = this.exprAt(i);
@@ -224,7 +230,7 @@ public class TBPar extends Vect<LiveExprNode> {
 		return ts;
 	}
 
-	public final Vect<TBTriple> betaTriples() {
+	private final Vect<TBTriple> betaTriples() {
 		Vect<TBTriple> ts = new Vect<>();
 		for (int i = 0; i < this.size(); i++) {
 			LiveExprNode ln = this.exprAt(i);
@@ -239,20 +245,36 @@ public class TBPar extends Vect<LiveExprNode> {
 	}
 
 	/**
-	 * The method isLocallyConsistent determines whether a list of state
-	 * predicates is locally consistent.
+	 * The method isLocallyConsistent determines whether a list of state predicates
+	 * is locally consistent.
+	 * <p>
+	 * Manna &Pnueli (p.444): A set of temporal formulae B is (locally) consistent
+	 * if it does *not* contain a formulae and its negation, and the conjunction of
+	 * all state formulae state(B) is satisfiable.
+	 * <p>
+	 * Check Manna & Pnueli book page 444ff and 453 specifically for the theory of
+	 * locally consistent.
 	 */
-	public final boolean isLocallyConsistent() {
+	private final boolean isLocallyConsistent() {
+		// Pre-conditions per Manna & Pnueli and the calling code:
+		//assert !this.containsActions (no LNAction instances)
+		//assert this.isPositiveForm()
 		// First put the elements into positive or negative bin
 		TBPar pos = new TBPar(this.size());
 		TBPar neg = new TBPar(this.size());
 		for (int i = 0; i < this.size(); i++) {
 			LiveExprNode ln = this.exprAt(i);
-			if (ln instanceof LNState) {
+			// Implementation not aligned with TBGraphNode::new because here we split into
+			// pos and neg bins.
+			if (ln instanceof LNState || ln instanceof LNBool) {
 				pos.addElement(ln);
 			} else if (ln instanceof LNNeg) {
 				LiveExprNode body = ((LNNeg) ln).getBody();
-				if (body instanceof LNState) {
+				// Because tf has been brought into positive form by the nested pushNeg of
+				// toDNF, the sub-terms of LNNeg can only be LNState and LNBool, but not
+				// arbitrary terms such as ~[]p or []<>p.
+				//assert body instanceof LNState || body instanceof LNBool;
+				if (body instanceof LNState || body instanceof LNBool) {
 					neg.addElement(body);
 				}
 			}
@@ -260,6 +282,12 @@ public class TBPar extends Vect<LiveExprNode> {
 		// If any positive is in the negative bin, that's a clash.
 		for (int i = 0; i < pos.size(); i++) {
 			if (neg.member(pos.exprAt(i))) {
+				// This is reachable if two LNState instances have the same tag
+				// (LNState#tetTag), which are set in Liveness before the liveness constraints
+				// and properties are brought into disjunct normal form.  Thus, for two (or more)
+				// LNState to have the same tag, LiveExprNode.toDNF() would have to duplicate
+				// the LNState instance.
+				// For two LNBool to be equal, their boolean values have to be the same.
 				return false;
 			}
 		}
@@ -267,60 +295,66 @@ public class TBPar extends Vect<LiveExprNode> {
 	}
 
 	/**
-	 * This method, given a list of terms, returns all those terms and subterms
-	 * that are positive (i.e. whose major operator is not a negation). There
-	 * can not be LNActs in the expression.
+	 * This method, given a list of terms, returns all those terms and subterms that
+	 * are positive (i.e. whose major operator is not a negation). For LNAll and
+	 * LNEven, it also adds LNNext particles.
+	 * <p>
+	 * There can not be LNActs in the expression.
 	 */
-	public final TBPar positiveClosure() {
+	private final TBPar positiveClosure() {
 		// tps is the queue of terms to be processed.
 		TBPar tps = new TBPar(this.size() * 2);
 		for (int i = 0; i < this.size(); i++) {
 			tps.addElement(this.elementAt(i));
 		}
-		TBPar res = new TBPar(this.size() * 2);
+		TBPar result = new TBPar(this.size() * 2);
 		while (tps.size() > 0) {
 			LiveExprNode ln = tps.exprAt(tps.size() - 1);
 			tps.removeLastElement();
 			if (ln instanceof LNNeg) {
+				// LNNeg is obviously not positive, but its subterms might.
 				tps.addElement(((LNNeg) ln).getBody());
 			} else if (ln instanceof LNNext) {
-				res.addElement(ln);
+				result.addElement(ln);
 				tps.addElement(((LNNext) ln).getBody());
 			} else if (ln instanceof LNEven) {
-				res.addElement(ln);
-				res.addElement(new LNNext(ln));
+				result.addElement(ln);
+				// See page 452, Closure and Particles, 3. item
+				result.addElement(new LNNext(ln));
 				tps.addElement(((LNEven) ln).getBody());
 			} else if (ln instanceof LNAll) {
-				res.addElement(ln);
-				res.addElement(new LNNext(ln));
+				result.addElement(ln);
+				// See page 452, Closure and Particles, 3. item
+				result.addElement(new LNNext(ln));
 				tps.addElement(((LNAll) ln).getBody());
 			} else if (ln instanceof LNConj) {
 				LNConj lnc = (LNConj) ln;
 				for (int i = 0; i < lnc.getCount(); i++) {
 					tps.addElement(lnc.getBody(i));
 				}
-				res.addElement(ln);
+				result.addElement(ln);
 			} else if (ln instanceof LNDisj) {
 				LNDisj lnd = (LNDisj) ln;
 				for (int i = 0; i < lnd.getCount(); i++) {
 					tps.addElement(lnd.getBody(i));
 				}
-				res.addElement(ln);
+				result.addElement(ln);
 			} else if (ln instanceof LNState) {
-				res.addElement(ln);
+				result.addElement(ln);
 			} else if (ln instanceof LNBool) {
-				res.addElement(ln);
+				result.addElement(ln);
 			} else {
 				Assert.fail(EC.TLC_LIVE_ENCOUNTERED_ACTIONS);
 			}
 		}
-		return res;
+		return result;
 	}
 
 	/**
 	 * This method returns a list of implied successors of a given particle.
+	 * PART-TAB particle tableau construction on page 456 in Manna & Pnueli.
 	 */
-	public final TBPar impliedSuccessors() {
+	final TBPar impliedSuccessors() {
 		TBPar successors = new TBPar(this.size());
 		for (int i = 0; i < this.size(); i++) {
 			LiveExprNode ln = this.exprAt(i);
@@ -341,7 +375,7 @@ public class TBPar extends Vect<LiveExprNode> {
 	 * <li>r \in A</li>
 	 * </ul>
 	 */
-	public final boolean isFulfilling(LNEven promise) {
+	final boolean isFulfilling(LNEven promise) {
 		return !this.member(promise) || this.member(promise.getBody());
 	}
 

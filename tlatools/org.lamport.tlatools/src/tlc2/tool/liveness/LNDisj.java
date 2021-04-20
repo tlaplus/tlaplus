@@ -75,6 +75,17 @@ class LNDisj extends LiveExprNode {
 	public final boolean containAction() {
 		return (this.info & 8) > 0;
 	}
+	
+	@Override
+	public final boolean isPositiveForm() {
+		for (int i = 0; i < disjs.size(); i++) {
+			LiveExprNode lexpr = (LiveExprNode) disjs.elementAt(i);
+			if (!lexpr.isPositiveForm()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		int sz = disjs.size();

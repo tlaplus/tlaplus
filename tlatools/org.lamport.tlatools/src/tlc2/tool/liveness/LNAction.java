@@ -56,6 +56,7 @@ public class LNAction extends LiveExprNode {
 		return LevelConstants.ActionLevel;
 	}
 
+	@Override
 	public final boolean containAction() {
 		return true;
 	}

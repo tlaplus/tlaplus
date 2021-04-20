@@ -435,22 +435,32 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * returns null if there is nothing to check.
 	 */
 	private static LiveExprNode parseLiveness(ITool tool) {
+		// livespec (fairness)
+		// For example, a conjunct with context for each WF in `\A self \in ProcSet :
+		// WF_vars(Next(self))`.
 		Action[] fairs = tool.getTemporals();
 		LNConj lnc = new LNConj(fairs.length);
 		for (int i = 0; i < fairs.length; i++) {
 			LiveExprNode ln = astToLive(tool, (ExprNode) fairs[i].pred, fairs[i].con);
 			lnc.addConj(ln);
 		}
+		
+		// livecheck
 		Action[] checks = tool.getImpliedTemporals();
 		if (checks.length == 0) {
 			if (fairs.length == 0) {
+				// No PROPERTIES and no fairness.
 				return null;
 			}
 		} else if (checks.length == 1) {
+			// Avoid outer disjunct if just one branch (singleton junctions).
 			LiveExprNode ln = astToLive(tool, (ExprNode) checks[0].pred, checks[0].con);
 			if (lnc.getCount() == 0) {
+				// We are looking for ~livecheck. Thus, nest ln in LNNeg (same below).
 				return new LNNeg(ln);
 			}
+			// /\ livespec 
+			// /\ ~livecheck
 			lnc.addConj(new LNNeg(ln));
 		} else {
 			LNDisj lnd = new LNDisj(checks.length);
@@ -461,6 +471,10 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			if (lnc.getCount() == 0) {
 				return lnd;
 			}
+			// /\ livespec 
+			// /\ \/ ~livecheck1
+			//    \/ ~livecheck2
+			//    \/ ...
 			lnc.addConj(lnd);
 		}
 		return lnc;
@@ -511,17 +525,27 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	public static OrderOfSolution[] processLiveness(final ITool tool) {
 		LiveExprNode lexpr = parseLiveness(tool);
 
+		// Contrary to the Manna & Pnueli book - which discusses LTL and LTL with only
+		// future operators - the Temporal Logic of Actions (TLA) comes with actions. If
+		// there is a reduction from TLA to LTL (with only future operators), it is not
+		// used here.  Instead, the code below has special treatment for actions (LNAction),
+		// which is not part of the Manna & Pnueli book.
+		
 		if (lexpr == null) {
 			return new OrderOfSolution[0];
 		}
 
+		// I:
 		// Give tags to all action and state predicates, for equality
 		// checking (tlc2.tool.liveness.LiveExprNode.equals(LiveExprNode)).
 		// We tag them here so that, if disjunct normal form (DNF) should happen to
-		// duplicate exprs, then they will still have the same tag.
+		// duplicate expressions, then they will still have the same tag.
 		lexpr.tagExpr(1);
 		
-		
+		// II & III:
+		// Converting the formula to DNF pushes negation inside (see
+		// LiveExprNode#pushNeg). This is important later when the promises are
+		// extracted (see LiveExprNode#extractPromises).
 		lexpr = lexpr.simplify().toDNF();
 		if ((lexpr instanceof LNBool) && !((LNBool) lexpr).b) {
 			// This branch is only reachable for a handful of properties, such as
@@ -532,13 +556,39 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		}
 		final LNDisj dnf = (lexpr instanceof LNDisj) ? (LNDisj) lexpr : (new LNDisj(lexpr));
 
+		// IV:
 		// Now we will turn DNF into a format that can be tested by the
 		// tableau method. The first step is to collect everything into
-		// pems+lexps: listof-(listof-<>[],[]<> /\ tf)
+		// pems+lexps: listof-(listof-<>[],[]<> /\ tf).
+		//
+		// "pems":  Possible Error Models
+		// "lexps": Liveness expressions ?
+		//
+		// In other words, for each junction of the disjunct normal form, classify DNF
+		// into four Vects in OSExprPem with A an action and S a state-predicate:
+		//
+		// 1) <>[]A: "Eventually Always Actions"        OSExprPem#AEAction
+		// 2) []<>A: "Always Eventually Actions"        OSExprPem#EAAction
+		// 3) <>[]S: "Eventually Always States"         OSExprPem#AEState
+		// 4) tf:   "temporal formulae with no actions" OSExprPem#tfs
+		//
+		// For example, below is what happens for a simple spec:
+		//
+		//  VARIABLE x
+		//  Spec == x = 0 /\ [][x'=x+1]_x /\ WF_x(x'=x+1)     \* LNDisj(LNNeg(LNStateEnabled) \/ LNAction) in OSExprPem#AEAction
+		//
+		//  Prop1 == <>[][x' > x]_x                           \* LNNeg(LNAction) in OSExprPem#AEAction
+		//  Prop2 == []<>(<<x' > x>>_x)                       \* LNNeg(LNAction) in OSExprPem#EAAction
+		//  Prop3 == <>[](x \in Nat)                          \* LNNeg(LNState)  in OSExprPem#AEState
+		//  Prop4 == <>(x \in Nat)                            \* LNAll(LNNeg(LNStateAST) in OSExprPem#tfs
+		//
 		final OSExprPem[] pems = new OSExprPem[dnf.getCount()];
 		final LiveExprNode[] tfs = new LiveExprNode[dnf.getCount()];
 		for (int i = 0; i < dnf.getCount(); i++) {
 			// Flatten junctions, because DNF may contain singleton junctions
+			// (a singleton junction is a disjunct list of a single disjunct).
+			// Flattening is, thus, a simple optimization that rewrites the body
+			// to remove superfluous disjunct operators. 
 			final LiveExprNode ln = dnf.getBody(i).flattenSingleJunctions();
 			final OSExprPem pem = new OSExprPem();
 			pems[i] = pem;
@@ -550,18 +600,11 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			} else {
 				classifyExpr(ln, pem);
 			}
-			tfs[i] = null;
-			if (pem.tfs.size() == 1) {
-				tfs[i] = (LiveExprNode) pem.tfs.elementAt(0);
-			} else if (pem.tfs.size() > 1) {
-				final LNConj lnc2 = new LNConj(pem.tfs.size());
-				for (int j = 0; j < pem.tfs.size(); j++) {
-					lnc2.addConj((LiveExprNode) pem.tfs.elementAt(j));
-				}
-				tfs[i] = lnc2;
-			}
+			tfs[i] = pem.toTFS();
 		}
+		// Could null pems[n].tfs at this point.
 
+		// V:
 		// Now, we will create our OrderOfSolutions. We lump together all
 		// disjunctions that have the same tf. This will happen often in
 		// cases such as (WF /\ SF) => (WF /\ SF /\ TF), since the WF and
@@ -576,9 +619,39 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		for (int i = 0; i < dnf.getCount(); i++) {
 			int found = -1;
 			final LiveExprNode tf = tfs[i];
+			// Compare current temporal formula to all other temporal formulae added to
+			// tfbin so far.
 			for (int j = 0; j < tfbin.size() && found == -1; j++) {
 				final LiveExprNode tf0 = tfbin.exprAt(j);
 				if ((tf == null && tf0 == null) || (tf != null && tf0 != null && tf.equals(tf0))) {
+					// We get here if we fFound two (syntactically) equivalent temporal formulae
+					// (null and null are syntactically equivalent). An simple example is:
+					//
+					//  Spec== x = 0 /\ [][UNCHANGED x]_x /\ SF_x(UNCHANGED x)
+					//  Prop== <>TRUE  \* Alternatively, a state-level expression.
+					//
+					// The tfs that get lumped together are the second conjuncts of:
+					//
+					//  \/ (/\ (<>[]-ENABLED UNCHANGED x)
+				    //      /\ ([]FALSE))
+				    //  \/ (/\ ([]<><line UNCHANGED x)
+				    //      /\ ([]FALSE))
+					// 
+					// Out of all the specs on my system, only the following two TLA+ examples trigger
+					// this code path (with `tf#null`), though:
+					//   specifications/SpecifyingSystems/TLC/MCAlternatingBit.tla
+					//   specifications/allocator/SimpleAllocator.tla
+					// They have in common that their livecheck and livespec (fairness) are of the form:
+					//
+					//  Fairness== \A self \in SetOfProcs: SF_vars(...)
+					//  Prop== \A self \in SetOfProcs: P ~> Q
+					//
+					// In those specs, this optimizations substantially reduces the blowup caused by
+					// the universal quantifier.
+					//
+					//TODO: Investigate how substantial reduction, if a more sophisticated (beyond syntax)
+					//      equivalence was implemented (the liveness graph is the cross-product of the
+					//      state-graph and tableau!).
 					found = j;
 				}
 			}
@@ -589,7 +662,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			}
 			((Vect<OSExprPem>) pembin.elementAt(found)).addElement(pems[i]);
 		}
+		// Could null pems (OSExprPem) and tfs (LiveExprNode[]) here.
 
+		// VI:
 		// We then create an OrderOfSolution for each tf in tfbin.
 		final OrderOfSolution[] oss = new OrderOfSolution[tfbin.size()];
 		for (int i = 0; i < tfbin.size(); i++) {
@@ -598,17 +673,67 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			if (tf == null) {
 				oss[i] = new OrderOfSolution(new LNEven[0]);
 			} else {
+				// Suggested by the comment of tlc2.tool.liveness.LiveExprNode.makeBinary(),
+				// validated by running the test suite with this assertion, and manually
+				// confirmed by eye-balling
+				// tlc2.tool.liveness.Liveness.classifyExpr(LiveExprNode, OSExprPem), tfs[i]
+				// is free of LNActions (LNActions are in OSExprPem#EAction and
+				// OSExprPem#AEAction.
+				//assert !tfs[i].containAction() : "Found LNAction(s) in temporal formulae.";
+				
+				// Decompose disjunct and conjunct lists to at most two junctions. E.g.:
+				//
+				//   /\ tf1
+				//   /\ tf2
+				//   /\ tf3
+				//   /\ tf4
+				//
+				//  to:
+				//
+				//   /\ /\ tf1
+				//      /\ tf2
+				//   /\ /\ tf3
+				//      /\ tf4
+				//
+				// This, usually, has to happen for properties that involve universal
+				// quantification:
+				//
+				//   \A self \in SetOfProcs: P ~> Q
+				//
+				// Note that LNActions have been excluded from tf in step IV. above as it's
+				// mandated in LiveExprNode#makeBinary.  This is because the tableau construction
+				// in the Manna & Pnueli book is for LTL that has no actions.  Thus, action
+				// are excluded from the tableau, and, instead, get a special treatment in this
+				// implementation. 
 				final LiveExprNode tf1 = tf.makeBinary();
-				final TBPar promises = new TBPar(10);
-				tf1.extractPromises(promises);
-				oss[i] = new OrderOfSolution(new TBGraph(tf1), new LNEven[promises.size()]);
-				for (int j = 0; j < promises.size(); j++) {
-					oss[i].getPromises()[j] = (LNEven) promises.exprAt(j);
-				}
+				// Below is a (non-exhaustive) list of examples for tf (let P and Q be state- or
+				// constant-level formulae):
+				//
+				// Prop: <>P, here: []~P
+				// Prop: P ~> Q, here: <>(P /\ []~Q)
+				// Prop: [](P => []Q), here: <>(P /\ <>~Q)
+				// Prop: [](P => <>[]Q), here: <>(P /\ []<>~Q)
+				//
+				// Negation has already pushed inside to the atom in toDNF above.
+				//assert tf1.isPositiveForm();
+				
+				// LEN#extractPromises returns all <>(someStateOrConstantLevelFormula), which
+				// are added as promises to the OOS.
+				oss[i] = new OrderOfSolution(new TBGraph(tf1), tf1.extractPromises());
 			}
 
+			// VII:
 			// We lump all the pems into a single checkState and checkAct,
 			// and oss[i].pems will simply be integer lookups into them.
+			//
+			// At this point, the temporal formulae are done and only the `[]<>A`, `<>[]A`, and `[]<>S`
+			// are added to the OOS.  The OOS holds the `[]<>S` and the union of `[]<>A` and `<>[]A`
+			// (OOS#checkState and OOS#checkAction). The PossibleErrorModel stores the indices into
+			// OOS#checkState and OOS#checkAction.
+			//
+			// The split into OrderOfSolution (OOS) and PossibleErrorModel (PEM) appears to
+			// be a code-level optimization to speed-up the check of the liveness/behavior-graph
+			// in LiveWorker.
 			final Vect<LiveExprNode> stateBin = new Vect<>();
 			final Vect<LiveExprNode> actionBin = new Vect<>();
 			final Vect<OSExprPem> tfPems = (Vect<OSExprPem>) pembin.elementAt(i);
@@ -628,6 +753,8 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				oss[i].getCheckAction()[j] = (LiveExprNode) actionBin.elementAt(j);
 			}
 		}
+		// Could null TBPar tfbin and Vect<Vect<OSExprPem>> pembin here.
+
 		MP.printMessage(EC.TLC_LIVE_IMPLIED, String.valueOf(oss.length));
 		// SZ Jul 28, 2009: What for?
 		// ToolIO.out.flush();
@@ -726,16 +853,32 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * PossibleErrorModel and OrderOfSolution.
 	 */
 	private static class OSExprPem {
-		Vect<LiveExprNode> EAAction; // <>[]action's
-		Vect<LiveExprNode> AEState; // []<>state's
-		Vect<LiveExprNode> AEAction; // []<>action's
-		Vect<LiveExprNode> tfs; // other temp formulae with no actions
+		private final Vect<LiveExprNode> EAAction; // <>[]action's
+		private final Vect<LiveExprNode> AEState; // []<>state's
+		private final Vect<LiveExprNode> AEAction; // []<>action's
+		private final Vect<LiveExprNode> tfs; // other temp formulae with no actions
 
 		public OSExprPem() {
 			this.EAAction = new Vect<>();
 			this.AEState = new Vect<>();
 			this.AEAction = new Vect<>();
 			this.tfs = new Vect<>();
+		}
+
+		public LiveExprNode toTFS() {
+			if (tfs.size() == 1) {
+				// Once again avoid creating a superfluous LNConj in case of a singleton
+				// junction.
+				return (LiveExprNode) tfs.elementAt(0);
+			} else if (tfs.size() > 1) {
+				final LNConj lnc2 = new LNConj(tfs.size());
+				for (int j = 0; j < tfs.size(); j++) {
+					lnc2.addConj((LiveExprNode) tfs.elementAt(j));
+				}
+				return lnc2;
+			} else {
+				return null;
+			}
 		}
 	}
 
