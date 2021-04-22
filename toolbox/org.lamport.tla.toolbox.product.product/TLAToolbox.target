@@ -29,7 +29,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.jclouds.feature.feature.group" version="0.0.0"/>
-<repository id="github-jclouds" location="http://lemmy.github.com/jclouds2p2/"/>
+<repository id="github-jclouds" location="http://lemmster.de/jclouds2p2/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.help.feature.group" version="0.0.0"/>
