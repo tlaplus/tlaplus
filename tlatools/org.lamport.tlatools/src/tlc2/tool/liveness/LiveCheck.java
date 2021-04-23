@@ -104,6 +104,9 @@ public class LiveCheck implements ILiveCheck {
 			// same value), the "smallest" (see
 			// tlc2.tool.TLCStateMut.fingerPrint()) cannot be used as a
 			// replacement state to check the actions.
+			// TODO: In the past (commit 768b8e8), actions were only evaluated for nodes
+			// that are new (ptr == -1)
+			// (see https://github.com/tlaplus/tlaplus/issues/614)
 			final BitVector checkActionResults = new BitVector(alen * nextStates.size());
 			for (int sidx = 0; sidx < nextStates.size(); sidx++) {
 				final TLCState s1 = nextStates.next();
@@ -583,6 +586,10 @@ public class LiveCheck implements ILiveCheck {
 			int cnt = 0;
 			final int succCnt = nextStates.size();
 			
+			//TODO: See regression introduced by moving TBGraphNode#isConsistent
+			//      out of the (synchronized) loop below (commit d4908d0).
+			//      https://github.com/tlaplus/tlaplus/issues/614
+			
 			// Pre-compute the consistency of the successor states for all
 			// nodes in the tableau. This is an expensive operation which is
 			// also dependent on the amount of nodes in the tableau times
@@ -600,8 +607,7 @@ public class LiveCheck implements ILiveCheck {
 						// BitVector is divided into a segment for each
 						// tableau node. Inside each segment, addressing is done
 						// via each state. Use identical addressing below
-						// where the lookup is done (plus 1 accounts for
-						// zero-based addressing).
+						// where the lookup is done.
 						consistency.set((tableauNode.getIndex() * succCnt) + sidx);
 					}
 				}
@@ -617,8 +623,11 @@ public class LiveCheck implements ILiveCheck {
 			// with N=11 and 32 threads were ~75% compared to ~55% thread concurrency.
 			synchronized (oos) {
 
-				// Mark the current fingerprint as done. Internally it creates
-				// or updates a record in the TableauNodePtrTable.
+				// Mark the fingerprint of s in s -> t as done. Internally it creates
+				// or updates a record in the TableauNodePtrTable. We can safely mark
+				// s0/fp0 done even though we release the oos lock, because no other
+				// worker will work on s0/fp0 ever again, which is guaranteed by safety-
+				// checking.
 				final int loc0 = dgraph.setDone(fp0);
 				final int[] nodes = dgraph.getNodesByLoc(loc0);
 				if (nodes == null) {
@@ -649,14 +658,20 @@ public class LiveCheck implements ILiveCheck {
 							// Check if the successor is new
 							final long ptr1 = dgraph.getPtr(successor, tnode1.getIndex());
 							if (consistency.get((tnode1.getIndex() * succCnt) + sidx)
+									// We cannot infer from successor t being in the fingerprint graph (FG), that it is
+									// also in the behavior graph (BG):
+									// a) Worker A might add t to FG. B observes t in the fingerprint graph and adds
+									// t to BG *incorrectly assuming it is done*.
+									// b) t in FG does not imply that <<t, tnode>> in BG
+									// Without a), LiveChecker.addNextState(ITool, TLCState, long, SetOfStates,
+									// BitVector, boolean[]) could skip checking t \in BG.
+									// In other words, t \in FG is a necessary but not a sufficient condition...
 									&& (ptr1 == -1 || !node0.transExists(successor, tnode1.getIndex()))) {
 								node0.addTransition(successor, tnode1.getIndex(), checkStateResults.length, alen,
 										checkActionResults, sidx * alen, allocationHint - cnt);
 								writer.writeState(s0, tnode0, s1, tnode1, checkActionResults, sidx * alen, alen, true);
-								// Record that we have seen <fp1,
-								// tnode1>. If fp1 is done, we have
-								// to compute the next states for <fp1,
-								// tnode1>.
+								// Record that we have seen <successor,tnode1>. If fp1 is done, we have
+								// to compute the next states for <successor, tnode1>.
 								if (ptr1 == -1) {
 									dgraph.recordNode(successor, tnode1.getIndex());
 									if (isDone) {
