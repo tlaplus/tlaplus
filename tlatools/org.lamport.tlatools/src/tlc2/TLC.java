@@ -416,7 +416,7 @@ public class TLC {
 				// file=/path/to/file
 				// "file=..." and "num=..." are only relevant for simulation which is why they
 				// are args to "-simulate".
-				if (((index + 1) < args.length) && (args[index].contains("file=") || args[index].contains("num="))) {
+				if ((index < args.length) && (args[index].contains("file=") || args[index].contains("num="))) {
 					final String[] simArgs = args[index].split(",");
 					index++; // consume simulate args
 					for (String arg : simArgs) {
