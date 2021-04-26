@@ -252,7 +252,11 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
         workersLine.setLayout(gl);
 
         // field workers
-        workers = new Spinner(workersLine, SWT.NONE);
+		// Style is set to read-only to prevent user typing, which (on at least Windows)
+		// causes the verification in SWT.Verify below to strip off the last char. For
+		// example, if a user enters "42" workers, verification removes "2" and persists
+		// "4".
+        workers = new Spinner(workersLine, SWT.READ_ONLY);
         workers.addFocusListener(focusListener);
         workers.addListener(SWT.Verify, (e) -> {
 			if (!programmaticallySettingWorkerParameters.get()) {
