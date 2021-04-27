@@ -26,6 +26,7 @@
 package tlc2.value.impl;
 
 import tlc2.tool.coverage.CostModel;
+import tlc2.util.Combinatorics;
 
 public class KSubsetValue extends SubsetValue {
 
@@ -53,5 +54,15 @@ public class KSubsetValue extends SubsetValue {
 			return new RandomSubsetGenerator(k);
 		}
 		return super.elements(ordering);
+	}
+	
+	@Override
+	public final int size() {
+		final long size = this.numberOfKElements(k);
+        if ((int) size != size) {
+            throw new IllegalArgumentException(String.format("k=%s and n=%s", k, size));
+        }
+        return (int) size;
+
 	}
 }

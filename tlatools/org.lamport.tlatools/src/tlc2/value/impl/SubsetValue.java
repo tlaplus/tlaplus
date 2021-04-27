@@ -155,7 +155,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final int size() {
+  public int size() {
     try {
       int sz = this.set.size();
       if (sz >= 31) {
@@ -592,7 +592,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	 */
 	public final long numberOfKElements(final int k) {
 		final int size = this.set.size();
-		if (k < 0 || size < k || size > 62) {
+		if (k < 0 || size < k || size > 63) {
+			// Size >63 because KElementEnumerator.nextElement() limited to 63 bits
+			// (assert vals.size() == k will be violated).
 			throw new IllegalArgumentException(String.format("k=%s and n=%s", k, size));
 		}
 		if (k == 0 || k == size) {
@@ -623,7 +625,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		private final int numKSubsetElems;
 		private final int k;
 		
-		private int index;
+		private long index;
 		private int cnt;
 
 		public KElementEnumerator(final int k) {
@@ -643,17 +645,17 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		
 		@Override
 		public void reset() {
-			index = (1 << k) - 1;
+			index = (1L << k) - 1L;
 			cnt = 0;
 		}
 
 		// see "Compute the lexicographically next bit permutation" at
 		// http://graphics.stanford.edu/~seander/bithacks.html#NextBitPermutation
-		private int nextIndex() {
-			final int oldIdx = this.index;
+		private long nextIndex() {
+			final long oldIdx = this.index;
 
-			final int t = (index | (index - 1)) + 1;
-			this.index = t | ((((t & -t) / (index & -index)) >> 1) - 1);
+			final long t = (index | (index - 1L)) + 1L;
+			this.index = t | ((((t & -t) / (index & -index)) >> 1L) - 1L);
 
 			return oldIdx;
 		}
@@ -665,8 +667,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 			cnt++;
 
-			int bits = nextIndex();
-			final ValueVec vals = new ValueVec(Integer.bitCount(bits));
+			long bits = nextIndex();
+			final ValueVec vals = new ValueVec(Long.bitCount(bits));
 			for (int i = 0; bits > 0 && i < elems.size(); i++) {
 				// Treat bits as a bitset and add the element of elem at current
 				// position i if the LSB of bits happens to be set.
@@ -676,6 +678,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 				// ...right-shift zero-fill bits by one afterwards.
 				bits = bits >>> 1;
 			}
+			assert vals.size() == k;
 			return new SetEnumValue(vals, false, cm);
 		}
 		

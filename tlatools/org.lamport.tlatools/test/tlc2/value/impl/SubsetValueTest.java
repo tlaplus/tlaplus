@@ -405,7 +405,7 @@ public class SubsetValueTest {
 	
 	@Test
 	public void testNumKSubsetPreventsOverflow() {
-		final IntervalValue innerSet = new IntervalValue(1, 63);
+		final IntervalValue innerSet = new IntervalValue(1, 64);
 		final SubsetValue subset = new SubsetValue(innerSet);
 		for (int i = 0; i <= innerSet.size(); i++) {
 			try {
