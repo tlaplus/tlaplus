@@ -30,6 +30,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -436,8 +437,15 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         final TraceExpressionModelWriter writer = new TraceExpressionModelWriter();
 
         // add extend primer
+        // add extend primer
+		final Set<String> traceExplorerExtends = model.getTraceExplorerExtends();
+		// Want e.g. TLC!@@ infix operator.
+		traceExplorerExtends.add("TLC");
+		// A TE spec has to extend Toolbox to have access to _TETrace and _TEPosition
+		// operators.
+		traceExplorerExtends.add("Toolbox");
 		writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()),
-				model.getTraceExplorerExtends());
+				traceExplorerExtends);
 
         writeModelInfo(model.getSpec().getValidRootModule(), config, writer);
         
@@ -643,8 +651,14 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         writer.addInfoComments(traceExpressionData);
 
         // add extend primer
+		final Set<String> traceExplorerExtends = model.getTraceExplorerExtends();
+		// Want e.g. TLC!@@ infix operator.
+		traceExplorerExtends.add("TLC");
+		// A TE spec has to extend Toolbox to have access to _TETrace and _TEPosition
+		// operators.
+		traceExplorerExtends.add("Toolbox");
 		writer.addPrimer(ModelHelper.TE_MODEL_NAME, ResourceHelper.getModuleName(model.getSpec().getRootFilename()),
-				model.getTraceExplorerExtends());
+				traceExplorerExtends);
 
         // write constants, model values, new definitions, definition overrides
         writeModelInfo(model.getSpec().getValidRootModule(), configuration, writer);
