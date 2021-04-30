@@ -15,9 +15,13 @@ _TETrace ==
 
 LOCAL _TETraceLength == Cardinality(DOMAIN _TETrace)
 
+\* When evaluated as part of a TLC ALIAS expression, `_TEPosition` should be
+\* redefined as `TLCGet("level"), or replace with `TLCGet(level)` right away.
+\* The definition below accounts for several "peculiarities" of the
+\* Toolbox's trace exploration.
 _TEPosition == 
     IF TLCGet("level") >= _TETraceLength
        THEN _TETraceLength
-       ELSE TLCGet("level") + 1
+       ELSE IF TLCGet("level") = 0 THEN 1 ELSE TLCGet("level")
 
 =============================================================================

@@ -815,7 +815,7 @@ public abstract class Tool
     ActionItemList acts = ActionItemList.Empty;
     TLCState s1 = TLCState.Empty.createEmpty();
     StateVec nss = new StateVec(0);
-    this.getNextStates(action, action.pred, acts, ctx, state, s1, nss, action.cm);
+    this.getNextStates(action, action.pred, acts, ctx, state, s1.setPredecessor(state).setAction(action), nss, action.cm);
     if (coverage) { action.cm.incInvocations(nss.size()); }
     if (PROBABLISTIC && nss.size() > 1) {System.err.println("Simulator generated more than one next state");}
     return nss;
@@ -830,8 +830,8 @@ public abstract class Tool
   }
 
   public boolean getNextStates(final INextStateFunctor functor, final TLCState state, final Action action) {
-		this.getNextStates(action, action.pred, ActionItemList.Empty, action.con, state, TLCState.Empty.createEmpty(),
-				functor, action.cm);
+		this.getNextStates(action, action.pred, ActionItemList.Empty, action.con, state,
+				TLCState.Empty.createEmpty().setPredecessor(state).setAction(action), functor, action.cm);
 		return false;
   }
   

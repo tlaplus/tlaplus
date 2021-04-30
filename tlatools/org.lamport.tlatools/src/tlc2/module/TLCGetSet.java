@@ -204,8 +204,17 @@ public class TLCGetSet implements ValueConstants {
 			}
 		} else if (LEVEL == sv.val) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"
-			// is because it calls tlc2.tool.TLCTrace.getLevelForReporting(). "level" is the
-			// height stores as part of the state that is currently explored.
+			// is monotonically increasing because it calls tlc2.tool.TLCTrace.getLevelForReporting().
+			// "level" is the height stored as part of the state that is currently explored.
+			
+			// Note that s1 can be null (TLCState#Null) if TLCGet("level") is primed
+			// `TLCGet("level")'` and evaluated as part of the behavior spec. Related, it is
+			// unclear as to why Tool#evalApplImpl(..) does *not* set control to EV#Primed
+			// for opcode prime. s0#uid might or might not be TLCState.INIT_UID, depending
+			// on whether the state has already been written to disk, which happens *after*
+			// state- and action-constraints are checked, but before invariants, implied
+			// actions, and liveness are checked.
+			
 			if (EvalControl.isConst(control) || EvalControl.isInit(control)) {
 				// By definition, level is 0 in ASSUME/POSTCONDITION and the initial predicate.
 				return IntValue.gen(TLCState.INIT_LEVEL - 1);
