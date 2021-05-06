@@ -624,6 +624,13 @@ public class ModelChecker extends AbstractChecker
 			} else if (e instanceof EvalException)
 			{
 				ec = ((EvalException) e).getErrorCode();
+			// TODO: 345hv87 Read errorCode from TLCRE into ec. However, too much legacy
+			// code reports TLCRE errors as EC.General, and, thus, this change has the
+			// risk of causing regression (it causes test failures in e.g.:
+			// ETest6, FingerprintExceptionNextTest, tlc2.tool.Github611Test)
+//			} else if (e instanceof TLCRuntimeException)
+//			{
+//				ec = ((TLCRuntimeException) e).errorCode;
 			} else
 			{
 				ec = EC.GENERAL;
@@ -639,6 +646,9 @@ public class ModelChecker extends AbstractChecker
 						// pretty-print it a second time, which is why we pass the original parameters
 						// instead of the EvalException itself.  Exception handling in TLC is a mess!
 						MP.printError(ec, ((EvalException) e).getParameters(), e);
+					//TODO: See note above at label "345hv87".
+//					} else if (e instanceof TLCRuntimeException) {
+//						MP.printError(ec, ((TLCRuntimeException) e).parameters);
 					} else {
 						MP.printError(ec, e);
 					}
