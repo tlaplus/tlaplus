@@ -15,6 +15,7 @@ import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
+import tlc2.tool.impl.CallStackTool;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.BufferedRandomAccessFile;
@@ -23,6 +24,8 @@ import tlc2.util.IdThread;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.FixedSizedBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
+import util.Assert;
+import util.Assert.TLCRuntimeException;
 import util.FileUtil;
 import util.WrongInvocationException;
 
@@ -160,7 +163,54 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		liveNextStates.put(curStateFP, curState);
 		this.tlc.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
 
-		this.tlc.liveCheck.addNextState(tlc.tool.getLiveness(), curState, curStateFP, liveNextStates);
+		// Contrary to exceptions that are thrown during the evaluation of the init
+		// predicate and the next-state relation, the code below causes the call stack
+		// to be printed first and only then the trace.  Ordinary safety checking first
+		// prints the trace followed by the call stack.  The Toolbox is oblivious because
+		// it parses the output.  Command-line users, however, might miss the call stack.
+		// Perhaps, it would be best to attach CallStack to the exception and let the
+		// global exception handling take care of it. Unfortunately, TLC's exception
+		// handling is a mess: a) TLCRuntimException and EvalException overlap b)
+		// CallStackTool cannot always be enabled at the site where exceptions
+		// originate, and c) there is no global exception handling.
+		try {
+			this.tlc.liveCheck.addNextState(tlc.tool.getLiveness(), curState, curStateFP, liveNextStates);
+		} catch (EvalException | TLCRuntimeException origExp) {
+			// liveCheck#addNextState throws an EvalException if, e.g., a Java module overrides throw one:
+			// For example: `Cardinality(S) ~> ...` with `S` a naturals, ...
+
+			// Reset the iterator before using it again after the call to addNextState above.
+			liveNextStates.resetNext();
+
+			// TODO: Try to pass DebugTool instead of tool.getLiveness to enable the TLC
+			// debugger for liveness checking.
+			final CallStackTool cTool = new CallStackTool(tlc.tool.getLiveness());
+			try {
+				this.tlc.liveCheck.addNextState(cTool, curState, curStateFP, liveNextStates);
+				// Regular evaluation with tlc.tool.getLiveness failed but CallStackTool
+				// succeeded. This should never happen!
+				Assert.fail(EC.GENERAL, origExp);
+			} catch (EvalException | TLCRuntimeException rerunExp) {
+				// liveCheck#addNextState is not side-effect free. For example, the behavior
+				// (liveness) graph might have been changed and new GraphNodes been added. If
+				// that's the case, calling addNextStates with the same parameters again causes
+				// different exceptions. Those exception are bogus and should not be shown to the
+				// user.
+				// I don't expect equals to do the right thing(tm) for EvalException and/or
+				// TLCRuntimeException. We effectively expect the same exception gets
+				// throw by calling addNextState again.
+				//assert origExp.getClass().isAssignableFrom(rerunExp.getClass());
+				//assert origException.equals(rerunException);
+				
+				if (cTool.hasCallStack()) {
+					// Do not handle the exception here but send it up the stack.
+					// ModelChecker#doNextFailed puts this exception into context and prints the
+					// current (prefix of) the behavior.
+					MP.printError(EC.TLC_NESTED_EXPRESSION, cTool.toString());
+				}
+			}
+			throw origExp;
+		}
 
 		if (liveNextStates.capacity() > (multiplier * INITIAL_CAPACITY)) {
 			// Increase initial size for as long as the set has to grow

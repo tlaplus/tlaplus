@@ -239,4 +239,8 @@ public final class CallStackTool extends Tool {
 		value.setSource(expr);
 		return value;
 	}
+
+	public boolean hasCallStack() {
+		return callStack.size() > 0;
+	}
 }
