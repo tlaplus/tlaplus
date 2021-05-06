@@ -8,6 +8,7 @@ Init == /\ a = 0
         /\ b = 0
         
 disj == /\ a' = a + 1
+        /\ a' \in 1..10
 
 Next == /\ disj
         /\ UNCHANGED b \* Moving UNCHANGED b to disj makes bug disappear (see WF_vars(...) below).

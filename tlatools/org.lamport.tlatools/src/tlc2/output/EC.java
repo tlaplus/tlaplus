@@ -89,6 +89,8 @@ public interface EC
     public static final int TLC_ERROR_STATE = 2120;
     public static final int TLC_BEHAVIOR_UP_TO_THIS_POINT = 2121;
     
+    public static final int TLC_STATE_NOT_COMPLETELY_SPECIFIED_LIVE = 2148;
+    
     /**
      * This error code accompanies the final state in a liveness property
      * counter-example trace, when the trace takes the form of a lasso

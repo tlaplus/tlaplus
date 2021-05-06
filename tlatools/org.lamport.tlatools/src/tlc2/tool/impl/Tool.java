@@ -21,6 +21,7 @@ import tla2sany.semantic.LevelConstants;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
@@ -1845,7 +1846,49 @@ public abstract class Tool
             return this.eval(opDef.getBody(), c1, s0, s1, control, cm);
           }
           else {
-            Assert.fail(EC.TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR,
+				if (!EvalControl.isEnabled(control) && EvalControl.isPrimed(control) && opNode instanceof OpDeclNode) {
+					// We end up here if fairness is declared on a sub-action that doesn't define
+					// the value of all variables given in the subscript vars (state pred) part of
+					// the (weak or strong) fairness operator:
+					// 
+					// VARIABLES a,b            \* opNode is b up here.
+					// vars == <<a,b>>
+					// A == a' = 42
+					// Next == A /\ b = b' \* Do something with b.
+					// Spec == ... /\ WF_vars(A)
+					//
+					// Variants:
+					//        /\ WF_b(TRUE)
+					//        /\ WF_vars(TRUE)
+					//
+					// This variant is debatable. It triggers the "generic" exception below:
+					//        /\ WF_vars(a' = b')
+					//
+					// For larger specs, this is obviously difficult to debug. Especially, 
+					// because opNode usually points to b on the vars == <<...>> line.
+					//
+					// The following issues confirm that even seasoned users run into this:
+					// https://github.com/tlaplus/tlaplus/issues/317
+					// https://github.com/tlaplus/tlaplus/issues/618
+					// http://discuss.tlapl.us/msg03840.html
+					Assert.fail(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_LIVE,
+							new String[] { opNode.getName().toString(), expr.toString() }, expr, c);
+					// Assert#fail throws exception, thus, no need for an else.
+				}
+				// EV#Enabled /\ EV#Prime /\ OpDeclNode is the case when A is an action (a boolean
+				// valued transition function (see page 312 in Specifying Systems) appearing in an
+				// invariant that TLC cannot evaluate. E.g.:
+        	  	// 
+	      	    // Spec == Init /\ [][a' = a + 1]_a
+        	    // Inv == ENABLED a' > a
+        	    // 
+				// -----------
+				// EV#Clear /\ OpDeclNode is the case when A is an action that TLC
+				// cannot evaluate. E.g.:
+	      	  	// 
+	      	    // Spec == Init /\ [][a' > a]_a
+	      	    // 
+	            Assert.fail(EC.TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR,
                 new String[] { opNode.getName().toString(), expr.toString() }, expr, c);
           }
           if (opcode == 0) {

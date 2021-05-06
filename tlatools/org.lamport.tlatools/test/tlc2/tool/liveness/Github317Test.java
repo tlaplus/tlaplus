@@ -51,11 +51,15 @@ public class Github317Test extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_NESTED_EXPRESSION,
-				"0. Line 17, column 20 to line 17, column 23 in Github317\n"
-				+ "1. Line 10, column 9 to line 10, column 21 in Github317\n"
+				"0. Line 18, column 20 to line 18, column 23 in Github317\n"
+				+ "1. Line 10, column 9 to line 11, column 23 in Github317\n"
 				+ "2. Line 10, column 12 to line 10, column 21 in Github317\n"
-				+ "3. Line 17, column 15 to line 17, column 18 in Github317\n"
-				+ "4. Line 5, column 9 to line 5, column 15 in Github317\n"
-				+ "5. Line 5, column 13 to line 5, column 13 in Github317\n\n"));
+				+ "3. Line 11, column 12 to line 11, column 23 in Github317\n"
+				+ "4. Line 18, column 15 to line 18, column 18 in Github317\n"
+				+ "5. Line 5, column 9 to line 5, column 15 in Github317\n"
+				+ "6. Line 5, column 13 to line 5, column 13 in Github317\n\n"));
+
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_LIVE,
+				"b", "line 5, col 13 to line 5, col 13 of module Github317"));
 	}
 }

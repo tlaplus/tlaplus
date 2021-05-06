@@ -471,7 +471,10 @@ public class MP
         case EC.TLC_PROPERTY_VIOLATED_INITIAL:
             b.append("Property %1% is violated by the initial state:\n%2%");
             break;
-
+        case EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_LIVE:
+			b.append(
+					"The action formula A appearing in a WF_v(A) or SF_v(A) operator does not specify the primed value of the variable %1% occurring in the state formula v.\n");
+        	break;
         case EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT:
 			if (parameters.length == 3) {
 				b.append(
