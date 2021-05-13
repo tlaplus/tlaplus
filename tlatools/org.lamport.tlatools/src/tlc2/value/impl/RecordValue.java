@@ -111,6 +111,24 @@ public class RecordValue extends Value implements Applicable {
 		this.isNorm = false;
   }
 
+  public RecordValue(final TLCState state, final Action action) {
+		final OpDeclNode[] vars = state.getVars();
+		
+		this.names = new UniqueString[vars.length + 1];
+		this.values = new Value[vars.length + 1];
+
+		//TODO: _action too verbose?
+		this.names[0] = UniqueString.of("_action");
+		this.values[0] = new RecordValue(action);
+		
+		for (int i = 0; i < vars.length; i++) {
+			this.names[i+1] = vars[i].getName();
+			this.values[i+1] = (Value) state.lookup(this.names[i+1]); 
+		}
+		
+		this.isNorm = false;
+  }
+
   public RecordValue(final TLCState state, final Value defVal) {
 	  this(state);
 		// if state.lookup in this returned null, replace null with defVal.

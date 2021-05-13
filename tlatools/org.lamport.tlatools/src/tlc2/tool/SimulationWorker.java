@@ -496,6 +496,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	}
 	
 	public final StateVec getTrace() {
+		if (curState == null) {
+			return new StateVec(0);
+		}
+
 		final int level = curState.getLevel();
 		final TLCState[] t = new TLCState[level];
 
@@ -507,16 +511,6 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		assert t[0] != null && s == null;
 		
 		return new StateVec(t);
-	}
-	
-	public final TLCStateInfo[] getTraceInfo() {
-		final StateVec stateTrace = getTrace();
-		final TLCStateInfo[] trace = new TLCStateInfo[stateTrace.size()];
-		for (int i = 0; i < stateTrace.size(); i++) {
-			final TLCState s = stateTrace.elementAt(i);
-			trace[i] = new TLCStateInfo(s);
-		}
-		return trace;
 	}
 	
 	public final TLCStateInfo[] getTraceInfo(final int level) {

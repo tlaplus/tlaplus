@@ -177,14 +177,24 @@ public class TLCExt {
 					unassigned.stream().map(n -> n.getName().toString()).collect(Collectors.joining(", "))));
 		}
 
-		if (s0.isInitial()) {
-			return new TupleValue(new Value[] { new RecordValue(s0) });
-		}
-
 		if (TLCGlobals.simulator != null) {
 			// TODO Somehow load only this implementation in simulation mode => module
 			// overrides for a specific tool mode.
-			return getTrace0(s0, TLCGlobals.simulator.getTraceInfo());
+			final StateVec trace = TLCGlobals.simulator.getTrace();
+			
+			final Value[] values = new Value[trace.size() + 1];
+			for (int j = 0; j < trace.size(); j++) {
+				final TLCState state = trace.elementAt(j);
+				values[j] = new RecordValue(state, state.getAction());
+			}
+			
+			values[values.length - 1] = new RecordValue(s0, s0.getAction());
+			
+			return new TupleValue(values);
+		}
+		
+		if (s0.isInitial()) {
+			return new TupleValue(new Value[] { new RecordValue(s0) });
 		}
 		
 		if (s0.uid == TLCState.INIT_UID) {
