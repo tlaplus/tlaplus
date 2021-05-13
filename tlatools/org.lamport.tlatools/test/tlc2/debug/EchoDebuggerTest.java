@@ -198,7 +198,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		Variable[] trace = frame.getTrace();
 		assertEquals(1, trace.length);
 		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) trace[0]).getTLCValue());
-		assertEquals("1: <Initial predicate>", trace[trace.length - 1].getName());
+		assertEquals("1: <Init line 95, col 9 to line 101, col 43 of module Echo>", trace[trace.length - 1].getName());
 
 		// Debug type correctness property during n0 (next-state relation)
 		// (Run to n0, then run to TypeOK)
