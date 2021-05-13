@@ -26,6 +26,10 @@
 package tlc2.module;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tlc2.TLCGlobals;
@@ -42,13 +46,16 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.util.IdThread;
+import tlc2.util.Vect;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
+import tlc2.value.impl.ValueVec;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -92,13 +99,13 @@ public class TLCGetSet implements ValueConstants {
 				return res;
 			}
 		} else if (vidx instanceof StringValue) {
-			return TLCGetStringValue(vidx, s0, s1, control);
+			return TLCGetStringValue(tool, vidx, s0, s1, control);
 		}
 		throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR,
 				new String[] { "TLCGet", "nonnegative integer", Values.ppr(vidx.toString()) });
 	}
 
-	private static final Value TLCGetStringValue(final Value vidx, final TLCState s0, final TLCState s1,
+	private static final Value TLCGetStringValue(final Tool tool, final Value vidx, final TLCState s0, final TLCState s1,
 			final int control) {
 		final StringValue sv = (StringValue) vidx;
 		if (DIAMETER == sv.val) {
@@ -172,7 +179,8 @@ public class TLCGetSet implements ValueConstants {
 				TLC!TLCGet("config") ==
 				    CHOOSE cfg \in
 				       [ mode: STRING,
-				          depth : Nat ] \cup [mode: STRING]: TRUE
+				          depth : Nat, inits : STRING, actions : STRING ]
+				           \cup [mode: STRING]: TRUE
 				```
 			 * 
 			 * Note that `TLCGet("config")` remains undocumented in `TLC.tla` until we have
@@ -186,22 +194,50 @@ public class TLCGetSet implements ValueConstants {
 			 * TODO: Initialize the RecordValue (config) eagerly to minimize the runtime
 			 *       overhead.
 			 */
+			final Value[] values;
+			final UniqueString[] names;
 			if (TLCGlobals.simulator != null) {
-				final Value[] values = new Value[2];
-				final UniqueString[] names = new UniqueString[2];
+				values = new Value[4];
+				names = new UniqueString[4];
+				
+				// Mode
 				names[0] = UniqueString.of("mode");
 				if (Tool.isProbabilistic()) {
 					values[0] = new StringValue("generate");
 				} else {
 					values[0] = new StringValue("simulate");
 				}
+				
+				// Depth
 				names[1] = UniqueString.of("depth");
 				values[1] = IntValue.gen(TLCGlobals.simulator.getTraceDepth());
-				return new RecordValue(names, values, false);
 			} else {
 				assert TLCGlobals.mainChecker != null;
-				return new RecordValue(UniqueString.of("mode"), new StringValue("bfs"));
+				values = new Value[3];
+				names = new UniqueString[3];
+				names[0] = UniqueString.of("mode");
+				values[0] = new StringValue("bfs");
 			}
+			
+			//TODO: Consider moving actions and inits to TLCGet("model") or TLCGet("spec")?
+			
+			// Inits as found by spec processing.
+			final List<Value> l = new ArrayList<>();
+			final Vect<Action> inits = tool.getInitStateSpec();
+			for (int i = 0; i < inits.size(); i++) {
+				l.add(new RecordValue(inits.elementAt(i)));
+			}
+			names[values.length - 2] = UniqueString.of("inits");
+			values[values.length - 2] = new SetEnumValue(new ValueVec(l), false);
+			
+			// Actions as found by spec processing. For a sub-action with non-zero arity,
+			// TLC has multiple copies.
+			names[values.length - 1] = UniqueString.of("actions");
+			values[values.length - 1] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getActions()).stream()
+					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
+
+			return new RecordValue(names, values, false);
+			
 		} else if (LEVEL == sv.val) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"
 			// is monotonically increasing because it calls tlc2.tool.TLCTrace.getLevelForReporting().
