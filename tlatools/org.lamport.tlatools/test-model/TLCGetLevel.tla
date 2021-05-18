@@ -6,12 +6,14 @@ VARIABLES x, y, yb, z
 ASSUME(TLCGet("level") = 0)
 
 Init ==
+   /\ TLCGet("level") = 0
    /\ yb = TLCGet("level")
    /\ x = 0
    /\ y = TLCGet("level")
    /\ z = 1
 
 Next == 
+   /\ TLCGet("level") > 0
    /\ Assert(TLCGet("level") + 1 = TLCGet("level")', "Failure pre next-state")
    /\ yb' = TLCGet("level")
    /\ x < 3 
