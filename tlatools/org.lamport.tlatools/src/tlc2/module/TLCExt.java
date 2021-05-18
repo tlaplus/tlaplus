@@ -47,6 +47,7 @@ import tlc2.tool.ModelChecker;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
+import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -92,7 +93,8 @@ public class TLCExt {
 		// TLC checks action constraints before it checks if states are new or not. Exclude seen states here
 		// to not repeatedly ask a user to extend a behavior with the same state over and over again.
 		try {
-			if (((ModelChecker) TLCGlobals.mainChecker).theFPSet.contains(s1.fingerPrint())) {
+			if (TLCGlobals.mainChecker != null // simulation mode does not remember seen states.
+					&& ((ModelChecker) TLCGlobals.mainChecker).theFPSet.contains(s1.fingerPrint())) {
 				// If it is a seen state it is by definition in the model.
 				return BoolValue.ValTrue;
 			}
@@ -112,17 +114,21 @@ public class TLCExt {
 			return BoolValue.ValTrue;
 		}
 
-		// Find the (first) Action this pair of states belongs to. If more than one
-		// Action match, we pick the first one.
-		// TODO: This is clumsy (we regenerate all next-states again) and incorrect if
-		// two actions generate the same successor states. It's good enough for now
-		// until the Action instance was passed down the call-stack.
 		Action action = null;
-		LOOP: for (Action act : tool.getActions()) {
-			StateVec nextStates = tool.getNextStates(act, s0);
-			if (nextStates.contains(s1)) {
-				action = act;
-				break LOOP;
+		if (s1 instanceof TLCStateMutExt) {
+			action = s1.getAction();
+		} else {
+			// Find the (first) Action this pair of states belongs to. If more than one
+			// Action match, we pick the first one.
+			// TODO: This is clumsy (we regenerate all next-states again) and incorrect if
+			// two actions generate the same successor states. It's good enough for now
+			// until the Action instance was passed down the call-stack.
+			LOOP: for (Action act : tool.getActions()) {
+				StateVec nextStates = tool.getNextStates(act, s0);
+				if (nextStates.contains(s1)) {
+					action = act;
+					break LOOP;
+				}
 			}
 		}
 
@@ -144,12 +150,17 @@ public class TLCExt {
 			} else if (nextLine.charAt(0) == 'd') {
 				MP.printMessage(EC.TLC_MODULE_OVERRIDE_STDOUT, s1.toString(s0));
 			} else if (nextLine.charAt(0) == 'e') {
-				try {
-					((ModelChecker) TLCGlobals.mainChecker).theFPSet.put(s1.fingerPrint());
-				} catch (IOException notExpectedToHappen) {
-					notExpectedToHappen.printStackTrace();
+				if (TLCGlobals.mainChecker != null) {
+					try {
+						((ModelChecker) TLCGlobals.mainChecker).theFPSet.put(s1.fingerPrint());
+					} catch (IOException notExpectedToHappen) {
+						notExpectedToHappen.printStackTrace();
+					}
+					return BoolValue.ValTrue;
+				} else {
+					MP.printMessage(EC.TLC_MODULE_OVERRIDE_STDOUT, String.format(
+							"Marking a state explored is unsupported by the current TLC mode. Is TLC running in simulation mode?"));
 				}
-				return BoolValue.ValTrue;
 			} else if (nextLine.charAt(0) == 'n') {
 				return BoolValue.ValFalse;
 			}
