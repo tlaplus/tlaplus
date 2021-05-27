@@ -57,6 +57,31 @@ public class DotActionWriter {
 		// Spread out state nodes a bit more.
         this.writer.append("nodesep=0.35;\n");
 
+        // Add a legend explaining the semantics of the arcs.
+        //TODO penwidth should be explained too!
+//        subgraph cluster_legend {
+//            label = "Legend";
+//            node [shape=point] {
+//                d0 [style = invis];
+//                d1 [style = invis];
+//                p0 [style = invis];
+//                p1 [style = invis];
+//            }
+//            d0 -> d1 [label=unseen color=green style=dotted]
+//            p0 -> p1 [label=seen]
+//        }
+		this.writer.append("subgraph cluster_legend {\n");
+		this.writer.append("label = \"Coverage\";\n");
+		this.writer.append("node [shape=point] {\n");
+		this.writer.append("d0 [style = invis];\n");
+		this.writer.append("d1 [style = invis];\n");
+		this.writer.append("p0 [style = invis];\n");
+		this.writer.append("p0 [style = invis];\n");
+		this.writer.append("}\n");
+		this.writer.append("d0 -> d1 [label=unseen, color=\"green\", style=dotted]\n");
+		this.writer.append("p0 -> p1 [label=seen]\n");
+		this.writer.append("}\n");
+
 		this.writer.flush();
 	}
 

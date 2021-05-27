@@ -159,6 +159,7 @@ public class TLC {
      * Name of the file to which to write state traces.
      */
     private String traceFile = null;
+    private boolean traceActions = false;
     /**
      * Maximum state trace depth. Set to 100 by default.
      */
@@ -416,7 +417,8 @@ public class TLC {
 				// file=/path/to/file
 				// "file=..." and "num=..." are only relevant for simulation which is why they
 				// are args to "-simulate".
-				if ((index < args.length) && (args[index].contains("file=") || args[index].contains("num="))) {
+				if ((index < args.length) && (args[index].contains("stats=") || args[index].contains("file=")
+						|| args[index].contains("num="))) {
 					final String[] simArgs = args[index].split(",");
 					index++; // consume simulate args
 					for (String arg : simArgs) {
@@ -424,6 +426,8 @@ public class TLC {
 							traceNum = Long.parseLong(arg.replace("num=", ""));
 						} else if (arg.startsWith("file=")) {
 							traceFile = arg.replace("file=", "");
+						} else if (arg.startsWith("stats=")) {
+							traceActions = true;
 						}
 					}
 				}
@@ -1068,11 +1072,11 @@ public class TLC {
 						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, instance.listen(debugPort));
 					}
 					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
-	                        traceNum, rng, seed, resolver);
+	                        traceNum, traceActions, rng, seed, resolver);
 				} else {
 					tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation);
 					simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 
-	                        traceNum, rng, seed, resolver, TLCGlobals.getNumWorkers());
+	                        traceNum, traceActions, rng, seed, resolver, TLCGlobals.getNumWorkers());
 				}
                 TLCGlobals.simulator = simulator;
                 result = simulator.simulate();

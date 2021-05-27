@@ -49,7 +49,7 @@ public class Simulator {
 
 	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean
 			.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
-	public static boolean actionStats = Boolean.getBoolean(tlc2.tool.Simulator.class.getName() + ".actionStats");
+	private final boolean actionStats;
 
 	/* Constructors */
 
@@ -58,7 +58,7 @@ public class Simulator {
 			long traceNum, RandomGenerator rng, long seed, FilenameToStream resolver,
 			int numWorkers) throws IOException {
 		this(new FastTool(extracted(specFile), configFile, resolver, Tool.Mode.Simulation), "", traceFile, deadlock,
-				traceDepth, traceNum, rng, seed, resolver, numWorkers);
+				traceDepth, traceNum, false, rng, seed, resolver, numWorkers);
 	}
 
 	private static String extracted(String specFile) {
@@ -67,7 +67,7 @@ public class Simulator {
 	}
 
 	public Simulator(ITool tool, String metadir, String traceFile, boolean deadlock, int traceDepth,
-				long traceNum, RandomGenerator rng, long seed, FilenameToStream resolver,
+				long traceNum, boolean traceActions, RandomGenerator rng, long seed, FilenameToStream resolver,
 				int numWorkers) throws IOException {
 		this.tool = tool;
 
@@ -84,6 +84,7 @@ public class Simulator {
 		}
 		this.traceFile = traceFile;
 		this.traceNum = traceNum;
+		this.actionStats = traceActions;
 		this.rng = rng;
 		this.seed = seed;
 		this.aril = 0;
@@ -103,8 +104,8 @@ public class Simulator {
 		this.workers = new ArrayList<>(numWorkers);
 		for (int i = 0; i < this.numWorkers; i++) {
 			this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
-					this.traceDepth, this.traceNum, this.checkDeadlock, this.traceFile, this.liveCheck,
-					this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+					this.traceDepth, this.traceNum, this.actionStats, this.checkDeadlock, this.traceFile,
+					this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 		}
 		
 		if (TLCGlobals.isCoverageEnabled()) {
@@ -483,6 +484,13 @@ public class Simulator {
 	protected final void printSummary() {
 		this.reportCoverage();
 
+		try {
+			this.writeActionFlowGraph();
+		} catch (Exception e) {
+			// SZ Jul 10, 2009: changed from error to bug
+			MP.printTLCBug(EC.TLC_REPORTER_DIED, null);
+		}
+
 		/*
 		 * This allows the toolbox to easily display the last set of state space
 		 * statistics by putting them in the same form as all other progress statistics.
@@ -547,76 +555,77 @@ public class Simulator {
 			}
 		}
 
-		private void writeActionFlowGraph() throws IOException {
-			if (!actionStats) {
-				return;
+	}
+	
+	private void writeActionFlowGraph() throws IOException {
+		if (!actionStats) {
+			return;
+		}
+		// The number of actions is expected to be low (dozens commons and hundreds a
+		// rare). This is why the code below isn't optimized for performance.
+		final Action[] actions = Simulator.this.tool.getActions();
+		final int len = actions.length;
+		
+		// Clusters of actions that have the same context:
+		// CONSTANT Proc
+		// ...
+		// A(p) == p \in {...} /\ v' = 42...
+		// Next == \E p \in Proc : A(p)
+		final Map<String, Set<Integer>> clusters = new HashMap<>();
+		for (int i = 0; i < len; i++) {
+			final String con = actions[i].con.toString();
+			if (!clusters.containsKey(con)) {
+				clusters.put(con, new HashSet<>());	
 			}
-			// The number of actions is expected to be low (dozens commons and hundreds a
-			// rare). This is why the code below isn't optimized for performance.
-			final Action[] actions = Simulator.this.tool.getActions();
-			final int len = actions.length;
+			clusters.get(con).add(i);
+		}
+		
+		// Write clusters to dot file (override previous file).
+		final DotActionWriter dotActionWriter = new DotActionWriter(
+				Simulator.this.tool.getRootName() + "_actions.dot", "");
+		for (Entry<String, Set<Integer>> cluster : clusters.entrySet()) {
+			// key is a unique set of chars accepted/valid as a graphviz cluster id.
+			final String key = Integer.toString(Math.abs(cluster.getKey().hashCode()));
+			dotActionWriter.writeSubGraphStart(key, cluster.getKey().toString());
 			
-			// Clusters of actions that have the same context:
-			// CONSTANT Proc
-			// ...
-			// A(p) == p \in {...} /\ v' = 42...
-			// Next == \E p \in Proc : A(p)
-			final Map<String, Set<Integer>> clusters = new HashMap<>();
-			for (int i = 0; i < len; i++) {
-				final String con = actions[i].con.toString();
-				if (!clusters.containsKey(con)) {
-				   clusters.put(con, new HashSet<>());	
-				}
-				clusters.get(con).add(i);
+			final Set<Integer> ids = cluster.getValue();
+			for (Integer id : ids) {
+				dotActionWriter.write(actions[id], id);
 			}
-			
-			// Write clusters to dot file (override previous file).
-			final DotActionWriter dotActionWriter = new DotActionWriter(
-					Simulator.this.tool.getRootName() + "_actions.dot", "");
-			for (Entry<String, Set<Integer>> cluster : clusters.entrySet()) {
-				// key is a unique set of chars accepted/valid as a graphviz cluster id.
-				final String key = Integer.toString(Math.abs(cluster.getKey().hashCode()));
-				dotActionWriter.writeSubGraphStart(key, cluster.getKey().toString());
-
-				final Set<Integer> ids = cluster.getValue();
-				for (Integer id : ids) {
-					dotActionWriter.write(actions[id], id);
-				}
-				dotActionWriter.writeSubGraphEnd();
-			}					
-
-			// Element-wise sum the statistics from all workers.
-			long[][] aggregateActionStats = new long[len][len];
-			final List<SimulationWorker> workers = Simulator.this.workers;
-			for (SimulationWorker sw : workers) {
-				final long[][] s = sw.actionStats;
-				for (int i = 0; i < len; i++) {
-					for (int j = 0; j < len; j++) {
-						aggregateActionStats[i][j] += s[i][j];
-					}
-				}
-			}
-			
-			// Write stats to dot file as edges between the action vertices.
+			dotActionWriter.writeSubGraphEnd();
+		}					
+		
+		// Element-wise sum the statistics from all workers.
+		long[][] aggregateActionStats = new long[len][len];
+		final List<SimulationWorker> workers = Simulator.this.workers;
+		for (SimulationWorker sw : workers) {
+			final long[][] s = sw.actionStats;
 			for (int i = 0; i < len; i++) {
 				for (int j = 0; j < len; j++) {
-					long l = aggregateActionStats[i][j];
-					if (l > 0L) {
-						// LogLog l (to keep the graph readable) and round to two decimal places (to not
-						// write a gazillion decimal places truncated by graphviz anyway).
-						final double loglogWeight = Math.log10(Math.log10(l+1)); // +1 to prevent negative inf.
-						dotActionWriter.write(actions[i], i, actions[j], j,
-								BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
-										.doubleValue());
-					} else {
-						dotActionWriter.write(actions[i], i, actions[j], j);
-					}
+					aggregateActionStats[i][j] += s[i][j];
 				}
 			}
-			
-			// Close dot file.
-			dotActionWriter.close();
 		}
+		
+		// Write stats to dot file as edges between the action vertices.
+		for (int i = 0; i < len; i++) {
+			for (int j = 0; j < len; j++) {
+				long l = aggregateActionStats[i][j];
+				if (l > 0L) {
+					// LogLog l (to keep the graph readable) and round to two decimal places (to not
+					// write a gazillion decimal places truncated by graphviz anyway).
+					final double loglogWeight = Math.log10(Math.log10(l+1)); // +1 to prevent negative inf.
+					dotActionWriter.write(actions[i], i, actions[j], j,
+							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
+							.doubleValue());
+				} else {
+					dotActionWriter.write(actions[i], i, actions[j], j);
+				}
+			}
+		}
+		
+		// Close dot file.
+		dotActionWriter.close();
 	}
 
 	public final StateVec getTrace() {
