@@ -11,7 +11,7 @@ import org.junit.Test;
 import tlc2.tool.CommonTestCase;
 import util.ToolIO;
 
-public class ConflictingFairnessOptions extends PCalTest {
+public class ConflictingFairnessOptionsTest extends PCalTest {
 
 	@Test
 	public void test() {
