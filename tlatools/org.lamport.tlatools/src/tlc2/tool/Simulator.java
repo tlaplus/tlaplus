@@ -49,7 +49,7 @@ public class Simulator {
 
 	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean
 			.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
-	private final boolean actionStats;
+	private final String traceActions;
 
 	/* Constructors */
 
@@ -58,7 +58,7 @@ public class Simulator {
 			long traceNum, RandomGenerator rng, long seed, FilenameToStream resolver,
 			int numWorkers) throws IOException {
 		this(new FastTool(extracted(specFile), configFile, resolver, Tool.Mode.Simulation), "", traceFile, deadlock,
-				traceDepth, traceNum, false, rng, seed, resolver, numWorkers);
+				traceDepth, traceNum, null, rng, seed, resolver, numWorkers);
 	}
 
 	private static String extracted(String specFile) {
@@ -67,7 +67,7 @@ public class Simulator {
 	}
 
 	public Simulator(ITool tool, String metadir, String traceFile, boolean deadlock, int traceDepth,
-				long traceNum, boolean traceActions, RandomGenerator rng, long seed, FilenameToStream resolver,
+				long traceNum, String traceActions, RandomGenerator rng, long seed, FilenameToStream resolver,
 				int numWorkers) throws IOException {
 		this.tool = tool;
 
@@ -84,7 +84,7 @@ public class Simulator {
 		}
 		this.traceFile = traceFile;
 		this.traceNum = traceNum;
-		this.actionStats = traceActions;
+		this.traceActions = traceActions;
 		this.rng = rng;
 		this.seed = seed;
 		this.aril = 0;
@@ -104,7 +104,7 @@ public class Simulator {
 		this.workers = new ArrayList<>(numWorkers);
 		for (int i = 0; i < this.numWorkers; i++) {
 			this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
-					this.traceDepth, this.traceNum, this.actionStats, this.checkDeadlock, this.traceFile,
+					this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
 					this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 		}
 		
@@ -556,11 +556,16 @@ public class Simulator {
 		}
 
 	}
-	
+
 	private void writeActionFlowGraph() throws IOException {
-		if (!actionStats) {
-			return;
+		if (traceActions == "BASIC") {
+			writeActionFlowGraphBasic();
+		} else if (traceActions == "FULL") {
+			writeActionFlowGraphFull();
 		}
+	}
+	
+	private void writeActionFlowGraphFull() throws IOException {		
 		// The number of actions is expected to be low (dozens commons and hundreds a
 		// rare). This is why the code below isn't optimized for performance.
 		final Action[] actions = Simulator.this.tool.getActions();
@@ -615,11 +620,90 @@ public class Simulator {
 					// LogLog l (to keep the graph readable) and round to two decimal places (to not
 					// write a gazillion decimal places truncated by graphviz anyway).
 					final double loglogWeight = Math.log10(Math.log10(l+1)); // +1 to prevent negative inf.
-					dotActionWriter.write(actions[i], i, actions[j], j,
+					dotActionWriter.write(i, j,
 							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
 							.doubleValue());
 				} else {
-					dotActionWriter.write(actions[i], i, actions[j], j);
+					dotActionWriter.write(i, j);
+				}
+			}
+		}
+		
+		// Close dot file.
+		dotActionWriter.close();
+	}
+
+	private void writeActionFlowGraphBasic() throws IOException {
+		// The number of actions is expected to be low (dozens commons and hundreds a
+		// rare). This is why the code below isn't optimized for performance.
+		final Action[] actions = Simulator.this.tool.getActions();
+		final int len = actions.length;
+		
+		// Create a map from id to action name.
+		final Map<Integer, String> idToActionName = new HashMap<>();
+		for (int i = 0; i < len; i++) {
+			final String actionName;
+			if (actions[i].isNamed()) {
+				actionName = actions[i].getName().toString();
+			} else {
+				// If we have an unnamed action, action name will be
+				// the string representation of the action (which has information
+				// about line, column etc).
+				actionName = actions[i].toString();
+			}
+			idToActionName.put(i, actionName);
+		}
+
+		// Override previous basic file.
+		final DotActionWriter dotActionWriter = new DotActionWriter(
+				Simulator.this.tool.getRootName() + "_actions.dot", "");
+
+		// Identify actions in the dot file.
+	    final List<String> distinctActionNames = idToActionName.values().stream().distinct().sorted().collect(Collectors.toList());
+		for (int i = 0; i < distinctActionNames.size(); i ++) {
+			final String actionName = distinctActionNames.get(i);
+			// Uses the position in `distinctActionNames` as the id.
+			dotActionWriter.write(actionName, i);
+		}
+		
+		// Element-wise sum the statistics from all workers.
+		long[][] aggregateActionStats = new long[len][len];
+		final List<SimulationWorker> workers = Simulator.this.workers;
+		for (SimulationWorker sw : workers) {
+			final long[][] s = sw.actionStats;
+			for (int i = 0; i < len; i++) {
+				for (int j = 0; j < len; j++) {
+					aggregateActionStats[i][j] += s[i][j];
+				}
+			}
+		}
+
+		// Having the aggregated action stats, reduce it to account for only
+		// the distinct action names.
+		long[][] reducedAggregateActionStats = new long[distinctActionNames.size()][distinctActionNames.size()];
+		for (int i = 0; i < len; i++) {
+			// Find origin id.
+			final int originActionId = distinctActionNames.indexOf(idToActionName.get(i));
+			for (int j = 0; j < len; j++) {
+				// Find next id.
+				final int nextActionId = distinctActionNames.indexOf(idToActionName.get(j));
+				reducedAggregateActionStats[originActionId][nextActionId] += aggregateActionStats[i][j];
+			}
+		}
+
+		// Write stats to dot file as edges between the action vertices.
+		for (int i = 0; i < distinctActionNames.size(); i++) {
+			for (int j = 0; j < distinctActionNames.size(); j++) {
+				long l = reducedAggregateActionStats[i][j];
+				if (l > 0L) {
+					// LogLog l (to keep the graph readable) and round to two decimal places (to not
+					// write a gazillion decimal places truncated by graphviz anyway).
+					final double loglogWeight = Math.log10(Math.log10(l+1)); // +1 to prevent negative inf.
+					dotActionWriter.write(i, j,
+							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
+							.doubleValue());
+				} else {
+					dotActionWriter.write(i, j);
 				}
 			}
 		}

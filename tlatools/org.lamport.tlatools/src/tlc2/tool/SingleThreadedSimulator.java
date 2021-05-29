@@ -56,7 +56,7 @@ public class SingleThreadedSimulator extends Simulator {
 	 * Phaser, ...
 	 */
 	public SingleThreadedSimulator(ITool tool, String metadir, String traceFile, boolean deadlock, int traceDepth,
-			long traceNum, boolean traceActions, RandomGenerator rng, long seed, FilenameToStream resolver) throws IOException {
+			long traceNum, String traceActions, RandomGenerator rng, long seed, FilenameToStream resolver) throws IOException {
 		super(tool, metadir, traceFile, deadlock, traceDepth, traceNum, traceActions, rng, seed, resolver, 1);
 	}
 

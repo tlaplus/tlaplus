@@ -103,7 +103,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	// Adjacency Matrix with link weights.
 	final long[][] actionStats;
 
-	private final boolean collectActionStats;
+	private final String traceActions;
 	
 	/**
 	 * Encapsulates information about an error produced by a simulation worker.
@@ -192,15 +192,15 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	public SimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue,
 			long seed, int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck) {
-		this(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, false, checkDeadlock, traceFile, liveCheck,
+		this(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, null, checkDeadlock, traceFile, liveCheck,
 				new LongAdder(), new LongAdder(), new AtomicLong());
 	}
 
 	public SimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue,
-			long seed, int maxTraceDepth, long maxTraceNum, boolean actionStats, boolean checkDeadlock, String traceFile,
+			long seed, int maxTraceDepth, long maxTraceNum, String traceActions, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck, LongAdder numOfGenStates, LongAdder numOfGenTraces, AtomicLong m2AndMean) {
 		super(id);
-		this.collectActionStats = actionStats;
+		this.traceActions = traceActions;
 		this.localRng = new RandomGenerator(seed);
 		this.tool = tool;
 		this.maxTraceDepth = maxTraceDepth;
@@ -213,7 +213,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		this.numOfGenTraces = numOfGenTraces;
 		this.welfordM2AndMean = m2AndMean;
 		
-		if (collectActionStats) {
+		if (traceActions != null) {
 			final Action[] actions = this.tool.getActions();
 			final int len = actions.length;
 			this.actionStats = new long[len][len];
@@ -430,7 +430,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			
 			// In case actionStats are off, we waste a few cycles to increment this counter
 			// nobody is going to look at.
-			if (collectActionStats) {
+			if (traceActions != null) {
 				this.actionStats[curState.getAction().getId()][s1.getAction().getId()]++;
 			}
 			curState = s1;

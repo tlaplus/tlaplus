@@ -159,7 +159,7 @@ public class TLC {
      * Name of the file to which to write state traces.
      */
     private String traceFile = null;
-    private boolean traceActions = false;
+    private String traceActions = null;
     /**
      * Maximum state trace depth. Set to 100 by default.
      */
@@ -426,8 +426,10 @@ public class TLC {
 							traceNum = Long.parseLong(arg.replace("num=", ""));
 						} else if (arg.startsWith("file=")) {
 							traceFile = arg.replace("file=", "");
-						} else if (arg.startsWith("stats=")) {
-							traceActions = true;
+						} else if (arg.equals("stats=basic")) {
+							traceActions = "BASIC";
+						} else if (arg.equals("stats=full")) {
+							traceActions = "FULL";
 						}
 					}
 				}
