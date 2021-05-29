@@ -420,7 +420,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		AtomicLong m2AndMean = new AtomicLong();
 		int traceDepth = 5;
 		long traceNum = 5;
-		SimulationWorker worker = new SimulationWorker(0, tool, resultQueue, 0, traceDepth, traceNum, false, false,
+		SimulationWorker worker = new SimulationWorker(0, tool, resultQueue, 0, traceDepth, traceNum, null, false,
 				null, liveCheck, numOfGenStates, numOfGenTraces, m2AndMean);
 
 		worker.start(initStates);
