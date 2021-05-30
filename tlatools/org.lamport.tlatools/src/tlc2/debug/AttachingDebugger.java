@@ -89,7 +89,10 @@ public class AttachingDebugger extends TLCDebugger {
 				// Immediately re-open the debugger to front-end requests after a front-end disconnected.
 				//TODO: This doesn't terminate when TLC terminates.
 				while (true) {
-					// No point printing the debugger port while it's hard-coded.
+					// Beware: Do not remove "Debugger is listening on %s\n" below, because the
+					// debugger front-end of the VSCode extension waits for TLC to print this
+					// message when connecting to the TLA+ debugger:
+					// https://github.com/alygin/vscode-tlaplus/commit/74d4a34cf9e2b3864f7ee51402d88fc3b9f7525f#commitcomment-51478347
 					System.out.printf("Debugger is listening on %s\n", serverSocket.getLocalSocketAddress());
 					final Socket socket = serverSocket.accept();
 					final InputStream inputStream = socket.getInputStream();
