@@ -1920,24 +1920,19 @@ public class PcalTLAGen
         }
         ;
 
-        if (EmptyExpr(defs))
+        /******************************************************************
+        * Generate a single VARIABLES statement and set gVars to vector   *
+        * of all variables.                                               *        
+        ******************************************************************/
+        gVars.addAll(lVars);
+        gVarsSource.addAll(lVarsSource) ;
+        GenVarDecl(gVars, gVarsSource); 
+        
+        if (!EmptyExpr(defs))
         {
             /******************************************************************
-            * There is no `define' statement.  In this case, generate a       *
-            * single VARIABLES statement and set gVars to vector of all       *
-            * variables.                                                      *
+            * There is a `define' statement.                                  *
             ******************************************************************/
-            gVars.addAll(lVars);
-            gVarsSource.addAll(lVarsSource) ;
-            GenVarDecl(gVars, gVarsSource); 
-        } else
-        {
-            /******************************************************************
-            * There is a `define' statement.  In this case, must declare      *
-            * global and local variables separately.  Also, set gVars to      *
-            * vector of all variables.                                        *
-            ******************************************************************/
-            GenVarDecl(gVars, gVarsSource);
             addOneLineOfTLA("");
             addOneLineOfTLA("(* define statement *)");
             addExprToTLA(defs);
@@ -1945,12 +1940,7 @@ public class PcalTLAGen
 //            for (int i = 0; i < sv.size(); i++)
 //            {
 //                tlacode.addElement((String) sv.elementAt(i));
-//            }
-            ;
-            addOneLineOfTLA("");
-            GenVarDecl(lVars, lVarsSource); // to be fixed
-            gVars.addAll(lVars);
-            gVarsSource.addAll(lVarsSource);
+//            }            
         }
         ;
         addOneLineOfTLA("");
