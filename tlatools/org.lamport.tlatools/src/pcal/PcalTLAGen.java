@@ -2802,7 +2802,7 @@ public class PcalTLAGen
             for (int i = 0; i < st.procs.size(); i++)
             {
                 PcalSymTab.ProcedureEntry p = (PcalSymTab.ProcedureEntry) st.procs.elementAt(i);
-                if ((p.name.length() + "(self) \\/ ".length() + sb.length()) > max)
+                if (sb.length() > 0 && (p.name.length() + "(self) \\/ ".length() + sb.length()) > max)
                 {
                     nextSS.addElement(sb.toString());
                     sb = new StringBuffer();
