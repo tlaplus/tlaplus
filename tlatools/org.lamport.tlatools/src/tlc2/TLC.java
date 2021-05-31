@@ -1066,7 +1066,7 @@ public class TLC {
 				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				
 				Simulator simulator;
-				if (debugPort > 0) {
+				if (debugPort >= 0) {
 					assert TLCGlobals.getNumWorkers() == 1
 							: "TLCDebugger does not support running with multiple workers.";
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(suspend, halt);
@@ -1096,7 +1096,7 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
-				if (debugPort > 0) {
+				if (debugPort >= 0) {
 					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(suspend, halt);
 					synchronized (instance) {
@@ -1488,7 +1488,8 @@ public class TLC {
 					+ "runtime errors can be inspected in the debugger before TLC\n"
 					+ "terminates. The optional parameter 'port=1274' makes the\n"
 					+ "debugger listen on port 1274 instead of on the standard\n"
-					+ "port 4712. Multiple optional parameters must be comma-separated.\n"
+					+ "port 4712, and 'port=0' lets the debugger choose a port.\n"
+					+ "Multiple optional parameters must be comma-separated.\n"
 					+ "Specifying '-debugger' implies '-workers 1'."
 					+ "", false,
 				"nosuspend"));
