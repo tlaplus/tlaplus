@@ -27,7 +27,9 @@ package tlc2.debug;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
@@ -45,10 +47,12 @@ import tlc2.value.impl.RecordValue;
 public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 
 	private transient final INextStateFunctor fun;
+	private transient final Action a;
 
 	public TLCSuccessorsStackFrame(TLCStackFrame parent, OpDefNode node, Context ctxt, Tool tool, TLCState s, Action a,
 			INextStateFunctor fun) {
 		super(parent, node, ctxt, tool, s);
+		this.a = a;
 		this.fun = fun;
 		//TODO Append action name, too? => node.getName().toString()
 		// Overwrite setName from parent that uses HumanReadableImage, which -for an
@@ -66,13 +70,17 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 	public Variable[] getVariables(int vr) {
 		if (vr == getSuccessorId()) {
 			return tool.eval(() -> {
-				final Variable[] vars = new Variable[fun.getStates().size()];
+				// A) Filter those states from fun#getStates that are a-steps where a is the Action
+				// corresponding to this frame.
+				final Set<TLCState> aSteps = fun.getStates().getSubSet(a);
+				
+				// B) Convert a-steps into the DAP representation.
+				final Variable[] vars = new Variable[aSteps.size()];
+				Iterator<TLCState> itr = aSteps.iterator();
 				for (int i = 0; i < vars.length; i++) {
-					RecordValue r = new RecordValue(fun.getStates().next());
+					RecordValue r = new RecordValue(itr.next());
 					vars[i] = getStateAsVariable(r, "t" + (i+1));
 				}
-				// Always clean-up after ourself! Do not interfere with liveness checking!
-				fun.getStates().resetNext();
 				return vars;
 			});
 		}
@@ -103,7 +111,7 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 			final Location location = one[0].getLocation();
 			final int hits = bp.getHits();
 			return bp.getLine() == location.beginLine() && location.beginColumn() <= bp.getColumnAsInt()
-					&& bp.getColumnAsInt() <= location.endColumn() && fun.getStates().size() >= hits;
+					&& bp.getColumnAsInt() <= location.endColumn() && fun.getStates().getSubSet(a).size() >= hits;
 		}
 		return false;
 	}

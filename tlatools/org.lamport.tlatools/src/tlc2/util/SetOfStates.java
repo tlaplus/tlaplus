@@ -26,6 +26,9 @@
 
 package tlc2.util;
 
+import java.util.HashSet;
+
+import tlc2.tool.Action;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import util.Assert.TLCRuntimeException;
@@ -188,6 +191,21 @@ public final class SetOfStates {
 		}
 		buf.append("}");
 		return buf.toString();
+	}
+	
+	public java.util.Set<TLCState> getSubSet(final Action a) {
+		final HashSet<TLCState> subset = new HashSet<>(size());
+		
+		for (int i = 0; i < size(); i++) {
+			final TLCState next = next();
+			if (next.hasAction() && next.getAction() == a) {
+				subset.add(next);
+			}
+		}
+		// Always clean-up after ourself!
+		resetNext();
+		
+		return subset;
 	}
 	
 	/*
