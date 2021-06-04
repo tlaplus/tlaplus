@@ -269,16 +269,16 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// Step through the evaluation of a mildly complex expression. 
 		debugger.replaceAllBreakpointsWith(RM, 119);
 		stackFrames = debugger.continue_();
-		assertEquals(8, stackFrames.length);
+		assertEquals(9, stackFrames.length);
 		Context context = Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne).cons(null, IntValue.ValOne);
 		assertTLCActionFrame(stackFrames[0], 119, 119, RM, context, vars[3]);
 
 		stackFrames = debugger.stepIn();
-		assertEquals(9, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 119, 119, RM, context, vars[3]);
 
 		stackFrames = debugger.stepIn(3);
-		assertEquals(10, stackFrames.length);
+		assertEquals(11, stackFrames.length);
 		Set<Variable> variables = new HashSet<>();
 		variables.add(createVariable("i","1",IntValue.ValZero.getTypeString()));
 		variables.add(createVariable("j","1",IntValue.ValZero.getTypeString()));
@@ -287,11 +287,11 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCActionFrame(stackFrames[0], 119, 44, 119, 57, RM, variables, vars[3]);
 
 		stackFrames = debugger.stepIn();
-		assertEquals(11, stackFrames.length);
+		assertEquals(12, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 29, 29, UTILS, variables, vars[3]);
 
 		stackFrames = debugger.stepIn(13);
-		assertEquals(9, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		variables = new HashSet<>();
 		variables.add(createVariable("i","1",IntValue.ValZero.getTypeString()));
 		variables.add(createVariable("j","1",IntValue.ValZero.getTypeString()));
@@ -300,13 +300,13 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// 8888888888888888888 Invariant TypeOK 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(RM, 29);
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(11, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 29, 3, 37, 25, RM, Context.Empty);
 		
 		// 8888888888888888888 Invariant EWD998!Inv 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(FOLDER, 150);
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(11, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 150, 3, 162, 34, FOLDER, (Context) null); //TODO Assert context that contains the refinement mapping
 		
 		// 8888888888888888888 Test resolving a location (e.g. editor hovering) to a value 888888888888888 //
@@ -404,12 +404,12 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		// before the UNCHANGED is evaluated
 		stackFrames = debugger.continue_();
-		assertEquals(6, stackFrames.length);
+		assertEquals(7, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 107, 6, 107, 32, RM, (Context) null, vars[0], vars[1]);
 
 		// evaluate the UNCHANGED
 		stackFrames = debugger.stepIn();
-		assertEquals(7, stackFrames.length);
+		assertEquals(8, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 107, 6, 107, 32, RM, (Context) null);
 
 		// Run to the state-constraint and a hit condition.
@@ -418,7 +418,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		sba.getBreakpoints()[0].setHitCondition("3");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(8, stackFrames.length);
+		assertEquals(9, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 148, 3, 153, 45, RM, Context.Empty);
 		
 		// Remove all breakpoints and run the spec to completion.

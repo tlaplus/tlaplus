@@ -76,10 +76,12 @@ import org.eclipse.lsp4j.debug.services.IDebugProtocolClient;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
+import tlc2.tool.INextStateFunctor;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -466,6 +468,30 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		stack.push(frame);
 		haltExecution(frame, this.stack.size());
 		return this;
+	}
+
+	@Override
+	public synchronized IDebugTarget pushFrame(Tool tool, OpDefNode expr, Context c, TLCState s,
+			Action a, INextStateFunctor fun) {
+		final TLCStackFrame frame = new TLCSuccessorsStackFrame(stack.peek(), expr, c, tool, s, a, fun);
+		stack.push(frame);
+		// for the fun it doesn't make sense to halt the execution *before* the
+		// successor states have been generated. Instead, haltExec is called in the
+		// corresponding pop method below.
+		//haltExecution(frame, this.stack.size());
+		return this;
+	}
+
+	@Override
+	public synchronized IDebugTarget popFrame(Tool tool, OpDefNode expr, Context c, TLCState s, Action a,
+			INextStateFunctor fun) {
+		final TLCStackFrame frame = this.stack.peek();
+		if (frame != null && matches(frame)) {
+			// Check if execution/evaluation should be halted even if fun#getStates is
+			// empty.  Users can set the hit count to >0 to ignore non-enabled actions
+			haltExecution(frame);
+		}
+		return popFrame(s);
 	}
 
 	@Override

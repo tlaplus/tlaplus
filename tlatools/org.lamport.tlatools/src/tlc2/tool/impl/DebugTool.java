@@ -26,8 +26,11 @@
 package tlc2.tool.impl;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import tla2sany.semantic.ASTConstants;
@@ -395,7 +398,21 @@ public class DebugTool extends Tool {
 			if (functor instanceof WrapperNextStateFunctor) {
 				return super.getNextStates(functor, state);
 			} else {
-				return super.getNextStates(new WrapperNextStateFunctor(functor, target), state);
+				for (int i = 0; i < actions.length; i++) {
+					final Action action = actions[i];
+					final WrapperNextStateFunctor wf = new WrapperNextStateFunctor(functor, target);
+					if (action.isDeclared()) {
+						// Breakpoints for the INextStateFunctor frames are in-line breakpoints on
+						// the action declaration. If an action is undeclared, it is impossible to set
+						// the breakpoint.
+						target.pushFrame(this, action.getOpDef(), action.con, state, action, wf);
+						this.getNextStates(wf, state, action);
+						target.popFrame(this, action.getOpDef(), action.con, state, action, wf);
+					} else {
+						this.getNextStates(wf, state, action);
+					}
+				}
+				return false;
 			}
 		} finally {
 			// In getNextState above, the predecessor state is set eagerly for
@@ -429,6 +446,14 @@ public class DebugTool extends Tool {
 
 	private static class WrapperNextStateFunctor extends WrapperStateFunctor implements INextStateFunctor {
 
+		private final Set<TLCState> successors = new TreeSet<>(new Comparator<TLCState>() {
+
+			@Override
+			public int compare(TLCState o1, TLCState o2) {
+				return Long.compare(o1.fingerPrint(), o2.fingerPrint());
+			}
+		});
+		
 		WrapperNextStateFunctor(INextStateFunctor functor, IDebugTarget target) {
 			super(functor, target);
 		}
@@ -437,8 +462,14 @@ public class DebugTool extends Tool {
 		public Object addElement(TLCState predecessor, Action a, TLCState state) {
 			target.pushFrame(predecessor, a, state);
 			Object addElement = ((INextStateFunctor) functor).addElement(predecessor, a, state);
+			successors.add(state);
 			target.popFrame(predecessor, state);
 			return addElement;
+		}
+
+		@Override
+		public Collection<TLCState> getStates() {
+			return successors;
 		}
 	}
 

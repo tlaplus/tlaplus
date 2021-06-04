@@ -205,12 +205,12 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		debugger.unsetBreakpoints();
 		debugger.replaceAllBreakpointsWith(RM, 104);
 		stackFrames = debugger.continue_();
-		assertEquals(3, stackFrames.length);
+		assertEquals(4, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
 		
 		debugger.replaceAllBreakpointsWith(RM, 167);
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(11, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
 		frame = (TLCStateStackFrame) stackFrames[0];
 		assertEquals(2, frame.state.getLevel());
@@ -222,7 +222,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		sba.getBreakpoints()[0].setHitCondition("5");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(3, stackFrames.length);
+		assertEquals(4, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
 		
 		// Remove all breakpoints and run the spec to completion.

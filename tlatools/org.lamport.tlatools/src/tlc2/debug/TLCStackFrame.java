@@ -571,6 +571,7 @@ public class TLCStackFrame extends StackFrame {
 		// passing e.g. TLCGet("level") > 3 as the hit condition for state-level and a
 		// simple integer for const-level.
 		return bp.getLine() == node.getLocation().beginLine()
+				//TODO why *smaller* than BEGINcolumn?
 				&& bp.getColumnAsInt() <= node.getLocation().beginColumn();
 	}
 }
