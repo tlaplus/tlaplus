@@ -141,6 +141,7 @@ public abstract class Tool
 
   protected final Action[] actions;     // the list of TLA actions.
   private Vect<Action> actionVec = new Vect<>(10);
+  protected final Mode toolMode;
 
   /**
    * Creates a new tool handle
@@ -176,6 +177,7 @@ public abstract class Tool
   {
       super(specDir, specFile, configFile, resolver, mode);
 
+      this.toolMode = mode;
 		// set variables to the static filed in the state
 		if (mode == Mode.Simulation || mode == Mode.Executor || mode == Mode.MC_DEBUG) {
 			assert TLCState.Empty instanceof TLCStateMutExt;
@@ -203,8 +205,14 @@ public abstract class Tool
 	  super(other);
 	  this.actions = other.actions;
 	  this.actionVec = other.actionVec;
+	  this.toolMode = other.toolMode;
   }
 
+  @Override
+  public Mode getMode() {
+	  return this.toolMode;
+  }
+  
 	/**
    * This method returns the set of all possible actions of the
    * spec, and sets the actions field of this object. In fact, we

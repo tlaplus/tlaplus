@@ -38,6 +38,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.ModelConfig;
 import tlc2.tool.impl.SpecProcessor;
+import tlc2.tool.impl.Tool.Mode;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
@@ -48,6 +49,8 @@ import util.FilenameToStream;
 
 public interface ITool extends TraceApp {
 
+	Mode getMode();
+	
 	/**
 	   * This method returns the set of all possible actions of the
 	   * spec, and sets the actions field of this object. In fact, we

@@ -27,7 +27,6 @@ package tlc2.debug;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.lsp4j.debug.Scope;
@@ -67,17 +66,14 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 	public Variable[] getVariables(int vr) {
 		if (vr == getSuccessorId()) {
 			return tool.eval(() -> {
-				final Iterator<TLCState> iterator = fun.getStates().iterator();
 				final Variable[] vars = new Variable[fun.getStates().size()];
 				for (int i = 0; i < vars.length; i++) {
-					RecordValue r = new RecordValue(iterator.next());
+					RecordValue r = new RecordValue(fun.getStates().next());
 					vars[i] = getStateAsVariable(r, "t" + (i+1));
 				}
+				// Always clean-up after ourself! Do not interfere with liveness checking!
+				fun.getStates().resetNext();
 				return vars;
-				// If the label tN: left of the state in the variable view of the debugger turns
-				// out useless, the map/collect below is equivalent to the for loop above.
-//				return fun.getStates().stream().map(s -> getStateAsVariable(new RecordValue(s), ""))
-//						.collect(Collectors.toList()).toArray(Variable[]::new);
 			});
 		}
 		return super.getVariables(vr);

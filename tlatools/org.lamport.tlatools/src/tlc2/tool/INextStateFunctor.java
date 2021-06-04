@@ -25,8 +25,7 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import java.util.Collection;
-import java.util.Set;
+import tlc2.util.SetOfStates;
 
 public interface INextStateFunctor extends IStateFunctor {
 
@@ -43,8 +42,8 @@ public interface INextStateFunctor extends IStateFunctor {
 	default boolean hasStates() {
 		throw new UnsupportedOperationException();
 	}
-
-	default Collection<TLCState> getStates() {
-		return Set.of();
+	
+	default SetOfStates getStates() {
+		return new SetOfStates(0);
 	}
 }

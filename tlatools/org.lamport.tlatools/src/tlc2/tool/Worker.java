@@ -17,6 +17,7 @@ import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.impl.CallStackTool;
 import tlc2.tool.impl.Tool;
+import tlc2.tool.impl.Tool.Mode;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.BufferedRandomAccessFile;
 import tlc2.util.IStateWriter;
@@ -41,6 +42,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	 */
 	private final ModelChecker tlc;
 	private final Tool tool;
+	private final Mode mode;
 	private final IStateQueue squeue;
 	private final FPSet theFPSet;
 	private final IStateWriter allStateWriter;
@@ -63,6 +65,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		this.checkLiveness = this.tlc.checkLiveness;
 		this.checkDeadlock = this.tlc.checkDeadlock;
 		this.tool = (Tool) this.tlc.tool;
+		this.mode = this.tool.getMode();
 		this.squeue = this.tlc.theStateQueue;
 		this.theFPSet = this.tlc.theFPSet;
 		this.allStateWriter = this.tlc.allStateWriter;
@@ -97,7 +100,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 				}
 				setCurrentState(curState);
 				
-				if (this.checkLiveness) {
+				if (this.checkLiveness || mode == Mode.MC_DEBUG) {
 					// Allocate iff liveness is checked.
 					setOfStates = createSetOfStates();
 				}
@@ -220,6 +223,11 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	
 	private final SetOfStates createSetOfStates() {
 		return new SetOfStates(multiplier * INITIAL_CAPACITY);
+	}
+	
+	@Override
+	public SetOfStates getStates() {
+		return setOfStates;
 	}
 	
 	/* Statistics */
@@ -480,7 +488,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			if (coverage) {	action.cm.incSecondary(); }
 		}
 		// For liveness checking:
-		if (this.checkLiveness)
+		if (this.checkLiveness || mode == Mode.MC_DEBUG)
 		{
 			this.setOfStates.put(fp, succState);
 		}

@@ -26,11 +26,8 @@
 package tlc2.tool.impl;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import tla2sany.semantic.ASTConstants;
@@ -50,6 +47,7 @@ import tlc2.tool.TLCStateFun;
 import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
+import tlc2.util.SetOfStates;
 import tlc2.value.IValue;
 import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
@@ -70,7 +68,6 @@ public class DebugTool extends Tool {
 	 * code gets this FastTool.
 	 */
 	private final FastTool fastTool;
-	private final Mode toolMode;
 
 	private EvalMode mode = EvalMode.Const;
 	
@@ -94,7 +91,6 @@ public class DebugTool extends Tool {
 	
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, IDebugTarget target) {
 		super(mainFile, configFile, resolver, mode);
-		this.toolMode = mode;
 		
 		// This and FastTool share state.  Do not evaluate things concurrently.
 		this.fastTool = new FastTool(this);
@@ -446,14 +442,6 @@ public class DebugTool extends Tool {
 
 	private static class WrapperNextStateFunctor extends WrapperStateFunctor implements INextStateFunctor {
 
-		private final Set<TLCState> successors = new TreeSet<>(new Comparator<TLCState>() {
-
-			@Override
-			public int compare(TLCState o1, TLCState o2) {
-				return Long.compare(o1.fingerPrint(), o2.fingerPrint());
-			}
-		});
-		
 		WrapperNextStateFunctor(INextStateFunctor functor, IDebugTarget target) {
 			super(functor, target);
 		}
@@ -462,14 +450,13 @@ public class DebugTool extends Tool {
 		public Object addElement(TLCState predecessor, Action a, TLCState state) {
 			target.pushFrame(predecessor, a, state);
 			Object addElement = ((INextStateFunctor) functor).addElement(predecessor, a, state);
-			successors.add(state);
 			target.popFrame(predecessor, state);
 			return addElement;
 		}
 
 		@Override
-		public Collection<TLCState> getStates() {
-			return successors;
+		public SetOfStates getStates() {
+			return ((INextStateFunctor) functor).getStates();
 		}
 	}
 
