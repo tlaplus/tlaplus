@@ -79,7 +79,7 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 				Iterator<TLCState> itr = aSteps.iterator();
 				for (int i = 0; i < vars.length; i++) {
 					RecordValue r = new RecordValue(itr.next());
-					vars[i] = getStateAsVariable(r, "t" + (i+1));
+					vars[i] = getStateAsVariable(r, a.getName().toString() + (i+1));
 				}
 				return vars;
 			});
