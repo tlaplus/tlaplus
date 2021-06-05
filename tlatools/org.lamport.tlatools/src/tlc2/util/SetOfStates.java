@@ -198,7 +198,15 @@ public final class SetOfStates {
 		
 		for (int i = 0; i < size(); i++) {
 			final TLCState next = next();
-			if (next.hasAction() && next.getAction() == a) {
+			// Deliberately use identify checking here! TLC maintains N instances of action
+			// A, one for each N passed to A:
+			//  
+			//  A(n) == ...
+			//  Next == \E n \in 1..N: A(n)
+			//
+			// Below, we want the TLCStates corresponding to A *and* a particular n! Equality
+			// (equals) might not reflect this.
+			if (a == next.getAction()) {
 				subset.add(next);
 			}
 		}
