@@ -123,9 +123,25 @@ public class REPL {
                 // TODO: Improve error messages with more specific detail.
             	System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr, exc);
             } catch (Assert.TLCRuntimeException exc) {
-            	if (exc.parameters != null) {
+            	if (exc.parameters != null && exc.parameters.length > 0) {
+					// 0..1 \X 0..1 has non-null params of length zero. Actual error message is
+					// "Parsing or semantic analysis failed.".
 					System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr,
 							Arrays.toString(exc.parameters));
+            	} else if (exc.getMessage() != null) {
+            		// Examples of what ends up here:
+            		// 23 = TRUE
+            		// Attempted to evaluate an expression of form P \/ Q when P was an integer.
+            		// 23 \/ TRUE
+            		// Attempted to check equality of integer 23 with non-integer: TRUE
+            		// CHOOSE x \in Nat : x = 4
+            		// Attempted to compute the value of an expression of form CHOOSE x \in S: P, but S was not enumerable.
+					String msg = exc.getMessage().trim();
+					// Strip meaningless location from error message.
+					msg = msg.replaceFirst("\\nline [0-9]+, col [0-9]+ to line [0-9]+, col [0-9]+ of module tlarepl$", "");
+					// Replace any newlines with whitespaces.
+					msg = msg.replaceAll("\\n", " ").trim();
+					System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr, msg);
             	} else {
             		System.out.printf("Error evaluating expression: '%s'%n", evalExpr);
             	}
