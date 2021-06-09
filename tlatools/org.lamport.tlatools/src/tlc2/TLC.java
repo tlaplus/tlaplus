@@ -495,7 +495,7 @@ public class TLC {
                 if ((index < args.length) && args[index].equals("nomonolith")) {
                 	index++;
                 }
-            } else if (args[index].equals("-noGenerateSpecTE"))
+            } else if (args[index].equals("-noGenerateSpecTE") || args[index].equalsIgnoreCase("-noTE"))
             {
             	index++;
             	generateTESpec = false;
