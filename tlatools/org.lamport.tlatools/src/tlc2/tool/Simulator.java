@@ -712,6 +712,16 @@ public class Simulator {
 		dotActionWriter.close();
 	}
 
+	public final StateVec getTrace(final TLCState s) {
+		if (Thread.currentThread() instanceof SimulationWorker) {
+			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
+			return w.getTrace(s);
+		} else {
+			assert numWorkers == 1 && workers.size() == numWorkers;
+			return workers.get(0).getTrace(s);
+		}
+	}
+
 	public final StateVec getTrace() {
 		if (Thread.currentThread() instanceof SimulationWorker) {
 			final SimulationWorker w = (SimulationWorker) Thread.currentThread();

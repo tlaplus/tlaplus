@@ -191,15 +191,13 @@ public class TLCExt {
 		if (TLCGlobals.simulator != null) {
 			// TODO Somehow load only this implementation in simulation mode => module
 			// overrides for a specific tool mode.
-			final StateVec trace = TLCGlobals.simulator.getTrace();
+			final StateVec trace = TLCGlobals.simulator.getTrace(s0);
 			
-			final Value[] values = new Value[trace.size() + 1];
+			final Value[] values = new Value[trace.size()];
 			for (int j = 0; j < trace.size(); j++) {
 				final TLCState state = trace.elementAt(j);
 				values[j] = new RecordValue(state, state.getAction());
 			}
-			
-			values[values.length - 1] = new RecordValue(s0, s0.getAction());
 			
 			return new TupleValue(values);
 		}

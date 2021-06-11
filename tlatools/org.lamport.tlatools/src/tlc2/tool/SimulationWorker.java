@@ -499,14 +499,17 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	}
 	
 	public final StateVec getTrace() {
-		if (curState == null) {
+		return getTrace(curState);
+	}
+
+	public synchronized final StateVec getTrace(TLCState s) {
+		if (s == null) {
 			return new StateVec(0);
 		}
 
-		final int level = curState.getLevel();
+		final int level = s.getLevel();
 		final TLCState[] t = new TLCState[level];
 
-		TLCState s = curState;
 		for (int i = level - 1; i >= 0; i--) {
 			t[i] = s;
 			s = s.getPredecessor();
