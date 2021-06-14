@@ -181,6 +181,20 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			// unfortunately lacks incremental parsing.  Study related discussion started
 			// in http://discuss.tlapl.us/msg01427.html and continued offline in the involved
 			// inboxes.
+		} else if ("variables".equals(args.getContext())) {
+			// The front-end passes "variables" as the context when users select a variable
+			// in the variables view and invoke the copy-to-clipboard action. Since the
+			// variables view shows the plain TLA+ values, we don't have to do anything
+			// here, but simply return the value. One thing to investigate is why
+			// copy-to-clipboard requires a full front-end/back-end round-trip in the first
+			// place. I suspect that this is a side-effect of the
+			// setSupportsEvaluateForHovers capability that the back-end announces in
+			// initialize above. 
+			// TODO Our version of LSP4J doesn't know the constant "variables" yet, which is
+			// why it's hard-coded here.
+			final EvaluateResponse response = new EvaluateResponse();
+			response.setResult(args.getExpression());
+			return CompletableFuture.completedFuture(response);
 		}
 		return CompletableFuture.completedFuture(new EvaluateResponse());
 	}
