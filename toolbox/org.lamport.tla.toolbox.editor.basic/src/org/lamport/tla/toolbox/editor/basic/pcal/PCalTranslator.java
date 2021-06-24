@@ -36,6 +36,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -103,6 +104,13 @@ public class PCalTranslator {
 								final ISelection selection = tlaEditor.getViewer().getSelection();
 								doc.set(translator.getOutput());
 								tlaEditor.getViewer().setSelection(selection);
+								// https://github.com/tlaplus/tlaplus/issues/638
+								// After translating PlusCal, the toolbox resets the position to the top of the
+								// file
+								if (selection instanceof ITextSelection) {
+									final ITextSelection its = (ITextSelection) selection;
+									tlaEditor.selectAndReveal(its.getOffset(), its.getLength());
+								}
 	
 								// Finally save the editor.
 								if (tlaEditor.isDirty() && saveEditor) {
