@@ -155,7 +155,7 @@ public class Sequences extends UserObj implements ValueConstants
         TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
-            throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "Append(v, s)", "sequence",
+            throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "Append(s, v)", "sequence",
                     Values.ppr(s.toString()) });
         }
         int len = seq.size();
