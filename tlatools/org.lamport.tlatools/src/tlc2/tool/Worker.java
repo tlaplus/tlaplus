@@ -158,6 +158,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	private SetOfStates setOfStates;
 
 	private final boolean checkLiveness;
+	private static boolean printedLivenessErrorStack = false;
 
 	private final void doNextCheckLiveness(TLCState curState, SetOfStates liveNextStates) throws IOException {
 		final long curStateFP = curState.fingerPrint();
@@ -179,40 +180,51 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		try {
 			this.tlc.liveCheck.addNextState(tlc.tool.getLiveness(), curState, curStateFP, liveNextStates);
 		} catch (EvalException | TLCRuntimeException origExp) {
-			// liveCheck#addNextState throws an EvalException if, e.g., a Java module overrides throw one:
-			// For example: `Cardinality(S) ~> ...` with `S` a naturals, ...
-
-			// Reset the iterator before using it again after the call to addNextState above.
-			liveNextStates.resetNext();
-
-			// TODO: Try to pass DebugTool instead of tool.getLiveness to enable the TLC
-			// debugger for liveness checking.
-			final CallStackTool cTool = new CallStackTool(tlc.tool.getLiveness());
-			try {
-				this.tlc.liveCheck.addNextState(cTool, curState, curStateFP, liveNextStates);
-				// Regular evaluation with tlc.tool.getLiveness failed but CallStackTool
-				// succeeded. This should never happen!
-				Assert.fail(EC.GENERAL, origExp);
-			} catch (EvalException | TLCRuntimeException rerunExp) {
-				// liveCheck#addNextState is not side-effect free. For example, the behavior
-				// (liveness) graph might have been changed and new GraphNodes been added. If
-				// that's the case, calling addNextStates with the same parameters again causes
-				// different exceptions. Those exception are bogus and should not be shown to the
-				// user.
-				// I don't expect equals to do the right thing(tm) for EvalException and/or
-				// TLCRuntimeException. We effectively expect the same exception gets
-				// throw by calling addNextState again.
-				//assert origExp.getClass().isAssignableFrom(rerunExp.getClass());
-				//assert origException.equals(rerunException);
-				
-				if (cTool.hasCallStack()) {
-					// Do not handle the exception here but send it up the stack.
-					// ModelChecker#doNextFailed puts this exception into context and prints the
-					// current (prefix of) the behavior.
-					MP.printError(EC.TLC_NESTED_EXPRESSION, cTool.toString());
+			synchronized (this.tlc) {
+				if (printedLivenessErrorStack) {
+					// Another worker beat us to printing an error trace.
+					return; 
 				}
+				printedLivenessErrorStack= true;
+				
+				// liveCheck#addNextState throws an EvalException if, e.g., a Java module overrides throw one:
+				// For example: `Cardinality(S) ~> ...` with `S` a naturals, ...
+
+				// Reset the iterator before using it again after the call to addNextState above.
+				liveNextStates.resetNext();
+
+				// TODO: Try to pass DebugTool instead of tool.getLiveness to enable the TLC
+				// debugger for liveness checking.
+				final CallStackTool cTool = new CallStackTool(tlc.tool.getLiveness());
+				try {
+					this.tlc.liveCheck.addNextState(cTool, curState, curStateFP, liveNextStates);
+					// Regular evaluation with tlc.tool.getLiveness failed but CallStackTool
+					// succeeded. This should never happen!
+					Assert.fail(EC.GENERAL, origExp);
+				} catch (EvalException | TLCRuntimeException rerunExp) {
+					// liveCheck#addNextState is not side-effect free. For example, the behavior
+					// (liveness) graph might have been changed and new GraphNodes been added. If
+					// that's the case, calling addNextStates with the same parameters again causes
+					// different exceptions. Those exception are bogus and should not be shown to the
+					// user.
+					// I don't expect equals to do the right thing(tm) for EvalException and/or
+					// TLCRuntimeException. We effectively expect the same exception gets
+					// throw by calling addNextState again.
+					//assert origExp.getClass().isAssignableFrom(rerunExp.getClass());
+					//assert origException.equals(rerunException);
+					
+					if (cTool.hasCallStack()) {
+						// Tell ModelChecker.java not to re-run model-checking to re-create the error
+						// stack because it was already re-created here.
+						this.tlc.keepCallStack = false;
+						// Do not handle the exception here but send it up the stack.
+						// ModelChecker#doNextFailed puts this exception into context and prints the
+						// current (prefix of) the behavior.
+						MP.printError(EC.TLC_NESTED_EXPRESSION, cTool.toString());
+					}
+				}
+				throw origExp;
 			}
-			throw origExp;
 		}
 
 		if (liveNextStates.capacity() > (multiplier * INITIAL_CAPACITY)) {

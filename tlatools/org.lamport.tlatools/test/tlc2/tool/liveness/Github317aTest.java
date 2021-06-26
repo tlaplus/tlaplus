@@ -33,10 +33,10 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 
-public class Github317Test extends ModelCheckerTestCase {
+public class Github317aTest extends ModelCheckerTestCase {
 
-	public Github317Test() {
-		super("Github317", new String[] { "-config", "Github317.tla"}, EC.ExitStatus.ERROR);
+	public Github317aTest() {
+		super("Github317a", new String[] { "-config", "Github317a.tla"}, EC.ExitStatus.ERROR);
 	}
 
 	@Override
@@ -49,23 +49,22 @@ public class Github317Test extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		
+
 		// Assert there is a trace.
 		assertFalse(recorder.getRecords(EC.TLC_STATE_PRINT2).isEmpty());
 
+		// Assert the right error trace has been printed.
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_NESTED_EXPRESSION,
-				"0. Line 18, column 20 to line 18, column 23 in Github317\n"
-				+ "1. Line 10, column 9 to line 11, column 23 in Github317\n"
-				+ "2. Line 10, column 12 to line 10, column 21 in Github317\n"
-				+ "3. Line 11, column 12 to line 11, column 23 in Github317\n"
-				+ "4. Line 18, column 15 to line 18, column 18 in Github317\n"
-				+ "5. Line 5, column 9 to line 5, column 15 in Github317\n"
-				+ "6. Line 5, column 13 to line 5, column 13 in Github317\n\n"));
-
+				"0. Line 138, column 41 to line 138, column 48 in Github317a\n"
+				+ "1. Line 117, column 13 to line 133, column 54 in Github317a\n"
+				+ "2. Line 118, column 15 to line 133, column 54 in Github317a\n"
+				+ "3. Line 128, column 23 to line 133, column 54 in Github317a\n"
+				+ "4. Line 128, column 26 to line 128, column 67 in Github317a\n"
+				+ "5. Line 129, column 26 to line 132, column 50 in Github317a\n"
+				+ "6. Line 129, column 29 to line 129, column 59 in Github317a\n"
+				+ "7. Line 129, column 29 to line 129, column 42 in Github317a\n\n"));
+		
 		// Assert error stack has only been printed once by one of the workers.
 		assertEquals(1, recorder.getRecords(EC.TLC_NESTED_EXPRESSION).size());
-		
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_LIVE,
-				"b", "line 5, col 13 to line 5, col 13 of module Github317"));
 	}
 }
