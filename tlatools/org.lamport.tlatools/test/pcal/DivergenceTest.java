@@ -34,6 +34,9 @@ import tla2sany.drivers.SANY;
 import util.TestPrintStream;
 import util.ToolIO;
 
+
+//TODO The asserts below could be strengthened if the error message about the divergence would include the actual hash mismatch.
+
 // Plz can haz https://openjdk.java.net/jeps/355 ?
 public class DivergenceTest extends PCalTest {
 	@Test
@@ -156,6 +159,31 @@ public class DivergenceTest extends PCalTest {
 				"  skip;\n" +
 				"end algorithm; *)\n" +
 				"\\* BEGIN TRANSLATION (checksum(PlusCal) = \"7c28162a\" /\\ chksum(TLA+) \\in STRING)\n" +
+				"\\* END TRANSLATION\n" +
+				"\n=========================");
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertSubstring(String.format(
+				"!! WARNING: The PlusCal algorithm in module %s has changed since its last translation.",
+				filename));
+	}
+	
+	@Test
+	public void divergenceTestIndentation() throws IOException {
+		final String filename = "divergenceTest01" + System.currentTimeMillis();
+		final String absolutePath = writeFile(System.getProperty("java.io.tmpdir") + File.separator + filename,
+				"---- MODULE " + filename + " ----\n" +
+				"\n" +
+				"(*\n" +
+				"--algorithm a\nvariable f;" + 
+				"begin\n" +
+				"  f := /\\ TRUE\n" + 
+				"    /\\ TRUE;\n" +  // Divergence because indentation was changed after the translation.
+				"end algorithm; *)\n" +
+				"\\* BEGIN TRANSLATION (checksum(PlusCal) = \"996afab0\" /\\ chksum(TLA+) \\in STRING)\n" +
 				"\\* END TRANSLATION\n" +
 				"\n=========================");
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
