@@ -28,7 +28,6 @@ package pcal;
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import tla2sany.drivers.SANY;
@@ -119,6 +118,54 @@ public class DivergenceTest extends PCalTest {
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertNoSubstring("!! WARNING " + filename);
+	}
+
+	@Test
+	public void divergenceTest01fair() throws IOException {
+		final String filename = "divergenceTest01" + System.currentTimeMillis();
+		final String absolutePath = writeFile(System.getProperty("java.io.tmpdir") + File.separator + filename,
+				"---- MODULE " + filename + " ----\n" +
+				"\n" +
+				"(*\n" +
+				"--fair algorithm a\n" + // Divergence because "fair" was added after the translation.
+				"begin\n" +
+				"  skip;\n" +
+				"end algorithm; *)\n" +
+				"\\* BEGIN TRANSLATION (checksum(PlusCal) = \"4860ac97\" /\\ chksum(TLA+) \\in STRING)\n" +
+				"\\* END TRANSLATION\n" +
+				"\n=========================");
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertSubstring(String.format(
+				"!! WARNING: The PlusCal algorithm in module %s has changed since its last translation.",
+				filename));
+	}
+	
+	@Test
+	public void divergenceTest01unfair() throws IOException {
+		final String filename = "divergenceTest01" + System.currentTimeMillis();
+		final String absolutePath = writeFile(System.getProperty("java.io.tmpdir") + File.separator + filename,
+				"---- MODULE " + filename + " ----\n" +
+				"\n" +
+				"(*\n" +
+				"--algorithm a\n" + // Divergence because "fair" was removed after the translation.
+				"begin\n" +
+				"  skip;\n" +
+				"end algorithm; *)\n" +
+				"\\* BEGIN TRANSLATION (checksum(PlusCal) = \"7c28162a\" /\\ chksum(TLA+) \\in STRING)\n" +
+				"\\* END TRANSLATION\n" +
+				"\n=========================");
+		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
+		final TestPrintStream testPrintStream = new TestPrintStream();
+		ToolIO.out = testPrintStream;
+		SANY.SANYmain(new String[] { absolutePath });
+		testPrintStream.assertSubstring("Semantic processing of module " + filename);
+		testPrintStream.assertSubstring(String.format(
+				"!! WARNING: The PlusCal algorithm in module %s has changed since its last translation.",
+				filename));
 	}
 
 	@Test

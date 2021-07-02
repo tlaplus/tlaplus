@@ -50,6 +50,8 @@ public class Validator {
 	static final String PCAL_CHECKSUM = "pcalchecksum";
 	static final String TLA_CHECKSUM = "tlachecksum";
 	
+	static final String FAIR = "fair";
+	
 	static final String CHECKSUM_TEMPLATE_IGNORE = "(chksum(pcal) \\in STRING /\\ chksum(tla) \\in STRING)";
 	static final String CHECKSUM_TEMPLATE = "(chksum(pcal) = \"%s\" /\\ chksum(tla) = \"%s\")";
 	
@@ -253,7 +255,7 @@ public class Validator {
 	    	if (m.find()) {
 	    		if (m.group(Validator.PCAL_CHECKSUM) != null) {
 
-	    			final String chksumPCalAST = Validator.checksum(ast.toString());
+	    			final String chksumPCalAST = Validator.checksum(foundFairBegin ? FAIR : "" + ast.toString());
 	    			if (!m.group(Validator.PCAL_CHECKSUM).equals(chksumPCalAST)) {
 	    				// Mismatch between the PlusCal algorithm and its checksum.
 	    				res.add(ValidationResult.PCAL_DIVERGENCE_EXISTS);
