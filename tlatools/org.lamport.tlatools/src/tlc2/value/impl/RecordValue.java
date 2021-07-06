@@ -62,6 +62,23 @@ public class RecordValue extends Value implements Applicable {
 	  this(new UniqueString[] {name}, new Value[] {v}, false);
   }
 
+	// See
+	// https://github.com/tlaplus/CommunityModules/commit/12cc3c6046d49ceaf2d0de8ce7558d8e2f4e53ad#diff-9a781a1a0e9b833becf01e1979ac6c5a9d49561c6b41cfbd70cfd75df1716867R86
+	// where this would have been useful. Consider refactoring the CM module
+	// override once sufficient time has passed that we can expect most users to be
+	// on a version of TLC with this constructor.
+	public RecordValue(final Map<String, String> m) {
+		final List<Map.Entry<String, String>> entries = new ArrayList<>(m.entrySet());
+
+		this.names = new UniqueString[entries.size()];
+		this.values = new Value[entries.size()];
+
+		for (int i = 0; i < entries.size(); i++) {
+			this.names[i] = UniqueString.of(entries.get(i).getKey());
+			this.values[i] = new StringValue(entries.get(i).getValue());
+		}
+	}
+
   public RecordValue(final Location location) {
 		this.names = new UniqueString[5];
 		this.values = new Value[5];
