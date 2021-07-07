@@ -46,7 +46,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   public final byte getKind() { return SUBSETVALUE; }
 
   @Override
-  public final int compareTo(Object obj) {
+  public int compareTo(Object obj) {
     try {
       if (obj instanceof SubsetValue) {
         return this.set.compareTo(((SubsetValue)obj).set);
@@ -60,7 +60,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  public final boolean equals(Object obj) {
+  public boolean equals(Object obj) {
     try {
       if (obj instanceof SubsetValue) {
         return this.set.equals(((SubsetValue)obj).set);
@@ -75,7 +75,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final boolean member(Value val) {
+  public boolean member(Value val) {
     try {
       if (val instanceof Enumerable) {
         ValueEnumeration Enum = ((Enumerable)val).elements();
@@ -103,7 +103,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     try {
       // Reduce (SUBSET A \subseteq SUBSET B) to (A \subseteq B) to avoid
       // exponential blowup inherent in generating the power set.
-      if (other instanceof SubsetValue && this.set instanceof Enumerable) {
+	  // For KSubsetValue, delegate to the naive implementation that enumerates the
+	  // elements. In other words, don't rewrite if a KSubsetValue is involved.
+	  if (other instanceof SubsetValue && !(other instanceof KSubsetValue) && this.set instanceof Enumerable) {
         final SubsetValue sv = (SubsetValue) other;
         return ((Enumerable) this.set).isSubsetEq(sv.set);
       }
@@ -272,7 +274,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  private final void convertAndCache() {
+  protected final void convertAndCache() {
     if (this.pset == null) {
       this.pset = (SetEnumValue) this.toSetEnum();
     }
