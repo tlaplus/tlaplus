@@ -239,10 +239,15 @@ public class FileUtil
             metadir = specDir + TLCGlobals.metaRoot + FileUtil.separator;
         }
 
+		// MAK 07/2021: Flip the default from low-res time-stamp to high-res time-stamp.
+		// The old default causes problems when TLC is invoked on a small spec in
+		// scripts or e.g. bash while loops.
         SimpleDateFormat sdf;
-        if (Boolean.getBoolean(FileUtil.class.getName() + ".milliseconds")) {
+        String highres = System.getProperty(FileUtil.class.getName() + ".milliseconds", "true");
+        if (Boolean.valueOf(highres)) {
         	sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss.SSS");
         } else {
+        	// -Dutil.FileUtil.milliseconds=false
         	sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
         }
         metadir += sdf.format(date);
