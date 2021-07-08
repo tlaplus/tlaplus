@@ -72,5 +72,8 @@ public final class ContextEnumerator implements IContextEnumerator {
       return con1;
   }
 
+  public final boolean isDone() {
+	return isDone;
+  }
 }
 

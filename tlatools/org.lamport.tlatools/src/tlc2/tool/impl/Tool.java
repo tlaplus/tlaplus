@@ -332,14 +332,24 @@ public abstract class Tool
     switch (opcode) {
     case OPCODE_be:     // BoundedExists
       {
-        int cnt = this.actionVec.size();
+        final int cnt = this.actionVec.size();
         try {
           ContextEnumerator Enum =
             this.contexts(next, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear, cm);
+          if (Enum.isDone()) {
+        	  // No exception and no actions created implies Enum was empty:
+        	  // \E i \in {} : ...
+        	  // \E i \in Nat: FALSE
+        	  // ...
+        	  this.actionVec.addElement(new Action(next, con, actionName));
+        	  return;
+          }
           Context econ;
           while ((econ = Enum.nextElement()) != null) {
             this.getActions(args[0], econ, actionName, cm);
           }
+			assert (cnt < this.actionVec.size())
+					: "AssertionError when creating Actions. This case should have been handled by Enum.isDone conditional above!";
         }
         catch (Throwable e) {
           Action action = new Action(next, con, actionName);
