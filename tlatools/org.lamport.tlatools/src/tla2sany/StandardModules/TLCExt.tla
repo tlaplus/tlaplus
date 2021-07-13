@@ -47,6 +47,33 @@ Trace ==
 
 (* HERE BE DRAGONS! The operators below are experimental! *)
 
+TLCModelValue(str) ==
+  (******************************************************************************)
+  (* A model value is an unspecified value that TLC considers to be unequal to  *)
+  (* any value that you can express in TLA+.                                    *)
+  (*                                                                            *)
+  (* In most cases, TLC model values can and should be declared via the TLC     *)
+  (* config file.  However, for large sets of model values, it can become       *)
+  (* tedious to enumerate them explicitly. Large sets of model values usually   *)
+  (* appear when simulating TLA+ specs with TLC. The following example defines  *)
+  (* a set of 32 model values:                                                  *)
+  (*                                                                            *)
+  (*  SetOfModelValues == {TLCModelValue("T_MV" \o ToString(i)) : i \in 1..32}  *)
+  (*                                                                            *)
+  (* As a matter of fact, the example defines a set of "typed" model values:    *)
+  (* TLC considers a typed model value to be unequal to any other model value   *)
+  (* of the same type.  However, it produces an error when evaluating an        *)
+  (* expression requires it to determine if a typed model value is equal to any *)
+  (* value other than a model value of the same type or an ordinary model       *)
+  (* value.                                                                     *)
+  (*                                                                            *)
+  (* A model-value type consists of a single letter, so there are 52 different  *)
+  (* types because  a  and  A  are different types.  (TLC actually accepts      *)
+  (* digits and underscore as types; don't use them.)  A model value has type   *)
+  (* T  if and only if its name begins with the two characters  T_ .            *)
+  (******************************************************************************)
+  CHOOSE v: ToString(v) = str
+
 TLCDefer(expression) ==
   (******************************************************************************)
   (* Defer evaluation of expression to some later time or never.                *)

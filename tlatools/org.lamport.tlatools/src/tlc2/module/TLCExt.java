@@ -52,7 +52,9 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.util.IdThread;
+import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
@@ -270,5 +272,15 @@ public class TLCExt {
 	@TLAPlusOperator(identifier = "TLCNoOp", module = "TLCExt", warn = false)
 	public static Value tlcNoOp(final Value val) {
 		return val;
+	}
+
+	@TLAPlusOperator(identifier = "TLCModelValue", module = "TLCExt", warn = false)
+	public static Value tlcModelValue(final Value val) {
+		if (!(val instanceof StringValue)) {
+			throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR,
+					new String[] { "ModelValue", "string", Values.ppr(val.toString()) });
+		}
+		final StringValue str = (StringValue) val;
+		return ModelValue.make(str.val.toString());
 	}
 }
