@@ -1,6 +1,12 @@
 --------------------------- MODULE TLCSet ---------------------------
 EXTENDS Integers, TLC
 
+ASSUME TLCGet("config").mode = "bfs"
+
+ASSUME TLCGet("spec").inits = {[name |-> "Init", location |-> [beginLine |-> 12, beginColumn |-> 9, endLine |-> 23, endColumn |-> 40, module |-> "TLCSet"]]}
+                
+ASSUME TLCGet("spec").actions = {[name |-> "Next", location |-> [beginLine |-> 25, beginColumn |-> 9, endLine |-> 38, endColumn |-> 41, module |-> "TLCSet"]]}
+
 VARIABLES x
 
 Init == /\ x = 0

@@ -42,7 +42,9 @@ import tlc2.util.DotActionWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
 import util.FileUtil;
@@ -783,4 +785,22 @@ public class Simulator {
 	}
 	
 	private static final UniqueString TRACES = UniqueString.uniqueStringOf("traces");
+
+	public final Value getConfig() {
+		final UniqueString[] n = new UniqueString[3];
+		final Value[] v = new Value[n.length];
+		
+		n[0] = TLCGetSet.MODE;
+		v[0] = Tool.isProbabilistic() ? new StringValue("generate") : new StringValue("simulate");
+
+		n[1] = DEPTH;
+		v[1] = IntValue.gen(TLCGlobals.simulator.getTraceDepth());
+
+		n[2] = TRACES;
+		v[2] = IntValue.gen((int) (this.numWorkers * traceNum));
+		
+		return new RecordValue(n, v, false);
+	}
+
+	private static final UniqueString DEPTH = UniqueString.uniqueStringOf("depth");
 }

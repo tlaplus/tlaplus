@@ -74,7 +74,11 @@ public class TLCGetSet implements ValueConstants {
 	
 	// TLCGet(..)
 	private static final UniqueString CONFIG = UniqueString.uniqueStringOf("config");
+	private static final UniqueString SPEC = UniqueString.uniqueStringOf("spec");
 	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
+
+	public static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
+	public static final UniqueString DEADLOCK = UniqueString.uniqueStringOf("deadlock");
 	
 	// TLCGet(..)
 	// BFS & Simulation mode
@@ -222,65 +226,53 @@ public class TLCGetSet implements ValueConstants {
 				TLC!TLCGet("config") ==
 				    CHOOSE cfg \in
 				       [ mode: STRING,
-				          depth : Nat, inits : STRING, actions : STRING ]
-				           \cup [mode: STRING]: TRUE
+				          depth : Nat, trace : Nat ]
 				```
 			 * 
 			 * Note that `TLCGet("config")` remains undocumented in `TLC.tla` until we have
 			 * more confidence in its usefulness.
 			 * 
-			 * TODO: The config record remains mostly incomplete:
-			 *       - worker id
-			 *       - number of traces to generate/simulate
-			 *       - deadlock checking yes/no
-			 * 
 			 * TODO: Initialize the RecordValue (config) eagerly to minimize the runtime
 			 *       overhead.
 			 */
-			final Value[] values;
-			final UniqueString[] names;
-			if (TLCGlobals.simulator != null) {
-				values = new Value[4];
-				names = new UniqueString[4];
-				
-				// Mode
-				names[0] = UniqueString.of("mode");
-				if (Tool.isProbabilistic()) {
-					values[0] = new StringValue("generate");
-				} else {
-					values[0] = new StringValue("simulate");
+			try {
+				if (TLCGlobals.mainChecker != null) {
+					return TLCGlobals.mainChecker.getConfig();
+				} else if (TLCGlobals.simulator != null) {
+					return TLCGlobals.simulator.getConfig();
 				}
-				
-				// Depth
-				names[1] = UniqueString.of("depth");
-				values[1] = IntValue.gen(TLCGlobals.simulator.getTraceDepth());
-			} else {
-				assert TLCGlobals.mainChecker != null;
-				values = new Value[3];
-				names = new UniqueString[3];
-				names[0] = UniqueString.of("mode");
-				values[0] = new StringValue("bfs");
+			} catch (NullPointerException npe) {
+				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-			
-			//TODO: Consider moving actions and inits to TLCGet("model") or TLCGet("spec")?
-			
+		} else if (SPEC == sv.val) {
+			/*
+			 * Add operator `TLC!TLCGet("spec")`.
+			 * 
+				```tla
+				TLC!TLCGet("spec") ==
+				    CHOOSE spec \in
+				       [ inits : STRING, actions : STRING ]
+				```
+			 */
+			final UniqueString[] n = new UniqueString[2];
+			final Value[] v = new Value[n.length];
+
 			// Inits as found by spec processing.
 			final List<Value> l = new ArrayList<>();
 			final Vect<Action> inits = tool.getInitStateSpec();
 			for (int i = 0; i < inits.size(); i++) {
 				l.add(new RecordValue(inits.elementAt(i)));
 			}
-			names[values.length - 2] = UniqueString.of("inits");
-			values[values.length - 2] = new SetEnumValue(new ValueVec(l), false);
+			n[0] = UniqueString.of("inits");
+			v[0] = new SetEnumValue(new ValueVec(l), false);
 			
 			// Actions as found by spec processing. For a sub-action with non-zero arity,
 			// TLC has multiple copies.
-			names[values.length - 1] = UniqueString.of("actions");
-			values[values.length - 1] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getActions()).stream()
+			n[1] = UniqueString.of("actions");
+			v[1] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getActions()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 
-			return new RecordValue(names, values, false);
-			
+			return new RecordValue(n, v, false);
 		} else if (LEVEL == sv.val) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"
 			// is monotonically increasing because it calls tlc2.tool.TLCTrace.getLevelForReporting().

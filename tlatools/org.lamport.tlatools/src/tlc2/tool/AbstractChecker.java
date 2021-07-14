@@ -27,6 +27,7 @@ import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.IValue;
 import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
 import util.DebugPrinter;
 import util.UniqueString;
@@ -623,6 +624,14 @@ public abstract class AbstractChecker
 		n[4] = TLCGetSet.DURATION;
 		v[4] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
 
+		return new RecordValue(n, v, false);
+	}
+
+	public final Value getConfig() {
+		final UniqueString[] n = new UniqueString[1];
+		final Value[] v = new Value[n.length];
+		n[0] = TLCGetSet.MODE;
+		v[0] = new StringValue("bfs");
 		return new RecordValue(n, v, false);
 	}
 }
