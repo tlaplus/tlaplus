@@ -1,29 +1,35 @@
 --------------------------- MODULE TLCSet ---------------------------
 EXTENDS Integers, TLC
 
-IsBFS == TLCGet("config").mode \notin {"simulate", "generate"}
-
-ASSUME /\ ~IsBFS => TLCGet("config").depth = 4224
-
 VARIABLES x
 
 Init == /\ x = 0
+        \* Old world
         /\ TLCGet("duration") >= 0 \* Init might take more than a seconds since startup.
-        /\ IF IsBFS
-           THEN /\ TLCGet("diameter") = 1
-                /\ TLCGet("queue") = 0 \* queue is always empty because spec is a single behavior.
-                /\ TLCGet("distinct") = 0
-           ELSE /\ TLCGet("diameter") = 0
+        /\ TLCGet("diameter") = 1
+        /\ TLCGet("queue") = 0 \* queue is always empty because spec is a single behavior.
+        /\ TLCGet("distinct") = 0
+		\* New world
+        /\ TLCGet("stats").duration >= 0
+        /\ TLCGet("stats").queue = 0
+        /\ TLCGet("stats").distinct = 0
+        /\ TLCGet("stats").diameter = 1
+        /\ TLCGet("stats").generated = 0
 
 Next == /\ x' = x + 1
-        /\ TLCGet("duration") >= 0 \* Next might evaluate within the first second of model checking.
         /\ TLCSet("exit", x = 4223)
-        /\ IF IsBFS
-           THEN /\ TLCGet("queue") = 0 \* queue is always empty because spec is a single behavior.
-                /\ TLCGet("distinct") = x + 1
-                /\ TLCGet("generated") = x + 1
-		        /\ TLCGet("diameter") = x + 1 \* As byproduct check that trace is strictly monotonically increasing.
-           ELSE TRUE
+        \* Old world
+        /\ TLCGet("duration") >= 0 \* Next might evaluate within the first second of model checking.
+        /\ TLCGet("queue") = 0 \* queue is always empty because spec is a single behavior.
+        /\ TLCGet("distinct") = x'
+        /\ TLCGet("generated") = x'
+		/\ TLCGet("diameter") = x' \* As byproduct check that trace is strictly monotonically increasing.
+		\* New world
+        /\ TLCGet("stats").duration >= 0
+        /\ TLCGet("stats").queue = 0
+        /\ TLCGet("stats").distinct = x' 
+        /\ TLCGet("stats").diameter = x'
+        /\ TLCGet("stats").generated = x'
 
 Spec == Init /\ [][Next]_x
 =============================================================================

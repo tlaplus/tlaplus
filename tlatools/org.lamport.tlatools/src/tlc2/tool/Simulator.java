@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprNode;
 import tlc2.TLCGlobals;
+import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.StatePrinter;
@@ -41,9 +42,12 @@ import tlc2.util.DotActionWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.IValue;
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
 import util.FileUtil;
 import util.FilenameToStream;
+import util.UniqueString;
 
 public class Simulator {
 
@@ -761,4 +765,22 @@ public class Simulator {
 	public int getTraceDepth() {
 		return this.traceDepth;
 	}
+
+	public final Value getStatistics() {
+		final UniqueString[] n = new UniqueString[3];
+		final Value[] v = new Value[n.length];
+		
+		n[0] = TRACES;
+		v[0] = TLCGetSet.narrowToIntValue(numOfGenTraces.longValue());
+		
+		n[1] = TLCGetSet.DURATION;
+		v[1] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
+
+		n[2] = TLCGetSet.GENERATED;
+		v[2] = TLCGetSet.narrowToIntValue(numOfGenStates.longValue());
+
+		return new RecordValue(n, v, false);
+	}
+	
+	private static final UniqueString TRACES = UniqueString.uniqueStringOf("traces");
 }

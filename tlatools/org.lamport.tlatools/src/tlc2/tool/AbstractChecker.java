@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import tlc2.TLC;
 import tlc2.TLCGlobals;
+import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.coverage.CostModelCreator;
@@ -25,7 +26,10 @@ import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.IValue;
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.Value;
 import util.DebugPrinter;
+import util.UniqueString;
 
 /**
  * The abstract checker
@@ -598,5 +602,27 @@ public abstract class AbstractChecker
 
 	public long getStatesGenerated() {
 		return -1;
+	}
+
+	public final Value getStatistics() {
+		final UniqueString[] n = new UniqueString[5];
+		final Value[] v = new Value[n.length];
+		
+		n[0] = TLCGetSet.QUEUE;
+		v[0] = TLCGetSet.narrowToIntValue(getStateQueueSize());
+		
+		n[1] = TLCGetSet.DISTINCT;
+		v[1] = TLCGetSet.narrowToIntValue(getDistinctStatesGenerated());
+
+		n[2] = TLCGetSet.GENERATED;
+		v[2] = TLCGetSet.narrowToIntValue(getStatesGenerated());
+		
+		n[3] = TLCGetSet.DIAMETER;
+		v[3] = TLCGetSet.narrowToIntValue(getProgress());
+		
+		n[4] = TLCGetSet.DURATION;
+		v[4] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
+
+		return new RecordValue(n, v, false);
 	}
 }
