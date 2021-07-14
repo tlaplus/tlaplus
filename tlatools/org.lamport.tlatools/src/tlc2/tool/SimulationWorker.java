@@ -281,11 +281,26 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	/**
 	 * Check to see if the worker thread has been interrupted.
 	 */
-	private void checkForInterrupt() throws InterruptedException {
-		if (Thread.interrupted()) {
+	private final void checkForInterrupt() throws InterruptedException {
+		// MAK 07/2021: This used to be a call to Thread.interrupted instead of the
+		// explicit stopped flag. The former doesn't work anymore because of
+		// SingleThreadedSimulator (with STS, checkForTermination is called from
+		// the main thread and not from the worker thread, causing workers to never
+		// throw the InterruptedException, thus terminate).
+		// Initially, I tried tried to change Thread.interrupted to the instance-method
+		// isInterrupted, which seemed safe because checkForInterrupt is a private final
+		// instance-method.  However, this only worked on Linux and macOS with a JVM
+		// >= 14.
+		if (Thread.interrupted() || stopped) {
 			throw new InterruptedException();
 		}
 	}
+
+	public final void setStopped() {
+		stopped = true;
+	}
+
+	private volatile boolean stopped = false;
 	
 	/**
 	 * This method returns a state that is randomly chosen from the set of states.

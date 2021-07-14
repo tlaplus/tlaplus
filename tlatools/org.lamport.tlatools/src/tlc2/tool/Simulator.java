@@ -744,6 +744,7 @@ public class Simulator {
 	
 	public void stop() {
 		for (SimulationWorker worker : workers) {
+			worker.setStopped();
 			worker.interrupt();
 		}
 	}
