@@ -1301,7 +1301,7 @@ procVars(proc) == {proc.decls[j].var : j \in 1..Len(proc.decls)}
 (* recursively to be the sequence with commas inserted between the         *)
 (* strings.  Thus,                                                         *)
 (*                                                                         *)
-(*    CommaSeq( << "foo", "bar", "x" >> = << "foo", "," "bar", ",", "x" >>  *)
+(*    CommaSeq( << "foo", "bar", "x" >> = << "foo", ",", "bar", ",", "x" >>  *)
 (***************************************************************************)
 (*RECURSIVE*) CONSTANT CommaSeq(_)
 XCommaSeq(seq) ==
@@ -1965,13 +1965,10 @@ Translation ==
       (*********************************************************************)
       (* The VARIABLES declaration(s) and the `define' section, if any.    *)
       (*********************************************************************)
-      <<"VARIABLES">> \o 
-      (IF ast.defs = << >>
-         THEN CommaSeq(varSeq)
-         ELSE CommaSeq(preDefsVars) \o ast.defs \o
-              (IF postDefsVars # << >> 
-                 THEN <<"VARIABLES">> \o CommaSeq(postDefsVars)
-                 ELSE << >>)
+      <<"VARIABLES">> \o CommaSeq(varSeq) \o
+      (IF ast.defs # << >>
+         THEN ast.defs
+         ELSE << >>
       ) \o
 
       (*********************************************************************)
