@@ -42,6 +42,7 @@ import tlc2.util.DotActionWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.IValue;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
@@ -787,7 +788,7 @@ public class Simulator {
 	private static final UniqueString TRACES = UniqueString.uniqueStringOf("traces");
 
 	public final Value getConfig() {
-		final UniqueString[] n = new UniqueString[3];
+		final UniqueString[] n = new UniqueString[4];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.MODE;
@@ -798,7 +799,10 @@ public class Simulator {
 
 		n[2] = TRACES;
 		v[2] = IntValue.gen((int) (this.numWorkers * traceNum));
-		
+
+		n[3] = TLCGetSet.DEADLOCK;
+		v[3] = checkDeadlock ? BoolValue.ValTrue : BoolValue.ValFalse;
+
 		return new RecordValue(n, v, false);
 	}
 

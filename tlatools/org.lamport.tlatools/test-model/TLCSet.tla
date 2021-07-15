@@ -38,4 +38,6 @@ Next == /\ x' = x + 1
         /\ TLCGet("stats").generated = x'
 
 Spec == Init /\ [][Next]_x
+
+ASSUME TLCGet("config").deadlock = FALSE
 =============================================================================

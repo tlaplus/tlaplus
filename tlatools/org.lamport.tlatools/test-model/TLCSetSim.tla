@@ -22,4 +22,6 @@ Next == /\ x' = x + 1
         /\ TLCSet("exit", x = 4223)
 
 Spec == Init /\ [][Next]_x
+	
+ASSUME TLCGet("config").deadlock = FALSE
 =============================================================================

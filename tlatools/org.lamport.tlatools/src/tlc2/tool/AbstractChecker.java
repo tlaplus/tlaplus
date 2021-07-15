@@ -26,6 +26,7 @@ import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.IValue;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
@@ -628,10 +629,14 @@ public abstract class AbstractChecker
 	}
 
 	public final Value getConfig() {
-		final UniqueString[] n = new UniqueString[1];
+		final UniqueString[] n = new UniqueString[2];
 		final Value[] v = new Value[n.length];
 		n[0] = TLCGetSet.MODE;
 		v[0] = new StringValue("bfs");
+
+		n[1] = TLCGetSet.DEADLOCK;
+		v[1] = checkDeadlock ? BoolValue.ValTrue : BoolValue.ValFalse;
+
 		return new RecordValue(n, v, false);
 	}
 }
