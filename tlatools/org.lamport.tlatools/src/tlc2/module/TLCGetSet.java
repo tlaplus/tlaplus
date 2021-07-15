@@ -247,14 +247,8 @@ public class TLCGetSet implements ValueConstants {
 		} else if (SPEC == sv.val) {
 			/*
 			 * Add operator `TLC!TLCGet("spec")`.
-			 * 
-				```tla
-				TLC!TLCGet("spec") ==
-				    CHOOSE spec \in
-				       [ inits : STRING, actions : STRING ]
-				```
 			 */
-			final UniqueString[] n = new UniqueString[2];
+			final UniqueString[] n = new UniqueString[6];
 			final Value[] v = new Value[n.length];
 
 			// Inits as found by spec processing.
@@ -272,6 +266,22 @@ public class TLCGetSet implements ValueConstants {
 			v[1] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getActions()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 
+			n[2] = UniqueString.of("temporals");
+			v[2] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getTemporals()).stream()
+					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
+			
+			n[3] = UniqueString.of("invariants");
+			v[3] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getInvariants()).stream()
+					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
+			
+			n[4] = UniqueString.of("impliedinits");
+			v[4] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedInits()).stream()
+					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
+			
+			n[5] = UniqueString.of("impliedtemporals");
+			v[5] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedTemporals()).stream()
+					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
+			
 			return new RecordValue(n, v, false);
 		} else if (LEVEL == sv.val) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"

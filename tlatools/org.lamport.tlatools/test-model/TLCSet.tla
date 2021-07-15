@@ -40,4 +40,9 @@ Next == /\ x' = x + 1
 Spec == Init /\ [][Next]_x
 
 ASSUME TLCGet("config").deadlock = FALSE
+
+ASSUME TLCGet("spec").temporals = {}
+ASSUME TLCGet("spec").invariants = {}
+ASSUME TLCGet("spec").impliedinits = {}
+ASSUME TLCGet("spec").impliedtemporals = {}
 =============================================================================
