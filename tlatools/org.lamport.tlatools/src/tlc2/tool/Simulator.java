@@ -794,7 +794,7 @@ public class Simulator {
 		v[0] = Tool.isProbabilistic() ? new StringValue("generate") : new StringValue("simulate");
 
 		n[1] = DEPTH;
-		v[1] = IntValue.gen(TLCGlobals.simulator.getTraceDepth());
+		v[1] = IntValue.gen(this.traceDepth == Integer.MAX_VALUE ? -1 : this.traceDepth);
 
 		n[2] = TRACES;
 		v[2] = IntValue.gen((int) (this.numWorkers * traceNum));
