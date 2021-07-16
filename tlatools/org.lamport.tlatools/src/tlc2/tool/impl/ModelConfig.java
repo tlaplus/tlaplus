@@ -10,9 +10,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import tla2sany.parser.SimpleCharStream;
 import tla2sany.parser.TLAplusParserConstants;
@@ -554,6 +556,81 @@ public class ModelConfig implements ValueConstants, Serializable {
     public synchronized final List<String> getRawConstants()
     {
         return this.rawConstants;
+    }
+
+    // TODO: Add doc, comments and unit test.
+    /**
+     * Like `getRawConstants`, but it returns the constants as a list where each
+     * element of the list is also a list of one or two elements (instead of raw strings).
+     * If one element, it has the form `["field->value"]`, which is a replacement, otherwise
+     * it has the form `["field", "value"]`, which is an assignment (which are the lines in a
+     * config file for the CONSTANT(s) section where you have `field = value`).
+     */
+    public synchronized final List<List<String>> getConstantsAsList() {
+        /**
+         * `getRawConstants` returns a list of strings where each element has the
+         * following form (fields and values are example letters):
+         *
+         * CONSTANT
+         * a = b
+         * c = d
+         * e <- f
+         * CONSTANTS
+         * g <- h
+         * i = j
+         *
+         * We will use the example above to document the stream below (we are only showing
+         * one element, but ).
+         */
+        return this.getRawConstants()
+            // Convert the list a stream so we can transform the input raw strings.
+            .stream()
+            /**
+             * Split by lines so each element will have the following form ([] represents a list):
+             *
+             * ["CONSTANT",
+             *  "a = b",
+             *  "c = d",
+             *  "e <- f",
+             *  "CONSTANTS",
+             *  "g <- h",
+             *  "i = j"]
+             */
+            .map(s -> s.split("\n"))
+            /**
+             * Flatten both lists, so `[["CONSTANT", "a = b"], ["g <- h"]]` becomes
+             * `["CONSTANT", "a = b", "g <- h"]`.
+             */
+            .flatMap(Stream::of)
+            /**
+             * Then we trim just to make sure we don't have whitespaces surrounding any element.
+             */
+            .map(s -> s.trim())
+            /**
+             * Ignore `CONSTANT` or `CONSTANTS`:
+             *
+             * ["a = b",
+             *  "c = d",
+             *  "e <- f",
+             *  "g <- h",
+             *  "i = j"]
+             */
+            .filter(s -> !(s.equals("CONSTANT") || s.equals("CONSTANTS")))
+            /**
+             * We split only `=` as `<-` means a replacement and we don't need to analyze
+             * its field separately.
+             *
+             * [["a", "b"],
+             *  ["c", "d"],
+             *  ["e <- f"],
+             *  ["g <- h"],
+             *  ["i", "j"]]
+             */
+            .map(s -> Arrays.asList(s.split(" = ")))
+            /**
+             * Convert the stream to a java List, we are finished processing it.
+             */
+            .collect(Collectors.toList());
     }
 
     public synchronized final Vect getConstants()

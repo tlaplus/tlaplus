@@ -35,25 +35,31 @@ import java.util.List;
 
 import org.junit.Test;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
-public class OneBitMutexNoSymmetryTETraceTest extends TraceExpressionTestCase {
+public class OneBitMutexNoSymmetryTest_TTraceTest extends ModelCheckerTestCase {
 
-	public OneBitMutexNoSymmetryTETraceTest() {
+    @Override
+    protected boolean isTESpec() {
+		return true;
+	}
+
+	public OneBitMutexNoSymmetryTest_TTraceTest() {
 		super("OneBitMutexNoSymmetryMC", "symmetry" + File.separator + "OneBitMutex", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "21", "20", "0"));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "21", "20", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+		
+		assertNodeAndPtrSizes(576L, 320L);
 
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
@@ -160,6 +166,6 @@ public class OneBitMutexNoSymmetryTETraceTest extends TraceExpressionTestCase {
 						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertBackToState(9, "<_next line 42, col 5 to line 53, col 31 of module OneBitMutexNoSymmetryMC_TTrace_2000000000>");
+		assertBackToState(9, "<_next line 42, col 5 to line 53, col 31 of module OneBitMutexNoSymmetryMC_TTrace_2000000000_tlc2_tool_liveness_OneBitMutexNoSymmetryTest_TTraceTest>");
 	}
 }

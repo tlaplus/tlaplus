@@ -50,6 +50,8 @@ public class EmptySubsetEqTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1", "1", "0"));
 
+		assertNoTESpec();
+
 		assertTrue(recorder.recordedWithStringValue(EC.GENERAL,
 				"TLC threw an unexpected exception.\nThis was probably caused by an "
 				+ "error in the spec or model.\nSee the User Output or TLC Console "

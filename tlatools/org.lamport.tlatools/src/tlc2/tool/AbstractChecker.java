@@ -639,4 +639,8 @@ public abstract class AbstractChecker
 
 		return new RecordValue(n, v, false);
 	}
+
+    public final String getFromChktp() {
+        return this.fromChkpt;
+    }
 }

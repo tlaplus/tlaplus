@@ -50,6 +50,8 @@ public class ContinueTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "29"));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+
+		assertNoTESpec();
 		
 		// With -continue, TLC simply prints two or more consecutive traces in no given
 		// order (determined by concurrent BFS) to stdout. This means that the

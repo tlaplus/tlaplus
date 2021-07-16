@@ -35,17 +35,22 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
+import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class SBBTETraceTest extends TraceExpressionTestCase {
+public class SBBTest_TTraceTest extends ModelCheckerTestCase {
 
-	public SBBTETraceTest() {
+    @Override
+    protected boolean isTESpec() {
+		return true;
+	}
+
+	public SBBTest_TTraceTest() {
 		super("SBB", "pcal", ExitStatus.VIOLATION_SAFETY);
 	}
 
-	/*
+    /*
 	 * Test fails because the value of the variable publishedbuffers changes from
 	 * the initial state to the next-state relation. This causes TLC to fail with an
 	 * evaluation error when the (generated) invariant is evaluated on the initial
@@ -57,13 +62,13 @@ public class SBBTETraceTest extends TraceExpressionTestCase {
 	 * on inv until the error state.
 	 */
 	
-	@Test
-	@Ignore("Ignored until a proper fix for the problem with silly expression mentioned above found")
+    @Test
+    @Ignore("Ignored until a proper fix for the problem with silly expression mentioned above found")
 	public void testSpec() {
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "15", "15", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3126", "1617", "328"));
 		assertEquals(15, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

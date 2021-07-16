@@ -29,40 +29,41 @@ package tlc2.tool.liveness;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Test;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
  */
-public class CodePlexBug08EWD840FL2TETraceTest extends TraceExpressionTestCase {
+public class CodePlexBug08EWD840FL1Test_TTraceTest extends ModelCheckerTestCase {
 
-	public CodePlexBug08EWD840FL2TETraceTest() {
-		super("EWD840MC2", "CodePlexBug08", new String[] {}, ExitStatus.VIOLATION_LIVENESS,
-			new HashMap<String, Object>() {{
-				put("expectedJsonPath", BASE_PATH + "CodePlexBug08" + File.separator + "EWD840MC2_TTrace_2000000000_Expected.json");                
-			}});
+    @Override
+    protected boolean isTESpec() {
+		return true;
+	}
+
+	public CodePlexBug08EWD840FL1Test_TTraceTest() {
+		super("EWD840MC1", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "10","0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "10", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
-	
+		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-
+		
+		assertNodeAndPtrSizes(296L, 160L);
+		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>();
@@ -107,8 +108,9 @@ public class CodePlexBug08EWD840FL2TETraceTest extends TraceExpressionTestCase {
 		                + "/\\ tcolor = \"black\"\n"
 		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
-		
-		// last state points back to state 1
+
 		assertBackToState(1);
+
+	assertZeroUncovered();
 	}
 }

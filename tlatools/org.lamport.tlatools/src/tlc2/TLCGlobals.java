@@ -210,4 +210,7 @@ public class TLCGlobals
 	}
 
 	public static boolean expand = true;
+
+	// Set when TLC throws an exception.
+	public static boolean throwedException = false;
 }

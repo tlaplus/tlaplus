@@ -51,6 +51,8 @@ public class CheckpointWhenTimeBoundTest extends ModelCheckerTestCase {
 		// ModelChecker has finished and generated the expected amount of states. 
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
+
+		assertNoTESpec();
 		
 		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT1));
 		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));

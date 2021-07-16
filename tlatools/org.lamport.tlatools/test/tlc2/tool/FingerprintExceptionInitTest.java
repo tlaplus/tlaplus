@@ -49,7 +49,7 @@ public class FingerprintExceptionInitTest extends ModelCheckerTestCase {
 		String arg1 = "1) line 7, col 20 to line 7, col 32 of module FingerprintExceptionInit\n"
 			+ "0) line 7, col 13 to line 7, col 33 of module FingerprintExceptionInit\n";
 		String arg2 = "Overflow when computing the number of elements in:\n"
-			+ "SUBSET 1..36";
+			+ "SUBSET(1..36)";
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_FINGERPRINT_EXCEPTION, arg1, arg2));
 		
 		assertUncovered("line 8, col 39 to line 8, col 64 of module FingerprintExceptionInit: 0\n" + 

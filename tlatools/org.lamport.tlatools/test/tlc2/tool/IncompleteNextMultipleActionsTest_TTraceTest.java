@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -24,61 +24,58 @@
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
 
-package tlc2.tool.liveness;
+package tlc2.tool;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
+import tlc2.tool.liveness.ModelCheckerTestCase;
 
-/**
- * System LOOP as described by Manna & Pneuli on page 423ff
- */
-public class LoopTETraceTest extends TraceExpressionTestCase {
-	
-	public LoopTETraceTest() {
-		super("SystemLoop", "Loop", ExitStatus.VIOLATION_LIVENESS);
+public class IncompleteNextMultipleActionsTest_TTraceTest extends ModelCheckerTestCase {
+
+    @Override
+    protected boolean isTESpec() {
+		return true;
 	}
 
+	public IncompleteNextMultipleActionsTest_TTraceTest() {
+		super("IncompleteNextMultipleActions", ExitStatus.FAILURE_SPEC_EVAL);
+	}
+
+    @Ignore("https://github.com/tlaplus/tlaplus/pull/588#issuecomment-821745313")
 	@Test
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "3", "0"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
 		assertFalse(recorder.recorded(EC.GENERAL));
-
-		// Assert it has found the temporal violation and also a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
+		assertFalse(recorder.recorded(EC.GENERAL));
+		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(4);
-		expectedTrace.add("x = 0");
-		expectedTrace.add("x = 1");
-		expectedTrace.add("x = 2");
+		expectedTrace.add("/\\ x = 0\n/\\ y = 0\n/\\ z = 0");
+		expectedTrace.add("/\\ x = 1\n/\\ y = null\n/\\ z = null");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		// Without any fairness defined, state 4 is stuttering instead of moving
-		// on to state x=3.
-		assertStuttering(4);
-		
-		//TODO This error trace is not the shortest one. The shortest one would
-		// be stuttering after the initial state x=0 and not after x=2 with x=3
-		// as the last successor in the behavior. However, the SCC search
-		// implemented in LiveWorker#checkSccs checks the path end to start and
-		// not start to end.
-		// If liveness is (forcefully) triggered after the initial state, stuttering
-		// after the initial state is correctly detected.
+		// Assert TLC indicates unassigned variable
+		assertTrue(recorder.recorded(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT));
+		final List<Object> records = recorder.getRecords(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT);
+		assertEquals("A1", ((String[]) records.get(0))[0]);
+		assertEquals("s are", ((String[]) records.get(0))[1]);
+		assertEquals("y, z", ((String[]) records.get(0))[2]);
 
-		assertZeroUncovered();
+		assertUncovered("line 8, col 16 to line 8, col 21 of module IncompleteNextMultipleActions: 0\n"
+				+ "line 8, col 26 to line 8, col 31 of module IncompleteNextMultipleActions: 0\n"
+				+ "line 8, col 7 to line 8, col 11 of module IncompleteNextMultipleActions: 0\n");
 	}
 }

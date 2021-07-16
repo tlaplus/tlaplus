@@ -32,19 +32,22 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import tlc2.TraceExpressionTestCase;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
  */
-public class CodePlexBug08AgentRingTETraceTest extends TraceExpressionTestCase {
+public class CodePlexBug08AgentRingTest_TTraceTest extends ModelCheckerTestCase {
 
-	public CodePlexBug08AgentRingTETraceTest() {
+    @Override
+    protected boolean isTESpec() {
+		return true;
+	}
+
+	public CodePlexBug08AgentRingTest_TTraceTest() {
 		super("AgentRingMC", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
@@ -59,6 +62,8 @@ public class CodePlexBug08AgentRingTETraceTest extends TraceExpressionTestCase {
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
+		assertNodeAndPtrSizes(380L, 208L);
+		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(4);

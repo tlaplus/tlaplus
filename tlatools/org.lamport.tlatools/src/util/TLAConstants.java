@@ -109,6 +109,8 @@ public final class TLAConstants {
 		public static final String SPEC_TE_INIT = "_init";
 		public static final String SPEC_TE_CONSTRAINT = "_constraint";
 		public static final String SPEC_TE_NEXT = "_next";
+		public static final String SPEC_TETRACE_LASSO_START = "_TTraceLassoStart";
+		public static final String SPEC_TETRACE_LASSO_END = "_TTraceLassoEnd";
 	}
 
 	

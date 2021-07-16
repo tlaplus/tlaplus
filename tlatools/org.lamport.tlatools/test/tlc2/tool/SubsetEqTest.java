@@ -47,6 +47,8 @@ public class SubsetEqTest extends ModelCheckerTestCase {
 		// the test completes within seconds.
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
+
+		assertNoTESpec();
 		
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
 		// No error trace!

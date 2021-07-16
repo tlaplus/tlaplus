@@ -327,8 +327,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
         return val.toString(sb, offset, swallow);
       }
       else {
-        sb = sb.append("SUBSET ");
+        sb = sb.append("SUBSET(");
         sb = this.set.toString(sb, offset, swallow);
+		sb = sb.append(")");
         return sb;
       }
     }

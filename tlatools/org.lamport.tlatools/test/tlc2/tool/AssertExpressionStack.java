@@ -48,6 +48,8 @@ public class AssertExpressionStack extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.TLC_BUG));
 
 		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
+
+		assertNoTESpec();
 		
 		final List<String> expectedTrace = new ArrayList<String>(2);
 		expectedTrace.add("x = 0");
