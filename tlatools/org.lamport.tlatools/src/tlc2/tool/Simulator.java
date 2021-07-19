@@ -773,7 +773,7 @@ public class Simulator {
 		final UniqueString[] n = new UniqueString[3];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TRACES;
+		n[0] = TLCGetSet.TRACES;
 		v[0] = TLCGetSet.narrowToIntValue(numOfGenTraces.longValue());
 		
 		n[1] = TLCGetSet.DURATION;
@@ -784,27 +784,32 @@ public class Simulator {
 
 		return new RecordValue(n, v, false);
 	}
-	
-	private static final UniqueString TRACES = UniqueString.uniqueStringOf("traces");
 
 	public final Value getConfig() {
-		final UniqueString[] n = new UniqueString[4];
+		final UniqueString[] n = new UniqueString[7];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.MODE;
 		v[0] = Tool.isProbabilistic() ? new StringValue("generate") : new StringValue("simulate");
 
-		n[1] = DEPTH;
+		n[1] = TLCGetSet.DEPTH;
 		v[1] = IntValue.gen(this.traceDepth == Integer.MAX_VALUE ? -1 : this.traceDepth);
 
-		n[2] = TRACES;
+		n[2] = TLCGetSet.TRACES;
 		v[2] = IntValue.gen((int) (this.numWorkers * traceNum));
 
 		n[3] = TLCGetSet.DEADLOCK;
 		v[3] = checkDeadlock ? BoolValue.ValTrue : BoolValue.ValFalse;
 
+		n[4] = TLCGetSet.SEED;
+		v[4] = new StringValue(Long.toString(seed));
+
+		n[5] = TLCGetSet.ARIL;
+		v[5] = new StringValue(Long.toString(aril));
+
+		n[6] = TLCGetSet.WORKER;
+		v[6] = IntValue.gen(numWorkers);
+
 		return new RecordValue(n, v, false);
 	}
-
-	private static final UniqueString DEPTH = UniqueString.uniqueStringOf("depth");
 }

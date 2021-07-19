@@ -40,9 +40,20 @@ Next == /\ x' = x + 1
 Spec == Init /\ [][Next]_x
 
 ASSUME TLCGet("config").deadlock = FALSE
+ASSUME TLCGet("config").worker = 1
+ASSUME TLCGet("config").fingerprint \in STRING
+ASSUME TLCGet("config").seed \in STRING
 
 ASSUME TLCGet("spec").temporals = {}
 ASSUME TLCGet("spec").invariants = {}
 ASSUME TLCGet("spec").impliedinits = {}
 ASSUME TLCGet("spec").impliedtemporals = {}
+
+ASSUME TLCGet("revision").tag \in STRING
+ASSUME TLCGet("revision").count \in Nat
+ASSUME TLCGet("revision").timestamp \in Nat
+ASSUME TLCGet("revision").date \in STRING
+ASSUME TLCGet("revision").tag = "development" => TLCGet("revision").count = 0 
+ASSUME TLCGet("revision").tag # "development" => TLCGet("revision").count > 7854
+ASSUME TLCGet("revision").tag # "development" => TLCGet("revision").timestamp > 1626748578
 =============================================================================

@@ -26,9 +26,13 @@
 package tlc2.module;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprOrOpArgNode;
@@ -79,7 +83,19 @@ public class TLCGetSet implements ValueConstants {
 
 	public static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
 	public static final UniqueString DEADLOCK = UniqueString.uniqueStringOf("deadlock");
+	public static final UniqueString SEED = UniqueString.uniqueStringOf("seed");
+	public static final UniqueString FINGERPRINT = UniqueString.uniqueStringOf("fingerprint");
+	public static final UniqueString WORKER = UniqueString.uniqueStringOf("worker");
+	public static final UniqueString TRACES = UniqueString.uniqueStringOf("traces");
+	public static final UniqueString DEPTH = UniqueString.uniqueStringOf("depth");
+	public static final UniqueString ARIL = UniqueString.uniqueStringOf("aril");
 	
+	public static final UniqueString REVISION = UniqueString.uniqueStringOf("revision");
+	public static final UniqueString REV_TIMESTAMP = UniqueString.uniqueStringOf("timestamp");
+	public static final UniqueString REV_DATE = UniqueString.uniqueStringOf("date");
+	public static final UniqueString REV_COUNT = UniqueString.uniqueStringOf("count");
+	public static final UniqueString REV_TAG = UniqueString.uniqueStringOf("tag");
+
 	// TLCGet(..)
 	// BFS & Simulation mode
 	// Considered to be part of "statistics", but it is a property of the current behavior.
@@ -244,6 +260,32 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
+		} else if (REVISION == sv.val) {
+			/*
+			 * Add operator `TLC!TLCGet("revision")`.
+			 */
+			final UniqueString[] n = new UniqueString[4];
+			final Value[] v = new Value[n.length];
+			
+			n[0] = TLCGetSet.REV_COUNT;
+			v[0] = IntValue.gen(TLCGlobals.getSCMCommits());
+			
+			final Date buildDate = TLCGlobals.getBuildDate();
+			// This suffers from the year 2038 problem
+			// (https://en.wikipedia.org/wiki/Year_2038_problem). By then, somebody please
+			// properly implement support for TLC's tlc2.util.BigInt.
+			n[1] = TLCGetSet.REV_TIMESTAMP;
+			v[1] = IntValue.gen((int) buildDate.toInstant().getEpochSecond());
+
+			n[2] = TLCGetSet.REV_DATE;
+			final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+			df.setTimeZone(TimeZone.getTimeZone("UTC"));
+			v[2] = new StringValue(df.format(buildDate));
+			
+			n[3] = TLCGetSet.REV_TAG;
+			v[3] = new StringValue(TLCGlobals.getRevisionOrDev());
+
+			return new RecordValue(n, v, false);
 		} else if (SPEC == sv.val) {
 			/*
 			 * Add operator `TLC!TLCGet("spec")`.

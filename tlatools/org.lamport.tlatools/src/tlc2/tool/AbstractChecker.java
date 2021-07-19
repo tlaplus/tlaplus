@@ -20,13 +20,16 @@ import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.liveness.Liveness;
 import tlc2.tool.liveness.NoOpLiveCheck;
+import tlc2.util.FP64;
 import tlc2.util.IStateWriter;
 import tlc2.util.IdThread;
 import tlc2.util.statistics.ConcurrentBucketStatistics;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.IValue;
+import tlc2.value.RandomEnumerableValues;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
@@ -629,13 +632,22 @@ public abstract class AbstractChecker
 	}
 
 	public final Value getConfig() {
-		final UniqueString[] n = new UniqueString[2];
+		final UniqueString[] n = new UniqueString[5];
 		final Value[] v = new Value[n.length];
 		n[0] = TLCGetSet.MODE;
 		v[0] = new StringValue("bfs");
 
 		n[1] = TLCGetSet.DEADLOCK;
 		v[1] = checkDeadlock ? BoolValue.ValTrue : BoolValue.ValFalse;
+
+		n[2] = TLCGetSet.WORKER;
+		v[2] = IntValue.gen(TLCGlobals.getNumWorkers());
+
+		n[3] = TLCGetSet.SEED;
+		v[3] = new StringValue(Long.toString(RandomEnumerableValues.getSeed()));
+		
+		n[4] = TLCGetSet.FINGERPRINT;
+		v[4] = new StringValue(Long.toString(FP64.getIrredPoly()));
 
 		return new RecordValue(n, v, false);
 	}

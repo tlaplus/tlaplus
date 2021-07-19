@@ -15,6 +15,7 @@
 	<!-- timestamp -->
 	<tstamp>
 		<format property="TODAY" pattern="yyyy-MM-dd" locale="en,US" />
+		<format property="ISO8601" pattern="yyyy-MM-dd'T'HH:mm:ss.S'Z'" timezone="UTC"/>
 	</tstamp>
 
 	<!-- JaCoCo code coverage -->
@@ -54,6 +55,7 @@
 		<echo message="Skipping Tests : ${test.skip}" />
 		<echo message="With AspectJ   : ${withaj}" />
 		<echo message="Git BuildNumber: ${git.branch}_${git.tag}_${git.shortRevision}" />
+		<echo message="Timestamp      : ${ISO8601}" />
 	</target>
 
 	<target name="default" depends="info" description="Default">
@@ -383,6 +385,7 @@
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Build-Tag" value="${env.BUILD_TAG}" />
 				<attribute name="Build-Rev" value="${Build-Rev}" />
+				<attribute name="Build-TimeStamp" value="${ISO8601}"/>
 				<attribute name="Implementation-Title" value="TLA+ Tools" />
 				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
