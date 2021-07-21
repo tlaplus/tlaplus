@@ -46,6 +46,8 @@ public class REPL {
 
     // The name of the spec used for evaluating expressions.
     final String REPL_SPEC_NAME = "tlarepl";
+    
+    private static final String prompt = "(tla+) ";
 
     private final Writer replWriter = new PrintWriter(System.out);
     
@@ -167,16 +169,9 @@ public class REPL {
     /**
      * Runs the main REPL loop continuously until there is a fatal error or a user interrupt.
      */
-    public void runREPL() throws IOException {
-        // For TLA+ we don't want to treat backslashes as escape chars e.g. for LaTeX like operators.
-        DefaultParser parser = new DefaultParser();
-        parser.setEscapeChars(null);
-        Terminal terminal = TerminalBuilder.builder().build();
-        LineReader reader = LineReaderBuilder.builder().parser(parser).terminal(terminal).build();
-
+    public void runREPL(final LineReader reader) throws IOException {
         // Run the loop.
-        String prompt = "(tla+) ";
-        String expr;
+    	String expr;
         while (true) {
             try {
                 expr = reader.readLine(prompt);
@@ -196,13 +191,29 @@ public class REPL {
 
     public static void main(String[] args) {
         try {
-            Path tempDir = Files.createTempDirectory(TEMP_DIR_PREFIX);
-            REPL repl = new REPL(tempDir);
+            final Path tempDir = Files.createTempDirectory(TEMP_DIR_PREFIX);
+            final REPL repl = new REPL(tempDir);
             // TODO: Allow external spec file to be loaded into REPL context.
+ 
+            if(args.length == 1) {
+                String res = repl.processInput(args[0]);
+                if (!res.equals("")) {
+                	System.out.println(res);
+                }
+                //TODO Return actual exit value if parsing/evaluation fails.
+                System.exit(0);
+            }
+
+            // For TLA+ we don't want to treat backslashes as escape chars e.g. for LaTeX like operators.
+			final DefaultParser parser = new DefaultParser();
+			parser.setEscapeChars(null);
+			final Terminal terminal = TerminalBuilder.builder().build();
+			final LineReader reader = LineReaderBuilder.builder().parser(parser).terminal(terminal).build();
             System.out.println("Welcome to the TLA+ REPL!");
             MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
-            System.out.println("Enter a constant-level TLA+ expression.");
-            repl.runREPL();
+        	System.out.println("Enter a constant-level TLA+ expression.");
+
+            repl.runREPL(reader);
         } catch (Exception e) {
             e.printStackTrace();
         }
