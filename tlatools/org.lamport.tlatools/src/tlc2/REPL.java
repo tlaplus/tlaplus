@@ -16,6 +16,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.DefaultParser;
+import org.jline.reader.impl.history.DefaultHistory;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
@@ -37,6 +38,8 @@ import util.ToolIO;
  * A TLA+ REPL which provides an interactive mode of evaluating expressions and specifications.
  */
 public class REPL {
+	
+	private static final String HISTORY_PATH = System.getProperty("user.home", "") + File.separator + ".tlaplus" + File.separator + "history.repl";
 
     // The spec file to use in the REPL context, if any.
     private File specFile = null;
@@ -185,6 +188,9 @@ public class REPL {
             } catch (EndOfFileException e) {
                 e.printStackTrace();
                 return;
+            } finally {
+				// Persistent file and directory will be create on demand.
+            	reader.getHistory().save();
             }
         }
     }
@@ -208,8 +214,11 @@ public class REPL {
 			final DefaultParser parser = new DefaultParser();
 			parser.setEscapeChars(null);
 			final Terminal terminal = TerminalBuilder.builder().build();
-			final LineReader reader = LineReaderBuilder.builder().parser(parser).terminal(terminal).build();
-            System.out.println("Welcome to the TLA+ REPL!");
+			final LineReader reader = LineReaderBuilder.builder().parser(parser).terminal(terminal)
+					.history(new DefaultHistory()).build();
+			reader.setVariable(LineReader.HISTORY_FILE, HISTORY_PATH);
+
+			System.out.println("Welcome to the TLA+ REPL!");
             MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
         	System.out.println("Enter a constant-level TLA+ expression.");
 
