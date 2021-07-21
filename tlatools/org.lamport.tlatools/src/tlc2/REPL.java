@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -74,6 +75,16 @@ public class REPL {
 
         // The modules we will extend in the REPL environment.
         String moduleExtends = "Reals,Sequences,Bags,FiniteSets,TLC,Randomization";
+        try {
+			// Try loading the "index" class of the Community Modules that define
+			// popular modulesl that should be loaded by default. If the Community Modules
+			// are not present, silently fail.
+        	final Class<?> clazz = Class.forName("tlc2.overrides.CommunityModules");
+        	final Method m = clazz.getDeclaredMethod("popularModules");
+        	moduleExtends += String.format(",%s", m.invoke(null));
+		} catch (Exception | NoClassDefFoundError ignore) {
+		}
+        
         if (specFile != null) {
             String mainModuleName = specFile.getName().replaceFirst(TLAConstants.Files.TLA_EXTENSION + "$", "");
             moduleExtends += ("," + mainModuleName);
