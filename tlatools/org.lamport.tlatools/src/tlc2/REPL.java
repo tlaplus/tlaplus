@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -45,6 +47,8 @@ public class REPL {
     // The name of the spec used for evaluating expressions.
     final String REPL_SPEC_NAME = "tlarepl";
 
+    private final Writer replWriter = new PrintWriter(System.out);
+    
     // A temporary directory to place auxiliary files needed for REPL evaluation.
     Path replTempDir;
 
@@ -117,8 +121,13 @@ public class REPL {
                 Tool tool = new FastTool(REPL_SPEC_NAME, REPL_SPEC_NAME, resolver);
                 ModuleNode module = tool.getSpecProcessor().getRootModule();
                 OpDefNode valueNode = module.getOpDef(replValueVarName);
-                Value exprVal = (Value) tool.eval(valueNode.getBody());
-                return exprVal.toString();
+                
+				// Make output of TLC!Print and TLC!PrintT appear in the REPL. Set here
+				// and unset in finally below to suppress output of FastTool instantiation
+				// above.
+				tlc2.module.TLC.OUTPUT = replWriter;
+				final Value exprVal = (Value) tool.eval(valueNode.getBody());
+				return exprVal.toString();
             } catch (EvalException exc) {
                 // TODO: Improve error messages with more specific detail.
             	System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr, exc);
@@ -145,6 +154,9 @@ public class REPL {
             	} else {
             		System.out.printf("Error evaluating expression: '%s'%n", evalExpr);
             	}
+            } finally {
+                replWriter.flush();
+        		tlc2.module.TLC.OUTPUT = null;
             }
         } catch (IOException pe) {
             pe.printStackTrace();

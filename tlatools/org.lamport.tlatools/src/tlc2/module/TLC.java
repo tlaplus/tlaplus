@@ -5,8 +5,8 @@
 
 package tlc2.module;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Writer;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -38,7 +38,7 @@ public class TLC implements ValueConstants
 
 	public static final long serialVersionUID = 20160822L;
 
-	public static BufferedWriter OUTPUT;
+	public static Writer OUTPUT;
 
     static
     {
