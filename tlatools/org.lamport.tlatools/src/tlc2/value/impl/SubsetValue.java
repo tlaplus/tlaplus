@@ -26,6 +26,7 @@ import tlc2.value.IValueOutputStream;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.Values;
 import util.Assert;
+import util.TLAConstants;
 
 public class SubsetValue extends EnumerableValue implements Enumerable {
   public Value  set;           // SUBSET set
@@ -328,7 +329,23 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       }
       else {
         sb = sb.append("SUBSET ");
-        sb = this.set.toString(sb, offset, swallow);
+        if (this.set instanceof IntervalValue) {
+        	// MAK 07/2021:
+			// SUBSET has higher precedence than the .. (infix) operator appearing in
+			// interval definitions (see tla2sany.semantic.BuiltInLevel). Thus, printing
+        	//   SUBSET 1..2
+        	// is wrong because its meaning is
+        	//   ((SUBSET 1)..2)
+        	//
+        	// We can correct this easily here by adding parenthesis:
+        	//   SUBSET (1..2)
+        	//   SUBSET (1+2..42)
+        	sb.append(TLAConstants.L_PAREN);
+        	sb = this.set.toString(sb, offset, swallow);
+        	sb.append(TLAConstants.R_PAREN);
+        } else {
+        	sb = this.set.toString(sb, offset, swallow);
+        }
         return sb;
       }
     }
