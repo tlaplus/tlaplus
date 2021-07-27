@@ -54,7 +54,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	private long snapshotEvalCount = 0;
 	private boolean primed = false;
 	private int level;
-	private OpApplNodeWrapper recursive;
+	private CostModelNode recursive;
 	protected final Map<SemanticNode, CostModelNode> lets = new LinkedHashMap<>();
 
 	OpApplNodeWrapper(OpApplNode node, CostModelNode root) {
@@ -142,7 +142,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		return this;
 	}
 
-	public OpApplNodeWrapper setRecursive(OpApplNodeWrapper recursive) {
+	public OpApplNodeWrapper setRecursive(CostModelNode recursive) {
 		assert this.recursive == null;
 		this.recursive = recursive;
 		return this;

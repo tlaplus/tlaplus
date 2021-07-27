@@ -254,13 +254,10 @@ public class CostModelCreator extends ExplorerVisitor {
 			if (operator instanceof OpDefNode) {
 				final OpDefNode odn = (OpDefNode) operator;
 				if (odn.getInRecursive()) {
-					final OpApplNodeWrapper recursive = (OpApplNodeWrapper) stack.stream()
+					stack.stream()
 							.filter(w -> w.getNode() != null && w.getNode() instanceof OpApplNode
 									&& ((OpApplNode) w.getNode()).getOperator() == odn)
-							.findFirst().orElse(null);
-					if (recursive != null) {
-						oan.setRecursive(recursive);
-					}
+							.findFirst().ifPresent(cmn -> oan.setRecursive(cmn));
 				}
 			}
 
@@ -287,7 +284,7 @@ public class CostModelCreator extends ExplorerVisitor {
 			// specification took approximately 60 seconds. With the safeguard, it is down
 			// to a second or two.
 			//
-			// To summarize, this is a clutch that has been hacked to work good enough!
+			// To summarize, this is a clutch that has been hacked to be good enough!
 			// 
 			// if-branches 1., 2., and 3. below are evaluated in three distinct
 			// invocation of outer preVisit for different ExploreNodes.
