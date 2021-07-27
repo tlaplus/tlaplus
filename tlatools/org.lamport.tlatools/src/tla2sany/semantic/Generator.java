@@ -3999,6 +3999,25 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * modified appropriately. *
 		 ***********************************************************************/
 		if ((mainOp.getKind() == UserDefinedOpKind) || (mainOp.getKind() == ModuleInstanceKind)) {
+			final OpDefNode opDefNode = (OpDefNode) mainOp;
+			FormalParamNode[] params = opDefNode.getParams();
+			
+			// MAK 07/2021: Added this check to prevent an ArrayIndexOutOfBoundsException
+			// that occurs if a RECURSIVE operator declaration has more arguments (higher
+			// arity) than its definition:
+			//
+			//  RECURSIVE ReachableFrom(_,_)                    \* 2-arity!
+            //  ReachableFrom(S) == LET R == SetNbrs(S)
+            //                      IN  IF R \subseteq S THEN S
+            //                          ELSE ReachableFrom(R \cup S)
+            //
+			// This check expects that code elsewhere (in case of RECURSIVE e.g.
+			// processOperator(..)) has already produced a corresponding error message,
+			// such as "Definition of ReachableFrom has different arity than its RECURSIVE
+			// declaration."
+			if (params.length <= argPosition) {
+				return nullOAN;
+			}
 			arityExpected = ((OpDefNode) mainOp).getParams()[argPosition].getArity();
 		} else {
 			arityExpected = 0;
