@@ -37,17 +37,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class SBBTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class SBBTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public SBBTest_TTraceTest() {
-		super("SBB", "pcal", ExitStatus.VIOLATION_SAFETY);
+		super(SBBTest.class, "pcal", ExitStatus.VIOLATION_SAFETY);
 	}
 
     /*

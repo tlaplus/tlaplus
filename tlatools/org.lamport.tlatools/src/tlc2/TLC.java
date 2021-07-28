@@ -397,7 +397,7 @@ public class TLC {
 		boolean snapshot = false;
 		
 		boolean generateTESpec = true;
-		Path teSpecOutDir = null;
+		Path teSpecOut = null;
 		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
@@ -505,7 +505,7 @@ public class TLC {
             	if (index < args.length) {
             		String path = args[index];
             		try {
-						teSpecOutDir = Paths.get(path);
+						teSpecOut = Paths.get(path);
             		} catch (InvalidPathException e) {
             			printErrorMsg("Error: invalid path for -teSpecOutDir option: " + path);
             			return false;
@@ -919,17 +919,6 @@ public class TLC {
                 
         startTime = System.currentTimeMillis();
 
-		generateTESpec =
-				generateTESpec
-				&& !TLCGlobals.continuation
-				&& !TLCGlobals.tool
-				&& !TraceExplorationSpec.isTESpecFile(mainFile);
-                
-		if (generateTESpec) {
-			final Path specDir = teSpecOutDir == null ? getTlaFileParentDir(mainFile) : teSpecOutDir;
-			this.teSpec = new TraceExplorationSpec(specDir, new Date(startTime), this.recorder);
-		}
-		
 		if (mainFile == null) {
 			// command line omitted name of spec file, take this as an
 			// indicator to check the in-jar model/ folder for a spec.
@@ -945,6 +934,29 @@ public class TLC {
 				return false;
 			}
 		}
+		
+		generateTESpec =
+				generateTESpec
+				&& !TLCGlobals.continuation
+				&& !TLCGlobals.tool
+				&& !TraceExplorationSpec.isTESpecFile(mainFile);
+                
+		
+		if (generateTESpec) {
+			if (teSpecOut == null) {
+				this.teSpec = new TraceExplorationSpec(getTlaFileParentDir(mainFile), new Date(startTime), mainFile,
+						this.recorder);
+			} else {
+				if (teSpecOut.toString().toLowerCase().endsWith(TLAConstants.Files.TLA_EXTENSION)) {
+					this.teSpec = new TraceExplorationSpec(teSpecOut.getParent(), teSpecOut.getFileName().toFile()
+							.getName().replaceFirst(TLAConstants.Files.TLA_EXTENSION + "$", ""), mainFile,
+							this.recorder);
+				} else {
+					this.teSpec = new TraceExplorationSpec(teSpecOut, new Date(startTime), mainFile, this.recorder);
+				}
+			}
+		}
+		
 
 		// The functionality to start TLC from an (absolute) path /path/to/spec/file.tla
 		// seems to have eroded over the years which is why this block of code is a

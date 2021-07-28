@@ -36,17 +36,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class RandomElementSimulationTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class RandomElementSimulationTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public RandomElementSimulationTest_TTraceTest() {
-		super("RandomElement", ExitStatus.VIOLATION_SAFETY);
+		super(RandomElementSimulationTest.class, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
@@ -70,9 +65,9 @@ public class RandomElementSimulationTest_TTraceTest extends ModelCheckerTestCase
 		expectedTrace.add("/\\ x = 318\n/\\ y = 10");
 		List<Object> actualTrace = recorder.getRecords(EC.TLC_STATE_PRINT2);
 		final List<String> expectedActions = new ArrayList<>();
-		expectedActions.add("<_init line 23, col 5 to line 24, col 24 of module RandomElement_TTrace_2000000000_tlc2_tool_RandomElementSimulationTest_TTraceTest>");
+		expectedActions.add("<_init line 23, col 5 to line 24, col 24 of module "+getModuleName()+">");
 		expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1,
-				"<_next line 28, col 5 to line 33, col 29 of module RandomElement_TTrace_2000000000_tlc2_tool_RandomElementSimulationTest_TTraceTest>"));
+				"<_next line 28, col 5 to line 33, col 29 of module "+getModuleName()+">"));
 		assertTraceWith(actualTrace, expectedTrace, expectedActions);
 
 		assertZeroUncovered();

@@ -38,15 +38,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
-public class Test3_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class Test3_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public Test3_TTraceTest() {
-		super("Test3", ExitStatus.VIOLATION_LIVENESS);
+		super(Test3.class, ExitStatus.VIOLATION_LIVENESS);
 	}
 	
     // Every run of this test generates a different trace, but the TE spec should replicate it anyway, 

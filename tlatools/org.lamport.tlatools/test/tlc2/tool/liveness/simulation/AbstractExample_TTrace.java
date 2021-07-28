@@ -37,16 +37,11 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.TLCStateInfo;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public abstract class AbstractExample_TTrace extends ModelCheckerTestCase {
+public abstract class AbstractExample_TTrace extends TTraceModelCheckerTestCase {
 
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
-
-	public AbstractExample_TTrace(final String cfg) {
+	public AbstractExample_TTrace(final Class<?> cfg) {
 		super(cfg, "simulation", ExitStatus.VIOLATION_LIVENESS);
 	}
 	

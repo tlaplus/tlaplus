@@ -37,17 +37,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class DepthFirstErrorTraceTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class DepthFirstErrorTraceTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public DepthFirstErrorTraceTest_TTraceTest() {
-		super("DepthFirstErrorTrace", ExitStatus.VIOLATION_SAFETY);
+		super(DepthFirstErrorTraceTest.class, ExitStatus.VIOLATION_SAFETY);
 	}
 	
 	@Test
@@ -70,9 +65,9 @@ public class DepthFirstErrorTraceTest_TTraceTest extends ModelCheckerTestCase {
 		expectedTrace.add("x = 7");		
         
         final List<String> expectedActions = new ArrayList<>();
-        expectedActions.add("<_init line 21, col 5 to line 21, col 24 of module DepthFirstErrorTrace_TTrace_2000000000_tlc2_tool_DepthFirstErrorTraceTest_TTraceTest>");
+        expectedActions.add("<_init line 21, col 5 to line 21, col 24 of module " + getModuleName() + ">");
         expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1, 
-                "<_next line 25, col 5 to line 28, col 29 of module DepthFirstErrorTrace_TTrace_2000000000_tlc2_tool_DepthFirstErrorTraceTest_TTraceTest>"));	        
+				"<_next line 25, col 5 to line 28, col 29 of module " + getModuleName() + ">"));
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		assertZeroUncovered();
 	}

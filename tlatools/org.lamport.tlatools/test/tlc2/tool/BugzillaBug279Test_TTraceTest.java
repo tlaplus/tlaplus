@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 import tlc2.value.Values;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SubsetValue;
@@ -75,15 +75,10 @@ import tlc2.value.impl.SubsetValue;
  *  in which this would cause performance problems.  However, I will consult
  *  with Yuan Yu before doing anything about this.
  */
-public class BugzillaBug279Test_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class BugzillaBug279Test_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public BugzillaBug279Test_TTraceTest() {
-		super("InitStateBug", "Bug279", ExitStatus.VIOLATION_SAFETY);
+		super(BugzillaBug279Test.class, "Bug279", ExitStatus.VIOLATION_SAFETY);
 	}
 	
 	@Override

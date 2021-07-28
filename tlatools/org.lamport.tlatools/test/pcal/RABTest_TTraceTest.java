@@ -35,17 +35,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class RABTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class RABTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public RABTest_TTraceTest() {
-		super("RAB", "pcal", EC.ExitStatus.VIOLATION_SAFETY);
+		super(RABTest.class, "pcal", EC.ExitStatus.VIOLATION_SAFETY);
 	}    
 
 	@Test

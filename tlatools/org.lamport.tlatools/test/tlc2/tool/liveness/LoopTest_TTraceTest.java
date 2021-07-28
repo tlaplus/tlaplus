@@ -40,15 +40,10 @@ import tlc2.output.EC.ExitStatus;
 /**
  * System LOOP as described by Manna & Pneuli on page 423ff
  */
-public class LoopTest_TTraceTest extends ModelCheckerTestCase {
+public class LoopTest_TTraceTest extends TTraceModelCheckerTestCase {
 
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
-	
 	public LoopTest_TTraceTest() {
-		super("SystemLoop", "Loop", ExitStatus.VIOLATION_LIVENESS);
+		super(LoopTest.class, "Loop", ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

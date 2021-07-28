@@ -26,7 +26,6 @@
 package tlc2;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -42,7 +41,6 @@ import tlc2.util.Vect;
 import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
-import tlc2.value.impl.RecordValue;
 import util.TLAConstants;
 import util.UniqueString;
 

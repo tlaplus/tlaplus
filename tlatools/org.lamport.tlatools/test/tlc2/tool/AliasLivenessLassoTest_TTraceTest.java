@@ -37,18 +37,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
 import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
 @RunWith(BlockJUnit4ClassRunner.class)
-public class AliasLivenessLassoTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class AliasLivenessLassoTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public AliasLivenessLassoTest_TTraceTest() {
-		super("Alias", new String[] {}, EC.ExitStatus.VIOLATION_LIVENESS);
+		super(AliasLivenessLassoTest.class, EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	// ALIAS modifies the output of the original spec, do we need to worry

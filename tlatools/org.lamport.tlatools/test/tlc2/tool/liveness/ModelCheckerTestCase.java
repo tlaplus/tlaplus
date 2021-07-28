@@ -26,24 +26,15 @@
 package tlc2.tool.liveness;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 
 import tlc2.TLC;
@@ -57,13 +48,9 @@ import tlc2.tool.ModelChecker;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
-import util.TLAConstants;
 import util.ToolIO;
 
 public abstract class ModelCheckerTestCase extends CommonTestCase {
-
-	protected final static String teSpecTimestamp = "2000000000";
-	private final static String teSpecSuffix = "_" + TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + "_" + teSpecTimestamp;	
 
 	protected String path = "";
 	protected String spec;
@@ -103,14 +90,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	
 	public ModelCheckerTestCase(final String spec, final String path, final int exitStatus) {
 		super(new TestMPRecorder());
-
-		// If we are running a TE spec, build the correct module name.
-		if (isTESpec()) {
-			this.spec = spec + teSpecSuffix + "_" + mungedClassName();
-		} else {
-			this.spec = spec;
-		}
-		
+		this.spec = spec;
 		this.path = path;
 		this.expectedExitStatus = exitStatus;
 	}
@@ -119,103 +99,17 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		// No-op
 	}
 
-	// Use it to indicate that the test will read the generated
-	// TE spec file instead of running the original spec.
-	protected boolean isTESpec() {
-		return false;
-	}
-
-	private String originalTESpecPath() {
-		return System.getProperty("user.dir") + File.separator + this.spec;
-	}
-
-	private String clonedTESpecPath() {
-		return BASE_PATH + this.path + File.separator + this.spec;
-	}	
-
-	private void checkTESpecAssumption() {
-		Path sourcePath = Paths.get(originalTESpecPath() + TLAConstants.Files.TLA_EXTENSION);
-		Path destPath = Paths.get(clonedTESpecPath() + TLAConstants.Files.TLA_EXTENSION);
-
-		// First check if the file is already moved to the correct path.
-		// If it doesn't, check with `Assume` that the generated file exists
-		// in the original path.
-		if (destPath.toFile().isFile()) {
-			return;
-		} else {
-			Assume.assumeTrue("No TE spec was generated, please run test with original spec", sourcePath.toFile().isFile());
-		}
-	}
-
-	private void moveTESpecFiles() {
-		// Move generated files from their original location (user.dir) to the same folder
-		// as the original TLA spec so we can run the generated TE spec.
-		// First the TLA file.
-		Path sourcePath = Paths.get(originalTESpecPath() + TLAConstants.Files.TLA_EXTENSION);
-		Path destPath = Paths.get(clonedTESpecPath() + TLAConstants.Files.TLA_EXTENSION);
-
-		// Check if the file is already moved to the correct path.
-		if (destPath.toFile().isFile()) {
-			return;
-		}
-		
-		try {
-			Files.move(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException exception) {
-			fail(exception.toString());
-		}
-
-		// Then we move the config file.
-		sourcePath = Paths.get(originalTESpecPath() + TLAConstants.Files.CONFIG_EXTENSION);
-		destPath = Paths.get(clonedTESpecPath() + TLAConstants.Files.CONFIG_EXTENSION);
-		try {
-			Files.move(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException exception) {
-			fail(exception.toString());
-		}
-	}
-
-	private void removeGeneratedFiles(String originalPath, String clonedPath) {
-        // Remove generated files, if any.
-        new File(originalPath + TLAConstants.Files.TLA_EXTENSION).delete();
-        new File(originalPath + TLAConstants.Files.CONFIG_EXTENSION).delete();
-        new File(clonedPath + TLAConstants.Files.TLA_EXTENSION).delete();
-        new File(clonedPath + TLAConstants.Files.CONFIG_EXTENSION).delete();
-    }
-
-	private String mungedClassName() {
-		return this.getClass().getName().replaceAll("\\.", "_");
-	}
-
 	/* (non-Javadoc)
 	 * @see junit.framework.TestCase#setUp()
 	 */
 	@Before
 	public void setUp() {
-		if (!isTESpec()) {
-			// Remove any generated file before running a original spec.
-			removeGeneratedFiles(
-				originalTESpecPath() + teSpecSuffix + "_" + mungedClassName() + "_TTraceTest", 
-				clonedTESpecPath() + teSpecSuffix + "_" + mungedClassName() + "_TTraceTest");
-		} else {
-			checkTESpecAssumption();
-			
-			// If it's a TE spec run, move TE spec files so they are in the
-			// correct path.
-			moveTESpecFiles();			
-		}
-
 		beforeSetUp();		
 		
 		// some tests might want to access the liveness graph after model
 		// checking completed. Thus, prevent the liveness graph from being
 		// closed too earlier.
 		System.setProperty(ModelChecker.class.getName() + ".vetoCleanup", "true");
-
-		// Timestamps for traces generated by the trace expression writer (trace explorer)
-		// will have the same suffix so it's easy to know beforehand the name of the
-		// file.
-		System.setProperty("TLC_TRACE_EXPLORER_TIMESTAMP", teSpecTimestamp + "_" + mungedClassName() + "_TTraceTest");
 
 		try {
 			// TEST_MODEL is where TLC should look for user defined .tla files
@@ -254,6 +148,11 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			
 			if (noGenerateSpec()) {
 				args.add("-noGenerateSpecTE");
+			} else {
+				// Make sure the generated spec ends up in a designated location.
+				args.add("-generateSpecTE");
+				args.add("-teSpecOutDir");
+				args.add(TTraceModelCheckerTestCase.getPath(getClass()));
 			}
 			
 			if (noRandomFPandSeed()) {
@@ -324,12 +223,6 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 
 	@After
 	public void tearDown() {
-		// Also check assumption in `@After` as it's not skipped
-		// if assumption in `@Before` fails.
-		if (isTESpec()) {
-			checkTESpecAssumption();
-		}		
-		
 		beforeTearDown();
 		
 		assertExitStatus();

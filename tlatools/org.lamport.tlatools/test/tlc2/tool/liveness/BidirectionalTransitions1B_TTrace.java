@@ -36,15 +36,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
-public abstract class BidirectionalTransitions1B_TTrace extends ModelCheckerTestCase {
+public abstract class BidirectionalTransitions1B_TTrace extends TTraceModelCheckerTestCase {
 
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
-
-	public BidirectionalTransitions1B_TTrace() {
-		super("BidirectionalTransitions", ExitStatus.VIOLATION_LIVENESS);
+	public BidirectionalTransitions1B_TTrace(Class<?> clazz) {
+		super(clazz, ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

@@ -35,17 +35,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class Github461Test_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class Github461Test_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public Github461Test_TTraceTest() {
-		super("Github461", EC.ExitStatus.VIOLATION_SAFETY);
+		super(Github461Test.class, EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

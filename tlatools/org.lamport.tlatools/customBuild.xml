@@ -378,6 +378,7 @@
 			<fileset dir="${test.class.dir}">
 				<include name="**/tlc2/tool/CommonTestCase*.class" />
 				<include name="**/tlc2/tool/liveness/ModelCheckerTestCase*.class" />
+				<include name="**/tlc2/tool/liveness/tlc2.tool.liveness.TTraceModelCheckerTestCase*.class" />
 				<include name="**/tlc2/TestMPRecorder*.class" />
 				<include name="**/util/IsolatedTestCaseRunner*.class" />
 			</fileset>
@@ -505,6 +506,7 @@
 					<exclude name="**/*_TTraceTest.java" />
 					<exclude name="**/CommonTestCase.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
+					<exclude name="**/TTraceModelCheckerTestCase.java" />
 					<exclude name="**/TLCDebuggerTestCase.java" />
 					<exclude name="**/PCalModelCheckerTestCase.java" />
 					<exclude name="**/TraceExpressionSpecTest.java" />
@@ -690,6 +692,7 @@
 						<exclude name="**/*_TTraceTest.java" />
 						<exclude name="**/CommonTestCase.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
+						<exclude name="**/TTraceModelCheckerTestCase.java" />
 						<exclude name="**/TLCDebuggerTestCase.java" />
 						<exclude name="**/PCalModelCheckerTestCase.java" />
 						<exclude name="**/TraceExpressionSpecTest.java" />

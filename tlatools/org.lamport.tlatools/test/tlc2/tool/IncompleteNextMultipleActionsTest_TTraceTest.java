@@ -38,17 +38,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class IncompleteNextMultipleActionsTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class IncompleteNextMultipleActionsTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public IncompleteNextMultipleActionsTest_TTraceTest() {
-		super("IncompleteNextMultipleActions", ExitStatus.FAILURE_SPEC_EVAL);
+		super(IncompleteNextMultipleActionsTest.class, ExitStatus.FAILURE_SPEC_EVAL);
 	}
 
     @Ignore("https://github.com/tlaplus/tlaplus/pull/588#issuecomment-821745313")

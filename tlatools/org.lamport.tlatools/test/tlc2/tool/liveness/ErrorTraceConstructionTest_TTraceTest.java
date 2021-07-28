@@ -37,15 +37,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
-public class ErrorTraceConstructionTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class ErrorTraceConstructionTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public ErrorTraceConstructionTest_TTraceTest() {
-		super("ErrorTraceConstructionMC", "symmetry", ExitStatus.VIOLATION_LIVENESS);
+		super(ErrorTraceConstructionTest.class, "symmetry", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test
@@ -74,7 +69,7 @@ public class ErrorTraceConstructionTest_TTraceTest extends ModelCheckerTestCase 
 		expectedTrace.add("/\\ x = 0\n/\\ y = 7");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		assertBackToState(4, "<_next line 32, col 5 to line 39, col 29 of module ErrorTraceConstructionMC_TTrace_2000000000_tlc2_tool_liveness_ErrorTraceConstructionTest_TTraceTest>");
+		assertBackToState(4, "<_next line 32, col 5 to line 39, col 29 of module "+getModuleName()+">");
 
 	assertZeroUncovered();
 	}

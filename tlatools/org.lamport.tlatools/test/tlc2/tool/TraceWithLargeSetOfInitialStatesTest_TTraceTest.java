@@ -35,17 +35,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class TraceWithLargeSetOfInitialStatesTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class TraceWithLargeSetOfInitialStatesTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public TraceWithLargeSetOfInitialStatesTest_TTraceTest() {
-		super("TraceWithLargeSetOfInitialStatesTest", new String[] { "-maxSetSize", "10" }, ExitStatus.VIOLATION_SAFETY);
+		super(TraceWithLargeSetOfInitialStatesTest.class, new String[] { "-maxSetSize", "10" }, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
@@ -61,9 +56,9 @@ public class TraceWithLargeSetOfInitialStatesTest_TTraceTest extends ModelChecke
 		expectedTrace.add("/\\ x = 1\n/\\ y = TRUE");
 		final List<String> expectedActions = new ArrayList<>(2);
         expectedActions.add(isExtendedTLCState()
-				? "<_init line 23, col 5 to line 24, col 24 of module TraceWithLargeSetOfInitialStatesTest_TTrace_2000000000_tlc2_tool_TraceWithLargeSetOfInitialStatesTest_TTraceTest>"
+				? "<_init line 23, col 5 to line 24, col 24 of module "+getModuleName()+">"
 				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<_next line 28, col 5 to line 33, col 29 of module TraceWithLargeSetOfInitialStatesTest_TTrace_2000000000_tlc2_tool_TraceWithLargeSetOfInitialStatesTest_TTraceTest>");		
+		expectedActions.add("<_next line 28, col 5 to line 33, col 29 of module "+getModuleName()+">");		
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions );
 
 	assertZeroUncovered();

@@ -36,20 +36,14 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import util.TLAConstants;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
  */
-public class CodePlexBug08Test_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class CodePlexBug08Test_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public CodePlexBug08Test_TTraceTest() {
-		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+		super(CodePlexBug08Test.class, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

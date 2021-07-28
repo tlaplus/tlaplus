@@ -29,6 +29,6 @@ package tlc2.tool.liveness.simulation;
 public class LiveCheckExample1Test_TTraceTest extends AbstractExample_TTrace {
 
 	public LiveCheckExample1Test_TTraceTest() {
-		super("Example1");
+		super(LiveCheckExample1Test.class);
 	}
 }

@@ -37,17 +37,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class DepthFirstDieHardTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class DepthFirstDieHardTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public DepthFirstDieHardTest_TTraceTest() {
-		super("DieHard", ExitStatus.VIOLATION_SAFETY);
+		super(DepthFirstDieHardTest.class, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
@@ -71,9 +66,9 @@ public class DepthFirstDieHardTest_TTraceTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ action = \"pour big to small\"\n/\\ smallBucket = 3\n/\\ bigBucket = 4\n/\\ water_to_pour = 1");
 
         final List<String> expectedActions = new ArrayList<>();
-        expectedActions.add("<_init line 27, col 5 to line 30, col 48 of module DieHard_TTrace_2000000000_tlc2_tool_DepthFirstDieHardTest_TTraceTest>");
-        expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1, 
-                "<_next line 34, col 5 to line 43, col 53 of module DieHard_TTrace_2000000000_tlc2_tool_DepthFirstDieHardTest_TTraceTest>"));
+		expectedActions.add("<_init line 27, col 5 to line 30, col 48 of module " + getModuleName() + ">");
+		expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1,
+				"<_next line 34, col 5 to line 43, col 53 of module " + getModuleName() + ">"));
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		assertZeroUncovered();
 	}

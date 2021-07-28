@@ -35,17 +35,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class RandomSubsetNextTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class RandomSubsetNextTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public RandomSubsetNextTest_TTraceTest() {
-		super("RandomSubsetNext", ExitStatus.VIOLATION_SAFETY);
+		super(RandomSubsetNextTest.class, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

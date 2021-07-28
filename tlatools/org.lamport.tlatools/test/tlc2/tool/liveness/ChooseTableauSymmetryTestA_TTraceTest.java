@@ -38,15 +38,10 @@ import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.TLCStateInfo;
 
-public class ChooseTableauSymmetryTestA_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class ChooseTableauSymmetryTestA_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public ChooseTableauSymmetryTestA_TTraceTest() {
-		super("ChooseTableauSymmetryMCa", "symmetry", ExitStatus.VIOLATION_LIVENESS);
+		super(ChooseTableauSymmetryTestA.class, "symmetry", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test
@@ -71,16 +66,16 @@ public class ChooseTableauSymmetryTestA_TTraceTest extends ModelCheckerTestCase 
 		
 		final List<String> expectedActions = new ArrayList<>();
 		expectedActions.add(isExtendedTLCState()
-				? "<_init line 23, col 5 to line 23, col 28 of module ChooseTableauSymmetryMCa_TTrace_2000000000_tlc2_tool_liveness_ChooseTableauSymmetryTestA_TTraceTest>"
+				? "<_init line 23, col 5 to line 23, col 28 of module ChooseTableauSymmetryTestATTrace>"
 				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryMCa_TTrace_2000000000_tlc2_tool_liveness_ChooseTableauSymmetryTestA_TTraceTest>");
-		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryMCa_TTrace_2000000000_tlc2_tool_liveness_ChooseTableauSymmetryTestA_TTraceTest>");
-		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryMCa_TTrace_2000000000_tlc2_tool_liveness_ChooseTableauSymmetryTestA_TTraceTest>");
-		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryMCa_TTrace_2000000000_tlc2_tool_liveness_ChooseTableauSymmetryTestA_TTraceTest>");
+		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
 		
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		
-		assertBackToState(3, "<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryMCa_TTrace_2000000000_tlc2_tool_liveness_ChooseTableauSymmetryTestA_TTraceTest>");
+		assertBackToState(3, "<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
 
 	assertZeroUncovered();
 	}

@@ -33,17 +33,12 @@ import java.util.List;
 import org.junit.Test;
 
 import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class EvalExceptionTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class EvalExceptionTest_TTraceTest extends TTraceModelCheckerTestCase {
 
     public EvalExceptionTest_TTraceTest() {
-        super("DistBakery", EC.ExitStatus.VIOLATION_SAFETY);
+        super(EvalExceptionTest.class, EC.ExitStatus.VIOLATION_SAFETY);
     }
 
     @Override

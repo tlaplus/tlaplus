@@ -36,20 +36,15 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public abstract class RandomSubset_TTrace extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public abstract class RandomSubset_TTrace extends TTraceModelCheckerTestCase {
 
 	private final int x;
 	private final int y;
 
-	public RandomSubset_TTrace(final int x, final int y) {		
-		super("RandomSubset", ExitStatus.VIOLATION_SAFETY);
+	public RandomSubset_TTrace(Class<?> clazz, final int x, final int y) {		
+		super(clazz, ExitStatus.VIOLATION_SAFETY);
 		this.x = x;
 		this.y = y;
 	}

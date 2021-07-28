@@ -35,17 +35,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class TLCGetLevelTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class TLCGetLevelTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public TLCGetLevelTest_TTraceTest() {
-		super("TLCGetLevel", ExitStatus.VIOLATION_LIVENESS);
+		super(TLCGetLevelTest.class, ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

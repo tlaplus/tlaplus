@@ -39,11 +39,6 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class Github597Test_TTraceTest extends ModelCheckerTestCase {
 
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
-
 	public Github597Test_TTraceTest() {
 		super("dekker", EC.ExitStatus.VIOLATION_LIVENESS);
 	}

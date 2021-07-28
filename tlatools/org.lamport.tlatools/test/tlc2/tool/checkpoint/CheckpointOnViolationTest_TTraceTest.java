@@ -33,17 +33,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class CheckpointOnViolationTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class CheckpointOnViolationTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public CheckpointOnViolationTest_TTraceTest() {
-		super("DieHard", ExitStatus.VIOLATION_SAFETY);
+		super(CheckpointOnViolationTest.class, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test

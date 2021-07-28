@@ -40,15 +40,10 @@ import tlc2.output.EC.ExitStatus;
 /**
  * see http://tlaplus.codeplex.com/workitem/8
  */
-public class CodePlexBug08AgentRingTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class CodePlexBug08AgentRingTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public CodePlexBug08AgentRingTest_TTraceTest() {
-		super("AgentRingMC", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+		super(CodePlexBug08AgentRingTest.class, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

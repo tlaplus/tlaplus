@@ -37,20 +37,15 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.TLCStateInfo;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
 /*
  * Contrary to Test2, this test violates liveness (back to state 1)  
  */
-public class SimulationTest2a_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class SimulationTest2a_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public SimulationTest2a_TTraceTest() {
-		super("Test2a", ExitStatus.VIOLATION_LIVENESS);
+		super(SimulationTest2a.class, ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test

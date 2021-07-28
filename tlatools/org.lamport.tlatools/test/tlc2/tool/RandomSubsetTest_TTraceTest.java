@@ -36,22 +36,17 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import util.UniqueString;
 
-public class RandomSubsetTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class RandomSubsetTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public RandomSubsetTest_TTraceTest() {
-		super("RandomSubset", ExitStatus.VIOLATION_SAFETY);
+		super(RandomSubsetTest.class, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
@@ -70,7 +65,7 @@ public class RandomSubsetTest_TTraceTest extends ModelCheckerTestCase {
 		
 		final TLCStateInfo first = (TLCStateInfo) ((Object[]) actual.get(0))[0];
 		if (isExtendedTLCState()) {
-			assertEquals("<_init line 25, col 5 to line 27, col 24 of module RandomSubset_TTrace_2000000000_tlc2_tool_RandomSubsetTest_TTraceTest>", first.info);
+			assertEquals("<_init line 25, col 5 to line 27, col 24 of module "+getModuleName()+">", first.info);
 		} else {
 			assertTrue(((String) first.info).startsWith("<Initial predicate>"));
 		}
@@ -87,7 +82,7 @@ public class RandomSubsetTest_TTraceTest extends ModelCheckerTestCase {
 		assertEquals(BoolValue.ValTrue, (IBoolValue) firstState.get(UniqueString.uniqueStringOf("z")));
 		
 		final TLCStateInfo second = (TLCStateInfo) ((Object[]) actual.get(1))[0];
-		assertTrue(((String) second.info).startsWith("<_next line 31, col 5 to line 38, col 29 of module RandomSubset_TTrace_2000000000_tlc2_tool_RandomSubsetTest_TTraceTest>"));
+		assertTrue(((String) second.info).startsWith("<_next line 31, col 5 to line 38, col 29 of module "+getModuleName()+">"));
 		final Map<UniqueString, IValue> secondState = second.state.getVals();
 		assertEquals(3, secondState.size());
 		// UNCHANGED x,y

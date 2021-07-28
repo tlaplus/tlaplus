@@ -36,18 +36,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
-import util.TLAConstants;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class PrintTraceRaceTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class PrintTraceRaceTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public PrintTraceRaceTest_TTraceTest() {
-		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "PrintTraceRace", ExitStatus.VIOLATION_SAFETY);
+		super(PrintTraceRaceTest.class, "PrintTraceRace", ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
@@ -74,8 +68,6 @@ public class PrintTraceRaceTest_TTraceTest extends ModelCheckerTestCase {
 		assertEquals(i, objs[1]);
 		
 		assertEquals(2, objs.length);
-
-		assertUncovered("line 15, col 12 to line 15, col 28 of module PrintTraceRace: 0");
 	}
 	
 	protected int getNumberOfThreads() {

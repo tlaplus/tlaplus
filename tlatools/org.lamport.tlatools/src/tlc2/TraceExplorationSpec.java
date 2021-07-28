@@ -1,7 +1,5 @@
 package tlc2;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,32 +29,41 @@ import util.TLAConstants;
 public class TraceExplorationSpec {
 	
 	/**
-	 * Timestamp to include in TE spec module name.
-	 */
-	private final Date timestamp;
-	
-	/**
-	 * Resolves TE spec files & provides output streams to them.
-	 */
-	private IStreamProvider streamProvider;
-	
-	/**
 	 * Records TLC output as it runs, capturing the error trace if one is found.
 	 */
 	private final ErrorTraceMessagePrinterRecorder recorder;
 	
+	private final Path outputPath;
+
+	private final String originalModuleName;
+
+	private final String teSpecModuleName;
+	
 	/**
 	 * Initializes a new instance of the {@link TraceExplorationSpec} class.
-	 * @param outputDirectory Directory to which to output the TE spec.
+	 * @param output Directory to which to output the TE spec.
 	 * @param timestamp Timestamp to include in TE spec filename.
 	 * @param recorder Recorder to record TLC as it runs; assumed to already be subscribed.
 	 */
 	public TraceExplorationSpec(
-			Path outputDirectory,
+			Path output,
 			Date timestamp,
+			String originalModuleName,
 			ErrorTraceMessagePrinterRecorder recorder) {
-		this.timestamp = timestamp;
-		this.streamProvider = new FileStreamProvider(outputDirectory);
+		this.outputPath = output;
+		this.teSpecModuleName = deriveTESpecModuleName(originalModuleName, timestamp);
+		this.originalModuleName = originalModuleName;
+		this.recorder = recorder;
+	}
+	
+	public TraceExplorationSpec(
+			Path output,
+			String teModuleName,
+			String originalModuleName,
+			ErrorTraceMessagePrinterRecorder recorder) {
+		this.outputPath = output;
+		this.teSpecModuleName = teModuleName;
+		this.originalModuleName = originalModuleName;
 		this.recorder = recorder;
 	}
 	
@@ -69,10 +76,9 @@ public class TraceExplorationSpec {
 		return this.recorder.getMCErrorTrace().map(errorTrace -> {
 			ModelConfig cfg = specInfo.getModelConfig();
 			SpecProcessor spec = specInfo.getSpecProcessor();
-			String ogModuleName = specInfo.getRootName();
 			List<String> variables = Arrays.asList(TLCState.Empty.getVarsAsStrings());
 			MCParserResults parserResults = MCParser.generateResultsFromProcessorAndConfig(spec, cfg);
-			return this.generate(ogModuleName, parserResults, variables, errorTrace, specInfo);
+			return this.generate(parserResults, variables, errorTrace, specInfo);
 		});
 	}
 
@@ -86,7 +92,6 @@ public class TraceExplorationSpec {
 	 * @param errorTrace The error trace.
 	 */
 	private	TraceExplorationSpecGenerationReport generate(
-			String ogModuleName,
 			MCParserResults parserResults,
 			List<String> variables,
 			MCError errorTrace,
@@ -101,24 +106,17 @@ public class TraceExplorationSpec {
 			return null;
 		}
 
-		String teSpecModuleName = deriveTESpecModuleName(ogModuleName, this.timestamp);
-		try (
-				OutputStream tlaStream = this.streamProvider.getTlaStream(teSpecModuleName);
-				OutputStream cfgStream = this.streamProvider.getCfgStream(teSpecModuleName);
-		) {
-			TraceExplorer.writeSpecTEStreams(
-					teSpecModuleName,
-					ogModuleName,
-					parserResults,
-					variables,
-					errorTrace,
-					specInfo,
-					tlaStream,
-					cfgStream);
-			TraceExplorationSpecGenerationReport report = new TraceExplorationSpecGenerationReport(
-					errorTrace,
-					this.streamProvider.getTlaPath(teSpecModuleName),
-					this.streamProvider.getCfgPath(teSpecModuleName));
+		// Create any intermediate folders if they don't exist.
+		this.outputPath.toFile().mkdirs();
+		
+		final Path teSpecPath = this.outputPath.resolve(teSpecModuleName + TLAConstants.Files.TLA_EXTENSION);
+		final Path teConfigPath = this.outputPath.resolve(teSpecModuleName + TLAConstants.Files.CONFIG_EXTENSION);
+		try (OutputStream tlaStream = new FileOutputStream(teSpecPath.toFile());
+				OutputStream cfgStream = new FileOutputStream(teConfigPath.toFile());) {
+			TraceExplorer.writeSpecTEStreams(teSpecModuleName, originalModuleName, parserResults, variables, errorTrace,
+					specInfo, tlaStream, cfgStream);
+			TraceExplorationSpecGenerationReport report = new TraceExplorationSpecGenerationReport(errorTrace,
+					teSpecPath, teConfigPath);
 			MP.printMessage(EC.TLC_TE_SPEC_GENERATION_COMPLETE, report.teSpecTlaPath.toString());
 			return report;
 		} catch (SecurityException | IOException e) {
@@ -128,10 +126,6 @@ public class TraceExplorationSpec {
 	}
 	
 	public static String teModuleId(Date timestamp) {
-		String traceExplorerTimestamp = System.getProperty("TLC_TRACE_EXPLORER_TIMESTAMP");
-		if (traceExplorerTimestamp != null) {
-			return traceExplorerTimestamp;
-		}
 		final long secondsSinceEpoch = timestamp.getTime() / 1_000L;
 		return Long.toString(secondsSinceEpoch);
 	}
@@ -142,7 +136,7 @@ public class TraceExplorationSpec {
 	 * @return The TE spec module name.
 	 */
 	public static String deriveTESpecModuleName(String ogModuleName, Date timestamp) {
-		// millis to seconds
+		// millis to secondPaths
 		return String.format(
 			"%s_%s_%s",
 			ogModuleName,
@@ -162,109 +156,12 @@ public class TraceExplorationSpec {
 		
 		try {
 			// TODO: branch based on something better than the filename such as the module
-			// name that we choose above.
+			// name that we choose above, or check for special tokens/symbols generated in
+			// trace spec.
 			String filename = Paths.get(tlaFilePath).getFileName().toString();
 			// see tlc2.TraceExplorationSpec.deriveTESpecModuleName(String)
 			return filename
 					.matches("^.*_" + TLAConstants.TraceExplore.TRACE_EXPRESSION_MODULE_NAME + ".*(.tla)?$");
 		} catch (InvalidPathException e) { return false; }
-	}
-	
-	/**
-	 * Interface for creating streams to which to write the TE spec.
-	 */
-	public interface IStreamProvider {
-		
-		/**
-		 * Returns the path to the TLA file.
-		 * Path not guaranteed to exist.
-		 * @param moduleName Name of the TE spec module.
-		 * @return The path to the TLA file.
-		 */
-		public Path getTlaPath(String moduleName);
-		
-		/**
-		 * Creates an output stream to which to write the TE spec.
-		 * Caller is responsible for managing stream lifecycle.
-		 * @param moduleName Name of the TE spec module.
-		 * @return A new output stream to which to write the TE spec.
-		 * @throws FileNotFoundException Thrown if filepath is inaccessible.
-		 * @throws SecurityException Thrown if lacking perms to write file.
-		 */
-		public OutputStream getTlaStream(String moduleName) throws FileNotFoundException, SecurityException;
-		
-		/**
-		 * Returns the path to the CFG file.
-		 * Path not guaranteed to exist.
-		 * @param moduleName Name of the TE spec module.
-		 * @return The path to the CFG file.
-		 */
-		public Path getCfgPath(String moduleName);
-		
-		/**
-		 * Creates an output stream to which to write the TE spec's CFG file.
-		 * Caller is responsible for managing stream lifecycle.
-		 * @param moduleName Name of the TE spec module.
-		 * @return A new output stream to which to write the CFG file.
-		 * @throws FileNotFoundException Thrown if filepath is inaccessible.
-		 * @throws SecurityException Thrown if lacking perms to write file.
-		 */
-		public OutputStream getCfgStream(String moduleName) throws FileNotFoundException, SecurityException;
-	}
-	
-	/**
-	 * Provides streams to actual files on disk.
-	 */
-	public class FileStreamProvider implements IStreamProvider {
-		
-		/**
-		 * Directory to which to output the files.
-		 */
-		private Path outputDirectory;
-		
-		/**
-		 * Initializes a new instance of {@link FileStreamProvider}
-		 * @param outputDirectory Output directory for TLA & CFG files.
-		 */
-		public FileStreamProvider(Path outputDirectory) {
-			this.outputDirectory = outputDirectory;
-		}
-		
-		@Override
-		public Path getTlaPath(String moduleName) {
-			return this.outputDirectory.resolve(moduleName + TLAConstants.Files.TLA_EXTENSION);
-		}
-		
-		@Override
-		public OutputStream getTlaStream(String moduleName) throws FileNotFoundException, SecurityException {
-			this.ensureDirectoryExists();
-			final File tlaFile = this.getTlaPath(moduleName).toFile();
-			return new FileOutputStream(tlaFile);
-		}
-		
-		@Override
-		public Path getCfgPath(String moduleName) {
-			return this.outputDirectory.resolve(moduleName + TLAConstants.Files.CONFIG_EXTENSION);
-		}
-		
-		@Override
-		public OutputStream getCfgStream(String moduleName) throws FileNotFoundException, SecurityException {
-			this.ensureDirectoryExists();
-			final File cfgFile = this.getCfgPath(moduleName).toFile();
-			return new FileOutputStream(cfgFile);
-		}
-		
-		/**
-		 * Recursively creates directories until the desired path is present.
-		 * @throws SecurityException Access issue when creating directories.
-		 */
-		private void ensureDirectoryExists() throws SecurityException {
-			for (int i = 1; i <= this.outputDirectory.getNameCount(); i++) {
-				Path subPath = this.outputDirectory.subpath(0, i);
-				if (!subPath.toFile().exists()) {
-					subPath.toFile().mkdir();
-				}
-			}
-		}
 	}
 }

@@ -33,18 +33,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
-import util.TLAConstants;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class StutteringTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class StutteringTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public StutteringTest_TTraceTest() {
-		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+		super(StutteringTest.class, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

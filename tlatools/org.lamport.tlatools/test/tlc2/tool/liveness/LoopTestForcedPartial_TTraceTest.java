@@ -43,19 +43,14 @@ import tlc2.tool.AbstractChecker;
  * {@link AddAndCheckLiveCheck}. This way, TLC correctly produces the shortest
  * possible counterexample.
  */
-public class LoopTestForcedPartial_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class LoopTestForcedPartial_TTraceTest extends TTraceModelCheckerTestCase {
 	
 	static {
 		AbstractChecker.LIVENESS_TESTING_IMPLEMENTATION = true;
 	}
 	
 	public LoopTestForcedPartial_TTraceTest() {
-		super("SystemLoop", "Loop", ExitStatus.VIOLATION_LIVENESS);
+		super(LoopTestForcedPartial.class, "Loop", ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test

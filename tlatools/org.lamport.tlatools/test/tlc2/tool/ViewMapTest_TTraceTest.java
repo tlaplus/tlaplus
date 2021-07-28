@@ -37,17 +37,12 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 
-public class ViewMapTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class ViewMapTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public ViewMapTest_TTraceTest() {
-		super("ViewMap", new String[] { "-view" }, ExitStatus.VIOLATION_SAFETY);
+		super(ViewMapTest.class, new String[] { "-view" }, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	// VIEW modifies the output of the original spec (is it a poor's man ALIAS?), do we need to worry

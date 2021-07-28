@@ -28,5 +28,6 @@ package tlc2.tool.liveness;
 public class BidirectionalTransitions1ByTest_TTraceTest extends BidirectionalTransitions1B_TTrace {
 
 	public BidirectionalTransitions1ByTest_TTraceTest() {
+		super(BidirectionalTransitions1ByTest.class);
 	}
 }

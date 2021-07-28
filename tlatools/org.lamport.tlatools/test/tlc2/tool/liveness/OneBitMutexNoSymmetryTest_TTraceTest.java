@@ -38,15 +38,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
-public class OneBitMutexNoSymmetryTest_TTraceTest extends ModelCheckerTestCase {
-
-    @Override
-    protected boolean isTESpec() {
-		return true;
-	}
+public class OneBitMutexNoSymmetryTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 	public OneBitMutexNoSymmetryTest_TTraceTest() {
-		super("OneBitMutexNoSymmetryMC", "symmetry" + File.separator + "OneBitMutex", ExitStatus.VIOLATION_LIVENESS);
+		super(OneBitMutexNoSymmetryTest.class, "symmetry" + File.separator + "OneBitMutex", ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	@Test
@@ -166,6 +161,6 @@ public class OneBitMutexNoSymmetryTest_TTraceTest extends ModelCheckerTestCase {
 						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertBackToState(9, "<_next line 42, col 5 to line 53, col 31 of module OneBitMutexNoSymmetryMC_TTrace_2000000000_tlc2_tool_liveness_OneBitMutexNoSymmetryTest_TTraceTest>");
+		assertBackToState(9, "<_next line 42, col 5 to line 53, col 31 of module "+getModuleName()+">");
 	}
 }
