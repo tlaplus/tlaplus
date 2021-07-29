@@ -857,7 +857,8 @@ public class ModelChecker extends AbstractChecker
                 String.valueOf(this.theFPSet.size()), String.valueOf(this.theStateQueue.size()) });
         // The depth used to only be reported on success, but this seems bogus since TLC reports
         // the number states above.
-        MP.printMessage(EC.TLC_SEARCH_DEPTH, String.valueOf(this.trace.getLevelForReporting()));
+		MP.printMessage(EC.TLC_SEARCH_DEPTH,
+				String.valueOf(getStatesGenerated() == 0L ? 0 : this.trace.getLevelForReporting()));
         if (success)
         {
 			
