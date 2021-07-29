@@ -168,6 +168,8 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 			if (result != 0) {
 				return result;
 			}
+		}
+		for (int i = 0; i < this.domain.length; i++) {
 			result = this.values[i].compareTo(fcn.values[i]);
 			if (result != 0) {
 				return result;
@@ -179,6 +181,8 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 			if (result != 0) {
 				return result;
 			}
+		}
+		for (int i = 0; i < this.domain.length; i++) {
 			result = this.values[i].compareTo(fcn.values[i]);
 			if (result != 0) {
 				return result;
@@ -212,6 +216,8 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   			if (result != 0) {
   				return result;
   			}
+  		}
+  		for (int i = 0; i < fcn.domain.length; i++) {
   			result = this.values[i].compareTo(fcn.values[i]);
   			if (result != 0) {
   				return result;
@@ -250,10 +256,14 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".", getSource());
             }
-            if (((IntValue)dElem).val != (this.intv.low + i) ||
-                !this.values[i].equals(fcn.values[i])) {
+            if (((IntValue)dElem).val != (this.intv.low + i)) {
               return false;
             }
+          }
+          for (int i = 0; i < fcn.values.length; i++) {
+              if (!this.values[i].equals(fcn.values[i])) {
+                return false;
+              }
           }
         }
       }
@@ -266,18 +276,26 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".", getSource());
             }
-            if (((IntValue)dElem).val != (fcn.intv.low + i) ||
-                !this.values[i].equals(fcn.values[i])) {
+            if (((IntValue)dElem).val != (fcn.intv.low + i)) {
               return false;
             }
+          }
+          for (int i = 0; i < this.values.length; i++) {
+              if (!this.values[i].equals(fcn.values[i])) {
+                return false;
+              }
           }
         }
         else {
           for (int i = 0; i < this.domain.length; i++) {
-            if (!this.domain[i].equals(fcn.domain[i]) ||
-                !this.values[i].equals(fcn.values[i])) {
+            if (!this.domain[i].equals(fcn.domain[i])) {
               return false;
             }
+          }
+          for (int i = 0; i < this.values.length; i++) {
+              if (!this.values[i].equals(fcn.values[i])) {
+                return false;
+              }
           }
         }
       }

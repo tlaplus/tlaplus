@@ -75,6 +75,9 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
       int len = this.elems.length;
       int cmp = len - tv.elems.length;
       if (cmp == 0) {
+		// At this point, we know that the domains are equal because the domain of a
+		// tuple is 1..N where N is Len(tuple). Thus, we can compare the values one by
+		// one.
         for (int i = 0; i < len; i++) {
           cmp = this.elems[i].compareTo(tv.elems[i]);
           if (cmp != 0) break;
@@ -98,6 +101,9 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
       int len = this.elems.length;
       if (len != tv.elems.length)
         return false;
+	// At this point, we know that the domains are equal because the domain of a
+	// tuple is 1..N where N is Len(tuple). Thus, we can check equality of the
+	// values one by one.
       for (int i = 0; i < len; i++) {
         if (!this.elems[i].equals(tv.elems[i]))
           return false;

@@ -207,11 +207,15 @@ public class RecordValue extends Value implements Applicable {
       int len = this.names.length;
       int cmp = len - rcd.names.length;
       if (cmp == 0) {
+    	// First, compare the (equicardinal) domains.
         for (int i = 0; i < len; i++) {
           cmp = this.names[i].compareTo(rcd.names[i]);
-          if (cmp != 0) break;
+          if (cmp != 0) return cmp;
+        }
+        // Then, compare values iff domains are equal.
+        for (int i = 0; i < len; i++) {
           cmp = this.values[i].compareTo(rcd.values[i]);
-          if (cmp != 0) break;
+          if (cmp != 0) return cmp;
         }
       }
       return cmp;
@@ -235,10 +239,17 @@ public class RecordValue extends Value implements Applicable {
       rcd.normalize();
       int len = this.names.length;
       if (len != rcd.names.length) return false;
+  	  // First, compare the (equicardinal) domains.
       for (int i = 0; i < len; i++) {
-        if ((!(this.names[i].equals(rcd.names[i]))) ||
-          (!(this.values[i].equals(rcd.values[i]))))
-          return false;
+        if (!(this.names[i].equals(rcd.names[i]))) {
+        	return false;
+        }
+      }
+      // Then, compare values iff domains are equal.
+      for (int i = 0; i < len; i++) {
+        if (!(this.values[i].equals(rcd.values[i]))) {
+        	  return false;
+        }
       }
       return true;
     }
