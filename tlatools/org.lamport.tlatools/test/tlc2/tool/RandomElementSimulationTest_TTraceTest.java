@@ -65,9 +65,9 @@ public class RandomElementSimulationTest_TTraceTest extends TTraceModelCheckerTe
 		expectedTrace.add("/\\ x = 318\n/\\ y = 10");
 		List<Object> actualTrace = recorder.getRecords(EC.TLC_STATE_PRINT2);
 		final List<String> expectedActions = new ArrayList<>();
-		expectedActions.add("<_init line 23, col 5 to line 24, col 24 of module "+getModuleName()+">");
+		expectedActions.add("<_init line 25, col 5 to line 26, col 24 of module "+getModuleName()+">");
 		expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1,
-				"<_next line 28, col 5 to line 33, col 29 of module "+getModuleName()+">"));
+				"<_next line 30, col 5 to line 36, col 29 of module "+getModuleName()+">"));
 		assertTraceWith(actualTrace, expectedTrace, expectedActions);
 
 		assertZeroUncovered();

@@ -147,9 +147,11 @@ public final class SpecWriterUtilities {
 		final StringBuilder buffer = new StringBuilder();
 		buffer.append(TLAConstants.SEP).append(' ').append(TLAConstants.KeyWords.MODULE).append(' ');
 		buffer.append(getModuleNameChecked(moduleFilename, false)).append(' ').append(TLAConstants.SEP).append('\n');
-		buffer.append(TLAConstants.KeyWords.EXTENDS).append(' ');
-		buffer.append(String.join(", ", extendedModuleName));
-		buffer.append("\n\n");
+		if (extendedModuleName.length != 0) {
+			buffer.append(TLAConstants.KeyWords.EXTENDS).append(' ');
+			buffer.append(String.join(", ", extendedModuleName));
+			buffer.append("\n\n");
+		}
 		return buffer;
 	}
 

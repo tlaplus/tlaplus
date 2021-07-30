@@ -68,14 +68,14 @@ public class ChooseTableauSymmetryTestA_TTraceTest extends TTraceModelCheckerTes
 		expectedActions.add(isExtendedTLCState()
 				? "<_init line 23, col 5 to line 23, col 28 of module ChooseTableauSymmetryTestATTrace>"
 				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
-		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
-		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
-		expectedActions.add("<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
 		
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		
-		assertBackToState(3, "<_next line 27, col 5 to line 32, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		assertBackToState(3, "<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
 
 	assertZeroUncovered();
 	}

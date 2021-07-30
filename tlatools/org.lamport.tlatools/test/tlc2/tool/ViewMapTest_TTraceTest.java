@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -45,9 +44,6 @@ public class ViewMapTest_TTraceTest extends TTraceModelCheckerTestCase {
 		super(ViewMapTest.class, new String[] { "-view" }, ExitStatus.VIOLATION_SAFETY);
 	}
 
-	// VIEW modifies the output of the original spec (is it a poor's man ALIAS?), do we need to worry
-	// about these cases and also create a VIEW in our TE spec?
-    @Ignore("TESpec bug - VIEW")
 	@Test    
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
@@ -57,23 +53,20 @@ public class ViewMapTest_TTraceTest extends TTraceModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
 		
 		final List<String> expectedTrace = new ArrayList<String>(8);
-		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {}");
-		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1}");
-		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, c2}");
-		expectedTrace.add("/\\ buffer = <<\"d\">>\n/\\ waitset = {c2}");
-
-		expectedTrace.add("/\\ buffer = <<\"d\">>\n/\\ waitset = {c2, p1}");
-		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {p1}");
-		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {c1, p1}");
-		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {c1, c2, p1}");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, c2}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = <<\"d\">>\n/\\ waitset = {c2}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = <<\"d\">>\n/\\ waitset = {c2, p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, c2, p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
 		final List<String> expectedActions = new ArrayList<>();
 		expectedActions.add(isExtendedTLCState()
-				? "<_init line 25, col 5 to line 27, col 26 of module ViewMap_TTrace_2000000000_tlc2_tool_ViewMapTest_TTraceTest>"
+				? "<_init line 27, col 5 to line 29, col 26 of module ViewMapTestTTrace>"
 				: TLCStateInfo.INITIAL_PREDICATE);
 		expectedActions.addAll(
-			Collections.nCopies(7, "<_next line 31, col 5 to line 38, col 31 of module ViewMap_TTrace_2000000000_tlc2_tool_ViewMapTest_TTraceTest>"));
+			Collections.nCopies(7, "<_next line 33, col 5 to line 41, col 31 of module ViewMapTestTTrace>"));
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
-
-		assertUncovered("line 91, col 60 to line 91, col 73 of module ViewMap: 0");
 	}
 }

@@ -69,7 +69,7 @@ public class ErrorTraceConstructionTest_TTraceTest extends TTraceModelCheckerTes
 		expectedTrace.add("/\\ x = 0\n/\\ y = 7");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		assertBackToState(4, "<_next line 32, col 5 to line 39, col 29 of module "+getModuleName()+">");
+		assertBackToState(4, "<_next line 32, col 5 to line 40, col 29 of module "+getModuleName()+">");
 
 	assertZeroUncovered();
 	}

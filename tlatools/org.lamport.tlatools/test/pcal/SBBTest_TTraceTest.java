@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -45,25 +44,12 @@ public class SBBTest_TTraceTest extends TTraceModelCheckerTestCase {
 		super(SBBTest.class, "pcal", ExitStatus.VIOLATION_SAFETY);
 	}
 
-    /*
-	 * Test fails because the value of the variable publishedbuffers changes from
-	 * the initial state to the next-state relation. This causes TLC to fail with an
-	 * evaluation error when the (generated) invariant is evaluated on the initial
-	 * state.  One hack would be to prepend the conjunct 
-	 * 
-	 * 		TLCGet("level") = Len(_TETrace)
-	 * 
-	 * to the generated invariant.  That way, TLC won't evaluate the other conjuncts
-	 * on inv until the error state.
-	 */
-	
     @Test
-    @Ignore("Ignored until a proper fix for the problem with silly expression mentioned above found")
 	public void testSpec() {
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3126", "1617", "328"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "15", "15", "0"));
 		assertEquals(15, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

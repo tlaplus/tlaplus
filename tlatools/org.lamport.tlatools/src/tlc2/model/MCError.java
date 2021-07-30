@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import tlc2.value.impl.SetEnumValue;
+import tlc2.value.impl.ValueVec;
 import util.TLAConstants;
 
 /**
@@ -133,5 +135,22 @@ public class MCError {
 			return false;
 		}
 		return this.states.get(this.states.size() - 1).isBackToState();
+	}
+	
+	/**
+	 * The same state or states may appear multiple times in a (liveness) trace. For
+	 * example, a trace could be s -> t -> s -> u with u closing the lasso back to
+	 * the *first* s. (trace violates e.g. a property s.t. <>[]t \/ <>[]u. In other
+	 * words, t and u are mutually exclusive).
+	 */
+	public boolean isLassoWithDuplicates() {
+		if (isLasso()) {
+			final ValueVec valueVec = new ValueVec();
+			for (int i = 0; i < states.size() - 1; i++) {
+				valueVec.addElement(states.get(i).getRecord());
+			}
+			return this.states.size() != new SetEnumValue(valueVec, false).size();
+		}
+		return false;
 	}
 }

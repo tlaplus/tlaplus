@@ -68,7 +68,7 @@ public class UnsymmetricModelCheckerTestA_TTraceTest extends TTraceModelCheckerT
 		expectedActions.add(isExtendedTLCState()
 				? "<_init line 23, col 5 to line 23, col 24 of module "+getModuleName()+">"
 				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<_next line 27, col 5 to line 32, col 29 of module "+getModuleName()+">");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 29 of module "+getModuleName()+">");
 
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 

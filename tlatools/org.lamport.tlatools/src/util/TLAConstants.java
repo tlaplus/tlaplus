@@ -49,6 +49,7 @@ public final class TLAConstants {
 	    public static final String UNION = "\\union";
 	    public static final String VARIABLE = "VARIABLE";
 	    public static final String ENABLED = "ENABLED";
+	    public static final String VIEW = "VIEW";
 	}
 	
 	public final class LoggingAtoms {
@@ -111,6 +112,7 @@ public final class TLAConstants {
 		public static final String SPEC_TE_NEXT = "_next";
 		public static final String SPEC_TETRACE_LASSO_START = "_TTraceLassoStart";
 		public static final String SPEC_TETRACE_LASSO_END = "_TTraceLassoEnd";
+		public static final String VIEW = "_view";
 	}
 
 	
@@ -153,6 +155,7 @@ public final class TLAConstants {
     public static final String L_SQUARE_BRACKET = "[";
     public static final String R_SQUARE_BRACKET = "]";
     public static final String FALSE = "FALSE";
+    public static final String TRUE = "TRUE";
 
     public static final String INDENTED_CONJUNCTIVE = TLAConstants.INDENT + TLAConstants.TLA_AND + TLAConstants.SPACE;
     public static final String INDENTED_DISJUNCTIVE = TLAConstants.INDENT + TLAConstants.TLA_OR + TLAConstants.SPACE;

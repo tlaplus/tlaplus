@@ -161,6 +161,6 @@ public class OneBitMutexNoSymmetryTest_TTraceTest extends TTraceModelCheckerTest
 						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertBackToState(9, "<_next line 42, col 5 to line 53, col 31 of module "+getModuleName()+">");
+		assertBackToState(9, "<_next line 42, col 5 to line 54, col 31 of module "+getModuleName()+">");
 	}
 }

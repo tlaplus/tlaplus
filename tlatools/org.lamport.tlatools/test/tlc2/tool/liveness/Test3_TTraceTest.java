@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -44,15 +43,11 @@ public class Test3_TTraceTest extends TTraceModelCheckerTestCase {
 		super(Test3.class, ExitStatus.VIOLATION_LIVENESS);
 	}
 	
-    // Every run of this test generates a different trace, but the TE spec should replicate it anyway, 
-	// which it's not happening. The TE spec has the right trace, but the lasso in most of the tests runs
-	// shorter than the original one.
-    @Ignore("https://github.com/tlaplus/tlaplus/pull/588#issuecomment-835524119")
 	@Test
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "3", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "4", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
 		// Assert it has found the temporal violation and also a counter example

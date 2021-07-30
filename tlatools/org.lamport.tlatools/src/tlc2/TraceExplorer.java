@@ -155,7 +155,9 @@ public class TraceExplorer {
 		// First we set all the model values seen, the values will be at the static field ModelValue.mvs.
 		ModelValue.setValues();
 		final Set<String> declaredConstantNames = constants.stream().map(l -> l.get(0)).collect(Collectors.toSet());
-		final Set<ModelValue> reifiedConstants = Set.of(ModelValue.mvs).stream()
+		final Set<ModelValue> reifiedConstants = new HashSet<ModelValue>();
+		reifiedConstants.addAll(Arrays.asList(ModelValue.mvs));
+		reifiedConstants.stream()
 				.filter(m -> !declaredConstantNames.contains(m.toString())).collect(Collectors.toSet());
 
 		/**
@@ -239,8 +241,6 @@ public class TraceExplorer {
 		// A TE spec has to extend Toolbox to have access to _TETrace and _TEPosition
 		// operators.
 		specTEExtendedModules.add(TLAConstants.BuiltInModules.TRACE_EXPRESSIONS);
-		// Adds Json module so we can write a Json output.
-		specTEExtendedModules.add("Json");
 		specTEExtendedModules.add("TLCExt");
 		// EXTEND Naturals for next-state relation:
 		//   _next ==
@@ -250,6 +250,8 @@ public class TraceExplorer {
 		//        /\ x' = _TETrace[j].x
 		//
 		specTEExtendedModules.add("Naturals");
+		// Len(..) operator appearing in _inv (not added by the Toolbox because the Toolbox checks deadlock).
+		specTEExtendedModules.add("Sequences");
 		specTEExtendedModules.addAll(teConstantModuleHashSet);
 				
 		writer.addPrimer(teSpecModuleName, originalSpecName, specTEExtendedModules);		
@@ -267,6 +269,32 @@ public class TraceExplorer {
 		// always write a syntactically correct behavior spec even if trace = <<>>.
 		writer.addInitNextTraceFunction(trace, teSpecModuleName, variables, SPEC_TE_INIT_ID, SPEC_TE_NEXT_ID, results);
 				
+		if (error.isLassoWithDuplicates()) {
+			// The same state or states may appear multiple times in a (liveness) trace. For
+			// example, a trace could be s -> t -> s -> u with u closing the lasso back to
+			// the *first* s. (trace violates e.g. a property s.t. <>[]t \/ <>[]u. In other
+			// words, t and u are mutually exclusive). Unless we add a VIEW to the trace spec
+			// that causes different fingerprints for the  s  states to be calculated, the
+			// trace won't be recreated.  The view is such that the start and end states of
+			// the lasso get the same value.
+			//
+			//   <<vars, IF TLCGet("level") = _TTraceLassoEnd + 1
+			//           THEN _TTraceLassoStart
+			//           ELSE TLCGet("level")>>
+			// 
+			// As an alternative, an auxiliary  _index  variable could be added to every spec 
+			// that gets incremented. This would be the explicit variant of TLCGet("level") above.
+			// However, that has the risk of runaway traces s.t. _index keeps incrementing forever.
+			//
+			//    /\ \/ /\ _index < _TTraceLassoEnd
+			//          /\ _index' = _index + 1
+			//       \/ /\ _index = _TTraceLassoEnd
+			//          /\ _index' = _TTraceLassoStart
+			//    /\ x  = _TETrace[_index].x
+			//    /\ x' = _TETrace[_index'].x
+			writer.addView(String.join(", ", variables));
+		}
+		
 		writer.addFooter();
 		
 		/**

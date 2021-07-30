@@ -65,7 +65,7 @@ public class RandomSubsetTest_TTraceTest extends TTraceModelCheckerTestCase {
 		
 		final TLCStateInfo first = (TLCStateInfo) ((Object[]) actual.get(0))[0];
 		if (isExtendedTLCState()) {
-			assertEquals("<_init line 25, col 5 to line 27, col 24 of module "+getModuleName()+">", first.info);
+			assertEquals("<_init line 27, col 5 to line 29, col 24 of module "+getModuleName()+">", first.info);
 		} else {
 			assertTrue(((String) first.info).startsWith("<Initial predicate>"));
 		}
@@ -82,7 +82,7 @@ public class RandomSubsetTest_TTraceTest extends TTraceModelCheckerTestCase {
 		assertEquals(BoolValue.ValTrue, (IBoolValue) firstState.get(UniqueString.uniqueStringOf("z")));
 		
 		final TLCStateInfo second = (TLCStateInfo) ((Object[]) actual.get(1))[0];
-		assertTrue(((String) second.info).startsWith("<_next line 31, col 5 to line 38, col 29 of module "+getModuleName()+">"));
+		assertTrue(((String) second.info).startsWith("<_next line 33, col 5 to line 41, col 29 of module "+getModuleName()+">"));
 		final Map<UniqueString, IValue> secondState = second.state.getVals();
 		assertEquals(3, secondState.size());
 		// UNCHANGED x,y

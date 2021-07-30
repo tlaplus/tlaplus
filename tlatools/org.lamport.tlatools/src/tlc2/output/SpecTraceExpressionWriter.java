@@ -657,6 +657,22 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		this.tlaBuffer.append(TLAConstants.CR + TLAConstants.INDENT + TLAConstants.R_SQUARE_BRACKET + TLAConstants.CR + TLAConstants.CR);		
 	}
 
+	public void addViewConfig(final String view) {
+		cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.VIEW).append(TLAConstants.CR);
+		cfgBuffer.append(TLAConstants.INDENT).append(view).append(TLAConstants.CR);
+	}
+	
+	public void addView(String vars) {
+		addViewConfig(TLAConstants.TraceExplore.VIEW);
+		
+		tlaBuffer.append(TLAConstants.CR).append(TLAConstants.TraceExplore.VIEW).append(TLAConstants.DEFINES_CR);
+		tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.BEGIN_TUPLE)
+				.append(vars + ", IF TLCGet(\"level\") = " + TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_END
+						+ " + 1 THEN " + TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_START + " ELSE TLCGet(\"level\")")
+				.append(TLAConstants.END_TUPLE);
+		tlaBuffer.append(TLAConstants.CR);
+	}
+
 	public void addFooter() {
 		tlaBuffer.append(getTLAModuleClosingTag());
 	}
@@ -748,8 +764,36 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	
 	    tlaBuffer.append(TLAConstants.CR).append(id).append(TLAConstants.DEFINES_CR);
 	    tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.TLA_NOT).append(TLAConstants.L_PAREN).append(TLAConstants.CR);
-	    tlaBuffer.append(getStateConjunction(finalState)).append(TLAConstants.CR);
-	    tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.R_PAREN);
+	    
+		// The main reason why we generate an invariant compared to the much simpler
+		// deadlock checking is noted in addProperties below (thank you simulation mode).
+		// Another reason is that we want to allow users to be able to amend the te
+		// spec to check the original Init/Next or Spec in place of the generated
+		// _init/_next (to a) quickly check if a spec change addresses the error causing
+		// the error trace, and b) print the original action names). With this variant
+	    // of the te spec, there might no longer be a deadlock (Worker.java doesn't report
+	    // deadlocks if states are excluded from the model due to action- and
+	    // state-constraints).
+	    //
+		// A less important side-effect of checking _inv -formulated as ~(SomeState)- is
+		// that it brings the variable values in the canonical order defined by the
+		// original invariant. Let  x # [ b |-> 42, a |-> 23 ]  be the invariant in the
+	    // original spec.  With deadlock checking, the error trace might report the 
+	    // value in the opposite order:  x = [ a |-> 23, b |-> 42 ].
+	    // 
+	    // An undesired side-effect of checking _inv are occasional silly expressions that
+	    // some might call type mismatches. For example, let the value of the x variable
+	    // above in first state of an error trace be a special "NULL" value and 
+	    // [ b |-> 1, a |-> 2 ] in the other states leading up to the error state. 
+	    // Checking the generated _inv on the initial state would cause TLC to fail with
+	    // the evaluation error stemming from the silly expression
+	    // "NULL" # [ b |-> 42, a |-> 23 ].  Thus, we conjoin  TLCGet("level") # Len(_TETrace)
+	    // to  SomeState  to prevent evaluating silly expressions.  On the upside, this
+	    // asserts the correct error trace should the previously described spec variant
+	    // with the original Init/Next be checked; a trace could be too short if a state
+	    // exluded by the action-constraint violated  SomeState.
+		tlaBuffer.append(getStateConjunction(finalState, "TLCGet(\"level\") = Len(_TETrace)")).append(TLAConstants.CR);
+		tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.R_PAREN);
 	}
 
 	public void addProperties(final List<MCState> trace) {
@@ -776,7 +820,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 			// with the comment above about deadlock checking taking care of it. The
 			// statement is wrong when an error-trace is not the shortest possible trace,
 			// because bfs (run with TE) on such a trace might a) shorten it and b) no
-			// longer deadlocks. This is the possible with traces that can come out of
+			// longer deadlocks. This is possible with traces that come out of TLC's
 			// simulation mode.
 			// Assume any spec and an invariant such as TLCGet("level") < n for some n \in Nat
         	// (larger n increase the probability of a behavior with a sequence of stuttering
@@ -924,15 +968,6 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 
 		tlaBuffer.append(TLAConstants.TraceExplore.SPEC_TE_INIT).append(TLAConstants.DEFINES_CR);
 		
-		// Add INIT identifier from original spec to the beginning of the TE init spec.
-		// If the config spec has `SPECIFICATION`, then this will be empty.
-		final String configInitName = results.getModelConfig().getInit();
-		if (configInitName != null && configInitName != "") {
-			tlaBuffer.append(TLAConstants.INDENTED_CONJUNCTIVE);
-        	tlaBuffer.append(configInitName);
-        	tlaBuffer.append(TLAConstants.CR);
-		}
-
         // variables from spec
 		for (String var : vars) {
             tlaBuffer.append(TLAConstants.INDENTED_CONJUNCTIVE);
@@ -952,15 +987,8 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
          *  Now add the next state relation             *
          ************************************************/
 		if (cfgBuffer != null) {	
-			final String configNextName = results.getModelConfig().getNext();		
 			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.NEXT).append(TLAConstants.CR);
-			// Add NEXT identifier from original spec.
-			// If the config spec has `SPECIFICATION` or it's an invariant, then use `nextId`.
-			if (finalState.isBackToState() || finalState.isStuttering() || configNextName == null || configNextName == "") {
-				cfgBuffer.append(TLAConstants.INDENT).append(nextId).append(TLAConstants.CR);
-			} else {
-				cfgBuffer.append(TLAConstants.INDENT).append(configNextName).append(TLAConstants.CR);
-			}
+			cfgBuffer.append(TLAConstants.INDENT).append(nextId).append(TLAConstants.CR);
 		}		
 		
 		// _next ==
@@ -968,12 +996,16 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 
 		if (trace.size() == 1) {
 			tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE);
-			tlaBuffer.append("FALSE").append(TLAConstants.CR);
+			tlaBuffer.append(TLAConstants.FALSE).append(TLAConstants.CR);
 		} else {
 			tlaBuffer.append(TLAConstants.INDENTED_CONJUNCTIVE).append("\\E i,j \\in DOMAIN _TETrace:")
 					.append(TLAConstants.CR);
-			tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE).append(TLAConstants.TLA_OR).append(" j = i + 1")
+			tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENTED_CONJUNCTIVE).append(TLAConstants.TLA_OR)
+					.append(TLAConstants.SPACE).append(TLAConstants.TLA_AND).append(" j = i + 1")
 					.append(TLAConstants.CR);
+			tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append(TLAConstants.SPACE)
+					.append(TLAConstants.SPACE).append(TLAConstants.INDENTED_CONJUNCTIVE)
+					.append("i = TLCGet(\"level\")").append(TLAConstants.CR);
 			// Back to state?
 			if (finalState.isBackToState()) {
 				// Instead of this disjunct, we could append backToState to the trace function
@@ -1048,6 +1080,33 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
                IN EWD840_EWD840_TETrace!trace
 		   ----
 		 */
+		// This expression has temporal level because of the INSTANCE statement
+		// and the fact that the module  EWD840_TETrace  indirectly extends
+		// the original spec  EWD840.  The tlc2.tool.impl.SymbolNodeValueLookupProvider
+		// over-approximates the level of expressions and cannot figure out that
+		// the  EWD840_TETrace  module is a constant/variable-free spec.
+		// Assuming the specs below, the fact that the expr has temporal level
+		// has the following side effect. The first conjunct of  MyInit  is not
+		// evaluated as part of the initial predicate.  Only the second conjunct,
+		// i.e., the in-lined  Init  gets evaluated.
+		//
+		//   VARIABLES v
+		//   Init == v \in 1..42
+		//   Next == ...
+		//   Spec == Init /\ [][Next]_v
+		//
+		// a te spec:
+		//
+		//   _trace == ...
+		//   MyInit ==
+		//       /\ v = _trace[1].v
+		//       /\ v \in 1..42 \* Init in-lined
+		//
+		// and a config:
+		//
+		//   CONSTANT Init <- MyInit
+		//   SPECIFICATION Spec
+		//
 		tlaBuffer
 				.append(String.format("%s ==%s%sLET %s == INSTANCE %s%s%sIN %s!%s",
 						TLAConstants.TraceExplore.SPEC_TETRACE_TRACE, TLAConstants.CR, TLAConstants.INDENT,
@@ -1091,12 +1150,19 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
      * @return
      */
 	private static String getStateConjunction(final MCState state) {
+		return getStateConjunction(state, null);
+	}
+	
+	private static String getStateConjunction(final MCState state, final String prefixConjunct) {
 		if (state.isBackToState()) {
 			return null;
 		} else if (state.isStuttering()) {
 			return null;
 		} else {
             final StringBuilder formula = new StringBuilder();
+            if (prefixConjunct != null) {
+            	formula.append(prefixConjunct).append(TLAConstants.CR).append(TLAConstants.TLA_AND).append(TLAConstants.CR);
+            }
             final MCVariable[] vars = state.getVariables();
 			for (int i = 0; i < vars.length; i++) {
 				final MCVariable var = vars[i];
