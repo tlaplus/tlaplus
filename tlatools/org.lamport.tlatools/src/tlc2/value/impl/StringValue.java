@@ -10,10 +10,13 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Random;
 
+import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
+import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
@@ -21,7 +24,7 @@ import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
 
-public class StringValue extends Value {
+public class StringValue extends Value implements Applicable, ITupleValue {
   public final UniqueString val;
 
   /* Constructor */
@@ -50,6 +53,17 @@ public class StringValue extends Value {
       if (obj instanceof StringValue) {
         return this.val.compareTo(((StringValue)obj).val);
       }
+      if (obj instanceof Value) {
+    	  Value objVal = (Value) obj;
+    	  Value tmp = objVal.toTuple();
+          if (tmp != null) {
+        	return this.toTuple().compareTo(tmp);
+          }
+          tmp = objVal.toFcnRcd();
+          if (tmp != null) {
+            return this.toFcnRcd().compareTo(tmp);
+          }
+      }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to compare string " + Values.ppr(this.toString()) +
         " with non-string:\n" + Values.ppr(obj.toString()), getSource());
@@ -66,6 +80,17 @@ public class StringValue extends Value {
     try {
       if (obj instanceof StringValue) {
         return this.val.equals(((StringValue)obj).getVal());
+      }
+      if (obj instanceof Value) {
+    	  Value objVal = (Value) obj;
+    	  Value tmp = objVal.toTuple();
+          if (tmp != null) {
+        	return this.toTuple().equals(tmp);
+          }
+          tmp = objVal.toFcnRcd();
+          if (tmp != null) {
+            return this.toFcnRcd().equals(tmp);
+          }
       }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to check equality of string " + Values.ppr(this.toString()) +
@@ -107,32 +132,12 @@ public class StringValue extends Value {
 
   @Override
   public final Value takeExcept(ValueExcept ex) {
-    try {
-      if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to apply EXCEPT construct to the string " +
-        Values.ppr(this.toString()) + ".", getSource());
-      }
-      return ex.value;
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
+    return toTuple().takeExcept(ex); // TODO: maybe check if EXCEPT produces a valid string, which could speed up later computations
   }
 
   @Override
   public final Value takeExcept(ValueExcept[] exs) {
-    try {
-      if (exs.length != 0) {
-        Assert.fail("Attempted to apply EXCEPT construct to the string " +
-        Values.ppr(this.toString()) + ".", getSource());
-      }
-      return this;
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
+	  return toTuple().takeExcept(exs); // TODO: maybe check if EXCEPT produces a valid string, which could speed up later computations
   }
 
   @Override
@@ -143,7 +148,7 @@ public class StringValue extends Value {
   @Override
   public boolean mutates() {
 	  // finalized after construction.
-	  return true;
+	  return true; // TODO shouldn't this be false? 
   }
 
   @Override
@@ -271,24 +276,36 @@ public class StringValue extends Value {
     }
   }
   
+  private Value[] getValues() {
+	try {
+	  Value[] values = new Value[val.length()];
+	  for (int i = 0; i < val.length(); i++) {
+		values[i] = new CharValue(val.toString().charAt(i));
+	  }
+	  return values;
+	} catch (RuntimeException | OutOfMemoryError e) {
+	  if (hasSource()) {
+		throw FingerprintException.getNewHead(this, e);
+	  } else {
+		throw e;
+	  }
+	}
+  }
+  
   @Override
   public final Value toTuple() {
-	  // TODO probably should use try catch
-	  Value[] values = new Value[val.length()];
-	  for (int i = 0; i<val.length(); i++)
-		  values[i] = new CharValue(val.toString().charAt(i));
-	  return new TupleValue(values);
+	return new TupleValue(getValues());
   }
   
   @Override
   public final Value toFcnRcd() {
-	  // TODO is this too lazy?
-	  return toTuple().toFcnRcd();
+	// TODO is this too lazy?
+	return toTuple().toFcnRcd();
   }
 
   @Override
   public final Value toRcd() {
-	  return val.length() == 0 ? RecordValue.EmptyRcd : super.toRcd();
+	return val.length() == 0 ? RecordValue.EmptyRcd : super.toRcd();
   }
 
   /* Same as toString. */
@@ -312,4 +329,83 @@ public class StringValue extends Value {
 		vos.assign(res, index);
 		return res;
 	}
+
+	@Override
+  public final Value getElem(int i) {
+	try {
+      return new CharValue(val.toString().charAt(i)); // no bounds checked as in TupleValue
+    }
+	catch (RuntimeException | OutOfMemoryError e) {
+	  if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	  else { throw e; }
+	}
+  }
+
+	@Override
+  public final IValue[] getElems() {
+	return getValues();
+  }
+
+	@Override
+  public final Value apply(Value arg, int control) {
+	try {
+	  if (!(arg instanceof IntValue)) {
+	    Assert.fail("Attempted to access tuple at a non integral index: " + Values.ppr(arg.toString()), getSource());
+	  }
+	  int idx = ((IntValue)arg).val;
+	  if (idx <= 0 || idx > this.length()) {
+	        Assert.fail("Attempted to access index " + idx + " of string\n" +	
+	        			Values.ppr(this.toString()) + 
+	        			"\nwhich is out of bounds.", getSource());
+	      }
+	  return this.getElem(idx-1);
+	}
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  @Override
+  public final Value apply(Value[] args, int control) {
+	try {
+      if (args.length != 1) {
+        Assert.fail("Attempted to access string with " + args.length + " arguments when it expects 1.", getSource());
+      }
+	  return this.apply(args[0], EvalControl.Clear);
+	} 
+	catch (RuntimeException | OutOfMemoryError e) {
+	  if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	  else { throw e; }
+	}
+  }
+
+	@Override
+  public Value getDomain() throws EvalException {
+	try {
+	  return new IntervalValue(1, this.size());
+	}
+    catch (RuntimeException | OutOfMemoryError e) {
+	  if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	  else { throw e; }
+	}
+  }
+
+  @Override
+  public Value select(Value arg) throws EvalException {    
+	try {
+      if (!(arg instanceof IntValue)) {
+        Assert.fail("Attempted to access string at a non integral index: " + Values.ppr(arg.toString()), getSource());
+      }
+      int idx = ((IntValue)arg).val;
+	  if (idx > 0 && idx <= this.length()) {
+        return this.getElem(idx-1);
+	  }
+	  return null;
+	}
+	catch (RuntimeException | OutOfMemoryError e) {
+	  if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	  else { throw e; }
+	}
+  }
 }

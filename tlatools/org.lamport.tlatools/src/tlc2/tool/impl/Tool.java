@@ -2172,7 +2172,8 @@ public abstract class Tool
               result = fcn.apply(argVal, control);
             }
             else if ((fval instanceof TupleValue) ||
-                     (fval instanceof RecordValue)) {
+                     (fval instanceof RecordValue) ||
+                     (fval instanceof StringValue)) {
               Applicable fcn = (Applicable)fval;
               if (args.length != 2) {
                 Assert.fail("Attempted to evaluate an expression of form f[e1, ... , eN]" +
