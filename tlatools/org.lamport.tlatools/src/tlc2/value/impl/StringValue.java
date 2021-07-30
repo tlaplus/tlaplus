@@ -137,15 +137,7 @@ public class StringValue extends Value {
 
   @Override
   public final int size() {
-    try {
-      Assert.fail("Attempted to compute the number of elements in the string " +
-      Values.ppr(this.toString()) + ".", getSource());
-      return 0;       // make compiler happy
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
+	  return val.length(); // TODO Is this correct? If not, the size definition for function types is also wrong!
   }
 
   @Override
@@ -277,6 +269,26 @@ public class StringValue extends Value {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
+  }
+  
+  @Override
+  public final Value toTuple() {
+	  // TODO probably should use try catch
+	  Value[] values = new Value[val.length()];
+	  for (int i = 0; i<val.length(); i++)
+		  values[i] = new CharValue(val.toString().charAt(i));
+	  return new TupleValue(values);
+  }
+  
+  @Override
+  public final Value toFcnRcd() {
+	  // TODO is this too lazy?
+	  return toTuple().toFcnRcd();
+  }
+
+  @Override
+  public final Value toRcd() {
+	  return val.length() == 0 ? RecordValue.EmptyRcd : super.toRcd();
   }
 
   /* Same as toString. */

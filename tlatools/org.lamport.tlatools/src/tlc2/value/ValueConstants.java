@@ -34,6 +34,7 @@ public interface ValueConstants {
   byte INTERVALVALUE    = USERVALUE + 1;
   byte UNDEFVALUE       = INTERVALVALUE + 1;
   byte LAZYVALUE        = UNDEFVALUE + 1;
-  byte DUMMYVALUE       = LAZYVALUE + 1;
+  byte CHARVALUE        = LAZYVALUE + 1;
+  byte DUMMYVALUE       = CHARVALUE + 1;
 
 }
