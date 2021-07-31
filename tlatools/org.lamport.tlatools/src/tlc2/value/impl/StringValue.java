@@ -119,6 +119,7 @@ public class StringValue extends Value implements Applicable, ITupleValue {
 
   @Override
   public final boolean isFinite() {
+	// TODO: or true? see FcnRcdValue
     try {
       Assert.fail("Attempted to check if the string " + Values.ppr(this.toString()) +
       " is a finite set.", getSource());

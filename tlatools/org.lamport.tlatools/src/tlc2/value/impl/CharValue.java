@@ -14,7 +14,7 @@ public class CharValue extends Value {
 	
 	public final char val;
 	
-	public CharValue(char val) { this.val = val; }
+	public CharValue(char val) { this.val = val; } // TODO maybe make this private and add a cache + gen method?
 
 	@Override
 	public final int compareTo(Object obj) {
