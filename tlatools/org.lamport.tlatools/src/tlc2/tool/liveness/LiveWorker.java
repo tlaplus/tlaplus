@@ -870,7 +870,8 @@ public class LiveWorker implements Callable<Boolean> {
 
 				// Print the prefix in reverse order of previous loop:
 				for (int i = 0; i < states.size() - 1; i++) {
-					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(states.get(i), states.get(i + 1).state));
+					StatePrinter.printInvariantViolationStateTraceState(
+							tool.getLiveness().evalAlias(states.get(i), states.get(i + 1).state));
 				}
 				return states;
 			}
