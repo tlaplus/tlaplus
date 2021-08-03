@@ -47,7 +47,7 @@ public class Test3_TTraceTest extends TTraceModelCheckerTestCase {
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "4", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "7", "4", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
 		// Assert it has found the temporal violation and also a counter example

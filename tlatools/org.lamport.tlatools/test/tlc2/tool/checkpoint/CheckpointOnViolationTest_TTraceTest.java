@@ -46,7 +46,7 @@ public class CheckpointOnViolationTest_TTraceTest extends TTraceModelCheckerTest
 		// ModelChecker has finished and generated the expected amount of states. 
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "7", "7", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "36", "7", "0"));
 		
 		// Check the violation
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

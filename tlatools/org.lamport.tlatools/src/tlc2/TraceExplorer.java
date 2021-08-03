@@ -292,7 +292,10 @@ public class TraceExplorer {
 			//          /\ _index' = _TTraceLassoStart
 			//    /\ x  = _TETrace[_index].x
 			//    /\ x' = _TETrace[_index'].x
-			writer.addView(String.join(", ", variables));
+			writer.addLassoView(String.join(", ", variables));
+		}
+		if (error.isStuttering()) {
+			writer.addStutteringView(String.join(", ", variables));
 		}
 		
 		writer.addFooter();

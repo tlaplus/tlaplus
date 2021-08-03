@@ -153,4 +153,11 @@ public class MCError {
 		}
 		return false;
 	}
+
+	public boolean isStuttering() {
+		if (this.states.isEmpty()) {
+			return false;
+		}
+		return this.states.get(this.states.size() - 1).isStuttering();
+	}
 }

@@ -57,7 +57,7 @@ public class LoopTestForcedPartial_TTraceTest extends TTraceModelCheckerTestCase
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1", "1", "0"));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 

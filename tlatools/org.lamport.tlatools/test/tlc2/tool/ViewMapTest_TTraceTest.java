@@ -58,15 +58,21 @@ public class ViewMapTest_TTraceTest extends TTraceModelCheckerTestCase {
 		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, c2}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
 		expectedTrace.add("/\\ buffer = <<\"d\">>\n/\\ waitset = {c2}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
 		expectedTrace.add("/\\ buffer = <<\"d\">>\n/\\ waitset = {c2, p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
-		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
-		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
-		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, c2, p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {c1, p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
+		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {c1, c2, p1}\n/\\ pc = (c1 :> \"lbc\" @@ c2 :> \"lbc\" @@ p1 :> \"lbp\")");
 		final List<String> expectedActions = new ArrayList<>();
 		expectedActions.add(isExtendedTLCState()
-				? "<_init line 27, col 5 to line 29, col 26 of module ViewMapTestTTrace>"
+				? "<Init line 53, col 9 to line 56, col 63 of module ViewMap>"
 				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.addAll(
-			Collections.nCopies(7, "<_next line 33, col 5 to line 41, col 31 of module ViewMapTestTTrace>"));
+		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbp line 58, col 14 to line 69, col 60 of module ViewMap>");
+		expectedActions.add("<lbp line 58, col 14 to line 69, col 60 of module ViewMap>");
+		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 	}
 }

@@ -50,14 +50,12 @@ public class CodePlexBug08EWD840FL4Test_TTraceTest extends TTraceModelCheckerTes
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "2", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11140", "1025", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-		
-		assertNodeAndPtrSizes(52L, 32L);
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
