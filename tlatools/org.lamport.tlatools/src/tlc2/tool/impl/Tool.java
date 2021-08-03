@@ -1517,6 +1517,13 @@ public abstract class Tool
 		}
 		// see getState(..)
 		IdThread.setCurrentState(current);
+		
+		// See asserts in tlc2.debug.TLCActionStackFrame.TLCActionStackFrame(TLCStackFrame, SemanticNode, Context, Tool, TLCState, Action, TLCState, RuntimeException)
+		if (successor.getLevel() != current.getLevel()) {
+			// Calling setPrecessor when the levels are equal would increase the level of
+			// successor.
+			successor.setPredecessor(current);
+		}
 
 		try {
 			final TLCState alias = eval(getAliasSpec(), Context.Empty, current, successor, EvalControl.Clear).toState();
@@ -1538,6 +1545,15 @@ public abstract class Tool
 		
 		// see getState(..)
 		IdThread.setCurrentState(current.state);
+
+		// See asserts in
+		// tlc2.debug.TLCActionStackFrame.TLCActionStackFrame(TLCStackFrame,
+		// SemanticNode, Context, Tool, TLCState, Action, TLCState, RuntimeException)
+		if (successor.getLevel() != current.state.getLevel()) {
+			// Calling setPrecessor when the levels are equal would increase the level of
+			// successor.
+			successor.setPredecessor(current);
+		}
 
 		try {
 			final TLCState alias = eval(getAliasSpec(), Context.Empty, current.state, successor, EvalControl.Clear).toState();

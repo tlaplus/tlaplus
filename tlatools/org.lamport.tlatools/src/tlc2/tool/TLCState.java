@@ -124,6 +124,10 @@ public abstract class TLCState implements Cloneable, Serializable {
 	  return res;
   }
 
+  public TLCState setPredecessor(final TLCStateInfo predecessor) {
+	  return setPredecessor(predecessor.getOriginalState());
+  }
+
   public TLCState setPredecessor(final TLCState predecessor) {
 	  // This method only keeps the level instead of the predecessor, because a) we
 	  // don't need the predecessor and b) keeping predecessors would mean that we
