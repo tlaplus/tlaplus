@@ -93,7 +93,7 @@ jobs:
       ## Run TLC tests.
       ##
     - name: Run TLC tests
-      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test test
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dtest.halt=true compile compile-test test
 
       ##
       ## Build TLC and Toolbox (logger reduces verbosity).
