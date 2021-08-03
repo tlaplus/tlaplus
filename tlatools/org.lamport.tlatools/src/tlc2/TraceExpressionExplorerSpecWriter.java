@@ -119,9 +119,12 @@ public class TraceExpressionExplorerSpecWriter extends AbstractSpecWriter {
 		tlaBuffer.append(TLAConstants.CR).append(TLAConstants.CR);
 	}
 	
+    static final String SPEC_TE_INIT_ID = "_SpecTEInit";
+    static final String SPEC_TE_NEXT_ID = "_SpecTENext";
+	
 	private void createInitNextWithExpressions() {
 		final StringBuilder initConjunction = new StringBuilder(TLAConstants.INDENTED_CONJUNCTIVE);
-		initConjunction.append(TraceExplorer.SPEC_TE_INIT_ID).append(TLAConstants.CR);
+		initConjunction.append(SPEC_TE_INIT_ID).append(TLAConstants.CR);
 		addExpressionsToBuffer(initConjunction, false);
 		
 		final List<String[]> initContent
@@ -130,7 +133,7 @@ public class TraceExpressionExplorerSpecWriter extends AbstractSpecWriter {
 		
 		
 		final StringBuilder nextConjunction = new StringBuilder(TLAConstants.INDENTED_CONJUNCTIVE);
-		nextConjunction.append(TraceExplorer.SPEC_TE_NEXT_ID).append(TLAConstants.CR);
+		nextConjunction.append(SPEC_TE_NEXT_ID).append(TLAConstants.CR);
 		addExpressionsToBuffer(nextConjunction, true);
 
 		final List<String[]> nextContent

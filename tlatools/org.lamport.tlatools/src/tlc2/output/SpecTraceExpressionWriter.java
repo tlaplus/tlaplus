@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import tlc2.input.MCParserResults;
 import tlc2.model.Assignment;
 import tlc2.model.Formula;
 import tlc2.model.MCState;
@@ -956,7 +955,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		addInitNext(trace, null, initId, nextId, actionConstraintId, nextSubActionBasename);
 	}
 
-	public void addInitNextTraceFunction(final List<MCState> trace, final String teSpecModuleName, final List<String> vars, final String _initId, String _nextId, MCParserResults results) {
+	public void addInitNextTraceFunction(final List<MCState> trace, final String teSpecModuleName, final List<String> vars, ModelConfig modelConfig) {
 		/*******************************************************
          * Add the init definition.                            *
          *******************************************************/
@@ -1010,7 +1009,6 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 			if (finalState.isBackToState()) {
 				// Instead of this disjunct, we could append backToState to the trace function
 				// (_TETrace). Len(_TETrace) would however be off by one.
-				MCState backToState = trace.get(finalState.getStateNumber() - 1);
 				tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.INDENT).append("   ")
 						.append(TLAConstants.TLA_OR).append(TLAConstants.SPACE).append(TLAConstants.TLA_AND)						
 						// `_TTraceLassoEnd` is a constant which contains the last state of the lasso.
