@@ -632,7 +632,7 @@ public abstract class AbstractChecker
 	}
 
 	public final Value getConfig() {
-		final UniqueString[] n = new UniqueString[5];
+		final UniqueString[] n = new UniqueString[6];
 		final Value[] v = new Value[n.length];
 		n[0] = TLCGetSet.MODE;
 		v[0] = new StringValue("bfs");
@@ -649,6 +649,9 @@ public abstract class AbstractChecker
 		n[4] = TLCGetSet.FINGERPRINT;
 		v[4] = new StringValue(Long.toString(FP64.getIrredPoly()));
 
+		n[5] = TLCGetSet.INSTALL;
+		v[5] = new StringValue(TLCGlobals.getInstallLocation());
+		
 		return new RecordValue(n, v, false);
 	}
 

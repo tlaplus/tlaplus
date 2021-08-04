@@ -80,6 +80,7 @@ public class TLCGetSet implements ValueConstants {
 	private static final UniqueString CONFIG = UniqueString.uniqueStringOf("config");
 	private static final UniqueString SPEC = UniqueString.uniqueStringOf("spec");
 	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
+	public static final UniqueString INSTALL = UniqueString.uniqueStringOf("install");
 
 	public static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
 	public static final UniqueString DEADLOCK = UniqueString.uniqueStringOf("deadlock");

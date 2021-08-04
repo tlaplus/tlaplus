@@ -786,7 +786,7 @@ public class Simulator {
 	}
 
 	public final Value getConfig() {
-		final UniqueString[] n = new UniqueString[7];
+		final UniqueString[] n = new UniqueString[8];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.MODE;
@@ -810,6 +810,9 @@ public class Simulator {
 		n[6] = TLCGetSet.WORKER;
 		v[6] = IntValue.gen(numWorkers);
 
+		n[7] = TLCGetSet.INSTALL;
+		v[7] = new StringValue(TLCGlobals.getInstallLocation());
+		
 		return new RecordValue(n, v, false);
 	}
 }

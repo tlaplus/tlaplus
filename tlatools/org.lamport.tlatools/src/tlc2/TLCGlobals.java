@@ -2,6 +2,8 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -245,5 +247,13 @@ public class TLCGlobals
 		} catch (Exception ignore) {
 		}
 		return null;
+	}
+	
+	public static String getInstallLocation() {
+		try {
+			return new File(TLC.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
+		} catch (URISyntaxException e) {
+			return "unknown";
+		}
 	}
 }
