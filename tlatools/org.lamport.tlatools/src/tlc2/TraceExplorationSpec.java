@@ -88,11 +88,9 @@ public class TraceExplorationSpec {
 		this.outputPath.toFile().mkdirs();
 
 		final Path teSpecPath = this.outputPath.resolve(teSpecModuleName + TLAConstants.Files.TLA_EXTENSION);
-		final Path teConfigPath = this.outputPath.resolve(teSpecModuleName + TLAConstants.Files.CONFIG_EXTENSION);
-		try (OutputStream tlaStream = new FileOutputStream(teSpecPath.toFile());
-				OutputStream cfgStream = new FileOutputStream(teConfigPath.toFile());) {
+		try (OutputStream tlaStream = new FileOutputStream(teSpecPath.toFile());) {
 			writeSpecTEStreams(teSpecModuleName, originalModuleName, specInfo.getModelConfig(), variables, errorTrace,
-					specInfo, tlaStream, cfgStream);
+					specInfo, tlaStream);
 			MP.printMessage(EC.TLC_TE_SPEC_GENERATION_COMPLETE, teSpecPath.toString());
 		} catch (SecurityException | IOException e) {
 			MP.printMessage(EC.TLC_TE_SPEC_GENERATION_ERROR, e.getMessage());
@@ -101,7 +99,7 @@ public class TraceExplorationSpec {
 
 	private void writeSpecTEStreams(final String teSpecModuleName, final String originalSpecName,
 			final ModelConfig modelConfig, final List<String> variables, final MCError error, final ITool specInfo,
-			final OutputStream specTETLAOutStream, final OutputStream specTECFGOutStream) throws IOException {
+			final OutputStream specTETLAOutStream) throws IOException {
 
 		final List<MCState> trace = error.getStates();
 
@@ -346,10 +344,12 @@ public class TraceExplorationSpec {
 			writer.append(modelValuesAsConstants).append(TLAConstants.CR);
 		}
 
+		writer.wrapConfig(teSpecModuleName);
+		
 		/**
 		 * Write to streams.
 		 */
-		writer.writeStreams(specTETLAOutStream, specTECFGOutStream);
+		writer.writeStreams(specTETLAOutStream, specTETLAOutStream);
 	}
 
 	public static String teModuleId(Date timestamp) {

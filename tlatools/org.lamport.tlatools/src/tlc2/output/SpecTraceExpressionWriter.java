@@ -1196,4 +1196,15 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		final String idnt = new String(new char[n]).replace("\0", TLAConstants.INDENT);
 		return idnt + String.join(TLAConstants.CR + idnt, s.split(TLAConstants.CR));
 	}
+
+	public void wrapConfig(String moduleFilename) {
+		// Header
+		final StringBuilder buffer = new StringBuilder();
+		buffer.append("\n").append(TLAConstants.SEP).append(' ').append("CONFIG").append(' ');
+		buffer.append(moduleFilename).append(' ').append(TLAConstants.SEP).append('\n');
+		cfgBuffer.insert(0, buffer);
+		
+		// Footer
+		cfgBuffer.append(getTLAModuleClosingTag());
+	}
 }

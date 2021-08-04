@@ -28,6 +28,8 @@ package tlc2.tool.liveness;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.junit.Assume;
 import org.junit.Before;
@@ -59,19 +61,21 @@ public abstract class TTraceModelCheckerTestCase extends ModelCheckerTestCase {
 	}
 	
 	public TTraceModelCheckerTestCase(final Class<?> clazz, final String path, final int exitStatus) {
-		super(getSpecFileName(clazz), GEN_SPEC_PATH, exitStatus);
+		super(getSpecFileName(clazz), GEN_SPEC_PATH, new String[] {"-config", getSpecFileName(clazz)}, exitStatus);
 		this.clazz = clazz;
 		this.specPath = BASE_PATH + path;
 	}
 
 	public TTraceModelCheckerTestCase(final Class<?> clazz, final int exitStatus) {
-		super(getSpecFileName(clazz), GEN_SPEC_PATH, exitStatus);
+		super(getSpecFileName(clazz), GEN_SPEC_PATH, new String[] {"-config", getSpecFileName(clazz)}, exitStatus);
 		this.clazz = clazz;
 		this.specPath = BASE_PATH;
 	}
 
 	public TTraceModelCheckerTestCase(final Class<?> clazz, final String[] extraArgs, final int exitStatus) {
-		super(getSpecFileName(clazz), GEN_SPEC_PATH, extraArgs, exitStatus);
+		super(getSpecFileName(clazz), GEN_SPEC_PATH, Stream
+				.concat(Arrays.stream(new String[] { "-config", getSpecFileName(clazz) }), Arrays.stream(extraArgs))
+				.toArray(String[]::new), exitStatus);
 		this.clazz = clazz;
 		this.specPath = BASE_PATH;
 	}

@@ -49,7 +49,7 @@ public class TraceExpressionSpecDeadlockTest extends TraceExpressionSpecTest {
 	private static final String TE_SPEC_TEST = "TESpecDeadlockTest";
 
 	public TraceExpressionSpecDeadlockTest() {
-		super(TE_SPEC_TEST, "TESpecDeadlockTest.cfg", "-modelcheck", EC.ExitStatus.VIOLATION_DEADLOCK);
+		super(TE_SPEC_TEST, "TESpecDeadlockTest", "-modelcheck", EC.ExitStatus.VIOLATION_DEADLOCK);
 	}
 
 	@Override
