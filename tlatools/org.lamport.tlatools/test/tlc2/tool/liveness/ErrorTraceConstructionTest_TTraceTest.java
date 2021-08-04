@@ -54,6 +54,8 @@ public class ErrorTraceConstructionTest_TTraceTest extends TTraceModelCheckerTes
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
+		assertNodeAndPtrSizes(240, 128L);
+	
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(4);
@@ -67,7 +69,7 @@ public class ErrorTraceConstructionTest_TTraceTest extends TTraceModelCheckerTes
 		expectedTrace.add("/\\ x = 0\n/\\ y = 7");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		assertBackToState(4, "<N7 line 32, col 7 to line 34, col 19 of module ErrorTraceConstruction>");
+		assertBackToState(4, "<_next line 32, col 5 to line 40, col 29 of module "+getModuleName()+">");
 
 	assertZeroUncovered();
 	}

@@ -66,13 +66,9 @@ public class DepthFirstDieHardTest_TTraceTest extends TTraceModelCheckerTestCase
 		expectedTrace.add("/\\ action = \"pour big to small\"\n/\\ smallBucket = 3\n/\\ bigBucket = 4\n/\\ water_to_pour = 1");
 
         final List<String> expectedActions = new ArrayList<>();
-		expectedActions.add("<Init line 52, col 9 to line 56, col 28 of module DieHard>");
-		expectedActions.add("<FixWater line 58, col 16 to line 60, col 58 of module DieHard>");
-		expectedActions.add("<FixWater line 70, col 16 to line 73, col 57 of module DieHard>");
-		expectedActions.add("<FixWater line 67, col 16 to line 69, col 56 of module DieHard>");
-		expectedActions.add("<FixWater line 70, col 16 to line 73, col 57 of module DieHard>");
-		expectedActions.add("<FixWater line 58, col 16 to line 60, col 58 of module DieHard>");
-		expectedActions.add("<FixWater line 70, col 16 to line 73, col 57 of module DieHard>");
+		expectedActions.add("<_init line 29, col 5 to line 32, col 48 of module " + getModuleName() + ">");
+		expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1,
+				"<_next line 36, col 5 to line 46, col 53 of module " + getModuleName() + ">"));
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		assertZeroUncovered();
 	}

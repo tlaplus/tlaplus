@@ -662,22 +662,15 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 		cfgBuffer.append(TLAConstants.INDENT).append(view).append(TLAConstants.CR);
 	}
 	
-	private void addView0(final String vars, final String level) {
+	public void addView(String vars) {
 		addViewConfig(TLAConstants.TraceExplore.VIEW);
 		
 		tlaBuffer.append(TLAConstants.CR).append(TLAConstants.TraceExplore.VIEW).append(TLAConstants.DEFINES_CR);
-		tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.BEGIN_TUPLE).append(vars + level)
+		tlaBuffer.append(TLAConstants.INDENT).append(TLAConstants.BEGIN_TUPLE)
+				.append(vars + ", IF TLCGet(\"level\") = " + TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_END
+						+ " + 1 THEN " + TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_START + " ELSE TLCGet(\"level\")")
 				.append(TLAConstants.END_TUPLE);
 		tlaBuffer.append(TLAConstants.CR);
-	}
-	
-	public void addLassoView(String vars) {
-		addView0(vars, ", IF TLCGet(\"level\") = " + TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_END
-				+ " + 1 THEN " + TLAConstants.TraceExplore.SPEC_TETRACE_LASSO_START + " ELSE TLCGet(\"level\")");
-	}
-	
-	public void addStutteringView(String vars) {
-		addView0(vars, ", TLCGet(\"level\")");
 	}
 
 	public void addFooter() {
@@ -964,22 +957,10 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
 	}
 
 	public void addInitNextTraceFunction(final List<MCState> trace, final String teSpecModuleName, final List<String> vars, final String _initId, String _nextId, MCParserResults results) {
-		String spec = results.getModelConfig().getSpec();
-		boolean hasSpec = spec != null && !"".equals(spec);
-		if (hasSpec) {
-			cfgBuffer.append(TLAConstants.CR);
-			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.SPECIFICATION).append(TLAConstants.CR);
-			cfgBuffer.append(TLAConstants.INDENT).append(spec).append(TLAConstants.CR);
-			
-			cfgBuffer.append(TLAConstants.CR);
-			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.ACTION_CONSTRAINT).append(TLAConstants.CR);
-			cfgBuffer.append(TLAConstants.INDENT).append(TLAConstants.TraceExplore.SPEC_TE_NEXT).append(TLAConstants.CR);
-		}
-		
 		/*******************************************************
          * Add the init definition.                            *
          *******************************************************/
-		if (!hasSpec && cfgBuffer != null) {
+		if (cfgBuffer != null) {
 			cfgBuffer.append(TLAConstants.CR);
 			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.INIT).append(TLAConstants.CR);
 			cfgBuffer.append(TLAConstants.INDENT).append(TLAConstants.TraceExplore.SPEC_TE_INIT).append(TLAConstants.CR);
@@ -1005,7 +986,7 @@ public class SpecTraceExpressionWriter extends AbstractSpecWriter {
         /************************************************
          *  Now add the next state relation             *
          ************************************************/
-		if (!hasSpec && cfgBuffer != null) {	
+		if (cfgBuffer != null) {	
 			cfgBuffer.append(TLAConstants.CR).append(TLAConstants.KeyWords.NEXT).append(TLAConstants.CR);
 			cfgBuffer.append(TLAConstants.INDENT).append(nextId).append(TLAConstants.CR);
 		}		

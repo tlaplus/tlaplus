@@ -46,7 +46,7 @@ public abstract class BidirectionalTransitions2C_TTrace extends TTraceModelCheck
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "4", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "4", "0"));
 
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));

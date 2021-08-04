@@ -56,9 +56,9 @@ public class TraceWithLargeSetOfInitialStatesTest_TTraceTest extends TTraceModel
 		expectedTrace.add("/\\ x = 1\n/\\ y = TRUE");
 		final List<String> expectedActions = new ArrayList<>(2);
         expectedActions.add(isExtendedTLCState()
-				? "<Initial predicate line 6, col 25 to line 6, col 33 of module TraceWithLargeSetOfInitialStatesTest>"
+				? "<_init line 25, col 5 to line 26, col 24 of module "+getModuleName()+">"
 				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<Action line 6, col 42 to line 6, col 60 of module TraceWithLargeSetOfInitialStatesTest>");		
+		expectedActions.add("<_next line 30, col 5 to line 36, col 29 of module "+getModuleName()+">");		
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions );
 
 	assertZeroUncovered();

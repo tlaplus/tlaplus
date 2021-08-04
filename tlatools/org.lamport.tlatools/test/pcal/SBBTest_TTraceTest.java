@@ -49,7 +49,7 @@ public class SBBTest_TTraceTest extends TTraceModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "34", "15", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "15", "15", "0"));
 		assertEquals(15, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

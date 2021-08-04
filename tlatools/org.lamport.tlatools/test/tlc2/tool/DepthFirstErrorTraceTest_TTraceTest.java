@@ -65,11 +65,10 @@ public class DepthFirstErrorTraceTest_TTraceTest extends TTraceModelCheckerTestC
 		expectedTrace.add("x = 7");		
         
         final List<String> expectedActions = new ArrayList<>();
-        expectedActions.add("<Initial predicate line 6, col 10 to line 6, col 12 of module DepthFirstErrorTrace>");
+        expectedActions.add("<_init line 23, col 5 to line 23, col 24 of module " + getModuleName() + ">");
         expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1, 
-				"<Action line 6, col 21 to line 6, col 26 of module DepthFirstErrorTrace>"));
+				"<_next line 27, col 5 to line 31, col 29 of module " + getModuleName() + ">"));
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
-		
 		assertZeroUncovered();
 	}
 }

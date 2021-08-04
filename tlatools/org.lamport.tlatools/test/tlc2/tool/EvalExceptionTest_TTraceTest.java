@@ -49,7 +49,7 @@ public class EvalExceptionTest_TTraceTest extends TTraceModelCheckerTestCase {
 	@Test
     public void testSpec() {
         assertTrue(recorder.recorded(EC.TLC_FINISHED));
-        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "10", "6", "0"));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6", "6", "0"));
 
         final List<String> expectedTrace = new ArrayList<String>(6);
 		expectedTrace.add("/\\ num = (-2 :> 0 @@ -1 :> 0)\n"

@@ -47,13 +47,15 @@ public class OneBitMutexNoSymmetryTest_TTraceTest extends TTraceModelCheckerTest
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "50", "23", "0"));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "21", "20", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
+		assertNodeAndPtrSizes(576L, 320L);
+
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(17);
@@ -159,6 +161,6 @@ public class OneBitMutexNoSymmetryTest_TTraceTest extends TTraceModelCheckerTest
 						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertBackToState(9, "<e2 line 66, col 13 to line 74, col 21 of module OneBitMutex>");
+		assertBackToState(9, "<_next line 42, col 5 to line 54, col 31 of module "+getModuleName()+">");
 	}
 }

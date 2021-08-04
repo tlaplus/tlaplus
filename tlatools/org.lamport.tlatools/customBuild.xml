@@ -793,22 +793,6 @@
 					<include name="tlc2/tool/TraceWithLargeSetOfInitialStatesTest_TTraceTest.java" />
 					<include name="tlc2/tool/ViewMapTest.java" />
 					<include name="tlc2/tool/ViewMapTest_TTraceTest.java" />
-                   <!-- The tests below are incompatible with the idea of re-using the original 
-                        init-predicate and next-state relation combined with an action constraint.
-                        The reason is that those trace specs generated all init- and successor-states,
-                        and discard all but those satisfying the action constraint.  This result
-                        in a different order in which random values are generated.
-                        On the other hand, when the init-pred and next-state relation of the trace
-                        spec instead of an action constraint are used, no random values are generated
-                       at all. -->
-                   <exclude name="tlc2/tool/RandomSubsetTest_TTraceTest.java"/>
-                   <exclude name="tlc2/tool/RandomElementSimulationTest_TTraceTest.java"/>
-                   <exclude name="tlc2/tool/RandomElementT4Test_TTraceTest.java"/>
-                   <exclude name="tlc2/tool/RandomElementTest_TTraceTest.java"/>
-                   <exclude name="tlc2/tool/RandomElementXandYTest_TTraceTest.java"/>
-                   <exclude name="tlc2/tool/RandomSubsetATest_TTraceTest.java"/>
-                   <exclude name="tlc2/tool/RandomSubsetBTest_TTraceTest.java"/>
-                   <exclude name="tlc2/tool/RandomSubsetNextTest_TTraceTest.java"/>
 				</fileset>
 			</batchtest>
 		</junit>

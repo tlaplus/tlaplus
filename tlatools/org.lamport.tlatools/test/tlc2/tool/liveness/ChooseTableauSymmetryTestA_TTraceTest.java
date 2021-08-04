@@ -47,7 +47,7 @@ public class ChooseTableauSymmetryTestA_TTraceTest extends TTraceModelCheckerTes
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "5", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6", "5", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		// Assert it has found the temporal violation and also a counter example
@@ -66,16 +66,16 @@ public class ChooseTableauSymmetryTestA_TTraceTest extends TTraceModelCheckerTes
 		
 		final List<String> expectedActions = new ArrayList<>();
 		expectedActions.add(isExtendedTLCState()
-				? "<Init line 5, col 9 to line 5, col 37 of module ChooseTableauSymmetry>"
+				? "<_init line 23, col 5 to line 23, col 28 of module ChooseTableauSymmetryTestATTrace>"
 				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
-		expectedActions.add("<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
-		expectedActions.add("<Busy line 10, col 12 to line 11, col 46 of module ChooseTableauSymmetry>");
-		expectedActions.add("<Done line 13, col 12 to line 14, col 47 of module ChooseTableauSymmetry>");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
+		expectedActions.add("<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
 		
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		
-		assertBackToState(3, "<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
+		assertBackToState(3, "<_next line 27, col 5 to line 33, col 33 of module ChooseTableauSymmetryTestATTrace>");
 
 	assertZeroUncovered();
 	}

@@ -23,6 +23,7 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
+
 package tlc2.tool;
 
 import static org.junit.Assert.assertFalse;
@@ -40,6 +41,8 @@ public class TSnapShotTest extends ModelCheckerTestCase {
 	public TSnapShotTest() {
 		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "TSnapShot", ExitStatus.FAILURE_SAFETY_EVAL);
 	}
+	
+	// See https://github.com/tlaplus/tlaplus/pull/588#issuecomment-821745313.
 	
 	@Test
 	public void testSpec() {
