@@ -23,10 +23,10 @@ EXTENDS FileFieldModule,FiniteSets
 
 <Definition>CTDeed == "CTDeed"</Definition>
 <Definition>
-	DeedCertificates ==
-	  [	type : { CTDeed },
-		deed : Deed
-	  ]
+    DeedCertificates ==
+      [ type : { CTDeed },
+        deed : Deed
+      ]
 </Definition>
 
  *)

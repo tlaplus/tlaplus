@@ -239,10 +239,10 @@ UpdateCreateFileMessageInLogWithNewBorrowedMaxSuffix(fileID,newMaxSuffix)==
              ]
 
 (* When an operation message in the log expires, we discard it from the log.  We also discard the transitive closure
-	of operation messages that are forward-dependent upon the expired operation message.  This invalidates the FileValueTableState
-	state that has been poked by the discarded operation messages, so we must immediately release the leases on all fields
-	poked by by these operation messages, unless there is already such a lease-release message behind that operation message
-	in the log. *)
+    of operation messages that are forward-dependent upon the expired operation message.  This invalidates the FileValueTableState
+    state that has been poked by the discarded operation messages, so we must immediately release the leases on all fields
+    poked by by these operation messages, unless there is already such a lease-release message behind that operation message
+    in the log. *)
 
 (*Defn*)DiscardOperationMessagesFromLog==
   \E keepEntries \in LogEntrySeq,

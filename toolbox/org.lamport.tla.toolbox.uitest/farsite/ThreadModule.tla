@@ -3,21 +3,21 @@
 
 EXTENDS APIComponentsModule,ModeModule,PriorityModule
 (* 
-	This module defines the variable ThreadTable, which is a table of records
-	containing information about threads.  Each record indicates three things:
-	(1) whether the thread is performing computation or blocked waiting for a
-	reply from the filesystem, (2) the most recent request submitted to the
-	filesystem, and (3) the most recent reply returned by the filesystem.
+    This module defines the variable ThreadTable, which is a table of records
+    containing information about threads.  Each record indicates three things:
+    (1) whether the thread is performing computation or blocked waiting for a
+    reply from the filesystem, (2) the most recent request submitted to the
+    filesystem, and (3) the most recent reply returned by the filesystem.
 
-	Each request includes one of seven supported commands, a handle on which to
-	perform the command, and additional command-specific information.  Each
-	reply includes a return code and a command-specific return value.  These
-	structures are defined before the declaration of ThreadTable.
+    Each request includes one of seven supported commands, a handle on which to
+    perform the command, and additional command-specific information.  Each
+    reply includes a return code and a command-specific return value.  These
+    structures are defined before the declaration of ThreadTable.
 
-	The filesystem receives a request by blocking the thread and recording the
-	submitted request.  The filesystem returns a reply by recording the result
-	and unblocking the thread.  Operators to support these actions are defined
-	after the declaration of ThreadTable.
+    The filesystem receives a request by blocking the thread and recording the
+    submitted request.  The filesystem returns a reply by recording the result
+    and unblocking the thread.  Operators to support these actions are defined
+    after the declaration of ThreadTable.
  *)
 
 (* ********** Requests ***************************************************************************************************** *)
@@ -143,21 +143,21 @@ MakeMoveRequest(i_priority,i_childHandle,i_destRootHandle,i_destPath)==
 
 (* 
 <Enum name="ReturnValueType">
-	<Enum-Value name="RVContent"/>
-	<Enum-Value name="RVHandle"/>
-	<Enum-Value name="RVNil"/>
+    <Enum-Value name="RVContent"/>
+    <Enum-Value name="RVHandle"/>
+    <Enum-Value name="RVNil"/>
 </Enum>
 <Struct set="ReturnValue" encodable="true">
-	<Struct-Field name="type" type="ReturnValueType" isKeyField="true" />
-	<Struct set="ReturnValueContent" keyValue="RVContent">
-		<Struct-Field name="content" type="Content" />
-	</Struct>
-	<Struct set="ReturnValueHandle" keyValue="RVHandle">
-		<Struct-Field name="handle" type="Handle" />
-	</Struct>
-	<Struct set="ReturnValueNil" keyValue="RVNil">
-		<Struct-Field name="handle" type="Handle" />
-	</Struct>
+    <Struct-Field name="type" type="ReturnValueType" isKeyField="true" />
+    <Struct set="ReturnValueContent" keyValue="RVContent">
+        <Struct-Field name="content" type="Content" />
+    </Struct>
+    <Struct set="ReturnValueHandle" keyValue="RVHandle">
+        <Struct-Field name="handle" type="Handle" />
+    </Struct>
+    <Struct set="ReturnValueNil" keyValue="RVNil">
+        <Struct-Field name="handle" type="Handle" />
+    </Struct>
 </Struct>
  *)
 

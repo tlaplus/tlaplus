@@ -14,7 +14,7 @@ EXTENDS Naturals, TLC
    \* should print out 10 or 7
 
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-a111e49229d06e75e660ee8777442285
 VARIABLES x, y, pc
 

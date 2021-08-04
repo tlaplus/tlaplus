@@ -16,11 +16,11 @@ EXTENDS HostBaseModule,ServerCreatorPortalModule
 
 (*  following struct a lazy hack for the generated code.
 <Definition>
-	Reservations ==
-	  [	client : NilOr(Client),
-		leader : NilOr(FileID),
-		value : SharedValues
-	  ]
+    Reservations ==
+      [ client : NilOr(Client),
+        leader : NilOr(FileID),
+        value : SharedValues
+      ]
 </Definition>
 TODO should de-pluralize Reservations, and decide how
 to handle SharedValues. Here I'm sloppy and use FileValueType, which is

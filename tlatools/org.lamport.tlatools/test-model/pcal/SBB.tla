@@ -26,7 +26,7 @@ NoBuf == CHOOSE b : b \notin Buf
     process work \in Pid
         variable
             buf = NoBuf;
-	    op = {};
+        op = {};
     begin
       Loop:
         while TRUE do
@@ -34,8 +34,8 @@ NoBuf == CHOOSE b : b \notin Buf
                 op := lop;
             end with;
 
-	    if (op = "Publish") then
-                buf := sb.buf;		    
+        if (op = "Publish") then
+                buf := sb.buf;          
               Publish1:
                 if sb.owner # self /\ sb.owner # NoPid then
                     buf := CHOOSE b \in availablebuffers : TRUE;

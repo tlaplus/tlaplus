@@ -9,7 +9,7 @@ FApply(f, _++_, Identity) ==
   LET fa[S \in SUBSET DOMAIN f] ==
         IF S = { } THEN Identity
                    ELSE LET s == CHOOSE s \in S : TRUE
-                        IN f[s] ++ fa[S \ {s}]		
+                        IN f[s] ++ fa[S \ {s}]      
   IN  fa[DOMAIN f]
 
 

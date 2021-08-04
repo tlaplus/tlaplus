@@ -49,7 +49,7 @@ Max(S) == CHOOSE i \in S : \A j \in S : i \geq j
   end algorithm
 
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-23d3f8a2c70b06b61c3d312c6981bc33
 CONSTANT defaultInitValue
 VARIABLES A, Uns, new, next, pc, stack, parg

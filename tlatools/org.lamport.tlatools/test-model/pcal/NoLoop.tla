@@ -10,7 +10,7 @@ EXTENDS Sequences, Naturals, TLC
               when Print ( x , TRUE );
     end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-688f592294a3ad1b9996ea0f884f9746
 VARIABLES x, y, pc
 

@@ -22,7 +22,7 @@ EXTENDS Sequences, Naturals, TLC
 
 
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-deb6c76a28ce9358817b0dff2194ebab
 VARIABLES sum, pc, stack
 

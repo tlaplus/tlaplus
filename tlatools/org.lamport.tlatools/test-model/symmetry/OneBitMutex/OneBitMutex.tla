@@ -4,38 +4,38 @@ CONSTANT Procs
 
 (***************************************************************************
 --algorithm OneBitMutex
-	{ 
-		variable x = [i \in Procs |-> FALSE];
-		fair process (p \in Procs)
-			variables unchecked = {};
-			other \in Procs ;
-			{ 
-				ncs:- while (TRUE)
-				{
-				e1: x[self] := TRUE ;
-					unchecked := Procs \ {self};
-				e2: while (unchecked # {})
-					    {
-						with (i \in unchecked) { other := i } ;
-						unchecked := unchecked \ {other};
-					e3: if (x[other])
-						{ 
-						  	if (TRUE) \* Changed from "self > other" to "TRUE"
-							{ 
-							e4: x[self] := FALSE;
-							e5: await ~x[other];
-								goto e1;
-							}
-						    else
-						    { 
-							e6: await ~x[other];
-							}
-						};
-					} ;
-				cs: skip;
-				f: x[self] := FALSE
-			}
-	}
+    { 
+        variable x = [i \in Procs |-> FALSE];
+        fair process (p \in Procs)
+            variables unchecked = {};
+            other \in Procs ;
+            { 
+                ncs:- while (TRUE)
+                {
+                e1: x[self] := TRUE ;
+                    unchecked := Procs \ {self};
+                e2: while (unchecked # {})
+                        {
+                        with (i \in unchecked) { other := i } ;
+                        unchecked := unchecked \ {other};
+                    e3: if (x[other])
+                        { 
+                            if (TRUE) \* Changed from "self > other" to "TRUE"
+                            { 
+                            e4: x[self] := FALSE;
+                            e5: await ~x[other];
+                                goto e1;
+                            }
+                            else
+                            { 
+                            e6: await ~x[other];
+                            }
+                        };
+                    } ;
+                cs: skip;
+                f: x[self] := FALSE
+            }
+    }
 }
  ***************************************************************************)
 
@@ -118,18 +118,18 @@ Spec == /\ Init /\ [][Next]_vars
 
 -----------------------------------------------------------------------------
 TypeOK == /\ pc \in [{0,1} -> {"r", "e1", "e2", "cs"}]
-		  /\ x \in [{0,1} -> BOOLEAN]
+          /\ x \in [{0,1} -> BOOLEAN]
 
 Past(i,j) == \/ ((pc[i] = "e2") /\ (j \notin unchecked[i]))
-			 \/ /\ pc[i] \in {"e3", "e6"}
-			    /\ j \notin unchecked[i] \cup {other[i]}
-			 \/ pc[i] = "cs"
+             \/ /\ pc[i] \in {"e3", "e6"}
+                /\ j \notin unchecked[i] \cup {other[i]}
+             \/ pc[i] = "cs"
 
 Inv == /\ TypeOK
-	   /\ \A i \in Procs :
-	   		/\ (pc[i] \in {"e2", "e3", "e6", "cs"}) => x[i]
-       		/\ \A j \in Procs \ {i} :
-						Past(i, j) => ~Past(j, i) /\ x[i]
+       /\ \A i \in Procs :
+            /\ (pc[i] \in {"e2", "e3", "e6", "cs"}) => x[i]
+            /\ \A j \in Procs \ {i} :
+                        Past(i, j) => ~Past(j, i) /\ x[i]
 
 
 (***************************************************************************

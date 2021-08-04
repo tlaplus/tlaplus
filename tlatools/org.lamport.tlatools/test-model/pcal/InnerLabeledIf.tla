@@ -19,7 +19,7 @@ EXTENDS Sequences, Naturals, TLC
           f : print("made it to end") ;
     end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-8d605a76553c67cf0740a3d27b57470b
 VARIABLES x, pc
 

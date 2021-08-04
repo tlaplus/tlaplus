@@ -5,9 +5,9 @@ EXTENDS ServerFileOwnershipModule
 (* ********** Shared-value lease grant partial actions ********************************************************************* *)
 
 (* 
-	The only enabling condition for these partial actions is that no client holds a
-	reservation on the lease.  All other preconditions must be established by the
-	actions that make use of these partial actions.
+    The only enabling condition for these partial actions is that no client holds a
+    reservation on the lease.  All other preconditions must be established by the
+    actions that make use of these partial actions.
  *)
 
 (*Defn*)GrantSVLease(client,fileID,field,rw)==
@@ -162,8 +162,8 @@ EXTENDS ServerFileOwnershipModule
 (* ********** OpenHandle lease grant partial actions *********************************************************************** *)
 
 (* 
-	There are no enabling conditions for these partial actions.  All preconditions
-	must be established by the actions that make use of these partial actions.
+    There are no enabling conditions for these partial actions.  All preconditions
+    must be established by the actions that make use of these partial actions.
  *)
 
 (*Defn*)GrantOpenHandleReadSelfLease(client,fileID)==
@@ -236,8 +236,8 @@ EXTENDS ServerFileOwnershipModule
 (* ********** BonaFide lease grant partial actions ************************************************************************* *)
 
 (* 
-	There are no enabling conditions for these partial actions.  All preconditions
-	must be established by the actions that make use of these partial actions.
+    There are no enabling conditions for these partial actions.  All preconditions
+    must be established by the actions that make use of these partial actions.
  *)
 
 (*Defn*)GrantBonaFideLease(client,fileID)==
@@ -273,8 +273,8 @@ EXTENDS ServerFileOwnershipModule
 (* ********** Mode lease grant partial actions ***************************************************************************** *)
 
 (* 
-	There are no enabling conditions for these partial actions.  All preconditions
-	must be established by the actions that make use of these partial actions.
+    There are no enabling conditions for these partial actions.  All preconditions
+    must be established by the actions that make use of these partial actions.
  *)
 
 (*Defn*)GrantModeWriteSelfLease(client,fileID,mode)==

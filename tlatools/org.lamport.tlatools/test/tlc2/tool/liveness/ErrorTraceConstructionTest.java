@@ -69,7 +69,7 @@ public class ErrorTraceConstructionTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 0\n/\\ y = 7");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
-		assertBackToState(4, "<N7 line 32, col 7 to line 34, col 19 of module ErrorTraceConstruction>");
+		assertBackToState(4, "<N7 line 32, col 7 to line 34, col 15 of module ErrorTraceConstruction>");
 
 	assertZeroUncovered();
 	}

@@ -31,7 +31,7 @@ Adapted from page 8 of the 2nd edition of Robert Sedgewick's "Algorithms".
   end algorithm 
 
 *)
-					
+                    
 GCD(x, y) == CHOOSE i \in (1..x) \cap (1..y) :
                 /\ x % i = 0 
                 /\ y % i = 0

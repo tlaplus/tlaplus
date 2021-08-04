@@ -6,8 +6,8 @@ EXTENDS AbstractComponentsModule,PhysicalComponentsModule,ModeModule
 
 (* 
 <Enum name="PIndividualOrEveryone">
-	<Enum-Value name="PIndividual"/>
-	<Enum-Value name="PEveryone"/>
+    <Enum-Value name="PIndividual"/>
+    <Enum-Value name="PEveryone"/>
 </Enum>
  *)
 
@@ -19,8 +19,8 @@ EXTENDS AbstractComponentsModule,PhysicalComponentsModule,ModeModule
 
 (* 
 <Enum name="PReadOrWrite">
-	<Enum-Value name="PRead"/>
-	<Enum-Value name="PWrite"/>
+    <Enum-Value name="PRead"/>
+    <Enum-Value name="PWrite"/>
 </Enum>
  *)
 
@@ -40,12 +40,12 @@ EXTENDS AbstractComponentsModule,PhysicalComponentsModule,ModeModule
 (*Defn*)BBSelfMap==[Client->HandleSet]
 
 (*  Note: Note that this map data type is identical to the PrivateValue
-	map. That's natural: as JD likes to say, a PrivateValue is
-	"a half of a half of a BlackBox". But we don't want to use the
-	type by name, because the BlackBox.self field would better be
-	called a "PublicValue" (since it's value is visible as the "other"
-	field on other hosts) and we don't want the name to mislead.
-	 *)
+    map. That's natural: as JD likes to say, a PrivateValue is
+    "a half of a half of a BlackBox". But we don't want to use the
+    type by name, because the BlackBox.self field would better be
+    called a "PublicValue" (since it's value is visible as the "other"
+    field on other hosts) and we don't want the name to mislead.
+     *)
 
 (*Defn*)BBOtherMap==[Client->Boolean]
 

@@ -835,12 +835,12 @@ EXTENDS
              /\ WithdrawServerInterlockMessageSet({pfuMsg,pfrMsg})
 
 (* This is an annoying little action.  It doesn't fit the standard pattern at all.
-	Most spurious interlock messages are dealt with in the action that handles
-	reasonable interlock messages, but there was no easy way to do this for this
-	particular message.  The problem stems from the fact that the destination
-	needs two interlock messages before it is willing to do its prepare.
-	We don't really need this operation; we could allow detritus to accumulate in
-	the InterlockMessageBuffer, but it seems like a good idea to include it. *)
+    Most spurious interlock messages are dealt with in the action that handles
+    reasonable interlock messages, but there was no easy way to do this for this
+    particular message.  The problem stems from the fact that the destination
+    needs two interlock messages before it is willing to do its prepare.
+    We don't really need this operation; we could allow detritus to accumulate in
+    the InterlockMessageBuffer, but it seems like a good idea to include it. *)
 
 (*Defn*)DestinationDiscardSpuriousParentFieldUpdatedMessage==
   \E pfuMsg \in ParentFieldUpdatedMessage:

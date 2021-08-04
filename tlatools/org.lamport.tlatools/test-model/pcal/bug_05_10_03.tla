@@ -7,7 +7,7 @@ begin
 start: x.f1:=self;
        assert x.f1 = self;
 end process;
-	
+    
 end algorithm
 
 ------------- MODULE bug_05_10_03 ------------

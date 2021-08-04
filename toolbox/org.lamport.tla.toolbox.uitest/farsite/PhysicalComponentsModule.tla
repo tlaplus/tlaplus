@@ -16,7 +16,7 @@ CONSTANT Server
 CONSTANT Machine
 
 (*  machine identities don't show up in spec, but we need a constant
-	to supply to constructors.  *)
+    to supply to constructors.  *)
 
 CONSTANT DummyMachine
 
@@ -59,11 +59,11 @@ ASSUME Client \intersect Server={}
 (*Defn*)Duration==Nat
 
 (* 
-	The rate of each host's base clock has a relative error no greater than
-	MaxClockRateError.  This value is used by the ClockSync module when
-	advancing host clocks, and it is also used by the GrantPathWarrant
-	partial action in the ServerLeasePartialActions module when computing
-	the expiration time of a path warrant.
+    The rate of each host's base clock has a relative error no greater than
+    MaxClockRateError.  This value is used by the ClockSync module when
+    advancing host clocks, and it is also used by the GrantPathWarrant
+    partial action in the ServerLeasePartialActions module when computing
+    the expiration time of a path warrant.
  *)
 
 CONSTANT MaxClockRateError
@@ -73,13 +73,13 @@ ASSUME MaxClockRateError \in Real
 ASSUME MaxClockRateError \geq 0
 
 (* 
-	When a client creates a new fileID, it can give itself leases on the fileID.
-	If the lease expiration time is no more than ClientLeaseTimeLimit in the
-	future, then the server will accept it.
+    When a client creates a new fileID, it can give itself leases on the fileID.
+    If the lease expiration time is no more than ClientLeaseTimeLimit in the
+    future, then the server will accept it.
 
-	If a client sets a black-box self value to a time that is no more than
-	BBSelfTimeLimit beyond the expiration time of the writeSelf protection,
-	then the server will accept it.
+    If a client sets a black-box self value to a time that is no more than
+    BBSelfTimeLimit beyond the expiration time of the writeSelf protection,
+    then the server will accept it.
  *)
 
 CONSTANT ClientShortLeaseTimeLimit

@@ -5,13 +5,13 @@ VARIABLE arr
 Init == arr = [v \in Val |-> "ready"]
 
 Ready(v) == /\ arr[v] = "ready"
-       	    /\ arr' = [arr EXCEPT ![v]= "busy"]
+            /\ arr' = [arr EXCEPT ![v]= "busy"]
 
 Busy(v) == /\ arr[v] = "busy"
-       	   /\ arr' = [arr EXCEPT ![v]= "done"]
+           /\ arr' = [arr EXCEPT ![v]= "done"]
 
 Done(v) == /\ arr[v] = "done"
-       	   /\ arr' = [arr EXCEPT ![v]= "ready"]
+           /\ arr' = [arr EXCEPT ![v]= "ready"]
 
 Next == \E v \in Val : Ready(v) \/ Busy(v) \/ Done(v)
 

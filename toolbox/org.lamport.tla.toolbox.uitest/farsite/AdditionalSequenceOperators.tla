@@ -3,31 +3,31 @@
 
 EXTENDS Naturals,Sequences,FiniteSets
 (* 
-	The TLA+ Sequences module defines the operators Head and Tail for
-	retrieving the first element of a sequence and all-but-the-first elements
-	of a sequence, respectively.
+    The TLA+ Sequences module defines the operators Head and Tail for
+    retrieving the first element of a sequence and all-but-the-first elements
+    of a sequence, respectively.
 
-	This module provides four operators that slightly generalize the notions
-	of Head and Tail:
-		First returns the first element of a sequence, equivalently to Head.
-		Last returns the last element of a sequence.
-		AllButFirst returns all-but-the-first elements of a sequence,
-			equivalently to Tail.
-		AllButLast returns all-but-the-last elements of a sequence.
+    This module provides four operators that slightly generalize the notions
+    of Head and Tail:
+        First returns the first element of a sequence, equivalently to Head.
+        Last returns the last element of a sequence.
+        AllButFirst returns all-but-the-first elements of a sequence,
+            equivalently to Tail.
+        AllButLast returns all-but-the-last elements of a sequence.
 
-	This module also provides several additional operators on sequences:
+    This module also provides several additional operators on sequences:
 
-	IsElementInSeq is a predicate that is true when the specified value is an element
-	of the specified sequence.
+    IsElementInSeq is a predicate that is true when the specified value is an element
+    of the specified sequence.
 
-	IsSequenceOfSetElements is a predicate that is true when the specified
-	sequence contains all and only elements of the specified set.
+    IsSequenceOfSetElements is a predicate that is true when the specified
+    sequence contains all and only elements of the specified set.
 
-	IsSortedSequenceOfSetElements is a predicate that is true when the
-	IsSequenceOfSetElements is true and the sequence is also sorted in increasing order.
+    IsSortedSequenceOfSetElements is a predicate that is true when the
+    IsSequenceOfSetElements is true and the sequence is also sorted in increasing order.
 
-	DeleteElement produces a sequence by deleting an indicated element from another
-	sequence.
+    DeleteElement produces a sequence by deleting an indicated element from another
+    sequence.
  *)
 
 (*Defn*)Prepend(s,e)== <<e>>\o s

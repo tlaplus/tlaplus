@@ -42,7 +42,7 @@ PermsOf(Arr) ==
                             (i < j) =>  A[i] \leq A[j]
   end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION
 VARIABLES Ainit, A, pc, stack, qlo, qhi, pivot
 

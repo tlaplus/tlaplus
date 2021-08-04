@@ -210,7 +210,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		stackFrames = debugger.stepIn(13);
 		assertEquals(10, stackFrames.length);
-		assertTLCStateFrame(stackFrames[0], 16, 58, 16, 68, MDL, Context.Empty.cons(null, IntValue.ValZero));
+		assertTLCStateFrame(stackFrames[0], 16, 54, 16, 64, MDL, Context.Empty.cons(null, IntValue.ValZero));
 		Variable[] contextVariables = ((TLCStateStackFrame) stackFrames[0]).getVariables();
 		assertNotNull(contextVariables);
 		assertEquals(1, contextVariables.length);
@@ -237,8 +237,8 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		for (int i = 0; i < 6; i++) {
 			stackFrames = debugger.continue_();
 			assertEquals(11, stackFrames.length);
-			assertTLCActionFrame(stackFrames[0], 33, 28, 33, 57, MDL);
-			assertTLCActionFrame(stackFrames[1], 28, 9, 34, 9, MDL);
+			assertTLCActionFrame(stackFrames[0], 33, 20, 33, 49, MDL);
+			assertTLCActionFrame(stackFrames[1], 28, 5, 34, 5, MDL);
 		}
 
 		// Remove all breakpoints and run the spec to completion.

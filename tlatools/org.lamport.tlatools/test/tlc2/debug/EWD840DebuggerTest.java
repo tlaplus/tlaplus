@@ -209,7 +209,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		stackFrames = debugger.stepIn(13);
 		assertEquals(12, stackFrames.length);
-		assertTLCStateFrame(stackFrames[0], 16, 58, 16, 68, MDL, Context.Empty.cons(null, IntValue.ValZero));
+		assertTLCStateFrame(stackFrames[0], 16, 54, 16, 64, MDL, Context.Empty.cons(null, IntValue.ValZero));
 		Variable[] contextVariables = ((TLCStateStackFrame) stackFrames[0]).getVariables();
 		assertNotNull(contextVariables);
 		assertEquals(1, contextVariables.length);
@@ -243,8 +243,8 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		for (int i = 0; i < 5; i++) {
 			stackFrames = debugger.continue_();
 			assertEquals(8, stackFrames.length);
-			assertTLCActionFrame(stackFrames[0], 33, 28, 33, 57, MDL);
-			assertTLCActionFrame(stackFrames[1], 28, 9, 34, 9, MDL);
+			assertTLCActionFrame(stackFrames[0], 33, 20, 33, 49, MDL);
+			assertTLCActionFrame(stackFrames[1], 28, 5, 34, 5, MDL);
 			assertTLCActionFrame(stackFrames[2], 53, 6, 53, 38, RM, context);
 			assertTLCActionFrame(stackFrames[3], 53, 6, 53, 38, RM, context, vars[0], vars[2], vars[3]);
 			assertTLCActionFrame(stackFrames[4], 52, 6, 52, 43, RM, context, vars);
@@ -253,8 +253,8 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		}
 		stackFrames = debugger.continue_();
 		assertEquals(8, stackFrames.length);
-		assertTLCActionFrame(stackFrames[0], 33, 28, 33, 57, MDL);
-		assertTLCActionFrame(stackFrames[1], 28, 9, 34, 9, MDL);
+		assertTLCActionFrame(stackFrames[0], 33, 20, 33, 49, MDL);
+		assertTLCActionFrame(stackFrames[1], 28, 5, 34, 5, MDL);
 		assertTLCActionFrame(stackFrames[2], 53, 6, 53, 38, RM, context);
 		assertTLCActionFrame(stackFrames[3], 53, 6, 53, 38, RM, context, vars[0], vars[2], vars[3]);
 		assertTLCActionFrame(stackFrames[4], 52, 6, 52, 43, RM, context, vars);

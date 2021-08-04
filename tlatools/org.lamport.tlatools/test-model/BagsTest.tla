@@ -47,7 +47,7 @@ ASSUME(~IsABag(y))
 ASSUME(~IsABag(z)) \* With the standard module TLC fails with "Cannot decide if element "a" is element of Nat"
 
 ASSUME(\A bool \in BOOLEAN : ~IsABag(bool))
-ASSUME(~IsABag(C))	
+ASSUME(~IsABag(C))  
 
 \* BagCardinality
 ASSUME(BagCardinality(a) = 0)

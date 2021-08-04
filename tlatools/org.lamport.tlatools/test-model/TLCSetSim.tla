@@ -22,7 +22,7 @@ Next == /\ x' = x + 1
         /\ TLCSet("exit", x = 4223)
 
 Spec == Init /\ [][Next]_x
-	
+    
 ASSUME TLCGet("config").deadlock = FALSE
 ASSUME TLCGet("config").worker = 1
 ASSUME TLCGet("config").aril \in STRING

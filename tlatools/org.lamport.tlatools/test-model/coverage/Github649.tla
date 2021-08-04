@@ -16,5 +16,5 @@ Init == Flip(clock, FALSE, 1)  \* The expression Flip(..) does *not* appear in t
 Next == clock' = ~clock
 
 Constraint ==
-	Flip(clock, ~clock, 2)
+    Flip(clock, ~clock, 2)
 ====

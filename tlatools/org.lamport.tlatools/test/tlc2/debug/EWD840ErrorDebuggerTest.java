@@ -71,9 +71,9 @@ public class EWD840ErrorDebuggerTest extends TLCDebuggerTestCase {
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
 		assertTLCStateFrame(stackFrames[--i], 23, 6, 23, 21, RM, Context.Empty, vars[2]);
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
-		assertTLCStateFrame(stackFrames[--i], 14, 17, 14, 26, MDL, Context.Empty);
+		assertTLCStateFrame(stackFrames[--i], 14, 13, 14, 22, MDL, Context.Empty);
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
-		assertTLCStateFrame(stackFrames[--i], 14, 17, 14, 26, MDL, Context.Empty);
+		assertTLCStateFrame(stackFrames[--i], 14, 13, 14, 22, MDL, Context.Empty);
 
 		// Assert the exception variable.
 		TLCStackFrame stackFrame = (TLCStackFrame) stackFrames[i];
@@ -81,7 +81,7 @@ public class EWD840ErrorDebuggerTest extends TLCDebuggerTestCase {
 		Variable[] expVar = stackFrame.getExceptionAsVariable();
 		assertEquals(1, expVar.length);
 
-		assertEquals("line 14, col 17 to line 14, col 26 of module Error02", expVar[0].getName());
+		assertEquals("line 14, col 13 to line 14, col 22 of module Error02", expVar[0].getName());
 		assertEquals("Attempted to check equality of integer 42 with non-integer:\n\"abc\"", expVar[0].getValue());
 		assertEquals("TLCRuntimeException", expVar[0].getType());
 

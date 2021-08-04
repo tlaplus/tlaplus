@@ -12,6 +12,6 @@ EXTENDS EWD840, TLC, Sequences
 ActionConstraint ==
     LET foo(vv) == SelectSeq([i \in 1..N+1 |-> i - 1], LAMBDA node: node = vv )
     IN \/ foo("abc") = <<tpos>>'
-	   \/ foo("abc") # <<tpos'>>
-	
+       \/ foo("abc") # <<tpos'>>
+    
 =============================================================================

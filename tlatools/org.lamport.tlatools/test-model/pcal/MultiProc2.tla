@@ -30,7 +30,7 @@ EXTENDS Sequences, Naturals, TLC
       end process
     end algorithm 
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-6a3f53faa6a08b14086cf6736a14399e
 VARIABLES x, sum, done, pc, stack, arg, u, y, z
 

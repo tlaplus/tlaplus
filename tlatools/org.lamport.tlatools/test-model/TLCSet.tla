@@ -15,7 +15,7 @@ Init == /\ x = 0
         /\ TLCGet("diameter") = 1
         /\ TLCGet("queue") = 0 \* queue is always empty because spec is a single behavior.
         /\ TLCGet("distinct") = 0
-		\* New world
+        \* New world
         /\ TLCGet("stats").duration >= 0
         /\ TLCGet("stats").queue = 0
         /\ TLCGet("stats").distinct = 0
@@ -29,8 +29,8 @@ Next == /\ x' = x + 1
         /\ TLCGet("queue") = 0 \* queue is always empty because spec is a single behavior.
         /\ TLCGet("distinct") = x'
         /\ TLCGet("generated") = x'
-		/\ TLCGet("diameter") = x' \* As byproduct check that trace is strictly monotonically increasing.
-		\* New world
+        /\ TLCGet("diameter") = x' \* As byproduct check that trace is strictly monotonically increasing.
+        \* New world
         /\ TLCGet("stats").duration >= 0
         /\ TLCGet("stats").queue = 0
         /\ TLCGet("stats").distinct = x' 

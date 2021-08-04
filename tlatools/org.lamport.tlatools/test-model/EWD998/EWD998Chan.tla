@@ -164,7 +164,7 @@ tpos ==
 (* EWD998 with channels refines EWD998 that models channels as sets.       *)
 (***************************************************************************)
 EWD998 == INSTANCE EWD998 WITH  active <- active,
-								token <-
+                                token <-
                                   LET tkn == CHOOSE i \in 1 .. Len(inbox[tpos]):
                                                      inbox[tpos][i].type = "tok"
                                   IN  [pos   |-> tpos, 
@@ -197,6 +197,6 @@ Stop ==
     LET T == INSTANCE TLC IN T!TLCSet("exit", T!TLCGet("distinct") > 500)
 
 ActionConstraint ==
-	counter \in [Nodes -> Int]
+    counter \in [Nodes -> Int]
 
 =============================================================================

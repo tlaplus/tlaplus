@@ -13,7 +13,7 @@ EXTENDS Naturals, Sequences, TLC
     } }
   
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-9c797e1d4e2fc4c259c478fdea1bd5fa
 CONSTANT defaultInitValue
 VARIABLES n, pc

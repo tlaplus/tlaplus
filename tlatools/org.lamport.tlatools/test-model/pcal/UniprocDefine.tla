@@ -16,7 +16,7 @@ EXTENDS Naturals, Sequences, TLC
          minor: assert n = 6 ;
   end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-6a1ac8b08c9ed86b40d0f6e5ef5cbdb0
 CONSTANT defaultInitValue
 VARIABLES n, pc, stack

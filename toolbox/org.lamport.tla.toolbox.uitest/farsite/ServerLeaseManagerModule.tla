@@ -907,13 +907,13 @@ EXTENDS
 (* ********** OpenHandle Read Self Request ********************************************************************************* *)
 
 (* 
-	TODO JD jonh notes that ProcessOpenHandleReadSelfRequestMessage and
-	ProcessBonaFideRequestMessage don't check
-	SomeServerMessageHasPriorityOverMessage. That makes sense; the client doesn't
-	send these messages in response to a user request. But the result
-	is that these requests receive highest priority. That seems to suggest
-	a malicious client could DDOS the server by sending lots of requests
-	for these, scooping other client requests. I guess.
+    TODO JD jonh notes that ProcessOpenHandleReadSelfRequestMessage and
+    ProcessBonaFideRequestMessage don't check
+    SomeServerMessageHasPriorityOverMessage. That makes sense; the client doesn't
+    send these messages in response to a user request. But the result
+    is that these requests receive highest priority. That seems to suggest
+    a malicious client could DDOS the server by sending lots of requests
+    for these, scooping other client requests. I guess.
  *)
 
 (*Defn*)ProcessOpenHandleReadSelfRequestMessage==

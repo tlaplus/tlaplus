@@ -19,7 +19,7 @@ EXTENDS Naturals, Sequences, TLC
 
 *)
 
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-925d38ef233a8a8c33b34bb25ba0c30d
 VARIABLES x, y, n, i, pc, stack, incr, z
 

@@ -13,7 +13,7 @@ EXTENDS Naturals, TLC
            b : assert 2 * x = 80;                                             
      end algorithm                  *)
 
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-50f6f9a537b91874ce70a2eef129eb7f
 VARIABLES x, pc
 

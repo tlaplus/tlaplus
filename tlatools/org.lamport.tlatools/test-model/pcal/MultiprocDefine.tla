@@ -14,7 +14,7 @@ EXTENDS Naturals, Sequences, TLC
   end process
   end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-255a10565612be8265861699149ea328
 CONSTANT defaultInitValue
 VARIABLES n, pc

@@ -47,7 +47,7 @@ Proc == 1..NumProcs  \* The set of processes
 
 
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-3787a86d71fe978e1e68a7e275a515ae
 VARIABLES num, choosing, pc, read, max, nxt
 

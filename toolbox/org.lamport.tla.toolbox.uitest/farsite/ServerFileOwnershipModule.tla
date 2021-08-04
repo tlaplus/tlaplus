@@ -37,10 +37,10 @@ VARIABLE IssuedDeeds
 (* ********** Support Operators ******************************************************************************************** *)
 
 (* When delegating fileID data, we need to ensure that expired leases don't get
-	un-expired due to differences in clocks between the two servers.  The solution
-	is to coerce all expiration times that are earlier than now to BeforeTimeBegins.
-	That way, these times will certainly be earlier than now for whatever value
-	of now the delegate server has. *)
+    un-expired due to differences in clocks between the two servers.  The solution
+    is to coerce all expiration times that are earlier than now to BeforeTimeBegins.
+    That way, these times will certainly be earlier than now for whatever value
+    of now the delegate server has. *)
 
 (*Defn*)CoercedIssuedExpirationTime(expirationTime)==
   IF NowLaterThan(expirationTime)THEN BeforeTimeBegins ELSE expirationTime

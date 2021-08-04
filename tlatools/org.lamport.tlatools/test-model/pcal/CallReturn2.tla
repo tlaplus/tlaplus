@@ -47,7 +47,7 @@ EXTENDS Naturals, Sequences, TLC
        C: call PP(1) ;
   end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-84a5cdf59d68214ad905732a585890ae
 \* Procedure variable x of procedure P at line 13 col 16 changed to x_
 CONSTANT defaultInitValue

@@ -15,7 +15,7 @@ EXTENDS Naturals, Sequences, TLC
      begin A: call P(1)
   end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-1f8e16f0d9c2b45f0271cd3d8415f9b8
 VARIABLES pc, stack, a, x, y
 

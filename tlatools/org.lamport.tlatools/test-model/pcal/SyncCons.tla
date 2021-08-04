@@ -1,9 +1,9 @@
 --algorithm SyncCons
         variables clock = 0;
                   input \in Data;
-		  round = [i \in 1..N |-> 0];
-		  buffer= { };
-		  crashed = { };
+          round = [i \in 1..N |-> 0];
+          buffer= { };
+          crashed = { };
 
 \***** Macros for sending and receiving messages
        macro Send(i, j, msg)
@@ -35,7 +35,7 @@
                   value = IF self = 1
                             THEN input
                             ELSE bot;
-		  recd = { };
+          recd = { };
           begin
 s1:         while round[self] < t + 1 do
               when round[self] = clock;

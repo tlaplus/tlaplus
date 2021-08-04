@@ -37,7 +37,7 @@ EXTENDS Naturals, Sequences, TLC
      end algorithm         
 
 *)
-					
+                    
 \* BEGIN TRANSLATION
 \* Process variable y of process ProcA at line 20 col 17 changed to y_
 \* Process variable z of process ProcB at line 27 col 17 changed to z_

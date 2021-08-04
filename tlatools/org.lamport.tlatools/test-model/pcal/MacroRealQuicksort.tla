@@ -40,7 +40,7 @@ PermsOf(Arr) ==
                 end while
   end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION
 VARIABLES Ainit, A, S, pivot, pc
 

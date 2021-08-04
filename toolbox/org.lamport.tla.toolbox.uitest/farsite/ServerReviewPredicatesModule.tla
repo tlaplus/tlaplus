@@ -3,8 +3,8 @@
 
 EXTENDS ServerLeasePredicatesModule
 (* The predicates in this fileID all have past-tense names to reflect the fact
-	that they refer to a state of the client in the past, particularly at the
-	point in the update sequence that the server is processing.
+    that they refer to a state of the client in the past, particularly at the
+    point in the update sequence that the server is processing.
  *)
 
 (* ********** Label predicates ********************************************************************************************* *)

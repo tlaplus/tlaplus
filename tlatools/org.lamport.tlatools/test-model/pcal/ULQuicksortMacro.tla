@@ -42,7 +42,7 @@ PermsOf(Arr) ==
   begin  (*main :*) call QS(1, Len(A)) ;
   end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-749f221938b5b2dde2ae6c5d6a23511d
 VARIABLES A, returnVal, pc, stack, qlo, qhi, pivot
 

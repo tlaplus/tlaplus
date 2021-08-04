@@ -69,8 +69,8 @@ EXTENDS ServerFileProtectionModule
   }
 
 (* 
-	jonh moved these definitions outside the struct to work around
-	a bug in Sany's emitIdioms mechanisms.
+    jonh moved these definitions outside the struct to work around
+    a bug in Sany's emitIdioms mechanisms.
  *)
 
 (*Defn*)FileValueData==UNION{[fileSet->FileValue]:fileSet \in SUBSET FileID}

@@ -3,11 +3,11 @@
 
 EXTENDS Stubs
 (* 
-	Windows has fairly involved mode semantics for opening files.  There are
-	three types of permissions: read, write, and delete.  When a thread opens
-	or creates a fileID, it indicates which permissions it requires that it be
-	granted, and it indicates which permissions it requires that others not
-	be granted.
+    Windows has fairly involved mode semantics for opening files.  There are
+    three types of permissions: read, write, and delete.  When a thread opens
+    or creates a fileID, it indicates which permissions it requires that it be
+    granted, and it indicates which permissions it requires that others not
+    be granted.
  *)
 
 (*Defn*)ATReadable=="ATReadable"

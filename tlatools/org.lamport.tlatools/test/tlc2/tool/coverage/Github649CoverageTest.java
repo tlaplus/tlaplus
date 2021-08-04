@@ -63,13 +63,13 @@ public class Github649CoverageTest extends AbstractCoverageTest {
 				+ "  ||line 7, col 48 to line 7, col 62 of module Github649: 2\n"
 				+ "  |line 9, col 17 to line 9, col 21 of module Github649: 2\n"
 				+ "<Constraint line 18, col 1 to line 18, col 10 of module Github649>: 3:3\n"
-				+ "  line 19, col 9 to line 19, col 30 of module Github649: 3\n"
+				+ "  line 19, col 5 to line 19, col 26 of module Github649: 3\n"
 				+ "  |line 12, col 18 to line 12, col 60 of module Github649: 9\n"
 				+ "  ||line 12, col 21 to line 12, col 25 of module Github649: 9\n"
 				+ "  ||line 12, col 32 to line 12, col 37 of module Github649: 3\n"
 				+ "  ||line 12, col 44 to line 12, col 60 of module Github649: 6\n"
-				+ "  |line 19, col 14 to line 19, col 18 of module Github649: 3\n"
-				+ "  |line 19, col 21 to line 19, col 26 of module Github649: 3");
+				+ "  |line 19, col 10 to line 19, col 14 of module Github649: 3\n"
+				+ "  |line 19, col 17 to line 19, col 22 of module Github649: 3");
 		assertFalse(recorder.recorded(EC.TLC_COVERAGE_MISMATCH));
     }
 }

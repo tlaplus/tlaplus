@@ -46,7 +46,7 @@ PermsOf(Arr) ==
                             (i < j) =>  A[i] \leq A[j]
   end algorithm
 *)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-9360dabbf03d04fb938a53e6f43a0dc3
 CONSTANT defaultInitValue
 VARIABLES Ainit, A, returnVal, pc, stack, lo, hi, qlo, qhi, pivot

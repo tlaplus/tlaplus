@@ -127,7 +127,7 @@ f | g == [ a \in DOMAIN f |-> [ n \in DOMAIN f[a] |-> f[a][n] \/ g[a][n] ]]
                 (* Store the temporary back into the global flags       *)
                 (* variable.                                            *)
                 (********************************************************)
-	
+    
                 flags := temp;
             end if;
 

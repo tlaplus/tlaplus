@@ -1080,7 +1080,7 @@ Known problems with the translation:
   call Error("15: Procedure " \o <<prcd>> \o 
               called with wrong number of variables") ;
 ***********)
-	
+    
 \***************************** END definition of ExpandSeq ************
   procedure ProcessVars(vrs, addExpr, pvexpr)
     (***********************************************************************)

@@ -167,8 +167,8 @@ EXTENDS ClientPermissionPredicatesModule
      \/ ( \E handle \in Handle:KnowHandleHasModeOnFile(handle,ModeOpposite(mode),fileID))
 
 (* In the following predicate, there is no need to check the other value for
-	the opposite modes, because the server will not grant writeSelf on a mode
-	for which the other value is TRUE. *)
+    the opposite modes, because the server will not grant writeSelf on a mode
+    for which the other value is TRUE. *)
 
 (*Defn*)KnowModeSetCompatible(fileID,modes)==
   \A mode \in modes,handle \in Handle:

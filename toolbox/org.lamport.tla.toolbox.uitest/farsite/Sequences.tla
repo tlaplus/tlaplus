@@ -24,19 +24,19 @@ EXTENDS Stubs,Naturals
 (* 
 
 <Definition>
-	SelectSeq(s, Test(_)) == 
-	LET
-		F[i \in 0..Len(s)] == 
-			IF i = 0
-			THEN
-				\langle \rangle
-			ELSE IF Test(s[i])
-			THEN
-				Append(F[i-1], s[i])
-			ELSE
-				F[i-1]
-	IN
-		F[Len(s)]
+    SelectSeq(s, Test(_)) == 
+    LET
+        F[i \in 0..Len(s)] == 
+            IF i = 0
+            THEN
+                \langle \rangle
+            ELSE IF Test(s[i])
+            THEN
+                Append(F[i-1], s[i])
+            ELSE
+                F[i-1]
+    IN
+        F[Len(s)]
 </Definition>
 
 TODO:  The parser cannot currently handle second-order operators.

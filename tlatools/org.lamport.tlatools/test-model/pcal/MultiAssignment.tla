@@ -20,7 +20,7 @@ EXTENDS Naturals, TLC
   end algorithm 
 
 ****)
-					
+                    
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-922bd40bbb66854d6ea0cf6dbef935cb
 VARIABLES pc, A, x
 
