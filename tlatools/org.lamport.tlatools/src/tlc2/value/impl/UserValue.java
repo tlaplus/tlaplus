@@ -26,7 +26,7 @@ public class UserValue extends Value {
         return this.userObj.compareTo((Value)obj);
       }
       if (!(obj instanceof ModelValue))
-        Assert.fail(1006, "Attempted to compare overridden value " + Values.ppr(this.toString()) +
+        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare overridden value " + Values.ppr(this.toString()) +
         " with non-overridden value:\n" + Values.ppr(obj.toString()), getSource());
       return 1;
     }

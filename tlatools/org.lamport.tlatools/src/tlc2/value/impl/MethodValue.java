@@ -82,7 +82,7 @@ public class MethodValue extends OpValue implements Applicable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      Assert.fail(1006, "Attempted to compare operator " + this.toString() +
+      Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare operator " + this.toString() +
       " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()), getSource());
       return 0;       // make compiler happy
     }
@@ -94,7 +94,7 @@ public class MethodValue extends OpValue implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      Assert.fail(1006, "Attempted to check equality of operator " + this.toString() +
+      Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of operator " + this.toString() +
       " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()), getSource());
       return false;   // make compiler happy
     }

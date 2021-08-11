@@ -131,7 +131,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 			if (fcn == null) {
 				if (obj instanceof ModelValue)
 					return 1;
-				Assert.fail(1006, "Attempted to compare the function " + Values.ppr(this.toString()) + " with the value:\n"
+				Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare the function " + Values.ppr(this.toString()) + " with the value:\n"
 						+ Values.ppr(obj.toString()), getSource());
 			}
 			this.normalize();
@@ -234,7 +234,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       if (fcn == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail(1006, "Attempted to check equality of the function " + Values.ppr(this.toString()) +
+        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of the function " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
@@ -253,7 +253,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
           for (int i = 0; i < fcn.domain.length; i++) {
             Value dElem = fcn.domain[i];
             if (!(dElem instanceof IntValue)) {
-              Assert.fail(1006, "Attempted to compare an integer with non-integer:\n" +
+              Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".", getSource());
             }
             if (((IntValue)dElem).val != (this.intv.low + i)) {
@@ -273,7 +273,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
           for (int i = 0; i < this.domain.length; i++) {
             Value dElem = this.domain[i];
             if (!(dElem instanceof IntValue)) {
-              Assert.fail(1006, "Attempted to compare an integer with non-integer:\n" +
+              Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".", getSource());
             }
             if (((IntValue)dElem).val != (fcn.intv.low + i)) {

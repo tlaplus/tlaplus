@@ -35,6 +35,8 @@ public class REPLTest {
         assertEquals("FALSE", res);
         res = repl.processInput("1 \\in {\"frab\",3,2,1}");
         assertEquals("TRUE", res);
+        res = repl.processInput("1 \\in {\"frab\", \"bar\"}");
+        assertEquals("FALSE", res);
         res = repl.processInput("{1,2} \\X {3,4}");
         assertEquals("{<<1, 3>>, <<1, 4>>, <<2, 3>>, <<2, 4>>}", res);
         res = repl.processInput("{1,2} \\cup {3,4}");

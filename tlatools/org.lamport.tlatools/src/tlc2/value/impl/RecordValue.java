@@ -199,7 +199,7 @@ public class RecordValue extends Value implements Applicable {
       RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue) return 1;
-        Assert.fail(1006, "Attempted to compare record:\n" + Values.ppr(this.toString()) +
+        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare record:\n" + Values.ppr(this.toString()) +
         "\nwith non-record\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
@@ -232,7 +232,7 @@ public class RecordValue extends Value implements Applicable {
       if (rcd == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail(1006, "Attempted to check equality of record:\n" + Values.ppr(this.toString()) +
+        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of record:\n" + Values.ppr(this.toString()) +
         "\nwith non-record\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();

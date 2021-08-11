@@ -94,7 +94,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
-        Assert.fail(1006, "Attempted to compare the set " + Values.ppr(this.toString()) +
+        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare the set " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
@@ -120,7 +120,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail(1006, "Attempted to check equality of the set " + Values.ppr(this.toString()) +
+        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of the set " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();

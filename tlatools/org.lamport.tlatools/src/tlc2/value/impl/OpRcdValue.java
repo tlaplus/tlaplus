@@ -34,7 +34,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      Assert.fail(1006, "Attempted to compare operator " + Values.ppr(this.toString()) +
+      Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare operator " + Values.ppr(this.toString()) +
       " with value:\n" + Values.ppr(obj.toString()), getSource());
       return 0;         // make compiler happy
     }
@@ -46,7 +46,7 @@ public class OpRcdValue extends OpValue implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      Assert.fail(1006, "Attempted to check equality of operator " + Values.ppr(this.toString()) +
+      Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of operator " + Values.ppr(this.toString()) +
       " with value:\n" + Values.ppr(obj.toString()), getSource());
       return false;     // make compiler happy
     }
