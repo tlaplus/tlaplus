@@ -25,6 +25,16 @@ public class REPLTest {
         assertEquals("5", res);
 
         // Set expressions.
+        res = repl.processInput("1 \\in {1,2}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("1 \\in {4,2,1,\"frab\"}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("\"frab\" \\in {4,2,1,\"frab\"}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("\"bar\" \\in {4,2,1,\"frab\"}");
+        assertEquals("FALSE", res);
+        res = repl.processInput("1 \\in {\"frab\",3,2,1}");
+        assertEquals("TRUE", res);
         res = repl.processInput("{1,2} \\X {3,4}");
         assertEquals("{<<1, 3>>, <<1, 4>>, <<2, 3>>, <<2, 4>>}", res);
         res = repl.processInput("{1,2} \\cup {3,4}");

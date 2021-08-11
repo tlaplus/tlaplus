@@ -51,9 +51,8 @@ public class StringValue extends Value {
         return this.val.compareTo(((StringValue)obj).val);
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to compare string " + Values.ppr(this.toString()) +
+        Assert.fail(1006, "Attempted to compare string " + Values.ppr(this.toString()) +
         " with non-string:\n" + Values.ppr(obj.toString()), getSource());
-      }
       return 1;
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -68,7 +67,7 @@ public class StringValue extends Value {
         return this.val.equals(((StringValue)obj).getVal());
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to check equality of string " + Values.ppr(this.toString()) +
+        Assert.fail(1006, "Attempted to check equality of string " + Values.ppr(this.toString()) +
         " with non-string:\n" + Values.ppr(obj.toString()), getSource());
       }
       return ((ModelValue) obj).modelValueEquals(this) ;

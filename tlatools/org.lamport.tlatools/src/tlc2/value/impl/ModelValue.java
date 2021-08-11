@@ -147,7 +147,7 @@ public class ModelValue extends Value implements IModelValue {
                         + Values.ppr(mobj.toString()), getSource());
           }
       }
-      Assert.fail("Attempted to check equality of typed model value "
+      Assert.fail(1006, "Attempted to check equality of typed model value "
                    + Values.ppr(this.toString()) + " and non-model value\n"
                    + Values.ppr(obj.toString()), getSource()) ;
       return false;   // make compiler happy
@@ -166,7 +166,7 @@ public class ModelValue extends Value implements IModelValue {
   public final boolean modelValueEquals(Object obj){
     try {
       if (this.type != 0) {
-      Assert.fail("Attempted to check equality of the typed model value "
+      Assert.fail(1006, "Attempted to check equality of the typed model value "
                    + Values.ppr(this.toString()) + " and the non-model value\n"
                    + Values.ppr(obj.toString()), getSource()) ;
 

@@ -10,6 +10,7 @@ import java.util.Collection;
 
 import tlc2.TLCGlobals;
 import util.WrongInvocationException;
+import util.Assert.TLCRuntimeException;
 
 public class ValueVec implements Cloneable, Serializable {
   private Value [] elementData;
@@ -165,9 +166,17 @@ public class ValueVec implements Cloneable, Serializable {
     }
     else {
       for (int i = 0; i < this.elementCount; i++) {
-	if (this.elementData[i].equals(elem)) {
-	  return true;
-	}
+        try{
+          if (this.elementData[i].equals(elem)) {
+            return true;
+          }
+        }
+        catch(TLCRuntimeException e) {
+          if (e.errorCode != 1006)
+          {
+            throw e;
+          }
+        }
       }
     }
     return false;

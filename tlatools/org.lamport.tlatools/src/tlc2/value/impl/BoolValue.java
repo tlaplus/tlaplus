@@ -43,7 +43,7 @@ public class BoolValue extends Value implements IBoolValue {
         return x - y;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to compare boolean " + Values.ppr(this.toString()) +
+        Assert.fail(1006, "Attempted to compare boolean " + Values.ppr(this.toString()) +
         " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
       }
       return 1;
@@ -60,7 +60,7 @@ public class BoolValue extends Value implements IBoolValue {
         return this.val == ((BoolValue)obj).val;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to compare equality of boolean " + Values.ppr(this.toString()) +
+        Assert.fail(1006, "Attempted to compare equality of boolean " + Values.ppr(this.toString()) +
         " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
       }
       return ((ModelValue) obj).modelValueEquals(this) ;

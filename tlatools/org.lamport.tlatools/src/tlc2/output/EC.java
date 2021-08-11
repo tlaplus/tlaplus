@@ -55,6 +55,7 @@ public interface EC
     public static final int SYSTEM_OUT_OF_MEMORY_TOO_MANY_INIT = 1002;
     public static final int SYSTEM_OUT_OF_MEMORY_LIVENESS = 1003;
     public static final int SYSTEM_STACK_OVERFLOW = 1005;
+    public static final int TYPE_MISMATCH_COMPARE = 1006;
 
     public static final int WRONG_COMMANDLINE_PARAMS_SIMULATOR = 1101;
     public static final int WRONG_COMMANDLINE_PARAMS_TLC = 1102;

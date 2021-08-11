@@ -34,6 +34,15 @@ public class Assert
     	}
 	}
 
+	public static void fail(int errorCode, String reason, SemanticNode expr) throws RuntimeException {
+    	if (expr == null) {
+    		// expr is null if Value#getSource returns null in Tool.
+    		fail(errorCode, reason);
+    	} else {
+    		throw new TLCDetailedRuntimeException(errorCode, reason, expr, Context.Empty);
+    	}
+	}
+
     public static void fail(String reason, SemanticNode expr, Context ctxt) throws RuntimeException
     {
     	if (expr == null) {

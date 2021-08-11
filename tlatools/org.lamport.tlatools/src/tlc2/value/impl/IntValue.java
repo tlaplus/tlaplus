@@ -73,7 +73,8 @@ public class IntValue extends Value {
         return Integer.compare(this.val, ((IntValue)obj).val);
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to compare integer " + Values.ppr(this.toString()) +
+
+        Assert.fail(1006, "Attempted to compare integer " + Values.ppr(this.toString()) +
         " with non-integer:\n" + Values.ppr(obj.toString()), getSource());
       }
       return 1;
@@ -90,7 +91,7 @@ public class IntValue extends Value {
         return this.val == ((IntValue)obj).val;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail("Attempted to check equality of integer " + Values.ppr(this.toString()) +
+        Assert.fail(1006, "Attempted to check equality of integer " + Values.ppr(this.toString()) +
         " with non-integer:\n" + Values.ppr(obj.toString()), getSource());
       }
       return ((ModelValue) obj).modelValueEquals(this);

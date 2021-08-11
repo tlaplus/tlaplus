@@ -80,7 +80,7 @@ public class EvaluatingValue extends OpValue implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      Assert.fail("Attempted to compare operator " + this.toString() +
+      Assert.fail(1006, "Attempted to compare operator " + this.toString() +
       " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()), getSource());
       return 0;       // make compiler happy
     }
@@ -92,7 +92,7 @@ public class EvaluatingValue extends OpValue implements Applicable {
 
   public final boolean equals(Object obj) {
     try {
-      Assert.fail("Attempted to check equality of operator " + this.toString() +
+      Assert.fail(1006, "Attempted to check equality of operator " + this.toString() +
       " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()), getSource());
       return false;   // make compiler happy
     }

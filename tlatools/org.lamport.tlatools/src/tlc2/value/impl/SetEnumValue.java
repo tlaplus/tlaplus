@@ -24,6 +24,7 @@ import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
+import util.Assert.TLCRuntimeException;
 
 @SuppressWarnings("serial")
 public class SetEnumValue extends EnumerableValue
@@ -93,7 +94,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
-        Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
+        Assert.fail(1006, "Attempted to compare the set " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
@@ -119,7 +120,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail("Attempted to check equality of the set " + Values.ppr(this.toString()) +
+        Assert.fail(1006, "Attempted to check equality of the set " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
@@ -145,6 +146,10 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final boolean member(Value elem) {
     try {
       return this.elems.search(elem, this.isNorm);
+    }
+    catch (TLCRuntimeException e) {
+      // try again without sort -- it is probably collection of diff types
+      return this.elems.search(elem, false);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
