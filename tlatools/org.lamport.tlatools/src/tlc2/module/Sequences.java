@@ -133,8 +133,13 @@ public class Sequences extends UserObj implements ValueConstants
         TupleValue seq = (TupleValue) s.toTuple();
         if (seq == null)
         {
-            throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "Append(s, v)", "sequence",
-                    Values.ppr(s.toString()) });
+            // swap if v is a seq
+            seq = (TupleValue) v.toTuple();
+            if (seq == null)
+                throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "Append(s, v)", "sequence",
+                        Values.ppr(s.toString()) });
+            else
+                v = s;
         }
         int len = seq.size();
         Value[] values = new Value[len + 1];

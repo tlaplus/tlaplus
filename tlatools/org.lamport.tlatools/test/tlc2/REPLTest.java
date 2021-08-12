@@ -35,8 +35,8 @@ public class REPLTest {
         // Tuple expressions.
         res = repl.processInput("Append(<<1,2>>, 3)");
         assertEquals("<<1, 2, 3>>", res);
-        res = repl.processInput("Append(3, <<1,2>>)"); // error.
-        assertEquals("", res);
+        res = repl.processInput("Append(3, <<1,2>>)");
+        assertEquals("<<1, 2, 3>>", res);
         res = repl.processInput("Tail(<<1,2,3>>)");
         assertEquals("<<2, 3>>", res);
         res = repl.processInput("Head(<<1,2,3>>)");
