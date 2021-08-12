@@ -39,7 +39,13 @@ public class REPLTest {
         assertEquals("TRUE", res);
         res = repl.processInput("{\"frab\"} \\in {{\"frab\"},{3,4}}");
         assertEquals("TRUE", res);
-        res = repl.processInput("{1,\"frab\"} \\in {{\"frab\",1},{3,4}}");
+        res = repl.processInput("{1,\"frab\"} \\in {{1,\"frab\"},{3,4}}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("{1,\"frab\"} \\in {{3,4}, {1,\"frab\"}}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("{1,\"frab\"} \\in {{\"frab\", 1}}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("{1,\"frab\"} \\in {{3,4}, {\"frab\", 1}}");
         assertEquals("TRUE", res);
         res = repl.processInput("{1,\"frab\"} \\in {{3,4}, {\"frab\",1},{4,8}}");
         assertEquals("TRUE", res);
@@ -51,6 +57,12 @@ public class REPLTest {
         assertEquals("TRUE", res);
         res = repl.processInput("{1,2} \\in {{3,4}, {\"frab\",{2,1},1,{4,8}}, {1,2}}");
         assertEquals("TRUE", res);
+        res = repl.processInput("{1,2} \\subseteq {1,2,3}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("{1,\"frab\",2} \\subseteq {\"b\",1,2,\"frab\",3,5}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("{1,\"frab\",2,4} \\subseteq {\"b\",1,2,\"frab\",3,5}");
+        assertEquals("FALSE", res);
         res = repl.processInput("\"bar\" \\in {4,2,1,\"frab\"}");
         assertEquals("FALSE", res);
         res = repl.processInput("1 \\in {\"frab\",3,2,1}");

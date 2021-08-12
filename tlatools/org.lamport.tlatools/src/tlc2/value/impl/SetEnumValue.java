@@ -31,7 +31,7 @@ import util.Assert.TLCTypeMismatchException;
 public class SetEnumValue extends EnumerableValue
 implements Enumerable, Reducible {
   public ValueVec elems;         // the elements of the set
-  private boolean isNorm;        // normalized?
+  protected boolean isNorm;        // normalized?
 public static final SetEnumValue EmptySet = new SetEnumValue(new ValueVec(0), true);
 public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
 
@@ -95,12 +95,6 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
      see: linear_compare(..);
   */
   private final boolean quadratic_compare(SetEnumValue set){
-    if (this.isNorm && set.isNorm) throw new TLCRuntimeException("fatal: impossible to reach. quadratic_compare is only for not-normalized sets");
-
-    if (this.isNorm ^ set.isNorm) return false;
-
-    // todo: probably need to dedup since normalize failed
-    // is this a req?
     int sz = this.elems.size();
     int cmp = sz - set.elems.size();
     if (cmp != 0) return false;
@@ -132,27 +126,18 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   // best case scenario: single type set that can be normalized: nlogn
   // worst case scenario: mixed type set that can't be normalized: quadratic
   private final int best_effort_normalize_and_compare(SetEnumValue set){
-    // sadly we have to nest try to ensure both sets get a chance to normalize
-    try{
-      try {
-        this.normalize();
-      }
-      catch(Exception e)
-      {
-        set.normalize();
-        throw e;
-      }
-      set.normalize();
+    this.normalize();
+    set.normalize();
+    if (this.isNorm && set.isNorm) {
+      return linear_compare(set);
     }
-    // if normalizing failed due to mismatch types
-    catch(TLCTypeMismatchException e2){
+    else {
+      // if normalizing failed due to mismatch types
       // try slower compare routine
       if (quadratic_compare(set)) return 0;
       // if they are different we cannot judge on order, so throw
       else throw new TLCTypeMismatchException("different and unsortable");
     }
-
-    return linear_compare(set);
   }
 
   @Override
@@ -176,6 +161,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final boolean equals(Object obj) {
     try {
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
+
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
@@ -326,6 +312,13 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
         this.elems.sort(true);   // duplicates eliminated
         this.isNorm = true;
       }
+      return this;
+    }
+    catch (TLCTypeMismatchException e) 
+    {
+      // can't be normalized - no sort for diff types
+      // todo: add dedup stage here? do we care about duplicates
+      this.isNorm = false;
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
