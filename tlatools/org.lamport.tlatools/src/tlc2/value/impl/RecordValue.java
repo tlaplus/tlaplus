@@ -35,6 +35,7 @@ import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
 import util.UniqueString;
+import util.Assert.TLCTypeMismatchException;
 
 public class RecordValue extends Value implements Applicable {
   public final UniqueString[] names;   // the field names
@@ -199,8 +200,8 @@ public class RecordValue extends Value implements Applicable {
       RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
       if (rcd == null) {
         if (obj instanceof ModelValue) return 1;
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare record:\n" + Values.ppr(this.toString()) +
-        "\nwith non-record\n" + Values.ppr(obj.toString()), getSource());
+        throw new TLCTypeMismatchException("Attempted to compare record:\n" + Values.ppr(this.toString()) +
+        "\nwith non-record\n" + Values.ppr(obj.toString()));
       }
       this.normalize();
       rcd.normalize();
@@ -232,8 +233,7 @@ public class RecordValue extends Value implements Applicable {
       if (rcd == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of record:\n" + Values.ppr(this.toString()) +
-        "\nwith non-record\n" + Values.ppr(obj.toString()), getSource());
+        return false;
       }
       this.normalize();
       rcd.normalize();

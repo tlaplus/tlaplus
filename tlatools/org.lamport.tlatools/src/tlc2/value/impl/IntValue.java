@@ -15,6 +15,7 @@ import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
+import util.Assert.TLCTypeMismatchException;
 
 public class IntValue extends Value {
   private static final IntValue[] cache;
@@ -74,8 +75,8 @@ public class IntValue extends Value {
       }
       if (!(obj instanceof ModelValue)) {
 
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare integer " + Values.ppr(this.toString()) +
-        " with non-integer:\n" + Values.ppr(obj.toString()), getSource());
+        throw new TLCTypeMismatchException("Attempted to compare integer " + Values.ppr(this.toString()) +
+        " with non-integer:\n" + Values.ppr(obj.toString()));
       }
       return 1;
     }
@@ -91,8 +92,7 @@ public class IntValue extends Value {
         return this.val == ((IntValue)obj).val;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of integer " + Values.ppr(this.toString()) +
-        " with non-integer:\n" + Values.ppr(obj.toString()), getSource());
+        return false;
       }
       return ((ModelValue) obj).modelValueEquals(this);
     }

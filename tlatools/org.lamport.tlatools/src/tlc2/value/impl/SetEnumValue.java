@@ -25,6 +25,7 @@ import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
 import util.Assert.TLCRuntimeException;
+import util.Assert.TLCTypeMismatchException;
 
 @SuppressWarnings("serial")
 public class SetEnumValue extends EnumerableValue
@@ -88,25 +89,83 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final byte getKind() { return SETENUMVALUE; }
 
+  /* used only as a fallback when normalize fails
+     if normalization fails it means it could not sort,
+     therefore those sets have different types.
+     see: linear_compare(..);
+  */
+  private final boolean quadratic_compare(SetEnumValue set){
+    if (this.isNorm && set.isNorm) throw new TLCRuntimeException("fatal: impossible to reach. quadratic_compare is only for not-normalized sets");
+
+    if (this.isNorm ^ set.isNorm) return false;
+
+    // todo: probably need to dedup since normalize failed
+    // is this a req?
+    int sz = this.elems.size();
+    int cmp = sz - set.elems.size();
+    if (cmp != 0) return false;
+
+    // avoid perf hit, improve repl experience
+    if (sz >= 128) throw new TLCRuntimeException("fatal: quadratic compare is too slow. aborting pre-emptively.");
+
+    boolean result = true;
+    for (int i = 0; i < sz; i++) {
+      result &= this.elems.search(set.elems.elementAt(i), this.isNorm);
+    }
+    return result;
+  }
+
+  private final int linear_compare(SetEnumValue set){
+    if (!(this.isNorm && set.isNorm)) throw new TLCRuntimeException("fatal: linear_compare only works with normalized sets.");
+
+    int sz = this.elems.size();
+    int cmp = sz - set.elems.size();
+    if (cmp != 0) return cmp;
+
+    for (int i = 0; i < sz; i++) {
+      cmp = this.elems.elementAt(i).compareTo(set.elems.elementAt(i));
+      if (cmp != 0) return cmp;
+    }
+    return 0;
+  }
+
+  // best case scenario: single type set that can be normalized: nlogn
+  // worst case scenario: mixed type set that can't be normalized: quadratic
+  private final int best_effort_normalize_and_compare(SetEnumValue set){
+    // sadly we have to nest try to ensure both sets get a chance to normalize
+    try{
+      try {
+        this.normalize();
+      }
+      catch(Exception e)
+      {
+        set.normalize();
+        throw e;
+      }
+      set.normalize();
+    }
+    // if normalizing failed due to mismatch types
+    catch(TLCTypeMismatchException e2){
+      // try slower compare routine
+      if (quadratic_compare(set)) return 0;
+      // if they are different we cannot judge on order, so throw
+      else throw new TLCTypeMismatchException("different and unsortable");
+    }
+
+    return linear_compare(set);
+  }
+
   @Override
   public final int compareTo(Object obj) {
     try {
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
         if (obj instanceof ModelValue) return 1;
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare the set " + Values.ppr(this.toString()) +
-        " with the value:\n" + Values.ppr(obj.toString()), getSource());
+        throw new TLCTypeMismatchException("Attempted to compare the set " + Values.ppr(this.toString()) +
+        " with the value:\n" + Values.ppr(obj.toString()));
       }
-      this.normalize();
-      set.normalize();
-      int sz = this.elems.size();
-      int cmp = sz - set.elems.size();
-      if (cmp != 0) return cmp;
-      for (int i = 0; i < sz; i++) {
-        cmp = this.elems.elementAt(i).compareTo(set.elems.elementAt(i));
-        if (cmp != 0) return cmp;
-      }
-      return 0;
+
+      return best_effort_normalize_and_compare(set);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -120,21 +179,16 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       if (set == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of the set " + Values.ppr(this.toString()) +
-        " with the value:\n" + Values.ppr(obj.toString()), getSource());
-      }
-      this.normalize();
-      set.normalize();
-      int sz = this.elems.size();
-      if (sz != set.elems.size()) {
         return false;
       }
-      for (int i = 0; i < sz; i++) {
-        if (!this.elems.elementAt(i).equals(set.elems.elementAt(i))) {
-          return false;
-        }
+
+      try{
+        if (best_effort_normalize_and_compare(set) == 0) return true;
+        else return false;
       }
-      return true;
+      catch(TLCTypeMismatchException e){
+        return false;
+      }
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

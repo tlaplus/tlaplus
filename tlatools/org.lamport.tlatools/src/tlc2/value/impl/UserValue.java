@@ -10,6 +10,7 @@ import tlc2.tool.FingerprintException;
 import tlc2.value.IValue;
 import tlc2.value.Values;
 import util.Assert;
+import util.Assert.TLCTypeMismatchException;
 
 public class UserValue extends Value {
   public UserObj userObj;
@@ -26,8 +27,8 @@ public class UserValue extends Value {
         return this.userObj.compareTo((Value)obj);
       }
       if (!(obj instanceof ModelValue))
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare overridden value " + Values.ppr(this.toString()) +
-        " with non-overridden value:\n" + Values.ppr(obj.toString()), getSource());
+        throw new TLCTypeMismatchException("Attempted to compare overridden value " + Values.ppr(this.toString()) +
+        " with non-overridden value:\n" + Values.ppr(obj.toString()));
       return 1;
     }
     catch (RuntimeException | OutOfMemoryError e) {

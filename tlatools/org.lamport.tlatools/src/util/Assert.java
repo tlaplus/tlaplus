@@ -210,6 +210,21 @@ public class Assert
 			this.parameters = parameters;
 		}
     }
+
+    @SuppressWarnings("serial")
+    public static class TLCTypeMismatchException extends TLCRuntimeException {
+		public TLCTypeMismatchException(String errorMsg) {
+			super(EC.TYPE_MISMATCH_COMPARE, errorMsg);
+		}
+		
+		public TLCTypeMismatchException(String message, Throwable cause) {
+			super(EC.TYPE_MISMATCH_COMPARE, message, cause);
+		}
+
+		public TLCTypeMismatchException(String[] parameters, String message) {
+			super(EC.TYPE_MISMATCH_COMPARE, parameters, message);
+		}
+    }
     
     @SuppressWarnings("serial")
     public static class TLCDetailedRuntimeException extends TLCRuntimeException {

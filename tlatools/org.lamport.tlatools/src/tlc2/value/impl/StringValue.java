@@ -20,6 +20,7 @@ import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
+import util.Assert.TLCTypeMismatchException;
 
 public class StringValue extends Value {
   public final UniqueString val;
@@ -51,8 +52,8 @@ public class StringValue extends Value {
         return this.val.compareTo(((StringValue)obj).val);
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare string " + Values.ppr(this.toString()) +
-        " with non-string:\n" + Values.ppr(obj.toString()), getSource());
+        throw new TLCTypeMismatchException("Attempted to compare string " + Values.ppr(this.toString()) +
+        " with non-string:\n" + Values.ppr(obj.toString()));
       }
       return 1;
     }
@@ -68,8 +69,7 @@ public class StringValue extends Value {
         return this.val.equals(((StringValue)obj).getVal());
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of string " + Values.ppr(this.toString()) +
-        " with non-string:\n" + Values.ppr(obj.toString()), getSource());
+        return false;
       }
       return ((ModelValue) obj).modelValueEquals(this) ;
     }

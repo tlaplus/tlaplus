@@ -16,6 +16,7 @@ import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
+import util.Assert.TLCTypeMismatchException;
 
 public class BoolValue extends Value implements IBoolValue {
   public boolean val;   // the boolean
@@ -43,8 +44,8 @@ public class BoolValue extends Value implements IBoolValue {
         return x - y;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare boolean " + Values.ppr(this.toString()) +
-        " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
+        throw new TLCTypeMismatchException("Attempted to compare boolean " + Values.ppr(this.toString()) +
+        " with non-boolean:\n" + Values.ppr(obj.toString()));
       }
       return 1;
     }
@@ -60,8 +61,7 @@ public class BoolValue extends Value implements IBoolValue {
         return this.val == ((BoolValue)obj).val;
       }
       if (!(obj instanceof ModelValue)) {
-        Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare equality of boolean " + Values.ppr(this.toString()) +
-        " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
+        return false;
       }
       return ((ModelValue) obj).modelValueEquals(this) ;
     }
