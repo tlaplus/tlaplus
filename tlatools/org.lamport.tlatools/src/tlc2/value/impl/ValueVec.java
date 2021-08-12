@@ -153,15 +153,15 @@ public class ValueVec implements Cloneable, Serializable {
     if (sorted) {
       int cmp = 0, mid = 0, low = 0, high = this.elementCount;
       while (low < high) {
-	mid = (low + high) >> 1;
-  cmp = elem.compareTo(this.elementData[mid]);
-	if (cmp == 0) return true;
-	if (cmp < 0) {
-	  high = mid;
-	}
-	else {
-	  low = mid + 1;
-	}
+        mid = (low + high) >> 1;
+        cmp = elem.compareTo(this.elementData[mid]);
+        if (cmp == 0) return true;
+        if (cmp < 0) {
+          high = mid;
+        }
+        else {
+          low = mid + 1;
+        }
       }
     }
     else {
@@ -171,8 +171,8 @@ public class ValueVec implements Cloneable, Serializable {
             return true;
           }
         }
+        // we ignore type mismatch -> treat as not equal
         catch(TLCTypeMismatchException e) { }
-          // we ignore type mismatch -> treat as not equal
       }
     }
     return false;
