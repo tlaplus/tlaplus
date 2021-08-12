@@ -172,6 +172,7 @@ public class ValueVec implements Cloneable, Serializable {
           }
         }
         catch(TLCRuntimeException e) {
+          // we ignore type mismatch -> treat as not equal
           if (e.errorCode != tlc2.output.EC.TYPE_MISMATCH_COMPARE)
           {
             throw e;

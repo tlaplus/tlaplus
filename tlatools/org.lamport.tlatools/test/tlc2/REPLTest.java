@@ -31,10 +31,18 @@ public class REPLTest {
         assertEquals("TRUE", res);
         res = repl.processInput("\"frab\" \\in {4,2,1,\"frab\"}");
         assertEquals("TRUE", res);
+        res = repl.processInput("\"frab\" \\in {1,2,\"frab\",4}");
+        assertEquals("TRUE", res);
         res = repl.processInput("\"bar\" \\in {4,2,1,\"frab\"}");
         assertEquals("FALSE", res);
         res = repl.processInput("1 \\in {\"frab\",3,2,1}");
         assertEquals("TRUE", res);
+        res = repl.processInput("{} \\in {1, {}}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("{} \\in {1}");
+        assertEquals("FALSE", res);
+        res = repl.processInput("{} \\in {}");
+        assertEquals("FALSE", res);
         res = repl.processInput("1 \\in {\"frab\", \"bar\"}");
         assertEquals("FALSE", res);
         res = repl.processInput("{1,2} \\X {3,4}");

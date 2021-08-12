@@ -147,13 +147,6 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     try {
       return this.elems.search(elem, this.isNorm);
     }
-    catch (TLCRuntimeException e) {
-      if (e.errorCode == tlc2.output.EC.TYPE_MISMATCH_COMPARE){
-        // try again without sort -- it is probably collection of diff types
-        return this.elems.search(elem, false);
-      }
-      throw e;
-    }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
@@ -282,6 +275,8 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
+      // reset isNorm since it failed
+      this.isNorm = false;
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
