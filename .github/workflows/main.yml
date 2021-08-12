@@ -5,6 +5,9 @@ on:
     # Sequence of patterns matched against refs/heads
     branches:    
       - master         # Push events on master branch
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
 
