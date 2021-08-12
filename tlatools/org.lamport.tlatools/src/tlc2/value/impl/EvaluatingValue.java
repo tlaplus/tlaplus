@@ -42,6 +42,7 @@ import tlc2.value.Values;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.WrongInvocationException;
+import util.Assert.TLCTypeMismatchException;
 
 public class EvaluatingValue extends OpValue implements Applicable {
   protected final MethodHandle mh;
@@ -80,9 +81,8 @@ public class EvaluatingValue extends OpValue implements Applicable {
 
   public final int compareTo(Object obj) {
     try {
-      Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to compare operator " + this.toString() +
-      " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()), getSource());
-      return 0;       // make compiler happy
+      throw new TLCTypeMismatchException("Attempted to compare operator " + this.toString() +
+      " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()));
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -91,15 +91,7 @@ public class EvaluatingValue extends OpValue implements Applicable {
   }
 
   public final boolean equals(Object obj) {
-    try {
-      Assert.fail(tlc2.output.EC.TYPE_MISMATCH_COMPARE, "Attempted to check equality of operator " + this.toString() +
-      " with value:\n" + obj == null ? "null" : Values.ppr(obj.toString()), getSource());
-      return false;   // make compiler happy
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
+    return false;
   }
 
   public final boolean member(Value elem) {
