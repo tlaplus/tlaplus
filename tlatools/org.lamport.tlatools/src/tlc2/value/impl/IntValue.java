@@ -73,8 +73,8 @@ public class IntValue extends Value {
       if (obj instanceof IntValue) {
         return Integer.compare(this.val, ((IntValue)obj).val);
       }
-      if (obj instanceof StringValue) {
-	return -1;
+	if (((Value)obj).getKind() <= 3){
+		return this.getKind() - ((Value)obj).getKind();
 	}
       if (!(obj instanceof ModelValue)) {
 
