@@ -72,4 +72,13 @@ public class REPLTest {
         assertEquals("", res);
     }
 
+    @Test(expected = tlc2.tool.EvalException.class)
+    public void testEvalExceptionThrow() throws IOException {
+        Path tempDir = Files.createTempDirectory("repltest2");
+        final REPL repl = new REPL(tempDir);
+
+        Value val = repl.processInputToValue("Append(3, <<1,2>>)"); // error.
+        assertEquals("", val.toString());
+    }
+
 }

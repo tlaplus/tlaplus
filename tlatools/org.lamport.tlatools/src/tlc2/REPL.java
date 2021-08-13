@@ -68,10 +68,11 @@ public class REPL {
 
     /**
      * Evaluate the given string input as a TLA+ expression.
+     * If ignoreEvalException, it disables the catch
      *
-     * @return the pretty printed result of the evaluation or an empty string if there was an error.
+     * @return Value result of the evaluation or null if error
      */
-    public Value processInputToValue(String evalExpr) {
+    public Value processInputToValue(String evalExpr, boolean ignoreEvalException) {
 
         // The modules we will extend in the REPL environment.
         String moduleExtends = "Reals,Sequences,Bags,FiniteSets,TLC,Randomization";
@@ -144,6 +145,7 @@ public class REPL {
 				tlc2.module.TLC.OUTPUT = replWriter;
                 return (Value) tool.eval(valueNode.getBody());
             } catch (EvalException exc) {
+                if (ignoreEvalException) throw exc;
                 // TODO: Improve error messages with more specific detail.
             	System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr, exc);
             } catch (Assert.TLCRuntimeException exc) {
@@ -179,8 +181,17 @@ public class REPL {
         return null;
     }
 
+    public Value processInputToValue(String evalExpr) {
+        return processInputToValue(evalExpr, true);
+    }
+
+    /**
+     * Evaluate the given string input as a TLA+ expression.
+     *
+     * @return the pretty printed result of the evaluation or an empty string if there was an error.
+     */
     public String processInput(String evalExpr) {
-        final Value exprValue = processInputToValue(evalExpr);
+        final Value exprValue = processInputToValue(evalExpr, false);
 
         if (exprValue != null)
             return exprValue.toString();
