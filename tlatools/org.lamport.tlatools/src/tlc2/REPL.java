@@ -54,7 +54,7 @@ public class REPL {
     private static final String prompt = "(tla+) ";
 
     private final Writer replWriter = new PrintWriter(System.out);
-    
+
     // A temporary directory to place auxiliary files needed for REPL evaluation.
     Path replTempDir;
 
@@ -71,7 +71,7 @@ public class REPL {
      *
      * @return the pretty printed result of the evaluation or an empty string if there was an error.
      */
-    public String processInput(String evalExpr) {
+    public Value processInputToValue(String evalExpr) {
 
         // The modules we will extend in the REPL environment.
         String moduleExtends = "Reals,Sequences,Bags,FiniteSets,TLC,Randomization";
@@ -142,8 +142,7 @@ public class REPL {
 				// and unset in finally below to suppress output of FastTool instantiation
 				// above.
 				tlc2.module.TLC.OUTPUT = replWriter;
-				final Value exprVal = (Value) tool.eval(valueNode.getBody());
-				return exprVal.toString();
+                return (Value) tool.eval(valueNode.getBody());
             } catch (EvalException exc) {
                 // TODO: Improve error messages with more specific detail.
             	System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr, exc);
@@ -177,7 +176,16 @@ public class REPL {
         } catch (IOException pe) {
             pe.printStackTrace();
         }
-        return "";
+        return null;
+    }
+
+    public String processInput(String evalExpr) {
+        final Value exprValue = processInputToValue(evalExpr);
+
+        if (exprValue != null)
+            return exprValue.toString();
+        else
+            return "";
     }
 
     /**
