@@ -73,6 +73,9 @@ public class IntValue extends Value {
       if (obj instanceof IntValue) {
         return Integer.compare(this.val, ((IntValue)obj).val);
       }
+      if (obj instanceof StringValue) {
+	return -1;
+	}
       if (!(obj instanceof ModelValue)) {
 
         throw new TLCTypeMismatchException("Attempted to compare integer " + Values.ppr(this.toString()) +

@@ -51,6 +51,9 @@ public class StringValue extends Value {
       if (obj instanceof StringValue) {
         return this.val.compareTo(((StringValue)obj).val);
       }
+      if (obj instanceof IntValue) {
+	return 1;
+	}
       if (!(obj instanceof ModelValue)) {
         throw new TLCTypeMismatchException("Attempted to compare string " + Values.ppr(this.toString()) +
         " with non-string:\n" + Values.ppr(obj.toString()));

@@ -86,6 +86,13 @@ public class REPLTest {
         res = repl.processInput("{1,2} \\cap {2,3}");
         assertEquals("{2}", res);
 
+        res = repl.processInput("{1,\"frab\",2}");
+        assertEquals("{1, 2, \"frab\"}", res);
+        res = repl.processInput("SUBSET {1,\"frab\",2}");
+        assertEquals("{{}, {1}, {2}, {\"frab\"}, {1, 2}, {1, \"frab\"}, {2, \"frab\"}, {1, 2, \"frab\"}}", res);
+        res = repl.processInput("UNION SUBSET {1,\"frab\",2}");
+        assertEquals("{1, 2, \"frab\"}", res);
+
         // Tuple expressions.
         res = repl.processInput("Append(<<1,2>>, 3)");
         assertEquals("<<1, 2, 3>>", res);
