@@ -68,11 +68,11 @@ public class REPL {
 
     /**
      * Evaluate the given string input as a TLA+ expression.
-     * If ignoreEvalException, it disables the catch
+     * If ignoreTLAExceptions, it disables the catch for TLA related exceptions
      *
      * @return Value result of the evaluation or null if error
      */
-    public Value processInputToValue(String evalExpr, boolean ignoreEvalException) {
+    public Value processInputToValue(String evalExpr, boolean ignoreTLAExceptions) {
 
         // The modules we will extend in the REPL environment.
         String moduleExtends = "Reals,Sequences,Bags,FiniteSets,TLC,Randomization";
@@ -145,10 +145,11 @@ public class REPL {
 				tlc2.module.TLC.OUTPUT = replWriter;
                 return (Value) tool.eval(valueNode.getBody());
             } catch (EvalException exc) {
-                if (ignoreEvalException) throw exc;
+                if (ignoreTLAExceptions) throw exc;
                 // TODO: Improve error messages with more specific detail.
             	System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr, exc);
             } catch (Assert.TLCRuntimeException exc) {
+                if (ignoreTLAExceptions) throw exc;
             	if (exc.parameters != null && exc.parameters.length > 0) {
 					// 0..1 \X 0..1 has non-null params of length zero. Actual error message is
 					// "Parsing or semantic analysis failed.".
