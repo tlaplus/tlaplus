@@ -73,6 +73,10 @@ public class REPLTest {
         assertEquals("FALSE", res);
         res = repl.processInput("{} \\in {}");
         assertEquals("FALSE", res);
+        res = repl.processInput("{} \\subseteq {}");
+        assertEquals("TRUE", res);
+        res = repl.processInput("{} \\subseteq {1,\"frab\"}");
+        assertEquals("TRUE", res);
         res = repl.processInput("1 \\in {\"frab\", \"bar\"}");
         assertEquals("FALSE", res);
         res = repl.processInput("{1,2} \\X {3,4}");
