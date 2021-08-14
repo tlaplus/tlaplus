@@ -16,7 +16,6 @@ import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.Assert.TLCTypeMismatchException;
 
 public class BoolValue extends Value implements IBoolValue {
   public boolean val;   // the boolean
@@ -47,8 +46,8 @@ public class BoolValue extends Value implements IBoolValue {
         return this.getKind() - ((Value)obj).getKind();
       }
       if (!(obj instanceof ModelValue)) {
-        throw new TLCTypeMismatchException("Attempted to compare boolean " + Values.ppr(this.toString()) +
-        " with non-boolean:\n" + Values.ppr(obj.toString()));
+        Assert.fail("Attempted to compare boolean " + Values.ppr(this.toString()) +
+        " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
       }
       return 1;
     }

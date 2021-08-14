@@ -25,7 +25,6 @@ import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
 import util.Assert.TLCRuntimeException;
-import util.Assert.TLCTypeMismatchException;
 
 @SuppressWarnings("serial")
 public class SetEnumValue extends EnumerableValue
@@ -121,8 +120,8 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
         }
 
         if (obj instanceof ModelValue) return 1;
-        throw new TLCTypeMismatchException("Attempted to compare the set " + Values.ppr(this.toString()) +
-        " with the value:\n" + Values.ppr(obj.toString()));
+        Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
+        " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
 
       return best_effort_normalize_and_compare(set);
