@@ -107,6 +107,9 @@ public class REPLTest {
         res = repl.processInput("<<1,2>> \\o <<3>>");
         assertEquals("<<1, 2, 3>>", res);
 
+        res = repl.processInput("{{}, 2,1,1,\"frab\",{}}");
+        assertEquals("{1, 2, \"frab\", {}}", res);
+
         // Other invalid expressions.
         res = repl.processInput("invalid");
         assertEquals("", res);

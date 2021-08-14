@@ -73,9 +73,9 @@ public class IntValue extends Value {
       if (obj instanceof IntValue) {
         return Integer.compare(this.val, ((IntValue)obj).val);
       }
-	if (((Value)obj).getKind() <= 3){
-		return this.getKind() - ((Value)obj).getKind();
-	}
+      if (((Value)obj).getKind() <= 5){
+        return this.getKind() - ((Value)obj).getKind();
+      }
       if (!(obj instanceof ModelValue)) {
 
         throw new TLCTypeMismatchException("Attempted to compare integer " + Values.ppr(this.toString()) +

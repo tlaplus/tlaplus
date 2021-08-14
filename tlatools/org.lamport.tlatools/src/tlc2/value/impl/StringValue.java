@@ -51,9 +51,9 @@ public class StringValue extends Value {
       if (obj instanceof StringValue) {
         return this.val.compareTo(((StringValue)obj).val);
       }
-	if (((Value)obj).getKind() <= 3){
-		return this.getKind() - ((Value)obj).getKind();
-	}
+      if (((Value)obj).getKind() <= 5){
+        return this.getKind() - ((Value)obj).getKind();
+      }
       if (!(obj instanceof ModelValue)) {
         throw new TLCTypeMismatchException("Attempted to compare string " + Values.ppr(this.toString()) +
         " with non-string:\n" + Values.ppr(obj.toString()));

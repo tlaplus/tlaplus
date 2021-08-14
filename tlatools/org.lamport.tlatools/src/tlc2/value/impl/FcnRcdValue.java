@@ -28,7 +28,6 @@ import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
 import util.UniqueString;
-import util.Assert.TLCTypeMismatchException;
 
 public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   public final Value[] domain;
@@ -132,8 +131,8 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 			if (fcn == null) {
 				if (obj instanceof ModelValue)
 					return 1;
-				throw new TLCTypeMismatchException("Attempted to compare the function " + Values.ppr(this.toString()) + " with the value:\n"
-						+ Values.ppr(obj.toString()));
+				Assert.fail("Attempted to compare the function " + Values.ppr(this.toString()) + " with the value:\n"
+						+ Values.ppr(obj.toString()), getSource());
 			}
 			this.normalize();
 			fcn.normalize();
@@ -235,7 +234,8 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       if (fcn == null) {
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
-        return false;
+        Assert.fail("Attempted to check equality of the function " + Values.ppr(this.toString()) +
+        " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
       fcn.normalize();
@@ -253,7 +253,8 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
           for (int i = 0; i < fcn.domain.length; i++) {
             Value dElem = fcn.domain[i];
             if (!(dElem instanceof IntValue)) {
-              return false;
+              Assert.fail("Attempted to compare an integer with non-integer:\n" +
+              Values.ppr(dElem.toString()) + ".", getSource());
             }
             if (((IntValue)dElem).val != (this.intv.low + i)) {
               return false;
@@ -272,7 +273,8 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
           for (int i = 0; i < this.domain.length; i++) {
             Value dElem = this.domain[i];
             if (!(dElem instanceof IntValue)) {
-              return false;
+              Assert.fail("Attempted to compare an integer with non-integer:\n" +
+              Values.ppr(dElem.toString()) + ".", getSource());
             }
             if (((IntValue)dElem).val != (fcn.intv.low + i)) {
               return false;

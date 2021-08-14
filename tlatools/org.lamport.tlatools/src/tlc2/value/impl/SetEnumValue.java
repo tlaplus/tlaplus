@@ -89,26 +89,6 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final byte getKind() { return SETENUMVALUE; }
 
-  /* used only as a fallback when normalize fails
-     if normalization fails it means it could not sort,
-     therefore those sets have different types.
-     see: linear_compare(..);
-  */
-  private final boolean quadratic_compare(SetEnumValue set){
-    int sz = this.elems.size();
-    int cmp = sz - set.elems.size();
-    if (cmp != 0) return false;
-
-    // avoid perf hit, improve repl experience
-    if (sz >= 128) throw new TLCRuntimeException("fatal: quadratic compare is too slow. aborting pre-emptively.");
-
-    boolean result = true;
-    for (int i = 0; i < sz; i++) {
-      result &= this.elems.search(set.elems.elementAt(i), this.isNorm);
-    }
-    return result;
-  }
-
   private final int linear_compare(SetEnumValue set){
     if (!(this.isNorm && set.isNorm)) throw new TLCRuntimeException("fatal: linear_compare only works with normalized sets.");
 
@@ -124,20 +104,11 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   }
 
   // best case scenario: single type set that can be normalized: nlogn
-  // worst case scenario: mixed type set that can't be normalized: quadratic
+  // worst case scenario: fails as before
   private final int best_effort_normalize_and_compare(SetEnumValue set){
     this.normalize();
     set.normalize();
-    if (this.isNorm && set.isNorm) {
-      return linear_compare(set);
-    }
-    else {
-      // if normalizing failed due to mismatch types
-      // try slower compare routine
-      if (quadratic_compare(set)) return 0;
-      // if they are different we cannot judge on order, so throw
-      else throw new TLCTypeMismatchException("different and unsortable");
-    }
+    return linear_compare(set);
   }
 
   @Override
@@ -145,6 +116,10 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     try {
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
+        if (((Value)obj).getKind() <= 5){
+          return this.getKind() - ((Value)obj).getKind();
+        }
+
         if (obj instanceof ModelValue) return 1;
         throw new TLCTypeMismatchException("Attempted to compare the set " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()));
@@ -168,13 +143,8 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
         return false;
       }
 
-      try{
-        if (best_effort_normalize_and_compare(set) == 0) return true;
-        else return false;
-      }
-      catch(TLCTypeMismatchException e){
-        return false;
-      }
+      if (best_effort_normalize_and_compare(set) == 0) return true;
+      else return false;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -312,13 +282,6 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
         this.elems.sort(true);   // duplicates eliminated
         this.isNorm = true;
       }
-      return this;
-    }
-    catch (TLCTypeMismatchException e) 
-    {
-      // can't be normalized - no sort for diff types
-      // todo: add dedup stage here? do we care about duplicates
-      this.isNorm = false;
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {

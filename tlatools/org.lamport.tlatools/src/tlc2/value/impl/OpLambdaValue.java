@@ -17,7 +17,6 @@ import tlc2.value.IValue;
 import tlc2.value.Values;
 import util.Assert;
 import util.WrongInvocationException;
-import util.Assert.TLCTypeMismatchException;
 
 public class OpLambdaValue extends OpValue implements Applicable {
   public final OpDefNode opDef;       // the operator definition.
@@ -52,8 +51,9 @@ public class OpLambdaValue extends OpValue implements Applicable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      throw new TLCTypeMismatchException("Attempted to compare operator " + Values.ppr(this.toString()) +
-      " with value:\n" + Values.ppr(obj.toString()));
+      Assert.fail("Attempted to compare operator " + Values.ppr(this.toString()) +
+      " with value:\n" + Values.ppr(obj.toString()), getSource());
+      return 0;       // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -62,7 +62,15 @@ public class OpLambdaValue extends OpValue implements Applicable {
   }
 
   public final boolean equals(Object obj) {
-    return false;
+    try {
+      Assert.fail("Attempted to check equality of operator " + Values.ppr(this.toString()) +
+      " with value:\n" + Values.ppr(obj.toString()), getSource());
+      return false;   // make compiler happy
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
   }
 
   @Override

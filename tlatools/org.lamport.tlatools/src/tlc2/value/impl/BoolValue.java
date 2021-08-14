@@ -43,9 +43,9 @@ public class BoolValue extends Value implements IBoolValue {
         int y = ((BoolValue)obj).val ? 1 : 0;
         return x - y;
       }
-	if (((Value)obj).getKind() <= 3){
-		return this.getKind() - ((Value)obj).getKind();
-	}
+      if (((Value)obj).getKind() <= 5){
+        return this.getKind() - ((Value)obj).getKind();
+      }
       if (!(obj instanceof ModelValue)) {
         throw new TLCTypeMismatchException("Attempted to compare boolean " + Values.ppr(this.toString()) +
         " with non-boolean:\n" + Values.ppr(obj.toString()));
