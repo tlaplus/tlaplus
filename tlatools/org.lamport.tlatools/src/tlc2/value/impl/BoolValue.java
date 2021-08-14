@@ -62,8 +62,12 @@ public class BoolValue extends Value implements IBoolValue {
       if (obj instanceof BoolValue) {
         return this.val == ((BoolValue)obj).val;
       }
-      if (!(obj instanceof ModelValue)) {
+      if (((Value)obj).getKind() <= 5){
         return false;
+      }
+      if (!(obj instanceof ModelValue)) {
+        Assert.fail("Attempted to compare equality of boolean " + Values.ppr(this.toString()) +
+        " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
       }
       return ((ModelValue) obj).modelValueEquals(this) ;
     }

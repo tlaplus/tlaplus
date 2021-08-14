@@ -70,8 +70,12 @@ public class StringValue extends Value {
       if (obj instanceof StringValue) {
         return this.val.equals(((StringValue)obj).getVal());
       }
-      if (!(obj instanceof ModelValue)) {
+      if (((Value)obj).getKind() <= 5){
         return false;
+      }
+      if (!(obj instanceof ModelValue)) {
+        Assert.fail("Attempted to check equality of string " + Values.ppr(this.toString()) +
+        " with non-string:\n" + Values.ppr(obj.toString()), getSource());
       }
       return ((ModelValue) obj).modelValueEquals(this) ;
     }

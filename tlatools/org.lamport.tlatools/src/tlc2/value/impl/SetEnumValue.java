@@ -24,13 +24,12 @@ import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
-import util.Assert.TLCRuntimeException;
 
 @SuppressWarnings("serial")
 public class SetEnumValue extends EnumerableValue
 implements Enumerable, Reducible {
   public ValueVec elems;         // the elements of the set
-  protected boolean isNorm;        // normalized?
+  private boolean isNorm;        // normalized?
 public static final SetEnumValue EmptySet = new SetEnumValue(new ValueVec(0), true);
 public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
 
@@ -88,28 +87,6 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final byte getKind() { return SETENUMVALUE; }
 
-  private final int linear_compare(SetEnumValue set){
-    if (!(this.isNorm && set.isNorm)) throw new TLCRuntimeException("fatal: linear_compare only works with normalized sets.");
-
-    int sz = this.elems.size();
-    int cmp = sz - set.elems.size();
-    if (cmp != 0) return cmp;
-
-    for (int i = 0; i < sz; i++) {
-      cmp = this.elems.elementAt(i).compareTo(set.elems.elementAt(i));
-      if (cmp != 0) return cmp;
-    }
-    return 0;
-  }
-
-  // best case scenario: single type set that can be normalized: nlogn
-  // worst case scenario: fails as before
-  private final int best_effort_normalize_and_compare(SetEnumValue set){
-    this.normalize();
-    set.normalize();
-    return linear_compare(set);
-  }
-
   @Override
   public final int compareTo(Object obj) {
     try {
@@ -118,13 +95,21 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
         if (((Value)obj).getKind() <= 5){
           return this.getKind() - ((Value)obj).getKind();
         }
-
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
-
-      return best_effort_normalize_and_compare(set);
+      this.normalize();
+      set.normalize();
+      if (!(this.isNorm && set.isNorm)) Assert.fail("fatal: linear_compare only works with normalized sets.");
+      int sz = this.elems.size();
+      int cmp = sz - set.elems.size();
+      if (cmp != 0) return cmp;
+      for (int i = 0; i < sz; i++) {
+        cmp = this.elems.elementAt(i).compareTo(set.elems.elementAt(i));
+        if (cmp != 0) return cmp;
+      }
+      return 0;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -135,15 +120,28 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final boolean equals(Object obj) {
     try {
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
-
       if (set == null) {
+        if (((Value)obj).getKind() <= 5){
+          return false;
+        }
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
+        Assert.fail("Attempted to check equality of the set " + Values.ppr(this.toString()) +
+        " with the value:\n" + Values.ppr(obj.toString()), getSource());
+      }
+      this.normalize();
+      set.normalize();
+      if (!(this.isNorm && set.isNorm)) Assert.fail("fatal: linear_compare only works with normalized sets.");
+      int sz = this.elems.size();
+      if (sz != set.elems.size()) {
         return false;
       }
-
-      if (best_effort_normalize_and_compare(set) == 0) return true;
-      else return false;
+      for (int i = 0; i < sz; i++) {
+        if (!this.elems.elementAt(i).equals(set.elems.elementAt(i))) {
+          return false;
+        }
+      }
+      return true;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -284,8 +282,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
-      // reset isNorm since it failed
-      this.isNorm = false;
+      this.isNorm = false; // reset isNorm since it failed
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
