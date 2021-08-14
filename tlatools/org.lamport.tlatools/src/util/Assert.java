@@ -201,7 +201,7 @@ public class Assert
 			this.parameters = parameters;
 		}
     }
-
+    
     @SuppressWarnings("serial")
     public static class TLCDetailedRuntimeException extends TLCRuntimeException {
 
