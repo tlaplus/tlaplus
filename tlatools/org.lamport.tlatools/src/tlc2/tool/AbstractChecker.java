@@ -66,6 +66,7 @@ public abstract class AbstractChecker
     protected final IStateWriter allStateWriter;
     protected IWorker[] workers;
 	protected final ILiveCheck liveCheck;
+	private final Value config;
     /**
      * Timestamp of when model checking started.
      */
@@ -136,6 +137,11 @@ public abstract class AbstractChecker
         } else {
         	this.liveCheck = new NoOpLiveCheck(this.tool, this.metadir);
         }
+        
+		// Eagerly create the config value in case the next-state relation involves
+		// TLCGet("config"). In this case, we would end up locking the
+		// UniqueString#InternTable for every lookup. See Simulator too.
+        this.config = createConfig();
         
         scheduleTermination(new TimerTask() {
 			@Override
@@ -632,6 +638,10 @@ public abstract class AbstractChecker
 	}
 
 	public final Value getConfig() {
+		return config;
+	}
+	
+	private final Value createConfig() {
 		final UniqueString[] n = new UniqueString[6];
 		final Value[] v = new Value[n.length];
 		n[0] = TLCGetSet.MODE;

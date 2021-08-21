@@ -37,6 +37,15 @@ import util.TLAConstants;
 import util.UniqueString;
 
 public class RecordValue extends Value implements Applicable {
+  private static final UniqueString BLI = UniqueString.of("beginLine");
+  private static final UniqueString BCOL = UniqueString.of("beginColumn");
+  private static final UniqueString ELI = UniqueString.of("endLine");
+  private static final UniqueString ECOL = UniqueString.of("endColumn");
+  private static final UniqueString MOD = UniqueString.of("module");
+  private static final UniqueString NAME = UniqueString.of("name");
+  private static final UniqueString LOC = UniqueString.of("location");
+  private static final UniqueString ACTION = UniqueString.of("_action");
+
   public final UniqueString[] names;   // the field names
   public final Value[] values;         // the field values
   private boolean isNorm;
@@ -83,20 +92,20 @@ public class RecordValue extends Value implements Applicable {
 		this.names = new UniqueString[5];
 		this.values = new Value[5];
 
-		this.names[0] = UniqueString.of("beginLine");
+		this.names[0] = BLI;
 		this.values[0] = IntValue.gen(location.beginLine());
 
-		this.names[1] = UniqueString.of("beginColumn");
+		this.names[1] = BCOL;
 		this.values[1] = IntValue.gen(location.beginColumn());
 
-		this.names[2] = UniqueString.of("endLine");
+		this.names[2] = ELI;
 		this.values[2] = IntValue.gen(location.endLine());
 
-		this.names[3] = UniqueString.of("endColumn");
+		this.names[3] = ECOL;
 		this.values[3] = IntValue.gen(location.endColumn());
 		
-		this.names[4] = UniqueString.of("module");
-		this.values[4] = new StringValue(location.source());
+		this.names[4] = MOD;
+		this.values[4] = new StringValue(location.sourceAsUniqueString());
 		
 		this.isNorm = false;
   }
@@ -105,10 +114,10 @@ public class RecordValue extends Value implements Applicable {
 		this.names = new UniqueString[2];
 		this.values = new Value[2];
 
-		this.names[0] = UniqueString.of("name");
+		this.names[0] = NAME;
 		this.values[0] = new StringValue(action.getName());
 		
-		this.names[1] = UniqueString.of("location");
+		this.names[1] = LOC;
 		this.values[1] = new RecordValue(action.getDefinition());
 		
 		this.isNorm = false;
@@ -135,7 +144,7 @@ public class RecordValue extends Value implements Applicable {
 		this.values = new Value[vars.length + 1];
 
 		//TODO: _action too verbose?
-		this.names[0] = UniqueString.of("_action");
+		this.names[0] = ACTION;
 		this.values[0] = new RecordValue(action);
 		
 		for (int i = 0; i < vars.length; i++) {

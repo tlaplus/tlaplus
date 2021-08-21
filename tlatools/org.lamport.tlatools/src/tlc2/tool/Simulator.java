@@ -57,6 +57,7 @@ public class Simulator {
 	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean
 			.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
 	private final String traceActions;
+	private final Value config;
 
 	/* Constructors */
 
@@ -114,6 +115,11 @@ public class Simulator {
 					this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
 					this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 		}
+	
+		// Eagerly create the config value in case the next-state relation involves
+		// TLCGet("config"). In this case, we would end up locking the
+		// UniqueString#InternTable for every lookup. See AbstractChecker too.
+		this.config = createConfig();
 		
 		if (TLCGlobals.isCoverageEnabled()) {
         	CostModelCreator.create(this.tool);
@@ -786,6 +792,10 @@ public class Simulator {
 	}
 
 	public final Value getConfig() {
+		return this.config;
+	}
+
+	private final Value createConfig() {
 		final UniqueString[] n = new UniqueString[8];
 		final Value[] v = new Value[n.length];
 		

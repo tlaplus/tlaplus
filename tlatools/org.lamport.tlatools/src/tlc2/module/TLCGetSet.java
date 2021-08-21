@@ -64,7 +64,7 @@ import util.ToolIO;
 import util.UniqueString;
 
 public class TLCGetSet implements ValueConstants {
-	
+
 	public static Value narrowToIntValue(final long value) {
         if ((int)value != value) {
         	return IntValue.ValNegOne;
@@ -96,6 +96,13 @@ public class TLCGetSet implements ValueConstants {
 	public static final UniqueString REV_DATE = UniqueString.uniqueStringOf("date");
 	public static final UniqueString REV_COUNT = UniqueString.uniqueStringOf("count");
 	public static final UniqueString REV_TAG = UniqueString.uniqueStringOf("tag");
+	
+	private static final UniqueString SPEC_IMPLIEDINITS = UniqueString.of("impliedinits");
+	private static final UniqueString SPEC_INVARIANTS = UniqueString.of("invariants");
+	private static final UniqueString SPEC_IMPLIEDTEMPORALS = UniqueString.of("impliedtemporals");
+	private static final UniqueString SPEC_TERMPORALS = UniqueString.of("temporals");
+	private static final UniqueString SPEC_ACTIONS = UniqueString.of("actions");
+	private static final UniqueString SPEC_INITS = UniqueString.of("inits");
 
 	// TLCGet(..)
 	// BFS & Simulation mode
@@ -300,28 +307,28 @@ public class TLCGetSet implements ValueConstants {
 			for (int i = 0; i < inits.size(); i++) {
 				l.add(new RecordValue(inits.elementAt(i)));
 			}
-			n[0] = UniqueString.of("inits");
+			n[0] = SPEC_INITS;
 			v[0] = new SetEnumValue(new ValueVec(l), false);
 			
 			// Actions as found by spec processing. For a sub-action with non-zero arity,
 			// TLC has multiple copies.
-			n[1] = UniqueString.of("actions");
+			n[1] = SPEC_ACTIONS;
 			v[1] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getActions()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 
-			n[2] = UniqueString.of("temporals");
+			n[2] = SPEC_TERMPORALS;
 			v[2] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getTemporals()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[3] = UniqueString.of("invariants");
+			n[3] = SPEC_INVARIANTS;
 			v[3] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getInvariants()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[4] = UniqueString.of("impliedinits");
+			n[4] = SPEC_IMPLIEDINITS;
 			v[4] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedInits()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[5] = UniqueString.of("impliedtemporals");
+			n[5] = SPEC_IMPLIEDTEMPORALS;
 			v[5] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedTemporals()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			

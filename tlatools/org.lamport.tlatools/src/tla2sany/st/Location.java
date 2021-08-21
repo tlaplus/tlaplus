@@ -328,6 +328,10 @@ public final class Location implements Comparable<Location>
         return name != null ? name.toString() : null;
     }
 
+    public final UniqueString sourceAsUniqueString() {
+    	return name;
+    }
+    
     /**
      * This method should be called by all tools to print the location, so
      * users see a consistent method of identifying a location. I        
