@@ -170,7 +170,7 @@ public class TLCExt {
 	}
 
 	@Evaluation(definition = "Trace", module = "TLCExt", minLevel = 1, warn = false, silent = true)
-	public synchronized static TupleValue getTrace(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
+	public static TupleValue getTrace(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) throws IOException {
 
 		if (!s0.allAssigned()) {
@@ -207,39 +207,41 @@ public class TLCExt {
 		if (s0.isInitial()) {
 			return new TupleValue(new Value[] { new RecordValue(s0) });
 		}
-		
-		if (s0.uid == TLCState.INIT_UID) {
-			// The state s0 has not been written do disk, i.e. the trace file.
-			// This is the case where Trace is evaluated in a state-constraint when the
-			// trace up to s0 hasn't been constructed yet.  Consequently, we cannot 
-			// re-construct the trace up to s0.  Instead, we re-construct the trace up
-			// to s0's predecessor sP.  If sP is an initial state, we are done and return
-			// the trace of length two.  Otherwise, we re-construct the trace to sP and
-			// append sP and s0.
-			// Obviously, this hack is prohibitively expensive if evaluated for every state.
-			// However, the TLCDebugger makes use of this should a user manually request
-			// the trace for a TLCStateStackFrame that correspond to a state-constraint.
-			// For this use-case, we consider this good enough.
-			//TODO: This won't work if TLCExt is extended to return action names for which
-			// we have to create proper TLCStateInfo instances below instead of instantiating
-			// them here.
-			final List<TLCStateInfo> trace = new ArrayList<>();
-
-			final TLCState currentState = IdThread.getCurrentState();
-			if (currentState.isInitial()) {
-				trace.add(new TLCStateInfo(currentState));
-				trace.add(new TLCStateInfo(s0));
-			} else {
-				trace.addAll(Arrays.asList(TLCGlobals.mainChecker.getTraceInfo(currentState)));
-				trace.add(new TLCStateInfo(currentState));
-				trace.add(new TLCStateInfo(s0));
-				// A side-effect of getTraceInfo are nested calls to setCurrentState. Thus, we
-				// have to reset to currentState after we are done with our getTraceInfo business.
-				IdThread.setCurrentState(currentState);
+			
+		synchronized (TLCExt.class) {
+			if (s0.uid == TLCState.INIT_UID) {
+				// The state s0 has not been written do disk, i.e. the trace file.
+				// This is the case where Trace is evaluated in a state-constraint when the
+				// trace up to s0 hasn't been constructed yet.  Consequently, we cannot 
+				// re-construct the trace up to s0.  Instead, we re-construct the trace up
+				// to s0's predecessor sP.  If sP is an initial state, we are done and return
+				// the trace of length two.  Otherwise, we re-construct the trace to sP and
+				// append sP and s0.
+				// Obviously, this hack is prohibitively expensive if evaluated for every state.
+				// However, the TLCDebugger makes use of this should a user manually request
+				// the trace for a TLCStateStackFrame that correspond to a state-constraint.
+				// For this use-case, we consider this good enough.
+				//TODO: This won't work if TLCExt is extended to return action names for which
+				// we have to create proper TLCStateInfo instances below instead of instantiating
+				// them here.
+				final List<TLCStateInfo> trace = new ArrayList<>();
+				
+				final TLCState currentState = IdThread.getCurrentState();
+				if (currentState.isInitial()) {
+					trace.add(new TLCStateInfo(currentState));
+					trace.add(new TLCStateInfo(s0));
+				} else {
+					trace.addAll(Arrays.asList(TLCGlobals.mainChecker.getTraceInfo(currentState)));
+					trace.add(new TLCStateInfo(currentState));
+					trace.add(new TLCStateInfo(s0));
+					// A side-effect of getTraceInfo are nested calls to setCurrentState. Thus, we
+					// have to reset to currentState after we are done with our getTraceInfo business.
+					IdThread.setCurrentState(currentState);
+				}
+				return new TupleValue(trace.stream().map(si -> new RecordValue(si.state)).toArray(Value[]::new));
 			}
-			return new TupleValue(trace.stream().map(si -> new RecordValue(si.state)).toArray(Value[]::new));
+			return getTrace0(s0, TLCGlobals.mainChecker.getTraceInfo(s0));
 		}
-		return getTrace0(s0, TLCGlobals.mainChecker.getTraceInfo(s0));
 	}
 
 	private static final TupleValue getTrace0(final TLCState s0, final TLCStateInfo[] trace) {
