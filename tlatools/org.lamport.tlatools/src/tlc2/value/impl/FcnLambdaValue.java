@@ -689,6 +689,12 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
             }
             values[idx++] = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
           }
+	      if (this.params.domains[0] instanceof IntervalValue) {
+	      	final IntervalValue iv = (IntervalValue) this.params.domains[0];
+	      	this.fcnRcd = new FcnRcdValue(iv, values, cm);
+	      } else {
+	        this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
+	      }
         }
         else {
           while ((arg = Enum.nextElement()) != null) {
@@ -712,9 +718,9 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
             }
             values[idx++] = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
           }
+          this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
         }
         if (coverage) {cm.incSecondary(sz);}
-        this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
         if (this.excepts != null) {
           this.fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(this.excepts);
         }

@@ -462,7 +462,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
           if ((idx >= this.intv.low) && (idx <= this.intv.high)) {
             int vidx = idx - this.intv.low;
             ex.idx++;
-            newValues[idx] = this.values[vidx].takeExcept(ex);
+            newValues[vidx] = this.values[vidx].takeExcept(ex);
           }
           return new FcnRcdValue(this.intv, newValues);
         }
