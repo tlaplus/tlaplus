@@ -909,14 +909,15 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
         sb.append(">>");
       }
       else {
+    	final Value[] domainAsValues = getDomainAsValues();
         sb = sb.append("(");
-        sb = this.domain[0].toString(sb, offset, swallow);
+        sb = domainAsValues[0].toString(sb, offset, swallow);
         sb.append(" :> ");
         sb = this.values[0].toString(sb, offset, swallow);
 
         for (int i = 1; i < len; i++) {
           sb.append(" @@ ");
-          sb = this.domain[i].toString(sb, offset, swallow);
+          sb = domainAsValues[i].toString(sb, offset, swallow);
           sb.append(" :> ");
           sb = this.values[i].toString(sb, offset, swallow);
         }
