@@ -1316,9 +1316,16 @@ public abstract class Tool
 	        }
 	        
 			if (PROBABLISTIC) {
-				// See Bounded exists above!
-				throw new UnsupportedOperationException(
-								"Probabilistic evaluation of next-state relation not implemented for \\in yet.");
+				final ValueEnumeration Enum = ((Enumerable)rval).elements(Ordering.RANDOMIZED);
+				Value elem;
+			    while ((elem = Enum.nextElement()) != null) {
+			        resState.bind(varName, elem);
+			        resState = this.getNextStates(action, acts, s0, resState, nss, cm);
+			        resState.unbind(varName);
+					if (nss.hasStates()) {
+						return resState;
+					}
+			    }
 			}
 
 	        ValueEnumeration Enum = ((Enumerable)rval).elements();
