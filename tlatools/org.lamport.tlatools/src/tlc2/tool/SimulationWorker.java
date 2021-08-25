@@ -26,18 +26,27 @@
 package tlc2.tool;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
+import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.Value;
 import util.FileUtil;
+import util.UniqueString;
 
 /**
  * A SimulationWorker repeatedly checks random traces of a spec.
@@ -104,6 +113,8 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	final long[][] actionStats;
 
 	private final String traceActions;
+
+	private final Map<UniqueString, Integer> behaviorStats = new HashMap<>();
 	
 	/**
 	 * Encapsulates information about an error produced by a simulation worker.
@@ -213,13 +224,15 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		this.numOfGenTraces = numOfGenTraces;
 		this.welfordM2AndMean = m2AndMean;
 		
+		final Action[] actions = this.tool.getActions();
+		final int len = actions.length;
+		for (int i = 0; i < actions.length; i++) {
+			actions[i].setId(i);
+			this.behaviorStats.put(actions[i].getName(), 0);
+		}
+
 		if (traceActions != null) {
-			final Action[] actions = this.tool.getActions();
-			final int len = actions.length;
 			this.actionStats = new long[len][len];
-			for (int i = 0; i < actions.length; i++) {
-				actions[i].setId(i);
-			}
 		} else {
 			// Write all statistics into a single cell that we will ignore.
 			this.actionStats = new long[1][1];
@@ -400,6 +413,9 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		
 		final Action[] actions = this.tool.getActions();
 		final int len = actions.length;
+		
+		// Reset per-behavior statistics before generating next one.
+		this.behaviorStats.replaceAll((k,v) -> 0);
 
 		// Simulate a trace up to the maximum specified length.
 		for (int traceIdx = 0; traceIdx < maxTraceDepth; traceIdx++) {
@@ -448,6 +464,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			if (traceActions != null) {
 				this.actionStats[curState.getAction().getId()][s1.getAction().getId()]++;
 			}
+			this.behaviorStats.merge(curState.getAction().getName(), 1, Integer::sum);
 			curState = s1;
 			setCurrentState(curState);
 		}
@@ -556,5 +573,29 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	
 	public final RandomGenerator getRNG() {
 		return this.localRng;
+	}
+
+	public Value getWorkerStatistics() {
+		final UniqueString[] n = new UniqueString[1];
+		final Value[] v = new Value[n.length];
+		
+		n[0] = TLCGetSet.SPEC_ACTIONS;
+		v[0] = toRecordValue(behaviorStats);
+		
+		return new RecordValue(n, v, false);
+	}
+	
+	private static RecordValue toRecordValue(final Map<UniqueString, Integer> m) {
+		final List<Map.Entry<UniqueString, Integer>> entries = new ArrayList<>(m.entrySet());
+
+		UniqueString[] names = new UniqueString[entries.size()];
+		Value[] values = new Value[entries.size()];
+
+		for (int i = 0; i < entries.size(); i++) {
+			names[i] = entries.get(i).getKey();
+			values[i] = IntValue.gen(entries.get(i).getValue());
+		}
+		
+		return new RecordValue(names, values, false);
 	}
 }

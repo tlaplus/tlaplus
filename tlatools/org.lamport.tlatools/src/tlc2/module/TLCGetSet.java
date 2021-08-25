@@ -82,6 +82,8 @@ public class TLCGetSet implements ValueConstants {
 	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
 	public static final UniqueString INSTALL = UniqueString.uniqueStringOf("install");
 
+	public static final UniqueString BEHAVIOR = UniqueString.of("behavior");
+	
 	public static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
 	public static final UniqueString DEADLOCK = UniqueString.uniqueStringOf("deadlock");
 	public static final UniqueString SEED = UniqueString.uniqueStringOf("seed");
@@ -101,7 +103,7 @@ public class TLCGetSet implements ValueConstants {
 	private static final UniqueString SPEC_INVARIANTS = UniqueString.of("invariants");
 	private static final UniqueString SPEC_IMPLIEDTEMPORALS = UniqueString.of("impliedtemporals");
 	private static final UniqueString SPEC_TERMPORALS = UniqueString.of("temporals");
-	private static final UniqueString SPEC_ACTIONS = UniqueString.of("actions");
+	public static final UniqueString SPEC_ACTIONS = UniqueString.of("actions");
 	private static final UniqueString SPEC_INITS = UniqueString.of("inits");
 
 	// TLCGet(..)

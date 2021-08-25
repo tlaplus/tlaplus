@@ -579,7 +579,7 @@ public class Simulator {
 	}
 	
 	private void writeActionFlowGraphFull() throws IOException {		
-		// The number of actions is expected to be low (dozens commons and hundreds a
+		// The number of actions is expected to be low (dozens commons and hundreds are
 		// rare). This is why the code below isn't optimized for performance.
 		final Action[] actions = Simulator.this.tool.getActions();
 		final int len = actions.length;
@@ -775,8 +775,18 @@ public class Simulator {
 		return this.traceDepth;
 	}
 
+	public final Value getWorkerStatistics() {
+		if (Thread.currentThread() instanceof SimulationWorker) {
+			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
+			return w.getWorkerStatistics();
+		} else {
+			assert numWorkers == 1 && workers.size() == numWorkers;
+			return workers.get(0).getWorkerStatistics();
+		}	
+	}
+	
 	public final Value getStatistics() {
-		final UniqueString[] n = new UniqueString[3];
+		final UniqueString[] n = new UniqueString[4];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.TRACES;
@@ -788,6 +798,9 @@ public class Simulator {
 		n[2] = TLCGetSet.GENERATED;
 		v[2] = TLCGetSet.narrowToIntValue(numOfGenStates.longValue());
 
+		n[3] = TLCGetSet.BEHAVIOR;
+		v[3] = getWorkerStatistics();
+		
 		return new RecordValue(n, v, false);
 	}
 
