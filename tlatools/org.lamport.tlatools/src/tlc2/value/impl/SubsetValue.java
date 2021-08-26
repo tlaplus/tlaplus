@@ -547,7 +547,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		// Only normalized inputs will yield a normalized output. Note that SEV#convert
 		// (unfortunately) enumerates the input. Thus "SUBSET SUBSET 1..10" will result
 		// in the nested/right SUBSET to be fully enumerated (1..10 obviously too).
-		final ValueVec elems = ((SetEnumValue) set.toSetEnum().normalize()).elems;
+		final Value setEnum = set.toSetEnum();
+		if (setEnum == null) {
+			// E.g. SUBSET <<1,2>> or SUBSET [ a |-> 42]
+            Assert.fail("Attempted to compute the value of an expression of form\n" +
+                    "SUBSET S, but S is a non-enumerable value:\n" + Values.ppr(this.set), getSource());
+		}
+		final ValueVec elems = ((SetEnumValue) setEnum.normalize()).elems;
 		return new ValueEnumeration() {
 
 			private int k = 0;
