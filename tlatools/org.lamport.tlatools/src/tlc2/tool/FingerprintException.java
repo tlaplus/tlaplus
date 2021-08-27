@@ -26,6 +26,9 @@
 
 package tlc2.tool;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tla2sany.semantic.SemanticNode;
 import tlc2.value.IValue;
 
@@ -100,4 +103,17 @@ public class FingerprintException extends RuntimeException {
     }
   }
 
+  public final List<SemanticNode> asTrace() {
+	  final List<SemanticNode> stack = new ArrayList<>();
+	  
+	  if (value != null) {
+		  stack.add(this.value.getSource());
+	  }
+
+	  while (next != null && next.value != null) {
+		stack.add(next.value.getSource());
+	  }
+	  
+	  return stack;
+  }
 }

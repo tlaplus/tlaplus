@@ -34,6 +34,14 @@ public class CallStack {
 	  this.frozen = true;
   }
   
+  public void freeze(FingerprintException e) {
+	  if (this.frozen) {
+		  return;
+	  }
+	  this.frozen = true;
+	  e.asTrace().forEach(sm -> push(sm));
+  }
+ 
   public final int size() { return this.index; }
 
   private final void resize() {

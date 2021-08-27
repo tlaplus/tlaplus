@@ -190,7 +190,8 @@ public class ModelChecker extends AbstractChecker
                     // SZ Feb 23, 2009: ignore cancel on error reporting
 					this.doInit(cTool, true);
                 } catch (FingerprintException fe){
-                    result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{fe.getTrace(), fe.getRootCause().getMessage()});
+					result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[] {
+							cTool.hasCallStack() ? cTool.toString() : fe.getTrace(), fe.getRootCause().getMessage() });
                 } catch (Throwable e1) {
                     // Assert.printStack(e);
                     result = MP.printError(EC.TLC_NESTED_EXPRESSION, cTool.toString());
@@ -280,7 +281,8 @@ public class ModelChecker extends AbstractChecker
 							new Worker(4223, this, this.metadir, tool.getRootName()));
                 } catch (FingerprintException e)
                 {
-                    result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[]{e.getTrace(), e.getRootCause().getMessage()});
+					result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[] {
+							cTool.hasCallStack() ? cTool.toString() : e.getTrace(), e.getRootCause().getMessage() });
                 } catch (EvalException e) {
                 	// Do not replace the actual error code, such as assert violation, with TLC_NESTED_EXPRESSION.
 	                MP.printError(EC.TLC_NESTED_EXPRESSION, cTool.toString());

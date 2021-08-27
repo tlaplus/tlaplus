@@ -30,6 +30,7 @@ import tla2sany.semantic.SemanticNode;
 import tlc2.tool.Action;
 import tlc2.tool.CallStack;
 import tlc2.tool.EvalException;
+import tlc2.tool.FingerprintException;
 import tlc2.tool.IActionItemList;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
@@ -68,6 +69,9 @@ public final class CallStackTool extends Tool {
 			// Java call stack gets unwounded.
 			this.callStack.freeze();
 			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
+			throw e;
 		} finally {
 			this.callStack.pop();
 		}
@@ -82,6 +86,9 @@ public final class CallStackTool extends Tool {
 			// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context,
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
+			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
 			throw e;
 		} finally {
 			this.callStack.pop();
@@ -99,6 +106,9 @@ public final class CallStackTool extends Tool {
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
 			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
+			throw e;
 		} finally {
 			this.callStack.pop();
 		}
@@ -114,6 +124,9 @@ public final class CallStackTool extends Tool {
 			// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context,
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
+			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
 			throw e;
 		} finally {
 			this.callStack.pop();
@@ -140,6 +153,9 @@ public final class CallStackTool extends Tool {
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
 			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
+			throw e;
 		} finally {
 			this.callStack.pop();
 		}
@@ -165,6 +181,9 @@ public final class CallStackTool extends Tool {
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
 			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
+			throw e;
 		} finally {
 			this.callStack.pop();
 		}
@@ -180,6 +199,9 @@ public final class CallStackTool extends Tool {
 			// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context,
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
+			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
 			throw e;
 		} finally {
 			this.callStack.pop();
@@ -197,6 +219,9 @@ public final class CallStackTool extends Tool {
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
 			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
+			throw e;
 		} finally {
 			this.callStack.pop();
 		}
@@ -213,6 +238,9 @@ public final class CallStackTool extends Tool {
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
 			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
+			throw e;
 		} finally {
 			this.callStack.pop();
 		}
@@ -228,6 +256,9 @@ public final class CallStackTool extends Tool {
 			// see tlc2.tool.Tool.getInitStates(SemanticNode, ActionItemList, Context,
 			// TLCState, IStateFunctor)
 			this.callStack.freeze();
+			throw e;
+		} catch (FingerprintException e) {
+			this.callStack.freeze(e);
 			throw e;
 		} finally {
 			this.callStack.pop();
