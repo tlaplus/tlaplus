@@ -51,6 +51,9 @@ ASSUME(AssertEq(ToJsonObject([a |-> FALSE, b |-> 1]), "{\"a\":false,\"b\":1}"))
 ASSUME(AssertEq(ToJsonObject("a" :> 1 @@ "b" :> 2 @@ "c" :> 3), "{\"a\":1,\"b\":2,\"c\":3}"))
 ASSUME(AssertEq(ToJsonObject(1 :> "b" @@ 0 :> "c"), "{\"0\":\"c\",\"1\":\"b\"}"))
 
+\* Tests FcnRcdValue where the domain could be represented symbolically.
+ASSUME(AssertEq(ToJsonObject([n \in 1..2 |-> "a"]), "[\"a\",\"a\"]"))
+
 \* Nested values
 ASSUME(AssertEq(ToJsonObject([a |-> {<<1, 2>>}, b |-> [c |-> 3]]), "{\"a\":[[1,2]],\"b\":{\"c\":3}}"))
 

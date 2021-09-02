@@ -224,17 +224,15 @@ public class Json {
    * @return indicates whether the value is a valid sequence
    */
   private static boolean isValidSequence(FcnRcdValue value) {
-    if (value.intv != null) {
-      return value.intv.low == 1 && value.intv.high == value.domain.length;
-    }
-    for (Value domain : value.domain) {
-      if (!(domain instanceof IntValue)) {
+    final Value[] domain = value.getDomainAsValues();
+    for (Value d : domain) {
+      if (!(d instanceof IntValue)) {
         return false;
       }
     }
     value.normalize();
-    for (int i = 0; i < value.domain.length; i++) {
-      if (((IntValue) value.domain[i]).val != (i + 1)) {
+    for (int i = 0; i < domain.length; i++) {
+      if (((IntValue) domain[i]).val != (i + 1)) {
         return false;
       }
     }
@@ -272,9 +270,10 @@ public class Json {
       return getArrayNode(value);
     }
 
+    final Value[] domain = value.getDomainAsValues();
     JsonObject jsonObject = new JsonObject();
-    for (int i = 0; i < value.domain.length; i++) {
-      Value domainValue = value.domain[i];
+    for (int i = 0; i < domain.length; i++) {
+      Value domainValue = domain[i];
       if (domainValue instanceof StringValue) {
         jsonObject.add(((StringValue) domainValue).val.toString(), getNode(value.values[i]));
       } else {
