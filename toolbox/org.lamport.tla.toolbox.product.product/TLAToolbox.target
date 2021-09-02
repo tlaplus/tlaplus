@@ -65,7 +65,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="0.0.0"/>
-<repository id="eclipse-rcp" location="http://download.eclipse.org/releases/2018-09/201809191000"/>
+<repository id="eclipse-rcp" location="http://download.eclipse.org/releases/2018-09/201809191002"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
