@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 
 
 /**
@@ -45,6 +46,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
    * being the last element of this array.
    */
   private String[] libraryPaths;
+  private final Path tmpDir = FilenameToStream.getTempDirectory();
 
   public SimpleFilenameToStream() {
 	  libraryPaths = getLibraryPaths(getInstallationBasePath(), null);
@@ -57,8 +59,8 @@ public class SimpleFilenameToStream implements FilenameToStream {
 /**
  * August 2014 - TL
  * This constructor was on the interface but was not implemented.
- * Now one can pass additiona libraries which will be added to the
- * installtion path and instead the path supplied using the system property TLA_LIBRARY
+ * Now one can pass additional libraries which will be added to the
+ * installation path and instead the path supplied using the system property TLA_LIBRARY
  * (which is being used in the default constructor).
  */
   public SimpleFilenameToStream(String[] anLibraryPaths) {
@@ -235,7 +237,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
   } // end locate()
 
   private File read(String name, URL location, InputStream is) {
-    final File sourceFile = new TLAFile(TMPDIR + File.separator + name, location, true, this);
+    final File sourceFile = new TLAFile(tmpDir.resolve(name), location, true, this);
 	sourceFile.deleteOnExit();
 	try {
 

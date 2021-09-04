@@ -3,9 +3,12 @@
 package util;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 
@@ -54,6 +57,10 @@ public interface FilenameToStream
 			this.resolver = fts;
 		}
 
+		public TLAFile(Path path, boolean isLibraryModule, FilenameToStream fts) {
+			this(path.toFile().toString(), isLibraryModule, fts);
+		}
+
 		public TLAFile(String parent, String child, FilenameToStream fts) {
 			super(parent,
 				  ((ROOT_PATH_PATTERN.matcher(parent).find() && child.startsWith(parent))
@@ -75,6 +82,10 @@ public interface FilenameToStream
 			this.libraryPath = toNullOrURI(location);
 			this.isLibraryModule = isLibraryModule;
 			this.resolver = fts;
+		}
+
+		public TLAFile(Path path, URL location, boolean isLibraryModule, FilenameToStream fts) {
+			this(path.toFile().toString(), location, isLibraryModule, fts);
 		}
 
 		private static URI toNullOrURI(URL location) {
@@ -142,14 +153,22 @@ public interface FilenameToStream
 	default boolean isLibraryModule(String moduleName) {
 		return isStandardModule(moduleName);
 	}
-   
-	static final String TMPDIR = System.getProperty("java.io.tmpdir");
-
+ 	
 	static boolean isInJar(final String aString) {
 		return aString.startsWith("jar:") || aString.endsWith(".jar");
 	}
 
 	static boolean isArchive(String aString) {
 		return isInJar(aString) || aString.endsWith(".zip");
+	}
+	
+	static Path getTempDirectory() {
+  		try {
+			return Files.createTempDirectory("tlc-");
+		} catch (IOException e) {
+			// This is unfortunately how we handle things over here. :-(
+			e.printStackTrace();
+		}
+  		return null;
 	}
 }

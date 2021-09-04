@@ -36,6 +36,7 @@ public class RCPNameToFileIStream implements FilenameToStream
 {
 
     private final Vector<String> libraryPathEntries = new Vector<String>();
+    private final Path tmpDir = FilenameToStream.getTempDirectory();
 
     /**
      * Initialization of the name resolver <br>
@@ -173,7 +174,7 @@ public class RCPNameToFileIStream implements FilenameToStream
 	// the resource. The problem is, that the Toolbox and TLC work with File instead
 	// of InputStream which is why we can't extract to memory only.
 	private File getFromArchive(String prefix, String name) {
-		final File outputFile = new TLAFile(TMPDIR + File.separator + name, true, this);
+		final File outputFile = new TLAFile(tmpDir.resolve(name), true, this);
 		outputFile.deleteOnExit(); // Written to TMPDIR which is likely deleted regularly anyway.
 		try (FileSystem fileSystem = FileSystems.newFileSystem(new File(prefix).toPath(), (ClassLoader) null)) {
 	        Path fileToExtract = fileSystem.getPath(name);
