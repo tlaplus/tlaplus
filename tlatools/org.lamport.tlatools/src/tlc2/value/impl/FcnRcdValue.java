@@ -795,7 +795,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     try {
 
       this.normalize();
-      int flen = this.domain.length;
+      int flen = this.size();
       Value[] vals = new Value[flen];
 
       boolean vchanged = false;
