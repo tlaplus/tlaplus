@@ -2,7 +2,7 @@
 
 \begin{ppcal}
 -------------------------- MODULE OpenAddressing --------------------------
-EXTENDS Sequences, FiniteSets, Integers, TLC
+EXTENDS Sequences, FiniteSets, Integers
 
 (***************************************************************************)
 (* K: The overall number of fingerprints that fit into the table.          *)
@@ -15,7 +15,7 @@ EXTENDS Sequences, FiniteSets, Integers, TLC
 CONSTANT K, fps, empty, Writer, Reader, L
 
 (***************************************************************************)
-(* K is a positive natural.  emtpy is disjunct to all elements in fps.     *)
+(* K is a positive natural.  emtpy is different from all elements in fps.  *)
 (* fingerprints are natural numbers and can be well-ordered.               *)
 (***************************************************************************)
 ASSUME /\ K \in (Nat \ {0})
@@ -24,6 +24,11 @@ ASSUME /\ K \in (Nat \ {0})
        /\ (2*L) <= K 
 
 ----------------------------------------------------------------------------
+
+(***************************************************************************)
+(* The image of the function F.                                            *)
+(***************************************************************************)
+Image(F) == { F[x] : x \in DOMAIN F }
 
 (***************************************************************************)
 (* The element of position Len(seq) of a sequence seq.                     *)
@@ -39,13 +44,13 @@ largestElem(sortedSeq) == IF sortedSeq = <<>> THEN 0 ELSE last(sortedSeq)
 (***************************************************************************)
 (* All elements of seq1 smaller than elem and the largest element in seq2. *)
 (***************************************************************************)
-subSetSmaller(seq1, seq2, elem) == SelectSeq(seq1, LAMBDA p:
+subSeqSmaller(seq1, seq2, elem) == SelectSeq(seq1, LAMBDA p:
                                      p < elem /\ p > largestElem(seq2))               
 
 (***************************************************************************)
 (* All elements of seq1 larger than the largest element in seq2.           *)
 (***************************************************************************)
-subSetLarger(seq1, seq2) == IF seq2 = <<>> 
+subSeqLarger(seq1, seq2) == IF seq2 = <<>> 
                             THEN seq1 
                             ELSE SelectSeq(seq1, LAMBDA p:
                                                     p > largestElem(seq2))               
@@ -53,10 +58,10 @@ subSetLarger(seq1, seq2) == IF seq2 = <<>>
 (***************************************************************************)
 (* TRUE iff the sequence seq contains the element elem.                    *)
 (***************************************************************************)
-containsElem(seq, elem) == \E i \in 1..Len(seq): seq[i] = elem
+containsElem(seq, elem) == elem \in Image(seq)
                     
 (***************************************************************************)
-(* The minimum and maximum element in set s.                               *)
+(* The minimum and maximum element in set S.                               *)
 (***************************************************************************)
 min(S) == CHOOSE s \in S: \A a \in S: s <= a 
 max(S) == CHOOSE s \in S: \A a \in S: s >= a 
@@ -96,13 +101,13 @@ rescale(k,maxF,minF,fp,p) == LET f == (k - 1) \div (maxF - minF)
 
 (***************************************************************************)
 (* Calculates an fp's index where fp \in fps. p is an alternative address, *)
-(* such that: p \in 0..P. Uses bitshifting iff K is power of two.          *)
+(* such that: p \in 0..L.                                                  *)
 (***************************************************************************)
 idx(fp, p) == rescale(K, max(fps), min(fps), fp, p)
 
 (***************************************************************************)
 (* TRUE iff the fingerprint at table position index is equal to fp or its  *)
-(* corresponding negative fp value (marked as to be copied to secondary).  *)
+(* corresponding negative fp value (marked as to be copied to external).   *)
 (***************************************************************************)
 isMatch(fp, index, table) == \/ table[index] = fp
                              \/ table[index] = (-1*fp)
@@ -117,22 +122,6 @@ isEmpty(index, table) == table[index] = empty
 (***************************************************************************)
 isMarked(index, table) == table[index] < 0
 
-(***************************************************************************)
-(* t is sorted iff its empty-filtered sub-sequence is sorted. An empty     *)
-(* sequence is defined to be sorted.                                       *)
-(***************************************************************************)
-isSorted(seq) == LET sub == SelectSeq(seq, LAMBDA e: e # empty)
-                 IN IF sub = <<>> THEN TRUE
-                    ELSE \A i \in 1..(Len(sub) - 1):
-                         sub[mod(i, Len(sub))] < sub[mod(i+1, Len(sub))]
-
-(***************************************************************************)
-(* TRUE iff fingerprint fp is either found within table according to       *)
-(* isMatch or in seq.                                                      *)
-(***************************************************************************)
-contains(f,t,seq,Q) == \/ \E i \in 0..Q: isMatch(f,idx(f,i),t)
-                       \/ \E i \in 1..Len(seq): seq[i] = f 
-                       
 ----------------------------------------------------------------------------
 
 (***************************************************************************)
@@ -144,38 +133,90 @@ contains(f,t,seq,Q) == \/ \E i \in 0..Q: isMatch(f,idx(f,i),t)
 wrapped(fp, pos) == idx(fp, 0) > mod(pos, K) 
 
 (***************************************************************************)
-(* TRUE iff the given two fingerprints have to be swapped to satisfy the   *)
-(* expected order.                                                         *)
+(* Compare the two fingerprints fp1 and fp2 for order with regards to      *) 
+(* their numerical values and their respective positions i1 and i2.        *)
+(*                                                                         *)
+(* Returns -1, iff fp2 is less than fp1. Returns 0, iff fp1 and fp2 are    *)
+(* equal. Returns 1, iff fp1 is less than fp2.                             *)
+(*                                                                         *)
+(* compare considers three cases:                                          *)
+(* 1) Iff either one or both fingerprints are empty, they are defined to   *)
+(*    be equal. Under the assumption of a stable sorting algorithm, fp1    *)
+(*    and fp2 are not swapped (ELSE 0).                                    *)
+(* 2) Iff neither one or both fingerprints wrapped, a basic comparison is  *)
+(*    done. A basic comparison is one, where the lower positioned fp has   *)
+(*    to be numerically lower.                                             *)
+(* 3) Iff the truth values for wrapped differed, two cases have to be      *)
+(*    distinguished:                                                       *)
+(*                                                                         *)
+(*     Let:                                                                *)
+(*     $\overset{\circlearrowleft}{fps} \triangleq {fp \in fps:            *)
+(*               \E i \in Image(PS[fp]): wrapped(fp,i)}$                   *)
+(*                                                                         *)
+(*     $\overrightarrow{fps} \triangleq fps \                              *)
+(*                        \overset{\circlearrowleft}{fps}$                 *)
+(*                                                                         *)
+(* 3a) Comparison when fp1 and fp2 are both in                             *)
+(*     $\overset{\circlearrowleft}{fps}$. If fp1 is at a lower             *)
+(*     position (thus wrapped) and numerically lower, swap it with fp2     *)
+(*     which is at a higher position and thus did not wrap.                *)
+(*     For example, fp1 was inserted into the table after fp2 and thus     *)
+(*     wrapped, but is numerically lower than fp2.                         *)
+(*                                                                         *)
+(* 3b) Special case comparison required by Insertion Sort. It compares a   *)
+(*     fingerprint in $\overset{\circlearrowleft}{fps}$ with one in        *) 
+(*     $\overrightarrow{fps}$.                                             *)
+(*     Insertion Sort compares adjacent elements. Thus, without this case  *)
+(*     two fingerprints fp1 and fpX, which are eventually handled by 3a),  *)
+(*     would not be sorted, iff fp2 is inbetween of fp1 and fpX. Thus, fp1 *)
+(*     is swapped with fp2 meaning it moves towards the beginning of table.*)
+(*     Eventually, all wrapped fingerprints in                             *)
+(*     $\overset{\circlearrowleft}{fps}$ will form a cluster               *)
+(*     at the beginning of t and can then be sorted with 3a). In other     *)
+(*     words, we allow the wrapped fingerprints to be compacted at the     *)
+(*     beginning ot the table and non-wrapping fingerprints to be moved to *)
+(*     higher positions.                                                   *)
+(*                                                                         *)
+(*     Assumeming that the beginning of table is:                          *)
+(*     <<1,23,22,...,24>> (assuming fps is 1..24, L=3 and K=6. Sorted,     *)
+(*     table needs to change to <<1,23,24,...,22>>.                        *)
+(*     Without 3b), Insertion Sort compares 22 to 1 and 23 to 22. The      *)
+(*     outcome would be <<1,22,23,...,24>>, which is cleary not fully      *)
+(*     sorted. Thus, in order to handle this case, we allow IS to swap 22  *)
+(*     and 23 with 1. As a result, table - when sorted - is                *)
+(*     <<23,24,1,...,22>>.                                                 *)
+(*                                                                         *)
+(*     Can we be sure, that non-wrapping fingerprints do not get moved out *)
+(*     beyond the end of their probing sequence?                           *)
+(*     Obvously, at most, L-1 wrapping fingerprints can be located at the  *)
+(*     beginning of table. In this case, only one non-wrapping fingerprint *)
+(*     will be in the table, which maximally will be moved L-1 positions   *)
+(*     to the right with regards to its primary position.                  *)
 (***************************************************************************)
-compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
-                          THEN IF wrapped(fp1, i1) = wrapped(fp2, i2) /\ i1 > i2
-                               THEN IF fp1 < fp2 THEN -1 ELSE 1
-                               ELSE IF ~(wrapped(fp1, i1) <=> wrapped(fp2, i2))
-                                    THEN IF i1 < i2 /\ fp1 < fp2
-                                         THEN -1
-                                         ELSE IF i1 > i2 /\ fp1 > fp2
-                                              THEN -1
-                                              ELSE 0
-                                    ELSE 0
-                          ELSE 0            
+compare(fp1,i1,fp2,i2) == 
+                IF fp1 \in fps /\ fp2 \in fps                         \* 1)
+                THEN IF wrapped(fp1, i1) = wrapped(fp2, i2)           \* 2)
+                     THEN IF i1 > i2 /\ fp1 < fp2 THEN -1 ELSE 1
+                     ELSE IF i1 < i2 /\ fp1 < fp2 THEN -1 ELSE        \* 3a
+                          IF i1 > i2 /\ fp1 > fp2 THEN -1 ELSE 0      \* 3b
+                ELSE 0            
                              
 ----------------------------------------------------------------------------
 
 (***       this is a comment containing the PlusCal code *
---fair algorithm OpenAddressing 
+--algorithm OpenAddressing 
 (***************************************************************************)
 (* table: The actual hash table specified as a TLA+ sequence. history: An  *)
 (* auxiliary (history) variable unrelated to the actual hash table         *)
 (* specification. It just records the inserted fingerprints to be verified *)
-(* by Inv. An implementation won't need history. secondary: The secondary  *)
+(* by Inv. An implementation won't need history. external: The external  *)
 (* storage where fingerprints are eventually evicted to. outer/inner:      *)
-(* Index variables local to the sort action. P: The number of times an     *) 
-(* alterante index is to be tried.                                         *)          
+(* Index variables local to the sort action. L: The number of times an     *) 
+(* alternate index is to be tried.                                         *)          
 (***************************************************************************)
 { variable table = [i \in 1..K |-> empty], 
-           secondary = <<>>,
-           newsecondary = <<>>,
-           P = 0,         \* LongAccumulator in Java
+           external = <<>>,
+           newexternal = <<>>,
            evict = FALSE, \* AtomicBoolean in Java
            waitCnt = 0,   \* CyclicBarrier in Java
            history = {};
@@ -198,7 +239,8 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
    (* SC_Implementation_Details_by_Processor_family                        *)       
    (************************************************************************)
 
-  (* Atomically compare and swap. *)      
+  (* Atomically compare and swap an element of table.    *)
+  (* Atomicity is implicit due to the absence of labels. *)      
   macro CAS(result, pos, expected, new) {
      if (table[pos] = expected) {
          table[pos] := new;
@@ -211,7 +253,7 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
   procedure Evict()
      variables ei = 1, ej = 1, lo = 0; {
                 (* Insertion sort. *)
-     strIns:    while (ei <= K+P) {
+     strIns:    while (ei <= K+L) {
                   lo := table[mod(ei + 1, K)];
      nestedIns:   while (compare(lo, mod(ei + 1, K), 
                             table[mod(ej, K)], mod(ej, K)) <= -1) {
@@ -230,82 +272,72 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
                 ei := 1;
                 
                 (* Write to external storage. *)
-     flush:     while (ei <= K+P) {
+     flush:     while (ei <= K+L) {
                      lo := table[mod(ei, K)];
                      if (lo # empty /\
-                         lo > largestElem(newsecondary) /\
+                         lo > largestElem(newexternal) /\
                          ((ei <= K /\ ~wrapped(lo,ei)) \/ 
                           (ei > K /\ wrapped(lo,ei)))) {
                         (* Copy all smaller fps than lo from   *)
-                        (* secondary to newsecondary.          *)
-                        newsecondary := Append(newsecondary \o 
-                               subSetSmaller(secondary, newsecondary, lo), lo);
+                        (* secondary to newexternal.          *)
+                        newexternal := Append(newexternal \o 
+                               subSeqSmaller(external, newexternal, lo), lo);
                         (* Mark table[mod(cpy,table)] as being *)
-                        (* written to secondary.               *)
+                        (* written to external.               *)
                         table[mod(ei, K)] := lo * (-1);
                      };
                      ei := ei + 1;
                 };
-                (* Append remainder of secondary to newsecondary and *) 
-                (* assign newsecondary to secondary. *)
-                secondary := newsecondary \o 
-                             subSetLarger(secondary, newsecondary);
-                newsecondary := <<>>;
-                (* Setting P to 0 means a larger portion of cntns queries   *)
-                (* go to secondary. Leaving P unchanged results in a longer *) 
-                (* lookup chain. However neither violates any invariants.   *)
-                (* An implementation is likely to set P to the              *)
-                (* mean/median/some other fancy statistics or treats P as   *)
-                (* as an optimization to speedup insertions prior to the    *)
-                (* first eviction.                                          *)
-                with (p \in 0..P) {
-                   P := p;
-                };
+                (* Append remainder of external to newexternal and *) 
+                (* assign newexternal to external. *)
+                external := newexternal \o 
+                             subSeqLarger(external, newexternal);
+                newexternal := <<>>;
      rtrn:      return;
   }
   
-  process (q \in Reader) 
-    variables rfp = 0, rindex = 0, checked = {}; {
-     rwait:   await history # {};
-     rpick:   while (TRUE) {
-                  if (checked = history /\ history = fps) {
-                     goto Done;
-                  } else {
-                     with (f \in history) { 
-                        rfp := f;
-                        checked := checked \cup {f};
-                     };
-                  };
-                   
-     rcntns:      rindex := 0;
-                  if (evict) {
-                     waitCnt := waitCnt + 1;
-     rwaitEv:        await evict = FALSE;
-     rendWEv:        waitCnt := waitCnt - 1;
-                     goto rcntns
-                  };
-                 
-     ronPrm:      while (rindex <= P) {
-                     if (isMatch(rfp, idx(rfp, rindex), table)) {
-                        goto rpick
-                     } else {
-                        if (isEmpty(idx(rfp, rindex), table) 
-                         \/ isMarked(idx(rfp, rindex), table)) {
-                           goto ronSnc;
-                        } else {
-                          rindex := rindex + 1
-                        }
-                     }
-                  };
-     ronSnc:      if (containsElem(secondary,rfp)) {
-                      goto rpick
-                  } else {
-                      (* Since we picked a fp from history, it always *) 
-                      (* either has to be in table or secondary.      *)
-                      assert(FALSE);
-                  };
-             }
-  }
+\*  process (q \in Reader) 
+\*    variables rfp = 0, rindex = 0, checked = {}; {
+\*     rwait:   await history # {};
+\*     rpick:   while (TRUE) {
+\*                  if (checked = history /\ history = fps) {
+\*                     goto Done;
+\*                  } else {
+\*                     with (f \in history) { 
+\*                        rfp := f;
+\*                        checked := checked \cup {f};
+\*                     };
+\*                  };
+\*                   
+\*     rcntns:      rindex := 0;
+\*                  if (evict) {
+\*                     waitCnt := waitCnt + 1;
+\*     rwaitEv:        await evict = FALSE;
+\*     rendWEv:        waitCnt := waitCnt - 1;
+\*                     goto rcntns
+\*                  };
+\*                 
+\*     ronPrm:      while (rindex <= L) {
+\*                     if (isMatch(rfp, idx(rfp, rindex), table)) {
+\*                        goto rpick
+\*                     } else {
+\*                        if (isEmpty(idx(rfp, rindex), table) 
+\*                         \/ isMarked(idx(rfp, rindex), table)) {
+\*                           goto ronSnc;
+\*                        } else {
+\*                          rindex := rindex + 1
+\*                        }
+\*                     }
+\*                  };
+\*     ronSnc:      if (containsElem(external,rfp)) {
+\*                      goto rpick
+\*                  } else {
+\*                      (* Since we picked a fp from history, it always *) 
+\*                      (* either has to be in table or external.      *)
+\*                      assert(FALSE);
+\*                  };
+\*             }
+\*  }
        
   (* A weak fair process. *)        
   fair process (p \in Writer)
@@ -328,7 +360,7 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
               (* where the fp is inserted. Maximally, a position    *)
               (* can be K + L, thus expected is set to K + L + 1;   *)
               (* as an approximation of infinity.                   *)
-              expected := K + L + 1;
+              expected := L;
               (* Wait for eviction thread to do its work. *)
               if (evict) {
                  waitCnt := waitCnt + 1;
@@ -337,12 +369,12 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
                  goto put
               };
               
-              (* Check secondary unless empty. First though, we do   *)
+              (* Check external unless empty. First though, we do    *)
               (* a primary lookup in case the fp in question has not *)
-              (* been evicted to secondary yet.                      *)
-     chkSnc:  if (secondary # <<>>) {
+              (* been evicted to external yet.                       *)
+     chkSnc:  if (external # <<>>) {
                  (* Primary lookup. *)
-     cntns:       while (index < P) {
+     cntns:       while (index < L) {
                     if (isMatch(fp, idx(fp, index), table)) {
                        goto pick
                     } else {
@@ -369,8 +401,8 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
                   };
               
               
-                  (* Secondary lookup. *)
-     onSnc:       if (containsElem(secondary,fp)) {
+                  (* External lookup. *)
+     onSnc:       if (containsElem(external,fp)) {
                      goto pick
                   } else {
                      (* Have next loop start at expected determined *)
@@ -382,12 +414,11 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
               };
               
               (* Put inserts the given fp into the hash table by sequentially *)
-              (* trying the primary to the P's alternate position.            *)
+              (* trying the primary to the L's alternate position.            *)
      insrt:   while (index < L) {
                  expected := table[idx(fp,index)];
                  if (expected = empty \/ 
                      (expected < 0 /\ expected # (-1) * fp))  {
-     incP:           if (index > P) {P := index};
      cas:            CAS(result, idx(fp,index), expected, fp);
                      if (result) {
                         history := history \cup {fp};
@@ -400,7 +431,7 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
                  };
                 
                  (* Has fp been inserted by another process? Check isMatch *)
-                 (* AFTER empty and on-secondary because of two reasons:   *)
+                 (* AFTER empty and on-external because of two reasons:    *)
                  (* a) Thread A finds table[pos] to be empty but fails     *)
                  (*    to CAS fpX. Thread B concurrently also finds        *)
                  (*    table[pos] to be empty and succeeds to CAS fpX.     *)
@@ -415,8 +446,13 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
 
 
               (* We failed to insert fp into a full table, thus try *)
-              (* to become the thread that evicts to secondary.     *)
+              (* to become the thread that evicts to external.      *)
+              (* The label tryEv makes sure, that the read and      *) 
+              (* write occur atomically. An implementation has to   *)
+              (* CAS or use some other mechanism to control         *)
+              (* concurrency.                                       *)
      tryEv:   if (evict = FALSE) {
+                 (* CAS evict! *)
                  evict := TRUE;
                  (* Wait for all other insertion threads and  *) 
                  (* the one reader to park.                   *)
@@ -427,28 +463,24 @@ compare(fp1,i1,fp2,i2) == IF fp1 # empty /\ fp2 # empty
               } else {
                  goto put
               }
-            } 
+            }
          } \* end while/pick
     }
 }
 ***     this ends the comment containg the pluscal code      **********)
-----------------------------------------------------------------------------
-\* BEGIN TRANSLATION
-VARIABLES table, secondary, newsecondary, P, evict, waitCnt, history, pc, 
-          stack, ei, ej, lo, rfp, rindex, checked, fp, index, result, 
-          expected
+\* BEGIN TRANSLATION (chksum(pcal) = "b4d45dd9" /\ chksum(tla) = "7e9e5338")
+VARIABLES table, external, newexternal, evict, waitCnt, history, pc, stack, 
+          ei, ej, lo, fp, index, result, expected
 
-vars == << table, secondary, newsecondary, P, evict, waitCnt, history, pc, 
-           stack, ei, ej, lo, rfp, rindex, checked, fp, index, result, 
-           expected >>
+vars == << table, external, newexternal, evict, waitCnt, history, pc, stack, 
+           ei, ej, lo, fp, index, result, expected >>
 
-ProcSet == (Reader) \cup (Writer)
+ProcSet == (Writer)
 
 Init == (* Global variables *)
         /\ table = [i \in 1..K |-> empty]
-        /\ secondary = <<>>
-        /\ newsecondary = <<>>
-        /\ P = 0
+        /\ external = <<>>
+        /\ newexternal = <<>>
         /\ evict = FALSE
         /\ waitCnt = 0
         /\ history = {}
@@ -456,75 +488,71 @@ Init == (* Global variables *)
         /\ ei = [ self \in ProcSet |-> 1]
         /\ ej = [ self \in ProcSet |-> 1]
         /\ lo = [ self \in ProcSet |-> 0]
-        (* Process q *)
-        /\ rfp = [self \in Reader |-> 0]
-        /\ rindex = [self \in Reader |-> 0]
-        /\ checked = [self \in Reader |-> {}]
         (* Process p *)
         /\ fp = [self \in Writer |-> 0]
         /\ index = [self \in Writer |-> 0]
         /\ result = [self \in Writer |-> FALSE]
         /\ expected = [self \in Writer |-> -1]
         /\ stack = [self \in ProcSet |-> << >>]
-        /\ pc = [self \in ProcSet |-> CASE self \in Reader -> "rwait"
-                                        [] self \in Writer -> "pick"]
+        /\ pc = [self \in ProcSet |-> "pick"]
 
-strEv(self) == /\ pc[self] = "strEv"
-               /\ IF ei[self] <= K+P
-                     THEN /\ lo' = [lo EXCEPT ![self] = table[mod(ei[self] + 1, K)]]
-                          /\ pc' = [pc EXCEPT ![self] = "fdsaf"]
-                          /\ ei' = ei
-                     ELSE /\ ei' = [ei EXCEPT ![self] = 1]
-                          /\ pc' = [pc EXCEPT ![self] = "flush"]
-                          /\ lo' = lo
-               /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                               waitCnt, history, stack, ej, rfp, rindex, 
-                               checked, fp, index, result, expected >>
+strIns(self) == /\ pc[self] = "strIns"
+                /\ IF ei[self] <= K+L
+                      THEN /\ lo' = [lo EXCEPT ![self] = table[mod(ei[self] + 1, K)]]
+                           /\ pc' = [pc EXCEPT ![self] = "nestedIns"]
+                           /\ ei' = ei
+                      ELSE /\ ei' = [ei EXCEPT ![self] = 1]
+                           /\ pc' = [pc EXCEPT ![self] = "flush"]
+                           /\ lo' = lo
+                /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                                history, stack, ej, fp, index, result, 
+                                expected >>
 
-fdsaf(self) == /\ pc[self] = "fdsaf"
-               /\ IF compare(lo[self], mod(ei[self] + 1, K), table[mod(ej[self], K)], mod(ej[self], K)) <= -1
-                     THEN /\ table' = [table EXCEPT ![mod(ej[self] + 1, K)] = table[mod(ej[self], K)]]
-                          /\ IF ej[self] = 0
-                                THEN /\ ej' = [ej EXCEPT ![self] = ej[self] - 1]
-                                     /\ pc' = [pc EXCEPT ![self] = "set"]
-                                ELSE /\ ej' = [ej EXCEPT ![self] = ej[self] - 1]
-                                     /\ pc' = [pc EXCEPT ![self] = "fdsaf"]
-                     ELSE /\ pc' = [pc EXCEPT ![self] = "set"]
-                          /\ UNCHANGED << table, ej >>
-               /\ UNCHANGED << secondary, newsecondary, P, evict, waitCnt, 
-                               history, stack, ei, lo, rfp, rindex, checked, 
-                               fp, index, result, expected >>
+nestedIns(self) == /\ pc[self] = "nestedIns"
+                   /\ IF compare(lo[self], mod(ei[self] + 1, K),
+                            table[mod(ej[self], K)], mod(ej[self], K)) <= -1
+                         THEN /\ table' = [table EXCEPT ![mod(ej[self] + 1, K)] = table[mod(ej[self], K)]]
+                              /\ IF ej[self] = 0
+                                    THEN /\ ej' = [ej EXCEPT ![self] = ej[self] - 1]
+                                         /\ pc' = [pc EXCEPT ![self] = "set"]
+                                    ELSE /\ ej' = [ej EXCEPT ![self] = ej[self] - 1]
+                                         /\ pc' = [pc EXCEPT ![self] = "nestedIns"]
+                         ELSE /\ pc' = [pc EXCEPT ![self] = "set"]
+                              /\ UNCHANGED << table, ej >>
+                   /\ UNCHANGED << external, newexternal, evict, waitCnt, 
+                                   history, stack, ei, lo, fp, index, result, 
+                                   expected >>
 
 set(self) == /\ pc[self] = "set"
              /\ table' = [table EXCEPT ![mod(ej[self] + 1, K)] = lo[self]]
              /\ ej' = [ej EXCEPT ![self] = ei[self] + 1]
              /\ ei' = [ei EXCEPT ![self] = ei[self] + 1]
-             /\ pc' = [pc EXCEPT ![self] = "strEv"]
-             /\ UNCHANGED << secondary, newsecondary, P, evict, waitCnt, 
-                             history, stack, lo, rfp, rindex, checked, fp, 
-                             index, result, expected >>
+             /\ pc' = [pc EXCEPT ![self] = "strIns"]
+             /\ UNCHANGED << external, newexternal, evict, waitCnt, history, 
+                             stack, lo, fp, index, result, expected >>
 
 flush(self) == /\ pc[self] = "flush"
-               /\ IF ei[self] <= K+P
+               /\ IF ei[self] <= K+L
                      THEN /\ lo' = [lo EXCEPT ![self] = table[mod(ei[self], K)]]
                           /\ IF lo'[self] # empty /\
-                                lo'[self] > largestElem(newsecondary) /\
+                                lo'[self] > largestElem(newexternal) /\
                                 ((ei[self] <= K /\ ~wrapped(lo'[self],ei[self])) \/
                                  (ei[self] > K /\ wrapped(lo'[self],ei[self])))
-                                THEN /\ newsecondary' = Append(newsecondary \o subSetSmaller(secondary, newsecondary, lo'[self]), lo'[self])
+                                THEN /\ newexternal' =         Append(newexternal \o
+                                                       subSeqSmaller(external, newexternal, lo'[self]), lo'[self])
                                      /\ table' = [table EXCEPT ![mod(ei[self], K)] = lo'[self] * (-1)]
                                 ELSE /\ TRUE
-                                     /\ UNCHANGED << table, newsecondary >>
+                                     /\ UNCHANGED << table, newexternal >>
                           /\ ei' = [ei EXCEPT ![self] = ei[self] + 1]
                           /\ pc' = [pc EXCEPT ![self] = "flush"]
-                          /\ UNCHANGED << secondary, P >>
-                     ELSE /\ secondary' = newsecondary \o subSetLarger(secondary, newsecondary)
-                          /\ newsecondary' = <<>>
-                          /\ P' = 0
+                          /\ UNCHANGED external
+                     ELSE /\ external' = newexternal \o
+                                          subSeqLarger(external, newexternal)
+                          /\ newexternal' = <<>>
                           /\ pc' = [pc EXCEPT ![self] = "rtrn"]
                           /\ UNCHANGED << table, ei, lo >>
-               /\ UNCHANGED << evict, waitCnt, history, stack, ej, rfp, rindex, 
-                               checked, fp, index, result, expected >>
+               /\ UNCHANGED << evict, waitCnt, history, stack, ej, fp, index, 
+                               result, expected >>
 
 rtrn(self) == /\ pc[self] = "rtrn"
               /\ pc' = [pc EXCEPT ![self] = Head(stack[self]).pc]
@@ -532,86 +560,11 @@ rtrn(self) == /\ pc[self] = "rtrn"
               /\ ej' = [ej EXCEPT ![self] = Head(stack[self]).ej]
               /\ lo' = [lo EXCEPT ![self] = Head(stack[self]).lo]
               /\ stack' = [stack EXCEPT ![self] = Tail(stack[self])]
-              /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                              waitCnt, history, rfp, rindex, checked, fp, 
-                              index, result, expected >>
+              /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                              history, fp, index, result, expected >>
 
-Evict(self) == strEv(self) \/ fdsaf(self) \/ set(self) \/ flush(self)
+Evict(self) == strIns(self) \/ nestedIns(self) \/ set(self) \/ flush(self)
                   \/ rtrn(self)
-
-rwait(self) == /\ pc[self] = "rwait"
-               /\ history # {}
-               /\ pc' = [pc EXCEPT ![self] = "rpick"]
-               /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                               waitCnt, history, stack, ei, ej, lo, rfp, 
-                               rindex, checked, fp, index, result, expected >>
-
-rpick(self) == /\ pc[self] = "rpick"
-               /\ IF checked[self] = history /\ history = fps
-                     THEN /\ pc' = [pc EXCEPT ![self] = "Done"]
-                          /\ UNCHANGED << rfp, checked >>
-                     ELSE /\ \E f \in history:
-                               /\ rfp' = [rfp EXCEPT ![self] = f]
-                               /\ checked' = [checked EXCEPT ![self] = checked[self] \cup {f}]
-                          /\ pc' = [pc EXCEPT ![self] = "rcntns"]
-               /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                               waitCnt, history, stack, ei, ej, lo, rindex, fp, 
-                               index, result, expected >>
-
-rcntns(self) == /\ pc[self] = "rcntns"
-                /\ rindex' = [rindex EXCEPT ![self] = 0]
-                /\ IF evict
-                      THEN /\ waitCnt' = waitCnt + 1
-                           /\ pc' = [pc EXCEPT ![self] = "rwaitEv"]
-                      ELSE /\ pc' = [pc EXCEPT ![self] = "ronPrm"]
-                           /\ UNCHANGED waitCnt
-                /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                history, stack, ei, ej, lo, rfp, checked, fp, 
-                                index, result, expected >>
-
-rwaitEv(self) == /\ pc[self] = "rwaitEv"
-                 /\ evict = FALSE
-                 /\ pc' = [pc EXCEPT ![self] = "rendWEv"]
-                 /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                 waitCnt, history, stack, ei, ej, lo, rfp, 
-                                 rindex, checked, fp, index, result, expected >>
-
-rendWEv(self) == /\ pc[self] = "rendWEv"
-                 /\ waitCnt' = waitCnt - 1
-                 /\ pc' = [pc EXCEPT ![self] = "rcntns"]
-                 /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                 history, stack, ei, ej, lo, rfp, rindex, 
-                                 checked, fp, index, result, expected >>
-
-ronPrm(self) == /\ pc[self] = "ronPrm"
-                /\ IF rindex[self] <= P
-                      THEN /\ IF isMatch(rfp[self], idx(rfp[self], rindex[self]), table)
-                                 THEN /\ pc' = [pc EXCEPT ![self] = "rpick"]
-                                      /\ UNCHANGED rindex
-                                 ELSE /\ IF    isEmpty(idx(rfp[self], rindex[self]), table)
-                                            \/ isMarked(idx(rfp[self], rindex[self]), table)
-                                            THEN /\ pc' = [pc EXCEPT ![self] = "ronSnc"]
-                                                 /\ UNCHANGED rindex
-                                            ELSE /\ rindex' = [rindex EXCEPT ![self] = rindex[self] + 1]
-                                                 /\ pc' = [pc EXCEPT ![self] = "ronPrm"]
-                      ELSE /\ pc' = [pc EXCEPT ![self] = "ronSnc"]
-                           /\ UNCHANGED rindex
-                /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                waitCnt, history, stack, ei, ej, lo, rfp, 
-                                checked, fp, index, result, expected >>
-
-ronSnc(self) == /\ pc[self] = "ronSnc"
-                /\ IF containsElem(secondary,rfp[self])
-                      THEN /\ pc' = [pc EXCEPT ![self] = "rpick"]
-                      ELSE /\ Assert((FALSE), 
-                                     "Failure of assertion at line 291, column 23.")
-                           /\ pc' = [pc EXCEPT ![self] = "rpick"]
-                /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                waitCnt, history, stack, ei, ej, lo, rfp, 
-                                rindex, checked, fp, index, result, expected >>
-
-q(self) == rwait(self) \/ rpick(self) \/ rcntns(self) \/ rwaitEv(self)
-              \/ rendWEv(self) \/ ronPrm(self) \/ ronSnc(self)
 
 pick(self) == /\ pc[self] = "pick"
               /\ IF (fps \ history) = {}
@@ -620,82 +573,84 @@ pick(self) == /\ pc[self] = "pick"
                     ELSE /\ \E f \in (fps \ history):
                               fp' = [fp EXCEPT ![self] = f]
                          /\ pc' = [pc EXCEPT ![self] = "put"]
-              /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                              waitCnt, history, stack, ei, ej, lo, rfp, rindex, 
-                              checked, index, result, expected >>
+              /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                              history, stack, ei, ej, lo, index, result, 
+                              expected >>
 
 put(self) == /\ pc[self] = "put"
              /\ index' = [index EXCEPT ![self] = 0]
              /\ result' = [result EXCEPT ![self] = FALSE]
-             /\ expected' = [expected EXCEPT ![self] = -1]
+             /\ expected' = [expected EXCEPT ![self] = L]
              /\ IF evict
                    THEN /\ waitCnt' = waitCnt + 1
                         /\ pc' = [pc EXCEPT ![self] = "waitEv"]
                    ELSE /\ pc' = [pc EXCEPT ![self] = "chkSnc"]
                         /\ UNCHANGED waitCnt
-             /\ UNCHANGED << table, secondary, newsecondary, P, evict, history, 
-                             stack, ei, ej, lo, rfp, rindex, checked, fp >>
+             /\ UNCHANGED << table, external, newexternal, evict, history, 
+                             stack, ei, ej, lo, fp >>
 
 waitEv(self) == /\ pc[self] = "waitEv"
                 /\ evict = FALSE
                 /\ pc' = [pc EXCEPT ![self] = "endWEv"]
-                /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                waitCnt, history, stack, ei, ej, lo, rfp, 
-                                rindex, checked, fp, index, result, expected >>
+                /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                                history, stack, ei, ej, lo, fp, index, result, 
+                                expected >>
 
 endWEv(self) == /\ pc[self] = "endWEv"
                 /\ waitCnt' = waitCnt - 1
                 /\ pc' = [pc EXCEPT ![self] = "put"]
-                /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                history, stack, ei, ej, lo, rfp, rindex, 
-                                checked, fp, index, result, expected >>
+                /\ UNCHANGED << table, external, newexternal, evict, history, 
+                                stack, ei, ej, lo, fp, index, result, expected >>
 
 chkSnc(self) == /\ pc[self] = "chkSnc"
-                /\ IF secondary # <<>>
+                /\ IF external # <<>>
                       THEN /\ pc' = [pc EXCEPT ![self] = "cntns"]
                       ELSE /\ pc' = [pc EXCEPT ![self] = "insrt"]
-                /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                waitCnt, history, stack, ei, ej, lo, rfp, 
-                                rindex, checked, fp, index, result, expected >>
+                /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                                history, stack, ei, ej, lo, fp, index, result, 
+                                expected >>
 
 cntns(self) == /\ pc[self] = "cntns"
-               /\ IF index[self] < P
+               /\ IF index[self] < L
                      THEN /\ IF isMatch(fp[self], idx(fp[self], index[self]), table)
                                 THEN /\ pc' = [pc EXCEPT ![self] = "pick"]
-                                     /\ index' = index
-                                ELSE /\ IF    isEmpty(idx(fp[self], index[self]), table)
-                                           \/ isMarked(idx(fp[self], index[self]), table)
-                                           THEN /\ pc' = [pc EXCEPT ![self] = "onSnc"]
+                                     /\ UNCHANGED << index, expected >>
+                                ELSE /\ IF isEmpty(idx(fp[self], index[self]), table)
+                                           THEN /\ expected' = [expected EXCEPT ![self] = minimum(expected[self], index[self])]
+                                                /\ pc' = [pc EXCEPT ![self] = "onSnc"]
                                                 /\ index' = index
-                                           ELSE /\ index' = [index EXCEPT ![self] = index[self] + 1]
+                                           ELSE /\ IF isMarked(idx(fp[self], index[self]), table)
+                                                      THEN /\ expected' = [expected EXCEPT ![self] = minimum(expected[self], index[self])]
+                                                           /\ index' = [index EXCEPT ![self] = index[self] + 1]
+                                                      ELSE /\ index' = [index EXCEPT ![self] = index[self] + 1]
+                                                           /\ UNCHANGED expected
                                                 /\ pc' = [pc EXCEPT ![self] = "cntns"]
                      ELSE /\ pc' = [pc EXCEPT ![self] = "onSnc"]
-                          /\ index' = index
-               /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                               waitCnt, history, stack, ei, ej, lo, rfp, 
-                               rindex, checked, fp, result, expected >>
+                          /\ UNCHANGED << index, expected >>
+               /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                               history, stack, ei, ej, lo, fp, result >>
 
 onSnc(self) == /\ pc[self] = "onSnc"
-               /\ IF containsElem(secondary,fp[self])
+               /\ IF containsElem(external,fp[self])
                      THEN /\ pc' = [pc EXCEPT ![self] = "pick"]
-                          /\ index' = index
-                     ELSE /\ index' = [index EXCEPT ![self] = 0]
+                          /\ UNCHANGED << index, expected >>
+                     ELSE /\ index' = [index EXCEPT ![self] = expected[self]]
+                          /\ expected' = [expected EXCEPT ![self] = -1]
                           /\ pc' = [pc EXCEPT ![self] = "insrt"]
-               /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                               waitCnt, history, stack, ei, ej, lo, rfp, 
-                               rindex, checked, fp, result, expected >>
+               /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                               history, stack, ei, ej, lo, fp, result >>
 
 insrt(self) == /\ pc[self] = "insrt"
                /\ IF index[self] < L
                      THEN /\ expected' = [expected EXCEPT ![self] = table[idx(fp[self],index[self])]]
-                          /\ IF expected'[self] = empty \/ (expected'[self] < 0 /\ expected'[self] # (-1) * fp[self])
-                                THEN /\ pc' = [pc EXCEPT ![self] = "incP"]
+                          /\ IF expected'[self] = empty \/
+                                (expected'[self] < 0 /\ expected'[self] # (-1) * fp[self])
+                                THEN /\ pc' = [pc EXCEPT ![self] = "cas"]
                                 ELSE /\ pc' = [pc EXCEPT ![self] = "isMth"]
                      ELSE /\ pc' = [pc EXCEPT ![self] = "tryEv"]
                           /\ UNCHANGED expected
-               /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                               waitCnt, history, stack, ei, ej, lo, rfp, 
-                               rindex, checked, fp, index, result >>
+               /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                               history, stack, ei, ej, lo, fp, index, result >>
 
 isMth(self) == /\ pc[self] = "isMth"
                /\ IF isMatch(fp[self],idx(fp[self],index[self]),table)
@@ -703,19 +658,9 @@ isMth(self) == /\ pc[self] = "isMth"
                           /\ index' = index
                      ELSE /\ index' = [index EXCEPT ![self] = index[self] + 1]
                           /\ pc' = [pc EXCEPT ![self] = "insrt"]
-               /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                               waitCnt, history, stack, ei, ej, lo, rfp, 
-                               rindex, checked, fp, result, expected >>
-
-incP(self) == /\ pc[self] = "incP"
-              /\ IF index[self] > P
-                    THEN /\ P' = index[self]
-                    ELSE /\ TRUE
-                         /\ P' = P
-              /\ pc' = [pc EXCEPT ![self] = "cas"]
-              /\ UNCHANGED << table, secondary, newsecondary, evict, waitCnt, 
-                              history, stack, ei, ej, lo, rfp, rindex, checked, 
-                              fp, index, result, expected >>
+               /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                               history, stack, ei, ej, lo, fp, result, 
+                               expected >>
 
 cas(self) == /\ pc[self] = "cas"
              /\ IF table[(idx(fp[self],index[self]))] = expected[self]
@@ -728,9 +673,8 @@ cas(self) == /\ pc[self] = "cas"
                         /\ pc' = [pc EXCEPT ![self] = "pick"]
                    ELSE /\ pc' = [pc EXCEPT ![self] = "insrt"]
                         /\ UNCHANGED history
-             /\ UNCHANGED << secondary, newsecondary, P, evict, waitCnt, stack, 
-                             ei, ej, lo, rfp, rindex, checked, fp, index, 
-                             expected >>
+             /\ UNCHANGED << external, newexternal, evict, waitCnt, stack, ei, 
+                             ej, lo, fp, index, expected >>
 
 tryEv(self) == /\ pc[self] = "tryEv"
                /\ IF evict = FALSE
@@ -738,9 +682,8 @@ tryEv(self) == /\ pc[self] = "tryEv"
                           /\ pc' = [pc EXCEPT ![self] = "waitIns"]
                      ELSE /\ pc' = [pc EXCEPT ![self] = "put"]
                           /\ evict' = evict
-               /\ UNCHANGED << table, secondary, newsecondary, P, waitCnt, 
-                               history, stack, ei, ej, lo, rfp, rindex, 
-                               checked, fp, index, result, expected >>
+               /\ UNCHANGED << table, external, newexternal, waitCnt, history, 
+                               stack, ei, ej, lo, fp, index, result, expected >>
 
 waitIns(self) == /\ pc[self] = "waitIns"
                  /\ waitCnt = Cardinality(Writer) - 1 + Cardinality(Reader)
@@ -753,116 +696,126 @@ waitIns(self) == /\ pc[self] = "waitIns"
                  /\ ei' = [ei EXCEPT ![self] = 1]
                  /\ ej' = [ej EXCEPT ![self] = 1]
                  /\ lo' = [lo EXCEPT ![self] = 0]
-                 /\ pc' = [pc EXCEPT ![self] = "strEv"]
-                 /\ UNCHANGED << table, secondary, newsecondary, P, evict, 
-                                 waitCnt, history, rfp, rindex, checked, fp, 
-                                 index, result, expected >>
+                 /\ pc' = [pc EXCEPT ![self] = "strIns"]
+                 /\ UNCHANGED << table, external, newexternal, evict, waitCnt, 
+                                 history, fp, index, result, expected >>
 
 endEv(self) == /\ pc[self] = "endEv"
                /\ evict' = FALSE
                /\ pc' = [pc EXCEPT ![self] = "put"]
-               /\ UNCHANGED << table, secondary, newsecondary, P, waitCnt, 
-                               history, stack, ei, ej, lo, rfp, rindex, 
-                               checked, fp, index, result, expected >>
+               /\ UNCHANGED << table, external, newexternal, waitCnt, history, 
+                               stack, ei, ej, lo, fp, index, result, expected >>
 
 p(self) == pick(self) \/ put(self) \/ waitEv(self) \/ endWEv(self)
               \/ chkSnc(self) \/ cntns(self) \/ onSnc(self) \/ insrt(self)
-              \/ isMth(self) \/ incP(self) \/ cas(self) \/ tryEv(self)
-              \/ waitIns(self) \/ endEv(self)
+              \/ isMth(self) \/ cas(self) \/ tryEv(self) \/ waitIns(self)
+              \/ endEv(self)
+
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
 
 Next == (\E self \in ProcSet: Evict(self))
-           \/ (\E self \in Reader: q(self))
            \/ (\E self \in Writer: p(self))
-           \/ (* Disjunct to prevent deadlock on termination *)
-              ((\A self \in ProcSet: pc[self] = "Done") /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
-        /\ WF_vars(Next)
         /\ \A self \in Writer : WF_vars(p(self)) /\ WF_vars(Evict(self))
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION
+\* END TRANSLATION 
+
+----------------------------------------------------------------------------
+
+contains(f,t,seq,Q) == \/ \E i \in 0..Q: isMatch(f,idx(f,i),t)
+                       \/ \E i \in 1..Len(seq): seq[i] = f
+                       \/ IF f \in (Image(lo) \ {0}) THEN evict = TRUE
+                                                     ELSE FALSE
 
 (***************************************************************************)
-(* A type correctness invariant for outer, inner and P.                    *)
+(* All fingerprint in history are (always) members of the seen set C,      *)
+(* all (fps \ history) never are.                                          *)
+(* During eviction, the sort algorithm might swap two fingerprints         *)
+(* non-atomically s.t. the table does not contain one of the two           *)
+(* fingerprints. The one not in table is then expected to be in the lo     *)
+(* variable of the sort algorithms.                                        *)
 (***************************************************************************)
-TypeOK == /\ P \in Nat
-          /\ P <= L
-                        
+Contains == /\ \A seen \in history: 
+                           contains(seen,table,external,L)
+            /\ \A unseen \in (fps \ history):
+                          ~contains(unseen,table,external,L)
+
+----------------------------------------------------------------------------
+
 (***************************************************************************)
-(* All fingerprint in history are (always) hash table members,             *)
-(* all fps \ history never are.                                            *)
+(* The absolute value of the given number.                                 *)
 (***************************************************************************)
-Inv == evict = FALSE => /\ \A seen \in history: 
-                                       contains(seen,table,secondary,P+1)
-                        /\ \A unseen \in (fps \ history):
-                                      ~contains(unseen,table,secondary,P+1)
+abs(number) == IF number < 0 THEN -1 * number ELSE number
        
 (***************************************************************************)
-(* FALSE iff table contains duplicate elements (excluding empty).          *)
+(* True when no eviction is running.                                       *)
 (***************************************************************************)
-Duplicates == evict = FALSE => LET sub == SelectSeq(table, LAMBDA e: e # empty)
-                               IN IF Len(sub) < 2 THEN TRUE
-                                  ELSE \A i \in 1..(Len(sub) - 1):
-                                           /\ sub[i] # sub[i+1]
-                                           /\ sub[i] # (-1) * sub[i+1]
+FindOrPut == evict = FALSE
+
+(***************************************************************************)
+(* FALSE iff table contains duplicate elements (excluding empty), unless   *)
+(* Evict is running.                                                       *)
+(* During eviction, the sort algorithm might swap two fingerprints         *)
+(* non-atomically s.t. the table contains duplicates of one of the two     *)
+(* fingerprints temporarily.                                               *)
+(***************************************************************************)
+Duplicates == FindOrPut => LET sub == SelectSeq(table, LAMBDA e: e # empty)
+                           IN IF Len(sub) < 2 THEN TRUE
+                              ELSE \A i \in 1..(Len(sub) - 1):
+                                      \A j \in (i+1)..Len(sub):
+                                         abs(sub[i]) # abs(sub[j])
+
+----------------------------------------------------------------------------
+
+(***************************************************************************)
+(* seq is sorted iff its empty-filtered sub-sequence is sorted. An empty   *)
+(* sequence is defined to be sorted.                                       *)
+(***************************************************************************)
+isSorted(seq) == LET sub == SelectSeq(seq, LAMBDA e: e # empty)
+                 IN IF Len(sub) < 2 THEN TRUE
+                    ELSE \A i \in 1..(Len(sub) - 1):
+                            sub[i] < sub[i+1]
                         
 (***************************************************************************)
-(* Secondary storage is always sorted in ascending order.                  *)
+(* External storage is always sorted in ascending order.                   *)
 (***************************************************************************) 
-Sorted == isSorted(secondary) /\ isSorted(newsecondary)
+Sorted == isSorted(external) /\ isSorted(newexternal)
+
+----------------------------------------------------------------------------
 
 (***************************************************************************)
-(* TRUE iff f is found in table within idx(f,0)..id(f,r).                  *)
+(* TRUE iff f is found in table within idx(f,0)..id(f,L).                  *)
 (***************************************************************************)
-containedInTable(f) == \E r \in 0..P+1: IF f < 0
-                                        THEN table[idx((-1)*f, r)] = f
-                                        ELSE table[idx(f, r)] = f
+containedInTable(f) == \E l \in 0..L: table[idx(abs(f), l)] = f
 
 (***************************************************************************)
-(* TRUE iff f is found in secondary.                                       *)
+(* TRUE if all fingerprints \in history correctly transition from table    *)
+(* to the external storage. Models a three state FSM.                      *)
 (***************************************************************************)
-containedInSecondary(f) == containsElem(secondary,f)
+Consistent == FindOrPut => \A seen \in history:
+            /\ containedInTable(seen) => ~containsElem(external, seen)
+            /\ containedInTable(seen * (-1)) => containsElem(external, seen)
+            /\ ~containedInTable(seen) => containsElem(external, seen)
+
+----------------------------------------------------------------------------
 
 (***************************************************************************)
-(* TRUE iff f is found in newsecondary.                                    *)
+(* Under all behaviors, the algorithm makes progress and eventually puts   *)
+(* all fingerprints in fps into the table resulting in history = fps.      *)
 (***************************************************************************)
-containedInNewSecondary(f) == containsElem(newsecondary,f)
+Complete == <>[](history = fps)
 
 (***************************************************************************)
-(* TRUE iff fingerprints correctly transition from table to newsecondary   *)
-(* to secondary.                                                           *)
+(* Iff certain that Termination is guaranteed, the liveness property       *)
+(* Complete can be rewritten to the safety property below. A safety        *)
+(* property can be checked faster.                                         *)
 (***************************************************************************)
-Consistent == evict = FALSE => \A seen \in history:
-        /\ (containedInTable(seen) => ~containedInSecondary(seen))
-        /\ (containedInTable(seen) => ~containedInNewSecondary(seen))
-        /\ (~containedInTable(seen) => (containedInSecondary(seen)) \/ 
-                                        containedInNewSecondary(seen))
-        /\ (containedInTable(seen * (-1)) => (containedInSecondary(seen)) \/ 
-                                              containedInNewSecondary(seen))
-\* Universal quantification and leads-to not supported by TLC
-\*      /\ (containedInTable((-1)*seen) ~> containedInSecondary(seen))
-
-(***************************************************************************)
-(* TRUE iff the maximum displacement of all elements (without empty) is    *)
-(* equal to P. In other words, P is always minimal.                        *)
-(***************************************************************************)
-Minimal == \A i \in 1..Len(table): IF table[i] = empty 
-                                     THEN TRUE
-                                     ELSE LET f == IF table[i] < 0 
-                                                   THEN -1 * table[i]
-                                                   ELSE table[i]
-                                          IN (i - idx(f, 0)) <= P
-
-(***************************************************************************)
-(* P has to reach the limit L in some behaviors.                           *)
-(***************************************************************************)
-Maxed == <>(P = L)
-
-(***************************************************************************)
-(* Under all behaviors, the algorithm makes progress.                      *)
-(***************************************************************************)
-Prop == <>[](history = fps)
+CompleteAsSafety == \A self \in ProcSet: pc[self] = "Done" => (history = fps)
 =============================================================================
 \end{ppcal}
