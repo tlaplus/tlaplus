@@ -43,9 +43,11 @@ import tlc2.util.RandomGenerator;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
+import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
 import util.FileUtil;
@@ -490,6 +492,25 @@ public class Simulator {
 	public List<IValue> getAllValues(int idx) {
 		return workers.stream().map(w -> w.getLocalValue(idx)).collect(Collectors.toList());
 	}
+	
+	public final Value getAllValues() {
+		final IValue[] localValues = workers.get(0).getLocalValues();
+		
+		final Map<Value, Value> m = new HashMap<>(localValues.length);
+		
+		for (int i = 0; i < localValues.length; i++) {
+			final IValue iValue = localValues[i];
+			if (iValue != null) {
+				final Value[] vals = new Value[workers.size()];
+				for (int j = 0; j < vals.length; j++) {
+					vals[j] = (Value) workers.get(j).getLocalValue(i);
+				}
+				m.put(IntValue.gen(i), new TupleValue(vals));
+			}
+		}
+		return new FcnRcdValue(m);
+	}
+
 
 	/**
 	 * Prints the summary

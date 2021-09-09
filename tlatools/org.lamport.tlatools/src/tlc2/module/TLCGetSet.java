@@ -83,6 +83,7 @@ public class TLCGetSet implements ValueConstants {
 	public static final UniqueString INSTALL = UniqueString.uniqueStringOf("install");
 
 	public static final UniqueString BEHAVIOR = UniqueString.of("behavior");
+	public static final UniqueString ALL_VALUES = UniqueString.of("all");
 	
 	public static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
 	public static final UniqueString DEADLOCK = UniqueString.uniqueStringOf("deadlock");
@@ -385,6 +386,24 @@ public class TLCGetSet implements ValueConstants {
 				return new RecordValue(Action.UNKNOWN);
 			} else {
 				return new RecordValue(s0.getAction());
+			}
+		} else if (ALL_VALUES == sv.val) {
+			/*
+			 * - Let  W  be the set  1..TLCGet("config").worker
+             * - Let  Eval(w, Op)  be an operator that evaluates the given operator  Op  
+             *   in the context of the w-th worker  s.t.  w \in W  .
+             * - Let  I  be the set of (naturals)  i  that appear in all  TLCSet(i, v)
+             *   throughout a spec.
+             * 
+             * TLCGet("all") ==
+             *    [ i \in I |-> 
+             *       [ w \in W |-> 
+             *         Eval(w, TLCGet(i) ] ]
+			 */
+			if (TLCGlobals.mainChecker != null) {
+				return TLCGlobals.mainChecker.getAllValues();
+			} else if (TLCGlobals.simulator != null) {
+				return TLCGlobals.simulator.getAllValues();
 			}
 		}
 		throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));

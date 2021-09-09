@@ -81,6 +81,18 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 	  this.cm = cm;
   }
 
+	public FcnRcdValue(final List<Value> vals) {
+		this(new IntervalValue(1, vals.size()), vals.toArray(Value[]::new));
+	}
+
+  public FcnRcdValue(final Map<Value, Value> pairs) {
+	  this(pairs, false);
+  }
+
+  public FcnRcdValue(final Map<Value, Value> pairs, final boolean isNorm) {
+	  this(pairs.keySet().toArray(Value[]::new), pairs.values().toArray(Value[]::new), isNorm);
+  }
+
   @Override
   public final byte getKind() { return FCNRCDVALUE; }
 

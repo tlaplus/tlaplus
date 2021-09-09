@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
@@ -29,9 +31,11 @@ import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.IValue;
 import tlc2.value.RandomEnumerableValues;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
+import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
 import util.DebugPrinter;
 import util.UniqueString;
@@ -506,14 +510,32 @@ public abstract class AbstractChecker
 		}
 	}
 
-	public final List<IValue> getAllValues(final int idx) {
+	public final List<IValue> getAllValue(final int idx) {
 		return Arrays.asList(workers).stream().map(w -> w.getLocalValue(idx)).collect(Collectors.toList());
 	}
 
 	public final IValue getValue(int i, int idx) {
 		return workers[i].getLocalValue(idx);
 	}
-
+	
+	public final Value getAllValues() {
+		final IValue[] localValues = ((IdThread) workers[0]).getLocalValues();
+		
+		final Map<Value, Value> m = new HashMap<>(localValues.length);
+		
+		for (int i = 0; i < localValues.length; i++) {
+			final IValue iValue = localValues[i];
+			if (iValue != null) {
+				final Value[] vals = new Value[workers.length];
+				for (int j = 0; j < vals.length; j++) {
+					vals[j] = (Value) workers[j].getLocalValue(i);
+				}
+				m.put(IntValue.gen(i), new TupleValue(vals));
+			}
+		}
+		return new FcnRcdValue(m);
+	}
+	
     /**
      * Debugging support
      * @param message

@@ -77,6 +77,10 @@ public class IdThread extends Thread {
 		}
 		return null;
 	}
+	
+	public IValue[] getLocalValues() {
+		return this.localValues;
+	}
 
 	public void setLocalValue(int idx, IValue val) {
 		if (idx >= this.localValues.length) {

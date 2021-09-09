@@ -46,7 +46,7 @@ Next == \/ FillSmall
         
 Spec == Init /\ [][Next]_<<small, big>>   
 
-\* Active because of TYPE_CONSTRAINT in corresponding .cfg file.
+
 PostCondition ==
   \* Evaluating the spec takes 97 states of which 16 are distinct.  The
   \* diameter of the spec is 8.
@@ -59,7 +59,7 @@ PostCondition ==
      \/ Print(TLCGet(42), FALSE)
   \* On average, for each distinct state of the spec, TLC pours 8 gallons
   \* of water from the fountain. To check if TLC correctly reports the 
-  \* violationg of this property, we expect it to be 23.
+  \* violating of this property, we expect it to be 23.
   /\ \/ (TLCGet(42) \div TLCGet("distinct")) = 23
      \/ Print(TLCGet(42) \div TLCGet("distinct"), FALSE)
 
