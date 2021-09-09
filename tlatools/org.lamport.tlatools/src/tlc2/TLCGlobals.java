@@ -205,11 +205,15 @@ public class TLCGlobals
 	
 	public static Date getBuildDate() {
 		try {
+			final String manifestValue = getManifestValue("Build-TimeStamp");
+			if (manifestValue == null) {
+				return new Date();
+			}
 			final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
 			df.setTimeZone(TimeZone.getTimeZone("UTC"));
 			// TLC's Build-TimeStamp in the jar's Manifest is format according to ISO 8601
 			// (https://en.m.wikipedia.org/wiki/ISO_8601)
-			return df.parse(getManifestValue("Build-TimeStamp"));
+			return df.parse(manifestValue);
 		} catch (NullPointerException | ParseException e) {
 			// There is no manifest or the manifest does not contain a build time stamp, in
 			// which case we return the current, syntactically equivalent time stamp.
