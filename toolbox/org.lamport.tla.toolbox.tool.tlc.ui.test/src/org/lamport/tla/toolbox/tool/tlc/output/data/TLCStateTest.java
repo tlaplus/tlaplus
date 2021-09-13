@@ -52,16 +52,33 @@ public class TLCStateTest {
 		assertFalse(state.isStuttering());
 		
 		assertEquals(1, state.getStateNumber());
+
+		// Variables are returned in lexicographical ordering.
+		final TLCVariable[] variables = state.getVariables();
 		
-		final List<TLCVariable> variables = state.getVariablesAsList();
-		variables.contains(
-				new TLCVariable("adding", TLCVariableValue.parseValue("(e1 :> NotAnElement @@ e2 :> NotAnElement)")));
-		variables.contains(
-				new TLCVariable("deq", TLCVariableValue.parseValue("(d1 :> v1)")));
-		variables.contains(
-				new TLCVariable("enq", TLCVariableValue.parseValue("(e1 :> Done @@ e2 :> Done)")));
-		variables.contains(
-				new TLCVariable("after", TLCVariableValue.parseValue("<<>>")));
+		TLCVariable variable = variables[0];
+		assertEquals(" adding", variable.getName());
+		TLCVariableValue expected = TLCVariableValue.parseValue("(e1 :> NotAnElement @@ e2 :> NotAnElement)");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[2];
+		assertEquals(" deq", variable.getName());
+		expected = TLCVariableValue.parseValue("(d1 :> v1)");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[3];
+		assertEquals(" enq", variable.getName());
+		expected = TLCVariableValue.parseValue("(e1 :> Done @@ e2 :> Done)");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[1];
+		assertEquals(" after", variable.getName());
+		expected = TLCVariableValue.parseValue("<<>>");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
 	}
 	
 	public void testInitNodeBackup() {
@@ -88,15 +105,34 @@ public class TLCStateTest {
 		
 		assertEquals(1, state.getStateNumber());
 		
-		final List<TLCVariable> variables = state.getVariablesAsList();
-		variables.contains(
-				new TLCVariable("IsNodeUp", TLCVariableValue.parseValue("(n1 :> TRUE @@ n2 :> TRUE @@ n3 :> TRUE)")));
-		variables.contains(
-				new TLCVariable("LockTimeout", TLCVariableValue.parseValue("FALSE")));
-		variables.contains(
-				new TLCVariable("BackupLock", TLCVariableValue.parseValue("None")));
-		variables.contains(
-				new TLCVariable("IsTakingBackup", TLCVariableValue.parseValue("(n1 :> FALSE @@ n2 :> FALSE @@ n3 :> FALSE)")));
+		// Variables are returned in lexicographical ordering.
+		final TLCVariable[] variables = state.getVariables();
+		
+		TLCVariable variable = variables[0];
+		assertEquals(" BackupLock", variable.getName());
+		TLCVariableValue expected = TLCVariableValue.parseValue("None");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[2];
+		assertEquals(" IsNodeUp", variable.getName());
+		expected = TLCVariableValue.parseValue("(n1 :> TRUE @@ n2 :> TRUE @@ n3 :> TRUE)");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[3];
+		assertEquals(" IsTakingBackup", variable.getName());
+		expected = TLCVariableValue.parseValue("(n1 :> FALSE @@ n2 :> FALSE @@ n3 :> FALSE)");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[1];
+		assertEquals(" LockTimeout", variable.getName());
+		expected = TLCVariableValue.parseValue("FALSE");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+		
+		//TODO NetworkPath
 	}
 
 	@Test
@@ -141,16 +177,33 @@ public class TLCStateTest {
 		
 		assertEquals(2, state.getStateNumber());
 		
-		final List<TLCVariable> variables = state.getVariablesAsList();
-		variables.contains(
-				new TLCVariable("adding", TLCVariableValue.parseValue("(e1 :> [data |-> v2, id |-> i2] @@ e2 :> NotAnElement)")));
-		variables.contains(
-				new TLCVariable("deq", TLCVariableValue.parseValue("(d1 :> v1)")));
-		variables.contains(
-				new TLCVariable("enq", TLCVariableValue.parseValue("(e1 :> v2 @@ e2 :> Done)")));
-		variables.contains(
-				new TLCVariable("after", TLCVariableValue.parseValue("([data |-> v2, id |-> i2] :> {})")));
+		// Variables are returned in lexicographical ordering.
+		final TLCVariable[] variables = state.getVariables();
 		
+		TLCVariable variable = variables[0];
+		assertEquals(" adding", variable.getName());
+		TLCVariableValue expected = TLCVariableValue.parseValue("(e1 :> [data |-> v2, id |-> i2] @@ e2 :> NotAnElement)");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[2];
+		assertEquals(" deq", variable.getName());
+		expected = TLCVariableValue.parseValue("(d1 :> v1)");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[3];
+		assertEquals(" enq", variable.getName());
+		expected = TLCVariableValue.parseValue("(e1 :> v2 @@ e2 :> Done)");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
+		variable = variables[1];
+		assertEquals(" after", variable.getName());
+		expected = TLCVariableValue.parseValue("([data |-> v2, id |-> i2] :> {})");
+		variable.getValue().diff(expected);
+		assertFalse(expected.isChanged());
+
 		assertEquals(state.getModuleLocation(), new Location(UniqueString.uniqueStringOf("NQSpec"), 88, 16, 94, 31));
 	}
 	
@@ -179,15 +232,52 @@ public class TLCStateTest {
 			
 			assertEquals(2, state.getStateNumber());
 			
-			final List<TLCVariable> variables = state.getVariablesAsList();
-			variables.contains(
-					new TLCVariable("IsNodeUp", TLCVariableValue.parseValue("(n1 :> TRUE @@ n2 :> TRUE @@ n3 :> TRUE)")));
-			variables.contains(
-					new TLCVariable("LockTimeout", TLCVariableValue.parseValue("FALSE")));
-			variables.contains(
-					new TLCVariable("BackupLock", TLCVariableValue.parseValue("None")));
-			variables.contains(
-					new TLCVariable("IsTakingBackup", TLCVariableValue.parseValue("(n1 :> FALSE @@ n2 :> FALSE @@ n3 :> FALSE)")));
+			// Variables are returned in lexicographical ordering.
+			final TLCVariable[] variables = state.getVariables();
+			
+			TLCVariable variable = variables[0];
+			assertEquals(" BackupLock", variable.getName());
+			TLCVariableValue expected = TLCVariableValue.parseValue("None");
+			variable.getValue().diff(expected);
+			assertFalse(expected.isChanged());
+
+			variable = variables[1];
+			assertEquals(" IsNodeUp", variable.getName());
+			expected = TLCVariableValue.parseValue("(n1 :> TRUE @@ n2 :> TRUE @@ n3 :> TRUE)");
+			variable.getValue().diff(expected);
+			assertFalse(expected.isChanged());
+
+			variable = variables[2];
+			assertEquals(" IsTakingBackup", variable.getName());
+			expected = TLCVariableValue.parseValue("(n1 :> FALSE @@ n2 :> FALSE @@ n3 :> FALSE)");
+			variable.getValue().diff(expected);
+			assertFalse(expected.isChanged());
+
+			variable = variables[3];
+			assertEquals(" Leader", variable.getName());
+			expected = TLCVariableValue.parseValue("n1");
+			variable.getValue().diff(expected);
+			assertFalse(expected.isChanged());
+
+			variable = variables[4];
+			assertEquals(" LockTimeout", variable.getName());
+			expected = TLCVariableValue.parseValue("FALSE");
+			variable.getValue().diff(expected);
+			assertFalse(expected.isChanged());
+
+			variable = variables[5];
+			assertEquals(" NetworkPath", variable.getName());
+			expected = TLCVariableValue.parseValue("( <<n1, n1>> :> TRUE @@\n"
+					+ "  <<n1, n2>> :> TRUE @@\n" 
+					+ "  <<n1, n3>> :> TRUE @@\n" 
+					+ "  <<n2, n1>> :> TRUE @@\n" 
+					+ "  <<n2, n2>> :> TRUE @@\n" 
+					+ "  <<n2, n3>> :> TRUE @@\n" 
+					+ "  <<n3, n1>> :> TRUE @@\n" 
+					+ "  <<n3, n2>> :> TRUE @@\n" 
+					+ "  <<n3, n3>> :> TRUE )");
+			variable.getValue().diff(expected);
+			assertFalse(expected.isChanged());
 			
 			assertEquals(state.getModuleLocation(), new Location(UniqueString.uniqueStringOf("NodeBackup"), 138, 24, 138, 37));
 	}
