@@ -26,15 +26,60 @@
 
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TLCVariable
 {
+	private static final Comparator<TLCVariable> comparator = new Comparator<TLCVariable>() {
+		public int compare(TLCVariable v1, TLCVariable v2) {
+			if (v1.isTraceExplorerVar() && v2.isTraceExplorerVar()) {
+				// both are variables. Compare the vars alphabetically.
+				return v1.getName().compareTo(v2.getName());
+			}
+			if (v1.isTraceExplorerVar()) {
+				return -1;
+			}
+			if (v2.isTraceExplorerVar()) {
+				return 1;
+			}
+			return v1.getName().compareTo(v2.getName());
+		}
+	};
+	
+	// "^/\ ": Optional conjunct delimiting variables (not present for a state with a single variable).
+	// lhs: Match any valid TLA+ variable name (any letter, digit or underscore, see http://lamport.azurewebsites.net/tla/TLAPlus2Grammar.tla).
+	// " = ": delimiter
+	// rhs: Match any characters including newlines up to the next "/\".
+	private static final Pattern pattern = Pattern.compile("^(\\/\\\\ )?(?<lhs>\\w+) = (?<rhs>.[^\\/\\\\]*)",
+			// Match over multiple lines and dot matches newline character.
+			Pattern.MULTILINE | Pattern.DOTALL);
+
+	public static List<TLCVariable> parseVariables(final String variablesText) {
+		final List<TLCVariable> vars = new ArrayList<TLCVariable>();
+
+		final Matcher matcher = pattern.matcher(variablesText);
+		while (matcher.find()) {
+			final String lhs = matcher.group("lhs");
+			final String rhs = matcher.group("rhs").trim(); // Trim dangling newlines.
+			
+			vars.add(new TLCVariable(lhs, TLCVariableValue.parseValue(rhs)));
+		}
+		
+		Collections.sort(vars, comparator);
+		return vars;
+	}
+	
     private String name;
     private TLCVariableValue value;
     private boolean isTraceExplorerVar;
 
-    public TLCVariable(String name, TLCVariableValue value)
+    private TLCVariable(String name, TLCVariableValue value)
     {
         this.name = name;
         this.value = value;

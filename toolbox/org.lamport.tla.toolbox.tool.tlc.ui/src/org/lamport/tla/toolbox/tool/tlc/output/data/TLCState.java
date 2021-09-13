@@ -27,8 +27,6 @@
 package org.lamport.tla.toolbox.tool.tlc.output.data;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,84 +112,10 @@ public class TLCState implements IModuleLocatable
             TLCState state = new TLCState(number, modelName);
             state.label = label;
             state.variablesAsString = input.substring(index2 + 1);
-            state.variables = TLCState.parseVariables(state.variablesAsString);
+            state.variables = TLCVariable.parseVariables(state.variablesAsString);
             state.setLocation(Location.parseLocation(label));
             return state;
         }
-    }
-
-    /**
-     * Parse the state variables out of the state output
-     * @param variablesText
-     * @return
-     */
-	private static List<TLCVariable> parseVariables(String variablesText) {
-        String[] lines = variablesText.split(TLAConstants.CR);
-		List<TLCVariable> vars = new ArrayList<TLCVariable>();
-        int index;
-
-        // buffer for accumulating the state variable
-        String[] stateVarString = null;
-
-        // iterate line-wise
-        for (int j = 0; j < lines.length; j++)
-        {
-            // find the index of the first /\ in the line
-            index = lines[j].indexOf(TLAConstants.TLA_AND);
-
-            // adding the current line to the previous lines
-            if (index != -1)
-            {
-                // there was something in the buffer for the state variable
-                // found an empty line, which means that this is the end of the current state
-                if (stateVarString != null)
-                {
-                    TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue.parseValue(stateVarString[1]));
-                    vars.add(var);
-                }
-
-                stateVarString = lines[j].substring(index + TLAConstants.TLA_AND.length()).split(TLAConstants.EQ);
-            } else
-            {
-                // no index
-
-                if (stateVarString != null)
-                {
-                    // either an empty line
-                    stateVarString[1] += TLAConstants.CR;
-                    stateVarString[1] += lines[j];
-                } else
-                {
-                    // the state has one variable only
-                    stateVarString = lines[j].split(TLAConstants.EQ);
-                }
-            }
-        }
-
-		// write the last one (for a viewmap (see page 243 of specifying system)
-		// stateVarString.lenght does not necessarily equal 2)
-        if (stateVarString != null && stateVarString.length >= 2)
-        {
-            TLCVariable var = new TLCVariable(stateVarString[0], TLCVariableValue.parseValue(stateVarString[1]));
-            vars.add(var);
-        }
-
-		Collections.sort(vars, new Comparator<TLCVariable>() {
-			public int compare(TLCVariable v1, TLCVariable v2) {
-				if (v1.isTraceExplorerVar() && v2.isTraceExplorerVar()) {
-					// both are variables. Compare the vars alphabetically.
-					return v1.getName().compareTo(v2.getName());
-				}
-				if (v1.isTraceExplorerVar()) {
-					return -1;
-				}
-				if (v2.isTraceExplorerVar()) {
-					return 1;
-				}
-				return v1.getName().compareTo(v2.getName());
-			}
-		});
-		return vars;
     }
 
     private int number;
