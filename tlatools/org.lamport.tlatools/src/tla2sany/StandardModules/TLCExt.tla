@@ -71,6 +71,10 @@ TLCModelValue(str) ==
   (* types because  a  and  A  are different types.  (TLC actually accepts      *)
   (* digits and underscore as types; don't use them.)  A model value has type   *)
   (* T  if and only if its name begins with the two characters  T_ .            *)
+  (*                                                                            *)
+  (* TLCModelValue may only appear in constant definitions!  Expect bogus       *)
+  (* behavior if TLCModelValue appears in the behavior spec, constraints,       *)
+  (* invariants, or properties.                                                 *)
   (******************************************************************************)
   CHOOSE v: ToString(v) = str
 

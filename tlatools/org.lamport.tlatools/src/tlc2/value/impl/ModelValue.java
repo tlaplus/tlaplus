@@ -101,6 +101,23 @@ public class ModelValue extends Value implements IModelValue {
     return mv;
   }
 
+  public static Value add(String str) {
+	    ModelValue mv = (ModelValue)mvTable.get(str);
+	    if (mv != null) return mv;
+	    mv = new ModelValue(str);
+	    mvTable.put(str, mv);
+	    // Contrary to the make method above, this method can be invoked
+      // *after* setValues below has been called from Spec. Thus, we
+      // re-create mvs here.  However, this will only work if add is
+      // called by SpecProcessor as part of constant processing.  add
+      // cannot be called from the initial predicate, let alone the
+      // next-state relation.  Except bogus behavior such as 
+      // FingerprintException, NullPointers, ... or serialization
+      // and deserialization in the StateQueue to fail.
+	    setValues();
+	    return mv;
+	}
+
   /* Collect all the model values defined thus far. */
   public static void setValues() {
     mvs = new ModelValue[mvTable.size()];

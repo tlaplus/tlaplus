@@ -277,12 +277,12 @@ public class TLCExt {
 	}
 
 	@TLAPlusOperator(identifier = "TLCModelValue", module = "TLCExt", warn = false)
-	public static Value tlcModelValue(final Value val) {
+	public static synchronized Value tlcModelValue(final Value val) {
 		if (!(val instanceof StringValue)) {
 			throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR,
 					new String[] { "ModelValue", "string", Values.ppr(val.toString()) });
 		}
 		final StringValue str = (StringValue) val;
-		return ModelValue.make(str.val.toString());
+		return ModelValue.add(str.val.toString());
 	}
 }
