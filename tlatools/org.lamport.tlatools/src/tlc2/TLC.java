@@ -397,6 +397,7 @@ public class TLC {
 		boolean snapshot = false;
 		
 		boolean generateTESpec = true;
+		boolean forceGenerateTESpec = false;
 		Path teSpecOut = null;
 		
         // SZ Feb 20, 2009: extracted this method to separate the 
@@ -492,6 +493,7 @@ public class TLC {
                 TLCGlobals.tool = true;
             } else if (args[index].equals("-generateSpecTE")) {
                 index++;
+                forceGenerateTESpec = true;
                 if ((index < args.length) && args[index].equals("nomonolith")) {
                 	index++;
                 }
@@ -936,10 +938,19 @@ public class TLC {
 		}
 		
 		generateTESpec =
-				generateTESpec
-				&& !TLCGlobals.continuation
-				&& !TLCGlobals.tool
-				&& !TraceExplorationSpec.isTESpecFile(mainFile);
+				// Let -generateSpecTE force the generation of a trace spec even in e.g. -tool
+				// mode. Eventually, we trace spec generation should even be the default with
+				// -tool mode to make trace specs broadly available to VSCode TLA+ extension
+				// users. However, the Eclipse Toolbox should not generate trace specs unless it
+				// migrates from its (legacy) trace exploration to trace specs.
+				forceGenerateTESpec || 
+					(generateTESpec
+					// TODO Drop forceGen... and replace .tool with check of system property
+					// tlc2.TLC.ide=toolbox to prevent trace spec generation when running from
+					// Toolbox.
+					&& !TLCGlobals.tool
+					&& !TLCGlobals.continuation
+					&& !TraceExplorationSpec.isTESpecFile(mainFile));
                 
 		
 		if (generateTESpec) {

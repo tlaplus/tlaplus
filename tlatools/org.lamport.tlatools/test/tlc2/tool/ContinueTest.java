@@ -43,6 +43,11 @@ public class ContinueTest extends ModelCheckerTestCase {
 		super("Continue", new String[] { "-continue" }, ExitStatus.SUCCESS);
 	}
 
+	@Override
+	protected boolean noGenerateSpec() {
+		return true;
+	}
+
 	@Test
 	public void testSpec() throws FileNotFoundException, IOException {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
