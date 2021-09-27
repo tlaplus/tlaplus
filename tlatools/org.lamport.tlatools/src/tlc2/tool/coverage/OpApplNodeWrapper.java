@@ -28,6 +28,7 @@ package tlc2.tool.coverage;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import tla2sany.semantic.OpApplNode;
@@ -39,7 +40,7 @@ import tlc2.output.MP;
 
 public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApplNodeWrapper>, CostModel {
 
-	private final Set<Long> childCounts = new HashSet<>();
+	private final Set<Pair> childCounts = new HashSet<>();
 	private final CostModelNode root;
 	private final OpApplNode node;
 	// Periodic coverage reporting executes concurrently with the evaluation of the
@@ -52,6 +53,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	// counts printed is consistent. Alternatively, evaluation of init and next
 	// could be suspended for the duration of the snapshot, but that seems overkill.
 	private long snapshotEvalCount = 0;
+	private long snapshotSecondCount = 0;
 	private boolean primed = false;
 	private int level;
 	private CostModelNode recursive;
@@ -223,40 +225,55 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		}
 	}
 
+	protected long getSecondCount(Calculate fresh) {
+		if (fresh == Calculate.FRESH) {
+			return super.getSecondary();
+		} else {
+			return snapshotSecondCount;
+		}
+	}
+
 	public CostModel report() {
 		print(0, Calculate.FRESH);
 		return this;
 	}
 
 	protected void print(int level, final Calculate fresh) {
-		final Set<Long> collectedEvalCounts = new HashSet<>();
+		final Set<Pair> collectedEvalCounts = new HashSet<>();
 		this.collectChildren(collectedEvalCounts, fresh);
 		if (collectedEvalCounts.isEmpty()) {
 			// Subtree has nothing to report.
 			if (getEvalCount(fresh) == 0l && !isPrimed()) {
-				// ..this node neither.
+				// ..this node neither (eval count zero => secondary zero).
 				return;
 			} else {
 				printSelf(level++);
 				return; // Do not invoke printSelf(...) again below.
 			}
 		}
+		final Pair node = new Pair(getEvalCount(fresh), getSecondCount(fresh));
 
 		if (collectedEvalCounts.size() == 1) {
-			final long count = getCount(collectedEvalCounts);
+			// The eval and secondary count of all children is consistent. We can, thus,
+			// collapse subtrees into this node under the following cases.
+			final Pair consistentChildren = getCount(collectedEvalCounts);
 
-			if (count < getEvalCount(fresh)) {
+			if (consistentChildren.primary < node.primary || consistentChildren.secondary < consistentChildren.secondary) {
 				// Cannot collapse subtree because inconsistent with this node.
 				printSelf(level++);
 				printChildren(level);
 				return;
 			}
-			if (!isPrimed() && getEvalCount(fresh) == 0l && count != 0l) {
+			if (!isPrimed() && node.isZero() && consistentChildren.isNonZero()) {
 				// Collapse consistent subtree into this node unless this node is primed.
-				printSelf(level++, count);
+				if (consistentChildren.secondary == 0l) {
+					printSelf(level++, consistentChildren.primary);
+				} else {
+					printSelf(level++, consistentChildren.primary, consistentChildren.secondary);
+				}
 				return;
 			}
-			if (getEvalCount(fresh) == count && count == 0l) {
+			if (node.isZero() && consistentChildren.isZero()) {
 				if (isPrimed()) {
 					printSelf(level++);
 				}
@@ -264,7 +281,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 				printChildren(level);
 				return;
 			}
-			if (getEvalCount(fresh) == count) {
+			if (node.equals(consistentChildren)) {
 				// Have a primed in subtree.
 				printSelf(level++);
 				return;
@@ -272,18 +289,18 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		}
 
 		// Subtree is inconsistent and needs to report itself.
-		if (getEvalCount(fresh) > 0 || isPrimed()) {
+		if (node.isNonZero() || isPrimed()) {
 			printSelf(level++);
 		}
 		printChildren(level);
 	}
 
-	private long getCount(Set<Long> collectWeights) {
+	private Pair getCount(Set<Pair> collectWeights) {
 		assert collectWeights.size() == 1;
-		for (Long l : collectWeights) {
+		for (Pair l : collectWeights) {
 			return l;
 		}
-		return -1l; // make compiler happy
+		return null; // make compiler happy
 	}
 	
 	protected void printChildren(final int level) {
@@ -317,24 +334,64 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		return whitespaces + str;
 	}
 	
+	static class Pair {
+		public final long primary;
+		public final long secondary;
+
+		public Pair(long primary, long secondary) {
+			this.primary = primary;
+			this.secondary = secondary;
+		}
+		public boolean isZero() {
+			return primary == 0 && secondary == 0;
+		}
+
+		public boolean isNonZero() {
+			return primary > 0 || secondary > 0;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(primary, secondary);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Pair other = (Pair) obj;
+			return primary == other.primary && secondary == other.secondary;
+		}
+
+		@Override
+		public String toString() {
+			return "<<" + primary + ", " + secondary + ">>";
+		}
+	}
+	
 	// ---------------- Child counts ---------------- //
 	
 	protected enum Calculate {
 		FRESH, CACHED;
 	}
 
-	protected void collectChildren(final Set<Long> result, Calculate c) {
+	protected void collectChildren(final Set<Pair> result, Calculate c) {
 		for (CostModelNode cmn : children.values()) {
 			((OpApplNodeWrapper) cmn).collectAndFreezeEvalCounts(result, c);
 		}
 	}
 
-	protected void collectAndFreezeEvalCounts(final Set<Long> result, final Calculate c) {
+	protected void collectAndFreezeEvalCounts(final Set<Pair> result, final Calculate c) {
 		if (c == Calculate.FRESH) {
 			snapshotEvalCount = this.getEvalCount(c);
+			snapshotSecondCount = this.getSecondCount(c);
 			childCounts.clear();
-			if (snapshotEvalCount > 0 || this.isPrimed()) {
-				childCounts.add(snapshotEvalCount);
+			if (snapshotEvalCount > 0 || snapshotSecondCount > 0 || this.isPrimed()) {
+				childCounts.add(new Pair(snapshotEvalCount, snapshotSecondCount));
 			}
 			collectChildren(childCounts, c);
 		}

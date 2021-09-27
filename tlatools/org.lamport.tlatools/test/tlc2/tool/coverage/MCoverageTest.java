@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2021 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -32,36 +32,46 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 
-public class JCoverageTest extends AbstractCoverageTest {
+public class MCoverageTest extends AbstractCoverageTest {
 
-    public JCoverageTest () {
-        super("J");
+    public MCoverageTest () {
+        super("M");
     }
 
     @Test
     public void testSpec () {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "6", "0"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "1"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "37056", "192", "0"));
 
 		// No 'general' errors recorded
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertCoverage("<Init line 5, col 1 to line 5, col 4 of module J>: 5:5\n" + 
-				"  line 5, col 12 to line 5, col 28 of module J: 1:6\n" + 
-				"  line 6, col 12 to line 6, col 40 of module J: 5\n" + 
-				"  |line 6, col 16 to line 6, col 40 of module J: 5:25\n" +
-				"  ||line 6, col 23 to line 6, col 33 of module J: 5:30\n" +
-				"<Next line 12, col 1 to line 12, col 4 of module J>: 1:6\n" + 
-				"  line 12, col 12 to line 12, col 22 of module J: 6\n" + 
-				"  |line 12, col 17 to line 12, col 22 of module J: 6\n" + 
-				"  ||line 9, col 2 to line 10, col 19 of module J: 6\n" + 
-				"  |||line 9, col 7 to line 9, col 11 of module J: 6\n" + 
-				"  |||line 9, col 16 to line 9, col 40 of module J: 2\n" + 
-				"  |||line 10, col 7 to line 10, col 19 of module J: 4\n" + 
-				"  ||line 12, col 21 to line 12, col 21 of module J: 6\n" + 
-				"  line 13, col 12 to line 13, col 22 of module J: 6");
 		assertFalse(recorder.recorded(EC.TLC_COVERAGE_MISMATCH));
+		
+		assertFalse(recorder.recorded(EC.TLC_COVERAGE_MISMATCH));
+		assertCoverage("<Init line 16, col 1 to line 16, col 4 of module M>: 192:192\n"
+				+ "  line 17, col 17 to line 17, col 39 of module M: 1:24\n"
+				+ "  |line 17, col 18 to line 17, col 27 of module M: 1\n"
+				+ "  |line 17, col 32 to line 17, col 38 of module M: 1\n"
+				+ "  line 18, col 16 to line 18, col 31 of module M: 8:192\n"
+				+ "  |line 18, col 17 to line 18, col 21 of module M: 8\n"
+				+ "  |line 18, col 26 to line 18, col 30 of module M: 8\n"
+				+ "  line 19, col 6 to line 19, col 19 of module M: 64\n"
+				+ "  line 20, col 6 to line 20, col 21 of module M: 192\n"
+				+"<Next line 22, col 1 to line 22, col 4 of module M>: 0:36864\n"
+				+ "  line 23, col 6 to line 23, col 40 of module M: 1536\n"
+				+ "  |line 23, col 18 to line 23, col 40 of module M: 192:4608\n"
+				+ "  ||line 23, col 19 to line 23, col 28 of module M: 192\n"
+				+ "  ||line 23, col 33 to line 23, col 39 of module M: 192\n"
+				+ "  line 24, col 6 to line 24, col 32 of module M: 12288\n"
+				+ "  |line 24, col 17 to line 24, col 32 of module M: 1536:36864\n"
+				+ "  ||line 24, col 18 to line 24, col 22 of module M: 1536\n"
+				+ "  ||line 24, col 27 to line 24, col 31 of module M: 1536\n"
+				+ "  line 25, col 6 to line 25, col 20 of module M: 36864\n"
+				+ "  |line 25, col 16 to line 25, col 20 of module M: 12288\n"
+				+ "  line 26, col 6 to line 26, col 22 of module M: 36864");
+
     }
 }

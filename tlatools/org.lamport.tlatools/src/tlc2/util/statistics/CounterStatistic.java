@@ -84,5 +84,10 @@ public abstract class CounterStatistic {
 		public void add(long evalCount) {
 			adder.add(evalCount);
 		}
+
+		@Override
+		public String toString() {
+			return adder.toString();
+		}
 	}
 }

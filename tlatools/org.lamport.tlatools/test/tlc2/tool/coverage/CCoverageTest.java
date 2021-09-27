@@ -98,6 +98,7 @@ public class CCoverageTest extends AbstractCoverageTest {
 				"  ||||line 46, col 55 to line 46, col 64 of module C: 21504\n" + 
 				"  ||||line 46, col 51 to line 46, col 51 of module C: 5376\n" + 
 				"  |||line 46, col 26 to line 46, col 38 of module C: 21:26880\n" + 
+				"  ||||line 46, col 34 to line 46, col 37 of module C: 21\n" +
 				"  |line 51, col 23 to line 51, col 26 of module C: 21\n" + 
 				"  |line 52, col 14 to line 54, col 26 of module C: 21\n" + 
 				"  ||line 52, col 17 to line 52, col 27 of module C: 21\n" + 
@@ -115,6 +116,7 @@ public class CCoverageTest extends AbstractCoverageTest {
 				"  ||||line 46, col 55 to line 46, col 64 of module C: 48384\n" + 
 				"  ||||line 46, col 51 to line 46, col 51 of module C: 10752\n" + 
 				"  |||line 46, col 26 to line 46, col 38 of module C: 21:59136\n" + 
+				"  ||||line 46, col 34 to line 46, col 37 of module C: 21\n" +
 				"  |line 59, col 24 to line 59, col 27 of module C: 21\n" + 
 				"  |line 60, col 15 to line 62, col 27 of module C: 21\n" + 
 				"  ||line 60, col 15 to line 60, col 28 of module C: 21\n" + 

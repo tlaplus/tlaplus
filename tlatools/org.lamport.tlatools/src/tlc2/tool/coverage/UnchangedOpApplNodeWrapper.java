@@ -43,14 +43,14 @@ public class UnchangedOpApplNodeWrapper extends OpApplNodeWrapper {
 
 	@Override
 	protected void print(int level, final Calculate fresh) {
-		final Set<Long> collectedEvalCounts = new HashSet<>();
+		final Set<Pair> collectedEvalCounts = new HashSet<>();
 		this.collectChildren(collectedEvalCounts, fresh);
-		collectedEvalCounts.remove(0L); 
+		collectedEvalCounts.remove(new Pair(0,0)); 
 		if (collectedEvalCounts.isEmpty()) {
 			printSelf(level++);
 			return;
 		} else {
-			printSelf(level, Math.max(getEvalCount(), collectedEvalCounts.iterator().next()));
+			printSelf(level, Math.max(getEvalCount(), collectedEvalCounts.iterator().next().primary));
 		}
 	}
 }
