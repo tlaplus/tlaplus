@@ -93,7 +93,7 @@ public class DotActionWriter {
 	public synchronized void write(final String actionName, final int id) {
 		// Marker the state as an initial state by using a filled style.
 		this.writer.append(Integer.toString(id));
-		this.writer.append(" [label=\"");
+		this.writer.append(" [shape=box,label=\"");
 		this.writer.append(actionName);
 		this.writer.append("\"]");
 		this.writer.append("\n");
