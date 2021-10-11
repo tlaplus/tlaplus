@@ -16,14 +16,14 @@ TLC doesn't implement the `\cdot` (action composition) operator.
 
 TLC cannot handle definitions that comes from a parametrized instantiation. For example, suppose a module *M*, which has the variable parameter *x*, defines the specification *Spec*. If you define *ISpec* by
 
-```
+```tla
 IM(x) == INSTANCE M
 ISpec == IM(xbar)!Spec
 ```
 
 then TLC will not be able to check the property ISpec. However, TLC will be able to check ISpec if it's defined in the following equivalent way:
 
-```
+```tla
 IM == INSTANCE M WITH x <- xbar
 ISpec == IM!Spec
 ```
@@ -38,20 +38,20 @@ Most users now run TLC from the Toolbox, where overriding of definitions is perf
 
 When running TLC from the command line, definition overriding is specified by the configuration file. As described in _Specifying Systems_, when running TLC on a module _M_, a replacement
 
-```
+```tla
 foo <- bar
 ```
 
 replaces *foo* by *bar* in all operators either defined in _M_ or imported into _M_ through EXTEND statements. (For example, if _M_ extends _M1_ which extends _M2_, then the replacement will occur in operators defined in _M1_ and _M2_, as well as in _M_.) It does not perform the replacement on any operators imported into _M_ by an INSTANCE statement. The replacement
 
-```
+```tla
 foo <- [Mod] bar
 ```
 
 replaces _foo_ by _bar_ in all operators defined in module _Mod_ or imported into _Mod_ through EXTEND statements. You should use this if you want the replacement to be made in a module _Mod_ that is instantiated either by the module _M_ on which TLC is being run, or by some module imported into _M_ through EXTEND statements.
 
 An operator may be imported into the current module by multiple paths. For example, the identifier _Nat_ can be imported directly from the _Integers_ module by an EXTENDS statement or indirectly through an instantiated module, often under a different name. In that case, to redefine _Nat_ to equal 0..2, it's safest to put both of the following in the configuration file:
-```
+```tla
 Nat <- 0..2
 Nat <- [Integers] 0..2
 ```
@@ -66,14 +66,14 @@ TLA+ defines strings to be sequences, but the TLC implementation does not regard
 
 TLC can now read and set a special list of values while evaluating expressions. This works as follows. The _TLC_ module defines two new operators:
 
-```text
+```tla
 TLCGet(i) == CHOOSE n : TRUE
 TLCSet(i, v) == TRUE
 ```
 
 When TLC evaluates `TLCSet(i, v)`, for any positive integer _i_ and arbitrary value _v_, in addition to obtaining the value TRUE, it sets the *i*th element of the list to *v*. When TLC evaluates `TLCGet(i)`, the value it obtains is the current value of the *i*th element of this list. For example, when TLC evaluates the formula
 
-```text
+```tla
 /\ TLCSet(42, <<"a", 1>>)
 /\ \A i \in {1, 2, 3} :
     /\ Print(TLCGet(42), TRUE)
@@ -82,7 +82,7 @@ When TLC evaluates `TLCSet(i, v)`, for any positive integer _i_ and arbitrary va
 
 it prints
 
-```text
+```tla
 << "a", 1 >> TRUE
 << "a", 2 >> TRUE
 << "a", 3 >> TRUE
@@ -92,7 +92,7 @@ One use of this feature is to check TLC's progress during long computations. For
 
 As explained in the description of the _TLCEval_ operator below, you may also want to use this feature to count how many times TLC is evaluating an expression _e_. To use value number _i_ as the counter, just replace _e_ by
 
-```text
+```tla
 IF TLCSet(i, TLCGet(i) + 1) THEN e ELSE 42
 ```
 
@@ -124,7 +124,9 @@ For reasons of efficiency, _TLCGet_ and _TLCSet_ behave somewhat strangely when 
 
 To allow information collected with _TLCGet_ and _TLCSet_ to be reported when TLC finishes, TLC now allows the `cfg` file to contain the statement
 
-```POSTCONDITION Op```
+```tla
+POSTCONDITION Op
+```
 
 where _Op_ is a constant-level operator with no arguments defined in the spec or the model. After executing the model, TLC evaluates the operator _Op_.
 
@@ -134,7 +136,9 @@ TLC often uses lazy evaluation. For example, it may not enumerate the elements o
 
 You can solve this problem with the _TLCEval_ operator. The _TLC_ module defines the operator _TLCEval_ by
 
-```TLCEval(x) == x```
+```tla
+TLCEval(x) == x
+```
 
 TLC evaluates the expression `TLCEval(e)` by completely evaluating _e_.
 
@@ -150,7 +154,9 @@ The use of _Any_ sounds dangerous, since it acts like the set of all sets and ra
 
 You should not use _Any_ in an actual specification; it is intended only to help in using TLC. In the actual specification, you should write the definition like
 
-```f[x \in Dom] == ...```
+```tla
+f[x \in Dom] == ...
+```
 
 where the domain _Dom_ is either defined or declared as a constant parameter. In the configuration file, you can tell TLC to substitute _Any_ for _Dom_.
 
@@ -158,7 +164,9 @@ where the domain _Dom_ is either defined or declared as a constant parameter. In
 
 The TLC module defines
 
-```PrintT(out) == TRUE```
+```tla
+PrintT(out) == TRUE
+```
 
 However, evaluating `PrintT(out)` causes TLC to print the value of _out_. This allows you to eliminate the annoying "TRUE" produced by evaluating `Print(out, TRUE)`.
 
@@ -166,11 +174,15 @@ However, evaluating `PrintT(out)` causes TLC to print the value of _out_. This a
 
 The TLC module defines
 
-```RandomElement(S) == CHOOSE x \in S : TRUE```
+```tla
+RandomElement(S) == CHOOSE x \in S : TRUE
+```
 
 so `RandomElement(S)` is an arbitrarily chosen element of the set _S_. However, contrary to what the definition says, TLC actually makes an independent choice every time it evaluates `RandomElement(S)`, so it could evaluate
 
-```RandomElement(S) = RandomElement(S)```
+```tla
+RandomElement(S) = RandomElement(S)
+```
 
 to equal FALSE.
 
@@ -314,7 +326,9 @@ There are analogous LATEX `pcal` and `ppcal` environments for formatting PlusCal
 
 You run this version of TLATEX with the command `java tlatex.TeX`. Executing
 
-```java tlatex.TeX -info```
+```
+java tlatex.TeX -info
+```
 
 will type out reasonably detailed directions on using the program.
 
