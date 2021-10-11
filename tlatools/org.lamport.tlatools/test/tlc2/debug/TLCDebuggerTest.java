@@ -41,6 +41,12 @@ import org.junit.Test;
 public class TLCDebuggerTest {
 
 	@Test
+	public void testStackFrameWhileRunning() throws InterruptedException, ExecutionException {
+		// Debugger returns no stack frames when execution is not halted.
+		assertEquals(0, new TestTLCDebugger(20, false).getFrames().size());
+	}
+
+	@Test
 	public void testStackFramePaginationEmpty() throws InterruptedException, ExecutionException {
 		assertEquals(0, new TestTLCDebugger().getFrames(new StackTraceArguments()).size());
 	}
@@ -157,21 +163,25 @@ public class TLCDebuggerTest {
 
 	protected class TestTLCDebugger extends TLCDebugger {
 		public TestTLCDebugger() {
-			super();
+			super(Step.In, true, true);
 		}
 
 		public TestTLCDebugger(TLCStackFrame tlcStackFrame) {
-			super();
+			super(Step.In, true, true);
 			this.stack.add(tlcStackFrame);
 		}
 
 		public TestTLCDebugger(List<TLCStackFrame> frames) {
-			super();
+			super(Step.In, true, true);
 			this.stack.addAll(frames);
 		}
 
 		public TestTLCDebugger(int n) {
-			super();
+			this(n, true);
+		}
+		
+		public TestTLCDebugger(int n, boolean executionIsHalted) {
+			super(Step.In, true, executionIsHalted);
 			this.stack.addAll(IntStream.range(0, n).boxed().sorted(Collections.reverseOrder())
 					.map(i -> new TestTLCStackFrame(i)).collect(Collectors.toList()));
 		}

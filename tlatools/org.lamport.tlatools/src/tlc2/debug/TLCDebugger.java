@@ -103,7 +103,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = s;
 		this.halt = halt;
 	}
-	
+
+	/*
+	 * Unit testing only!!!
+	 */
+	TLCDebugger(final Step s, final boolean halt, final boolean executionIsHalted) {
+		this.step = s;
+		this.halt = halt;
+		this.executionIsHalted = executionIsHalted;
+	}
+
 	public abstract TLCDebugger listen(int debugPort);
 
 	@Override
@@ -322,6 +331,15 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<StackTraceResponse> stackTrace(StackTraceArguments args) {
 		LOGGER.finer(String.format("stackTrace frame: %s, levels: %s\n", args.getStartFrame(), args.getLevels()));
 		final StackTraceResponse res = new StackTraceResponse();
+		
+		if (!executionIsHalted) {
+			// Returning the current stack frames to the front-end when execution is *not*
+			// halted causes the front-end to briefly jump to the location of the topmost
+			// stack frame.
+			res.setStackFrames(new StackFrame[0]);
+			res.setTotalFrames(0);
+			return CompletableFuture.completedFuture(res);
+		}
 
 		int from = 0;
 		if (args.getStartFrame() != null) {
@@ -458,6 +476,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	private volatile Step step = Step.In;
 	
 	private volatile boolean halt;
+	private volatile boolean executionIsHalted = false;
 
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c) {
@@ -641,9 +660,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		sendStopped(frame);
 
 		try {
-			// Halt TLC's evaluation by blocking on this (one-element) queue. The DAP
-			// front-end will add an element that will unblock us.
+			// Halt TLC's evaluation by blocking the worker thread. This state is observable
+			// externally through the value of executionIsHalted.
+			executionIsHalted = true;
 			this.wait();
+			executionIsHalted = false;
 		} catch (InterruptedException notExpectedToHappen) {
 			notExpectedToHappen.printStackTrace();
 			java.lang.Thread.currentThread().interrupt();
