@@ -42,7 +42,7 @@ public class Github317Test extends ModelCheckerTestCase {
 	@Override
 	protected int getNumberOfThreads() {
 		// Have multiple workers compete to report/print the error stack. Implies that
-		// the actual error trace is non-deteministic and not asserted below.
+		// the actual error trace is non-deterministic and not asserted below.
 		return Runtime.getRuntime().availableProcessors();
 	}
 
