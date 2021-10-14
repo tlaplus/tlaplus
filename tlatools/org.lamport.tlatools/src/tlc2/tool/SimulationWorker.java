@@ -31,11 +31,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import tla2sany.semantic.OpDeclNode;
 import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
 import tlc2.tool.impl.Tool;
@@ -338,7 +341,20 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		t.setPredecessor(s).setAction(a);
 
 		if (!tool.isGoodState(t)) {
-			throw new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, null, t, getTrace());
+			final Set<OpDeclNode> unassigned = t.getUnassigned();
+			final String[] parameters;
+			if (this.tool.getActions().length == 1) {
+				parameters = new String[] { unassigned.size() > 1 ? "s are" : " is",
+								unassigned.stream().map(n -> n.getName().toString())
+										.collect(Collectors.joining(", ")) };
+			} else {
+				parameters = new String[] { a.getName().toString(),
+								unassigned.size() > 1 ? "s are" : " is",
+								unassigned.stream().map(n -> n.getName().toString())
+										.collect(Collectors.joining(", ")) };
+			}
+
+			throw new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, parameters, t, getTrace());
 		}
 
 		// Check invariants.
