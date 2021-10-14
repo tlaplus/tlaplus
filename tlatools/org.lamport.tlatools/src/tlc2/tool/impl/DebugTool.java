@@ -342,7 +342,13 @@ public class DebugTool extends Tool {
 		}
 		mode = EvalMode.Action;
 		target.pushFrame(this, pred, c, s0, action, s1);
-		TLCState s = getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
+		TLCState s;
+		try {
+			s = getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
+		} catch (TLCRuntimeException | EvalException e) {
+			target.pushExceptionFrame(this, pred, c, e);
+			throw e;
+		}		
 		target.popFrame(this, pred, c, s0, s1);
 		return s;
 	}
@@ -350,7 +356,12 @@ public class DebugTool extends Tool {
 	@Override
 	protected final TLCState processUnchanged(final Action action, final SemanticNode expr, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
-		return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
+		try {
+			return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
+		} catch (TLCRuntimeException | EvalException e) {
+			target.pushExceptionFrame(this, expr, c, e);
+			throw e;
+		}		
 	}
 
 	@Override
