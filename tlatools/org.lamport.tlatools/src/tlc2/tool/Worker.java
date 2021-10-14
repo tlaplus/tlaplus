@@ -416,6 +416,9 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		try {
 			if (!this.tool.isGoodState(succState)) {
 				this.tlc.doNextSetErr(curState, succState, action);
+				// It seems odd to subsume this under IVE, but we consider
+				// it an invariant that the values of all variables have to
+				// be defined.
 				throw new InvariantViolatedException();
 			}
 			

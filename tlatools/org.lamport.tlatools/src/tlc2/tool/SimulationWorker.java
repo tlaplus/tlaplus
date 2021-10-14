@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.util.IdThread;
@@ -122,7 +123,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	/**
 	 * Encapsulates information about an error produced by a simulation worker.
 	 */
-	 public static class SimulationWorkerError extends RuntimeException {
+	 public static class SimulationWorkerError extends InvariantViolatedException  {
 		public SimulationWorkerError(int errorCode, String[] parameters, TLCState state, StateVec stateTrace) {
 			this(errorCode, parameters, state, stateTrace, null);
 		}
@@ -150,6 +151,11 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 		// An exception associated with the error.
 		public final Exception exception;
+
+		@Override
+		public String getMessage() {
+			return MP.getMessage(errorCode, parameters);
+		}
 	}
 	
 	
@@ -448,6 +454,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				try {
 					this.tool.getNextStates(this, curState, actions[index]);
 				} catch (SimulationWorkerError swe) {
+					// getNextState doesn't throw SWE unless SimulationWorker#addElement above throws it.
 					return Optional.of(swe);
 				}
 				if (!nextStates.empty()) {
