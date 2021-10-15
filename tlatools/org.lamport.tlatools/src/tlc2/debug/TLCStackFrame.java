@@ -558,6 +558,10 @@ public class TLCStackFrame extends StackFrame {
 	public StoppedEventArguments getStoppedEventArgument() {
 		final StoppedEventArguments eventArguments = new StoppedEventArguments();
 		if (this.exception != null) {
+			// The DAP does not have anything besides "exception" that would be useful, ie.
+			// show something meaningful in the front-end, when an invariant is violated.
+			// Thus, we have to use the visualization that comes with exception, even though
+			// the term "exception" appears in the front-end.
 			eventArguments.setReason("exception");
 			eventArguments.setText(this.exception.getMessage());
 		}

@@ -651,7 +651,22 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		}
 		return this;
 	}
+	
+	@Override
+	public synchronized IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode expr, Context c, TLCState predecessor, TLCState state, RuntimeException e) {
+		if (exceptionNotYetHandled(e)) {
+			pushFrameAndHalt(new TLCStateStackFrame(stack.peek(), expr, c, tool, state, e), e);
+		}
+		return this;
+	}
 
+	@Override
+	public synchronized IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state, RuntimeException e) {
+		if (exceptionNotYetHandled(e)) {
+			pushFrameAndHalt(new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, a, state, e), e);
+		}
+		return this;
+	}
 
 	private IDebugTarget pushFrameAndHalt(final TLCStackFrame frame, final RuntimeException e) {
 		// Calling methods duplicate the top-most stack-frame with the exception causes

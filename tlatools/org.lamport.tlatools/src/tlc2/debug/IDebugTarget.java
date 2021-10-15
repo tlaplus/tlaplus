@@ -70,6 +70,10 @@ public interface IDebugTarget {
 	IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state,
 			RuntimeException e);
 
+	IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode pred, Context c, TLCState predecessor, TLCState state, RuntimeException e);
+
+	IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode pred, Context c, TLCState predecessor, Action a, TLCState state, RuntimeException e);
+
 	//------------------------ Wrapper --------------------------//
 	
 	IDebugTarget pushFrame(TLCState state);

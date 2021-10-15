@@ -40,6 +40,7 @@ import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.IActionItemList;
 import tlc2.tool.INextStateFunctor;
+import tlc2.tool.INextStateFunctor.InvariantViolatedException;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -348,6 +349,9 @@ public class DebugTool extends Tool {
 		} catch (TLCRuntimeException | EvalException e) {
 			target.pushExceptionFrame(this, pred, c, e);
 			throw e;
+		} catch (InvariantViolatedException e) {
+			target.markInvariantViolatedFrame(this, pred, c, s0, action, s1, e);
+			throw e;
 		}		
 		target.popFrame(this, pred, c, s0, s1);
 		return s;
@@ -360,6 +364,9 @@ public class DebugTool extends Tool {
 			return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
 		} catch (TLCRuntimeException | EvalException e) {
 			target.pushExceptionFrame(this, expr, c, e);
+			throw e;
+		} catch (InvariantViolatedException e) {
+			target.markInvariantViolatedFrame(this, expr, c, s0, action, s1, e);
 			throw e;
 		}		
 	}
