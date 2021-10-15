@@ -157,6 +157,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// by SANY.
 		capabilities.setSupportsConditionalBreakpoints(false);
 		capabilities.setSupportsLogPoints(false);
+		// TODO: Implement stepping back for model-checking and simulation/generation.
+		capabilities.setSupportsStepBack(false);
 		return CompletableFuture.completedFuture(capabilities);
 	}
 
