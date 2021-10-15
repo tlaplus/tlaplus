@@ -613,25 +613,50 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		popFrame(tool, expr, c, v);
 		return this;
 	}
-
+	
+	private boolean exceptionNotYetHandled(final RuntimeException e) {
+		// The debugger handles an exception such as
+		// EvalException/TLCRuntimeException/InvariantViolationException) (close to) the
+		// call-site in Tool to point users to the most specific location. However, the
+		// exception also gets re-thrown for TLC's generic exception handling to deal
+		// with it. Potentially, this causes the debugger to catch the same exception
+		// again when it travels up Tool's call-stack.  Here, we make sure that an exception
+		// only gets handled by the debugger once.  Alternatively, we could have added a flag
+		// to EE, TRE, and IVE to mark an exception as handled by the debugger.
+		return stack.isEmpty() || stack.peek().exception != e;
+	}
+	
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, RuntimeException e) {
-		return pushExceptionFrame(new TLCStackFrame(stack.peek(), expr, c, tool, e), e);
+		if (exceptionNotYetHandled(e)) {
+			return pushFrameAndHalt(new TLCStackFrame(stack.peek(), expr, c, tool, e), e);
+		}
+		return this;
 	}
 	
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c,
 			TLCState state, RuntimeException e) {
-		return pushExceptionFrame(new TLCStateStackFrame(stack.peek(), expr, c, tool, state, e), e);
+		if (exceptionNotYetHandled(e)) {
+			return pushFrameAndHalt(new TLCStateStackFrame(stack.peek(), expr, c, tool, state, e), e);
+		}
+		return this;
 	}
 	
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
 			Action a, TLCState t, RuntimeException e) {
-		return pushExceptionFrame(new TLCActionStackFrame(stack.peek(), expr, c, tool, s, a, t, e), e);
+		if (exceptionNotYetHandled(e)) {
+			return pushFrameAndHalt(new TLCActionStackFrame(stack.peek(), expr, c, tool, s, a, t, e), e);
+		}
+		return this;
 	}
 
-	private IDebugTarget pushExceptionFrame(final TLCStackFrame frame, RuntimeException e) {
+
+	private IDebugTarget pushFrameAndHalt(final TLCStackFrame frame, final RuntimeException e) {
+		// Calling methods duplicate the top-most stack-frame with the exception causes
+		// the front-end to raise a corresponding error in the editor.
+		
 		stack.push(frame);
 
 		// Let the client print the exception in its debug output UI.
