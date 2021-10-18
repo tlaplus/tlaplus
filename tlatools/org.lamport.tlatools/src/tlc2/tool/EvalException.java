@@ -12,7 +12,7 @@ import tlc2.output.MP;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class EvalException extends RuntimeException
+public class EvalException extends StatefulRuntimeException
 {
 // SZ Jul 14, 2009: not used since error codes are in the {@link EC} class    
 //    public final static int ERROR = 0;

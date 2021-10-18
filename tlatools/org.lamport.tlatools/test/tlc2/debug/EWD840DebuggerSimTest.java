@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import tla2sany.semantic.OpDeclNode;
 import tlc2.output.EC;
+import tlc2.tool.INextStateFunctor.InvariantViolatedException;
 import tlc2.util.Context;
 import tlc2.value.impl.IntValue;
 
@@ -234,9 +235,18 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		// 8888888888888888888 ALIAS Alias 8888888888888888888 //
 
 		debugger.replaceAllBreakpointsWith(MDL, 33);
+		
+		// Continue to when TLC finds a violation of the Stop invariant.
+		stackFrames = debugger.continue_();
+		assertEquals(10, stackFrames.length);
+		assertTLCActionFrame(stackFrames[0], 41, 18, 41, 23, RM, (Context) null);
+		TLCActionStackFrame actionStackFrame = (TLCActionStackFrame) stackFrames[0];
+		assertTrue(actionStackFrame.exception instanceof InvariantViolatedException);
+		assertEquals("Invariant Stop is violated.", actionStackFrame.exception.getMessage());
+		
 		for (int i = 0; i < 6; i++) {
 			stackFrames = debugger.continue_();
-			assertEquals(11, stackFrames.length);
+			assertEquals(2, stackFrames.length);
 			assertTLCActionFrame(stackFrames[0], 33, 20, 33, 49, MDL);
 			assertTLCActionFrame(stackFrames[1], 28, 5, 34, 5, MDL);
 		}

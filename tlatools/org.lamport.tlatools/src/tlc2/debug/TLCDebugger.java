@@ -50,6 +50,7 @@ import org.eclipse.lsp4j.debug.InitializeRequestArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
 import org.eclipse.lsp4j.debug.OutputEventArguments;
 import org.eclipse.lsp4j.debug.PauseArguments;
+import org.eclipse.lsp4j.debug.ReverseContinueArguments;
 import org.eclipse.lsp4j.debug.ScopesArguments;
 import org.eclipse.lsp4j.debug.ScopesResponse;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
@@ -62,6 +63,7 @@ import org.eclipse.lsp4j.debug.SourceBreakpoint;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.StackTraceArguments;
 import org.eclipse.lsp4j.debug.StackTraceResponse;
+import org.eclipse.lsp4j.debug.StepBackArguments;
 import org.eclipse.lsp4j.debug.StepInArguments;
 import org.eclipse.lsp4j.debug.StepOutArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
@@ -82,6 +84,7 @@ import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.INextStateFunctor;
+import tlc2.tool.StatefulRuntimeException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -96,12 +99,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	public TLCDebugger() {
 		this.step = Step.In;
-		this.halt = true;
+		this.haltExp = true;
+		this.haltInv = true;
 	}
 
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
-		this.halt = halt;
+		this.haltExp = halt;
+		this.haltInv = halt;
 	}
 
 	/*
@@ -109,7 +114,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	 */
 	TLCDebugger(final Step s, final boolean halt, final boolean executionIsHalted) {
 		this.step = s;
-		this.halt = halt;
+		this.haltExp = halt;
+		this.haltInv = halt;
 		this.executionIsHalted = executionIsHalted;
 	}
 
@@ -158,25 +164,36 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		capabilities.setSupportsConditionalBreakpoints(false);
 		capabilities.setSupportsLogPoints(false);
 		// TODO: Implement stepping back for model-checking and simulation/generation.
-		capabilities.setSupportsStepBack(false);
+		// Stepping back would be hugely useful especially because TLC's evaluation behavior might be 
+		// surprising (non-determinism). This can cause users to miss the stack-frame they wish to see.
+		// Implementing arbitrary navigation along stack-frames is impossible unless one implements
+		// undo operations for each Tool action.  However, it should be good enough to reset Tool
+		// to e.g. the beginning of the evaluation of the next-state relation for state s, evaluation
+		// of the invariant for state s, evaluation of state- & action-constraints for s, ... by
+		// throwing a ResetEvalException.
+		capabilities.setSupportsStepBack(true);
 		return CompletableFuture.completedFuture(capabilities);
 	}
 
 	private ExceptionBreakpointsFilter[] getExceptionBreakpointFilters() {
 		final ExceptionBreakpointsFilter filter = new ExceptionBreakpointsFilter();
-		filter.setDefault_(this.halt);
+		filter.setDefault_(this.haltExp);
 		filter.setFilter("ExceptionBreakpointsFilter");
 		filter.setLabel("Halt (break) on exceptions");
-		return new ExceptionBreakpointsFilter[] {filter};
+		
+		final ExceptionBreakpointsFilter violations = new ExceptionBreakpointsFilter();
+		violations.setDefault_(this.haltInv);
+		violations.setFilter("InvariantBreakpointsFilter");
+		violations.setLabel("Halt (break) on violations");
+		
+		return new ExceptionBreakpointsFilter[] {filter, violations};
 	}
 
 	@Override
 	public synchronized CompletableFuture<Void> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
-		if (Arrays.asList(args.getFilters()).contains("ExceptionBreakpointsFilter")) {
-			this.halt = true;
-		} else {
-			this.halt = false;
-		}
+		final List<String> asList = Arrays.asList(args.getFilters());
+		this.haltExp = asList.contains("ExceptionBreakpointsFilter");
+		this.haltInv = asList.contains("InvariantBreakpointsFilter");
 		return CompletableFuture.completedFuture(null);
 	}
 
@@ -242,7 +259,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		breakpoints.clear();
 		targetLevel = -1;
 		step = Step.Continue;
-		halt = false;
+		haltExp = false;
+		haltInv = false;
 		this.notify();
 		
 		return CompletableFuture.completedFuture(null);
@@ -463,6 +481,22 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		});
 		return CompletableFuture.completedFuture(null);
 	}
+	
+	@Override
+	public synchronized CompletableFuture<Void> stepBack(StepBackArguments args) {
+		step = Step.Reset;
+		this.notify();
+
+		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
+	public synchronized CompletableFuture<Void> reverseContinue(ReverseContinueArguments args) {
+		step = Step.Reset_Start;
+		this.notify();
+
+		return CompletableFuture.completedFuture(null);
+	}
 
 	// 8888888888888888888888888888888888888888888888888888888888888888888888888 //
 
@@ -477,9 +511,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	private volatile int targetLevel = 1;
 	private volatile Step step = Step.In;
 	
-	private volatile boolean halt;
+	private volatile boolean haltExp;
+	private volatile boolean haltInv;
 	private volatile boolean executionIsHalted = false;
-
+	
 	@Override
 	public synchronized IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c) {
 		final TLCStackFrame frame = new TLCStackFrame(stack.peek(), expr, c, tool);
@@ -561,7 +596,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 					new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
 		}
 		final TLCStackFrame pop = stack.pop();
-		assert expr == pop.getNode();
+		assert pop.matches(expr);
 		return this;
 	}
 
@@ -593,7 +628,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState s) {
 		final TLCStackFrame pop = stack.pop();
-		assert expr == pop.getNode();
+		assert pop.matches(expr);
 		return this;
 	}
 
@@ -613,62 +648,80 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		popFrame(tool, expr, c, v);
 		return this;
 	}
+
+	@Override
+	public synchronized IDebugTarget popExceptionFrame(Tool tool, SemanticNode expr, Context c, Value v, StatefulRuntimeException e) {
+		if (LOGGER.isLoggable(Level.FINER)) {
+			LOGGER.finer(String.format("%s Call popExceptionFrame: [%s], level: %s\n",
+					new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
+		}
+		final TLCStackFrame pop = stack.pop();
+		assert pop.matches(expr, e);
+		return this;
+	}
+
+	@Override
+	public synchronized IDebugTarget popExceptionFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState s, StatefulRuntimeException e) {
+		return popExceptionFrame(tool, expr, c, v, e);
+	}
+
+	@Override
+	public synchronized IDebugTarget popExceptionFrame(Tool tool, SemanticNode expr, Context c, Value v, TLCState s, TLCState t, StatefulRuntimeException e) {
+		return popExceptionFrame(tool, expr, c, v, e);
+	}
 	
-	private boolean exceptionNotYetHandled(final RuntimeException e) {
+	private boolean exceptionNotYetHandled(final StatefulRuntimeException e) {
 		// The debugger handles an exception such as
 		// EvalException/TLCRuntimeException/InvariantViolationException) (close to) the
 		// call-site in Tool to point users to the most specific location. However, the
 		// exception also gets re-thrown for TLC's generic exception handling to deal
 		// with it. Potentially, this causes the debugger to catch the same exception
-		// again when it travels up Tool's call-stack.  Here, we make sure that an exception
-		// only gets handled by the debugger once.  Alternatively, we could have added a flag
-		// to EE, TRE, and IVE to mark an exception as handled by the debugger.
-		return stack.isEmpty() || stack.peek().exception != e;
+		// again when it travels up Tool's call-stack.  Here, we make sure that the debugger
+		// handles an exception only once.
+		return !e.setKnown();
 	}
 	
 	@Override
-	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, RuntimeException e) {
+	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, StatefulRuntimeException e) {
 		if (exceptionNotYetHandled(e)) {
-			return pushFrameAndHalt(new TLCStackFrame(stack.peek(), expr, c, tool, e), e);
+			return pushFrameAndHalt(haltExp, new TLCStackFrame(stack.peek(), expr, c, tool, e), e);
 		}
 		return this;
 	}
 	
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c,
-			TLCState state, RuntimeException e) {
+			TLCState state, StatefulRuntimeException e) {
 		if (exceptionNotYetHandled(e)) {
-			return pushFrameAndHalt(new TLCStateStackFrame(stack.peek(), expr, c, tool, state, e), e);
+			return pushFrameAndHalt(haltExp, new TLCStateStackFrame(stack.peek(), expr, c, tool, state, e), e);
 		}
 		return this;
 	}
 	
 	@Override
 	public synchronized IDebugTarget pushExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
-			Action a, TLCState t, RuntimeException e) {
+			Action a, TLCState t, StatefulRuntimeException e) {
 		if (exceptionNotYetHandled(e)) {
-			return pushFrameAndHalt(new TLCActionStackFrame(stack.peek(), expr, c, tool, s, a, t, e), e);
-		}
-		return this;
-	}
-	
-	@Override
-	public synchronized IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode expr, Context c, TLCState predecessor, TLCState state, RuntimeException e) {
-		if (exceptionNotYetHandled(e)) {
-			pushFrameAndHalt(new TLCStateStackFrame(stack.peek(), expr, c, tool, state, e), e);
+			return pushFrameAndHalt(haltExp, new TLCActionStackFrame(stack.peek(), expr, c, tool, s, a, t, e), e);
 		}
 		return this;
 	}
 
 	@Override
-	public synchronized IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state, RuntimeException e) {
+	public synchronized IDebugTarget popExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
+			Action a, TLCState t, StatefulRuntimeException e) {
+		return popExceptionFrame(tool, expr, c, null, e);
+	}
+
+	@Override
+	public synchronized IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state, StatefulRuntimeException e) {
 		if (exceptionNotYetHandled(e)) {
-			pushFrameAndHalt(new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, a, state, e), e);
+			pushFrameAndHalt(haltInv, new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, a, state, e), e);
 		}
 		return this;
 	}
 
-	private IDebugTarget pushFrameAndHalt(final TLCStackFrame frame, final RuntimeException e) {
+	private IDebugTarget pushFrameAndHalt(final boolean halt, final TLCStackFrame frame, final RuntimeException e) {
 		// Calling methods duplicate the top-most stack-frame with the exception causes
 		// the front-end to raise a corresponding error in the editor.
 		
@@ -710,6 +763,17 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		} catch (InterruptedException notExpectedToHappen) {
 			notExpectedToHappen.printStackTrace();
 			java.lang.Thread.currentThread().interrupt();
+		}
+		
+		if (Step.Reset == step) {
+			step = Step.In;
+			if (frame.parent != null) {
+				// If frame has no parent, there is nothing the debugger reset to--it marks the entry point of the evaluation.
+				throw new ResetEvalException(frame.parent);
+			}
+		} else if (Step.Reset_Start == step) {
+			step = Step.In;
+			throw new ResetEvalException(stack.getLast());
 		}
 	}
 

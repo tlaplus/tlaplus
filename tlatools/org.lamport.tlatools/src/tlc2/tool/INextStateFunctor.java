@@ -31,7 +31,7 @@ public interface INextStateFunctor extends IStateFunctor {
 
 	Object addElement(final TLCState s, final Action a, final TLCState t);
 	
-	public static class InvariantViolatedException extends RuntimeException {
+	public static class InvariantViolatedException extends StatefulRuntimeException {
 		
 	}
 

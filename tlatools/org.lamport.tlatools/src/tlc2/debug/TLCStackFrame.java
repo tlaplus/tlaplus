@@ -59,6 +59,7 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
+import tlc2.tool.INextStateFunctor.InvariantViolatedException;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -135,6 +136,9 @@ public class TLCStackFrame extends StackFrame {
 
 		if (node instanceof NumeralNode) {
 			setName(Integer.toString(((NumeralNode)node).val()));
+		} else if (e instanceof InvariantViolatedException) {
+			setName(String.format("(Invariant) %s", node.getHumanReadableImage()));
+			setPresentationHint(StackFramePresentationHint.SUBTLE);
 		} else if (e != null) {
 			setName(String.format("(Exception) %s", node.getHumanReadableImage()));
 			setPresentationHint(StackFramePresentationHint.SUBTLE);
@@ -577,5 +581,13 @@ public class TLCStackFrame extends StackFrame {
 		return bp.getLine() == node.getLocation().beginLine()
 				//TODO why *smaller* than BEGINcolumn?
 				&& bp.getColumnAsInt() <= node.getLocation().beginColumn();
+	}
+
+    boolean matches(SemanticNode expr, RuntimeException e) {
+		return node == expr || (e instanceof TLCDetailedRuntimeException && ((TLCDetailedRuntimeException)e).expr == node);
+	}
+
+	public boolean matches(SemanticNode expr) {
+		return node == expr;
 	}
 }

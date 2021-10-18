@@ -7,6 +7,7 @@ package util;
 import tla2sany.semantic.SemanticNode;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.StatefulRuntimeException;
 import tlc2.util.Context;
 
 /**
@@ -176,7 +177,7 @@ public class Assert
     }
 
     @SuppressWarnings("serial")
-	public static class TLCRuntimeException extends RuntimeException {
+	public static class TLCRuntimeException extends StatefulRuntimeException {
 
 		public final int errorCode;
 		public String[] parameters = null;

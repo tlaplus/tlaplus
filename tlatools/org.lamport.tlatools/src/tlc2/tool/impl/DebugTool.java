@@ -35,6 +35,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.debug.IDebugTarget;
+import tlc2.debug.IDebugTarget.ResetEvalException;
 import tlc2.tool.Action;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
@@ -136,60 +137,74 @@ public class DebugTool extends Tool {
 	@Override
 	public final Value eval(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, final CostModel cm) {
-		if (mode == EvalMode.Debugger) {
-			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (s1 == null || EvalControl.isPrimed(control) || EvalControl.isEnabled(control)) {
-			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (mode == EvalMode.Action && s1.getAction() == null) {
-			// We are in mode action but s1 has no action. This is the case if the UNCHANGED
-			// of an action is evaluated. We could set mode to State or ignore these frames.
-			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (EvalControl.isInit(control)) {
-			mode = EvalMode.State;
+		try {
+			if (mode == EvalMode.Debugger) {
+				return fastTool.evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (s1 == null || EvalControl.isPrimed(control) || EvalControl.isEnabled(control)) {
+				return fastTool.evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (mode == EvalMode.Action && s1.getAction() == null) {
+				// We are in mode action but s1 has no action. This is the case if the UNCHANGED
+				// of an action is evaluated. We could set mode to State or ignore these frames.
+				return fastTool.evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (EvalControl.isInit(control)) {
+				mode = EvalMode.State;
+				return evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (EvalControl.isConst(control)) {
+				mode = EvalMode.Const;
+				return evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (mode == EvalMode.State && s1 != null && s1.noneAssigned()) {
+				return evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (mode == EvalMode.Const && s0.noneAssigned() && s1.noneAssigned()) {
+				return evalImpl(expr, c, s0, s1, control, cm);
+			}
+			mode = EvalMode.Action;
 			return evalImpl(expr, c, s0, s1, control, cm);
+		} catch (ResetEvalException ree) {
+			if (ree.isTarget(expr)) {
+				return eval(expr, c, s0, s1, control, cm);
+			}
+			throw ree;
 		}
-		if (EvalControl.isConst(control)) {
-			mode = EvalMode.Const;
-			return evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (mode == EvalMode.State && s1 != null && s1.noneAssigned()) {
-			return evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (mode == EvalMode.Const && s0.noneAssigned() && s1.noneAssigned()) {
-			return evalImpl(expr, c, s0, s1, control, cm);
-		}
-		mode = EvalMode.Action;
-		return evalImpl(expr, c, s0, s1, control, cm);
 	}
 
 	@Override
 	protected final Value evalImpl(final SemanticNode expr, final Context c, final TLCState s0, final TLCState s1,
 			final int control, CostModel cm) {
-		if (isInitialize()) {
-			// Cannot delegate to fastTool that is null during initialization.
-			return super.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (isLiveness(control, s0, s1) || isLeaf(expr) || isBoring(expr, c)) {
-			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (mode == EvalMode.Debugger) {
-			// Skip debugging when evaluation was triggered by the debugger itself. For
-			// example, when LazyValues get unlazied.
-			return fastTool.evalImpl(expr, c, s0, s1, control, cm);
-		}
-		if (mode == EvalMode.Const) {
-			assert s0.noneAssigned() && s1.noneAssigned();
-			// s0 and s1 can be dummies that are passed by some value instances or Tool
-			// during the evaluation of the init-predicate or other const-level expressions.
-			return constLevelEval(expr, c, s0, s1, control, cm);
-		} else if (mode == EvalMode.State) {
-			assert s1 == null || s1.noneAssigned();
-			return stateLevelEval(expr, c, s0, s1, control, cm);
-		} else {
-			return actionLevelEval(expr, c, s0, s1, control, cm);
+		try {
+			if (isInitialize()) {
+				// Cannot delegate to fastTool that is null during initialization.
+				return super.evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (isLiveness(control, s0, s1) || isLeaf(expr) || isBoring(expr, c)) {
+				return fastTool.evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (mode == EvalMode.Debugger) {
+				// Skip debugging when evaluation was triggered by the debugger itself. For
+				// example, when LazyValues get unlazied.
+				return fastTool.evalImpl(expr, c, s0, s1, control, cm);
+			}
+			if (mode == EvalMode.Const) {
+				assert s0.noneAssigned() && s1.noneAssigned();
+				// s0 and s1 can be dummies that are passed by some value instances or Tool
+				// during the evaluation of the init-predicate or other const-level expressions.
+				return constLevelEval(expr, c, s0, s1, control, cm);
+			} else if (mode == EvalMode.State) {
+				assert s1 == null || s1.noneAssigned();
+				return stateLevelEval(expr, c, s0, s1, control, cm);
+			} else {
+				return actionLevelEval(expr, c, s0, s1, control, cm);
+			}
+		} catch (ResetEvalException ree) {
+			if (ree.isTarget(expr)) {
+				return evalImpl(expr, c, s0, s1, control, cm);
+			}
+			throw ree;
 		}
 	}
 
@@ -252,38 +267,59 @@ public class DebugTool extends Tool {
 	}
 
 	private Value actionLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
+		Value v = null;
 		try {
 			target.pushFrame(this, expr, c, s0, s1.getAction(), s1);
-			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, expr, c, v, s0, s1);
+			v = super.evalImpl(expr, c, s0, s1, control, cm);
 			return v;
 		} catch (TLCRuntimeException | EvalException e) {
-			target.pushExceptionFrame(this, expr, c, s0, s1.getAction(), s1, e);
+			if (e.isKnown()) {throw e;}
+			try {
+				target.pushExceptionFrame(this, expr, c, s0, s1.getAction(), s1, e);
+			} finally {
+				target.popExceptionFrame(this, expr, c, v, s0, s1, e);
+			}
 			throw e;
+		} finally {
+			target.popFrame(this, expr, c, v, s0, s1);
 		}
 	}
 
 	private Value stateLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
+		Value v = null;
 		try {
 			target.pushFrame(this, expr, c, s0);
-			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, expr, c, v, s0);
+			v = super.evalImpl(expr, c, s0, s1, control, cm);
 			return v;
 		} catch (TLCRuntimeException | EvalException e) {
-			target.pushExceptionFrame(this, expr, c, s0, e);
+			if (e.isKnown()) {throw e;}
+			try {
+				target.pushExceptionFrame(this, expr, c, s0, e);
+			} finally {
+				target.popExceptionFrame(this, expr, c, v, s0, e);
+			}
 			throw e;
+		} finally {
+			target.popFrame(this, expr, c, v, s0);
 		}
 	}
 
 	private Value constLevelEval(SemanticNode expr, Context c, TLCState s0, TLCState s1, int control, CostModel cm) {
+		Value v = null;
 		try {
 			target.pushFrame(this, expr, c);
-			final Value v = super.evalImpl(expr, c, s0, s1, control, cm);
-			target.popFrame(this, expr, c, v);
+			v = super.evalImpl(expr, c, s0, s1, control, cm);
 			return v;
 		} catch (TLCRuntimeException | EvalException e) {
-			target.pushExceptionFrame(this, expr, c, e);
+			if (e.isKnown()) {throw e;}
+			try {
+				target.pushExceptionFrame(this, expr, c, e);
+			} finally {
+				target.popExceptionFrame(this, expr, c, v, e);
+			}
 			throw e;
+		} finally {
+			target.popFrame(this, expr, c, v);
 		}
 	}
 
@@ -321,10 +357,10 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
-	protected final TLCState getNextStates(final Action action, final SemanticNode pred, final ActionItemList acts,
+	protected final TLCState getNextStates(final Action action, final SemanticNode expr, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
 		if (mode == EvalMode.Debugger) {
-			return fastTool.getNextStatesImpl(action, pred, acts, c, s0, s1, nss, cm);
+			return fastTool.getNextStatesImpl(action, expr, acts, c, s0, s1, nss, cm);
 		}
 		mode = EvalMode.Action;
 		// In regular model-checking mode (no DebugTool), TLC sets the action and
@@ -332,7 +368,14 @@ public class DebugTool extends Tool {
 		// and the state- and action-constraints evaluated.  With DebugTool present,
 		// users want to see the trace from the initial to the current, partially
 		// evaluated state.  Thus, we set action and predecessor eagerly.
-		return getNextStatesImpl(action, pred, acts, c, s0, s1.setPredecessor(s0).setAction(action), nss, cm);
+		try {
+			return getNextStatesImpl(action, expr, acts, c, s0, s1.setPredecessor(s0).setAction(action), nss, cm);
+		} catch (ResetEvalException ree) {
+			if (ree.isTarget(expr)) {
+				return getNextStates(action, expr, acts, c, s0, s1, nss, cm);
+			}
+			throw ree;
+		}
 	}
 
 	@Override
@@ -342,18 +385,29 @@ public class DebugTool extends Tool {
 			return fastTool.getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
 		}
 		mode = EvalMode.Action;
-		target.pushFrame(this, pred, c, s0, action, s1);
 		TLCState s;
 		try {
+			target.pushFrame(this, pred, c, s0, action, s1);
 			s = getNextStatesApplImpl(action, pred, acts, c, s0, s1, nss, cm);
 		} catch (TLCRuntimeException | EvalException e) {
-			target.pushExceptionFrame(this, pred, c, e);
+			if (e.isKnown()) {throw e;}
+			try {
+				target.pushExceptionFrame(this, pred, c, e);
+			} finally {
+				target.popExceptionFrame(this, pred, c, s0, action, s1, e);
+			}
 			throw e;
 		} catch (InvariantViolatedException e) {
-			target.markInvariantViolatedFrame(this, pred, c, s0, action, s1, e);
+			if (e.isKnown()) {throw e;}
+			try {
+				target.markInvariantViolatedFrame(this, pred, c, s0, action, s1, e);
+			} finally {
+				target.popExceptionFrame(this, pred, c, s0, action, s1, e);
+			}
 			throw e;
-		}		
-		target.popFrame(this, pred, c, s0, s1);
+		} finally {
+			target.popFrame(this, pred, c, s0, s1);
+		}
 		return s;
 	}
 
@@ -363,28 +417,45 @@ public class DebugTool extends Tool {
 		try {
 			return processUnchangedImpl(action, expr, acts, c, s0, s1, nss, cm);
 		} catch (TLCRuntimeException | EvalException e) {
-			target.pushExceptionFrame(this, expr, c, e);
+			if (e.isKnown()) {throw e;}
+			try {
+				target.pushExceptionFrame(this, expr, c, s0, action, s1, e);
+			} finally{
+				target.popExceptionFrame(this, expr, c, s0, action, s1, e);
+			}
 			throw e;
 		} catch (InvariantViolatedException e) {
-			target.markInvariantViolatedFrame(this, expr, c, s0, action, s1, e);
+			if (e.isKnown()) {throw e;}
+			try {
+				target.markInvariantViolatedFrame(this, expr, c, s0, action, s1, e);
+			} finally {
+				target.popExceptionFrame(this, expr, c, s0, action, s1, e);
+			}
 			throw e;
 		}		
 	}
-
-	@Override
+	
+    @Override
 	protected void getInitStates(SemanticNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
 			CostModel cm) {
 		if (mode == EvalMode.Debugger) {
 			fastTool.getInitStates(init, acts, c, ps, states, cm);
 		} else {
 			mode = EvalMode.State;
-			if (states instanceof WrapperStateFunctor) {
-				// Wrap the IStateFunctor so we can intercept Tool adding a new state to the
-				// functor. Without it, the debugger wouldn't show the fully assigned state and
-				// the variable that is assigned last will always be null.
-				super.getInitStates(init, acts, c, ps, states, cm);
-			} else {
-				super.getInitStates(init, acts, c, ps, new WrapperStateFunctor(states, target), cm);
+			try {
+				if (states instanceof WrapperStateFunctor) {
+					// Wrap the IStateFunctor so we can intercept Tool adding a new state to the
+					// functor. Without it, the debugger wouldn't show the fully assigned state and
+					// the variable that is assigned last will always be null.
+					super.getInitStates(init, acts, c, ps, states, cm);
+				} else {
+					super.getInitStates(init, acts, c, ps, new WrapperStateFunctor(states, target), cm);
+				}
+			} catch (ResetEvalException ree) {
+				if (ree.isTarget(init)) {
+					getInitStates(init, acts, c, ps, states, cm);
+				}
+				throw ree;
 			}
 		}
 	}
@@ -396,9 +467,12 @@ public class DebugTool extends Tool {
 			fastTool.getInitStatesAppl(init, acts, c, ps, states, cm);
 		} else {
 			mode = EvalMode.State;
-			target.pushFrame(this, init, c, ps);
-			super.getInitStatesAppl(init, acts, c, ps, states, cm);
-			target.popFrame(this, init, c, ps);
+			try {
+				target.pushFrame(this, init, c, ps);
+				super.getInitStatesAppl(init, acts, c, ps, states, cm);
+			} finally {
+				target.popFrame(this, init, c, ps);
+			}
 		}
 	}
 
@@ -419,9 +493,12 @@ public class DebugTool extends Tool {
 						// Breakpoints for the INextStateFunctor frames are in-line breakpoints on
 						// the action declaration. If an action is undeclared, it is impossible to set
 						// the breakpoint.
-						target.pushFrame(this, action.getOpDef(), action.con, state, action, wf);
-						this.getNextStates(wf, state, action);
-						target.popFrame(this, action.getOpDef(), action.con, state, action, wf);
+						try {
+							target.pushFrame(this, action.getOpDef(), action.con, state, action, wf);
+							this.getNextStates(wf, state, action);
+						} finally {
+							target.popFrame(this, action.getOpDef(), action.con, state, action, wf);
+						}
 					} else {
 						this.getNextStates(wf, state, action);
 					}
@@ -451,10 +528,12 @@ public class DebugTool extends Tool {
 		
 		@Override
 		public Object addElement(TLCState state) {
-			target.pushFrame(state);
-			Object addElement = functor.addElement(state);
-			target.popFrame(state);
-			return addElement;
+			try {
+				target.pushFrame(state);
+				return functor.addElement(state);
+			} finally {
+				target.popFrame(state);
+			}
 		}
 	}
 
@@ -466,10 +545,12 @@ public class DebugTool extends Tool {
 
 		@Override
 		public Object addElement(TLCState predecessor, Action a, TLCState state) {
-			target.pushFrame(predecessor, a, state);
-			Object addElement = ((INextStateFunctor) functor).addElement(predecessor, a, state);
-			target.popFrame(predecessor, state);
-			return addElement;
+			try {
+				target.pushFrame(predecessor, a, state);
+				return((INextStateFunctor) functor).addElement(predecessor, a, state);
+			} finally {
+				target.popFrame(predecessor, state);
+			}
 		}
 
 		@Override
