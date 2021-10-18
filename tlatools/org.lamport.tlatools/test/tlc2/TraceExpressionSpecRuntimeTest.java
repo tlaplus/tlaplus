@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import tla2sany.semantic.ExternalModuleTable;
 import tlc2.output.EC;
 import tlc2.tool.Action;
 import tlc2.tool.StateVec;
@@ -42,7 +41,6 @@ import tlc2.util.Vect;
 import tlc2.value.IValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
-import util.TLAConstants;
 import util.UniqueString;
 
 public class TraceExpressionSpecRuntimeTest extends TraceExpressionSpecTest {
