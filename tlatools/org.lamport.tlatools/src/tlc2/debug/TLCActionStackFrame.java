@@ -59,11 +59,12 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 			Action a, TLCState ps, RuntimeException e) {
 		super(parent, expr, c, tool, ps /* super calls ps.deepCopy() */, e);
 		assert predecessor != null;
-		assert predecessor.allAssigned();
 		assert a != null;
 		assert ps != null;
 		assert ps.getPredecessor() != null;
-		assert ps.getPredecessor().allAssigned();
+		// We *cannot* assert allAssigned here cause the check if ps is a good state (Tool#isGoodState) happens later.
+//		assert predecessor.allAssigned();
+//		assert ps.getPredecessor().allAssigned();
 	}
 	
 	@Override
