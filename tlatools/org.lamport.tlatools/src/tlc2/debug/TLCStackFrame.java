@@ -563,7 +563,7 @@ public class TLCStackFrame extends StackFrame {
 			// Thus, we have to use the visualization that comes with exception, even though
 			// the term "exception" appears in the front-end.
 			eventArguments.setReason("exception");
-			eventArguments.setText(this.exception.getMessage());
+			eventArguments.setText(this.exception.getMessage().replaceAll("(?m)^@!@!@.*", ""));
 		}
 		return eventArguments;
 	}

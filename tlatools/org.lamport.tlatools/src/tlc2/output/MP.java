@@ -246,7 +246,11 @@ public class MP
      */
     public synchronized static String getMessage(int messageClass, int messageCode, String[] parameters)
     {
+    	return getMessage(messageClass, messageCode, parameters, true);
+    }
 
+    public synchronized static String getMessage(int messageClass, int messageCode, String[] parameters, final boolean tool)
+        {
         if (parameters == null)
         {
             parameters = EMPTY_PARAMS;
@@ -261,7 +265,7 @@ public class MP
 
         StringBuffer b = new StringBuffer();
 
-        if (TLCGlobals.tool)
+        if (TLCGlobals.tool && tool)
         {
             // for the tool we always print the message class
             // and message code
@@ -291,7 +295,7 @@ public class MP
         
         b.append(getMessage0(messageClass, messageCode, parameters));
 
-        if (TLCGlobals.tool)
+        if (TLCGlobals.tool && tool)
         {
             // for the tool we always print the message code
             b.append(CR).append(DELIM).append(ENDMSG).append(messageCode).append(SPACE).append(DELIM);
