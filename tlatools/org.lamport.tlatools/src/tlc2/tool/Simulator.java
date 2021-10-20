@@ -303,6 +303,7 @@ public class Simulator {
 		// Wait for the progress reporter thread to finish.
 		report.join();
 
+		this.printSummary();
 		return errorCode;
 	}
 
@@ -542,7 +543,7 @@ public class Simulator {
 	 */
 	public final void reportCoverage() {
 		if (TLCGlobals.isCoverageEnabled()) {
-            CostModelCreator.report(this.tool, this.startTime );
+            CostModelCreator.report(this.tool, this.startTime);
 		}
 	}
 

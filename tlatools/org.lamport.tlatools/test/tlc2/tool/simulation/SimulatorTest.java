@@ -74,6 +74,7 @@ public class SimulatorTest extends CommonTestCase {
 		runSimulatorTest("BasicMultiTrace", TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, false, 100, 100);
 		assertFalse(recorder.recorded(EC.TLC_INVARIANT_VIOLATED_INITIAL));
 		assertTrue(recorder.recorded(EC.TLC_PROGRESS_SIMU));
+		assertTrue(recorder.recorded(EC.TLC_STATS_SIMU));
 	}
 	
 	@Test
