@@ -927,13 +927,22 @@ public abstract class Tool
 	  return copy;
   }
 
-  @ExpectInlined
+  
   private final TLCState getNextStates0(final Action action, ActionItemList acts, final TLCState s0, final TLCState s1,
                                        final INextStateFunctor nss, CostModel cm) {
     if (acts.isEmpty()) {
       nss.addElement(s0, action, s1);
       return s1.copy();
-    } else if (s1.allAssigned()) {
+    } else if (TLCGlobals.warn && s1.allAssigned()) {
+		// If all variables have been assigned and warnings are turned off, Tool can
+		// execute the fast-path that avoids generating known successor states, but
+		// doesn't trigger a warning in cases like:
+    	//  ---- MODULE F ----
+    	//  VARIABLES x
+    	//  Init == x = 0
+    	//  Next == x' = 42 /\ UNCHANGED x \* UNCHANGED and changed!
+    	//  ====
+    	// => "Warning: The variable x was changed while it is specified as UNCHANGED"
     	return getNextStatesAllAssigned(action, acts, s0, s1, nss, cm);
     }
 
