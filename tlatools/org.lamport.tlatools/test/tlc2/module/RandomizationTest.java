@@ -54,6 +54,21 @@ public class RandomizationTest {
 		FP64.Init();
 	}
 
+	/* RandomSubset */
+	
+
+	@Test
+	public void testRandomSubsetNonFinite() {
+		try {
+			Randomization.RandomSubset(IntValue.gen(23), Naturals.Nat());
+		} catch (final EvalException ee) {
+			assertTrue(ee.getMessage().contains("The second argument of RandomSubset should be a a finite set, but instead it is:\n"
+					+ "Nat"));
+			return;
+		}
+		fail();
+	}
+	
 	/* RandomSubsetSet */
 
 	@Test
@@ -71,6 +86,18 @@ public class RandomizationTest {
 			Randomization.RandomSubsetSet(IntValue.gen(23), new StringValue("1.1"), new IntervalValue(1, 42));
 		} catch (final EvalException ee) {
 			assertTrue(ee.getMessage().contains("1.1"));
+			return;
+		}
+		fail();
+	}
+
+	@Test
+	public void testSetNonFinite() {
+		try {
+			Randomization.RandomSubsetSet(IntValue.gen(23), new StringValue("1.0"), Naturals.Nat());
+		} catch (final EvalException ee) {
+			assertTrue(ee.getMessage().contains("The third argument of RandomSubsetSetProbability should be a finite set, but instead it is:\n"
+					+ "Nat"));
 			return;
 		}
 		fail();
