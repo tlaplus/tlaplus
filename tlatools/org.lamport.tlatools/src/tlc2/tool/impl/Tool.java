@@ -928,6 +928,7 @@ public abstract class Tool
   }
 
   
+  @ExpectInlined
   private final TLCState getNextStates0(final Action action, ActionItemList acts, final TLCState s0, final TLCState s1,
                                        final INextStateFunctor nss, CostModel cm) {
     if (acts.isEmpty()) {
