@@ -46,6 +46,16 @@ public class Github317Test extends ModelCheckerTestCase {
 		return Runtime.getRuntime().availableProcessors();
 	}
 
+	@Override
+	protected boolean noGenerateSpec() {
+		// Because of getNumberOfThreads above, TLC runs with multiple workers. This leads
+		// to non-determinism in the length of the error-trace (usually one state, but
+		// occasionally two). Iff the length is greater than one, TLC would write a
+		// trace spec, which causes this test to fail because it expects no trace spec to
+		// be written. Thus, we generally turn off trace specs for any length.
+		return false;
+	}
+
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
