@@ -1676,6 +1676,9 @@ public class MP
      */
     public static void printWarning(int errorCode, String... parameters)
     {
+    	if (Boolean.getBoolean(MP.class.getName() + ".warning2error")) {
+    		Assert.fail(errorCode, parameters);
+    	}
     	recorder.record(errorCode, (Object[]) parameters);
         DebugPrinter.print("entering printWarning(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         // only print warnings if the global warning switch was enabled
@@ -1700,6 +1703,9 @@ public class MP
      */
     public static void printWarning(int errorCode, String parameters, Throwable e)
     {
+    	if (Boolean.getBoolean(MP.class.getName() + ".warning2error")) {
+    		Assert.fail(errorCode, e);
+    	}
     	recorder.record(errorCode, parameters, e);
         DebugPrinter.print("entering printWarning(int, String, Exception) with errorCode " + errorCode); //$NON-NLS-1$
         // only print warnings if the global warning switch was enabled
