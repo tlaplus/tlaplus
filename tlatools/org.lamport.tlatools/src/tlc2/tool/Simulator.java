@@ -303,7 +303,11 @@ public class Simulator {
 		// Wait for the progress reporter thread to finish.
 		report.join();
 
-		this.printSummary();
+		if (errorCode == EC.NO_ERROR) {
+			// Do not print the summary again, which has already happened, e.g., when the
+			// simulator printed a behavior above.
+			this.printSummary();
+		}
 		return errorCode;
 	}
 
@@ -531,7 +535,8 @@ public class Simulator {
 		 * statistics by putting them in the same form as all other progress statistics.
 		 */
 		if (TLCGlobals.tool) {
-			MP.printMessage(EC.TLC_PROGRESS_SIMU, String.valueOf(numOfGenStates.longValue()));
+			MP.printMessage(EC.TLC_PROGRESS_SIMU, String.valueOf(numOfGenStates.longValue()),
+					String.valueOf(numOfGenTraces.longValue()));
 		}
 
 		MP.printMessage(EC.TLC_STATS_SIMU, new String[] { String.valueOf(numOfGenStates.longValue()),

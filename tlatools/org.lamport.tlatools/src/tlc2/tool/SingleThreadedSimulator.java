@@ -132,6 +132,7 @@ public class SingleThreadedSimulator extends Simulator {
 			// If the result is OK, this indicates that the worker has terminated and also
 			// terminate. For example, the worker has generated the requested number of traces.
 			else {
+				this.printSummary();
 				return errorCode;
 			}
 		}
