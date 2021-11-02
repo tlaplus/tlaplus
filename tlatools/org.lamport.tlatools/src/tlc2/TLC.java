@@ -1084,8 +1084,8 @@ public class TLC {
                 } else
                 {
                     rng.setSeed(seed, aril);
-    				RandomEnumerableValues.setSeed(seed);
                 }
+                RandomEnumerableValues.setSeed(seed);
 				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				
 				Simulator simulator;
