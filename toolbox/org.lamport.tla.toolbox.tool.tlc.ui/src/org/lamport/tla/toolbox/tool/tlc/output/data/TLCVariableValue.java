@@ -298,7 +298,7 @@ public abstract class TLCVariableValue
                     innerValue = innerParse(input);
                     if (innerValue == null)
                     {
-                        // no right side of |->
+                        // no right side of :>
                         throw new VariableValueParseException();
                     }
 
