@@ -78,7 +78,7 @@
     <repository
         url="http://download.eclipse.org/tools/ajdt/410/dev/update/"/>
     <repository
-        url="http://download.eclipse.org/technology/m2e/releases/"/>
+        url="http://download.eclipse.org/technology/m2e/releases/latest/"/>
     <repository
         url="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
     <repository
