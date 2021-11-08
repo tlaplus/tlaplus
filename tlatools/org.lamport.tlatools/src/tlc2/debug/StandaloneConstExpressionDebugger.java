@@ -26,11 +26,7 @@
 package tlc2.debug;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -39,7 +35,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 import org.eclipse.lsp4j.debug.OutputEventArguments;
-import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
@@ -120,10 +115,5 @@ public class StandaloneConstExpressionDebugger extends TLCDebugger {
 		});
 
 		return CompletableFuture.completedFuture(null);
-	}
-
-	@Override
-	public TLCDebugger listen(int debugPort) {
-		throw new UnsupportedOperationException("implement me!");
 	}
 }

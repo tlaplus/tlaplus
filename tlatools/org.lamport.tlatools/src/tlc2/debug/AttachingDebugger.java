@@ -40,14 +40,17 @@ import org.eclipse.lsp4j.debug.OutputEventArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
 import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 
+import tlc2.tool.impl.Tool;
 import util.ToolIO;
 
 public class AttachingDebugger extends TLCDebugger {
 	
 	private String buffer = "";
+	private final int port;
 	
-	public AttachingDebugger(final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
+	public AttachingDebugger(int port, final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
 		super(s, halt);
+		this.port = port;
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
 		ToolIO.out = new PrintStream(ToolIO.out) {
 			// ToolIO.out passed to PrintStream above is either System.out or one of TLC's
@@ -82,8 +85,10 @@ public class AttachingDebugger extends TLCDebugger {
 		};
 	}
 
+
 	@Override
-	public TLCDebugger listen(final int port) {
+	public IDebugTarget setTool(final Tool tool) {
+		super.setTool(tool);
 		Executors.newSingleThreadExecutor().submit(() -> {
 			try (ServerSocket serverSocket = new ServerSocket(port)) {
 				// Immediately re-open the debugger to front-end requests after a front-end disconnected.

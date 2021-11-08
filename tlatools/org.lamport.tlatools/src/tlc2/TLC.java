@@ -1092,9 +1092,9 @@ public class TLC {
 				if (debugPort >= 0) {
 					assert TLCGlobals.getNumWorkers() == 1
 							: "TLCDebugger does not support running with multiple workers.";
-					final TLCDebugger instance = TLCDebugger.Factory.getInstance(suspend, halt);
+					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
-						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, instance.listen(debugPort));
+						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, instance);
 					}
 					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
 	                        traceNum, traceActions, rng, seed, resolver);
@@ -1121,9 +1121,9 @@ public class TLC {
             	// model checking
 				if (debugPort >= 0) {
 					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
-					final TLCDebugger instance = TLCDebugger.Factory.getInstance(suspend, halt);
+					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
-						tool = new DebugTool(mainFile, configFile, resolver, instance.listen(debugPort));
+						tool = new DebugTool(mainFile, configFile, resolver, instance);
 					}
 				} else {
 					tool = new FastTool(mainFile, configFile, resolver);

@@ -193,11 +193,6 @@ public class TLCDebuggerTest {
 		public List<StackFrame> getFrames(StackTraceArguments sta) throws InterruptedException, ExecutionException {
 			return Arrays.asList(stackTrace(sta).get().getStackFrames());
 		}
-
-		@Override
-		public TLCDebugger listen(int debugPort) {
-			return this;
-		}
 	}
 
 	protected class TestTLCStackFrame extends TLCStackFrame {

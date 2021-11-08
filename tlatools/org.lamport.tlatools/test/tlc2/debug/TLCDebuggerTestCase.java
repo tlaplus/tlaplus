@@ -633,11 +633,5 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		public TestTLCDebugger() {
 			launcher = new TestLauncher();
 		}
-
-		@Override
-		public TLCDebugger listen(int debugPort) {
-			// Nothing to do for a dummy server.
-			return this;
-		}
 	}
 }
