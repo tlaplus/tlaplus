@@ -305,6 +305,17 @@ If the configuration file specifies a VIEW, then this option tells TLC to apply 
 `-workers` _num_ or `auto`
 Specifies the number of TLC worker threads, where `auto` means to use as many threads as there are cores on the computer. Without this option, TLC uses only a single worker thread.
 
+### Java System Properties
+
+In addition to command line options, TLC also uses several Java system properties to choose between different algorithms for certain tasks. In particular, the following properties can improve performance when TLC is run with many worker threads on a large number of cores.
+
+`tlc2.tool.fp.FPSet.impl`
+Defines which fingerprint set implementation to use. For optimal many-core performance, use `-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet`.
+
+`tlc2.tool.ModelChecker.BAQueue`
+If run with `-Dtlc2.tool.ModelChecker.BAQueue=true`, TLC will use the `ByteArrayQueue`, a prototype implementation that increases many-core throughput by reducing the critical section of the queue of unseen states.
+
+
 ## TLATEX
 ### Bugs
 
