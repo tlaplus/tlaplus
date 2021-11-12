@@ -24,6 +24,5 @@ Prop == <>FALSE \* Force TLC to run liveness checking.
 =============================================================================
 ---- CONFIG Github317 ----
 SPECIFICATION Spec
-INVARIANT Inv
 PROPERTY Prop
 ====
