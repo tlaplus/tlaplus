@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
 import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.OpDefNode;
 import tlc2.output.EC;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
@@ -40,8 +41,8 @@ import util.Assert;
 
 public class CallableValue extends EvaluatingValue {
 
-	public CallableValue(Method md, int minLevel) throws IllegalAccessException {
-		super(MethodHandles.publicLookup().unreflect(md).asSpreader(IValue[].class, md.getParameterCount()), md, minLevel);
+	public CallableValue(Method md, int minLevel, OpDefNode opDef) throws IllegalAccessException {
+		super(MethodHandles.publicLookup().unreflect(md).asSpreader(IValue[].class, md.getParameterCount()), md, minLevel, opDef);
 	}
 
 	@Override

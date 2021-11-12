@@ -576,6 +576,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     }
                 }
                 // Adds/overrides new definitions:
+                //TODO This loop could be merged with the previous loop
+                // by using mods[i].getOpDef(UniqueString) right away
+                // without javaDefns.
                 OpDefNode[] opDefs = mods[i].getOpDefs();
                 for (int j = 0; j < opDefs.length; j++)
                 {
@@ -615,23 +618,22 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 							
 							final Evaluation evaluation = m.getAnnotation(Evaluation.class);
 							if (evaluation != null) {
-								final Value val = new EvaluatingValue(m, evaluation.minLevel());
-								
 								final ModuleNode moduleNode = modSet.get(evaluation.module());
 								if (moduleNode == null) {
 									if (evaluation.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
 											evaluation.module() + "!" + evaluation.definition(),
-											c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
 									continue LOOP;
 								}
 								final OpDefNode opDef = moduleNode.getOpDef(evaluation.definition());
 								if (opDef == null) {
 									if (evaluation.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
 											evaluation.module() + "!" + evaluation.definition(),
-											c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
 									continue LOOP;
 								}
 								
+								final Value val = new EvaluatingValue(m, evaluation.minLevel(), opDef);
 								opDef.getBody().setToolObject(toolId, val);
 			                    this.defns.put(evaluation.definition(), val);
 			                    
@@ -648,23 +650,23 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 							
 							final TLAPlusCallable jev = m.getAnnotation(TLAPlusCallable.class);
 							if (jev != null) {
-								final Value val = new CallableValue(m, jev.minLevel());
 								
 								final ModuleNode moduleNode = modSet.get(jev.module());
 								if (moduleNode == null) {
 									if (jev.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
 											jev.module() + "!" + jev.definition(),
-											c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
 									continue LOOP;
 								}
 								final OpDefNode opDef = moduleNode.getOpDef(jev.definition());
 								if (opDef == null) {
 									if (jev.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
 											jev.module() + "!" + jev.definition(),
-											c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
 									continue LOOP;
 								}
 								
+								final Value val = new CallableValue(m, jev.minLevel(), opDef);
 								opDef.getBody().setToolObject(toolId, val);
 			                    this.defns.put(jev.definition(), val);
 			                    hasCallableValue = true;

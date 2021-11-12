@@ -30,6 +30,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 
 import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.OpDefNode;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.FingerprintException;
@@ -47,17 +48,20 @@ public class EvaluatingValue extends OpValue implements Applicable {
   protected final MethodHandle mh;
   protected final Method md;
   protected final int minLevel;
+  protected final OpDefNode opDef;
 
-  protected EvaluatingValue(final MethodHandle mh, final Method md, final int minLevel) {
+  protected EvaluatingValue(final MethodHandle mh, final Method md, final int minLevel, final OpDefNode opDef) {
 	  this.mh = mh;
 	  this.md = md;
 	  this.minLevel = minLevel;
+	  this.opDef = opDef;
   }
   
   /* Constructor */
-	public EvaluatingValue(final Method md, final int minLevel) {
+	public EvaluatingValue(final Method md, final int minLevel, final OpDefNode opDef) {
 		this.md = md;
 		this.minLevel = minLevel;
+		this.opDef = opDef;
 		try {
 			this.mh = MethodHandles.publicLookup().unreflect(md).asFixedArity();
 		} catch (IllegalAccessException e) {
@@ -69,7 +73,12 @@ public class EvaluatingValue extends OpValue implements Applicable {
 	public Value eval(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
 			final TLCState s1, final int control, final CostModel cm) {
 		try {
-			return (Value) this.mh.invoke(tool, args, c, s0, s1, control, cm);
+			final Object invoke = this.mh.invoke(tool, args, c, s0, s1, control, cm);
+			if (invoke == null) {
+				// Fall back to pure (TLA+) operator definition if the Java module override returned null.
+				return tool.eval(opDef.getBody(), c, s0, s1, control, cm);
+			}
+			return (Value) invoke;
 		} catch (Throwable e) {
             Assert.fail(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[]{this.md.toString(), e.getMessage()});
             return null; // make compiler happy
