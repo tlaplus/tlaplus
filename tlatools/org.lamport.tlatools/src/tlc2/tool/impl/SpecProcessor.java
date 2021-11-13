@@ -93,6 +93,7 @@ import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.MethodValue;
+import tlc2.value.impl.PriorityEvaluatingValue;
 import tlc2.value.impl.OpRcdValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.StringValue;
@@ -633,15 +634,28 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 									continue LOOP;
 								}
 								
-								final Value val = new EvaluatingValue(m, evaluation.minLevel(), opDef);
-								opDef.getBody().setToolObject(toolId, val);
-			                    this.defns.put(evaluation.definition(), val);
+								// Either load the first EvaluatingValue or combine multiple EvaluatingValues for this operator into
+								// a PriorityEvaluatingValue that -given by the EVs priority- keeps evaluating every EV until one returns
+								// a Value.
+								final Object toolObject = opDef.getBody().getToolObject(toolId);
+								if (toolObject instanceof EvaluatingValue) {
+									final Value val = new PriorityEvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef, (EvaluatingValue) toolObject);
+									opDef.getBody().setToolObject(toolId, val);
+				                    this.defns.put(evaluation.definition(), val);
+								} else if (toolObject instanceof PriorityEvaluatingValue) {
+									final PriorityEvaluatingValue mev = (PriorityEvaluatingValue) toolObject;
+									mev.add(new EvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef));
+								} else {
+									final Value val = new EvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef);
+									opDef.getBody().setToolObject(toolId, val);
+				                    this.defns.put(evaluation.definition(), val);
+								}
 			                    
 								// Print success of loading the module override.
 			                    if (!evaluation.silent()) {
 			                    	MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
 			                    			evaluation.module() + "!" + evaluation.definition(),
-			                    			c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+			                    			c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
 			                    }
 			                    
 			                    // continue with next method (don't try to also load Execution annotation below).

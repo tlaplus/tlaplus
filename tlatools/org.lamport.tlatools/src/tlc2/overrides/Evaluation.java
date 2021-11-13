@@ -74,4 +74,11 @@ public @interface Evaluation {
 	 * @return true if no message should be printed when this EV is successfully loaded.
 	 */
 	boolean silent() default false;
+	
+	/**
+	 * Should there be more than one Evaluation for an operator, the Evaluation with a
+	 * lower priority will be evaluated first.  If two or more Evaluations have the
+	 * same priority, the order in which they are evaluated is non-deterministic.
+	 */
+	int priority() default 100;
 }

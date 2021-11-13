@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2021 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -25,9 +25,9 @@
  ******************************************************************************/
 package tlc2.value.impl;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.OpDefNode;
@@ -36,29 +36,57 @@ import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
-import tlc2.value.IValue;
 import util.Assert;
 
-public class CallableValue extends EvaluatingValue {
+public class PriorityEvaluatingValue extends EvaluatingValue {
 
-	public CallableValue(Method md, int minLevel, OpDefNode opDef) throws IllegalAccessException {
-		super(MethodHandles.publicLookup().unreflect(md).asSpreader(IValue[].class, md.getParameterCount()), md, minLevel, 100, opDef);
+	private static final Comparator<EvaluatingValue> comparator = new Comparator<>() {
+		@Override
+		public int compare(EvaluatingValue o1, EvaluatingValue o2) {
+			return Integer.compare(o1.priority, o2.priority);
+		}
+	};
+
+	private final ArrayList<EvaluatingValue> handles = new ArrayList<>();
+
+	public PriorityEvaluatingValue(final Method md, final int minLevel, final int priority, final OpDefNode opDef,
+			final EvaluatingValue ev) {
+		super(md, minLevel, priority, opDef);
+		if (ev.opDef != this.opDef || ev.minLevel != this.minLevel) {
+			// TODO Specific error code.
+			Assert.fail(EC.GENERAL);
+		}
+
+		this.handles.add(this);
+		this.handles.add(ev);
+		this.handles.sort(comparator);
+	}
+
+	public void add(EvaluatingValue ev) {
+		if (ev.opDef != this.opDef || ev.minLevel != this.minLevel) {
+			// TODO Specific error code.
+			Assert.fail(EC.GENERAL);
+		}
+		this.handles.add(ev);
+		this.handles.sort(comparator);
 	}
 
 	@Override
 	public Value eval(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
 			final TLCState s1, final int control, final CostModel cm) {
-		final Value[] argVals = new Value[args.length];
-		// evaluate the operator's arguments:
-		for (int i = 0; i < args.length; i++) {
-			argVals[i] = tool.eval(args[i], c, s0, s1, control, cm);
-		}
 		try {
-			final Callable<?> cl = (Callable<?>) this.mh.invoke(argVals);
-			s1.setCallable(cl);
+			for (EvaluatingValue ev : handles) {
+				final Object invoke = ev.mh.invoke(tool, args, c, s0, s1, control, cm);
+				if (invoke != null) {
+					return (Value) invoke;
+				}
+			}
+			// Fall back to pure (TLA+) operator definition if the Java module overrides
+			// returned null.
+			return tool.eval(opDef.getBody(), c, s0, s1, control, cm);
 		} catch (Throwable e) {
 			Assert.fail(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[] { this.md.toString(), e.getMessage() });
+			return null; // make compiler happy
 		}
-		return BoolValue.ValTrue;
 	}
 }

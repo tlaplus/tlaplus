@@ -48,19 +48,22 @@ public class EvaluatingValue extends OpValue implements Applicable {
   protected final MethodHandle mh;
   protected final Method md;
   protected final int minLevel;
+  protected final int priority;
   protected final OpDefNode opDef;
 
-  protected EvaluatingValue(final MethodHandle mh, final Method md, final int minLevel, final OpDefNode opDef) {
+  protected EvaluatingValue(final MethodHandle mh, final Method md, final int minLevel, final int priority, final OpDefNode opDef) {
 	  this.mh = mh;
 	  this.md = md;
 	  this.minLevel = minLevel;
+      this.priority = priority;
 	  this.opDef = opDef;
   }
   
   /* Constructor */
-	public EvaluatingValue(final Method md, final int minLevel, final OpDefNode opDef) {
+	public EvaluatingValue(final Method md, final int minLevel, final int priority, final OpDefNode opDef) {
 		this.md = md;
 		this.minLevel = minLevel;
+		this.priority = priority;
 		this.opDef = opDef;
 		try {
 			this.mh = MethodHandles.publicLookup().unreflect(md).asFixedArity();
@@ -70,6 +73,7 @@ public class EvaluatingValue extends OpValue implements Applicable {
 		}
 	}
 
+	@Override
 	public Value eval(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
 			final TLCState s1, final int control, final CostModel cm) {
 		try {
