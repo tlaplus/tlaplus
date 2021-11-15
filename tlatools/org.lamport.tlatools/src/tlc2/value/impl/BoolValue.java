@@ -42,6 +42,9 @@ public class BoolValue extends Value implements IBoolValue {
         int y = ((BoolValue)obj).val ? 1 : 0;
         return x - y;
       }
+      if (((Value)obj).getKind() <= 5){
+        return this.getKind() - ((Value)obj).getKind();
+      }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to compare boolean " + Values.ppr(this.toString()) +
         " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
@@ -58,6 +61,9 @@ public class BoolValue extends Value implements IBoolValue {
     try {
       if (obj instanceof BoolValue) {
         return this.val == ((BoolValue)obj).val;
+      }
+      if (((Value)obj).getKind() <= 5){
+        return false;
       }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to compare equality of boolean " + Values.ppr(this.toString()) +

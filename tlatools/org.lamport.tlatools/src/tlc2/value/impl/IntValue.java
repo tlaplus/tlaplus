@@ -72,6 +72,9 @@ public class IntValue extends Value {
       if (obj instanceof IntValue) {
         return Integer.compare(this.val, ((IntValue)obj).val);
       }
+      if (((Value)obj).getKind() <= 5){
+        return this.getKind() - ((Value)obj).getKind();
+      }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to compare integer " + Values.ppr(this.toString()) +
         " with non-integer:\n" + Values.ppr(obj.toString()), getSource());
@@ -88,6 +91,9 @@ public class IntValue extends Value {
     try {
       if (obj instanceof IntValue) {
         return this.val == ((IntValue)obj).val;
+      }
+      if (((Value)obj).getKind() <= 5){
+        return false;
       }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to check equality of integer " + Values.ppr(this.toString()) +

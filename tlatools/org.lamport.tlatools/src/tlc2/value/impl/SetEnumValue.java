@@ -92,12 +92,16 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     try {
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
+        if (((Value)obj).getKind() <= 5){
+          return this.getKind() - ((Value)obj).getKind();
+        }
         if (obj instanceof ModelValue) return 1;
         Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }
       this.normalize();
       set.normalize();
+      if (!(this.isNorm && set.isNorm)) Assert.fail("fatal: linear_compare only works with normalized sets.");
       int sz = this.elems.size();
       int cmp = sz - set.elems.size();
       if (cmp != 0) return cmp;
@@ -117,6 +121,9 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     try {
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
+        if (((Value)obj).getKind() <= 5){
+          return false;
+        }
         if (obj instanceof ModelValue)
            return ((ModelValue) obj).modelValueEquals(this) ;
         Assert.fail("Attempted to check equality of the set " + Values.ppr(this.toString()) +
@@ -124,6 +131,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       }
       this.normalize();
       set.normalize();
+      if (!(this.isNorm && set.isNorm)) Assert.fail("fatal: linear_compare only works with normalized sets.");
       int sz = this.elems.size();
       if (sz != set.elems.size()) {
         return false;
@@ -274,6 +282,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
+      this.isNorm = false; // reset isNorm since it failed
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
