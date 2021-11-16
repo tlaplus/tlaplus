@@ -40,7 +40,7 @@ import util.Assert;
 
 public class PriorityEvaluatingValue extends EvaluatingValue {
 
-	private static final Comparator<EvaluatingValue> comparator = new Comparator<>() {
+	private static final Comparator<EvaluatingValue> comparator = new Comparator<EvaluatingValue>() {
 		@Override
 		public int compare(EvaluatingValue o1, EvaluatingValue o2) {
 			return Integer.compare(o1.priority, o2.priority);
