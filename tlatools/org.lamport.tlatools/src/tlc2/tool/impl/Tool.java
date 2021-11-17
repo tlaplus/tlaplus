@@ -1616,6 +1616,13 @@ public abstract class Tool
               TLCState s1, final int control) {
 		  return eval(expr, c, s0, s1, control, CostModel.DO_NOT_RECORD);
 	  }
+	  
+	public Value evalPure(final OpDefNode opDef, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
+				final TLCState s1, final int control, final CostModel cm) {
+	    final Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
+		return this.eval(opDef.getBody(), c1, s0, s1, control, cm);
+	}
+
   /*
    * This method evaluates the expression expr in the given context,
    * current state, and partial next state.

@@ -33,6 +33,7 @@ import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.OpDefNode;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.tool.BuiltInOPs;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
@@ -65,6 +66,10 @@ public class EvaluatingValue extends OpValue implements Applicable {
 		this.minLevel = minLevel;
 		this.priority = priority;
 		this.opDef = opDef;
+		if (BuiltInOPs.getOpCode(opDef.getName()) != 0) {
+			Assert.fail(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[] { this.md.toString(),
+					"@Evaluation fallback to pure TLA+ definition only works for user-defined operators." });
+		}
 		try {
 			this.mh = MethodHandles.publicLookup().unreflect(md).asFixedArity();
 		} catch (IllegalAccessException e) {
@@ -80,7 +85,7 @@ public class EvaluatingValue extends OpValue implements Applicable {
 			final Object invoke = this.mh.invoke(tool, args, c, s0, s1, control, cm);
 			if (invoke == null) {
 				// Fall back to pure (TLA+) operator definition if the Java module override returned null.
-				return tool.eval(opDef.getBody(), c, s0, s1, control, cm);
+				return tool.evalPure(opDef, args, c, s0, s1, control, cm);
 			}
 			return (Value) invoke;
 		} catch (Throwable e) {
