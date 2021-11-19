@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2021, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Sat 23 February 2008 at 10:18:01 PST by lamport
 //      modified on Fri Aug 10 15:09:53 PDT 2001 by yuanyu
@@ -339,16 +340,9 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       this.rcdSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.rcdSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = null;
-      synchronized(this) {
-        if (this.rcdSet == SetEnumValue.DummyEnum) {
-          val = (SetEnumValue) this.toSetEnum();
-          val.deepNormalize();
-        }
-      }
-      synchronized(this) {
-        if (this.rcdSet == SetEnumValue.DummyEnum) { this.rcdSet = val; }
-      }
+      SetEnumValue val = (SetEnumValue) this.toSetEnum();
+      val.deepNormalize();
+      this.rcdSet = val;
     }
   }
 
