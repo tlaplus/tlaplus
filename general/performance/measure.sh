@@ -11,8 +11,8 @@ MODEL='k'$K'_l'$L'_n'$N'_c'$C
 
 # Performance related properties
 WORKERS=${5-"$(nproc --all)"}
-HEAP_MEM=${6-"128G"}
-DIRECT_MEM=${7-"128g"}
+HEAP_MEM=${6-"8G"}
+DIRECT_MEM=${7-"8g"}
 FPSET_IMPL="tlc2.tool.fp.OffHeapDiskFPSet"
 
 # TLC version
@@ -22,7 +22,7 @@ REV=$(git rev-parse HEAD)
 #DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # TLC's code location
-TLATOOLS_HOME=../../tlatools/
+TLATOOLS_HOME=../../tlatools/org.lamport.tlatools/
 
 # Trap interrupts and exit instead of continuing the for loop below
 trap "echo Exited!; exit;" SIGINT SIGTERM
@@ -37,6 +37,7 @@ CONSTANT N = $N
 CONSTANT C = $C
 INIT Init
 NEXT Next
+INVARIANT Inv
 EOF
 
 # Repeat N times to even out noise...
@@ -50,12 +51,12 @@ for i in {1..3}; do
           TLC_OUTPUT_FILE=$REV-$i-$w-tlc.txt
 
           /usr/bin/time --append --output=$TIME_OUTPUT_FILE \
-          java -XX:StartFlightRecording=settings=default \
-           -XX:FlightRecorderOptions=defaultrecording=true,disk=true,repository=/tmp,dumponexit=true,dumponexitpath=$JFR_OUTPUT_FILE,maxage=12h,settings=$TLATOOLS_HOME/jfr/tlc.jfc \
-           -javaagent:$TLATOOLS_HOME/jfr/jmx2jfr.jar=$TLATOOLS_HOME/jfr/jmxprobes.xml \
+          java \
+           -XX:+UseParallelGC \
            -Xmx$HEAP_MEM -Xms$HEAP_MEM \
            -XX:MaxDirectMemorySize=$DIRECT_MEM \
            -Dtlc2.tool.fp.FPSet.impl=$FPSET_IMPL \
+           -Dtlc2.tool.ModelChecker.BAQueue=true \
            -cp $TLATOOLS_HOME/class:$TLATOOLS_HOME/lib/* \
            -DspecName=$SPEC \
            -DmodelName=$MODEL \

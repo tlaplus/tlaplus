@@ -27,9 +27,20 @@ import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
+import util.ToolIO;
 import util.UniqueString;
 
 public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
+	
+	// -Dtlc2.value.impl.FcnRcdValue.noIndex=true
+	private static final boolean NO_INDEX = Boolean.getBoolean(FcnRcdValue.class.getName() + ".noIndex");
+	static {
+		// Indicate if index creation will be disabled in this TLC run.
+		if (NO_INDEX) {
+			ToolIO.out.println("FcnRcdValue#createIndex is disabled.");
+		}
+	}
+	
   public final Value[] domain;
   public final IntervalValue intv;
   public final Value[] values;
@@ -385,8 +396,9 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
         if (this.indexTbl != null) {
           return this.values[this.lookupIndex(arg)];
         }
-        if (this.isNorm) this.createIndex();
-
+        if (!NO_INDEX && this.isNorm) {
+        	this.createIndex();
+        }
         if (this.indexTbl != null) {
           return this.values[this.lookupIndex(arg)];
         }
@@ -407,6 +419,38 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       else { throw e; }
     }
   }
+
+  public final Value selectNoIndex(Value arg) {
+    try {
+
+      if (this.intv != null) {
+        // domain is represented as an integer interval:
+        if (!(arg instanceof IntValue)) {
+          Assert.fail("Attempted to apply function with integer domain to" +
+                " the non-integer argument " + Values.ppr(arg.toString()), getSource());
+        }
+        int idx = ((IntValue)arg).val;
+        if ((idx >= this.intv.low) && (idx <= this.intv.high)) {
+          return this.values[idx - this.intv.low];
+        }
+      }
+      else {
+        // domain is represented as an array of values:
+          int len = this.domain.length;
+          for (int i = 0; i < len; i++) {
+            if (this.domain[i].equals(arg)) {
+              return this.values[i];
+            }
+          }
+      }
+      return null;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
 
 //  public final boolean assign(Value[] args, Value val) {
 //    try {

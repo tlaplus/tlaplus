@@ -22,11 +22,16 @@ EXTENDS Integers, FiniteSets
 CONSTANTS N, K, L, C
 VARIABLE x, y
 
-Init == /\ x = [i \in 1..N |-> 0]
+\* To trigger FcnRcdValue#createTable domain must not be int range
+Dom == 0..1 \union 2..N
+
+Init == /\ x = [i \in Dom |-> 0]
         /\ y \in 1..C
 
 Next == /\ UNCHANGED y
-        /\ \E i \in 1..N : /\ x' = [x EXCEPT ![i] = (@ + 1) % K]
+        /\ \E i \in Dom : /\ x' = [x EXCEPT ![i] = (@ + 1) % K]
         /\ \E s \in SUBSET (1..L): Cardinality(s) = L
 
+Inv ==
+    \A i \in Dom : x[i] < K
 =============================================================================
