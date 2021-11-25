@@ -8,7 +8,6 @@ package tlc2.value.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -27,25 +26,15 @@ import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
-import util.ToolIO;
 import util.UniqueString;
 
 public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
-	
-	// -Dtlc2.value.impl.FcnRcdValue.noIndex=true
-	private static final boolean NO_INDEX = Boolean.getBoolean(FcnRcdValue.class.getName() + ".noIndex");
-	static {
-		// Indicate if index creation will be disabled in this TLC run.
-		if (NO_INDEX) {
-			ToolIO.out.println("FcnRcdValue#createIndex is disabled.");
-		}
-	}
 	
   public final Value[] domain;
   public final IntervalValue intv;
   public final Value[] values;
   private boolean isNorm;
-  private int[] indexTbl;  // speed up function application
+//  private int[] indexTbl;  // speed up function application
   public static final Value EmptyFcn = new FcnRcdValue(new Value[0], new Value[0], true);
 
   /* Constructor */
@@ -54,7 +43,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     this.values = values;
     this.intv = null;
     this.isNorm = isNorm;
-    this.indexTbl = null;
+//    this.indexTbl = null;
   }
 
   public FcnRcdValue(IntervalValue intv, Value[] values) {
@@ -62,7 +51,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     this.values = values;
     this.domain = null;
     this.isNorm = true;
-    this.indexTbl = null;
+//    this.indexTbl = null;
   }
 
   public FcnRcdValue(IntervalValue intv, Value[] values, CostModel cm) {
@@ -75,7 +64,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     this.intv = fcn.intv;
     this.values = values;
     this.isNorm = fcn.isNorm;
-    this.indexTbl = fcn.indexTbl;
+//    this.indexTbl = fcn.indexTbl;
   }
 
   public FcnRcdValue(ValueVec elems, Value[] values, boolean isNorm) {
@@ -107,44 +96,44 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   @Override
   public final byte getKind() { return FCNRCDVALUE; }
 
-  /* We create an index only when the domain is not very small. */
-  private final void createIndex() {
-    if (this.domain != null && this.domain.length > 10) {
-      int len = this.domain.length * 2 + 1;
-
-      int[] tbl = new int[len];
-      Arrays.fill(tbl, -1);
-
-      synchronized(this) {
-        for (int i = 0; i < this.domain.length; i++) {
-          int loc = (this.domain[i].hashCode() & 0x7FFFFFFF) % len;
-          while (tbl[loc] != -1) {
-            loc = (loc + 1) % len;
-          }
-          tbl[loc] = i;
-        }
-      }
-
-      synchronized(this) { this.indexTbl = tbl; }
-    }
-  }
-
-  private final int lookupIndex(Value arg) {
-    int len = this.indexTbl.length;
-    int loc = (arg.hashCode() & 0x7FFFFFFF) % len;
-    while (true) {
-      int idx = this.indexTbl[loc];
-      if (idx == -1) {
-        Assert.fail("Attempted to apply function:\n" + Values.ppr(this.toString()) +
-              "\nto argument " + Values.ppr(arg.toString()) +
-              ", which is not in the domain of the function.", getSource());
-      }
-      if (this.domain[idx].equals(arg)) {
-        return idx;
-      }
-      loc = (loc + 1) % len;
-    }
-  }
+//  /* We create an index only when the domain is not very small. */
+//  private final void createIndex() {
+//    if (this.domain != null && this.domain.length > 10) {
+//      int len = this.domain.length * 2 + 1;
+//
+//      int[] tbl = new int[len];
+//      Arrays.fill(tbl, -1);
+//
+//      synchronized(this) {
+//        for (int i = 0; i < this.domain.length; i++) {
+//          int loc = (this.domain[i].hashCode() & 0x7FFFFFFF) % len;
+//          while (tbl[loc] != -1) {
+//            loc = (loc + 1) % len;
+//          }
+//          tbl[loc] = i;
+//        }
+//      }
+//
+//      synchronized(this) { this.indexTbl = tbl; }
+//    }
+//  }
+//
+//  private final int lookupIndex(Value arg) {
+//    int len = this.indexTbl.length;
+//    int loc = (arg.hashCode() & 0x7FFFFFFF) % len;
+//    while (true) {
+//      int idx = this.indexTbl[loc];
+//      if (idx == -1) {
+//        Assert.fail("Attempted to apply function:\n" + Values.ppr(this.toString()) +
+//              "\nto argument " + Values.ppr(arg.toString()) +
+//              ", which is not in the domain of the function.", getSource());
+//      }
+//      if (this.domain[idx].equals(arg)) {
+//        return idx;
+//      }
+//      loc = (loc + 1) % len;
+//    }
+//  }
 
   @Override
   public final int compareTo(Object obj) {
@@ -402,21 +391,22 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     }
   }
   
-  final Value selectIndexTable(final Value arg) {
-    // domain is represented as an array of values:
-    if (this.indexTbl != null) {
-      return this.values[this.lookupIndex(arg)];
-    }
-    if (!NO_INDEX && this.isNorm) {
-    	this.createIndex();
-    }
-    if (this.indexTbl != null) {
-      return this.values[this.lookupIndex(arg)];
-    }
-    else {
-	  return selectLinearSearch(arg);
-    }
-  }
+  // This implementation has a concurrency bug: https://github.com/tlaplus/tlaplus/issues/439
+//  final Value selectIndexTable(final Value arg) {
+//    // domain is represented as an array of values:
+//    if (this.indexTbl != null) {
+//      return this.values[this.lookupIndex(arg)];
+//    }
+//    if (this.isNorm) {
+//    	this.createIndex();
+//    }
+//    if (this.indexTbl != null) {
+//      return this.values[this.lookupIndex(arg)];
+//    }
+//    else {
+//	  return selectLinearSearch(arg);
+//    }
+//  }
 
   final Value selectLinearSearch(final Value arg) {
       // domain is represented as an array of values:
@@ -430,6 +420,8 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   }
 
   final Value selectBinarySearch(Value arg) {
+	  // The value 32 has been determined empirically (see FcnRcdBenachmark).
+	  // In older versions of TLC this the threshold was 10.
       if (this.isNorm && this.domain.length >= 32) {
         // domain is represented as an array of values:
     	// iff normalized, use binary search to speedup lookups.
