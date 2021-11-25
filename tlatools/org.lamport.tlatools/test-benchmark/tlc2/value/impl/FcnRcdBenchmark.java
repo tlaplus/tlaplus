@@ -34,6 +34,10 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
@@ -48,12 +52,12 @@ public class FcnRcdBenchmark {
 		FP64.Init();
 	}
 	
-	@Param({"4", "8", "16", "32", "64", "128", "256", "512", "8192"})
+	@Param({"0", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192"})
 	public int size;
 
 	public FcnRcdValue fcnRcd;
 		
-	@Setup(Level.Invocation)
+	@Setup(Level.Iteration)
 	public void setup() {
 		Value[] domain = new Value[size];
 		Value[] range = new Value[size];
@@ -64,15 +68,15 @@ public class FcnRcdBenchmark {
 			range[i] = IntValue.gen(i);
 		}
 		Collections.shuffle(Arrays.asList(domain));
-		fcnRcd = new FcnRcdValue(domain, range, false);
+		fcnRcd = (FcnRcdValue) new FcnRcdValue(domain, range, false).normalize();
 	}
 
 	@Benchmark
-	public Value[] fcnRcdValueSelect() {
+	public Value[] fcnRcdValueSelectIndex() {
 		Value[] values = new Value[size];
 		for (int i = 0; i < values.length; i++) {
 			Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
-			values[i] = fcnRcd.select(domain);
+			values[i] = fcnRcd.selectIndexTable(domain);
 //			values[i] = fcnRcd.select(IntValue.gen(i));
 		}
 		return values;
@@ -83,9 +87,27 @@ public class FcnRcdBenchmark {
 		Value[] values = new Value[size];
 		for (int i = 0; i < values.length; i++) {
 			Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
-			values[i] = fcnRcd.selectNoIndex(domain);
+			values[i] = fcnRcd.selectLinearSearch(domain);
 //			values[i] = fcnRcd.selectNoIndex(IntValue.gen(i));
 		}
 		return values;
 	}
+	
+	@Benchmark
+	public Value[] fcnRcdValueSelectBinarySearch() {
+		Value[] values = new Value[size];
+		for (int i = 0; i < values.length; i++) {
+			Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
+			values[i] = fcnRcd.selectBinarySearch(domain);
+//			values[i] = fcnRcd.selectNoIndex(IntValue.gen(i));
+		}
+		return values;
+	}
+	
+    public static void main(String[] args) throws RunnerException {
+        final Options opt = new OptionsBuilder()
+                .include(FcnRcdBenchmark.class.getSimpleName())
+                .build();
+        new Runner(opt).run();
+    }
 }

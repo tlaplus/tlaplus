@@ -381,76 +381,77 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     try {
 
       if (this.intv != null) {
-        // domain is represented as an integer interval:
-        if (!(arg instanceof IntValue)) {
-          Assert.fail("Attempted to apply function with integer domain to" +
-                " the non-integer argument " + Values.ppr(arg.toString()), getSource());
-        }
-        int idx = ((IntValue)arg).val;
-        if ((idx >= this.intv.low) && (idx <= this.intv.high)) {
-          return this.values[idx - this.intv.low];
-        }
+          // domain is represented as an integer interval:
+          if (!(arg instanceof IntValue)) {
+            Assert.fail("Attempted to apply function with integer domain to" +
+                  " the non-integer argument " + Values.ppr(arg.toString()), getSource());
+          }
+          int idx = ((IntValue)arg).val;
+          if ((idx >= this.intv.low) && (idx <= this.intv.high)) {
+            return this.values[idx - this.intv.low];
+          }
+          return null;
       }
       else {
-        // domain is represented as an array of values:
-        if (this.indexTbl != null) {
-          return this.values[this.lookupIndex(arg)];
-        }
-        if (!NO_INDEX && this.isNorm) {
-        	this.createIndex();
-        }
-        if (this.indexTbl != null) {
-          return this.values[this.lookupIndex(arg)];
-        }
-        else {
-          int len = this.domain.length;
-          for (int i = 0; i < len; i++) {
-            if (this.domain[i].equals(arg)) {
-              return this.values[i];
-            }
-          }
-        }
+    	  return selectBinarySearch(arg);
       }
-      return null;
-
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
   }
-
-  public final Value selectNoIndex(Value arg) {
-    try {
-
-      if (this.intv != null) {
-        // domain is represented as an integer interval:
-        if (!(arg instanceof IntValue)) {
-          Assert.fail("Attempted to apply function with integer domain to" +
-                " the non-integer argument " + Values.ppr(arg.toString()), getSource());
-        }
-        int idx = ((IntValue)arg).val;
-        if ((idx >= this.intv.low) && (idx <= this.intv.high)) {
-          return this.values[idx - this.intv.low];
-        }
-      }
-      else {
-        // domain is represented as an array of values:
-          int len = this.domain.length;
-          for (int i = 0; i < len; i++) {
-            if (this.domain[i].equals(arg)) {
-              return this.values[i];
-            }
-          }
-      }
-      return null;
+  
+  final Value selectIndexTable(final Value arg) {
+    // domain is represented as an array of values:
+    if (this.indexTbl != null) {
+      return this.values[this.lookupIndex(arg)];
     }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
+    if (!NO_INDEX && this.isNorm) {
+    	this.createIndex();
+    }
+    if (this.indexTbl != null) {
+      return this.values[this.lookupIndex(arg)];
+    }
+    else {
+	  return selectLinearSearch(arg);
     }
   }
 
+  final Value selectLinearSearch(final Value arg) {
+      // domain is represented as an array of values:
+      int len = this.domain.length;
+      for (int i = 0; i < len; i++) {
+        if (this.domain[i].equals(arg)) {
+          return this.values[i];
+        }
+      }
+      return null;
+  }
+
+  final Value selectBinarySearch(Value arg) {
+      if (this.isNorm && this.domain.length >= 32) {
+        // domain is represented as an array of values:
+    	// iff normalized, use binary search to speedup lookups.
+		int low = 0;
+		int high = this.domain.length - 1;
+		while (low <= high) {
+			// cast to int is the same as flooring for positive ints.
+			final int mid = low + (high - low) / 2;
+			final int cmp = this.domain[mid].compareTo(arg);
+			if (cmp == 0) {
+				return this.values[mid];
+			} else if (cmp < 0) {
+				low = mid + 1;
+			} else {
+				high = mid - 1;
+			}
+		}
+		return null;
+	  } else {
+		return selectLinearSearch(arg);
+	  }
+  }
 
 //  public final boolean assign(Value[] args, Value val) {
 //    try {
