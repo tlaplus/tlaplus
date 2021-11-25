@@ -27,9 +27,9 @@ package tlc2.value.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.BeforeClass;
@@ -40,26 +40,17 @@ import tlc2.value.RandomEnumerableValues;
 
 public class FcnRcdValueTest {
 
-	private static final Value[] getValue(String... strs) {
-		final List<Value> values = new ArrayList<>(strs.length);
-		for (int i = 0; i < strs.length; i++) {
-			values.add(new StringValue(strs[i]));
+	private static final Value[] getInts(final int from, final int to, final int offset) {
+		final List<IntValue> l = new ArrayList<>();
+		for (int i = from; i < to; i++) {
+			l.add(IntValue.gen(offset + i));
 		}
-		Collections.shuffle(values);
-		return values.toArray(new Value[values.size()]);
+		return l.toArray(IntValue[]::new);
 	}
-	
-	private static final Value[] getInts(int n, int offset) {
-		Value[] res = new Value[n];
-		for (int i = 0; i < n; i++) {
-			res[i] = IntValue.gen(offset + i);
-		}
-		return res;
-	}
- 
+
 	@BeforeClass
 	public static void setup() {
-		// Make test repeatable by setting random seed always to same value. 
+		// Make test repeatable by setting random seed always to same value.
 		RandomEnumerableValues.setSeed(15041980L);
 		// Needed to insert elements into java.util.Set (because of hashcode) later to
 		// detect duplicates.
@@ -67,29 +58,49 @@ public class FcnRcdValueTest {
 	}
 
 	@Test
+	public void testSelecEmpty() {
+		FcnRcdValue rcdValue = new FcnRcdValue(new IntValue[0], new IntValue[0], false);
+		rcdValue.select(IntValue.ValNegOne);
+	}
+
+	@Test
+	public void testSelecNormalizedEmpty() {
+		FcnRcdValue rcdValue = (FcnRcdValue) new FcnRcdValue(new IntValue[0], new IntValue[0], false).normalize();
+		rcdValue.select(IntValue.ValNegOne);
+	}
+
+	@Test
 	public void testSelect() {
-		for (int i = 0; i < 64; i++) {
-			Value[] dom = getInts(i, 0);
-			Value[] rng = getInts(i, i);
-			FcnRcdValue rcdValue = new FcnRcdValue(dom, rng, false);
-			for (int j = 0; j < dom.length; j++) {
-				IntValue val = (IntValue) rcdValue.select(dom[j]);
-				assertNotNull(val);
-				assertEquals(j + i, val.val);
-			}
-		}
+		testSelect(false);
 	}
 
 	@Test
 	public void testSelectNormalized() {
-		for (int i = 0; i < 64; i++) {
-			Value[] dom = getInts(i, 0);
-			Value[] rng = getInts(i, i);
-			FcnRcdValue rcdValue = (FcnRcdValue) new FcnRcdValue(dom, rng, false).normalize();
-			for (int j = 0; j < dom.length; j++) {
-				IntValue val = (IntValue) rcdValue.select(dom[j]);
-				assertNotNull(val);
-				assertEquals(j + i, val.val);
+		testSelect(true);
+	}
+
+	private static void testSelect(final boolean normalize) {
+		for (int upper = -64; upper < 64; upper++) {
+			for (int lower = -64; lower < upper; lower++) {
+				Value[] dom = getInts(lower, upper, 0);
+				Value[] rng = getInts(lower, upper, 1024);
+
+				FcnRcdValue rcdValue = new FcnRcdValue(dom, rng, false);
+				if (normalize) {
+					rcdValue.normalize();
+				}
+
+				for (int j = -128; j < 128; j++) {
+					if (j < ((IntValue) dom[0]).val || j > ((IntValue) dom[dom.length - 1]).val) {
+						// \A i \notin ...
+						assertNull(rcdValue.select(IntValue.gen(j)));
+					} else {
+						// \A i \in ...
+						IntValue val = (IntValue) rcdValue.select(IntValue.gen(j));
+						assertNotNull(val);
+						assertEquals(IntValue.gen(j + 1024), val);
+					}
+				}
 			}
 		}
 	}
