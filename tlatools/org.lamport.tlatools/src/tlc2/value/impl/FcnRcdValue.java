@@ -26,9 +26,18 @@ import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
+import util.ToolIO;
 import util.UniqueString;
 
 public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
+	
+	// -Dtlc2.value.impl.FcnRcdValue.threshold=16
+	private static final int LINEAR_SEARCH_THRESHOLD = Integer.getInteger(FcnRcdValue.class.getName() + ".threshold", 32);
+	static {
+		if (LINEAR_SEARCH_THRESHOLD != 32) {
+			ToolIO.out.println("FcnRcdValue#threshold is: " + LINEAR_SEARCH_THRESHOLD);
+		}
+	}
 	
   public final Value[] domain;
   public final IntervalValue intv;
@@ -419,17 +428,17 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       return null;
   }
 
-  final Value selectBinarySearch(Value arg) {
+  final Value selectBinarySearch(final Value arg) {
 	  // The value 32 has been determined empirically (see FcnRcdBenachmark).
 	  // In older versions of TLC this the threshold was 10.
-      if (this.isNorm && this.domain.length >= 32) {
+      if (this.isNorm && this.domain.length >= LINEAR_SEARCH_THRESHOLD) {
         // domain is represented as an array of values:
     	// iff normalized, use binary search to speedup lookups.
 		int low = 0;
 		int high = this.domain.length - 1;
 		while (low <= high) {
 			// cast to int is the same as flooring for positive ints.
-			final int mid = low + (high - low) / 2;
+			final int mid = (low + high) >>> 1;
 			final int cmp = this.domain[mid].compareTo(arg);
 			if (cmp == 0) {
 				return this.values[mid];
