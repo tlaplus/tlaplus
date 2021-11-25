@@ -71,16 +71,16 @@ public class FcnRcdBenchmark {
 		fcnRcd = (FcnRcdValue) new FcnRcdValue(domain, range, false).normalize();
 	}
 
-	@Benchmark
-	public Value[] fcnRcdValueSelectIndex() {
-		Value[] values = new Value[size];
-		for (int i = 0; i < values.length; i++) {
-			Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
-			values[i] = fcnRcd.selectIndexTable(domain);
-//			values[i] = fcnRcd.select(IntValue.gen(i));
-		}
-		return values;
-	}
+//	@Benchmark
+//	public Value[] fcnRcdValueSelectIndex() {
+//		Value[] values = new Value[size];
+//		for (int i = 0; i < values.length; i++) {
+//			Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
+//			values[i] = fcnRcd.selectIndexTable(domain);
+////			values[i] = fcnRcd.select(IntValue.gen(i));
+//		}
+//		return values;
+//	}
 
 	@Benchmark
 	public Value[] fcnRcdValueSelectNoIndex() {
