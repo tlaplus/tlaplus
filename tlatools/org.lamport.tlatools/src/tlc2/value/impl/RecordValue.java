@@ -207,7 +207,9 @@ public class RecordValue extends Value implements Applicable {
     try {
       RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
       if (rcd == null) {
-        if (obj instanceof ModelValue) return 1;
+        if (obj instanceof ModelValue) {
+            return ((ModelValue) obj).modelValueCompareTo(this);
+        }
         Assert.fail("Attempted to compare record:\n" + Values.ppr(this.toString()) +
         "\nwith non-record\n" + Values.ppr(obj.toString()), getSource());
       }

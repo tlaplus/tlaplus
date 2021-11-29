@@ -46,7 +46,7 @@ public class BoolValue extends Value implements IBoolValue {
         Assert.fail("Attempted to compare boolean " + Values.ppr(this.toString()) +
         " with non-boolean:\n" + Values.ppr(obj.toString()), getSource());
       }
-      return 1;
+      return ((ModelValue) obj).modelValueCompareTo(this);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
