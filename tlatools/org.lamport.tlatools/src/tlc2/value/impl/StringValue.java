@@ -54,7 +54,7 @@ public class StringValue extends Value {
         Assert.fail("Attempted to compare string " + Values.ppr(this.toString()) +
         " with non-string:\n" + Values.ppr(obj.toString()), getSource());
       }
-      return 1;
+      return ((ModelValue) obj).modelValueCompareTo(this);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
