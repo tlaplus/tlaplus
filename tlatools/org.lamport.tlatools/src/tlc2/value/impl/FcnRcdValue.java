@@ -440,7 +440,10 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 			// cast to int is the same as flooring for positive ints.
 			final int mid = (low + high) >>> 1;
 			final int cmp = this.domain[mid].compareTo(arg);
-			if (cmp == 0) {
+			if (cmp == 0 && this.domain[mid].equals(arg)) {
+				// Check equality and cmp here to not introduce subtle bugs with Value#compareTo
+				// behaving slightly differently for some types. Linear search and the old,
+				// hash-based lookup use/used Value#equals.
 				return this.values[mid];
 			} else if (cmp < 0) {
 				low = mid + 1;
