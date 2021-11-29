@@ -8,6 +8,7 @@ package tlc2.value.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -434,23 +435,13 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       if (this.isNorm && this.domain.length >= LINEAR_SEARCH_THRESHOLD) {
         // domain is represented as an array of values:
     	// iff normalized, use binary search to speedup lookups.
-		int low = 0;
-		int high = this.domain.length - 1;
-		while (low <= high) {
-			// cast to int is the same as flooring for positive ints.
-			final int mid = (low + high) >>> 1;
-			final int cmp = this.domain[mid].compareTo(arg);
-			if (cmp == 0 && this.domain[mid].equals(arg)) {
-				// Check equality and cmp here to not introduce subtle bugs with Value#compareTo
-				// behaving slightly differently for some types. Linear search and the old,
-				// hash-based lookup use/used Value#equals.
-				return this.values[mid];
-			} else if (cmp < 0) {
-				low = mid + 1;
-			} else {
-				high = mid - 1;
-			}
-		}
+    	int idx = Arrays.binarySearch(this.domain, arg, Value::compareTo);
+		if (idx >= 0 && this.domain[idx].equals(arg)) {
+			// Check equality and cmp here to not introduce subtle bugs should Value#compareTo
+			// behaving slightly differently for some types. Linear search and the old,
+			// hash-based lookup use/used Value#equals.
+			return this.values[idx];
+    	}
 		return null;
 	  } else {
 		return selectLinearSearch(arg);
