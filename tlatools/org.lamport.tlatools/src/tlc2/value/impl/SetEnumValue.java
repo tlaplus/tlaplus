@@ -92,7 +92,9 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     try {
       SetEnumValue set = obj instanceof Value ? (SetEnumValue) ((Value)obj).toSetEnum() : null;
       if (set == null) {
-        if (obj instanceof ModelValue) return 1;
+        if (obj instanceof ModelValue) {
+            return ((ModelValue) obj).modelValueCompareTo(this);
+        }
         Assert.fail("Attempted to compare the set " + Values.ppr(this.toString()) +
         " with the value:\n" + Values.ppr(obj.toString()), getSource());
       }

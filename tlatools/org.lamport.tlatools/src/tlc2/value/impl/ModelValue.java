@@ -131,13 +131,48 @@ public class ModelValue extends Value implements IModelValue {
   @Override
   public final byte getKind() { return MODELVALUE; }
 
+	/*
+	 * #### Typed Model Values
+	 * 
+	 * One way that TLC finds bugs is by reporting an error if it tries to compare
+	 * two incomparable values&mdash;for example, a string and a set. The use of
+	 * model values can cause TLC to miss bugs because it will compare a model value
+	 * to any value without complaining (finding it unequal to anything but itself).
+	 * Typed model values have been introduced to solve this problem.
+	 * 
+	 * For any character &tau;, a model value whose name begins with the
+	 * two-character string "&tau;\_" is defined to have type &tau;. For example,
+	 * the model value _x\_1_ has type _x_. Any other model value is untyped. TLC
+	 * treats untyped model values as before, being willing to compare them to
+	 * anything. However it reports an error if it tries to compare a typed model
+	 * value to anything other than a model value of the same type or an untyped
+	 * model value. Thus, TLC will find the model value _x_1_ unequal to the model
+	 * values _x_ab2_ and _none_, but will report an error if it tries to compare
+	 * _x\_1_ to _a\_1_.
+	 */
+
   @Override
   public final int compareTo(Object obj) {
     try {
-      if (obj instanceof ModelValue) {
-        return this.val.compareTo(((ModelValue)obj).val);
-      }
-      return -1;
+		if (this.type == 0) {
+			if (obj instanceof ModelValue) {
+				return this.val.compareTo(((ModelValue) obj).val);
+			} else {
+				return -1;
+			}
+		}
+		if (obj instanceof ModelValue) {
+			ModelValue mobj = (ModelValue) obj;
+			if ((mobj.type == this.type) || (mobj.type == 0)) {
+				return this.val.compareTo(((ModelValue) obj).val);
+			} else {
+				Assert.fail("Attempted to compare the differently-typed model values "
+						+ Values.ppr(this.toString()) + " and " + Values.ppr(mobj.toString()), getSource());
+			}
+		}
+		Assert.fail("Attempted to compare the typed model value " + Values.ppr(this.toString())
+				+ " and non-model value\n" + Values.ppr(obj.toString()), getSource());
+		return -1; // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -175,6 +210,22 @@ public class ModelValue extends Value implements IModelValue {
     }
   }
 
+  public final int modelValueCompareTo(final Object obj){
+	    try {
+	      if (this.type != 0) {
+	      Assert.fail("Attempted to compare the typed model value "
+	                   + Values.ppr(this.toString()) + " and the non-model value\n"
+	                   + Values.ppr(obj.toString()), getSource()) ;
+
+	       }
+	      return 1 ;
+	    }
+	    catch (RuntimeException | OutOfMemoryError e) {
+	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+	      else { throw e; }
+	    }
+  }
+  
   /*************************************************************************
   * The following two methods are used used to check if this model value   *
   * equal to or a member of non-model value obj.  They return false if     *

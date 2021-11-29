@@ -33,20 +33,21 @@ import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class Github696Test extends ModelCheckerTestCase {
+public class Github696bTest extends ModelCheckerTestCase {
 
-	public Github696Test() {
-		super("Github696", ExitStatus.FAILURE_SPEC_EVAL);
+	public Github696bTest() {
+		super("Github696b", ExitStatus.ERROR);
 	}
 
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "1"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1", "1", "1"));
 		
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INITIAL_STATE,
-				"Attempted to compare the differently-typed model values A_31 and B_a"));
+		assertTrue(recorder.recordedWithStringValues(EC.GENERAL,
+				"TLC threw an unexpected exception.\n"
+				+ "This was probably caused by an error in the spec or model.\n"
+				+ "See the User Output or TLC Console for clues to what happened.\n"
+				+ "The exception was a java.lang.RuntimeException\n"
+				+ ": Attempted to compare the differently-typed model values B_a and A_a"));
 	}
 }

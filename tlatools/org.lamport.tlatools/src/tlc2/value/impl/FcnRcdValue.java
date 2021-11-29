@@ -151,8 +151,9 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 
 			final FcnRcdValue fcn = obj instanceof Value ? (FcnRcdValue) ((Value) obj).toFcnRcd() : null;
 			if (fcn == null) {
-				if (obj instanceof ModelValue)
-					return 1;
+				if (obj instanceof ModelValue) {
+				      return ((ModelValue) obj).modelValueCompareTo(this);
+				}
 				Assert.fail("Attempted to compare the function " + Values.ppr(this.toString()) + " with the value:\n"
 						+ Values.ppr(obj.toString()), getSource());
 			}

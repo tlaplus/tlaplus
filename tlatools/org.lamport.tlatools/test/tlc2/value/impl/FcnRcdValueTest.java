@@ -177,13 +177,13 @@ public class FcnRcdValueTest {
 			rcdValue.select(ModelValue.make("B_c"));
 			fail("Comparison to typed model value should fail");
 		} catch (TLCRuntimeException e) {
-			assertEquals("Attempted to check equality of the differently-typed model values A_A and B_c", e.getMessage());
+			assertEquals("Attempted to compare the differently-typed model values A_Z and B_c", e.getMessage());
 		}
 		try {
 			rcdValue.select(IntValue.ValNegOne);
 			fail("Comparison to typed model value should fail");
 		} catch (TLCRuntimeException e) {
-			assertEquals("Attempted to check equality of typed model value A_A and non-model value\n"
+			assertEquals("Attempted to compare the typed model value A_Z and non-model value\n"
 					+ "-1", e.getMessage());
 		}
 		
