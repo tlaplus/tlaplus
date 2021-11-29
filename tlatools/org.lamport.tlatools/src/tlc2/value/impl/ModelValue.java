@@ -59,7 +59,7 @@ public class ModelValue extends Value implements IModelValue {
     public static void init()
     {
        count = 0;
-       mvTable = new Hashtable();
+       mvTable = new Hashtable<String, ModelValue>();
        mvs = null;
     }
 
@@ -72,7 +72,7 @@ public class ModelValue extends Value implements IModelValue {
     }
 
   private static int count;
-  private static Hashtable mvTable;
+  private static Hashtable<String, ModelValue> mvTable;
   // SZ Mar 9, 2009: public accessed field, this will cause troubles
   public static ModelValue[] mvs;
 
