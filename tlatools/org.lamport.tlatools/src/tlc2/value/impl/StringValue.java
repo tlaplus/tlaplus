@@ -151,7 +151,7 @@ public class StringValue extends Value {
   @Override
   public boolean mutates() {
 	  // finalized after construction.
-	  return true;
+	  return false;
   }
 
   @Override
