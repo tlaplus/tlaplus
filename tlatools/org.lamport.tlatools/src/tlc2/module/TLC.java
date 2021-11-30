@@ -124,7 +124,18 @@ public class TLC implements ValueConstants
      */
     public static Value JavaTime()
     {
-        int t = (int) System.currentTimeMillis();
+    	// MAK 11/30/2021:
+		// Prevent wall-clock time from going backward for a while longer by converting
+		// milliseconds to seconds (since epoch), which "gains" ~10 bits before the Java
+		// type int overflows. This change should be safe, assuming specs do not rely on
+		// sub-second time resolution -- TLC!JavaTime never guaranteed time to increment
+    	// between two states.
+    	//TODO: Switch to 64 bit integers (long) to prevent year 2038 problem.
+    	final int t = (int) (System.currentTimeMillis() / 1000L);
+    	// Zero MSB to prevent time going negative when 2^31 overflows
+    	// (there is no unsigned variant of IntValue).  Instead, time
+    	// will go backwards, which satisfies the definition 
+    	//   CHOOSE n : n \in Nat  in  TLC!JavaTime.
         return IntValue.gen(t & 0x7FFFFFFF);
     }
 
