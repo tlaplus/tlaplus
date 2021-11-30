@@ -39,7 +39,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	    "a set of the form {x \\in S : expr}", // "SetPredValue",
 	    "a tuple",                             // "TupleValue",
 	    "a function of the form  [x \\in S |-> expr]",           // "FcnLambdaValue",
-	    "a function  of the form (d1 :> e1 @@ ... @@ dN :> eN)", // "FcnRcdValue",
+	    "a function of the form  (d1 :> e1 @@ ... @@ dN :> eN)", // "FcnRcdValue",
 	    "an operator",                                // "OpLambdaValue",
 	    "a constant operator",                        // "OpRcdValue",
 	    "a java method",                              // "MethodValue",    
@@ -56,6 +56,7 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 	    "a set of the form i..j",                     // "IntervalValue",
 	    "an undefined value",                         // "UndefValue",
 	    "a value represented in lazy form",           // "LazyValue",
+	    "a character value",                          // "CharValue"
 	    "a dummy for not-a-value",                    // "DummyValue",    
 	  };
 	  
