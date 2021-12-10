@@ -96,7 +96,7 @@
 				$(this).attr("visibility", "hidden");
 			}
 		});
-		$("#frameNum").html("Frame Number: "+ currFrame + "/" + Math.max(0, maxFrame - 1));
+		$("#frameNum").html("Step: "+ (currFrame + 1) + "/" + Math.max(1, maxFrame));
 		console.log("Current frame: " + currFrame);
 	}
 
