@@ -3,6 +3,7 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>TLA+ Trace Animator</title>
 	<script src="jquery.js"></script>
+	<script src="svg-pan-zoom.min.js"></script>
 	<!-- <script src="js/jquery.min.js"></script> -->
 </head>
 <body _adv_already_used="true">
@@ -26,13 +27,17 @@
 	<!-- Control Buttons and Frame Info -->
 	<button id="prevBtn" style="visibility: hidden">Prev Frame</button>
 	<button id="nextBtn" style="visibility: hidden">Next Frame</button>
+	&nbsp
+    <button id="zoom-in" style="visibility: hidden">Zoom in</button>
+	<button id="reset" style="visibility: hidden">Reset</button>
+	<button id="zoom-out" style="visibility: hidden">Zoom out</button>
  	
 	<!-- FrameNum above buttons to easily exclude buttons in screencast --> 
 	<div id="frameNum" style="visibility: hidden">Step: 0</div>
 		
 	<!-- <svg id="svgBox" width="40%" viewBox="0 0 100 90" style="border:solid;float:right"> -->
 	<div style="margin:auto">
-		<svg id="svgBox" width="50%" height="500px" viewBox="0 0 300 300" style="border:solid; border-width: 1px; border-color:lightgray; visibility: hidden">
+		<svg id="svgBox" width="100%" height="1000px" viewBox="0 0 1000 1000" style="border:solid; border-width: 1px; border-color:lightgray; visibility: hidden">
 		</svg>
 	</div>
 </div>
@@ -83,8 +88,35 @@
 		$(this).hide();
 		init();
 		reload();
+		
 		$("#svgBox").css("visibility", "visible");
-
+		$("#prevBtn").css("visibility", "visible");
+		$("#nextBtn").css("visibility", "visible");
+		$("#frameNum").css("visibility", "visible");
+		$("#zoom-in").css("visibility", "visible");
+		$("#zoom-out").css("visibility", "visible");
+		$("#reset").css("visibility", "visible");
+		
+		window.zoom = svgPanZoom('#svgBox', {
+          zoomEnabled: true,
+          controlIconsEnabled: false,
+          fit: true,
+          center: true,
+          zoomScaleSensitivity: 0.1
+        });
+        document.getElementById('zoom-in').addEventListener('click', function(ev){
+          ev.preventDefault()
+          window.zoom.zoomIn()
+        });
+        document.getElementById('zoom-out').addEventListener('click', function(ev){
+          ev.preventDefault()
+          window.zoom.zoomOut()
+        });
+        document.getElementById('reset').addEventListener('click', function(ev){
+          ev.preventDefault()
+          window.zoom.resetZoom()
+        });
+        
 	});
 
 	function reload(){
