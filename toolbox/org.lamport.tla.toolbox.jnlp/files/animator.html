@@ -79,7 +79,7 @@
 		//
 		tlaRecordDelim = "|->";
 		frameLines = text.split("\n").filter(line => line.includes(tlaRecordDelim));
-		frames = frameLines.map(line => line.split("|->").pop());
+		frames = frameLines.map(line => line.slice(line.indexOf(tlaRecordDelim) + 1));
 		framesText = frames.join("");
 
 		$("#svgBox").html(framesText);
