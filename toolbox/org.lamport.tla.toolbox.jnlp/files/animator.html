@@ -64,22 +64,15 @@
 	$("#textdrop").on('input', function(ev) {
 	    var text = $("#textdrop").val();
 
-		// The pasted text should be a TLA+ sequence (tuple) of records, where each record has
-		// one key-value pair, whose value is the SVG element for that frame. We expect
-		// that the record has been filtered to only include the view expression, so we 
-		// pull out all lines that contain a record delimiter. We might want to eventually
-		// make this a regex that properly matches and extracts key-value pairs from a TLA+
-		// record, but for now this will do the job.
-		// text should look something like:
-		// <<
-		// [SlotNumber |-> "<text x='25' font='Arial' y='25'>Text A</text>"],
-		// [SlotNumber |-> "<text x='50' font='Arial' y='50'>Text B</text>"],
-		// [SlotNumber |-> "<text x='75' font='Arial' y='75'>Text C</text>"]
-		// >>
-		//
-		tlaRecordDelim = "|->";
-		frameLines = text.split("\n").filter(line => line.includes(tlaRecordDelim));
-		frames = frameLines.map(line => line.slice(line.indexOf(tlaRecordDelim) + 1));
+		frameLines = text.split("\n").filter(line => line.includes("_animator ="));
+		var frames;
+		if (frameLines.length > 0) {
+		   frames = frameLines.map(line => line.slice(line.indexOf("_animator =") + 1));
+		} else {
+			tlaRecordDelim = "|->";
+			frameLines = text.split("\n").filter(line => line.includes(tlaRecordDelim));
+			frames = frameLines.map(line => line.slice(line.indexOf(tlaRecordDelim) + 1));
+		}
 		framesText = frames.join("");
 
 		$("#svgBox").html(framesText);
