@@ -25,8 +25,9 @@
 	</div>
 
 	<!-- Control Buttons and Frame Info -->
-	<button id="prevBtn" style="visibility: hidden">Prev Frame</button>
-	<button id="nextBtn" style="visibility: hidden">Next Frame</button>
+	<button id="prevBtn" style="visibility: hidden">Prev Step</button>
+	<button id="playBtn" style="visibility: hidden">Play</button>
+	<button id="nextBtn" style="visibility: hidden">Next Step</button>
 	&nbsp
     <button id="zoom-in" style="visibility: hidden">Zoom in</button>
 	<button id="reset" style="visibility: hidden">Reset</button>
@@ -84,6 +85,7 @@
 		
 		$("#svgBox").css("visibility", "visible");
 		$("#prevBtn").css("visibility", "visible");
+		$("#playBtn").css("visibility", "visible");
 		$("#nextBtn").css("visibility", "visible");
 		$("#frameNum").css("visibility", "visible");
 		$("#zoom-in").css("visibility", "visible");
@@ -125,13 +127,29 @@
 		console.log("Current frame: " + currFrame);
 	}
 
+	function play(){
+		var timer = setTimeout(function() { 
+						advanceFrame();
+						// Schedule the next timer to play to the end.
+						if (currFrame < maxFrame - 1) {
+							play();
+						}
+					}, 1000); // 1 second
+		// prev or next cancels the timer.
+		$("#nextBtn").click(function() {
+			clearTimeout(timer);
+		});
+		$("#prevBtn").click(function() {
+			clearTimeout(timer);
+		});
+	}
+
 	// Set the current frame to the given index. If an out of bound frame index is given, we take the
 	// index modulo the maximum frame index.
 	function setFrame(frameInd){
 		currFrame = frameInd % maxFrame;
 		reload();
 	}
-
 
 	function advanceFrame(){
 		currFrame = (currFrame + 1) % maxFrame;
@@ -164,16 +182,10 @@
 
 	$("#nextBtn").click(advanceFrame);
 	$("#prevBtn").click(prevFrame);
+	$("#playBtn").click(play);
 
 	reload();
 
 </script>
-
-
-
-
-
-
-
 
 </body></html>
