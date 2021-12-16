@@ -57,7 +57,7 @@ for i in {1..3}; do
            -XX:MaxDirectMemorySize=$DIRECT_MEM \
            -Dtlc2.tool.fp.FPSet.impl=$FPSET_IMPL \
            -Dtlc2.tool.ModelChecker.BAQueue=true \
-           -cp $TLATOOLS_HOME/class:$TLATOOLS_HOME/lib/* \
+           -cp $TLATOOLS_HOME/class:$TLATOOLS_HOME/lib/*:$TLATOOLS_HOME/lib/javax.mail/*:$TLATOOLS_HOME/lib/gson/* \
            -DspecName=$SPEC \
            -DmodelName=$MODEL \
            tlc2.TLC -deadlock -checkpoint 99999 -workers $w -config $MODEL $SPEC 2>&1 | tee $TLC_OUTPUT_FILE;
