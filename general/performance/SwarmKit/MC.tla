@@ -1,4 +1,4 @@
 ----------- MODULE MC -----------
-EXTENDS SwarmKit
+EXTENDS SwarmKit, stats
 
 =================================

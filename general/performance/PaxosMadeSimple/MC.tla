@@ -1,5 +1,5 @@
 ---- MODULE MC ----
-EXTENDS PaxosMadeSimple, TLC
+EXTENDS PaxosMadeSimple, TLC, stats
 
 \* MV CONSTANT declarations@modelParameterConstants
 CONSTANTS

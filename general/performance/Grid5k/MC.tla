@@ -1,4 +1,4 @@
 -------- MODULE MC ---------
-EXTENDS Grid5k
+EXTENDS Grid5k, stats
 ===================
 

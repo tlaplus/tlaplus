@@ -1,5 +1,5 @@
 ---- MODULE MC ----
-EXTENDS PaxosCommit, TLC
+EXTENDS PaxosCommit, TLC, stats
 
 \* MV CONSTANT declarations@modelParameterConstants
 CONSTANTS

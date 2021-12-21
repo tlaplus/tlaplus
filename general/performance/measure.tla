@@ -1,6 +1,7 @@
 Run with (single worker guarantees that the benachmarks run sequentially):
 
-  $ java -jar tla2tools.jar:CommunityModules.jar -workers 1 -config measure.tla measure
+  $ wget https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
+  $ java -jar tla2tools.jar -workers 1 -config measure.tla measure.tla
 
 ----------------------------- MODULE measure -----------------------------
 EXTENDS TLC, Integers, Sequences, IOUtils
@@ -8,13 +9,20 @@ EXTENDS TLC, Integers, Sequences, IOUtils
 AbsolutePathOfTLC == 
     TLCGet("config").install
 
+Timestamp ==
+    JavaTime
+
 CmdTemplate ==
     <<"bash",
     "-c",
     "java " \o
     "-XX:+UseParallelGC " \o
     \* "-XX:MaxDirectMemorySize=20g -Xmx8g " \o
-    \* "-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet " \o 
+    \* "-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet " \o
+    \* Give 10 minutes to each run.
+    "-Dtlc2.TLC.stopAfter=600 " \o
+    "-DTLA-Library=.. " \o
+    "-DspecName=%3$s " \o
     "-cp %1$s " \o
     "tlc2.TLC " \o
     "-checkpoint 0 -workers %2$s %3$s/MC.tla > %4$s 2>&1">>
@@ -25,8 +33,8 @@ LogFile(run, workers, spec) ==
 -----------------------------------------------------------------------------
 
 Specs ==
-	{"Bloemen", "EWD840", "Ghostferry", "Grid5k", "MongoRepl", "PaxosCommit", "PaxosMadeSimple", "SwarmKit"}
-
+	{"Bloemen", "EWD840", "Ghostferry", "Grid5k", 
+	 "MongoRepl", "PaxosCommit", "PaxosMadeSimple", "SwarmKit"}
 
 VARIABLE run, workers, spec, proc
 
@@ -55,7 +63,12 @@ ExecTLC ==
     /\ proc.exitValue = -42
     /\ PrintT(<<"run", run, "workers", workers, "spec", spec, "Starting">>)
     \*/\ PrintT(<<AbsolutePathOfTLC, ToString(workers), spec, LogFile(run, workers, spec)>>)
-    /\ proc' = IOExecTemplate( 
+    /\ proc' = IOEnvExecTemplate(
+                [ 
+                    run |-> run,
+                    spec |-> spec,
+                    timestamp |-> Timestamp
+                ],
                 CmdTemplate, 
                 <<AbsolutePathOfTLC, ToString(workers), spec, LogFile(run, workers, spec)>> )
     /\ UNCHANGED <<run, workers, spec>>

@@ -1,0 +1,65 @@
+name: Performance Tests TLC
+on:
+  workflow_dispatch:
+    inputs:
+      suffix:
+        description: 'git commit sha'
+        required: false
+        default: 'HEAD'
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        # Number of commits to fetch. 0 indicates all history.
+        # jgit task nested in customBuild.xml fails without history.
+        fetch-depth: '0'
+        
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11.0.3
+
+      ##
+      ## Build TLC tla2tools.
+      ##
+    - name: Build TLC
+      run: |
+        ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test dist
+
+    - name: Download artifact from previous performance test
+      uses: dawidd6/action-download-artifact@v2
+      continue-on-error: true
+      with:
+        workflow: perf.yml
+        name: perf-results
+        path: previous
+
+      ##
+      ## Fetch CommunityModules.
+      ##
+    - name: Fetch CommunityModules
+      run: |
+        wget https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar --output-document=tlatools/org.lamport.tlatools/dist/CommunityModules-deps.jar
+
+      ##
+      ## Run performance regression tests.
+      ## Appends to a older out_run-stats.csv if it exists (cp ... is a no-op otherwise)
+      ##
+    - name: Run performance tests
+      run: |
+        cp previous/out_run-stats.csv general/performance/ || :
+        cd general/performance
+        java -jar ../../tlatools/org.lamport.tlatools/dist/tla2tools.jar -config measure.tla measure.tla
+
+      ##
+      ## Upload results.
+      ##
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: perf-results
+        path: general/performance/out_run*
