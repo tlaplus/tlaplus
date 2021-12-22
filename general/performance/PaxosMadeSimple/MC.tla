@@ -28,7 +28,7 @@ Permutations(const_144139943710210000) \union Permutations(const_144139943711311
 
 \* CONSTANT definitions @modelParameterConstants:2Quorum
 const_144139943713313000 == 
-{Q \in SUBSET Acceptor : Cardinality(Q) > Cardinality(Acceptor)\div 2}
+TLCEval({Q \in SUBSET Acceptor : Cardinality(Q) > Cardinality(Acceptor)\div 2})
 ----
 
 \* CONSTANT definition @modelParameterDefinitions:1

@@ -247,8 +247,42 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
           if (opDef.getArity() == 0) {
             try {
             	Object defVal = WorkerValue.demux(opDefEvaluator, opDef.getBody());
-                opDef.setToolObject(toolId, defVal);
-                constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(opDef, defVal);
+            	opDef.setToolObject(toolId, defVal);
+            	// https://github.com/tlaplus/tlaplus/issues/648
+            	//
+            	// Without consts[i].setTool... below, TLC re-evaluates CONSTANT definitions on
+            	// every invocation.  With consts[i].setTool..., TLC caches values.  Here is the
+            	// reason why consts[i].setTool... is commented:
+            	//
+            	// A) For "cheap" definitions such as CONSTANT N = 4, caching values makes no 
+            	//    difference.
+            	//
+            	// B) For more expensive expressions, such as PaxosMadeSimple.tla the performance
+            	//    gain is around 10%.
+            	//
+            	//    Quorum == {i \in SUBSET(Server) : Cardinality(i) * 2 > Cardinality(Server)}
+            	//
+            	//    CONSTANT Q <- Quorum
+            	//    
+            	// C) However, half of our user base expects the following spec to probabilistically
+            	//    have 2 to 4 distinct states:
+            	//
+            	//    EXTENDS TLC
+            	//    R == RandomElement({1,2,3})
+            	//    CONSTANT C
+            	//    VARIABLE x
+            	//    Spec == x = 0 /\ [][x' = C]_x
+            	//
+            	//    CONSTANT C <- R
+            	// 
+            	// Therefore, we let the user decide by giving her TLC!TLCEval to wrap expressive 
+            	// constant definitions when necessary:
+            	//
+            	//    R == TLCEval(RandomElement({1,2,3}))
+            	// 
+//            	consts[i].setToolObject(toolId, defVal);
+
+            	constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(opDef, defVal);
             } catch (Assert.TLCRuntimeException | EvalException e) {
               final String addendum = (e instanceof EvalException) ? "" : (" - specifically: " + e.getMessage());
               Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,

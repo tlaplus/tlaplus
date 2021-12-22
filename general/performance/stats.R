@@ -6,6 +6,10 @@ data <- read.csv(header=TRUE, sep = "#", file = here("out_run-stats.csv"))
 ## a commit only changes auxiliary files.
 ## Replace git commit short-hash f91... with df1...
 data[data == "f91c7b0"] <- "df144c5"
+data[data == "46de326"] <- "df144c5"
+
+
+data[data == "0f6a80b"] <- "1eb600d"
 data[data == "0b93602"] <- "1eb600d"
 
 ## Convert epoch to date.
@@ -30,6 +34,7 @@ s <- scatterD3(data = data,
                xlab = "RevTag", ylab = "log(Time&Throughput)", 
                col_var=Spec
                )
+plot(s)
 
 library(htmlwidgets)
 saveWidget(s, file="index.html")

@@ -444,18 +444,19 @@ public class TLC implements ValueConstants
      * @param val
      * @return
      */
-    public static Value  TLCEval(Value val) {
-        Value  evalVal = val.toSetEnum();
-        if (evalVal != null) {
-            return evalVal;
-        }
-        evalVal = val.toFcnRcd();
-        if (evalVal != null) {
-            return evalVal;
-        }
-        // System.out.println("TLCEval gets no conversion");
-        return val;
-    }
+//    public static Value  TLCEval(Value val) {
+//        Value  evalVal = val.toSetEnum();
+//        if (evalVal != null) {
+//            return evalVal;
+//        }
+//        evalVal = val.toFcnRcd();
+//        if (evalVal != null) {
+//            return evalVal;
+//        }
+//        // System.out.println("TLCEval gets no conversion");
+//        return val;
+//    }
+
     /*
     public static Value FApply(Value f, Value op, Value base) {
       FcnRcdValue fcn = f.toFcnRcd();
