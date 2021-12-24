@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -256,7 +257,10 @@ public class AdvancedTLCOptionsPage extends BasicFormPage implements Closeable {
 		// causes the verification in SWT.Verify below to strip off the last char. For
 		// example, if a user enters "42" workers, verification removes "2" and persists
 		// "4".
-        workers = new Spinner(workersLine, SWT.READ_ONLY);
+        // On Linux, SWT.READ_ONLY also applies to the buttons, thus, making it impossible
+        // to change the number of workers at all.  On macOS, the buttons work even with 
+        // READ_ONLY.
+        workers = new Spinner(workersLine, Platform.getOS().equals(Platform.OS_WIN32) ? SWT.READ_ONLY : SWT.NONE);
         workers.addFocusListener(focusListener);
         workers.addListener(SWT.Verify, (e) -> {
 			if (!programmaticallySettingWorkerParameters.get()) {
