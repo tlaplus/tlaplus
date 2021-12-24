@@ -39,6 +39,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import tla2sany.semantic.OpDeclNode;
+import tlc2.TLCGlobals;
 import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -73,7 +74,9 @@ import util.UniqueString;
  * clients that this thread has terminated.
  */
 public class SimulationWorker extends IdThread implements INextStateFunctor {
-	
+
+	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
+
 	// This worker's local source of randomness.
 	private final RandomGenerator localRng;
 
@@ -339,6 +342,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 	@Override
 	public Object addElement(final TLCState s, final Action a, final TLCState t) {
+	    if (coverage) { a.cm.incInvocations(); }
 		numOfGenStates.increment();
 
 		// Any check below may terminate simulation, which then makes state the final
@@ -399,6 +403,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		}
 		
 		if ((tool.isInModel(t) && tool.isInActions(s, t))) {
+			if (coverage) {	a.cm.incSecondary(); }
 			return nextStates.addElement(t);
 		}
 
