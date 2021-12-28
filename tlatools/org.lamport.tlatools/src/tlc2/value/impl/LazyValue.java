@@ -306,6 +306,7 @@ public class LazyValue extends Value {
   public IValue eval(Tool tool, TLCState s0, TLCState s1) {
 		final Value eval = tool.eval(expr, con, s0, s1, EvalControl.Clear, cm);
 		if (!eval.hasSource()) {
+			// See comment at tlc2.debug.TLCStackFrame.getVariable(IValue, SymbolNode)
 			eval.setSource(this.expr);
 		}
 		return eval;

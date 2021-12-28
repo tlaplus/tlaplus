@@ -59,6 +59,7 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
+import tlc2.tool.FingerprintException;
 import tlc2.tool.INextStateFunctor.InvariantViolatedException;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
@@ -185,6 +186,10 @@ public class TLCStackFrame extends StackFrame {
 
 	private Variable getVariable(final IValue val, final SymbolNode expr) {
 		if (!val.hasSource()) {
+			// Previously, only CallStack would attach a SymbolNode to the
+			// value, which the legacy exception handling in the Value classes
+			// relies on (values throw a FingerprintException if a SymbolNode
+			// has been attached.
 			val.setSource(expr);
 		}
 		return getVariable(val, expr.getName());
@@ -487,7 +492,7 @@ public class TLCStackFrame extends StackFrame {
 			return tool.eval(() -> {
 				return lv.eval(tool);
 			});
-		} catch (TLCRuntimeException | EvalException e) {
+		} catch (TLCRuntimeException | EvalException | FingerprintException e) {
 			return fallback == null ? e : fallback;
 		}
 	}
