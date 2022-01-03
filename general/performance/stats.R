@@ -2,12 +2,15 @@
 library(here)
 data <- read.csv(header=TRUE, sep = "#", file = here("out_run-stats.csv"))
 
+## Merge two or more commits when they cannot impact performance because
+## a commit only changes auxiliary files.
+## Replace git commit short-hash f91... with df1...
+data[data == "f91c7b0"] <- "df144c5"
+data[data == "0b93602"] <- "1eb600d"
+
 ## Convert epoch to date.
 library(anytime)
 data$Date <- anytime(data$Timestamp)
-
-## Calculate Throughput on aggregated data.
-data$Throughput <- data$Generated / data$Duration
   
 ## Aggregate multiple runs.
 data <- aggregate(cbind(Generated,Duration) ~ Spec + RevTag + Workers, data = data, FUN = mean, na.rm = TRUE)
