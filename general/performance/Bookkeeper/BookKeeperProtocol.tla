@@ -1,5 +1,5 @@
 ------------------------- MODULE BookKeeperProtocol -------------------------
-EXTENDS MessagePassing, Naturals, FiniteSets, FiniteSetsExt, Sequences, SequencesExt, Integers, TLC
+EXTENDS MessagePassing, Naturals, FiniteSets, FiniteSetsExt, Sequences, SequencesExt, Integers, TLC, stats
 
 (*
 This specification formally describes the BookKeeper protocol. It describes it

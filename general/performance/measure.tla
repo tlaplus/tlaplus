@@ -34,7 +34,7 @@ LogFile(run, workers, spec) ==
 
 Specs ==
 	{"Bloemen", "EWD840", "Ghostferry", "Grid5k", 
-	 "MongoRepl", "PaxosCommit", "PaxosMadeSimple", "SwarmKit"}
+	 "MongoRepl", "PaxosCommit", "PaxosMadeSimple", "SwarmKit", "Bookkeeper"}
 
 VARIABLE run, workers, spec, proc
 
