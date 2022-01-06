@@ -93,8 +93,8 @@ import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.MethodValue;
-import tlc2.value.impl.PriorityEvaluatingValue;
 import tlc2.value.impl.OpRcdValue;
+import tlc2.value.impl.PriorityEvaluatingValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
@@ -246,7 +246,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
           if (opDef.getArity() == 0) {
             try {
-            	Object defVal = WorkerValue.demux(opDefEvaluator, consts[i], opDef);
+            	Object defVal = WorkerValue.demux(opDefEvaluator, opDef.getBody());
                 opDef.setToolObject(toolId, defVal);
                 constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(opDef, defVal);
             } catch (Assert.TLCRuntimeException | EvalException e) {
@@ -283,8 +283,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 	continue DEFS;
                 }
                 // System.err.println(opName);
-                final Object val = WorkerValue.demux(opDefEvaluator, opDef);
-                // System.err.println(opName + ": " + val);
+                final Object val = WorkerValue.demux(opDefEvaluator, opDef.getBody());
                 opDef.setToolObject(toolId, val);
                 Object def = this.defns.get(opName);
                 if (def == opDef) {
