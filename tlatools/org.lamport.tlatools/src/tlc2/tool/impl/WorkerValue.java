@@ -27,10 +27,10 @@ package tlc2.tool.impl;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tlc2.TLCGlobals;
-import tlc2.tool.IWorker;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
+import tlc2.util.IdThread;
 import tlc2.value.IValue;
 
 /*
@@ -135,8 +135,8 @@ public class WorkerValue {
 		
 		final WorkerValue vp = (WorkerValue) result;
 		final Thread t = Thread.currentThread();
-		if (t instanceof IWorker) {
-			final IWorker w = (IWorker) t;
+		if (t instanceof IdThread) {
+			final IdThread w = (IdThread) t;
 			return vp.values[w.myGetId()];
 		} else {
 			return vp.values[0];
