@@ -6,7 +6,6 @@
 <repository id="eclipse-ajdt" location="http://download.eclipse.org/tools/ajdt/410/dev/update/ajdt-e410-2.2.4.202007241909"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.apache.log4j" version="0.0.0"/>
 <unit id="org.hamcrest" version="0.0.0"/>
 <unit id="com.jcraft.jsch" version="0.0.0"/>
 <unit id="org.apache.commons.io" version="0.0.0"/>
