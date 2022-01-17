@@ -81,7 +81,7 @@ public class TLCEval implements ValueConstants {
 			// For a state-level formula, the value could be kept in a transient member
 			// of the state.  This effort doesn't seem worth it, though.
 			return convert(tool.eval(arg, c, s0, s1, control, cm));
-		} else if (!c.isEmpty()) {
+		} else if (!c.isDeepEmpty()) {
 			// If a constant expression has a context, e.g. a parameter, we
 			// cannot cache the value.
 			return convert(tool.eval(arg, c, s0, s1, control, cm));

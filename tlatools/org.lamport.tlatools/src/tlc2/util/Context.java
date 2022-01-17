@@ -213,6 +213,13 @@ public final class Context implements Iterator<Context> {
 		return this == Empty;
 	}
 
+	public final boolean isDeepEmpty() {
+		if (this.isEmpty() || this == BaseBranch) {
+			return true;
+		}
+		return false;
+	}
+
 	public final int depth() {
 		int depth = 1;
 		Context child = next();
