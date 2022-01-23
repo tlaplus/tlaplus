@@ -47,6 +47,7 @@ import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
+import tlc2.util.Vect;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.Value;
@@ -236,11 +237,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		this.numOfGenTraces = numOfGenTraces;
 		this.welfordM2AndMean = m2AndMean;
 		
-		final Action[] actions = this.tool.getActions();
-		final int len = actions.length;
-		for (int i = 0; i < actions.length; i++) {
-			actions[i].setId(i);
-			this.behaviorStats.put(actions[i].getName(), 0);
+		final Vect<Action> initAndNext = this.tool.getSpecActions();
+		final int len = initAndNext.size();
+		for (int i = 0; i < initAndNext.size(); i++) {
+			this.behaviorStats.put(initAndNext.elementAt(i).getName(), 0);
 		}
 
 		if (traceActions != null) {

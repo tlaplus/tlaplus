@@ -40,6 +40,7 @@ import tlc2.tool.liveness.LiveException;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.DotActionWriter;
 import tlc2.util.RandomGenerator;
+import tlc2.util.Vect;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
@@ -608,8 +609,8 @@ public class Simulator {
 	private void writeActionFlowGraphFull() throws IOException {		
 		// The number of actions is expected to be low (dozens commons and hundreds are
 		// rare). This is why the code below isn't optimized for performance.
-		final Action[] actions = Simulator.this.tool.getActions();
-		final int len = actions.length;
+		final Vect<Action> initAndNext = tool.getSpecActions();
+		final int len = initAndNext.size();
 		
 		// Clusters of actions that have the same context:
 		// CONSTANT Proc
@@ -618,7 +619,7 @@ public class Simulator {
 		// Next == \E p \in Proc : A(p)
 		final Map<String, Set<Integer>> clusters = new HashMap<>();
 		for (int i = 0; i < len; i++) {
-			final String con = actions[i].con.toString();
+			final String con = initAndNext.elementAt(i).con.toString();
 			if (!clusters.containsKey(con)) {
 				clusters.put(con, new HashSet<>());	
 			}
@@ -635,7 +636,7 @@ public class Simulator {
 			
 			final Set<Integer> ids = cluster.getValue();
 			for (Integer id : ids) {
-				dotActionWriter.write(actions[id], id);
+				dotActionWriter.write(initAndNext.elementAt(id), id);
 			}
 			dotActionWriter.writeSubGraphEnd();
 		}					
@@ -676,20 +677,21 @@ public class Simulator {
 	private void writeActionFlowGraphBasic() throws IOException {
 		// The number of actions is expected to be low (dozens commons and hundreds a
 		// rare). This is why the code below isn't optimized for performance.
-		final Action[] actions = Simulator.this.tool.getActions();
-		final int len = actions.length;
+		final Vect<Action> initAndNext = tool.getSpecActions();
+		final int len = initAndNext.size();
 		
 		// Create a map from id to action name.
 		final Map<Integer, String> idToActionName = new HashMap<>();
-		for (int i = 0; i < len; i++) {
+		for (int i = 0; i < initAndNext.size(); i++) {
+			Action action = initAndNext.elementAt(i);
 			final String actionName;
-			if (actions[i].isNamed()) {
-				actionName = actions[i].getName().toString();
+			if (action.isNamed()) {
+				actionName = action.getName().toString();
 			} else {
 				// If we have an unnamed action, action name will be
 				// the string representation of the action (which has information
 				// about line, column etc).
-				actionName = actions[i].toString();
+				actionName = action.toString();
 			}
 			idToActionName.put(i, actionName);
 		}

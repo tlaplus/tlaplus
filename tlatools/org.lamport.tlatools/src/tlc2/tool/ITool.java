@@ -270,4 +270,8 @@ public interface ITool extends TraceApp {
 	default ITool getLiveness() {
 		return this;
 	}
+
+	default Vect<Action> getSpecActions() {
+		return getInitStateSpec().concat(new Vect<Action>(getActions()));
+	}
 }

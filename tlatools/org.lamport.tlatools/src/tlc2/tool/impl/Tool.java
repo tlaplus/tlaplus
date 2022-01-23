@@ -199,6 +199,12 @@ public abstract class Tool
 				this.actions[i] = (Action) this.actionVec.elementAt(i);
 			}
 		}
+		
+		// Tag the initial predicates and next-state actions.
+		final Vect<Action> initAndNext = getInitStateSpec().concat(actionVec);
+		for (int i = 0; i < initAndNext.size(); i++) {
+			initAndNext.elementAt(i).setId(i);
+		}
   }
 
   Tool(Tool other) {
