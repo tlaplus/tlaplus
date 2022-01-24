@@ -1056,7 +1056,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             {
                 Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "initial predicate", name });
             }
-            this.initPredVec.addElement(new Action(def.getBody(), Context.Empty, def));
+            this.initPredVec.addElement(new Action(def.getBody(), Context.Empty, def, true));
         }
 
         name = this.config.getNext();
@@ -1151,7 +1151,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     ExprNode body = ((OpDefNode) val).getBody();
                     if (symbolNodeValueLookupProvider.getLevelBound(body, c, toolId) == 1)
                     {
-                        this.initPredVec.addElement(new Action(Specs.addSubsts(body, subs), c, ((OpDefNode) val)));
+                        this.initPredVec.addElement(new Action(Specs.addSubsts(body, subs), c, ((OpDefNode) val), true));
                     } else
                     {
                         this.processConfigSpec(body, c, subs);

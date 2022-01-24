@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprNode;
+import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
@@ -653,6 +654,13 @@ public class Simulator {
 			}
 		}
 		
+		// Create a map from id to action name.
+		final Map<Integer, Action> idToActionName = new HashMap<>();
+		for (int i = 0; i < initAndNext.size(); i++) {
+			Action action = initAndNext.elementAt(i);
+			idToActionName.put(action.getId(), action);
+		}
+
 		// Write stats to dot file as edges between the action vertices.
 		for (int i = 0; i < len; i++) {
 			for (int j = 0; j < len; j++) {
@@ -664,7 +672,8 @@ public class Simulator {
 					dotActionWriter.write(i, j,
 							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
 							.doubleValue());
-				} else {
+				} else if (!idToActionName.get(j).isInitPredicate()) {
+					// Only draw an unseen arc if the sink is not an initial prediate.
 					dotActionWriter.write(i, j);
 				}
 			}
@@ -680,34 +689,6 @@ public class Simulator {
 		final Vect<Action> initAndNext = tool.getSpecActions();
 		final int len = initAndNext.size();
 		
-		// Create a map from id to action name.
-		final Map<Integer, String> idToActionName = new HashMap<>();
-		for (int i = 0; i < initAndNext.size(); i++) {
-			Action action = initAndNext.elementAt(i);
-			final String actionName;
-			if (action.isNamed()) {
-				actionName = action.getName().toString();
-			} else {
-				// If we have an unnamed action, action name will be
-				// the string representation of the action (which has information
-				// about line, column etc).
-				actionName = action.toString();
-			}
-			idToActionName.put(i, actionName);
-		}
-
-		// Override previous basic file.
-		final DotActionWriter dotActionWriter = new DotActionWriter(
-				Simulator.this.tool.getRootName() + "_actions.dot", "");
-
-		// Identify actions in the dot file.
-	    final List<String> distinctActionNames = idToActionName.values().stream().distinct().sorted().collect(Collectors.toList());
-		for (int i = 0; i < distinctActionNames.size(); i ++) {
-			final String actionName = distinctActionNames.get(i);
-			// Uses the position in `distinctActionNames` as the id.
-			dotActionWriter.write(actionName, i);
-		}
-		
 		// Element-wise sum the statistics from all workers.
 		long[][] aggregateActionStats = new long[len][len];
 		final List<SimulationWorker> workers = Simulator.this.workers;
@@ -719,32 +700,57 @@ public class Simulator {
 				}
 			}
 		}
+		
+		// Create mappings from distinct ids to action ids and name.
+		final Map<Integer, Action> idToAction = new HashMap<>();
+		final Map<Location, Integer> actionToId = new HashMap<>();
+		for (int i = 0; i < initAndNext.size(); i++) {
+			final Action action = initAndNext.elementAt(i);
+			
+			if (!actionToId.containsKey(action.getDefinition())) {
+				int id = idToAction.size();
+				idToAction.put(id, action);
+				actionToId.put(action.getDefinition(), id);
+			}
+		}
+		final Map<Integer, Integer> actionsToDistinctActions = new HashMap<>();
+		for (int i = 0; i < initAndNext.size(); i++) {
+			final Action action = initAndNext.elementAt(i);
+			actionsToDistinctActions.put(action.getId(), actionToId.get(action.getDefinition()));
+		}
+		
+		// Override previous basic file.
+		final DotActionWriter dotActionWriter = new DotActionWriter(
+				Simulator.this.tool.getRootName() + "_actions.dot", "");
 
+		// Identify actions in the dot file.
+		idToAction.forEach((id, a) -> dotActionWriter.write(a, id));
+		
 		// Having the aggregated action stats, reduce it to account for only
 		// the distinct action names.
-		long[][] reducedAggregateActionStats = new long[distinctActionNames.size()][distinctActionNames.size()];
+		long[][] reducedAggregateActionStats = new long[idToAction.size()][idToAction.size()];
 		for (int i = 0; i < len; i++) {
 			// Find origin id.
-			final int originActionId = distinctActionNames.indexOf(idToActionName.get(i));
+			final int originActionId = actionsToDistinctActions.get(i);
 			for (int j = 0; j < len; j++) {
 				// Find next id.
-				final int nextActionId = distinctActionNames.indexOf(idToActionName.get(j));
+				final int nextActionId = actionsToDistinctActions.get(j);
 				reducedAggregateActionStats[originActionId][nextActionId] += aggregateActionStats[i][j];
 			}
 		}
 
 		// Write stats to dot file as edges between the action vertices.
-		for (int i = 0; i < distinctActionNames.size(); i++) {
-			for (int j = 0; j < distinctActionNames.size(); j++) {
+		for (int i = 0; i < idToAction.size(); i++) {
+			for (int j = 0; j < idToAction.size(); j++) {
 				long l = reducedAggregateActionStats[i][j];
 				if (l > 0L) {
 					// LogLog l (to keep the graph readable) and round to two decimal places (to not
 					// write a gazillion decimal places truncated by graphviz anyway).
-					final double loglogWeight = Math.log10(Math.log10(l+1)); // +1 to prevent negative inf.
+					final double loglogWeight = Math.abs(Math.log10(Math.log10(l + 1))); // +1 to prevent negative inf.
 					dotActionWriter.write(i, j,
-							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
-							.doubleValue());
-				} else {
+							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP).doubleValue());
+				} else if (!idToAction.get(j).isInitPredicate()) {
+					// Only draw an unseen arc if the sink is not an initial prediate.
 					dotActionWriter.write(i, j);
 				}
 			}

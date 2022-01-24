@@ -17,7 +17,7 @@ import util.UniqueString;
 public final class Action implements ToolGlobals, Serializable {
 	private static final UniqueString UNNAMED_ACTION = UniqueString.uniqueStringOf("UnnamedAction");
 
-	public static final Action UNKNOWN = new Action(SemanticNode.nullSN, Context.Empty, UNNAMED_ACTION);
+	public static final Action UNKNOWN = new Action(SemanticNode.nullSN, Context.Empty, UNNAMED_ACTION, false);
 
   /* A TLA+ action.   */
 
@@ -27,23 +27,33 @@ public final class Action implements ToolGlobals, Serializable {
   private final UniqueString actionName;
   private OpDefNode opDef = null;
   private int id;
+  private final boolean isInitPred;
   public CostModel cm = CostModel.DO_NOT_RECORD;
 
   /* Constructors */
   public Action(SemanticNode pred, Context con) {
-	  this(pred, con, UNNAMED_ACTION);
+	  this(pred, con, false);
+  }
+  
+  public Action(SemanticNode pred, Context con, boolean isInitPred) {
+	  this(pred, con, UNNAMED_ACTION, isInitPred);
   }
 
-  private Action(SemanticNode pred, Context con, UniqueString actionName) {
+  private Action(SemanticNode pred, Context con, UniqueString actionName, boolean isInitPred) {
 	  this.pred = pred;
 	  this.con = con;
 	  this.actionName = actionName;
+	  this.isInitPred = isInitPred;
   }
 
   public Action(SemanticNode pred, Context con, OpDefNode opDef) {
+	  this(pred, con, opDef, false);
+  }
+
+  public Action(SemanticNode pred, Context con, OpDefNode opDef, boolean isInitPred) {
+	  this(pred, con, opDef != null ? opDef.getName() : UNNAMED_ACTION, isInitPred);
 	  // opDef null when action not declared, i.e. Spec == x = 0 /\ ...
 	  // See test64 and test64a and others.
-	  this(pred, con, opDef != null ? opDef.getName() : UNNAMED_ACTION);
 	  this.opDef = opDef;
   }
 
@@ -75,6 +85,16 @@ public final class Action implements ToolGlobals, Serializable {
   public final UniqueString getName() {
 	  return actionName;
   }
+  
+	public final String getNameOfDefault() {
+		if (isNamed()) {
+			return getName().toString();
+		}
+		// If we have an unnamed action, action name will be
+		// the string representation of the action (which has information
+		// about line, column etc).
+		return toString();
+	}
   
 	/**
 	 * @return The OpDefNode corresponding to this Action or <code>null</code> if
@@ -116,5 +136,9 @@ public final class Action implements ToolGlobals, Serializable {
 	}
 	public int getId() {
 		return this.id;
+	}
+	
+	public final boolean isInitPredicate() {
+		return isInitPred;
 	}
 }
