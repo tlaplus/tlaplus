@@ -110,6 +110,20 @@ public class TBGraphNode {
 		}
 		return true;
 	}
+	
+	private final boolean isSelfLoop() {
+		if (nextSize() == 1) {
+			return nextAt(0) == this;
+		}
+		return false;
+	}
+	
+	public final boolean isAccepting() {
+		if (par.isEmpty() && isSelfLoop()) {
+			return true;
+		}
+		return false;
+	}
 
 	public final String toString() {
 		StringBuffer buf = new StringBuffer();
