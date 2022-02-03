@@ -3386,14 +3386,18 @@ public abstract class Tool
     return this.isValid(act, TLCState.Empty, TLCState.Empty);
   }
 
+	public boolean isValid(ExprNode expr, int control, TLCState curState) {
+	    IValue val = this.eval(expr, Context.Empty, curState, TLCState.Empty, 
+	    		control, CostModel.DO_NOT_RECORD);
+	    if (!(val instanceof BoolValue)) {
+	      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, expr);
+	    }
+	    return ((BoolValue)val).val;
+	}
+
   @Override
   public final boolean isValid(ExprNode expr) {
-    IValue val = this.eval(expr, Context.Empty, TLCState.Empty, TLCState.Empty, 
-    		EvalControl.Const, CostModel.DO_NOT_RECORD);
-    if (!(val instanceof BoolValue)) {
-      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, expr);
-    }
-    return ((BoolValue)val).val;
+	  return isValid(expr, EvalControl.Const, TLCState.Empty);
   }
 
   @Override

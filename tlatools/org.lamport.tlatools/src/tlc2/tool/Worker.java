@@ -120,7 +120,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 					// A deadlock is defined as a state without (seen or unseen) successor
 					// states. In other words, evaluating the next-state relation for a state
 					// yields no states.
-	                this.tlc.doNextSetErr(curState, null, false, EC.TLC_DEADLOCK_REACHED, null);
+	                this.doNextSetErr(curState, null, false, EC.TLC_DEADLOCK_REACHED, null);
 				}
 				
 	            // Finally, add curState into the behavior graph for liveness checking:
@@ -415,7 +415,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		
 		try {
 			if (!this.tool.isGoodState(succState)) {
-				this.tlc.doNextSetErr(curState, succState, action);
+				this.doNextSetErr(curState, succState, action);
 				// It seems odd to subsume this under IVE, but we consider
 				// it an invariant that the values of all variables have to
 				// be defined.
@@ -528,7 +528,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 							return false;
                         }
                 	} else {
-						return this.tlc.doNextSetErr(curState, succState, false,
+						return this.doNextSetErr(curState, succState, false,
 								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
                 	}
 				}
@@ -560,7 +560,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 							return false;
                        }
                     } else {
-						return this.tlc.doNextSetErr(curState, succState, false,
+						return this.doNextSetErr(curState, succState, false,
 								EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
 								this.tool.getImpliedActNames()[k]);
                 	}
@@ -573,12 +573,30 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		}
         return false;
 	}
+	
+	private boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
+		synchronized (this.tlc) {
+			doPostConditionCheck((succState == null) ? curState : succState);
+			return this.tlc.doNextSetErr(curState, succState, keep, ec, param);
+		}
+	}
+	
+	private boolean doNextSetErr(TLCState curState, TLCState succState, Action action) throws IOException, WorkerException {
+		synchronized (this.tlc) {
+			doPostConditionCheck((succState == null) ? curState : succState);
+			return this.tlc.doNextSetErr(curState, succState, action);
+		}
+	}
 
 	// User request: http://discuss.tlapl.us/msg03658.html
 	private final void doPostConditionCheck() {
+		doPostConditionCheck(TLCState.Empty);
+	}
+
+	private final void doPostConditionCheck(final TLCState curState) {
 		final ExprNode sn = (ExprNode) this.tool.getPostConditionSpec();
 		try {
-			if (sn != null && !this.tool.isValid(sn)) {
+			if (sn != null && !this.tool.isValid(sn, EvalControl.Clear, curState)) {
 				// It's not an assumption because the expression doesn't appear inside
 				// an ASSUME, but good enough for this prototype.
 				MP.printError(EC.TLC_ASSUMPTION_FALSE, sn.toString());
