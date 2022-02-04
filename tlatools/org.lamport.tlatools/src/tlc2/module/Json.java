@@ -141,7 +141,8 @@ public class Json {
    * @return a boolean value indicating whether the serialization was successful
    */
   @TLAPlusOperator(identifier = "ndJsonSerialize", module = "Json", warn = false)
-  public synchronized static BoolValue ndSerialize(final StringValue path, final TupleValue value) throws IOException {
+  public synchronized static BoolValue ndSerialize(final StringValue path, final Value v) throws IOException {
+	TupleValue value = (TupleValue) v.toTuple();
     File file = new File(path.val.toString());
     if (file.getParentFile() != null) {file.getParentFile().mkdirs();} // Cannot create parent dir for relative path.
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(path.val.toString())))) {
@@ -160,7 +161,8 @@ public class Json {
    * @return a boolean value indicating whether the serialization was successful
    */
   @TLAPlusOperator(identifier = "JsonSerialize", module = "Json", warn = false)
-  public synchronized static BoolValue serialize(final StringValue path, final TupleValue value) throws IOException {
+  public synchronized static BoolValue serialize(final StringValue path, final Value v) throws IOException {
+	TupleValue value = (TupleValue) v.toTuple();
     File file = new File(path.val.toString());
     if (file.getParentFile() != null) {file.getParentFile().mkdirs();} // Cannot create parent dir for relative path.
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(path.val.toString())))) {
