@@ -33,6 +33,7 @@ import java.io.IOException;
 
 import org.easymock.EasyMock;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.tool.ITool;
@@ -65,11 +66,13 @@ public class LiveCheckTest {
 	// Note that adding/updating the state would result in a larger
 	// on-disk file, but doesn't seem to invalidate the simulation validity.
 	@Test
+	@Ignore("EasyMock doesn't work with recent Java versions")
 	public void testAddIdenticalNodeTwiceNoTableau() throws IOException {
 		addIdenticalNodeTwice(false, -1);
 	}
 
 	@Test
+	@Ignore("EasyMock doesn't work with recent Java versions")
 	public void testAddIdenticalNodeTwiceWithTableau() throws IOException {
 		addIdenticalNodeTwice(true, 0);
 	}
