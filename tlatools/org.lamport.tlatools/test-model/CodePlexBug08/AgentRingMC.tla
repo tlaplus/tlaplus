@@ -22,6 +22,8 @@ TypeInv
 prop_142745588773041000 ==
 Test
 ----
+PostCondition ==
+	TLCSet(42, TLCGet("generated"))
 =============================================================================
 \* Modification History
 \* Created Fri Mar 27 12:31:27 CET 2015 by makuppe

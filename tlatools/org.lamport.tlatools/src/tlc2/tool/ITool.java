@@ -119,6 +119,8 @@ public interface ITool extends TraceApp {
 	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1);
 	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm);
 
+	boolean isValid(ExprNode expr, Context ctxt);
+	
 	/* This method determines if the action predicate is valid in (s0, s1). */
 	boolean isValid(Action act, TLCState s0, TLCState s1);
 
@@ -173,6 +175,8 @@ public interface ITool extends TraceApp {
 	boolean[] getAssumptionIsAxiom();
 
 	int checkAssumptions();
+	
+	int checkPostCondition();
 
 	String[] getInvNames();
 

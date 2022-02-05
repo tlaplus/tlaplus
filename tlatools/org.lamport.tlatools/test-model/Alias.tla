@@ -1,9 +1,9 @@
----- CONFIG Alias ----
-SPECIFICATION FairSpec
-INVARIANT Inv
-PROPERTY Prop
-ALIAS Alias
-======================
+
+
+
+
+
+
 
 ---- MODULE Alias ----
 EXTENDS Integers, TLC, Sequences
@@ -59,7 +59,19 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
           te |-> ENABLED Next]      \* Trace Expression
          
 
+PostCondition ==
+	TLCSet(42, TLCGet("generated"))
 =======================
+
+---- CONFIG Alias ----
+SPECIFICATION FairSpec
+INVARIANT Inv
+PROPERTY Prop
+ALIAS Alias
+POSTCONDITION PostCondition
+======================
+
+
 \* FairSpec => []Inv
 Error: Invariant Inv is violated.
 Error: The behavior up to this point is:

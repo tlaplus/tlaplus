@@ -982,6 +982,8 @@ public class LiveWorker implements Callable<Boolean> {
 			assert cycleState.state.equals(sinfo.state);
 			StatePrinter.printBackToState(sinfo, stateNumber);
 		}
+		
+		tool.checkPostCondition();
 	}
 
 	// BFS search

@@ -1,5 +1,5 @@
 ---- MODULE Github710a ----
-
+EXTENDS TLC
 VARIABLE x
 vars == <<x>>
 
@@ -19,4 +19,7 @@ StateConstraint ==
 AtMostOnce == [](x => [](~x => []~x)) \* G(x => G(~x => G~x))
 
 AtMostOnceEquiv == [](~x \/ [](x \/ []~x)) \* G(~x \/ G(x \/ G~x))
+
+PostCondition ==
+	/\ TLCSet(42, TLCGet("generated"))
 ====

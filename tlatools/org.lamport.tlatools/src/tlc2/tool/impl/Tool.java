@@ -3386,9 +3386,10 @@ public abstract class Tool
     return this.isValid(act, TLCState.Empty, TLCState.Empty);
   }
 
-	public boolean isValid(ExprNode expr, int control, TLCState curState) {
-	    IValue val = this.eval(expr, Context.Empty, curState, TLCState.Empty, 
-	    		control, CostModel.DO_NOT_RECORD);
+    @Override
+	public boolean isValid(ExprNode expr, Context ctxt) {
+	    IValue val = this.eval(expr, ctxt, TLCState.Empty, TLCState.Empty, 
+	    		EvalControl.Const, CostModel.DO_NOT_RECORD);
 	    if (!(val instanceof BoolValue)) {
 	      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, expr);
 	    }
@@ -3397,7 +3398,7 @@ public abstract class Tool
 
   @Override
   public final boolean isValid(ExprNode expr) {
-	  return isValid(expr, EvalControl.Const, TLCState.Empty);
+	  return isValid(expr, Context.Empty);
   }
 
   @Override
@@ -3421,6 +3422,36 @@ public abstract class Tool
       }
       return EC.NO_ERROR;
   }
+
+	@Override
+	public final int checkPostCondition() {
+		return checkPostConditionWithContext(Context.Empty);
+	}
+	private final int checkPostConditionWithContext(final Context ctxt) {
+		// User request: http://discuss.tlapl.us/msg03658.html
+		final ExprNode en = (ExprNode) getPostConditionSpec();
+		try {
+			if (en != null && !isValid(en, ctxt)) {
+				// It's not an assumption because the expression doesn't appear inside
+				// an ASSUME, but good enough for this prototype.
+				return MP.printError(EC.TLC_ASSUMPTION_FALSE, en.toString());
+			}
+		} catch (Exception e) {
+			// tool.isValid(sn) failed to evaluate...
+			return MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
+					new String[] { en.toString(), e.getMessage() });
+		}
+		// The PostCheckAssumption/PostCondition cannot be stated as an ordinary
+		// invariant
+		// with the help of TLCSet/Get because the invariant will only be evaluated for
+		// distinct states, but we want it to be evaluated after state-space exploration
+		// finished. Hacking away with TLCGet("queue") = 0 doesn't work because the
+		// queue
+		// can be empty during the evaluation of the next-state relation when a worker
+		// dequeues
+		// the last state S, that has more successor states.
+		return EC.NO_ERROR;
+	}
   
     /* Reconstruct the initial state whose fingerprint is fp. */
 	@Override

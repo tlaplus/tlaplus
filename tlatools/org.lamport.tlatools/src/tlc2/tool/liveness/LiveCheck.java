@@ -751,6 +751,8 @@ public class LiveCheck implements ILiveCheck {
 						TLCGlobals.mainChecker.setErrState(states.get(states.size() - 2).state, last.state, false,
 								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
 						
+						tool.checkPostCondition();
+						
 						errorGraphNode = null;
 						throw new InvariantViolatedException();
 					}

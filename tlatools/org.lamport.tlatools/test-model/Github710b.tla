@@ -1,5 +1,5 @@
 ---- MODULE Github710b ----
-EXTENDS Naturals
+EXTENDS Naturals, TLC
 
 VARIABLE x
 vars == <<x>>
@@ -17,4 +17,7 @@ StateConstraint ==
     x < 5
 
 AtMostOnce == [](x > 1 => [](x > 2)) \* violated by x = 2
+
+PostCondition ==
+	/\ TLCSet(42, TLCGet("generated"))
 ====

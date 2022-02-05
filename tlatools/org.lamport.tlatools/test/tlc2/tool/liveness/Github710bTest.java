@@ -25,6 +25,8 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -32,7 +34,10 @@ import java.util.List;
 
 import org.junit.Test;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
+import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
 
 public class Github710bTest extends ModelCheckerTestCase {
 
@@ -61,5 +66,15 @@ public class Github710bTest extends ModelCheckerTestCase {
 		expectedTrace.add("x = 2");
 
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+
+		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
+		// register.
+		final List<IValue> allValue = TLCGlobals.mainChecker.getAllValue(42);
+		assertTrue(!allValue.isEmpty());
+		assertEquals(IntValue.gen(3), allValue.get(0));
 	}
 }
