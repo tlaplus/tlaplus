@@ -24,6 +24,7 @@ import tlc2.tool.Action;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateInfo;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.FP64;
@@ -139,6 +140,10 @@ public class RecordValue extends Value implements Applicable {
 		this.values[2] = new RecordValue(ctxt.toMap());
 		
 		this.isNorm = false;
+  }
+
+  public RecordValue(final TLCStateInfo info) {
+	  this(info.state);
   }
 
   public RecordValue(final TLCState state) {

@@ -100,4 +100,11 @@ public class TLCStateInfo {
   public TLCState getOriginalState() {
 	return state;
   }
+  
+  public Action getAction() {
+	  if (state.hasAction()) {
+		  return state.getAction();
+	  }
+	  return Action.UNKNOWN;
+  }
 }

@@ -3427,6 +3427,18 @@ public abstract class Tool
 	public final int checkPostCondition() {
 		return checkPostConditionWithContext(Context.Empty);
 	}
+
+	@Override
+	public final int checkPostConditionWithCounterExample(final IValue value) {
+		final SymbolNode def = getCounterExampleDef();
+		if (def == null) {
+			// TLCExt!CounterExample does not appear anywhere in the spec.
+			return checkPostCondition();
+		}
+		final Context ctxt = Context.Empty.cons(def, value);
+		return checkPostConditionWithContext(ctxt);
+	}
+
 	private final int checkPostConditionWithContext(final Context ctxt) {
 		// User request: http://discuss.tlapl.us/msg03658.html
 		final ExprNode en = (ExprNode) getPostConditionSpec();

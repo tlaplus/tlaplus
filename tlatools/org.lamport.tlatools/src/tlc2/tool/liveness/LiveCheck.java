@@ -40,6 +40,7 @@ import tlc2.util.LongVec;
 import tlc2.util.NoopStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.IBucketStatistics;
+import tlc2.value.impl.CounterExample;
 import util.Assert;
 
 public class LiveCheck implements ILiveCheck {
@@ -751,7 +752,7 @@ public class LiveCheck implements ILiveCheck {
 						TLCGlobals.mainChecker.setErrState(states.get(states.size() - 2).state, last.state, false,
 								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
 						
-						tool.checkPostCondition();
+						tool.checkPostConditionWithCounterExample(new CounterExample(states));
 						
 						errorGraphNode = null;
 						throw new InvariantViolatedException();

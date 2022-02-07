@@ -54,6 +54,7 @@ import tlc2.util.Context;
 import tlc2.util.IdThread;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.CounterExample;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
@@ -167,6 +168,18 @@ public class TLCExt {
 				return BoolValue.ValFalse;
 			}
 		}
+	}
+
+	@Evaluation(definition = "CounterExample", module = "TLCExt", minLevel = 1, warn = false, silent = true)
+	public static Value error(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
+			final TLCState s0, final TLCState s1, final int control, final CostModel cm) throws IOException {
+
+		final Object lookup = c.lookup(tool.getCounterExampleDef());
+		if (lookup instanceof Value) {
+			return (Value) lookup;
+		}
+		// No CounterExample.
+		return new CounterExample();
 	}
 
 	@Evaluation(definition = "Trace", module = "TLCExt", minLevel = 1, warn = false, silent = true)

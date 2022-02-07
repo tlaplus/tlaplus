@@ -41,6 +41,7 @@ import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
 import tlc2.value.ValueConstants;
+import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.ModelValue;
 import util.Assert;
@@ -257,6 +258,27 @@ abstract class Spec
 
         }
         return def.getBody();
+    }
+
+    public final OpDefNode getCounterExampleDef()
+    {
+    	// Defined in TLCExt.tla
+        Object type = this.defns.get("CounterExample");
+        if (type == null)
+        {
+        	// Not used anywhere in the current spec.
+            return null;
+        }
+        if (!(type instanceof EvaluatingValue))
+        {
+            Assert.fail(EC.GENERAL);
+        }
+        OpDefNode def = ((EvaluatingValue) type).getOpDef();
+        if (def.getArity() != 0)
+        {
+            Assert.fail(EC.GENERAL);
+        }
+        return def;
     }
 
 	public final boolean livenessIsTrue() {

@@ -9,6 +9,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -24,6 +27,7 @@ import tlc2.util.IdThread;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.FixedSizedBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
+import tlc2.value.impl.CounterExample;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.FileUtil;
@@ -578,15 +582,30 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	
 	private boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
 		synchronized (this.tlc) {
-			tool.checkPostCondition();
-			return this.tlc.doNextSetErr(curState, succState, keep, ec, param);
+			final boolean doNextSetErr = this.tlc.doNextSetErr(curState, succState, keep, ec, param);
+
+			// Invoke PostCondition
+			doPostCondition(curState, succState);
+			
+			return doNextSetErr;
 		}
 	}
 	
 	private boolean doNextSetErr(TLCState curState, TLCState succState, Action action) throws IOException, WorkerException {
 		synchronized (this.tlc) {
-			tool.checkPostCondition();
-			return this.tlc.doNextSetErr(curState, succState, action);
+			final boolean doNextSetErr = this.tlc.doNextSetErr(curState, succState, action);
+
+			// Invoke PostCondition
+			doPostCondition(curState, succState);
+
+			return doNextSetErr;
 		}
+	}
+	
+	private final void doPostCondition(TLCState curState, TLCState succState) throws IOException {
+		final List<TLCStateInfo> trace = new ArrayList<>(
+				Arrays.asList(tlc.getTraceInfo((succState == null) ? curState : succState)));
+		trace.add(tool.getState(succState, curState));
+		tool.checkPostConditionWithCounterExample(new CounterExample(trace));
 	}
 }

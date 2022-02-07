@@ -177,6 +177,8 @@ public interface ITool extends TraceApp {
 	int checkAssumptions();
 	
 	int checkPostCondition();
+	
+	int checkPostConditionWithCounterExample(IValue value);
 
 	String[] getInvNames();
 
@@ -252,6 +254,8 @@ public interface ITool extends TraceApp {
 	SemanticNode getViewSpec();
 
 	SemanticNode getPostConditionSpec();
+
+	OpDefNode getCounterExampleDef();
 
 	int getId();
 

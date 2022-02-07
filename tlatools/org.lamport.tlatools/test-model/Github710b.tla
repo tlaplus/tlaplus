@@ -1,5 +1,5 @@
 ---- MODULE Github710b ----
-EXTENDS Naturals, TLC
+EXTENDS Naturals, TLC, TLCExt
 
 VARIABLE x
 vars == <<x>>
@@ -20,4 +20,17 @@ AtMostOnce == [](x > 1 => [](x > 2)) \* violated by x = 2
 
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
+	/\ CounterExample =
+			[ action |->
+		      { << <<1, [x |-> 1]>>,
+		           [ name |-> "Next",
+		             location |->
+		                 [ beginLine |-> 9,
+		                   beginColumn |-> 9,
+		                   endLine |-> 9,
+		                   endColumn |-> 18,
+		                   module |-> "Github710b" ] ],
+		           <<2, [x |-> 2]>> >> },
+		  state |-> {<<1, [x |-> 1]>>, <<2, [x |-> 2]>>} ]
+			
 ====

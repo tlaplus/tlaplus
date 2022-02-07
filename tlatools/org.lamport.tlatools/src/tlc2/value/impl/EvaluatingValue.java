@@ -271,4 +271,8 @@ public class EvaluatingValue extends OpValue implements Applicable {
   public int getMinLevel() {
 	  return minLevel;
   }
+
+  public OpDefNode getOpDef() {
+	  return this.opDef;
+  }
 }
