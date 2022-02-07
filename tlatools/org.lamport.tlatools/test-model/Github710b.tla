@@ -20,6 +20,7 @@ AtMostOnce == [](x > 1 => [](x > 2)) \* violated by x = 2
 
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
+	/\ ToTrace(CounterExample) = <<[x |-> 1], [x |-> 2]>>
 	/\ CounterExample =
 			[ action |->
 		      { << <<1, [x |-> 1]>>,

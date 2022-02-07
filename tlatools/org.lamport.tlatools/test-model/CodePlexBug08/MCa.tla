@@ -12,7 +12,7 @@ x=1 ~> x=0
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
 	/\ \/ CounterExample = [state |-> {}, action |-> {}]
-	   \/ CounterExample = 
+	   \/ /\ CounterExample = 
 				[ state |->
 				      { <<1, [x |-> 1, b |-> FALSE]>>,
 				        <<2, [x |-> 2, b |-> TRUE]>>,
@@ -95,6 +95,15 @@ PostCondition ==
 				                   endColumn |-> 18,
 				                   module |-> "CodeplexBug8" ] ],
 				           <<8, [x |-> 5, b |-> TRUE]>> >> } ]
+	      /\ ToTrace(CounterExample) =
+		    	      << [x |-> 1, b |-> FALSE],
+					   [x |-> 2, b |-> TRUE],
+					   [x |-> 2, b |-> FALSE],
+					   [x |-> 3, b |-> TRUE],
+					   [x |-> 3, b |-> FALSE],
+					   [x |-> 4, b |-> TRUE],
+					   [x |-> 4, b |-> FALSE],
+					   [x |-> 5, b |-> TRUE] >> 
 =============================================================================
 \* Modification History
 \* Created Wed Mar 25 21:34:22 CET 2015 by markus

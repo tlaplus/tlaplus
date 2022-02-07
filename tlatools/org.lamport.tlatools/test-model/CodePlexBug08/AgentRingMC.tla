@@ -172,6 +172,25 @@ PostCondition ==
 			             Agent |->
 			                 [Loc |-> 1, LastLoad |-> 1, ReadyToMove |-> TRUE, Task |-> 1],
 			             CanCreate |-> FALSE ] >> } ]
+	/\ ToTrace(CounterExample) =
+				<< [ Nodes |-> (0 :> [Load |-> 0] @@ 1 :> [Load |-> 0]),
+			     Agent |-> [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0],
+			     CanCreate |-> TRUE ],
+			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
+			     Agent |-> [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0],
+			     CanCreate |-> TRUE ],
+			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
+			     Agent |-> [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0],
+			     CanCreate |-> TRUE ],
+			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2]),
+			     Agent |-> [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0],
+			     CanCreate |-> TRUE ],
+			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2]),
+			     Agent |-> [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0],
+			     CanCreate |-> FALSE ],
+			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1]),
+			     Agent |-> [Loc |-> 1, LastLoad |-> 1, ReadyToMove |-> TRUE, Task |-> 1],
+			     CanCreate |-> FALSE ] >>
 
 	
 =============================================================================

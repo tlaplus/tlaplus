@@ -6,7 +6,48 @@ const_123 == 4
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
 	/\ \/ CounterExample = [ action |-> {} , state |-> {} ]
-	   \/ CounterExample =
+	   \/ /\ ToTrace(CounterExample) = 
+                << [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 0,
+                    tcolor |-> "black" ],
+                [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 3,
+                    tcolor |-> "white" ],
+                [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 3,
+                    tcolor |-> "white" ],
+                [ active |-> (0 :> TRUE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 3,
+                    tcolor |-> "white" ],
+                [ active |-> (0 :> TRUE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 3,
+                    tcolor |-> "white" ],
+                [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 3,
+                    tcolor |-> "white" ],
+                [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 2,
+                    tcolor |-> "white" ],
+                [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "black" @@ 3 :> "white"),
+                    tpos |-> 2,
+                    tcolor |-> "white" ],
+                [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 1,
+                    tcolor |-> "black" ],
+                [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+                    color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
+                    tpos |-> 1,
+                    tcolor |-> "black" ] >>
+	      /\ CounterExample =
 			[ action |->
 			      { << << 1,
 			              [ active |->

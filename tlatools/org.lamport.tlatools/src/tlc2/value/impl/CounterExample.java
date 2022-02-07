@@ -52,7 +52,7 @@ public class CounterExample extends RecordValue {
 	// when there can be many counterexamples.
 	// TODO Include name of definition of the violated property.
 	public CounterExample(final List<TLCStateInfo> trace, final Action action, final int loopOrdinal) {
-		super(new UniqueString[] { STATES, ACTIONS }, new Value[2], false);
+		super(new UniqueString[] { ACTIONS, STATES }, new Value[2], false);
 
 		final int loopIdx = loopOrdinal - 1;
 		assert loopIdx < trace.size();
@@ -80,7 +80,17 @@ public class CounterExample extends RecordValue {
 			actions.add(edge);
 		}
 
-		this.values[0] = new SetEnumValue(states.toArray(Value[]::new), false);
-		this.values[1] = new SetEnumValue(actions.toArray(Value[]::new), false);
+		this.values[0] = new SetEnumValue(actions.toArray(Value[]::new), false);
+		this.values[1] = new SetEnumValue(states.toArray(Value[]::new), false);
+	}
+
+	public Value toTrace() {
+		final SetEnumValue set = (SetEnumValue) this.select(new StringValue(STATES));
+		final Value[] v = new Value[set.elems.size()];
+		for (int i = 0; i < v.length; i++) {
+			final TupleValue tv = (TupleValue) set.elems.elementAt(i);
+			v[((IntValue) tv.getElem(0)).val - 1] = (Value) tv.getElem(1);
+		}
+		return new TupleValue(v);
 	}
 }

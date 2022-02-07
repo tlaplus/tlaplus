@@ -170,6 +170,15 @@ public class TLCExt {
 		}
 	}
 
+	@TLAPlusOperator(identifier = "ToTrace", module = "TLCExt", warn = false)
+	public static Value lassoOrdinal(final Value val) {
+		if (!(val instanceof CounterExample)) {
+			throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR,
+					new String[] { "ToTrace", "CounterExample", Values.ppr(val.toString()) });
+		}
+		return ((CounterExample) val).toTrace();
+	}
+
 	@Evaluation(definition = "CounterExample", module = "TLCExt", minLevel = 1, warn = false, silent = true)
 	public static Value error(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) throws IOException {

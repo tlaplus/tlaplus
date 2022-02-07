@@ -22,6 +22,7 @@ AtMostOnceEquiv == [](~x \/ [](x \/ []~x)) \* G(~x \/ G(x \/ G~x))
 
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
+	/\ ToTrace(CounterExample) = <<[x |-> FALSE], [x |-> TRUE], [x |-> FALSE], [x |-> TRUE]>>
 	/\ CounterExample =
 				[ action |->
 			      { << <<1, [x |-> FALSE]>>,
