@@ -47,6 +47,7 @@ public interface IDebugTarget {
 		public final TLCStackFrame frame;
 		
 		public ResetEvalException(TLCStackFrame frame) {
+			assert frame != null;
 			this.frame = frame;
 		}
 
@@ -94,6 +95,8 @@ public interface IDebugTarget {
 			StatefulRuntimeException e);
 
 	IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode pred, Context c, TLCState predecessor, Action a, TLCState state, StatefulRuntimeException e);
+
+	IDebugTarget markAssumptionViolatedFrame(Tool debugTool, SemanticNode pred, Context c);
 
 	//------------------------ Wrapper --------------------------//
 	

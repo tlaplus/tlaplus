@@ -719,6 +719,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return this;
 	}
 
+	@Override
+	public synchronized IDebugTarget markAssumptionViolatedFrame(Tool debugTool, SemanticNode expr, Context c) {
+		final TLCStackFrame frame = new TLCStackFrame(null, expr, c, tool); // no parent!
+		stack.push(frame);
+		if (haltInv) {
+			haltExecution(frame);
+		}
+		return this;
+	}
+
 	private IDebugTarget pushFrameAndHalt(final boolean halt, final TLCStackFrame frame, final RuntimeException e) {
 		// Calling methods duplicate the top-most stack-frame with the exception causes
 		// the front-end to raise a corresponding error in the editor.

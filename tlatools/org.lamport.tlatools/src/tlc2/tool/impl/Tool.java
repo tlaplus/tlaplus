@@ -3401,6 +3401,10 @@ public abstract class Tool
 	  return isValid(expr, Context.Empty);
   }
 
+  public boolean isValidAssumption(ExprNode assumption) {
+	  return isValid(assumption);
+  }
+  
   @Override
   public final int checkAssumptions() {
       final ExprNode[] assumps = getAssumptions();
@@ -3409,7 +3413,7 @@ public abstract class Tool
       {
           try
           {
-              if ((!isAxiom[i]) && !isValid(assumps[i]))
+              if ((!isAxiom[i]) && !isValidAssumption(assumps[i]))
               {
                   return MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
               }
