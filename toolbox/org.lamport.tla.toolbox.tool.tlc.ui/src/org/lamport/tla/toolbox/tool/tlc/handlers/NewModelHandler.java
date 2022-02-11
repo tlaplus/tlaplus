@@ -189,20 +189,20 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                 if (defs[i].getNumberOfArgs() == 0)
                 {
                     // Only look at operators with no arguments.
-                    if (defs[i].getName().toString().equals("Spec") && (defs[i].getLevel() == LevelNode.TemporalLevel))
+                    if (defs[i].getNameUS().toString().equals("Spec") && (defs[i].getLevel() == LevelNode.TemporalLevel))
                     {
                         foundSpec = true;
 
-                    } else if (defs[i].getName().toString().equals("Init")
+                    } else if (defs[i].getNameUS().toString().equals("Init")
                             && (defs[i].getLevel() == LevelNode.VariableLevel))
                     {
                         foundInit = true;
-                    } else if (defs[i].getName().toString().equals("Next")
+                    } else if (defs[i].getNameUS().toString().equals("Next")
                             && (defs[i].getLevel() == LevelNode.ActionLevel))
                     {
                         foundNext = true;
 
-                    } else if (defs[i].getName().toString().equals("Termination")
+                    } else if (defs[i].getNameUS().toString().equals("Termination")
                             && (defs[i].getLevel() == LevelNode.TemporalLevel))
                     {
                         foundTermination = true;
@@ -310,7 +310,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                 if (nodeBody instanceof OpApplNode)
                 {
                     OpApplNode nodeBodyA = (OpApplNode) nodeBody;
-                    if (nodeBodyA.getOperator().getName().toString().equals("$UnboundedChoose"))
+                    if (nodeBodyA.getOperator().getNameUS().toString().equals("$UnboundedChoose"))
                     {
                         // The OpDefNode node's body has the form CHOOSE v : ...
                         FormalParamNode chooseParam = nodeBodyA.getUnbdedQuantSymbols()[0];
@@ -319,7 +319,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                         {
                             OpApplNode chooseBodyA = (OpApplNode) chooseBody;
                             boolean toOverride = false;
-                            String topOpName = chooseBodyA.getOperator().getName().toString();
+                            String topOpName = chooseBodyA.getOperator().getNameUS().toString();
                             if (topOpName.equals("\\notin"))
                             {
                                 // this is CHOOSE v : exp \notin exp . Set to override iff
@@ -341,7 +341,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                                 if (notArg instanceof OpApplNode)
                                 {
                                     OpApplNode notArgA = (OpApplNode) notArg;
-                                    if (notArgA.getOperator().getName().equals("\\in"))
+                                    if (notArgA.getOperator().getNameUS().equals("\\in"))
                                     {
                                         // This is CHOOSE v : ~(expa \in expb). Set to override
                                         // iff expa equals v.
@@ -359,7 +359,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                             }
                             if (toOverride)
                             {
-                                String defName = node.getName().toString();
+                                String defName = node.getNameUS().toString();
                                 overrides.addElement(defName + ";;" + defName + ";1;0");
                             }
                         }

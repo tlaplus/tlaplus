@@ -133,7 +133,7 @@ public class ParseResultBroadcaster
         IPath dirPath = parseResult.getParsedResource().getLocation().removeLastSegments(1);
         for (int i = 0; i < moduleNodes.length; i++)
         {
-            parseResults.put(dirPath.append(ResourceHelper.getModuleFileName(moduleNodes[i].getName().toString())),
+            parseResults.put(dirPath.append(ResourceHelper.getModuleFileName(moduleNodes[i].getNameUS().toString())),
                     parseResult);
         }
     }

@@ -521,14 +521,14 @@ public class OpDefNode extends OpDefOrDeclNode
 	   if (compoundID != null) {
 		   return compoundID;
 	   }
-	   return new UniqueString[] {getName()};
+	   return new UniqueString[] {getNameUS()};
    }
 
 	public final UniqueString getLocalName() {
 		   if (compoundID != null) {
 			   return compoundID[compoundID.length - 1];
 		   }
-		   return getName();
+		   return getNameUS();
 	}
 	
 	public final boolean hasPath() {
@@ -765,27 +765,27 @@ public class OpDefNode extends OpDefOrDeclNode
         for ( int i = 0; i < args.length; i++ ) {
           if (args[i] instanceof OpArgNode) {
             errors.addError(loc, "Illegal expression used as argument " + (i+1) +
-                            " to operator '" + this.getName() + "'.");
+                            " to operator '" + this.getNameUS() + "'.");
             result = false;
           }
         }
       }
       else  {// null arg vector; supposedly cannot happen
         errors.addAbort(loc, "Internal error: null args vector for operator '" +
-                        this.getName() + "' that should take variable number of args.",true);
+                        this.getNameUS() + "' that should take variable number of args.",true);
       }
     }
     else {
       // It is an operator with a fixed number of params (possibly zero)
       if (args == null | params == null) { // args vector should never be null
         errors.addAbort(loc, "Internal error: Null args or params vector for operator '" +
-                        this.getName() + "'.", true);
+                        this.getNameUS() + "'.", true);
       }
       else { // Normal case: params != null & args != null
         // if the number of args does not match the number of params
         if (params.length != args.length) {
           errors.addError(loc, "Wrong number of arguments (" + args.length +
-                          ") given to operator '" + this.getName() + "', \nwhich requires " +
+                          ") given to operator '" + this.getNameUS() + "', \nwhich requires " +
                           params.length + " arguments.");
           result = false;
         }
@@ -800,7 +800,7 @@ public class OpDefNode extends OpDefOrDeclNode
               if (args[i] instanceof OpArgNode) {
                 errors.addError(loc, "Non-expression used as argument number " + (i + 1)
                                 + " to BuiltIn operator '"
-                                + this.getName() + "'.");
+                                + this.getNameUS() + "'.");
                 result = false;
               }
             }
@@ -821,13 +821,13 @@ public class OpDefNode extends OpDefOrDeclNode
                 // OpArgNode of correct arity must be passed in this arg position
                 if (! matchingOpArgOperand(args[i],i)) {
                   errors.addError(loc, "Argument number " + (i+1) + " to operator '"
-                                  + this.getName() + "' \nshould be a " + params[i].getArity()
+                                  + this.getNameUS() + "' \nshould be a " + params[i].getArity()
                                   + "-parameter operator.");
                   result = false;
                 }
               } else { // if params[i].getArity() < 0
                 errors.addError(loc,
-                                "Internal error: Operator '" + this.getName() +
+                                "Internal error: Operator '" + this.getNameUS() +
                                 "' indicates that it requires \na negative number of arguments.");
               }
             } // end for
@@ -1264,7 +1264,7 @@ public class OpDefNode extends OpDefOrDeclNode
 
 
   public boolean hasOpcode(final int opCode) {
-      return opCode == BuiltInOPs.getOpCode(getName());
+      return opCode == BuiltInOPs.getOpCode(getNameUS());
   }
 
   /**
@@ -1300,7 +1300,7 @@ public class OpDefNode extends OpDefOrDeclNode
 	@Override
 	public String getSignature() {
 		final StringBuffer buf = new StringBuffer();
-		buf.append(getName().toString());
+		buf.append(getNameUS().toString());
 		if (getArity() > 0 && getKind() != ASTConstants.BuiltInKind) {
 			buf.append("(");
 			//TODO This hack doesn't work for infix operators
@@ -1331,7 +1331,7 @@ public class OpDefNode extends OpDefOrDeclNode
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    String ret = "\n*OpDefNode: " + this.getName().toString()
+    String ret = "\n*OpDefNode: " + this.getNameUS().toString()
                 + "\n  "
                 + super.toString(depth)
                 + "\n  local: " + local
@@ -1342,11 +1342,11 @@ public class OpDefNode extends OpDefOrDeclNode
                 + "\n  local: " + local
                 + "\n  source: " +
                   ((source == null) ? "this" :
-                       (source.getName().toString() +
+                       (source.getNameUS().toString() +
                             " (uid: " + source.myUID + ")"))
                 + "\n  originallyDefinedInModule: " +
                      ((originallyDefinedInModule == null) ? "null" :
-                       (originallyDefinedInModule.getName().toString() +
+                       (originallyDefinedInModule.getNameUS().toString() +
                           " (uid: " + originallyDefinedInModule.myUID + ")"))
                 + ((stepNode == null) ? "" :
                         ("\n  stepNode: " +
@@ -1443,7 +1443,7 @@ public class OpDefNode extends OpDefOrDeclNode
     switch (getKind()) {
       case UserDefinedOpKind:
         ret = doc.createElement("UserDefinedOpKind");
-        ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getNameUS().toString()));
         ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
         ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
         if (params != null) {
@@ -1460,7 +1460,7 @@ public class OpDefNode extends OpDefOrDeclNode
       break;
       case BuiltInKind:
         ret = doc.createElement("BuiltInKind");
-        ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getNameUS().toString()));
         ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
         Element arguments2 = doc.createElement("params");
         if (params != null) {
@@ -1475,7 +1475,7 @@ public class OpDefNode extends OpDefOrDeclNode
         break;
       case ModuleInstanceKind:
         ret = doc.createElement("ModuleInstanceKind");
-        ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getNameUS().toString()));
         break;
       default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
     }

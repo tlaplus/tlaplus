@@ -382,9 +382,9 @@ public class Context implements ExploreNode {
 			if (!sn.isLocal()) {
 				Object sName;
 				if (sn instanceof ModuleNode) {
-					sName = new SymbolTable.ModuleName(sn.getName());
+					sName = new SymbolTable.ModuleName(sn.getNameUS());
 				} else {
-					sName = sn.getName();
+					sName = sn.getNameUS();
 				}
 
 				if (!table.containsKey(sName)) {
@@ -455,7 +455,7 @@ public class Context implements ExploreNode {
 	current.link = new Pair(null,p.info); // Note: causes sharing of reference in link.info
         current = current.link;
       }
-      dup.table.put(current.info.getName(), current);
+      dup.table.put(current.info.getNameUS(), current);
       p = p.link;
     }
     return dup;
@@ -489,7 +489,7 @@ public class Context implements ExploreNode {
 
     Pair p = lastPair;
     while (p != null) {
-      UniqueString key = p.info.getName();
+      UniqueString key = p.info.getNameUS();
 
       // If b is false, don't bother printing the initialContext--too long--
       // and, don't bother printing elements of the Naturals module either

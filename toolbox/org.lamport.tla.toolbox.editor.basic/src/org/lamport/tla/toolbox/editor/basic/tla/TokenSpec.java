@@ -812,7 +812,7 @@ public class TokenSpec
         {
             return str + "null]";
         }
-        return str + this.resolvedSymbol.getName() + "]";
+        return str + this.resolvedSymbol.getNameUS() + "]";
 
     }
 }

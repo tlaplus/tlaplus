@@ -115,7 +115,7 @@ public abstract class ToolboxCompletionProcessor {
 
 			final Collection<SymbolNode> symbols = rootModule.getSymbols(matcher.setPrefix(word));
 			for (final SymbolNode symbolNode : symbols) {
-				propositionList.add(new CompletionProposalTemplate(symbolNode.getSignature(), symbolNode.getName(),
+				propositionList.add(new CompletionProposalTemplate(symbolNode.getSignature(), symbolNode.getNameUS(),
 						symbolNode.getHumanReadableImage()).getProposal(replacementOffset, carretColumnIndex - qualifierLength, qualifierLength));
 			}
 		}

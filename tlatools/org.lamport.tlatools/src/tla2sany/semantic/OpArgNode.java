@@ -54,7 +54,7 @@ public class OpArgNode extends ExprOrOpArgNode {
 
     // if op is an OpDefNode, OpDeclNode, or FormalParamNode
     this.op        = op;
-    this.name      = op.getName();
+    this.name      = op.getNameUS();
     this.arity     = op.getArity();
     this.mn        = mn;
   }

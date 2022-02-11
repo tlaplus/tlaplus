@@ -416,7 +416,7 @@ public class ShowUsesHandler extends AbstractHandler implements IHandler, Syntax
         if (numberOfModulesUsedIn == 0)
         {
             MessageDialog.openWarning(UIHelper.getShellProvider().getShell(), "Cannot find uses",
-                    "There are no uses of the symbol " + resolvedSymbol.getName());
+                    "There are no uses of the symbol " + resolvedSymbol.getNameUS());
             return null;
         }
 

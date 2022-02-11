@@ -519,7 +519,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             if (opDefLevelCheck && opd.levelCheck(itr)) {
               errors.addError(
                  this.stn.getLocation(),
-                 "Level error in applying operator " + opDef.getName() +
+                 "Level error in applying operator " + opDef.getNameUS() +
                     ":\nThe level of argument " + (i+1) + " exceeds the" +
                     " maximum level allowed by the operator.");
             }
@@ -544,7 +544,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
                 if (opDefLevelCheck && opd.levelCheck(itr)) {
                   errors.addError(this.stn.getLocation(),
                                   "Level error in applying operator "
-                                        + opDef.getName() + ":\n" +
+                                        + opDef.getNameUS() + ":\n" +
                                   "The permitted level of argument "
                                    + (j+1) + " of the operator argument " +
                                   (i+1) + " \nmust be at least " +
@@ -561,7 +561,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
                       this.operands[j].levelCheck(itr)) {
                     errors.addError(
                        this.stn.getLocation(),
-                       "Level error in applying operator " + opDef.getName() +
+                       "Level error in applying operator " + opDef.getNameUS() +
                          ":\nThe level of argument " + (j+1) + " exceeds the" +
                          " maximum level allowed by the operator.");
                   }
@@ -581,7 +581,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             if (rangeLevelCheck) {
               errors.addError(
                 this.stn.getLocation(),
-                "Level error in applying operator " + opDef.getName() +
+                "Level error in applying operator " + opDef.getNameUS() +
                   ":\nThe level of the range for the bounded variable " +
                   boundedBoundSymbols[i][0] + " \nexceeds the maximum " +
                   "level allowed by the operator.");
@@ -1017,7 +1017,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     *    Note that not a problem with CHOOSE, which does not allow a       *
     *    temporal body.                                                    *
     ***********************************************************************/
-    String opName = this.operator.getName().toString();
+    String opName = this.operator.getNameUS().toString();
     /***********************************************************************
     * Check for []A.                                                       *
     ***********************************************************************/
@@ -1025,7 +1025,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       ExprNode arg = (ExprNode) this.getArgs()[0];
       if (  (arg.getLevel() == ActionLevel)
           && (arg.getKind() == OpApplKind)) {
-        if (!((OpApplNode) arg).operator.getName().toString().equals(
+        if (!((OpApplNode) arg).operator.getNameUS().toString().equals(
                                                            "$SquareAct")) {
           errors.addError(
             stn.getLocation(),
@@ -1041,7 +1041,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         ExprNode arg = (ExprNode) this.getArgs()[0];
         if (  (arg.getLevel() == ActionLevel)
             && (arg.getKind() == OpApplKind)) {
-          if (!((OpApplNode) arg).operator.getName().toString().equals(
+          if (!((OpApplNode) arg).operator.getNameUS().toString().equals(
                                                              "$AngleAct")) {
             errors.addError(
               stn.getLocation(),
@@ -1140,7 +1140,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 
 
   public boolean hasOpcode(final int opCode) {
-      return opCode == BuiltInOPs.getOpCode(getOperator().getName());
+      return opCode == BuiltInOPs.getOpCode(getOperator().getNameUS());
   }
 
   @Override
@@ -1211,7 +1211,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       ret = "\nOperator: null";
     }
     else {
-      ret = "\nOperator: " + operator.getName().toString() + "  "
+      ret = "\nOperator: " + operator.getNameUS().toString() + "  "
             + operator.getUid() + "  ";
     }
 
@@ -1275,7 +1275,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
      sEO = Strings.indent(2,
               "\nsubExpressionOf: " +
               Strings.indent(2, this.subExpressionOf.toString(1))) ;} ;
-    return "\n*OpApplNode: " + operator.getName() + "  " + super.toString(depth+1)
+    return "\n*OpApplNode: " + operator.getNameUS() + "  " + super.toString(depth+1)
            + "  errors: " + (errors != null ? "non-null" : "null")
            + toStringBody(depth) + sEO ;
   }
@@ -1291,7 +1291,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 			final TreeSet<SymbolNode> s = new TreeSet<SymbolNode>(new java.util.Comparator<SymbolNode>() {
 				@Override
 				public int compare(SymbolNode o1, SymbolNode o2) {
-					return Integer.compare(o1.getName().getVarLoc(), o2.getName().getVarLoc());
+					return Integer.compare(o1.getNameUS().getVarLoc(), o2.getNameUS().getVarLoc());
 				}
 			});
 			s.addAll(allParams);
@@ -1299,7 +1299,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 			int idx = 0;
 			for (final SymbolNode sn : s) {
 				result.append("/\\ ");
-				result.append(sn.getName().toString());
+				result.append(sn.getNameUS().toString());
 
 				final IValue value = ((ITupleValue) aValue).getElem(idx++);
 				result.append(" = ");
@@ -1318,13 +1318,13 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     // TL 2014 - A fix for detecting null representing OTHER inside a case (please refrain from using null as a semantical object),
     // its form is
     // OpApplNode: Operator: $Case - Operands: 3(_,_,OpApplNode: Operator: $Pair - Operands: 2(null,_))
-    if (operator.getName().toString().equals("$Case") && operands.length > 1 /* OTHER cannot occur alone in a CASE */) {
+    if (operator.getNameUS().toString().equals("$Case") && operands.length > 1 /* OTHER cannot occur alone in a CASE */) {
       // OTHER should be last operand
        ExprOrOpArgNode lastOperand = operands[operands.length-1];
        if (lastOperand instanceof tla2sany.semantic.OpApplNode) {
           OpApplNode other = (OpApplNode)lastOperand;
           // indeed the OTHER case
-          if (other.getOperator().getName().toString().equals("$Pair") && other.getArgs()[0] == null) {
+          if (other.getOperator().getNameUS().toString().equals("$Pair") && other.getArgs()[0] == null) {
             // we pass a flag that tells any future OpApplNode that a null operand in 0 position should be replaced by the string $Other
             context = new SymbolContext(context);
             context.setFlag(SymbolContext.OTHER_BUG);

@@ -515,7 +515,7 @@ public class EditorUtil
             {
                 for (int i = 0; i < fpn.length; i++)
                 {
-                    if (fpn[i].getName() == name)
+                    if (fpn[i].getNameUS() == name)
                     {
                         // return fpn[i];
                         foundSymbol = fpn[i];
@@ -531,7 +531,7 @@ public class EditorUtil
                 {
                     for (int j = 0; j < fpnA[i].length; j++)
                     {
-                        if (fpnA[i][j].getName() == name)
+                        if (fpnA[i][j].getNameUS() == name)
                         {
                             // return fpnA[i][j];
                             foundSymbol = fpnA[i][j];
@@ -546,7 +546,7 @@ public class EditorUtil
             FormalParamNode[] params = ((OpDefNode) curNode).getParams();
             for (int i = 0; i < params.length; i++)
             {
-                if (name == params[i].getName())
+                if (name == params[i].getNameUS())
                 {
                     // return params[i];
                     foundSymbol = params[i];
@@ -570,7 +570,7 @@ public class EditorUtil
                         {
                             NewSymbNode newSymb = (NewSymbNode) assumes[i];
                             OpDeclNode opDecl = newSymb.getOpDeclNode();
-                            if (name == opDecl.getName())
+                            if (name == opDecl.getNameUS())
                             {
                                 foundSymbol = opDecl;
                                 break;

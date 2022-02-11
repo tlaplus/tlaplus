@@ -91,12 +91,12 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 			// OpApplNode that represents the prime.
 			final SymbolNode var = tool.getPrimedVar(path.getFirst(), ctxt, false);
 			if (var != null) {
-				final IValue value = getT().lookup(var.getName());
+				final IValue value = getT().lookup(var.getNameUS());
 				if (value != null) {
-					return getVariable(value, var.getName() + "'");
+					return getVariable(value, var.getNameUS() + "'");
 				} else {
 					Variable v = new Variable();
-					v.setName(var.getName() + "'");
+					v.setName(var.getNameUS() + "'");
 					v.setValue(DebuggerValue.NOT_EVALUATED);
 					return v;
 				}

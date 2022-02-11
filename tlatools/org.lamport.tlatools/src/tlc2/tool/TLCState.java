@@ -105,7 +105,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   public final Map<UniqueString, IValue> getVals() {
 	final Map<UniqueString, IValue> valMap = new HashMap<UniqueString, IValue>();
 	for(int i = 0; i < vars.length; i++) {
-        UniqueString key = vars[i].getName();
+        UniqueString key = vars[i].getNameUS();
         IValue val = this.lookup(key);
         valMap.put(key, val);
     }
@@ -119,7 +119,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   public final String[] getVarsAsStrings() {
 	  String[] res = new String[vars.length];
 	  for (int i = 0; i < vars.length; i++) {
-		res[i] = vars[i].getName().toString();
+		res[i] = vars[i].getNameUS().toString();
 	  }
 	  return res;
   }

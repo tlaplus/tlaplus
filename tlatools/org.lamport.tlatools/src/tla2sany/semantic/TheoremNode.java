@@ -106,7 +106,7 @@ public class TheoremNode extends LevelNode {
   *************************************************************************/
   public final UniqueString getName() {
     if (def == null) {return null;} ;
-    return def.getName() ;
+    return def.getNameUS() ;
     }
 
   /* Level checking */
@@ -194,7 +194,7 @@ public class TheoremNode extends LevelNode {
    * Added 3 Mar 2009.                                                     *
    ************************************************************************/
    if (   (oanOp != null)
-       && (oanOp.getName() == OP_pick)
+       && (oanOp.getNameUS() == OP_pick)
        && (oan.ranges != null)
        && (this.theoremExprOrAssumeProve.level == TemporalLevel)) {
      for (int i = 0; i < oan.ranges.length; i++) {
@@ -256,7 +256,7 @@ public class TheoremNode extends LevelNode {
           }
        };
        if (oanode != null) {
-         UniqueString name = oanode.operator.getName();
+         UniqueString name = oanode.operator.getNameUS();
 
          if (   (   (name == OP_take)
                  || (name == OP_witness)

@@ -295,7 +295,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 		final Set<OpDeclNode> unassignedVars = new TreeSet<OpDeclNode>(new Comparator<OpDeclNode>() {
 			@Override
 			public int compare(OpDeclNode o1, OpDeclNode o2) {
-				return o1.getName().toString().compareTo(o2.getName().toString());
+				return o1.getNameUS().toString().compareTo(o2.getNameUS().toString());
 			}
 		});
 		int len = this.values.length;
@@ -332,7 +332,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     StringBuffer result = new StringBuffer();
     int vlen = vars.length;
     if (vlen == 1) {
-      UniqueString key = vars[0].getName();
+      UniqueString key = vars[0].getNameUS();
       IValue val = this.lookup(key);
       result.append(key.toString());
       result.append(" = ");
@@ -341,7 +341,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     }
     else {
       for (int i = 0; i < vlen; i++) {
-	UniqueString key = vars[i].getName();
+	UniqueString key = vars[i].getNameUS();
 	IValue val = this.lookup(key);
 	result.append("/\\ ");
 	result.append(key.toString());
@@ -360,7 +360,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 
     int vlen = vars.length;
     if (vlen == 1) {
-      UniqueString key = vars[0].getName();
+      UniqueString key = vars[0].getNameUS();
       IValue val = this.lookup(key);
       IValue lstateVal = lstate.lookup(key);
       if (!lstateVal.equals(val)) {
@@ -370,7 +370,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     }
     else {
       for (int i = 0; i < vlen; i++) {
-	UniqueString key = vars[i].getName();
+	UniqueString key = vars[i].getNameUS();
 	IValue val = this.lookup(key);
 	IValue lstateVal = lstate.lookup(key);
 	if (!lstateVal.equals(val)) {

@@ -292,7 +292,7 @@ public int levelChecked   = 0 ;
     final Iterator<? extends SymbolNode> iter = hs.iterator();
     while (iter.hasNext()) {
       if (! first) {rval = rval + ", ";} ;
-      rval = rval + iter.next().getName() ;
+      rval = rval + iter.next().getNameUS() ;
       first = false ;
      } ;
     rval = rval + "}" ;
@@ -309,8 +309,8 @@ public int levelChecked   = 0 ;
     while (iter.hasNext()) {
       if (! first) {rval = rval + ", ";} ;
       ArgLevelParam alp = iter.next();
-      rval = rval + "<" + alp.op.getName() + ", " + alp.i + ", " +
-                     alp.param.getName() + ">" ;
+      rval = rval + "<" + alp.op.getNameUS() + ", " + alp.i + ", " +
+                     alp.param.getNameUS() + ">" ;
       first = false;
      } ;
     rval = rval + "}" ;

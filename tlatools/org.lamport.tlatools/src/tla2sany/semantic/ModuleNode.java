@@ -425,7 +425,7 @@ public class ModuleNode extends SymbolNode {
   }
 
   public final OpDefNode getOpDef(final UniqueString name) {
-	  return Stream.of(getOpDefs()).filter(o -> o.getName() == name).findFirst().orElse(null);
+	  return Stream.of(getOpDefs()).filter(o -> o.getNameUS() == name).findFirst().orElse(null);
   }
 
   /*************************************************************************
@@ -834,7 +834,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
             if (curNode.maxLevels[j] < ActionLevel) {
                errors.addError(curNode.getTreeNode().getLocation(),
                              "Argument " + (j+1) + " of recursive operator "
-                               + curNode.getName() + " is primed") ;
+                               + curNode.getNameUS() + " is primed") ;
             } ; // if
            } ; // for j
           maxRecursiveLevel = Math.max(maxRecursiveLevel, curNode.level) ;
@@ -1218,7 +1218,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 
   protected Element getSymbolElement(Document doc, SymbolContext context) {
     Element ret = doc.createElement("ModuleNode");
-    ret.appendChild(appendText(doc, "uniquename", getName().toString()));
+    ret.appendChild(appendText(doc, "uniquename", getNameUS().toString()));
 
     SemanticNode[] nodes = null;
     // constants

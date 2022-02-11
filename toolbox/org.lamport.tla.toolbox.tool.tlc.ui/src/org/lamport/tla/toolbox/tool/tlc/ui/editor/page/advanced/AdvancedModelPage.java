@@ -214,7 +214,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
         {
             for (int j = 0; j < opDefNodes.length; j++)
             {
-                String key = opDefNodes[j].getName().toString();
+                String key = opDefNodes[j].getNameUS().toString();
                 nodeTable.put(key, opDefNodes[j]);
             }
         }
@@ -268,7 +268,7 @@ public class AdvancedModelPage extends BasicFormPage implements Closeable {
                         if (opDefNode.getSource().getNumberOfArgs() != definition.getParams().length)
                         {
                             modelEditor.addErrorMessage(definition.getLabel(), "Edit the definition override for "
-                                    + opDefNode.getSource().getName() + " to match the correct number of arguments.", this
+                                    + opDefNode.getSource().getNameUS() + " to match the correct number of arguments.", this
                                     .getId(), IMessageProvider.ERROR, widget);
                             setComplete(false);
                         }

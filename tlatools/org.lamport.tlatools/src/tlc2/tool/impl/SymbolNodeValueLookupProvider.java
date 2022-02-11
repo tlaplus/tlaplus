@@ -182,7 +182,7 @@ public interface SymbolNodeValueLookupProvider {
 	 */
 	default int getLevelBoundAppl(final OpApplNode expr, Context c, final int forToolId) {
 		final SymbolNode opNode = expr.getOperator();
-		final UniqueString opName = opNode.getName();
+		final UniqueString opName = opNode.getNameUS();
 		final int opcode = BuiltInOPs.getOpCode(opName);
 
 		if (BuiltInOPs.isTemporal(opcode)) {

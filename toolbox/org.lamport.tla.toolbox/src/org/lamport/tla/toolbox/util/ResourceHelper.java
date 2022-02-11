@@ -1101,7 +1101,7 @@ public class ResourceHelper {
              * Top level nodes can be ones imported from extended modules.
              * We only want to look at those in the module.
              */
-            if (topLevelNodes[i].getLocation().source().equals(module.getName().toString()))
+            if (topLevelNodes[i].getLocation().source().equals(module.getNameUS().toString()))
             {
                 /*
                  * If the level node is a use or hide node search to see if the
@@ -1782,7 +1782,7 @@ public class ResourceHelper {
             OpDeclNode[] decls = modNode.getConstantDecls() ;
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getNameUS().toString()) ;
                 }
             }
             
@@ -1790,7 +1790,7 @@ public class ResourceHelper {
             decls = modNode.getVariableDecls() ;
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getNameUS().toString()) ;
                 }
             }
         }
@@ -1817,7 +1817,7 @@ public class ResourceHelper {
             OpDefNode[] decls = modNode.getOpDefs();
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getNameUS().toString()) ;
                 } 
             }
             
@@ -1825,7 +1825,7 @@ public class ResourceHelper {
             ThmOrAssumpDefNode[] tdecls = module.getThmOrAssDefs();
             for (int i = 0; i < tdecls.length; i++) {
                 if ((modNode != module) || earlierLine(tdecls[i].stn.getLocation(), loc)) {
-                    result.add(tdecls[i].getName().toString()) ;
+                    result.add(tdecls[i].getNameUS().toString()) ;
                 } 
             }
         };
@@ -1952,7 +1952,7 @@ public class ResourceHelper {
             OpDeclNode[] decls = modNode.getConstantDecls() ;
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getNameUS().toString()) ;
                 }
             }
             
@@ -1960,7 +1960,7 @@ public class ResourceHelper {
             decls = modNode.getVariableDecls() ;
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getNameUS().toString()) ;
                 }
             }
         }
@@ -1987,7 +1987,7 @@ public class ResourceHelper {
             OpDefNode[] decls = modNode.getOpDefs();
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getNameUS().toString()) ;
                 } 
             }
             
@@ -1995,7 +1995,7 @@ public class ResourceHelper {
             ThmOrAssumpDefNode[] tdecls = module.getThmOrAssDefs();
             for (int i = 0; i < tdecls.length; i++) {
                 if ((modNode != module) || earlierLine(tdecls[i].stn.getLocation(), loc)) {
-                    result.add(tdecls[i].getName().toString()) ;
+                    result.add(tdecls[i].getNameUS().toString()) ;
                 } 
             }
         };

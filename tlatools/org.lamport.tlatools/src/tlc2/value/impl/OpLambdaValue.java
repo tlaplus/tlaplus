@@ -239,7 +239,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean ignored) {
     try {
-      String opName = this.opDef.getName().toString();
+      String opName = this.opDef.getNameUS().toString();
       return sb.append("<Operator ").append(opName).append(">");
     }
     catch (RuntimeException | OutOfMemoryError e) {

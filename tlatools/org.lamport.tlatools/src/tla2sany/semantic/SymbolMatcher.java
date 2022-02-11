@@ -58,12 +58,12 @@ public interface SymbolMatcher {
 				// looping over matchTypes.
 				return false;
 			}
-			if (aSymbol.getKind() == ASTConstants.BuiltInKind && aSymbol.getName().toString().startsWith("$")) {
+			if (aSymbol.getKind() == ASTConstants.BuiltInKind && aSymbol.getNameUS().toString().startsWith("$")) {
 				// Do not match internal built-in operators.
 				return false;
 			}
 
-			final String symbolName = aSymbol.getName().toString();
+			final String symbolName = aSymbol.getNameUS().toString();
 			if (matchCaseSensitive() && !symbolName.startsWith(getPrefix())) {
 				return false;
 			} else if (!symbolName.toLowerCase().startsWith(getPrefix().toLowerCase())){

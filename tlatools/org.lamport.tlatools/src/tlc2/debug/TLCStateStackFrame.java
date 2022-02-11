@@ -226,12 +226,12 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		if (!isPrimeScope(path)) {
 			SymbolNode var = tool.getVar(path.getFirst(), ctxt, false, tool.getId());
 			if (var != null) {
-				final IValue value = getS().lookup(var.getName());
+				final IValue value = getS().lookup(var.getNameUS());
 				if (value != null) {
-					return getVariable(value, var.getName());
+					return getVariable(value, var.getNameUS());
 				} else {
 					Variable v = new Variable();
-					v.setName(var.getName().toString());
+					v.setName(var.getNameUS().toString());
 					v.setValue(DebuggerValue.NOT_EVALUATED);
 					return v;
 				}
@@ -252,7 +252,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		for (SemanticNode semanticNode : path) {
 			if (semanticNode instanceof OpApplNode) {
 				OpApplNode oan = (OpApplNode) semanticNode;
-				if (ASTConstants.OP_prime == oan.getOperator().getName()) {
+				if (ASTConstants.OP_prime == oan.getOperator().getNameUS()) {
 					return true;
 				}
 			}

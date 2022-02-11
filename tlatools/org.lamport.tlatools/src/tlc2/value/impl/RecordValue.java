@@ -130,7 +130,7 @@ public class RecordValue extends Value implements Applicable {
 		this.values = new Value[vars.length];
 
 		for (int i = 0; i < vars.length; i++) {
-			this.names[i] = vars[i].getName();
+			this.names[i] = vars[i].getNameUS();
 			this.values[i] = (Value) state.lookup(this.names[i]); 
 		}
 
@@ -148,7 +148,7 @@ public class RecordValue extends Value implements Applicable {
 		this.values[0] = new RecordValue(action);
 		
 		for (int i = 0; i < vars.length; i++) {
-			this.names[i+1] = vars[i].getName();
+			this.names[i+1] = vars[i].getNameUS();
 			this.values[i+1] = (Value) state.lookup(this.names[i+1]); 
 		}
 		
@@ -180,7 +180,7 @@ public class RecordValue extends Value implements Applicable {
 
 		for (int i = 0; i < vars.length; i++) {
 			final int j = i * 2;
-			final UniqueString var = vars[i].getName();
+			final UniqueString var = vars[i].getNameUS();
 
 			this.names[j] = UniqueString.of(var + " ");
 			this.names[j+1] = UniqueString.of(var + "'");
@@ -734,7 +734,7 @@ public class RecordValue extends Value implements Applicable {
 			final TLCState state = TLCState.Empty.createEmpty();
 			final OpDeclNode[] vars = state.getVars();
 			for (int i = 0; i < vars.length; i++) {
-				final UniqueString name = vars[i].getName();
+				final UniqueString name = vars[i].getNameUS();
 				int rlen = this.names.length;
 				for (int j = 0; j < rlen; j++) {
 					if (name.equals(this.names[j])) {

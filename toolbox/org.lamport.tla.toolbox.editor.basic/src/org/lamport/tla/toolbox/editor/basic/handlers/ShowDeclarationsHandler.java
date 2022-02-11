@@ -231,8 +231,8 @@ public class ShowDeclarationsHandler extends AbstractHandler implements IHandler
             // opdef nodes, ThmOrAssumpDefNodes.
             final Collection<SymbolNode> symbols = module.getSymbols(matcher.setPrefix(filterPrefix.toLowerCase()));
             for (SymbolNode symbolNode : symbols) {
-                list.add(symbolNode.getName().toString());
-                list.setData(symbolNode.getName().toString(), symbolNode);
+                list.add(symbolNode.getNameUS().toString());
+                list.setData(symbolNode.getNameUS().toString(), symbolNode);
 			}
         }
 

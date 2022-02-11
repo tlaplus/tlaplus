@@ -130,7 +130,7 @@ abstract class Spec
             OpApplNode expr1 = (OpApplNode) expr;
             SymbolNode opNode = expr1.getOperator();
 
-            if (BuiltInOPs.getOpCode(opNode.getName()) == OPCODE_prime)
+            if (BuiltInOPs.getOpCode(opNode.getNameUS()) == OPCODE_prime)
             {
                 return this.getVar(expr1.getArgs()[0], c, cutoff, toolId);
             }
@@ -362,7 +362,7 @@ abstract class Spec
 		// clash between variable in refined spec and operator in instantiated spec. See
 		// releated test in Github362.java.
         if (opNode.getKind() != UserDefinedOpKind) {
-			result = s.lookup(opNode.getName());
+			result = s.lookup(opNode.getNameUS());
 			if (result != null) {
 				return result;
 			}
@@ -475,7 +475,7 @@ abstract class Spec
     {
         ExprOrOpArgNode[] args = pred.getArgs();
         SymbolNode opNode = pred.getOperator();
-        int opcode = BuiltInOPs.getOpCode(opNode.getName());
+        int opcode = BuiltInOPs.getOpCode(opNode.getNameUS());
 
         switch (opcode) {
         case OPCODE_fa: // FcnApply
@@ -501,7 +501,7 @@ abstract class Spec
         case OPCODE_eq:   // x' = 42
         case OPCODE_in: { // x' \in S (eq case "falls through")
             SymbolNode var = this.getPrimedVar(args[0], c, false);
-            if (var != null && var.getName().getVarLoc() != -1)
+            if (var != null && var.getNameUS().getVarLoc() != -1)
             {
                 tbl.put(pred, 0);
             }
@@ -568,7 +568,7 @@ abstract class Spec
         {
             OpApplNode expr1 = (OpApplNode) expr;
             SymbolNode opNode = expr1.getOperator();
-            UniqueString opName = opNode.getName();
+            UniqueString opName = opNode.getNameUS();
             int opcode = BuiltInOPs.getOpCode(opName);
 
             if (opName.getVarLoc() >= 0)

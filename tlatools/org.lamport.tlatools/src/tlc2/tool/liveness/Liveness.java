@@ -172,7 +172,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		ExprOrOpArgNode[] args = expr.getArgs();
 		int alen = args.length;
 		SymbolNode opNode = expr.getOperator();
-		int opcode = BuiltInOPs.getOpCode(opNode.getName());
+		int opcode = BuiltInOPs.getOpCode(opNode.getNameUS());
 
 		if (opcode == 0) {
 			// This is a user-defined operator with one exception: it may
@@ -182,7 +182,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 
 			if (val instanceof OpDefNode) {
 				OpDefNode opDef = (OpDefNode) val;
-				opcode = BuiltInOPs.getOpCode(opDef.getName());
+				opcode = BuiltInOPs.getOpCode(opDef.getNameUS());
 				if (opcode == 0) {
 					try {
 						FormalParamNode[] formals = opDef.getParams();

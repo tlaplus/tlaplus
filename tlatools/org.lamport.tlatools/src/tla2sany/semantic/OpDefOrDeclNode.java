@@ -78,7 +78,7 @@ public abstract class OpDefOrDeclNode extends SymbolNode {
     return super.toString(depth) 
            + "  arity: " + arity 
            + "  orgDefInModule: " + (originallyDefinedInModule != null 
-                             ? originallyDefinedInModule.getName().toString() 
+                             ? originallyDefinedInModule.getNameUS().toString() 
                              : "<null>" );
   }
 

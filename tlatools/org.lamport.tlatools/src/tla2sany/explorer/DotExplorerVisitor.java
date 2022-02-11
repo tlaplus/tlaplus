@@ -65,7 +65,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 		this.rootModule = rootModule;
 		this.table = new NoopTable<>();
 		try {
-			this.writer = new PrintWriter(FileUtil.newBFOS(rootModule.getName() + ".dot"));
+			this.writer = new PrintWriter(FileUtil.newBFOS(rootModule.getNameUS() + ".dot"));
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		}
@@ -85,7 +85,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 			final ModuleNode mn = (ModuleNode) exploreNode;
 			this.writer.append(Integer.toString(mn.hashCode()));
 			this.writer.append(" [label=\"");
-			this.writer.append(mn.getName().toString());
+			this.writer.append(mn.getNameUS().toString());
 			this.writer.append("\",style = filled]");
 			this.writer.append(";\n");
 			
@@ -95,7 +95,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 			this.writer.append(Integer.toString(sn.hashCode()));
 			this.writer.append(type2format.getOrDefault(exploreNode.getClass(), " [") + "label=\"");
 			if (exploreNode instanceof OpDefNode) {
-				this.writer.append(toDot(((OpDefNode) sn).getName().toString()));
+				this.writer.append(toDot(((OpDefNode) sn).getNameUS().toString()));
 			} else {
 				this.writer.append(toDot(sn.getTreeNode().getHumanReadableImage()));
 			}

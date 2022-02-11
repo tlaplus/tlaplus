@@ -109,7 +109,7 @@ public class ExternalModuleTable implements ExploreNode {
   }
 
   public final Context getContextForRootModule() {
-	  return getContext(getRootModule().getName());
+	  return getContext(getRootModule().getNameUS());
   }
   
   /**

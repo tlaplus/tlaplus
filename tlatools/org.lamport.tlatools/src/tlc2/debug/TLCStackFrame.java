@@ -187,7 +187,7 @@ public class TLCStackFrame extends StackFrame {
 		if (!val.hasSource()) {
 			val.setSource(expr);
 		}
-		return getVariable(val, expr.getName());
+		return getVariable(val, expr.getNameUS());
 	}
 
 	protected Variable getVariable(final IValue value, String varName) {
@@ -287,7 +287,7 @@ public class TLCStackFrame extends StackFrame {
 						vars.add(variable);
 					} else if (val instanceof RuntimeException) {
 						final Variable variable = new Variable();
-						variable.setName(c.getName().getName().toString());
+						variable.setName(c.getName().getNameUS().toString());
 						variable.setValue(c.getValue().toString());
 						final RuntimeException re = (RuntimeException) val;
 						variable.setType(re.getMessage());
@@ -325,7 +325,7 @@ public class TLCStackFrame extends StackFrame {
 					// If there is only one module, do *not* organize the constants in the variable
 					// view by modules. In other words, constants get moved up by one level in the
 					// variable view iff there is only one module.
-					e.getValue().entrySet().stream().map(c -> getVariable((Value) c.getValue(), c.getKey().getName()))
+					e.getValue().entrySet().stream().map(c -> getVariable((Value) c.getValue(), c.getKey().getNameUS()))
 							.forEach(var -> vars.add(var));
 				} else {
 					final ModuleNode module = e.getKey();

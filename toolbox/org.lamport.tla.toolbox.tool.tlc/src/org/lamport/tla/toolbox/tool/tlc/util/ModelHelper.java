@@ -262,7 +262,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             String[] params = new String[constantDecls[i].getNumberOfArgs()];
             // pre-fill the empty array
             Arrays.fill(params, EMPTY_STRING);
-            Assignment assign = new Assignment(constantDecls[i].getName().toString(), params, EMPTY_STRING);
+            Assignment assign = new Assignment(constantDecls[i].getNameUS().toString(), params, EMPTY_STRING);
             constants.add(assign);
         }
         return constants;
@@ -279,7 +279,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         OpDeclNode[] constantDecls = moduleNode.getConstantDecls();
         for (int i = 0; i < constantDecls.length; i++)
         {
-            if (assignment.getLabel().equals(constantDecls[i].getName().toString())
+            if (assignment.getLabel().equals(constantDecls[i].getNameUS().toString())
                     && assignment.getParams().length == constantDecls[i].getNumberOfArgs())
             {
                 return true;
@@ -308,7 +308,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         OpDeclNode[] variableDecls = moduleNode.getVariableDecls();
         for (int i = 0; i < variableDecls.length; i++)
         {
-            buffer.append(variableDecls[i].getName().toString());
+            buffer.append(variableDecls[i].getNameUS().toString());
             if (i != variableDecls.length - 1)
             {
                 buffer.append(", ");
@@ -327,7 +327,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
         String[] returnVal = new String[variableDecls.length];
         for (int i = 0; i < variableDecls.length; i++)
         {
-            returnVal[i] = variableDecls[i].getName().toString();
+            returnVal[i] = variableDecls[i].getNameUS().toString();
         }
         return returnVal;
     }
@@ -362,7 +362,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
             String[] params = new String[operatorDefinitions[i].getNumberOfArgs()];
             // pre-fill the empty array
             Arrays.fill(params, "");
-            Assignment assign = new Assignment(operatorDefinitions[i].getName().toString(), params, "");
+            Assignment assign = new Assignment(operatorDefinitions[i].getNameUS().toString(), params, "");
             operations.add(assign);
         }
         return operations;
@@ -891,7 +891,7 @@ public class ModelHelper implements IModelConfigurationConstants, IModelConfigur
     	OpDefNode[] opDefNodes = specObj.getExternalModuleTable().getRootModule().getOpDefs();
     	for (int j = 0; j < opDefNodes.length; j++)
     	{
-    		if (opDefNodes[j].getName().toString().equals(name))
+    		if (opDefNodes[j].getNameUS().toString().equals(name))
     		{
     			return opDefNodes[j];
     		}

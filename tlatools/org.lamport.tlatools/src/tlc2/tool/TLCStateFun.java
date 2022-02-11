@@ -54,7 +54,7 @@ public final class TLCStateFun extends TLCState {
   
   public final IValue lookup(UniqueString var) {
     for (TLCStateFun cur = this; cur != Empty; cur = cur.next) {
-      if (var == cur.name.getName()) return cur.value;
+      if (var == cur.name.getNameUS()) return cur.value;
     }
     return null;
   }
@@ -110,13 +110,13 @@ public final class TLCStateFun extends TLCState {
   public final String toString() {
     StringBuffer sb = new StringBuffer("[");
     if (this != Empty) {
-      sb.append(this.name.getName().toString());
+      sb.append(this.name.getNameUS().toString());
       sb.append(" -> ");
       sb.append(this.value.toString());
 
       for (TLCStateFun cur = this.next; cur != Empty; cur = cur.next) {
 	sb.append(", ");
-	sb.append(cur.name.getName().toString());
+	sb.append(cur.name.getNameUS().toString());
 	sb.append("->");
 	sb.append(cur.value);
       }

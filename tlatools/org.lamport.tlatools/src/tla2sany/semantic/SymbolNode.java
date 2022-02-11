@@ -37,6 +37,7 @@ public abstract class SymbolNode extends LevelNode {
   }
 
   /**
+   * @deprecated
    * This method returns the UniqueString for the printable name of
    * the symbol being declared or defined. For example, if this node
    * is an operator definition:
@@ -45,7 +46,9 @@ public abstract class SymbolNode extends LevelNode {
    *
    * getName() is the UniqueString for "Foo".
    */
-  public final UniqueString getName() { return this.name; }
+  public final UniqueString getNameUS() { return this.name; }
+  
+  public final String getName() { return this.name.toString(); }
 
   /* Returns the arity of the operator named by the symbol.  */
   public abstract int getArity();
@@ -75,7 +78,7 @@ public abstract class SymbolNode extends LevelNode {
   }
   
   public String getSignature() {
-	  return getName().toString();
+	  return getNameUS().toString();
   }
 
   /**
@@ -132,7 +135,7 @@ public abstract class SymbolNode extends LevelNode {
    */
   public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context) {
     if (!context.isTop_level_entry())
-      throw new IllegalArgumentException("Exporting definition "+getName()+" ref "+getNodeRef()+" twice!");
+      throw new IllegalArgumentException("Exporting definition "+getNameUS()+" ref "+getNodeRef()+" twice!");
     context.resetTop_level_entry();
     try {
       Element e = getSymbolElement(doc, context);

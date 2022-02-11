@@ -43,7 +43,7 @@ public final class Action implements ToolGlobals, Serializable {
   public Action(SemanticNode pred, Context con, OpDefNode opDef) {
 	  // opDef null when action not declared, i.e. Spec == x = 0 /\ ...
 	  // See test64 and test64a and others.
-	  this(pred, con, opDef != null ? opDef.getName() : UNNAMED_ACTION);
+	  this(pred, con, opDef != null ? opDef.getNameUS() : UNNAMED_ACTION);
 	  this.opDef = opDef;
   }
 
