@@ -4,14 +4,17 @@
 
 package tlc2.tool;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import util.UniqueString;
 
 public class BuiltInOPs implements ToolGlobals {
 
-  private static int[] OpCodeTable;
+  private static Map<String,Integer> OpCodeTable;
 
   static {
-    OpCodeTable = new int[200];
+    OpCodeTable = new HashMap<String,Integer>(200);
     
     /* Operators */
     put(OP_aa,   OPCODE_aa);
@@ -83,27 +86,23 @@ public class BuiltInOPs implements ToolGlobals {
     put(OP_prime,    OPCODE_prime);
   }
 
+  /** @deprecated */
   private static void put(UniqueString op, int opcode) {
-    int loc = op.getTok();
-    if (loc >= OpCodeTable.length) {
-      int len1 = loc + 20;
-      int[] OpCodeTable1 = new int[len1];
-      for (int i = 0; i < OpCodeTable.length; i++) {
-	OpCodeTable1[i] = OpCodeTable[i];
-      }
-      OpCodeTable = OpCodeTable1;
-    }
-    OpCodeTable[loc] = opcode;
+	put(op.toString(),opcode);
+  }
+  
+  private static void put(String op, int opcode) {
+	OpCodeTable.put(op.toString(), Integer.valueOf(opcode));
   }
 	
   /* Return the opcode for op. If it is not builtin, return 0. */
-  public static int getOpCode(UniqueString op) {
-    int loc = op.getTok();
-    return (loc < OpCodeTable.length) ? OpCodeTable[loc] : 0;
+  public static int getOpCode(String op) {
+	  return OpCodeTable.containsKey(op) ? OpCodeTable.get(op).intValue() : 0;
   }
-
-  public static int getOpCode(int loc) {
-    return (loc < OpCodeTable.length) ? OpCodeTable[loc] : 0;
+  
+  /** @deprecated  */
+  public static int getOpCode(UniqueString op) {
+    return getOpCode(op.toString());
   }
 
   public static boolean isTemporal(int opcode) {
