@@ -183,11 +183,11 @@ public final class Configuration implements ConfigConstants {
     }
    Operator op;
    if ( t == null ) {
-     op = new Operator( UniqueString.uniqueStringOf(s), low, high, assoc, kind );
+     op = new Operator(s, low, high, assoc, kind);
    } else {
-     op = new Operator( UniqueString.uniqueStringOf(t.image), low, high, assoc, kind );
+     op = new Operator(t.image, low, high, assoc, kind );
    }
-   Operators.addOperator( UniqueString.uniqueStringOf(s), op );
+   Operators.addOperator(s, op);
   }
 
   static final public void OpSynonym() throws ParseException {
@@ -195,8 +195,7 @@ public final class Configuration implements ConfigConstants {
     jj_consume_token(SYNONYM);
     t1 = jj_consume_token(OPID);
     t2 = jj_consume_token(OPID);
-    Operators.addSynonym( UniqueString.uniqueStringOf(t1.image), 
-                          UniqueString.uniqueStringOf(t2.image) );
+    Operators.addSynonym(t1.image, t2.image);
   }
 
   static final public void OpNull(String s) throws ParseException {

@@ -31,16 +31,6 @@ public class Operator implements tla2sany.st.SyntaxTreeConstants {
   public Operator(String id, int l, int h, int a, int f) {
     Id = id; Low = l; High = h; Associativity = a; Fix = f;
   }
-  /** @deprecated */
-  public Operator(UniqueString id, int l, int h, int a, int f) {
-    this(id.toString(),l,h,a,f);
-  }
-
-  // TODO appears to be unused
-  /** @deprecated */
-  public Operator clone ( UniqueString name ) {
-    return new Operator( name, Low, High, Associativity, Fix);
-  }
 
   public String toString() {
   switch ( Fix ) {
