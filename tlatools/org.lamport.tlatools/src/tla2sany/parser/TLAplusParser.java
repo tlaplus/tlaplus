@@ -2311,7 +2311,6 @@ expecting = "COMMA or )";
   SyntaxTreeNode sn[] = null;
   int kind;
   Token t;
-  UniqueString n;
   bpa("Op. Symbol Declaration");
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case op_76:
@@ -2326,8 +2325,8 @@ expecting = "COMMA or )";
     case op_115:
     case op_116:
       // LOOKAHEAD( <OpSymbol>, { isPrefixDeclOp( getToken(1) )  } )
-            tn = NonExpPrefixOp();
-        kind = N_PrefixDecl; n = lastOp.getUS();
+        tn = NonExpPrefixOp();
+        kind = N_PrefixDecl; 
         sn = new SyntaxTreeNode[2]; sn[0] = tn;
 expecting = "_";
       t = jj_consume_token(US);
@@ -2440,7 +2439,7 @@ expecting = "infix or postfix operator";
       case op_118:
       case op_119:
         tn = InfixOp();
-          kind = N_InfixDecl; n = lastOp.getUS();
+          kind = N_InfixDecl; 
           sn = new SyntaxTreeNode[3]; sn[1] = tn;
           sn[0] =  new SyntaxTreeNode(mn, t);
 expecting = "_";
@@ -2452,7 +2451,7 @@ expecting = "_";
       case op_69:
       case op_70:
         tn = PostfixOp();
-          kind = N_PostfixDecl; n = lastOp.getUS();
+          kind = N_PostfixDecl;
           sn = new SyntaxTreeNode[2]; sn[1] = tn;
           sn[0] =  new SyntaxTreeNode(mn, t);
         break;

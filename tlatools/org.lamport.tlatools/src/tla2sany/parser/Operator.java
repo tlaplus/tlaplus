@@ -90,13 +90,6 @@ public class Operator implements tla2sany.st.SyntaxTreeConstants {
   static final boolean samePrec( Operator left, Operator right ) {
     return ( (left.High == right.High) && (left.Low == right.Low) );
   }
-
-  /**
-   * @deprecated
-   */
-  public final UniqueString getUS() {
-    return UniqueString.uniqueStringOf(Id);
-  }
   
   public final String getIdentifier() {
 	return Id;

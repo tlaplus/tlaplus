@@ -111,7 +111,7 @@ public class Operators {
   static public UniqueString resolveSynonym( UniqueString name ) {
     Operator n = (Operator) DefinitionTable.get( name.toString() );
     if ( n == null ) return name;
-    else return n.getUS();
+    else return UniqueString.uniqueStringOf(n.getIdentifier());
   }
 
   static public void addBuiltinAssoc( String symbol, String builtin ) {
