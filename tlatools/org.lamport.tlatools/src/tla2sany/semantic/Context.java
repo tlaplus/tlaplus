@@ -193,22 +193,46 @@ public class Context implements ExploreNode {
    * Returns symbol node associated with "name" in this Context, if
    * one exists; else returns null
    */
-  public SymbolNode getSymbol(Object name) {
+  private SymbolNode getSymbolInternal(Object name) {
     Pair r = (Pair)table.get(name);
     if (r != null) {
       return r.info;
     }
     return null;
   }
+  
+  /** @deprecated */
+  public SymbolNode getSymbol(UniqueString name) {
+	  return this.getSymbolInternal(name.toString());
+  }
+  
+  public SymbolNode getSymbol(String name) {
+	  return this.getSymbolInternal(name);
+  }
+  
+  public SymbolNode getSymbol(SymbolTable.ModuleName name) {
+	  return this.getSymbolInternal(name);
+  }
 
   /**
-   * Adds a (UniqueString, SymbolNode) pair to this context; no-op if
+   * Adds a (String, SymbolNode) pair to this context; no-op if
    * already present
-   * @param name the UniqueString representing the string, see {@link UniqueString#uniqueStringOf(String)}
+   * @param name the String representing the string
    * @param s the symbol node to be put in
    */
-  public void addSymbolToContext(Object name, SymbolNode s) {
-    table.put(name, new Pair(s));    // Links to & updates lastPair
+  public void addSymbolToContext(String name, SymbolNode s) {
+	  table.put(name, new Pair(s));    // Links to & updates lastPair
+  }
+  
+  /**
+   * @deprecated
+   */
+  public void addSymbolToContext(UniqueString name, SymbolNode s) {
+	  this.addSymbolToContext(name.toString(), s);
+  }
+  
+  public void addSymbolToContext(SymbolTable.ModuleName name, SymbolNode s) {
+	  table.put(name, new Pair(s));    // Links to & updates lastPair
   }
 
 
@@ -217,8 +241,19 @@ public class Context implements ExploreNode {
    * @param name the UniqueString representing the string, see {@link UniqueString#uniqueStringOf(String)}
    * @return true iff the UniqueString provided occurs as a key in the symbol table
    */
-  public boolean occurSymbol(Object name) {
-    return table.containsKey(name);
+  public boolean occurSymbol(SymbolTable.ModuleName name) {
+	  return table.containsKey(name);
+  }
+  
+  public boolean occurSymbol(String name) {
+	  return table.containsKey(name);
+  }
+
+  /**
+   * @deprecated
+   */
+  public boolean occurSymbol(UniqueString name) {
+	  return this.occurSymbol(name.toString());
   }
 
   /**
@@ -382,9 +417,9 @@ public class Context implements ExploreNode {
 			if (!sn.isLocal()) {
 				Object sName;
 				if (sn instanceof ModuleNode) {
-					sName = new SymbolTable.ModuleName(sn.getNameUS());
+					sName = new SymbolTable.ModuleName(sn.getName());
 				} else {
-					sName = sn.getNameUS();
+					sName = sn.getName();
 				}
 
 				if (!table.containsKey(sName)) {
@@ -455,7 +490,8 @@ public class Context implements ExploreNode {
 	current.link = new Pair(null,p.info); // Note: causes sharing of reference in link.info
         current = current.link;
       }
-      dup.table.put(current.info.getNameUS(), current);
+      // TODO: check whether this leads to bugs if current.info is a module (if that is possible)
+      dup.table.put(current.info.getName(), current);
       p = p.link;
     }
     return dup;
@@ -489,7 +525,7 @@ public class Context implements ExploreNode {
 
     Pair p = lastPair;
     while (p != null) {
-      UniqueString key = p.info.getNameUS();
+      String key = p.info.getName();
 
       // If b is false, don't bother printing the initialContext--too long--
       // and, don't bother printing elements of the Naturals module either
