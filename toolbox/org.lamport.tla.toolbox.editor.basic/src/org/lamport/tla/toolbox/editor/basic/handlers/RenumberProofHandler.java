@@ -158,7 +158,7 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
             int stepNumber = 1;
             for (int i = 0; i < steps.length; i++)
             {
-                UniqueString uname = null;
+                String uname = null;
                 if (steps[i] instanceof TheoremNode)
                 {
                     // check if the step has a leaf proof that uses <*>
@@ -193,7 +193,7 @@ public class RenumberProofHandler extends AbstractHandler implements IHandler
                 }
                 if (uname != null)
                 {
-                    String oldName = uname.toString();
+                    String oldName = uname;
                     
                     // Following use of the preference added by LL on 25 July 2013
                     // First set rename to true iff the preferences say that the

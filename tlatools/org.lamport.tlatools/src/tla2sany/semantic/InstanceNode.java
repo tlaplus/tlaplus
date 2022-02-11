@@ -47,11 +47,11 @@ public class InstanceNode extends LevelNode {
    *  return some fields.
    */
 
-  UniqueString      name;
+  String      name;
      // The name of this instance, e.g. "I" in the example above;
      //   null if this is an unnamed instance.
 
-  public UniqueString getName() {
+  public String getName() {
       return name ;
   }
   FormalParamNode[] params;
@@ -90,8 +90,8 @@ public class InstanceNode extends LevelNode {
    * a level (like <9>) rather than a complete step number.
    * Added by LL on 6 June 2010.
    */
-  private UniqueString stepName = null;
-  public void setStepName(UniqueString stepName)
+  private String stepName = null;
+  public void setStepName(String stepName)
    {
     this.stepName = stepName;
    }
@@ -99,12 +99,12 @@ public class InstanceNode extends LevelNode {
   /**
    * @return the stepName
    */
-  public UniqueString getStepName()
+  public String getStepName()
    {
     return stepName;
    }
 
-  public InstanceNode(UniqueString name, boolean localness,
+  public InstanceNode(String name, boolean localness,
                       FormalParamNode[] params,
                       ModuleNode module, Subst[] substs, TreeNode stn) {
     super(InstanceKind, stn);

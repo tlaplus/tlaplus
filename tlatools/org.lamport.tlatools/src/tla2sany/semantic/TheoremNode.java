@@ -104,8 +104,8 @@ public class TheoremNode extends LevelNode {
   * Return the name of the theorem if it is a named theorem, else return   *
   * null.                                                                  *
   *************************************************************************/
-  public final UniqueString getName() {
-    return def == null ? null : def.getNameUS();
+  public final String getName() {
+    return def == null ? null : def.getName();
   }
 
   /* Level checking */

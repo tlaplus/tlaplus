@@ -4673,7 +4673,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		// Create a new InstanceNode to represent this INSTANCE stmt
 		// in the current module
-		InstanceNode inst = new InstanceNode(UniqueString.of(name), localness, args, instanceeModule, substIn.getSubsts(), treeNode);
+		InstanceNode inst = new InstanceNode(name, localness, args, instanceeModule, substIn.getSubsts(), treeNode);
 
 		// Append this new InstanceNode to the vector of InstanceNodes
 		// being accumulated for this module
@@ -5482,7 +5482,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			/*********************************************************************
 			 * Set stepNum to the step number, or null if its an unnumbered step. *
 			 *********************************************************************/
-			UniqueString stepNum = null;
+			String stepNum = null;
 			switch (stepNumSTN.getKind()) {
 			// LL: On 25 Feb 2010 I discovered the following comment here:
 			// XXXXXX xyz: need to add the following case
@@ -5491,11 +5491,11 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// comment that I didn't remove when I added the case to the code.
 			case TLAplusParserConstants.ProofImplicitStepLexeme:
 			case TLAplusParserConstants.ProofStepLexeme:
-				stepNum = stepNumSTN.getUS();
+				stepNum = stepNumSTN.getName();
 				break;
 			case TLAplusParserConstants.ProofStepDotLexeme:
 				String stNum = stepNumSTN.getName();
-				stepNum = UniqueString.uniqueStringOf(stNum.substring(0, stNum.indexOf(".")));
+				stepNum = stNum.substring(0, stNum.indexOf("."));
 				break;
 			default:
 				makePfNumNode = false;
@@ -5517,7 +5517,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 ********************************************************************/
 			ThmOrAssumpDefNode tadn = null;
 			if (stepNum != null) {
-				tadn = new ThmOrAssumpDefNode(stepNum.toString(), stepNumSTN);
+				tadn = new ThmOrAssumpDefNode(stepNum, stepNumSTN);
 			}
 			;
 
@@ -5943,9 +5943,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					if (isSuffices) {
 						tadn.setSuffices();
 					}
-					;
 				}
-				;
 				/***********************************************************************
 				 * Set proof to the proof, or to null if there is none. There is no * check made
 				 * to see if this is a kind of step that should have a * proof. Thus, adding a
@@ -5961,14 +5959,11 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					if (isAssumeProve && !isSuffices) {
 						symbolTable.pushContext(assumeContext);
 					}
-					;
 					proof = generateProof(stepPfSTN, cm);
 					if (isAssumeProve && !isSuffices) {
 						symbolTable.popContext();
 					}
-					;
 				}
-				;
 
 				/********************************************************************
 				 * For a SUFFICES ASSUME/PROVE, must make the ASSUME's declarations * visible
@@ -5980,11 +5975,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					numberOfPops++;
 					symbolTable.pushContext(assumeContext);
 				}
-				;
+
 				if (isAssumeProve) {
 					((AssumeProveNode) body).inProof = false;
 				}
-				;
 				/******************************************************************
 				 * For an ASSUME/PROVE, set the inProof field to false. *
 				 ******************************************************************/
@@ -5997,13 +5991,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				thm.suffices = isSuffices;
 				steps[i - offset] = thm;
 			}
-			; // switch
+            // switch
 			if (makePfNumNode) {
 				/*******************************************************************
 				 * Make an OpDefNode for the numbered step and add any label * declarations to
 				 * it. *
 				 *******************************************************************/
-				OpDefNode nodeMadeOnlyToBePutInSymbolTable = new OpDefNode(stepNum.toString(), pfNumNode, cm, symbolTable,
+				OpDefNode nodeMadeOnlyToBePutInSymbolTable = new OpDefNode(stepNum, pfNumNode, cm, symbolTable,
 						pfStepSTN);
 				nodeMadeOnlyToBePutInSymbolTable.setLabels(popLabelNodeSet());
 			}
@@ -6071,7 +6065,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * ASSUME/PROVE, SUFFICES, * and PROVE expression *
 		 ***********************************************************************/
 		errors.addAbort(stn.getLocation(), "Uses generateNumerable_Step");
-		UniqueString stepNum = null;
+		String stepNum = null;
 		TreeNode[] heirs = stn.heirs();
 		int nextTok = 0;
 		ThmOrAssumpDefNode tadn = null;
@@ -6767,7 +6761,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			cg = currentGoal;
 		}
 		;
-		LabelNode retVal = new LabelNode(stn, UniqueString.of(name), params, currentGoal, currentGoalClause, body, isAssumeProve);
+		LabelNode retVal = new LabelNode(stn, name, params, currentGoal, currentGoalClause, body, isAssumeProve);
 		retVal.setLabels(ht);
 		boolean ignore = formalParamsEqual(retVal);
 		/*********************************************************************

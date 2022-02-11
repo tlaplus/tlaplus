@@ -1874,7 +1874,7 @@ public class ResourceHelper {
                  && (   ! instances[i].getLocal()
                      || earlierLine(loc, infiniteLoc))){
                if (instances[i].getName() != null) {
-                   symbols.add(instances[i].getName().toString()) ;
+                   symbols.add(instances[i].getName()) ;
                } else {
                   // Testing on 9 Oct 2014 revealed that the following is unnecessary because
                   // the defined operators imported into a module M without renaming by an INSTANCE
@@ -2046,7 +2046,7 @@ public class ResourceHelper {
                  && (   ! instances[i].getLocal()
                      || earlierLine(loc, infiniteLoc))){
                if (instances[i].getName() != null) {
-                   symbols.add(instances[i].getName().toString()) ;
+                   symbols.add(instances[i].getName()) ;
                } else {
                   // Testing on 9 Oct 2014 revealed that the following is unnecessary because
                   // the defined operators imported into a module M without renaming by an INSTANCE

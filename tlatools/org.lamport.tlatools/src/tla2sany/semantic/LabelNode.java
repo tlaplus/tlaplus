@@ -60,7 +60,7 @@ public class LabelNode extends ExprNode
   /*************************************************************************
   * The fields.                                                            *
   *************************************************************************/
-  UniqueString name ;
+  String name ;
     /***********************************************************************
     * The name of the label                                                *
     ***********************************************************************/
@@ -126,7 +126,7 @@ public class LabelNode extends ExprNode
   * The constructor.                                                       *
   *************************************************************************/
   LabelNode(TreeNode tn,           // the syntax tree node
-            UniqueString nm,       // name
+            String nm,       // name
             FormalParamNode[] pms, // params
             ThmOrAssumpDefNode gl, // goal
             int  clause,           // goalClause
@@ -148,7 +148,7 @@ public class LabelNode extends ExprNode
   *************************************************************************/
   LabelNode(LevelNode /* ExprNode */ bdy) {
     super(LabelKind, SyntaxTreeNode.nullSTN);
-    this.name   = UniqueString.uniqueStringOf("nullLabelNode");
+    this.name   = "nullLabelNode";
     this.params = new FormalParamNode[0] ;
     this.arity  = 0 ;
     this.goal   = null ;
@@ -156,7 +156,7 @@ public class LabelNode extends ExprNode
    }
 
 
-  public UniqueString getName() {return this.name; }
+  public UniqueString getName() {return UniqueString.of(this.name); }
 
   /*************************************************************************
   * The following methods implement the OpDefOrLabel interface.            *
@@ -299,7 +299,7 @@ public class LabelNode extends ExprNode
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String ret = "\n*LabelNode: " + super.toString(depth);
-    ret += Strings.indent(2, "\nname: " + name.toString()) ;
+    ret += Strings.indent(2, "\nname: " + name) ;
     for (int i = 0; i < params.length; i++) {
       ret += Strings.indent(2,
                             "\nparam[" + i + "]:" +

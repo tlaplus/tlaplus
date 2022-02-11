@@ -57,9 +57,9 @@ public class UseOrHideNode extends LevelNode {
    * comparison efficient.
    * Added by LL on 6 June 2010.
    */
-  private UniqueString stepName = null;
+  private String stepName = null;
 
-    public void setStepName(UniqueString stepName)
+    public void setStepName(String stepName)
     {
         this.stepName = stepName;
     }
@@ -67,7 +67,7 @@ public class UseOrHideNode extends LevelNode {
     /**
      * @return the stepName
      */
-    public UniqueString getStepName()
+    public String getStepName()
     {
         return stepName;
     }
