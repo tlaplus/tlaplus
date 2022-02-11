@@ -405,6 +405,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public final String         getImage() { return image.toString(); }
 
+  /** @deprecated */
   public final UniqueString   getUS() { return image; }
 
   public final SyntaxTreeNode first() {

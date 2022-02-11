@@ -85,9 +85,14 @@ public class Operators {
   *************************************************************************/
   /** @deprecated */
   static public UniqueString resolveSynonym( UniqueString name ) {
-    Operator n = (Operator) DefinitionTable.get( name.toString() );
+    String ret = resolveSynonym(name.toString());
+    return UniqueString.uniqueStringOf(ret);
+  }
+
+  static public String resolveSynonym( String name ) {
+    Operator n = (Operator) DefinitionTable.get(name);
     if ( n == null ) return name;
-    else return UniqueString.uniqueStringOf(n.getIdentifier());
+    else return n.getIdentifier();
   }
 
   // TODO appears to be unused
