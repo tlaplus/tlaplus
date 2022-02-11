@@ -137,7 +137,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
   * The Constructor.                                                      *
   *************************************************************************/
   public ThmOrAssumpDefNode(
-           UniqueString name,       // The thm/assump name.
+           String name,       // The thm/assump name.
            boolean      thm,        // true if a theorem, false if an assump.
            LevelNode    exp,        // The body
            ModuleNode   oModNode,   // Name of module.
@@ -182,7 +182,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
   * not used when created a ThmOrAssumpDefNode by instantiation, so        *
   * getInstantitedFrom will be null for this object.                       *
   *************************************************************************/
-  public ThmOrAssumpDefNode(UniqueString name, TreeNode stn) {
+  public ThmOrAssumpDefNode(String name, TreeNode stn) {
     super(ThmOrAssumpDefKind, stn, name) ;
    }
 

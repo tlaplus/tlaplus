@@ -148,7 +148,7 @@ public class OpApplNodeWrapperTest {
 	private static class DummySymbolNode extends SymbolNode {
 
 		protected DummySymbolNode(String name) {
-			super(1, SyntaxTreeNode.nullSTN, UniqueString.uniqueStringOf(name));
+			super(1, SyntaxTreeNode.nullSTN, (name));
 		}
 
 		@Override

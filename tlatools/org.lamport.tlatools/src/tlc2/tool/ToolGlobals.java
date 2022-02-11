@@ -15,7 +15,7 @@ public interface ToolGlobals extends ASTConstants {
    * of the tools.
    */
   // SZ 11.04.2009: changed the method to the equivalent 
-  public static final OpDefNode EXCEPT_AT = new OpDefNode(UniqueString.uniqueStringOf("@"));
+  public static final OpDefNode EXCEPT_AT = new OpDefNode("@");
   
   /* Prefix operators */
   public static final UniqueString OP_lnot = UniqueString.uniqueStringOf("\\lnot");

@@ -325,7 +325,7 @@ public class ModuleNode extends SymbolNode {
     ***********************************************************************/
 
   // Invoked only in Generator
-  public ModuleNode(UniqueString us, Context ct, TreeNode stn) {
+  public ModuleNode(String us, Context ct, TreeNode stn) {
     super(ModuleKind, stn, us);
     this.ctxt = ct;
   }

@@ -44,7 +44,7 @@ public abstract class TLCStates {
 		for (int i = 0; i < numVars; i++) {
 			UniqueString us = UniqueString.uniqueStringOf("v" + Integer.toString(i));
 			us.setLoc(i);
-			variables[i] = new OpDeclNode(us, ASTConstants.VariableDeclKind, 1, 0, null, null, null);
+			variables[i] = new OpDeclNode(us.toString(), ASTConstants.VariableDeclKind, 1, 0, null, null, null);
 		}
 
 		// Initialize the empty state (variable declarations are static/final per TLC

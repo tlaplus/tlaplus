@@ -31,7 +31,7 @@ public class FormalParamNode extends SymbolNode {
     // the module in which this formal param was declared
 
   // Constructor
-  public FormalParamNode(UniqueString us, int ar, TreeNode stn,
+  public FormalParamNode(String us, int ar, TreeNode stn,
 			 SymbolTable symbolTable, ModuleNode mn) {
     super(FormalParamKind, stn, us);
     this.arity      = ar;

@@ -1603,7 +1603,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				/*******************************************************************
 				 * Set newpm to a "clone" of pm. *
 				 *******************************************************************/
-				FormalParamNode newpm = new FormalParamNode(pm.getNameUS(), pm.getArity(), pm.stn, null, cm);
+				FormalParamNode newpm = new FormalParamNode(pm.getName(), pm.getArity(), pm.stn, null, cm);
 
 				/*******************************************************************
 				 * Set eoag to the ExprOrOpArgNode constructed from newpm. *
@@ -1665,10 +1665,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			if (params.size() + substInPrefix.size() > 0) {
 				FormalParamNode[] temp2 = new FormalParamNode[curOpArgNode.getArity()];
 				for (int i = 0; i < temp2.length; i++) {
-					UniqueString temp3 = UniqueString.uniqueStringOf("NewParam" + i);
+					String temp3 = ("NewParam" + i);
 					temp2[i] = new FormalParamNode(temp3, // name
 							0, // arity
-							new SyntaxTreeNode(temp3), // syntax tree node
+							new SyntaxTreeNode(UniqueString.of(temp3)), // syntax tree node
 							null, // symbol table
 							cm); // module
 					params.addElement(temp2[i]);
@@ -1836,7 +1836,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 ***********************************************************************/
 		OpDefNode newLambda = null;
 		if (paramsArray.length > 0) {
-			newLambda = new OpDefNode(UniqueString.uniqueStringOf(S_lambda), // The operator name is "LAMBDA"
+			newLambda = new OpDefNode(S_lambda, // The operator name is "LAMBDA"
 					UserDefinedOpKind, // The node kind
 					paramsArray, // the array of formal parameters
 					false, // localness, which is meaningless
@@ -1945,7 +1945,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	// Constructor
 	public Generator(ExternalModuleTable moduleTable, Errors errs) {
 		nullParam = new FormalParamNode[0];
-		nullODN = new OpDefNode(UniqueString.uniqueStringOf("nullODN"));
+		nullODN = new OpDefNode("nullODN");
 		nullOAN = new OpApplNode(nullODN);
 		nullOpArg = new OpArgNode(UniqueString.uniqueStringOf("nullOpArg"));
 		nullLabelNode = new LabelNode(nullOAN);
@@ -1997,7 +1997,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		TreeNode[] ss = children[0].heirs(); // Array of heirs of the module header
 												// ss[1] is always the module name
 		String moduleName = ss[1].getImage(); // the module name
-		ModuleNode currentModule = new ModuleNode(ss[1].getUS(), context, treeNode);
+		ModuleNode currentModule = new ModuleNode(ss[1].getName(), context, treeNode);
 		currentModule.nestingLevel = moduleNestingLevel;
 		// if this is an internal module, add its ModuleNode to the end of
 		// the list of definitions for the parent
@@ -2186,15 +2186,15 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	// of the API.
 	private final void processVariables(TreeNode treeNodes[], ModuleNode cm) {
 		for (int lvi = 1; lvi < treeNodes.length; lvi += 2) {
-			String us = treeNodes[lvi].getName();
+			String name = treeNodes[lvi].getName();
 
-			if (us.equals(S_at)) {
+			if (name.equals(S_at)) {
 				errors.addError(treeNodes[lvi].getLocation(), "Attempted to declare '@' as a variable.");
 			}
 
 			// The next line has its side-effects in the constructor; in particular,
 			// the new OpDeclNode is placed in the symbolTble there.
-			new OpDeclNode(UniqueString.uniqueStringOf(us), VariableDeclKind, 1, 0, cm, symbolTable, treeNodes[lvi]);
+			new OpDeclNode(name, VariableDeclKind, 1, 0, cm, symbolTable, treeNodes[lvi]);
 		}
 	}
 
@@ -2217,21 +2217,21 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * declared. The * processRecursive method just uses the name and arity from the
 		 * * returned OpDeclNode. *
 		 ***********************************************************************/
-		String us = null;
+		String name = null;
 		int arity = 0;
 		TreeNode[] ss = treeNode.heirs();
 
 		if (treeNode.isKind(N_IdentDecl)) {
-			us = ss[0].getName();
+			name = ss[0].getName();
 			arity = (ss.length - 1) / 2;
 		} else if (treeNode.isKind(N_PrefixDecl)) {
-			us = ss[0].getName();
+			name = ss[0].getName();
 			arity = 1;
 		} else if (treeNode.isKind(N_InfixDecl)) {
-			us = ss[1].getName();
+			name = ss[1].getName();
 			arity = 2;
 		} else if (treeNode.isKind(N_PostfixDecl)) {
-			us = ss[1].getName();
+			name = ss[1].getName();
 			arity = 1;
 		} else {
 			errors.addError(treeNode.getLocation(), "Unknown parameter declaration `" + treeNode.getName() + "'.");
@@ -2248,8 +2248,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * declarations work with any synonym for an operator--e.g., * with both (+) and
 		 * \oplus. *
 		 **********************************************************************/
-		UniqueString str = UniqueString.uniqueStringOf(Operators.resolveSynonym(us));
-		return new OpDeclNode(str, declKind, declLevel, arity, cm, st, treeNode);
+		return new OpDeclNode(Operators.resolveSynonym(name), declKind, declLevel, arity, cm, st, treeNode);
 	}
 
 	private final void processParameters(TreeNode treeNodes[], ModuleNode cm) {
@@ -2282,7 +2281,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	 ************************************************************************/
 	private final void processOperator(TreeNode treeNode, Vector defs, ModuleNode cm) throws AbortException {
 		TreeNode syntaxTreeNode = treeNode;
-		UniqueString name = null;
+		String name = null;
 		int arity = 0;
 		boolean local = syntaxTreeNode.zero() != null;
 		TreeNode[] children = syntaxTreeNode.one();
@@ -2308,12 +2307,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					TreeNode sss[] = ss[lvi].heirs();
 					if (ss[lvi].isKind(N_IdentDecl)) {
 						// parameter is simple identifier
-						name = sss[0].getUS();
+						name = sss[0].getName();
 						arity = (sss.length - 1) / 2;
 					} else if (ss[lvi].isKind(N_InfixDecl)) {
 						// parameter is infix operator
 						// Call of Operators.resolveSynonym added by LL on 27 Mar 2013
-						name = sss[1].getUS();
+						name = sss[1].getName();
 
 						// Following added by LL on 27 Mar 2013
 						// to handle parameters like _(+)_
@@ -2322,7 +2321,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						arity = 2;
 					} else if (ss[lvi].isKind(N_PrefixDecl)) {
 						// parameter is prefix operator
-						name = sss[0].getUS();
+						name = sss[0].getName();
 						arity = 1;
 					} else {
 						// parameter must be postfix operator
@@ -2330,7 +2329,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						if (!ss[lvi].isKind(N_PostfixDecl)) {
 							throw new WrongInvocationException(MP.getMessage(EC.TLC_PARAMETER_MUST_BE_POSTFIX));
 						}
-						name = sss[1].getUS();
+						name = sss[1].getName();
 						arity = 1;
 					}
 					params[(lvi - 2) / 2] = new FormalParamNode(name, arity, ss[lvi], symbolTable, cm);
@@ -2339,33 +2338,33 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				// The operator has no arguments
 				params = new FormalParamNode[0];
 			}
-			name = ss[0].getUS();
+			name = ss[0].getName();
 		} else if (children[0].isKind(N_PrefixLHS)) { // operator is a prefix operator
 			// Process the parameter
 			params = new FormalParamNode[1];
-			params[0] = new FormalParamNode(ss[1].getUS(), 0, ss[1], symbolTable, cm);
+			params[0] = new FormalParamNode(ss[1].getName(), 0, ss[1], symbolTable, cm);
 
 			// Process the operator
-			name = Operators.resolveSynonym(ss[0].getUS());
+			name = Operators.resolveSynonym(ss[0].getName());
 		} else if (children[0].isKind(N_InfixLHS)) { // operator is an infix operator
 			params = new FormalParamNode[2];
 			// Process the first param
-			params[0] = new FormalParamNode(ss[0].getUS(), 0, ss[0], symbolTable, cm);
+			params[0] = new FormalParamNode(ss[0].getName(), 0, ss[0], symbolTable, cm);
 
 			// Process the second param
-			params[1] = new FormalParamNode(ss[2].getUS(), 0, ss[2], symbolTable, cm);
+			params[1] = new FormalParamNode(ss[2].getName(), 0, ss[2], symbolTable, cm);
 
 			// Process the operator
-			name = Operators.resolveSynonym(ss[1].getUS());
+			name = Operators.resolveSynonym(ss[1].getName());
 		} else if (children[0].isKind(N_PostfixLHS)) { // operator is a postfix operator
 			// Process the parameter
 			params = new FormalParamNode[1];
-			params[0] = new FormalParamNode(ss[0].getUS(), 0, ss[0], symbolTable, cm);
+			params[0] = new FormalParamNode(ss[0].getName(), 0, ss[0], symbolTable, cm);
 
 			// Process the operator
-			name = Operators.resolveSynonym(ss[1].getUS());
+			name = Operators.resolveSynonym(ss[1].getName());
 		} else {
-			errors.addError(children[0].getLocation(), "Unknown parameter declaration `" + children[0].getUS() + "'.");
+			errors.addError(children[0].getLocation(), "Unknown parameter declaration `" + children[0].getName() + "'.");
 		}
 
 		/***********************************************************************
@@ -2407,7 +2406,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					}
 					; // if
 					if (!paramsMatch) {
-						errors.addError(treeNode.getLocation(), "Definition of " + odn.getNameUS()
+						errors.addError(treeNode.getLocation(), "Definition of " + odn.getName()
 								+ " has different arity than " + "its RECURSIVE declaration.");
 					}
 					;
@@ -2420,13 +2419,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} // if (odn.letInLevel == curLevel)
 				else {
 					errors.addError(treeNode.getLocation(),
-							"Recursive operator " + name.toString() + " defined at wrong LET/IN level.");
+							"Recursive operator " + name + " defined at wrong LET/IN level.");
 					odn = null;
 				} // else
 			} // if (odn != null) ...
 			else {
 				errors.addError(treeNode.getLocation(),
-						"Operator " + name.toString() + " already defined or declared.");
+						"Operator " + name + " already defined or declared.");
 			}
 		} // if (symbolNode != null)
 
@@ -2449,8 +2448,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * This comment appears to be incorrect, because it looks like the * parameter
 			 * symbols were just popped off symbolTable. *
 			 ********************************************************************/
-			odn = new OpDefNode(name, UserDefinedOpKind, params, local, exp, cm, symbolTable, syntaxTreeNode, true,
-					null);
+			odn = new OpDefNode(name, UserDefinedOpKind, params, local, exp, cm, symbolTable, syntaxTreeNode, true, null);
 			symbolNode = odn;
 			/*******************************************************************
 			 * Keeping symbolNode for historical reasons--I'm too lazy to * rearrange the
@@ -2525,7 +2523,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				odna[lvi] = new FormalParamNode[sss.length / 2];
 
 				for (int lvj = 0; lvj < sss.length / 2; lvj++) {
-					odna[lvi][lvj] = new FormalParamNode(sss[2 * lvj + 1].getUS(), 0, sss[2 * lvj + 1], symbolTable,
+					odna[lvi][lvj] = new FormalParamNode(sss[2 * lvj + 1].getName(), 0, sss[2 * lvj + 1], symbolTable,
 							cm);
 				}
 			} else { // gotta be N_Identifier
@@ -2533,7 +2531,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				odna[lvi] = new FormalParamNode[(ss.length - 1) / 2];
 
 				for (int lvj = 0; lvj < (ss.length - 1) / 2; lvj++) {
-					odna[lvi][lvj] = new FormalParamNode(ss[2 * lvj].getUS(), 0, ss[2 * lvj], symbolTable, cm);
+					odna[lvi][lvj] = new FormalParamNode(ss[2 * lvj].getName(), 0, ss[2 * lvj], symbolTable, cm);
 				}
 			}
 		}
@@ -2571,7 +2569,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		symbolTable.pushContext(newContext);
 		processQuantBoundArgs(ss, 2, quants, tuples, domains, cm);
 
-		UniqueString name = ss[0].getUS();
+		String name = ss[0].getName();
 		SymbolNode symbolNode = symbolTable.resolveSymbol(name);
 
 		// This is in anticipation of the possibility that the function is
@@ -2611,7 +2609,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * defined operators. *
 		 ***********************************************************************/
 		if (symbolNode == null) {
-			odn = new OpDefNode(ss[0].getUS(), UserDefinedOpKind, nullParam, local, oan, cm, symbolTable,
+			odn = new OpDefNode(ss[0].getName(), UserDefinedOpKind, nullParam, local, oan, cm, symbolTable,
 					syntaxTreeNode, true, null);
 			setOpDefNodeRecursionFields(odn, cm);
 		} else {
@@ -2642,13 +2640,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} // if (odn.letInLevel == curLevel)
 				else {
 					errors.addError(treeNode.getLocation(),
-							"Recursive function " + name.toString() + " defined at wrong LET/IN level.");
+							"Recursive function " + name + " defined at wrong LET/IN level.");
 					odn = null;
 				} // else
 			} // if (odn != null) ...
 			else {
 				errors.addError(treeNode.getLocation(),
-						"Function name `" + name.toString() + "' already defined or declared.");
+						"Function name `" + name + "' already defined or declared.");
 			}
 		} // else (symbolNode != null)
 
@@ -3336,7 +3334,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	// InAssumeDummyNode as if it were declared within the ASSUME and then
 	// checking if it's defined where the []ASSUME is used.
 	private final static String S_InAssume = ("$$InAssume");
-	private final static OpDeclNode InAssumeDummyNode = new OpDeclNode(UniqueString.of(S_InAssume), 0, 0, 0, null, null, null);
+	private final static OpDeclNode InAssumeDummyNode = new OpDeclNode(S_InAssume, 0, 0, 0, null, null, null);
 
 	private final AssumeProveNode generateAssumeProve(TreeNode treeNode, ModuleNode cm)
 			/***********************************************************************
@@ -3547,13 +3545,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				syntaxTreeNode = children[1].heirs();
 				odn = new FormalParamNode[syntaxTreeNode.length / 2];
 				for (int lvj = 0; lvj < syntaxTreeNode.length / 2; lvj++) {
-					odn[lvj] = new FormalParamNode(syntaxTreeNode[2 * lvj + 1].getUS(), 0, syntaxTreeNode[2 * lvj + 1],
+					odn[lvj] = new FormalParamNode(syntaxTreeNode[2 * lvj + 1].getName(), 0, syntaxTreeNode[2 * lvj + 1],
 							symbolTable, cm);
 				}
 				tuple = true;
 			} else {
 				odn = new FormalParamNode[1];
-				odn[0] = new FormalParamNode(children[1].getUS(), 0, children[0], symbolTable, cm);
+				odn[0] = new FormalParamNode(children[1].getName(), 0, children[0], symbolTable, cm);
 				tuple = false;
 			}
 			pushFormalParams(odn);
@@ -3577,13 +3575,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				syntaxTreeNode = children[1].heirs();
 				odna[0] = new FormalParamNode[syntaxTreeNode.length / 2];
 				for (int lvj = 0; lvj < syntaxTreeNode.length / 2; lvj++) {
-					odna[0][lvj] = new FormalParamNode(syntaxTreeNode[2 * lvj + 1].getUS(), 0,
+					odna[0][lvj] = new FormalParamNode(syntaxTreeNode[2 * lvj + 1].getName(), 0,
 							syntaxTreeNode[2 * lvj + 1], symbolTable, cm);
 				}
 				tuples[0] = true;
 			} else {
 				odna[0] = new FormalParamNode[1];
-				odna[0][0] = new FormalParamNode(children[1].getUS(), 0, children[1], symbolTable, cm);
+				odna[0][0] = new FormalParamNode(children[1].getName(), 0, children[1], symbolTable, cm);
 				tuples[0] = false;
 			}
 			pushFormalParams(flattenParams(odna));
@@ -3672,7 +3670,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		symbolTable.pushContext(new Context(moduleTable, errors));
 
 		for (int lvi = 0; lvi < length; lvi++) {
-			odn[lvi] = new FormalParamNode(children[2 * lvi + 1].getUS(), 0, children[2 * lvi + 1], symbolTable, cm);
+			odn[lvi] = new FormalParamNode(children[2 * lvi + 1].getName(), 0, children[2 * lvi + 1], symbolTable, cm);
 		}
 
 		// now the expression
@@ -3724,12 +3722,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			TreeNode[] ss = children[1].heirs();
 			odna[0] = new FormalParamNode[ss.length / 2];
 			for (int lvj = 0; lvj < ss.length / 2; lvj++) {
-				odna[0][lvj] = new FormalParamNode(ss[2 * lvj + 1].getUS(), 0, ss[2 * lvj + 1], symbolTable, cm);
+				odna[0][lvj] = new FormalParamNode(ss[2 * lvj + 1].getName(), 0, ss[2 * lvj + 1], symbolTable, cm);
 			}
 			tuples[0] = true;
 		} else {
 			odna[0] = new FormalParamNode[1];
-			odna[0][0] = new FormalParamNode(children[1].getUS(), 0, children[1], symbolTable, cm);
+			odna[0][0] = new FormalParamNode(children[1].getName(), 0, children[1], symbolTable, cm);
 			tuples[0] = false;
 		}
 
@@ -3891,7 +3889,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				// the heirs of an ExceptComponent
 				TreeNode subSyntaxTreeNode[] = syntaxTreeNode[1 + excCompIx].heirs();
 
-				if (subSyntaxTreeNode[0].getUS().equals(S_brack)) {
+				if (subSyntaxTreeNode[0].getName().equals(S_brack)) {
 					// The first heir is "[" , indicates one or more fcn args;
 					// add expressions as function args
 					if (subSyntaxTreeNode.length > 3) {
@@ -4246,7 +4244,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			/*********************************************************************
 			 * Set params[i] to the FormalParamNode for the i-th formal * parameter. *
 			 *********************************************************************/
-			params[i] = new FormalParamNode(children[argPos].getUS(), 0, // parameters of a lambda expression
+			params[i] = new FormalParamNode(children[argPos].getName(), 0, // parameters of a lambda expression
 																			// have arity 0.
 					children[argPos], symbolTable, cm);
 			argPos = argPos + 2;
@@ -4280,8 +4278,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		/*********************************************************************
 		 * Restore original context. *
 		 *********************************************************************/
-		UniqueString str = UniqueString.of(S_lambda);
-		return new OpDefNode(str, // The operator name is "LAMBDA"
+		return new OpDefNode(S_lambda, // The operator name is "LAMBDA"
 				UserDefinedOpKind, // The node kind for a lambda expression
 				params, // the array of formal parameters
 				false, // localness, which is meaningless
@@ -4419,7 +4416,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// modules being instantiated
 		boolean localness = treeNode.zero() != null;
 		TreeNode[] children = treeNode.one()[0].heirs(); // heirs of IdentLHS
-		UniqueString name = children[0].getUS();
+		String name = children[0].getName();
 
 		// processing of LHS of the definition, i.e. the name and parameters
 		FormalParamNode[] args = nullParam;
@@ -4437,20 +4434,20 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// For each formal parameter declared for the op being defined
 			for (int i = 0; i < args.length; i++) {
 				TreeNode child = children[2 + 2 * i];
-				UniqueString id = null;
+				String id = null;
 				int count = 0;
 
 				if (child.isKind(N_IdentDecl)) {
-					id = child.heirs()[0].getUS();
+					id = child.heirs()[0].getName();
 					count = (child.heirs().length - 1) / 2;
 				} else if (child.isKind(N_InfixDecl)) {
-					id = child.heirs()[1].getUS();
+					id = child.heirs()[1].getName();
 					count = 2;
 				} else if (child.isKind(N_PrefixDecl)) {
-					id = child.heirs()[0].getUS();
+					id = child.heirs()[0].getName();
 					count = 1;
 				} else if (child.isKind(N_PostfixDecl)) {
-					id = child.heirs()[1].getUS();
+					id = child.heirs()[1].getName();
 					count = 1;
 				} else {
 					errors.addAbort(treeNode.getLocation(),
@@ -4522,8 +4519,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 **********************************************************************/
 			if (!odn.isLocal() && ((odn.getKind() == UserDefinedOpKind) || (odn.getKind() == ModuleInstanceKind))) {
 				// Create the new name prepended with "name!"
-				String compoundID = name + "!" + odn.getNameUS();
-				UniqueString qualifiedName = UniqueString.uniqueStringOf(compoundID);
+				String qualifiedName = name + "!" + odn.getName();
 
 				// Copy parameters for the op being defined
 				FormalParamNode[] fpn = odn.getParams();
@@ -4546,7 +4542,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						// ad-hoc parsing later when a feature such as the debugger needs to know each
 						// segment.
 						// A!B!C!OP -> {A,B,C,OP}
-						final UniqueString[] cID = Stream.of(new UniqueString[] { name }, odn.getCompoundId())
+						final UniqueString[] cID = Stream.of(new UniqueString[] { UniqueString.of(name) }, odn.getCompoundId())
 								.flatMap(Stream::of).toArray(UniqueString[]::new);
 
 						// Create the OpDefNode for the new instance of this
@@ -4608,8 +4604,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// Ignore it if it is local
 			if (!taOdn.isLocal()) {
 				// Create the new name prepended with "name!"
-				String compoundID = name + "!" + taOdn.getNameUS();
-				UniqueString qualifiedName = UniqueString.uniqueStringOf(compoundID);
+				String qualifiedName = name + "!" + taOdn.getName();
 
 				// Copy parameters for the op being defined
 				/*******************************************************************
@@ -4678,7 +4673,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		// Create a new InstanceNode to represent this INSTANCE stmt
 		// in the current module
-		InstanceNode inst = new InstanceNode(name, localness, args, instanceeModule, substIn.getSubsts(), treeNode);
+		InstanceNode inst = new InstanceNode(UniqueString.of(name), localness, args, instanceeModule, substIn.getSubsts(), treeNode);
 
 		// Append this new InstanceNode to the vector of InstanceNodes
 		// being accumulated for this module
@@ -4710,7 +4705,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	 */
 	private ExprOrOpArgNode generateSubst(Context instanceeCtxt, TreeNode substTarget, TreeNode substValue,
 			ModuleNode mn) throws AbortException {
-		SymbolNode targetSymbol = instanceeCtxt.getSymbol(substTarget.getUS());
+		SymbolNode targetSymbol = instanceeCtxt.getSymbol(substTarget.getName());
 
 		// if the targetSymbol cannot be found in the instancee context,
 		// or if it does not correspond to a declaration, then it is an
@@ -5046,7 +5041,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 * extensively tested it and I have no idea what * problems may remain. *
 					 ****************************************************************/
 					if (localness && topLevel) {
-						newOdn = new OpDefNode(odn.getNameUS(), UserDefinedOpKind, odn.getParams(), localness,
+						newOdn = new OpDefNode(odn.getName(), UserDefinedOpKind, odn.getParams(), localness,
 								odn.getBody(), odn.getOriginallyDefinedInModuleNode(), symbolTable, treeNode, true,
 								odn.getSource());
 						/***************************************************************
@@ -5065,7 +5060,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// instantiated
 					substInTemplate = new SubstInNode(treeNode, subst.getSubsts(), odn.getBody(), cm,
 							instanceeModuleNode);
-					newOdn = new OpDefNode(odn.getNameUS(), UserDefinedOpKind, odn.getParams(), localness,
+					newOdn = new OpDefNode(odn.getName(), UserDefinedOpKind, odn.getParams(), localness,
 							substInTemplate, cm, symbolTable, treeNode, true, odn.getSource());
 					newOdn.setLabels(odn.getLabelsHT());
 
@@ -5085,7 +5080,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 * the `then' clause, just above. * This entire change was made by LL on 16 Feb
 					 * 2009. *
 					 ****************************************************************/
-					newOdn = new OpDefNode(odn.getNameUS(), UserDefinedOpKind, odn.getParams(), localness, odn.getBody(),
+					newOdn = new OpDefNode(odn.getName(), UserDefinedOpKind, odn.getParams(), localness, odn.getBody(),
 							odn.getOriginallyDefinedInModuleNode(), symbolTable, treeNode, true, odn.getSource());
 					newOdn.setLabels(odn.getLabelsHT());
 				} else {
@@ -5136,7 +5131,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// Following if/else added by LL on 30 Oct 2012 to handle locally
 					// instantiated theorems and assumptions.
 					if (localness && topLevel) {
-						newTadn = new ThmOrAssumpDefNode(tadn.getNameUS(), tadn.isTheorem(), tadn.getBody(), cm,
+						newTadn = new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(), tadn.getBody(), cm,
 								symbolTable, treeNode, tadn.getParams(), instanceeModuleNode, tadn.getSource());
 						newTadn.setLocal(true);
 					} else {
@@ -5160,7 +5155,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// instantiated
 					tasubstInTemplate = new APSubstInNode(treeNode, subst.getSubsts(), tadn.getBody(), cm,
 							instanceeModuleNode);
-					newTadn = new ThmOrAssumpDefNode(tadn.getNameUS(), tadn.isTheorem(), tasubstInTemplate, cm,
+					newTadn = new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(), tasubstInTemplate, cm,
 							symbolTable, treeNode, tadn.getParams(), instanceeModuleNode, tadn.getSource());
 					// Following if/else added by LL on 30 Oct 2012 to handle locally
 					// instantiated theorems and assumptions.
@@ -5179,7 +5174,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				// Create a ThmOrAssumpDefNode whose body is the same as
 				// the instancer's.
 				if (localness && topLevel) {
-					newTadn = new ThmOrAssumpDefNode(tadn.getNameUS(), tadn.isTheorem(), tadn.getBody(),
+					newTadn = new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(), tadn.getBody(),
 							tadn.getOriginallyDefinedInModuleNode(), symbolTable, treeNode, tadn.getParams(),
 							instanceeModuleNode, tadn.getSource());
 					// Following if/else added by LL on 30 Oct 2012 to handle locally
@@ -5239,14 +5234,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * object. *
 			 *********************************************************************/
 			pushLS();
-			UniqueString name = stn.heirs()[1].getUS();
+			String name = stn.heirs()[1].getName();
 			tadn = new ThmOrAssumpDefNode(name, stn);
 		}
 		;
-		if (stn.zero()[bodyIndex]
-				.isKind(N_AssumeProve)) { /*******************************************************************
-											 * Theorem statement is an ASSUME/PROVE. Must set currentGoal. *
-											 *******************************************************************/
+		if (stn.zero()[bodyIndex].isKind(N_AssumeProve)) { 
+			/*******************************************************************
+			 * Theorem statement is an ASSUME/PROVE. Must set currentGoal.     *
+			 *******************************************************************/
 			currentGoal = tadn;
 			isAssumeProve = true;
 
@@ -5258,9 +5253,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			symbolTable.pushContext(new Context(moduleTable, errors));
 			body = generateAssumeProve(stn.heirs()[bodyIndex], cm);
 			currentGoal = null;
-		} else { /****************************************************************
-					 * Theorem statement must be an ExprNode. *
-					 ****************************************************************/
+		} else { 
+			/****************************************************************
+			 * Theorem statement must be an ExprNode.                       *
+			 ****************************************************************/
 			body = generateExpression(stn.heirs()[bodyIndex], cm);
 		}
 		;
@@ -5334,7 +5330,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			/**********************************************************************
 			 * The assumption node has the form * ASSUME Ident == expression *
 			 **********************************************************************/
-			UniqueString name = stn.heirs()[1].getUS();
+			String name = stn.heirs()[1].getName();
 			tadn = new ThmOrAssumpDefNode(name, false, expr, cm, symbolTable, stn, null, null, null);
 			tadn.setLabels(popLabelNodeSet());
 			cm.appendDef(tadn);
@@ -5498,7 +5494,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				stepNum = stepNumSTN.getUS();
 				break;
 			case TLAplusParserConstants.ProofStepDotLexeme:
-				String stNum = stepNumSTN.getUS().toString();
+				String stNum = stepNumSTN.getName();
 				stepNum = UniqueString.uniqueStringOf(stNum.substring(0, stNum.indexOf(".")));
 				break;
 			default:
@@ -5521,7 +5517,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 ********************************************************************/
 			ThmOrAssumpDefNode tadn = null;
 			if (stepNum != null) {
-				tadn = new ThmOrAssumpDefNode(stepNum, stepNumSTN);
+				tadn = new ThmOrAssumpDefNode(stepNum.toString(), stepNumSTN);
 			}
 			;
 
@@ -5867,7 +5863,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						 ************************************************************/
 						FormalParamNode[] params = new FormalParamNode[ids];
 						for (int j = 0; j < ids; j++) {
-							params[j] = new FormalParamNode(bodyHeirs[2 * j + 1].getUS(), 0, bodyHeirs[2 * j + 1],
+							params[j] = new FormalParamNode(bodyHeirs[2 * j + 1].getName(), 0, bodyHeirs[2 * j + 1],
 									symbolTable, cm);
 						}
 						;
@@ -6007,7 +6003,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				 * Make an OpDefNode for the numbered step and add any label * declarations to
 				 * it. *
 				 *******************************************************************/
-				OpDefNode nodeMadeOnlyToBePutInSymbolTable = new OpDefNode(stepNum, pfNumNode, cm, symbolTable,
+				OpDefNode nodeMadeOnlyToBePutInSymbolTable = new OpDefNode(stepNum.toString(), pfNumNode, cm, symbolTable,
 						pfStepSTN);
 				nodeMadeOnlyToBePutInSymbolTable.setLabels(popLabelNodeSet());
 			}
@@ -6225,7 +6221,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				 *****************************************************************/
 				FormalParamNode[] params = new FormalParamNode[ids];
 				for (int i = 0; i < ids; i++) {
-					params[i] = new FormalParamNode(heirs[2 * i + nextTok].getUS(), 0, heirs[2 * i + nextTok],
+					params[i] = new FormalParamNode(heirs[2 * i + nextTok].getName(), 0, heirs[2 * i + nextTok],
 							symbolTable, cm);
 				}
 				;
@@ -6458,7 +6454,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		while ((nextTok < heirs.length) && (heirs[nextTok].getKind() != TLAplusParserConstants.DF)) {
 			if (heirs[nextTok].getKind() == TLAplusParserConstants.MODULE) {
 				nextTok++;
-				UniqueString moduleId = heirs[nextTok].getUS();
+				String moduleId = heirs[nextTok].getName();
 				ModuleNode moduleNode = symbolTable.resolveModule(moduleId);
 
 				/*******************************************************************
@@ -6466,7 +6462,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				 * This will probably mean to use or hide facts * introduced so far in the
 				 * current module. *
 				 *******************************************************************/
-				if ((moduleNode == null) && (moduleId == cm.getNameUS())) {
+				if ((moduleNode == null) && moduleId.equals(cm.getName())) {
 					moduleNode = cm;
 				}
 				;
@@ -6521,7 +6517,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			while (nextTok < heirs.length) {
 				if (heirs[nextTok].getKind() == TLAplusParserConstants.MODULE) {
 					nextTok++;
-					UniqueString moduleId = heirs[nextTok].getUS();
+					String moduleId = heirs[nextTok].getName();
 					ModuleNode moduleNode = symbolTable.resolveModule(moduleId);
 
 					/*****************************************************************
@@ -6529,7 +6525,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 * This will probably mean to use or hide * definitions introduced so far in the
 					 * current module. *
 					 *****************************************************************/
-					if ((moduleNode == null) && (moduleId == cm.getNameUS())) {
+					if ((moduleNode == null) && moduleId.equals(cm.getName())) {
 						moduleNode = cm;
 					}
 					;
@@ -6714,7 +6710,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		/***********************************************************************
 		 * We now create the LabelNode. *
 		 ***********************************************************************/
-		UniqueString name;
+		String name;
 		FormalParamNode[] params;
 		/*********************************************************************
 		 * The label's name and parameter list. *
@@ -6723,7 +6719,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			/*********************************************************************
 			 * There are no arguments to the label. *
 			 *********************************************************************/
-			name = labelExpChildren[0].heirs()[1].getUS();
+			name = labelExpChildren[0].heirs()[1].getName();
 			params = new FormalParamNode[0];
 		} else {
 			/**********************************************************************
@@ -6735,7 +6731,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			;
 
 			TreeNode[] opApplChildren = labelExpChildren[0].heirs();
-			name = opApplChildren[0].heirs()[1].getUS();
+			name = opApplChildren[0].heirs()[1].getName();
 			TreeNode[] opArgsChildren = opApplChildren[1].heirs();
 			int numOfParams = (opArgsChildren.length - 1) / 2;
 			params = new FormalParamNode[numOfParams];
@@ -6747,14 +6743,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				 * or \EE expression). *
 				 *******************************************************************/
 				TreeNode argSyntaxNode = opArgsChildren[2 * i + 1];
-				UniqueString argName = argSyntaxNode.heirs()[1].getUS();
+				String argName = argSyntaxNode.heirs()[1].getName();
 				SymbolNode argNode = symbolTable.resolveSymbol(argName);
 				FormalParamNode arg = null;
 				if (argNode instanceof FormalParamNode) {
 					arg = (FormalParamNode) argNode;
 				} else {
 					errors.addError(argSyntaxNode.getLocation(),
-							"Illegal parameter " + argName.toString() + " of label `" + name.toString() + "'.");
+							"Illegal parameter " + argName.toString() + " of label `" + name + "'.");
 					arg = new FormalParamNode(argName, 0, argSyntaxNode, null, cm);
 					/**********************************************************
 					 * Create a dummy FormalParamNode to prevent a null * pointer exception in later
@@ -6771,7 +6767,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			cg = currentGoal;
 		}
 		;
-		LabelNode retVal = new LabelNode(stn, name, params, currentGoal, currentGoalClause, body, isAssumeProve);
+		LabelNode retVal = new LabelNode(stn, UniqueString.of(name), params, currentGoal, currentGoalClause, body, isAssumeProve);
 		retVal.setLabels(ht);
 		boolean ignore = formalParamsEqual(retVal);
 		/*********************************************************************
@@ -6779,9 +6775,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * by the method. *
 		 *********************************************************************/
 		if (!addLabelNodeToSet(retVal)) {
-			errors.addError(stn.getLocation(), "Duplicate label `" + name.toString() + "'.");
+			errors.addError(stn.getLocation(), "Duplicate label `" + name + "'.");
 		}
-		;
 		return retVal;
 	} // generateLabel
 
@@ -7084,7 +7079,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * RECURSIVE statement, this * method is called when processing that statement
 		 * with the Treenode * tn equal to the syntax tree node for the declaration. *
 		 ***********************************************************************/
-		OpDefNode odn = new OpDefNode(us, UserDefinedOpKind, params, localness, null, // the expression
+		OpDefNode odn = new OpDefNode(us.toString(), UserDefinedOpKind, params, localness, null, // the expression
 				oModNode, st, tn, false, null);
 //  was incrementing it twice
 //    unresolvedCnt[curLevel] ++ ;

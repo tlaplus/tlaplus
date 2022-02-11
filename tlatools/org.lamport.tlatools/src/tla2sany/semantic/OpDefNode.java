@@ -404,7 +404,7 @@ public class OpDefNode extends OpDefOrDeclNode
 * The constructors.                                                        *
 ***************************************************************************/
   /* Used only for creating nullODN */
-  public OpDefNode(UniqueString us) {
+  public OpDefNode(String us) {
     super(us, 0, -2, null, null, SyntaxTreeNode.nullSTN);
     if (st != null) {
       st.addSymbol(us, this);
@@ -412,7 +412,7 @@ public class OpDefNode extends OpDefOrDeclNode
   }
 
   /* Invoked in configuration.Configuration for built-in ops */
-  public OpDefNode(UniqueString us, int k, int ar, FormalParamNode[] parms,
+  public OpDefNode(String us, int k, int ar, FormalParamNode[] parms,
                    boolean localness, ExprNode exp, ModuleNode oModNode,
                    SymbolTable symbolTable, TreeNode stn) {
     super(us, k, (parms == null ? -1 : parms.length), oModNode, symbolTable, stn);
@@ -421,8 +421,7 @@ public class OpDefNode extends OpDefOrDeclNode
     // Create phony FormalParamNodes for built-in operators
     if ( arity >= 0 ) {
       for (int i = 0; i < params.length; i++ ) {
-        params[i] = new FormalParamNode(UniqueString.uniqueStringOf("Formal_" + i),
-                                        0, null, symbolTable, oModNode);
+        params[i] = new FormalParamNode("Formal_" + i, 0, null, symbolTable, oModNode);
       }
     }
     if (st != null) {
@@ -464,7 +463,7 @@ public class OpDefNode extends OpDefOrDeclNode
    * See semantic/Generator.java/startOpDefNode, and its uses.  This       *
    * argument was added by LL on 7 Apr 2007.                               *
    ************************************************************************/
-   public OpDefNode(UniqueString us,
+   public OpDefNode(String us,
                     int k,                   // The kind
                     FormalParamNode[] parms,
                     boolean localness,
@@ -501,7 +500,7 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
-   public OpDefNode(UniqueString us,
+   public OpDefNode(String us,
            int k,                   // The kind
            FormalParamNode[] parms,
            boolean localness,
@@ -554,7 +553,7 @@ public class OpDefNode extends OpDefOrDeclNode
   *    body    - there is none                                             *
   *    defined - always true because it can't be declared RECURSIVE.       *
   *************************************************************************/
-  public OpDefNode(UniqueString us,
+  public OpDefNode(String us,
                    FormalParamNode[] parms,
                    boolean localness,
                    ModuleNode oModNode,
@@ -576,7 +575,7 @@ public class OpDefNode extends OpDefOrDeclNode
   * Constructor for NumberedProofStepKind nodes.  It should never be       *
   * called with symbolTable null.                                          *
   *************************************************************************/
-  public OpDefNode(UniqueString us,  LevelNode step, ModuleNode oModNode,
+  public OpDefNode(String us,  LevelNode step, ModuleNode oModNode,
                    SymbolTable symbolTable, TreeNode stn) {
     super(us, NumberedProofStepKind, 0, oModNode, symbolTable, stn) ;
     this.stepNode = step ;

@@ -50,7 +50,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/
-  public OpDeclNode(UniqueString us, int kind, int level,
+  public OpDeclNode(String us, int kind, int level,
 		    int arity, ModuleNode mn, SymbolTable symbolTable,
                     TreeNode stn) {
     super(us, kind, arity, mn, symbolTable, stn);

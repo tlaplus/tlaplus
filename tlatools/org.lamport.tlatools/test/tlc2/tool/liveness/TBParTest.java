@@ -190,7 +190,7 @@ public class TBParTest {
 		private static class DummySymbolNode extends SymbolNode {
 			
 			protected DummySymbolNode(String name) {
-				super(1, SyntaxTreeNode.nullSTN, UniqueString.uniqueStringOf(name));
+				super(1, SyntaxTreeNode.nullSTN, (name));
 			}
 			
 			@Override
@@ -220,7 +220,7 @@ public class TBParTest {
 			
 			@Override
 			public String toString() {
-				return name.toString();
+				return name;
 			}
 		}
 	}

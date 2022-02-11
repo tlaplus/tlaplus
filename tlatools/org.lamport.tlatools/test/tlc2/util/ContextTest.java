@@ -173,7 +173,7 @@ public class ContextTest {
 		}
 		
 		DummySymbolNode(String name) {
-			super(-1, new SyntaxTreeNode(), UniqueString.uniqueStringOf(name));
+			super(-1, new SyntaxTreeNode(), (name));
 		}
 
 		public int getArity() {

@@ -29,9 +29,9 @@ import util.UniqueString;
 ***************************************************************************/
 public abstract class SymbolNode extends LevelNode {
 
-  protected final UniqueString name;    // the name of this symbol
+  protected final String name;    // the name of this symbol
 
-  protected SymbolNode(int kind, TreeNode stn, UniqueString name) {
+  protected SymbolNode(int kind, TreeNode stn, String name) {
     super(kind, stn);
     this.name = name;
   }
@@ -46,9 +46,9 @@ public abstract class SymbolNode extends LevelNode {
    *
    * getName() is the UniqueString for "Foo".
    */
-  public final UniqueString getNameUS() { return this.name; }
+  public final UniqueString getNameUS() { return UniqueString.of(this.name); }
   
-  public final String getName() { return this.name.toString(); }
+  public final String getName() { return this.name; }
 
   /* Returns the arity of the operator named by the symbol.  */
   public abstract int getArity();

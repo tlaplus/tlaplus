@@ -176,8 +176,7 @@ public class Context implements ExploreNode {
   public Errors getErrors() { return errors; }
 
   // Adds a symbol to the (unique) initialContext; aborts if already there
-  public static void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors)
-  throws AbortException {
+  public static void addGlobalSymbol(String name, SymbolNode sn, Errors errors) throws AbortException {
     if (initialContext.getSymbol(name) != null) {
       errors.addAbort(Location.nullLoc,
 		      "Error building initial context: Multiply-defined builtin operator " +
@@ -187,6 +186,11 @@ public class Context implements ExploreNode {
       initialContext.addSymbolToContext( name, sn );
       return;
     }
+  }
+  
+  /** @deprecated */
+  public static void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors) throws AbortException {
+	  addGlobalSymbol(name.toString(), sn, errors);
   }
 
   /**
