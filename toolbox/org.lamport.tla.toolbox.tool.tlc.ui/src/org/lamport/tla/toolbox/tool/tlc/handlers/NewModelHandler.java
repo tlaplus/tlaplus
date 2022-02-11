@@ -341,7 +341,7 @@ public class NewModelHandler extends AbstractHandler implements IModelConfigurat
                                 if (notArg instanceof OpApplNode)
                                 {
                                     OpApplNode notArgA = (OpApplNode) notArg;
-                                    if (notArgA.getOperator().getNameUS().equals("\\in"))
+                                    if (notArgA.getOperator().getName().equals("\\in"))
                                     {
                                         // This is CHOOSE v : ~(expa \in expb). Set to override
                                         // iff expa equals v.

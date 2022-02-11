@@ -1140,7 +1140,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 
 
   public boolean hasOpcode(final int opCode) {
-      return opCode == BuiltInOPs.getOpCode(getOperator().getNameUS());
+      return opCode == BuiltInOPs.getOpCode(getOperator().getName());
   }
 
   @Override
@@ -1275,7 +1275,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
      sEO = Strings.indent(2,
               "\nsubExpressionOf: " +
               Strings.indent(2, this.subExpressionOf.toString(1))) ;} ;
-    return "\n*OpApplNode: " + operator.getNameUS() + "  " + super.toString(depth+1)
+    return "\n*OpApplNode: " + operator.getName() + "  " + super.toString(depth+1)
            + "  errors: " + (errors != null ? "non-null" : "null")
            + toStringBody(depth) + sEO ;
   }
