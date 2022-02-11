@@ -11,7 +11,7 @@ import util.UniqueString;
 
 public class Operator implements tla2sany.st.SyntaxTreeConstants {
 
-  private UniqueString Id;
+  private String Id;
   private int Low;
   private int High;
   public int Associativity;
@@ -23,29 +23,32 @@ public class Operator implements tla2sany.st.SyntaxTreeConstants {
   // of the unique string in the class loading time 
   public synchronized static Operator VoidOperator()
   {  
-      if (voidOperator == null) 
-      {
-          voidOperator = new Operator(UniqueString.uniqueStringOf("$$_void"), 0, 0, 
-                  Operators.assocNone, Operators.infix);
-      }
+      if (voidOperator == null)
+          voidOperator = new Operator("$$_void", 0, 0, Operators.assocNone, Operators.infix);
       return voidOperator;
   }
-  
-  public Operator( UniqueString id, int l, int h, int a, int f) {
+
+  public Operator(String id, int l, int h, int a, int f) {
     Id = id; Low = l; High = h; Associativity = a; Fix = f;
   }
+  /** @deprecated */
+  public Operator(UniqueString id, int l, int h, int a, int f) {
+    this(id.toString(),l,h,a,f);
+  }
 
+  // TODO appears to be unused
+  /** @deprecated */
   public Operator clone ( UniqueString name ) {
     return new Operator( name, Low, High, Associativity, Fix);
   }
 
   public String toString() {
   switch ( Fix ) {
-    case 0 /* Operators.nofix   */ : return Id.toString() + ", nofix";
-    case 1 /* Operators.prefix  */ : return Id.toString() + ", prefix";
-    case 2 /* Operators.postfix */ : return Id.toString() + ", postfix";
-    case 3 /* Operators.infix   */ : return Id.toString() + ", infix";
-    case 4 /* Operators.nfix    */ : return Id.toString() + ", nfix";
+    case 0 /* Operators.nofix   */ : return Id + ", nofix";
+    case 1 /* Operators.prefix  */ : return Id + ", prefix";
+    case 2 /* Operators.postfix */ : return Id + ", postfix";
+    case 3 /* Operators.infix   */ : return Id + ", infix";
+    case 4 /* Operators.nfix    */ : return Id + ", nfix";
   }
   return null;
 }
@@ -98,7 +101,14 @@ public class Operator implements tla2sany.st.SyntaxTreeConstants {
     return ( (left.High == right.High) && (left.Low == right.Low) );
   }
 
-  public final UniqueString getIdentifier() {
-    return Id;
+  /**
+   * @deprecated
+   */
+  public final UniqueString getUS() {
+    return UniqueString.uniqueStringOf(Id);
+  }
+  
+  public final String getIdentifier() {
+	return Id;
   }
 }

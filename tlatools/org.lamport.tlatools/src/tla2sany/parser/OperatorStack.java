@@ -244,7 +244,7 @@ What do left and right mean?????? What does shift mean????????
       if ( oR.isPostfix() ) {
         if ( n == 0 ) {
           throw new ParseException("\n  Encountered postfix op " + 
-                                   oR.getIdentifier() + " in block " + 
+                                   oR.getUS() + " in block " + 
                                    tm0.getNode().getLocation().toString() + 
                                    " on empty stack");
         } else {
@@ -254,10 +254,10 @@ What do left and right mean?????? What does shift mean????????
 // System.out.println("tm1 est " + oL.toString() );
             if ( oL.isInfix() || oL.isPrefix() ) {
               throw new ParseException("\n  Encountered postfix op " + 
-                                       oR.getIdentifier() + " in block " + 
+                                       oR.getUS() + " in block " + 
                                        tm0.getNode().getLocation().toString() + 
                                        " following prefix or infix op " + 
-                                       oL.getIdentifier() + ".");
+                                       oL.getUS() + ".");
             } else { // isPostfixOp - must reduce.
               reducePostfix();
             }
@@ -271,9 +271,9 @@ What do left and right mean?????? What does shift mean????????
                 } else if ( ! Operator.prec( oL, oR ) ) {
                   throw new ParseException(
                            "Precedence conflict between ops " + 
-                           oL.getIdentifier() + " in block " + 
+                           oL.getUS() + " in block " + 
                            tm0.getNode().getLocation().toString() + " and " 
-                           + oR.getIdentifier() + ".");
+                           + oR.getUS() + ".");
 		} else
 		  break;
               } else {
@@ -296,14 +296,14 @@ What do left and right mean?????? What does shift mean????????
             oL = tm1.getOperator();
             if ( oL.isPostfix() ) {
               throw new ParseException(
-                      "\n  Encountered prefix op " + oR.getIdentifier() + 
+                      "\n  Encountered prefix op " + oR.getUS() + 
                       " in block " + tm0.getNode().getLocation().toString() + 
-                      " following postfix op " + oL.getIdentifier() + ".");
+                      " following postfix op " + oL.getUS() + ".");
             } else // nothing to do
               break;
           } else { // can't be expression 
             throw new ParseException(
-                          "\n  Encountered prefix op " + oR.getIdentifier() + 
+                          "\n  Encountered prefix op " + oR.getUS() + 
                           " in block " + 
                           tm0.getNode().getLocation().toString() + 
                           " following an expression.");
@@ -314,7 +314,7 @@ What do left and right mean?????? What does shift mean????????
             Operator mixR  = Operators.getMixfix( oR );
             if ( mixR == null )
               throw new ParseException(
-                          "\n  Encountered infix op " + oR.getIdentifier() + 
+                          "\n  Encountered infix op " + oR.getUS() + 
                           " in block " + 
                           tm0.getNode().getLocation().toString() + 
                           " on empty stack.");
@@ -334,22 +334,22 @@ What do left and right mean?????? What does shift mean????????
                          "\n  Missing expression in block " + 
                          tm1.getNode().getLocation().toString() + 
                          " following prefix or infix op " + 
-                         oL.getIdentifier() + ".");
+                         oL.getUS() + ".");
                 else
                   throw new ParseException(
                               "\n  Encountered infix op " + 
-                              oR.getIdentifier() + " in block " + 
+                              oR.getUS() + " in block " + 
                               tm1.getNode().getLocation().toString() + 
                               " following prefix or infix op " + 
-                              oL.getIdentifier() + ".");
+                              oL.getUS() + ".");
               } else if (   Operator.succ( oL, mixR ) 
                          || ( oL == mixR && oL.assocLeft() ) ) {
 // System.out.println("precedence pbm detected");
                 throw new ParseException(
                             "\n  Precedence conflict between ops " + 
-                            oL.getIdentifier() + " in block " + 
+                            oL.getUS() + " in block " + 
                             tm1.getNode().getLocation().toString() + 
-                            " and " + mixR.getIdentifier() + ".");
+                            " and " + mixR.getUS() + ".");
               } // else, skip
             } else // no choice
               reducePostfix();
@@ -378,15 +378,15 @@ What do left and right mean?????? What does shift mean????????
                    else {
                      if (   (tm2.getNode().getLocation().beginLine() < 
                                 tm1.getNode().getLocation().beginLine() )
-                         && (oR.getIdentifier() == 
+                         && (oR.getUS() == 
                                UniqueString.uniqueStringOf("=") )) {
 // System.out.println("Case 1");
                        throw new ParseException(
                               "\n  *** Hint *** You may have mistyped ==" + 
                               "\n  Illegal combination of operators " + 
-                              oL.getIdentifier() + " in block " + 
+                              oL.getUS() + " in block " + 
                               tm2.getNode().getLocation().toString() + 
-                              " and " + oR.getIdentifier() + ".");
+                              " and " + oR.getUS() + ".");
 		     } else if (oR == Operator.VoidOperator() ) {
 // System.out.println("Case 2");
 	               throw new ParseException(
@@ -397,9 +397,9 @@ What do left and right mean?????? What does shift mean????????
 // System.out.println("Case 3");
                        throw new ParseException(
                               "\n  Illegal combination of operators " + 
-                              oL.getIdentifier() + " in block " + 
+                              oL.getUS() + " in block " + 
                               tm2.getNode().getLocation().toString() + 
-                              " and " + oR.getIdentifier() + ".");
+                              " and " + oR.getUS() + ".");
 		     }
                   }
                 } else if (   !( Operator.prec( oL, oR ) 
@@ -407,9 +407,9 @@ What do left and right mean?????? What does shift mean????????
 // System.out.println("prefix or infix in prec oL, oR+++ throwing exception");
                     throw new ParseException(
                             "\n  Precedence conflict between ops " + 
-                            oL.getIdentifier() + " in block " + 
+                            oL.getUS() + " in block " + 
                             tm2.getNode().getLocation().toString() + 
-                            " and " + oR.getIdentifier() + ".");
+                            " and " + oR.getUS() + ".");
                 } else {
 // System.out.println("Case not handled");
                   break;

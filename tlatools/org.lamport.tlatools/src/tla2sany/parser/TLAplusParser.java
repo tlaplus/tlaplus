@@ -2327,7 +2327,7 @@ expecting = "COMMA or )";
     case op_116:
       // LOOKAHEAD( <OpSymbol>, { isPrefixDeclOp( getToken(1) )  } )
             tn = NonExpPrefixOp();
-        kind = N_PrefixDecl; n = lastOp.getIdentifier();
+        kind = N_PrefixDecl; n = lastOp.getUS();
         sn = new SyntaxTreeNode[2]; sn[0] = tn;
 expecting = "_";
       t = jj_consume_token(US);
@@ -2440,7 +2440,7 @@ expecting = "infix or postfix operator";
       case op_118:
       case op_119:
         tn = InfixOp();
-          kind = N_InfixDecl; n = lastOp.getIdentifier();
+          kind = N_InfixDecl; n = lastOp.getUS();
           sn = new SyntaxTreeNode[3]; sn[1] = tn;
           sn[0] =  new SyntaxTreeNode(mn, t);
 expecting = "_";
@@ -2452,7 +2452,7 @@ expecting = "_";
       case op_69:
       case op_70:
         tn = PostfixOp();
-          kind = N_PostfixDecl; n = lastOp.getIdentifier();
+          kind = N_PostfixDecl; n = lastOp.getUS();
           sn = new SyntaxTreeNode[2]; sn[1] = tn;
           sn[0] =  new SyntaxTreeNode(mn, t);
         break;
