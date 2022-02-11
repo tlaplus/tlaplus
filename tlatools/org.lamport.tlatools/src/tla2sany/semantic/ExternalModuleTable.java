@@ -58,12 +58,11 @@ public class ExternalModuleTable implements ExploreNode {
     public String toString(int depth) {
       if (depth <= 0) return "";
       
-      if (moduleNode != null) {
-	return Strings.indent(2, "\nModule: " + Strings.indent(2,moduleNode.toString(depth)) );
-      } else {
-	return Strings.indent(2, "\nModule: " + Strings.indent(2, "\n***Null ExternalModuleTable entry; " + 
+      if (moduleNode != null) 
+	    return Strings.indent(2, "\nModule: " + Strings.indent(2,moduleNode.toString(depth)) );
+      else 
+	    return Strings.indent(2, "\nModule: " + Strings.indent(2, "\n***Null ExternalModuleTable entry; " + 
 							       "module contained error and was not created."));
-      }
     } // end toString()
 
   } // end internal class ModuleTableEntry
@@ -81,7 +80,7 @@ public class ExternalModuleTable implements ExploreNode {
   * moduleHashTable, and that each of its entries has a moduleName as the  *
   * key and a value that's an ExternalModuleTableEntry object.             *
   *************************************************************************/
-  public Hashtable<UniqueString, ExternalModuleTableEntry> moduleHashTable;
+  public Hashtable<String, ExternalModuleTableEntry> moduleHashTable;
 
   // Vector moduleVector contains ModuleNodes (the same ones as
   // moduleHashTable), but preserves the order in which they were
@@ -94,7 +93,7 @@ public class ExternalModuleTable implements ExploreNode {
 
   // Constructor
   public ExternalModuleTable() {
-    moduleHashTable  = new Hashtable<>();
+    moduleHashTable = new Hashtable<String, ExternalModuleTableEntry>();
     moduleNodeVector = new Vector<>();
   }
 
@@ -102,10 +101,14 @@ public class ExternalModuleTable implements ExploreNode {
   public ModuleNode getRootModule()              { return rootModule; }
   public void       setRootModule(ModuleNode mn) { rootModule = mn; }
 
-  public final Context getContext( UniqueString key ) {
+  public final Context getContext(String key) {
     ExternalModuleTableEntry p = moduleHashTable.get(key);
     if (p == null) return null;
     return p.ctxt;
+  }
+  /** @deprecated */
+  public final Context getContext( UniqueString key ) {
+	return this.getContext(key.toString());
   }
 
   public final Context getContextForRootModule() {
@@ -129,21 +132,27 @@ public class ExternalModuleTable implements ExploreNode {
   }
 
   public final ModuleNode getModuleNode( String key ) {
-	  return getModuleNode(UniqueString.of(key));
+	ExternalModuleTableEntry p = moduleHashTable.get(key);
+	if (p == null) return null;
+	return p.moduleNode;
   }
 
+  /** @deprecated */
   public final ModuleNode getModuleNode( UniqueString key ) {
-    ExternalModuleTableEntry p = moduleHashTable.get(key);
-    if (p == null) return null;
-    return p.moduleNode;
+	  return getModuleNode(key.toString());
   }
 
-  public final void put( UniqueString key, Context ctxt, ModuleNode moduleNode ) {
+  
+  public final void put(String key, Context ctxt, ModuleNode moduleNode) {
     ExternalModuleTableEntry c = moduleHashTable.get( key );
     if (c == null) {
       moduleHashTable.put( key, new ExternalModuleTableEntry(ctxt, moduleNode) );
       moduleNodeVector.addElement(moduleNode);
     }
+  }
+  /** @deprecated */
+  public final void put( UniqueString key, Context ctxt, ModuleNode moduleNode ) {
+	this.put(key.toString(), ctxt, moduleNode);
   }
 
   @Override
