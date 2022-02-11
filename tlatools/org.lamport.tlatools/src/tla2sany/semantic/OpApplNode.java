@@ -167,7 +167,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * This is also used for the "@" construct, which somehow gets treated
    * as an OpApplNode for now
    */
-  public OpApplNode(UniqueString us, ExprOrOpArgNode[] ops, TreeNode stn,
+  public OpApplNode(String us, ExprOrOpArgNode[] ops, TreeNode stn,
                     ModuleNode mn) {
     super(OpApplKind, stn);
     this.operands = ops;
@@ -189,7 +189,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
   /*************************************************************************
   * Argument for setting isATuple eliminated 3 Aug 2007.                   *
   *************************************************************************/
-  public OpApplNode(UniqueString us, ExprOrOpArgNode[] ops,
+  public OpApplNode(String us, ExprOrOpArgNode[] ops,
                     FormalParamNode[] odns,
                     TreeNode stn, ModuleNode mn) {
     super(OpApplKind, stn);
@@ -208,7 +208,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * constructor for builtins & bounded quantifiers, including fcn defs--
    * matching is very syntax-specific in this case and we skip it.
    */
-  public OpApplNode(UniqueString us, FormalParamNode[] funcName,
+  public OpApplNode(String us, FormalParamNode[] funcName,
                     ExprOrOpArgNode[] ops, FormalParamNode[][] pars,
                     boolean[] isT, ExprNode[] rs, TreeNode stn,
                     ModuleNode mn) {
@@ -243,7 +243,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
   /*************************************************************************
   * Called only by Function.recursionCheck() in semantic/Generator.java.   *
   *************************************************************************/
-  final void resetOperator( UniqueString us ) {
+  final void resetOperator(String us) {
     this.operator = Context.getGlobalContext().getSymbol(us);
   }
 

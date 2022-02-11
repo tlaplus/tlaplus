@@ -63,8 +63,9 @@ public class SimpUtil implements ToolGlobals {
     defns = new Hashtable();
   }
 
+  // TODO This appears to be unused
   public static UniqueString transOp(UniqueString name) {
-    UniqueString op = (UniqueString)trop.get(name);
+    UniqueString op = (UniqueString)trop.get(name.toString());
     return (op == null) ? name : op;
   }
 

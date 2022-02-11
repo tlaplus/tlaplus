@@ -252,7 +252,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		for (SemanticNode semanticNode : path) {
 			if (semanticNode instanceof OpApplNode) {
 				OpApplNode oan = (OpApplNode) semanticNode;
-				if (ASTConstants.OP_prime == oan.getOperator().getNameUS()) {
+				if (ASTConstants.OP_prime.equals(oan.getOperator().getName())) {
 					return true;
 				}
 			}

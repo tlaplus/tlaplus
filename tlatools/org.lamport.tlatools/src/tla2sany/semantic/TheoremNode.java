@@ -193,7 +193,7 @@ public class TheoremNode extends LevelNode {
    * Added 3 Mar 2009.                                                     *
    ************************************************************************/
    if (   (oanOp != null)
-       && (oanOp.getNameUS() == OP_pick)
+       && (oanOp.getName().equals(OP_pick))
        && (oan.ranges != null)
        && (this.theoremExprOrAssumeProve.level == TemporalLevel)) {
      for (int i = 0; i < oan.ranges.length; i++) {
@@ -255,18 +255,18 @@ public class TheoremNode extends LevelNode {
           }
        };
        if (oanode != null) {
-         UniqueString name = oanode.operator.getNameUS();
+         String name = oanode.operator.getName();
 
-         if (   (   (name == OP_take)
-                 || (name == OP_witness)
-                 || (name == OP_have) )
-             && (oanode.getLevel() != ConstantLevel)) {
+         if (   (   (name.equals(OP_take)
+                 || name.equals(OP_witness)
+                 || name.equals(OP_have) )
+             && (oanode.getLevel() != ConstantLevel))) {
                    errors.addError(
                      oanode.stn.getLocation(),
                      "Non-constant TAKE, WITNESS, or HAVE " +
                      "for temporal goal.");
          } else
-         if (name == OP_pfcase) {
+         if (name.equals(OP_pfcase)) {
            /****************************************************************
            * This is a CASE, check that its argument is constant and then  *
            * recursively call LevelCheckTemporal on its proof.             *
@@ -278,7 +278,7 @@ public class TheoremNode extends LevelNode {
              };
            LevelCheckTemporal(tnode.getProof()) ;
          } else
-         if (name == OP_qed) {
+         if (name.equals(OP_qed)) {
            LevelCheckTemporal(tnode.getProof()) ;
          }
        }; // if (oanode != null)
