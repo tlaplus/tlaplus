@@ -882,7 +882,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             }
         }
         if (newName == null) {
-            return node.getNameUS().toString();
+            return node.getName();
         } else {
             return newName;
         }
@@ -945,7 +945,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             return curName;
         }
 
-        String oldName = getNewNamePrefix(node.getNameUS().toString());
+        String oldName = getNewNamePrefix(node.getName());
         int i = 1;
         while (currentlyDeclared.contains(oldName + i)) {
             i++;
@@ -1321,8 +1321,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                                   if (assumptions[j] instanceof NewSymbNode) {
                                       declaredIdentifiers
                                               .add(((NewSymbNode) assumptions[j])
-                                                      .getOpDeclNode().getNameUS()
-                                                      .toString());
+                                                      .getOpDeclNode().getName());
                                   } else {
                                       if (! (assumptions[j] instanceof AssumeProveNode)) {
                                         if (isChosenStep) {
@@ -1429,8 +1428,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                                      if (assumptions[j] instanceof NewSymbNode) {
                                          declaredIdentifiers
                                                  .add(((NewSymbNode) assumptions[j])
-                                                         .getOpDeclNode().getNameUS()
-                                                         .toString());
+                                                         .getOpDeclNode().getName());
                                      } else {
                                          // Non-NEW assumptions added to contextAssumptions.
                                          if (! (assumptions[j] instanceof AssumeProveNode)) {
@@ -1907,7 +1905,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
 
         // Initialize moduleNameToDoc
         moduleNameToDoc = new Hashtable<String, IDocument>() ;
-        moduleNameToDoc.put(this.moduleNode.getNameUS().toString(), this.doc) ;
+        moduleNameToDoc.put(this.moduleNode.getName(), this.doc) ;
 
         /**
          * The Following code copied from ProverHelper.
@@ -4145,7 +4143,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
         // Set childDoc to the IDocument in which the children are to
         // be found. 
         IDocument childDoc = this.doc;
-        String moduleName = this.moduleNode.getNameUS().toString() ;
+        String moduleName = this.moduleNode.getName() ;
         if (decomp.moduleName != null) {
             childDoc = moduleNameToIDocument(decomp.moduleName) ;
         }
@@ -4600,7 +4598,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 if (i != 0) {
                     str = str + ", ";
                 }
-                str = str + decomp.quantIds.elementAt(i).getNameUS().toString();
+                str = str + decomp.quantIds.elementAt(i).getName();
             }
             str = str + ")";
             newNodeText = appendToNodeText(newNodeText, str);
@@ -4957,7 +4955,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             // NOTE: If we were substituting for a formal parameter for which a
             // different identifier had been substituted, we have to use as
             // sourceTextLength the length of the new identifier.
-            int sourceTextLength = formalParams[i].getNameUS().toString().length();
+            int sourceTextLength = formalParams[i].getName().length();
             // Set mayNeedParens true if replacementText doesn't end in ' and
             // would need parentheses around it in order to prime it.
             boolean mayNeedParens = false;
@@ -5099,7 +5097,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
         for (int i = 0; i < opUses.length; i++) {
             if (opUses[i] instanceof OpApplNode) {
                 OpDefNode opDef = (OpDefNode) ((OpApplNode) opUses[i]).getOperator() ;
-                String opDefName = opDef.getNameUS().toString() ;
+                String opDefName = opDef.getName() ;
                 ExprNode opDefBody = opDef.getBody() ;
                 boolean notFound = true ;
                 
@@ -5465,8 +5463,8 @@ public class DecomposeProofHandler extends AbstractHandler implements
 			           *  if a warning has not already been generated for this module and this 
 			           *  is not a top-level implicit instantiation.
 			          */
-					  (!this.moduleNode.getNameUS().toString().equals(lastModuleWithImplicitRenamingWarning))
-					  && (!this.moduleNode.getNameUS().toString().equals(
+					  (!this.moduleNode.getName().equals(lastModuleWithImplicitRenamingWarning))
+					  && (!this.moduleNode.getName().equals(
 							  subst.getExpr().getTreeNode().getFilename()))) { 
 					MessageDialog.openError(UIHelper.getShellProvider().getShell(), 
 				      "Decompose Proof Command",
@@ -5475,7 +5473,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
 				        + "\ndefinitions imported by instantiation.  This can be avoided by using"
 				        + "\nWITH clauses to make instantiations explicit."
 						+ "\n\nThis warning will probably not be repeated for this module.");
-					this.lastModuleWithImplicitRenamingWarning = this.moduleNode.getNameUS().toString();
+					this.lastModuleWithImplicitRenamingWarning = this.moduleNode.getName();
 				} // End of if/else statement added by LL on 22 March 2019
 		}
         return result ;
@@ -6156,7 +6154,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             case ASTConstants.NewSymbKind:
                 result.nodeType = NEW_NODE;
                 NewSymbNode newNode = (NewSymbNode) sn;
-                result.newId = newNode.getOpDeclNode().getNameUS().toString();
+                result.newId = newNode.getOpDeclNode().getName();
                 break;
             case ASTConstants.LeafProofKind:
                 result.nodeType = PROOF_NODE;
@@ -6733,7 +6731,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
         // For an operator named Foo!Bar!Op, sets split to the
         // 3-element array {"Foo", "Bar", "Op"}.  Let's call "Op"
         // the PRINCIPAL PART of the operator name.
-        String[] split = opDef.getNameUS().toString().split("!") ;
+        String[] split = opDef.getName().split("!") ;
 
         Location ntLoc = ntRepNode.getLocation() ;
         Location opApplLoc = oaNode.getLocation() ;
@@ -6829,7 +6827,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
         if (!OK) {
             MessageDialog.openError(UIHelper.getShellProvider()
                     .getShell(), "Decompose Proof Command",
-                    "Cannot rename use of " + opDef.getNameUS());
+                    "Cannot rename use of " + opDef.getName());
             return null ;
         }
         
@@ -7036,7 +7034,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 if (i > 0) {
                     result = result + ", " ;
                 } 
-                result = result + identifiers.elementAt(i).getNameUS() +
+                result = result + identifiers.elementAt(i).getName() +
                            " <- " + "\"" + newNames.elementAt(i) + "\"" ;
             }
             return result + "]" ;
@@ -7214,7 +7212,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     if (i != 0) {
                         val = val + ", ";
                     }
-                    val = val + quantIds.elementAt(i).getNameUS().toString();
+                    val = val + quantIds.elementAt(i).getName();
                 }
             }
             if (quantBounds != null) {
@@ -7467,7 +7465,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 && (node.getOperator().getKind() == ASTConstants.UserDefinedOpKind)) {
             // This is a user-defined operator
             OpDefNode definition = (OpDefNode) node.getOperator();
-            String operatorName = definition.getNameUS().toString();
+            String operatorName = definition.getName();
             
             // Set opDef to the (OpArgNode) at the bottom of the SubstInNode chain
             // and instSubs to the new InstanceSubstitution for the decomposition
@@ -7637,7 +7635,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                         if (!((i == 0) && (j == 0))) {
                             namePath = namePath + ",";
                         }
-                        namePath = namePath + quantIds[j].getNameUS().toString();
+                        namePath = namePath + quantIds[j].getName();
                     }
                 }
             } else {
@@ -7648,7 +7646,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                     if (i != 0) {
                         namePath = namePath + ",";
                     }
-                    namePath = namePath + quantIds[i].getNameUS().toString();
+                    namePath = namePath + quantIds[i].getName();
                 }
 
             }
@@ -8534,7 +8532,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
         if (ops instanceof OpDefNode) {
             OpDefNode odn = (OpDefNode) ops;
             return (odn.getKind() == ASTConstants.BuiltInKind)
-                    || !StringHelper.isIdentifier(odn.getNameUS().toString());
+                    || !StringHelper.isIdentifier(odn.getName());
         } else {
             return false;
         }

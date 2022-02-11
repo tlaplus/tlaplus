@@ -159,7 +159,7 @@ public class TokenSpec
                 indiceAdjustedToken = indiceAdjustedToken.substring(1);
             }
             
-            symbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(indiceAdjustedToken), moduleNode, location, null);
+            symbol = EditorUtil.lookupOriginalSymbol(indiceAdjustedToken, moduleNode, location, null);
             if (symbol != null)
             {
                 goodIndex = i;
