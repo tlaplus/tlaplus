@@ -517,7 +517,6 @@ public class Context implements ExploreNode {
 
   public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
 	  visitor.preVisit(this);
-    UniqueString key;
     Enumeration<?>  e = table.keys();
 
     while (e.hasMoreElements()) {
@@ -536,13 +535,12 @@ public class Context implements ExploreNode {
       *********************************************************************/
       Object next = e.nextElement();
       if (next instanceof SymbolTable.ModuleName) {
-         key = ((SymbolTable.ModuleName) next).name ;
-         System.out.println("Bug in debugging caused by inner module " +
-                             key.toString());
+         String key = ((SymbolTable.ModuleName) next).name ;
+         System.out.println("Bug in debugging caused by inner module " + key);
          System.out.println("SANY will throw a null pointer exception.");
         }
       else {
-        key = (UniqueString) next;
+        UniqueString key = (UniqueString) next;
         ((Pair)table.get(key)).info.walkGraph(semNodesTable, visitor);
        } ;
        visitor.postVisit(this);

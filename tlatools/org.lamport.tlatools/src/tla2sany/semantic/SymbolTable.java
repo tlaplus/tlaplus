@@ -257,9 +257,14 @@ public class SymbolTable implements ASTConstants {
   }
 
   static class ModuleName {
-    UniqueString name;
-
+    String name;
+    
+    /** @deprecated */
     ModuleName(UniqueString name) {
+    	this(name.toString());
+    }
+
+    ModuleName(String name) {
       this.name = name;
     }
 
@@ -271,7 +276,7 @@ public class SymbolTable implements ASTConstants {
     }
 
     public final String toString() {
-      return this.name.toString();
+      return this.name;
     }
 	
   }
