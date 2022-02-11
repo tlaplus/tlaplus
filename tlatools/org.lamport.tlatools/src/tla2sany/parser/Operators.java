@@ -39,23 +39,10 @@ public class Operators {
     /***********************************************************************
     * It appears that this is not used.                                    *
     ***********************************************************************/
-
-  /**
-   * @deprecated
-   */
-  static public void addOperator(UniqueString name, Operator op) {
-    DefinitionTable.put(name.toString(), op);
-  }
   
+  // TODO: appears to be unused
   static public void addOperator(String name, Operator op) {
 	DefinitionTable.put(name, op);
-  }
-
-  /** 
-   * @deprecated
-   */
-  static public Operator getOperator( UniqueString name ) {
-    return getOperator(name.toString());
   }
   
   static public Operator getOperator(String name) {
@@ -70,12 +57,7 @@ public class Operators {
      }
   }
   
-  /**
-   * @deprecated
-   */
-  static public boolean existsOperator( UniqueString name ) {
-    return existsOperator(name.toString());
-  }
+  // TODO appears to be unused
   static public boolean existsOperator( String name ) {
 	return ( DefinitionTable.get( name ) != null );
   }
@@ -91,12 +73,6 @@ public class Operators {
     } /* else {
        error
     } */
-  }
-  /**
-   * @deprecated
-   */
-  static public void addSynonym( UniqueString template, UniqueString match ) {
-    addSynonym(template.toString(), match.toString());
   }
   
   /*************************************************************************
@@ -114,12 +90,9 @@ public class Operators {
     else return UniqueString.uniqueStringOf(n.getIdentifier());
   }
 
+  // TODO appears to be unused
   static public void addBuiltinAssoc( String symbol, String builtin ) {
     BuiltinTable.put( symbol, builtin );
-  }
-  /** @deprecated */
-  static public void addBuiltinAssoc( UniqueString symbol, UniqueString builtin ) {
-    addBuiltinAssoc(symbol.toString(), builtin.toString());
   }
 
 /* debugging help */

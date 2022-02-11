@@ -42,7 +42,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
   private boolean numberFlag = false;
   private boolean decimalFlag = false;
 
-  private Operator FcnOp = Operators.getOperator( UniqueString.uniqueStringOf("[" ));
+  private Operator FcnOp = Operators.getOperator("[");
   private SyntaxTreeNode FairnessHook;
 
   private UniqueString At = UniqueString.uniqueStringOf("@");
@@ -2897,7 +2897,7 @@ expecting = "Expression or Op. Symbol";
   final public SyntaxTreeNode PrefixOp() throws ParseException {
   Token t;
     t = PrefixOpToken();
-    lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
+    lastOp = Operators.getOperator(t.image); // YYY to revise
     {if (true) return new SyntaxTreeNode(mn, N_PrefixOp, t) ;}
     throw new Error("Missing return statement in function");
   }
@@ -2905,7 +2905,7 @@ expecting = "Expression or Op. Symbol";
   final public SyntaxTreeNode NonExpPrefixOp() throws ParseException {
   Token t;
     t = NEPrefixOpToken();
-    lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
+    lastOp = Operators.getOperator(t.image); // YYY to revise
     {if (true) return new SyntaxTreeNode(mn, N_NonExpPrefixOp, t) ;}
     throw new Error("Missing return statement in function");
   }
@@ -2914,7 +2914,7 @@ expecting = "Expression or Op. Symbol";
   Token t;
 bpa("Infix Op") ;
     t = InfixOpToken();
-    lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
+    lastOp = Operators.getOperator(t.image); // YYY to revise
 epa();
     {if (true) return new SyntaxTreeNode( mn, N_InfixOp, t) ;}
     throw new Error("Missing return statement in function");
@@ -2923,7 +2923,7 @@ epa();
   final public SyntaxTreeNode PostfixOp() throws ParseException {
   Token t;
     t = PostfixOpToken();
-    lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
+    lastOp = Operators.getOperator(t.image); // YYY to revise
     {if (true) return new SyntaxTreeNode(mn, N_PostfixOp, t) ;}
     throw new Error("Missing return statement in function");
   }

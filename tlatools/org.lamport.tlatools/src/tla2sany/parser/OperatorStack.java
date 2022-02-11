@@ -38,7 +38,7 @@ public class OperatorStack implements tla2sany.st.SyntaxTreeConstants {
     
   public OperatorStack( ParseErrors pe ) {
     PErrors = pe;
-    fcnOp = Operators.getOperator( UniqueString.uniqueStringOf("[") ); }
+    fcnOp = Operators.getOperator("["); }
 
 // could be optimized to reuse memory
   public final void newStack() {
