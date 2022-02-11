@@ -6,6 +6,8 @@
 package tlc2.tool;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import util.UniqueString;
 
@@ -26,10 +28,9 @@ import util.UniqueString;
 // SZ 10.04.2009: This class is used only once in {@link Spec}
 // class. There exist exactly one instance of it in runtime.
 // there is no reason to have any static fields in it. 
-public class Defns implements ToolGlobals, Serializable
+public class Defns implements Serializable // TODO: check whether this needs to implement Serializable
 {
-    private int defnIdx;
-    private Object[] table;
+    private Map<String, Object> table;
 
     /**
      * Constructs the storage of initial size + 32
@@ -38,33 +39,26 @@ public class Defns implements ToolGlobals, Serializable
     // value explicit during the object creation
     public Defns(int initialSize)
     {
-        this.defnIdx = initialSize;
-        this.table = new Object[defnIdx + 32];
+        this.table = new HashMap<String,Object>(initialSize);
     }
 
     public Defns()
     {
-        this.table = new Object[defnIdx + 32];
+        this.table = new HashMap<String,Object>();
     }
 
     Defns(Defns other) {
-    	this.defnIdx = other.defnIdx;
-    	this.table = new Object[other.table.length];
-        System.arraycopy(other.table, 0, this.table, 0, other.table.length);
+    	this.table = new HashMap<String,Object>(other.table);
     }
     
     /**
      * Returns the definition of key if its definition exists.
      * Otherwise, returns null.
+     * @deprecated
      */
     public Object get(UniqueString key)
     {
-        int loc = key.getDefnLoc();
-        if (loc < 0 || loc >= this.table.length)
-        {
-            return null;
-        }
-        return this.table[loc];
+    	return this.get(key.toString());
     }
 
     /**
@@ -74,33 +68,17 @@ public class Defns implements ToolGlobals, Serializable
      */
     public Object get(String key)
     {
-        UniqueString var = UniqueString.uniqueStringOf(key);
-        return this.get(var);
+        return this.table.get(key);
     }
 
     /**
      * Store a new definition for key.  If there was an entry in the
      * table for the key, overwrite it.
+     * @deprecated
      */
     public void put(UniqueString key, Object val)
     {
-        int loc = key.getDefnLoc();
-        if (loc == -1)
-        {
-            loc = defnIdx++;
-            key.setLoc(loc);
-        }
-        if (loc >= this.table.length)
-        {
-            int oldSize = this.table.length;
-            int newSize = Math.max(2 * oldSize, loc + 1);
-            Object[] old = this.table;
-            this.table = new Object[newSize];
-            // SZ 10.04.2009: changed a for loop of array copy to the 
-            // native system copy call
-            System.arraycopy(old, 0, this.table, 0, old.length);
-        }
-        this.table[loc] = val;
+    	this.put(key.toString(), val);
     }
 
     /**
@@ -110,12 +88,16 @@ public class Defns implements ToolGlobals, Serializable
      */
     public void put(String key, Object val)
     {
-        this.put(UniqueString.uniqueStringOf(key), val);
+        this.table.put(key, val);
     }
 
+    /**
+     * 
+     * @param index
+     * @deprecated
+     */
     public void setDefnCount(int index)
     {
-        this.defnIdx = index;
     }
     
     public Defns snapshot() {
