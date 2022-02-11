@@ -114,7 +114,7 @@ public class SemanticHelper
             }
         }
         // finally check the reserved words and the spec
-        return keywords.contains(name) || specContext.occurSymbol(UniqueString.uniqueStringOf(name));
+        return keywords.contains(name) || specContext.occurSymbol(name);
     }
 
     /**

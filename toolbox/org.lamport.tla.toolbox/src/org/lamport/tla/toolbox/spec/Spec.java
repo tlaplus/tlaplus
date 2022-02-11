@@ -679,15 +679,11 @@ public class Spec implements IAdaptable {
 	}
 
 	public boolean declares(final String str) {
-		return declares(UniqueString.uniqueStringOf(str));
-	}
-
-	public boolean declares(final UniqueString us) {
 		if (getRootModule() != null) {
 			final ExternalModuleTable externalModuleTable = getRootModule().getExternalModuleTable();
 			final Context context = externalModuleTable.getContextForRootModule();
 			if (context != null) {
-				return context.occurSymbol(us);
+				return context.occurSymbol(str);
 			}
 		}
 		return false;

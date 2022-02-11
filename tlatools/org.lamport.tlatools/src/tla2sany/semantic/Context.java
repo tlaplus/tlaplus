@@ -250,13 +250,6 @@ public class Context implements ExploreNode {
   }
 
   /**
-   * @deprecated
-   */
-  public boolean occurSymbol(UniqueString name) {
-	  return this.occurSymbol(name.toString());
-  }
-
-  /**
    * Returns Enumeration of the elements of the Hashtable "Table",
    * which are pair of the form (Pair link, SymbolNode sn)
    */
