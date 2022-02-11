@@ -49,7 +49,7 @@ public class TLAPlusExecutor {
 			this.params = new HashMap<>();
 			this.symbol2node = new HashMap<>();
 			for (String param : params) {
-				final SymbolNode node = action.con.lookupName(s -> s.getNameUS().equals(param));
+				final SymbolNode node = action.con.lookupName(s -> s.getName().equals(param));
 				this.symbol2node.put(param, node);
 			}
 		}
@@ -87,7 +87,7 @@ public class TLAPlusExecutor {
 		final Action[] actions = tool.getActions();
 		for (Action action : actions) {
 			if (action.getName().equals(actionName)) {
-				final Object lookup = action.con.lookup(s -> s.getNameUS().equals(processNode));
+				final Object lookup = action.con.lookup(s -> s.getName().equals(processNode));
 				if (lookup != null) {
 					if (lookup.equals(v)) {
 						return new Mapping(action, params);

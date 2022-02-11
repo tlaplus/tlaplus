@@ -106,7 +106,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
                                                          // override
             {
                 OpDefNode result = (OpDefNode) (definitionSelection.getResult())[0];
-                formula = new Assignment(result.getNameUS().toString(), Assignment.getArrayOfEmptyStrings(result
+                formula = new Assignment(result.getName(), Assignment.getArrayOfEmptyStrings(result
                         .getSource().getNumberOfArgs()), "");
             } else
             {
@@ -196,7 +196,7 @@ public class ValidateableOverridesSectionPart extends ValidateableConstantSectio
 					// I'm not going to rewrite it.
                     final OpDefNode node = ModelHelper.getOpDefNode(label);
             		if (moduleNameStyle && (node != null) && (node.getSource() != node)) {
-            			noBangLabel += " [" + node.getSource().getOriginallyDefinedInModuleNode().getNameUS().toString() + "]";
+            			noBangLabel += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName() + "]";
             		}
 
 					final boolean appendOverriddenModelValue = assign.isModelValue() && (node != null)

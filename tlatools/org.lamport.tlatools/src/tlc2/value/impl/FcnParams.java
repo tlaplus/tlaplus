@@ -60,14 +60,14 @@ public class FcnParams implements IFcnParams {
       FormalParamNode[] ids = this.formals[0];
       if (this.isTuples[0]) {
 	sb.append("<<");
-	if (ids.length != 0) sb.append(ids[0].getNameUS());
+	if (ids.length != 0) sb.append(ids[0].getName());
 	for (int j = 1; j < ids.length; j++) {
-	  sb.append(", " + ids[j].getNameUS());
+	  sb.append(", " + ids[j].getName());
 	}
 	sb.append(">>");	
       }
       else {
-	sb.append(ids[0].getNameUS());
+	sb.append(ids[0].getName());
       }
       sb.append(" \\in " + this.domains[0].toString());
     }
@@ -76,14 +76,14 @@ public class FcnParams implements IFcnParams {
       FormalParamNode[] ids = this.formals[i];
       if (this.isTuples[i]) {
 	sb.append("<<");
-	if (ids.length != 0) sb.append(ids[0].getNameUS());
+	if (ids.length != 0) sb.append(ids[0].getName());
 	for (int j = 1; j < ids.length; j++) {
-	  sb.append(", " + ids[j].getNameUS());
+	  sb.append(", " + ids[j].getName());
 	}
 	sb.append(">>");	
       }
       else {
-	sb.append(ids[0].getNameUS());
+	sb.append(ids[0].getName());
       }	
       sb.append(" \\in " + this.domains[i].toString());
     }

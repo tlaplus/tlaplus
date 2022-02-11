@@ -152,9 +152,9 @@ public class OpDeclNode extends OpDefOrDeclNode {
 	@Override
 	public String getHumanReadableImage() {
 		if (getKind() == 2) {
-			return super.getNameUS().toString() + " CONSTANT";
+			return super.getName() + " CONSTANT";
 		} else if (getKind() == 3) {
-			return super.getNameUS().toString() + " VARIABLE";
+			return super.getName() + " VARIABLE";
 		}
 		return super.getHumanReadableImage();
 	}
@@ -165,7 +165,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
     return "\n*OpDeclNode: " + this.getNameUS() + "  " + super.toString(depth)
            + "\n  originallyDefinedInModule: " +
                             (originallyDefinedInModule != null
-                             ? originallyDefinedInModule.getNameUS().toString()
+                             ? originallyDefinedInModule.getName()
                              : "<null>" ) ;
   }
 
@@ -176,7 +176,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
 
   protected Element getSymbolElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("OpDeclNode");
-    e.appendChild(appendText(doc,"uniquename",getNameUS().toString()));
+    e.appendChild(appendText(doc,"uniquename",getName()));
     e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
     e.appendChild(appendText(doc,"kind", Integer.toString(getKind())));
     return e;

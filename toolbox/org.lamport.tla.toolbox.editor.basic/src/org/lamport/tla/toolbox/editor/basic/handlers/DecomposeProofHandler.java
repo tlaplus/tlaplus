@@ -914,7 +914,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
             rename.newNames.remove(i);
             rename.newNames.insertElementAt(name, i);
         } else {
-            if (!name.equals(node.getNameUS().toString())) {
+            if (!name.equals(node.getName())) {
                 rename.identifiers.add(node);
                 rename.newNames.add(name);
             }
@@ -7761,8 +7761,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
                 }
 
                 if (curNode.getOperator() instanceof OpDefNode) {
-                    UniqueString opId = ((OpDefNode) curNode.getOperator())
-                            .getNameUS();
+                    UniqueString opId = ((OpDefNode) curNode.getOperator()).getNameUS();
                     String opName = opId.toString();
 
                     if (   (opId == ASTConstants.OP_be)

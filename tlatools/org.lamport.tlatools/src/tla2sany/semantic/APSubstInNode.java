@@ -145,7 +145,7 @@ public class APSubstInNode extends LevelNode {
       // Try to resolve the name in the instancer module so we can see
       // if it is recognized as an operator, and if so, what kind of
       // operator it is
-      SymbolNode symb = instancerST.resolveSymbol(decl.getNameUS());
+      SymbolNode symb = instancerST.resolveSymbol(decl.getName());
 
       // if the name could be resolved in the instancer module
       // (including parameters created on the LHS of the module
@@ -197,11 +197,11 @@ public class APSubstInNode extends LevelNode {
    * substitutions
    */
   @SuppressWarnings("unused")	// TODO final else block is dead code 
-  final void addExplicitSubstitute(Context instanceCtxt, UniqueString lhs,
+  final void addExplicitSubstitute(Context instanceCtxt, String lhs,
                                    TreeNode stn, ExprOrOpArgNode sub) {
     int index;
     for (index = 0; index < this.substs.length; index++) {
-      if (lhs == this.substs[index].getOp().getNameUS()) break;
+      if (lhs.equals(this.substs[index].getOp().getName())) break;
     }
 
     if (index < this.substs.length) {
@@ -265,12 +265,12 @@ public class APSubstInNode extends LevelNode {
   final void matchAll(Vector decls) {
     for (int i = 0; i < decls.size(); i++) {
       // Get the name of the i'th operator that must be substituted for
-      UniqueString opName = ((OpDeclNode)decls.elementAt(i)).getNameUS();
+      String opName = ((OpDeclNode)decls.elementAt(i)).getName();
 
       // See if it is represented in the substitutions array
       int j;
       for (j = 0; j < this.substs.length; j++) {
-        if (this.substs[j].getOp().getNameUS() == opName) break;
+        if (this.substs[j].getOp().getName().equals(opName)) break;
       }
 
       // If not, then report an error
@@ -278,7 +278,7 @@ public class APSubstInNode extends LevelNode {
         errors.addError(stn.getLocation(),
 			"Substitution missing for symbol " + opName + " declared at " +
 			((OpDeclNode)(decls.elementAt(i))).getTreeNode().getLocation() +
-			" \nand instantiated in module " + instantiatingModule.getNameUS() + "." );
+			" \nand instantiated in module " + instantiatingModule.getName() + "." );
       }
     }
   }
@@ -401,8 +401,8 @@ public class APSubstInNode extends LevelNode {
 
     String ret = "\n*APSubstInNode: "
                  + super.toString(depth)
-	         + "\n  instantiating module: " + instantiatingModule.getNameUS()
-                 + ", instantiated module: " + instantiatedModule.getNameUS()
+	         + "\n  instantiating module: " + instantiatingModule.getName()
+                 + ", instantiated module: " + instantiatedModule.getName()
                  + Strings.indent(2, "\nSubstitutions:");
     if (this.substs != null) {
       for (int i = 0; i < this.substs.length; i++) {

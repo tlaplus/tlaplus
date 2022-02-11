@@ -148,7 +148,7 @@ public class SubstInNode extends ExprNode {
       // Try to resolve the name in the instancer module so we can see
       // if it is recognized as an operator, and if so, what kind of
       // operator it is
-      SymbolNode symb = instancerST.resolveSymbol(decl.getNameUS());
+      SymbolNode symb = instancerST.resolveSymbol(decl.getName());
 
       // if the name could be resolved in the instancer module
       // (including parameters created on the LHS of the module
@@ -268,12 +268,12 @@ public class SubstInNode extends ExprNode {
   final void matchAll(Vector<OpDeclNode> decls) {
     for (int i = 0; i < decls.size(); i++) {
       // Get the name of the i'th operator that must be substituted for
-      UniqueString opName = decls.elementAt(i).getNameUS();
+      String opName = decls.elementAt(i).getName();
 
       // See if it is represented in the substitutions array
       int j;
       for (j = 0; j < this.substs.length; j++) {
-        if (this.substs[j].getOp().getNameUS() == opName) break;
+        if (this.substs[j].getOp().getName().equals(opName)) break;
       }
 
       // If not, then report an error
@@ -281,7 +281,7 @@ public class SubstInNode extends ExprNode {
         errors.addError(stn.getLocation(),
 			"Substitution missing for symbol " + opName + " declared at " +
 			decls.elementAt(i).getTreeNode().getLocation() +
-			" \nand instantiated in module " + instantiatingModule.getNameUS() + "." );
+			" \nand instantiated in module " + instantiatingModule.getName() + "." );
       }
     }
   }
@@ -471,8 +471,8 @@ public class SubstInNode extends ExprNode {
 
     String ret = "\n*SubstInNode: "
                  + super.toString(depth)
-	         + "\n  instantiating module: " + instantiatingModule.getNameUS()
-                 + ", instantiated module: " + instantiatedModule.getNameUS()
+	         + "\n  instantiating module: " + instantiatingModule.getName()
+                 + ", instantiated module: " + instantiatedModule.getName()
                  + Strings.indent(2, "\nSubstitutions:");
     if (this.substs != null) {
       for (int i = 0; i < this.substs.length; i++) {

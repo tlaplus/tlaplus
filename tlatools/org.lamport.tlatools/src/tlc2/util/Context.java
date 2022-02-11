@@ -144,13 +144,13 @@ public final class Context implements Iterator<Context> {
 			}
 			return this.next.toString(sb);
 		}
-		sb.append(this.name.getNameUS());
+		sb.append(this.name.getName());
 		sb.append("->");
 		sb.append(this.value);
 		Context cur;
 		for (cur = this.next; cur.name != null; cur = cur.next) {
 			sb.append(", ");
-			sb.append(cur.name.getNameUS());
+			sb.append(cur.name.getName());
 			sb.append("->");
 			sb.append(cur.value);
 		}

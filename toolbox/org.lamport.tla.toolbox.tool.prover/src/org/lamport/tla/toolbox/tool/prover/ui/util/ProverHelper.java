@@ -712,7 +712,7 @@ public class ProverHelper
                     if (assertion instanceof OpApplNode)
                     {
                         OpApplNode opApplAss = (OpApplNode) assertion;
-                        String name = opApplAss.getOperator().getNameUS().toString();
+                        String name = opApplAss.getOperator().getName();
                         if (name.equals("$Have") || name.equals("$Take") || name.equals("$Witness"))
                             shouldHaveProof = false;
                     }

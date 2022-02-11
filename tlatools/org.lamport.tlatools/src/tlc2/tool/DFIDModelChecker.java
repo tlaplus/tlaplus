@@ -408,12 +408,12 @@ public class DFIDModelChecker extends AbstractChecker
 								String[] parameters;
 								if (tool.getActions().length == 1) {
 									parameters = new String[] { unassigned.size() > 1 ? "s are" : " is",
-											unassigned.stream().map(n -> n.getNameUS().toString())
+											unassigned.stream().map(n -> n.getName())
 													.collect(Collectors.joining(", ")) };
 								} else {
 									parameters = new String[] { tool.getActions()[i].getName().toString(),
 											unassigned.size() > 1 ? "s are" : " is",
-											unassigned.stream().map(n -> n.getNameUS().toString())
+											unassigned.stream().map(n -> n.getName())
 													.collect(Collectors.joining(", ")) };
 								}
 								this.printTrace(errorCode, parameters, curState, succState);

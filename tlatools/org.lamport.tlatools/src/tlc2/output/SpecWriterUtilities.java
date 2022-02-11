@@ -299,7 +299,7 @@ public final class SpecWriterUtilities {
 		final HashMap<String, OpDefNode> nodeTable = new HashMap<>(opDefNodes.length);
 
 		for (int j = 0; j < opDefNodes.length; j++) {
-			final String key = opDefNodes[j].getNameUS().toString();
+			final String key = opDefNodes[j].getName();
 			nodeTable.put(key, opDefNodes[j]);
 		}
 
@@ -331,14 +331,14 @@ public final class SpecWriterUtilities {
 					if (formula.isModelValue() && !formula.isSetOfModelValues()) {
                         // model value
                         content = new String[] {
-                                source.getNameUS().toString() + TLAConstants.ARROW + "["
-                                        + source.getOriginallyDefinedInModuleNode().getNameUS().toString() + "]" + id
-                                        + " " + id + TLAConstants.EQ + source.getNameUS().toString(), "CONSTANT " + id };
+                                source.getName() + TLAConstants.ARROW + "["
+                                        + source.getOriginallyDefinedInModuleNode().getName() + "]" + id
+                                        + " " + id + TLAConstants.EQ + source.getName(), "CONSTANT " + id };
 					} else {
                         // not a model value
                         content = new String[] {
-                                source.getNameUS().toString() + TLAConstants.ARROW + "["
-                                        + source.getOriginallyDefinedInModuleNode().getNameUS().toString() + "]" + id,
+                                source.getName() + TLAConstants.ARROW + "["
+                                        + source.getOriginallyDefinedInModuleNode().getName() + "]" + id,
                                 formula.getParametrizedLabel(id) + TLAConstants.DEFINES_CR + formula.getRight() };
                     }
 				} else {

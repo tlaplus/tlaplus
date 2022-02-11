@@ -292,14 +292,14 @@ public abstract class Tool
   private final void getActionsAppl(OpApplNode next, Context con, final OpDefNode actionName, CostModel cm) {
     ExprOrOpArgNode[] args = next.getArgs();
     SymbolNode opNode = next.getOperator();
-    int opcode = BuiltInOPs.getOpCode(opNode.getNameUS());
+    int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
     if (opcode == 0) {
       Object val = this.lookup(opNode, con, false);
 
       if (val instanceof OpDefNode) {
         OpDefNode opDef = (OpDefNode)val;
-        opcode = BuiltInOPs.getOpCode(opDef.getNameUS());
+        opcode = BuiltInOPs.getOpCode(opDef.getName());
         if (opcode == 0) {
           try {
             FormalParamNode[] formals = opDef.getParams();
@@ -532,7 +532,7 @@ public abstract class Tool
         ExprOrOpArgNode[] args = init.getArgs();
         int alen = args.length;
         SymbolNode opNode = init.getOperator();
-        int opcode = BuiltInOPs.getOpCode(opNode.getNameUS());
+        int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
         if (opcode == 0) {
           // This is a user-defined operator with one exception: it may
@@ -542,7 +542,7 @@ public abstract class Tool
 
           if (val instanceof OpDefNode) {
             OpDefNode opDef = (OpDefNode)val;
-            opcode = BuiltInOPs.getOpCode(opDef.getNameUS());
+            opcode = BuiltInOPs.getOpCode(opDef.getName());
             if (opcode == 0) {
               // Context c1 = this.getOpContext(opDef, args, c, false);
               Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
@@ -557,7 +557,7 @@ public abstract class Tool
           *********************************************************************/
           if (val instanceof ThmOrAssumpDefNode) {
             ThmOrAssumpDefNode opDef = (ThmOrAssumpDefNode)val;
-            opcode = BuiltInOPs.getOpCode(opDef.getNameUS());
+            opcode = BuiltInOPs.getOpCode(opDef.getName());
             Context c1 = this.getOpContext(opDef, args, c, true);
             this.getInitStates(opDef.getBody(), acts, c1, ps, states, cm);
             return;
@@ -1025,7 +1025,7 @@ public abstract class Tool
         final int alen = args.length;
         final SymbolNode opNode = pred.getOperator();
 
-        int opcode = BuiltInOPs.getOpCode(opNode.getNameUS());
+        int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
         if (opcode == 0) {
           // This is a user-defined operator with one exception: it may
@@ -1035,7 +1035,7 @@ public abstract class Tool
 
           if (val instanceof OpDefNode) {
 				final OpDefNode opDef = (OpDefNode) val;
-				opcode = BuiltInOPs.getOpCode(opDef.getNameUS());
+				opcode = BuiltInOPs.getOpCode(opDef.getName());
 				if (opcode == 0) {
 					return this.getNextStates(action, opDef.getBody(), acts, this.getOpContext(opDef, args, c, true, cm, toolId), s0, s1, nss, cm);
 	            }
@@ -1739,7 +1739,7 @@ public abstract class Tool
     }
         ExprOrOpArgNode[] args = expr.getArgs();
         SymbolNode opNode = expr.getOperator();
-        int opcode = BuiltInOPs.getOpCode(opNode.getNameUS());
+        int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
         if (opcode == 0) {
           // This is a user-defined operator with one exception: it may
@@ -1858,7 +1858,7 @@ public abstract class Tool
 			Value res = null;
           if (val instanceof OpDefNode) {
             OpDefNode opDef = (OpDefNode)val;
-            opcode = BuiltInOPs.getOpCode(opDef.getNameUS());
+            opcode = BuiltInOPs.getOpCode(opDef.getName());
             if (opcode == 0) {
               Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
               res = this.eval(opDef.getBody(), c1, s0, s1, control, cm);
@@ -1923,7 +1923,7 @@ public abstract class Tool
 					// https://github.com/tlaplus/tlaplus/issues/618
 					// http://discuss.tlapl.us/msg03840.html
 					Assert.fail(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_LIVE,
-							new String[] { opNode.getNameUS().toString(), expr.toString() }, expr, c);
+							new String[] { opNode.getName(), expr.toString() }, expr, c);
 					// Assert#fail throws exception, thus, no need for an else.
 				}
 				// EV#Enabled /\ EV#Prime /\ OpDeclNode is the case when A is an action (a boolean
@@ -1940,7 +1940,7 @@ public abstract class Tool
 	      	    // Spec == Init /\ [][a' > a]_a
 	      	    // 
 	            Assert.fail(EC.TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR,
-                new String[] { opNode.getNameUS().toString(), expr.toString() }, expr, c);
+                new String[] { opNode.getName(), expr.toString() }, expr, c);
           }
           if (opcode == 0) {
             return res;
@@ -2861,7 +2861,7 @@ public abstract class Tool
         ExprOrOpArgNode[] args = pred.getArgs();
         int alen = args.length;
         SymbolNode opNode = pred.getOperator();
-        int opcode = BuiltInOPs.getOpCode(opNode.getNameUS());
+        int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
         if (opcode == 0)
         {
@@ -2873,7 +2873,7 @@ public abstract class Tool
           if (val instanceof OpDefNode)
           {
             OpDefNode opDef = (OpDefNode) val;
-            opcode = BuiltInOPs.getOpCode(opDef.getNameUS());
+            opcode = BuiltInOPs.getOpCode(opDef.getName());
             if (opcode == 0)
             {
               // Context c1 = this.getOpContext(opDef, args, c, false);
@@ -3282,7 +3282,7 @@ public abstract class Tool
           ExprOrOpArgNode[] args = expr1.getArgs();
           int alen = args.length;
           SymbolNode opNode = expr1.getOperator();
-          UniqueString opName = opNode.getNameUS();
+          String opName = opNode.getName();
           int opcode = BuiltInOPs.getOpCode(opName);
 
           if (opcode == OPCODE_tup) {
@@ -3630,7 +3630,7 @@ public abstract class Tool
 		  final OpApplNode permutationNode = (OpApplNode)node;
 		  if (permutationNode.getOperator() instanceof OpDefNode) {
 			  final OpDefNode operator = (OpDefNode)permutationNode.getOperator();
-			  if (TLAConstants.BuiltInOperators.PERMUTATIONS.equals(operator.getNameUS().toString())) {
+			  if (TLAConstants.BuiltInOperators.PERMUTATIONS.equals(operator.getName())) {
 				  final ExprOrOpArgNode[] operands = permutationNode.getArgs();
 				  if ((operands.length == 1)
 						  && (operands[0] instanceof OpApplNode)

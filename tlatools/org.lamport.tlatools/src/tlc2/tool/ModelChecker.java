@@ -575,13 +575,13 @@ public class ModelChecker extends AbstractChecker
 				if (this.tool.getActions().length == 1) {
 					MP.printError(errorCode,
 							new String[] { unassigned.size() > 1 ? "s are" : " is",
-									unassigned.stream().map(n -> n.getNameUS().toString())
+									unassigned.stream().map(n -> n.getName())
 											.collect(Collectors.joining(", ")) });
 				} else {
 					MP.printError(errorCode,
 							new String[] { action.getName().toString(),
 									unassigned.size() > 1 ? "s are" : " is",
-									unassigned.stream().map(n -> n.getNameUS().toString())
+									unassigned.stream().map(n -> n.getName())
 											.collect(Collectors.joining(", ")) });
 				}
 				this.trace.printTrace(curState, succState);

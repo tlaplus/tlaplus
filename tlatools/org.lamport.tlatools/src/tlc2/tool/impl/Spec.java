@@ -475,7 +475,7 @@ abstract class Spec
     {
         ExprOrOpArgNode[] args = pred.getArgs();
         SymbolNode opNode = pred.getOperator();
-        int opcode = BuiltInOPs.getOpCode(opNode.getNameUS());
+        int opcode = BuiltInOPs.getOpCode(opNode.getName());
 
         switch (opcode) {
         case OPCODE_fa: // FcnApply

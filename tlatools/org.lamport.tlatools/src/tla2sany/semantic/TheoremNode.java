@@ -105,9 +105,8 @@ public class TheoremNode extends LevelNode {
   * null.                                                                  *
   *************************************************************************/
   public final UniqueString getName() {
-    if (def == null) {return null;} ;
-    return def.getNameUS() ;
-    }
+    return def == null ? null : def.getNameUS();
+  }
 
   /* Level checking */
 

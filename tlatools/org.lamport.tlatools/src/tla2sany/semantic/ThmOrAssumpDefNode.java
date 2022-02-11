@@ -595,11 +595,11 @@ public class ThmOrAssumpDefNode extends SymbolNode
   public final String toString(int depth) {
     if (depth <= 0) return "";
     String ret =
-          "\n*ThmOrAssumpDefNode: " + this.getNameUS().toString() +
+          "\n*ThmOrAssumpDefNode: " + this.getName() +
             "  " + super.toString(depth) +
             " arity: " + this.arity +
             " module: " + (originallyDefinedInModule != null
-                             ? originallyDefinedInModule.getNameUS().toString()
+                             ? originallyDefinedInModule.getName()
                              : "<null>" ) ;
     if (instantiatedFrom != null) {ret += " instantiatedFrom: " +
                                           instantiatedFrom.getNameUS() ; } ;
@@ -659,7 +659,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
       e = doc.createElement("AssumeDef");
     }
 
-    e.appendChild(appendText(doc, "uniquename", getNameUS().toString() ));
+    e.appendChild(appendText(doc, "uniquename", getName() ));
     e.appendChild(body.export(doc, context));
     return e;
   }

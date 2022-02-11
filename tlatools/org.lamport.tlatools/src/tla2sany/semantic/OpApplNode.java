@@ -1017,7 +1017,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     *    Note that not a problem with CHOOSE, which does not allow a       *
     *    temporal body.                                                    *
     ***********************************************************************/
-    String opName = this.operator.getNameUS().toString();
+    String opName = this.operator.getName();
     /***********************************************************************
     * Check for []A.                                                       *
     ***********************************************************************/
@@ -1025,7 +1025,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       ExprNode arg = (ExprNode) this.getArgs()[0];
       if (  (arg.getLevel() == ActionLevel)
           && (arg.getKind() == OpApplKind)) {
-        if (!((OpApplNode) arg).operator.getNameUS().toString().equals(
+        if (!((OpApplNode) arg).operator.getName().equals(
                                                            "$SquareAct")) {
           errors.addError(
             stn.getLocation(),
@@ -1041,7 +1041,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         ExprNode arg = (ExprNode) this.getArgs()[0];
         if (  (arg.getLevel() == ActionLevel)
             && (arg.getKind() == OpApplKind)) {
-          if (!((OpApplNode) arg).operator.getNameUS().toString().equals(
+          if (!((OpApplNode) arg).operator.getName().equals(
                                                              "$AngleAct")) {
             errors.addError(
               stn.getLocation(),
@@ -1211,7 +1211,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       ret = "\nOperator: null";
     }
     else {
-      ret = "\nOperator: " + operator.getNameUS().toString() + "  "
+      ret = "\nOperator: " + operator.getName() + "  "
             + operator.getUid() + "  ";
     }
 
@@ -1299,7 +1299,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 			int idx = 0;
 			for (final SymbolNode sn : s) {
 				result.append("/\\ ");
-				result.append(sn.getNameUS().toString());
+				result.append(sn.getName());
 
 				final IValue value = ((ITupleValue) aValue).getElem(idx++);
 				result.append(" = ");
@@ -1318,13 +1318,13 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     // TL 2014 - A fix for detecting null representing OTHER inside a case (please refrain from using null as a semantical object),
     // its form is
     // OpApplNode: Operator: $Case - Operands: 3(_,_,OpApplNode: Operator: $Pair - Operands: 2(null,_))
-    if (operator.getNameUS().toString().equals("$Case") && operands.length > 1 /* OTHER cannot occur alone in a CASE */) {
+    if (operator.getName().equals("$Case") && operands.length > 1 /* OTHER cannot occur alone in a CASE */) {
       // OTHER should be last operand
        ExprOrOpArgNode lastOperand = operands[operands.length-1];
        if (lastOperand instanceof tla2sany.semantic.OpApplNode) {
           OpApplNode other = (OpApplNode)lastOperand;
           // indeed the OTHER case
-          if (other.getOperator().getNameUS().toString().equals("$Pair") && other.getArgs()[0] == null) {
+          if (other.getOperator().getName().equals("$Pair") && other.getArgs()[0] == null) {
             // we pass a flag that tells any future OpApplNode that a null operand in 0 position should be replaced by the string $Other
             context = new SymbolContext(context);
             context.setFlag(SymbolContext.OTHER_BUG);

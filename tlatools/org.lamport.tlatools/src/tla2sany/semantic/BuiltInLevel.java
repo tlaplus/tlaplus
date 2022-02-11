@@ -149,11 +149,11 @@ public class BuiltInLevel implements LevelConstants {
 
     while (Enum.hasMoreElements()) {
       SymbolNode sn = Enum.nextElement();
-      Data d = (Data)LevelData.get(sn.getNameUS().toString());
+      Data d = (Data)LevelData.get(sn.getName());
       if (d != null) {
-	OpDefNode opDef = (OpDefNode)gcon.getSymbol(sn.getNameUS());
+	OpDefNode opDef = (OpDefNode)gcon.getSymbol(sn.getName());
 	if (opDef.getArity() != d.arity) {
-	    throw new WrongInvocationException("Level data for " + sn.getNameUS() + " has the wrong arity");
+	    throw new WrongInvocationException("Level data for " + sn.getName() + " has the wrong arity");
 	}
 	opDef.setBuiltinLevel(d);
       }	

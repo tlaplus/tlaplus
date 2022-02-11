@@ -78,7 +78,7 @@ public abstract class SymbolNode extends LevelNode {
   }
   
   public String getSignature() {
-	  return getNameUS().toString();
+	  return getName();
   }
 
   /**
@@ -135,7 +135,7 @@ public abstract class SymbolNode extends LevelNode {
    */
   public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context) {
     if (!context.isTop_level_entry())
-      throw new IllegalArgumentException("Exporting definition "+getNameUS()+" ref "+getNodeRef()+" twice!");
+      throw new IllegalArgumentException("Exporting definition "+getName()+" ref "+getNodeRef()+" twice!");
     context.resetTop_level_entry();
     try {
       Element e = getSymbolElement(doc, context);

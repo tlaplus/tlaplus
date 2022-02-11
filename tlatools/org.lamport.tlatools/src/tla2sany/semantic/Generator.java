@@ -2056,7 +2056,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				symbolTable = oldSt;
 
 				// Add the inner module's name to the context of the outer module
-				symbolTable.addModule(mn.getNameUS(), mn);
+				symbolTable.addModule(mn.getName(), mn);
 
 				/*******************************************************************
 				 * Append the opDefsInRecursiveSection field of the inner module * to that of
@@ -5055,7 +5055,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						newOdn.setLabels(odn.getLabelsHT());
 					} else {
 						newOdn = odn;
-						symbolTable.addSymbol(odn.getNameUS(), odn);
+						symbolTable.addSymbol(odn.getName(), odn);
 					}
 				} else {
 					// Create the "wrapping" SubstInNode as a clone of "subst" above,

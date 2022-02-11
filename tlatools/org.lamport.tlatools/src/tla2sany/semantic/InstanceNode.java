@@ -168,9 +168,9 @@ public class InstanceNode extends LevelNode {
           if (mexp.levelCheck(itr) && mparam.levelCheck(itr)) {
             errors.addError(
                this.stn.getLocation(),
-               "Level error in instantiating module '" + module.getNameUS() +
+               "Level error in instantiating module '" + module.getName() +
                "':\nThe level of the expression or operator substituted for '"
-                   + mparam.getNameUS() +
+                   + mparam.getName() +
                "' \nmust be at most " + mparam.getLevel() + ".");
           }
           this.levelCorrect = false;
@@ -188,9 +188,9 @@ public class InstanceNode extends LevelNode {
             && ( ! ((OpDefNode) op).isLeibniz)) {
           errors.addError(
                this.stn.getLocation(),
-               "Error in instantiating module '" + module.getNameUS() +
+               "Error in instantiating module '" + module.getName() +
                "':\n A non-Leibniz operator substituted for '"
-                   + mparam.getNameUS() + "'.");
+                   + mparam.getName() + "'.");
             } // if ;
         } // if (mexp.getKind() == OpArgKind) ;
       } // for i
@@ -208,9 +208,9 @@ public class InstanceNode extends LevelNode {
           mexp.getLevel() > plevel.intValue()) {
         if (mexp.levelCheck(itr)) {
           errors.addError(this.stn.getLocation(),
-            "Level error in instantiating module '" + module.getNameUS() +
+            "Level error in instantiating module '" + module.getName() +
             "':\nThe level of the expression or operator substituted for '" +
-            mparam.getNameUS() + "' \nmust be at most " + plevel + ".");
+            mparam.getName() + "' \nmust be at most " + plevel + ".");
         }
         this.levelCorrect = false;
       }
@@ -235,9 +235,9 @@ public class InstanceNode extends LevelNode {
               *************************************************************/
               errors.addError(
                 this.stn.getLocation(),
-                "Level error in instantiating module '" + module.getNameUS() +
+                "Level error in instantiating module '" + module.getName() +
                   "':\nThe level of the argument " + j + " of the operator " +
-                  opDef.getNameUS() + " \nmust be at least " + plevel + ".");
+                  opDef.getName() + " \nmust be at least " + plevel + ".");
             }
             this.levelCorrect = false;
           }
@@ -266,9 +266,9 @@ public class InstanceNode extends LevelNode {
                 errors.addError(
                    this.stn.getLocation(),
                    "Level error when instantiating module '" +
-                      module.getNameUS() + "':\nThe level of the argument " +
+                      module.getName() + "':\nThe level of the argument " +
                       alp.i + " of the operator " +
-                      pi.getNameUS() + "' \nmust be at most " +
+                      pi.getName() + "' \nmust be at most " +
                       ((OpDefNode)op).getMaxLevel(alp.i) + ".");
               }
               this.levelCorrect = false;
@@ -418,7 +418,7 @@ public class InstanceNode extends LevelNode {
 
     String ret = "\n*InstanceNode " + super.toString(depth) +
                  "  InstanceName = " + (name == null ? "(none)" : name.toString()) +
-                 Strings.indent(2, "\nModule: " + module.getNameUS())
+                 Strings.indent(2, "\nModule: " + module.getName())
    +             Strings.indent(2, "\nlocal: " + this.local);
     if (params.length > 0) {
       ret += Strings.indent(2,"\nInstance parameters:");
@@ -454,7 +454,7 @@ public class InstanceNode extends LevelNode {
 
       Element ret = doc.createElement("InstanceNode");
       if (name != null) ret.appendChild(appendText(doc,"uniquename",name.toString()));
-      ret.appendChild(appendText(doc, "module", module.getNameUS().toString() ));
+      ret.appendChild(appendText(doc, "module", module.getName() ));
       ret.appendChild(sbts);
       ret.appendChild(prms);
       return ret;

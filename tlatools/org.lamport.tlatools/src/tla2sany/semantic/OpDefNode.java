@@ -1300,7 +1300,7 @@ public class OpDefNode extends OpDefOrDeclNode
 	@Override
 	public String getSignature() {
 		final StringBuffer buf = new StringBuffer();
-		buf.append(getNameUS().toString());
+		buf.append(getName());
 		if (getArity() > 0 && getKind() != ASTConstants.BuiltInKind) {
 			buf.append("(");
 			//TODO This hack doesn't work for infix operators
@@ -1331,7 +1331,7 @@ public class OpDefNode extends OpDefOrDeclNode
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    String ret = "\n*OpDefNode: " + this.getNameUS().toString()
+    String ret = "\n*OpDefNode: " + this.getName()
                 + "\n  "
                 + super.toString(depth)
                 + "\n  local: " + local
@@ -1342,11 +1342,11 @@ public class OpDefNode extends OpDefOrDeclNode
                 + "\n  local: " + local
                 + "\n  source: " +
                   ((source == null) ? "this" :
-                       (source.getNameUS().toString() +
+                       (source.getName() +
                             " (uid: " + source.myUID + ")"))
                 + "\n  originallyDefinedInModule: " +
                      ((originallyDefinedInModule == null) ? "null" :
-                       (originallyDefinedInModule.getNameUS().toString() +
+                       (originallyDefinedInModule.getName() +
                           " (uid: " + originallyDefinedInModule.myUID + ")"))
                 + ((stepNode == null) ? "" :
                         ("\n  stepNode: " +
@@ -1443,7 +1443,7 @@ public class OpDefNode extends OpDefOrDeclNode
     switch (getKind()) {
       case UserDefinedOpKind:
         ret = doc.createElement("UserDefinedOpKind");
-        ret.appendChild(appendText(doc,"uniquename",getNameUS().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getName()));
         ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
         ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
         if (params != null) {
@@ -1460,7 +1460,7 @@ public class OpDefNode extends OpDefOrDeclNode
       break;
       case BuiltInKind:
         ret = doc.createElement("BuiltInKind");
-        ret.appendChild(appendText(doc,"uniquename",getNameUS().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getName()));
         ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
         Element arguments2 = doc.createElement("params");
         if (params != null) {
@@ -1475,7 +1475,7 @@ public class OpDefNode extends OpDefOrDeclNode
         break;
       case ModuleInstanceKind:
         ret = doc.createElement("ModuleInstanceKind");
-        ret.appendChild(appendText(doc,"uniquename",getNameUS().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getName()));
         break;
       default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
     }

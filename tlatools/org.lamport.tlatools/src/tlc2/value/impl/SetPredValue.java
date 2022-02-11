@@ -338,13 +338,13 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
       sb.append("{");
       if (this.vars instanceof FormalParamNode) {
-        sb.append(((FormalParamNode)this.vars).getNameUS());
+        sb.append(((FormalParamNode)this.vars).getName());
       }
       else {
         FormalParamNode[] ids = (FormalParamNode[])this.vars;
-        if (ids.length != 0) sb.append(ids[0].getNameUS());
+        if (ids.length != 0) sb.append(ids[0].getName());
         for (int i = 1; i < ids.length; i++) {
-          sb.append(", " + ids[i].getNameUS());
+          sb.append(", " + ids[i].getName());
         }
       }
       sb.append(" \\in " + this.inVal + " : <expression ");

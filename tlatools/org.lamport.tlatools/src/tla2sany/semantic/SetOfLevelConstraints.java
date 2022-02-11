@@ -47,7 +47,7 @@ class SetOfLevelConstraints extends HashMap<SymbolNode, Integer> implements Leve
     StringBuffer sb = new StringBuffer("{ ");
     for (Iterator<SymbolNode> iter = this.keySet().iterator(); iter.hasNext(); ) {
       SymbolNode param = iter.next();
-      sb.append(param.getNameUS() + " -> " + this.get(param));
+      sb.append(param.getName() + " -> " + this.get(param));
       if (iter.hasNext()) sb.append(", ");
     }
     sb.append("}");

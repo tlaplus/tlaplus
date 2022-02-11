@@ -287,7 +287,7 @@ public class TLCStackFrame extends StackFrame {
 						vars.add(variable);
 					} else if (val instanceof RuntimeException) {
 						final Variable variable = new Variable();
-						variable.setName(c.getName().getNameUS().toString());
+						variable.setName(c.getName().getName());
 						variable.setValue(c.getValue().toString());
 						final RuntimeException re = (RuntimeException) val;
 						variable.setType(re.getMessage());

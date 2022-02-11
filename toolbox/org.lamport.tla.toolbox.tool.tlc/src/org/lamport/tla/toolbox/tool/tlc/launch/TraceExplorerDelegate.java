@@ -571,7 +571,7 @@ public class TraceExplorerDelegate extends TLCModelLaunchDelegate implements ILa
         Assert.isNotNull(opDefNodes, "OpDefNodes[] from parsing TE.tla is null. This is a bug.");
         for (int j = 0; j < opDefNodes.length; j++)
         {
-            String key = opDefNodes[j].getNameUS().toString();
+            String key = opDefNodes[j].getName();
             nodeTable.put(key, opDefNodes[j]);
         }
 

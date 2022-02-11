@@ -253,10 +253,6 @@ public class SymbolTable implements ASTConstants {
 		    currentBinding.getTreeNode().getLocation().toString() + ".");
     return false;
   }
-  /** @deprecated */
-  public final boolean addModule(UniqueString name, ModuleNode symbol) {
-	return this.addModule(name.toString(), symbol);
-  }
   
   // return a string with all symbols in all contexts, from top to bottom
   public String toString() {

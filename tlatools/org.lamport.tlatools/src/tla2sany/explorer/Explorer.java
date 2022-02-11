@@ -121,7 +121,7 @@ public class Explorer {
 			ExploreNode semNode = Enum.nextElement();
 
 			if (semNode instanceof SymbolNode
-					&& ((SymbolNode) semNode).getNameUS() == UniqueString.uniqueStringOf(symbName)) {
+					&& ((SymbolNode) semNode).getName().equals(symbName)) {
 
 				symbolVect.addElement((SymbolNode) semNode);
 
@@ -149,7 +149,7 @@ public class Explorer {
 			ExploreNode semNode = Enum.nextElement();
 
 			if (semNode instanceof SymbolNode
-					&& ((SymbolNode) semNode).getNameUS() == UniqueString.uniqueStringOf(symbName)) {
+					&& ((SymbolNode) semNode).getName().equals(symbName)) {
 
 				symbolVect.addElement((SymbolNode) semNode);
 
@@ -162,12 +162,12 @@ public class Explorer {
 			if (sym instanceof OpDefOrDeclNode) {
 				if (((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode() != null) {
 					System.out.print(
-							"Module: " + ((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode().getNameUS() + "\n");
+							"Module: " + ((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode().getName() + "\n");
 				} else {
 					System.out.print("Module: " + "null" + "\n");
 				}
 			} else if (sym instanceof FormalParamNode) {
-				System.out.print("Module: " + ((FormalParamNode) sym).getModuleNode().getNameUS());
+				System.out.print("Module: " + ((FormalParamNode) sym).getModuleNode().getName());
 			}
 			System.out.println(((ExploreNode) (symbolVect.elementAt(i))).toString(100));
 			System.out.println();
@@ -187,7 +187,7 @@ public class Explorer {
 			ExploreNode semNode = Enum.nextElement();
 
 			if (semNode instanceof SymbolNode
-					&& ((SymbolNode) semNode).getNameUS() == UniqueString.uniqueStringOf(symbName)) {
+					&& ((SymbolNode) semNode).getName().equals(symbName)) {
 
 				symbolVect.addElement((SymbolNode) semNode);
 
@@ -200,12 +200,12 @@ public class Explorer {
 			if (sym instanceof OpDefOrDeclNode) {
 				if (((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode() != null) {
 					System.out.print(
-							"Module: " + ((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode().getNameUS() + "\n");
+							"Module: " + ((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode().getName() + "\n");
 				} else {
 					System.out.print("Module: " + "null" + "\n");
 				}
 			} else if (sym instanceof FormalParamNode) {
-				System.out.print("Module: " + ((FormalParamNode) sym).getModuleNode().getNameUS() + "\n");
+				System.out.print("Module: " + ((FormalParamNode) sym).getModuleNode().getName() + "\n");
 			}
 			System.out.println(((ExploreNode) (sym)).levelDataToString());
 			System.out.println();
