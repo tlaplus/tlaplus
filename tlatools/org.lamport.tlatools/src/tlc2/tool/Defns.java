@@ -28,7 +28,9 @@ import util.UniqueString;
 // SZ 10.04.2009: This class is used only once in {@link Spec}
 // class. There exist exactly one instance of it in runtime.
 // there is no reason to have any static fields in it. 
-public class Defns implements Serializable // TODO: check whether this needs to implement Serializable
+// TODO: check whether this needs to implement Serializable 
+// if not this class can be removed.
+public class Defns implements Serializable 
 {
     private Map<String, Object> table;
 
@@ -54,31 +56,10 @@ public class Defns implements Serializable // TODO: check whether this needs to 
     /**
      * Returns the definition of key if its definition exists.
      * Otherwise, returns null.
-     * @deprecated
-     */
-    public Object get(UniqueString key)
-    {
-    	return this.get(key.toString());
-    }
-
-    /**
-     * Convenience method for {@link Defns#get(UniqueString)} 
-     * @param key
-     * @return
      */
     public Object get(String key)
     {
         return this.table.get(key);
-    }
-
-    /**
-     * Store a new definition for key.  If there was an entry in the
-     * table for the key, overwrite it.
-     * @deprecated
-     */
-    public void put(UniqueString key, Object val)
-    {
-    	this.put(key.toString(), val);
     }
 
     /**
@@ -89,15 +70,6 @@ public class Defns implements Serializable // TODO: check whether this needs to 
     public void put(String key, Object val)
     {
         this.table.put(key, val);
-    }
-
-    /**
-     * 
-     * @param index
-     * @deprecated
-     */
-    public void setDefnCount(int index)
-    {
     }
     
     public Defns snapshot() {

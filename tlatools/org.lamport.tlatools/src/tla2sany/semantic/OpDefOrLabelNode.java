@@ -39,7 +39,12 @@ public abstract void setLabels(Hashtable<UniqueString, LabelNode> ht) ;
   /*************************************************************************
   * Set the set of labels to ht.                                           *
   *************************************************************************/
-  
+
+default public LabelNode getLabel(String label) {
+	return this.getLabel(UniqueString.of(label));
+}
+
+/** @deprecated */
 public abstract LabelNode getLabel(UniqueString us) ;
   /*************************************************************************
   * If the set contains an OpDefNode with name `us', then that OpDefNode   *

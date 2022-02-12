@@ -30,6 +30,7 @@ public class StringValue extends Value {
     this.val = UniqueString.uniqueStringOf(str);
   }
 
+  /** @deprecated */
   public StringValue(UniqueString var) {
     this.val = var;
   }
