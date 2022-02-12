@@ -258,8 +258,7 @@ public class EditorUtil
         if ((stl.string.charAt(0) == '<') && (stl.string.indexOf('.') != -1))
         {
             Location loc = stl.location;
-            stl = new StringAndLocation(stl.string.substring(0, stl.string.indexOf('.')), new Location(UniqueString
-                    .uniqueStringOf(loc.source()), loc.beginLine(), loc.beginColumn(), loc.endLine(), loc.beginColumn()
+            stl = new StringAndLocation(stl.string.substring(0, stl.string.indexOf('.')), new Location(loc.source(), loc.beginLine(), loc.beginColumn(), loc.endLine(), loc.beginColumn()
                     + stl.string.indexOf('.')));
         }
         return stl;

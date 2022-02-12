@@ -167,7 +167,7 @@ public class TLCStateTest {
 		
 		assertEquals(0, state.getVariablesAsList().size());
 		
-		assertEquals(state.getModuleLocation(), new Location(UniqueString.uniqueStringOf("NQSpec"), 102, 16, 104, 50));
+		assertEquals(state.getModuleLocation(), new Location("NQSpec", 102, 16, 104, 50));
 	}
 	
 	@Test
@@ -211,7 +211,7 @@ public class TLCStateTest {
 		variable.getValue().diff(expected);
 		assertFalse(expected.isChanged());
 
-		assertEquals(state.getModuleLocation(), new Location(UniqueString.uniqueStringOf("NQSpec"), 88, 16, 94, 31));
+		assertEquals(state.getModuleLocation(), new Location("NQSpec", 88, 16, 94, 31));
 	}
 	
 	@Test
@@ -285,7 +285,7 @@ public class TLCStateTest {
 			variable.getValue().diff(expected);
 			assertFalse(expected.isChanged());
 			
-			assertEquals(state.getModuleLocation(), new Location(UniqueString.uniqueStringOf("NodeBackup"), 138, 24, 138, 37));
+			assertEquals(state.getModuleLocation(), new Location("NodeBackup", 138, 24, 138, 37));
 	}
 
 	@Test
@@ -308,7 +308,7 @@ public class TLCStateTest {
 		assertFalse(expected.isChanged());
 
 		
-		assertEquals(state.getModuleLocation(), new Location(UniqueString.uniqueStringOf("Github670"), 6, 9, 6, 24));
+		assertEquals(state.getModuleLocation(), new Location("Github670", 6, 9, 6, 24));
 	}
 
 	@Test
@@ -411,6 +411,6 @@ public class TLCStateTest {
 		variable.getValue().diff(expected);
 		assertFalse(expected.isChanged());
 		
-		assertEquals(state.getModuleLocation(), new Location(UniqueString.uniqueStringOf("Github670"), 6, 9, 6, 24));
+		assertEquals(state.getModuleLocation(), new Location("Github670", 6, 9, 6, 24));
 	}
 }

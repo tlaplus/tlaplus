@@ -409,7 +409,7 @@ public abstract class TLAPMMessage
              */
             String[] coordinates = locString.split(":");
             Assert.isTrue(coordinates.length >= 4, "Not enough coordinates found in location string : " + locString);
-            return new Location(UniqueString.uniqueStringOf(moduleName), Integer.parseInt(coordinates[0]), Integer
+            return new Location(moduleName, Integer.parseInt(coordinates[0]), Integer
                     .parseInt(coordinates[1]), Integer.parseInt(coordinates[2]), Integer.parseInt(coordinates[3]) - 1);
         } catch (NumberFormatException e)
         {

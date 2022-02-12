@@ -105,7 +105,7 @@ public class RecordValue extends Value implements Applicable {
 		this.values[3] = IntValue.gen(location.endColumn());
 		
 		this.names[4] = MOD;
-		this.values[4] = new StringValue(location.sourceAsUniqueString());
+		this.values[4] = new StringValue(location.source());
 		
 		this.isNorm = false;
   }

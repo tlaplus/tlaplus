@@ -134,8 +134,7 @@ public class TLCUIHelper
                                 "Found a plus cal assertion failed location without a TLC error location with the module name.");
                 final int beginLine = Integer.parseInt(matcher.group(1));
                 final int beginColumn = Integer.parseInt(matcher.group(2));
-                final Location l = new Location(UniqueString.uniqueStringOf(moduleName), beginLine, beginColumn,
-                		beginLine, beginColumn);
+                final Location l = new Location(moduleName, beginLine, beginColumn,	beginLine, beginColumn);
 
                 result.add(getHyperlinkStyleRange(l, matcher.start(), matcher.end()));
 			} catch (NumberFormatException e) {

@@ -10,7 +10,6 @@ import pcal.PCalLocation;
 import pcal.Region;
 import util.Assert;
 import util.TLAConstants;
-import util.UniqueString;
 
 /**
  * A location specifies the position of a syntactic unit in the source.
@@ -37,7 +36,7 @@ public final class Location implements Comparable<Location>
     private static final String CLOSE_ACTION = ">";
     private static final String OPEN_ACTION = "<[A-Za-z_0-9]+ "; // The regex used to just be "Action" but the most recent TLC prints the name of the action instead of just the location.
 
-    private static final UniqueString unknown = UniqueString.uniqueStringOf("--unknown--");
+    private static final String unknown = "--unknown--";
 
     /**
      * Unknown location
@@ -90,16 +89,12 @@ public final class Location implements Comparable<Location>
     public static final Pattern[] ALL_PATTERNS = new Pattern[] { LOCATION_MATCHER, LOCATION_MATCHER2,
             LOCATION_MATCHER3, LOCATION_MATCHER4 };
 
-    protected UniqueString name;
+    protected String name;
     protected int bLine, bColumn, eLine, eColumn;
 
 	public Location(final String fName, final String bl, final String bc, final String el, final String ec) {
-		this(UniqueString.uniqueStringOf(fName), Integer.valueOf(bl), Integer.valueOf(bc), Integer.valueOf(el),
+		this(fName, Integer.valueOf(bl), Integer.valueOf(bc), Integer.valueOf(el),
 				Integer.valueOf(ec));
-	}
-
-	public Location(final String fName, int bl, int bc, int el, int ec) {
-		this(UniqueString.uniqueStringOf(fName), bl, bc, el, ec);
 	}
     
    /**
@@ -110,7 +105,7 @@ public final class Location implements Comparable<Location>
      * @param el end line
      * @param ec end column
      */
-    public Location(UniqueString fName, int bl, int bc, int el, int ec)
+    public Location(String fName, int bl, int bc, int el, int ec)
     {
         name = fName;
         bLine = bl;
@@ -120,7 +115,7 @@ public final class Location implements Comparable<Location>
     }
 
     public Location(int bl, int bc, int el, int ec) {
-		this((UniqueString) null, bl, bc, el, ec);
+		this(null, bl, bc, el, ec);
 	}
 
 	
@@ -156,7 +151,7 @@ public final class Location implements Comparable<Location>
      */
     public static Location moduleLocation(String moduleName)
     {
-        return new Location(UniqueString.uniqueStringOf(moduleName), 0, 0, 0, 0);
+        return new Location(moduleName, 0, 0, 0, 0);
     }
 
     /**
@@ -186,7 +181,7 @@ public final class Location implements Comparable<Location>
             // these are: bl, bc, el, ec, moduleName
             try
             {
-                return new Location(UniqueString.uniqueStringOf(matcher.group(5)), Integer.parseInt(matcher.group(1)),
+                return new Location(matcher.group(5), Integer.parseInt(matcher.group(1)),
                         Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), Integer
                                 .parseInt(matcher.group(4)));
             } catch (NumberFormatException e)
@@ -199,7 +194,7 @@ public final class Location implements Comparable<Location>
             // these are: bl, bc, el, ec, moduleName
             try
             {
-                return new Location(UniqueString.uniqueStringOf(matcher.group(5)), Integer.parseInt(matcher.group(1)),
+                return new Location(matcher.group(5), Integer.parseInt(matcher.group(1)),
                         Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), Integer
                                 .parseInt(matcher.group(4)));
             } catch (NumberFormatException e)
@@ -212,7 +207,7 @@ public final class Location implements Comparable<Location>
             // these are: bl, bc, el, ec, moduleName
             try
             {
-                return new Location(UniqueString.uniqueStringOf(matcher.group(5)), Integer.parseInt(matcher.group(1)),
+                return new Location(matcher.group(5), Integer.parseInt(matcher.group(1)),
                         Integer.parseInt(matcher.group(2)), Integer.parseInt(matcher.group(3)), Integer
                                 .parseInt(matcher.group(4)));
             } catch (NumberFormatException e)
@@ -325,11 +320,7 @@ public final class Location implements Comparable<Location>
      */
     public final String source()
     {
-        return name != null ? name.toString() : null;
-    }
-
-    public final UniqueString sourceAsUniqueString() {
-    	return name;
+        return name;
     }
     
     /**
@@ -450,7 +441,7 @@ public final class Location implements Comparable<Location>
 	 *         and the range of chars is within this range of chars).
 	 */
 	public boolean includes(final Location other) {
-		if (this.name != other.name) {
+		if (!this.name.equals(other.name)) {
 			return false;
 		}
 		if (this.bLine > other.bLine) {

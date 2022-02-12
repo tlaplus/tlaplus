@@ -622,7 +622,7 @@ public class ProverHelper
                  */
                 Location beginLoc = theoremNode.getLocation();
                 Location statementLoc = theoremNode.getTheorem().getLocation();
-                locForAttr = new Location(UniqueString.uniqueStringOf(statementLoc.source()), beginLoc.beginLine(),
+                locForAttr = new Location(statementLoc.source(), beginLoc.beginLine(),
                         beginLoc.beginColumn(), statementLoc.endLine(), statementLoc.endColumn());
             }
             marker.setAttribute(SANY_LOC_ATR, locToString(locForAttr));
@@ -797,7 +797,7 @@ public class ProverHelper
          * moduleName:bl:bc:el:ec
          */
         String[] segments = locString.split(LOC_DELIM);
-        return new Location(UniqueString.uniqueStringOf(segments[0]), Integer.parseInt(segments[1]), Integer
+        return new Location(segments[0], Integer.parseInt(segments[1]), Integer
                 .parseInt(segments[2]), Integer.parseInt(segments[3]), Integer.parseInt(segments[4]));
     }
 
