@@ -187,13 +187,14 @@ public class TLCStackFrame extends StackFrame {
 		if (!val.hasSource()) {
 			val.setSource(expr);
 		}
-		return getVariable(val, expr.getNameUS());
+		return getVariable(val, expr.getName());
 	}
 
 	protected Variable getVariable(final IValue value, String varName) {
 		return getVariable(value, UniqueString.of(varName));
 	}
 	
+	/** @deprecated */
 	protected Variable getVariable(final IValue value, UniqueString varName) {
 		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName.toString()), rnd);
 		nestedVariables.put(variable.getVariablesReference(), variable);
@@ -325,7 +326,7 @@ public class TLCStackFrame extends StackFrame {
 					// If there is only one module, do *not* organize the constants in the variable
 					// view by modules. In other words, constants get moved up by one level in the
 					// variable view iff there is only one module.
-					e.getValue().entrySet().stream().map(c -> getVariable((Value) c.getValue(), c.getKey().getNameUS()))
+					e.getValue().entrySet().stream().map(c -> getVariable((Value) c.getValue(), c.getKey().getName()))
 							.forEach(var -> vars.add(var));
 				} else {
 					final ModuleNode module = e.getKey();

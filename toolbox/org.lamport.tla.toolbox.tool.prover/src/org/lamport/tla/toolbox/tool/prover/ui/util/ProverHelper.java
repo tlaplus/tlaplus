@@ -547,8 +547,7 @@ public class ProverHelper
 
                     String moduleName = ResourceHelper.getModuleName(module);
 
-                    ModuleNode moduleNode = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                            UniqueString.uniqueStringOf(moduleName));
+                    ModuleNode moduleNode = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
                     LevelNode[] topLevelNodes = moduleNode.getTopLevel();
 
                     for (int i = 0; i < topLevelNodes.length; i++)

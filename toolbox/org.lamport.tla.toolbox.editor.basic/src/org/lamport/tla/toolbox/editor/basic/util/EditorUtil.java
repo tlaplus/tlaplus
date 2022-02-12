@@ -238,8 +238,7 @@ public class EditorUtil
         // get module node (code copied from
         // ResourceHelper.getPfStepOrUseHideFromMod)
         String moduleName = ResourceHelper.getModuleName(moduleFile);
-        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                UniqueString.uniqueStringOf(moduleName));
+        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
         if (module == null)
         {
             return null;

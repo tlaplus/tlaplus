@@ -119,7 +119,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   public final String[] getVarsAsStrings() {
 	  String[] res = new String[vars.length];
 	  for (int i = 0; i < vars.length; i++) {
-		res[i] = vars[i].getNameUS().toString();
+		res[i] = vars[i].getName();
 	  }
 	  return res;
   }

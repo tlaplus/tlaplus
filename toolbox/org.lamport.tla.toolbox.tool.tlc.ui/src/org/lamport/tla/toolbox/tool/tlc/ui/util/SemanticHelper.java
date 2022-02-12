@@ -147,7 +147,7 @@ public class SemanticHelper
             return KEYWORD;
         }
         // check the spec module
-        Object specUsed = specContext.getSymbol(UniqueString.uniqueStringOf(name));
+        Object specUsed = specContext.getSymbol(name);
         return specUsed;
     }
 

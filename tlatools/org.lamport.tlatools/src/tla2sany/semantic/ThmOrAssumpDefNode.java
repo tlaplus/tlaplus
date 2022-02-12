@@ -606,7 +606,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
                              ? originallyDefinedInModule.getName()
                              : "<null>" ) ;
     if (instantiatedFrom != null) {ret += " instantiatedFrom: " +
-                                          instantiatedFrom.getNameUS() ; } ;
+                                          instantiatedFrom.getName() ; } ;
     if (params != null) {
       String tempString = "\nFormal params: " + params.length;
       for (int i = 0; i < params.length; i++) {

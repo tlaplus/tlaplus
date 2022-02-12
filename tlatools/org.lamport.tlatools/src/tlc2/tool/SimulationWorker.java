@@ -351,12 +351,12 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			final String[] parameters;
 			if (this.tool.getActions().length == 1) {
 				parameters = new String[] { unassigned.size() > 1 ? "s are" : " is",
-								unassigned.stream().map(n -> n.getNameUS().toString())
+								unassigned.stream().map(n -> n.getName())
 										.collect(Collectors.joining(", ")) };
 			} else {
 				parameters = new String[] { a.getName().toString(),
 								unassigned.size() > 1 ? "s are" : " is",
-								unassigned.stream().map(n -> n.getNameUS().toString())
+								unassigned.stream().map(n -> n.getName())
 										.collect(Collectors.joining(", ")) };
 			}
 

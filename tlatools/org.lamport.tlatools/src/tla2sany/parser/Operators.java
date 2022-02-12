@@ -83,12 +83,6 @@ public class Operators {
   * iff either a = b or a and b are synonyms (like (+) and \oplus).  If a  *
   * has no synonmys, then resolveSynonym(a) = a.                           *
   *************************************************************************/
-  /** @deprecated */
-  static public UniqueString resolveSynonym( UniqueString name ) {
-    String ret = resolveSynonym(name.toString());
-    return UniqueString.uniqueStringOf(ret);
-  }
-
   static public String resolveSynonym( String name ) {
     Operator n = (Operator) DefinitionTable.get(name);
     if ( n == null ) return name;
@@ -103,8 +97,8 @@ public class Operators {
 /* debugging help */
   static public void printTable() {
     System.out.println("printing Operators table");
-    Enumeration Enum = DefinitionTable.keys();
-    while( Enum.hasMoreElements() ) { System.out.println("-> " + ((UniqueString)Enum.nextElement()).toString() ); }
+    Enumeration<String> Enum = DefinitionTable.keys();
+    while( Enum.hasMoreElements() ) { System.out.println("-> " + Enum.nextElement()); }
   }
 
 // shouldn't be necessary

@@ -292,7 +292,7 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
 		final Set<OpDeclNode> unassignedVars = new TreeSet<OpDeclNode>(new Comparator<OpDeclNode>() {
 			@Override
 			public int compare(OpDeclNode o1, OpDeclNode o2) {
-				return o1.getNameUS().toString().compareTo(o2.getNameUS().toString());
+				return o1.getName().compareTo(o2.getName());
 			}
 		});
 		int len = this.values.length;

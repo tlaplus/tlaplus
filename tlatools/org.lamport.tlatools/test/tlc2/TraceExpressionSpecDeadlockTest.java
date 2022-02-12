@@ -119,9 +119,8 @@ public class TraceExpressionSpecDeadlockTest extends TraceExpressionSpecTest {
 		
 		// Assert that all three sub-modules exist
 		final ExternalModuleTable moduleTbl = specProcessor.getModuleTbl();
-		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TE_SPEC_TEST)));
-		assertNotNull(moduleTbl.getModuleNode(
-				UniqueString.of(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME)));
-		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.SPEC_TETRACE_NAME)));
+		assertNotNull(moduleTbl.getModuleNode(TE_SPEC_TEST));
+		assertNotNull(moduleTbl.getModuleNode(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME));
+		assertNotNull(moduleTbl.getModuleNode(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.SPEC_TETRACE_NAME));
 	}
 }

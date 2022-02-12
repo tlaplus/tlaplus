@@ -17,7 +17,6 @@ import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.Location;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
-import util.UniqueString;
 
 // A context contains def/declNodes only.
 // Implements a simple context for symbol decls and defs. Also
@@ -187,11 +186,6 @@ public class Context implements ExploreNode {
       return;
     }
   }
-  
-  /** @deprecated */
-  public static void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors) throws AbortException {
-	  addGlobalSymbol(name.toString(), sn, errors);
-  }
 
   /**
    * Returns symbol node associated with "name" in this Context, if
@@ -203,11 +197,6 @@ public class Context implements ExploreNode {
       return r.info;
     }
     return null;
-  }
-  
-  /** @deprecated */
-  public SymbolNode getSymbol(UniqueString name) {
-	  return this.getSymbolInternal(name.toString());
   }
   
   public SymbolNode getSymbol(String name) {
@@ -228,13 +217,6 @@ public class Context implements ExploreNode {
 	  table.put(name, new Pair(s));    // Links to & updates lastPair
   }
   
-  /**
-   * @deprecated
-   */
-  public void addSymbolToContext(UniqueString name, SymbolNode s) {
-	  this.addSymbolToContext(name.toString(), s);
-  }
-  
   public void addSymbolToContext(SymbolTable.ModuleName name, SymbolNode s) {
 	  table.put(name, new Pair(s));    // Links to & updates lastPair
   }
@@ -242,8 +224,8 @@ public class Context implements ExploreNode {
 
   /**
    * Tests whether a name is present in this context
-   * @param name the UniqueString representing the string, see {@link UniqueString#uniqueStringOf(String)}
-   * @return true iff the UniqueString provided occurs as a key in the symbol table
+   * @param name 
+   * @return true iff the String provided occurs as a key in the symbol table
    */
   public boolean occurSymbol(SymbolTable.ModuleName name) {
 	  return table.containsKey(name);
@@ -515,8 +497,7 @@ public class Context implements ExploreNode {
   *************************************************************************/
   public Vector<String> getContextEntryStringVector(int depth, boolean b) {
     Vector<String> ctxtEntries = new Vector<>(100);  // vector of Strings
-    Context naturalsContext =
-               exMT.getContext(UniqueString.uniqueStringOf("Naturals"));
+    Context naturalsContext = exMT.getContext("Naturals");
 
     if (depth <= 0) return ctxtEntries;
 
@@ -557,7 +538,7 @@ public class Context implements ExploreNode {
       * Bug fix attempted by LL on 19 Apr 2007.                            *
       *                                                                    *
       * The original code expected Enum.nextElement() to be a              *
-      * UniqueString.  However, it can also be a SymbolTable.ModuleName    *
+      * (Unique)String.  However, it can also be a SymbolTable.ModuleName  *
       * for an inner module.  I attempted to fix that by just getting key  *
       * from the right place in the object.  However, that caused a        *
       * NullPointerException because table.get(key) equaled null.  So, I   *
@@ -573,7 +554,7 @@ public class Context implements ExploreNode {
          System.out.println("SANY will throw a null pointer exception.");
         }
       else {
-        UniqueString key = (UniqueString) next;
+        String key = (String) next;
         ((Pair)table.get(key)).info.walkGraph(semNodesTable, visitor);
        } ;
        visitor.postVisit(this);

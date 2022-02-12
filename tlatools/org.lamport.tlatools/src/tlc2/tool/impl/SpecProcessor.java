@@ -1113,7 +1113,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 return;
             }
 
-            int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getNameUS());
+            int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getName());
             if ((opcode == OPCODE_te) || (opcode == OPCODE_tf))
             {
             	Assert.fail(EC.TLC_SPECIFICATION_FEATURES_TEMPORAL_QUANTIFIER);
@@ -1130,7 +1130,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             {
                 SemanticNode boxArg = args[0];
                 if ((boxArg instanceof OpApplNode)
-                        && BuiltInOPs.getOpCode(((OpApplNode) boxArg).getOperator().getNameUS()) == OPCODE_sa)
+                        && BuiltInOPs.getOpCode(((OpApplNode) boxArg).getOperator().getName()) == OPCODE_sa)
                 {
                     ExprNode arg = (ExprNode) ((OpApplNode) boxArg).getArgs()[0];
                     // ---sm 09/06/04 <<<
@@ -1360,7 +1360,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 }
                 return;
             }
-            int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getNameUS());
+            int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getName());
             if (opcode == OPCODE_cl || opcode == OPCODE_land)
             {
                 for (int i = 0; i < args.length; i++)

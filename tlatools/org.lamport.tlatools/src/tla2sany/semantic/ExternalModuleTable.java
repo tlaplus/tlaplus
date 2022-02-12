@@ -15,7 +15,6 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
-import util.UniqueString;
 
 public class ExternalModuleTable implements ExploreNode {
 
@@ -106,10 +105,6 @@ public class ExternalModuleTable implements ExploreNode {
     if (p == null) return null;
     return p.ctxt;
   }
-  /** @deprecated */
-  public final Context getContext( UniqueString key ) {
-	return this.getContext(key.toString());
-  }
 
   public final Context getContextForRootModule() {
 	  return getContext(getRootModule().getName());
@@ -136,12 +131,6 @@ public class ExternalModuleTable implements ExploreNode {
 	if (p == null) return null;
 	return p.moduleNode;
   }
-
-  /** @deprecated */
-  public final ModuleNode getModuleNode( UniqueString key ) {
-	  return getModuleNode(key.toString());
-  }
-
   
   public final void put(String key, Context ctxt, ModuleNode moduleNode) {
     ExternalModuleTableEntry c = moduleHashTable.get( key );
@@ -149,10 +138,6 @@ public class ExternalModuleTable implements ExploreNode {
       moduleHashTable.put( key, new ExternalModuleTableEntry(ctxt, moduleNode) );
       moduleNodeVector.addElement(moduleNode);
     }
-  }
-  /** @deprecated */
-  public final void put( UniqueString key, Context ctxt, ModuleNode moduleNode ) {
-	this.put(key.toString(), ctxt, moduleNode);
   }
 
   @Override

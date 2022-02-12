@@ -116,7 +116,7 @@ public class CheckImplFile extends CheckImpl
         // Set the rootModule:
         ExternalModuleTable mt = spec.getExternalModuleTable();
         // SZ 11.04.2009: Changed access method
-        ModuleNode module = mt.getModuleNode(UniqueString.uniqueStringOf(rfname));
+        ModuleNode module = mt.getModuleNode(rfname);
 
         // Put the sequence of states in the trace into this.states:
         OpDefNode[] opDefs = module.getOpDefs();

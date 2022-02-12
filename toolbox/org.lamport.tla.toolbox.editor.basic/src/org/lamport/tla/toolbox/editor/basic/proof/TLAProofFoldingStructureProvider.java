@@ -299,7 +299,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
          */
         Assert.isNotNull(specObj.getExternalModuleTable());
 
-        ModuleNode moduleNode = specObj.getExternalModuleTable().getModuleNode(UniqueString.uniqueStringOf(moduleName));
+        ModuleNode moduleNode = specObj.getExternalModuleTable().getModuleNode(moduleName);
         if (moduleNode == null)
         {
             // nothing to do

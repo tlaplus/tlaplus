@@ -93,10 +93,10 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 			if (var != null) {
 				final IValue value = getT().lookup(var.getNameUS());
 				if (value != null) {
-					return getVariable(value, var.getNameUS() + "'");
+					return getVariable(value, var.getName() + "'");
 				} else {
 					Variable v = new Variable();
-					v.setName(var.getNameUS() + "'");
+					v.setName(var.getName() + "'");
 					v.setValue(DebuggerValue.NOT_EVALUATED);
 					return v;
 				}

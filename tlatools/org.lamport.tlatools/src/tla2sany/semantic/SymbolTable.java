@@ -4,7 +4,6 @@ package tla2sany.semantic;
 
 import tla2sany.utilities.Stack;
 import tla2sany.utilities.Vector;
-import util.UniqueString;
 
 // The Symbol Table builds the stack of context tables.  The stack
 // model for symbol resolution is straightforward, but not
@@ -97,10 +96,6 @@ public class SymbolTable implements ASTConstants {
 	}
 	return null;
   }
-  /** @deprecated */
-  public final SymbolNode resolveSymbol(UniqueString name) {
-	  return this.resolveSymbol(name.toString());
-  }
 
   public final ModuleNode resolveModule(String name) {
     ModuleName modName = new ModuleName(name);
@@ -113,11 +108,6 @@ public class SymbolTable implements ASTConstants {
 
     // See if "name" refers to an external module
     return mt.getModuleNode(name);
-  }
-
-  /** @deprecated */
-  public final ModuleNode resolveModule(UniqueString name) {
-	return this.resolveModule(name.toString());
   }
   
   /**
@@ -226,11 +216,6 @@ public class SymbolTable implements ASTConstants {
 
     return true; 
   } // end addSymbol() 
-
-  /** @deprecated */
-  public final boolean addSymbol(UniqueString name, SymbolNode symbol) {
-	return this.addSymbol(name.toString(), symbol);
-  }
 
   public final boolean addModule(String name, ModuleNode symbol) {
     SymbolNode currentBinding = resolveModule(name);

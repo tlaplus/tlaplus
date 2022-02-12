@@ -519,7 +519,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             if (opDefLevelCheck && opd.levelCheck(itr)) {
               errors.addError(
                  this.stn.getLocation(),
-                 "Level error in applying operator " + opDef.getNameUS() +
+                 "Level error in applying operator " + opDef.getName() +
                     ":\nThe level of argument " + (i+1) + " exceeds the" +
                     " maximum level allowed by the operator.");
             }
@@ -544,7 +544,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
                 if (opDefLevelCheck && opd.levelCheck(itr)) {
                   errors.addError(this.stn.getLocation(),
                                   "Level error in applying operator "
-                                        + opDef.getNameUS() + ":\n" +
+                                        + opDef.getName() + ":\n" +
                                   "The permitted level of argument "
                                    + (j+1) + " of the operator argument " +
                                   (i+1) + " \nmust be at least " +
@@ -561,7 +561,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
                       this.operands[j].levelCheck(itr)) {
                     errors.addError(
                        this.stn.getLocation(),
-                       "Level error in applying operator " + opDef.getNameUS() +
+                       "Level error in applying operator " + opDef.getName() +
                          ":\nThe level of argument " + (j+1) + " exceeds the" +
                          " maximum level allowed by the operator.");
                   }
@@ -581,7 +581,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             if (rangeLevelCheck) {
               errors.addError(
                 this.stn.getLocation(),
-                "Level error in applying operator " + opDef.getNameUS() +
+                "Level error in applying operator " + opDef.getName() +
                   ":\nThe level of the range for the bounded variable " +
                   boundedBoundSymbols[i][0] + " \nexceeds the maximum " +
                   "level allowed by the operator.");

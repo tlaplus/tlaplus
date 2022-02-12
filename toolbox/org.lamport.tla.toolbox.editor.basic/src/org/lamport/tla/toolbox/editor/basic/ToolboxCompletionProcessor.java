@@ -56,7 +56,6 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SymbolMatcher;
 import tla2sany.semantic.SymbolNode;
-import util.UniqueString;
 
 public abstract class ToolboxCompletionProcessor {
 	
@@ -115,7 +114,7 @@ public abstract class ToolboxCompletionProcessor {
 
 			final Collection<SymbolNode> symbols = rootModule.getSymbols(matcher.setPrefix(word));
 			for (final SymbolNode symbolNode : symbols) {
-				propositionList.add(new CompletionProposalTemplate(symbolNode.getSignature(), symbolNode.getNameUS(),
+				propositionList.add(new CompletionProposalTemplate(symbolNode.getSignature(), symbolNode.getName(),
 						symbolNode.getHumanReadableImage()).getProposal(replacementOffset, carretColumnIndex - qualifierLength, qualifierLength));
 			}
 		}
@@ -197,16 +196,6 @@ public abstract class ToolboxCompletionProcessor {
 			this.fDisplayString = dipslayString;
 			this.fContextInformation = null;
 			this.fAdditionalProposalInfo = additionalProposalInfo;
-		}
-		
-		public CompletionProposalTemplate(UniqueString replacementString, UniqueString dipslayString,
-				String additionalProposalInfo) {
-			this(replacementString.toString(), dipslayString.toString(), additionalProposalInfo);
-		}
-		
-		public CompletionProposalTemplate(String replacementString, UniqueString dipslayString,
-				String additionalProposalInfo) {
-			this(replacementString, dipslayString.toString(), additionalProposalInfo);
 		}
 		
 		public CompletionProposalTemplate(String replacementString, String dipslayString,

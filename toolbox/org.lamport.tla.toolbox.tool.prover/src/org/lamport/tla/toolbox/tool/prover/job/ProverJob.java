@@ -983,8 +983,7 @@ public class ProverJob extends Job {
 
         if (nodeToProve == null /* || nodeToProve instanceof InstanceNode  || nodeToProve instanceof DefStepNode */ )
         {
-            nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                    UniqueString.uniqueStringOf(moduleName));
+            nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
             return;
         }
 
