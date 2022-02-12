@@ -19,7 +19,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     ***********************************************************************/
     String[]deps = new String[ dependencyList.size() ];
     for (int lvi =0; lvi < deps.length; lvi++)
-      deps[lvi] = ((UniqueString)dependencyList.elementAt(lvi)).toString();
+      deps[lvi] = dependencyList.elementAt(lvi);
     return deps;
   }
   public TreeNode rootNode() { return ParseTree; }
@@ -32,7 +32,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     * The root node.                                                       *
     ***********************************************************************/
 
-  public Vector dependencyList = new Vector( 20 );
+  public Vector<String> dependencyList = new Vector( 20 );
 
   private String mn = null;
      /**********************************************************************
@@ -767,13 +767,8 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
 //
 
   Stack internals = new Stack();
-
-  private final void addDependency( String s ) {
-	  addDependency(UniqueString.of(s));
-  }
 	  
-  /** @deprecated */
-  private final void addDependency( UniqueString s ) {
+  private final void addDependency(String s) {
     int lvi = internals.search( s );
     if ( lvi < 0 )
       dependencyList.addElement( s );
@@ -1466,7 +1461,7 @@ Token t;
   expecting = "==== or more Module body";
     lSTN[3] = EndModule();
   do { pop = internals.pop(); } while (pop != null );
-  internals.push( UniqueString.of(lSTN[0].zero[1].image) );
+  internals.push(lSTN[0].zero[1].image);
   epa(); {if (true) return new SyntaxTreeNode( mn, N_Module, lSTN );}
     throw new Error("Missing return statement in function");
   }
