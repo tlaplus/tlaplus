@@ -2455,7 +2455,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		} // else
 
-		Hashtable ht = popLabelNodeSet();
+		Hashtable<String, LabelNode> ht = popLabelNodeSet();
 		/*********************************************************************
 		 * Succeed or fail, we must execute popLabelNodeSet to match the * previous
 		 * pushLS. *
@@ -2684,7 +2684,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * This isn't really necessary, since we're going to pop the * LS stack below,
 		 * but I hate to have a push without a pop. *
 		 *********************************************************************/
-		Hashtable ht = popLabelNodeSet();
+		Hashtable<String, LabelNode> ht = popLabelNodeSet();
 		/*********************************************************************
 		 * The matching pop for the pushLS above. *
 		 *********************************************************************/
@@ -6690,7 +6690,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			body = generateExpression(labelExpChildren[2], cm);
 		}
 		;
-		Hashtable ht = popLabelNodeSet();
+		Hashtable<String,LabelNode> ht = popLabelNodeSet();
 
 		/***********************************************************************
 		 * We now create the LabelNode. *
@@ -6765,14 +6765,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		return retVal;
 	} // generateLabel
 
-	Vector LSlabels = new Vector();
+	Vector<Hashtable<String,LabelNode>> LSlabels = new Vector();
 	/***********************************************************************
 	 * LSlabels.elementAt(i) is a HashTable that represents * LS.labels[i+1]. The
 	 * values in the Hashtable are LabelNode objects, * where ln.getName() is the
 	 * key of object ln. The empty set is * represented by null. *
 	 ***********************************************************************/
 
-	Vector LSparamSeq = new Vector();
+	Vector<Vector<FormalParamNode>> LSparamSeq = new Vector();
 
 	/***********************************************************************
 	 * LsparamSeq.elementAt(i) is a Vector whose elements are of type *
@@ -6791,7 +6791,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		LSparamSeq.addElement(new Vector());
 	}
 
-	Hashtable popLabelNodeSet() {
+	Hashtable<String,LabelNode> popLabelNodeSet() {
 		/***********************************************************************
 		 * Implements LS' = Front(LS) * return Last(LS).labels *
 		 ***********************************************************************/
@@ -6800,7 +6800,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			throw new WrongInvocationException("popLabelNodeSet called on empty stack.");
 		}
 		;
-		Hashtable retVal = (Hashtable) LSlabels.elementAt(size - 1);
+		Hashtable<String, LabelNode> retVal = LSlabels.elementAt(size - 1);
 		LSlabels.removeElementAt(size - 1);
 		LSparamSeq.removeElementAt(size - 1);
 		return retVal;
@@ -6819,9 +6819,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			throw new WrongInvocationException("addLabelNodeToSet called on empty stack.");
 		}
 		;
-		Hashtable ht = (Hashtable) LSlabels.elementAt(size - 1);
+		Hashtable<String,LabelNode> ht = LSlabels.elementAt(size - 1);
 		if (ht == null) {
-			ht = new Hashtable();
+			ht = new Hashtable<>();
 			LSlabels.setElementAt(ht, size - 1);
 		}
 		boolean retVal = !ht.containsKey(ln.getName());
@@ -6883,7 +6883,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			if (!opParams.add(odns[i])) {
 				retVal = false;
 				errors.addError(ln.stn.getLocation(), "Repeated formal parameter " + odns[i].getName() + " \nin label `"
-						+ ln.getName().toString() + "'.");
+						+ ln.getName() + "'.");
 			}
 			;
 		} // for ;
@@ -6894,7 +6894,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			for (int j = 0; j < ops.length; j++) {
 				if (!opParams.remove(ops[j])) {
 					retVal = false;
-					errors.addError(ln.stn.getLocation(), "Label " + ln.getName().toString()
+					errors.addError(ln.stn.getLocation(), "Label " + ln.getName()
 							+ " must contain formal parameter `" + ops[j].getName() + "'.");
 				}
 				;
@@ -6903,7 +6903,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (!opParams.isEmpty()) {
 			retVal = false;
 			Iterator iter = opParams.iterator();
-			String res = "Label " + ln.getName().toString() + " declares extra parameter(s)  ";
+			String res = "Label " + ln.getName() + " declares extra parameter(s)  ";
 			while (iter.hasNext()) {
 				FormalParamNode nd = (FormalParamNode) iter.next();
 				res = res + nd.getName() + "  ";

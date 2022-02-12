@@ -47,7 +47,6 @@ import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
 import tlc2.tool.BuiltInOPs;
-import util.UniqueString;
 import util.WrongInvocationException;
 
   /**
@@ -388,7 +387,7 @@ public class OpDefNode extends OpDefOrDeclNode
     * the body that are not within the scope of an inner label or LET      *
     * definition.                                                          *
     ***********************************************************************/
-    private Hashtable labels = null ;
+    private Hashtable<String, LabelNode> labels = null ;
 
     private OpDefNode source = null ;
     
@@ -852,12 +851,14 @@ public class OpDefNode extends OpDefOrDeclNode
   * There doesn't seem to be any easy way to write these methods only      *
   * once.                                                                  *
   *************************************************************************/
+  @Override
   public void setLabels(Hashtable ht) {labels = ht; }
     /***********************************************************************
     * Sets the set of labels.                                              *
     ***********************************************************************/
 
-  public LabelNode getLabel(UniqueString us) {
+  @Override
+  public LabelNode getLabel(String us) {
     /***********************************************************************
     * If the hashtable `labels' contains a LabelNode with name `us',       *
     * then that LabelNode is returned; otherwise null is returned.         *
@@ -866,24 +867,26 @@ public class OpDefNode extends OpDefOrDeclNode
     return (LabelNode) labels.get(us) ;
    }
 
+  @Override
   public boolean addLabel(LabelNode odn) {
     /***********************************************************************
     * If the hashtable `labels' contains no OpDefNode with the same name   *
     * as odn, then odn is added to the set and true is return; else the    *
     * set is unchanged and false is returned.                              *
     ***********************************************************************/
-    if (labels == null) {labels = new Hashtable(); } ;
-    if (labels.containsKey(odn)) {return false ;} ;
+    if (labels == null) {labels = new Hashtable<>(); } ;
+    if (labels.containsKey(odn.getName())) {return false ;} ;
     labels.put(odn.getName(), odn) ;
     return true;
    }
 
+  @Override
   public LabelNode[] getLabels() {
     /***********************************************************************
     * Returns an array containing the Label objects in the hashtable       *
     * `labels'.                                                            *
     ***********************************************************************/
-    if (labels == null) {return new LabelNode[0];} ;
+    if (labels == null) {return new LabelNode[0];}
     Vector v = new Vector() ;
     Enumeration e = labels.elements() ;
     while (e.hasMoreElements()) { v.addElement(e.nextElement()); } ;
@@ -893,7 +896,7 @@ public class OpDefNode extends OpDefOrDeclNode
     return retVal ;
    }
 
-  public Hashtable  getLabelsHT() {
+  public Hashtable<String,LabelNode>  getLabelsHT() {
     /***********************************************************************
     * Return the labels field.  Used to "clone" an OpDefNode for module    *
     * instantiation.                                                       *
@@ -1393,9 +1396,9 @@ public class OpDefNode extends OpDefOrDeclNode
     ***********************************************************************/
     if (labels != null) {
        ret += "\n  Labels: " ;
-       Enumeration list = labels.keys() ;
+       Enumeration<String> list = labels.keys() ;
        while (list.hasMoreElements()) {
-          ret += ((UniqueString) list.nextElement()).toString() + "  " ;
+          ret += list.nextElement() + "  " ;
          } ;
       }
     else {ret += "\n  Labels: null";};

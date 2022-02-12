@@ -35,17 +35,12 @@ import util.UniqueString;
 
 interface OpDefOrLabelNode {
 
-public abstract void setLabels(Hashtable<UniqueString, LabelNode> ht) ;
+public abstract void setLabels(Hashtable<String, LabelNode> ht) ;
   /*************************************************************************
   * Set the set of labels to ht.                                           *
   *************************************************************************/
 
-default public LabelNode getLabel(String label) {
-	return this.getLabel(UniqueString.of(label));
-}
-
-/** @deprecated */
-public abstract LabelNode getLabel(UniqueString us) ;
+public abstract LabelNode getLabel(String label);
   /*************************************************************************
   * If the set contains an OpDefNode with name `us', then that OpDefNode   *
   * is returned; otherwise null is returned.                               *

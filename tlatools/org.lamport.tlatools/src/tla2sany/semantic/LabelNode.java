@@ -51,7 +51,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 import util.WrongInvocationException;
 
 public class LabelNode extends ExprNode
@@ -94,7 +93,7 @@ public class LabelNode extends ExprNode
     * beginning of OpDefOrLabelNode.java for an explanation.               *
     ***********************************************************************/
 
-  private Hashtable labels = null ;
+  private Hashtable<String, LabelNode> labels = null ;
     /***********************************************************************
     * This field is used to implement the OpDefOrLabel interface.  It is   *
     * a hashtable of OpDefNode objects representing labels within the      *
@@ -155,8 +154,7 @@ public class LabelNode extends ExprNode
     this.body   = bdy;
    }
 
-
-  public UniqueString getName() {return UniqueString.of(this.name); }
+  public String getName() {return (this.name); }
 
   /*************************************************************************
   * The following methods implement the OpDefOrLabel interface.            *
@@ -165,12 +163,14 @@ public class LabelNode extends ExprNode
   * There doesn't seem to be any easy way to write these methods only      *
   * once.                                                                  *
   *************************************************************************/
-  public void setLabels(Hashtable ht) {labels = ht; }
+  @Override
+  public void setLabels(Hashtable<String, LabelNode> ht) {labels = ht; }
     /***********************************************************************
     * Sets the set of labels.                                              *
     ***********************************************************************/
 
-  public LabelNode getLabel(UniqueString us) {
+  @Override
+  public LabelNode getLabel(String us) {
     /***********************************************************************
     * If the hashtable `labels' contains a LabelNode with name `us',       *
     * then that LabelNode is returned; otherwise null is returned.         *
@@ -179,18 +179,20 @@ public class LabelNode extends ExprNode
     return (LabelNode) labels.get(us) ;
    }
 
+  @Override
   public boolean addLabel(LabelNode odn) {
     /***********************************************************************
     * If the hashtable `labels' contains no OpDefNode with the same name   *
     * as odn, then odn is added to the set and true is return; else the    *
     * set is unchanged and false is returned.                              *
     ***********************************************************************/
-    if (labels == null) {labels = new Hashtable(); } ;
-    if (labels.containsKey(odn)) {return false ;} ;
+    if (labels == null) {labels = new Hashtable<>(); } ;
+    if (labels.containsKey(odn.getName())) {return false ;} ;
     labels.put(odn.getName(), odn) ;
     return true;
    }
 
+  @Override
   public LabelNode[] getLabels() {
     /***********************************************************************
     * Returns an array containing the Label objects in the hashtable       *
@@ -316,9 +318,9 @@ public class LabelNode extends ExprNode
     ***********************************************************************/
     if (labels != null) {
        ret += "\n  Labels: " ;
-       Enumeration list = labels.keys() ;
+       Enumeration<String> list = labels.keys() ;
        while (list.hasMoreElements()) {
-          ret += ((UniqueString) list.nextElement()).toString() + "  " ;
+          ret += list.nextElement() + "  " ;
          } ;
       }
     else {ret += "\n  Labels: null";} ;
@@ -336,7 +338,7 @@ public class LabelNode extends ExprNode
   @Override
   protected Element getLevelElement(Document doc, SymbolContext context) {
       Element ret = doc.createElement("LabelNode");
-      ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+      ret.appendChild(appendText(doc,"uniquename",getName()));
       ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
       ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
       Element arguments = doc.createElement("params");

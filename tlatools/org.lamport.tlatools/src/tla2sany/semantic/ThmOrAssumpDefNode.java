@@ -36,7 +36,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 import util.WrongInvocationException;
 
 /***************************************************************************
@@ -87,8 +86,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
   * the body that are not within the scope of an inner label or LET        *
   * definition.                                                            *
   *************************************************************************/
-  private Hashtable<UniqueString, LabelNode> labels = null ;
-  public Hashtable<UniqueString, LabelNode>  getLabelsHT() {
+  private Hashtable<String, LabelNode> labels = null ;
+  public Hashtable<String, LabelNode>  getLabelsHT() {
       /***********************************************************************
       * Return the labels field.  Used to "clone" an OpDefNode for module    *
       * instantiation.                                                       *
@@ -258,6 +257,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
   /*************************************************************************
   * Implementations of the abstract methods of the SymbolNode superclass.  *
   *************************************************************************/
+  @Override
   public final int getArity() { return this.arity;}
     /***********************************************************************
     * The name of a theorem or assumption has no parameters.               *
@@ -294,12 +294,14 @@ public class ThmOrAssumpDefNode extends SymbolNode
   * There doesn't seem to be any easy way to write these methods only      *
   * once.                                                                  *
   *************************************************************************/
-  public void setLabels(Hashtable<UniqueString, LabelNode> ht) {labels = ht; }
+  @Override
+  public void setLabels(Hashtable<String, LabelNode> ht) {labels = ht; }
     /***********************************************************************
     * Sets the set of labels.                                              *
     ***********************************************************************/
 
-  public LabelNode getLabel(UniqueString us) {
+  @Override
+  public LabelNode getLabel(String us) {
     /***********************************************************************
     * If the hashtable `labels' contains a LabelNode with name `us',       *
     * then that LabelNode is returned; otherwise null is returned.         *
@@ -308,6 +310,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     return (LabelNode) labels.get(us) ;
    }
 
+  @Override
   public boolean addLabel(LabelNode odn) {
     /***********************************************************************
     * If the hashtable `labels' contains no OpDefNode with the same name   *
@@ -320,6 +323,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     return true;
    }
 
+  @Override
   public LabelNode[] getLabels() {
     /***********************************************************************
     * Returns an array containing the Label objects in the hashtable       *
@@ -625,9 +629,9 @@ public class ThmOrAssumpDefNode extends SymbolNode
     ***********************************************************************/
     if (labels != null) {
        ret += "\n  Labels: " ;
-       Enumeration<UniqueString> list = labels.keys() ;
+       Enumeration<String> list = labels.keys() ;
        while (list.hasMoreElements()) {
-          ret += list.nextElement().toString() + "  " ;
+          ret += list.nextElement() + "  " ;
          } ;
       }
     else {ret += "\n  Labels: null";};
