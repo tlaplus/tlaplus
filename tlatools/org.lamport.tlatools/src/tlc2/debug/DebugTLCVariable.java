@@ -42,9 +42,6 @@ public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVar
 	
 	private transient Value tlcValue;
 	
-	public DebugTLCVariable(UniqueString lhs) {
-		this.setName(lhs.toString());
-	}
 	
 	public DebugTLCVariable(String lhs) {
 		this.setName(lhs);

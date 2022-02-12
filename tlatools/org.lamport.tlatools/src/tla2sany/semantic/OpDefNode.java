@@ -392,7 +392,7 @@ public class OpDefNode extends OpDefOrDeclNode
 
     private OpDefNode source = null ;
     
-	private UniqueString[] compoundID = null;
+	private String[] compoundID = null;
       /*********************************************************************
       * If this OpDefNode was created through a chain of INSTANCEs, then   *
       * this field points to the original OpDefNode object from where it   *
@@ -510,24 +510,24 @@ public class OpDefNode extends OpDefOrDeclNode
            TreeNode stn,
            boolean defined,
            OpDefNode src,             // The source
-           UniqueString[] compoundID
+           String[] compoundID
           ) {
 	   this(us,k,parms,localness,exp,oModNode,symbolTable,stn,defined,src);
 	   this.compoundID = compoundID;
    }
    
-   final UniqueString[] getCompoundId() {
+   final String[] getCompoundId() {
 	   if (compoundID != null) {
 		   return compoundID;
 	   }
-	   return new UniqueString[] {getNameUS()};
+	   return new String[] {getName()};
    }
 
-	public final UniqueString getLocalName() {
+	public final String getLocalName() {
 		   if (compoundID != null) {
 			   return compoundID[compoundID.length - 1];
 		   }
-		   return getNameUS();
+		   return getName();
 	}
 	
 	public final boolean hasPath() {
@@ -537,12 +537,14 @@ public class OpDefNode extends OpDefOrDeclNode
 		   return false;
 	}
 
-	public final UniqueString getPathName() {
-		   if (compoundID != null) {
-			   // drop last segment.
-			   return UniqueString.join("!", compoundID.length - 1, compoundID);
+	public final String getPathName() {
+		   if (compoundID == null || compoundID.length == 0)
+		     return "";
+		   String out = compoundID[0];
+		   for (int i = 1; i < compoundID.length; i++) {
+			   out = out + "!" + compoundID[i];
 		   }
-		   return UniqueString.of("");
+		   return out;
 	}
 
   /* Used for ModuleInstance names */

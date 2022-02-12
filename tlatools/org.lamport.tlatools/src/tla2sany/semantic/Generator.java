@@ -1947,7 +1947,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		nullParam = new FormalParamNode[0];
 		nullODN = new OpDefNode("nullODN");
 		nullOAN = new OpApplNode(nullODN);
-		nullOpArg = new OpArgNode(UniqueString.uniqueStringOf("nullOpArg"));
+		nullOpArg = new OpArgNode("nullOpArg");
 		nullLabelNode = new LabelNode(nullOAN);
 		this.errors = errs;
 		this.moduleTable = moduleTable;
@@ -4542,8 +4542,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						// ad-hoc parsing later when a feature such as the debugger needs to know each
 						// segment.
 						// A!B!C!OP -> {A,B,C,OP}
-						final UniqueString[] cID = Stream.of(new UniqueString[] { UniqueString.of(name) }, odn.getCompoundId())
-								.flatMap(Stream::of).toArray(UniqueString[]::new);
+						final String[] cID = Stream.of(new String[] { name }, odn.getCompoundId())
+								.flatMap(Stream::of).toArray(String[]::new);
 
 						// Create the OpDefNode for the new instance of this
 						// definition; because of the new operator name, cm is the

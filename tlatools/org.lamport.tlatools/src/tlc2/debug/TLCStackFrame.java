@@ -195,7 +195,7 @@ public class TLCStackFrame extends StackFrame {
 	}
 	
 	protected Variable getVariable(final IValue value, UniqueString varName) {
-		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName), rnd);
+		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName.toString()), rnd);
 		nestedVariables.put(variable.getVariablesReference(), variable);
 		return variable;
 	}
@@ -337,7 +337,7 @@ public class TLCStackFrame extends StackFrame {
 					// equals the empty (unique) string if the module has no path.
 					v.setValue(e.getValue().keySet().stream().filter(OpDefNode.class::isInstance)
 							.map(OpDefNode.class::cast).map(OpDefNode::getPathName).findAny()
-							.orElse(UniqueString.of(module.getSignature())).toString());
+							.orElse(module.getSignature()));
 					v.setName(module.getSignature());
 					v.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
 					vars.add(v);

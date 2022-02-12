@@ -30,13 +30,13 @@ public class OpArgNode extends ExprOrOpArgNode {
   private SymbolNode   op;      // The OpDefNode, OpDeclNode, or
                                 // FormalParamNode corresponding to
                                 // THIS OpArgNode
-  private UniqueString name;    // The string name of the full compound
+  private String name;    // The string name of the full compound
                                 // name of this operator
   private int          arity;   // The correct arity for this operator
   private ModuleNode   mn;      // the Module in which THIS OpArgNode appears
 
   /* Used only for construction of a "null" OpArg */
-  public OpArgNode(UniqueString name) {
+  public OpArgNode(String name) {
     super(OpArgKind, SyntaxTreeNode.nullSTN);
     this.name = name;
     this.arity = -2;
@@ -54,7 +54,7 @@ public class OpArgNode extends ExprOrOpArgNode {
 
     // if op is an OpDefNode, OpDeclNode, or FormalParamNode
     this.op        = op;
-    this.name      = op.getNameUS();
+    this.name      = op.getName();
     this.arity     = op.getArity();
     this.mn        = mn;
   }
@@ -63,7 +63,7 @@ public class OpArgNode extends ExprOrOpArgNode {
 
   public final int          getArity()     { return this.arity; }
 
-  public final UniqueString getName()      { return this.name; }
+  public final String getName()      { return this.name; }
 
   public final ModuleNode   getModule()    { return this.mn; }
 
@@ -136,7 +136,7 @@ public class OpArgNode extends ExprOrOpArgNode {
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    return "\n*OpArgNode: " + ( name != null ? name.toString() : "null") +
+    return "\n*OpArgNode: " + ( name != null ? name : "null") +
       "  " + super.toString(depth) +
       "  arity: " + arity +
       "  op: " + (op != null ? "" + ((SemanticNode)op).getUid() : "null" );
