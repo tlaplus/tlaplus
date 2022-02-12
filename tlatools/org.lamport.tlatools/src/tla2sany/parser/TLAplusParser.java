@@ -768,13 +768,18 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
 
   Stack internals = new Stack();
 
+  private final void addDependency( String s ) {
+	  addDependency(UniqueString.of(s));
+  }
+	  
+  /** @deprecated */
   private final void addDependency( UniqueString s ) {
     int lvi = internals.search( s );
     if ( lvi < 0 )
       dependencyList.addElement( s );
   }
 
-  private final UniqueString reduceString( String s ) {
+  private final String reduceString( String s ) {
     int l = s.length();
     StringBuffer copy = new StringBuffer( l );
     int i = 0;
@@ -793,7 +798,7 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
       i++; j++;
     }
     copy.setLength(j);
-    return UniqueString.uniqueStringOf(copy.toString());
+    return copy.toString();
   }
 
 /***************************************************************************
@@ -835,7 +840,7 @@ private int levelOfProofStepLexeme(Token tok){
 * appropriate level number, and leading zeros are removed from a regular   *
 * level number.                                                            *
 ***************************************************************************/
-private UniqueString correctedStepNum(Token t) {
+private String correctedStepNum(Token t) {
   String str = t.image ;
   if (   str.substring(1,2).equals("*")
       || str.substring(1,2).equals("+") ) {
@@ -854,7 +859,7 @@ private UniqueString correctedStepNum(Token t) {
    }
   else {str = "<" + levelOfProofStepLexeme(t) + str.substring(str.indexOf('>'));
    } ;
-  return UniqueString.uniqueStringOf(str) ;
+  return str;
   } ;
 
 private void pushProofLevel() throws ParseException {
@@ -1461,7 +1466,7 @@ Token t;
   expecting = "==== or more Module body";
     lSTN[3] = EndModule();
   do { pop = internals.pop(); } while (pop != null );
-  internals.push( lSTN[0].zero[1].image );
+  internals.push( UniqueString.of(lSTN[0].zero[1].image) );
   epa(); {if (true) return new SyntaxTreeNode( mn, N_Module, lSTN );}
     throw new Error("Missing return statement in function");
   }
@@ -1491,7 +1496,7 @@ Token t;
   t = getToken(1);
   if (isFieldNameToken( t )) t.kind = IDENTIFIER;
     lSTN[1] = Identifier();
-    if ( mn == null ) mn = lSTN[1].image;
+    if ( mn == null ) mn = UniqueString.of(lSTN[1].image);
     expecting = "----";
     t = jj_consume_token(SEPARATOR);
                       lSTN[2] =  new SyntaxTreeNode(mn, t );
@@ -4828,7 +4833,7 @@ expecting = "==";
   bpa("String");
     t = jj_consume_token(STRING_LITERAL);
     tn = new SyntaxTreeNode( mn, N_String, t);
-    tn.image = reduceString( tn.image.toString() );
+    tn.image = reduceString( tn.image ).toString();
     epa();
     {if (true) return tn;}
     throw new Error("Missing return statement in function");
@@ -5306,8 +5311,8 @@ int kind ;
       case op_119:
         tn = InfixOp();
          kind = N_GenInfixOp;
-         if (   (tn.image == UniqueString.uniqueStringOf("\\X"))
-             || (tn.image == UniqueString.uniqueStringOf("\\times"))){
+         if (   (tn.image.equals("\\X"))
+             || (tn.image.equals("\\times"))){
             {if (true) throw new ParseException(
                         tn.getLocation().toString() +
                         ": \\X may not be used as an infix operator.");}

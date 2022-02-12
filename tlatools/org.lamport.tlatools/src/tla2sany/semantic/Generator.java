@@ -1664,7 +1664,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					String temp3 = ("NewParam" + i);
 					temp2[i] = new FormalParamNode(temp3, // name
 							0, // arity
-							new SyntaxTreeNode(UniqueString.of(temp3)), // syntax tree node
+							new SyntaxTreeNode(temp3), // syntax tree node
 							null, // symbol table
 							cm); // module
 					params.addElement(temp2[i]);
@@ -5467,9 +5467,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * stepNumSTN.originalImage = null and stepNumSTN.image = the actual token.
 			 */
 			SyntaxTreeNode STN = (SyntaxTreeNode) stepNumSTN;
-			if ((STN.originalImage != null) && (STN.originalImage != STN.image)) {
-				String oimage = STN.originalImage.toString();
-				if ((!oimage.equals(STN.image.toString()))
+			if ((STN.originalImage != null) && !STN.originalImage.equals(STN.image)) {
+				String oimage = STN.originalImage;
+				if ((!oimage.equals(STN.image)) // TODO this seems redundant
 						&& ((oimage.charAt(1) == '*') || (oimage.charAt(1) == '+'))) {
 					errors.addError(stepNumSTN.getLocation(), "<*> and <+> cannot be used for a named step.");
 				}

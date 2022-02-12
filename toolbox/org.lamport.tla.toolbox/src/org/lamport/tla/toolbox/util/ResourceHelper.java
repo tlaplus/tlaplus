@@ -1498,7 +1498,6 @@ public class ResourceHelper {
                 // HIDE that's a proof step, in which case it seems to be
                 // stn.getHeirs()[1]. Set defIdx to the index of the "DEF" in the
                 // node's syntax tree.
-                UniqueString defStr = UniqueString.uniqueStringOf("DEF");
                 int defIdx = -1;
                 SyntaxTreeNode stn = ((SyntaxTreeNode) node.stn);
                 if (stn.getKind() == SyntaxTreeConstants.N_ProofStep)
@@ -1514,7 +1513,7 @@ public class ResourceHelper {
                 for (int i = 0; i < stn.getHeirs().length; i++)
                 {
                     SyntaxTreeNode nd = stn.getHeirs()[i];
-                    if (nd.image == defStr)
+                    if (nd.image.equals("DEF"))
                     {
                         defIdx = i;
                         break;

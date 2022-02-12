@@ -72,13 +72,13 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     * "int EOF = 0" and ends with "int ProofStepLexeme = 222".)  Another   *
     * (currently incomplete) list is in documentation/token-kinds.txt.     *
     ***********************************************************************/
-  public UniqueString             image       = null;
+  public String             image       = null;
     /***********************************************************************
     * For a token node formed from a Token t, this equals t.image.  For a  *
     * non-terminal node, it is the name of the node type.                  *
     ***********************************************************************/
 
-  public UniqueString             originalImage  = null;
+  public String             originalImage  = null;
     /***********************************************************************
     * This is a hack for dealing with step numbers of the form <*>...      *
     * and <+>...  .  For those step numbers, originalImage is the actual   *
@@ -149,13 +149,13 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     ***********************************************************************/
 
   public static SyntaxTreeNode nullSTN =
-    new SyntaxTreeNode( UniqueString.uniqueStringOf("***I do not exist***") );
+    new SyntaxTreeNode("***I do not exist***");
 
   public SyntaxTreeNode() {
     zero = nullArray; one = nullArray;
   }
 
-  public SyntaxTreeNode( UniqueString fn ) {
+  public SyntaxTreeNode( String fn ) {
     kind = 0; 
     image = fn;
     zero = nullArray;
@@ -167,7 +167,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public SyntaxTreeNode(UniqueString fn, Token t) {
     this.kind = t.kind; 
-    this.image = UniqueString.uniqueStringOf( t.image );
+    this.image = t.image;
     zero = nullArray; 
     one = nullArray;
     location[0] = t.beginLine;
@@ -185,7 +185,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     /***********************************************************************
     * I have no idea why this was commented out, or by whom.               *
     ***********************************************************************/
-    this.image = UniqueString.uniqueStringOf( t.image );
+    this.image = t.image;
     zero = nullArray;
     one = nullArray;
     location[0] = t.beginLine;
@@ -199,7 +199,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public SyntaxTreeNode(UniqueString fn, int kind, SyntaxTreeNode a[]) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ];
+    image = SyntaxNodeImage[ kind ].toString();
     zero = a;
     fileName = fn;
     updateLocation();
@@ -208,7 +208,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public SyntaxTreeNode( int kind, SyntaxTreeNode a[]) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ];
+    image = SyntaxNodeImage[ kind ].toString();
     zero = a;
     fileName = a[0].fileName;
     updateLocation();
@@ -225,7 +225,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   public SyntaxTreeNode(UniqueString fn, int kind, SyntaxTreeNode a, 
                         SyntaxTreeNode b[]) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ];
+    image = SyntaxNodeImage[ kind ].toString();
     if (a != null) {
       zero = new SyntaxTreeNode[1]; 
       zero[0] = a;
@@ -239,7 +239,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   public SyntaxTreeNode(UniqueString fn, int kind, SyntaxTreeNode a[], 
                         SyntaxTreeNode b[]) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ];
+    image = SyntaxNodeImage[ kind ].toString();
     zero = a;
     one = b;
     fileName = fn;
@@ -249,7 +249,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public SyntaxTreeNode(int kind, SyntaxTreeNode a, SyntaxTreeNode b) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ];
+    image = SyntaxNodeImage[ kind ].toString();
     fileName = a.fileName;
     zero = new SyntaxTreeNode[2];
     zero[0] = a;
@@ -261,7 +261,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   public SyntaxTreeNode(int kind, SyntaxTreeNode a, SyntaxTreeNode b, 
                         SyntaxTreeNode c) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ];
+    image = SyntaxNodeImage[ kind ].toString();
     fileName = a.fileName;
     zero = new SyntaxTreeNode[3];
     zero[0] = a; 
@@ -403,10 +403,10 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
                          location[3] );
    }
 
-  public final String         getImage() { return image.toString(); }
+  public final String         getImage() { return image; }
 
   /** @deprecated */
-  public final UniqueString   getUS() { return image; }
+  public final UniqueString   getUS() { return UniqueString.of(image); }
 
   public final SyntaxTreeNode first() {
     //System.out.println( image);
@@ -426,7 +426,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 			}
 			return buf.toString();
 		} else {
-			final String string = image.toString();
+			final String string = image;
 			// See SyntaxTreeNodeConstants. The strings below are the ones with
 			// which non-human-readable images start.
 			if (string.startsWith("N_")) {
@@ -550,28 +550,25 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     String      operator = "";
     TreeNode [] heirs    = this.heirs();
 
-    if (image != null && image.toString().equals("N_OperatorDefinition")) {
-       if (((SyntaxTreeNode)(heirs()[0])).image.toString().equals(
-                                              "N_IdentLHS")) {
+    if (image != null && image.equals("N_OperatorDefinition")) {
+       if (((SyntaxTreeNode)(heirs()[0])).image.equals("N_IdentLHS")) {
           operator = "*" + ((SyntaxTreeNode)(((SyntaxTreeNode)(
-                              heirs()[0])).heirs()[0])).image.toString();
+                              heirs()[0])).heirs()[0])).image;
        }
-       if (((SyntaxTreeNode)(heirs()[1])).image.toString().equals(
-                                                    "N_IdentLHS")) {
+       if (((SyntaxTreeNode)(heirs()[1])).image.equals("N_IdentLHS")) {
           operator = ((SyntaxTreeNode)(((SyntaxTreeNode)(
-                              heirs()[1])).heirs()[0])).image.toString();
+                              heirs()[1])).heirs()[0])).image;
        }
-       if (((SyntaxTreeNode)(heirs()[0])).image.toString().equals(
-                                                    "N_InfixLHS")) {
+       if (((SyntaxTreeNode)(heirs()[0])).image.equals("N_InfixLHS")) {
           operator = ((SyntaxTreeNode)(((SyntaxTreeNode)(
-                            heirs()[0])).heirs()[1])).image.toString();
+                            heirs()[0])).heirs()[1])).image;
        }
     }
 
     for (int i = 0; i < indentLevel; i++) System.out.print(Strings.blanks[2]);
     
     System.out.print((image == null ? "(" + SyntaxNodeImage[kind].toString() 
-         + ")" : image.toString()) 
+         + ")" : image) 
          + "\t" + (!operator.equals("") ? operator + "\t" : "")
          + "  #heirs: " + heirs.length + "\t"
          + "  kind:   " + kind + PreCommentToString(preComment) + "\n"      

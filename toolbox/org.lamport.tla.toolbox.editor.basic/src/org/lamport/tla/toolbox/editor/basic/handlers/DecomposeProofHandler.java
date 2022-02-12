@@ -1671,7 +1671,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
         if (step == theorem) {
             stepNumber = null;
         } else {
-            stepNumber = nd.getHeirs()[0].image.toString();
+            stepNumber = nd.getHeirs()[0].image;
             if (stepNumber.indexOf('>') == stepNumber.length() - 1) {
                 stepNumber = null;
             } else {
@@ -1846,7 +1846,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
      */
     static String getStepName (TheoremNode step) {
         SyntaxTreeNode nd = (SyntaxTreeNode) step.stn;
-        String result = nd.getHeirs()[0].image.toString();
+        String result = nd.getHeirs()[0].image;
         if (result.indexOf('>') == result.length() - 1) {
             result = null;
         } else {
@@ -8504,8 +8504,7 @@ public class DecomposeProofHandler extends AbstractHandler implements
      * @return
      */
     static int stepLevel(SemanticNode nd) {
-        String stepStr = ((SyntaxTreeNode) nd.stn).getHeirs()[0].image
-                .toString();
+        String stepStr = ((SyntaxTreeNode) nd.stn).getHeirs()[0].image;
         String stepNum = stepStr.substring(stepStr.indexOf('<') + 1,
                 stepStr.indexOf('>'));
         return Integer.valueOf(stepNum).intValue();

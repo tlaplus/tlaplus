@@ -209,7 +209,7 @@ public final class Configuration implements ConfigConstants {
     jj_consume_token(BUILTIN);
     t = jj_consume_token(OPID);
     name = t.image ;
-    SyntaxTreeNode stn = new SyntaxTreeNode(UniqueString.of(name));
+    SyntaxTreeNode stn = new SyntaxTreeNode(name);
     t = jj_consume_token(RESTRICTED);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INFIX:
