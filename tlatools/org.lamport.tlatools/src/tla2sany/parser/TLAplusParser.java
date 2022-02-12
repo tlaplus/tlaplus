@@ -23,7 +23,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     return deps;
   }
   public TreeNode rootNode() { return ParseTree; }
-  public String moduleName() { return mn.toString(); }
+  public String moduleName() { return mn; }
 //  public tla2sany.st.ParseErrors getErrors() { return PErrors; } Unused, apparently
 // The front end can simply read the public PErrors.
 
@@ -34,7 +34,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
 
   public Vector dependencyList = new Vector( 20 );
 
-  private UniqueString mn = null;
+  private String mn = null;
      /**********************************************************************
      * The module name.                                                    *
      **********************************************************************/
@@ -1496,7 +1496,7 @@ Token t;
   t = getToken(1);
   if (isFieldNameToken( t )) t.kind = IDENTIFIER;
     lSTN[1] = Identifier();
-    if ( mn == null ) mn = UniqueString.of(lSTN[1].image);
+    if ( mn == null ) mn = lSTN[1].image;
     expecting = "----";
     t = jj_consume_token(SEPARATOR);
                       lSTN[2] =  new SyntaxTreeNode(mn, t );
@@ -6448,7 +6448,7 @@ SyntaxTreeNode tn;
     t = jj_consume_token(ARROW);
                 zn[1] = new SyntaxTreeNode(mn, t);
     zn[2] = Expression();
-    epa(); {if (true) return new SyntaxTreeNode( mn, N_CaseArm, zn );}
+    epa(); {if (true) return new SyntaxTreeNode(mn, N_CaseArm, zn );}
     throw new Error("Missing return statement in function");
   }
 
@@ -6461,7 +6461,7 @@ SyntaxTreeNode tn;
     t = jj_consume_token(ARROW);
                 zn[1] = new SyntaxTreeNode(mn, t);
     zn[2] = Expression();
-    epa(); {if (true) return new SyntaxTreeNode( mn, N_OtherArm, zn );}
+    epa(); {if (true) return new SyntaxTreeNode(mn, N_OtherArm, zn );}
     throw new Error("Missing return statement in function");
   }
 

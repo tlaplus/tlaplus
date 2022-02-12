@@ -115,7 +115,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     * the values <<endLine, endColumn>> of its tokens.                     *
     ***********************************************************************/
     
-  private UniqueString            fileName    = null;
+  private String            fileName    = null;
     /***********************************************************************
     * fileName seems to be the name of the module containing this node.    *
     ***********************************************************************/
@@ -161,11 +161,11 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     zero = nullArray;
     one = nullArray;
     location[0] = 0; location[1] = 0; location[2] = 0; location[3] = 0;
-    fileName = UniqueString.uniqueStringOf("--TLA+ BUILTINS--");
+    fileName = ("--TLA+ BUILTINS--");
   }
 
 
-  public SyntaxTreeNode(UniqueString fn, Token t) {
+  public SyntaxTreeNode(String fn, Token t) {
     this.kind = t.kind; 
     this.image = t.image;
     zero = nullArray; 
@@ -179,7 +179,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   }
 
 
-  public SyntaxTreeNode(UniqueString fn, int kind, Token t) {
+  public SyntaxTreeNode(String fn, int kind, Token t) {
     this.kind = kind;
 //  this.image = SyntaxNodeImage[ kind ];
     /***********************************************************************
@@ -197,7 +197,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   }
 
 
-  public SyntaxTreeNode(UniqueString fn, int kind, SyntaxTreeNode a[]) {
+  public SyntaxTreeNode(String fn, int kind, SyntaxTreeNode a[]) {
     this.kind = kind;
     image = SyntaxNodeImage[ kind ].toString();
     zero = a;
@@ -222,7 +222,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   }
 
 
-  public SyntaxTreeNode(UniqueString fn, int kind, SyntaxTreeNode a, 
+  public SyntaxTreeNode(String fn, int kind, SyntaxTreeNode a, 
                         SyntaxTreeNode b[]) {
     this.kind = kind;
     image = SyntaxNodeImage[ kind ].toString();
@@ -236,7 +236,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   }
 
 
-  public SyntaxTreeNode(UniqueString fn, int kind, SyntaxTreeNode a[], 
+  public SyntaxTreeNode(String fn, int kind, SyntaxTreeNode a[], 
                         SyntaxTreeNode b[]) {
     this.kind = kind;
     image = SyntaxNodeImage[ kind ].toString();
@@ -394,9 +394,10 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   }
   
 
-  public final String         getFilename() {return fileName.toString(); }
+  public final String         getFilename() {return fileName; }
 
-  public final UniqueString   getFN() { return fileName; }
+  /** @deprecated */
+  public final UniqueString   getFN() { return UniqueString.of(fileName); }
 
   public final Location       getLocation( ) {
     return new Location( fileName, location[0], location[1], location[2], 

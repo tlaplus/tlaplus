@@ -213,7 +213,7 @@ What do left and right mean?????? What does shift mean????????
       } else {
 // System.out.println("postfix reduction : FcnOp");
         SyntaxTreeNode eSTN = ((OSelement) CurrentTop.elementAt( n-2)).getNode();
-        lSTN = new SyntaxTreeNode( eSTN.getFN(), N_FcnAppl, eSTN, (SyntaxTreeNode[]) (opNode.heirs()) );
+        lSTN = new SyntaxTreeNode( eSTN.getName(), N_FcnAppl, eSTN, (SyntaxTreeNode[]) (opNode.heirs()) );
       }
       CurrentTop.removeElementAt(n-1);
       CurrentTop.setElementAt(new OSelement(lSTN) , n-2);
