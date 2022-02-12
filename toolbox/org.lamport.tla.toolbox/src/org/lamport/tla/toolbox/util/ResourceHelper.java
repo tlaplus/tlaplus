@@ -97,7 +97,6 @@ import tlc2.output.SpecWriterUtilities;
 import util.FilenameToStream;
 import util.StringHelper;
 import util.TLAConstants;
-import util.UniqueString;
 
 /**
  * A utility class with resource related methods
@@ -584,7 +583,7 @@ public class ResourceHelper {
         {
             return null;
         }
-        return specObj.getExternalModuleTable().getModuleNode(UniqueString.uniqueStringOf(moduleName));
+        return specObj.getExternalModuleTable().getModuleNode(moduleName);
     }
 
     /**
@@ -965,8 +964,7 @@ public class ResourceHelper {
         {
             return null;
         }
-        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                UniqueString.uniqueStringOf(moduleName));
+        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
         if (module == null)
         {
             return null;
@@ -1033,8 +1031,7 @@ public class ResourceHelper {
             {
                 return null;
             }
-            ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                    UniqueString.uniqueStringOf(moduleName));
+            ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
 
             return getPfStepOrUseHideFromModuleNode(module, document.getLineOfOffset(textSelection.getOffset()) + 1);
             // if (module == null)

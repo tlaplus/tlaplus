@@ -312,7 +312,6 @@ import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
 import util.StringHelper;
 import util.TLAConstants;
-import util.UniqueString;
 
 public class OldDecomposeProofHandler extends AbstractHandler implements IHandler {
 

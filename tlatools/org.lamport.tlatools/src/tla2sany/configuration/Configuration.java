@@ -27,7 +27,6 @@ import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
 import util.ToolIO;
-import util.UniqueString;
 
 public final class Configuration implements ConfigConstants {
 

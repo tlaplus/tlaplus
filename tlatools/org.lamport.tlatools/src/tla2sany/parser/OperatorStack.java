@@ -2,7 +2,6 @@
 package tla2sany.parser;
 
 import tla2sany.utilities.Vector;
-import util.UniqueString;
 
 /***************************************************************************
 * An OperatorStack object is a stack of stacks of OSelement objects.       *

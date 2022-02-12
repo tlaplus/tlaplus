@@ -18,8 +18,6 @@
 ***************************************************************************/
 package tla2sany.st;
 
-import util.UniqueString;
-
 public interface SyntaxTreeConstants {
 
   int  NULL_ID =  327;

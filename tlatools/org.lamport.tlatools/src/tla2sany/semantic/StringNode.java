@@ -12,9 +12,6 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
-
-
 
 /**
  * This node represents a string literal in the specification--for
@@ -41,7 +38,7 @@ public class StringNode extends ExprNode implements ExploreNode {
   }
 
   /**
-   * Returns the UniqueString representation of the string.
+   * Returns the the string.
    */
   public final String getRep() { return this.value; }
 

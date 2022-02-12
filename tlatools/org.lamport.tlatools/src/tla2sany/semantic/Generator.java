@@ -31,7 +31,6 @@ import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tlc2.output.EC;
 import tlc2.output.MP;
-import util.UniqueString;
 import util.WrongInvocationException;
 
 // This class generates a semantic graph from a parse tree. It also uses
