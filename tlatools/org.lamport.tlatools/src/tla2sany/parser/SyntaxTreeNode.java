@@ -199,7 +199,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public SyntaxTreeNode(String fn, int kind, SyntaxTreeNode a[]) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ].toString();
+    image = SyntaxNodeImage[ kind ];
     zero = a;
     fileName = fn;
     updateLocation();
@@ -208,7 +208,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public SyntaxTreeNode( int kind, SyntaxTreeNode a[]) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ].toString();
+    image = SyntaxNodeImage[ kind ];
     zero = a;
     fileName = a[0].fileName;
     updateLocation();
@@ -225,7 +225,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   public SyntaxTreeNode(String fn, int kind, SyntaxTreeNode a, 
                         SyntaxTreeNode b[]) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ].toString();
+    image = SyntaxNodeImage[ kind ];
     if (a != null) {
       zero = new SyntaxTreeNode[1]; 
       zero[0] = a;
@@ -239,7 +239,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   public SyntaxTreeNode(String fn, int kind, SyntaxTreeNode a[], 
                         SyntaxTreeNode b[]) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ].toString();
+    image = SyntaxNodeImage[ kind ];
     zero = a;
     one = b;
     fileName = fn;
@@ -249,7 +249,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public SyntaxTreeNode(int kind, SyntaxTreeNode a, SyntaxTreeNode b) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ].toString();
+    image = SyntaxNodeImage[ kind ];
     fileName = a.fileName;
     zero = new SyntaxTreeNode[2];
     zero[0] = a;
@@ -261,7 +261,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   public SyntaxTreeNode(int kind, SyntaxTreeNode a, SyntaxTreeNode b, 
                         SyntaxTreeNode c) {
     this.kind = kind;
-    image = SyntaxNodeImage[ kind ].toString();
+    image = SyntaxNodeImage[ kind ];
     fileName = a.fileName;
     zero = new SyntaxTreeNode[3];
     zero[0] = a; 
@@ -568,7 +568,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
     for (int i = 0; i < indentLevel; i++) System.out.print(Strings.blanks[2]);
     
-    System.out.print((image == null ? "(" + SyntaxNodeImage[kind].toString() 
+    System.out.print((image == null ? "(" + SyntaxNodeImage[kind] 
          + ")" : image) 
          + "\t" + (!operator.equals("") ? operator + "\t" : "")
          + "  #heirs: " + heirs.length + "\t"
