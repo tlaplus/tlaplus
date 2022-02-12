@@ -9,7 +9,6 @@ import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;
 import util.ToolIO;
-import util.UniqueString;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree, TLAplusParserConstants {
 
@@ -44,8 +43,6 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
 
   private Operator FcnOp = Operators.getOperator("[");
   private SyntaxTreeNode FairnessHook;
-
-  private UniqueString At = UniqueString.uniqueStringOf("@");
 
   ParseErrors PErrors = new ParseErrors();
 
@@ -6075,7 +6072,7 @@ SyntaxTreeNode tn;
                 Token next = getToken(1);
                 if (isFieldNameToken( next )) next.kind = IDENTIFIER;
       tn = Identifier();
-      if (tn.getUS().equals(At) ) {
+      if (tn.getName().equals("@") ) {
         PErrors.push( new ParseError("@ used in !.@") );
       }
       addHeir( tn );

@@ -23,14 +23,11 @@ import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-import util.UniqueString;
 
 // The SyntaxTreeNode is the node of the syntax tree. It holds key 
 // information from the tokens (string, position). Heirs are held in two 
 // arrays. This is a trick to facilitate construction, and also to test 
 // for the presence of the LOCAL token more easily.
-
-// all strings are resolved internally to UniqueString.
 
 /* methods
  * various constructors
@@ -82,7 +79,7 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     /***********************************************************************
     * This is a hack for dealing with step numbers of the form <*>...      *
     * and <+>...  .  For those step numbers, originalImage is the actual   *
-    * image, while image is the UniqueString of the string obtained by     *
+    * image, while image is the String of the string obtained by     *
     * substituting the correct level number for the "*" or "+".            *
     *                                                                      *
     * This may result in strange error messages if the modified image is   *
@@ -396,18 +393,16 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 
   public final String         getFilename() {return fileName; }
 
-  /** @deprecated */
-  public final UniqueString   getFN() { return UniqueString.of(fileName); }
-
   public final Location       getLocation( ) {
     return new Location( fileName, location[0], location[1], location[2], 
                          location[3] );
    }
 
-  public final String         getImage() { return image; }
+  /** @deprecated Use getName() instead */
+  public final String   getImage() { return image; }
 
-  /** @deprecated */
-  public final UniqueString   getUS() { return UniqueString.of(image); }
+  @Override
+  public final String   getName() { return image; }
 
   public final SyntaxTreeNode first() {
     //System.out.println( image);
@@ -597,4 +592,4 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     };
     return res ;
   }
-  }
+}

@@ -200,11 +200,10 @@ public class SubstInNode extends ExprNode {
    * substitutions
    */
   @SuppressWarnings("unused")	// TODO final else block is dead code 
-  final void addExplicitSubstitute(Context instanceCtxt, UniqueString lhs,
-                                   TreeNode stn, ExprOrOpArgNode sub) {
+  final void addExplicitSubstitute(Context instanceCtxt, String lhs, TreeNode stn, ExprOrOpArgNode sub) {
     int index;
     for (index = 0; index < this.substs.length; index++) {
-      if (lhs == this.substs[index].getOp().getNameUS()) break;
+      if (lhs.equals(this.substs[index].getOp().getName())) break;
     }
 
     if (index < this.substs.length) {
@@ -212,7 +211,7 @@ public class SubstInNode extends ExprNode {
 	// if it is not an implicit substitution, then replacing it is
 	// an error.
         errors.addError(stn.getLocation(), "Multiple substitutions for symbol '" +
-			lhs.toString() + "' in substitution.");
+			lhs + "' in substitution.");
       }
       else {
 	// if it is an implicit subst, then replacing it with an

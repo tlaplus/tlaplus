@@ -15,9 +15,7 @@ public interface TreeNode {
   public boolean                isKind( int k );
   public TreeNode[]             zero();
   public TreeNode[]             one();
-  /** @deprecated */
-  public util.UniqueString      getUS();
-  default public String         getName() { return this.getUS().toString(); }
+  public String                 getName();
   public String[]               getPreComments();  // always returns an array, never null
 //  public String[]               getPostComments(); // always returns an array, never null
   public boolean                local();

@@ -426,7 +426,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						/************************************************************
 						 * This is not a number, so it is ">>", "<<", "@", or ":". *
 						 ************************************************************/
-						UniqueString us = stn.getUS();
+						String us = stn.getName();
 						if (us.equals(GGUS)) {
 							ops[i] = GGSel;
 						} else if (us.equals(LLUS)) {
@@ -4709,7 +4709,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// illegal substitution target
 
 		if (targetSymbol == null || !(targetSymbol instanceof OpDeclNode)) {
-			errors.addError(substTarget.getLocation(), "Identifier '" + substTarget.getUS() + "' is not a legal"
+			errors.addError(substTarget.getLocation(), "Identifier '" + substTarget.getName() + "' is not a legal"
 					+ " target of a substitution. \nA legal target must be a declared"
 					+ " CONSTANT or VARIABLE in the module being instantiated."
 					+ " \n(Also, check for warnings about multiple declarations of" + " this same identifier.)");
@@ -4881,7 +4881,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 			// Overwrite an implicit substitution if there is one, or add a new one,
 			// checking for duplicate substitutions for the same symbol
-			substIn.addExplicitSubstitute(instanceeCtxt, sc[0].getUS(), sc[2], substRHS);
+			substIn.addExplicitSubstitute(instanceeCtxt, sc[0].getName(), sc[2], substRHS);
 		}
 
 		// Check if substitution is complete, i.e. that all constants and vars
