@@ -5,8 +5,6 @@
 
 package tla2sany.semantic;
 
-import util.UniqueString;
-
 public interface ASTConstants {
 
   /* The following are kinds of SemanticNodes. */

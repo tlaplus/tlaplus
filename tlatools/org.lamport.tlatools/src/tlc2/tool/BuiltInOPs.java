@@ -7,8 +7,6 @@ package tlc2.tool;
 import java.util.HashMap;
 import java.util.Map;
 
-import util.UniqueString;
-
 public class BuiltInOPs implements ToolGlobals {
 
   private static Map<String,Integer> OpCodeTable;
@@ -85,11 +83,6 @@ public class BuiltInOPs implements ToolGlobals {
     /* Postfix operators */
     put(OP_prime,    OPCODE_prime);
   }
-
-  /** @deprecated */
-  private static void put(UniqueString op, int opcode) {
-	put(op.toString(),opcode);
-  }
   
   private static void put(String op, int opcode) {
 	OpCodeTable.put(op.toString(), Integer.valueOf(opcode));
@@ -98,11 +91,6 @@ public class BuiltInOPs implements ToolGlobals {
   /* Return the opcode for op. If it is not builtin, return 0. */
   public static int getOpCode(String op) {
 	  return OpCodeTable.containsKey(op) ? OpCodeTable.get(op).intValue() : 0;
-  }
-  
-  /** @deprecated  */
-  public static int getOpCode(UniqueString op) {
-    return getOpCode(op.toString());
   }
 
   public static boolean isTemporal(int opcode) {
