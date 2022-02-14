@@ -35,39 +35,12 @@ public class SimpUtil implements ToolGlobals {
   public static Sx cross2 = Sx.Atom("cross2");
   public static Sx bgPush = Sx.Atom("BG_PUSH");
   public static Sx pats = Sx.Atom("PATS");  
-  
-  protected static Hashtable trop;
-  public static Hashtable defns; // Maps operator name to translated defintions.
 
   // The following list contains the Sx translations of the TLA expressions in
   // the input module.
   public static Sx opDefns = Sx.nil;
   public static Sx fcnDefns = Sx.nil;
   public static Sx thms = Sx.nil;
-
-  static {
-    trop = new Hashtable();
-    trop.put(OP_lnot, "F_NOT");
-    trop.put(OP_eq, "F_EQ");
-    trop.put(OP_noteq, "F_NEQ");
-    trop.put(OP_implies, "F_IMPLIES");
-    trop.put(OP_land, "F_AND");
-    trop.put(OP_lor, "F_OR");
-    trop.put(OP_in, "in");
-    trop.put(OP_dotdot, "intv");
-    trop.put(OP_leq, "F_LE");
-    trop.put(OP_geq, "F_GE");
-    trop.put(OP_gt, "F_GT");    
-    trop.put(OP_cp, "cross2");
-
-    defns = new Hashtable();
-  }
-
-  // TODO This appears to be unused
-  public static UniqueString transOp(UniqueString name) {
-    UniqueString op = (UniqueString)trop.get(name.toString());
-    return (op == null) ? name : op;
-  }
 
   public static Sx mkForall(Sx vars, Sx body) {
     return Sx.List(forall, vars, body);
