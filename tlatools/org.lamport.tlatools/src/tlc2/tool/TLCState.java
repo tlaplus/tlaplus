@@ -19,7 +19,6 @@ import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import util.Assert;
-import util.UniqueString;
 
 public abstract class TLCState implements Cloneable, Serializable {
   public short workerId = Short.MAX_VALUE; // Must be set to a non-negative number. Valid worker ids \in [0,Short.MAX_VALUE] and start at 0.
@@ -99,12 +98,12 @@ public abstract class TLCState implements Cloneable, Serializable {
   /** 
    * Returns a mapping of variable names to their assigned values in this state.
    */ 
-  public final Map<UniqueString, IValue> getVals() {
-	final Map<UniqueString, IValue> valMap = new HashMap<UniqueString, IValue>();
+  public final Map<String, IValue> getVals() {
+	final Map<String, IValue> valMap = new HashMap<String, IValue>();
 	for(int i = 0; i < vars.length; i++) {
         String key = vars[i].getName();
-        IValue val = this.lookup(key.toString());
-        valMap.put(UniqueString.of(key), val);
+        IValue val = this.lookup(key);
+        valMap.put(key, val);
     }
     return valMap;
   }

@@ -58,8 +58,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 	 * Return a value from a TLCState as a string.
 	 */
 	public String getStateVal(TLCState s, String name) {
-		UniqueString us = UniqueString.uniqueStringOf(name);
-		return s.getVals().get(us).toString();
+		return s.getVals().get(name).toString();
 	}
 
 	@Test
@@ -270,7 +269,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "branch"));
 				
-		assertEquals(null, err.state.getVals().get(UniqueString.uniqueStringOf("depth")));
+		assertEquals(null, err.state.getVals().get("depth"));
 		assertEquals("0", getStateVal(err.state, "branch"));
 
 		worker.join();

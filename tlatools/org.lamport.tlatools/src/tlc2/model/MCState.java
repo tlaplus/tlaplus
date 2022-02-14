@@ -169,13 +169,13 @@ public class MCState {
 		this.isBackToState = false;
 		this.stateNumber = (int)tlcState.stateNumber;
 
-		Map<UniqueString, IValue> variableMap = tlcState.getOriginalState().getVals();
+		Map<String, IValue> variableMap = tlcState.getOriginalState().getVals();
 		List<MCVariable> variableList = new ArrayList<MCVariable>();
-		for (UniqueString key : variableMap.keySet()) {
+		for (String key : variableMap.keySet()) {
 			IValue value = variableMap.get(key);
 			// value is null if the successor state is not completely specified by the
 			// next-state relation. See e.g. IncompleteNextTest.java
-			MCVariable variable = new MCVariable(key.toString(), value);
+			MCVariable variable = new MCVariable(key, value);
 			variableList.add(variable);
 		}
 		

@@ -61,12 +61,12 @@ public class RandomElementT4Test extends ModelCheckerTestCase {
 		for (Object r : records) {
 			final Object[] objs = (Object[]) r;
 			final TLCStateInfo info = (TLCStateInfo) objs[0];
-			final Map<UniqueString, IValue> vals = info.state.getVals();
+			final Map<String, IValue> vals = info.state.getVals();
 
-			final IValue y = vals.get(UniqueString.uniqueStringOf("y"));
+			final IValue y = vals.get("y");
 			assertEquals(cnt++, ((IntValue) y).val);
 			
-			final IValue x = info.state.getVals().get(UniqueString.uniqueStringOf("x"));
+			final IValue x = info.state.getVals().get("x");
 			assertTrue(1 <= ((IntValue) x).val && ((IntValue) x).val <= 1000);
 			
 			final int statenum = (int) objs[1];

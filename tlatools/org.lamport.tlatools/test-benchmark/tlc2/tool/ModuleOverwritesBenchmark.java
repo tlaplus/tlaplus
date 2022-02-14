@@ -86,7 +86,7 @@ public class ModuleOverwritesBenchmark {
 	}
 
 	private static final void shuffleValues() {
-		final FcnRcdValue frv = (FcnRcdValue) state.getVals().get(UniqueString.uniqueStringOf("t"));
+		final FcnRcdValue frv = (FcnRcdValue) state.getVals().get("t");
 
 		final List<Value> values = Arrays.asList(frv.values);
 		Collections.shuffle(values);

@@ -77,9 +77,9 @@ public abstract class TraceExpressionSpecSafetyTest extends TraceExpressionSpecT
 		assertTrue(tool.isGoodState(sv.first()));
 		assertTrue(tool.isInModel(sv.first()));
 		assertTrue(tool.isValid(invariants[0], sv.first()));
-		Map<UniqueString, IValue> vals = sv.first().getVals();
-		assertEquals(IntValue.gen(0), vals.get(UniqueString.of("x")));
-		assertEquals(BoolValue.ValFalse, vals.get(UniqueString.of("y")));
+		Map<String, IValue> vals = sv.first().getVals();
+		assertEquals(IntValue.gen(0), vals.get("x"));
+		assertEquals(BoolValue.ValFalse, vals.get("y"));
 
 		sv = tool.getNextStates(actions[0], sv.first());
 		assertEquals(1, sv.size());
@@ -87,8 +87,8 @@ public abstract class TraceExpressionSpecSafetyTest extends TraceExpressionSpecT
 		assertTrue(tool.isInModel(sv.first()));
 		assertTrue(tool.isValid(invariants[0], sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(IntValue.gen(1), vals.get(UniqueString.of("x")));
-		assertEquals(BoolValue.ValTrue, vals.get(UniqueString.of("y")));
+		assertEquals(IntValue.gen(1), vals.get("x"));
+		assertEquals(BoolValue.ValTrue, vals.get("y"));
 
 		sv = tool.getNextStates(actions[0], sv.first());
 		assertEquals(1, sv.size());
@@ -96,8 +96,8 @@ public abstract class TraceExpressionSpecSafetyTest extends TraceExpressionSpecT
 		assertTrue(tool.isInModel(sv.first()));
 		assertTrue(tool.isValid(invariants[0], sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(IntValue.gen(2), vals.get(UniqueString.of("x")));
-		assertEquals(BoolValue.ValFalse, vals.get(UniqueString.of("y")));
+		assertEquals(IntValue.gen(2), vals.get("x"));
+		assertEquals(BoolValue.ValFalse, vals.get("y"));
 
 		sv = tool.getNextStates(actions[0], sv.first());
 		assertEquals(1, sv.size());
@@ -105,8 +105,8 @@ public abstract class TraceExpressionSpecSafetyTest extends TraceExpressionSpecT
 		assertTrue(tool.isInModel(sv.first()));
 		assertFalse(tool.isValid(invariants[0], sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(IntValue.gen(3), vals.get(UniqueString.of("x")));
-		assertEquals(BoolValue.ValTrue, vals.get(UniqueString.of("y")));
+		assertEquals(IntValue.gen(3), vals.get("x"));
+		assertEquals(BoolValue.ValTrue, vals.get("y"));
 
 		assertNotNull(tool.getModelConfig().getAlias());
 		assertFalse(tool.getModelConfig().getCheckDeadlock());
