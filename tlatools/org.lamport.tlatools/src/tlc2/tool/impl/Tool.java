@@ -1427,7 +1427,7 @@ public abstract class Tool
           ExprOrOpArgNode[] args = expr1.getArgs();
           int alen = args.length;
           SymbolNode opNode = expr1.getOperator();
-          UniqueString opName = opNode.getNameUS();
+          String opName = opNode.getName();
           int opcode = BuiltInOPs.getOpCode(opName);
 
           if (opcode == OPCODE_tup) {
@@ -1451,7 +1451,7 @@ public abstract class Tool
   @ExpectInlined
   private final TLCState processUnchangedImpl0Arity(final Action action, final SemanticNode expr, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm,
-			final SymbolNode opNode, final UniqueString opName) {
+			final SymbolNode opNode, final String opName) {
 		final Object val = this.lookup(opNode, c, false);
 	
 		if (val instanceof OpDefNode) {

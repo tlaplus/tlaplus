@@ -6,7 +6,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import tla2sany.st.TreeNode;
-import util.UniqueString;
 
 /**
  * Abstract class extended by classes that represent the meaning of an
@@ -37,16 +36,14 @@ public abstract class SymbolNode extends LevelNode {
   }
 
   /**
-   * @deprecated
-   * This method returns the UniqueString for the printable name of
+   * This method returns the String for the printable name of
    * the symbol being declared or defined. For example, if this node
    * is an operator definition:
    *
    *   Foo(a, b) == a*b
    *
-   * getName() is the UniqueString for "Foo".
+   * getName() is "Foo".
    */
-  public final UniqueString getNameUS() { return UniqueString.of(this.name); }
   
   public final String getName() { return this.name; }
 

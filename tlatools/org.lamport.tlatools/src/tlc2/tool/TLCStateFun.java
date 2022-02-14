@@ -108,13 +108,13 @@ public final class TLCStateFun extends TLCState {
   public final String toString() {
     StringBuffer sb = new StringBuffer("[");
     if (this != Empty) {
-      sb.append(this.name.getNameUS().toString());
+      sb.append(this.name.getName());
       sb.append(" -> ");
       sb.append(this.value.toString());
 
       for (TLCStateFun cur = this.next; cur != Empty; cur = cur.next) {
 	sb.append(", ");
-	sb.append(cur.name.getNameUS().toString());
+	sb.append(cur.name.getName());
 	sb.append("->");
 	sb.append(cur.value);
       }

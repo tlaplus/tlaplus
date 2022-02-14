@@ -130,7 +130,7 @@ public class RecordValue extends Value implements Applicable {
 		this.values = new Value[vars.length];
 
 		for (int i = 0; i < vars.length; i++) {
-			this.names[i] = vars[i].getNameUS();
+			this.names[i] = UniqueString.of(vars[i].getName());
 			this.values[i] = (Value) state.lookup(this.names[i].toString()); 
 		}
 
@@ -148,8 +148,8 @@ public class RecordValue extends Value implements Applicable {
 		this.values[0] = new RecordValue(action);
 		
 		for (int i = 0; i < vars.length; i++) {
-			this.names[i+1] = vars[i].getNameUS();
-			this.values[i+1] = (Value) state.lookup(this.names[i+1].toString()); 
+			this.names[i+1] = UniqueString.of(vars[i].getName());
+			this.values[i+1] = (Value) state.lookup(vars[i+1].getName()); 
 		}
 		
 		this.isNorm = false;

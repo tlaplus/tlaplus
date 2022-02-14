@@ -1170,7 +1170,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                                     OpApplNode subscript1 = (OpApplNode) subscript;
                                     SymbolNode opNode = subscript1.getOperator();
                                     ExprOrOpArgNode[] args = subscript1.getArgs();
-                                    int opCode = BuiltInOPs.getOpCode(opNode.getNameUS());
+                                    int opCode = BuiltInOPs.getOpCode(opNode.getName());
                                     // if it's a tuple, recurse with its members
                                     if (opCode == OPCODE_tup)
                                     {

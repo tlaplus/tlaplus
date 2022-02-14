@@ -34,10 +34,7 @@ import util.UniqueString;
 public interface AnyDefNode {
     public boolean levelCheck(int itr) ;
     public int getMaxLevel(int i) ;
-    public UniqueString getNameUS() ;
-    public default String getName() {
-    	return this.getNameUS().toString();
-    }
+    public String getName() ;
     public int getMinMaxLevel(int i, int j) ;
     public boolean getOpLevelCond(int i, int j, int k) ;
     public int getLevel() ;
