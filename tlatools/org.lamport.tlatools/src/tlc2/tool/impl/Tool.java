@@ -721,7 +721,7 @@ public abstract class Tool
         case OPCODE_eq:
           {
             SymbolNode var = this.getVar(args[0], c, false, toolId);
-            if (var == null || var.getNameUS().getVarLoc() < 0) {
+            if (var == null || UniqueString.getVarLoc(var.getName()) < 0) {
               Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
                 return;
@@ -749,7 +749,7 @@ public abstract class Tool
         case OPCODE_in:
           {
             SymbolNode var = this.getVar(args[0], c, false, toolId);
-            if (var == null || var.getNameUS().getVarLoc() < 0) {
+            if (var == null || UniqueString.getVarLoc(var.getName()) < 0) {
               Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
                 return;

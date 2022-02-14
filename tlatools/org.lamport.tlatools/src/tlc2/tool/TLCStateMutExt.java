@@ -96,7 +96,7 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
   
   public final TLCState bind(String name, IValue value) {
 	  // Note, tla2sany.semantic.OpApplNode.toString(Value) relies on this ordering.
-    int loc = UniqueString.of(name).getVarLoc();
+    int loc = UniqueString.getVarLoc(name);
     this.values[loc] = value;
     return this;
   }
@@ -106,13 +106,13 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
   }
   
   public final TLCState unbind(String name) {
-    int loc = UniqueString.of(name).getVarLoc();
+    int loc = UniqueString.getVarLoc(name);
     this.values[loc] = null;
     return this;
   }
 
   public final IValue lookup(String name) {
-    int loc = UniqueString.of(name).getVarLoc();
+    int loc = UniqueString.getVarLoc(name);
     if (loc < 0) return null;
     return this.values[loc];
   }

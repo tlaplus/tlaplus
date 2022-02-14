@@ -1291,7 +1291,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 			final TreeSet<SymbolNode> s = new TreeSet<SymbolNode>(new java.util.Comparator<SymbolNode>() {
 				@Override
 				public int compare(SymbolNode o1, SymbolNode o2) {
-					return Integer.compare(o1.getNameUS().getVarLoc(), o2.getNameUS().getVarLoc());
+					return Integer.compare(UniqueString.getVarLoc(o1.getName()), UniqueString.getVarLoc(o2.getName()));
 				}
 			});
 			s.addAll(allParams);

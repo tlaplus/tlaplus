@@ -182,7 +182,7 @@ public interface SymbolNodeValueLookupProvider {
 	 */
 	default int getLevelBoundAppl(final OpApplNode expr, Context c, final int forToolId) {
 		final SymbolNode opNode = expr.getOperator();
-		final UniqueString opName = opNode.getNameUS();
+		final String opName = opNode.getName();
 		final int opcode = BuiltInOPs.getOpCode(opName);
 
 		if (BuiltInOPs.isTemporal(opcode)) {
@@ -220,7 +220,7 @@ public interface SymbolNodeValueLookupProvider {
 
 		if (opcode == 0) {
 			// This operator is a user-defined operator.
-			if (opName.getVarLoc() >= 0)
+			if (UniqueString.getVarLoc(opName) >= 0)
 				return 1;
 
 			final Object val = lookup(opNode, c, false, forToolId);

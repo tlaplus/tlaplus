@@ -4,6 +4,7 @@ package util;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Hashtable;
 import java.util.Map;
 
 import tlc2.tool.Defns;
@@ -47,10 +48,6 @@ import tlc2.util.FP64;
  * the number of state variables defined in the specification is maintained in the static member {@link UniqueString#varCount}. 
  * The methods that are responsible for this feature are:
  * <ul>
- *   <li>{@link UniqueString#getDefnLoc()}</li>
- *   <li>{@link UniqueString#getVarLoc()}</li>
- *   <li>{@link UniqueString#setLoc(int)}</li>
- *   <li>{@link UniqueString#setVariableCount(int)}</li>
  * </ul>
  * <br>
  * Finally, there are two methods responsible for marshaling/un-marshaling and convenience methods to put and get unique 
@@ -147,30 +144,14 @@ public final class UniqueString implements Serializable
      * Returns the location of this variable in a state, if the name is a
      * variable.  Otherwise, returns -1.
      */
-    public int getVarLoc()
-    {
-        return (this.loc < varCount) ? this.loc : -1;
+    
+    // TODO: Move this to a different class. Eventually get rid of it.
+    private static Hashtable<String, Integer> map = new Hashtable<>();
+    public static int getVarLoc(String name) {
+    	return map.get(name) == null ? -1 : map.get(name);
     }
-
-    /**
-     * Returns the location of this operator in defns, if it is the name
-     * of an operator.  Otherwise, returns -1.
-     */
-    public int getDefnLoc()
-    {
-        return (this.loc < varCount) ? -1 : this.loc;
-    }
-
-    /**
-     * Set this string's location in either the state or the defns.
-     * This is fishy to store location outside of the storage
-     * 
-     * @see {@link TLCState}
-     * @see {@link Defns}
-     */
-    public void setLoc(int loc)
-    {
-        this.loc = loc;
+    public static void setVarLoc(String name, int i) {
+    	map.put(name, i);
     }
 
     /**
@@ -310,7 +291,7 @@ public final class UniqueString implements Serializable
     public final void write(IDataOutputStream dos) throws IOException
     {
         dos.writeInt(this.tok);
-        dos.writeInt(this. getVarLoc()); 
+        dos.writeInt(UniqueString.getVarLoc(this.toString())); 
          // Above changed from dos.writeInt(this.loc); by Yuan Yu on 17 Mar 2010
         dos.writeInt(this.s.length());
         dos.writeString(this.s);
