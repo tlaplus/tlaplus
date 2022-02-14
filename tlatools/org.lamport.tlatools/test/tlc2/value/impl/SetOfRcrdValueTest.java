@@ -38,7 +38,6 @@ import org.junit.Test;
 
 import tlc2.util.FP64;
 import tlc2.value.impl.SetOfRcdsValue.SubsetEnumerator;
-import util.UniqueString;
 
 public class SetOfRcrdValueTest {
 

@@ -18,7 +18,6 @@ import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
 
 public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final String[] names;      // The names of the fields.

@@ -39,7 +39,6 @@ import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.Value;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
-import util.UniqueString;
 
 @State(Scope.Benchmark)
 public class ModuleOverwritesBenchmark {
