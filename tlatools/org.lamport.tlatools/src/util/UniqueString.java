@@ -71,18 +71,6 @@ public final class UniqueString implements Serializable
      * The unique integer assigned to the string.
      */
     private int tok;
-
-    /**
-     * If this unique string is a state variable, this is the location of this
-     * variable in {@link TLCState}.  If this string is the name of an operator
-     * definition, this is the location of this definition in {@link Defns}.
-     */
-    private int loc = -1;
-
-    // SZ 10.04.2009: removed the getter method
-    // since it is only needed in Spec#processSpec and the setter is called from there
-    private static int varCount;
-
     
     /**
      * Call static constructor method for call not out of TLC
@@ -98,7 +86,6 @@ public final class UniqueString implements Serializable
     public static void initialize()
     {
         internTbl = new InternTable(1024);
-        varCount = 0;
     }
 
     /**
@@ -121,36 +108,21 @@ public final class UniqueString implements Serializable
     private UniqueString(String str, int tok, int loc)
     {
         this(str, tok);
-        this.loc = loc;
+        UniqueString.setVarLoc(str, loc);
     }
-
-    /**
-     * Sets the number of variables in the spec
-     * @param varCount number of variables defined
-     */
-    public static void setVariableCount(int varCount)
-    {
-        UniqueString.varCount = varCount;
-        // SZ 10.04.2009: changed the method signature from setVariables(UniqueString[])
-        // to setVariableCount(int), since the method is effectively only responsible
-        // for storing this information in the static field of this class.
-
-        // SZ 10.04.2009: removed the loop that runs through the variable names
-        // and sets the Loc field of each variable name to it's order in the list
-        // moved it to the place where the variables are initialized
-    }
-
+    
+    // TODO: Move this to a different class. Eventually get rid of it.
+    private static Hashtable<String, Integer> map = new Hashtable<>();
     /**
      * Returns the location of this variable in a state, if the name is a
      * variable.  Otherwise, returns -1.
      */
-    
-    // TODO: Move this to a different class. Eventually get rid of it.
-    private static Hashtable<String, Integer> map = new Hashtable<>();
     public static int getVarLoc(String name) {
     	return map.get(name) == null ? -1 : map.get(name);
     }
     public static void setVarLoc(String name, int i) {
+    	if (i < 0)
+    		return;
     	map.put(name, i);
     }
 
@@ -251,36 +223,6 @@ public final class UniqueString implements Serializable
 		return uniqueStringOf(str);
 	}
 
-	public static UniqueString join(String delim, UniqueString... us) {
-		return join(delim, us.length, us);
-	}
-
-	public static UniqueString join(String delim, int n, UniqueString... us) {
-		assert 0 < n && n <= us.length;
-		UniqueString out = null;
-		for (int i = 0; i < n; i++) {
-			if (out == null) {
-				out = us[i];
-			} else {
-				out = out.concat("!");
-				out = out.concat(us[i]);
-			}
-		}
-		return out;
-	}
-	
-    /**
-     * If there exists a UniqueString object obj such that obj.getTok()
-     * equals tok, then uidToUniqueString(i) returns obj; otherwise,    
-     * it returns null.
-     * 
-     * This is a convenience method for a table lookup. 
-     */
-    public static UniqueString uidToUniqueString(int tok)
-    {
-        return internTbl.get(tok);
-    }
-
 
     /**
      * Writes current unique string to the stream
@@ -291,8 +233,7 @@ public final class UniqueString implements Serializable
     public final void write(IDataOutputStream dos) throws IOException
     {
         dos.writeInt(this.tok);
-        dos.writeInt(UniqueString.getVarLoc(this.toString())); 
-         // Above changed from dos.writeInt(this.loc); by Yuan Yu on 17 Mar 2010
+        dos.writeInt(UniqueString.getVarLoc(this.toString()));
         dos.writeInt(this.s.length());
         dos.writeString(this.s);
     }

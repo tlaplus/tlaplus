@@ -37,8 +37,6 @@ public abstract class TLCStates {
 	}
 
 	public static TLCState createDummyState(final int numVars) {
-		UniqueString.setVariableCount(numVars);
-
 		// Create variable declarations (no values yet).
 		final OpDeclNode[] variables = new OpDeclNode[numVars];
 		for (int i = 0; i < numVars; i++) {
