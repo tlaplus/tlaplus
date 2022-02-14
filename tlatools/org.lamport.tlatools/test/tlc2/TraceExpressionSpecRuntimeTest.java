@@ -76,7 +76,7 @@ public class TraceExpressionSpecRuntimeTest extends TraceExpressionSpecTest {
 		assertTrue(tool.isInModel(sv.first()));
 		assertTrue(tool.isValid(invariants[0], sv.first()));
 		Map<UniqueString, IValue> vals = sv.first().getVals();
-		assertEquals(new RecordValue(UniqueString.of("val"), IntValue.gen(0)), vals.get(UniqueString.of("x")));
+		assertEquals(new RecordValue("val", IntValue.gen(0)), vals.get(UniqueString.of("x")));
 
 		sv = tool.getNextStates(actions[0], sv.first());
 		assertEquals(1, sv.size());
@@ -84,7 +84,7 @@ public class TraceExpressionSpecRuntimeTest extends TraceExpressionSpecTest {
 		assertTrue(tool.isInModel(sv.first()));
 		assertTrue(tool.isValid(invariants[0], sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(new RecordValue(UniqueString.of("val"), IntValue.gen(1)), vals.get(UniqueString.of("x")));
+		assertEquals(new RecordValue("val", IntValue.gen(1)), vals.get(UniqueString.of("x")));
 
 		sv = tool.getNextStates(actions[0], sv.first());
 		assertEquals(1, sv.size());
@@ -92,7 +92,7 @@ public class TraceExpressionSpecRuntimeTest extends TraceExpressionSpecTest {
 		assertTrue(tool.isInModel(sv.first()));
 		assertTrue(tool.isValid(invariants[0], sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(new RecordValue(UniqueString.of("val"), IntValue.gen(2)), vals.get(UniqueString.of("x")));
+		assertEquals(new RecordValue("val", IntValue.gen(2)), vals.get(UniqueString.of("x")));
 
 		sv = tool.getNextStates(actions[0], sv.first());
 		assertEquals(1, sv.size());
@@ -100,7 +100,7 @@ public class TraceExpressionSpecRuntimeTest extends TraceExpressionSpecTest {
 		assertTrue(tool.isInModel(sv.first()));
 		assertTrue(tool.isValid(invariants[0], sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(new RecordValue(UniqueString.of("val"), IntValue.gen(3)), vals.get(UniqueString.of("x")));
+		assertEquals(new RecordValue("val", IntValue.gen(3)), vals.get(UniqueString.of("x")));
 
 		sv = tool.getNextStates(actions[0], sv.first());
 		assertEquals(1, sv.size());
@@ -108,7 +108,7 @@ public class TraceExpressionSpecRuntimeTest extends TraceExpressionSpecTest {
 		assertTrue(tool.isInModel(sv.first()));
 		assertFalse(tool.isValid(invariants[0], sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(new RecordValue(UniqueString.of("val2"), IntValue.gen(4)), vals.get(UniqueString.of("x")));
+		assertEquals(new RecordValue("val2", IntValue.gen(4)), vals.get(UniqueString.of("x")));
 
 		assertNotNull(tool.getModelConfig().getAlias());
 		assertFalse(tool.getModelConfig().getCheckDeadlock());

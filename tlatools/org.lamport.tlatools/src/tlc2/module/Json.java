@@ -292,7 +292,7 @@ public class Json {
   private static JsonElement getObjectNode(RecordValue value) throws IOException {
     JsonObject jsonObject = new JsonObject();
     for (int i = 0; i < value.names.length; i++) {
-      jsonObject.add(value.names[i].toString(), getNode(value.values[i]));
+      jsonObject.add(value.names[i], getNode(value.values[i]));
     }
     return jsonObject;
   }
@@ -443,14 +443,14 @@ public class Json {
    * @return the record value
    */
   private static RecordValue getRecordValue(JsonElement node) throws IOException {
-    List<UniqueString> keys = new ArrayList<>();
+    List<String> keys = new ArrayList<>();
     List<Value> values = new ArrayList<>();
     Iterator<Map.Entry<String, JsonElement>> iterator = node.getAsJsonObject().entrySet().iterator();
     while (iterator.hasNext()) {
       Map.Entry<String, JsonElement> entry = iterator.next();
-      keys.add(UniqueString.uniqueStringOf(entry.getKey()));
+      keys.add(entry.getKey());
       values.add(getValue(entry.getValue()));
     }
-    return new RecordValue(keys.toArray(new UniqueString[0]), values.toArray(new Value[0]), false);
+    return new RecordValue(keys.toArray(new String[0]), values.toArray(new Value[0]), false);
   }
 }

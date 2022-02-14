@@ -599,10 +599,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	}
 
 	public Value getWorkerStatistics() {
-		final UniqueString[] n = new UniqueString[1];
+		final String[] n = new String[1];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TLCGetSet.SPEC_ACTIONS;
+		n[0] = TLCGetSet.SPEC_ACTIONS.toString();
 		v[0] = toRecordValue(behaviorStats);
 		
 		return new RecordValue(n, v, false);
@@ -611,11 +611,11 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	private static RecordValue toRecordValue(final Map<String, Integer> m) {
 		final List<Map.Entry<String, Integer>> entries = new ArrayList<>(m.entrySet());
 
-		UniqueString[] names = new UniqueString[entries.size()];
+		String[] names = new String[entries.size()];
 		Value[] values = new Value[entries.size()];
 
 		for (int i = 0; i < entries.size(); i++) {
-			names[i] = UniqueString.of(entries.get(i).getKey());
+			names[i] = entries.get(i).getKey();
 			values[i] = IntValue.gen(entries.get(i).getValue());
 		}
 		

@@ -813,19 +813,19 @@ public class Simulator {
 	}
 	
 	public final Value getStatistics() {
-		final UniqueString[] n = new UniqueString[4];
+		final String[] n = new String[4];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TLCGetSet.TRACES;
+		n[0] = TLCGetSet.TRACES.toString();
 		v[0] = TLCGetSet.narrowToIntValue(numOfGenTraces.longValue());
 		
-		n[1] = TLCGetSet.DURATION;
+		n[1] = TLCGetSet.DURATION.toString();
 		v[1] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
 
-		n[2] = TLCGetSet.GENERATED;
+		n[2] = TLCGetSet.GENERATED.toString();
 		v[2] = TLCGetSet.narrowToIntValue(numOfGenStates.longValue());
 
-		n[3] = TLCGetSet.BEHAVIOR;
+		n[3] = TLCGetSet.BEHAVIOR.toString();
 		v[3] = getWorkerStatistics();
 		
 		return new RecordValue(n, v, false);
@@ -836,31 +836,31 @@ public class Simulator {
 	}
 
 	private final Value createConfig() {
-		final UniqueString[] n = new UniqueString[8];
+		final String[] n = new String[8];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TLCGetSet.MODE;
+		n[0] = TLCGetSet.MODE.toString();
 		v[0] = Tool.isProbabilistic() ? new StringValue("generate") : new StringValue("simulate");
 
-		n[1] = TLCGetSet.DEPTH;
+		n[1] = TLCGetSet.DEPTH.toString();
 		v[1] = IntValue.gen(this.traceDepth == Integer.MAX_VALUE ? -1 : this.traceDepth);
 
-		n[2] = TLCGetSet.TRACES;
+		n[2] = TLCGetSet.TRACES.toString();
 		v[2] = IntValue.gen((int) (this.numWorkers * traceNum));
 
-		n[3] = TLCGetSet.DEADLOCK;
+		n[3] = TLCGetSet.DEADLOCK.toString();
 		v[3] = checkDeadlock ? BoolValue.ValTrue : BoolValue.ValFalse;
 
-		n[4] = TLCGetSet.SEED;
+		n[4] = TLCGetSet.SEED.toString();
 		v[4] = new StringValue(Long.toString(seed));
 
-		n[5] = TLCGetSet.ARIL;
+		n[5] = TLCGetSet.ARIL.toString();
 		v[5] = new StringValue(Long.toString(aril));
 
-		n[6] = TLCGetSet.WORKER;
+		n[6] = TLCGetSet.WORKER.toString();
 		v[6] = IntValue.gen(numWorkers);
 
-		n[7] = TLCGetSet.INSTALL;
+		n[7] = TLCGetSet.INSTALL.toString();
 		v[7] = new StringValue(TLCGlobals.getInstallLocation());
 		
 		return new RecordValue(n, v, false);

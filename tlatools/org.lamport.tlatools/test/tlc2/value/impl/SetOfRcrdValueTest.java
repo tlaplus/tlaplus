@@ -52,24 +52,22 @@ public class SetOfRcrdValueTest {
 		return values;
 	}
 
-	private static final Value[] getValue(int n, String... strs) {
-		final Value[] values = new Value[strs.length];
+	private static final Value[] getValue(int n, Object[] names) {
+		// a,b,c,d,e,...
+		String[] arr = IntStream.range(a, a + names.length).mapToObj(ascii -> Character.toString((char) ascii))
+				.toArray(String[]::new);
+		
+		final Value[] values = new Value[arr.length];
 		for (int i = 0; i < values.length; i++) {
-			values[i] = new SetEnumValue(getValue(n, strs[i]), false);
+			values[i] = new SetEnumValue(getValue(n, arr[i]), false);
 		}
 		return values;
 	}
 
-	private static final Value[] getValue(int n, UniqueString[] names) {
-		// a,b,c,d,e,...
-		return getValue(n, IntStream.range(a, a + names.length).mapToObj(ascii -> Character.toString((char) ascii))
-				.toArray(String[]::new));
-	}
-
-	private static final UniqueString[] getNames(final int n) {
-		final UniqueString[] names = new UniqueString[n];
+	private static final String[] getNames(final int n) {
+		final String[] names = new String[n];
 		for (int i = 0; i < names.length; i++) {
-			names[i] = UniqueString.uniqueStringOf("N" + i);
+			names[i] = "N" + i;
 		}
 		return names;
 	}
@@ -81,7 +79,7 @@ public class SetOfRcrdValueTest {
 
 	@Test
 	public void testSimple() {
-		final UniqueString[] names = getNames(3);
+		final String[] names = getNames(3);
 		
 		final Value[] values = new Value[3];
 		values[0] = new SetEnumValue(getValue(7, "a"), true);
@@ -93,7 +91,7 @@ public class SetOfRcrdValueTest {
 		checkElements(names, values, setOfRcrdValue, (SubsetEnumerator) setOfRcrdValue.elements(setOfRcrdValue.size()));
 	}
 
-	private static void checkElements(final UniqueString[] names, final Value[] values, final SetOfRcdsValue set,
+	private static void checkElements(final String[] names, final Value[] values, final SetOfRcdsValue set,
 			final SubsetEnumerator rcds) {
 		for (int i = 0; i < set.size(); i++) {
 			// Check names are stable.
@@ -109,7 +107,7 @@ public class SetOfRcrdValueTest {
 	
 	@Test
 	public void testRangeSubsetValue() {
-		final UniqueString[] names = getNames(4);
+		final String[] names = getNames(4);
 		final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(2, names), true);
 
 		final Set<Value> actual = new HashSet<>(setOfRcrdValue.elements(setOfRcrdValue.size()).all());
@@ -121,7 +119,7 @@ public class SetOfRcrdValueTest {
 
 	@Test
 	public void testRandomSubset() {
-		final UniqueString[] names = getNames(4);
+		final String[] names = getNames(4);
 		final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(3, names), true);
 
 		final int size = 27;
@@ -144,7 +142,7 @@ public class SetOfRcrdValueTest {
 	@Test
 	public void testRandomSubsetVaryingParameters() {
 		for (int n = 1; n < 7; n++) {
-			final UniqueString[] names = getNames(n);
+			final String[] names = getNames(n);
 			for (int m = 1; m < 5; m++) {
 				final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(m, names), true);
 				final Set<RecordValue> randomsubsetValues = new HashSet<>();
@@ -174,7 +172,7 @@ public class SetOfRcrdValueTest {
 		//                       a4 : {k : k \in 1..50}, a5 : {k : k \in 1..50}, a6 : {k : k \in 1..50},
 		//                       a7 : {k : k \in 1..50}, a8 : {k : k \in 1..50}, a9 : {k : k \in 1..50},
 		//                      a10 : {k : k \in 1..50}])
-		final UniqueString[] names = getNames(10);
+		final String[] names = getNames(10);
 		final SetOfRcdsValue setOfRcrdValue = new SetOfRcdsValue(names, getValue(50, names), true);
 
 		final int k = 10000;

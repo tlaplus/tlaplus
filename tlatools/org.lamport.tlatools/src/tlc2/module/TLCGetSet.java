@@ -275,25 +275,25 @@ public class TLCGetSet implements ValueConstants {
 			/*
 			 * Add operator `TLC!TLCGet("revision")`.
 			 */
-			final UniqueString[] n = new UniqueString[4];
+			final String[] n = new String[4];
 			final Value[] v = new Value[n.length];
 			
-			n[0] = TLCGetSet.REV_COUNT;
+			n[0] = TLCGetSet.REV_COUNT.toString();
 			v[0] = IntValue.gen(TLCGlobals.getSCMCommits());
 			
 			final Date buildDate = TLCGlobals.getBuildDate();
 			// This suffers from the year 2038 problem
 			// (https://en.wikipedia.org/wiki/Year_2038_problem). By then, somebody please
 			// properly implement support for TLC's tlc2.util.BigInt.
-			n[1] = TLCGetSet.REV_TIMESTAMP;
+			n[1] = TLCGetSet.REV_TIMESTAMP.toString();
 			v[1] = IntValue.gen((int) buildDate.toInstant().getEpochSecond());
 
-			n[2] = TLCGetSet.REV_DATE;
+			n[2] = TLCGetSet.REV_DATE.toString();
 			final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
 			df.setTimeZone(TimeZone.getTimeZone("UTC"));
 			v[2] = new StringValue(df.format(buildDate));
 			
-			n[3] = TLCGetSet.REV_TAG;
+			n[3] = TLCGetSet.REV_TAG.toString();
 			v[3] = new StringValue(TLCGlobals.getRevisionOrDev());
 
 			return new RecordValue(n, v, false);
@@ -301,7 +301,7 @@ public class TLCGetSet implements ValueConstants {
 			/*
 			 * Add operator `TLC!TLCGet("spec")`.
 			 */
-			final UniqueString[] n = new UniqueString[6];
+			final String[] n = new String[6];
 			final Value[] v = new Value[n.length];
 
 			// Inits as found by spec processing.
@@ -310,28 +310,28 @@ public class TLCGetSet implements ValueConstants {
 			for (int i = 0; i < inits.size(); i++) {
 				l.add(new RecordValue(inits.elementAt(i)));
 			}
-			n[0] = SPEC_INITS;
+			n[0] = SPEC_INITS.toString();
 			v[0] = new SetEnumValue(new ValueVec(l), false);
 			
 			// Actions as found by spec processing. For a sub-action with non-zero arity,
 			// TLC has multiple copies.
-			n[1] = SPEC_ACTIONS;
+			n[1] = SPEC_ACTIONS.toString();
 			v[1] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getActions()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 
-			n[2] = SPEC_TERMPORALS;
+			n[2] = SPEC_TERMPORALS.toString();
 			v[2] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getTemporals()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[3] = SPEC_INVARIANTS;
+			n[3] = SPEC_INVARIANTS.toString();
 			v[3] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getInvariants()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[4] = SPEC_IMPLIEDINITS;
+			n[4] = SPEC_IMPLIEDINITS.toString();
 			v[4] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedInits()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[5] = SPEC_IMPLIEDTEMPORALS;
+			n[5] = SPEC_IMPLIEDTEMPORALS.toString();
 			v[5] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedTemporals()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			

@@ -53,11 +53,11 @@ public class RecordValueTest {
 		final Value bVal = new StringValue("bVal");
 		
 		// Create the source to create a deep copy of
-		final RecordValue orig = new RecordValue(new UniqueString[] {b, a}, new Value[] {bVal, aVal}, false);
+		final RecordValue orig = new RecordValue(new String[] {b.toString(), a.toString()}, new Value[] {bVal, aVal}, false);
 		
 		// Verify the mappings in RecordValue are correct
-		assertTrue(orig.names[0].equals(b));
-		assertTrue(orig.names[1].equals(a));
+		assertTrue(orig.names[0].equals(b.toString()));
+		assertTrue(orig.names[1].equals(a.toString()));
 		assertTrue(orig.values[0].equals(bVal));
 		assertTrue(orig.values[1].equals(aVal));
 		
@@ -67,14 +67,14 @@ public class RecordValueTest {
 		// Normalize the original record value and check its mappings have been
 		// re-organized
 		orig.deepNormalize();
-		assertTrue(orig.names[0].equals(a));
-		assertTrue(orig.names[1].equals(b));
+		assertTrue(orig.names[0].equals(a.toString()));
+		assertTrue(orig.names[1].equals(b.toString()));
 		assertTrue(orig.values[0].equals(aVal));
 		assertTrue(orig.values[1].equals(bVal));
 		
 		// Check that the mappings in the deep copy didn't change.
-		assertTrue(deepCopy.names[0].equals(b));
-		assertTrue(deepCopy.names[1].equals(a));
+		assertTrue(deepCopy.names[0].equals(b.toString()));
+		assertTrue(deepCopy.names[1].equals(a.toString()));
 		assertTrue(deepCopy.values[0].equals(bVal));
 		assertTrue(deepCopy.values[1].equals(aVal));
 	}
@@ -82,7 +82,7 @@ public class RecordValueTest {
 	@Test
 	public void testErrorMessages() {
 		final Value aVal = new StringValue("aVal");
-		final RecordValue recVal = new RecordValue(UniqueString.of("a"), aVal);
+		final RecordValue recVal = new RecordValue("a", aVal);
 
 		try{
 			recVal.apply(new StringValue("b"), 0);

@@ -2230,12 +2230,12 @@ public abstract class Tool
         case OPCODE_rc:     // RcdConstructor
           {
             int alen = args.length;
-            UniqueString[] names = new UniqueString[alen];
+            String[] names = new String[alen];
             Value[] vals = new Value[alen];
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
-              names[i] = ((StringValue)pair[0].getToolObject(toolId)).getVal();
+              names[i] = ((StringValue)pair[0].getToolObject(toolId)).getVal().toString();
               vals[i] = this.eval(pair[1], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
             }
             return setSource(expr, new RecordValue(names, vals, false, cm));
@@ -2286,12 +2286,12 @@ public abstract class Tool
         case OPCODE_sor:    // SetOfRcds
           {
             int alen = args.length;
-            UniqueString names[] = new UniqueString[alen];
+            String names[] = new String[alen];
             Value vals[] = new Value[alen];
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
-              names[i] = ((StringValue)pair[0].getToolObject(toolId)).getVal();
+              names[i] = ((StringValue)pair[0].getToolObject(toolId)).getVal().toString();
               vals[i] = this.eval(pair[1], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
             }
             return setSource(expr, new SetOfRcdsValue(names, vals, false, cm));

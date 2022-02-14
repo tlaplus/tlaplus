@@ -638,22 +638,22 @@ public abstract class AbstractChecker
 	}
 
 	public final Value getStatistics() {
-		final UniqueString[] n = new UniqueString[5];
+		final String[] n = new String[5];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TLCGetSet.QUEUE;
+		n[0] = TLCGetSet.QUEUE.toString();
 		v[0] = TLCGetSet.narrowToIntValue(getStateQueueSize());
 		
-		n[1] = TLCGetSet.DISTINCT;
+		n[1] = TLCGetSet.DISTINCT.toString();
 		v[1] = TLCGetSet.narrowToIntValue(getDistinctStatesGenerated());
 
-		n[2] = TLCGetSet.GENERATED;
+		n[2] = TLCGetSet.GENERATED.toString();
 		v[2] = TLCGetSet.narrowToIntValue(getStatesGenerated());
 		
-		n[3] = TLCGetSet.DIAMETER;
+		n[3] = TLCGetSet.DIAMETER.toString();
 		v[3] = TLCGetSet.narrowToIntValue(getProgress());
 		
-		n[4] = TLCGetSet.DURATION;
+		n[4] = TLCGetSet.DURATION.toString();
 		v[4] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
 
 		return new RecordValue(n, v, false);
@@ -664,24 +664,24 @@ public abstract class AbstractChecker
 	}
 	
 	private final Value createConfig() {
-		final UniqueString[] n = new UniqueString[6];
+		final String[] n = new String[6];
 		final Value[] v = new Value[n.length];
-		n[0] = TLCGetSet.MODE;
+		n[0] = TLCGetSet.MODE.toString();
 		v[0] = new StringValue("bfs");
 
-		n[1] = TLCGetSet.DEADLOCK;
+		n[1] = TLCGetSet.DEADLOCK.toString();
 		v[1] = checkDeadlock ? BoolValue.ValTrue : BoolValue.ValFalse;
 
-		n[2] = TLCGetSet.WORKER;
+		n[2] = TLCGetSet.WORKER.toString();
 		v[2] = IntValue.gen(TLCGlobals.getNumWorkers());
 
-		n[3] = TLCGetSet.SEED;
+		n[3] = TLCGetSet.SEED.toString();
 		v[3] = new StringValue(Long.toString(RandomEnumerableValues.getSeed()));
 		
-		n[4] = TLCGetSet.FINGERPRINT;
+		n[4] = TLCGetSet.FINGERPRINT.toString();
 		v[4] = new StringValue(Long.toString(FP64.getIrredPoly()));
 
-		n[5] = TLCGetSet.INSTALL;
+		n[5] = TLCGetSet.INSTALL.toString();
 		v[5] = new StringValue(TLCGlobals.getInstallLocation());
 		
 		return new RecordValue(n, v, false);

@@ -648,12 +648,12 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
       FcnRcdValue fcn = (FcnRcdValue) this.toFcnRcd();
       if (fcn == null || fcn.domain == null) { return null; }
       fcn.normalize();
-      UniqueString[] vars = new UniqueString[fcn.domain.length];
+      String[] vars = new String[fcn.domain.length];
       for (int i = 0; i < fcn.domain.length; i++) {
         if (!(fcn.domain[i] instanceof StringValue)) {
           return null;
         }
-        vars[i] = ((StringValue)fcn.domain[i]).getVal();
+        vars[i] = ((StringValue)fcn.domain[i]).getVal().toString();
       }
       if (coverage) {cm.incSecondary(vars.length);}
       return new RecordValue(vars, fcn.values, fcn.isNormalized(), cm);

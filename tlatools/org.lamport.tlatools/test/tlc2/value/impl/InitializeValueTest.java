@@ -158,7 +158,7 @@ public class InitializeValueTest {
 		final Value aVal = new SetEnumValue(vec, false);
 		final Value bVal = new SetEnumValue(vec, false);
 		
-		final RecordValue rcdv = new RecordValue(new UniqueString[] {b, a}, new Value[] {bVal, aVal}, false);
+		final RecordValue rcdv = new RecordValue(new String[] {b.toString(), a.toString()}, new Value[] {bVal, aVal}, false);
 
 		assertFalse(rcdv.isNormalized());
 		for (Value v : rcdv.values) {
@@ -273,10 +273,10 @@ public class InitializeValueTest {
 		return values;
 	}
 
-	private static final UniqueString[] getNames(final int n) {
-		final UniqueString[] names = new UniqueString[n];
+	private static final String[] getNames(final int n) {
+		final String[] names = new String[n];
 		for (int i = 0; i < names.length; i++) {
-			names[i] = UniqueString.uniqueStringOf("N" + i);
+			names[i] = "N" + i;
 		}
 		return names;
 	}

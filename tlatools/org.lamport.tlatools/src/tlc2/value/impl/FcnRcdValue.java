@@ -596,12 +596,12 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   public final Value toRcd() {
       if (this.domain == null) return null;
       this.normalize();
-      UniqueString[] vars = new UniqueString[this.domain.length];
+      String[] vars = new String[this.domain.length];
       for (int i = 0; i < this.domain.length; i++) {
         if (!(this.domain[i] instanceof StringValue)) {
           return null;
         }
-        vars[i] = ((StringValue)this.domain[i]).getVal();
+        vars[i] = ((StringValue)this.domain[i]).getVal().toString();
       }
       if (coverage) {cm.incSecondary(this.values.length);}
       return new RecordValue(vars, this.values, this.isNormalized(), cm);
