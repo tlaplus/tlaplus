@@ -38,7 +38,6 @@ import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
 import util.DebugPrinter;
-import util.UniqueString;
 
 /**
  * The abstract checker
@@ -641,19 +640,19 @@ public abstract class AbstractChecker
 		final String[] n = new String[5];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TLCGetSet.QUEUE.toString();
+		n[0] = TLCGetSet.QUEUE;
 		v[0] = TLCGetSet.narrowToIntValue(getStateQueueSize());
 		
-		n[1] = TLCGetSet.DISTINCT.toString();
+		n[1] = TLCGetSet.DISTINCT;
 		v[1] = TLCGetSet.narrowToIntValue(getDistinctStatesGenerated());
 
-		n[2] = TLCGetSet.GENERATED.toString();
+		n[2] = TLCGetSet.GENERATED;
 		v[2] = TLCGetSet.narrowToIntValue(getStatesGenerated());
 		
-		n[3] = TLCGetSet.DIAMETER.toString();
+		n[3] = TLCGetSet.DIAMETER;
 		v[3] = TLCGetSet.narrowToIntValue(getProgress());
 		
-		n[4] = TLCGetSet.DURATION.toString();
+		n[4] = TLCGetSet.DURATION;
 		v[4] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
 
 		return new RecordValue(n, v, false);
@@ -666,22 +665,22 @@ public abstract class AbstractChecker
 	private final Value createConfig() {
 		final String[] n = new String[6];
 		final Value[] v = new Value[n.length];
-		n[0] = TLCGetSet.MODE.toString();
+		n[0] = TLCGetSet.MODE;
 		v[0] = new StringValue("bfs");
 
-		n[1] = TLCGetSet.DEADLOCK.toString();
+		n[1] = TLCGetSet.DEADLOCK;
 		v[1] = checkDeadlock ? BoolValue.ValTrue : BoolValue.ValFalse;
 
-		n[2] = TLCGetSet.WORKER.toString();
+		n[2] = TLCGetSet.WORKER;
 		v[2] = IntValue.gen(TLCGlobals.getNumWorkers());
 
-		n[3] = TLCGetSet.SEED.toString();
+		n[3] = TLCGetSet.SEED;
 		v[3] = new StringValue(Long.toString(RandomEnumerableValues.getSeed()));
 		
-		n[4] = TLCGetSet.FINGERPRINT.toString();
+		n[4] = TLCGetSet.FINGERPRINT;
 		v[4] = new StringValue(Long.toString(FP64.getIrredPoly()));
 
-		n[5] = TLCGetSet.INSTALL.toString();
+		n[5] = TLCGetSet.INSTALL;
 		v[5] = new StringValue(TLCGlobals.getInstallLocation());
 		
 		return new RecordValue(n, v, false);

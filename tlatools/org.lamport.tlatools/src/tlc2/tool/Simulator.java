@@ -52,7 +52,6 @@ import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
 import util.FileUtil;
 import util.FilenameToStream;
-import util.UniqueString;
 
 public class Simulator {
 
@@ -816,16 +815,16 @@ public class Simulator {
 		final String[] n = new String[4];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TLCGetSet.TRACES.toString();
+		n[0] = TLCGetSet.TRACES;
 		v[0] = TLCGetSet.narrowToIntValue(numOfGenTraces.longValue());
 		
-		n[1] = TLCGetSet.DURATION.toString();
+		n[1] = TLCGetSet.DURATION;
 		v[1] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
 
-		n[2] = TLCGetSet.GENERATED.toString();
+		n[2] = TLCGetSet.GENERATED;
 		v[2] = TLCGetSet.narrowToIntValue(numOfGenStates.longValue());
 
-		n[3] = TLCGetSet.BEHAVIOR.toString();
+		n[3] = TLCGetSet.BEHAVIOR;
 		v[3] = getWorkerStatistics();
 		
 		return new RecordValue(n, v, false);
@@ -839,28 +838,28 @@ public class Simulator {
 		final String[] n = new String[8];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TLCGetSet.MODE.toString();
+		n[0] = TLCGetSet.MODE;
 		v[0] = Tool.isProbabilistic() ? new StringValue("generate") : new StringValue("simulate");
 
-		n[1] = TLCGetSet.DEPTH.toString();
+		n[1] = TLCGetSet.DEPTH;
 		v[1] = IntValue.gen(this.traceDepth == Integer.MAX_VALUE ? -1 : this.traceDepth);
 
-		n[2] = TLCGetSet.TRACES.toString();
+		n[2] = TLCGetSet.TRACES;
 		v[2] = IntValue.gen((int) (this.numWorkers * traceNum));
 
-		n[3] = TLCGetSet.DEADLOCK.toString();
+		n[3] = TLCGetSet.DEADLOCK;
 		v[3] = checkDeadlock ? BoolValue.ValTrue : BoolValue.ValFalse;
 
-		n[4] = TLCGetSet.SEED.toString();
+		n[4] = TLCGetSet.SEED;
 		v[4] = new StringValue(Long.toString(seed));
 
-		n[5] = TLCGetSet.ARIL.toString();
+		n[5] = TLCGetSet.ARIL;
 		v[5] = new StringValue(Long.toString(aril));
 
-		n[6] = TLCGetSet.WORKER.toString();
+		n[6] = TLCGetSet.WORKER;
 		v[6] = IntValue.gen(numWorkers);
 
-		n[7] = TLCGetSet.INSTALL.toString();
+		n[7] = TLCGetSet.INSTALL;
 		v[7] = new StringValue(TLCGlobals.getInstallLocation());
 		
 		return new RecordValue(n, v, false);

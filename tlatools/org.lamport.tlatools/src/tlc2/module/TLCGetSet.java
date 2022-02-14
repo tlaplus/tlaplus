@@ -61,7 +61,6 @@ import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
 import tlc2.value.impl.ValueVec;
 import util.ToolIO;
-import util.UniqueString;
 
 public class TLCGetSet implements ValueConstants {
 
@@ -73,67 +72,67 @@ public class TLCGetSet implements ValueConstants {
 	}
 
 	// TLCSet(..)
-	private static final UniqueString EXIT = UniqueString.uniqueStringOf("exit");
-	private static final UniqueString PAUSE = UniqueString.uniqueStringOf("pause");
+	private static final String EXIT = ("exit");
+	private static final String PAUSE = ("pause");
 	
 	// TLCGet(..)
-	private static final UniqueString CONFIG = UniqueString.uniqueStringOf("config");
-	private static final UniqueString SPEC = UniqueString.uniqueStringOf("spec");
-	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
-	public static final UniqueString INSTALL = UniqueString.uniqueStringOf("install");
+	private static final String CONFIG = ("config");
+	private static final String SPEC = ("spec");
+	private static final String ACTION = ("action");
+	public static final String INSTALL = ("install");
 
-	public static final UniqueString BEHAVIOR = UniqueString.of("behavior");
-	public static final UniqueString ALL_VALUES = UniqueString.of("all");
+	public static final String BEHAVIOR = ("behavior");
+	public static final String ALL_VALUES = ("all");
 	
-	public static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
-	public static final UniqueString DEADLOCK = UniqueString.uniqueStringOf("deadlock");
-	public static final UniqueString SEED = UniqueString.uniqueStringOf("seed");
-	public static final UniqueString FINGERPRINT = UniqueString.uniqueStringOf("fingerprint");
-	public static final UniqueString WORKER = UniqueString.uniqueStringOf("worker");
-	public static final UniqueString TRACES = UniqueString.uniqueStringOf("traces");
-	public static final UniqueString DEPTH = UniqueString.uniqueStringOf("depth");
-	public static final UniqueString ARIL = UniqueString.uniqueStringOf("aril");
+	public static final String MODE = ("mode");
+	public static final String DEADLOCK = ("deadlock");
+	public static final String SEED = ("seed");
+	public static final String FINGERPRINT = ("fingerprint");
+	public static final String WORKER = ("worker");
+	public static final String TRACES = ("traces");
+	public static final String DEPTH = ("depth");
+	public static final String ARIL = ("aril");
+	  
+	public static final String REVISION = ("revision");
+	public static final String REV_TIMESTAMP = ("timestamp");
+	public static final String REV_DATE = ("date");
+	public static final String REV_COUNT = ("count");
+	public static final String REV_TAG = ("tag");
 	
-	public static final UniqueString REVISION = UniqueString.uniqueStringOf("revision");
-	public static final UniqueString REV_TIMESTAMP = UniqueString.uniqueStringOf("timestamp");
-	public static final UniqueString REV_DATE = UniqueString.uniqueStringOf("date");
-	public static final UniqueString REV_COUNT = UniqueString.uniqueStringOf("count");
-	public static final UniqueString REV_TAG = UniqueString.uniqueStringOf("tag");
-	
-	private static final UniqueString SPEC_IMPLIEDINITS = UniqueString.of("impliedinits");
-	private static final UniqueString SPEC_INVARIANTS = UniqueString.of("invariants");
-	private static final UniqueString SPEC_IMPLIEDTEMPORALS = UniqueString.of("impliedtemporals");
-	private static final UniqueString SPEC_TERMPORALS = UniqueString.of("temporals");
-	public static final UniqueString SPEC_ACTIONS = UniqueString.of("actions");
-	private static final UniqueString SPEC_INITS = UniqueString.of("inits");
+	private static final String SPEC_IMPLIEDINITS = ("impliedinits");
+	private static final String SPEC_INVARIANTS = ("invariants");
+	private static final String SPEC_IMPLIEDTEMPORALS = ("impliedtemporals");
+	private static final String SPEC_TERMPORALS = ("temporals");
+	public static final String SPEC_ACTIONS = ("actions");
+	private static final String SPEC_INITS = ("inits");
 
 	// TLCGet(..)
 	// BFS & Simulation mode
 	// Considered to be part of "statistics", but it is a property of the current behavior.
-	public static final UniqueString LEVEL = UniqueString.uniqueStringOf("level");
+	public static final String LEVEL = ("level");
 
 	// TLCGet("stats")
 	// Wrapper for all the other named registers below, except that "stats"
 	// works for both BFS and simulation whereas some of the named registers below
 	// didn't work for both modes.  Now, a user can safely do:
 	//     DOMAIN TLCGet("stats").
-	private static final UniqueString STATISTICS = UniqueString.uniqueStringOf("stats");
+	private static final String STATISTICS = ("stats");
 
-	public static final UniqueString DURATION = UniqueString.uniqueStringOf("duration");
+	public static final String DURATION = ("duration");
 	// BFS: The number of generated states.
 	// Simulation: The total number of states generated.
-	public static final UniqueString GENERATED = UniqueString.uniqueStringOf("generated");
+	public static final String GENERATED = ("generated");
 
 	// BFS: The length of the longest behavior generated so far.
 	// Simulation: The number of traces generated by the current worker. (since July
 	// 2020 in commit 557c674c0f314c2e70885a4d5994e3e858bab64a). This should be removed
 	// eventually because "diameter" was hijacked for simulation.
-	public static final UniqueString DIAMETER = UniqueString.uniqueStringOf("diameter");
+	public static final String DIAMETER = ("diameter");
 	
 	// BFS: The number of distinct states.
-	public static final UniqueString DISTINCT = UniqueString.uniqueStringOf("distinct");
+	public static final String DISTINCT = ("distinct");
 	// BFS: The number of unexplored distinct states.
-	public static final UniqueString QUEUE = UniqueString.uniqueStringOf("queue");
+	public static final String QUEUE = ("queue");
 
 	
 	public static final long serialVersionUID = 20210330L;
@@ -278,22 +277,22 @@ public class TLCGetSet implements ValueConstants {
 			final String[] n = new String[4];
 			final Value[] v = new Value[n.length];
 			
-			n[0] = TLCGetSet.REV_COUNT.toString();
+			n[0] = TLCGetSet.REV_COUNT;
 			v[0] = IntValue.gen(TLCGlobals.getSCMCommits());
 			
 			final Date buildDate = TLCGlobals.getBuildDate();
 			// This suffers from the year 2038 problem
 			// (https://en.wikipedia.org/wiki/Year_2038_problem). By then, somebody please
 			// properly implement support for TLC's tlc2.util.BigInt.
-			n[1] = TLCGetSet.REV_TIMESTAMP.toString();
+			n[1] = TLCGetSet.REV_TIMESTAMP;
 			v[1] = IntValue.gen((int) buildDate.toInstant().getEpochSecond());
 
-			n[2] = TLCGetSet.REV_DATE.toString();
+			n[2] = TLCGetSet.REV_DATE;
 			final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
 			df.setTimeZone(TimeZone.getTimeZone("UTC"));
 			v[2] = new StringValue(df.format(buildDate));
 			
-			n[3] = TLCGetSet.REV_TAG.toString();
+			n[3] = TLCGetSet.REV_TAG;
 			v[3] = new StringValue(TLCGlobals.getRevisionOrDev());
 
 			return new RecordValue(n, v, false);
@@ -310,28 +309,28 @@ public class TLCGetSet implements ValueConstants {
 			for (int i = 0; i < inits.size(); i++) {
 				l.add(new RecordValue(inits.elementAt(i)));
 			}
-			n[0] = SPEC_INITS.toString();
+			n[0] = SPEC_INITS;
 			v[0] = new SetEnumValue(new ValueVec(l), false);
 			
 			// Actions as found by spec processing. For a sub-action with non-zero arity,
 			// TLC has multiple copies.
-			n[1] = SPEC_ACTIONS.toString();
+			n[1] = SPEC_ACTIONS;
 			v[1] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getActions()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 
-			n[2] = SPEC_TERMPORALS.toString();
+			n[2] = SPEC_TERMPORALS;
 			v[2] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getTemporals()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[3] = SPEC_INVARIANTS.toString();
+			n[3] = SPEC_INVARIANTS;
 			v[3] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getInvariants()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[4] = SPEC_IMPLIEDINITS.toString();
+			n[4] = SPEC_IMPLIEDINITS;
 			v[4] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedInits()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
-			n[5] = SPEC_IMPLIEDTEMPORALS.toString();
+			n[5] = SPEC_IMPLIEDTEMPORALS;
 			v[5] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedTemporals()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			

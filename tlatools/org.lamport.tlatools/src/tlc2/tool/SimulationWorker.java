@@ -50,7 +50,6 @@ import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.Value;
 import util.FileUtil;
-import util.UniqueString;
 
 /**
  * A SimulationWorker repeatedly checks random traces of a spec.
@@ -602,7 +601,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		final String[] n = new String[1];
 		final Value[] v = new Value[n.length];
 		
-		n[0] = TLCGetSet.SPEC_ACTIONS.toString();
+		n[0] = TLCGetSet.SPEC_ACTIONS;
 		v[0] = toRecordValue(behaviorStats);
 		
 		return new RecordValue(n, v, false);
