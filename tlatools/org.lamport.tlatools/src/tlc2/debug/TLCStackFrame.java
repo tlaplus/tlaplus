@@ -70,7 +70,6 @@ import tlc2.value.impl.Value;
 import util.Assert;
 import util.Assert.TLCDetailedRuntimeException;
 import util.Assert.TLCRuntimeException;
-import util.UniqueString;
 
 public class TLCStackFrame extends StackFrame {
 	
@@ -173,7 +172,7 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	protected Variable getStateAsVariable(final IValue value, String varName) {
-		final Variable variable = getVariable(value, UniqueString.of(varName));
+		final Variable variable = getVariable(value, varName);
 		// Because we convert the TLCState (getT) to a RecordValue to re-use the
 		// getVariable(..) implementation, the type (shown when hovering over the
 		// variable in the debugger's variable view) would be RecordValue. This would be
@@ -191,12 +190,7 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	protected Variable getVariable(final IValue value, String varName) {
-		return getVariable(value, UniqueString.of(varName));
-	}
-	
-	/** @deprecated */
-	protected Variable getVariable(final IValue value, UniqueString varName) {
-		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName.toString()), rnd);
+		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName), rnd);
 		nestedVariables.put(variable.getVariablesReference(), variable);
 		return variable;
 	}
