@@ -653,7 +653,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
         if (!(fcn.domain[i] instanceof StringValue)) {
           return null;
         }
-        vars[i] = ((StringValue)fcn.domain[i]).getVal().toString();
+        vars[i] = ((StringValue)fcn.domain[i]).getVal();
       }
       if (coverage) {cm.incSecondary(vars.length);}
       return new RecordValue(vars, fcn.values, fcn.isNormalized(), cm);

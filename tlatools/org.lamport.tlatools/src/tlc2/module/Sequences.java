@@ -90,7 +90,7 @@ public class Sequences extends UserObj implements ValueConstants
     {
     	// Implementation of Tail(string) by LL on 17 April 2013
     	if (s instanceof StringValue) {
-    		String str = ((StringValue) s).val.toString();
+    		String str = ((StringValue) s).val;
     		if (str.equals("")) {
     			throw new EvalException(EC.TLC_MODULE_APPLY_EMPTY_SEQ, "Tail");
     		}
@@ -152,8 +152,8 @@ public class Sequences extends UserObj implements ValueConstants
                 throw new EvalException(EC.TLC_MODULE_EVALUATING, new String[] { "t \\o s", "string",
                         Values.ppr(s2.toString()) });
             }
-            UniqueString u1 = ((StringValue) s1).val;
-            UniqueString u2 = ((StringValue) s2).val;
+            String u1 = ((StringValue) s1).val;
+            String u2 = ((StringValue) s2).val;
             return new StringValue(u1.concat(u2));
         }
 
@@ -265,7 +265,7 @@ public class Sequences extends UserObj implements ValueConstants
     	String str = null ;
     	TupleValue seq = null ;
     	if (s instanceof StringValue) {
-    		str = ((StringValue) s).val.toString();
+    		str = ((StringValue) s).val;
     		isString = true ;
     	}
     	

@@ -292,7 +292,7 @@ public class RecordValue extends Value implements Applicable {
         Value[] newValues = new Value[rlen];
         Value arcVal = ex.path[ex.idx];
         if (arcVal instanceof StringValue) {
-          UniqueString arc = ((StringValue)arcVal).val;
+          String arc = ((StringValue)arcVal).val;
           for (int i = 0; i < rlen; i++) {
             if (arc.equals(this.names[i])) {
               ex.idx++;
@@ -353,7 +353,7 @@ public class RecordValue extends Value implements Applicable {
         this.normalize();
         Value[] dom = new Value[this.names.length];
         for (int i = 0; i < this.names.length; i++) {
-          dom[i] = new StringValue(UniqueString.of(this.names[i]), cm);
+          dom[i] = new StringValue(this.names[i], cm);
         }
         if (coverage) {cm.incSecondary(dom.length);}
         return new FcnRcdValue(dom, this.values, this.isNormalized(), cm);
@@ -376,7 +376,7 @@ public class RecordValue extends Value implements Applicable {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()), getSource());
       }
-      UniqueString name = ((StringValue)arg).getVal();
+      String name = ((StringValue)arg).getVal();
       int rlen = this.names.length;
       for (int i = 0; i < rlen; i++) {
         if (name.equals(this.names[i])) {
@@ -414,7 +414,7 @@ public class RecordValue extends Value implements Applicable {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()), getSource());
       }
-      UniqueString name = ((StringValue)arg).getVal();
+      String name = ((StringValue)arg).getVal();
       int rlen = this.names.length;
       for (int i = 0; i < rlen; i++) {
         if (name.equals(this.names[i])) {

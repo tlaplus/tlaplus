@@ -283,6 +283,6 @@ public class TLCExt {
 					new String[] { "ModelValue", "string", Values.ppr(val.toString()) });
 		}
 		final StringValue str = (StringValue) val;
-		return ModelValue.add(str.val.toString());
+		return ModelValue.add(str.val);
 	}
 }

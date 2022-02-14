@@ -172,7 +172,7 @@ public class TLCGetSet implements ValueConstants {
 	private static final Value TLCGetStringValue(final Tool tool, final Value vidx, final TLCState s0, final TLCState s1,
 			final int control) {
 		final StringValue sv = (StringValue) vidx;
-		if (DIAMETER == sv.val) {
+		if (DIAMETER.equals(sv.val)) {
 			try {
 				if (TLCGlobals.mainChecker != null) {
 					return IntValue.gen(TLCGlobals.mainChecker.getProgress());
@@ -200,7 +200,7 @@ public class TLCGetSet implements ValueConstants {
 				// NPE.
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (GENERATED == sv.val) {
+		} else if (GENERATED.equals(sv.val)) {
 			try {
 				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getStatesGenerated()));
 			} catch (ArithmeticException e) {
@@ -209,7 +209,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (DISTINCT == sv.val) {
+		} else if (DISTINCT.equals(sv.val)) {
 			try {
 				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
 			} catch (ArithmeticException e) {
@@ -218,7 +218,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (QUEUE == sv.val) {
+		} else if (QUEUE.equals(sv.val)) {
 			try {
 				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getStateQueueSize()));
 			} catch (ArithmeticException e) {
@@ -227,7 +227,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (DURATION == sv.val) {
+		} else if (DURATION.equals(sv.val)) {
 			try {
 				final int duration = (int) ((System.currentTimeMillis() - startTime) / 1000L);
 				return IntValue.gen(Math.toIntExact(duration));
@@ -235,7 +235,7 @@ public class TLCGetSet implements ValueConstants {
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(((System.currentTimeMillis() - startTime) / 1000L)));
 			}
-		} else if (STATISTICS == sv.val) {
+		} else if (STATISTICS.equals(sv.val)) {
 			try {
 				if (TLCGlobals.mainChecker != null) {
 					return TLCGlobals.mainChecker.getStatistics();
@@ -245,7 +245,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (CONFIG == sv.val) {
+		} else if (CONFIG.equals(sv.val)) {
 			/*
 			 * Add operator `TLC!TLCGet("config")`.
 			 * 
@@ -271,7 +271,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (REVISION == sv.val) {
+		} else if (REVISION.equals(sv.val)) {
 			/*
 			 * Add operator `TLC!TLCGet("revision")`.
 			 */
@@ -297,7 +297,7 @@ public class TLCGetSet implements ValueConstants {
 			v[3] = new StringValue(TLCGlobals.getRevisionOrDev());
 
 			return new RecordValue(n, v, false);
-		} else if (SPEC == sv.val) {
+		} else if (SPEC.equals(sv.val)) {
 			/*
 			 * Add operator `TLC!TLCGet("spec")`.
 			 */
@@ -336,7 +336,7 @@ public class TLCGetSet implements ValueConstants {
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
 			return new RecordValue(n, v, false);
-		} else if (LEVEL == sv.val) {
+		} else if (LEVEL.equals(sv.val)) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"
 			// is monotonically increasing because it calls tlc2.tool.TLCTrace.getLevelForReporting().
 			// "level" is the height stored as part of the state that is currently explored.
@@ -354,7 +354,7 @@ public class TLCGetSet implements ValueConstants {
 				return IntValue.gen(TLCState.INIT_LEVEL - 1);
 			}
 			return IntValue.gen(s0.getLevel());
-		} else if (ACTION == sv.val) {
+		} else if (ACTION.equals(sv.val)) {
 				/*
 			    Add operator `TLC!TLCGet("action")`.
 				
@@ -387,7 +387,7 @@ public class TLCGetSet implements ValueConstants {
 			} else {
 				return new RecordValue(s0.getAction());
 			}
-		} else if (ALL_VALUES == sv.val) {
+		} else if (ALL_VALUES.equals(sv.val)) {
 			/*
 			 * - Let  W  be the set  1..TLCGet("config").worker
              * - Let  Eval(w, Op)  be an operator that evaluates the given operator  Op  
@@ -426,7 +426,7 @@ public class TLCGetSet implements ValueConstants {
 			}
 		} else if (vidx instanceof StringValue) {
 			final StringValue sv = (StringValue) vidx;
-			if (EXIT == sv.val) {
+			if (EXIT.equals(sv.val)) {
 				if (val == BoolValue.ValTrue) {
 					if (TLCGlobals.mainChecker != null) {
 						TLCGlobals.mainChecker.stop();
@@ -436,7 +436,7 @@ public class TLCGetSet implements ValueConstants {
 					}
 				}
 				return BoolValue.ValTrue;
-			} else if (PAUSE == sv.val) {
+			} else if (PAUSE.equals(sv.val)) {
 				// Provisional TLCSet("pause", TRUE) implementation that suspends BFS model
 				// checking until enter is pressed on system.in. Either use in spec as:
 				// TLCSet("pause", guard)

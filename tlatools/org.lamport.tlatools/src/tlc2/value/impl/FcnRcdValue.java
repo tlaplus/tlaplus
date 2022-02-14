@@ -601,7 +601,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
         if (!(this.domain[i] instanceof StringValue)) {
           return null;
         }
-        vars[i] = ((StringValue)this.domain[i]).getVal().toString();
+        vars[i] = ((StringValue)this.domain[i]).getVal();
       }
       if (coverage) {cm.incSecondary(this.values.length);}
       return new RecordValue(vars, this.values, this.isNormalized(), cm);
@@ -864,7 +864,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     for (int i = 0; i < this.domain.length; i++) {
       Value dval = this.domain[i];
       boolean isName = ((dval instanceof StringValue) &&
-      isName(((StringValue)dval).val.toString()));
+      isName(((StringValue)dval).val));
       if (!isName) return false;
     }
     return true;
