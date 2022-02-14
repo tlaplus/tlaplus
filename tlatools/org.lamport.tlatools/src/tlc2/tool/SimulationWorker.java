@@ -118,7 +118,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 	private final String traceActions;
 
-	private final Map<UniqueString, Integer> behaviorStats = new HashMap<>();
+	private final Map<String, Integer> behaviorStats = new HashMap<>();
 	
 	/**
 	 * Encapsulates information about an error produced by a simulation worker.
@@ -354,7 +354,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 								unassigned.stream().map(n -> n.getName())
 										.collect(Collectors.joining(", ")) };
 			} else {
-				parameters = new String[] { a.getName().toString(),
+				parameters = new String[] { a.getName(),
 								unassigned.size() > 1 ? "s are" : " is",
 								unassigned.stream().map(n -> n.getName())
 										.collect(Collectors.joining(", ")) };
@@ -608,14 +608,14 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		return new RecordValue(n, v, false);
 	}
 	
-	private static RecordValue toRecordValue(final Map<UniqueString, Integer> m) {
-		final List<Map.Entry<UniqueString, Integer>> entries = new ArrayList<>(m.entrySet());
+	private static RecordValue toRecordValue(final Map<String, Integer> m) {
+		final List<Map.Entry<String, Integer>> entries = new ArrayList<>(m.entrySet());
 
 		UniqueString[] names = new UniqueString[entries.size()];
 		Value[] values = new Value[entries.size()];
 
 		for (int i = 0; i < entries.size(); i++) {
-			names[i] = entries.get(i).getKey();
+			names[i] = UniqueString.of(entries.get(i).getKey());
 			values[i] = IntValue.gen(entries.get(i).getValue());
 		}
 		

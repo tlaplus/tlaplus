@@ -120,7 +120,7 @@ public class DotActionWriter {
 	}
 
 	protected static String action2dot(final Action action) {
-		return action.getName().toString();
+		return action.getName();
 	}
 
 	public void close() {

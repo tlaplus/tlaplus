@@ -64,7 +64,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		static final String NOT_EVALUATED = "?";
 
 		private DebuggerValue() {
-			super(UniqueString.of(DebuggerValue.NOT_EVALUATED));
+			super(DebuggerValue.NOT_EVALUATED);
 		}
 
 		@Override
@@ -208,7 +208,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			return "<Initial predicate>";
 		}
 		final Action a = state.getAction();
-		return a.getName() == null ? "Action" : a.getName().toString();
+		return a.getName() == null ? "Action" : a.getName();
 	}
 	
 	protected RecordValue toRecordValue() {

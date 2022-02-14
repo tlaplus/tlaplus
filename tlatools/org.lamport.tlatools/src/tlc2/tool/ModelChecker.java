@@ -579,7 +579,7 @@ public class ModelChecker extends AbstractChecker
 											.collect(Collectors.joining(", ")) });
 				} else {
 					MP.printError(errorCode,
-							new String[] { action.getName().toString(),
+							new String[] { action.getName(),
 									unassigned.size() > 1 ? "s are" : " is",
 									unassigned.stream().map(n -> n.getName())
 											.collect(Collectors.joining(", ")) });

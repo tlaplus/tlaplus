@@ -411,7 +411,7 @@ public class DFIDModelChecker extends AbstractChecker
 											unassigned.stream().map(n -> n.getName())
 													.collect(Collectors.joining(", ")) };
 								} else {
-									parameters = new String[] { tool.getActions()[i].getName().toString(),
+									parameters = new String[] { tool.getActions()[i].getName(),
 											unassigned.size() > 1 ? "s are" : " is",
 											unassigned.stream().map(n -> n.getName())
 													.collect(Collectors.joining(", ")) };

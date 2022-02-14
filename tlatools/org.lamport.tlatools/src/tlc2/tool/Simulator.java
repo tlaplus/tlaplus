@@ -684,7 +684,7 @@ public class Simulator {
 		for (int i = 0; i < len; i++) {
 			final String actionName;
 			if (actions[i].isNamed()) {
-				actionName = actions[i].getName().toString();
+				actionName = actions[i].getName();
 			} else {
 				// If we have an unnamed action, action name will be
 				// the string representation of the action (which has information
