@@ -131,7 +131,7 @@ public class RecordValue extends Value implements Applicable {
 
 		for (int i = 0; i < vars.length; i++) {
 			this.names[i] = vars[i].getNameUS();
-			this.values[i] = (Value) state.lookup(this.names[i]); 
+			this.values[i] = (Value) state.lookup(this.names[i].toString()); 
 		}
 
 		this.isNorm = false;
@@ -149,7 +149,7 @@ public class RecordValue extends Value implements Applicable {
 		
 		for (int i = 0; i < vars.length; i++) {
 			this.names[i+1] = vars[i].getNameUS();
-			this.values[i+1] = (Value) state.lookup(this.names[i+1]); 
+			this.values[i+1] = (Value) state.lookup(this.names[i+1].toString()); 
 		}
 		
 		this.isNorm = false;
@@ -180,7 +180,7 @@ public class RecordValue extends Value implements Applicable {
 
 		for (int i = 0; i < vars.length; i++) {
 			final int j = i * 2;
-			final UniqueString var = vars[i].getNameUS();
+			final String var = vars[i].getName();
 
 			this.names[j] = UniqueString.of(var + " ");
 			this.names[j+1] = UniqueString.of(var + "'");
@@ -734,10 +734,10 @@ public class RecordValue extends Value implements Applicable {
 			final TLCState state = TLCState.Empty.createEmpty();
 			final OpDeclNode[] vars = state.getVars();
 			for (int i = 0; i < vars.length; i++) {
-				final UniqueString name = vars[i].getNameUS();
+				final String name = vars[i].getName();
 				int rlen = this.names.length;
 				for (int j = 0; j < rlen; j++) {
-					if (name.equals(this.names[j])) {
+					if (name.equals(this.names[j].toString())) {
 						state.bind(name, this.values[j]);
 					}
 				}
@@ -803,7 +803,7 @@ public class RecordValue extends Value implements Applicable {
 			}
 
 			@Override
-			public TLCState bind(UniqueString name, IValue value) {
+			public TLCState bind(String name, IValue value) {
 				return this.state.bind(name, value);
 			}
 
@@ -813,18 +813,18 @@ public class RecordValue extends Value implements Applicable {
 			}
 
 			@Override
-			public TLCState unbind(UniqueString name) {
+			public TLCState unbind(String name) {
 				return this.state.unbind(name);
 			}
 
 			@Override
-			public IValue lookup(UniqueString var) {
+			public IValue lookup(String var) {
 				return this.state.lookup(var);
 			}
 
 			@Override
-			public boolean containsKey(UniqueString var) {
-				return this.state.containsKey(var);
+			public boolean containsKey(String var) {
+				return this.state.containsKey(var.toString());
 			}
 
 			@Override

@@ -94,9 +94,9 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
     return false;
   }
   
-  public final TLCState bind(UniqueString name, IValue value) {
+  public final TLCState bind(String name, IValue value) {
 	  // Note, tla2sany.semantic.OpApplNode.toString(Value) relies on this ordering.
-    int loc = name.getVarLoc();
+    int loc = UniqueString.of(name).getVarLoc();
     this.values[loc] = value;
     return this;
   }
@@ -105,19 +105,19 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
     throw new WrongInvocationException("TLCStateMut.bind: This is a TLC bug.");
   }
   
-  public final TLCState unbind(UniqueString name) {
-    int loc = name.getVarLoc();
+  public final TLCState unbind(String name) {
+    int loc = UniqueString.of(name).getVarLoc();
     this.values[loc] = null;
     return this;
   }
 
-  public final IValue lookup(UniqueString var) {
-    int loc = var.getVarLoc();
+  public final IValue lookup(String name) {
+    int loc = UniqueString.of(name).getVarLoc();
     if (loc < 0) return null;
     return this.values[loc];
   }
 
-  public final boolean containsKey(UniqueString var) {
+  public final boolean containsKey(String var) {
     return (this.lookup(var) != null);
   }
 
@@ -329,19 +329,19 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
     StringBuffer result = new StringBuffer();
     int vlen = vars.length;
     if (vlen == 1) {
-      UniqueString key = vars[0].getNameUS();
+      String key = vars[0].getName();
       IValue val = this.lookup(key);
-      result.append(key.toString());
+      result.append(key);
       result.append(" = ");
       result.append(Values.ppr(val));
       result.append("\n");
     }
     else {
       for (int i = 0; i < vlen; i++) {
-	UniqueString key = vars[i].getNameUS();
+	String key = vars[i].getName();
 	IValue val = this.lookup(key);
 	result.append("/\\ ");
-	result.append(key.toString());
+	result.append(key);
     result.append(" = ");
     result.append(Values.ppr(val));
     result.append("\n");
@@ -357,24 +357,24 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
 
     int vlen = vars.length;
     if (vlen == 1) {
-      UniqueString key = vars[0].getNameUS();
+      String key = vars[0].getName();
       IValue val = this.lookup(key);
       IValue lstateVal = lstate.lookup(key);
       if (!lstateVal.equals(val)) {
-	result.append(key.toString());
-	result.append(" = " + Values.ppr(val) + "\n");
+	    result.append(key);
+	    result.append(" = " + Values.ppr(val) + "\n");
       }
     }
     else {
       for (int i = 0; i < vlen; i++) {
-	UniqueString key = vars[i].getNameUS();
-	IValue val = this.lookup(key);
-	IValue lstateVal = lstate.lookup(key);
-	if (!lstateVal.equals(val)) {
-	  result.append("/\\ ");
-	  result.append(key.toString());
-	  result.append(" = " + Values.ppr(val) + "\n");
-	}
+		String key = vars[i].getName();
+		IValue val = this.lookup(key);
+		IValue lstateVal = lstate.lookup(key);
+		if (!lstateVal.equals(val)) {
+		  result.append("/\\ ");
+		  result.append(key);
+		  result.append(" = " + Values.ppr(val) + "\n");
+		}
       }
     }
     return result.toString();

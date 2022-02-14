@@ -15,8 +15,6 @@ import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
-import tlc2.value.impl.Value;
-import util.UniqueString;
 import util.WrongInvocationException;
 
 /**
@@ -40,7 +38,7 @@ public final class TLCStateFun extends TLCState {
 
   public final TLCState createEmpty() { return Empty; }
 
-  public final TLCState bind(UniqueString name, IValue value) {
+  public final TLCState bind(String name, IValue value) {
       throw new WrongInvocationException("TLCStateFun.bind: This is a TLC bug.");
   }
 
@@ -48,18 +46,18 @@ public final class TLCStateFun extends TLCState {
     return new TLCStateFun(id, value, this);
   }
   
-  public final TLCState unbind(UniqueString name) {
+  public final TLCState unbind(String name) {
       throw new WrongInvocationException("TLCStateFun.unbind: This is a TLC bug.");
   }
   
-  public final IValue lookup(UniqueString var) {
+  public final IValue lookup(String var) {
     for (TLCStateFun cur = this; cur != Empty; cur = cur.next) {
-      if (var == cur.name.getNameUS()) return cur.value;
+      if (var.equals(cur.name.getName())) return cur.value;
     }
     return null;
   }
   
-  public final boolean containsKey(UniqueString var) {
+  public final boolean containsKey(String var) {
     return this.lookup(var) != null;
   }
   

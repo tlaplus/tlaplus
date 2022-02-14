@@ -226,7 +226,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		if (!isPrimeScope(path)) {
 			SymbolNode var = tool.getVar(path.getFirst(), ctxt, false, tool.getId());
 			if (var != null) {
-				final IValue value = getS().lookup(var.getNameUS());
+				final IValue value = getS().lookup(var.getName());
 				if (value != null) {
 					return getVariable(value, var.getName());
 				} else {

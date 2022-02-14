@@ -55,7 +55,7 @@ public abstract class TLCStates {
 
 		// Assign values to variables.
 		for (int i = 0; i < numVars; i++) {
-			state.bind(variables[i].getNameUS(), IntValue.gen(i));
+			state.bind(variables[i].getName(), IntValue.gen(i));
 		}
 
 		return state;

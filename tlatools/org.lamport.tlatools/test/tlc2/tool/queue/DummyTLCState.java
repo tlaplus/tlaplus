@@ -28,7 +28,7 @@ public class DummyTLCState extends TLCState {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#bind(util.UniqueString, tlc2.value.Value, tla2sany.semantic.SemanticNode)
 	 */
-	public TLCState bind(UniqueString name, IValue value) {
+	public TLCState bind(String name, IValue value) {
 		return null;
 	}
 
@@ -42,21 +42,21 @@ public class DummyTLCState extends TLCState {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#unbind(util.UniqueString)
 	 */
-	public TLCState unbind(UniqueString name) {
+	public TLCState unbind(String name) {
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#lookup(util.UniqueString)
 	 */
-	public IValue lookup(UniqueString var) {
+	public IValue lookup(String var) {
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.TLCState#containsKey(util.UniqueString)
 	 */
-	public boolean containsKey(UniqueString var) {
+	public boolean containsKey(String var) {
 		return false;
 	}
 

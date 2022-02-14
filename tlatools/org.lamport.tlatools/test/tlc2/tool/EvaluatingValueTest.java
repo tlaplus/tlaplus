@@ -68,7 +68,7 @@ public class EvaluatingValueTest extends ModelCheckerTestCase {
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) {
 
 		// Set value of x variable of successor state to 42. 
-		s1.bind(UniqueString.of("x"), IntValue.gen(42));
+		s1.bind("x", IntValue.gen(42));
 		
 		return BoolValue.ValTrue;
 	}

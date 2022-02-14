@@ -449,7 +449,7 @@ public class EditorUtil
     }
     
     /**
-     * @see EditorUtil#lookupSymbol(UniqueString, SemanticNode, Location, SymbolNode)
+     * @see EditorUtil#lookupSymbol(String, SemanticNode, Location, SymbolNode)
      */
  	public static SymbolNode lookupSymbol(SpecObj specObj, IDocument document, WordRegion region) {
 		final Location location = getLocationAt(document, region.getOffset(), region.getLength());
@@ -458,7 +458,7 @@ public class EditorUtil
 	}
     
  	/**
- 	 * @see EditorUtil#lookupSymbol(UniqueString, SemanticNode, Location, SymbolNode)
+ 	 * @see EditorUtil#lookupSymbol(String, SemanticNode, Location, SymbolNode)
  	 */
 	public static SymbolNode lookupSymbol(String name, SymbolNode curNode, IDocument document, IRegion region,
 			SymbolNode defaultResult) {

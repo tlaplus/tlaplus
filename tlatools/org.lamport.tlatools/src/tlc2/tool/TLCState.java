@@ -66,17 +66,14 @@ public abstract class TLCState implements Cloneable, Serializable {
 		vos.writeShortNat((short) this.level);
 	}
 
-  public abstract TLCState bind(UniqueString name, IValue value);
+  public abstract TLCState bind(String name, IValue value);
   public abstract TLCState bind(SymbolNode id, IValue value);  
-  public abstract TLCState unbind(UniqueString name);
+  public abstract TLCState unbind(String name);
   /**
    * Convenience method when performance doesn't matter.
    */
-  public IValue lookup(String var) {
-	  return lookup(UniqueString.uniqueStringOf(var));
-  }
-  public abstract IValue lookup(UniqueString var);
-  public abstract boolean containsKey(UniqueString var);
+  public abstract IValue lookup(String var);
+  public abstract boolean containsKey(String var);
   public abstract TLCState copy();
   public abstract TLCState deepCopy();
   public abstract StateVec addToVec(StateVec states);
@@ -106,7 +103,7 @@ public abstract class TLCState implements Cloneable, Serializable {
 	final Map<UniqueString, IValue> valMap = new HashMap<UniqueString, IValue>();
 	for(int i = 0; i < vars.length; i++) {
         UniqueString key = vars[i].getNameUS();
-        IValue val = this.lookup(key);
+        IValue val = this.lookup(key.toString());
         valMap.put(key, val);
     }
     return valMap;

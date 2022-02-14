@@ -728,7 +728,7 @@ public abstract class Tool
               }
             }
             else {
-              UniqueString varName = var.getNameUS();
+              String varName = var.getName();
               IValue lval = ps.lookup(varName);
               Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (lval == null) {
@@ -756,7 +756,7 @@ public abstract class Tool
               }
             }
             else {
-              UniqueString varName = var.getNameUS();
+              String varName = var.getName();
               Value lval = (Value) ps.lookup(varName);
               Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (lval == null) {
@@ -1290,7 +1290,7 @@ public abstract class Tool
 	      }
 	    }
 	    else {
-	      UniqueString varName = var.getNameUS();
+	      String varName = var.getName();
 	      IValue lval = s1.lookup(varName);
 	      Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	      if (lval == null) {
@@ -1316,7 +1316,7 @@ public abstract class Tool
 	      }
 	    }
 	    else {
-	      UniqueString varName = var.getNameUS();
+	      String varName = var.getName();
 	      Value lval = (Value) s1.lookup(varName);
 	      Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	      if (lval == null) {
@@ -1502,7 +1502,7 @@ public abstract class Tool
   		SymbolNode var, final CostModel cm) {
           TLCState resState = s1;
           // expr is a state variable:
-          final UniqueString varName = var.getNameUS();
+          final String varName = var.getName();
           final IValue val0 = s0.lookup(varName);
           final IValue val1 = s1.lookup(varName);
           if (val1 == null) {
@@ -1522,7 +1522,7 @@ public abstract class Tool
               }
           }
           else {
-        	  MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
+        	  MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName, expr.toString()});
           }
           return resState;
   }
@@ -3134,8 +3134,7 @@ public abstract class Tool
               }
             } else
             {
-              UniqueString varName = var.getNameUS();
-              IValue lval = s1.lookup(varName);
+              IValue lval = s1.lookup(var.getName());
               Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               if (lval == null)
               {
@@ -3201,8 +3200,7 @@ public abstract class Tool
                 }
             } else
             {
-              UniqueString varName = var.getNameUS();
-              Value lval = (Value) s1.lookup(varName);
+              Value lval = (Value) s1.lookup(var.getName());
               Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               if (lval == null)
               {
@@ -3263,7 +3261,7 @@ public abstract class Tool
         SymbolNode var = this.getVar(expr, c, true, toolId);
         if (var != null) {
           // a state variable, e.g. UNCHANGED var1
-          UniqueString varName = var.getNameUS();
+          String varName = var.getName();
           Value v0 = this.eval(expr, c, s0, s1, EvalControl.Enabled, cm);
           IValue v1 = s1.lookup(varName);
           if (v1 == null) {
@@ -3273,7 +3271,7 @@ public abstract class Tool
           if (v1.equals(v0)) {
             return this.enabled(acts, s0, s1, cm);
           }
-          MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString() , expr.toString()});
+          MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName , expr.toString()});
           return null;
         }
 
