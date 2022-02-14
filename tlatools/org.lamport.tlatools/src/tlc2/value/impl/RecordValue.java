@@ -37,14 +37,14 @@ import util.TLAConstants;
 import util.UniqueString;
 
 public class RecordValue extends Value implements Applicable {
-  private static final UniqueString BLI = UniqueString.of("beginLine");
-  private static final UniqueString BCOL = UniqueString.of("beginColumn");
-  private static final UniqueString ELI = UniqueString.of("endLine");
-  private static final UniqueString ECOL = UniqueString.of("endColumn");
-  private static final UniqueString MOD = UniqueString.of("module");
-  private static final UniqueString NAME = UniqueString.of("name");
-  private static final UniqueString LOC = UniqueString.of("location");
-  private static final UniqueString ACTION = UniqueString.of("_action");
+  private static final String BLI = ("beginLine");
+  private static final String BCOL = ("beginColumn");
+  private static final String ELI = ("endLine");
+  private static final String ECOL = ("endColumn");
+  private static final String MOD = ("module");
+  private static final String NAME = ("name");
+  private static final String LOC = ("location");
+  private static final String ACTION = ("_action");
 
   public final String[] names;   // the field names
   public final Value[] values;         // the field values
@@ -92,19 +92,19 @@ public class RecordValue extends Value implements Applicable {
 		this.names = new String[5];
 		this.values = new Value[5];
 
-		this.names[0] = BLI.toString();
+		this.names[0] = BLI;
 		this.values[0] = IntValue.gen(location.beginLine());
 
-		this.names[1] = BCOL.toString();
+		this.names[1] = BCOL;
 		this.values[1] = IntValue.gen(location.beginColumn());
 
-		this.names[2] = ELI.toString();
+		this.names[2] = ELI;
 		this.values[2] = IntValue.gen(location.endLine());
 
-		this.names[3] = ECOL.toString();
+		this.names[3] = ECOL;
 		this.values[3] = IntValue.gen(location.endColumn());
 		
-		this.names[4] = MOD.toString();
+		this.names[4] = MOD;
 		this.values[4] = new StringValue(location.source());
 		
 		this.isNorm = false;
@@ -114,10 +114,10 @@ public class RecordValue extends Value implements Applicable {
 		this.names = new String[2];
 		this.values = new Value[2];
 
-		this.names[0] = NAME.toString();
+		this.names[0] = NAME;
 		this.values[0] = new StringValue(action.getName());
 		
-		this.names[1] = LOC.toString();
+		this.names[1] = LOC;
 		this.values[1] = new RecordValue(action.getDefinition());
 		
 		this.isNorm = false;
@@ -144,7 +144,7 @@ public class RecordValue extends Value implements Applicable {
 		this.values = new Value[vars.length + 1];
 
 		//TODO: _action too verbose?
-		this.names[0] = ACTION.toString();
+		this.names[0] = ACTION;
 		this.values[0] = new RecordValue(action);
 		
 		for (int i = 0; i < vars.length; i++) {
