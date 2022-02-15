@@ -61,7 +61,7 @@ public class CodePlexBug08EWD840FL1Test_TTraceTest extends TTraceModelCheckerTes
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>();
+		final List<String> expectedTrace = new ArrayList<String>(10);
 		expectedTrace.add("/\\ tpos = 0\n"
 		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 		                + "/\\ tcolor = \"black\"\n"

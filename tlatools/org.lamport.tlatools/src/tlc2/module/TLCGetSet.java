@@ -365,9 +365,14 @@ public class TLCGetSet implements ValueConstants {
 				         endLine: Nat,
 				         endColumn: Nat,
 				         module: STRING ]
+				      CONTEXTS ==
+				        [
+				          ...
+				        ]
 				  IN CHOOSE act \in
 				       [ name: STRING,
-				         location : LOCATIONS ]: TRUE
+				         location : LOCATIONS,
+				         context: CONTEXTS ]: TRUE
 				```
 				
 				If `TLCGet("action")` is evaluated outside the scope of a TLA+ action of
@@ -382,9 +387,9 @@ public class TLCGetSet implements ValueConstants {
 				have more confidence in its usefulness.
 			 */
 			if (s0 == null || s0.getAction() == null) {
-				return new RecordValue(Action.UNKNOWN);
+				return new RecordValue(Action.UNKNOWN, Context.Empty);
 			} else {
-				return new RecordValue(s0.getAction());
+				return new RecordValue(s0.getAction(), s0.getAction().con);
 			}
 		} else if (ALL_VALUES.equals(sv.val)) {
 			/*

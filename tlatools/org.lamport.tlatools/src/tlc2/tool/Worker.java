@@ -9,8 +9,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import tla2sany.semantic.ExprNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -25,6 +27,7 @@ import tlc2.util.IdThread;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.FixedSizedBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
+import tlc2.value.impl.CounterExample;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.FileUtil;
@@ -89,7 +92,10 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 				if (curState == null) {
 					synchronized (this.tlc) {
 						if(!this.tlc.setDone()) {
-							doPostConditionCheck();
+							final int ec = tool.checkPostCondition();
+							if (ec != EC.NO_ERROR) {
+								tlc.setError(true, ec);
+							}
 						}
 						this.tlc.notify();
 					}
@@ -120,7 +126,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 					// A deadlock is defined as a state without (seen or unseen) successor
 					// states. In other words, evaluating the next-state relation for a state
 					// yields no states.
-	                this.tlc.doNextSetErr(curState, null, false, EC.TLC_DEADLOCK_REACHED, null);
+	                this.doNextSetErr(curState, null, false, EC.TLC_DEADLOCK_REACHED, null);
 				}
 				
 	            // Finally, add curState into the behavior graph for liveness checking:
@@ -415,7 +421,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		
 		try {
 			if (!this.tool.isGoodState(succState)) {
-				this.tlc.doNextSetErr(curState, succState, action);
+				this.doNextSetErr(curState, succState, action);
 				// It seems odd to subsume this under IVE, but we consider
 				// it an invariant that the values of all variables have to
 				// be defined.
@@ -528,7 +534,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 							return false;
                         }
                 	} else {
-						return this.tlc.doNextSetErr(curState, succState, false,
+						return this.doNextSetErr(curState, succState, false,
 								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
                 	}
 				}
@@ -560,7 +566,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 							return false;
                        }
                     } else {
-						return this.tlc.doNextSetErr(curState, succState, false,
+						return this.doNextSetErr(curState, succState, false,
 								EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
 								this.tool.getImpliedActNames()[k]);
                 	}
@@ -573,28 +579,33 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		}
         return false;
 	}
+	
+	private boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
+		synchronized (this.tlc) {
+			final boolean doNextSetErr = this.tlc.doNextSetErr(curState, succState, keep, ec, param);
 
-	// User request: http://discuss.tlapl.us/msg03658.html
-	private final void doPostConditionCheck() {
-		final ExprNode sn = (ExprNode) this.tool.getPostConditionSpec();
-		try {
-			if (sn != null && !this.tool.isValid(sn)) {
-				// It's not an assumption because the expression doesn't appear inside
-				// an ASSUME, but good enough for this prototype.
-				MP.printError(EC.TLC_ASSUMPTION_FALSE, sn.toString());
-				// Terminate with a non-zero exit value.
-				this.tlc.setError(false, EC.TLC_ASSUMPTION_FALSE);
-			}
-		} catch (Exception e) {
-			// tool.isValid(sn) failed to evaluate...
-			MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR, new String[] { sn.toString(), e.getMessage() });
-			this.tlc.setError(true, EC.TLC_ASSUMPTION_EVALUATION_ERROR);
+			// Invoke PostCondition
+			doPostCondition(curState, succState);
+			
+			return doNextSetErr;
 		}
-		// The PostCheckAssumption/PostCondition cannot be stated as an ordinary invariant
-		// with the help of TLCSet/Get because the invariant will only be evaluated for
-		// distinct states, but we want it to be evaluated after state-space exploration
-		// finished.  Hacking away with TLCGet("queue") = 0 doesn't work because the queue
-		// can be empty during the evaluation of the next-state relation when a worker dequeues
-		// the last state S, that has more successor states.
+	}
+	
+	private boolean doNextSetErr(TLCState curState, TLCState succState, Action action) throws IOException, WorkerException {
+		synchronized (this.tlc) {
+			final boolean doNextSetErr = this.tlc.doNextSetErr(curState, succState, action);
+
+			// Invoke PostCondition
+			doPostCondition(curState, succState);
+
+			return doNextSetErr;
+		}
+	}
+	
+	private final void doPostCondition(TLCState curState, TLCState succState) throws IOException {
+		final List<TLCStateInfo> trace = new ArrayList<>(
+				Arrays.asList(tlc.getTraceInfo((succState == null) ? curState : succState)));
+		trace.add(tool.getState(succState, curState));
+		tool.checkPostConditionWithCounterExample(new CounterExample(trace));
 	}
 }

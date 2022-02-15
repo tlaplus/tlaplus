@@ -3,6 +3,7 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>TLA+ Trace Animator</title>
 	<script src="jquery.js"></script>
+	<script src="svg-pan-zoom.min.js"></script>
 	<!-- <script src="js/jquery.min.js"></script> -->
 </head>
 <body _adv_already_used="true">
@@ -18,25 +19,28 @@
 
 <div id="container" style="text-align:center;">
 
-	<h2>TLA+ Trace Animator</h2>
-
 	<!-- Text area for pasting SVG frames. -->
 	<div style="text-align: center;margin:auto;">
 		<textarea id="textdrop" cols="60" rows="20" placeholder="Paste SVG Frames Here" style="font-size:16px;"></textarea>
 	</div>
+
+	<!-- Control Buttons and Frame Info -->
+	<button id="prevBtn" style="visibility: hidden">Prev Step</button>
+	<button id="playBtn" style="visibility: hidden">Play</button>
+	<button id="nextBtn" style="visibility: hidden">Next Step</button>
+	&nbsp
+    <button id="zoom-in" style="visibility: hidden">Zoom in</button>
+	<button id="reset" style="visibility: hidden">Reset</button>
+	<button id="zoom-out" style="visibility: hidden">Zoom out</button>
+ 	
+	<!-- FrameNum above buttons to easily exclude buttons in screencast --> 
+	<div id="frameNum" style="visibility: hidden">Step: 0</div>
 		
 	<!-- <svg id="svgBox" width="40%" viewBox="0 0 100 90" style="border:solid;float:right"> -->
 	<div style="margin:auto">
-		<svg id="svgBox" width="50%" height="500px" viewBox="0 0 300 300" style="border:solid; border-width: 1px; border-color:lightgray; visibility: hidden">
+		<svg id="svgBox" width="100%" height="1000px" viewBox="0 0 1000 1000" style="border:solid; border-width: 1px; border-color:lightgray; visibility: hidden">
 		</svg>
 	</div>
-
-	<!-- Control Buttons and Frame Info -->
-	<!-- FrameNum above buttons to easily exclude buttons in screencast --> 
-	<div id="frameNum">Frame Number: 0</div>
-	<button id="prevBtn">Prev Frame</button>
-	<button id="nextBtn">Next Frame</button>
-
 </div>
 
 
@@ -61,22 +65,15 @@
 	$("#textdrop").on('input', function(ev) {
 	    var text = $("#textdrop").val();
 
-		// The pasted text should be a TLA+ sequence (tuple) of records, where each record has
-		// one key-value pair, whose value is the SVG element for that frame. We expect
-		// that the record has been filtered to only include the view expression, so we 
-		// pull out all lines that contain a record delimiter. We might want to eventually
-		// make this a regex that properly matches and extracts key-value pairs from a TLA+
-		// record, but for now this will do the job.
-		// text should look something like:
-		// <<
-		// [SlotNumber |-> "<text x='25' font='Arial' y='25'>Text A</text>"],
-		// [SlotNumber |-> "<text x='50' font='Arial' y='50'>Text B</text>"],
-		// [SlotNumber |-> "<text x='75' font='Arial' y='75'>Text C</text>"]
-		// >>
-		//
-		tlaRecordDelim = "|->";
-		frameLines = text.split("\n").filter(line => line.includes(tlaRecordDelim));
-		frames = frameLines.map(line => line.split("|->").pop());
+		frameLines = text.split("\n").filter(line => line.includes("_animator ="));
+		var frames;
+		if (frameLines.length > 0) {
+		   frames = frameLines.map(line => line.slice(line.indexOf("_animator =") + 1));
+		} else {
+			tlaRecordDelim = "|->";
+			frameLines = text.split("\n").filter(line => line.includes(tlaRecordDelim));
+			frames = frameLines.map(line => line.slice(line.indexOf(tlaRecordDelim) + 1));
+		}
 		framesText = frames.join("");
 
 		$("#svgBox").html(framesText);
@@ -85,8 +82,36 @@
 		$(this).hide();
 		init();
 		reload();
+		
 		$("#svgBox").css("visibility", "visible");
-
+		$("#prevBtn").css("visibility", "visible");
+		$("#playBtn").css("visibility", "visible");
+		$("#nextBtn").css("visibility", "visible");
+		$("#frameNum").css("visibility", "visible");
+		$("#zoom-in").css("visibility", "visible");
+		$("#zoom-out").css("visibility", "visible");
+		$("#reset").css("visibility", "visible");
+		
+		window.zoom = svgPanZoom('#svgBox', {
+          zoomEnabled: true,
+          controlIconsEnabled: false,
+          fit: true,
+          center: true,
+          zoomScaleSensitivity: 0.1
+        });
+        document.getElementById('zoom-in').addEventListener('click', function(ev){
+          ev.preventDefault()
+          window.zoom.zoomIn()
+        });
+        document.getElementById('zoom-out').addEventListener('click', function(ev){
+          ev.preventDefault()
+          window.zoom.zoomOut()
+        });
+        document.getElementById('reset').addEventListener('click', function(ev){
+          ev.preventDefault()
+          window.zoom.resetZoom()
+        });
+        
 	});
 
 	function reload(){
@@ -98,8 +123,25 @@
 				$(this).attr("visibility", "hidden");
 			}
 		});
-		$("#frameNum").html("Frame Number: "+ currFrame + "/" + Math.max(0, maxFrame - 1));
+		$("#frameNum").html("Step: "+ (currFrame + 1) + "/" + Math.max(1, maxFrame));
 		console.log("Current frame: " + currFrame);
+	}
+
+	function play(){
+		var timer = setTimeout(function() { 
+						advanceFrame();
+						// Schedule the next timer to play to the end.
+						if (currFrame < maxFrame - 1) {
+							play();
+						}
+					}, 1000); // 1 second
+		// prev or next cancels the timer.
+		$("#nextBtn").click(function() {
+			clearTimeout(timer);
+		});
+		$("#prevBtn").click(function() {
+			clearTimeout(timer);
+		});
 	}
 
 	// Set the current frame to the given index. If an out of bound frame index is given, we take the
@@ -108,7 +150,6 @@
 		currFrame = frameInd % maxFrame;
 		reload();
 	}
-
 
 	function advanceFrame(){
 		currFrame = (currFrame + 1) % maxFrame;
@@ -141,16 +182,10 @@
 
 	$("#nextBtn").click(advanceFrame);
 	$("#prevBtn").click(prevFrame);
+	$("#playBtn").click(play);
 
 	reload();
 
 </script>
-
-
-
-
-
-
-
 
 </body></html>

@@ -53,7 +53,7 @@ public class Github317Test extends ModelCheckerTestCase {
 		// occasionally two). Iff the length is greater than one, TLC would write a
 		// trace spec, which causes this test to fail because it expects no trace spec to
 		// be written. Thus, we generally turn off trace specs for any length.
-		return false;
+		return true;
 	}
 
 	@Test

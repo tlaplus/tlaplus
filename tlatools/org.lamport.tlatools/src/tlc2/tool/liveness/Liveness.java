@@ -719,7 +719,16 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				
 				// LEN#extractPromises returns all <>(someStateOrConstantLevelFormula), which
 				// are added as promises to the OOS.
-				oss[i] = new OrderOfSolution(new TBGraph(tf1), tf1.extractPromises());
+				TBGraph tbg = new TBGraph(tf1);
+				
+// Uncomment to write the tableau in dot format to disk.				
+//				try {
+//					Files.write(Paths.get("./TBGraph.dot"), tbg.toDotViz().getBytes());
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+				oss[i] = new OrderOfSolution(tbg, tf1.extractPromises());
 			}
 
 			// VII:

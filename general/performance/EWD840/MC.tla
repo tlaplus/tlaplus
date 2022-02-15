@@ -1,5 +1,5 @@
 ---- MODULE MC ----
-EXTENDS EWD840, TLC
+EXTENDS EWD840, TLC, stats
 
 \* CONSTANT definitions @modelParameterConstants:0N
 const_1515403233990126000 == 

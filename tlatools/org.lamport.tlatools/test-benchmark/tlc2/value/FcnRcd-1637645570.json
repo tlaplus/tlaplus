@@ -1,0 +1,994 @@
+[
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "4"
+        },
+        "primaryMetric" : {
+            "score" : 6132997.122137887,
+            "scoreError" : 951286.9621042944,
+            "scoreConfidence" : [
+                5181710.160033593,
+                7084284.084242182
+            ],
+            "scorePercentiles" : {
+                "0.0" : 5990998.88372785,
+                "50.0" : 6108814.544958172,
+                "90.0" : 6323360.514907354,
+                "95.0" : 6323360.514907354,
+                "99.0" : 6323360.514907354,
+                "99.9" : 6323360.514907354,
+                "99.99" : 6323360.514907354,
+                "99.999" : 6323360.514907354,
+                "99.9999" : 6323360.514907354,
+                "100.0" : 6323360.514907354
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    6323360.514907354,
+                    5990998.88372785
+                ],
+                [
+                    6169820.410291494,
+                    6047808.67962485
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 3404624.912021674,
+            "scoreError" : 255072.99967496344,
+            "scoreConfidence" : [
+                3149551.912346711,
+                3659697.9116966375
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3347240.376117334,
+                "50.0" : 3416882.480825434,
+                "90.0" : 3437494.310318494,
+                "95.0" : 3437494.310318494,
+                "99.0" : 3437494.310318494,
+                "99.9" : 3437494.310318494,
+                "99.99" : 3437494.310318494,
+                "99.999" : 3437494.310318494,
+                "99.9999" : 3437494.310318494,
+                "100.0" : 3437494.310318494
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    3417348.5322809387,
+                    3437494.310318494
+                ],
+                [
+                    3416416.4293699292,
+                    3347240.376117334
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 1721534.805809742,
+            "scoreError" : 233272.73208930079,
+            "scoreConfidence" : [
+                1488262.0737204412,
+                1954807.537899043
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1678034.6819220474,
+                "50.0" : 1721913.8665325444,
+                "90.0" : 1764276.8082518326,
+                "95.0" : 1764276.8082518326,
+                "99.0" : 1764276.8082518326,
+                "99.9" : 1764276.8082518326,
+                "99.99" : 1764276.8082518326,
+                "99.999" : 1764276.8082518326,
+                "99.9999" : 1764276.8082518326,
+                "100.0" : 1764276.8082518326
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1731661.5001586725,
+                    1678034.6819220474
+                ],
+                [
+                    1764276.8082518326,
+                    1712166.2329064163
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "32"
+        },
+        "primaryMetric" : {
+            "score" : 780622.885086322,
+            "scoreError" : 39524.48875069585,
+            "scoreConfidence" : [
+                741098.3963356261,
+                820147.3738370178
+            ],
+            "scorePercentiles" : {
+                "0.0" : 772647.9781998906,
+                "50.0" : 781357.487122928,
+                "90.0" : 787128.5878995412,
+                "95.0" : 787128.5878995412,
+                "99.0" : 787128.5878995412,
+                "99.9" : 787128.5878995412,
+                "99.99" : 787128.5878995412,
+                "99.999" : 787128.5878995412,
+                "99.9999" : 787128.5878995412,
+                "100.0" : 787128.5878995412
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    782974.6760860442,
+                    779740.2981598118
+                ],
+                [
+                    787128.5878995412,
+                    772647.9781998906
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "64"
+        },
+        "primaryMetric" : {
+            "score" : 275326.6991037687,
+            "scoreError" : 15391.519205151973,
+            "scoreConfidence" : [
+                259935.1798986167,
+                290718.2183089207
+            ],
+            "scorePercentiles" : {
+                "0.0" : 272536.9846508366,
+                "50.0" : 275459.7967163831,
+                "90.0" : 277850.21833147213,
+                "95.0" : 277850.21833147213,
+                "99.0" : 277850.21833147213,
+                "99.9" : 277850.21833147213,
+                "99.99" : 277850.21833147213,
+                "99.999" : 277850.21833147213,
+                "99.9999" : 277850.21833147213,
+                "100.0" : 277850.21833147213
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    272536.9846508366,
+                    274269.5008440561
+                ],
+                [
+                    276650.0925887101,
+                    277850.21833147213
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "128"
+        },
+        "primaryMetric" : {
+            "score" : 94905.23959959781,
+            "scoreError" : 1768.0815238778057,
+            "scoreConfidence" : [
+                93137.15807572001,
+                96673.32112347562
+            ],
+            "scorePercentiles" : {
+                "0.0" : 94642.35525473086,
+                "50.0" : 94844.29991015943,
+                "90.0" : 95290.0033233415,
+                "95.0" : 95290.0033233415,
+                "99.0" : 95290.0033233415,
+                "99.9" : 95290.0033233415,
+                "99.99" : 95290.0033233415,
+                "99.999" : 95290.0033233415,
+                "99.9999" : 95290.0033233415,
+                "100.0" : 95290.0033233415
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    95290.0033233415,
+                    94841.7575811156
+                ],
+                [
+                    94642.35525473086,
+                    94846.84223920325
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "256"
+        },
+        "primaryMetric" : {
+            "score" : 28107.83815204338,
+            "scoreError" : 422.65939119627063,
+            "scoreConfidence" : [
+                27685.17876084711,
+                28530.49754323965
+            ],
+            "scorePercentiles" : {
+                "0.0" : 28017.800022210806,
+                "50.0" : 28119.484148398304,
+                "90.0" : 28174.584289166112,
+                "95.0" : 28174.584289166112,
+                "99.0" : 28174.584289166112,
+                "99.9" : 28174.584289166112,
+                "99.99" : 28174.584289166112,
+                "99.999" : 28174.584289166112,
+                "99.9999" : 28174.584289166112,
+                "100.0" : 28174.584289166112
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    28120.212239100314,
+                    28174.584289166112
+                ],
+                [
+                    28118.75605769629,
+                    28017.800022210806
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "512"
+        },
+        "primaryMetric" : {
+            "score" : 9169.747810444063,
+            "scoreError" : 228.7399570073889,
+            "scoreConfidence" : [
+                8941.007853436675,
+                9398.487767451452
+            ],
+            "scorePercentiles" : {
+                "0.0" : 9132.000731151056,
+                "50.0" : 9167.188467448108,
+                "90.0" : 9212.613575728983,
+                "95.0" : 9212.613575728983,
+                "99.0" : 9212.613575728983,
+                "99.9" : 9212.613575728983,
+                "99.99" : 9212.613575728983,
+                "99.999" : 9212.613575728983,
+                "99.9999" : 9212.613575728983,
+                "100.0" : 9212.613575728983
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    9182.738198406725,
+                    9212.613575728983
+                ],
+                [
+                    9132.000731151056,
+                    9151.63873648949
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelect",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "8192"
+        },
+        "primaryMetric" : {
+            "score" : 22.650497852089575,
+            "scoreError" : 10.578005000431668,
+            "scoreConfidence" : [
+                12.072492851657907,
+                33.228502852521245
+            ],
+            "scorePercentiles" : {
+                "0.0" : 21.137505028075285,
+                "50.0" : 22.67245795139704,
+                "90.0" : 24.11957047748894,
+                "95.0" : 24.11957047748894,
+                "99.0" : 24.11957047748894,
+                "99.9" : 24.11957047748894,
+                "99.99" : 24.11957047748894,
+                "99.999" : 24.11957047748894,
+                "99.9999" : 24.11957047748894,
+                "100.0" : 24.11957047748894
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    21.137505028075285,
+                    24.11957047748894
+                ],
+                [
+                    21.332568374279898,
+                    24.01234752851418
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "4"
+        },
+        "primaryMetric" : {
+            "score" : 6432008.246497948,
+            "scoreError" : 3768497.7096022135,
+            "scoreConfidence" : [
+                2663510.5368957343,
+                1.0200505956100162E7
+            ],
+            "scorePercentiles" : {
+                "0.0" : 5923489.132219413,
+                "50.0" : 6311825.377253406,
+                "90.0" : 7180893.099265565,
+                "95.0" : 7180893.099265565,
+                "99.0" : 7180893.099265565,
+                "99.9" : 7180893.099265565,
+                "99.99" : 7180893.099265565,
+                "99.999" : 7180893.099265565,
+                "99.9999" : 7180893.099265565,
+                "100.0" : 7180893.099265565
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    7180893.099265565,
+                    5923489.132219413
+                ],
+                [
+                    6018579.871190995,
+                    6605070.883315817
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "8"
+        },
+        "primaryMetric" : {
+            "score" : 3414515.2700253874,
+            "scoreError" : 271615.3448375729,
+            "scoreConfidence" : [
+                3142899.9251878145,
+                3686130.6148629603
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3390403.895519137,
+                "50.0" : 3395091.5772828413,
+                "90.0" : 3477474.0300167324,
+                "95.0" : 3477474.0300167324,
+                "99.0" : 3477474.0300167324,
+                "99.9" : 3477474.0300167324,
+                "99.99" : 3477474.0300167324,
+                "99.999" : 3477474.0300167324,
+                "99.9999" : 3477474.0300167324,
+                "100.0" : 3477474.0300167324
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    3390403.895519137,
+                    3395610.7457658327
+                ],
+                [
+                    3394572.4087998495,
+                    3477474.0300167324
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "16"
+        },
+        "primaryMetric" : {
+            "score" : 1730666.6703705057,
+            "scoreError" : 78877.11450011125,
+            "scoreConfidence" : [
+                1651789.5558703945,
+                1809543.7848706169
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1713193.200871142,
+                "50.0" : 1734085.1631160094,
+                "90.0" : 1741303.154378861,
+                "95.0" : 1741303.154378861,
+                "99.0" : 1741303.154378861,
+                "99.9" : 1741303.154378861,
+                "99.99" : 1741303.154378861,
+                "99.999" : 1741303.154378861,
+                "99.9999" : 1741303.154378861,
+                "100.0" : 1741303.154378861
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    1735690.4181245018,
+                    1713193.200871142
+                ],
+                [
+                    1732479.9081075173,
+                    1741303.154378861
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "32"
+        },
+        "primaryMetric" : {
+            "score" : 774024.9973240492,
+            "scoreError" : 30147.603062320864,
+            "scoreConfidence" : [
+                743877.3942617284,
+                804172.6003863701
+            ],
+            "scorePercentiles" : {
+                "0.0" : 769574.901038398,
+                "50.0" : 773119.8471203456,
+                "90.0" : 780285.3940171079,
+                "95.0" : 780285.3940171079,
+                "99.0" : 780285.3940171079,
+                "99.9" : 780285.3940171079,
+                "99.99" : 780285.3940171079,
+                "99.999" : 780285.3940171079,
+                "99.9999" : 780285.3940171079,
+                "100.0" : 780285.3940171079
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    774646.7152631314,
+                    771592.9789775598
+                ],
+                [
+                    769574.901038398,
+                    780285.3940171079
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "64"
+        },
+        "primaryMetric" : {
+            "score" : 277860.5243483986,
+            "scoreError" : 14097.372495990712,
+            "scoreConfidence" : [
+                263763.1518524079,
+                291957.8968443893
+            ],
+            "scorePercentiles" : {
+                "0.0" : 275099.1834534272,
+                "50.0" : 278339.6683209544,
+                "90.0" : 279663.5772982583,
+                "95.0" : 279663.5772982583,
+                "99.0" : 279663.5772982583,
+                "99.9" : 279663.5772982583,
+                "99.99" : 279663.5772982583,
+                "99.999" : 279663.5772982583,
+                "99.9999" : 279663.5772982583,
+                "100.0" : 279663.5772982583
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    277126.6627855884,
+                    275099.1834534272
+                ],
+                [
+                    279663.5772982583,
+                    279552.6738563204
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "128"
+        },
+        "primaryMetric" : {
+            "score" : 95842.45214988438,
+            "scoreError" : 515.9782963490543,
+            "scoreConfidence" : [
+                95326.47385353532,
+                96358.43044623344
+            ],
+            "scorePercentiles" : {
+                "0.0" : 95783.33085312223,
+                "50.0" : 95813.91429621942,
+                "90.0" : 95958.6491539765,
+                "95.0" : 95958.6491539765,
+                "99.0" : 95958.6491539765,
+                "99.9" : 95958.6491539765,
+                "99.99" : 95958.6491539765,
+                "99.999" : 95958.6491539765,
+                "99.9999" : 95958.6491539765,
+                "100.0" : 95958.6491539765
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    95829.74656469574,
+                    95958.6491539765
+                ],
+                [
+                    95798.08202774308,
+                    95783.33085312223
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "256"
+        },
+        "primaryMetric" : {
+            "score" : 27949.7453464993,
+            "scoreError" : 641.0005305512651,
+            "scoreConfidence" : [
+                27308.744815948037,
+                28590.745877050565
+            ],
+            "scorePercentiles" : {
+                "0.0" : 27838.49823067622,
+                "50.0" : 27942.76504224984,
+                "90.0" : 28074.953070821306,
+                "95.0" : 28074.953070821306,
+                "99.0" : 28074.953070821306,
+                "99.9" : 28074.953070821306,
+                "99.99" : 28074.953070821306,
+                "99.999" : 28074.953070821306,
+                "99.9999" : 28074.953070821306,
+                "100.0" : 28074.953070821306
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    27916.6028353062,
+                    27838.49823067622
+                ],
+                [
+                    27968.92724919348,
+                    28074.953070821306
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "512"
+        },
+        "primaryMetric" : {
+            "score" : 9150.366174254594,
+            "scoreError" : 131.18920123704217,
+            "scoreConfidence" : [
+                9019.176973017551,
+                9281.555375491636
+            ],
+            "scorePercentiles" : {
+                "0.0" : 9121.970845996562,
+                "50.0" : 9156.166228921667,
+                "90.0" : 9167.161393178478,
+                "95.0" : 9167.161393178478,
+                "99.0" : 9167.161393178478,
+                "99.9" : 9167.161393178478,
+                "99.99" : 9167.161393178478,
+                "99.999" : 9167.161393178478,
+                "99.9999" : 9167.161393178478,
+                "100.0" : 9167.161393178478
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    9149.80939790998,
+                    9121.970845996562
+                ],
+                [
+                    9167.161393178478,
+                    9162.523059933355
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.21",
+        "benchmark" : "tlc2.value.impl.FcnRcdBenchmark.fcnRcdValueSelectWithoutIndex",
+        "mode" : "thrpt",
+        "threads" : 1,
+        "forks" : 2,
+        "jvm" : "/opt/homebrew/Cellar/openjdk/17.0.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "jvmArgs" : [
+        ],
+        "jdkVersion" : "17.0.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "17.0.1+0",
+        "warmupIterations" : 2,
+        "warmupTime" : "10 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 2,
+        "measurementTime" : "10 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "size" : "8192"
+        },
+        "primaryMetric" : {
+            "score" : 21.861220335138615,
+            "scoreError" : 7.350643282120018,
+            "scoreConfidence" : [
+                14.510577053018597,
+                29.211863617258633
+            ],
+            "scorePercentiles" : {
+                "0.0" : 20.860275604026963,
+                "50.0" : 21.858114492731495,
+                "90.0" : 22.8683767510645,
+                "95.0" : 22.8683767510645,
+                "99.0" : 22.8683767510645,
+                "99.9" : 22.8683767510645,
+                "99.99" : 22.8683767510645,
+                "99.999" : 22.8683767510645,
+                "99.9999" : 22.8683767510645,
+                "100.0" : 22.8683767510645
+            },
+            "scoreUnit" : "ops/s",
+            "rawData" : [
+                [
+                    20.89230322298333,
+                    22.8683767510645
+                ],
+                [
+                    20.860275604026963,
+                    22.823925762479664
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+

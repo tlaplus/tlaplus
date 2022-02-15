@@ -199,6 +199,12 @@ public abstract class Tool
 				this.actions[i] = (Action) this.actionVec.elementAt(i);
 			}
 		}
+		
+		// Tag the initial predicates and next-state actions.
+		final Vect<Action> initAndNext = getInitStateSpec().concat(actionVec);
+		for (int i = 0; i < initAndNext.size(); i++) {
+			initAndNext.elementAt(i).setId(i);
+		}
   }
 
   Tool(Tool other) {
@@ -1616,6 +1622,13 @@ public abstract class Tool
               TLCState s1, final int control) {
 		  return eval(expr, c, s0, s1, control, CostModel.DO_NOT_RECORD);
 	  }
+	  
+	public Value evalPure(final OpDefNode opDef, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
+				final TLCState s1, final int control, final CostModel cm) {
+	    final Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
+		return this.eval(opDef.getBody(), c1, s0, s1, control, cm);
+	}
+
   /*
    * This method evaluates the expression expr in the given context,
    * current state, and partial next state.
@@ -3371,16 +3384,25 @@ public abstract class Tool
     return this.isValid(act, TLCState.Empty, TLCState.Empty);
   }
 
+    @Override
+	public boolean isValid(ExprNode expr, Context ctxt) {
+	    IValue val = this.eval(expr, ctxt, TLCState.Empty, TLCState.Empty, 
+	    		EvalControl.Const, CostModel.DO_NOT_RECORD);
+	    if (!(val instanceof BoolValue)) {
+	      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, expr);
+	    }
+	    return ((BoolValue)val).val;
+	}
+
   @Override
   public final boolean isValid(ExprNode expr) {
-    IValue val = this.eval(expr, Context.Empty, TLCState.Empty, TLCState.Empty, 
-    		EvalControl.Const, CostModel.DO_NOT_RECORD);
-    if (!(val instanceof BoolValue)) {
-      Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, expr);
-    }
-    return ((BoolValue)val).val;
+	  return isValid(expr, Context.Empty);
   }
 
+  public boolean isValidAssumption(ExprNode assumption) {
+	  return isValid(assumption);
+  }
+  
   @Override
   public final int checkAssumptions() {
       final ExprNode[] assumps = getAssumptions();
@@ -3389,7 +3411,7 @@ public abstract class Tool
       {
           try
           {
-              if ((!isAxiom[i]) && !isValid(assumps[i]))
+              if ((!isAxiom[i]) && !isValidAssumption(assumps[i]))
               {
                   return MP.printError(EC.TLC_ASSUMPTION_FALSE, assumps[i].toString());
               }
@@ -3402,6 +3424,48 @@ public abstract class Tool
       }
       return EC.NO_ERROR;
   }
+
+	@Override
+	public final int checkPostCondition() {
+		return checkPostConditionWithContext(Context.Empty);
+	}
+
+	@Override
+	public final int checkPostConditionWithCounterExample(final IValue value) {
+		final SymbolNode def = getCounterExampleDef();
+		if (def == null) {
+			// TLCExt!CounterExample does not appear anywhere in the spec.
+			return checkPostCondition();
+		}
+		final Context ctxt = Context.Empty.cons(def, value);
+		return checkPostConditionWithContext(ctxt);
+	}
+
+	private final int checkPostConditionWithContext(final Context ctxt) {
+		// User request: http://discuss.tlapl.us/msg03658.html
+		final ExprNode en = (ExprNode) getPostConditionSpec();
+		try {
+			if (en != null && !isValid(en, ctxt)) {
+				// It's not an assumption because the expression doesn't appear inside
+				// an ASSUME, but good enough for this prototype.
+				return MP.printError(EC.TLC_ASSUMPTION_FALSE, en.toString());
+			}
+		} catch (Exception e) {
+			// tool.isValid(sn) failed to evaluate...
+			return MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
+					new String[] { en.toString(), e.getMessage() });
+		}
+		// The PostCheckAssumption/PostCondition cannot be stated as an ordinary
+		// invariant
+		// with the help of TLCSet/Get because the invariant will only be evaluated for
+		// distinct states, but we want it to be evaluated after state-space exploration
+		// finished. Hacking away with TLCGet("queue") = 0 doesn't work because the
+		// queue
+		// can be empty during the evaluation of the next-state relation when a worker
+		// dequeues
+		// the last state S, that has more successor states.
+		return EC.NO_ERROR;
+	}
   
     /* Reconstruct the initial state whose fingerprint is fp. */
 	@Override

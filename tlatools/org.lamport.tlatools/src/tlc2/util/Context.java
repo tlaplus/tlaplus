@@ -5,10 +5,14 @@
 
 package tlc2.util;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.function.Function;
 
 import tla2sany.semantic.SymbolNode;
+import tlc2.value.impl.StringValue;
+import tlc2.value.impl.Value;
 
 // Context is used two times:
 // 1) To determine the level boundedness of the expression appearing in the spec
@@ -137,6 +141,27 @@ public final class Context implements Iterator<Context> {
 		return null; // On Empty Context (end of chain), return null value
 	}
 
+	public final Map<String, Value> toMap() {
+		if (this.name == null) {
+			if (this == Empty) {
+				return new HashMap<>();
+			}
+			return this.next.toMap();
+		}
+		final Map<String, Value> res = new HashMap<>();
+		res.put(this.name.getName(),
+				this.value instanceof Value ? (Value) this.value : new StringValue(this.value.toString()));
+
+		Context cur;
+		for (cur = this.next; cur.name != null; cur = cur.next) {
+			res.put(cur.name.getName(),
+					cur.value instanceof Value ? (Value) cur.value : new StringValue(cur.value.toString()));
+		}
+		res.putAll(cur.toMap());
+
+		return res;
+	}
+	
 	public final StringBuffer toString(StringBuffer sb) {
 		if (this.name == null) {
 			if (this == Empty) {
@@ -185,6 +210,13 @@ public final class Context implements Iterator<Context> {
 	
 	public final boolean isEmpty() {
 		return this == Empty;
+	}
+
+	public final boolean isDeepEmpty() {
+		if (this.isEmpty() || this == BaseBranch) {
+			return true;
+		}
+		return false;
 	}
 
 	public final int depth() {

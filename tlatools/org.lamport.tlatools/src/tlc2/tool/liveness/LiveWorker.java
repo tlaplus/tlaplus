@@ -28,6 +28,7 @@ import tlc2.util.MemIntStack;
 import tlc2.util.SynchronousDiskIntStack;
 import tlc2.util.statistics.BucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
+import tlc2.value.impl.CounterExample;
 
 /**
  * {@link LiveWorker} is doing the heavy lifting of liveness checking:
@@ -957,6 +958,7 @@ public class LiveWorker implements Callable<Boolean> {
 			for (int i = postfix.size() - 1; i >= 0; i--) {
 				final long curFP = postfix.elementAt(i);
 				TLCStateInfo sucinfo = tool.getState(curFP, sinfo);
+				states.add(sucinfo);
 				StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucinfo.state));
 				sinfo = sucinfo;
 			}
@@ -982,6 +984,8 @@ public class LiveWorker implements Callable<Boolean> {
 			assert cycleState.state.equals(sinfo.state);
 			StatePrinter.printBackToState(sinfo, stateNumber);
 		}
+		
+		tool.checkPostConditionWithCounterExample(new CounterExample(states, sinfo.getAction(), stateNumber));
 	}
 
 	// BFS search

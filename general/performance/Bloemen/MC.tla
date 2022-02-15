@@ -1,5 +1,5 @@
 ---- MODULE MC ----
-EXTENDS BloemenSCC, TLC
+EXTENDS BloemenSCC, TLC, stats
 
 SymmetryThreads == Permutations(Threads)
 

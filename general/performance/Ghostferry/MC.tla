@@ -1,5 +1,5 @@
 ---- MODULE MC ----
-EXTENDS ghostferry, TLC
+EXTENDS ghostferry, TLC, stats
 
 \* MV CONSTANT declarations@modelParameterConstants
 CONSTANTS

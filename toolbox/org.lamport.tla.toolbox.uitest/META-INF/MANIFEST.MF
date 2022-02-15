@@ -12,11 +12,9 @@ Require-Bundle: org.eclipse.swt;bundle-version="3.5.0";visibility:=reexport,
  org.aspectj.runtime;bundle-version="1.8.10";visibility:=reexport,
  org.lamport.tla.toolbox;bundle-version="1.0.0";visibility:=reexport,
  org.lamport.tla.toolbox.editor.basic;bundle-version="1.0.0",
- org.apache.log4j;visibility:=reexport,
  org.eclipse.ui.editors;bundle-version="3.9.0",
  org.eclipse.ui.forms;bundle-version="3.6.200"
 Eclipse-BundleShape: dir
-Eclipse-RegisterBuddy: org.apache.log4j
 Eclipse-SupplementBundle: org.lamport.tla.toolbox*
 Export-Package: org.lamport.tla.toolbox.test,
  org.lamport.tla.toolbox.test.threading,

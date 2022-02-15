@@ -24,14 +24,6 @@ public class TBGraphNode {
 	private int index; // unique id for this node
 	private final LiveExprNode[] statePreds; // state predicates in the particle
 
-	public static TBGraphNode dummyNode = new TBGraphNode();
-
-	private TBGraphNode() {
-		this.par = null;
-		this.nexts = null;
-		this.index = -1;
-		this.statePreds = null;
-	}
 
 	public TBGraphNode(TBPar par) {
 		this.par = par;
@@ -117,6 +109,20 @@ public class TBGraphNode {
 			}
 		}
 		return true;
+	}
+	
+	private final boolean isSelfLoop() {
+		if (nextSize() == 1) {
+			return nextAt(0) == this;
+		}
+		return false;
+	}
+	
+	public final boolean isAccepting() {
+		if (par.isEmpty() && isSelfLoop()) {
+			return true;
+		}
+		return false;
 	}
 
 	public final String toString() {

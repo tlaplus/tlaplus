@@ -47,6 +47,27 @@ Trace ==
 
 (* HERE BE DRAGONS! The operators below are experimental! *)
 
+CounterExample ==
+    (****************************************************************************)
+    (* In the scope of POSTCONDITION, the operator CounterExample is equivalent *)
+    (* to a (directed) graph represented as [state: States, action: Actions]    *)
+    (* with                                                                     *)
+    (*   States \subseteq [ Variables -> Values ]                               *)
+    (* and                                                                      *)
+    (*  Actions \subseteq                                                       *)
+    (*            (CounterExample.state \X Action \X CounterExample.state).     *)
+    (* If TLC found no violations, then CounterExample.states equals {} and     *)
+    (* CounterExample.actions equals {}.  If only initial state violates a      *)
+    (* (safety) property, CounterExample.state is a set of those states, and    *)
+    (* CounterExample.actions = {}.                                             *)
+    (****************************************************************************)
+    TRUE
+
+ToTrace(CE) ==
+	TRUE
+
+-----------------------------------------------------------------------------
+
 TLCModelValue(str) ==
   (******************************************************************************)
   (* A model value is an unspecified value that TLC considers to be unequal to  *)

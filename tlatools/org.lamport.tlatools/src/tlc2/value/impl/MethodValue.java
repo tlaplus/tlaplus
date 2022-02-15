@@ -29,6 +29,8 @@ import util.WrongInvocationException;
 public class MethodValue extends OpValue implements Applicable {
 
 	public static Value get(final Method md) {
+		// Call from e.g. STRING (see tlc2.module.Strings.STRING()), which has no operator
+		// definition.
 		return get(md, 0);
 	}
 	

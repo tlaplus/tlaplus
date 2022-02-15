@@ -1,12 +1,12 @@
----- CONFIG Alias ----
-SPECIFICATION FairSpec
-INVARIANT Inv
-PROPERTY Prop
-ALIAS Alias
-======================
+
+
+
+
+
+
 
 ---- MODULE Alias ----
-EXTENDS Integers, TLC, Sequences
+EXTENDS Integers, TLC, Sequences, TLCExt
 
 VARIABLES x, y
 vars == <<x,y>>
@@ -59,7 +59,53 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
           te |-> ENABLED Next]      \* Trace Expression
          
 
+PostCondition ==
+	/\ TLCSet(42, TLCGet("generated"))
+  	/\ CounterExample = 
+			[ action |->
+			      { << <<1, [x |-> 1, y |-> FALSE]>>,
+			           [ name |-> "A",
+			             location |->
+			                 [ beginLine |-> 15,
+			                   beginColumn |-> 1,
+			                   endLine |-> 17,
+			                   endColumn |-> 13,
+			                   module |-> "Alias" ] ],
+			           <<2, [x |-> 2, y |-> TRUE]>> >>,
+			        << <<2, [x |-> 2, y |-> TRUE]>>,
+			           [ name |-> "A",
+			             location |->
+			                 [ beginLine |-> 15,
+			                   beginColumn |-> 1,
+			                   endLine |-> 17,
+			                   endColumn |-> 13,
+			                   module |-> "Alias" ] ],
+			           <<3, [x |-> 3, y |-> FALSE]>> >>,
+			        << <<3, [x |-> 3, y |-> FALSE]>>,
+			           [ name |-> "A",
+			             location |->
+			                 [ beginLine |-> 15,
+			                   beginColumn |-> 1,
+			                   endLine |-> 17,
+			                   endColumn |-> 13,
+			                   module |-> "Alias" ] ],
+			           <<4, [x |-> 4, y |-> TRUE]>> >> },
+			  state |->
+			      { <<1, [x |-> 1, y |-> FALSE]>>,
+			        <<2, [x |-> 2, y |-> TRUE]>>,
+			        <<3, [x |-> 3, y |-> FALSE]>>,
+			        <<4, [x |-> 4, y |-> TRUE]>> } ]
 =======================
+
+---- CONFIG Alias ----
+SPECIFICATION FairSpec
+INVARIANT Inv
+PROPERTY Prop
+ALIAS Alias
+POSTCONDITION PostCondition
+======================
+
+
 \* FairSpec => []Inv
 Error: Invariant Inv is violated.
 Error: The behavior up to this point is:

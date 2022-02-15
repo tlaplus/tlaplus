@@ -119,8 +119,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.executionIsHalted = executionIsHalted;
 	}
 
-	public abstract TLCDebugger listen(int debugPort);
-
 	@Override
 	public IDebugTarget setTool(final Tool tool) {
 		this.tool = tool;
@@ -721,6 +719,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return this;
 	}
 
+	@Override
+	public synchronized IDebugTarget markAssumptionViolatedFrame(Tool debugTool, SemanticNode expr, Context c) {
+		final TLCStackFrame frame = new TLCStackFrame(null, expr, c, tool); // no parent!
+		stack.push(frame);
+		if (haltInv) {
+			haltExecution(frame);
+		}
+		return this;
+	}
+
 	private IDebugTarget pushFrameAndHalt(final boolean halt, final TLCStackFrame frame, final RuntimeException e) {
 		// Calling methods duplicate the top-most stack-frame with the exception causes
 		// the front-end to raise a corresponding error in the editor.
@@ -825,14 +833,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 		public static TLCDebugger OVERRIDE;
 
-		public static TLCDebugger getInstance(final boolean suspend, boolean halt) throws Exception {
+		public static TLCDebugger getInstance(final int port, final boolean suspend, boolean halt) throws Exception {
 			if (OVERRIDE != null) {
 				return OVERRIDE;
 			}
 			if (suspend) {
-				return new AttachingDebugger(Step.In, halt);
+				return new AttachingDebugger(port, Step.In, halt);
 			}
-			return new AttachingDebugger(Step.Continue, halt);
+			return new AttachingDebugger(port, Step.Continue, halt);
 		}
 	}
 }

@@ -26,6 +26,7 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -35,8 +36,11 @@ import java.util.List;
 
 import org.junit.Test;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
+import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
 
 public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 
@@ -166,5 +170,15 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 		assertUncovered("line 80, col 38 to line 80, col 69 of module OneBitMutex: 0\n"
 				+ "line 96, col 16 to line 96, col 47 of module OneBitMutex: 0\n"
 				+ "line 97, col 16 to line 97, col 50 of module OneBitMutex: 0");
+
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+
+		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
+		// register.
+		final List<IValue> allValue = TLCGlobals.mainChecker.getAllValue(42);
+		assertTrue(!allValue.isEmpty());
+		assertEquals(IntValue.gen(244), allValue.get(0));
 	}
 }

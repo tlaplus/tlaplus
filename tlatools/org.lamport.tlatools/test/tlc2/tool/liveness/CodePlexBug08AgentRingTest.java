@@ -26,6 +26,7 @@
 
 package tlc2.tool.liveness;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -34,8 +35,11 @@ import java.util.List;
 
 import org.junit.Test;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
+import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
 
 /**
  * see http://tlaplus.codeplex.com/workitem/8
@@ -43,21 +47,21 @@ import tlc2.output.EC.ExitStatus;
 public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 
 	public CodePlexBug08AgentRingTest() {
-		super("AgentRingMC", "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+		super("AgentRingMC", "CodePlexBug08", ExitStatus.VIOLATION_SAFETY);
 	}
 	
 	@Test
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "361", "120"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "171", "70"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
-		assertNodeAndPtrSizes(8496L, 2880L);
+		assertNodeAndPtrSizes(3552L, 1120L);
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
@@ -85,31 +89,18 @@ public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 				   + "/\\ CanCreate = FALSE\n"
 				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])");
 
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 1, ReadyToMove |-> FALSE, Task |-> 1]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 1]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 1]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertBackToState(10);
+		assertZeroUncovered();
+		
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 
-	assertZeroUncovered();
+		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
+		// register.
+		final List<IValue> allValue = TLCGlobals.mainChecker.getAllValue(42);
+		assertTrue(!allValue.isEmpty());
+		assertEquals(IntValue.gen(171), allValue.get(0));
 	}
 }

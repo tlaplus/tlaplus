@@ -1,5 +1,5 @@
 ---- MODULE MC ----
-EXTENDS RaftMongo, TLC
+EXTENDS RaftMongo, TLC, stats
 
 \* MV CONSTANT declarations@modelParameterConstants
 CONSTANTS

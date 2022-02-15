@@ -25,13 +25,12 @@
  ******************************************************************************/
 package tlc2.tool.impl;
 
-import tla2sany.semantic.OpDefNode;
-import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.ExprOrOpArgNode;
 import tlc2.TLCGlobals;
-import tlc2.tool.IWorker;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
+import tlc2.util.IdThread;
 import tlc2.value.IValue;
 
 /*
@@ -104,17 +103,18 @@ Disadvantages:
 2) [Value#deepCopy](https://github.com/tlaplus/tlaplus/blob/63bab42e79e750b7ac033cfe7196d8f0b53e861e/tlatools/src/tlc2/value/IValue.java#L104)  - required to create the copies of V<sub>SG</sub> - is [broken for most value types](https://github.com/tlaplus/tlaplus/blob/63bab42e79e750b7ac033cfe7196d8f0b53e861e/tlatools/src/tlc2/value/impl/SubsetValue.java#L232) (can probably be fixed).
 */
 public class WorkerValue {
-	
 	/*
 	 * Demuxing is supposed to be called only once per sn/opDef whereas muxing is called many many times.
-	 */
-	
-    public static Object demux(final OpDefEvaluator spec, final OpDefNode opDef) {
-    	return demux(spec, opDef, opDef);
+	 */    
+    public static Object demux(final OpDefEvaluator spec, final ExprOrOpArgNode en) {
+    	return demux(spec, en, CostModel.DO_NOT_RECORD);
     }
-    
-    public static Object demux(final OpDefEvaluator spec, final SemanticNode sn, final OpDefNode opDef) {
-    	final IValue defVal = spec.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
+
+	/*
+	 * Demuxing is supposed to be called only once per sn/opDef whereas muxing is called many many times.
+	 */    
+    public static Object demux(final OpDefEvaluator spec, final ExprOrOpArgNode en, final CostModel cm) {
+        final IValue defVal = spec.eval(en, Context.Empty, TLCState.Empty, cm);
     	defVal.deepNormalize();
     	
     	if (defVal.mutates() && TLCGlobals.getNumWorkers() > 1) {
@@ -124,7 +124,7 @@ public class WorkerValue {
     		for (int i = 1; i < values.length; i++) {
     			// Ideally, we could invoke IValue#deepCopy here instead of evaluating opDef again.  However,
     			// IValue#deepCopy doesn't create copies for most values.
-    			values[i] = spec.eval(opDef.getBody(), Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
+    			values[i] = spec.eval(en, Context.Empty, TLCState.Empty, cm);
     			values[i].deepNormalize();
     		}
     		
@@ -141,8 +141,8 @@ public class WorkerValue {
 		
 		final WorkerValue vp = (WorkerValue) result;
 		final Thread t = Thread.currentThread();
-		if (t instanceof IWorker) {
-			final IWorker w = (IWorker) t;
+		if (t instanceof IdThread) {
+			final IdThread w = (IdThread) t;
 			return vp.values[w.myGetId()];
 		} else {
 			return vp.values[0];

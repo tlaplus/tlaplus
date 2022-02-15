@@ -33,6 +33,7 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.Action;
 import tlc2.tool.EvalException;
+import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
@@ -115,7 +116,7 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 		return tool.eval(() -> {
 			try {
 				return lv.eval(tool, getS(), getT());
-			} catch (TLCRuntimeException | EvalException e) {
+			} catch (TLCRuntimeException | EvalException | FingerprintException e) {
 				return fallback == null ? e : fallback;
 			}
 		});

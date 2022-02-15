@@ -76,7 +76,7 @@ public class IntValue extends Value {
         Assert.fail("Attempted to compare integer " + Values.ppr(this.toString()) +
         " with non-integer:\n" + Values.ppr(obj.toString()), getSource());
       }
-      return 1;
+      return ((ModelValue) obj).modelValueCompareTo(this);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -173,7 +173,7 @@ public class IntValue extends Value {
   @Override
   public boolean mutates() {
 	  // finalized after construction.
-	  return true;
+	  return false;
   }
 
   @Override

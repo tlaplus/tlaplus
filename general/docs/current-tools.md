@@ -244,9 +244,9 @@ Directs TLC to do depth-first model checking with iterative deepening, beginning
 Tells TLC to show only the differences between successive states when printing an error trace. Otherwise, it prints the full state descriptions.
 
 `-dump` _format file_
-The _format_ parameter can be omitted, or it can be a comma-separated list beginning with `dot` that may also contain one or both of the items `colorize` and `actionlabels`. If _format_ is omitted, TLC writes a list of all reachable states, described by TLA+ formulas, on _file_. Otherwise, TLC writes the state graph in dot format, the input format of the GraphViz program for displaying graphs. The parameter `colorize` indicates that state transitions should be colored according to the action generating the transition, and `actionlabels` indicates that they should be labeled with the name of the action. Example:
+The _format_ parameter can be omitted, or it can be a comma-separated list beginning with `dot` that may also contain one or both of the items `colorize` and `actionlabels`. If _format_ is omitted, TLC writes a list of all reachable states, described by TLA+ formulas, on _file_. Otherwise, TLC writes the state graph in dot format, the input format of the GraphViz program for displaying graphs. The parameter `colorize` indicates that state transitions should be colored according to the action generating the transition, and `actionlabels` indicates that they should be labeled with the name of the action. 
 
-`-dump dot,colorize,actionlabels file.dot`.
+Example: `-dump dot,colorize,actionlabels file.dot`.
 
 `-fp` _num_
 TLC's state fingerprinting algorithm uses one of a list of irreducible polynomials, numbered 0 through 130. This option tells it to use polynomial number _num_. Through release version 1.5.7 of the tools, The default is to used number 0. In later versions the default will be to use a randomly chosen one.
@@ -254,7 +254,7 @@ TLC's state fingerprinting algorithm uses one of a list of irreducible polynomia
 `-fpbits` _num_
 Directs TLC to partition its fingerprint set into 2<sup>_num_</sup> separate disk files. (On some systems, using multiple files can improve efficiency of reading and writing fingerprints when they don't fit in memory.) The default value of _num_ is 0.
 
--fpmem _num_
+`-fpmem` _num_
 Tells TLC how much memory to use to store the fingerprints of found states. If _num_ is an integer, it specifies the number of megabytes; if it's a fraction between 0 and 1, it specifies that fraction of the memory size.The default value of _num_ is .25.
 
 `-gzip`
@@ -285,10 +285,11 @@ Recover from the checkpoint found in the directory specified by _dir_. If not sp
 `-seed` _num_
 Provide the seed for the pseudo-random number generator used for random simulation. Defaults to a randomly chosen seed if not specified.
 
-`-simulate` file=_pname_ num=_num_
-This tells TLC to run in simulation mode. If the `file` argument is present, then TLC writes each trace it finds to the file whose name, including complete directory path, is _pname_. If the `num` argument is present, then _num_ is the number of behaviors to generate. Either or both arguments may be omitted; if both are present, they must be separated by a comma. Example:
+`-simulate` file=_pname_ num=_num_ stats=(basic|full) 
+This tells TLC to run in simulation mode. If the `file` argument is present, then TLC writes each trace it finds to the file whose name, including complete directory path, is _pname_. If the `num` argument is present, then _num_ is the number of behaviors to generate. If the `stats` argument is present, you must select either basic mode or full mode. Both modes generate a DOT file representing an action graph named in the `<spec>_actions.dot` format. Basic mode generates an action graph where nodes are actions, solid edges are seen transitions, and dashed edges are unseen transitions during the simulation. Full mode also generates an action graph, but now there are clusters of actions (actions might appear more than once) representing interactions between actions with parameters, for example actions A(1) points to A(2) which points to B(1), whereas in basic mode you'd only see A points to B. 
+Either or all arguments may be omitted; if more than one is present, they must be separated by a comma. 
 
-```-simulate file=file.txt,num=2```
+Example: ```-simulate file=trace.txt,num=100,stats=full```
 
 `-terse`
 Tells TLA not to expand values in the output produced by Print and PrintT. If not specified, the values are expanded.
@@ -304,6 +305,17 @@ If the configuration file specifies a VIEW, then this option tells TLC to apply 
 
 `-workers` _num_ or `auto`
 Specifies the number of TLC worker threads, where `auto` means to use as many threads as there are cores on the computer. Without this option, TLC uses only a single worker thread.
+
+### Java System Properties
+
+In addition to command line options, TLC also uses several Java system properties to choose between different algorithms for certain tasks. You set a Java system property by adding it to TLC's command line via `java -Dkey=value -jar tla2tools.jar ...`.  In particular, the following properties can improve performance when TLC is run with many worker on a large number of cores.
+
+`tlc2.tool.fp.FPSet.impl`
+Defines which fingerprint set implementation to use. For better many-core performance, pass `-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet`.
+
+`tlc2.tool.ModelChecker.BAQueue`
+If run with `-Dtlc2.tool.ModelChecker.BAQueue=true`, TLC will use the `ByteArrayQueue`, a prototype implementation that increases many-core throughput by reducing the critical section of the queue of unseen states.
+
 
 ## TLATEX
 ### Bugs

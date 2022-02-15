@@ -86,16 +86,15 @@ public class DotActionWriter {
 	}
 
 	public synchronized void write(final Action action, final int id) {
-		// Marker the state as an initial state by using a filled style.
-		write(action2dot(action), id);
-	}
-
-	public synchronized void write(final String actionName, final int id) {
-		// Marker the state as an initial state by using a filled style.
 		this.writer.append(Integer.toString(id));
 		this.writer.append(" [shape=box,label=\"");
-		this.writer.append(actionName);
-		this.writer.append("\"]");
+		this.writer.append(action.getNameOfDefault());
+		if (action.isInitPredicate()) {
+			// Marker the action as an initial predicate by using a filled style.
+			this.writer.append("\",style = filled]");
+		} else {
+			this.writer.append("\"]");
+		}
 		this.writer.append("\n");
 	}
 
@@ -117,10 +116,6 @@ public class DotActionWriter {
 			this.writer.append(String.format("[penwidth=%s]", Double.toString(weight)));
 		}
 		this.writer.append(";\n");
-	}
-
-	protected static String action2dot(final Action action) {
-		return action.getName();
 	}
 
 	public void close() {

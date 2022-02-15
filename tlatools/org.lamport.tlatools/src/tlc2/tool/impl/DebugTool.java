@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import tla2sany.semantic.ASTConstants;
+import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
@@ -104,6 +105,20 @@ public class DebugTool extends Tool {
 	}
 
 	// 88888888888888888888888888888888888888888888888888888888888888888888888888 //
+
+	@Override
+	public boolean isValidAssumption(final ExprNode assumption) {
+	    final boolean isValid = isValid(assumption);
+	    if (!isValid) {
+	    	try {
+	    		target.markAssumptionViolatedFrame(this, assumption, Context.Empty);
+			} catch (ResetEvalException ree) {
+				target.popFrame(this, assumption, Context.Empty);
+				return isValidAssumption(assumption);
+			}
+	    }
+	    return isValid;
+	}
 
 	@Override
 	public boolean isValid(Action act, TLCState state) {

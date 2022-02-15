@@ -24,7 +24,9 @@ import tlc2.tool.Action;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateInfo;
 import tlc2.tool.coverage.CostModel;
+import tlc2.util.Context;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
@@ -44,6 +46,7 @@ public class RecordValue extends Value implements Applicable {
   private static final String MOD = ("module");
   private static final String NAME = ("name");
   private static final String LOC = ("location");
+  private static final String CTXT = ("context");
   private static final String ACTION = ("_action");
 
   public final String[] names;   // the field names
@@ -76,21 +79,21 @@ public class RecordValue extends Value implements Applicable {
 	// where this would have been useful. Consider refactoring the CM module
 	// override once sufficient time has passed that we can expect most users to be
 	// on a version of TLC with this constructor.
-	public RecordValue(final Map<String, String> m) {
-		final List<Map.Entry<String, String>> entries = new ArrayList<>(m.entrySet());
+	public RecordValue(final Map<String, Value> m) {
+		final List<Map.Entry<String, Value>> entries = new ArrayList<>(m.entrySet());
 
 		this.names = new String[entries.size()];
 		this.values = new Value[entries.size()];
 
 		for (int i = 0; i < entries.size(); i++) {
 			this.names[i] = entries.get(i).getKey();
-			this.values[i] = new StringValue(entries.get(i).getValue());
+			this.values[i] = entries.get(i).getValue();
 		}
 	}
 
   public RecordValue(final Location location) {
 		this.names = new String[5];
-		this.values = new Value[5];
+		this.values = new Value[this.names.length];
 
 		this.names[0] = BLI;
 		this.values[0] = IntValue.gen(location.beginLine());
@@ -112,7 +115,7 @@ public class RecordValue extends Value implements Applicable {
 
   public RecordValue(final Action action) {
 		this.names = new String[2];
-		this.values = new Value[2];
+		this.values = new Value[this.names.length];
 
 		this.names[0] = NAME;
 		this.values[0] = new StringValue(action.getName());
@@ -121,6 +124,26 @@ public class RecordValue extends Value implements Applicable {
 		this.values[1] = new RecordValue(action.getDefinition());
 		
 		this.isNorm = false;
+  }
+
+  public RecordValue(final Action action, final Context ctxt) {
+		this.names = new String[3];
+		this.values = new Value[this.names.length];
+
+		this.names[0] = NAME;
+		this.values[0] = new StringValue(action.getName());
+		
+		this.names[1] = LOC;
+		this.values[1] = new RecordValue(action.getDefinition());
+		
+		this.names[2] = CTXT;
+		this.values[2] = new RecordValue(ctxt.toMap());
+		
+		this.isNorm = false;
+  }
+
+  public RecordValue(final TLCStateInfo info) {
+	  this(info.state);
   }
 
   public RecordValue(final TLCState state) {
@@ -145,7 +168,7 @@ public class RecordValue extends Value implements Applicable {
 
 		//TODO: _action too verbose?
 		this.names[0] = ACTION;
-		this.values[0] = new RecordValue(action);
+		this.values[0] = new RecordValue(action, action.con);
 		
 		for (int i = 0; i < vars.length; i++) {
 			this.names[i+1] = vars[i].getName();
@@ -207,7 +230,9 @@ public class RecordValue extends Value implements Applicable {
     try {
       RecordValue rcd = obj instanceof Value ? (RecordValue) ((Value)obj).toRcd() : null;
       if (rcd == null) {
-        if (obj instanceof ModelValue) return 1;
+        if (obj instanceof ModelValue) {
+            return ((ModelValue) obj).modelValueCompareTo(this);
+        }
         Assert.fail("Attempted to compare record:\n" + Values.ppr(this.toString()) +
         "\nwith non-record\n" + Values.ppr(obj.toString()), getSource());
       }

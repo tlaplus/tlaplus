@@ -119,6 +119,8 @@ public interface ITool extends TraceApp {
 	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1);
 	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm);
 
+	boolean isValid(ExprNode expr, Context ctxt);
+	
 	/* This method determines if the action predicate is valid in (s0, s1). */
 	boolean isValid(Action act, TLCState s0, TLCState s1);
 
@@ -173,6 +175,10 @@ public interface ITool extends TraceApp {
 	boolean[] getAssumptionIsAxiom();
 
 	int checkAssumptions();
+	
+	int checkPostCondition();
+	
+	int checkPostConditionWithCounterExample(IValue value);
 
 	String[] getInvNames();
 
@@ -249,6 +255,8 @@ public interface ITool extends TraceApp {
 
 	SemanticNode getPostConditionSpec();
 
+	OpDefNode getCounterExampleDef();
+
 	int getId();
 
 	List<File> getModuleFiles(FilenameToStream resolver);
@@ -269,5 +277,9 @@ public interface ITool extends TraceApp {
 
 	default ITool getLiveness() {
 		return this;
+	}
+
+	default Vect<Action> getSpecActions() {
+		return getInitStateSpec().concat(new Vect<Action>(getActions()));
 	}
 }
