@@ -91,45 +91,6 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 		}
 	}
 	
-	public final IValue read(final Map<String, UniqueString> tbl) throws IOException {
-		final byte kind = this.dis.readByte();
-
-		switch (kind) {
-		case BOOLVALUE: {
-			return (this.dis.readBoolean()) ? BoolValue.ValTrue : BoolValue.ValFalse;
-		}
-		case INTVALUE: {
-			return IntValue.gen(this.dis.readInt());
-		}
-		case STRINGVALUE: {
-			return StringValue.createFrom(this, tbl);
-		}
-		case MODELVALUE: {
-			return ModelValue.mvs[this.dis.readShort()];
-		}
-		case INTERVALVALUE: {
-			return new IntervalValue(this.dis.readInt(), this.dis.readInt());
-		}
-		case RECORDVALUE: {
-			return RecordValue.createFrom(this, tbl);
-		}
-		case FCNRCDVALUE: {
-			return FcnRcdValue.createFrom(this, tbl);
-		}
-		case SETENUMVALUE: {
-			return SetEnumValue.createFrom(this, tbl);
-		}
-		case TUPLEVALUE: {
-			return TupleValue.createFrom(this, tbl);
-		}
-		case DUMMYVALUE: {
-			return (IValue) this.handles.getValue(this.readNat());
-		}
-		default: {
-			throw new WrongInvocationException("ValueInputStream: Can not unpickle a value of kind " + kind);
-		}
-		}
-	}
  
   @Override
   public final int readShort() throws IOException {
@@ -157,6 +118,13 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
     if (res >= 0) return res;
     res = (res << 16) | (this.dis.readShort() & 0xFFFF);
     return -res;
+  }
+  
+  @Override
+  public final String readString() throws IOException {
+      int slen = dis.readInt();
+      String str = dis.readString(slen);
+      return str;
   }
   
   @Override

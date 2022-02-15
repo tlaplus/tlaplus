@@ -36,6 +36,8 @@ public interface IValueInputStream {
 	IValue read() throws IOException;
 
 	int readShort() throws IOException;
+	
+	String readString() throws IOException;
 
 	int readInt() throws IOException;
 

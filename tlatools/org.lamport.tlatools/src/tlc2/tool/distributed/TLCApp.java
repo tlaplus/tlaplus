@@ -524,10 +524,6 @@ public class TLCApp extends DistApp {
 		if (configFile == null)
 			configFile = specFile;
 
-		if (fromChkpt != null) {
-			// We must recover the intern table as early as possible
-			UniqueString.internTbl.recover(fromChkpt);
-		}
 		FP64.Init(fpIndex);
 
 		return new TLCApp(specFile, configFile, deadlock, fromChkpt, fpSetConfig);

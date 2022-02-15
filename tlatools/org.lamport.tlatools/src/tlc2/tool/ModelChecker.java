@@ -721,7 +721,6 @@ public class ModelChecker extends AbstractChecker
 		this.trace.beginChkpt();
 		this.theFPSet.beginChkpt();
 		this.theStateQueue.resumeAll();
-		UniqueString.internTbl.beginChkpt(this.metadir);
 		if (this.checkLiveness)
 		{
 			liveCheck.beginChkpt();
@@ -730,7 +729,6 @@ public class ModelChecker extends AbstractChecker
 		this.theStateQueue.commitChkpt();
 		this.trace.commitChkpt();
 		this.theFPSet.commitChkpt();
-		UniqueString.internTbl.commitChkpt(this.metadir);
 		if (this.checkLiveness)
 		{
 			liveCheck.commitChkpt();

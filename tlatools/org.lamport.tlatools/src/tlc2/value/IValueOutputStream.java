@@ -51,6 +51,8 @@ public interface IValueOutputStream {
 	void writeByte(byte b) throws IOException;
 
 	void writeBoolean(boolean b) throws IOException;
+	
+	void writeString(String s) throws IOException;
 
 	IDataOutputStream getOutputStream();
 

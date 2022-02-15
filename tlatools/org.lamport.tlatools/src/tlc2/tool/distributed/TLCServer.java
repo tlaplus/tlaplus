@@ -60,8 +60,7 @@ import util.MailSender;
 import util.UniqueString;
 
 @SuppressWarnings("serial")
-public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
-		InternRMI {
+public class TLCServer extends UnicastRemoteObject implements TLCServerRMI {
 
 	/**
 	 * Name by which {@link FPSetRMI} lookup the {@link TLCServer} (master).
@@ -234,14 +233,6 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 
 	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.InternRMI#intern(java.lang.String)
-	 */
-	public final UniqueString intern(String str) {
-		// SZ 11.04.2009: changed access method
-		return UniqueString.uniqueStringOf(str);
-	}
-
-	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.TLCServerRMI#registerWorker(tlc2.tool.distributed.TLCWorkerRMI)
 	 */
 	public synchronized final void registerWorker(TLCWorkerRMI worker
@@ -353,11 +344,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			this.trace.beginChkpt();
 			this.fpSetManager.checkpoint(this.filename);
 			this.stateQueue.resumeAll();
-			UniqueString.internTbl.beginChkpt(this.metadir);
 			// commit:
 			this.stateQueue.commitChkpt();
 			this.trace.commitChkpt();
-			UniqueString.internTbl.commitChkpt(this.metadir);
 			this.fpSetManager.commitChkpt();
 			MP.printMessage(EC.TLC_CHECKPOINT_END, "eted.");
 		}

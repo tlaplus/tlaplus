@@ -2,15 +2,10 @@
 // Last modified on Wed Oct 17 15:25:39 PDT 2001 by yuanyu
 package util;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.Hashtable;
-import java.util.Map;
 
 import tlc2.tool.Defns;
 import tlc2.tool.TLCState;
-import tlc2.tool.distributed.InternRMI;
-import tlc2.util.FP64;
 
 /**
  * For any string (state variable, operator definition) the strings are stored 
@@ -47,62 +42,8 @@ import tlc2.util.FP64;
  *  
  * @author Yuan Yu, Simon Zambrovski
  */
-public final class UniqueString implements Serializable
-{
-    
-    /** 
-     * Maps from strings to variables. 
-     */
-    public static InternTable internTbl = null;
-    /**
-     * The string content
-     */
-    private String s;
-
-    /** 
-     * The unique integer assigned to the string.
-     */
-    private int tok;
-    
-    /**
-     * Call static constructor method for call not out of TLC
-     */
-    static 
-    {
-        UniqueString.initialize();
-    }
-
-    /**
-     * Static constructor method
-     */
-    public static void initialize()
-    {
-        internTbl = new InternTable(1024);
-    }
-
-    /**
-     * Protected constructor, used from utility methods
-     * @param str a string to be saved 
-     * @param tok the unique integer for this string (position in the InternalTable)
-     */
-    protected UniqueString(String str, int tok)
-    {
-        this.s = str;
-        this.tok = tok;
-    }
-
-    /**
-     * Private constructor, used on marshaling/un-marshaling
-     * @param str a string to be saved 
-     * @param tok the unique integer for this string (position in the InternalTable)
-     * @param loc location inside of the state/definition table
-     */
-    private UniqueString(String str, int tok, int loc)
-    {
-        this(str, tok);
-        UniqueString.setVarLoc(str, loc);
-    }
-    
+public final class UniqueString
+{    
     // TODO: Move this to a different class. Eventually get rid of it.
     private static Hashtable<String, Integer> map = new Hashtable<>();
     /**
@@ -116,111 +57,5 @@ public final class UniqueString implements Serializable
     	if (i < 0)
     		return;
     	map.put(name, i);
-    }
-
-    /**
-     * Retrieves the unique number associated with this string
-     * @return
-     */
-    public int getTok()
-    {
-        return this.tok;
-    }
-    
-    /**
-     * Not a compare method as usual for objects
-     * Delivers the difference in positions inside of the table, the unique strings are stored in 
-     * @param uniqueString
-     * @return
-     */
-    public int compareTo(UniqueString uniqueString)
-    {
-        // SZ 10.04.2009: very strange way to compare strings
-        // return this.s.compareTo(t.s);
-        return this.tok - uniqueString.tok;
-    }
-
-    /**
-     * Since uniqueness is guaranteed, the equals is a high performance reference comparison 
-     */
-    public boolean equals(UniqueString t)
-    {
-        return this.tok == t.tok;
-    }
-
-    /**
-     * There is no performance gain to compare with a string.
-     */
-    public boolean equals(String t)
-    {
-        return this.s.equals(t);
-    }
-
-    /**
-     * Returns a unique object associated with string str.  That is,
-     * the first time uniqueStringOf("foo") is called, it returns a
-     * new object o.  Subsequent invocations of uniqueStringOf("foo")
-     * return the same object o.
-     * 
-     * This is a convenience method for a table put.
-     */
-    public static UniqueString uniqueStringOf(String str)
-    {
-        return internTbl.put(str);
-    }
-
-	public static UniqueString of(String str) {
-		return uniqueStringOf(str);
-	}
-
-
-    /**
-     * Writes current unique string to the stream
-     * @param dos
-     * @return
-     * @throws IOException
-     */
-    public final void write(IDataOutputStream dos) throws IOException
-    {
-        dos.writeInt(this.tok);
-        dos.writeInt(UniqueString.getVarLoc(this.toString()));
-        dos.writeInt(this.s.length());
-        dos.writeString(this.s);
-    }
-
-    /**
-     * Utility method for reading a unique string from the stream
-     * @param dis
-     * @return
-     * @throws IOException
-     * 
-     * The method does not change member/class variables
-     */
-    public static UniqueString read(IDataInputStream dis) throws IOException
-    {
-        int tok1 = dis.readInt();
-        int loc1 = dis.readInt();
-        int slen = dis.readInt();
-        String str = dis.readString(slen);
-        return new UniqueString(str, tok1, loc1);
-    }
-    
-    public static UniqueString read(IDataInputStream dis, final Map<String, UniqueString> tbl) throws IOException
-    {
-        dis.readInt(); // skip, because invalid for the given internTbl
-        dis.readInt(); // skip, because invalid for the given internTbl
-        final int slen = dis.readInt();
-        final String str = dis.readString(slen);
-        return tbl.get(str);
-    }
-
-
-    /**
-     * Sets the source 
-     * @param source
-     */
-    public static void setSource(InternRMI source)
-    {
-        internTbl.setSource(source);
     }
 }

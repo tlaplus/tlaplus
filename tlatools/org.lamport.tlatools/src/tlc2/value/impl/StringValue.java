@@ -190,7 +190,7 @@ public class StringValue extends Value {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(STRINGVALUE);
-			UniqueString.of(val).write(vos.getOutputStream());
+			vos.writeString(val);
 		} else {
 			vos.writeByte(DUMMYVALUE);
 			vos.writeNat(index);
@@ -283,15 +283,7 @@ public class StringValue extends Value {
   }
 
 	public static IValue createFrom(final IValueInputStream vos) throws IOException {
-		final String str = UniqueString.read(vos.getInputStream()).toString();
-		final IValue res = new StringValue(str);
-		final int index = vos.getIndex();
-		vos.assign(res, index);
-		return res;
-	}
-	
-	public static IValue createFrom(final IValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
-		final String str = UniqueString.read(vos.getInputStream(), tbl).toString();
+		final String str = vos.readString();
 		final IValue res = new StringValue(str);
 		final int index = vos.getIndex();
 		vos.assign(res, index);

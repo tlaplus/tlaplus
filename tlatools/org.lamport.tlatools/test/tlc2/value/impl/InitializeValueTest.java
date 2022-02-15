@@ -145,11 +145,7 @@ public class InitializeValueTest {
 	}
 
 	@Test
-	public void record() {
-		final InternTable internTable = new InternTable(2);
-		final UniqueString a = internTable.put("a");
-		final UniqueString b = internTable.put("b");
-		
+	public void record() {		
 		final ValueVec vec = new ValueVec();
 		vec.addElement(IntValue.gen(42));
 		vec.addElement(IntValue.gen(23));
@@ -158,7 +154,7 @@ public class InitializeValueTest {
 		final Value aVal = new SetEnumValue(vec, false);
 		final Value bVal = new SetEnumValue(vec, false);
 		
-		final RecordValue rcdv = new RecordValue(new String[] {b.toString(), a.toString()}, new Value[] {bVal, aVal}, false);
+		final RecordValue rcdv = new RecordValue(new String[] {"b", "a"}, new Value[] {bVal, aVal}, false);
 
 		assertFalse(rcdv.isNormalized());
 		for (Value v : rcdv.values) {

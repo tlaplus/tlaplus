@@ -413,18 +413,6 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
 		return res;
 	}
 
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
-		final int index = vos.getIndex();
-		final int len = vos.readNat();
-		final Value[] elems = new Value[len];
-		for (int i = 0; i < len; i++) {
-			elems[i] = (Value) vos.read(tbl);
-		}
-		final Value res = new TupleValue(elems);
-		vos.assign(res, index);
-		return res;
-	}
-
 	@Override
 	public List<TLCVariable> getTLCVariables(TLCVariable prototype, Random rnd) {
 		final List<TLCVariable> nestedVars = new ArrayList<>(this.size());

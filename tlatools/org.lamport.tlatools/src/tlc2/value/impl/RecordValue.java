@@ -594,7 +594,7 @@ public class RecordValue extends Value implements Applicable {
 				final int index1 = vos.put(names[i]);
 				if (index1 == -1) {
 					vos.writeByte(STRINGVALUE);
-					UniqueString.of(names[i]).write(vos.getOutputStream());
+					vos.writeString(names[i]);
 				} else {
 					vos.writeByte(DUMMYVALUE);
 					vos.writeNat(index1);
@@ -693,37 +693,10 @@ public class RecordValue extends Value implements Applicable {
 				names[i] = vos.getValue(index1).toString();
 			} else {
 				final int index1 = vos.getIndex();
-				names[i] = UniqueString.read(vos.getInputStream()).toString();
-				vos.assign(UniqueString.of(names[i]), index1);
+				names[i] = vos.readString();
+				vos.assign(names[i], index1);
 			}
 			vals[i] = (Value) vos.read();
-		}
-		final Value res = new RecordValue(names, vals, isNorm);
-		vos.assign(res, index);
-		return res;
-	}
-
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws EOFException, IOException {
-		final int index = vos.getIndex();
-		boolean isNorm = true;
-		int len = vos.readInt();
-		if (len < 0) {
-			len = -len;
-			isNorm = false;
-		}
-		final String[] names = new String[len];
-		final Value[] vals = new Value[len];
-		for (int i = 0; i < len; i++) {
-			final byte kind1 = vos.readByte();
-			if (kind1 == DUMMYVALUE) {
-				final int index1 = vos.readNat();
-				names[i] = vos.getValue(index1).toString();
-			} else {
-				final int index1 = vos.getIndex();
-				names[i] = UniqueString.read(vos.getInputStream(), tbl).toString();
-				vos.assign(UniqueString.of(names[i]), index1);
-			}
-			vals[i] = (Value) vos.read(tbl);
 		}
 		final Value res = new RecordValue(names, vals, isNorm);
 		vos.assign(res, index);

@@ -306,11 +306,6 @@ public class CheckImplFile extends CheckImpl
 	String metadir = FileUtil.makeMetaDir(f.isAbsolute() ? f.getParent() : "", fromChkpt);
 
     try {
-      // Initialize:
-      if (fromChkpt != null) {
-        // We must recover the intern var table as early as possible
-        UniqueString.internTbl.recover(fromChkpt);
-      }
       FP64.Init(0);
       
       // Start the checker:

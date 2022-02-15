@@ -1065,11 +1065,6 @@ public class TLC {
         try
         {
             // Initialize:
-            if (fromChkpt != null)
-            {
-                // We must recover the intern var table as early as possible
-                UniqueString.internTbl.recover(fromChkpt);
-            }
             FP64.Init(fpIndex);
     		
     		final RandomGenerator rng = new RandomGenerator();

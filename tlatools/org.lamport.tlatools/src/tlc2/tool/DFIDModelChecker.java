@@ -696,7 +696,6 @@ public class DFIDModelChecker extends AbstractChecker
             	{
             		liveCheck.beginChkpt();
             	}
-            	UniqueString.internTbl.beginChkpt(this.metadir);
             	
             	// Commit checkpoint:
             	this.theFPSet.commitChkpt();
@@ -704,7 +703,6 @@ public class DFIDModelChecker extends AbstractChecker
             	{
             		liveCheck.commitChkpt();
             	}
-            	UniqueString.internTbl.commitChkpt(this.metadir);
             	MP.printMessage(EC.TLC_CHECKPOINT_END);
             }
         }

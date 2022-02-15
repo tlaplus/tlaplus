@@ -970,32 +970,6 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 		return res;
 	}
 
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
-		final int index = vos.getIndex();
-		final int len = vos.readNat();
-		final int info = vos.readByte();
-		Value res;
-		final Value[] rvals = new Value[len];
-		if (info == 0) {
-			final int low = vos.readInt();
-			final int high = vos.readInt();
-			for (int i = 0; i < len; i++) {
-				rvals[i] = (Value) vos.read(tbl);
-			}
-			final IntervalValue intv = new IntervalValue(low, high);
-			res = new FcnRcdValue(intv, rvals);
-		} else {
-			final Value[] dvals = new Value[len];
-			for (int i = 0; i < len; i++) {
-				dvals[i] = (Value) vos.read(tbl);
-				rvals[i] = (Value) vos.read(tbl);
-			}
-			res = new FcnRcdValue(dvals, rvals, (info == 1));
-		}
-		vos.assign(res, index);
-		return res;
-	}
-
 	@Override
 	public List<TLCVariable> getTLCVariables(final TLCVariable prototype, Random rnd) {
 		final List<TLCVariable> nestedVars = new ArrayList<>(values.length);
