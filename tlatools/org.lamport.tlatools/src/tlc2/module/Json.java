@@ -59,7 +59,6 @@ import tlc2.value.impl.StringValue;
 import tlc2.value.impl.SubsetValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
-import util.UniqueString;
 
 /**
  * Module overrides for operators to read and write JSON.
@@ -191,7 +190,7 @@ public class Json {
     } else if (value instanceof StringValue) {
       return new JsonPrimitive(((StringValue) value).val);
     } else if (value instanceof ModelValue) {
-      return new JsonPrimitive(((ModelValue) value).val.toString());
+      return new JsonPrimitive(((ModelValue) value).val);
     } else if (value instanceof IntValue) {
       return new JsonPrimitive(((IntValue) value).val);
     } else if (value instanceof BoolValue) {

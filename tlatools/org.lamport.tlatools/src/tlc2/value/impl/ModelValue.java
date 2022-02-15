@@ -48,7 +48,6 @@ import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
 
 public class ModelValue extends Value implements IModelValue {
 
@@ -76,14 +75,14 @@ public class ModelValue extends Value implements IModelValue {
   // SZ Mar 9, 2009: public accessed field, this will cause troubles
   public static ModelValue[] mvs;
 
-  public UniqueString val;
+  public String val;
   public int index;
   public char type;  // type = 0 means untyped.
 
   /* Constructor */
   private ModelValue(String val) {
     // SZ 11.04.2009: changed access method
-    this.val = UniqueString.uniqueStringOf(val);
+    this.val = val;
     this.index = count++;
     if (   (val.length() > 2)
         && (val.charAt(1) == '_')) {
@@ -155,7 +154,7 @@ public class ModelValue extends Value implements IModelValue {
         ModelValue mobj = (ModelValue) obj ;
         if (   (mobj.type == this.type)
             || (mobj.type == 0) ) {
-          return mobj.val == this.val ;
+          return mobj.val.equals(this.val) ;
           }
          else {
           Assert.fail("Attempted to check equality "
@@ -321,7 +320,7 @@ public class ModelValue extends Value implements IModelValue {
   @Override
   public final long fingerPrint(long fp) {
     try {
-      return this.val.fingerPrint(FP64.Extend(fp, MODELVALUE));
+      return FP64.Extend(fingerPrint(FP64.Extend(fp, MODELVALUE)), this.val.hashCode());
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
