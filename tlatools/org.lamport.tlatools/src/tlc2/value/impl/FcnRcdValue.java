@@ -27,7 +27,7 @@ import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   public final Value[] domain;

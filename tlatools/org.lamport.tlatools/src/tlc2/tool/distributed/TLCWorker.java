@@ -41,7 +41,7 @@ import tlc2.util.LongVec;
 import tlc2.util.SimpleCache;
 import util.Assert;
 import util.ToolIO;
-import util.UniqueString;
+import util.VarLocMap;
 @SuppressWarnings("serial")
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 

@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tla2sany.st.Location;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class TLCStateTest {
 

@@ -23,7 +23,7 @@ import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.utilities.Vector;
-import util.UniqueString;
+import util.VarLocMap;
 
 /*
  * TL - 2014

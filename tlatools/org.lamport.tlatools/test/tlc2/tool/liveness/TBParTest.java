@@ -39,7 +39,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.xml.SymbolContext;
 import tlc2.util.Context;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class TBParTest {
 

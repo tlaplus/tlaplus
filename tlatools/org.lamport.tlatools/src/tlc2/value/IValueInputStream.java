@@ -29,7 +29,7 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import util.IDataInputStream;
-import util.UniqueString;
+import util.VarLocMap;
 
 public interface IValueInputStream {
 
@@ -59,5 +59,5 @@ public interface IValueInputStream {
 
 	IDataInputStream getInputStream();
 
-	UniqueString getValue(int idx);
+	VarLocMap getValue(int idx);
 }

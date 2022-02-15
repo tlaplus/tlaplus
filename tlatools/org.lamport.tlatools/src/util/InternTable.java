@@ -15,7 +15,7 @@ import tlc2.tool.distributed.InternRMI;
 /**
  * Storage for the UniqueStrings.  It stores them in a hash table using
  * simple linear hashing.
- * @see {@link UniqueString} for more information 
+ * @see {@link VarLocMap} for more information 
  * @author Yuan Yu, Simon Zambrovski
  */
 public final class InternTable implements Serializable

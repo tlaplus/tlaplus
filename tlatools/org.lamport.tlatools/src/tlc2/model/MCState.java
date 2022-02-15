@@ -11,7 +11,7 @@ import tlc2.value.IValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.Value;
 import util.TLAConstants;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * Encapsulates information about a TLC state.

@@ -100,7 +100,7 @@ import tlc2.value.impl.Value;
 import util.Assert;
 import util.FilenameToStream;
 import util.ToolIO;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class SpecProcessor implements ValueConstants, ToolGlobals {
 	
@@ -393,7 +393,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         for (int i = 0; i < varDecls.length; i++)
         {
             this.variablesNodes[i] = varDecls[i];
-            UniqueString.setVarLoc(varDecls[i].getName(), i);
+            VarLocMap.setVarLoc(varDecls[i].getName(), i);
         }
 
         // Add predefined (Boolean and String) in defns.

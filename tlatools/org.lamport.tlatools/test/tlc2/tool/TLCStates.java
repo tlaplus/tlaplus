@@ -28,7 +28,7 @@ package tlc2.tool;
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.value.impl.IntValue;
-import util.UniqueString;
+import util.VarLocMap;
 
 public abstract class TLCStates {
 
@@ -41,7 +41,7 @@ public abstract class TLCStates {
 		final OpDeclNode[] variables = new OpDeclNode[numVars];
 		for (int i = 0; i < numVars; i++) {
 			String us = "v" + Integer.toString(i);
-			UniqueString.setVarLoc(us, i);
+			VarLocMap.setVarLoc(us, i);
 			variables[i] = new OpDeclNode(us.toString(), ASTConstants.VariableDeclKind, 1, 0, null, null, null);
 		}
 

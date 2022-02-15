@@ -31,7 +31,7 @@ package tla2sany.semantic;
 
 import java.util.Hashtable;
 
-import util.UniqueString;
+import util.VarLocMap;
 
 interface OpDefOrLabelNode {
 

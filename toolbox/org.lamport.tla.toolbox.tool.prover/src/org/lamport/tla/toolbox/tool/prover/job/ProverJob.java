@@ -56,7 +56,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * Long running job for launching the prover. Look at the constructor

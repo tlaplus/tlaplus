@@ -21,7 +21,7 @@ import tlc2.value.impl.TupleValue;
 import util.BufferedDataInputStream;
 import util.FileUtil;
 import util.IDataInputStream;
-import util.UniqueString;
+import util.VarLocMap;
 import util.WrongInvocationException;
 
 public final class ValueInputStream implements ValueConstants, IValueInputStream {
@@ -163,8 +163,8 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 	}
 
 	@Override
-	public final UniqueString getValue(int idx) {
-		return (UniqueString) this.handles.getValue(idx);
+	public final VarLocMap getValue(int idx) {
+		return (VarLocMap) this.handles.getValue(idx);
 	}
 
   // @see ValueOutputStream#put

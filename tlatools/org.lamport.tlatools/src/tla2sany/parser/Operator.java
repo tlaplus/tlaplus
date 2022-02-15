@@ -7,7 +7,7 @@ package tla2sany.parser;
 * Unused import eliminated by LL on 2 Mar 2007                             *
 ***************************************************************************/
 
-import util.UniqueString;
+import util.VarLocMap;
 
 public class Operator implements tla2sany.st.SyntaxTreeConstants {
 

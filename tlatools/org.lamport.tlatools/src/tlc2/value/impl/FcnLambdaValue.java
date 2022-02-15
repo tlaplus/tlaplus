@@ -27,7 +27,7 @@ import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue {
   public final FcnParams params;       // the function formals

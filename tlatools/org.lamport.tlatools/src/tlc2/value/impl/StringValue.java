@@ -19,7 +19,7 @@ import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class StringValue extends Value {
   // TODO make this protected and use getter

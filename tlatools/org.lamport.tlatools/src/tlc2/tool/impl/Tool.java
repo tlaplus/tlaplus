@@ -96,7 +96,7 @@ import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
 import util.TLAConstants;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * This class provides useful methods for tools like model checker
@@ -721,7 +721,7 @@ public abstract class Tool
         case OPCODE_eq:
           {
             SymbolNode var = this.getVar(args[0], c, false, toolId);
-            if (var == null || UniqueString.getVarLoc(var.getName()) < 0) {
+            if (var == null || VarLocMap.getVarLoc(var.getName()) < 0) {
               Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
                 return;
@@ -749,7 +749,7 @@ public abstract class Tool
         case OPCODE_in:
           {
             SymbolNode var = this.getVar(args[0], c, false, toolId);
-            if (var == null || UniqueString.getVarLoc(var.getName()) < 0) {
+            if (var == null || VarLocMap.getVarLoc(var.getName()) < 0) {
               Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
                 return;

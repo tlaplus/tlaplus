@@ -26,7 +26,7 @@ import tlc2.value.IValueOutputStream;
 import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value[] elems;          // the elements of this tuple.

@@ -12,7 +12,7 @@ import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
+import util.VarLocMap;
 
 /***************************************************************************
 * This class represents a USE or HIDE statement.  It is of kind            *

@@ -46,7 +46,7 @@ import tlc2.value.impl.ModelValue;
 import util.Assert;
 import util.FilenameToStream;
 import util.MonolithSpecExtractor;
-import util.UniqueString;
+import util.VarLocMap;
 
 // Note that we use all of the {@code default} defined functionality in our
 //		implemented interface {@link SymbolNodeValueLookupProvider} (and our
@@ -501,7 +501,7 @@ abstract class Spec
         case OPCODE_eq:   // x' = 42
         case OPCODE_in: { // x' \in S (eq case "falls through")
             SymbolNode var = this.getPrimedVar(args[0], c, false);
-            if (var != null && UniqueString.getVarLoc(var.getName()) != -1)
+            if (var != null && VarLocMap.getVarLoc(var.getName()) != -1)
             {
                 tbl.put(pred, 0);
             }
@@ -571,7 +571,7 @@ abstract class Spec
             String opName = opNode.getName();
             int opcode = BuiltInOPs.getOpCode(opName);
 
-            if (UniqueString.getVarLoc(opName) >= 0)
+            if (VarLocMap.getVarLoc(opName) >= 0)
             {
                 // a state variable:
                 tbl.put(expr, 0);

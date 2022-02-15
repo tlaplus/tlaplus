@@ -17,8 +17,8 @@ import tlc2.tool.TLCState;
  * The primary purpose is to use instances of this class as a wrapper or
  * data holder inside of the {@link InternTable}. The latter is organized that way, that it holds an
  * array of UniqueStrings. Each UniqueString that is created is put at most once into the table, and holds 
- * the information of its location in the table. The member variable {@link UniqueString#s} is used to represent 
- * the content, the member variable {@link UniqueString#tok} holds the position inside of the {@link InternTable}.
+ * the information of its location in the table. The member variable {@link VarLocMap#s} is used to represent 
+ * the content, the member variable {@link VarLocMap#tok} holds the position inside of the {@link InternTable}.
  * The following methods are responsible for access to content and position:
  * <ul>
  * </ul>
@@ -27,12 +27,12 @@ import tlc2.tool.TLCState;
  * in subclasses of {@link TLCState}, and array of operator definitions in {@link Defns}. The main scheme 
  * behind the storage of the objects in these arrays is that the value of a variable / operation 
  * definition with name, identified by a UniqueString <code>foo</code> is stored at position, in the array, that is 
- * stored inside of <code>foo</code>, using the instance member {@link UniqueString#loc}. Note, that multiple instances 
+ * stored inside of <code>foo</code>, using the instance member {@link VarLocMap#loc}. Note, that multiple instances 
  * of TLCState store values of variables on the same position in their arrays and only one Defn instance 
  * exist. This is OK, because the state variable are global.
  * <br>
  * In order to distinguish between the index in the state variable array and index of operator definition array, 
- * the number of state variables defined in the specification is maintained in the static member {@link UniqueString#varCount}. 
+ * the number of state variables defined in the specification is maintained in the static member {@link VarLocMap#varCount}. 
  * The methods that are responsible for this feature are:
  * <ul>
  * </ul>
@@ -42,7 +42,7 @@ import tlc2.tool.TLCState;
  *  
  * @author Yuan Yu, Simon Zambrovski
  */
-public final class UniqueString
+public final class VarLocMap
 {    
     // TODO: Move this to a different class. Eventually get rid of it.
     private static Hashtable<String, Integer> map = new Hashtable<>();

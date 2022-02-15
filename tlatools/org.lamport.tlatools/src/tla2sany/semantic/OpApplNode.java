@@ -35,7 +35,7 @@ import tlc2.tool.BuiltInOPs;
 import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
 import tlc2.value.Values;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * OpApplNodes represent all kinds of operator applications in TLA+,
@@ -1291,7 +1291,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 			final TreeSet<SymbolNode> s = new TreeSet<SymbolNode>(new java.util.Comparator<SymbolNode>() {
 				@Override
 				public int compare(SymbolNode o1, SymbolNode o2) {
-					return Integer.compare(UniqueString.getVarLoc(o1.getName()), UniqueString.getVarLoc(o2.getName()));
+					return Integer.compare(VarLocMap.getVarLoc(o1.getName()), VarLocMap.getVarLoc(o2.getName()));
 				}
 			});
 			s.addAll(allParams);

@@ -3,7 +3,7 @@
 package tla2sany.semantic;
 
 import tla2sany.st.TreeNode;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * A OpDefOrDeclNode represents the definition or declaration of

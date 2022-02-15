@@ -30,7 +30,7 @@ import org.lamport.tla.toolbox.util.UIHelper;
 
 import tla2sany.st.Location;
 import util.TLAConstants;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class TLCUIHelper
 {

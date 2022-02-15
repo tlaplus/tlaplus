@@ -22,7 +22,7 @@ import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
-import util.UniqueString;
+import util.VarLocMap;
 import util.WrongInvocationException;
 
 /**
@@ -99,7 +99,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
   
   public final TLCState bind(String name, IValue value) {
 	  // Note, tla2sany.semantic.OpApplNode.toString(Value) relies on this ordering.
-    int loc = UniqueString.getVarLoc(name);
+    int loc = VarLocMap.getVarLoc(name);
     this.values[loc] = value;
     return this;
   }
@@ -109,13 +109,13 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
   }
   
   public final TLCState unbind(String name) {
-    int loc = UniqueString.getVarLoc(name);
+    int loc = VarLocMap.getVarLoc(name);
     this.values[loc] = null;
     return this;
   }
 
   public final IValue lookup(String name) {
-    int loc = UniqueString.getVarLoc(name);
+    int loc = VarLocMap.getVarLoc(name);
     if (loc < 0) return null;
     return this.values[loc];
   }

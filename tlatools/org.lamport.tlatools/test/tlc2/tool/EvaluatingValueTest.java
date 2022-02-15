@@ -41,7 +41,7 @@ import tlc2.util.Context;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.Value;
-import util.UniqueString;
+import util.VarLocMap;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class EvaluatingValueTest extends ModelCheckerTestCase {

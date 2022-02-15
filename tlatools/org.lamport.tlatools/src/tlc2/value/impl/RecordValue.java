@@ -34,7 +34,7 @@ import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class RecordValue extends Value implements Applicable {
   private static final String BLI = ("beginLine");

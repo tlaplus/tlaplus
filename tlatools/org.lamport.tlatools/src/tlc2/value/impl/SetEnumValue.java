@@ -23,7 +23,7 @@ import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
+import util.VarLocMap;
 
 @SuppressWarnings("serial")
 public class SetEnumValue extends EnumerableValue

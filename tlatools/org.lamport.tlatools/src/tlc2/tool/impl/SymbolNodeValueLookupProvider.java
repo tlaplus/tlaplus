@@ -22,7 +22,7 @@ import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.MethodValue;
-import util.UniqueString;
+import util.VarLocMap;
 
 public interface SymbolNodeValueLookupProvider {
     /* Return the variable if expr is a state variable. Otherwise, null. */
@@ -220,7 +220,7 @@ public interface SymbolNodeValueLookupProvider {
 
 		if (opcode == 0) {
 			// This operator is a user-defined operator.
-			if (UniqueString.getVarLoc(opName) >= 0)
+			if (VarLocMap.getVarLoc(opName) >= 0)
 				return 1;
 
 			final Object val = lookup(opNode, c, false, forToolId);

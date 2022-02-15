@@ -22,7 +22,7 @@ import tlc2.util.LongVec;
 import tlc2.util.SetOfStates;
 import util.Assert;
 import util.FileUtil;
-import util.UniqueString;
+import util.VarLocMap;
 
 /** 
  * A TLA+ Model checker using depth-first iterative deepening 

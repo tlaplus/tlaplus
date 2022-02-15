@@ -11,7 +11,7 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * A FormalParamNode represents a formal parameter in a user

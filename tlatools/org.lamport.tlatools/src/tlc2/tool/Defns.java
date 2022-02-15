@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * The purpose of this class is to hold definitions.

@@ -563,7 +563,7 @@ import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
 import util.StringHelper;
 import util.TLAConstants;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class DecomposeProofHandler extends AbstractHandler implements
         IHandler {

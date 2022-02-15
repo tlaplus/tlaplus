@@ -36,7 +36,7 @@ import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.TLCVariable;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVariable {
 	

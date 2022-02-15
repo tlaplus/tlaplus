@@ -56,7 +56,7 @@ import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * Helper methods for the launching of the prover.

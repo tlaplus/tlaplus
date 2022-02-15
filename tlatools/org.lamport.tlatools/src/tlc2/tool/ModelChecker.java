@@ -34,7 +34,7 @@ import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.TLAFlightRecorder;
-import util.UniqueString;
+import util.VarLocMap;
 
 /** 
  *  A TLA+ Model checker

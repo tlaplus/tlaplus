@@ -38,7 +38,7 @@ import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.UseOrHideNode;
 import tla2sany.st.Location;
 import util.StringHelper;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * @author lamport

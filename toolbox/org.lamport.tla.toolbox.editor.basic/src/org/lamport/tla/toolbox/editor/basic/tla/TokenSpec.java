@@ -19,7 +19,7 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * A TokenSpec object represents a possible TLA+ symbol name together

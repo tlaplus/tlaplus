@@ -42,7 +42,7 @@ import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import util.TLAConstants;
-import util.UniqueString;
+import util.VarLocMap;
 
 public class TraceExpressionSpecDeadlockTest extends TraceExpressionSpecTest {
 
