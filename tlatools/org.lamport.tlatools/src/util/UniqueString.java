@@ -26,14 +26,6 @@ import tlc2.util.FP64;
  * the content, the member variable {@link UniqueString#tok} holds the position inside of the {@link InternTable}.
  * The following methods are responsible for access to content and position:
  * <ul>
- *  <li>{@link UniqueString#compareTo(UniqueString)}</li>
- *  <li>{@link UniqueString#concat(UniqueString)}</li>
- *  <li>{@link UniqueString#equals(UniqueString)}</li>
- *  <li>{@link UniqueString#equals(String)}</li>
- *  <li>{@link UniqueString#getTok()}</li>
- *  <li>{@link UniqueString#hashCode()}</li>
- *  <li>{@link UniqueString#length()}</li>
- *  <li>{@link UniqueString#toString()}</li>
  * </ul>
  * <br>
  * In addition, there exist two types of externally stored tables: the array of values of state variables 
@@ -134,43 +126,7 @@ public final class UniqueString implements Serializable
     {
         return this.tok;
     }
-
-    /**
-     * Concatenates two unique strings
-     */
-    public UniqueString concat(UniqueString uniqueString)
-    {
-        return uniqueStringOf(this.toString() + uniqueString.toString());
-    }
     
-    public UniqueString concat(String string)
-    {
-        return uniqueStringOf(this.toString() + string);
-    }
-
-    /**
-     * Delivers the stored string 
-     */
-    public String toString()
-    {
-        return this.s;
-    }
-
-    /**
-     * @see {@link String#hashCode()} 
-     */
-    public int hashCode()
-    {
-        return this.s.hashCode();
-    }
-
-    /**
-     * @see {@link String#length()} 
-     */
-    public int length()
-    {
-        return this.s.length();
-    }
     /**
      * Not a compare method as usual for objects
      * Delivers the difference in positions inside of the table, the unique strings are stored in 
@@ -198,12 +154,6 @@ public final class UniqueString implements Serializable
     public boolean equals(String t)
     {
         return this.s.equals(t);
-    }
-
-    
-    public long fingerPrint(long fp)
-    {
-        return FP64.Extend(fp, this.tok);
     }
 
     /**
