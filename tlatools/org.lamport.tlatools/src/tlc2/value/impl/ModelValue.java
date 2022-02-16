@@ -320,7 +320,7 @@ public class ModelValue extends Value implements IModelValue {
   @Override
   public final long fingerPrint(long fp) {
     try {
-      return FP64.Extend(fingerPrint(FP64.Extend(fp, MODELVALUE)), this.val.hashCode());
+      return FP64.Extend(FP64.Extend(fp, MODELVALUE), this.val.hashCode());
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
