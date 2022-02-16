@@ -106,7 +106,6 @@ import util.UniqueString;
 public class SpecProcessor implements ValueConstants, ToolGlobals {
 	
     private final String rootFile; // The root file of this spec.
-    private final FilenameToStream resolver; // takes care of path to stream resolution
     private final int toolId;
     private final Defns defns; // Global definitions reachable from root
     private final ModelConfig config; // The model configuration.
@@ -155,7 +154,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 			final TLAClass tlaClass, Mode mode) {
 		super();
 		this.rootFile = rootFile;
-		this.resolver = resolver;
 		this.toolId = toolId;
 		this.defns = defns;
 		this.config = config;
