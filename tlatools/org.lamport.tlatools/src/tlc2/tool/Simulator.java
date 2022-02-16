@@ -69,7 +69,7 @@ public class Simulator {
 	public Simulator(String specFile, String configFile, String traceFile, boolean deadlock, int traceDepth,
 			long traceNum, RandomGenerator rng, long seed, FilenameToStream resolver,
 			int numWorkers) throws IOException {
-		this(new FastTool(extracted(specFile), configFile, resolver, Tool.Mode.Simulation), "", traceFile, deadlock,
+		this(new FastTool(extracted(specFile), configFile, resolver, Tool.Mode.Simulation, new HashMap<>()), "", traceFile, deadlock,
 				traceDepth, traceNum, null, rng, seed, resolver, numWorkers);
 	}
 

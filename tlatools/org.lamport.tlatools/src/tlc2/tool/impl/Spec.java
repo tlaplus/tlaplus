@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import tla2sany.modanalyzer.ParseUnit;
@@ -83,7 +84,7 @@ abstract class Spec
 
     // SZ Feb 20, 2009: added support to name resolver, to be able to run outside of the tool
 	public Spec(final String specDir, final String specFile, final String configFile, final FilenameToStream resolver,
-			Mode mode) {
+			Mode mode, final Map<String, Object> params) {
         this.specDir = specDir;
         this.rootFile = specFile;
         this.defns = new Defns();

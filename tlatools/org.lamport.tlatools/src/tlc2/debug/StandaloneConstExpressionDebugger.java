@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -100,7 +101,7 @@ public class StandaloneConstExpressionDebugger extends TLCDebugger {
 		};
 		ToolIO.reset();
 		
-		final Tool tool = new DebugTool(moduleName, specName, new SimpleFilenameToStream(specPath), this);
+		final Tool tool = new DebugTool(moduleName, specName, new SimpleFilenameToStream(specPath), new HashMap<>(), this);
 		final ModuleNode module = tool.getSpecProcessor().getRootModule();
 		// The spec has to have an "debugMe" operator.
 		final OpDefNode valueNode = module.getOpDef("debugMe");

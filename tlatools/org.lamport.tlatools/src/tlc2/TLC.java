@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -176,6 +177,8 @@ public class TLC {
      */
     private FPSetConfiguration fpSetConfiguration;
     
+    private final Map<String, Object> params;
+    
     private int debugPort = -1;
     private boolean suspend = true;
     private boolean halt = true;
@@ -218,6 +221,8 @@ public class TLC {
         traceDepth = 100;
 
         fpSetConfiguration = new FPSetConfiguration();
+
+        params = new HashMap<>();
 	}
 
     /*
@@ -1094,12 +1099,12 @@ public class TLC {
 							: "TLCDebugger does not support running with multiple workers.";
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
-						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, instance);
+						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params, instance);
 					}
 					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
 	                        traceNum, traceActions, rng, seed, resolver);
 				} else {
-					tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation);
+					tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params);
 					simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 
 	                        traceNum, traceActions, rng, seed, resolver, TLCGlobals.getNumWorkers());
 				}
@@ -1123,10 +1128,10 @@ public class TLC {
 					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
-						tool = new DebugTool(mainFile, configFile, resolver, instance);
+						tool = new DebugTool(mainFile, configFile, resolver, params, instance);
 					}
 				} else {
-					tool = new FastTool(mainFile, configFile, resolver);
+					tool = new FastTool(mainFile, configFile, resolver, params);
 				}
                 deadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
                 if (isBFS())
