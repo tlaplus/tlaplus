@@ -99,7 +99,10 @@ abstract class Spec
         this.config.parse();
         ModelValue.setValues(); // called after seeing all model values
 
-        specProcessor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass, mode);
+        // construct new specification object, if the
+        // passed one was null
+        final SpecObj specObj = new SpecObj(this.rootFile, resolver);
+        specProcessor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass, mode, specObj);
         
         this.unprocessedDefns = specProcessor.getUnprocessedDefns();
     }
