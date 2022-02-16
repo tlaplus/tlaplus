@@ -101,7 +101,12 @@ abstract class Spec
 
         // construct new specification object, if the
         // passed one was null
-        final SpecObj specObj = new SpecObj(this.rootFile, resolver);
+        final SpecObj specObj;
+        if (params.isEmpty()) {
+        	specObj = new SpecObj(this.rootFile, resolver);
+        } else {
+        	specObj = new ParameterizedSpecObj(this, resolver, params);
+        }
         specProcessor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass, mode, specObj);
         
         this.unprocessedDefns = specProcessor.getUnprocessedDefns();

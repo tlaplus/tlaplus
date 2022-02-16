@@ -8,7 +8,7 @@ import tla2sany.utilities.Vector;
  * This class contains fields representing the names of modules that are all related by EXTENDing or INSTANCEing
  * or inner definition to a ParseUnit (i.e. top level module in its own file)
  */
-class ModuleRelatives {
+public class ModuleRelatives {
 
   ParseUnit     parseUnit;                              // The ParseUnit that THIS ModuleRelatives object is associated with
 
@@ -68,4 +68,7 @@ class ModuleRelatives {
     return ret;
   }
 
+	public void addExtendee(final String module) {
+		directlyExtendedModuleNames.addElement(module);
+	}
 } // end class

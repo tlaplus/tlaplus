@@ -41,6 +41,8 @@ import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
+import tlc2.tool.impl.ParameterizedSpecObj;
+import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
@@ -255,6 +257,7 @@ public class TLC {
      *  o -cleanup: clean up the states directory
      *  o -dump [dot] file: dump all the states into file. If "dot" as sub-parameter
      *					is given, the output will be in dot notation.
+     *  o -postCondition mod!op: Evaluate the operator op in module mod after state-space exploration.
      *  o -difftrace: when printing trace, show only
      *					the differences between successive states
      *		Defaults to printing full state descriptions if not specified
@@ -577,6 +580,19 @@ public class TLC {
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
+            } else if (args[index].equalsIgnoreCase("-postCondition"))
+            {
+				index++; // consume "-postCondition".
+				if (index < args.length) {
+					@SuppressWarnings("unchecked")
+					final List<PostCondition> pcs = (List<PostCondition>) params
+							.computeIfAbsent(ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+					// TODO: Add input validation!
+					pcs.add(new PostCondition(args[index++]));
+				} else {
+					printErrorMsg("Error: Module!Operator for postCondition required.");
+					return false;
+				}
             } else if (args[index].equals("-coverage"))
             {
                 index++;

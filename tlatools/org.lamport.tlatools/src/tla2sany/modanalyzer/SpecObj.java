@@ -274,7 +274,7 @@ public class SpecObj
     // module in the ParseUnit created is the name of the entire
     // SpecObj. Returns the ParseUnit found or created. Aborts if
     // neither happens.
-    private final ParseUnit findOrCreateParsedUnit(String name, Errors errors, boolean firstCall) throws AbortException
+    protected ParseUnit findOrCreateParsedUnit(String name, Errors errors, boolean firstCall) throws AbortException
     {
         ParseUnit parseUnit;
 
