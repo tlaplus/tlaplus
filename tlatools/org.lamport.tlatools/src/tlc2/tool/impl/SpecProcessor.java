@@ -1890,4 +1890,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	public Defns getDefns() {
 		return defns;
 	}
+
+	public java.util.List<ExprNode> getPostConditionSpecs() {
+		return this.specObj.getPostConditionSpecs();
+	}
 }

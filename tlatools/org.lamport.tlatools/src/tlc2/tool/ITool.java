@@ -253,7 +253,7 @@ public interface ITool extends TraceApp {
 
 	SemanticNode getViewSpec();
 
-	SemanticNode getPostConditionSpec();
+	ExprNode[] getPostConditionSpecs();
 
 	OpDefNode getCounterExampleDef();
 

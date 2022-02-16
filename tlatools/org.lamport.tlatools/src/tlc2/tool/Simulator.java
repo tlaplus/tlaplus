@@ -286,14 +286,17 @@ public class Simulator {
 		
 		if (errorCode == EC.NO_ERROR) {
 			// see tlc2.tool.Worker.doPostCheckAssumption()
-			final ExprNode sn = (ExprNode) this.tool.getPostConditionSpec();
-			try {
-				if (sn != null && !this.tool.isValid(sn)) {
-					MP.printError(EC.TLC_ASSUMPTION_FALSE, sn.toString());
+			final ExprNode[] postConditions = this.tool.getPostConditionSpecs();
+			for (int i = 0; i < postConditions.length; i++) {
+				final ExprNode sn = postConditions[i];
+				try {
+					if (!this.tool.isValid(sn)) {
+						MP.printError(EC.TLC_ASSUMPTION_FALSE, sn.toString());
+					}
+				} catch (Exception e) {
+					// tool.isValid(sn) failed to evaluate...
+					MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR, new String[] { sn.toString(), e.getMessage() });
 				}
-			} catch (Exception e) {
-				// tool.isValid(sn) failed to evaluate...
-				MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR, new String[] { sn.toString(), e.getMessage() });
 			}
 		}
 
