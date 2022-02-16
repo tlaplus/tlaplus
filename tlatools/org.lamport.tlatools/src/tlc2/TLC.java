@@ -255,6 +255,7 @@ public class TLC {
      *		Defaults to 1
      *  o -dfid num: use depth-first iterative deepening with initial depth num
      *  o -cleanup: clean up the states directory
+     *  o -dumpTrace format file: dump all counter-examples into file in the given format.
      *  o -dump [dot] file: dump all the states into file. If "dot" as sub-parameter
      *					is given, the output will be in dot notation.
      *  o -postCondition mod!op: Evaluate the operator op in module mod after state-space exploration.
@@ -580,6 +581,26 @@ public class TLC {
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
+            } else if (args[index].equalsIgnoreCase("-dumpTrace"))
+            {
+				index++; // consume "-dumpTrace".
+				if (index < args.length) {
+					final String fmt = args[index++];
+					if ("json".equalsIgnoreCase(fmt)) {
+						@SuppressWarnings("unchecked")
+						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
+								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+						pcs.add(new PostCondition("_JsonTrace", "_JsonTrace", "_JsonTraceFile", args[index++]));
+					} else if ("Tomorrow's most favorite format".equalsIgnoreCase(fmt)) {
+						//Add your new dumpTrace formats here!
+					} else {
+						printErrorMsg("Error: Unknown format " + fmt + " given to -dumpTrace.");
+						return false;
+					}
+				} else {
+					printErrorMsg("Error: A format and a file name for dumping traces required.");
+					return false;
+				}
             } else if (args[index].equalsIgnoreCase("-postCondition"))
             {
 				index++; // consume "-postCondition".

@@ -67,6 +67,11 @@ public abstract class TraceExpressionSpecTest extends ModelCheckerTestCase {
 	protected boolean noGenerateSpec() {
 		return false;
 	}
+	
+	@Override
+	protected boolean doDumpTrace() {
+		return false;
+	}
 
 	@Test
 	public void testSpec() throws Exception {
