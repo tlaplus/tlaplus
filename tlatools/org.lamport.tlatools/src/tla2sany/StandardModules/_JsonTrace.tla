@@ -9,7 +9,7 @@ LOCAL _JsonTraceFile ==
 
 LOCAL _JsonTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
-        /\ PrintT("CounterExample written: " \o _JsonTraceFile)
         /\ JsonSerialize(_JsonTraceFile, ToTrace(CounterExample))
+        /\ PrintT("CounterExample written: " \o _JsonTraceFile)
 
 =============================================================================
