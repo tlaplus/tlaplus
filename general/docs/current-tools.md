@@ -240,8 +240,18 @@ Specifies the depth (number of steps) of a random simulation. Without this optio
 `-dfid` _num_
 Directs TLC to do depth-first model checking with iterative deepening, beginning with initial depth _num_.
 
+`-postCondition mod!oper`
+Evaluates the given (constant-level) operator _oper_ in the TLA+ module _mod_ at the end of model-checking.
+
+Example: `-postCondition MyModule!SomePostCondition`.
+
 `-difftrace`
 Tells TLC to show only the differences between successive states when printing an error trace. Otherwise, it prints the full state descriptions.
+
+`-dumpTrace` _format file_
+In case of a property violation, formats the TLA+ error trace to the given format _format_ and dumps the output to the specified file _file_. The file _file_ is relative to the same directory as the main spec.  At the time of writing, TLC supports the `tla` and the `json` formats.  To dump to multiple formats, the -dumpTrace parameter may appear multiple times.  The git commits [1eb815620](https://github.com/tlaplus/tlaplus/commit/1eb815620dedc696a5a637944853129595c47216) and [386eaa19f](https://github.com/tlaplus/tlaplus/commit/386eaa19f4d610781a79c95730638ba193cec614) show that adding new formats is easy.
+
+Example: `-dumpTrace tla file.tla -dumpTrace json file.json`.
 
 `-dump` _format file_
 The _format_ parameter can be omitted, or it can be a comma-separated list beginning with `dot` that may also contain one or both of the items `colorize` and `actionlabels`. If _format_ is omitted, TLC writes a list of all reachable states, described by TLA+ formulas, on _file_. Otherwise, TLC writes the state graph in dot format, the input format of the GraphViz program for displaying graphs. The parameter `colorize` indicates that state transitions should be colored according to the action generating the transition, and `actionlabels` indicates that they should be labeled with the name of the action. 

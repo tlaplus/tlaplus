@@ -1480,10 +1480,22 @@ public class TLC {
 															+ "file. When -deadlock is specified, config entry is\n"
 															+ "ignored; default behavior is to check for deadlocks",
 														true));
+    	sharedArguments.add(new UsageGenerator.Argument("-postCondition", "mod!oper",
+														"evaluate the given (constant-level) operator oper in the TLA+\n"
+    													+ "module mod at the end of model-checking.", true));
     	sharedArguments.add(new UsageGenerator.Argument("-difftrace",
 														"show only the differences between successive states when\n"
 															+ "printing trace information; defaults to printing\n"
 															+ "full state descriptions", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-dumpTrace", "format file",
+														"in case of a property violation, formats the TLA+ error trace\n"
+    													+ "as the given format and dumps the output to the specified\n"
+														+ "file.  The file is relative to the same directory as the\n"
+														+ "main spec. At the time of writing, TLC supports the \"tla\"\n"
+														+ "and the \"json\" formats.  To dump to multiple formats, the\n"
+														+ "-dumpTrace parameter may appear multiple times.\n"
+														+ "The git commits 1eb815620 and 386eaa19f show that adding new\n"
+														+ "formats is easy.\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-debug",
 														"print various debugging information - not for production use\n",
 														true));
