@@ -107,7 +107,7 @@ public final class Location implements Comparable<Location>
      */
     public Location(String fName, int bl, int bc, int el, int ec)
     {
-        name = fName;
+        name = (fName == null) ? unknown : fName;
         bLine = bl;
         bColumn = bc;
         eLine = el;
@@ -115,7 +115,7 @@ public final class Location implements Comparable<Location>
     }
 
     public Location(int bl, int bc, int el, int ec) {
-		this(null, bl, bc, el, ec);
+		this(unknown, bl, bc, el, ec);
 	}
 
 	
@@ -142,6 +142,8 @@ public final class Location implements Comparable<Location>
 		if (eColumn < bColumn) {
 			eColumn = bColumn;
 		}
+		
+		name = unknown;
 	}
 
 	/**
