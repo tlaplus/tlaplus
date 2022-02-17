@@ -584,7 +584,7 @@ public class TLC {
             } else if (args[index].equalsIgnoreCase("-dumpTrace"))
             {
 				index++; // consume "-dumpTrace".
-				if (index < args.length) {
+				if ((index + 1) < args.length) {
 					final String fmt = args[index++];
 					if ("json".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
