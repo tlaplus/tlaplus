@@ -32,8 +32,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import tlc2.util.FP64;
-import util.InternTable;
-import util.VarLocMap;
 
 public class InitializeValueTest {
 
