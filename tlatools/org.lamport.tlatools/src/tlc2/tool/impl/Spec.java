@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import tla2sany.modanalyzer.ParseUnit;
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
@@ -82,7 +84,7 @@ abstract class Spec
 
     // SZ Feb 20, 2009: added support to name resolver, to be able to run outside of the tool
 	public Spec(final String specDir, final String specFile, final String configFile, final FilenameToStream resolver,
-			Mode mode) {
+			Mode mode, final Map<String, Object> params) {
         this.specDir = specDir;
         this.rootFile = specFile;
         this.defns = new Defns();
@@ -97,7 +99,15 @@ abstract class Spec
         this.config.parse();
         ModelValue.setValues(); // called after seeing all model values
 
-        specProcessor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass, mode);
+        // construct new specification object, if the
+        // passed one was null
+        final SpecObj specObj;
+        if (params.isEmpty()) {
+        	specObj = new SpecObj(this.rootFile, resolver);
+        } else {
+        	specObj = new ParameterizedSpecObj(this, resolver, params);
+        }
+        specProcessor = new SpecProcessor(getRootName(), resolver, toolId, defns, config, this, this, tlaClass, mode, specObj);
         
         this.unprocessedDefns = specProcessor.getUnprocessedDefns();
     }
@@ -234,30 +244,32 @@ abstract class Spec
         return def.getBody();
     }
 
-    public final SemanticNode getPostConditionSpec()
+    public final ExprNode[] getPostConditionSpecs()
     {
+    	final List<ExprNode> res = this.specProcessor.getPostConditionSpecs();
+    	
         String name = this.config.getPostCondition();
-        if (name.length() == 0)
-        {
-            return null;
+        if (name.length() != 0)
+        {        	
+        	Object type = this.defns.get(name);
+        	if (type == null)
+        	{
+        		Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "post condition", name });
+        	}
+        	if (!(type instanceof OpDefNode))
+        	{
+        		Assert.fail(EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT, new String[] { "post condition", name });
+        	}
+        	OpDefNode def = (OpDefNode) type;
+        	if (def.getArity() != 0)
+        	{
+        		Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "post condition", name });
+        		
+        	}
+        	res.add(def.getBody());
         }
-
-        Object type = this.defns.get(name);
-        if (type == null)
-        {
-            Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "post condition", name });
-        }
-        if (!(type instanceof OpDefNode))
-        {
-            Assert.fail(EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT, new String[] { "post condition", name });
-        }
-        OpDefNode def = (OpDefNode) type;
-        if (def.getArity() != 0)
-        {
-            Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "post condition", name });
-
-        }
-        return def.getBody();
+        
+        return res.toArray(ExprNode[]::new);
     }
 
     public final OpDefNode getCounterExampleDef()

@@ -6,6 +6,7 @@ package tlc2.tool.distributed;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import model.InJarFilenameToStream;
@@ -67,7 +68,7 @@ public class TLCApp extends DistApp {
 		
 		this.checkDeadlock = deadlock.booleanValue();
 		this.preprocess = true;
-		this.tool = new FastTool(specDir, specFile, configFile, fts);
+		this.tool = new FastTool(specDir, specFile, configFile, fts, new HashMap<>());
 
 		this.impliedInits = this.tool.getImpliedInits();
 		this.invariants = this.tool.getInvariants();

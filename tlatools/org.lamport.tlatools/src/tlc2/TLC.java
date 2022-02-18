@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,8 @@ import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
+import tlc2.tool.impl.ParameterizedSpecObj;
+import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
@@ -176,6 +179,8 @@ public class TLC {
      */
     private FPSetConfiguration fpSetConfiguration;
     
+    private final Map<String, Object> params;
+    
     private int debugPort = -1;
     private boolean suspend = true;
     private boolean halt = true;
@@ -218,6 +223,8 @@ public class TLC {
         traceDepth = 100;
 
         fpSetConfiguration = new FPSetConfiguration();
+
+        params = new HashMap<>();
 	}
 
     /*
@@ -248,8 +255,10 @@ public class TLC {
      *		Defaults to 1
      *  o -dfid num: use depth-first iterative deepening with initial depth num
      *  o -cleanup: clean up the states directory
+     *  o -dumpTrace format file: dump all counter-examples into file in the given format.
      *  o -dump [dot] file: dump all the states into file. If "dot" as sub-parameter
      *					is given, the output will be in dot notation.
+     *  o -postCondition mod!op: Evaluate the operator op in module mod after state-space exploration.
      *  o -difftrace: when printing trace, show only
      *					the differences between successive states
      *		Defaults to printing full state descriptions if not specified
@@ -572,6 +581,45 @@ public class TLC {
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
+            } else if (args[index].equalsIgnoreCase("-dumpTrace"))
+            {
+				index++; // consume "-dumpTrace".
+				if ((index + 1) < args.length) {
+					final String fmt = args[index++];
+					if ("json".equalsIgnoreCase(fmt)) {
+						@SuppressWarnings("unchecked")
+						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
+								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+						pcs.add(new PostCondition("_JsonTrace", "_JsonTrace", "_JsonTraceFile", args[index++]));
+					} else if ("tla".equalsIgnoreCase(fmt)) {
+						@SuppressWarnings("unchecked")
+						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
+								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+						pcs.add(new PostCondition("_TLAPlusCounterExample", "_TLAPlusCounterExample",
+								"_TLAPlusCounterExampleFile", args[index++]));
+					} else if ("Tomorrow's most favorite format".equalsIgnoreCase(fmt)) {
+						//Add your new dumpTrace formats here!
+					} else {
+						printErrorMsg("Error: Unknown format " + fmt + " given to -dumpTrace.");
+						return false;
+					}
+				} else {
+					printErrorMsg("Error: A format and a file name for dumping traces required.");
+					return false;
+				}
+            } else if (args[index].equalsIgnoreCase("-postCondition"))
+            {
+				index++; // consume "-postCondition".
+				if (index < args.length) {
+					@SuppressWarnings("unchecked")
+					final List<PostCondition> pcs = (List<PostCondition>) params
+							.computeIfAbsent(ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+					// TODO: Add input validation!
+					pcs.add(new PostCondition(args[index++]));
+				} else {
+					printErrorMsg("Error: Module!Operator for postCondition required.");
+					return false;
+				}
             } else if (args[index].equals("-coverage"))
             {
                 index++;
@@ -1089,12 +1137,12 @@ public class TLC {
 							: "TLCDebugger does not support running with multiple workers.";
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
-						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, instance);
+						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params, instance);
 					}
 					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
 	                        traceNum, traceActions, rng, seed, resolver);
 				} else {
-					tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation);
+					tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params);
 					simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 
 	                        traceNum, traceActions, rng, seed, resolver, TLCGlobals.getNumWorkers());
 				}
@@ -1118,10 +1166,10 @@ public class TLC {
 					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
-						tool = new DebugTool(mainFile, configFile, resolver, instance);
+						tool = new DebugTool(mainFile, configFile, resolver, params, instance);
 					}
 				} else {
-					tool = new FastTool(mainFile, configFile, resolver);
+					tool = new FastTool(mainFile, configFile, resolver, params);
 				}
                 deadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
                 if (isBFS())
@@ -1427,10 +1475,22 @@ public class TLC {
 															+ "file. When -deadlock is specified, config entry is\n"
 															+ "ignored; default behavior is to check for deadlocks",
 														true));
+    	sharedArguments.add(new UsageGenerator.Argument("-postCondition", "mod!oper",
+														"evaluate the given (constant-level) operator oper in the TLA+\n"
+    													+ "module mod at the end of model-checking.", true));
     	sharedArguments.add(new UsageGenerator.Argument("-difftrace",
 														"show only the differences between successive states when\n"
 															+ "printing trace information; defaults to printing\n"
 															+ "full state descriptions", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-dumpTrace", "format file",
+														"in case of a property violation, formats the TLA+ error trace\n"
+    													+ "as the given format and dumps the output to the specified\n"
+														+ "file.  The file is relative to the same directory as the\n"
+														+ "main spec. At the time of writing, TLC supports the \"tla\"\n"
+														+ "and the \"json\" formats.  To dump to multiple formats, the\n"
+														+ "-dumpTrace parameter may appear multiple times.\n"
+														+ "The git commits 1eb815620 and 386eaa19f show that adding new\n"
+														+ "formats is easy.\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-debug",
 														"print various debugging information - not for production use\n",
 														true));

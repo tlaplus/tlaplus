@@ -7,8 +7,10 @@
 package tlc2.tool.impl;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.APSubstInNode;
@@ -153,29 +155,38 @@ public abstract class Tool
   public Tool(String specFile, String configFile, FilenameToStream resolver) {
 	  this(new File(specFile), specFile, configFile, resolver);
   }
+  
+  public Tool(String specFile, String configFile, FilenameToStream resolver, final Map<String, Object> params) {
+	  this(new File(specFile), specFile, configFile, resolver, params);
+  }
 
-  public Tool(String specFile, String configFile, FilenameToStream resolver, Mode mode) {
-	  this(new File(specFile), specFile, configFile, resolver, mode);
+  public Tool(String specFile, String configFile, FilenameToStream resolver, Mode mode, final Map<String, Object> params) {
+	  this(new File(specFile), specFile, configFile, resolver, mode, params);
   }
   
   private Tool(File specDir, String specFile, String configFile, FilenameToStream resolver)
   {
-	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver);
+	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver, new HashMap<>());
   }
   
-  private Tool(File specDir, String specFile, String configFile, FilenameToStream resolver, Mode mode)
+  private Tool(File specDir, String specFile, String configFile, FilenameToStream resolver, final Map<String, Object> params)
   {
-	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver, mode);
+	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver, params);
   }
   
-  public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver)
+  private Tool(File specDir, String specFile, String configFile, FilenameToStream resolver, Mode mode, final Map<String, Object> params)
   {
-	  this(specDir, specFile, configFile, resolver, Mode.MC);
+	  this(specDir.isAbsolute() ? specDir.getParent() : "", specFile, configFile, resolver, mode, params);
   }
   
-  public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver, Mode mode)
+  public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver, final Map<String, Object> params)
   {
-      super(specDir, specFile, configFile, resolver, mode);
+	  this(specDir, specFile, configFile, resolver, Mode.MC, params);
+  }
+  
+  public Tool(String specDir, String specFile, String configFile, FilenameToStream resolver, Mode mode, final Map<String, Object> params)
+  {
+      super(specDir, specFile, configFile, resolver, mode, params);
 
       this.toolMode = mode;
 		// set variables to the static filed in the state
@@ -3443,17 +3454,20 @@ public abstract class Tool
 
 	private final int checkPostConditionWithContext(final Context ctxt) {
 		// User request: http://discuss.tlapl.us/msg03658.html
-		final ExprNode en = (ExprNode) getPostConditionSpec();
-		try {
-			if (en != null && !isValid(en, ctxt)) {
-				// It's not an assumption because the expression doesn't appear inside
-				// an ASSUME, but good enough for this prototype.
-				return MP.printError(EC.TLC_ASSUMPTION_FALSE, en.toString());
+		final ExprNode[] postConditions = getPostConditionSpecs();
+		for (int i = 0; i < postConditions.length; i++) {
+			final ExprNode en = postConditions[i];
+			try {
+				if (!isValid(en, ctxt)) {
+					// It's not an assumption because the expression doesn't appear inside
+					// an ASSUME, but good enough for this prototype.
+					return MP.printError(EC.TLC_ASSUMPTION_FALSE, en.toString());
+				}
+			} catch (Exception e) {
+				// tool.isValid(sn) failed to evaluate...
+				return MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
+						new String[] { en.toString(), e.getMessage() });
 			}
-		} catch (Exception e) {
-			// tool.isValid(sn) failed to evaluate...
-			return MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
-					new String[] { en.toString(), e.getMessage() });
 		}
 		// The PostCheckAssumption/PostCondition cannot be stated as an ordinary
 		// invariant

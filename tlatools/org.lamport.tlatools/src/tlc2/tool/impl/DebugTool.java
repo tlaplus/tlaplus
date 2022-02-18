@@ -27,6 +27,7 @@ package tlc2.tool.impl;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -88,12 +89,12 @@ public class DebugTool extends Tool {
 		Const, State, Action, Debugger;
 	}
 	
-	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, IDebugTarget target) {
-		this(mainFile, configFile, resolver, Mode.MC_DEBUG, target);
+	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, final Map<String, Object> params, IDebugTarget target) {
+		this(mainFile, configFile, resolver, Mode.MC_DEBUG, params, target);
 	}
 	
-	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, IDebugTarget target) {
-		super(mainFile, configFile, resolver, mode);
+	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, final Map<String, Object> params, IDebugTarget target) {
+		super(mainFile, configFile, resolver, mode, params);
 		
 		// This and FastTool share state.  Do not evaluate things concurrently.
 		this.fastTool = new FastTool(this);

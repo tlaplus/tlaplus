@@ -56,7 +56,7 @@ public class ModulePointer {
 
 
   // Return the associated ModuleRelatives object
-  final ModuleRelatives getRelatives() { return moduleRelatives; }
+  public final ModuleRelatives getRelatives() { return moduleRelatives; }
 
 
   // Set the ModuleRelatives field

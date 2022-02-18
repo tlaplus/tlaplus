@@ -9,9 +9,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedList;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -603,9 +602,16 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	}
 	
 	private final void doPostCondition(TLCState curState, TLCState succState) throws IOException {
-		final List<TLCStateInfo> trace = new ArrayList<>(
-				Arrays.asList(tlc.getTraceInfo((succState == null) ? curState : succState)));
-		trace.add(tool.getState(succState, curState));
+		final LinkedList<TLCStateInfo> trace = new LinkedList<>();
+		if (curState.isInitial()) {
+			trace.add(tool.getState(curState.fingerPrint()));
+		} else if (succState == null) {
+			trace.addAll(Arrays.asList(tlc.getTraceInfo(curState)));
+			trace.add(tool.getState(curState, trace.getLast().state));
+		} else {
+			trace.addAll(Arrays.asList(tlc.getTraceInfo(succState)));
+			trace.add(tool.getState(succState, curState));
+		}
 		tool.checkPostConditionWithCounterExample(new CounterExample(trace));
 	}
 }

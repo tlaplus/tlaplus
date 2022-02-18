@@ -106,7 +106,6 @@ import util.VarLocMap;
 public class SpecProcessor implements ValueConstants, ToolGlobals {
 	
     private final String rootFile; // The root file of this spec.
-    private final FilenameToStream resolver; // takes care of path to stream resolution
     private final int toolId;
     private final Defns defns; // Global definitions reachable from root
     private final ModelConfig config; // The model configuration.
@@ -152,16 +151,16 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     
 	public SpecProcessor(final String rootFile, final FilenameToStream resolver, final int toolId, final Defns defns,
 			final ModelConfig config, final SymbolNodeValueLookupProvider snvlp, final OpDefEvaluator ode,
-			final TLAClass tlaClass, Mode mode) {
+			final TLAClass tlaClass, Mode mode, SpecObj obj) {
 		super();
 		this.rootFile = rootFile;
-		this.resolver = resolver;
 		this.toolId = toolId;
 		this.defns = defns;
 		this.config = config;
 		this.tlaClass = tlaClass;
 		this.processedDefs = new HashSet<OpDefNode>();
         this.initPredVec = new Vect<>(5);
+        this.specObj = obj;
         
         opDefEvaluator = ode;
         symbolNodeValueLookupProvider = snvlp;
@@ -364,10 +363,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     // SZ Feb 20, 2009: added support for existing specObj
     private final void processSpec(final Mode mode)
     {
-
-        // construct new specification object, if the
-        // passed one was null
-        specObj = new SpecObj(this.rootFile, resolver);
 
         // We first call the SANY front-end to parse and semantic-analyze
         // the complete TLA+ spec starting with the main module rootFile.
@@ -1876,5 +1871,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	
 	public Defns getDefns() {
 		return defns;
+	}
+
+	public java.util.List<ExprNode> getPostConditionSpecs() {
+		return this.specObj.getPostConditionSpecs();
 	}
 }

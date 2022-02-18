@@ -25,6 +25,9 @@
  ******************************************************************************/
 package tlc2.tool.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.Action;
@@ -44,19 +47,31 @@ public final class FastTool extends Tool {
 	}
 
 	public FastTool(String mainFile, String configFile, FilenameToStream resolver) {
-		super(mainFile, configFile, resolver);
+		super(mainFile, configFile, resolver, new HashMap<>());
+	}
+
+	public FastTool(String mainFile, String configFile, FilenameToStream resolver, Map<String, Object> params) {
+		super(mainFile, configFile, resolver, params);
 	}
 
 	public FastTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode) {
-		super(mainFile, configFile, resolver, mode);
+		super(mainFile, configFile, resolver, mode, new HashMap<>());
+	}
+
+	public FastTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, Map<String, Object> params) {
+		super(mainFile, configFile, resolver, mode, params);
 	}
 	
 	public FastTool(String specDir, String specFile, String configFile, FilenameToStream fts) {
-		super(specDir, specFile, configFile, fts);
+		super(specDir, specFile, configFile, fts, new HashMap<>());
+	}
+	
+	public FastTool(String specDir, String specFile, String configFile, FilenameToStream fts, Map<String, Object> params) {
+		super(specDir, specFile, configFile, fts, params);
 	}
 
 	public FastTool(String specDir, String specFile, String configFile, FilenameToStream fts, Mode mode) {
-		super(specDir, specFile, configFile, fts, mode);
+		super(specDir, specFile, configFile, fts, mode, new HashMap<>());
 	}
 
 	public FastTool(Tool tool) {

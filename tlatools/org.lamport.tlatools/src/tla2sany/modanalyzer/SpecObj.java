@@ -5,15 +5,18 @@ package tla2sany.modanalyzer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 
 import pcal.Validator;
 import pcal.Validator.ValidationResult;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
+import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.st.TreeNode;
@@ -271,7 +274,7 @@ public class SpecObj
     // module in the ParseUnit created is the name of the entire
     // SpecObj. Returns the ParseUnit found or created. Aborts if
     // neither happens.
-    private final ParseUnit findOrCreateParsedUnit(String name, Errors errors, boolean firstCall) throws AbortException
+    protected ParseUnit findOrCreateParsedUnit(String name, Errors errors, boolean firstCall) throws AbortException
     {
         ParseUnit parseUnit;
 
@@ -1077,4 +1080,8 @@ public class SpecObj
 		return this.parseUnitContext.get(this.getName());
 	}
 
+	public List<ExprNode> getPostConditionSpecs() {
+		// overridden by sub-classes.
+		return new ArrayList<>();
+	}
 }

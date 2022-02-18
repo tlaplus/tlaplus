@@ -183,6 +183,13 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 				args.add("${metadir}" + FileUtil.separator + getClass().getCanonicalName() + ".dot");
 			}
 
+			
+			if (doDumpTrace()) {
+				args.add("-dumpTrace");
+				args.add("json");
+				args.add(TLCGlobals.metaRoot + FileUtil.separator + getClass().getCanonicalName() + ".json");
+			}
+
 			args.addAll(Arrays.asList(extraArguments));
 			
 			args.add(spec);
@@ -244,6 +251,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	}
 	
 	protected boolean doDump() {
+		return true;
+	}
+
+	protected boolean doDumpTrace() {
 		return true;
 	}
 
