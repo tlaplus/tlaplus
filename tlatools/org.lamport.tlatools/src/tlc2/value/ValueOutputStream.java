@@ -121,6 +121,9 @@ public final class ValueOutputStream implements IValueOutputStream {
 
 	@Override
 	public void writeString(String s) throws IOException {
+		// two zeros are for backward compatability
+		dos.writeInt(0);
+		dos.writeInt(0);
 		dos.writeInt(s.length());
 		dos.writeString(s);
 	}
