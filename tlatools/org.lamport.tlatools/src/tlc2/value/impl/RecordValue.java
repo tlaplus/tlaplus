@@ -617,7 +617,7 @@ public class RecordValue extends Value implements Applicable {
 				final int index1 = vos.put(names[i]);
 				if (index1 == -1) {
 					vos.writeByte(STRINGVALUE);
-					vos.writeString(names[i]);
+					vos.writeStringVal(names[i]);
 				} else {
 					vos.writeByte(DUMMYVALUE);
 					vos.writeNat(index1);
@@ -716,7 +716,7 @@ public class RecordValue extends Value implements Applicable {
 				names[i] = vos.getValue(index1);
 			} else {
 				final int index1 = vos.getIndex();
-				names[i] = vos.readString();
+				names[i] = vos.readStringVal();
 				vos.assign(names[i], index1);
 			}
 			vals[i] = (Value) vos.read();

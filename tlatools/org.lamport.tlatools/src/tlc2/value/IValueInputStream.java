@@ -36,7 +36,12 @@ public interface IValueInputStream {
 
 	int readShort() throws IOException;
 	
-	String readString() throws IOException;
+	default String readStringVal() throws IOException {
+		IDataInputStream s = getInputStream();
+		s.readInt();
+		s.readInt();
+		return s.readString(s.readInt());
+	}
 
 	int readInt() throws IOException;
 

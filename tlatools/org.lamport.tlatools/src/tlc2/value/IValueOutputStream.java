@@ -52,7 +52,13 @@ public interface IValueOutputStream {
 
 	void writeBoolean(boolean b) throws IOException;
 	
-	void writeString(String s) throws IOException;
+	default void writeStringVal(String s) throws IOException {
+		IDataOutputStream stream = getOutputStream();
+		stream.writeInt(0);
+		stream.writeInt(0);
+		stream.writeInt(s.length());
+		stream.writeString(s);
+	}
 
 	IDataOutputStream getOutputStream();
 

@@ -811,13 +811,6 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		public final int readShort() throws IOException {
 	        return (short) ((bytes[idx++] << 8) | (bytes[idx++] & 0xff));
 		}
-		
-		@Override
-		public final String readString() throws IOException {
-		    int slen = this.readInt();
-		    String str = this.readString(slen);
-		    return str;
-		}
 
 		/* (non-Javadoc)
 		 * @see tlc2.value.IValueInputStream#readInt()

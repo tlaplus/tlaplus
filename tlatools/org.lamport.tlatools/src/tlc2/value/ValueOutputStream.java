@@ -119,15 +119,6 @@ public final class ValueOutputStream implements IValueOutputStream {
 		return dos;
 	}
 
-	@Override
-	public void writeString(String s) throws IOException {
-		// two zeros are for backward compatability
-		dos.writeInt(0);
-		dos.writeInt(0);
-		dos.writeInt(s.length());
-		dos.writeString(s);
-	}
-
 	/**
 	 * Check if another TLCState - which is currently also being serialized to the
 	 * same storage (i.e. disk file) - has/contains an identical Value. If yes, do

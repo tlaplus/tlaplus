@@ -188,7 +188,7 @@ public class StringValue extends Value {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(STRINGVALUE);
-			vos.writeString(val);
+			vos.writeStringVal(val);
 		} else {
 			vos.writeByte(DUMMYVALUE);
 			vos.writeNat(index);
@@ -281,7 +281,7 @@ public class StringValue extends Value {
   }
 
 	public static IValue createFrom(final IValueInputStream vos) throws IOException {
-		final String str = vos.readString();
+		final String str = vos.readStringVal();
 		final IValue res = new StringValue(str);
 		final int index = vos.getIndex();
 		vos.assign(res, index);

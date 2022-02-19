@@ -119,16 +119,6 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
   }
   
   @Override
-  public final String readString() throws IOException {
-	  // two reads for backward compatability
-	  dis.readInt();
-	  dis.readInt();
-      int slen = dis.readInt();
-      String str = dis.readString(slen);
-      return str;
-  }
-  
-  @Override
   public final short readShortNat() throws IOException {
 	short res = this.dis.readByte();
 	if (res >= 0) return res;
