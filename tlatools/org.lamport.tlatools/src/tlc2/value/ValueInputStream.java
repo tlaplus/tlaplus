@@ -166,8 +166,8 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 	}
 
 	@Override
-	public final VarLocMap getValue(int idx) {
-		return (VarLocMap) this.handles.getValue(idx);
+	public final String getValue(int idx) {
+		return (String) this.handles.getValue(idx);
 	}
 
   // @see ValueOutputStream#put

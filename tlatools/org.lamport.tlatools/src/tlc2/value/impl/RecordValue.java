@@ -715,7 +715,7 @@ public class RecordValue extends Value implements Applicable {
 			final byte kind1 = vos.readByte();
 			if (kind1 == DUMMYVALUE) {
 				final int index1 = vos.readNat();
-				names[i] = vos.getValue(index1).toString();
+				names[i] = vos.getValue(index1);
 			} else {
 				final int index1 = vos.getIndex();
 				names[i] = vos.readString();

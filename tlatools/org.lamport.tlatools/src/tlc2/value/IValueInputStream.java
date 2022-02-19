@@ -29,7 +29,6 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import util.IDataInputStream;
-import util.VarLocMap;
 
 public interface IValueInputStream {
 
@@ -59,5 +58,8 @@ public interface IValueInputStream {
 
 	IDataInputStream getInputStream();
 
-	VarLocMap getValue(int idx);
+	// TODO this is only used in RecordValue.createFrom()
+	// it should either be purged or have its return type changed to either Object (or (I)Value)
+	// the current state of having random objects in IValueStreams seems abusive.
+	String getValue(int idx);
 }
