@@ -25,7 +25,6 @@ import util.Assert;
 import util.FileUtil;
 import util.TLAConstants;
 import util.ToolIO;
-import util.VarLocMap;
 
 /**
  * CheckImplFile is a subclass of CheckImpl. It uses files to

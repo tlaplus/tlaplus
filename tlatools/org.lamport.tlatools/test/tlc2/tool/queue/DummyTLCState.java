@@ -8,7 +8,6 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.value.IValue;
-import util.VarLocMap;
 
 @SuppressWarnings("serial")
 public class DummyTLCState extends TLCState {

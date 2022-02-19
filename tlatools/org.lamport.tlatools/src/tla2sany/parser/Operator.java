@@ -2,13 +2,6 @@
 package tla2sany.parser;
 // Last modified onFri  2 Mar 2007 at 15:40:00 PST by lamport
 
-// import tla2sany.error.*;
-/***************************************************************************
-* Unused import eliminated by LL on 2 Mar 2007                             *
-***************************************************************************/
-
-import util.VarLocMap;
-
 public class Operator implements tla2sany.st.SyntaxTreeConstants {
 
   private String Id;

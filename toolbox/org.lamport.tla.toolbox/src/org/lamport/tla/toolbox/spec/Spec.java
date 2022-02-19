@@ -41,7 +41,6 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.ExternalModuleTable;
 import util.SimpleFilenameToStream;
-import util.VarLocMap;
 
 /**
  * Represents a specification handle in the toolbox

@@ -28,7 +28,6 @@ import util.FileUtil;
 import util.FilenameToStream;
 import util.TLAConstants;
 import util.ToolIO;
-import util.VarLocMap;
 
 public class TLCApp extends DistApp {
 

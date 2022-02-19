@@ -5,10 +5,7 @@
 
 package tlc2.util;
 
-import java.util.Hashtable;
-
 import tlc2.tool.ToolGlobals;
-import util.VarLocMap;
 
 public class SimpUtil implements ToolGlobals {
 

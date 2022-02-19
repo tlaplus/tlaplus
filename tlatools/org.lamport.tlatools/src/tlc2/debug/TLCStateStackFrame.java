@@ -55,7 +55,6 @@ import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 import util.Assert.TLCRuntimeException;
-import util.VarLocMap;
 
 public class TLCStateStackFrame extends TLCStackFrame {
 	

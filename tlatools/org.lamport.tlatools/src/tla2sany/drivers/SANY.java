@@ -22,7 +22,6 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.st.TreeNode;
 import util.FileUtil;
 import util.ToolIO;
-import util.VarLocMap;
 
 /** 
  * This is the main entry point for the TLA+ front end that performa parsing, semantic analysis, 

@@ -63,7 +63,6 @@ import util.SimpleFilenameToStream;
 import util.TLAConstants;
 import util.TLCRuntime;
 import util.ToolIO;
-import util.VarLocMap;
 import util.UsageGenerator;
 
 /**

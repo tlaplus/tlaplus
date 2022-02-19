@@ -7,7 +7,6 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Random;
 
 import tlc2.tool.FingerprintException;
@@ -19,7 +18,6 @@ import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.VarLocMap;
 
 public class StringValue extends Value {
   // TODO make this protected and use getter

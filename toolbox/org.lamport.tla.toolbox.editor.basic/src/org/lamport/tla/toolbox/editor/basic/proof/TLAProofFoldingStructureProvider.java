@@ -35,7 +35,6 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
-import util.VarLocMap;
 
 /**
  * This class provides the foldable regions for the proofs

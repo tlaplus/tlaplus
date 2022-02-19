@@ -39,7 +39,6 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.xml.SymbolContext;
-import util.VarLocMap;
 
 public class ContextTest {
 

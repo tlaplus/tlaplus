@@ -32,11 +32,9 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
-import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
-import util.VarLocMap;
 
 public class RecordValue extends Value implements Applicable {
   private static final String BLI = ("beginLine");

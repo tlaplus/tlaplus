@@ -14,7 +14,6 @@ import tla2sany.semantic.Context;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tlc2.tool.impl.ModelConfig;
-import util.VarLocMap;
 
 /**
  * A helper for resolution of objects related to the parsed specification

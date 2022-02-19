@@ -25,8 +25,6 @@ package tla2sany.semantic;
 
 import java.util.HashSet;
 
-import util.VarLocMap;
-
 /**
  * @author lamport
  *

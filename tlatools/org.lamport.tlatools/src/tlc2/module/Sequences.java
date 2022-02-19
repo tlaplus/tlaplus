@@ -25,7 +25,6 @@ import tlc2.value.impl.UserValue;
 import tlc2.value.impl.Value;
 import tlc2.value.impl.ValueVec;
 import util.Assert;
-import util.VarLocMap;
 
 public class Sequences extends UserObj implements ValueConstants
 {

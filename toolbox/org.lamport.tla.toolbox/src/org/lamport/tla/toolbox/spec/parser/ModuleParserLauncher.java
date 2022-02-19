@@ -36,7 +36,6 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import util.FilenameToStream;
 import util.ToolIO;
-import util.VarLocMap;
 
 /**
  * This parser launcher starts SANY and uses SANY's console output to find errors

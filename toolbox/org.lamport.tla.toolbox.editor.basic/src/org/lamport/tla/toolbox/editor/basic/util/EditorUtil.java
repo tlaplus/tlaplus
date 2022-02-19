@@ -50,7 +50,6 @@ import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
-import util.VarLocMap;
 
 /**
  * A collection of useful editor methods.

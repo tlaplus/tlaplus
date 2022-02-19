@@ -6,7 +6,6 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import tlc2.TLCGlobals;
 import tlc2.value.impl.BoolValue;
@@ -21,7 +20,6 @@ import tlc2.value.impl.TupleValue;
 import util.BufferedDataInputStream;
 import util.FileUtil;
 import util.IDataInputStream;
-import util.VarLocMap;
 import util.WrongInvocationException;
 
 public final class ValueInputStream implements ValueConstants, IValueInputStream {

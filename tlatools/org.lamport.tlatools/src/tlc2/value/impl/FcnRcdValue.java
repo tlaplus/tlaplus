@@ -23,12 +23,10 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
-import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
 import util.ToolIO;
-import util.VarLocMap;
 
 public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 	

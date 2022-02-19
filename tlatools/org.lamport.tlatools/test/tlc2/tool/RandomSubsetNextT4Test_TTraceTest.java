@@ -39,7 +39,6 @@ import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.TTraceModelCheckerTestCase;
 import tlc2.value.IValue;
 import tlc2.value.impl.IntValue;
-import util.VarLocMap;
 
 public class RandomSubsetNextT4Test_TTraceTest extends TTraceModelCheckerTestCase {
 

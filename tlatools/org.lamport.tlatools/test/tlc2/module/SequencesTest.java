@@ -37,7 +37,6 @@ import tlc2.value.impl.IntValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
-import util.VarLocMap;
 
 public class SequencesTest {
 

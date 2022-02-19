@@ -14,7 +14,6 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
-import util.VarLocMap;
 
 /**
  * An OpDeclNode can have one of the following kinds:

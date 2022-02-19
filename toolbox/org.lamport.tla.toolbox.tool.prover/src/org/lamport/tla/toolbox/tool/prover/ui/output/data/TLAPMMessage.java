@@ -8,7 +8,6 @@ import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser;
 
 import tla2sany.st.Location;
-import util.VarLocMap;
 
 /**
  * Abstract class for the data in a message of output

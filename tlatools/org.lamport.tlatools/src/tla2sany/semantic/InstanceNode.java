@@ -13,7 +13,6 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-import util.VarLocMap;
 
 public class InstanceNode extends LevelNode {
 

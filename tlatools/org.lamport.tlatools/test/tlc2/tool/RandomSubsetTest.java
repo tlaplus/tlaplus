@@ -41,7 +41,6 @@ import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
-import util.VarLocMap;
 
 public class RandomSubsetTest extends ModelCheckerTestCase {
 

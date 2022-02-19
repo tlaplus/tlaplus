@@ -9,8 +9,6 @@ package tla2sany.parser;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import util.VarLocMap;
-
 public class Operators {
   static public int assocNone = 0;
   static public int assocLeft = 1;

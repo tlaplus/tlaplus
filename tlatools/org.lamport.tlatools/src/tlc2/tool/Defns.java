@@ -9,8 +9,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import util.VarLocMap;
-
 /**
  * The purpose of this class is to hold definitions.
  * The index of a definition in the array is stored in

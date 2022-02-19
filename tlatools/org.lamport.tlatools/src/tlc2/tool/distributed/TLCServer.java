@@ -57,7 +57,6 @@ import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.FileUtil;
 import util.MailSender;
-import util.VarLocMap;
 
 @SuppressWarnings("serial")
 public class TLCServer extends UnicastRemoteObject implements TLCServerRMI {
