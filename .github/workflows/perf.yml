@@ -41,13 +41,6 @@ jobs:
         path: previous
 
       ##
-      ## Fetch CommunityModules.
-      ##
-    - name: Fetch CommunityModules
-      run: |
-        wget https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar --output-document=tlatools/org.lamport.tlatools/dist/CommunityModules-deps.jar
-
-      ##
       ## Run performance regression tests.
       ## Appends to a older out_run-stats.csv if it exists (cp ... is a no-op otherwise)
       ##
