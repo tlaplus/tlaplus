@@ -966,7 +966,12 @@ public class TLC {
                 }
             }
         }
-                
+		
+		if (TLCGlobals.getNumWorkers() != 1 && debugPort >= 0) {
+			printErrorMsg("Error: TLA+ Debugger does not support running with multiple workers.");
+            return false;
+		}
+		
         startTime = System.currentTimeMillis();
 
 		if (mainFile == null) {
