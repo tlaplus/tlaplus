@@ -163,10 +163,14 @@ public class TLCStateStackFrame extends TLCStackFrame {
 										"1: " + (s.hasAction() ? s.getAction().getLocation()
 												: TLCStateInfo.INITIAL_PREDICATE)));
 								return trace.toArray(new Variable[trace.size()]);
+							} else if (s.hasAction()) {
+								trace.add(getStateAsVariable(new RecordValue(s, NOT_EVAL), s.getLevel() + ": "
+										+ (s.hasAction() ? s.getAction().getLocation() : "")));
+								last = s;
+							} else {
+								// Let C) below reconstruct the TraceInfo for s.
+								break;
 							}
-							trace.add(getStateAsVariable(new RecordValue(s, NOT_EVAL),
-									s.getLevel() + ": " + s.getAction().getLocation()));
-							last = s;
 						}
 						
 						// C) The prefix from an initial state s_i to the predecessor of s_d. We can
