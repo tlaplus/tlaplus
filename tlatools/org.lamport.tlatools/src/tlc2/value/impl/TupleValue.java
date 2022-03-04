@@ -428,9 +428,9 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
 	@Override
 	public List<TLCVariable> getTLCVariables(TLCVariable prototype, Random rnd) {
 		final List<TLCVariable> nestedVars = new ArrayList<>(this.size());
-		for (Value value : elems) {
-			final TLCVariable nested = prototype.newInstance(value.toString(), value, rnd);
-			nested.setName(value.toString());
+		for (int i = 0; i < elems.length; i++) {
+			final Value value = elems[i];
+			final TLCVariable nested = prototype.newInstance(Integer.toString(i+1), value, rnd);
 			nested.setValue(value.toString());
 			nested.setType(value.getTypeString());
 			nestedVars.add(nested);
