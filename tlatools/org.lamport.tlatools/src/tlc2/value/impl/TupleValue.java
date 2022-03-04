@@ -432,6 +432,7 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
 			final TLCVariable nested = prototype.newInstance(value.toString(), value, rnd);
 			nested.setName(value.toString());
 			nested.setValue(value.toString());
+			nested.setType(value.getTypeString());
 			nestedVars.add(nested);
 		}
 		return nestedVars;
