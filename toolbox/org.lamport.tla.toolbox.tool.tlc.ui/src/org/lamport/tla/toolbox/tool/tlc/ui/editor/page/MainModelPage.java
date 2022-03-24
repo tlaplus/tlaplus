@@ -1066,7 +1066,7 @@ public class MainModelPage extends BasicFormPage implements IConfigurationConsta
 		 * Comments/notes section spanning two columns
 		 */
 
-		section = FormHelper.createSectionComposite(body, "Model description", "", toolkit, sectionFlags,
+		section = FormHelper.createSectionComposite(body, "Model description (optional)", "", toolkit, sectionFlags,
 				getExpansionListener());
 		twd = new TableWrapData();
 		twd.colspan = 2;
