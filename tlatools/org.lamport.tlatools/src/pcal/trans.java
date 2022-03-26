@@ -382,24 +382,26 @@ class trans {
         *********************************************************************/
         // if (!PcalParams.fromPcalFile)
         // {
-        File file;
-        try
-        {
-            file = new File(PcalParams.TLAInputFile + ".old");
-            if (file.exists())
-            {
-                file.delete();
-            }
-            ;
-            file = new File(PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION);
-            file.renameTo(new File(PcalParams.TLAInputFile + ".old"));
-        } catch (Exception e)
-        {
-            PcalDebug.reportError("Could not rename input file " + PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION + " to "
-                    + PcalParams.TLAInputFile + ".old");
-            return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+        boolean renameToOld = !PcalParams.NoOld;
+        if (renameToOld) {
+        	File file;
+        	try
+        	{
+        		file = new File(PcalParams.TLAInputFile + ".old");
+        		if (file.exists())
+        		{
+        			file.delete();
+        		}
+        		;
+        		file = new File(PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION);
+        		file.renameTo(new File(PcalParams.TLAInputFile + ".old"));
+        	} catch (Exception e)
+        	{
+        		PcalDebug.reportError("Could not rename input file " + PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION + " to "
+        				+ PcalParams.TLAInputFile + ".old");
+        		return exitWithStatus(STATUS_EXIT_WITH_ERRORS);
+        	}
         }
-        ;
         // }
 
         /*********************************************************************
@@ -1599,6 +1601,9 @@ class trans {
             } else if (option.equals("-termination") || (inFile && option.equals("termination")))
             {
                 PcalParams.CheckTermination = true;
+            } else if (option.equals("-noold"))
+            {
+                PcalParams.NoOld = true;
             } else if (option.equals("-nocfg"))
             {
                 PcalParams.Nocfg = true;

@@ -51,6 +51,7 @@ public final class PcalParams
         FairnessOption = "";
         FairAlgorithm = false;
         CheckTermination = false;
+        NoOld = false;
         Nocfg = false;
         NoDoneDisjunct = false;
         optionsInFile = false;
@@ -134,6 +135,11 @@ public final class PcalParams
       /*********************************************************************
       * True iff there is a -termination option.                           *
       *********************************************************************/
+
+    public static boolean NoOld = false ;
+    /*********************************************************************
+    * True iff there is a -noold option.                                 *
+    *********************************************************************/
       
     public static boolean Nocfg = false ;
       /*********************************************************************
