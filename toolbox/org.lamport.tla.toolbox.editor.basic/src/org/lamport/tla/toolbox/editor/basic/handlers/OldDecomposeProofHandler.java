@@ -312,7 +312,6 @@ import tla2sany.semantic.TheoremNode;
 import tla2sany.st.Location;
 import util.StringHelper;
 import util.TLAConstants;
-import util.UniqueString;
 
 public class OldDecomposeProofHandler extends AbstractHandler implements IHandler {
 
@@ -593,7 +592,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
         }
         
         if (newName == null) {
-            return node.getName().toString() ;
+            return node.getName() ;
         } else {
             return newName ;
         }
@@ -625,7 +624,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
             rename.newNames.remove(i);
             rename.newNames.insertElementAt(name, i);
         } else {
-            if (!name.equals(node.getName().toString())) {
+            if (!name.equals(node.getName())) {
                 rename.identifiers.add(node);
                 rename.newNames.add(name);
             }
@@ -656,7 +655,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
            return curName ;
        }
 
-       String oldName = getNewNamePrefix(node.getName().toString()) ;
+       String oldName = getNewNamePrefix(node.getName()) ;
        int i = 1 ;
        while (currentlyDeclared.contains(oldName + i)) {
            i++ ;
@@ -911,7 +910,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                         for (int j = 0; j < assumptions.length; j++) {
                             if (assumptions[j] instanceof NewSymbNode) {
                                 declaredIdentifiers.add(
-                                   ((NewSymbNode) assumptions[j]).getOpDeclNode().getName().toString());
+                                   ((NewSymbNode) assumptions[j]).getOpDeclNode().getName());
                             }
                         }
                     }
@@ -928,7 +927,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                             for (int j = 0; j < assumptions.length; j++) {
                                 if (assumptions[j] instanceof NewSymbNode) {
                                     declaredIdentifiers.add(
-                                       ((NewSymbNode) assumptions[j]).getOpDeclNode().getName().toString());
+                                       ((NewSymbNode) assumptions[j]).getOpDeclNode().getName());
                                 }
                             } 
                         }
@@ -936,12 +935,12 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                         	// Check if it's a $Pick step and add declared identifiers if it is.
                         	OpApplNode oanode = (OpApplNode) node.getTheorem() ;
                         	
-                        	if (oanode.getOperator().getName().toString().equals("$Pick")) {
+                        	if (oanode.getOperator().getName().equals("$Pick")) {
                         		FormalParamNode[] fp = oanode.getUnbdedQuantSymbols() ;
                         	  if (fp != null) {
                         		  // This is an unbounded PICK -- e.g., PICK x, y : exp
                         		  for (int j = 0;  j < fp.length; j++) {
-                        			declaredIdentifiers.add(fp[j].getName().toString())  ;
+                        			declaredIdentifiers.add(fp[j].getName())  ;
                         		  }
                         		
                         	  } else {
@@ -949,7 +948,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                         		  FormalParamNode[][] fpn = oanode.getBdedQuantSymbolLists() ;
                         		  for (int j = 0;  j < fpn.length; j++) {
                         			  for (int k = 0; k < fpn[j].length; k++) {
-                        				  declaredIdentifiers.add(fpn[j][k].getName().toString())  ;
+                        				  declaredIdentifiers.add(fpn[j][k].getName())  ;
                         			  }
                           		  }
                         	  }                      		  
@@ -962,7 +961,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                     if (pfsteps[i] instanceof DefStepNode) {
                         OpDefNode[] defs = ((DefStepNode) pfsteps[i]).getDefs() ;
                         for (int j = 0; j < defs.length; j++) {
-                            declaredIdentifiers.add(defs[j].getName().toString()) ;
+                            declaredIdentifiers.add(defs[j].getName()) ;
                         }
                     }
                     // If its an INSTANCE step, must add the instantiated
@@ -1014,7 +1013,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
         if (step == theorem) {
             stepNumber = null;
         } else {
-            stepNumber = nd.getHeirs()[0].image.toString();
+            stepNumber = nd.getHeirs()[0].image;
             if (stepNumber.indexOf('>') == stepNumber.length() - 1) {
                 stepNumber = null;
             } else {
@@ -1125,19 +1124,19 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                 return null;
             }
             goal = thm;
-            UniqueString goalOpName = null;
+            String goalOpId = null;
             if (goal instanceof OpApplNode) {
-                goalOpName = ((OpApplNode) goal).getOperator().getName();
+                goalOpId = ((OpApplNode) goal).getOperator().getName();
             }
 
             // Abort if this is one of the following kinds of steps:
             // QED, HAVE, PICK, WITNESS, SUFFICES
-            if ((goalOpName == null) || (goalOpName == ASTConstants.OP_qed)
-                    || (goalOpName == ASTConstants.OP_pfcase)
-                    || (goalOpName == ASTConstants.OP_have)
-                    || (goalOpName == ASTConstants.OP_pick)
-                    || (goalOpName == ASTConstants.OP_witness)
-                    || (goalOpName == ASTConstants.OP_suffices)) {
+            if ((goalOpId == null) || goalOpId.equals(ASTConstants.OP_qed)
+                    || goalOpId.equals(ASTConstants.OP_pfcase)
+                    || goalOpId.equals(ASTConstants.OP_have)
+                    || goalOpId.equals(ASTConstants.OP_pick)
+                    || goalOpId.equals(ASTConstants.OP_witness)
+                    || goalOpId.equals(ASTConstants.OP_suffices)) {
                 MessageDialog.openError(UIHelper.getShellProvider().getShell(),
                         "Decompose Proof Command",
                         "Cannot decompose this kind of step.");
@@ -2642,7 +2641,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
         // method in UIHelper.java
         IDocument childDoc = this.doc ;
         if (     (decomp.moduleName != null)
-             &&  ! this.moduleNode.getName().toString().equals(decomp.moduleName)) {
+             &&  ! this.moduleNode.getName().equals(decomp.moduleName)) {
           IFile moduleIFile = (IFile) ResourceHelper.getResourceByModuleName(decomp.moduleName) ;  
           FileEditorInput fileEditorInput = new FileEditorInput(moduleIFile);
           FileDocumentProvider moduleFileDocProvider = new FileDocumentProvider() ;
@@ -2772,7 +2771,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                 
                 // Strip prime from nodeRepArg.semanticNode if it has one.
                 OpApplNode oan = (OpApplNode) nodeRepArg.semanticNode ;
-                if (oan.getOperator().getName() == ASTConstants.OP_prime) {
+                if (oan.getOperator().getName().equals(ASTConstants.OP_prime)) {
                     if (! (oan instanceof OpApplNode)) {
                         return null ;
                     }
@@ -2964,7 +2963,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                 if (i != 0) {
                     str = str + ", ";
                 }
-                str = str + decomp.quantIds.elementAt(i).getName().toString();
+                str = str + decomp.quantIds.elementAt(i).getName();
             }
             str = str + ")";
             newNodeText = appendToNodeText(newNodeText, str);
@@ -3662,7 +3661,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
             case ASTConstants.NewSymbKind:
                 result.nodeType = NEW_NODE;
                 NewSymbNode newNode = (NewSymbNode) sn ;
-                result.newId = newNode.getOpDeclNode().getName().toString();
+                result.newId = newNode.getOpDeclNode().getName();
                 break;
             case ASTConstants.LeafProofKind:
                 result.nodeType = PROOF_NODE;
@@ -4190,7 +4189,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                     if (i != 0) {
                         val = val + ", ";
                     }
-                    val = val + quantIds.elementAt(i).getName().toString();
+                    val = val + quantIds.elementAt(i).getName();
                 }
             }
             if (quantBounds != null) {
@@ -4294,7 +4293,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
             FormalParamNode[] goalIdents = ResourceHelper
                     .getBoundIdentifiers((ExprNode) this.goalRep.semanticNode);
             for (int i = 0; i < goalIdents.length; i++) {
-                prevDeclared.add(goalIdents[i].getName().toString());
+                prevDeclared.add(goalIdents[i].getName());
             }
         }
     }
@@ -4340,19 +4339,18 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
      * @param opId
      * @return
      */
-    private static int operatorNameToNodeSubtype(UniqueString opId) {
-        String opName = opId.toString();
-        if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+    private static int operatorNameToNodeSubtype(String opId) {
+        if (opId.equals(ASTConstants.OP_cl) || opId.equals("\\land")) {
             return NodeRepresentation.AND_TYPE;
-        } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+        } else if (opId.equals(ASTConstants.OP_dl) || opId.equals("\\lor")) {
             return NodeRepresentation.OR_TYPE;
-        } else if (opName.equals("=>")) {
+        } else if (opId.equals("=>")) {
             return NodeRepresentation.IMPLIES_TYPE;
-        } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
+        } else if (opId.equals(ASTConstants.OP_bf) || opId.equals(ASTConstants.OP_uf)) {
             return NodeRepresentation.FORALL_TYPE;
-        } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
+        } else if (opId.equals(ASTConstants.OP_be) || opId.equals(ASTConstants.OP_ue)) {
             return NodeRepresentation.EXISTS_TYPE;
-        } else if (opId == ASTConstants.OP_sa) {
+        } else if (opId.equals(ASTConstants.OP_sa)) {
             return NodeRepresentation.SQSUB_TYPE;
         } else {
             return NodeRepresentation.OTHER_TYPE;
@@ -4385,7 +4383,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
         }
 
         // Check if primed expression.
-        if (node.getOperator().getName() == ASTConstants.OP_prime) {
+        if (node.getOperator().getName().equals(ASTConstants.OP_prime)) {
             if (!(node.getArgs()[0] instanceof OpApplNode)) {
                 return null ;
             }
@@ -4401,7 +4399,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                 && (node.getOperator().getKind() == ASTConstants.UserDefinedOpKind)) {
             // This is a user-defined operator
             OpDefNode definition = (OpDefNode) node.getOperator() ;
-            String operatorName = definition.getName().toString();            
+            String operatorName = definition.getName();            
             ExprNode opDef = definition.getBody();
             // The following commented out by LL on 24 April 2013.
             // For some reason, definitions that came from an INSTANCE
@@ -4480,39 +4478,38 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
         if (!(node.getOperator() instanceof OpDefNode)) {
             return null;
         }
-        UniqueString opId = ((OpDefNode) node.getOperator()).getName();
-        String opName = opId.toString();
+        String opId = ((OpDefNode) node.getOperator()).getName();
         // Note: experimentation reveals that /\ and \/ are parsed
         // with operator names "\\land" and "\\lor".
-        if ((opId == ASTConstants.OP_cl) || opName.equals("\\land")) {
+        if (opId.equals(ASTConstants.OP_cl) || opId.equals("\\land")) {
             result.type = NodeRepresentation.AND_TYPE;
-            if (opId == ASTConstants.OP_cl) {
+            if (opId.equals(ASTConstants.OP_cl)) {
                 isJunction = true;
             } else {
                 isAndOrOr = true;
             }
-        } else if ((opId == ASTConstants.OP_dl) || opName.equals("\\lor")) {
+        } else if (opId.equals(ASTConstants.OP_dl) || opId.equals("\\lor")) {
             result.type = NodeRepresentation.OR_TYPE;
-            if (opId == ASTConstants.OP_dl) {
+            if (opId.equals(ASTConstants.OP_dl)) {
                 isJunction = true;
             } else {
                 isAndOrOr = true;
             }
-        } else if (opName.equals("=>")) {
+        } else if (opId.equals("=>")) {
             result.type = NodeRepresentation.IMPLIES_TYPE;
-        } else if ((opId == ASTConstants.OP_bf) || (opId == ASTConstants.OP_uf)) {
+        } else if (opId.equals(ASTConstants.OP_bf) || opId.equals(ASTConstants.OP_uf)) {
             result.type = NodeRepresentation.FORALL_TYPE;
             isQuantifier = true;
-            if (opId == ASTConstants.OP_bf) {
+            if (opId.equals(ASTConstants.OP_bf)) {
                 isBoundedQuantifier = true;
             }
-        } else if ((opId == ASTConstants.OP_be) || (opId == ASTConstants.OP_ue)) {
+        } else if (opId.equals(ASTConstants.OP_be) || opId.equals(ASTConstants.OP_ue)) {
             result.type = NodeRepresentation.EXISTS_TYPE;
             isQuantifier = true;
-            if (opId == ASTConstants.OP_be) {
+            if (opId.equals(ASTConstants.OP_be)) {
                 isBoundedQuantifier = true;
             }
-        } else if (opId == ASTConstants.OP_sa) {
+        } else if (opId.equals(ASTConstants.OP_sa)) {
             result.type = NodeRepresentation.SQSUB_TYPE;
         } else {
             return null;
@@ -4522,7 +4519,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
          * Now set result.children and result.namePath.
          */
         if (isAndOrOr) {
-            processAndOrOr(result, node, "", opName);
+            processAndOrOr(result, node, "", opId);
         } else if (isJunction) {
             SemanticNode[] juncts = node.getArgs();
             for (int i = 0; i < juncts.length; i++) {
@@ -4558,7 +4555,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                         if (!((i == 0) && (j == 0))) {
                             namePath = namePath + ",";
                         }
-                        namePath = namePath + quantIds[j].getName().toString();
+                        namePath = namePath + quantIds[j].getName();
                     }
                 }
             } else {
@@ -4569,7 +4566,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
                     if (i != 0) {
                         namePath = namePath + ",";
                     }
-                    namePath = namePath + quantIds[i].getName().toString();
+                    namePath = namePath + quantIds[i].getName();
                 }
 
             }
@@ -4613,13 +4610,11 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
         }
         OpApplNode aonode = (OpApplNode) node;
         SymbolNode sym = aonode.getOperator();
-        UniqueString opId = null;
-        String opName = null;
+        String opId = null;
         if (sym instanceof OpDefNode) {
             opId = ((OpDefNode) sym).getName();
-            opName = opId.toString();
         }
-        if ((opName == null) || (!opName.equals(op))) {
+        if (opId == null || (!opId.equals(op))) {
             decomp.children.add(node);
             decomp.namePath.add(namePathPrefix);
             return;
@@ -5284,8 +5279,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
      * @return
      */
     static int stepLevel(SemanticNode nd) {
-        String stepStr = ((SyntaxTreeNode) nd.stn).getHeirs()[0].image
-                .toString();
+        String stepStr = ((SyntaxTreeNode) nd.stn).getHeirs()[0].image;
         String stepNum = stepStr.substring(stepStr.indexOf('<') + 1,
                 stepStr.indexOf('>'));
         return Integer.valueOf(stepNum).intValue();
@@ -5312,7 +5306,7 @@ public class OldDecomposeProofHandler extends AbstractHandler implements IHandle
         if (ops instanceof OpDefNode) {
             OpDefNode odn = (OpDefNode) ops;
             return (odn.getKind() == ASTConstants.BuiltInKind)
-                    || !StringHelper.isIdentifier(odn.getName().toString());
+                    || !StringHelper.isIdentifier(odn.getName());
         } else {
             return false;
         }

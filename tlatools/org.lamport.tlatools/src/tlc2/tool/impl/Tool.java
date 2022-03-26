@@ -98,7 +98,7 @@ import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
 import util.TLAConstants;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * This class provides useful methods for tools like model checker
@@ -738,14 +738,14 @@ public abstract class Tool
         case OPCODE_eq:
           {
             SymbolNode var = this.getVar(args[0], c, false, toolId);
-            if (var == null || var.getName().getVarLoc() < 0) {
+            if (var == null || VarLocMap.getVarLoc(var.getName()) < 0) {
               Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
                 return;
               }
             }
             else {
-              UniqueString varName = var.getName();
+              String varName = var.getName();
               IValue lval = ps.lookup(varName);
               Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (lval == null) {
@@ -766,14 +766,14 @@ public abstract class Tool
         case OPCODE_in:
           {
             SymbolNode var = this.getVar(args[0], c, false, toolId);
-            if (var == null || var.getName().getVarLoc() < 0) {
+            if (var == null || VarLocMap.getVarLoc(var.getName()) < 0) {
               Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (!((BoolValue)bval).val) {
                 return;
               }
             }
             else {
-              UniqueString varName = var.getName();
+              String varName = var.getName();
               Value lval = (Value) ps.lookup(varName);
               Value rval = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
               if (lval == null) {
@@ -1307,7 +1307,7 @@ public abstract class Tool
 	      }
 	    }
 	    else {
-	      UniqueString varName = var.getName();
+	      String varName = var.getName();
 	      IValue lval = s1.lookup(varName);
 	      Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	      if (lval == null) {
@@ -1333,7 +1333,7 @@ public abstract class Tool
 	      }
 	    }
 	    else {
-	      UniqueString varName = var.getName();
+	      String varName = var.getName();
 	      Value lval = (Value) s1.lookup(varName);
 	      Value rval = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	      if (lval == null) {
@@ -1444,7 +1444,7 @@ public abstract class Tool
           ExprOrOpArgNode[] args = expr1.getArgs();
           int alen = args.length;
           SymbolNode opNode = expr1.getOperator();
-          UniqueString opName = opNode.getName();
+          String opName = opNode.getName();
           int opcode = BuiltInOPs.getOpCode(opName);
 
           if (opcode == OPCODE_tup) {
@@ -1468,7 +1468,7 @@ public abstract class Tool
   @ExpectInlined
   private final TLCState processUnchangedImpl0Arity(final Action action, final SemanticNode expr, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm,
-			final SymbolNode opNode, final UniqueString opName) {
+			final SymbolNode opNode, final String opName) {
 		final Object val = this.lookup(opNode, c, false);
 	
 		if (val instanceof OpDefNode) {
@@ -1519,7 +1519,7 @@ public abstract class Tool
   		SymbolNode var, final CostModel cm) {
           TLCState resState = s1;
           // expr is a state variable:
-          final UniqueString varName = var.getName();
+          final String varName = var.getName();
           final IValue val0 = s0.lookup(varName);
           final IValue val1 = s1.lookup(varName);
           if (val1 == null) {
@@ -1539,7 +1539,7 @@ public abstract class Tool
               }
           }
           else {
-        	  MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString(), expr.toString()});
+        	  MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName, expr.toString()});
           }
           return resState;
   }
@@ -1947,7 +1947,7 @@ public abstract class Tool
 					// https://github.com/tlaplus/tlaplus/issues/618
 					// http://discuss.tlapl.us/msg03840.html
 					Assert.fail(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_LIVE,
-							new String[] { opNode.getName().toString(), expr.toString() }, expr, c);
+							new String[] { opNode.getName(), expr.toString() }, expr, c);
 					// Assert#fail throws exception, thus, no need for an else.
 				}
 				// EV#Enabled /\ EV#Prime /\ OpDeclNode is the case when A is an action (a boolean
@@ -1964,7 +1964,7 @@ public abstract class Tool
 	      	    // Spec == Init /\ [][a' > a]_a
 	      	    // 
 	            Assert.fail(EC.TLC_CONFIG_UNDEFINED_OR_NO_OPERATOR,
-                new String[] { opNode.getName().toString(), expr.toString() }, expr, c);
+                new String[] { opNode.getName(), expr.toString() }, expr, c);
           }
           if (opcode == 0) {
             return res;
@@ -2254,7 +2254,7 @@ public abstract class Tool
         case OPCODE_rc:     // RcdConstructor
           {
             int alen = args.length;
-            UniqueString[] names = new UniqueString[alen];
+            String[] names = new String[alen];
             Value[] vals = new Value[alen];
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
@@ -2310,12 +2310,12 @@ public abstract class Tool
         case OPCODE_sor:    // SetOfRcds
           {
             int alen = args.length;
-            UniqueString names[] = new UniqueString[alen];
+            String names[] = new String[alen];
             Value vals[] = new Value[alen];
             for (int i = 0; i < alen; i++) {
               OpApplNode pairNode = (OpApplNode)args[i];
               ExprOrOpArgNode[] pair = pairNode.getArgs();
-              names[i] = ((StringValue)pair[0].getToolObject(toolId)).getVal();
+              names[i] = ((StringValue)pair[0].getToolObject(toolId)).getVal().toString();
               vals[i] = this.eval(pair[1], c, s0, s1, control, coverage ? cm.get(pairNode) : cm);
             }
             return setSource(expr, new SetOfRcdsValue(names, vals, false, cm));
@@ -3158,8 +3158,7 @@ public abstract class Tool
               }
             } else
             {
-              UniqueString varName = var.getName();
-              IValue lval = s1.lookup(varName);
+              IValue lval = s1.lookup(var.getName());
               Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               if (lval == null)
               {
@@ -3225,8 +3224,7 @@ public abstract class Tool
                 }
             } else
             {
-              UniqueString varName = var.getName();
-              Value lval = (Value) s1.lookup(varName);
+              Value lval = (Value) s1.lookup(var.getName());
               Value rval = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               if (lval == null)
               {
@@ -3287,7 +3285,7 @@ public abstract class Tool
         SymbolNode var = this.getVar(expr, c, true, toolId);
         if (var != null) {
           // a state variable, e.g. UNCHANGED var1
-          UniqueString varName = var.getName();
+          String varName = var.getName();
           Value v0 = this.eval(expr, c, s0, s1, EvalControl.Enabled, cm);
           IValue v1 = s1.lookup(varName);
           if (v1 == null) {
@@ -3297,7 +3295,7 @@ public abstract class Tool
           if (v1.equals(v0)) {
             return this.enabled(acts, s0, s1, cm);
           }
-          MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName.toString() , expr.toString()});
+          MP.printWarning(EC.TLC_UNCHANGED_VARIABLE_CHANGED, new String[]{varName , expr.toString()});
           return null;
         }
 
@@ -3306,7 +3304,7 @@ public abstract class Tool
           ExprOrOpArgNode[] args = expr1.getArgs();
           int alen = args.length;
           SymbolNode opNode = expr1.getOperator();
-          UniqueString opName = opNode.getName();
+          String opName = opNode.getName();
           int opcode = BuiltInOPs.getOpCode(opName);
 
           if (opcode == OPCODE_tup) {
@@ -3708,7 +3706,7 @@ public abstract class Tool
 		  final OpApplNode permutationNode = (OpApplNode)node;
 		  if (permutationNode.getOperator() instanceof OpDefNode) {
 			  final OpDefNode operator = (OpDefNode)permutationNode.getOperator();
-			  if (TLAConstants.BuiltInOperators.PERMUTATIONS.equals(operator.getName().toString())) {
+			  if (TLAConstants.BuiltInOperators.PERMUTATIONS.equals(operator.getName())) {
 				  final ExprOrOpArgNode[] operands = permutationNode.getArgs();
 				  if ((operands.length == 1)
 						  && (operands[0] instanceof OpApplNode)

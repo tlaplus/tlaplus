@@ -37,7 +37,6 @@ import tlc2.value.impl.IntValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
-import util.UniqueString;
 
 public class SequencesTest {
 
@@ -51,7 +50,7 @@ public class SequencesTest {
 	public void testTailString() {
 		Value v = Sequences.Tail(new StringValue("abc"));
 		assertTrue(v instanceof StringValue);
-		assertEquals(UniqueString.of("bc"), ((StringValue) v).val);
+		assertEquals("bc", ((StringValue) v).val);
 	}
 
 	// Head("a") = "a"[1]  and TLC cannot evaluate "a"[1]:
@@ -143,7 +142,7 @@ public class SequencesTest {
 	public void testConcatStringToString() {
 		Value v = Sequences.Concat(new StringValue("abc"), (new StringValue("d")));
 		assertTrue(v instanceof StringValue);
-		assertEquals(UniqueString.of("abcd"), ((StringValue) v).val);
+		assertEquals("abcd", ((StringValue) v).val);
 	}
 
 	@Test
@@ -187,6 +186,6 @@ public class SequencesTest {
 	public void testSubseq() {
 		Value v = Sequences.SubSeq(new StringValue("abc"), IntValue.ValOne, IntValue.ValOne);
 		assertTrue(v instanceof StringValue);
-		assertEquals(UniqueString.of("a"), ((StringValue) v).val);
+		assertEquals("a", ((StringValue) v).val);
 	}
 }

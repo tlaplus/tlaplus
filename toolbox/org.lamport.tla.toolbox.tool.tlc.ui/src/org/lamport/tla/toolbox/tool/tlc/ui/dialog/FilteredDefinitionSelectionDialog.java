@@ -54,10 +54,10 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
 	private static String toString(OpDefNode node) {
 		// strip off leading F!B!... prefix and attach suffix [ModuleName] in case
 		// definition comes from foreign module.
-		String name = node.getName().toString();
+		String name = node.getName();
 		if (node.getSource() != node) {
 			name = name.substring(name.lastIndexOf("!") + 1);
-			name += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+			name += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName() + "]";
 		}
 		return name;
 	}
@@ -98,9 +98,9 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                 {
                     OpDefNode node = (OpDefNode) element;
 
-                    return node.getSource().getName().toString()
+                    return node.getSource().getName()
                             + ((node.getSource().getOriginallyDefinedInModuleNode() != null) ? " : "
-                                    + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() : "");
+                                    + node.getSource().getOriginallyDefinedInModuleNode().getName() : "");
                 }
                 return super.getText(element);
             }
@@ -120,7 +120,7 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                     final OpDefNode node = (OpDefNode) element;
                     if (node.getSource() == node)
                     {
-                        return node.getName().toString();
+                        return node.getName();
 					} else {
 						final IPreferenceStore ips = TLCUIActivator.getDefault().getPreferenceStore();
 						final String style = ips
@@ -129,13 +129,13 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
 								.equals(style);
 						
 						if (moduleNameStyle) {
-	                        return node.getSource().getName().toString() + " ["
-	                                + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+	                        return node.getSource().getName() + " ["
+	                                + node.getSource().getOriginallyDefinedInModuleNode().getName() + "]";
 						} else {
 	                        if (node.getSource().getOriginallyDefinedInModuleNode() != null) {
-	                        	return node.getName().toString();
+	                        	return node.getName();
 	                        } else {
-	                        	return node.getSource().getName().toString();
+	                        	return node.getSource().getName();
 	                        }
 						}
                     }
@@ -230,8 +230,8 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
     public String getElementName(Object item)
     {
         OpDefNode node = (OpDefNode) item;
-        return node.getSource().getName().toString()
-                + node.getSource().getOriginallyDefinedInModuleNode().getName().toString();
+        return node.getSource().getName()
+                + node.getSource().getOriginallyDefinedInModuleNode().getName();
     }
 
     /* (non-Javadoc)
@@ -246,8 +246,8 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                 ModuleNode module0 = node0.getOriginallyDefinedInModuleNode();
                 ModuleNode module1 = node1.getOriginallyDefinedInModuleNode();
 
-                boolean module0user = ToolboxHandle.isUserModule(module0.getName().toString());
-                boolean module1user = ToolboxHandle.isUserModule(module1.getName().toString());
+                boolean module0user = ToolboxHandle.isUserModule(module0.getName());
+                boolean module1user = ToolboxHandle.isUserModule(module1.getName());
 
                 if (module0user)
                 {
@@ -276,10 +276,10 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
                 // at this point both modules are user modules, or both are standard modules
                 // compare based on the name
 
-                int moduleCompare = module0.getName().toString().compareToIgnoreCase(module1.getName().toString());
+                int moduleCompare = module0.getName().compareToIgnoreCase(module1.getName());
                 if (moduleCompare == 0)
                 {
-                    return node0.getName().toString().compareToIgnoreCase(node1.getName().toString());
+                    return node0.getName().compareToIgnoreCase(node1.getName());
                 } else
                 {
                     return moduleCompare;
@@ -339,7 +339,7 @@ public class FilteredDefinitionSelectionDialog extends FilteredItemsSelectionDia
             {
                 return true;
             }
-            return matches(((OpDefNode) item).getSource().getName().toString());
+            return matches(((OpDefNode) item).getSource().getName());
         }
     }
 

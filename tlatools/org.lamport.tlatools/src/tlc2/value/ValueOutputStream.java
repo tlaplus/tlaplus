@@ -209,9 +209,9 @@ public final class ValueOutputStream implements IValueOutputStream {
       this.threshold = (int)(len * 0.75);
       Arrays.fill(this.spine, -1);
       for (int i = 0; i < this.size; i++) {
-	int index = (System.identityHashCode(this.values[i]) & 0x7FFFFFFF) % len;
-	this.next[i] = this.spine[index];
-	this.spine[index] = i;
+	    int index = (System.identityHashCode(this.values[i]) & 0x7FFFFFFF) % len;
+	    this.next[i] = this.spine[index];
+	    this.spine[index] = i;
       }
     }
   }

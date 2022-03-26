@@ -23,12 +23,10 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
-import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
 import util.ToolIO;
-import util.UniqueString;
 
 public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 	
@@ -637,7 +635,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
   public final Value toRcd() {
       if (this.domain == null) return null;
       this.normalize();
-      UniqueString[] vars = new UniqueString[this.domain.length];
+      String[] vars = new String[this.domain.length];
       for (int i = 0; i < this.domain.length; i++) {
         if (!(this.domain[i] instanceof StringValue)) {
           return null;
@@ -905,7 +903,7 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
     for (int i = 0; i < this.domain.length; i++) {
       Value dval = this.domain[i];
       boolean isName = ((dval instanceof StringValue) &&
-      isName(((StringValue)dval).val.toString()));
+      isName(((StringValue)dval).val));
       if (!isName) return false;
     }
     return true;
@@ -1004,32 +1002,6 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
 			for (int i = 0; i < len; i++) {
 				dvals[i] = (Value) vos.read();
 				rvals[i] = (Value) vos.read();
-			}
-			res = new FcnRcdValue(dvals, rvals, (info == 1));
-		}
-		vos.assign(res, index);
-		return res;
-	}
-
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
-		final int index = vos.getIndex();
-		final int len = vos.readNat();
-		final int info = vos.readByte();
-		Value res;
-		final Value[] rvals = new Value[len];
-		if (info == 0) {
-			final int low = vos.readInt();
-			final int high = vos.readInt();
-			for (int i = 0; i < len; i++) {
-				rvals[i] = (Value) vos.read(tbl);
-			}
-			final IntervalValue intv = new IntervalValue(low, high);
-			res = new FcnRcdValue(intv, rvals);
-		} else {
-			final Value[] dvals = new Value[len];
-			for (int i = 0; i < len; i++) {
-				dvals[i] = (Value) vos.read(tbl);
-				rvals[i] = (Value) vos.read(tbl);
 			}
 			res = new FcnRcdValue(dvals, rvals, (info == 1));
 		}

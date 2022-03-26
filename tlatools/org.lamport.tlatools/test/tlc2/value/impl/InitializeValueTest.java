@@ -32,8 +32,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import tlc2.util.FP64;
-import util.InternTable;
-import util.UniqueString;
 
 public class InitializeValueTest {
 
@@ -145,11 +143,7 @@ public class InitializeValueTest {
 	}
 
 	@Test
-	public void record() {
-		final InternTable internTable = new InternTable(2);
-		final UniqueString a = internTable.put("a");
-		final UniqueString b = internTable.put("b");
-		
+	public void record() {		
 		final ValueVec vec = new ValueVec();
 		vec.addElement(IntValue.gen(42));
 		vec.addElement(IntValue.gen(23));
@@ -158,7 +152,7 @@ public class InitializeValueTest {
 		final Value aVal = new SetEnumValue(vec, false);
 		final Value bVal = new SetEnumValue(vec, false);
 		
-		final RecordValue rcdv = new RecordValue(new UniqueString[] {b, a}, new Value[] {bVal, aVal}, false);
+		final RecordValue rcdv = new RecordValue(new String[] {"b", "a"}, new Value[] {bVal, aVal}, false);
 
 		assertFalse(rcdv.isNormalized());
 		for (Value v : rcdv.values) {
@@ -273,10 +267,10 @@ public class InitializeValueTest {
 		return values;
 	}
 
-	private static final UniqueString[] getNames(final int n) {
-		final UniqueString[] names = new UniqueString[n];
+	private static final String[] getNames(final int n) {
+		final String[] names = new String[n];
 		for (int i = 0; i < names.length; i++) {
-			names[i] = UniqueString.uniqueStringOf("N" + i);
+			names[i] = "N" + i;
 		}
 		return names;
 	}

@@ -36,15 +36,11 @@ import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.TLCVariable;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
-import util.UniqueString;
 
 public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVariable {
 	
 	private transient Value tlcValue;
 	
-	public DebugTLCVariable(UniqueString lhs) {
-		this.setName(lhs.toString());
-	}
 	
 	public DebugTLCVariable(String lhs) {
 		this.setName(lhs);

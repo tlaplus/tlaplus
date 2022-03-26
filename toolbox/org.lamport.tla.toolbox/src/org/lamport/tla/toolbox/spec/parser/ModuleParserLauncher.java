@@ -36,7 +36,6 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import util.FilenameToStream;
 import util.ToolIO;
-import util.UniqueString;
 
 /**
  * This parser launcher starts SANY and uses SANY's console output to find errors
@@ -273,9 +272,8 @@ public class ModuleParserLauncher
             // semantic module only available if no semantic errors found
             if (specStatus > IParseConstants.SEMANTIC_ERROR)
             {
-                ExternalModuleTable.ExternalModuleTableEntry emt = (ExternalModuleTable.ExternalModuleTableEntry) moduleSpec
-                        .getExternalModuleTable().moduleHashTable.get(UniqueString.uniqueStringOf(module
-                        .getModuleName()));
+                ExternalModuleTable.ExternalModuleTableEntry emt = 
+                		moduleSpec.getExternalModuleTable().moduleHashTable.get(module.getModuleName());
                 if (emt != null)
                 {
                     module.setNode(emt.getModuleNode());

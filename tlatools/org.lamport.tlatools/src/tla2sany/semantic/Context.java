@@ -17,7 +17,6 @@ import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.Location;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
-import util.UniqueString;
 
 // A context contains def/declNodes only.
 // Implements a simple context for symbol decls and defs. Also
@@ -176,8 +175,7 @@ public class Context implements ExploreNode {
   public Errors getErrors() { return errors; }
 
   // Adds a symbol to the (unique) initialContext; aborts if already there
-  public static void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors)
-  throws AbortException {
+  public static void addGlobalSymbol(String name, SymbolNode sn, Errors errors) throws AbortException {
     if (initialContext.getSymbol(name) != null) {
       errors.addAbort(Location.nullLoc,
 		      "Error building initial context: Multiply-defined builtin operator " +
@@ -193,32 +191,48 @@ public class Context implements ExploreNode {
    * Returns symbol node associated with "name" in this Context, if
    * one exists; else returns null
    */
-  public SymbolNode getSymbol(Object name) {
+  private SymbolNode getSymbolInternal(Object name) {
     Pair r = (Pair)table.get(name);
     if (r != null) {
       return r.info;
     }
     return null;
   }
+  
+  public SymbolNode getSymbol(String name) {
+	  return this.getSymbolInternal(name);
+  }
+  
+  public SymbolNode getSymbol(SymbolTable.ModuleName name) {
+	  return this.getSymbolInternal(name);
+  }
 
   /**
-   * Adds a (UniqueString, SymbolNode) pair to this context; no-op if
+   * Adds a (String, SymbolNode) pair to this context; no-op if
    * already present
-   * @param name the UniqueString representing the string, see {@link UniqueString#uniqueStringOf(String)}
+   * @param name the String representing the string
    * @param s the symbol node to be put in
    */
-  public void addSymbolToContext(Object name, SymbolNode s) {
-    table.put(name, new Pair(s));    // Links to & updates lastPair
+  public void addSymbolToContext(String name, SymbolNode s) {
+	  table.put(name, new Pair(s));    // Links to & updates lastPair
+  }
+  
+  public void addSymbolToContext(SymbolTable.ModuleName name, SymbolNode s) {
+	  table.put(name, new Pair(s));    // Links to & updates lastPair
   }
 
 
   /**
    * Tests whether a name is present in this context
-   * @param name the UniqueString representing the string, see {@link UniqueString#uniqueStringOf(String)}
-   * @return true iff the UniqueString provided occurs as a key in the symbol table
+   * @param name 
+   * @return true iff the String provided occurs as a key in the symbol table
    */
-  public boolean occurSymbol(Object name) {
-    return table.containsKey(name);
+  public boolean occurSymbol(SymbolTable.ModuleName name) {
+	  return table.containsKey(name);
+  }
+  
+  public boolean occurSymbol(String name) {
+	  return table.containsKey(name);
   }
 
   /**
@@ -455,6 +469,7 @@ public class Context implements ExploreNode {
 	current.link = new Pair(null,p.info); // Note: causes sharing of reference in link.info
         current = current.link;
       }
+      // TODO: check whether this leads to bugs if current.info is a module (if that is possible)
       dup.table.put(current.info.getName(), current);
       p = p.link;
     }
@@ -482,14 +497,13 @@ public class Context implements ExploreNode {
   *************************************************************************/
   public Vector<String> getContextEntryStringVector(int depth, boolean b) {
     Vector<String> ctxtEntries = new Vector<>(100);  // vector of Strings
-    Context naturalsContext =
-               exMT.getContext(UniqueString.uniqueStringOf("Naturals"));
+    Context naturalsContext = exMT.getContext("Naturals");
 
     if (depth <= 0) return ctxtEntries;
 
     Pair p = lastPair;
     while (p != null) {
-      UniqueString key = p.info.getName();
+      String key = p.info.getName();
 
       // If b is false, don't bother printing the initialContext--too long--
       // and, don't bother printing elements of the Naturals module either
@@ -517,7 +531,6 @@ public class Context implements ExploreNode {
 
   public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
 	  visitor.preVisit(this);
-    UniqueString key;
     Enumeration<?>  e = table.keys();
 
     while (e.hasMoreElements()) {
@@ -525,7 +538,7 @@ public class Context implements ExploreNode {
       * Bug fix attempted by LL on 19 Apr 2007.                            *
       *                                                                    *
       * The original code expected Enum.nextElement() to be a              *
-      * UniqueString.  However, it can also be a SymbolTable.ModuleName    *
+      * (Unique)String.  However, it can also be a SymbolTable.ModuleName  *
       * for an inner module.  I attempted to fix that by just getting key  *
       * from the right place in the object.  However, that caused a        *
       * NullPointerException because table.get(key) equaled null.  So, I   *
@@ -536,13 +549,12 @@ public class Context implements ExploreNode {
       *********************************************************************/
       Object next = e.nextElement();
       if (next instanceof SymbolTable.ModuleName) {
-         key = ((SymbolTable.ModuleName) next).name ;
-         System.out.println("Bug in debugging caused by inner module " +
-                             key.toString());
+         String key = ((SymbolTable.ModuleName) next).name ;
+         System.out.println("Bug in debugging caused by inner module " + key);
          System.out.println("SANY will throw a null pointer exception.");
         }
       else {
-        key = (UniqueString) next;
+        String key = (String) next;
         ((Pair)table.get(key)).info.walkGraph(semNodesTable, visitor);
        } ;
        visitor.postVisit(this);

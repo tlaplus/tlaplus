@@ -6,8 +6,6 @@ package tlc2.tool.distributed;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-import util.UniqueString;
-
 public interface InternRMI extends Remote {
-	public UniqueString intern(String str) throws RemoteException;
+	public String intern(String str) throws RemoteException;
 }

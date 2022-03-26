@@ -35,7 +35,6 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NonLeafProofNode;
 import tla2sany.semantic.ProofNode;
 import tla2sany.semantic.TheoremNode;
-import util.UniqueString;
 
 /**
  * This class provides the foldable regions for the proofs
@@ -299,7 +298,7 @@ public class TLAProofFoldingStructureProvider implements IParseResultListener, I
          */
         Assert.isNotNull(specObj.getExternalModuleTable());
 
-        ModuleNode moduleNode = specObj.getExternalModuleTable().getModuleNode(UniqueString.uniqueStringOf(moduleName));
+        ModuleNode moduleNode = specObj.getExternalModuleTable().getModuleNode(moduleName);
         if (moduleNode == null)
         {
             // nothing to do

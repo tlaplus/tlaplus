@@ -5,8 +5,6 @@
 
 package tla2sany.semantic;
 
-import util.UniqueString;
-
 public interface ASTConstants {
 
   /* The following are kinds of SemanticNodes. */
@@ -114,59 +112,58 @@ public interface ASTConstants {
   };
 
   /* Operators */
-  public static UniqueString OP_aa   = UniqueString.uniqueStringOf("$AngleAct");
-  public static UniqueString OP_bc   = UniqueString.uniqueStringOf("$BoundedChoose");
-  public static UniqueString OP_be   = UniqueString.uniqueStringOf("$BoundedExists");
-  public static UniqueString OP_bf   = UniqueString.uniqueStringOf("$BoundedForall");
-  public static UniqueString OP_case = UniqueString.uniqueStringOf("$Case");
-  public static UniqueString OP_cp   = UniqueString.uniqueStringOf("$CartesianProd");
-  public static UniqueString OP_cl   = UniqueString.uniqueStringOf("$ConjList");
-  public static UniqueString OP_dl   = UniqueString.uniqueStringOf("$DisjList");
-  public static UniqueString OP_exc  = UniqueString.uniqueStringOf("$Except");
-  public static UniqueString OP_fa   = UniqueString.uniqueStringOf("$FcnApply");
-  public static UniqueString OP_fc   = UniqueString.uniqueStringOf("$FcnConstructor");
-  public static UniqueString OP_ite  = UniqueString.uniqueStringOf("$IfThenElse");
-  public static UniqueString OP_nrfs = UniqueString.uniqueStringOf("$NonRecursiveFcnSpec");
-  public static UniqueString OP_pair = UniqueString.uniqueStringOf("$Pair");
-  public static UniqueString OP_rc   = UniqueString.uniqueStringOf("$RcdConstructor");
-  public static UniqueString OP_rs   = UniqueString.uniqueStringOf("$RcdSelect");
-  public static UniqueString OP_rfs  = UniqueString.uniqueStringOf("$RecursiveFcnSpec");
-  public static UniqueString OP_seq  = UniqueString.uniqueStringOf("$Seq");
-  public static UniqueString OP_sa   = UniqueString.uniqueStringOf("$SquareAct");
-  public static UniqueString OP_se   = UniqueString.uniqueStringOf("$SetEnumerate");
-  public static UniqueString OP_sf   = UniqueString.uniqueStringOf("$SF");
-  public static UniqueString OP_soa  = UniqueString.uniqueStringOf("$SetOfAll");
-  public static UniqueString OP_sor  = UniqueString.uniqueStringOf("$SetOfRcds");
-  public static UniqueString OP_sof  = UniqueString.uniqueStringOf("$SetOfFcns");
-  public static UniqueString OP_sso  = UniqueString.uniqueStringOf("$SubsetOf");
-  public static UniqueString OP_tup  = UniqueString.uniqueStringOf("$Tuple");
-  public static UniqueString OP_te   = UniqueString.uniqueStringOf("$TemporalExists");
-  public static UniqueString OP_tf   = UniqueString.uniqueStringOf("$TemporalForall");
-  public static UniqueString OP_uc   = UniqueString.uniqueStringOf("$UnboundedChoose");
-  public static UniqueString OP_ue   = UniqueString.uniqueStringOf("$UnboundedExists");
-  public static UniqueString OP_uf   = UniqueString.uniqueStringOf("$UnboundedForall");
-  public static UniqueString OP_wf   = UniqueString.uniqueStringOf("$WF");
+  public static String OP_aa   = ("$AngleAct");
+  public static String OP_bc   = ("$BoundedChoose");
+  public static String OP_be   = ("$BoundedExists");
+  public static String OP_bf   = ("$BoundedForall");
+  public static String OP_case = ("$Case");
+  public static String OP_cp   = ("$CartesianProd");
+  public static String OP_cl   = ("$ConjList");
+  public static String OP_dl   = ("$DisjList");
+  public static String OP_exc  = ("$Except");
+  public static String OP_fa   = ("$FcnApply");
+  public static String OP_fc   = ("$FcnConstructor");
+  public static String OP_ite  = ("$IfThenElse");
+  public static String OP_nrfs = ("$NonRecursiveFcnSpec");
+  public static String OP_pair = ("$Pair");
+  public static String OP_rc   = ("$RcdConstructor");
+  public static String OP_rs   = ("$RcdSelect");
+  public static String OP_rfs  = ("$RecursiveFcnSpec");
+  public static String OP_seq  = ("$Seq");
+  public static String OP_sa   = ("$SquareAct");
+  public static String OP_se   = ("$SetEnumerate");
+  public static String OP_sf   = ("$SF");
+  public static String OP_soa  = ("$SetOfAll");
+  public static String OP_sor  = ("$SetOfRcds");
+  public static String OP_sof  = ("$SetOfFcns");
+  public static String OP_sso  = ("$SubsetOf");
+  public static String OP_tup  = ("$Tuple");
+  public static String OP_te   = ("$TemporalExists");
+  public static String OP_tf   = ("$TemporalForall");
+  public static String OP_uc   = ("$UnboundedChoose");
+  public static String OP_ue   = ("$UnboundedExists");
+  public static String OP_uf   = ("$UnboundedForall");
+  public static String OP_wf   = ("$WF");
 
   /*************************************************************************
   * The following added by LL 2-3 Aug 2007.                                *
   *************************************************************************/
-  public static UniqueString OP_nop  = UniqueString.uniqueStringOf("$Nop");
-  public static UniqueString OP_qed     = UniqueString.uniqueStringOf("$Qed");
-  public static UniqueString OP_pfcase  = UniqueString.uniqueStringOf("$Pfcase");
-  public static UniqueString OP_have    = UniqueString.uniqueStringOf("$Have");
-  public static UniqueString OP_take    = UniqueString.uniqueStringOf("$Take");
-  public static UniqueString OP_pick    = UniqueString.uniqueStringOf("$Pick");
-  public static UniqueString OP_witness = 
-    UniqueString.uniqueStringOf("$Witness");
+  public static String OP_nop     = ("$Nop");
+  public static String OP_qed     = ("$Qed");
+  public static String OP_pfcase  = ("$Pfcase");
+  public static String OP_have    = ("$Have");
+  public static String OP_take    = ("$Take");
+  public static String OP_pick    = ("$Pick");
+  public static String OP_witness = ("$Witness");
 
   /*************************************************************************
   * OP_suffices added by LL 16 Feb 2009.                                   *
   *************************************************************************/
-  public static UniqueString OP_suffices  = UniqueString.uniqueStringOf("$Suffices");
+  public static String OP_suffices  = ("$Suffices");
   
   /*************************************************************************
   * OP_prime added by LL 2 Dec 2012.                                       *
   *************************************************************************/
-  public static UniqueString OP_prime  = UniqueString.uniqueStringOf("'");
+  public static String OP_prime  = ("'");
 
 }

@@ -149,7 +149,7 @@ public class BuiltInLevel implements LevelConstants {
 
     while (Enum.hasMoreElements()) {
       SymbolNode sn = Enum.nextElement();
-      Data d = (Data)LevelData.get(sn.getName().toString());
+      Data d = (Data)LevelData.get(sn.getName());
       if (d != null) {
 	OpDefNode opDef = (OpDefNode)gcon.getSymbol(sn.getName());
 	if (opDef.getArity() != d.arity) {

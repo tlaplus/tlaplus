@@ -14,7 +14,6 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 
 /**
  * An OpDeclNode can have one of the following kinds:
@@ -50,7 +49,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/
-  public OpDeclNode(UniqueString us, int kind, int level,
+  public OpDeclNode(String us, int kind, int level,
 		    int arity, ModuleNode mn, SymbolTable symbolTable,
                     TreeNode stn) {
     super(us, kind, arity, mn, symbolTable, stn);
@@ -152,9 +151,9 @@ public class OpDeclNode extends OpDefOrDeclNode {
 	@Override
 	public String getHumanReadableImage() {
 		if (getKind() == 2) {
-			return super.getName().toString() + " CONSTANT";
+			return super.getName() + " CONSTANT";
 		} else if (getKind() == 3) {
-			return super.getName().toString() + " VARIABLE";
+			return super.getName() + " VARIABLE";
 		}
 		return super.getHumanReadableImage();
 	}
@@ -165,7 +164,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
     return "\n*OpDeclNode: " + this.getName() + "  " + super.toString(depth)
            + "\n  originallyDefinedInModule: " +
                             (originallyDefinedInModule != null
-                             ? originallyDefinedInModule.getName().toString()
+                             ? originallyDefinedInModule.getName()
                              : "<null>" ) ;
   }
 
@@ -176,7 +175,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
 
   protected Element getSymbolElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("OpDeclNode");
-    e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    e.appendChild(appendText(doc,"uniquename",getName()));
     e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
     e.appendChild(appendText(doc,"kind", Integer.toString(getKind())));
     return e;

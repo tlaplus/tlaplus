@@ -29,13 +29,19 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import util.IDataInputStream;
-import util.UniqueString;
 
 public interface IValueInputStream {
 
 	IValue read() throws IOException;
 
 	int readShort() throws IOException;
+	
+	default String readStringVal() throws IOException {
+		IDataInputStream s = getInputStream();
+		s.readInt();
+		s.readInt();
+		return s.readString(s.readInt());
+	}
 
 	int readInt() throws IOException;
 
@@ -57,5 +63,8 @@ public interface IValueInputStream {
 
 	IDataInputStream getInputStream();
 
-	UniqueString getValue(int idx);
+	// TODO this is only used in RecordValue.createFrom()
+	// it should either be purged or have its return type changed to either Object (or (I)Value)
+	// the current state of having random objects in IValueStreams seems abusive.
+	String getValue(int idx);
 }

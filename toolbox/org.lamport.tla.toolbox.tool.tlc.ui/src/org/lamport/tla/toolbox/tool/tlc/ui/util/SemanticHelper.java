@@ -14,7 +14,6 @@ import tla2sany.semantic.Context;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tlc2.tool.impl.ModelConfig;
-import util.UniqueString;
 
 /**
  * A helper for resolution of objects related to the parsed specification
@@ -114,7 +113,7 @@ public class SemanticHelper
             }
         }
         // finally check the reserved words and the spec
-        return keywords.contains(name) || specContext.occurSymbol(UniqueString.uniqueStringOf(name));
+        return keywords.contains(name) || specContext.occurSymbol(name);
     }
 
     /**
@@ -147,7 +146,7 @@ public class SemanticHelper
             return KEYWORD;
         }
         // check the spec module
-        Object specUsed = specContext.getSymbol(UniqueString.uniqueStringOf(name));
+        Object specUsed = specContext.getSymbol(name);
         return specUsed;
     }
 

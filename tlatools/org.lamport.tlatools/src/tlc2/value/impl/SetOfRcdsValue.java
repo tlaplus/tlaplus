@@ -18,15 +18,14 @@ import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
 
 public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
-  public final UniqueString[] names;      // The names of the fields.
+  public final String[] names;      // The names of the fields.
   public final Value[] values;            // The values of the fields.
   protected SetEnumValue rcdSet;
 
   /* Constructor */
-  public SetOfRcdsValue(UniqueString[] names, Value[] values, boolean isNorm) {
+  public SetOfRcdsValue(String[] names, Value[] values, boolean isNorm) {
 	  assert names.length == values.length; // see tlc2.tool.Tool.evalAppl(OpApplNode, Context, TLCState, TLCState, int) case for OPCODE_sor
     this.names = names;
     this.values = values;
@@ -36,7 +35,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  public SetOfRcdsValue(UniqueString[] names, Value[] values, boolean isNorm, CostModel cm) {
+  public SetOfRcdsValue(String[] names, Value[] values, boolean isNorm, CostModel cm) {
 	  this(names, values, isNorm);
 	  this.cm = cm;
   }
@@ -253,7 +252,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
               " in set of records.", getSource());
       }
       else if (cmp > 0) {
-        UniqueString ts = this.names[0];
+        String ts = this.names[0];
         this.names[0] = this.names[i];
         this.names[i] = ts;
         Value tv = this.values[0];
@@ -263,7 +262,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
     for (int i = 2; i < this.names.length; i++) {
       int j = i;
-      UniqueString st = this.names[i];
+      String st = this.names[i];
       Value val = this.values[i];
       int cmp;
       while ((cmp = st.compareTo(this.names[j-1])) < 0) {

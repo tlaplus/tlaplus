@@ -11,7 +11,6 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 
 /**
  * A FormalParamNode represents a formal parameter in a user
@@ -31,7 +30,7 @@ public class FormalParamNode extends SymbolNode {
     // the module in which this formal param was declared
 
   // Constructor
-  public FormalParamNode(UniqueString us, int ar, TreeNode stn,
+  public FormalParamNode(String us, int ar, TreeNode stn,
 			 SymbolTable symbolTable, ModuleNode mn) {
     super(FormalParamKind, stn, us);
     this.arity      = ar;
@@ -128,7 +127,7 @@ public class FormalParamNode extends SymbolNode {
   @Override
   public final String toString(int depth) {
     if (depth <= 0) return "";
-    return ("\n*FormalParamNode: " + this.getName().toString() +
+    return ("\n*FormalParamNode: " + this.getName() +
 	    "  " + super.toString(depth) + "  arity: " + arity);
   }
 
@@ -138,7 +137,7 @@ public class FormalParamNode extends SymbolNode {
 
   protected Element getSymbolElement(Document doc, SymbolContext context) {
     Element e = doc.createElement("FormalParamNode");
-    e.appendChild(appendText(doc,"uniquename",getName().toString()));
+    e.appendChild(appendText(doc,"uniquename",getName()));
     e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
     return e;
   }

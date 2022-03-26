@@ -30,9 +30,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import util.InternTable;
-import util.UniqueString;
-
 public class RecordValueTest {
 
 	/**
@@ -45,15 +42,14 @@ public class RecordValueTest {
 	 */
 	@Test
 	public void testDeepCopy() {
-		final InternTable internTable = new InternTable(2);
-		final UniqueString a = internTable.put("a");
-		final UniqueString b = internTable.put("b");
+		final String a = ("a");
+		final String b = ("b");
 		
 		final Value aVal = new StringValue("aVal");
 		final Value bVal = new StringValue("bVal");
 		
 		// Create the source to create a deep copy of
-		final RecordValue orig = new RecordValue(new UniqueString[] {b, a}, new Value[] {bVal, aVal}, false);
+		final RecordValue orig = new RecordValue(new String[] {b, a}, new Value[] {bVal, aVal}, false);
 		
 		// Verify the mappings in RecordValue are correct
 		assertTrue(orig.names[0].equals(b));
@@ -82,7 +78,7 @@ public class RecordValueTest {
 	@Test
 	public void testErrorMessages() {
 		final Value aVal = new StringValue("aVal");
-		final RecordValue recVal = new RecordValue(UniqueString.of("a"), aVal);
+		final RecordValue recVal = new RecordValue("a", aVal);
 
 		try{
 			recVal.apply(new StringValue("b"), 0);

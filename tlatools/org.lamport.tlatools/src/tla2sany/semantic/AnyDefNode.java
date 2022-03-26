@@ -25,8 +25,6 @@ package tla2sany.semantic;
 
 import java.util.HashSet;
 
-import util.UniqueString;
-
 /**
  * @author lamport
  *
@@ -34,7 +32,7 @@ import util.UniqueString;
 public interface AnyDefNode {
     public boolean levelCheck(int itr) ;
     public int getMaxLevel(int i) ;
-    public UniqueString getName() ;
+    public String getName() ;
     public int getMinMaxLevel(int i, int j) ;
     public boolean getOpLevelCond(int i, int j, int k) ;
     public int getLevel() ;

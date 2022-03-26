@@ -39,7 +39,6 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 
 public class ContextTest {
 
@@ -173,7 +172,7 @@ public class ContextTest {
 		}
 		
 		DummySymbolNode(String name) {
-			super(-1, new SyntaxTreeNode(), UniqueString.uniqueStringOf(name));
+			super(-1, new SyntaxTreeNode(), (name));
 		}
 
 		public int getArity() {

@@ -11,7 +11,6 @@ import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 
 /***************************************************************************
 * This class represents definition step of a proof, which consists of a    *
@@ -24,7 +23,7 @@ public class DefStepNode extends LevelNode {
   /*************************************************************************
   * The fields.                                                            *
   *************************************************************************/
-  private UniqueString stepNumber ;
+  private String stepNumber ;
     /***********************************************************************
     * The step number of the step if it has one, otherwise null if it's    *
     * not a numbered step.                                                 *
@@ -38,7 +37,7 @@ public class DefStepNode extends LevelNode {
   /*************************************************************************
   * The constructor.                                                       *
   *************************************************************************/
-  public DefStepNode(TreeNode stn, UniqueString stepNum, OpDefNode[] theDefs){
+  public DefStepNode(TreeNode stn, String stepNum, OpDefNode[] theDefs){
     super(DefStepKind, stn);
     this.stepNumber = stepNum;
     this.defs = theDefs;
@@ -47,7 +46,7 @@ public class DefStepNode extends LevelNode {
   /*************************************************************************
   * The methods just return the field values.                              *
   *************************************************************************/
-  public UniqueString getStepNumber() {return stepNumber ;}
+  public String getStepNumber() {return stepNumber ;}
   public OpDefNode[] getDefs() {return defs;}
 
   @Override

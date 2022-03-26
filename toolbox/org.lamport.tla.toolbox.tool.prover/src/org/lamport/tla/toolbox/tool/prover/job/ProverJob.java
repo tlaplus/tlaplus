@@ -56,7 +56,6 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.TheoremNode;
-import util.UniqueString;
 
 /**
  * Long running job for launching the prover. Look at the constructor
@@ -983,8 +982,7 @@ public class ProverJob extends Job {
 
         if (nodeToProve == null /* || nodeToProve instanceof InstanceNode  || nodeToProve instanceof DefStepNode */ )
         {
-            nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                    UniqueString.uniqueStringOf(moduleName));
+            nodeToProve = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
             return;
         }
 

@@ -34,7 +34,6 @@ import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.TLAFlightRecorder;
-import util.UniqueString;
 
 /** 
  *  A TLA+ Model checker
@@ -575,13 +574,13 @@ public class ModelChecker extends AbstractChecker
 				if (this.tool.getActions().length == 1) {
 					MP.printError(errorCode,
 							new String[] { unassigned.size() > 1 ? "s are" : " is",
-									unassigned.stream().map(n -> n.getName().toString())
+									unassigned.stream().map(n -> n.getName())
 											.collect(Collectors.joining(", ")) });
 				} else {
 					MP.printError(errorCode,
-							new String[] { action.getName().toString(),
+							new String[] { action.getName(),
 									unassigned.size() > 1 ? "s are" : " is",
-									unassigned.stream().map(n -> n.getName().toString())
+									unassigned.stream().map(n -> n.getName())
 											.collect(Collectors.joining(", ")) });
 				}
 				this.trace.printTrace(curState, succState);
@@ -721,7 +720,6 @@ public class ModelChecker extends AbstractChecker
 		this.trace.beginChkpt();
 		this.theFPSet.beginChkpt();
 		this.theStateQueue.resumeAll();
-		UniqueString.internTbl.beginChkpt(this.metadir);
 		if (this.checkLiveness)
 		{
 			liveCheck.beginChkpt();
@@ -730,7 +728,6 @@ public class ModelChecker extends AbstractChecker
 		this.theStateQueue.commitChkpt();
 		this.trace.commitChkpt();
 		this.theFPSet.commitChkpt();
-		UniqueString.internTbl.commitChkpt(this.metadir);
 		if (this.checkLiveness)
 		{
 			liveCheck.commitChkpt();

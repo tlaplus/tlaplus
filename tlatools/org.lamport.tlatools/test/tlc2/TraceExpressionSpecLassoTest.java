@@ -48,7 +48,6 @@ import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import util.TLAConstants;
-import util.UniqueString;
 
 public class TraceExpressionSpecLassoTest extends TraceExpressionSpecTest {
 
@@ -87,10 +86,9 @@ public class TraceExpressionSpecLassoTest extends TraceExpressionSpecTest {
 		
 		// Assert that all three sub-modules exist
 		final ExternalModuleTable moduleTbl = specProcessor.getModuleTbl();
-		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TE_SPEC_TEST)));
-		assertNotNull(moduleTbl.getModuleNode(
-				UniqueString.of(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME)));
-		assertNotNull(moduleTbl.getModuleNode(UniqueString.of(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.SPEC_TETRACE_NAME)));
+		assertNotNull(moduleTbl.getModuleNode(TE_SPEC_TEST));
+		assertNotNull(moduleTbl.getModuleNode(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.EXPLORATION_MODULE_NAME));
+		assertNotNull(moduleTbl.getModuleNode(TE_SPEC_TEST + "_" + TLAConstants.TraceExplore.SPEC_TETRACE_NAME));
 
 		final LiveCheck1 lc = new LiveCheck1(tool);
 		lc.init(tool, tool.getActions(), "states");
@@ -100,9 +98,9 @@ public class TraceExpressionSpecLassoTest extends TraceExpressionSpecTest {
 		assertEquals(1, sv.size());
 		assertTrue(tool.isGoodState(sv.first()));
 		assertTrue(tool.isInModel(sv.first()));
-		Map<UniqueString, IValue> vals = sv.first().getVals();
-		assertEquals(IntValue.gen(0), vals.get(UniqueString.of("x")));
-		assertEquals(BoolValue.ValFalse, vals.get(UniqueString.of("y")));
+		Map<String, IValue> vals = sv.first().getVals();
+		assertEquals(IntValue.gen(0), vals.get("x"));
+		assertEquals(BoolValue.ValFalse, vals.get("y"));
 		lc.addInitState(tool, sv.first(), sv.first().fingerPrint());
 		TLCState cur = sv.first();
 
@@ -111,8 +109,8 @@ public class TraceExpressionSpecLassoTest extends TraceExpressionSpecTest {
 		assertTrue(tool.isGoodState(sv.first()));
 		assertTrue(tool.isInModel(sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(IntValue.gen(1), vals.get(UniqueString.of("x")));
-		assertEquals(BoolValue.ValTrue, vals.get(UniqueString.of("y")));
+		assertEquals(IntValue.gen(1), vals.get("x"));
+		assertEquals(BoolValue.ValTrue, vals.get("y"));
 
 		SetOfStates nextStates = new SetOfStates(1);
 		nextStates.put(sv.first());
@@ -124,8 +122,8 @@ public class TraceExpressionSpecLassoTest extends TraceExpressionSpecTest {
 		assertTrue(tool.isGoodState(sv.first()));
 		assertTrue(tool.isInModel(sv.first()));
 		vals = sv.first().getVals();
-		assertEquals(IntValue.gen(0), vals.get(UniqueString.of("x")));
-		assertEquals(BoolValue.ValFalse, vals.get(UniqueString.of("y")));
+		assertEquals(IntValue.gen(0), vals.get("x"));
+		assertEquals(BoolValue.ValFalse, vals.get("y"));
 
 		nextStates = new SetOfStates(1);
 		nextStates.put(sv.first());

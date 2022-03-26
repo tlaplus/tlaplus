@@ -19,7 +19,6 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
-import util.UniqueString;
 
 /**
  * A TokenSpec object represents a possible TLA+ symbol name together
@@ -159,7 +158,7 @@ public class TokenSpec
                 indiceAdjustedToken = indiceAdjustedToken.substring(1);
             }
             
-            symbol = EditorUtil.lookupOriginalSymbol(UniqueString.uniqueStringOf(indiceAdjustedToken), moduleNode, location, null);
+            symbol = EditorUtil.lookupOriginalSymbol(indiceAdjustedToken, moduleNode, location, null);
             if (symbol != null)
             {
                 goodIndex = i;

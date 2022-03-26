@@ -27,7 +27,6 @@ import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
 import util.ToolIO;
-import util.UniqueString;
 
 public final class Configuration implements ConfigConstants {
 
@@ -183,11 +182,11 @@ public final class Configuration implements ConfigConstants {
     }
    Operator op;
    if ( t == null ) {
-     op = new Operator( UniqueString.uniqueStringOf(s), low, high, assoc, kind );
+     op = new Operator(s, low, high, assoc, kind);
    } else {
-     op = new Operator( UniqueString.uniqueStringOf(t.image), low, high, assoc, kind );
+     op = new Operator(t.image, low, high, assoc, kind );
    }
-   Operators.addOperator( UniqueString.uniqueStringOf(s), op );
+   Operators.addOperator(s, op);
   }
 
   static final public void OpSynonym() throws ParseException {
@@ -195,8 +194,7 @@ public final class Configuration implements ConfigConstants {
     jj_consume_token(SYNONYM);
     t1 = jj_consume_token(OPID);
     t2 = jj_consume_token(OPID);
-    Operators.addSynonym( UniqueString.uniqueStringOf(t1.image), 
-                          UniqueString.uniqueStringOf(t2.image) );
+    Operators.addSynonym(t1.image, t2.image);
   }
 
   static final public void OpNull(String s) throws ParseException {
@@ -205,37 +203,36 @@ public final class Configuration implements ConfigConstants {
   }
 
   static final public void OpBuiltin() throws ParseException, AbortException {
-  Token t;
-  String external, internal;
-  UniqueString us;
+    Token t;
+    String name;
     jj_consume_token(BUILTIN);
     t = jj_consume_token(OPID);
-    external = t.image; us = UniqueString.uniqueStringOf( external );
+    name = t.image ;
+    SyntaxTreeNode stn = new SyntaxTreeNode(name);
     t = jj_consume_token(RESTRICTED);
-    internal = t.image;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INFIX:
       jj_consume_token(INFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 2,
-                        new FormalParamNode[2], false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol( name, new OpDefNode( name, tla2sany.semantic.ASTConstants.BuiltInKind, 2,
+                        new FormalParamNode[2], false, null, null, null, stn ),
                         errors);
       break;
     case PREFIX:
       jj_consume_token(PREFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
-                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol( name, new OpDefNode( name, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
+                        new FormalParamNode[1], false, null, null, null, stn ),
                         errors);
       break;
     case POSTFIX:
       jj_consume_token(POSTFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
-                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol( name, new OpDefNode( name, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
+                        new FormalParamNode[1], false, null, null, null, stn ),
                         errors);
       break;
     case CONSTANT:
       jj_consume_token(CONSTANT);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 0,
-                        new FormalParamNode[0], false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol( name, new OpDefNode( name, tla2sany.semantic.ASTConstants.BuiltInKind, 0,
+                        new FormalParamNode[0], false, null, null, null, stn ),
                         errors);
       break;
     case NUMBER:
@@ -243,9 +240,9 @@ public final class Configuration implements ConfigConstants {
       int n = Integer.parseInt( t.image );
       FormalParamNode fpn[] = null;
       if ( n != -1 ) fpn = new FormalParamNode[ n ];
-      Context.addGlobalSymbol( us, 
-                        new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, n,
-                                       fpn, false, null, null, null, new SyntaxTreeNode( us ) ),
+      Context.addGlobalSymbol( name, 
+                        new OpDefNode( name, tla2sany.semantic.ASTConstants.BuiltInKind, n,
+                                       fpn, false, null, null, null, stn ),
                                        errors);
       break;
     default:

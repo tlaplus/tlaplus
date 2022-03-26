@@ -8,7 +8,6 @@ import org.lamport.tla.toolbox.tool.prover.ui.ProverUIActivator;
 import org.lamport.tla.toolbox.tool.prover.ui.output.TagBasedTLAPMOutputIncrementalParser;
 
 import tla2sany.st.Location;
-import util.UniqueString;
 
 /**
  * Abstract class for the data in a message of output
@@ -409,7 +408,7 @@ public abstract class TLAPMMessage
              */
             String[] coordinates = locString.split(":");
             Assert.isTrue(coordinates.length >= 4, "Not enough coordinates found in location string : " + locString);
-            return new Location(UniqueString.uniqueStringOf(moduleName), Integer.parseInt(coordinates[0]), Integer
+            return new Location(moduleName, Integer.parseInt(coordinates[0]), Integer
                     .parseInt(coordinates[1]), Integer.parseInt(coordinates[2]), Integer.parseInt(coordinates[3]) - 1);
         } catch (NumberFormatException e)
         {

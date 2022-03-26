@@ -22,7 +22,7 @@ import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
-import util.UniqueString;
+import util.VarLocMap;
 import util.WrongInvocationException;
 
 /**
@@ -97,9 +97,9 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     return false;
   }
   
-  public final TLCState bind(UniqueString name, IValue value) {
+  public final TLCState bind(String name, IValue value) {
 	  // Note, tla2sany.semantic.OpApplNode.toString(Value) relies on this ordering.
-    int loc = name.getVarLoc();
+    int loc = VarLocMap.getVarLoc(name);
     this.values[loc] = value;
     return this;
   }
@@ -108,19 +108,19 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     throw new WrongInvocationException("TLCStateMut.bind: This is a TLC bug.");
   }
   
-  public final TLCState unbind(UniqueString name) {
-    int loc = name.getVarLoc();
+  public final TLCState unbind(String name) {
+    int loc = VarLocMap.getVarLoc(name);
     this.values[loc] = null;
     return this;
   }
 
-  public final IValue lookup(UniqueString var) {
-    int loc = var.getVarLoc();
+  public final IValue lookup(String name) {
+    int loc = VarLocMap.getVarLoc(name);
     if (loc < 0) return null;
     return this.values[loc];
   }
 
-  public final boolean containsKey(UniqueString var) {
+  public final boolean containsKey(String var) {
     return (this.lookup(var) != null);
   }
 
@@ -295,7 +295,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 		final Set<OpDeclNode> unassignedVars = new TreeSet<OpDeclNode>(new Comparator<OpDeclNode>() {
 			@Override
 			public int compare(OpDeclNode o1, OpDeclNode o2) {
-				return o1.getName().toString().compareTo(o2.getName().toString());
+				return o1.getName().compareTo(o2.getName());
 			}
 		});
 		int len = this.values.length;
@@ -332,16 +332,16 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     StringBuffer result = new StringBuffer();
     int vlen = vars.length;
     if (vlen == 1) {
-      UniqueString key = vars[0].getName();
+      String key = vars[0].getName();
       IValue val = this.lookup(key);
-      result.append(key.toString());
+      result.append(key);
       result.append(" = ");
       result.append(Values.ppr(val));
       result.append("\n");
     }
     else {
       for (int i = 0; i < vlen; i++) {
-	UniqueString key = vars[i].getName();
+	String key = vars[i].getName();
 	IValue val = this.lookup(key);
 	result.append("/\\ ");
 	result.append(key.toString());
@@ -360,7 +360,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
 
     int vlen = vars.length;
     if (vlen == 1) {
-      UniqueString key = vars[0].getName();
+      String key = vars[0].getName();
       IValue val = this.lookup(key);
       IValue lstateVal = lstate.lookup(key);
       if (!lstateVal.equals(val)) {
@@ -370,7 +370,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     }
     else {
       for (int i = 0; i < vlen; i++) {
-	UniqueString key = vars[i].getName();
+	String key = vars[i].getName();
 	IValue val = this.lookup(key);
 	IValue lstateVal = lstate.lookup(key);
 	if (!lstateVal.equals(val)) {

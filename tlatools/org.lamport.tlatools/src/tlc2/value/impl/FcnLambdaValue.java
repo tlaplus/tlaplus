@@ -27,7 +27,6 @@ import tlc2.value.IValue;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
 
 public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue {
   public final FcnParams params;       // the function formals
@@ -648,7 +647,7 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
       FcnRcdValue fcn = (FcnRcdValue) this.toFcnRcd();
       if (fcn == null || fcn.domain == null) { return null; }
       fcn.normalize();
-      UniqueString[] vars = new UniqueString[fcn.domain.length];
+      String[] vars = new String[fcn.domain.length];
       for (int i = 0; i < fcn.domain.length; i++) {
         if (!(fcn.domain[i] instanceof StringValue)) {
           return null;

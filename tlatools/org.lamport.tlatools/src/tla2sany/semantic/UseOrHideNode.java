@@ -12,7 +12,6 @@ import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 
 /***************************************************************************
 * This class represents a USE or HIDE statement.  It is of kind            *
@@ -57,9 +56,9 @@ public class UseOrHideNode extends LevelNode {
    * comparison efficient.
    * Added by LL on 6 June 2010.
    */
-  private UniqueString stepName = null;
+  private String stepName = null;
 
-    public void setStepName(UniqueString stepName)
+    public void setStepName(String stepName)
     {
         this.stepName = stepName;
     }
@@ -67,7 +66,7 @@ public class UseOrHideNode extends LevelNode {
     /**
      * @return the stepName
      */
-    public UniqueString getStepName()
+    public String getStepName()
     {
         return stepName;
     }

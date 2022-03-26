@@ -22,7 +22,6 @@ import tlc2.util.LongVec;
 import tlc2.util.SetOfStates;
 import util.Assert;
 import util.FileUtil;
-import util.UniqueString;
 
 /** 
  * A TLA+ Model checker using depth-first iterative deepening 
@@ -408,12 +407,12 @@ public class DFIDModelChecker extends AbstractChecker
 								String[] parameters;
 								if (tool.getActions().length == 1) {
 									parameters = new String[] { unassigned.size() > 1 ? "s are" : " is",
-											unassigned.stream().map(n -> n.getName().toString())
+											unassigned.stream().map(n -> n.getName())
 													.collect(Collectors.joining(", ")) };
 								} else {
-									parameters = new String[] { tool.getActions()[i].getName().toString(),
+									parameters = new String[] { tool.getActions()[i].getName(),
 											unassigned.size() > 1 ? "s are" : " is",
-											unassigned.stream().map(n -> n.getName().toString())
+											unassigned.stream().map(n -> n.getName())
 													.collect(Collectors.joining(", ")) };
 								}
 								this.printTrace(errorCode, parameters, curState, succState);
@@ -696,7 +695,6 @@ public class DFIDModelChecker extends AbstractChecker
             	{
             		liveCheck.beginChkpt();
             	}
-            	UniqueString.internTbl.beginChkpt(this.metadir);
             	
             	// Commit checkpoint:
             	this.theFPSet.commitChkpt();
@@ -704,7 +702,6 @@ public class DFIDModelChecker extends AbstractChecker
             	{
             		liveCheck.commitChkpt();
             	}
-            	UniqueString.internTbl.commitChkpt(this.metadir);
             	MP.printMessage(EC.TLC_CHECKPOINT_END);
             }
         }

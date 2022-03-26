@@ -1,18 +1,12 @@
 #!/bin/bash
 
-SPEC="Grid5k"
-
-# Check Grid5k.tla for semantical meaning
-K=${1-"04"}
-L=${2-"01"}
-N=${3-"10"}
-C=${4-"04"}
-MODEL='k'$K'_l'$L'_n'$N'_c'$C
+SPEC="${1-"Bloemen"}"
 
 # Performance related properties
-WORKERS=${5-"$(nproc --all)"}
-HEAP_MEM=${6-"8G"}
-DIRECT_MEM=${7-"8g"}
+BAQUEUE=${2-"true"}
+WORKERS=${3-"$(nproc --all)"}
+HEAP_MEM=${4-"8G"}
+DIRECT_MEM=${5-"8g"}
 FPSET_IMPL="tlc2.tool.fp.OffHeapDiskFPSet"
 
 # TLC version
@@ -22,23 +16,12 @@ REV=$(git rev-parse HEAD)
 #DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # TLC's code location
-TLATOOLS_HOME=../../tlatools/org.lamport.tlatools/
+TLATOOLS_HOME="../../tlatools/org.lamport.tlatools/dist/tla2tools.jar"
 
 # Trap interrupts and exit instead of continuing the for loop below
 trap "echo Exited!; exit;" SIGINT SIGTERM
 
 ######################################
-
-# Generate TLC's config on-the-fly
-cat > $MODEL.cfg <<EOF
-CONSTANT K = $K
-CONSTANT L = $L
-CONSTANT N = $N
-CONSTANT C = $C
-INIT Init
-NEXT Next
-INVARIANT Inv
-EOF
 
 # Repeat N times to even out noise...
 for i in {1..3}; do
@@ -56,17 +39,17 @@ for i in {1..3}; do
            -Xmx$HEAP_MEM -Xms$HEAP_MEM \
            -XX:MaxDirectMemorySize=$DIRECT_MEM \
            -Dtlc2.tool.fp.FPSet.impl=$FPSET_IMPL \
-           -Dtlc2.tool.ModelChecker.BAQueue=true \
-           -cp $TLATOOLS_HOME/class:$TLATOOLS_HOME/lib/*:$TLATOOLS_HOME/lib/javax.mail/*:$TLATOOLS_HOME/lib/gson/* \
+           -Dtlc2.tool.ModelChecker.BAQueue=$BAQUEUE \
+           -DTLA-Library=.. \
+           -cp "$TLATOOLS_HOME" \
            -DspecName=$SPEC \
-           -DmodelName=$MODEL \
-           tlc2.TLC -deadlock -checkpoint 99999 -workers $w -config $MODEL $SPEC 2>&1 | tee $TLC_OUTPUT_FILE;
+           tlc2.TLC -deadlock -checkpoint 99999 -workers $w "${SPEC}/MC.tla" 2>&1 | tee $TLC_OUTPUT_FILE;
           # newer TLC versions support "-checkpoint 0", but 99999 suffices.
 
           # cleanup left-over states/ directory to free disk space
           rm -rf states/
 
           # Notify user of completion
-          cat $TLC_OUTPUT_FILE | mail -s "Model: $MODEL Workers: $w" $(id -u -n)
+          #cat $TLC_OUTPUT_FILE | mail -s "Model: $MODEL Workers: $w" $(id -u -n)
         done
 done

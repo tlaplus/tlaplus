@@ -19,7 +19,6 @@ import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import util.Assert;
-import util.UniqueString;
 
 public abstract class TLCState implements Cloneable, Serializable {
   public short workerId = Short.MAX_VALUE; // Must be set to a non-negative number. Valid worker ids \in [0,Short.MAX_VALUE] and start at 0.
@@ -66,17 +65,14 @@ public abstract class TLCState implements Cloneable, Serializable {
 		vos.writeShortNat((short) this.level);
 	}
 
-  public abstract TLCState bind(UniqueString name, IValue value);
+  public abstract TLCState bind(String name, IValue value);
   public abstract TLCState bind(SymbolNode id, IValue value);  
-  public abstract TLCState unbind(UniqueString name);
+  public abstract TLCState unbind(String name);
   /**
    * Convenience method when performance doesn't matter.
    */
-  public IValue lookup(String var) {
-	  return lookup(UniqueString.uniqueStringOf(var));
-  }
-  public abstract IValue lookup(UniqueString var);
-  public abstract boolean containsKey(UniqueString var);
+  public abstract IValue lookup(String var);
+  public abstract boolean containsKey(String var);
   public abstract TLCState copy();
   public abstract TLCState deepCopy();
   public abstract StateVec addToVec(StateVec states);
@@ -102,10 +98,10 @@ public abstract class TLCState implements Cloneable, Serializable {
   /** 
    * Returns a mapping of variable names to their assigned values in this state.
    */ 
-  public final Map<UniqueString, IValue> getVals() {
-	final Map<UniqueString, IValue> valMap = new HashMap<UniqueString, IValue>();
+  public final Map<String, IValue> getVals() {
+	final Map<String, IValue> valMap = new HashMap<String, IValue>();
 	for(int i = 0; i < vars.length; i++) {
-        UniqueString key = vars[i].getName();
+        String key = vars[i].getName();
         IValue val = this.lookup(key);
         valMap.put(key, val);
     }
@@ -119,7 +115,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   public final String[] getVarsAsStrings() {
 	  String[] res = new String[vars.length];
 	  for (int i = 0; i < vars.length; i++) {
-		res[i] = vars[i].getName().toString();
+		res[i] = vars[i].getName();
 	  }
 	  return res;
   }

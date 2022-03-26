@@ -61,7 +61,6 @@ import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
 import tlc2.value.impl.ValueVec;
 import util.ToolIO;
-import util.UniqueString;
 
 public class TLCGetSet implements ValueConstants {
 
@@ -73,67 +72,67 @@ public class TLCGetSet implements ValueConstants {
 	}
 
 	// TLCSet(..)
-	private static final UniqueString EXIT = UniqueString.uniqueStringOf("exit");
-	private static final UniqueString PAUSE = UniqueString.uniqueStringOf("pause");
+	private static final String EXIT = ("exit");
+	private static final String PAUSE = ("pause");
 	
 	// TLCGet(..)
-	private static final UniqueString CONFIG = UniqueString.uniqueStringOf("config");
-	private static final UniqueString SPEC = UniqueString.uniqueStringOf("spec");
-	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
-	public static final UniqueString INSTALL = UniqueString.uniqueStringOf("install");
+	private static final String CONFIG = ("config");
+	private static final String SPEC = ("spec");
+	private static final String ACTION = ("action");
+	public static final String INSTALL = ("install");
 
-	public static final UniqueString BEHAVIOR = UniqueString.of("behavior");
-	public static final UniqueString ALL_VALUES = UniqueString.of("all");
+	public static final String BEHAVIOR = ("behavior");
+	public static final String ALL_VALUES = ("all");
 	
-	public static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
-	public static final UniqueString DEADLOCK = UniqueString.uniqueStringOf("deadlock");
-	public static final UniqueString SEED = UniqueString.uniqueStringOf("seed");
-	public static final UniqueString FINGERPRINT = UniqueString.uniqueStringOf("fingerprint");
-	public static final UniqueString WORKER = UniqueString.uniqueStringOf("worker");
-	public static final UniqueString TRACES = UniqueString.uniqueStringOf("traces");
-	public static final UniqueString DEPTH = UniqueString.uniqueStringOf("depth");
-	public static final UniqueString ARIL = UniqueString.uniqueStringOf("aril");
+	public static final String MODE = ("mode");
+	public static final String DEADLOCK = ("deadlock");
+	public static final String SEED = ("seed");
+	public static final String FINGERPRINT = ("fingerprint");
+	public static final String WORKER = ("worker");
+	public static final String TRACES = ("traces");
+	public static final String DEPTH = ("depth");
+	public static final String ARIL = ("aril");
+	  
+	public static final String REVISION = ("revision");
+	public static final String REV_TIMESTAMP = ("timestamp");
+	public static final String REV_DATE = ("date");
+	public static final String REV_COUNT = ("count");
+	public static final String REV_TAG = ("tag");
 	
-	public static final UniqueString REVISION = UniqueString.uniqueStringOf("revision");
-	public static final UniqueString REV_TIMESTAMP = UniqueString.uniqueStringOf("timestamp");
-	public static final UniqueString REV_DATE = UniqueString.uniqueStringOf("date");
-	public static final UniqueString REV_COUNT = UniqueString.uniqueStringOf("count");
-	public static final UniqueString REV_TAG = UniqueString.uniqueStringOf("tag");
-	
-	private static final UniqueString SPEC_IMPLIEDINITS = UniqueString.of("impliedinits");
-	private static final UniqueString SPEC_INVARIANTS = UniqueString.of("invariants");
-	private static final UniqueString SPEC_IMPLIEDTEMPORALS = UniqueString.of("impliedtemporals");
-	private static final UniqueString SPEC_TERMPORALS = UniqueString.of("temporals");
-	public static final UniqueString SPEC_ACTIONS = UniqueString.of("actions");
-	private static final UniqueString SPEC_INITS = UniqueString.of("inits");
+	private static final String SPEC_IMPLIEDINITS = ("impliedinits");
+	private static final String SPEC_INVARIANTS = ("invariants");
+	private static final String SPEC_IMPLIEDTEMPORALS = ("impliedtemporals");
+	private static final String SPEC_TERMPORALS = ("temporals");
+	public static final String SPEC_ACTIONS = ("actions");
+	private static final String SPEC_INITS = ("inits");
 
 	// TLCGet(..)
 	// BFS & Simulation mode
 	// Considered to be part of "statistics", but it is a property of the current behavior.
-	public static final UniqueString LEVEL = UniqueString.uniqueStringOf("level");
+	public static final String LEVEL = ("level");
 
 	// TLCGet("stats")
 	// Wrapper for all the other named registers below, except that "stats"
 	// works for both BFS and simulation whereas some of the named registers below
 	// didn't work for both modes.  Now, a user can safely do:
 	//     DOMAIN TLCGet("stats").
-	private static final UniqueString STATISTICS = UniqueString.uniqueStringOf("stats");
+	private static final String STATISTICS = ("stats");
 
-	public static final UniqueString DURATION = UniqueString.uniqueStringOf("duration");
+	public static final String DURATION = ("duration");
 	// BFS: The number of generated states.
 	// Simulation: The total number of states generated.
-	public static final UniqueString GENERATED = UniqueString.uniqueStringOf("generated");
+	public static final String GENERATED = ("generated");
 
 	// BFS: The length of the longest behavior generated so far.
 	// Simulation: The number of traces generated by the current worker. (since July
 	// 2020 in commit 557c674c0f314c2e70885a4d5994e3e858bab64a). This should be removed
 	// eventually because "diameter" was hijacked for simulation.
-	public static final UniqueString DIAMETER = UniqueString.uniqueStringOf("diameter");
+	public static final String DIAMETER = ("diameter");
 	
 	// BFS: The number of distinct states.
-	public static final UniqueString DISTINCT = UniqueString.uniqueStringOf("distinct");
+	public static final String DISTINCT = ("distinct");
 	// BFS: The number of unexplored distinct states.
-	public static final UniqueString QUEUE = UniqueString.uniqueStringOf("queue");
+	public static final String QUEUE = ("queue");
 
 	
 	public static final long serialVersionUID = 20210330L;
@@ -172,7 +171,7 @@ public class TLCGetSet implements ValueConstants {
 	private static final Value TLCGetStringValue(final Tool tool, final Value vidx, final TLCState s0, final TLCState s1,
 			final int control) {
 		final StringValue sv = (StringValue) vidx;
-		if (DIAMETER == sv.val) {
+		if (DIAMETER.equals(sv.val)) {
 			try {
 				if (TLCGlobals.mainChecker != null) {
 					return IntValue.gen(TLCGlobals.mainChecker.getProgress());
@@ -200,7 +199,7 @@ public class TLCGetSet implements ValueConstants {
 				// NPE.
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (GENERATED == sv.val) {
+		} else if (GENERATED.equals(sv.val)) {
 			try {
 				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getStatesGenerated()));
 			} catch (ArithmeticException e) {
@@ -209,7 +208,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (DISTINCT == sv.val) {
+		} else if (DISTINCT.equals(sv.val)) {
 			try {
 				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getDistinctStatesGenerated()));
 			} catch (ArithmeticException e) {
@@ -218,7 +217,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (QUEUE == sv.val) {
+		} else if (QUEUE.equals(sv.val)) {
 			try {
 				return IntValue.gen(Math.toIntExact(TLCGlobals.mainChecker.getStateQueueSize()));
 			} catch (ArithmeticException e) {
@@ -227,7 +226,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (DURATION == sv.val) {
+		} else if (DURATION.equals(sv.val)) {
 			try {
 				final int duration = (int) ((System.currentTimeMillis() - startTime) / 1000L);
 				return IntValue.gen(Math.toIntExact(duration));
@@ -235,7 +234,7 @@ public class TLCGetSet implements ValueConstants {
 				throw new EvalException(EC.TLC_MODULE_OVERFLOW,
 						Long.toString(((System.currentTimeMillis() - startTime) / 1000L)));
 			}
-		} else if (STATISTICS == sv.val) {
+		} else if (STATISTICS.equals(sv.val)) {
 			try {
 				if (TLCGlobals.mainChecker != null) {
 					return TLCGlobals.mainChecker.getStatistics();
@@ -245,7 +244,7 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (CONFIG == sv.val) {
+		} else if (CONFIG.equals(sv.val)) {
 			/*
 			 * Add operator `TLC!TLCGet("config")`.
 			 * 
@@ -271,11 +270,11 @@ public class TLCGetSet implements ValueConstants {
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 			}
-		} else if (REVISION == sv.val) {
+		} else if (REVISION.equals(sv.val)) {
 			/*
 			 * Add operator `TLC!TLCGet("revision")`.
 			 */
-			final UniqueString[] n = new UniqueString[4];
+			final String[] n = new String[4];
 			final Value[] v = new Value[n.length];
 			
 			n[0] = TLCGetSet.REV_COUNT;
@@ -297,11 +296,11 @@ public class TLCGetSet implements ValueConstants {
 			v[3] = new StringValue(TLCGlobals.getRevisionOrDev());
 
 			return new RecordValue(n, v, false);
-		} else if (SPEC == sv.val) {
+		} else if (SPEC.equals(sv.val)) {
 			/*
 			 * Add operator `TLC!TLCGet("spec")`.
 			 */
-			final UniqueString[] n = new UniqueString[6];
+			final String[] n = new String[6];
 			final Value[] v = new Value[n.length];
 
 			// Inits as found by spec processing.
@@ -336,7 +335,7 @@ public class TLCGetSet implements ValueConstants {
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
 			return new RecordValue(n, v, false);
-		} else if (LEVEL == sv.val) {
+		} else if (LEVEL.equals(sv.val)) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"
 			// is monotonically increasing because it calls tlc2.tool.TLCTrace.getLevelForReporting().
 			// "level" is the height stored as part of the state that is currently explored.
@@ -354,7 +353,7 @@ public class TLCGetSet implements ValueConstants {
 				return IntValue.gen(TLCState.INIT_LEVEL - 1);
 			}
 			return IntValue.gen(s0.getLevel());
-		} else if (ACTION == sv.val) {
+		} else if (ACTION.equals(sv.val)) {
 				/*
 			    Add operator `TLC!TLCGet("action")`.
 				
@@ -392,7 +391,7 @@ public class TLCGetSet implements ValueConstants {
 			} else {
 				return new RecordValue(s0.getAction(), s0.getAction().con);
 			}
-		} else if (ALL_VALUES == sv.val) {
+		} else if (ALL_VALUES.equals(sv.val)) {
 			/*
 			 * - Let  W  be the set  1..TLCGet("config").worker
              * - Let  Eval(w, Op)  be an operator that evaluates the given operator  Op  
@@ -431,7 +430,7 @@ public class TLCGetSet implements ValueConstants {
 			}
 		} else if (vidx instanceof StringValue) {
 			final StringValue sv = (StringValue) vidx;
-			if (EXIT == sv.val) {
+			if (EXIT.equals(sv.val)) {
 				if (val == BoolValue.ValTrue) {
 					if (TLCGlobals.mainChecker != null) {
 						TLCGlobals.mainChecker.stop();
@@ -441,7 +440,7 @@ public class TLCGetSet implements ValueConstants {
 					}
 				}
 				return BoolValue.ValTrue;
-			} else if (PAUSE == sv.val) {
+			} else if (PAUSE.equals(sv.val)) {
 				// Provisional TLCSet("pause", TRUE) implementation that suspends BFS model
 				// checking until enter is pressed on system.in. Either use in spec as:
 				// TLCSet("pause", guard)

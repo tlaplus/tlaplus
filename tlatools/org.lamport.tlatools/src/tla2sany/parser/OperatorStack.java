@@ -2,7 +2,6 @@
 package tla2sany.parser;
 
 import tla2sany.utilities.Vector;
-import util.UniqueString;
 
 /***************************************************************************
 * An OperatorStack object is a stack of stacks of OSelement objects.       *
@@ -38,7 +37,7 @@ public class OperatorStack implements tla2sany.st.SyntaxTreeConstants {
     
   public OperatorStack( ParseErrors pe ) {
     PErrors = pe;
-    fcnOp = Operators.getOperator( UniqueString.uniqueStringOf("[") ); }
+    fcnOp = Operators.getOperator("["); }
 
 // could be optimized to reuse memory
   public final void newStack() {
@@ -213,7 +212,7 @@ What do left and right mean?????? What does shift mean????????
       } else {
 // System.out.println("postfix reduction : FcnOp");
         SyntaxTreeNode eSTN = ((OSelement) CurrentTop.elementAt( n-2)).getNode();
-        lSTN = new SyntaxTreeNode( eSTN.getFN(), N_FcnAppl, eSTN, (SyntaxTreeNode[]) (opNode.heirs()) );
+        lSTN = new SyntaxTreeNode( eSTN.getFilename(), N_FcnAppl, eSTN, (SyntaxTreeNode[]) (opNode.heirs()) );
       }
       CurrentTop.removeElementAt(n-1);
       CurrentTop.setElementAt(new OSelement(lSTN) , n-2);
@@ -377,9 +376,8 @@ What do left and right mean?????? What does shift mean????????
                    else if ( oL.isPrefix() ) reducePrefix();
                    else {
                      if (   (tm2.getNode().getLocation().beginLine() < 
-                                tm1.getNode().getLocation().beginLine() )
-                         && (oR.getIdentifier() == 
-                               UniqueString.uniqueStringOf("=") )) {
+                             tm1.getNode().getLocation().beginLine() )
+                         && oR.getIdentifier().equals("=") ) {
 // System.out.println("Case 1");
                        throw new ParseException(
                               "\n  *** Hint *** You may have mistyped ==" + 

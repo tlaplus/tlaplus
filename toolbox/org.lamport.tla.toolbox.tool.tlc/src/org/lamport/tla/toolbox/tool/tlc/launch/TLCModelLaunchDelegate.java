@@ -609,7 +609,7 @@ public class TLCModelLaunchDelegate extends LaunchConfigurationDelegate
                     OpDeclNode[] vars = rootModuleNode.getVariableDecls();
                     if (vars != null && vars.length > 0)
                     {
-                        String var = rootModuleNode.getVariableDecls()[0].getName().toString();
+                        String var = rootModuleNode.getVariableDecls()[0].getName();
                         writer.addFormulaList(SpecWriterUtilities.createFalseInit(var), TLAConstants.KeyWords.INIT,
                         		MODEL_BEHAVIOR_NO_SPEC);
                         writer.addFormulaList(SpecWriterUtilities.createFalseNext(var), TLAConstants.KeyWords.NEXT,

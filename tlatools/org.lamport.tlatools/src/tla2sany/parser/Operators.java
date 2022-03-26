@@ -9,8 +9,6 @@ package tla2sany.parser;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import util.UniqueString;
-
 public class Operators {
   static public int assocNone = 0;
   static public int assocLeft = 1;
@@ -30,37 +28,39 @@ public class Operators {
     /***********************************************************************
     * The only operator of class nfix seems to be \X (aka \times).         *
     ***********************************************************************/
-  static Hashtable DefinitionTable = new Hashtable();
+  static Hashtable<String, Object> DefinitionTable = new Hashtable<String, Object>();
     /***********************************************************************
     * Contains the Operator objects for all operators.  It is constructed  *
     * from the data in ConfigConstants.defaultConfig.                      *
     ***********************************************************************/
-  static Hashtable BuiltinTable = new Hashtable();
+  static Hashtable<String, String> BuiltinTable = new Hashtable<String, String>();
     /***********************************************************************
     * It appears that this is not used.                                    *
     ***********************************************************************/
-    
-  static public void addOperator( UniqueString name, Operator op ) {
-    DefinitionTable.put(name, op);
+  
+  // TODO: appears to be unused
+  static public void addOperator(String name, Operator op) {
+	DefinitionTable.put(name, op);
   }
-
-  static public Operator getOperator( UniqueString name ) {
-    return (Operator) DefinitionTable.get( name );
+  
+  static public Operator getOperator(String name) {
+	return (Operator) DefinitionTable.get(name);
   }
 
   static public Operator getMixfix( Operator op ) {
      if (op.isPrefix()) return op;
      else {
-       UniqueString id = UniqueString.uniqueStringOf( op.getIdentifier().toString() + ".");
+       String id = op.getIdentifier() + ".";
        return (Operator) DefinitionTable.get( id );
      }
   }
   
-  static public boolean existsOperator( UniqueString name ) {
-    return ( DefinitionTable.get( name ) != null );
+  // TODO appears to be unused
+  static public boolean existsOperator( String name ) {
+	return ( DefinitionTable.get( name ) != null );
   }
 
-  static public void addSynonym( UniqueString template, UniqueString match ) {
+  static public void addSynonym(String template, String match ) {
     /*
        do make sure that the operator already exists.
        We make the new definition point to the other one.
@@ -81,35 +81,22 @@ public class Operators {
   * iff either a = b or a and b are synonyms (like (+) and \oplus).  If a  *
   * has no synonmys, then resolveSynonym(a) = a.                           *
   *************************************************************************/
-  static public UniqueString resolveSynonym( UniqueString name ) {
-    Operator n = (Operator) DefinitionTable.get( name );
+  static public String resolveSynonym( String name ) {
+    Operator n = (Operator) DefinitionTable.get(name);
     if ( n == null ) return name;
     else return n.getIdentifier();
   }
 
-  static public void addBuiltinAssoc( UniqueString symbol, UniqueString builtin ) {
+  // TODO appears to be unused
+  static public void addBuiltinAssoc( String symbol, String builtin ) {
     BuiltinTable.put( symbol, builtin );
-  }
-
-  /*************************************************************************
-  * It appears that the following method is not used.                      *
-  *************************************************************************/
-  static public UniqueString getBuiltinAssoc( UniqueString symbol ) {
-    /* first, resolve synonyms */
-    Operator n = (Operator) DefinitionTable.get(symbol);
-    if (n != null) {
-      UniqueString name = n.getIdentifier(); /* can't be null */
-      /* then lookup solution */
-      return (UniqueString) (BuiltinTable.get(name));
-    } else
-      return null;
   }
 
 /* debugging help */
   static public void printTable() {
     System.out.println("printing Operators table");
-    Enumeration Enum = DefinitionTable.keys();
-    while( Enum.hasMoreElements() ) { System.out.println("-> " + ((UniqueString)Enum.nextElement()).toString() ); }
+    Enumeration<String> Enum = DefinitionTable.keys();
+    while( Enum.hasMoreElements() ) { System.out.println("-> " + Enum.nextElement()); }
   }
 
 // shouldn't be necessary

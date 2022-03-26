@@ -41,7 +41,6 @@ import tlc2.util.LongVec;
 import tlc2.util.SimpleCache;
 import util.Assert;
 import util.ToolIO;
-import util.UniqueString;
 @SuppressWarnings("serial")
 public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
@@ -360,11 +359,6 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 
 			long irredPoly = server.getIrredPolyForFP();
 			FP64.Init(irredPoly);
-
-			// this call has to be made before the first UniqueString gets
-			// created! Otherwise workers and server end up creating different
-			// unique strings for the same String value.
-			UniqueString.setSource((InternRMI)server);
 
 			if (fts == null) {
 				fts = new RMIFilenameToStreamResolver();

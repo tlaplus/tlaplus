@@ -12,10 +12,9 @@ import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
-import util.UniqueString;
 
 public final class Action implements ToolGlobals, Serializable {
-	private static final UniqueString UNNAMED_ACTION = UniqueString.uniqueStringOf("UnnamedAction");
+	private static final String UNNAMED_ACTION = "UnnamedAction";
 
 	public static final Action UNKNOWN = new Action(SemanticNode.nullSN, Context.Empty, UNNAMED_ACTION, false);
 
@@ -24,7 +23,7 @@ public final class Action implements ToolGlobals, Serializable {
   /* Fields  */
   public final SemanticNode pred;     // Expression of the action
   public final Context con;           // Context of the action
-  private final UniqueString actionName;
+  private final String actionName;
   private OpDefNode opDef = null;
   private int id;
   private final boolean isInitPred;
@@ -39,7 +38,7 @@ public final class Action implements ToolGlobals, Serializable {
 	  this(pred, con, UNNAMED_ACTION, isInitPred);
   }
 
-  private Action(SemanticNode pred, Context con, UniqueString actionName, boolean isInitPred) {
+  private Action(SemanticNode pred, Context con, String actionName, boolean isInitPred) {
 	  this.pred = pred;
 	  this.con = con;
 	  this.actionName = actionName;
@@ -66,7 +65,7 @@ public final class Action implements ToolGlobals, Serializable {
 	  // It is possible that actionName is "Action" but lets ignore it for now.
 	  if (isNamed()) {
 		  // If known, print the action name instead of the generic string "Action".
-	      return getLocation(actionName.toString());
+	      return getLocation(actionName);
 	  }
 	  return getLocation("Action");
   }
@@ -76,13 +75,13 @@ public final class Action implements ToolGlobals, Serializable {
   }
   
   public final boolean isNamed() {
-	  return actionName != UNNAMED_ACTION && actionName != null && !"".equals(actionName.toString());
+	  return !actionName.equals(UNNAMED_ACTION) && actionName != null && !"".equals(actionName);
   }
   
   /**
    * @return The name of this action. Can be {@link Action#UNNAMED_ACTION}.
    */
-  public final UniqueString getName() {
+  public final String getName() {
 	  return actionName;
   }
   

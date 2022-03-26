@@ -33,7 +33,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 import util.WrongInvocationException;
 
 public class ModuleNode extends SymbolNode {
@@ -325,7 +324,7 @@ public class ModuleNode extends SymbolNode {
     ***********************************************************************/
 
   // Invoked only in Generator
-  public ModuleNode(UniqueString us, Context ct, TreeNode stn) {
+  public ModuleNode(String us, Context ct, TreeNode stn) {
     super(ModuleKind, stn, us);
     this.ctxt = ct;
   }
@@ -421,11 +420,7 @@ public class ModuleNode extends SymbolNode {
   }
 
   public final OpDefNode getOpDef(final String name) {
-	  return getOpDef(UniqueString.uniqueStringOf(name));
-  }
-
-  public final OpDefNode getOpDef(final UniqueString name) {
-	  return Stream.of(getOpDefs()).filter(o -> o.getName() == name).findFirst().orElse(null);
+	  return Stream.of(getOpDefs()).filter(o -> o.getName().equals(name)).findFirst().orElse(null);
   }
 
   /*************************************************************************
@@ -1218,7 +1213,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 
   protected Element getSymbolElement(Document doc, SymbolContext context) {
     Element ret = doc.createElement("ModuleNode");
-    ret.appendChild(appendText(doc, "uniquename", getName().toString()));
+    ret.appendChild(appendText(doc, "uniquename", getName()));
 
     SemanticNode[] nodes = null;
     // constants

@@ -30,7 +30,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 
 public class APSubstInNode extends LevelNode {
   /**
@@ -197,11 +196,11 @@ public class APSubstInNode extends LevelNode {
    * substitutions
    */
   @SuppressWarnings("unused")	// TODO final else block is dead code 
-  final void addExplicitSubstitute(Context instanceCtxt, UniqueString lhs,
+  final void addExplicitSubstitute(Context instanceCtxt, String lhs,
                                    TreeNode stn, ExprOrOpArgNode sub) {
     int index;
     for (index = 0; index < this.substs.length; index++) {
-      if (lhs == this.substs[index].getOp().getName()) break;
+      if (lhs.equals(this.substs[index].getOp().getName())) break;
     }
 
     if (index < this.substs.length) {
@@ -265,12 +264,12 @@ public class APSubstInNode extends LevelNode {
   final void matchAll(Vector decls) {
     for (int i = 0; i < decls.size(); i++) {
       // Get the name of the i'th operator that must be substituted for
-      UniqueString opName = ((OpDeclNode)decls.elementAt(i)).getName();
+      String opName = ((OpDeclNode)decls.elementAt(i)).getName();
 
       // See if it is represented in the substitutions array
       int j;
       for (j = 0; j < this.substs.length; j++) {
-        if (this.substs[j].getOp().getName() == opName) break;
+        if (this.substs[j].getOp().getName().equals(opName)) break;
       }
 
       // If not, then report an error

@@ -71,7 +71,6 @@ import tlc2.value.impl.Value;
 import util.Assert;
 import util.Assert.TLCDetailedRuntimeException;
 import util.Assert.TLCRuntimeException;
-import util.UniqueString;
 
 public class TLCStackFrame extends StackFrame {
 	
@@ -174,7 +173,7 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	protected Variable getStateAsVariable(final IValue value, String varName) {
-		final Variable variable = getVariable(value, UniqueString.of(varName));
+		final Variable variable = getVariable(value, varName);
 		// Because we convert the TLCState (getT) to a RecordValue to re-use the
 		// getVariable(..) implementation, the type (shown when hovering over the
 		// variable in the debugger's variable view) would be RecordValue. This would be
@@ -196,10 +195,6 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	protected Variable getVariable(final IValue value, String varName) {
-		return getVariable(value, UniqueString.of(varName));
-	}
-	
-	protected Variable getVariable(final IValue value, UniqueString varName) {
 		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName), rnd);
 		nestedVariables.put(variable.getVariablesReference(), variable);
 		return variable;
@@ -292,7 +287,7 @@ public class TLCStackFrame extends StackFrame {
 						vars.add(variable);
 					} else if (val instanceof RuntimeException) {
 						final Variable variable = new Variable();
-						variable.setName(c.getName().getName().toString());
+						variable.setName(c.getName().getName());
 						variable.setValue(c.getValue().toString());
 						final RuntimeException re = (RuntimeException) val;
 						variable.setType(re.getMessage());
@@ -342,7 +337,7 @@ public class TLCStackFrame extends StackFrame {
 					// equals the empty (unique) string if the module has no path.
 					v.setValue(e.getValue().keySet().stream().filter(OpDefNode.class::isInstance)
 							.map(OpDefNode.class::cast).map(OpDefNode::getPathName).findAny()
-							.orElse(UniqueString.of(module.getSignature())).toString());
+							.orElse(module.getSignature()));
 					v.setName(module.getSignature());
 					v.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
 					vars.add(v);

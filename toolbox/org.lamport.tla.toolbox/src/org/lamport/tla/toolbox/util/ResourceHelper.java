@@ -97,7 +97,6 @@ import tlc2.output.SpecWriterUtilities;
 import util.FilenameToStream;
 import util.StringHelper;
 import util.TLAConstants;
-import util.UniqueString;
 
 /**
  * A utility class with resource related methods
@@ -584,7 +583,7 @@ public class ResourceHelper {
         {
             return null;
         }
-        return specObj.getExternalModuleTable().getModuleNode(UniqueString.uniqueStringOf(moduleName));
+        return specObj.getExternalModuleTable().getModuleNode(moduleName);
     }
 
     /**
@@ -965,8 +964,7 @@ public class ResourceHelper {
         {
             return null;
         }
-        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                UniqueString.uniqueStringOf(moduleName));
+        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
         if (module == null)
         {
             return null;
@@ -1033,8 +1031,7 @@ public class ResourceHelper {
             {
                 return null;
             }
-            ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                    UniqueString.uniqueStringOf(moduleName));
+            ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
 
             return getPfStepOrUseHideFromModuleNode(module, document.getLineOfOffset(textSelection.getOffset()) + 1);
             // if (module == null)
@@ -1101,7 +1098,7 @@ public class ResourceHelper {
              * Top level nodes can be ones imported from extended modules.
              * We only want to look at those in the module.
              */
-            if (topLevelNodes[i].getLocation().source().equals(module.getName().toString()))
+            if (topLevelNodes[i].getLocation().source().equals(module.getName()))
             {
                 /*
                  * If the level node is a use or hide node search to see if the
@@ -1498,7 +1495,6 @@ public class ResourceHelper {
                 // HIDE that's a proof step, in which case it seems to be
                 // stn.getHeirs()[1]. Set defIdx to the index of the "DEF" in the
                 // node's syntax tree.
-                UniqueString defStr = UniqueString.uniqueStringOf("DEF");
                 int defIdx = -1;
                 SyntaxTreeNode stn = ((SyntaxTreeNode) node.stn);
                 if (stn.getKind() == SyntaxTreeConstants.N_ProofStep)
@@ -1514,7 +1510,7 @@ public class ResourceHelper {
                 for (int i = 0; i < stn.getHeirs().length; i++)
                 {
                     SyntaxTreeNode nd = stn.getHeirs()[i];
-                    if (nd.image == defStr)
+                    if (nd.image.equals("DEF"))
                     {
                         defIdx = i;
                         break;
@@ -1782,7 +1778,7 @@ public class ResourceHelper {
             OpDeclNode[] decls = modNode.getConstantDecls() ;
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getName()) ;
                 }
             }
             
@@ -1790,7 +1786,7 @@ public class ResourceHelper {
             decls = modNode.getVariableDecls() ;
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getName()) ;
                 }
             }
         }
@@ -1817,7 +1813,7 @@ public class ResourceHelper {
             OpDefNode[] decls = modNode.getOpDefs();
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getName()) ;
                 } 
             }
             
@@ -1825,7 +1821,7 @@ public class ResourceHelper {
             ThmOrAssumpDefNode[] tdecls = module.getThmOrAssDefs();
             for (int i = 0; i < tdecls.length; i++) {
                 if ((modNode != module) || earlierLine(tdecls[i].stn.getLocation(), loc)) {
-                    result.add(tdecls[i].getName().toString()) ;
+                    result.add(tdecls[i].getName()) ;
                 } 
             }
         };
@@ -1874,7 +1870,7 @@ public class ResourceHelper {
                  && (   ! instances[i].getLocal()
                      || earlierLine(loc, infiniteLoc))){
                if (instances[i].getName() != null) {
-                   symbols.add(instances[i].getName().toString()) ;
+                   symbols.add(instances[i].getName()) ;
                } else {
                   // Testing on 9 Oct 2014 revealed that the following is unnecessary because
                   // the defined operators imported into a module M without renaming by an INSTANCE
@@ -1952,7 +1948,7 @@ public class ResourceHelper {
             OpDeclNode[] decls = modNode.getConstantDecls() ;
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getName()) ;
                 }
             }
             
@@ -1960,7 +1956,7 @@ public class ResourceHelper {
             decls = modNode.getVariableDecls() ;
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getName()) ;
                 }
             }
         }
@@ -1987,7 +1983,7 @@ public class ResourceHelper {
             OpDefNode[] decls = modNode.getOpDefs();
             for (int i = 0; i < decls.length; i++) {
                 if ((modNode != module) || earlierLine(decls[i].stn.getLocation(), loc)) {
-                    result.add(decls[i].getName().toString()) ;
+                    result.add(decls[i].getName()) ;
                 } 
             }
             
@@ -1995,7 +1991,7 @@ public class ResourceHelper {
             ThmOrAssumpDefNode[] tdecls = module.getThmOrAssDefs();
             for (int i = 0; i < tdecls.length; i++) {
                 if ((modNode != module) || earlierLine(tdecls[i].stn.getLocation(), loc)) {
-                    result.add(tdecls[i].getName().toString()) ;
+                    result.add(tdecls[i].getName()) ;
                 } 
             }
         };
@@ -2046,7 +2042,7 @@ public class ResourceHelper {
                  && (   ! instances[i].getLocal()
                      || earlierLine(loc, infiniteLoc))){
                if (instances[i].getName() != null) {
-                   symbols.add(instances[i].getName().toString()) ;
+                   symbols.add(instances[i].getName()) ;
                } else {
                   // Testing on 9 Oct 2014 revealed that the following is unnecessary because
                   // the defined operators imported into a module M without renaming by an INSTANCE

@@ -41,7 +41,6 @@ import tlc2.util.Context;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.Value;
-import util.UniqueString;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class EvaluatingValueTest extends ModelCheckerTestCase {
@@ -68,7 +67,7 @@ public class EvaluatingValueTest extends ModelCheckerTestCase {
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) {
 
 		// Set value of x variable of successor state to 42. 
-		s1.bind(UniqueString.of("x"), IntValue.gen(42));
+		s1.bind("x", IntValue.gen(42));
 		
 		return BoolValue.ValTrue;
 	}

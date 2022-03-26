@@ -13,7 +13,6 @@ import java.util.function.Function;
 import tla2sany.semantic.SymbolNode;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
-import util.UniqueString;
 
 // Context is used two times:
 // 1) To determine the level boundedness of the expression appearing in the spec
@@ -142,14 +141,14 @@ public final class Context implements Iterator<Context> {
 		return null; // On Empty Context (end of chain), return null value
 	}
 
-	public final Map<UniqueString, Value> toMap() {
+	public final Map<String, Value> toMap() {
 		if (this.name == null) {
 			if (this == Empty) {
 				return new HashMap<>();
 			}
 			return this.next.toMap();
 		}
-		final Map<UniqueString, Value> res = new HashMap<>();
+		final Map<String, Value> res = new HashMap<>();
 		res.put(this.name.getName(),
 				this.value instanceof Value ? (Value) this.value : new StringValue(this.value.toString()));
 

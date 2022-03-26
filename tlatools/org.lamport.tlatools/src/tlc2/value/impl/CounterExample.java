@@ -31,12 +31,11 @@ import java.util.List;
 
 import tlc2.tool.Action;
 import tlc2.tool.TLCStateInfo;
-import util.UniqueString;
 
 public class CounterExample extends RecordValue {
 
-	private static final UniqueString STATES = UniqueString.of("state");
-	private static final UniqueString ACTIONS = UniqueString.of("action");
+	private static final String STATES = ("state");
+	private static final String ACTIONS = ("action");
 
 	public CounterExample() {
 		this(new ArrayList<>(0), Action.UNKNOWN, 0);
@@ -52,7 +51,7 @@ public class CounterExample extends RecordValue {
 	// when there can be many counterexamples.
 	// TODO Include name of definition of the violated property.
 	public CounterExample(final List<TLCStateInfo> trace, final Action action, final int loopOrdinal) {
-		super(new UniqueString[] { ACTIONS, STATES }, new Value[2], false);
+		super(new String[] { ACTIONS, STATES }, new Value[2], false);
 
 		final int loopIdx = loopOrdinal - 1;
 		assert loopIdx < trace.size();

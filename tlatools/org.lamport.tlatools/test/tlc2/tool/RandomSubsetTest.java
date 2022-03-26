@@ -41,7 +41,6 @@ import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
-import util.UniqueString;
 
 public class RandomSubsetTest extends ModelCheckerTestCase {
 
@@ -69,27 +68,27 @@ public class RandomSubsetTest extends ModelCheckerTestCase {
 		} else {
 			assertTrue(((String) first.info).startsWith("<Initial predicate>"));
 		}
-		final Map<UniqueString, IValue> firstState = first.state.getVals();
+		final Map<String, IValue> firstState = first.state.getVals();
 		assertEquals(3, firstState.size());
 		
 		// Check x and y values are within defined ranges.
-		final IntValue firstX = (IntValue) firstState.get(UniqueString.uniqueStringOf("x"));
+		final IntValue firstX = (IntValue) firstState.get("x");
 		assertTrue(1 <= firstX.val && firstX.val <= 100000000);
-		final IntValue firstY = (IntValue) firstState.get(UniqueString.uniqueStringOf("y"));
+		final IntValue firstY = (IntValue) firstState.get("y");
 		assertTrue(100000000 <= firstY.val && firstX.val <= 100000010);
 
 		// Check z is true
-		assertEquals(BoolValue.ValTrue, (IBoolValue) firstState.get(UniqueString.uniqueStringOf("z")));
+		assertEquals(BoolValue.ValTrue, (IBoolValue) firstState.get("z"));
 		
 		final TLCStateInfo second = (TLCStateInfo) ((Object[]) actual.get(1))[0];
 		assertTrue(((String) second.info).startsWith("<Next line 10, col 9 to line 11, col 21 of module RandomSubset>"));
-		final Map<UniqueString, IValue> secondState = second.state.getVals();
+		final Map<String, IValue> secondState = second.state.getVals();
 		assertEquals(3, secondState.size());
 		// UNCHANGED x,y
-		assertEquals(firstX.val, ((IntValue) secondState.get(UniqueString.uniqueStringOf("x"))).val);
-		assertEquals(firstY.val, ((IntValue) secondState.get(UniqueString.uniqueStringOf("y"))).val);
+		assertEquals(firstX.val, ((IntValue) secondState.get("x")).val);
+		assertEquals(firstY.val, ((IntValue) secondState.get("y")).val);
 		// Check z is false
-		assertEquals(BoolValue.ValFalse, (IBoolValue) secondState.get(UniqueString.uniqueStringOf("z")));
+		assertEquals(BoolValue.ValFalse, (IBoolValue) secondState.get("z"));
 
 		assertZeroUncovered();
 	}

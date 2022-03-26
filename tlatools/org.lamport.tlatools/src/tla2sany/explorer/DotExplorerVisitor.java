@@ -85,7 +85,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 			final ModuleNode mn = (ModuleNode) exploreNode;
 			this.writer.append(Integer.toString(mn.hashCode()));
 			this.writer.append(" [label=\"");
-			this.writer.append(mn.getName().toString());
+			this.writer.append(mn.getName());
 			this.writer.append("\",style = filled]");
 			this.writer.append(";\n");
 			
@@ -95,7 +95,7 @@ public class DotExplorerVisitor extends ExplorerVisitor {
 			this.writer.append(Integer.toString(sn.hashCode()));
 			this.writer.append(type2format.getOrDefault(exploreNode.getClass(), " [") + "label=\"");
 			if (exploreNode instanceof OpDefNode) {
-				this.writer.append(toDot(((OpDefNode) sn).getName().toString()));
+				this.writer.append(toDot(((OpDefNode) sn).getName()));
 			} else {
 				this.writer.append(toDot(sn.getTreeNode().getHumanReadableImage()));
 			}

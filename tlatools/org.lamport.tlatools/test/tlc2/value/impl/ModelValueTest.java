@@ -30,7 +30,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import util.Assert.TLCRuntimeException;
-import util.UniqueString;
 
 public class ModelValueTest {
 	
@@ -72,8 +71,8 @@ public class ModelValueTest {
 	
 	@Test
 	public void testEqualsRcdMV() {
-		assertNotEquals(new RecordValue(UniqueString.of("foo"), new StringValue("bar")), ModelValue.make("untyped"));
-		assertNotEquals(ModelValue.make("untyped"), new RecordValue(UniqueString.of("foo"), new StringValue("bar")));
+		assertNotEquals(new RecordValue("foo", new StringValue("bar")), ModelValue.make("untyped"));
+		assertNotEquals(ModelValue.make("untyped"), new RecordValue("foo", new StringValue("bar")));
 	}
 	
 	@Test
@@ -120,8 +119,8 @@ public class ModelValueTest {
 	
 	@Test
 	public void testCompareToRcdMV() {
-		assertEquals(1, new RecordValue(UniqueString.of("foo"), new StringValue("bar")).compareTo(ModelValue.make("untyped")));
-		assertEquals(-1, ModelValue.make("untyped").compareTo(new RecordValue(UniqueString.of("foo"), new StringValue("bar"))));
+		assertEquals(1, new RecordValue("foo", new StringValue("bar")).compareTo(ModelValue.make("untyped")));
+		assertEquals(-1, ModelValue.make("untyped").compareTo(new RecordValue("foo", new StringValue("bar"))));
 	}
 	
 	@Test
@@ -191,11 +190,11 @@ public class ModelValueTest {
 	
 	@Test(expected = TLCRuntimeException.class)
 	public void testEqualsRcdTypedMV() {
-		new RecordValue(UniqueString.of("foo"), new StringValue("bar")).equals(ModelValue.make("B_b"));
+		new RecordValue("foo", new StringValue("bar")).equals(ModelValue.make("B_b"));
 	}
 	@Test(expected = TLCRuntimeException.class)
 	public void testEqualsTypedMVRcd() {
-		ModelValue.make("B_b").equals(new RecordValue(UniqueString.of("foo"), new StringValue("bar")));
+		ModelValue.make("B_b").equals(new RecordValue("foo", new StringValue("bar")));
 	}
 	
 	@Test(expected = TLCRuntimeException.class)
@@ -268,11 +267,11 @@ public class ModelValueTest {
 	
 	@Test(expected = TLCRuntimeException.class)
 	public void testCompareToRcdTypedMV() {
-		new RecordValue(UniqueString.of("foo"), new StringValue("bar")).compareTo(ModelValue.make("B_b"));
+		new RecordValue("foo", new StringValue("bar")).compareTo(ModelValue.make("B_b"));
 	}
 	@Test(expected = TLCRuntimeException.class)
 	public void testCompareToTypedMVRcd() {
-		ModelValue.make("B_b").compareTo(new RecordValue(UniqueString.of("foo"), new StringValue("bar")));
+		ModelValue.make("B_b").compareTo(new RecordValue("foo", new StringValue("bar")));
 	}
 	
 	@Test(expected = TLCRuntimeException.class)

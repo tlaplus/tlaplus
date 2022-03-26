@@ -209,7 +209,7 @@ public class TLCExt {
 			Assert.fail(EC.GENERAL, String.format(
 					"In evaluating TLCExt!Trace, the state is not completely specified yet (variable%s %s undefined).",
 					unassigned.size() > 1 ? "s" : "",
-					unassigned.stream().map(n -> n.getName().toString()).collect(Collectors.joining(", "))));
+					unassigned.stream().map(n -> n.getName()).collect(Collectors.joining(", "))));
 		}
 
 		if (TLCGlobals.simulator != null) {
@@ -305,6 +305,6 @@ public class TLCExt {
 					new String[] { "ModelValue", "string", Values.ppr(val.toString()) });
 		}
 		final StringValue str = (StringValue) val;
-		return ModelValue.add(str.val.toString());
+		return ModelValue.add(str.val);
 	}
 }

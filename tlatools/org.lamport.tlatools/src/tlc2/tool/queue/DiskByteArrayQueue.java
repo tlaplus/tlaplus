@@ -34,7 +34,6 @@ import util.BufferedDataOutputStream;
 import util.FileUtil;
 import util.IDataInputStream;
 import util.IDataOutputStream;
-import util.UniqueString;
 import util.WrongInvocationException;
 
 /**
@@ -917,7 +916,7 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		 * @see tlc2.value.IValueInputStream#getValue(int)
 		 */
 		@Override
-		public final UniqueString getValue(int idx) {
+		public final String getValue(int idx) {
 			throw new WrongInvocationException("Not supported");
 		}
 

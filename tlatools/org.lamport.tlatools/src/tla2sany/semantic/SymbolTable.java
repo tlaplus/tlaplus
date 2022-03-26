@@ -4,7 +4,6 @@ package tla2sany.semantic;
 
 import tla2sany.utilities.Stack;
 import tla2sany.utilities.Vector;
-import util.UniqueString;
 
 // The Symbol Table builds the stack of context tables.  The stack
 // model for symbol resolution is straightforward, but not
@@ -88,17 +87,17 @@ public class SymbolTable implements ASTConstants {
   * Looks up `name' in the symbol table and returns the node it finds, or  *
   * null if there is no entry for `name'.                                  *
   *************************************************************************/
-	public final SymbolNode resolveSymbol(UniqueString name) {
-		for (int c = contextStack.size() - 1; c >= 0; c--) {
-			Context ct = (Context) contextStack.elementAt(c);
-			SymbolNode r = ct.getSymbol(name);
-			if (r != null)
-				return r;
-		}
-		return null;
+  public final SymbolNode resolveSymbol(String name) {
+	for (int c = contextStack.size() - 1; c >= 0; c--) {
+	  Context ct = (Context) contextStack.elementAt(c);
+	  SymbolNode r = ct.getSymbol(name);
+	  if (r != null)
+		return r;
 	}
+	return null;
+  }
 
-  public final ModuleNode resolveModule(UniqueString name) {
+  public final ModuleNode resolveModule(String name) {
     ModuleName modName = new ModuleName(name);
 
     for (int c = contextStack.size()-1; c >= 0; c--) {
@@ -121,7 +120,7 @@ public class SymbolTable implements ASTConstants {
    * 
    * As of 31 Oct 2012, the return value was not used by any calling method.
    */
-  public final boolean addSymbol(UniqueString name, SymbolNode symbol) {
+  public final boolean addSymbol(String name, SymbolNode symbol) {
     SymbolNode currentBinding = resolveSymbol(name);
 // System.out.println("*** Resolving " + name.toString() + ", in binding ");
     // If "name" is already bound to the argument "symbol", then
@@ -218,7 +217,7 @@ public class SymbolTable implements ASTConstants {
     return true; 
   } // end addSymbol() 
 
-  public final boolean addModule(UniqueString name, ModuleNode symbol) {
+  public final boolean addModule(String name, ModuleNode symbol) {
     SymbolNode currentBinding = resolveModule(name);
 
     // If "name" is already bound to the argument "symbol", then
@@ -257,9 +256,9 @@ public class SymbolTable implements ASTConstants {
   }
 
   static class ModuleName {
-    UniqueString name;
+    String name;
 
-    ModuleName(UniqueString name) {
+    ModuleName(String name) {
       this.name = name;
     }
 
@@ -271,9 +270,7 @@ public class SymbolTable implements ASTConstants {
     }
 
     public final String toString() {
-      return this.name.toString();
+      return this.name;
     }
-	
   }
-  
 }

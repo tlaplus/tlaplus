@@ -23,7 +23,6 @@ import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.utilities.Vector;
-import util.UniqueString;
 
 /*
  * TL - 2014
@@ -121,7 +120,7 @@ public class Explorer {
 			ExploreNode semNode = Enum.nextElement();
 
 			if (semNode instanceof SymbolNode
-					&& ((SymbolNode) semNode).getName() == UniqueString.uniqueStringOf(symbName)) {
+					&& ((SymbolNode) semNode).getName().equals(symbName)) {
 
 				symbolVect.addElement((SymbolNode) semNode);
 
@@ -149,7 +148,7 @@ public class Explorer {
 			ExploreNode semNode = Enum.nextElement();
 
 			if (semNode instanceof SymbolNode
-					&& ((SymbolNode) semNode).getName() == UniqueString.uniqueStringOf(symbName)) {
+					&& ((SymbolNode) semNode).getName().equals(symbName)) {
 
 				symbolVect.addElement((SymbolNode) semNode);
 
@@ -187,7 +186,7 @@ public class Explorer {
 			ExploreNode semNode = Enum.nextElement();
 
 			if (semNode instanceof SymbolNode
-					&& ((SymbolNode) semNode).getName() == UniqueString.uniqueStringOf(symbName)) {
+					&& ((SymbolNode) semNode).getName().equals(symbName)) {
 
 				symbolVect.addElement((SymbolNode) semNode);
 

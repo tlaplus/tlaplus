@@ -54,7 +54,6 @@ import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
 import util.FileUtil;
 import util.FilenameToStream;
-import util.UniqueString;
 
 public class Simulator {
 
@@ -824,7 +823,7 @@ public class Simulator {
 	}
 	
 	public final Value getStatistics() {
-		final UniqueString[] n = new UniqueString[4];
+		final String[] n = new String[4];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.TRACES;
@@ -847,7 +846,7 @@ public class Simulator {
 	}
 
 	private final Value createConfig() {
-		final UniqueString[] n = new UniqueString[8];
+		final String[] n = new String[8];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.MODE;

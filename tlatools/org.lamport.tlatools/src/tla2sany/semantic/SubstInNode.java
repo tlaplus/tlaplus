@@ -33,7 +33,6 @@ import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 
 public class SubstInNode extends ExprNode {
   /**
@@ -200,11 +199,10 @@ public class SubstInNode extends ExprNode {
    * substitutions
    */
   @SuppressWarnings("unused")	// TODO final else block is dead code 
-  final void addExplicitSubstitute(Context instanceCtxt, UniqueString lhs,
-                                   TreeNode stn, ExprOrOpArgNode sub) {
+  final void addExplicitSubstitute(Context instanceCtxt, String lhs, TreeNode stn, ExprOrOpArgNode sub) {
     int index;
     for (index = 0; index < this.substs.length; index++) {
-      if (lhs == this.substs[index].getOp().getName()) break;
+      if (lhs.equals(this.substs[index].getOp().getName())) break;
     }
 
     if (index < this.substs.length) {
@@ -212,7 +210,7 @@ public class SubstInNode extends ExprNode {
 	// if it is not an implicit substitution, then replacing it is
 	// an error.
         errors.addError(stn.getLocation(), "Multiple substitutions for symbol '" +
-			lhs.toString() + "' in substitution.");
+			lhs + "' in substitution.");
       }
       else {
 	// if it is an implicit subst, then replacing it with an
@@ -268,12 +266,12 @@ public class SubstInNode extends ExprNode {
   final void matchAll(Vector<OpDeclNode> decls) {
     for (int i = 0; i < decls.size(); i++) {
       // Get the name of the i'th operator that must be substituted for
-      UniqueString opName = decls.elementAt(i).getName();
+      String opName = decls.elementAt(i).getName();
 
       // See if it is represented in the substitutions array
       int j;
       for (j = 0; j < this.substs.length; j++) {
-        if (this.substs[j].getOp().getName() == opName) break;
+        if (this.substs[j].getOp().getName().equals(opName)) break;
       }
 
       // If not, then report an error

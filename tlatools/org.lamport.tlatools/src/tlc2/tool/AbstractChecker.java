@@ -38,7 +38,6 @@ import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
 import util.DebugPrinter;
-import util.UniqueString;
 
 /**
  * The abstract checker
@@ -638,7 +637,7 @@ public abstract class AbstractChecker
 	}
 
 	public final Value getStatistics() {
-		final UniqueString[] n = new UniqueString[5];
+		final String[] n = new String[5];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.QUEUE;
@@ -664,7 +663,7 @@ public abstract class AbstractChecker
 	}
 	
 	private final Value createConfig() {
-		final UniqueString[] n = new UniqueString[6];
+		final String[] n = new String[6];
 		final Value[] v = new Value[n.length];
 		n[0] = TLCGetSet.MODE;
 		v[0] = new StringValue("bfs");

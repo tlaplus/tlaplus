@@ -32,46 +32,44 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
-import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
 import util.TLAConstants;
-import util.UniqueString;
 
 public class RecordValue extends Value implements Applicable {
-  private static final UniqueString BLI = UniqueString.of("beginLine");
-  private static final UniqueString BCOL = UniqueString.of("beginColumn");
-  private static final UniqueString ELI = UniqueString.of("endLine");
-  private static final UniqueString ECOL = UniqueString.of("endColumn");
-  private static final UniqueString MOD = UniqueString.of("module");
-  private static final UniqueString NAME = UniqueString.of("name");
-  private static final UniqueString LOC = UniqueString.of("location");
-  private static final UniqueString CTXT = UniqueString.of("context");
-  private static final UniqueString ACTION = UniqueString.of("_action");
+  private static final String BLI = ("beginLine");
+  private static final String BCOL = ("beginColumn");
+  private static final String ELI = ("endLine");
+  private static final String ECOL = ("endColumn");
+  private static final String MOD = ("module");
+  private static final String NAME = ("name");
+  private static final String LOC = ("location");
+  private static final String CTXT = ("context");
+  private static final String ACTION = ("_action");
 
-  public final UniqueString[] names;   // the field names
+  public final String[] names;   // the field names
   public final Value[] values;         // the field values
   private boolean isNorm;
-  public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new Value[0], true);
+  public static final RecordValue EmptyRcd = new RecordValue(new String[0], new Value[0], true);
 
   /* Constructor */
-  public RecordValue(UniqueString[] names, Value[] values, boolean isNorm) {
+  public RecordValue(String[] names, Value[] values, boolean isNorm) {
     this.names = names;
     this.values = values;
     this.isNorm = isNorm;
   }
 
-  public RecordValue(UniqueString[] names, Value[] values, boolean isNorm, CostModel cm) {
+  public RecordValue(String[] names, Value[] values, boolean isNorm, CostModel cm) {
 	  this(names, values, isNorm);
 	  this.cm = cm;
   }
   
-  public RecordValue(UniqueString name, Value v, boolean isNorm) {
-	  this(new UniqueString[] {name}, new Value[] {v}, isNorm);
+  public RecordValue(String name, Value v, boolean isNorm) {
+	  this(new String[] {name}, new Value[] {v}, isNorm);
   }
   
-  public RecordValue(UniqueString name, Value v) {
-	  this(new UniqueString[] {name}, new Value[] {v}, false);
+  public RecordValue(String name, Value v) {
+	  this(new String[] {name}, new Value[] {v}, false);
   }
 
 	// See
@@ -79,10 +77,10 @@ public class RecordValue extends Value implements Applicable {
 	// where this would have been useful. Consider refactoring the CM module
 	// override once sufficient time has passed that we can expect most users to be
 	// on a version of TLC with this constructor.
-	public RecordValue(final Map<UniqueString, Value> m) {
-		final List<Map.Entry<UniqueString, Value>> entries = new ArrayList<>(m.entrySet());
+	public RecordValue(final Map<String, Value> m) {
+		final List<Map.Entry<String, Value>> entries = new ArrayList<>(m.entrySet());
 
-		this.names = new UniqueString[entries.size()];
+		this.names = new String[entries.size()];
 		this.values = new Value[entries.size()];
 
 		for (int i = 0; i < entries.size(); i++) {
@@ -92,7 +90,7 @@ public class RecordValue extends Value implements Applicable {
 	}
 
   public RecordValue(final Location location) {
-		this.names = new UniqueString[5];
+		this.names = new String[5];
 		this.values = new Value[this.names.length];
 
 		this.names[0] = BLI;
@@ -108,13 +106,13 @@ public class RecordValue extends Value implements Applicable {
 		this.values[3] = IntValue.gen(location.endColumn());
 		
 		this.names[4] = MOD;
-		this.values[4] = new StringValue(location.sourceAsUniqueString());
+		this.values[4] = new StringValue(location.source());
 		
 		this.isNorm = false;
   }
 
   public RecordValue(final Action action) {
-		this.names = new UniqueString[2];
+		this.names = new String[2];
 		this.values = new Value[this.names.length];
 
 		this.names[0] = NAME;
@@ -127,7 +125,7 @@ public class RecordValue extends Value implements Applicable {
   }
 
   public RecordValue(final Action action, final Context ctxt) {
-		this.names = new UniqueString[3];
+		this.names = new String[3];
 		this.values = new Value[this.names.length];
 
 		this.names[0] = NAME;
@@ -149,7 +147,7 @@ public class RecordValue extends Value implements Applicable {
   public RecordValue(final TLCState state) {
 		final OpDeclNode[] vars = state.getVars();
 		
-		this.names = new UniqueString[vars.length];
+		this.names = new String[vars.length];
 		this.values = new Value[vars.length];
 
 		for (int i = 0; i < vars.length; i++) {
@@ -163,7 +161,7 @@ public class RecordValue extends Value implements Applicable {
   public RecordValue(final TLCState state, final Action action) {
 		final OpDeclNode[] vars = state.getVars();
 		
-		this.names = new UniqueString[vars.length + 1];
+		this.names = new String[vars.length + 1];
 		this.values = new Value[vars.length + 1];
 
 		//TODO: _action too verbose?
@@ -172,7 +170,7 @@ public class RecordValue extends Value implements Applicable {
 		
 		for (int i = 0; i < vars.length; i++) {
 			this.names[i+1] = vars[i].getName();
-			this.values[i+1] = (Value) state.lookup(this.names[i+1]); 
+			this.values[i+1] = (Value) state.lookup(vars[i+1].getName()); 
 		}
 		
 		this.isNorm = false;
@@ -198,15 +196,15 @@ public class RecordValue extends Value implements Applicable {
 	  
 		final OpDeclNode[] vars = state.getVars();
 		
-		this.names = new UniqueString[vars.length * 2];
+		this.names = new String[vars.length * 2];
 		this.values = new Value[vars.length * 2];
 
 		for (int i = 0; i < vars.length; i++) {
 			final int j = i * 2;
-			final UniqueString var = vars[i].getName();
+			final String var = vars[i].getName();
 
-			this.names[j] = UniqueString.of(var + " ");
-			this.names[j+1] = UniqueString.of(var + "'");
+			this.names[j] = var + " ";
+			this.names[j+1] = var + "'";
 
 			this.values[j] = (Value) state.lookup(var);
 			if (this.values[j] == null) {
@@ -317,9 +315,9 @@ public class RecordValue extends Value implements Applicable {
         Value[] newValues = new Value[rlen];
         Value arcVal = ex.path[ex.idx];
         if (arcVal instanceof StringValue) {
-          UniqueString arc = ((StringValue)arcVal).val;
+          String arc = ((StringValue)arcVal).val;
           for (int i = 0; i < rlen; i++) {
-            if (this.names[i].equals(arc)) {
+            if (arc.equals(this.names[i])) {
               ex.idx++;
               newValues[i] = this.values[i].takeExcept(ex);
             }
@@ -327,9 +325,9 @@ public class RecordValue extends Value implements Applicable {
               newValues[i] = this.values[i];
             }
           }
-          UniqueString[] newNames = this.names;
+          String[] newNames = this.names;
           if (!this.isNorm) {
-            newNames = new UniqueString[rlen];
+            newNames = new String[rlen];
             for (int i = 0; i < rlen; i++) {
               newNames[i] = this.names[i];
             }
@@ -401,7 +399,7 @@ public class RecordValue extends Value implements Applicable {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()), getSource());
       }
-      UniqueString name = ((StringValue)arg).getVal();
+      String name = ((StringValue)arg).getVal();
       int rlen = this.names.length;
       for (int i = 0; i < rlen; i++) {
         if (name.equals(this.names[i])) {
@@ -439,7 +437,7 @@ public class RecordValue extends Value implements Applicable {
       if (!(arg instanceof StringValue)) {
         Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()), getSource());
       }
-      UniqueString name = ((StringValue)arg).getVal();
+      String name = ((StringValue)arg).getVal();
       int rlen = this.names.length;
       for (int i = 0; i < rlen; i++) {
         if (name.equals(this.names[i])) {
@@ -504,7 +502,7 @@ public class RecordValue extends Value implements Applicable {
             Assert.fail("Field name " + this.names[i] + " occurs multiple times in record.", getSource());
           }
           else if (cmp > 0) {
-            UniqueString ts = this.names[0];
+            String ts = this.names[0];
             this.names[0] = this.names[i];
             this.names[i] = ts;
             Value tv = this.values[0];
@@ -514,7 +512,7 @@ public class RecordValue extends Value implements Applicable {
         }
         for (int i = 2; i < len; i++) {
           int j = i;
-          UniqueString st = this.names[i];
+          String st = this.names[i];
           Value val = this.values[i];
           int cmp;
           while ((cmp = st.compareTo(this.names[j-1])) < 0) {
@@ -619,7 +617,7 @@ public class RecordValue extends Value implements Applicable {
 				final int index1 = vos.put(names[i]);
 				if (index1 == -1) {
 					vos.writeByte(STRINGVALUE);
-					names[i].write(vos.getOutputStream());
+					vos.writeStringVal(names[i]);
 				} else {
 					vos.writeByte(DUMMYVALUE);
 					vos.writeNat(index1);
@@ -641,7 +639,7 @@ public class RecordValue extends Value implements Applicable {
       fp = FP64.Extend(fp, FCNRCDVALUE);
       fp = FP64.Extend(fp, rlen);
       for (int i = 0; i < rlen; i++) {
-        String str = this.names[i].toString();
+        String str = this.names[i];
         fp = FP64.Extend(fp, STRINGVALUE);
         fp = FP64.Extend(fp, str.length());
         fp = FP64.Extend(fp, str);
@@ -709,7 +707,7 @@ public class RecordValue extends Value implements Applicable {
 			len = -len;
 			isNorm = false;
 		}
-		final UniqueString[] names = new UniqueString[len];
+		final String[] names = new String[len];
 		final Value[] vals = new Value[len];
 		for (int i = 0; i < len; i++) {
 			final byte kind1 = vos.readByte();
@@ -718,37 +716,10 @@ public class RecordValue extends Value implements Applicable {
 				names[i] = vos.getValue(index1);
 			} else {
 				final int index1 = vos.getIndex();
-				names[i] = UniqueString.read(vos.getInputStream());
+				names[i] = vos.readStringVal();
 				vos.assign(names[i], index1);
 			}
 			vals[i] = (Value) vos.read();
-		}
-		final Value res = new RecordValue(names, vals, isNorm);
-		vos.assign(res, index);
-		return res;
-	}
-
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws EOFException, IOException {
-		final int index = vos.getIndex();
-		boolean isNorm = true;
-		int len = vos.readInt();
-		if (len < 0) {
-			len = -len;
-			isNorm = false;
-		}
-		final UniqueString[] names = new UniqueString[len];
-		final Value[] vals = new Value[len];
-		for (int i = 0; i < len; i++) {
-			final byte kind1 = vos.readByte();
-			if (kind1 == DUMMYVALUE) {
-				final int index1 = vos.readNat();
-				names[i] = vos.getValue(index1);
-			} else {
-				final int index1 = vos.getIndex();
-				names[i] = UniqueString.read(vos.getInputStream(), tbl);
-				vos.assign(names[i], index1);
-			}
-			vals[i] = (Value) vos.read(tbl);
 		}
 		final Value res = new RecordValue(names, vals, isNorm);
 		vos.assign(res, index);
@@ -759,7 +730,7 @@ public class RecordValue extends Value implements Applicable {
 			final TLCState state = TLCState.Empty.createEmpty();
 			final OpDeclNode[] vars = state.getVars();
 			for (int i = 0; i < vars.length; i++) {
-				final UniqueString name = vars[i].getName();
+				final String name = vars[i].getName();
 				int rlen = this.names.length;
 				for (int j = 0; j < rlen; j++) {
 					if (name.equals(this.names[j])) {
@@ -791,9 +762,9 @@ public class RecordValue extends Value implements Applicable {
 					result.append("\n");
 				} else {
 					for (int i = 0; i < vlen; i++) {
-						UniqueString key = rcd.names[i];
+						String key = rcd.names[i];
 						result.append("/\\ ");
-						result.append(key.toString());
+						result.append(key);
 						result.append(" = ");
 						result.append(Values.ppr(rcd.values[i]));
 						result.append("\n");
@@ -828,7 +799,7 @@ public class RecordValue extends Value implements Applicable {
 			}
 
 			@Override
-			public TLCState bind(UniqueString name, IValue value) {
+			public TLCState bind(String name, IValue value) {
 				return this.state.bind(name, value);
 			}
 
@@ -838,18 +809,18 @@ public class RecordValue extends Value implements Applicable {
 			}
 
 			@Override
-			public TLCState unbind(UniqueString name) {
+			public TLCState unbind(String name) {
 				return this.state.unbind(name);
 			}
 
 			@Override
-			public IValue lookup(UniqueString var) {
+			public IValue lookup(String var) {
 				return this.state.lookup(var);
 			}
 
 			@Override
-			public boolean containsKey(UniqueString var) {
-				return this.state.containsKey(var);
+			public boolean containsKey(String var) {
+				return this.state.containsKey(var.toString());
 			}
 
 			@Override
@@ -887,9 +858,8 @@ public class RecordValue extends Value implements Applicable {
 		public List<TLCVariable> getTLCVariables(final TLCVariable prototype, Random rnd) {
 			final List<TLCVariable> nestedVars = new ArrayList<>(values.length);
 			for (int i = 0; i < names.length; i++) {
-				final UniqueString uniqueString = names[i];
 				final Value v = values[i];
-				final TLCVariable nested = prototype.newInstance(uniqueString.toString(), v, rnd);
+				final TLCVariable nested = prototype.newInstance(names[i], v, rnd);
 				nested.setValue(v.toString());
 				nested.setType(v.getTypeString());
 				nestedVars.add(nested);

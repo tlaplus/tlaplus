@@ -39,7 +39,6 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.xml.SymbolContext;
 import tlc2.util.Context;
-import util.UniqueString;
 
 public class TBParTest {
 
@@ -190,7 +189,7 @@ public class TBParTest {
 		private static class DummySymbolNode extends SymbolNode {
 			
 			protected DummySymbolNode(String name) {
-				super(1, SyntaxTreeNode.nullSTN, UniqueString.uniqueStringOf(name));
+				super(1, SyntaxTreeNode.nullSTN, (name));
 			}
 			
 			@Override
@@ -220,7 +219,7 @@ public class TBParTest {
 			
 			@Override
 			public String toString() {
-				return name.toString();
+				return name;
 			}
 		}
 	}

@@ -35,7 +35,7 @@ import tlc2.tool.BuiltInOPs;
 import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
 import tlc2.value.Values;
-import util.UniqueString;
+import util.VarLocMap;
 
 /**
  * OpApplNodes represent all kinds of operator applications in TLA+,
@@ -167,7 +167,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * This is also used for the "@" construct, which somehow gets treated
    * as an OpApplNode for now
    */
-  public OpApplNode(UniqueString us, ExprOrOpArgNode[] ops, TreeNode stn,
+  public OpApplNode(String us, ExprOrOpArgNode[] ops, TreeNode stn,
                     ModuleNode mn) {
     super(OpApplKind, stn);
     this.operands = ops;
@@ -189,7 +189,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
   /*************************************************************************
   * Argument for setting isATuple eliminated 3 Aug 2007.                   *
   *************************************************************************/
-  public OpApplNode(UniqueString us, ExprOrOpArgNode[] ops,
+  public OpApplNode(String us, ExprOrOpArgNode[] ops,
                     FormalParamNode[] odns,
                     TreeNode stn, ModuleNode mn) {
     super(OpApplKind, stn);
@@ -208,7 +208,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * constructor for builtins & bounded quantifiers, including fcn defs--
    * matching is very syntax-specific in this case and we skip it.
    */
-  public OpApplNode(UniqueString us, FormalParamNode[] funcName,
+  public OpApplNode(String us, FormalParamNode[] funcName,
                     ExprOrOpArgNode[] ops, FormalParamNode[][] pars,
                     boolean[] isT, ExprNode[] rs, TreeNode stn,
                     ModuleNode mn) {
@@ -243,7 +243,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
   /*************************************************************************
   * Called only by Function.recursionCheck() in semantic/Generator.java.   *
   *************************************************************************/
-  final void resetOperator( UniqueString us ) {
+  final void resetOperator(String us) {
     this.operator = Context.getGlobalContext().getSymbol(us);
   }
 
@@ -1017,7 +1017,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     *    Note that not a problem with CHOOSE, which does not allow a       *
     *    temporal body.                                                    *
     ***********************************************************************/
-    String opName = this.operator.getName().toString();
+    String opName = this.operator.getName();
     /***********************************************************************
     * Check for []A.                                                       *
     ***********************************************************************/
@@ -1025,7 +1025,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       ExprNode arg = (ExprNode) this.getArgs()[0];
       if (  (arg.getLevel() == ActionLevel)
           && (arg.getKind() == OpApplKind)) {
-        if (!((OpApplNode) arg).operator.getName().toString().equals(
+        if (!((OpApplNode) arg).operator.getName().equals(
                                                            "$SquareAct")) {
           errors.addError(
             stn.getLocation(),
@@ -1041,7 +1041,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         ExprNode arg = (ExprNode) this.getArgs()[0];
         if (  (arg.getLevel() == ActionLevel)
             && (arg.getKind() == OpApplKind)) {
-          if (!((OpApplNode) arg).operator.getName().toString().equals(
+          if (!((OpApplNode) arg).operator.getName().equals(
                                                              "$AngleAct")) {
             errors.addError(
               stn.getLocation(),
@@ -1211,7 +1211,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       ret = "\nOperator: null";
     }
     else {
-      ret = "\nOperator: " + operator.getName().toString() + "  "
+      ret = "\nOperator: " + operator.getName() + "  "
             + operator.getUid() + "  ";
     }
 
@@ -1291,7 +1291,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 			final TreeSet<SymbolNode> s = new TreeSet<SymbolNode>(new java.util.Comparator<SymbolNode>() {
 				@Override
 				public int compare(SymbolNode o1, SymbolNode o2) {
-					return Integer.compare(o1.getName().getVarLoc(), o2.getName().getVarLoc());
+					return Integer.compare(VarLocMap.getVarLoc(o1.getName()), VarLocMap.getVarLoc(o2.getName()));
 				}
 			});
 			s.addAll(allParams);
@@ -1299,7 +1299,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 			int idx = 0;
 			for (final SymbolNode sn : s) {
 				result.append("/\\ ");
-				result.append(sn.getName().toString());
+				result.append(sn.getName());
 
 				final IValue value = ((ITupleValue) aValue).getElem(idx++);
 				result.append(" = ");
@@ -1318,13 +1318,13 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     // TL 2014 - A fix for detecting null representing OTHER inside a case (please refrain from using null as a semantical object),
     // its form is
     // OpApplNode: Operator: $Case - Operands: 3(_,_,OpApplNode: Operator: $Pair - Operands: 2(null,_))
-    if (operator.getName().toString().equals("$Case") && operands.length > 1 /* OTHER cannot occur alone in a CASE */) {
+    if (operator.getName().equals("$Case") && operands.length > 1 /* OTHER cannot occur alone in a CASE */) {
       // OTHER should be last operand
        ExprOrOpArgNode lastOperand = operands[operands.length-1];
        if (lastOperand instanceof tla2sany.semantic.OpApplNode) {
           OpApplNode other = (OpApplNode)lastOperand;
           // indeed the OTHER case
-          if (other.getOperator().getName().toString().equals("$Pair") && other.getArgs()[0] == null) {
+          if (other.getOperator().getName().equals("$Pair") && other.getArgs()[0] == null) {
             // we pass a flag that tells any future OpApplNode that a null operand in 0 position should be replaced by the string $Other
             context = new SymbolContext(context);
             context.setFlag(SymbolContext.OTHER_BUG);

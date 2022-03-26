@@ -15,7 +15,6 @@ import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
 
 /**
  * This class represents operators of arity > 0 used as arguments to
@@ -30,13 +29,13 @@ public class OpArgNode extends ExprOrOpArgNode {
   private SymbolNode   op;      // The OpDefNode, OpDeclNode, or
                                 // FormalParamNode corresponding to
                                 // THIS OpArgNode
-  private UniqueString name;    // The string name of the full compound
+  private String name;    // The string name of the full compound
                                 // name of this operator
   private int          arity;   // The correct arity for this operator
   private ModuleNode   mn;      // the Module in which THIS OpArgNode appears
 
   /* Used only for construction of a "null" OpArg */
-  public OpArgNode(UniqueString name) {
+  public OpArgNode(String name) {
     super(OpArgKind, SyntaxTreeNode.nullSTN);
     this.name = name;
     this.arity = -2;
@@ -63,7 +62,7 @@ public class OpArgNode extends ExprOrOpArgNode {
 
   public final int          getArity()     { return this.arity; }
 
-  public final UniqueString getName()      { return this.name; }
+  public final String getName()      { return this.name; }
 
   public final ModuleNode   getModule()    { return this.mn; }
 
@@ -136,7 +135,7 @@ public class OpArgNode extends ExprOrOpArgNode {
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    return "\n*OpArgNode: " + ( name != null ? name.toString() : "null") +
+    return "\n*OpArgNode: " + ( name != null ? name : "null") +
       "  " + super.toString(depth) +
       "  arity: " + arity +
       "  op: " + (op != null ? "" + ((SemanticNode)op).getUid() : "null" );

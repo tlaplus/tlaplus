@@ -6,7 +6,6 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import tlc2.TLCGlobals;
 import tlc2.value.impl.BoolValue;
@@ -21,7 +20,6 @@ import tlc2.value.impl.TupleValue;
 import util.BufferedDataInputStream;
 import util.FileUtil;
 import util.IDataInputStream;
-import util.UniqueString;
 import util.WrongInvocationException;
 
 public final class ValueInputStream implements ValueConstants, IValueInputStream {
@@ -91,45 +89,6 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 		}
 	}
 	
-	public final IValue read(final Map<String, UniqueString> tbl) throws IOException {
-		final byte kind = this.dis.readByte();
-
-		switch (kind) {
-		case BOOLVALUE: {
-			return (this.dis.readBoolean()) ? BoolValue.ValTrue : BoolValue.ValFalse;
-		}
-		case INTVALUE: {
-			return IntValue.gen(this.dis.readInt());
-		}
-		case STRINGVALUE: {
-			return StringValue.createFrom(this, tbl);
-		}
-		case MODELVALUE: {
-			return ModelValue.mvs[this.dis.readShort()];
-		}
-		case INTERVALVALUE: {
-			return new IntervalValue(this.dis.readInt(), this.dis.readInt());
-		}
-		case RECORDVALUE: {
-			return RecordValue.createFrom(this, tbl);
-		}
-		case FCNRCDVALUE: {
-			return FcnRcdValue.createFrom(this, tbl);
-		}
-		case SETENUMVALUE: {
-			return SetEnumValue.createFrom(this, tbl);
-		}
-		case TUPLEVALUE: {
-			return TupleValue.createFrom(this, tbl);
-		}
-		case DUMMYVALUE: {
-			return (IValue) this.handles.getValue(this.readNat());
-		}
-		default: {
-			throw new WrongInvocationException("ValueInputStream: Can not unpickle a value of kind " + kind);
-		}
-		}
-	}
  
   @Override
   public final int readShort() throws IOException {
@@ -195,8 +154,8 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 	}
 
 	@Override
-	public final UniqueString getValue(int idx) {
-		return (UniqueString) this.handles.getValue(idx);
+	public final String getValue(int idx) {
+		return (String) this.handles.getValue(idx);
 	}
 
   // @see ValueOutputStream#put

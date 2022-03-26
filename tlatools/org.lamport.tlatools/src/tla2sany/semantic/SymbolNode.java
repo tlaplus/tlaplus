@@ -6,7 +6,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import tla2sany.st.TreeNode;
-import util.UniqueString;
 
 /**
  * Abstract class extended by classes that represent the meaning of an
@@ -29,23 +28,24 @@ import util.UniqueString;
 ***************************************************************************/
 public abstract class SymbolNode extends LevelNode {
 
-  protected final UniqueString name;    // the name of this symbol
+  protected final String name;    // the name of this symbol
 
-  protected SymbolNode(int kind, TreeNode stn, UniqueString name) {
+  protected SymbolNode(int kind, TreeNode stn, String name) {
     super(kind, stn);
     this.name = name;
   }
 
   /**
-   * This method returns the UniqueString for the printable name of
+   * This method returns the String for the printable name of
    * the symbol being declared or defined. For example, if this node
    * is an operator definition:
    *
    *   Foo(a, b) == a*b
    *
-   * getName() is the UniqueString for "Foo".
+   * getName() is "Foo".
    */
-  public final UniqueString getName() { return this.name; }
+  
+  public final String getName() { return this.name; }
 
   /* Returns the arity of the operator named by the symbol.  */
   public abstract int getArity();
@@ -75,7 +75,7 @@ public abstract class SymbolNode extends LevelNode {
   }
   
   public String getSignature() {
-	  return getName().toString();
+	  return getName();
   }
 
   /**

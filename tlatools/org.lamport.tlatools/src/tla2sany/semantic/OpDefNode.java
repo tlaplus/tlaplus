@@ -47,7 +47,6 @@ import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tla2sany.xml.SymbolContext;
 import tlc2.tool.BuiltInOPs;
-import util.UniqueString;
 import util.WrongInvocationException;
 
   /**
@@ -388,11 +387,11 @@ public class OpDefNode extends OpDefOrDeclNode
     * the body that are not within the scope of an inner label or LET      *
     * definition.                                                          *
     ***********************************************************************/
-    private Hashtable labels = null ;
+    private Hashtable<String, LabelNode> labels = null ;
 
     private OpDefNode source = null ;
     
-	private UniqueString[] compoundID = null;
+	private String[] compoundID = null;
       /*********************************************************************
       * If this OpDefNode was created through a chain of INSTANCEs, then   *
       * this field points to the original OpDefNode object from where it   *
@@ -404,7 +403,7 @@ public class OpDefNode extends OpDefOrDeclNode
 * The constructors.                                                        *
 ***************************************************************************/
   /* Used only for creating nullODN */
-  public OpDefNode(UniqueString us) {
+  public OpDefNode(String us) {
     super(us, 0, -2, null, null, SyntaxTreeNode.nullSTN);
     if (st != null) {
       st.addSymbol(us, this);
@@ -412,7 +411,7 @@ public class OpDefNode extends OpDefOrDeclNode
   }
 
   /* Invoked in configuration.Configuration for built-in ops */
-  public OpDefNode(UniqueString us, int k, int ar, FormalParamNode[] parms,
+  public OpDefNode(String us, int k, int ar, FormalParamNode[] parms,
                    boolean localness, ExprNode exp, ModuleNode oModNode,
                    SymbolTable symbolTable, TreeNode stn) {
     super(us, k, (parms == null ? -1 : parms.length), oModNode, symbolTable, stn);
@@ -421,8 +420,7 @@ public class OpDefNode extends OpDefOrDeclNode
     // Create phony FormalParamNodes for built-in operators
     if ( arity >= 0 ) {
       for (int i = 0; i < params.length; i++ ) {
-        params[i] = new FormalParamNode(UniqueString.uniqueStringOf("Formal_" + i),
-                                        0, null, symbolTable, oModNode);
+        params[i] = new FormalParamNode("Formal_" + i, 0, null, symbolTable, oModNode);
       }
     }
     if (st != null) {
@@ -464,7 +462,7 @@ public class OpDefNode extends OpDefOrDeclNode
    * See semantic/Generator.java/startOpDefNode, and its uses.  This       *
    * argument was added by LL on 7 Apr 2007.                               *
    ************************************************************************/
-   public OpDefNode(UniqueString us,
+   public OpDefNode(String us,
                     int k,                   // The kind
                     FormalParamNode[] parms,
                     boolean localness,
@@ -501,7 +499,7 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
-   public OpDefNode(UniqueString us,
+   public OpDefNode(String us,
            int k,                   // The kind
            FormalParamNode[] parms,
            boolean localness,
@@ -511,20 +509,20 @@ public class OpDefNode extends OpDefOrDeclNode
            TreeNode stn,
            boolean defined,
            OpDefNode src,             // The source
-           UniqueString[] compoundID
+           String[] compoundID
           ) {
 	   this(us,k,parms,localness,exp,oModNode,symbolTable,stn,defined,src);
 	   this.compoundID = compoundID;
    }
    
-   final UniqueString[] getCompoundId() {
+   final String[] getCompoundId() {
 	   if (compoundID != null) {
 		   return compoundID;
 	   }
-	   return new UniqueString[] {getName()};
+	   return new String[] {getName()};
    }
 
-	public final UniqueString getLocalName() {
+	public final String getLocalName() {
 		   if (compoundID != null) {
 			   return compoundID[compoundID.length - 1];
 		   }
@@ -538,12 +536,14 @@ public class OpDefNode extends OpDefOrDeclNode
 		   return false;
 	}
 
-	public final UniqueString getPathName() {
-		   if (compoundID != null) {
-			   // drop last segment.
-			   return UniqueString.join("!", compoundID.length - 1, compoundID);
+	public final String getPathName() {
+		   if (compoundID == null || compoundID.length == 0)
+		     return "";
+		   String out = compoundID[0];
+		   for (int i = 1; i < compoundID.length; i++) {
+			   out = out + "!" + compoundID[i];
 		   }
-		   return UniqueString.of("");
+		   return out;
 	}
 
   /* Used for ModuleInstance names */
@@ -554,7 +554,7 @@ public class OpDefNode extends OpDefOrDeclNode
   *    body    - there is none                                             *
   *    defined - always true because it can't be declared RECURSIVE.       *
   *************************************************************************/
-  public OpDefNode(UniqueString us,
+  public OpDefNode(String us,
                    FormalParamNode[] parms,
                    boolean localness,
                    ModuleNode oModNode,
@@ -576,7 +576,7 @@ public class OpDefNode extends OpDefOrDeclNode
   * Constructor for NumberedProofStepKind nodes.  It should never be       *
   * called with symbolTable null.                                          *
   *************************************************************************/
-  public OpDefNode(UniqueString us,  LevelNode step, ModuleNode oModNode,
+  public OpDefNode(String us,  LevelNode step, ModuleNode oModNode,
                    SymbolTable symbolTable, TreeNode stn) {
     super(us, NumberedProofStepKind, 0, oModNode, symbolTable, stn) ;
     this.stepNode = step ;
@@ -851,12 +851,14 @@ public class OpDefNode extends OpDefOrDeclNode
   * There doesn't seem to be any easy way to write these methods only      *
   * once.                                                                  *
   *************************************************************************/
+  @Override
   public void setLabels(Hashtable ht) {labels = ht; }
     /***********************************************************************
     * Sets the set of labels.                                              *
     ***********************************************************************/
 
-  public LabelNode getLabel(UniqueString us) {
+  @Override
+  public LabelNode getLabel(String us) {
     /***********************************************************************
     * If the hashtable `labels' contains a LabelNode with name `us',       *
     * then that LabelNode is returned; otherwise null is returned.         *
@@ -865,24 +867,26 @@ public class OpDefNode extends OpDefOrDeclNode
     return (LabelNode) labels.get(us) ;
    }
 
+  @Override
   public boolean addLabel(LabelNode odn) {
     /***********************************************************************
     * If the hashtable `labels' contains no OpDefNode with the same name   *
     * as odn, then odn is added to the set and true is return; else the    *
     * set is unchanged and false is returned.                              *
     ***********************************************************************/
-    if (labels == null) {labels = new Hashtable(); } ;
-    if (labels.containsKey(odn)) {return false ;} ;
+    if (labels == null) {labels = new Hashtable<>(); } ;
+    if (labels.containsKey(odn.getName())) {return false ;} ;
     labels.put(odn.getName(), odn) ;
     return true;
    }
 
+  @Override
   public LabelNode[] getLabels() {
     /***********************************************************************
     * Returns an array containing the Label objects in the hashtable       *
     * `labels'.                                                            *
     ***********************************************************************/
-    if (labels == null) {return new LabelNode[0];} ;
+    if (labels == null) {return new LabelNode[0];}
     Vector v = new Vector() ;
     Enumeration e = labels.elements() ;
     while (e.hasMoreElements()) { v.addElement(e.nextElement()); } ;
@@ -892,7 +896,7 @@ public class OpDefNode extends OpDefOrDeclNode
     return retVal ;
    }
 
-  public Hashtable  getLabelsHT() {
+  public Hashtable<String,LabelNode>  getLabelsHT() {
     /***********************************************************************
     * Return the labels field.  Used to "clone" an OpDefNode for module    *
     * instantiation.                                                       *
@@ -1300,7 +1304,7 @@ public class OpDefNode extends OpDefOrDeclNode
 	@Override
 	public String getSignature() {
 		final StringBuffer buf = new StringBuffer();
-		buf.append(getName().toString());
+		buf.append(getName());
 		if (getArity() > 0 && getKind() != ASTConstants.BuiltInKind) {
 			buf.append("(");
 			//TODO This hack doesn't work for infix operators
@@ -1331,7 +1335,7 @@ public class OpDefNode extends OpDefOrDeclNode
   public final String toString(int depth) {
     if (depth <= 0) return "";
 
-    String ret = "\n*OpDefNode: " + this.getName().toString()
+    String ret = "\n*OpDefNode: " + this.getName()
                 + "\n  "
                 + super.toString(depth)
                 + "\n  local: " + local
@@ -1342,11 +1346,11 @@ public class OpDefNode extends OpDefOrDeclNode
                 + "\n  local: " + local
                 + "\n  source: " +
                   ((source == null) ? "this" :
-                       (source.getName().toString() +
+                       (source.getName() +
                             " (uid: " + source.myUID + ")"))
                 + "\n  originallyDefinedInModule: " +
                      ((originallyDefinedInModule == null) ? "null" :
-                       (originallyDefinedInModule.getName().toString() +
+                       (originallyDefinedInModule.getName() +
                           " (uid: " + originallyDefinedInModule.myUID + ")"))
                 + ((stepNode == null) ? "" :
                         ("\n  stepNode: " +
@@ -1392,9 +1396,9 @@ public class OpDefNode extends OpDefOrDeclNode
     ***********************************************************************/
     if (labels != null) {
        ret += "\n  Labels: " ;
-       Enumeration list = labels.keys() ;
+       Enumeration<String> list = labels.keys() ;
        while (list.hasMoreElements()) {
-          ret += ((UniqueString) list.nextElement()).toString() + "  " ;
+          ret += list.nextElement() + "  " ;
          } ;
       }
     else {ret += "\n  Labels: null";};
@@ -1443,7 +1447,7 @@ public class OpDefNode extends OpDefOrDeclNode
     switch (getKind()) {
       case UserDefinedOpKind:
         ret = doc.createElement("UserDefinedOpKind");
-        ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getName()));
         ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
         ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
         if (params != null) {
@@ -1460,7 +1464,7 @@ public class OpDefNode extends OpDefOrDeclNode
       break;
       case BuiltInKind:
         ret = doc.createElement("BuiltInKind");
-        ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getName()));
         ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
         Element arguments2 = doc.createElement("params");
         if (params != null) {
@@ -1475,7 +1479,7 @@ public class OpDefNode extends OpDefOrDeclNode
         break;
       case ModuleInstanceKind:
         ret = doc.createElement("ModuleInstanceKind");
-        ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+        ret.appendChild(appendText(doc,"uniquename",getName()));
         break;
       default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
     }

@@ -9,7 +9,6 @@ import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;
 import util.ToolIO;
-import util.UniqueString;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree, TLAplusParserConstants {
 
@@ -19,11 +18,11 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     ***********************************************************************/
     String[]deps = new String[ dependencyList.size() ];
     for (int lvi =0; lvi < deps.length; lvi++)
-      deps[lvi] = ((UniqueString)dependencyList.elementAt(lvi)).toString();
+      deps[lvi] = dependencyList.elementAt(lvi);
     return deps;
   }
   public TreeNode rootNode() { return ParseTree; }
-  public String moduleName() { return mn.toString(); }
+  public String moduleName() { return mn; }
 //  public tla2sany.st.ParseErrors getErrors() { return PErrors; } Unused, apparently
 // The front end can simply read the public PErrors.
 
@@ -32,9 +31,9 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     * The root node.                                                       *
     ***********************************************************************/
 
-  public Vector dependencyList = new Vector( 20 );
+  public Vector<String> dependencyList = new Vector( 20 );
 
-  private UniqueString mn = null;
+  private String mn = null;
      /**********************************************************************
      * The module name.                                                    *
      **********************************************************************/
@@ -42,10 +41,8 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
   private boolean numberFlag = false;
   private boolean decimalFlag = false;
 
-  private Operator FcnOp = Operators.getOperator( UniqueString.uniqueStringOf("[" ));
+  private Operator FcnOp = Operators.getOperator("[");
   private SyntaxTreeNode FairnessHook;
-
-  private UniqueString At = UniqueString.uniqueStringOf("@");
 
   ParseErrors PErrors = new ParseErrors();
 
@@ -767,14 +764,14 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
 //
 
   Stack internals = new Stack();
-
-  private final void addDependency( UniqueString s ) {
+	  
+  private final void addDependency(String s) {
     int lvi = internals.search( s );
     if ( lvi < 0 )
       dependencyList.addElement( s );
   }
 
-  private final UniqueString reduceString( String s ) {
+  private final String reduceString( String s ) {
     int l = s.length();
     StringBuffer copy = new StringBuffer( l );
     int i = 0;
@@ -793,7 +790,7 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
       i++; j++;
     }
     copy.setLength(j);
-    return UniqueString.uniqueStringOf(copy.toString());
+    return copy.toString();
   }
 
 /***************************************************************************
@@ -835,7 +832,7 @@ private int levelOfProofStepLexeme(Token tok){
 * appropriate level number, and leading zeros are removed from a regular   *
 * level number.                                                            *
 ***************************************************************************/
-private UniqueString correctedStepNum(Token t) {
+private String correctedStepNum(Token t) {
   String str = t.image ;
   if (   str.substring(1,2).equals("*")
       || str.substring(1,2).equals("+") ) {
@@ -854,7 +851,7 @@ private UniqueString correctedStepNum(Token t) {
    }
   else {str = "<" + levelOfProofStepLexeme(t) + str.substring(str.indexOf('>'));
    } ;
-  return UniqueString.uniqueStringOf(str) ;
+  return str;
   } ;
 
 private void pushProofLevel() throws ParseException {
@@ -1461,7 +1458,7 @@ Token t;
   expecting = "==== or more Module body";
     lSTN[3] = EndModule();
   do { pop = internals.pop(); } while (pop != null );
-  internals.push( lSTN[0].zero[1].image );
+  internals.push(lSTN[0].zero[1].image);
   epa(); {if (true) return new SyntaxTreeNode( mn, N_Module, lSTN );}
     throw new Error("Missing return statement in function");
   }
@@ -2311,7 +2308,6 @@ expecting = "COMMA or )";
   SyntaxTreeNode sn[] = null;
   int kind;
   Token t;
-  UniqueString n;
   bpa("Op. Symbol Declaration");
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case op_76:
@@ -2326,8 +2322,8 @@ expecting = "COMMA or )";
     case op_115:
     case op_116:
       // LOOKAHEAD( <OpSymbol>, { isPrefixDeclOp( getToken(1) )  } )
-            tn = NonExpPrefixOp();
-        kind = N_PrefixDecl; n = lastOp.getIdentifier();
+        tn = NonExpPrefixOp();
+        kind = N_PrefixDecl; 
         sn = new SyntaxTreeNode[2]; sn[0] = tn;
 expecting = "_";
       t = jj_consume_token(US);
@@ -2440,7 +2436,7 @@ expecting = "infix or postfix operator";
       case op_118:
       case op_119:
         tn = InfixOp();
-          kind = N_InfixDecl; n = lastOp.getIdentifier();
+          kind = N_InfixDecl; 
           sn = new SyntaxTreeNode[3]; sn[1] = tn;
           sn[0] =  new SyntaxTreeNode(mn, t);
 expecting = "_";
@@ -2452,7 +2448,7 @@ expecting = "_";
       case op_69:
       case op_70:
         tn = PostfixOp();
-          kind = N_PostfixDecl; n = lastOp.getIdentifier();
+          kind = N_PostfixDecl;
           sn = new SyntaxTreeNode[2]; sn[1] = tn;
           sn[0] =  new SyntaxTreeNode(mn, t);
         break;
@@ -2898,7 +2894,7 @@ expecting = "Expression or Op. Symbol";
   final public SyntaxTreeNode PrefixOp() throws ParseException {
   Token t;
     t = PrefixOpToken();
-    lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
+    lastOp = Operators.getOperator(t.image); // YYY to revise
     {if (true) return new SyntaxTreeNode(mn, N_PrefixOp, t) ;}
     throw new Error("Missing return statement in function");
   }
@@ -2906,7 +2902,7 @@ expecting = "Expression or Op. Symbol";
   final public SyntaxTreeNode NonExpPrefixOp() throws ParseException {
   Token t;
     t = NEPrefixOpToken();
-    lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
+    lastOp = Operators.getOperator(t.image); // YYY to revise
     {if (true) return new SyntaxTreeNode(mn, N_NonExpPrefixOp, t) ;}
     throw new Error("Missing return statement in function");
   }
@@ -2915,7 +2911,7 @@ expecting = "Expression or Op. Symbol";
   Token t;
 bpa("Infix Op") ;
     t = InfixOpToken();
-    lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
+    lastOp = Operators.getOperator(t.image); // YYY to revise
 epa();
     {if (true) return new SyntaxTreeNode( mn, N_InfixOp, t) ;}
     throw new Error("Missing return statement in function");
@@ -2924,7 +2920,7 @@ epa();
   final public SyntaxTreeNode PostfixOp() throws ParseException {
   Token t;
     t = PostfixOpToken();
-    lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
+    lastOp = Operators.getOperator(t.image); // YYY to revise
     {if (true) return new SyntaxTreeNode(mn, N_PostfixOp, t) ;}
     throw new Error("Missing return statement in function");
   }
@@ -4829,7 +4825,7 @@ expecting = "==";
   bpa("String");
     t = jj_consume_token(STRING_LITERAL);
     tn = new SyntaxTreeNode( mn, N_String, t);
-    tn.image = reduceString( tn.image.toString() );
+    tn.image = reduceString( tn.image ).toString();
     epa();
     {if (true) return tn;}
     throw new Error("Missing return statement in function");
@@ -5307,8 +5303,8 @@ int kind ;
       case op_119:
         tn = InfixOp();
          kind = N_GenInfixOp;
-         if (   (tn.image == UniqueString.uniqueStringOf("\\X"))
-             || (tn.image == UniqueString.uniqueStringOf("\\times"))){
+         if (   (tn.image.equals("\\X"))
+             || (tn.image.equals("\\times"))){
             {if (true) throw new ParseException(
                         tn.getLocation().toString() +
                         ": \\X may not be used as an infix operator.");}
@@ -6076,7 +6072,7 @@ SyntaxTreeNode tn;
                 Token next = getToken(1);
                 if (isFieldNameToken( next )) next.kind = IDENTIFIER;
       tn = Identifier();
-      if (tn.getUS().equals(At) ) {
+      if (tn.getName().equals("@") ) {
         PErrors.push( new ParseError("@ used in !.@") );
       }
       addHeir( tn );
@@ -6444,7 +6440,7 @@ SyntaxTreeNode tn;
     t = jj_consume_token(ARROW);
                 zn[1] = new SyntaxTreeNode(mn, t);
     zn[2] = Expression();
-    epa(); {if (true) return new SyntaxTreeNode( mn, N_CaseArm, zn );}
+    epa(); {if (true) return new SyntaxTreeNode(mn, N_CaseArm, zn );}
     throw new Error("Missing return statement in function");
   }
 
@@ -6457,7 +6453,7 @@ SyntaxTreeNode tn;
     t = jj_consume_token(ARROW);
                 zn[1] = new SyntaxTreeNode(mn, t);
     zn[2] = Expression();
-    epa(); {if (true) return new SyntaxTreeNode( mn, N_OtherArm, zn );}
+    epa(); {if (true) return new SyntaxTreeNode(mn, N_OtherArm, zn );}
     throw new Error("Missing return statement in function");
   }
 

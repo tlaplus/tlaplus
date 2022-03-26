@@ -55,7 +55,6 @@ import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 import util.Assert.TLCRuntimeException;
-import util.UniqueString;
 
 public class TLCStateStackFrame extends TLCStackFrame {
 	
@@ -65,7 +64,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		static final String NOT_EVALUATED = "?";
 
 		private DebuggerValue() {
-			super(UniqueString.of(DebuggerValue.NOT_EVALUATED));
+			super(DebuggerValue.NOT_EVALUATED);
 		}
 
 		@Override
@@ -213,7 +212,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			return "<Initial predicate>";
 		}
 		final Action a = state.getAction();
-		return a.getName() == null ? "Action" : a.getName().toString();
+		return a.getName() == null ? "Action" : a.getName();
 	}
 	
 	protected RecordValue toRecordValue() {
@@ -236,7 +235,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 					return getVariable(value, var.getName());
 				} else {
 					Variable v = new Variable();
-					v.setName(var.getName().toString());
+					v.setName(var.getName());
 					v.setValue(DebuggerValue.NOT_EVALUATED);
 					return v;
 				}
@@ -257,7 +256,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		for (SemanticNode semanticNode : path) {
 			if (semanticNode instanceof OpApplNode) {
 				OpApplNode oan = (OpApplNode) semanticNode;
-				if (ASTConstants.OP_prime == oan.getOperator().getName()) {
+				if (ASTConstants.OP_prime.equals(oan.getOperator().getName())) {
 					return true;
 				}
 			}

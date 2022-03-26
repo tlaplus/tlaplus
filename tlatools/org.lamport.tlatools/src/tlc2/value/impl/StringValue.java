@@ -7,7 +7,6 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Random;
 
 import tlc2.tool.FingerprintException;
@@ -19,22 +18,18 @@ import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
 
 public class StringValue extends Value {
-  public final UniqueString val;
+  // TODO make this protected and use getter
+  public final String val;
 
   /* Constructor */
   public StringValue(String str) {
     // SZ 11.04.2009: changed the access method to equivalent
-    this.val = UniqueString.uniqueStringOf(str);
+    this.val = str;
   }
 
-  public StringValue(UniqueString var) {
-    this.val = var;
-  }
-
-  public StringValue(UniqueString var, CostModel cm) {
+  public StringValue(String var, CostModel cm) {
 	  this(var);
 	  this.cm = cm;
   }
@@ -42,7 +37,7 @@ public class StringValue extends Value {
   @Override
   public final byte getKind() { return STRINGVALUE; }
 
-  public final UniqueString getVal() { return this.val; }
+  public final String getVal() { return this.val; }
 
   @Override
   public final int compareTo(Object obj) {
@@ -65,7 +60,7 @@ public class StringValue extends Value {
   public final boolean equals(Object obj) {
     try {
       if (obj instanceof StringValue) {
-        return this.val.equals(((StringValue)obj).getVal());
+        return this.val.equals(((StringValue)obj).val);
       }
       if (!(obj instanceof ModelValue)) {
         Assert.fail("Attempted to check equality of string " + Values.ppr(this.toString()) +
@@ -193,7 +188,7 @@ public class StringValue extends Value {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(STRINGVALUE);
-			val.write(vos.getOutputStream());
+			vos.writeStringVal(val);
 		} else {
 			vos.writeByte(DUMMYVALUE);
 			vos.writeNat(index);
@@ -206,7 +201,7 @@ public class StringValue extends Value {
     try {
       fp = FP64.Extend(fp, STRINGVALUE) ;
       fp = FP64.Extend(fp, this.val.length()) ;
-      fp = FP64.Extend(fp, this.val.toString());
+      fp = FP64.Extend(fp, this.val);
       return fp;
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -271,7 +266,7 @@ public class StringValue extends Value {
   @Override
   public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
-      return sb.append("\"" + PrintVersion(this.val.toString()) + "\"");
+      return sb.append("\"" + PrintVersion(this.val) + "\"");
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -282,19 +277,11 @@ public class StringValue extends Value {
   /* Same as toString. */
   @Override
   public final String toUnquotedString() {
-	  return PrintVersion(this.val.toString());
+	  return PrintVersion(this.val);
   }
 
 	public static IValue createFrom(final IValueInputStream vos) throws IOException {
-		final UniqueString str = UniqueString.read(vos.getInputStream());
-		final IValue res = new StringValue(str);
-		final int index = vos.getIndex();
-		vos.assign(res, index);
-		return res;
-	}
-	
-	public static IValue createFrom(final IValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
-		final UniqueString str = UniqueString.read(vos.getInputStream(), tbl);
+		final String str = vos.readStringVal();
 		final IValue res = new StringValue(str);
 		final int index = vos.getIndex();
 		vos.assign(res, index);

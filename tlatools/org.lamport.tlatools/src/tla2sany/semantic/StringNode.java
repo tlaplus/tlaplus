@@ -12,9 +12,6 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
-import util.UniqueString;
-
-
 
 /**
  * This node represents a string literal in the specification--for
@@ -25,17 +22,14 @@ import util.UniqueString;
 
 public class StringNode extends ExprNode implements ExploreNode {
 
-  private UniqueString value;
+  private String value;
 
   public StringNode(TreeNode stn, boolean strip) {
     super(StringKind, stn);
 
-    this.value = stn.getUS();
+    this.value = stn.getName();
     if (strip) {
-      // Strip off quote marks from image in stn
-      String str = this.value.toString();
-      str = str.substring(1, str.length()-1);
-      this.value = UniqueString.uniqueStringOf(str);
+      this.value = value.substring(1, value.length()-1);
       /*********************************************************************
       * Setting levelChecked shouldn't be necessary.                       *
       *********************************************************************/
@@ -44,9 +38,9 @@ public class StringNode extends ExprNode implements ExploreNode {
   }
 
   /**
-   * Returns the UniqueString representation of the string.
+   * Returns the the string.
    */
-  public final UniqueString getRep() { return this.value; }
+  public final String getRep() { return this.value; }
 
   /* Level Checking */
   @Override
@@ -128,14 +122,14 @@ public class StringNode extends ExprNode implements ExploreNode {
   public final String toString(int depth) {
     if (depth <= 0) return "";
     return "\n*StringNode: " + super.toString(depth)
-                             + "Value: '" + PrintVersion(value.toString()) +
+                             + "Value: '" + PrintVersion(value) +
                              "'" + " Length: " + value.length();
   }
 
   @Override
   protected Element getLevelElement(Document doc, SymbolContext context) {
       Element e = doc.createElement("StringValue");
-      Node n = doc.createTextNode(value.toString());
+      Node n = doc.createTextNode(value);
       e.appendChild(n);
       return appendElement(doc, "StringNode", e);
    // return appendText(doc,"StringNode",value.toString());

@@ -22,7 +22,6 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.st.TreeNode;
 import util.FileUtil;
 import util.ToolIO;
-import util.UniqueString;
 
 /** 
  * This is the main entry point for the TLA+ front end that performa parsing, semantic analysis, 
@@ -283,7 +282,7 @@ public class SANY {
         moduleStringName = (String)spec.semanticAnalysisVector.elementAt(i);  
 
         // if semantic analysis has not already been done on this module
-        if (externalModuleTable.getContext( UniqueString.uniqueStringOf( moduleStringName)) == null ) {
+        if (externalModuleTable.getContext(moduleStringName) == null ) {
           parseUnit = (ParseUnit)spec.parseUnitContext.get(moduleStringName);;
       
           // get reference to the syntax tree for the module
@@ -317,7 +316,7 @@ public class SANY {
           moduleNode.setStandard(spec.getResolver().isStandardModule(moduleStringName)) ;
           
           // Put the semantic graph and related info for moduleNode into the module table
-          externalModuleTable.put(UniqueString.uniqueStringOf(moduleStringName), 
+          externalModuleTable.put(moduleStringName, 
                                   gen.getSymbolTable().getExternalContext(),
                                   moduleNode);
   

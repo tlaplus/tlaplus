@@ -51,6 +51,14 @@ public interface IValueOutputStream {
 	void writeByte(byte b) throws IOException;
 
 	void writeBoolean(boolean b) throws IOException;
+	
+	default void writeStringVal(String s) throws IOException {
+		IDataOutputStream stream = getOutputStream();
+		stream.writeInt(0);
+		stream.writeInt(0);
+		stream.writeInt(s.length());
+		stream.writeString(s);
+	}
 
 	IDataOutputStream getOutputStream();
 

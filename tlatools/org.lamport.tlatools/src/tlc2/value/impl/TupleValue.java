@@ -9,7 +9,6 @@ package tlc2.value.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import tlc2.output.EC;
@@ -23,10 +22,8 @@ import tlc2.value.ITupleValue;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
-import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.UniqueString;
 
 public class TupleValue extends Value implements Applicable, ITupleValue {
   public final Value[] elems;          // the elements of this tuple.
@@ -407,18 +404,6 @@ public class TupleValue extends Value implements Applicable, ITupleValue {
 		final Value[] elems = new Value[len];
 		for (int i = 0; i < len; i++) {
 			elems[i] = (Value) vos.read();
-		}
-		final Value res = new TupleValue(elems);
-		vos.assign(res, index);
-		return res;
-	}
-
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
-		final int index = vos.getIndex();
-		final int len = vos.readNat();
-		final Value[] elems = new Value[len];
-		for (int i = 0; i < len; i++) {
-			elems[i] = (Value) vos.read(tbl);
 		}
 		final Value res = new TupleValue(elems);
 		vos.assign(res, index);

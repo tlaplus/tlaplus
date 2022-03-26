@@ -110,7 +110,7 @@ public class AssignmentWizardPage extends WizardPage
         // display source name and originally defined in module
 		OpDefNode node = ModelHelper.getOpDefNode(assignment.getLabel());
 		if (node != null && node.getSource() != node) {
-			localLabel += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName().toString() + "]";
+			localLabel += " [" + node.getSource().getOriginallyDefinedInModuleNode().getName() + "]";
 		}
 		
 		paramComposite = new LabeledListComposite(container, localLabel, assignment.getParams());

@@ -7,7 +7,6 @@ package tlc2.tool;
 
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.OpDefNode;
-import util.UniqueString;
 
 public interface ToolGlobals extends ASTConstants {
   /**
@@ -15,47 +14,49 @@ public interface ToolGlobals extends ASTConstants {
    * of the tools.
    */
   // SZ 11.04.2009: changed the method to the equivalent 
-  public static final OpDefNode EXCEPT_AT = new OpDefNode(UniqueString.uniqueStringOf("@"));
+  public static final OpDefNode EXCEPT_AT = new OpDefNode("@");
+  
+  // TODO : Most of this is unused?
   
   /* Prefix operators */
-  public static final UniqueString OP_lnot = UniqueString.uniqueStringOf("\\lnot");
-  public static final UniqueString OP_subset = UniqueString.uniqueStringOf("SUBSET");
-  public static final UniqueString OP_union = UniqueString.uniqueStringOf("UNION");
-  public static final UniqueString OP_domain = UniqueString.uniqueStringOf("DOMAIN");
-  public static final UniqueString OP_box = UniqueString.uniqueStringOf("[]");
-  public static final UniqueString OP_diamond = UniqueString.uniqueStringOf("<>");
-  public static final UniqueString OP_enabled = UniqueString.uniqueStringOf("ENABLED");
-  public static final UniqueString OP_unchanged = UniqueString.uniqueStringOf("UNCHANGED");
+  public static final String OP_lnot = ("\\lnot");
+  public static final String OP_subset = ("SUBSET");
+  public static final String OP_union = ("UNION");
+  public static final String OP_domain = ("DOMAIN");
+  public static final String OP_box = ("[]");
+  public static final String OP_diamond = ("<>");
+  public static final String OP_enabled = ("ENABLED");
+  public static final String OP_unchanged = ("UNCHANGED");
 
   /* Infix operators */
-  public static final UniqueString OP_eq = UniqueString.uniqueStringOf("=");
-  public static final UniqueString OP_land = UniqueString.uniqueStringOf("\\land");
-  public static final UniqueString OP_lor = UniqueString.uniqueStringOf("\\lor");
-  public static final UniqueString OP_implies = UniqueString.uniqueStringOf("=>");
-  public static final UniqueString OP_cdot = UniqueString.uniqueStringOf("\\cdot");
-  public static final UniqueString OP_equiv = UniqueString.uniqueStringOf("\\equiv");
-  public static final UniqueString OP_leadto = UniqueString.uniqueStringOf("~>");
-  public static final UniqueString OP_arrow = UniqueString.uniqueStringOf("-+->");
-  public static final UniqueString OP_noteq = UniqueString.uniqueStringOf("/=");
-  public static final UniqueString OP_subseteq = UniqueString.uniqueStringOf("\\subseteq");
-  public static final UniqueString OP_in = UniqueString.uniqueStringOf("\\in");
-  public static final UniqueString OP_notin = UniqueString.uniqueStringOf("\\notin");
-  public static final UniqueString OP_setdiff = UniqueString.uniqueStringOf("\\");
-  public static final UniqueString OP_cap = UniqueString.uniqueStringOf("\\intersect");
-  public static final UniqueString OP_cup = UniqueString.uniqueStringOf("\\union");
+  public static final String OP_eq = ("=");
+  public static final String OP_land = ("\\land");
+  public static final String OP_lor = ("\\lor");
+  public static final String OP_implies = ("=>");
+  public static final String OP_cdot = ("\\cdot");
+  public static final String OP_equiv = ("\\equiv");
+  public static final String OP_leadto = ("~>");
+  public static final String OP_arrow = ("-+->");
+  public static final String OP_noteq = ("/=");
+  public static final String OP_subseteq = ("\\subseteq");
+  public static final String OP_in = ("\\in");
+  public static final String OP_notin = ("\\notin");
+  public static final String OP_setdiff = ("\\");
+  public static final String OP_cap = ("\\intersect");
+  public static final String OP_cup = ("\\union");
 
   /* Below are not built-in operators,  but are useful definitions. */
-  public static final UniqueString OP_dotdot = UniqueString.uniqueStringOf("..");	 
-  public static final UniqueString OP_plus = UniqueString.uniqueStringOf("+");
-  public static final UniqueString OP_minus = UniqueString.uniqueStringOf("-");
-  public static final UniqueString OP_times = UniqueString.uniqueStringOf("*");
-  public static final UniqueString OP_lt = UniqueString.uniqueStringOf("<");
-  public static final UniqueString OP_leq = UniqueString.uniqueStringOf("\\leq");
-  public static final UniqueString OP_gt = UniqueString.uniqueStringOf(">");    
-  public static final UniqueString OP_geq = UniqueString.uniqueStringOf("\\geq");
-  
+  public static final String OP_dotdot = ("..");  
+  public static final String OP_plus = ("+");
+  public static final String OP_minus = ("-");
+  public static final String OP_times = ("*");
+  public static final String OP_lt = ("<");
+  public static final String OP_leq = ("\\leq");
+  public static final String OP_gt = (">");    
+  public static final String OP_geq = ("\\geq");
+
   /* Postfix operators */
-  public static final UniqueString OP_prime = UniqueString.uniqueStringOf("'");
+  public static final String OP_prime = ("'");
 
   /* Opcodes of level 0 */
   public static final int OPCODE_bc   = 1;

@@ -22,7 +22,7 @@ import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.MethodValue;
-import util.UniqueString;
+import util.VarLocMap;
 
 public interface SymbolNodeValueLookupProvider {
     /* Return the variable if expr is a state variable. Otherwise, null. */
@@ -182,7 +182,7 @@ public interface SymbolNodeValueLookupProvider {
 	 */
 	default int getLevelBoundAppl(final OpApplNode expr, Context c, final int forToolId) {
 		final SymbolNode opNode = expr.getOperator();
-		final UniqueString opName = opNode.getName();
+		final String opName = opNode.getName();
 		final int opcode = BuiltInOPs.getOpCode(opName);
 
 		if (BuiltInOPs.isTemporal(opcode)) {
@@ -220,7 +220,7 @@ public interface SymbolNodeValueLookupProvider {
 
 		if (opcode == 0) {
 			// This operator is a user-defined operator.
-			if (opName.getVarLoc() >= 0)
+			if (VarLocMap.getVarLoc(opName) >= 0)
 				return 1;
 
 			final Object val = lookup(opNode, c, false, forToolId);

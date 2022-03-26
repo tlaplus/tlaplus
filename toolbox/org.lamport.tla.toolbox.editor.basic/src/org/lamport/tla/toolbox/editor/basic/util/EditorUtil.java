@@ -50,7 +50,6 @@ import tla2sany.semantic.TheoremNode;
 import tla2sany.semantic.ThmOrAssumpDefNode;
 import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
-import util.UniqueString;
 
 /**
  * A collection of useful editor methods.
@@ -238,8 +237,7 @@ public class EditorUtil
         // get module node (code copied from
         // ResourceHelper.getPfStepOrUseHideFromMod)
         String moduleName = ResourceHelper.getModuleName(moduleFile);
-        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(
-                UniqueString.uniqueStringOf(moduleName));
+        ModuleNode module = parseResult.getSpecObj().getExternalModuleTable().getModuleNode(moduleName);
         if (module == null)
         {
             return null;
@@ -258,8 +256,7 @@ public class EditorUtil
         if ((stl.string.charAt(0) == '<') && (stl.string.indexOf('.') != -1))
         {
             Location loc = stl.location;
-            stl = new StringAndLocation(stl.string.substring(0, stl.string.indexOf('.')), new Location(UniqueString
-                    .uniqueStringOf(loc.source()), loc.beginLine(), loc.beginColumn(), loc.endLine(), loc.beginColumn()
+            stl = new StringAndLocation(stl.string.substring(0, stl.string.indexOf('.')), new Location(loc.source(), loc.beginLine(), loc.beginColumn(), loc.endLine(), loc.beginColumn()
                     + stl.string.indexOf('.')));
         }
         return stl;
@@ -451,21 +448,21 @@ public class EditorUtil
     }
     
     /**
-     * @see EditorUtil#lookupSymbol(UniqueString, SemanticNode, Location, SymbolNode)
+     * @see EditorUtil#lookupSymbol(String, SemanticNode, Location, SymbolNode)
      */
  	public static SymbolNode lookupSymbol(SpecObj specObj, IDocument document, WordRegion region) {
 		final Location location = getLocationAt(document, region.getOffset(), region.getLength());
 		final ModuleNode rootModule = specObj.getExternalModuleTable().getRootModule();
-		return lookupSymbol(UniqueString.uniqueStringOf(region.getWord()), rootModule, location, null);
+		return lookupSymbol(region.getWord(), rootModule, location, null);
 	}
     
  	/**
- 	 * @see EditorUtil#lookupSymbol(UniqueString, SemanticNode, Location, SymbolNode)
+ 	 * @see EditorUtil#lookupSymbol(String, SemanticNode, Location, SymbolNode)
  	 */
 	public static SymbolNode lookupSymbol(String name, SymbolNode curNode, IDocument document, IRegion region,
 			SymbolNode defaultResult) {
 		final Location location = getLocationAt(document, region.getOffset(), region.getLength());
-		return lookupSymbol(UniqueString.uniqueStringOf(name), curNode, location, defaultResult);
+		return lookupSymbol(name, curNode, location, defaultResult);
 	}
 
     /**
@@ -494,7 +491,7 @@ public class EditorUtil
      * @param location
      * @param defaultResult
      */
-    public static SymbolNode lookupSymbol(UniqueString name, SemanticNode curNode, Location location,
+    public static SymbolNode lookupSymbol(String name, SemanticNode curNode, Location location,
             SymbolNode defaultResult)
     {
         SymbolNode foundSymbol = null;
@@ -515,7 +512,7 @@ public class EditorUtil
             {
                 for (int i = 0; i < fpn.length; i++)
                 {
-                    if (fpn[i].getName() == name)
+                    if (fpn[i].getName().equals(name))
                     {
                         // return fpn[i];
                         foundSymbol = fpn[i];
@@ -531,7 +528,7 @@ public class EditorUtil
                 {
                     for (int j = 0; j < fpnA[i].length; j++)
                     {
-                        if (fpnA[i][j].getName() == name)
+                        if (fpnA[i][j].getName().equals(name))
                         {
                             // return fpnA[i][j];
                             foundSymbol = fpnA[i][j];
@@ -546,7 +543,7 @@ public class EditorUtil
             FormalParamNode[] params = ((OpDefNode) curNode).getParams();
             for (int i = 0; i < params.length; i++)
             {
-                if (name == params[i].getName())
+                if (name.equals(params[i].getName()))
                 {
                     // return params[i];
                     foundSymbol = params[i];
@@ -570,7 +567,7 @@ public class EditorUtil
                         {
                             NewSymbNode newSymb = (NewSymbNode) assumes[i];
                             OpDeclNode opDecl = newSymb.getOpDeclNode();
-                            if (name == opDecl.getName())
+                            if (name.equals(opDecl.getName()))
                             {
                                 foundSymbol = opDecl;
                                 break;
@@ -609,7 +606,7 @@ public class EditorUtil
      * @param defaultResult
      * @return
      */
-    public static SymbolNode lookupOriginalSymbol(UniqueString name, SemanticNode curNode, Location location,
+    public static SymbolNode lookupOriginalSymbol(String name, SemanticNode curNode, Location location,
             SymbolNode defaultResult)
     {
         // In case this is a synonym for something else.
