@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.LevelConstants;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.StringNode;
 import tlc2.TLCGlobals;
@@ -89,7 +90,7 @@ public class TLCExt {
 
 	// This is likely only useful with a single worker, but let's synchronize
 	// anyway.
-	@Evaluation(definition = "PickSuccessor", module = "TLCExt", warn = false, silent = true)
+	@Evaluation(definition = "PickSuccessor", module = "TLCExt", warn = false, silent = true, minLevel = LevelConstants.ActionLevel)
 	public synchronized static Value pickSuccessor(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) {
 
@@ -117,6 +118,14 @@ public class TLCExt {
 			return BoolValue.ValTrue;
 		}
 
+		if (s1 == TLCState.Empty || !s1.allAssigned()) {
+			// Evaluates to TRUE if PickSuccessor is evaluated in the context of a
+			// constant- or state-level formula such as a state-constraint or invariant.
+			// Also evaluates to TRUE if PickSuccessor appears as part of the next-state
+			// relation before all primed variables are defined.
+			return BoolValue.ValTrue;
+		}
+		
 		Action action = null;
 		if (s1 instanceof TLCStateMutExt) {
 			action = s1.getAction();

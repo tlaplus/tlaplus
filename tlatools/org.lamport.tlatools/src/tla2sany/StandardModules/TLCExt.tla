@@ -132,6 +132,10 @@ PickSuccessor(exp) ==
   (* evaluates to FALSE.  To always pick successor states manually, use         *)
   (* PickSuccessor(FALSE). To pick successor states when the current prefix of  *)
   (* behaviors exceeds 22 states, use PickSuccessor(TLCGet("level") < 23).      *)
+  (* Evaluates to TRUE when evaluated in the context of a constant- or          *)
+  (* state-level formula.  Also evaluates to TRUE if PickSuccessor appears as   *)
+  (* part of the next-state relation and the successor state has not been       *)
+  (* fully determined yet.                                                      *)
   (******************************************************************************)
   IF (exp)
   THEN TRUE
