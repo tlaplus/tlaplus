@@ -179,7 +179,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertTLCStateFrame(stackFrames[0], 49, 49, RM, vars[1]);
 		
-		// Debug an operator that is evaluated as part of the refinement mapping and know to
+		// Debug an operator that is evaluated as part of the refinement mapping and known to
 		// consist of a bunch of LazyValues.  LazyValues are tricky because the debugger
 		// unlazies them, which has to be ignored by DebugTool.  Otherwise, the debugger
 		// debugs itself and deadlocks.
@@ -283,11 +283,11 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		variables.add(createVariable("i","1",IntValue.ValZero.getTypeString()));
 		variables.add(createVariable("j","1",IntValue.ValZero.getTypeString()));
 		variables.add(createVariable("@","<<[type |-> \"pl\"]>>",TupleValue.EmptyTuple.getTypeString()));
-		variables.add(createVariable("s","<<[type |-> \"pl\"]>>",TupleValue.EmptyTuple.getTypeString()));
 		assertTLCActionFrame(stackFrames[0], 119, 44, 119, 57, RM, variables, vars[3]);
 
 		stackFrames = debugger.stepIn();
 		assertEquals(12, stackFrames.length);
+		variables.add(createVariable("s","<<[type |-> \"pl\"]>>",TupleValue.EmptyTuple.getTypeString()));
 		assertTLCActionFrame(stackFrames[0], 29, 29, UTILS, variables, vars[3]);
 
 		stackFrames = debugger.stepIn(13);

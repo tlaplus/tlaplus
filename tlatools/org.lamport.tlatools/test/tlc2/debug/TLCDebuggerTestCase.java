@@ -210,7 +210,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		}
 		
 		final List<Variable> variables = Arrays.asList(f.getVariables());
-		assertTrue(expected.size() <= variables.size());
+		assertEquals(f.getContext().toMap().size(), variables.size());
 		NXT: for (Variable v : variables) {
 			for (Variable e : expected) {
 				if (e.getName().equals(v.getName()) && e.getValue().equals(v.getValue())
@@ -482,7 +482,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		assertNotNull(variables);
 		if (expectedContext!=null) {
 			assertEquals(0, new ContextComparator().compare(expectedContext, f.getContext()));
-			assertEquals(expectedContext.depth(), variables.length);
+			assertEquals(f.getContext().toMap().size(), variables.length);
 		}
 	}
 

@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.eclipse.lsp4j.debug.EvaluateArguments;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
@@ -213,7 +214,9 @@ public class TLCStackFrame extends StackFrame {
 			// doesn't correctly create whitespaces, which might be confusing. However, the
 			// Toolbox's hover help also shows getHumanReadableImage, which is why fixing it
 			// would be desirable.
-			vars.add(variable);
+			if (!vars.contains(variable)) {
+				vars.add(variable);
+			}
 		}
 		if (parent != null) {
 			return parent.getStackVariables(vars);
@@ -317,9 +320,9 @@ public class TLCStackFrame extends StackFrame {
 				// Intentionally not sorting lexicographically because the order given by the
 				// stack is probably more useful.
 				final List<Variable> pVars = getStackVariables(new ArrayList<>());
-				return pVars.toArray(new Variable[pVars.size()]); 
+				return pVars.toArray(Variable[]::new); 
 			}
-			return toSortedArray(vars);
+			return toSortedDistinctArray(vars);
 		});
 	}
 
@@ -368,15 +371,21 @@ public class TLCStackFrame extends StackFrame {
 			}
 	}
 	
-	protected Variable[] toSortedArray(final List<Variable> vars) {
-		// Its nicer if the variables/constants are sorted lexicographically.
-		vars.sort(new Comparator<Variable>() {
+	protected Variable[] toSortedDistinctArray(final List<Variable> vars) {
+		// Its nicer if variables/constants are sorted lexicographically, and
+		// duplicates removed.
+		final Set<Variable> s = new TreeSet<>(new Comparator<Variable>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public int compare(Variable o1, Variable o2) {
+				if (o1 instanceof Comparable && o2 instanceof Comparable) {
+					return ((Comparable<Variable>) o1).compareTo(o2);
+				}
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
-		return vars.toArray(new Variable[vars.size()]);
+		s.addAll(vars);
+		return s.toArray(Variable[]::new);
 	}
 	
 	protected Variable getVariable(final LinkedList<SemanticNode> path) {

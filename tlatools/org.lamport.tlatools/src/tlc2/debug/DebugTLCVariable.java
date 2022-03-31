@@ -38,7 +38,7 @@ import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
 import util.UniqueString;
 
-public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVariable {
+public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVariable, Comparable<DebugTLCVariable> {
 	
 	private transient Value tlcValue;
 	
@@ -83,5 +83,22 @@ public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVar
 	@Override
 	public Value getTLCValue() {
 		return tlcValue;
+	}
+
+	@Override
+	public int compareTo(DebugTLCVariable other) {
+		if (getName().compareTo(other.getName()) != 0) {
+			return getName().compareTo(other.getName());
+		}
+		if (getType().compareTo(other.getType()) != 0) {
+			return getType().compareTo(other.getType());
+		}
+		if (getValue().compareTo(other.getValue()) != 0) {
+			return getValue().compareTo(other.getValue());
+		}
+		// We do *not* compare tlcValue here for two reasons:
+		// 1. tlcValue is marked transient, and, thus, might be null
+		// 2. tlcValues representing infinite domains throw an exception when compared
+		return 0;
 	}
 }
