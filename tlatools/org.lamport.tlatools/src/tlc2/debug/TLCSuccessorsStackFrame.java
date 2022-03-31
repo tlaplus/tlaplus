@@ -103,11 +103,10 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 	
 	@Override
 	public boolean matches(final TLCSourceBreakpoint bp) {
-		final OpDefNode odn = (OpDefNode) node;
-		// TreeNode.one()[0] is the LHS of the definition => A user activates is by
+		// TreeNode.one()[0] is the LHS of the definition => A user activates it by
 		// setting an "in-line" breakpoint into the LHS of the def.
-		if (odn.getTreeNode() != null && odn.getTreeNode().one().length > 0) {
-			final TreeNode[] one = odn.getTreeNode().one();
+		if (node.getTreeNode() != null && node.getTreeNode().one() != null && node.getTreeNode().one().length > 0) {
+			final TreeNode[] one = node.getTreeNode().one();
 			final Location location = one[0].getLocation();
 			final int hits = bp.getHits();
 			return bp.getLine() == location.beginLine() && location.beginColumn() <= bp.getColumnAsInt()
