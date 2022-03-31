@@ -224,6 +224,14 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(4, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
+
+		// Check n0 action has expected number of successor states.
+		sba = createBreakpointArgument(RM, 103, 1, 1); // Inline breakpoint set on the LHS of Action definition.
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(1, stackFrames.length);
+		assertTLCSuccessorFrame(stackFrames[0], 103, 1, 109, 59, RM, null, 1);
+
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

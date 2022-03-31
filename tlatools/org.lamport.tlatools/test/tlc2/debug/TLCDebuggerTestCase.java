@@ -151,11 +151,14 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		//		return tool.getSpecProcessor().getVariablesNodes();
 	}
 	
-	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line, final int column) {
+	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line, final int column, final int hitCnt) {
 		final SetBreakpointsArguments arguments = new SetBreakpointsArguments();
 		final SourceBreakpoint breakpoint = new SourceBreakpoint();
 		breakpoint.setLine(line);
 		breakpoint.setColumn(column);
+		if (hitCnt > -1) {
+			breakpoint.setHitCondition(Integer.toString(hitCnt));
+		}
 		final SourceBreakpoint[] breakpoints = new SourceBreakpoint[] { breakpoint };
 		arguments.setBreakpoints(breakpoints);
 		final Source source = new Source();
@@ -165,7 +168,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 	}
 	
 	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line) {
-		return createBreakpointArgument(spec, line, 0);
+		return createBreakpointArgument(spec, line, 0, -1);
 	}
 
 	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
@@ -402,6 +405,32 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			// nested ones.
 			frame.nestedVariables.clear();
 			frame.nestedVariables.putAll(old);
+		}
+	}
+
+	protected static void assertTLCSuccessorFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
+			final int endLine, final int endColumn, String spec, final Context expectedContext,
+			final int expectedSuccessors, final OpDeclNode... unassigned) {
+		assertTLCStateFrame(stackFrame, beginLine, endLine, spec, expectedContext, unassigned);
+		assertEquals(beginColumn, stackFrame.getColumn());
+		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
+
+		assertTrue(stackFrame instanceof TLCSuccessorsStackFrame);
+		final TLCSuccessorsStackFrame succframe = (TLCSuccessorsStackFrame) stackFrame;
+
+		final Scope succs = Arrays.asList(succframe.getScopes()).stream().filter(s -> s.getName().equals("Successors"))
+				.reduce((a, b) -> a).get();
+		assertNotNull(succs);
+		
+		List<Variable> variables = Arrays.asList(succframe.getVariables(succs.getVariablesReference()));
+		assertEquals(expectedSuccessors, variables.size());
+		
+		final List<Value> stateRecords = variables.stream().map(v -> (DebugTLCVariable) v).map(d -> d.getTLCValue())
+				.collect(Collectors.toList());
+		final Set<RecordValue> successors = succframe.getSuccessors().stream().map(s -> new RecordValue(s))
+				.collect(Collectors.toSet());
+		for (Value s : stateRecords) {
+			assertTrue(successors.contains(s));
 		}
 	}
 	

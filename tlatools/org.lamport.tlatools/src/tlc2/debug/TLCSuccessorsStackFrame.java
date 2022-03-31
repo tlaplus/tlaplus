@@ -72,7 +72,7 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 			return tool.eval(() -> {
 				// A) Filter those states from fun#getStates that are a-steps where a is the Action
 				// corresponding to this frame.
-				final Set<TLCState> aSteps = fun.getStates().getSubSet(a);
+				final Set<TLCState> aSteps = getSuccessors();
 				
 				// B) Convert a-steps into the DAP representation.
 				final Variable[] vars = new Variable[aSteps.size()];
@@ -85,6 +85,10 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 			});
 		}
 		return super.getVariables(vr);
+	}
+
+	Set<TLCState> getSuccessors() {
+		return fun.getStates().getSubSet(a);
 	}
 	
 	@Override
@@ -110,7 +114,7 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 			final Location location = one[0].getLocation();
 			final int hits = bp.getHits();
 			return bp.getLine() == location.beginLine() && location.beginColumn() <= bp.getColumnAsInt()
-					&& bp.getColumnAsInt() <= location.endColumn() && fun.getStates().getSubSet(a).size() >= hits;
+					&& bp.getColumnAsInt() <= location.endColumn() && getSuccessors().size() >= hits;
 		}
 		return false;
 	}

@@ -260,6 +260,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertTLCActionFrame(stackFrames[4], 52, 6, 52, 43, RM, context, vars);
 		assertTLCActionFrame(stackFrames[5], 51, 6, 51, 14, RM, context, vars);
 		assertTLCActionFrame(stackFrames[6], 51, 3, 53, 38, RM, context, vars);
+		assertTLCSuccessorFrame(stackFrames[7], 50, 1, 53, 38, RM, context, 1);
 
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

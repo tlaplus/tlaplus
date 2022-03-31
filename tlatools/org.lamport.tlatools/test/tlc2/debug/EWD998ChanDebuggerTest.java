@@ -420,6 +420,13 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(9, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 148, 3, 153, 45, RM, Context.Empty);
+
+		// Check SendMsg action has expected number of successor states.
+		sba = createBreakpointArgument(RM, 96, 3, 1); // Inline breakpoint set on the LHS of Action definition.
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(1, stackFrames.length);
+		assertTLCSuccessorFrame(stackFrames[0], 96, 1, 107, 32, RM, Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne), 1);
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
