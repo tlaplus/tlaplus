@@ -136,8 +136,8 @@ public class TLCStateStackFrame extends TLCStackFrame {
 					// A) Last state of the trace s_f.
 					final TLCState t = getT();
 					
-					if (t.getPredecessor() == null) {
-						assert t.isInitial();
+					if (t.isInitial()) {
+						assert t.getPredecessor() == null;
 						// No need to re-construct a trace if this.state is an initial state. Note that
 						// getTrace(s)/getTraceInfo(s) below would return a trace, but a check at the
 						// beginning seems easier.
