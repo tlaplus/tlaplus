@@ -45,6 +45,7 @@ import org.eclipse.lsp4j.debug.Source;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.StackFramePresentationHint;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
+import org.eclipse.lsp4j.debug.StoppedEventArgumentsReason;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.parser.SyntaxTreeNode;
@@ -571,7 +572,7 @@ public class TLCStackFrame extends StackFrame {
 			// show something meaningful in the front-end, when an invariant is violated.
 			// Thus, we have to use the visualization that comes with exception, even though
 			// the term "exception" appears in the front-end.
-			eventArguments.setReason("exception");
+			eventArguments.setReason(StoppedEventArgumentsReason.EXCEPTION);
 			eventArguments.setText(this.exception.getMessage().replaceAll("(?m)^@!@!@.*", ""));
 		}
 		return eventArguments;
