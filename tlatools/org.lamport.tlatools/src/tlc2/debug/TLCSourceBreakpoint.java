@@ -39,6 +39,7 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 		setLine(s.getLine());
 		// Create a location that's not a point.
 		final int column = getColumn() != null ? getColumn() : 1;
+		//TODO: If the location spans lines, getLine() + 1 should be the endline (second line parameter of Location).
 		location = new Location(module, getLine() + 1, column, getLine(), column + 1);
 		
 		setCondition(s.getCondition());
@@ -58,6 +59,10 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 	
 	public int getHits() {
 		return hits;
+	}
+	
+	public boolean isInline() {
+		return getColumnAsInt() == -1;
 	}
 	
 	public int getColumnAsInt() {
