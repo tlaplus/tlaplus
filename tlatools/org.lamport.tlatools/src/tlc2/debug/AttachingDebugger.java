@@ -86,6 +86,14 @@ public class AttachingDebugger extends TLCDebugger {
 			private void sendOutput(String str) {
 				if (launcher != null) {
 					final OutputEventArguments oea = new OutputEventArguments();
+					// TODO Make use of OutputEventArgumentsCategory and OutputEventArgumentsGroup
+					// to make TLC's more readable in a debugger.  For example, TLC's progress
+					// messages tend to get mixed up with other, more relevant output.
+					// Don't parse the strings here!!! Instead, BroadcastMessagePrinterRecorder
+					// provides first-class access to the log output without parsing.
+					// When launched from the debugger (VScode), TLC does not run in -tool mode.
+					//oea.setGroup(OutputEventArgumentsGroup.START_COLLAPSED);
+					//oea.setCategory("Progress");
 					oea.setOutput(str);
 					launcher.getRemoteProxy().output(oea);
 				} else {
