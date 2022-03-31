@@ -25,6 +25,8 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import java.io.IOException;
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -94,6 +96,7 @@ import tlc2.value.impl.Value;
 public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarget {
 	protected static Logger LOGGER = Logger.getLogger(TLCDebugger.class.getName());
 
+	protected PipedOutputStream pipedOutputStream;
 	protected Launcher<IDebugProtocolClient> launcher;
 
 	private Tool tool;
@@ -207,7 +210,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			// Console". We could try to handle valid TLA+ expressions here, but SANY
 			// unfortunately lacks incremental parsing.  Study related discussion started
 			// in http://discuss.tlapl.us/msg01427.html and continued offline in the involved
-			// inboxes.
+			// inboxes.	
+			try {
+				pipedOutputStream.write((args.getExpression() + "\n").getBytes());
+			} catch (IOException notExpectedToHappen) {
+				notExpectedToHappen.printStackTrace();
+			}
 		} else if ("variables".equals(args.getContext())) {
 			// The front-end passes "variables" as the context when users select a variable
 			// in the variables view and invoke the copy-to-clipboard action. Since the

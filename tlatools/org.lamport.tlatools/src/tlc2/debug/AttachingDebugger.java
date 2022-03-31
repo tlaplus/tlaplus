@@ -28,6 +28,8 @@ package tlc2.debug;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -51,6 +53,14 @@ public class AttachingDebugger extends TLCDebugger {
 	public AttachingDebugger(int port, final Step s, final boolean halt) throws IOException, InterruptedException, ExecutionException {
 		super(s, halt);
 		this.port = port;
+		
+		// Connect TLC's stdin to the debugger's console for users to be able to control
+		// TLC should it accept user input on stdin.  For example, a Java module override
+		// might prompt a user to respond on stdin.
+		final PipedInputStream pin = new PipedInputStream();
+		System.setIn(pin);
+		pipedOutputStream = new PipedOutputStream(pin);
+		
 		// Listen to that SANY and TLC have to say, and what gets written with TLC!Print*.
 		ToolIO.out = new PrintStream(ToolIO.out) {
 			// ToolIO.out passed to PrintStream above is either System.out or one of TLC's
