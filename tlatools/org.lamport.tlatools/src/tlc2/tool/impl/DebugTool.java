@@ -502,9 +502,9 @@ public class DebugTool extends Tool {
 			if (functor instanceof WrapperNextStateFunctor) {
 				return super.getNextStates(functor, state);
 			} else {
+				final WrapperNextStateFunctor wf = new WrapperNextStateFunctor(functor, target);
 				for (int i = 0; i < actions.length; i++) {
 					final Action action = actions[i];
-					final WrapperNextStateFunctor wf = new WrapperNextStateFunctor(functor, target);
 					if (action.isDeclared()) {
 						// Breakpoints for the INextStateFunctor frames are in-line breakpoints on
 						// the action declaration. If an action is undeclared, it is impossible to set
