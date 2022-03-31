@@ -49,6 +49,7 @@ import org.eclipse.lsp4j.debug.ExceptionBreakpointsFilter;
 import org.eclipse.lsp4j.debug.InitializeRequestArguments;
 import org.eclipse.lsp4j.debug.NextArguments;
 import org.eclipse.lsp4j.debug.OutputEventArguments;
+import org.eclipse.lsp4j.debug.OutputEventArgumentsCategory;
 import org.eclipse.lsp4j.debug.PauseArguments;
 import org.eclipse.lsp4j.debug.ReverseContinueArguments;
 import org.eclipse.lsp4j.debug.ScopesArguments;
@@ -735,12 +736,20 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		
 		stack.push(frame);
 
-		// Let the client print the exception in its debug output UI.
-		final OutputEventArguments oea = new OutputEventArguments();
-		oea.setOutput(e.getMessage());
+		// Let the client print the exception in its debug output UI (Debug Console in
+		// VSCode). However, only halt the execution if a front-end/debugger is connect?
 		if (launcher != null) {
+			final OutputEventArguments oea = new OutputEventArguments();
+			oea.setOutput(e.getMessage());
+			// A hyperlink pointing to the given location is placed right of the output in
+			// the Debug Console.
+			oea.setLine(frame.getLine());
+			oea.setColumn(frame.getColumn());
+			oea.setSource(frame.getSource());
+			// STDERR get colored red in VSCode's Debug Console.
+			// (stdout -> blue, console -> orange)
+			oea.setCategory(OutputEventArgumentsCategory.STDERR);
 			launcher.getRemoteProxy().output(oea);
-			// Only halt the execution if a front-end/debugger is connect?
 		}
 		
 		if (halt) {
