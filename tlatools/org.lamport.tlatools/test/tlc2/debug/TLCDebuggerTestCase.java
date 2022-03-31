@@ -151,16 +151,21 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		//		return tool.getSpecProcessor().getVariablesNodes();
 	}
 	
-	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line) {
+	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line, final int column) {
 		final SetBreakpointsArguments arguments = new SetBreakpointsArguments();
 		final SourceBreakpoint breakpoint = new SourceBreakpoint();
 		breakpoint.setLine(line);
+		breakpoint.setColumn(column);
 		final SourceBreakpoint[] breakpoints = new SourceBreakpoint[] { breakpoint };
 		arguments.setBreakpoints(breakpoints);
 		final Source source = new Source();
 		source.setName(spec);
 		arguments.setSource(source);
 		return arguments;
+	}
+	
+	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line) {
+		return createBreakpointArgument(spec, line, 0);
 	}
 
 	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
