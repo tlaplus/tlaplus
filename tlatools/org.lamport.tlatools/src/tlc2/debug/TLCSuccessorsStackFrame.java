@@ -80,8 +80,10 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 				final Variable[] vars = new Variable[aSteps.size()];
 				Iterator<TLCState> itr = aSteps.iterator();
 				for (int i = 0; i < vars.length; i++) {
-					RecordValue r = new RecordValue(itr.next());
-					vars[i] = getStateAsVariable(r, a.getName().toString() + (i+1));
+					TLCState t = itr.next();
+					RecordValue r = new RecordValue(t);
+					vars[i] = getStateAsVariable(r, t.getLevel() + "." + (i + 1) + ": "
+							+ (t.hasAction() ? t.getAction().getLocation() : "<???>"));
 				}
 				return vars;
 			});
