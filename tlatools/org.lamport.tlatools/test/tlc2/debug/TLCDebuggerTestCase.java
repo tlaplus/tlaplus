@@ -348,9 +348,6 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			assertEquals(0, new ContextComparator().compare(expectedContext, f.getContext()));
 		}
 
-		assertTrue(Arrays.asList(f.getScopes()).stream().filter(s -> TLCStateStackFrame.SCOPE.equals(s.getName()))
-				.findAny().isPresent());
-
 		if (expectedContext != null && expectedContext.isEmpty()) {
 			assertTrue(f.nestedVariables.isEmpty());
 		}

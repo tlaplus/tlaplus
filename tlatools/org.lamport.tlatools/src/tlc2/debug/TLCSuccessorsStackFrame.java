@@ -25,13 +25,9 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
-import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.OpDefNode;
@@ -48,6 +44,13 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 
 	private transient final INextStateFunctor fun;
 	private transient final Action a;
+	
+	public static final String SCOPE = "Successors";
+
+	@Override
+	protected String getScope() {
+		return SCOPE;
+	}
 
 	public TLCSuccessorsStackFrame(TLCStackFrame parent, OpDefNode node, Context ctxt, Tool tool, TLCState s, Action a,
 			INextStateFunctor fun) {
@@ -59,16 +62,15 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 		// OpDefNode- is not the location.
 		setName(node.toString());
 	}
-	
-	public int getSuccessorId() {
-		// +4 because TLCStateStackFrame and TLCStackFrame already use up ctxtId+1,
-		// ctxtId+2, and ctxtId+3.
-		return this.ctxtId + 4;
+
+	@Override
+	Variable[] getStateVariables() {
+		return new Variable[] { toVariable() };
 	}
-	
+
 	@Override
 	public Variable[] getVariables(int vr) {
-		if (vr == getSuccessorId()) {
+		if (vr == stateId) {
 			return tool.eval(() -> {
 				// A) Filter those states from fun#getStates that are a-steps where a is the Action
 				// corresponding to this frame.
@@ -89,20 +91,6 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 
 	Set<TLCState> getSuccessors() {
 		return fun.getStates().getSubSet(a);
-	}
-	
-	@Override
-	public Scope[] getScopes() {
-		final List<Scope> scopes = new ArrayList<>();
-		scopes.addAll(Arrays.asList(super.getScopes()));
-		
-		final Scope scope = new Scope();
-		scope.setName("Successors");
-		scope.setVariablesReference(getSuccessorId());
-		// Move "Successors" above "Trace".  This is brittle!
-		scopes.add(scopes.size() - 1, scope);
-		
-		return scopes.toArray(new Scope[scopes.size()]);
 	}
 	
 	@Override
