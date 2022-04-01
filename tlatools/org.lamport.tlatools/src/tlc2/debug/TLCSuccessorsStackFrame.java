@@ -64,6 +64,11 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 	}
 
 	@Override
+	protected boolean addT() {
+		return true;
+	}
+
+	@Override
 	Variable[] getStateVariables() {
 		return new Variable[] { toVariable() };
 	}

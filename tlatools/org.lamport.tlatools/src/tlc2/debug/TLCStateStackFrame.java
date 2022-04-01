@@ -146,8 +146,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 					}
 					
 					final Deque<Variable> trace = new ArrayDeque<>();
-					trace.add(
-							getStateAsVariable(new RecordValue(t, NOT_EVAL), t.getLevel() + ": " + t.getAction().getLocation()));
+					if (addT()) {
+						trace.add(getStateAsVariable(new RecordValue(t, NOT_EVAL),
+								t.getLevel() + ": " + (t.hasAction() ? t.getAction().getLocation() : "<???>")));
+					}
 
 					final TLCStateInfo[] prefix;
 					if (TLCGlobals.simulator != null) {
@@ -202,6 +204,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			});
 		}
 		return super.getVariables(vr);
+	}
+
+	protected boolean addT() {
+		return false;
 	}
 
 	protected Variable toVariable() {

@@ -368,15 +368,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			
 			// Assert that the trace is never empty.
 			assertTrue(trace.size() > 0);
-			
-			// Assert that the 0st (top/last/final) state is equal to st.
-			if (st.allAssigned()) {
-				assertEquals(new RecordValue(st), trace.get(0).getTLCValue());
-			} else {
-				// State st isn't fully evaluated yet. Thus, some variables will be 'null'.
-				assertEquals(new RecordValue(st, TLCStateStackFrame.NOT_EVAL), trace.get(0).getTLCValue());
-			}
-			
+						
 			// Assert that the last state is an initial state.
 			assertTrue(trace.get(trace.size() - 1).getName().startsWith("1: "));
 			
