@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
@@ -229,7 +230,14 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(11, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
-		
+
+		final int successors = 1;
+		SetBreakpointsArguments sba = createBreakpointArgument(RM, 25, 3, successors);
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(1, stackFrames.length);
+		assertTLCSuccessorFrame(stackFrames[0], 25, 1, 31, 25, RM, Context.Empty, successors);
+
 		// 8888888888888888888 ALIAS Alias 8888888888888888888 //
 
 		// Error trace is six states long on which we evaluate the alias expression six

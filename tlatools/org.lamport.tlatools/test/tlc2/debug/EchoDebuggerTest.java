@@ -232,6 +232,11 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(1, stackFrames.length);
 		assertTLCSuccessorFrame(stackFrames[0], 103, 1, 109, 59, RM, null, 1);
 
+		sba = createBreakpointArgument(RM, 112, 0, 13);
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(4, stackFrames.length);
+		assertTLCActionFrame(stackFrames[0], 112, 16, 129, 71, RM, (Context) null, getVars());
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
