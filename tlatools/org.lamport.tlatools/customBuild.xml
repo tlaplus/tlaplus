@@ -142,8 +142,8 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar" />
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar" />
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar" />
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar" />
 			</classpath>
 		</javac>
 
@@ -292,19 +292,19 @@
 			</patternset>
 		</unzip>
 		
-		<unzip src="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar" dest="target/classes">
+		<unzip src="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar" dest="target/classes">
 			<patternset>
 				<include name="**/*.class"/>
 				<exclude name="META-INF/**"/>
 			</patternset>
 		</unzip>
-		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar" dest="target/classes">
+		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar" dest="target/classes">
 			<patternset>
 				<include name="**/*.class"/>
 				<exclude name="META-INF/**"/>
 			</patternset>
 		</unzip>
-		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.10.0.jar" dest="target/classes">
+		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar" dest="target/classes">
 			<patternset>
 				<include name="**/*.class"/>
 				<exclude name="META-INF/**"/>
@@ -330,19 +330,19 @@
 				<include name="**/*.class"/>
 			</patternset>
 		</unzip>
-		<unzip src="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar" dest="${class.dir}">
+		<unzip src="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar" dest="${class.dir}">
 			<patternset>
 				<include name="**/*.class"/>
 				<exclude name="META-INF/**"/>
 			</patternset>
 		</unzip>
-		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar" dest="${class.dir}">
+		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar" dest="${class.dir}">
 			<patternset>
 				<include name="**/*.class"/>
 				<exclude name="META-INF/**"/>
 			</patternset>
 		</unzip>
-		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.10.0.jar" dest="${class.dir}">
+		<unzip src="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar" dest="${class.dir}">
 			<patternset>
 				<include name="**/*.class"/>
 				<exclude name="META-INF/**"/>
@@ -422,8 +422,8 @@
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar" />
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar" />
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar" />
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
@@ -469,9 +469,9 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar"/>
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar"/>
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.10.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
@@ -609,9 +609,9 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar"/>
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar"/>
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.10.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
@@ -662,9 +662,9 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar"/>
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar"/>
-				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.10.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
@@ -818,9 +818,9 @@
 					<pathelement location="lib/cglib-nodep-3.1.jar" />
 					<pathelement location="lib/objenesis-2.1.jar" />
 					<pathelement location="lib/easymock-3.3.1.jar" />
-					<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.10.0.jar"/>
-					<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.10.0.jar"/>
-					<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.10.0.jar"/>
+					<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar"/>
+					<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar"/>
+					<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar"/>
 					<pathelement location="${dist.file}" />
 					<pathelement path="${test.class.dir}" />
 					<pathelement path="test-model/" />
