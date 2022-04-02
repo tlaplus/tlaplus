@@ -30,6 +30,7 @@ import java.util.HashSet;
 
 import tlc2.tool.Action;
 import tlc2.tool.ModelChecker;
+import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import util.Assert.TLCRuntimeException;
 
@@ -57,6 +58,13 @@ public final class SetOfStates {
 		this.length = size;
 		this.thresh = length / 2;
 		this.states = new TLCState[length];
+	}
+
+	public SetOfStates(final StateVec sv) {
+		this(sv.size());
+		for (int i = 0; i < sv.size(); i++) {
+			put(sv.elementAt(i));
+		}
 	}
 
 	public final void clear() {

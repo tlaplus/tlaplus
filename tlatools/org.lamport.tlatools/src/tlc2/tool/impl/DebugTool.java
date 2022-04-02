@@ -493,31 +493,28 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
-	public boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
+	public boolean getNextStates(final INextStateFunctor functor, final TLCState state, final Action action) {
 		if (mode == EvalMode.Debugger) {
-			fastTool.getNextStates(functor, state);
+			fastTool.getNextStates(functor, state, action);
 		}
 		mode = EvalMode.Action;
 		try {
 			if (functor instanceof WrapperNextStateFunctor) {
-				return super.getNextStates(functor, state);
+				return super.getNextStates(functor, state, action);
 			} else {
 				final WrapperNextStateFunctor wf = new WrapperNextStateFunctor(functor, target);
-				for (int i = 0; i < actions.length; i++) {
-					final Action action = actions[i];
-					if (action.isDeclared()) {
-						// Breakpoints for the INextStateFunctor frames are in-line breakpoints on
-						// the action declaration. If an action is undeclared, it is impossible to set
-						// the breakpoint.
-						try {
-							target.pushFrame(this, action.getOpDef(), action.con, state, action, wf);
-							this.getNextStates(wf, state, action);
-						} finally {
-							target.popFrame(this, action.getOpDef(), action.con, state, action, wf);
-						}
-					} else {
-						this.getNextStates(wf, state, action);
+				if (action.isDeclared()) {
+					// Breakpoints for the INextStateFunctor frames are in-line breakpoints on
+					// the action declaration. If an action is undeclared, it is impossible to set
+					// the breakpoint.
+					try {
+						target.pushFrame(this, action.getOpDef(), action.con, state, action, wf);
+						super.getNextStates(wf, state, action);
+					} finally {
+						target.popFrame(this, action.getOpDef(), action.con, state, action, wf);
 					}
+				} else {
+					this.getNextStates(wf, state, action);
 				}
 				return false;
 			}

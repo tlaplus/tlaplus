@@ -47,6 +47,7 @@ import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
+import tlc2.util.SetOfStates;
 import tlc2.util.Vect;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
@@ -416,6 +417,11 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		return !nextStates.isEmpty();
 	}
 	
+	@Override
+    public SetOfStates getStates() {
+		return new SetOfStates(nextStates);
+	}
+
 	private final StateVec nextStates = new StateVec(1);
 
 	/**
