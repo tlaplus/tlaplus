@@ -147,9 +147,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		capabilities.setSupportsEvaluateForHovers(true);
 		capabilities.setSupportsTerminateRequest(true);
 		// Don't support ExceptionInfo requests. The previous git commit of the one that
-		// introduces this message implements the request, and we learned that EI are
-		// only useful if we wish to show the Java stack trace (which users don't care
-		// about).
+		// introduces this message implements the request. We learned that EI are only
+		// useful if we wish to show the Java stack trace (which users don't care about).
+		// In a nutshell, the debugger backend can return a ExceptionInfoResponse that
+		// has additional field compared to the generic exception handling mechanisms.
+		// These additional fields cause the VSCode zone widget (area dynamically made
+		// visible in the editor upon an exception) to have a richer formatting.
 		capabilities.setSupportsExceptionInfoRequest(false);
 		// Let users flip at runtime the value of "nohalt" that they passed as a
 		// sub-command of the "-debugger" (see tlc2.TLC.java) command.
@@ -173,7 +176,66 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// to e.g. the beginning of the evaluation of the next-state relation for state s, evaluation
 		// of the invariant for state s, evaluation of state- & action-constraints for s, ... by
 		// throwing a ResetEvalException.
+		// With support set to true, the debugger front-end shows two additional button
+		// "Step Back" and "Reverse", which are mapped to the methods stepBack and
+		// reverseContinue below.
 		capabilities.setSupportsStepBack(true);
+		
+		// https://github.com/Microsoft/vscode/issues/28025
+		// TODO: This seems to be the way to add commands to the front-end's variable
+		// view. Commands that could be useful are (Json) exporters for the trace, ...
+		capabilities.setSupportsValueFormattingOptions(false);
+		
+		// Stepping granularity changes the behavior of next, step-in, step-out, ...
+		// s.t. a step get re-defined from source-level to machine-instruction level. It
+		// is a recent addition to the DAP (1.41.x https://microsoft.github.io/debug-adapter-protocol/changelog).
+		// While not being tailored to state-based formalism such as TLA+, it can
+		// probably be retrofitted for our purposes (think machine-instruction is
+		// instead defined to be a TLA+ state). However, the debugger front-end (VSCode)
+		// doesn't have the necessary UI to let users change the stepping granularity:
+		// https://github.com/microsoft/vscode/issues/102236
+		// https://cs.github.com/microsoft/vscode/blob/4b9253809f3fd3bc21c19cd5e19e02d211656e66/src/vs/workbench/contrib/debug/common/debug.ts?q=repo%3Amicrosoft%2Fvscode+Granul#L437
+		// https://github.com/microsoft/vscode-mock-debug/blob/12b05dc0d9ae5a41a6f5548ded9e6db73273bfbc/src/mockDebug.ts
+		capabilities.setSupportsSteppingGranularity(false);
+
+		// A GotoTarget describes a code location that can be used as a target in the
+		// ‘goto’ request. GotoTarget support lets the debugger (backend) send locations
+		// to the front-end that VSCode only seems to show in the command emmet as a
+		// result of the Goto Target command.
+		// https://microsoft.github.io/debug-adapter-protocol/specification#Types_GotoTarget
+		capabilities.setSupportsGotoTargetsRequest(false);
+		
+		// When data breakpoints are supported, users can add breakpoints that fire when
+		// the value of a variable changes. To create data breakpoints, users
+		// right-click variables in the front-end's variable view and select data breakpoint
+		// from the context menu.
+		// If a debugger supports data breakpoints, they can be set from the VARIABLES
+		// view and will get hit when the value of the underlying variable changes. Data
+		// breakpoints are shown with a red hexagon in the BREAKPOINTS section.
+		// https://code.visualstudio.com/docs/editor/debugging#_data-breakpoints
+		capabilities.setSupportsDataBreakpoints(false);
+
+		// Users create function breakpoints from the "Breakpoints" view of the debugger
+		// front-end by clicking the view menu's "+" button, and entering a function's
+		// name into a free-form field.
+		// Instead of placing breakpoints directly in source code, a debugger can
+		// support creating breakpoints by specifying a function name. This is useful in
+		// situations where source is not available but a function name is known. A
+		// function breakpoint is created by pressing the + button in the BREAKPOINTS
+		// section header and entering the function name. Function breakpoints are shown
+		// with a red triangle in the BREAKPOINTS section.
+		// https://code.visualstudio.com/docs/editor/debugging#_function-breakpoints
+		capabilities.setSupportsFunctionBreakpoints(false);
+		
+		// I couldn't figure out how instruction breakpoints work. Presumably, an
+		// instruction breakpoint is related to the DAP's assembly feature when the
+		// source code gets replaced with machine instructions or bytecode during
+		// debugging.  With TLA+, the semantic graph that is evaluated by TLC could
+		// be defined our assembly.  However, a graph is probably not too useful when
+		// shown in a text editor.
+		capabilities.setSupportsInstructionBreakpoints(false);
+		capabilities.setSupportsDisassembleRequest(false);
+		
 		return CompletableFuture.completedFuture(capabilities);
 	}
 
@@ -210,7 +272,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			// Console". We could try to handle valid TLA+ expressions here, but SANY
 			// unfortunately lacks incremental parsing.  Study related discussion started
 			// in http://discuss.tlapl.us/msg01427.html and continued offline in the involved
-			// inboxes.	
+			// inboxes.
+			// This is a poor-man's version of debugger commands:
+			// https://github.com/microsoft/debug-adapter-protocol/issues/231
+			// https://github.com/microsoft/debug-adapter-protocol/issues/216
 			try {
 				pipedOutputStream.write((args.getExpression() + "\n").getBytes());
 			} catch (IOException notExpectedToHappen) {

@@ -37,11 +37,7 @@ import org.eclipse.lsp4j.debug.DataBreakpointInfoResponse;
 import org.eclipse.lsp4j.debug.DisassembleArguments;
 import org.eclipse.lsp4j.debug.DisassembleResponse;
 import org.eclipse.lsp4j.debug.DisconnectArguments;
-import org.eclipse.lsp4j.debug.ExceptionInfoArguments;
-import org.eclipse.lsp4j.debug.ExceptionInfoResponse;
 import org.eclipse.lsp4j.debug.GotoArguments;
-import org.eclipse.lsp4j.debug.GotoTargetsArguments;
-import org.eclipse.lsp4j.debug.GotoTargetsResponse;
 import org.eclipse.lsp4j.debug.LoadedSourcesArguments;
 import org.eclipse.lsp4j.debug.LoadedSourcesResponse;
 import org.eclipse.lsp4j.debug.ModulesArguments;
@@ -71,7 +67,7 @@ import org.eclipse.lsp4j.debug.TerminateArguments;
 import org.eclipse.lsp4j.debug.TerminateThreadsArguments;
 import org.eclipse.lsp4j.debug.services.IDebugProtocolServer;
 
-public abstract class AbstractDebugger  implements IDebugProtocolServer{
+public abstract class AbstractDebugger implements IDebugProtocolServer{
 
 	@Override
 	public CompletableFuture<SourceResponse> source(SourceArguments args) {
@@ -123,34 +119,40 @@ public abstract class AbstractDebugger  implements IDebugProtocolServer{
 
 	@Override
 	public CompletableFuture<RunInTerminalResponse> runInTerminal(RunInTerminalRequestArguments args) {
+		System.out.println("runInTerminal");
 		return CompletableFuture.completedFuture(new RunInTerminalResponse());
 	}
 
 	@Override
 	public CompletableFuture<SetFunctionBreakpointsResponse> setFunctionBreakpoints(
 			SetFunctionBreakpointsArguments args) {
+		System.out.println("setFunctionBreakpoint");
 		return CompletableFuture.completedFuture(new SetFunctionBreakpointsResponse());
 	}
 
 	@Override
 	public CompletableFuture<Void> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
+		System.out.println("setExceptionBreakpoints");
 		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
 	public CompletableFuture<DataBreakpointInfoResponse> dataBreakpointInfo(DataBreakpointInfoArguments args) {
-		return IDebugProtocolServer.super.dataBreakpointInfo(args);
+		System.out.println("dataBreakpointInfo");
+		return CompletableFuture.completedFuture(new DataBreakpointInfoResponse());
 	}
 
 	@Override
 	public CompletableFuture<SetDataBreakpointsResponse> setDataBreakpoints(SetDataBreakpointsArguments args) {
-		return IDebugProtocolServer.super.setDataBreakpoints(args);
+		System.out.println("setDataBreakpoints");
+		return CompletableFuture.completedFuture(new SetDataBreakpointsResponse());
 	}
 
 	@Override
 	public CompletableFuture<SetInstructionBreakpointsResponse> setInstructionBreakpoints(
 			SetInstructionBreakpointsArguments args) {
-		return IDebugProtocolServer.super.setInstructionBreakpoints(args);
+		System.out.println("setInstructionBreakpoints");
+		return CompletableFuture.completedFuture(new SetInstructionBreakpointsResponse());
 	}
 
 	@Override
@@ -179,43 +181,39 @@ public abstract class AbstractDebugger  implements IDebugProtocolServer{
 
 	@Override
 	public CompletableFuture<SetExpressionResponse> setExpression(SetExpressionArguments args) {
+		System.out.println("setExpression");
 		return CompletableFuture.completedFuture(new SetExpressionResponse());
 	}
 
 	@Override
 	public CompletableFuture<StepInTargetsResponse> stepInTargets(StepInTargetsArguments args) {
+		System.out.println("stepInTargets");
 		return CompletableFuture.completedFuture(new StepInTargetsResponse());
 	}
 
 	@Override
-	public CompletableFuture<GotoTargetsResponse> gotoTargets(GotoTargetsArguments args) {
-		return CompletableFuture.completedFuture(new GotoTargetsResponse());
-	}
-
-	@Override
 	public CompletableFuture<CompletionsResponse> completions(CompletionsArguments args) {
+		System.out.println("completions");
 		return CompletableFuture.completedFuture(new CompletionsResponse());
 	}
 
 	@Override
-	public CompletableFuture<ExceptionInfoResponse> exceptionInfo(ExceptionInfoArguments args) {
-		return IDebugProtocolServer.super.exceptionInfo(args);
-	}
-
-	@Override
 	public CompletableFuture<ReadMemoryResponse> readMemory(ReadMemoryArguments args) {
-		return IDebugProtocolServer.super.readMemory(args);
+		System.out.println("readMemory");
+		return CompletableFuture.completedFuture(new ReadMemoryResponse());
 	}
 
 	@Override
 	public CompletableFuture<DisassembleResponse> disassemble(DisassembleArguments args) {
-		return IDebugProtocolServer.super.disassemble(args);
+		System.out.println("disassemble");
+		return CompletableFuture.completedFuture(new DisassembleResponse());
 	}
 
 	@Override
 	public synchronized CompletableFuture<BreakpointLocationsResponse> breakpointLocations(BreakpointLocationsArguments args) {
+		System.out.println("breakpointLocations");
 		// https://microsoft.github.io/debug-adapter-protocol/specification#Requests_BreakpointLocations
 		// Requires Capabilities#setSupportBreakpointLocationsRequest(true) to be returned in TLCDebugger.initialize(..).
-		return IDebugProtocolServer.super.breakpointLocations(args);
+		return CompletableFuture.completedFuture(new BreakpointLocationsResponse());
 	}
 }
