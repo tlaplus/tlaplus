@@ -28,14 +28,24 @@ package tlc2.tool;
 import tlc2.util.SetOfStates;
 
 public interface INextStateFunctor extends IStateFunctor {
-
-	Object addElement(final TLCState s, final Action a, final TLCState t);
 	
 	public static class InvariantViolatedException extends StatefulRuntimeException {
-		
 	}
 
-	default Object addElement(TLCState state) {
+	Object addElement(final TLCState s, final Action a, final TLCState t);
+
+	default Object addElement(final TLCState state) {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Contrary to {@link INextStateFunctor#addElement(TLCState)} and
+	 * {@link INextStateFunctor#addElement(TLCState, Action, TLCState)}, replaces
+	 * the previously added elements (TLCStates) with this one. Implementations do
+	 * <i>not</i> check that TLCState <code>state</code> violates invariants, state-
+	 * or action-constraints, ... (to check properties, ..., call addElement first).
+	 */
+	default Object setElement(final TLCState state) {
 		throw new UnsupportedOperationException();
 	}
 

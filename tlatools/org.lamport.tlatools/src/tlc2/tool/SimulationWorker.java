@@ -340,6 +340,13 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		}
 		return null;
 	}
+	
+	@Override
+	public Object setElement(final TLCState s) {
+		this.nextStates.clear();
+		this.nextStates.addElement(s);
+		return this;
+	}
 
 	@Override
 	public Object addElement(final TLCState s, final Action a, final TLCState t) {
