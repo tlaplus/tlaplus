@@ -550,17 +550,20 @@ public class DebugTool extends Tool {
 		}
 	}
 
-	private static class WrapperNextStateFunctor extends WrapperStateFunctor implements INextStateFunctor {
+	private static class WrapperNextStateFunctor implements INextStateFunctor {
+		protected final INextStateFunctor functor;
+		protected final IDebugTarget target;
 
 		WrapperNextStateFunctor(INextStateFunctor functor, IDebugTarget target) {
-			super(functor, target);
+			this.functor = functor;
+			this.target = target;
 		}
 
 		@Override
 		public Object addElement(TLCState predecessor, Action a, TLCState state) {
 			try {
 				target.pushFrame(predecessor, a, state);
-				return((INextStateFunctor) functor).addElement(predecessor, a, state);
+				return functor.addElement(predecessor, a, state);
 			} finally {
 				target.popFrame(predecessor, state);
 			}
@@ -568,7 +571,7 @@ public class DebugTool extends Tool {
 
 		@Override
 		public SetOfStates getStates() {
-			return ((INextStateFunctor) functor).getStates();
+			return functor.getStates();
 		}
 	}
 
