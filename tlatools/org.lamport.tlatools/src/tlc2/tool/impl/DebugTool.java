@@ -568,6 +568,13 @@ public class DebugTool extends Tool {
 			try {
 				final StepDirection dt = target.pushFrame(predecessor, a, state);
 				if (dt == StepDirection.Out) {
+					if (predecessor.isInitial()) {
+						// Stepping out into a predecessor is effectively a no-op. It would have been
+						// better to disable the step out button in the UI, but it doesn't seem
+						// possible.
+						functor.setElement(predecessor);
+						throw new AbortEvalException();
+					}
 					assert predecessor.getPredecessor() != null;
 					functor.setElement(predecessor.getPredecessor());
 					throw new AbortEvalException();
