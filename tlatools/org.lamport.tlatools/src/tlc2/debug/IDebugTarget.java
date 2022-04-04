@@ -75,7 +75,7 @@ public interface IDebugTarget {
 		}
 
 		public boolean isTarget(SemanticNode expr) {
-			return frame.getNode() == expr;
+			return frame.isTarget(expr);
 		}
 	}
 

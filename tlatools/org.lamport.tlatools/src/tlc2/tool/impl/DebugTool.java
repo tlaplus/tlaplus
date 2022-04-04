@@ -126,7 +126,11 @@ public class DebugTool extends Tool {
 	@Override
 	public boolean isValid(Action act, TLCState state) {
 		mode = EvalMode.State;
-		return this.isValid(act, state, TLCState.Empty);
+		try {
+			return this.isValid(act, state, TLCState.Empty);
+		} catch (ResetEvalException ree) {
+			return this.isValid(act, state);
+		}
 	}
 
 	@Override
@@ -520,6 +524,16 @@ public class DebugTool extends Tool {
 				}
 				return false;
 			}
+		} catch (final ResetEvalException ree) {
+			// This catch block is the safeguard that a ResetEvalException is never
+			// populated up the call stack beyond this top-most call to getNextState(..);
+			// Callers of getNextState(..) such as SimulationWorker or Worker do not handle
+			// ResetEvalException.  Reversing from a TLCSuccessorStackFrame lands here
+			// because a TSSF's SemanticNode isn't the target of any expression of TLC's
+			// call graph; the TSSF is mapped to the declaration & definition in the
+			// semantic graph.
+			assert ree.isTarget(action.getOpDef());
+			return getNextStates(functor, state, action);
 		} catch (AbortEvalException e) {
 			return false;
 		} finally {

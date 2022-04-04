@@ -608,6 +608,10 @@ public class TLCStackFrame extends StackFrame {
 		return node == expr;
 	}
 
+	public boolean isTarget(SemanticNode expr) {
+		return node == expr;
+	}
+
 	public void postHalt(final TLCDebugger tlcDebugger) {
 		// no-op; sub-classes may override.
 	}

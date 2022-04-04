@@ -916,6 +916,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			}
 		} else if (Step.Reset_Start == step) {
 			step = Step.In;
+			// TODO: stack#getLast always takes us to the top-most frame (usually a
+			// TLCSuccessorStackFrame). However, this is not the best target if, e.g., the a
+			// user reverses an invariant. In this case, the debugger should reverse to the
+			// beginning of the invariant and not the beginning of the next-state relation.
+			// Idea: When creating stack frames, mark those that are meaningful targets to
+			// reverse back to.  Here, we would traverse the stack to find the first one of
+			// those targets.
 			throw new ResetEvalException(stack.getLast());
 		}
 	}
