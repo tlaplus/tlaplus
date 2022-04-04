@@ -25,20 +25,22 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import tla2sany.semantic.SemanticNode;
+import org.eclipse.lsp4j.debug.Capabilities;
+
+import tla2sany.st.Location;
+import tlc2.debug.IDebugTarget.Granularity;
 import tlc2.debug.IDebugTarget.StepDirection;
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
-import tlc2.util.Context;
+import tlc2.tool.impl.Tool.Mode;
 
 public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 
 	private StepDirection step = StepDirection.Continue;
 
-	public TLCStepActionStackFrame(TLCStackFrame f, SemanticNode node, Context context, Tool tool, TLCState s, Action a,
-			TLCState t) {
-		super(f, node, context, tool, s, a, t);
+	public TLCStepActionStackFrame(TLCStackFrame f, Tool tool, TLCState s, Action a, TLCState t) {
+		super(f, f.getNode(), f.getContext(), tool, s, a, t);
 	}
 
 	public void continue_() {
@@ -59,5 +61,41 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 
 	public StepDirection getStepDirection() {
 		return step;
+	}
+
+	@Override
+	public boolean matches(final TLCSourceBreakpoint bp) {
+		if (tool.getMode() == Mode.Simulation) {
+			final Action nextPred = tool.getSpecProcessor().getNextPred();
+			final Location loc = nextPred.getDefinition();
+			if (loc.includes(bp.getLocation())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void preHalt(final TLCDebugger debugger) {
+		debugger.sendCapabilities(TLCCapabilities.NO_STEP_BACK);
+		debugger.setGranularity(Granularity.State);
+	}
+
+	@Override
+	public void postHalt(final TLCDebugger debugger) {
+		debugger.sendCapabilities(TLCCapabilities.STEP_BACK);
+		debugger.setGranularity(Granularity.Formula);
+	}
+
+	private static class TLCCapabilities extends Capabilities {
+
+		public static final Capabilities STEP_BACK = new TLCCapabilities(true);
+		
+		public static final Capabilities NO_STEP_BACK = new TLCCapabilities(false);
+
+		public TLCCapabilities(boolean reverse) {
+			super();
+			setSupportsStepBack(reverse);
+		}
 	}
 }

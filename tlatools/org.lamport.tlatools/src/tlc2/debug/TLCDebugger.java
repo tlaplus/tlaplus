@@ -106,14 +106,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = Step.In;
 		this.haltExp = true;
 		this.haltInv = true;
-		this.haltNext = false;
 	}
 
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
-		this.haltNext = halt;
 	}
 
 	/*
@@ -123,7 +121,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
-		this.haltNext = halt;
 		this.executionIsHalted = executionIsHalted;
 	}
 
@@ -254,12 +251,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		violations.setFilter("InvariantBreakpointsFilter");
 		violations.setLabel("Halt (break) on violations");
 		
-		final ExceptionBreakpointsFilter next = new ExceptionBreakpointsFilter();
-		next.setDefault_(this.haltNext);
-		next.setFilter("NextBreakpointsFilter");
-		next.setLabel("Halt (break) on next");
-		
-		return new ExceptionBreakpointsFilter[] {filter, violations, next};
+		return new ExceptionBreakpointsFilter[] {filter, violations};
 	}
 
 	@Override
@@ -267,7 +259,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final List<String> asList = Arrays.asList(args.getFilters());
 		this.haltExp = asList.contains("ExceptionBreakpointsFilter");
 		this.haltInv = asList.contains("InvariantBreakpointsFilter");
-		this.haltNext = asList.contains("NextBreakpointsFilter");
 		return CompletableFuture.completedFuture(null);
 	}
 
@@ -343,7 +334,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		step = Step.Continue;
 		haltExp = false;
 		haltInv = false;
-		haltNext = false;
 		this.notify();
 		
 		return CompletableFuture.completedFuture(null);
@@ -657,7 +647,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	private volatile boolean haltExp;
 	private volatile boolean haltInv;
-	private volatile boolean haltNext;
 
 	private volatile boolean executionIsHalted = false;
 	
@@ -716,44 +705,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized StepDirection pushFrame(TLCState s, Action a, TLCState t) {
-		final TLCStackFrame f = this.stack.peek();
-		final TLCStepActionStackFrame frame = new TLCStepActionStackFrame(f, f.getNode(), f.getContext(), tool, s, a, t);
+		final TLCStepActionStackFrame frame = new TLCStepActionStackFrame(this.stack.peek(), tool, s, a, t);
 		stack.push(frame);
-
-		if (haltNext) {
-			// Switch stepping granularity to state space. Also, disable the stepBack and
-			// reverse buttons in the debugger front-end. For now, this is the only way for
-			// users to discern the stepping granularity.
-			this.granularity = Granularity.State;
-			Executors.newSingleThreadExecutor().submit(() -> {
-				LOGGER.finer("setCapabilities");
-				final CapabilitiesEventArguments cea = new CapabilitiesEventArguments();
-				final Capabilities capabilities = new Capabilities();
-				capabilities.setSupportsStepBack(false);
-				cea.setCapabilities(capabilities);
-				launcher.getRemoteProxy().capabilities(cea);
-			});
-
-			
-			haltExecution(frame);
-			
-			
-			// Reset stepping granularity to formula and re-enable stepBack and reverse
-			// buttons.
-			this.granularity = Granularity.Formula;
-			Executors.newSingleThreadExecutor().submit(() -> {
-				LOGGER.finer("setCapabilities");
-				final CapabilitiesEventArguments cea = new CapabilitiesEventArguments();
-				final Capabilities capabilities = new Capabilities();
-				capabilities.setSupportsStepBack(true);
-				cea.setCapabilities(capabilities);
-				launcher.getRemoteProxy().capabilities(cea);
-			});
-		} else {
-			haltExecution(frame, this.stack.size());
-		}
-
-		return frame.getStepDirection();
+		haltExecution(frame, this.stack.size());
+		return frame.getStepDirection(); // Note different return type here!
 	}
 
 	@Override
@@ -943,8 +898,15 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		if (LOGGER.isLoggable(Level.FINER)) {
 			LOGGER.finer(String.format("%s(%s): [%s]\n", new String(new char[level]).replace('\0', '#'), level, frame.getNode()));
 		}
-		if (matches(step, targetLevel, level) || matches(frame)) {
+		if (matches(step, targetLevel, level)) {
 			haltExecution(frame);
+		} else if (matches(frame)) {
+			// Calling pre/postHalt because stack frame decided to halt and might want to do
+			// something specific. It does not giving control to the frame in the if branch
+			// because the frame wasn't involved in the decision to halt.
+			frame.preHalt(this);
+			haltExecution(frame);
+			frame.postHalt(this);
 		}
 	}
 
@@ -981,6 +943,19 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			eventArguments.setThreadId(0);
 			launcher.getRemoteProxy().stopped(eventArguments);
 		}
+	}
+
+	protected void sendCapabilities(final Capabilities capabilities) {
+		LOGGER.finer("sendCapabilities");
+		if (launcher != null) {
+			final CapabilitiesEventArguments cea = new CapabilitiesEventArguments();
+			cea.setCapabilities(capabilities);
+			launcher.getRemoteProxy().capabilities(cea);
+		}
+	}
+
+	public void setGranularity(Granularity g) {
+		this.granularity = g;
 	}
 
 	private static boolean matches(Step dir, int targetLevel, int currentLevel) {

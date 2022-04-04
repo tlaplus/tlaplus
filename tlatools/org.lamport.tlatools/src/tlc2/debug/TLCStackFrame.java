@@ -605,4 +605,12 @@ public class TLCStackFrame extends StackFrame {
 	public boolean matches(SemanticNode expr) {
 		return node == expr;
 	}
+
+	public void postHalt(final TLCDebugger tlcDebugger) {
+		// no-op; sub-classes may override.
+	}
+
+	public void preHalt(final TLCDebugger tlcDebugger) {
+		// no-op; sub-classes may override.
+	}
 }
