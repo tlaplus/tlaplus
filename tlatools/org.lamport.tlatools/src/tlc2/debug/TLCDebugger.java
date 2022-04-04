@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.lsp4j.debug.Breakpoint;
 import org.eclipse.lsp4j.debug.Capabilities;
+import org.eclipse.lsp4j.debug.CapabilitiesEventArguments;
 import org.eclipse.lsp4j.debug.ConfigurationDoneArguments;
 import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.ContinueResponse;
@@ -105,12 +106,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = Step.In;
 		this.haltExp = true;
 		this.haltInv = true;
+		this.haltNext = false;
 	}
 
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
+		this.haltNext = halt;
 	}
 
 	/*
@@ -120,6 +123,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
+		this.haltNext = halt;
 		this.executionIsHalted = executionIsHalted;
 	}
 
@@ -250,7 +254,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		violations.setFilter("InvariantBreakpointsFilter");
 		violations.setLabel("Halt (break) on violations");
 		
-		return new ExceptionBreakpointsFilter[] {filter, violations};
+		final ExceptionBreakpointsFilter next = new ExceptionBreakpointsFilter();
+		next.setDefault_(this.haltNext);
+		next.setFilter("NextBreakpointsFilter");
+		next.setLabel("Halt (break) on next");
+		
+		return new ExceptionBreakpointsFilter[] {filter, violations, next};
 	}
 
 	@Override
@@ -258,6 +267,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final List<String> asList = Arrays.asList(args.getFilters());
 		this.haltExp = asList.contains("ExceptionBreakpointsFilter");
 		this.haltInv = asList.contains("InvariantBreakpointsFilter");
+		this.haltNext = asList.contains("NextBreakpointsFilter");
 		return CompletableFuture.completedFuture(null);
 	}
 
@@ -333,6 +343,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		step = Step.Continue;
 		haltExp = false;
 		haltInv = false;
+		haltNext = false;
 		this.notify();
 		
 		return CompletableFuture.completedFuture(null);
@@ -506,6 +517,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<ContinueResponse> continue_(ContinueArguments args) {
 		LOGGER.finer("continue_");
+		
+		if (granularity == Granularity.State) {
+			// Continue state space exploration (accept the state, ...).
+			((TLCStepActionStackFrame) this.stack.peek()).continue_();
+
+			granularity = Granularity.Formula;
+			this.notify();
+			return CompletableFuture.completedFuture(new ContinueResponse());
+		}
+
 		targetLevel = -1;
 		step = Step.Continue;
 		this.notify();
@@ -515,6 +536,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<Void> next(NextArguments args) {
 		LOGGER.finer("next/stepOver");
+		
+		if (granularity == Granularity.State) {
+			// Ignore the current successors and move on to the next successor.
+			((TLCStepActionStackFrame) this.stack.peek()).stepOver();
+
+			granularity = Granularity.Formula;
+			this.notify();
+			return CompletableFuture.completedFuture(null);
+		}
+
 		targetLevel = this.stack.size();
 		step = Step.Over;
 		this.notify();
@@ -524,6 +555,15 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<Void> stepIn(StepInArguments args) {
 		LOGGER.finer("stepIn");
+		
+		if (granularity == Granularity.State) {
+			// Choose the current successor as the next state ignoring all other successors.
+			((TLCStepActionStackFrame) this.stack.peek()).stepIn();
+
+			granularity = Granularity.Formula;
+			this.notify();
+			return CompletableFuture.completedFuture(null);
+		}
 		// matches(..) below does not take targetLevel into account, thus not changing
 		// it here. The reason is that it is surprising if step.in on a leaf-frame
 		// would amount to resume/continue.
@@ -535,6 +575,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<Void> stepOut(StepOutArguments args) {
 		LOGGER.finer("stepOut");
+
+		if (granularity == Granularity.State) {
+			// Go back to the previous level/diameter.
+			((TLCStepActionStackFrame) this.stack.peek()).stepOut();
+			
+			granularity = Granularity.Formula;
+			this.notify();
+			return CompletableFuture.completedFuture(null);
+		}
+		
 		targetLevel = this.stack.size();
 		step = Step.Out;
 		this.notify();
@@ -556,6 +606,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	@Override
 	public synchronized CompletableFuture<Void> stepBack(StepBackArguments args) {
+		if (granularity == Granularity.State) {
+			// Because we change the backend's capabilities when switching to state-level
+			// stepping granularity (find setCapabilities in this class), the button should
+			// not be available in the UI. To safeguard against a deadlock, we simply define
+			// the buttons behavior to resume execution.
+			granularity = Granularity.Formula;
+			this.notify();
+			return CompletableFuture.completedFuture(null);
+		}
+
 		step = Step.Reset;
 		this.notify();
 
@@ -564,6 +624,17 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized CompletableFuture<Void> reverseContinue(ReverseContinueArguments args) {
+		if (granularity == Granularity.State) {
+			// Because we change the backend's capabilities when switching to state-level
+			// stepping granularity (find setCapabilities in this class), the button mapping
+			// to this method reverseContinue should not be available in the UI. To
+			// safeguard against a deadlock, we simply define the buttons behavior to resume
+			// execution.
+			granularity = Granularity.Formula;
+			this.notify();
+			return CompletableFuture.completedFuture(null);
+		}
+		
 		step = Step.Reset_Start;
 		this.notify();
 
@@ -582,9 +653,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	// Initialize the debugger to immediately halt on the first frame.
 	private volatile int targetLevel = 1;
 	private volatile Step step = Step.In;
+	private volatile Granularity granularity = Granularity.Formula;
 	
 	private volatile boolean haltExp;
 	private volatile boolean haltInv;
+	private volatile boolean haltNext;
+
 	private volatile boolean executionIsHalted = false;
 	
 	@Override
@@ -641,9 +715,45 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public synchronized IDebugTarget pushFrame(TLCState s, Action a, TLCState t) {
-		TLCStackFrame f = this.stack.peek();
-		return pushFrame(f.getTool(), f.getNode(), f.getContext(), s, a, t);
+	public synchronized StepDirection pushFrame(TLCState s, Action a, TLCState t) {
+		final TLCStackFrame f = this.stack.peek();
+		final TLCStepActionStackFrame frame = new TLCStepActionStackFrame(f, f.getNode(), f.getContext(), tool, s, a, t);
+		stack.push(frame);
+
+		if (haltNext) {
+			// Switch stepping granularity to state space. Also, disable the stepBack and
+			// reverse buttons in the debugger front-end. For now, this is the only way for
+			// users to discern the stepping granularity.
+			this.granularity = Granularity.State;
+			Executors.newSingleThreadExecutor().submit(() -> {
+				LOGGER.finer("setCapabilities");
+				final CapabilitiesEventArguments cea = new CapabilitiesEventArguments();
+				final Capabilities capabilities = new Capabilities();
+				capabilities.setSupportsStepBack(false);
+				cea.setCapabilities(capabilities);
+				launcher.getRemoteProxy().capabilities(cea);
+			});
+
+			
+			haltExecution(frame);
+			
+			
+			// Reset stepping granularity to formula and re-enable stepBack and reverse
+			// buttons.
+			this.granularity = Granularity.Formula;
+			Executors.newSingleThreadExecutor().submit(() -> {
+				LOGGER.finer("setCapabilities");
+				final CapabilitiesEventArguments cea = new CapabilitiesEventArguments();
+				final Capabilities capabilities = new Capabilities();
+				capabilities.setSupportsStepBack(true);
+				cea.setCapabilities(capabilities);
+				launcher.getRemoteProxy().capabilities(cea);
+			});
+		} else {
+			haltExecution(frame, this.stack.size());
+		}
+
+		return frame.getStepDirection();
 	}
 
 	@Override

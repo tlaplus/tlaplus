@@ -37,6 +37,29 @@ import tlc2.value.impl.Value;
 
 public interface IDebugTarget {
 
+	public enum StepDirection {
+		/**
+		 * Resume regular state-space exploration.
+		 */
+		Continue,
+		/**
+		 * Continue state-space exploration with the given state.
+		 */
+		In,
+		/**
+		 * Go back to the previous level/diameter.
+		 */
+		Out,
+		/**
+		 * Ignore the current state and continue with other successor states (if any).
+		 */
+		Over;
+	}
+
+	public enum Granularity {
+		State, Formula
+	};
+
 	public enum Step {
 		In, Out, Over, Continue, Reset, Reset_Start
 	};
@@ -54,6 +77,18 @@ public interface IDebugTarget {
 		public boolean isTarget(SemanticNode expr) {
 			return frame.getNode() == expr;
 		}
+	}
+
+	@SuppressWarnings("serial")
+	class AbortEvalException extends RuntimeException {
+		// Tool#getNextStates(..) does not support stopping the evaluation of the
+		// next-state relation. In other words, it always generates all successor states
+		// (unless running in probabilistic/generator mode). Here, however, we may want
+		// to stop the evaluation of the next-state relation before all successors have
+		// been generated. Thus, we throw an AbortEvalException that we catch further up
+		// the call-stack (see above). We assume Tool to gracefully handle this
+		// exception and correctly cleanup and reset for the next evaluation of the
+		// next-state relation.
 	}
 
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c);
@@ -104,8 +139,8 @@ public interface IDebugTarget {
 	
 	IDebugTarget popFrame(TLCState state);
 
-	IDebugTarget pushFrame(TLCState predecessor, Action a, TLCState state);
-	
+	StepDirection pushFrame(TLCState predecessor, Action a, TLCState state);
+
 	IDebugTarget popFrame(TLCState predecessor, TLCState state);
 
 	IDebugTarget setTool(Tool tool);

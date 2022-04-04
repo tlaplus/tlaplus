@@ -37,7 +37,9 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.debug.IDebugTarget;
+import tlc2.debug.IDebugTarget.AbortEvalException;
 import tlc2.debug.IDebugTarget.ResetEvalException;
+import tlc2.debug.IDebugTarget.StepDirection;
 import tlc2.tool.Action;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
@@ -518,6 +520,8 @@ public class DebugTool extends Tool {
 				}
 				return false;
 			}
+		} catch (AbortEvalException e) {
+			return false;
 		} finally {
 			// In getNextState above, the predecessor state is set eagerly for
 			// TLCStateStackFrame#getTrace to function correctly in all cases. Here, we null
@@ -562,8 +566,24 @@ public class DebugTool extends Tool {
 		@Override
 		public Object addElement(TLCState predecessor, Action a, TLCState state) {
 			try {
-				target.pushFrame(predecessor, a, state);
-				return functor.addElement(predecessor, a, state);
+				final StepDirection dt = target.pushFrame(predecessor, a, state);
+				if (dt == StepDirection.Out) {
+					assert predecessor.getPredecessor() != null;
+					functor.setElement(predecessor.getPredecessor());
+					throw new AbortEvalException();
+				} else if (dt == StepDirection.In) {
+					// First, do the usual checks on the *new* state, and then make it the only
+					// successor state to explore further.
+					functor.addElement(predecessor, a, state);
+					functor.setElement(state);
+					throw new AbortEvalException();
+				} else if (dt == StepDirection.Over) {
+					// Nothing to be done...
+					return functor;
+				} else {
+					assert dt == StepDirection.Continue;
+					return functor.addElement(predecessor, a, state);
+				}
 			} finally {
 				target.popFrame(predecessor, state);
 			}
