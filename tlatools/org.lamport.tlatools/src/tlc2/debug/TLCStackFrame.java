@@ -37,7 +37,9 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.debug.ContinueResponse;
 import org.eclipse.lsp4j.debug.EvaluateArguments;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.Scope;
@@ -612,5 +614,25 @@ public class TLCStackFrame extends StackFrame {
 
 	public void preHalt(final TLCDebugger tlcDebugger) {
 		// no-op; sub-classes may override.
+	}
+
+	public CompletableFuture<Void> stepOut(final TLCDebugger debugger) {
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	public CompletableFuture<Void> stepIn(final TLCDebugger debugger) {
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	public CompletableFuture<Void> stepOver(final TLCDebugger debugger) {
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	public CompletableFuture<ContinueResponse> continue_(final TLCDebugger debugger) {
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
 	}
 }

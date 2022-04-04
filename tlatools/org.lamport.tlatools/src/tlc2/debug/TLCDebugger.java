@@ -510,11 +510,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		
 		if (granularity == Granularity.State) {
 			// Continue state space exploration (accept the state, ...).
-			((TLCStepActionStackFrame) this.stack.peek()).continue_();
-
-			granularity = Granularity.Formula;
-			this.notify();
-			return CompletableFuture.completedFuture(new ContinueResponse());
+			return this.stack.peek().continue_(this);
 		}
 
 		targetLevel = -1;
@@ -529,11 +525,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		
 		if (granularity == Granularity.State) {
 			// Ignore the current successors and move on to the next successor.
-			((TLCStepActionStackFrame) this.stack.peek()).stepOver();
-
-			granularity = Granularity.Formula;
-			this.notify();
-			return CompletableFuture.completedFuture(null);
+			return this.stack.peek().stepOver(this);
 		}
 
 		targetLevel = this.stack.size();
@@ -548,11 +540,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		
 		if (granularity == Granularity.State) {
 			// Choose the current successor as the next state ignoring all other successors.
-			((TLCStepActionStackFrame) this.stack.peek()).stepIn();
-
-			granularity = Granularity.Formula;
-			this.notify();
-			return CompletableFuture.completedFuture(null);
+			return this.stack.peek().stepIn(this);
 		}
 		// matches(..) below does not take targetLevel into account, thus not changing
 		// it here. The reason is that it is surprising if step.in on a leaf-frame
@@ -568,11 +556,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 		if (granularity == Granularity.State) {
 			// Go back to the previous level/diameter.
-			((TLCStepActionStackFrame) this.stack.peek()).stepOut();
-			
-			granularity = Granularity.Formula;
-			this.notify();
-			return CompletableFuture.completedFuture(null);
+			return this.stack.peek().stepOut(this);
 		}
 		
 		targetLevel = this.stack.size();

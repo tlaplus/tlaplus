@@ -25,7 +25,10 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.eclipse.lsp4j.debug.Capabilities;
+import org.eclipse.lsp4j.debug.ContinueResponse;
 
 import tla2sany.st.Location;
 import tlc2.debug.IDebugTarget.Granularity;
@@ -43,20 +46,40 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 		super(f, f.getNode(), f.getContext(), tool, s, a, t);
 	}
 
-	public void continue_() {
+	@Override
+	public CompletableFuture<ContinueResponse> continue_(final TLCDebugger debugger) {
 		this.step = StepDirection.Continue;
+
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(new ContinueResponse());
 	}
 
-	public void stepOver() {
+	@Override
+	public CompletableFuture<Void> stepOver(final TLCDebugger debugger) {
 		this.step = StepDirection.Over;
+
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
 	}
 
-	public void stepOut() {
+	@Override
+	public CompletableFuture<Void> stepOut(final TLCDebugger debugger) {
 		this.step = StepDirection.Out;
+		
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
 	}
 
-	public void stepIn() {
+	@Override
+	public CompletableFuture<Void> stepIn(final TLCDebugger debugger) {
 		this.step = StepDirection.In;
+
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
 	}
 
 	public StepDirection getStepDirection() {
