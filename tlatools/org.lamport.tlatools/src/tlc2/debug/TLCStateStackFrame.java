@@ -267,6 +267,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		return false;
 	}
 
+	protected boolean hasScope() {
+		return true;
+	}
+	
 	@Override
 	public Scope[] getScopes() {
 		final List<Scope> scopes = new ArrayList<>();
@@ -281,12 +285,14 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		// up the TLCStackFrame stack is already implemented by
 		// tlc2.debug.TLCStackFrame.getStackVariables(List<Variable>). For simulation,
 		// we get the trace for free though.  There would be no need to cache it.
-		Scope scope = new Scope();
-		scope.setName(getScope());
-		scope.setVariablesReference(stateId);
-		scopes.add(scope);
+		if (hasScope()) {
+			Scope scope = new Scope();
+			scope.setName(getScope());
+			scope.setVariablesReference(stateId);
+			scopes.add(scope);
+		}
 		
-		scope = new Scope();
+		Scope scope = new Scope();
 		scope.setName(TRACE);
 		scope.setVariablesReference(stateId + 1);
 		scopes.add(scope);

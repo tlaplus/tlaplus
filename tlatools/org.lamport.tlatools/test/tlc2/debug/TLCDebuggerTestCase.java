@@ -407,19 +407,25 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		assertTrue(stackFrame instanceof TLCSuccessorsStackFrame);
 		final TLCSuccessorsStackFrame succframe = (TLCSuccessorsStackFrame) stackFrame;
 
-		final Scope succs = Arrays.asList(succframe.getScopes()).stream().filter(s -> s.getName().equals("Successors"))
-				.reduce((a, b) -> a).get();
-		assertNotNull(succs);
-		
-		List<Variable> variables = Arrays.asList(succframe.getVariables(succs.getVariablesReference()));
-		assertEquals(expectedSuccessors, variables.size());
-		
-		final List<Value> stateRecords = variables.stream().map(v -> (DebugTLCVariable) v).map(d -> d.getTLCValue())
-				.collect(Collectors.toList());
-		final Set<RecordValue> successors = succframe.getSuccessors().stream().map(s -> new RecordValue(s))
-				.collect(Collectors.toSet());
-		for (Value s : stateRecords) {
-			assertTrue(successors.contains(s));
+		if (!succframe.getSuccessors().isEmpty()) {
+			final Scope succs = Arrays.asList(succframe.getScopes()).stream().filter(s -> s.getName().equals("Successors"))
+					.reduce((a, b) -> a).get();
+			assertNotNull(succs);
+			
+			List<Variable> variables = Arrays.asList(succframe.getVariables(succs.getVariablesReference()));
+			assertEquals(expectedSuccessors, variables.size());
+			
+			final List<Value> stateRecords = variables.stream().map(v -> (DebugTLCVariable) v).map(d -> d.getTLCValue())
+					.collect(Collectors.toList());
+			final Set<RecordValue> successors = succframe.getSuccessors().stream().map(s -> new RecordValue(s))
+					.collect(Collectors.toSet());
+			for (Value s : stateRecords) {
+				assertTrue(successors.contains(s));
+			}
+		} else {
+			Optional<Scope> o = Arrays.asList(succframe.getScopes()).stream().filter(s -> s.getName().equals("Successors"))
+					.reduce((a, b) -> a);
+			assertTrue(o.isEmpty());
 		}
 	}
 	

@@ -101,6 +101,11 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 	}
 	
 	@Override
+	protected boolean hasScope() {
+		return !getSuccessors().isEmpty();
+	}
+
+	@Override
 	public boolean matches(final TLCSourceBreakpoint bp) {
 		// TreeNode.one()[0] is the LHS of the definition => A user activates it by
 		// setting an "in-line" breakpoint into the LHS of the def.
