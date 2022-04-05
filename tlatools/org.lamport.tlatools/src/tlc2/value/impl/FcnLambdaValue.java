@@ -722,7 +722,16 @@ public class FcnLambdaValue extends Value implements Applicable, IFcnLambdaValue
         }
         if (coverage) {cm.incSecondary(sz);}
         if (this.excepts != null) {
-          this.fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(this.excepts);
+        	// TODO:
+			// tlc2.tool.simulation.NQSpecTest is the only test in our test suite that
+			// exercises this code path--it works fine. In the general case, however,
+			// it is not clear why the cast to FRV should be safe. As a matter of fact,
+			// this threw a ClassCastException when working on the TLA+ debugger, where
+			// toFcnRcd is called from toString below. Given that the API contract of
+			// Value#toFcnRcd allows null, the cast could be secured with a conditional
+			// and null returned otherwise. In case of null, toString returns the symbolic
+			// value.
+	        this.fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(this.excepts);
         }
       }
       return this.fcnRcd;
