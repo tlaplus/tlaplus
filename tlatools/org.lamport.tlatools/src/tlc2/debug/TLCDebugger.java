@@ -617,10 +617,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			Action a, INextStateFunctor fun) {
 		final TLCStackFrame frame = new TLCSuccessorsStackFrame(stack.peek(), expr, c, tool, s, a, fun);
 		stack.push(frame);
-		// for the fun it doesn't make sense to halt the execution *before* the
-		// successor states have been generated. Instead, haltExec is called in the
-		// corresponding pop method below.
-		//haltExecution(frame, this.stack.size());
+		haltExecution(frame, this.stack.size());
 		return this;
 	}
 

@@ -93,7 +93,7 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals("line 7, col 9 to line 7, col 9 of module Debug02", var.getResult());
 
 		// outer-most frame of Next => xx evaluated, xx' not yet
-		debugger.stepIn();
+		debugger.stepIn(2);
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
 		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
