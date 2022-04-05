@@ -48,6 +48,10 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 
 	@Override
 	public boolean handle(final TLCDebugger debugger) {
+		if (tool.getMode() == Mode.Simulation) {
+			// State-level stepping only supported in simulation mode.
+			return false;
+		}
 		return debugger.getGranularity() == Granularity.State;
 	}
 
@@ -55,6 +59,8 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 	public CompletableFuture<ContinueResponse> continue_(final TLCDebugger debugger) {
 		this.step = StepDirection.Continue;
 
+		// Hitting continue in the front-end is how users reset the stepping granularity
+		// back to Formula.
 		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
 		return CompletableFuture.completedFuture(new ContinueResponse());
