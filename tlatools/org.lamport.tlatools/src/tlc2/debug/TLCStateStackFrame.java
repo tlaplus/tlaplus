@@ -324,7 +324,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	public boolean matches(final TLCSourceBreakpoint bp) {
 		if (super.matches(bp)) {
 			if (bp.getHits() > 0) {
-				// TODO: getLast here to have uniform hit count for actions an their
+				// TODO: getLast here to have uniform hit count for actions and their
 				// state-constraint.
 				return getT().getLevel() >= bp.getHits(); 
 			}

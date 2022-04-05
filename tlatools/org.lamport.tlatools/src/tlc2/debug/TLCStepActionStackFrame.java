@@ -48,7 +48,7 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 
 	@Override
 	public boolean handle(final TLCDebugger debugger) {
-		if (tool.getMode() == Mode.Simulation) {
+		if (tool.getMode() != Mode.Simulation) {
 			// State-level stepping only supported in simulation mode.
 			return false;
 		}
@@ -126,6 +126,11 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 			final Action nextPred = tool.getSpecProcessor().getNextPred();
 			final Location loc = nextPred.getDefinition();
 			if (loc.includes(bp.getLocation())) {
+				// We do not support hit count with state-level stepping because stepping back
+				// to level/diameter < bp.getHits() does not work.
+//				if (bp.getHits() > 0) {
+//					return getT().getLevel() >= bp.getHits(); 
+//				}
 				return true;
 			}
 		}

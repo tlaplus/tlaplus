@@ -56,6 +56,7 @@ import org.eclipse.lsp4j.debug.EvaluateArguments;
 import org.eclipse.lsp4j.debug.EvaluateArgumentsContext;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.NextArguments;
+import org.eclipse.lsp4j.debug.ReverseContinueArguments;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.Source;
@@ -171,11 +172,12 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		return createBreakpointArgument(spec, line, 0, -1);
 	}
 
-	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
+	protected static TLCActionStackFrame assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
 			final int endLine, final int endColumn, String spec, final Context ctxt, final OpDeclNode... unassigned) {
 		assertTLCActionFrame(stackFrame, beginLine, endLine, spec, ctxt, unassigned);
 		assertEquals(beginColumn, stackFrame.getColumn());
 		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
+		return (TLCActionStackFrame) stackFrame;
 	}
 
 	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
@@ -605,6 +607,12 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			return stackTrace();
 		}
 
+		public StackFrame[] stepOut(final int steps) throws Exception {
+			for (int i = 0; i < steps; i++) {
+				stepOut(new StepOutArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());			}
+			return stackTrace();
+		}
+		
 		public StackFrame[] stepOut() throws Exception {
 			// Convenience methods
 			stepOut(new StepOutArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
@@ -626,6 +634,12 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		public StackFrame[] continue_() throws Exception {
 			// Convenience methods
 			continue_(new ContinueArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
+			return stackTrace();
+		}
+
+		public StackFrame[] reverseContinue() throws Exception {
+			// Convenience methods
+			reverseContinue(new ReverseContinueArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
 			return stackTrace();
 		}
 

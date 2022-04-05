@@ -407,6 +407,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 				// behavior spec. The Next relation is another candidate when TLC decomposes it
 				// into sub-actions s.t. a breakpoint on Next will never hit.
 				
+				final Action nextPred = tool.getSpecProcessor().getNextPred();
+				final Location loc = nextPred.getDefinition();
+				if (loc.includes(sbp.getLocation()) && sbp.getHits() > 0) {
+					// see tlc2.debug.TLCStepActionStackFrame.matches(TLCSourceBreakpoint)
+					breakpoint.setVerified(false);
+					breakpoint.setMessage("A Next breakpoint does not support a hit condition.");
+				}
+				
 				final Source source = args.getSource();
 				breakpoint.setSource(source);
 				bp[j] = breakpoint;
