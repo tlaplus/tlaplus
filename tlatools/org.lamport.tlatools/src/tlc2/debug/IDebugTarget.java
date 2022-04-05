@@ -105,7 +105,7 @@ public interface IDebugTarget {
 
 	IDebugTarget pushFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state);
 	
-	IDebugTarget pushFrame(Tool tool, OpDefNode expr, Context c, TLCState predecessor, Action a, INextStateFunctor fun);
+	StepDirection pushFrame(Tool tool, OpDefNode expr, Context c, TLCState predecessor, Action a, INextStateFunctor fun);
 
 	IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, TLCState state);
 

@@ -27,12 +27,15 @@ package tlc2.debug;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
+import tlc2.debug.IDebugTarget.Granularity;
+import tlc2.debug.IDebugTarget.StepDirection;
 import tlc2.tool.Action;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.TLCState;
@@ -44,6 +47,7 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 
 	private transient final INextStateFunctor fun;
 	private transient final Action a;
+	private StepDirection step = StepDirection.Continue;
 	
 	public static final String SCOPE = "Successors";
 
@@ -117,5 +121,41 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 					&& bp.getColumnAsInt() <= location.endColumn() && getSuccessors().size() >= hits;
 		}
 		return false;
+	}
+
+	@Override
+	public boolean handle(final TLCDebugger debugger) {
+		return debugger.stack.size() == 1;
+	}
+
+	@Override
+	public CompletableFuture<Void> stepOver(final TLCDebugger debugger) {
+		this.step = StepDirection.Over;
+		
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
+	public CompletableFuture<Void> stepOut(final TLCDebugger debugger) {
+		this.step = StepDirection.Out;
+		
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
+	public CompletableFuture<Void> reverseContinue(final TLCDebugger debugger) {
+		this.step = StepDirection.Out;
+		
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+	
+	public StepDirection getDirection() {
+		return step;
 	}
 }

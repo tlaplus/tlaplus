@@ -514,7 +514,16 @@ public class DebugTool extends Tool {
 					// the action declaration. If an action is undeclared, it is impossible to set
 					// the breakpoint.
 					try {
-						target.pushFrame(this, action.getOpDef(), action.con, state, action, wf);
+						final StepDirection d = target.pushFrame(this, action.getOpDef(), action.con, state, action, wf);
+						if (d == StepDirection.Out && !state.isInitial()) {
+							functor.setElement(state.getPredecessor());
+							return false;
+						} else if (d == StepDirection.Over) {
+							// Nothing to be done for the current state when stepping over.
+							return false;
+						}
+						// SD.In, SD.Continue, and stepping out of an initial state are all equivalent
+						// *at the start* of evaluating the next-state relation.
 						super.getNextStates(wf, state, action);
 					} finally {
 						target.popFrame(this, action.getOpDef(), action.con, state, action, wf);
