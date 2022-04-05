@@ -508,8 +508,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<ContinueResponse> continue_(ContinueArguments args) {
 		LOGGER.finer("continue_");
 		
-		if (granularity == Granularity.State) {
-			// Continue state space exploration (accept the state, ...).
+		if (!stack.isEmpty() && stack.peek().handle(this)) {
 			return this.stack.peek().continue_(this);
 		}
 
@@ -523,8 +522,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> next(NextArguments args) {
 		LOGGER.finer("next/stepOver");
 		
-		if (granularity == Granularity.State) {
-			// Ignore the current successors and move on to the next successor.
+		if (!stack.isEmpty() && stack.peek().handle(this)) {
 			return this.stack.peek().stepOver(this);
 		}
 
@@ -538,8 +536,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> stepIn(StepInArguments args) {
 		LOGGER.finer("stepIn");
 		
-		if (granularity == Granularity.State) {
-			// Choose the current successor as the next state ignoring all other successors.
+		if (!stack.isEmpty() && stack.peek().handle(this)) {
 			return this.stack.peek().stepIn(this);
 		}
 		// matches(..) below does not take targetLevel into account, thus not changing
@@ -554,8 +551,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> stepOut(StepOutArguments args) {
 		LOGGER.finer("stepOut");
 
-		if (granularity == Granularity.State) {
-			// Go back to the previous level/diameter.
+		if (!stack.isEmpty() && stack.peek().handle(this)) {
 			return this.stack.peek().stepOut(this);
 		}
 		
@@ -580,14 +576,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	@Override
 	public synchronized CompletableFuture<Void> stepBack(StepBackArguments args) {
-		if (granularity == Granularity.State) {
-			// Because we change the backend's capabilities when switching to state-level
-			// stepping granularity (find setCapabilities in this class), the button should
-			// not be available in the UI. To safeguard against a deadlock, we simply define
-			// the buttons behavior to resume execution.
-			granularity = Granularity.Formula;
-			this.notify();
-			return CompletableFuture.completedFuture(null);
+		LOGGER.finer("stepBack");
+
+		if (!stack.isEmpty() && stack.peek().handle(this)) {
+			return this.stack.peek().stepBack(this);
 		}
 
 		step = Step.Reset;
@@ -598,15 +590,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized CompletableFuture<Void> reverseContinue(ReverseContinueArguments args) {
-		if (granularity == Granularity.State) {
-			// Because we change the backend's capabilities when switching to state-level
-			// stepping granularity (find setCapabilities in this class), the button mapping
-			// to this method reverseContinue should not be available in the UI. To
-			// safeguard against a deadlock, we simply define the buttons behavior to resume
-			// execution.
-			granularity = Granularity.Formula;
-			this.notify();
-			return CompletableFuture.completedFuture(null);
+		LOGGER.finer("reverseContinue");
+		
+		if (!stack.isEmpty() && stack.peek().handle(this)) {
+			return this.stack.peek().reverseContinue(this);
 		}
 		
 		step = Step.Reset_Start;
@@ -947,6 +934,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	public void setGranularity(Granularity g) {
 		this.granularity = g;
+	}
+
+	public Granularity getGranularity() {
+		return this.granularity;
 	}
 
 	private static boolean matches(Step dir, int targetLevel, int currentLevel) {

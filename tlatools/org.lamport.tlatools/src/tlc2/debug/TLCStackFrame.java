@@ -61,6 +61,7 @@ import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
+import tlc2.debug.IDebugTarget.Granularity;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
@@ -621,22 +622,42 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	public CompletableFuture<Void> stepOut(final TLCDebugger debugger) {
+		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
 		return CompletableFuture.completedFuture(null);
 	}
 
 	public CompletableFuture<Void> stepIn(final TLCDebugger debugger) {
+		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
 		return CompletableFuture.completedFuture(null);
 	}
 
 	public CompletableFuture<Void> stepOver(final TLCDebugger debugger) {
+		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
 		return CompletableFuture.completedFuture(null);
 	}
 
 	public CompletableFuture<ContinueResponse> continue_(final TLCDebugger debugger) {
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(new ContinueResponse());
+	}
+
+	public CompletableFuture<Void> reverseContinue(final TLCDebugger debugger) {
+		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
 		return CompletableFuture.completedFuture(null);
+	}
+
+	public CompletableFuture<Void> stepBack(final TLCDebugger debugger) {
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	public boolean handle(final TLCDebugger debugger) {
+		return false;
 	}
 }

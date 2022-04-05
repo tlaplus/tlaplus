@@ -47,6 +47,11 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 	}
 
 	@Override
+	public boolean handle(final TLCDebugger debugger) {
+		return debugger.getGranularity() == Granularity.State;
+	}
+
+	@Override
 	public CompletableFuture<ContinueResponse> continue_(final TLCDebugger debugger) {
 		this.step = StepDirection.Continue;
 
@@ -77,6 +82,29 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 	public CompletableFuture<Void> stepIn(final TLCDebugger debugger) {
 		this.step = StepDirection.In;
 
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
+	public CompletableFuture<Void> reverseContinue(final TLCDebugger debugger) {
+		// Because we change the backend's capabilities when switching to state-level
+		// stepping granularity (find setCapabilities in this class), the button mapping
+		// to this method reverseContinue should not be available in the UI. To
+		// safeguard against a deadlock, we simply define the buttons behavior to resume
+		// execution.
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
+	public CompletableFuture<Void> stepBack(final TLCDebugger debugger) {
+		// Because we change the backend's capabilities when switching to state-level
+		// stepping granularity (find setCapabilities in this class), the button should
+		// not be available in the UI. To safeguard against a deadlock, we simply define
+		// the buttons behavior to resume execution.
 		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
 		return CompletableFuture.completedFuture(null);
