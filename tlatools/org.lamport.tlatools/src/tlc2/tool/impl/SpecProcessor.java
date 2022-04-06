@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
@@ -959,13 +961,11 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // Postprocess:
         this.invariants = new Action[this.invVec.size()];
         this.invNames = new String[this.invVec.size()];
-        for (int i = 0; i < this.invariants.length; i++)
+        for (int i = 0; i < this.invVec.size(); i++)
         {
             this.invariants[i] = (Action) this.invVec.elementAt(i);
             this.invNames[i] = (String) this.invNameVec.elementAt(i);
         }
-        this.invVec = null;
-        this.invNameVec = null;
 
         this.impliedInits = new Action[this.impliedInitVec.size()];
         this.impliedInitNames = new String[this.impliedInitVec.size()];
@@ -1019,6 +1019,20 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             Assert.fail(EC.TLC_CONFIG_MISSING_NEXT);
         }
         
+        
+		// Process overrides given by ParameterizedSpecObj *after* the ordinary config
+		// has been processed. A check above expects this.invariants to be empty if
+		// this.initPred is empty.
+        final java.util.List<Action> overrides = specObj.getInvariants();
+
+        final ArrayList<Action> a = new ArrayList<>(Arrays.asList(this.invariants));
+		a.addAll(overrides);
+        this.invariants = a.toArray(Action[]::new);
+
+        final ArrayList<String> b = new ArrayList<>(Arrays.asList(this.invNames));
+        b.addAll(overrides.stream().map(act -> act.getNameOfDefault()).collect(Collectors.toList()));
+        this.invNames = b.toArray(String[]::new);
+        
 		// Process the model constraints in the config. It's done after all
 		// other config processing because it used to be processed lazy upon the
 		// first invocation of getModelConstraints. However, this caused a NPE
@@ -1051,7 +1065,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             {
                 Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "initial predicate", name });
             }
-            this.initPredVec.addElement(new Action(def.getBody(), Context.Empty, def, true));
+            this.initPredVec.addElement(new Action(def.getBody(), Context.Empty, def, true, false));
         }
 
         name = this.config.getNext();
@@ -1146,7 +1160,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     ExprNode body = ((OpDefNode) val).getBody();
                     if (symbolNodeValueLookupProvider.getLevelBound(body, c, toolId) == 1)
                     {
-                        this.initPredVec.addElement(new Action(Specs.addSubsts(body, subs), c, ((OpDefNode) val), true));
+                        this.initPredVec.addElement(new Action(Specs.addSubsts(body, subs), c, ((OpDefNode) val), true, false));
                     } else
                     {
                         this.processConfigSpec(body, c, subs);

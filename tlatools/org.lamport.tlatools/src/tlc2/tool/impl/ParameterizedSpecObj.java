@@ -39,12 +39,15 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
+import tlc2.tool.Action;
+import tlc2.util.Context;
 import tlc2.value.impl.StringValue;
 import util.FilenameToStream;
 
 public class ParameterizedSpecObj extends SpecObj {
 
 	public static final String POST_CONDITIONS = "POST_CONDITIONS";
+	public static final String INVARIANT = "INVARIANT";
 
 	private final Spec spec;
 	private final Map<String, Object> params;
@@ -68,6 +71,15 @@ public class ParameterizedSpecObj extends SpecObj {
 				rootModule.getRelatives().addExtendee(pc.module);
 			}
 		}
+		if (firstCall && params.containsKey(INVARIANT)) {
+			final ModulePointer rootModule = pu.getRootModule();
+			
+			@SuppressWarnings("unchecked")
+			final List<Invariant> invs = (List<Invariant>) params.get(INVARIANT);
+			for (Invariant inv : invs) {
+				rootModule.getRelatives().addExtendee(inv.module);
+			}
+		}
 		return pu;
 	}
 
@@ -76,7 +88,7 @@ public class ParameterizedSpecObj extends SpecObj {
 		final List<ExprNode> res = new ArrayList<>();
 
 		@SuppressWarnings("unchecked")
-		final List<PostCondition> pcs = (List<PostCondition>) params.get(POST_CONDITIONS);
+		final List<PostCondition> pcs = (List<PostCondition>) params.getOrDefault(POST_CONDITIONS, new ArrayList<>());
 		for (PostCondition pc : pcs) {
 			
 			final ExternalModuleTable mt = getExternalModuleTable();
@@ -117,5 +129,33 @@ public class ParameterizedSpecObj extends SpecObj {
 			this.operator = operator;
 			this.redefinitions = redefinitions;
 		}
+	}
+
+	public static class Invariant {
+		public final String module;
+		public final String operator;
+		
+		public Invariant(String module, String operator) {
+			super();
+			this.module = module;
+			this.operator = operator;
+		}
+	}
+
+	@Override
+	public List<Action> getInvariants() {
+		final List<Action> res = new ArrayList<>();
+
+		@SuppressWarnings("unchecked")
+		final List<Invariant> invs = (List<Invariant>) params.getOrDefault(INVARIANT, new ArrayList<>());
+		for (Invariant inv : invs) {
+			
+			final ExternalModuleTable mt = getExternalModuleTable();
+			final ModuleNode moduleNode = mt.getModuleNode(inv.module);
+			final OpDefNode opDef = moduleNode.getOpDef(inv.operator);
+			
+			res.add(new Action(opDef.getBody(), Context.Empty, opDef, false, true));
+		}
+		return res;
 	}
 }

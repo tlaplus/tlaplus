@@ -387,7 +387,9 @@ public class CostModelCreator extends ExplorerVisitor {
 		}
 
 		for (Action invariant : tool.getInvariants()) {
-			invariant.cm = collector.getCM(invariant, Relation.PROP);
+			if (!invariant.isInternal()) {
+				invariant.cm = collector.getCM(invariant, Relation.PROP);
+			}
 		}
 		
 		// action constraints
@@ -450,8 +452,10 @@ public class CostModelCreator extends ExplorerVisitor {
 		}
         
         for (Action invariant : tool.getInvariants()) {
-        	//TODO May need to be ordered similar to next-state actions above.
-        	invariant.cm.report();
+			if (!invariant.isInternal()) {
+	        	//TODO May need to be ordered similar to next-state actions above.
+	        	invariant.cm.report();
+			}
 		}
         
 		// action constraints

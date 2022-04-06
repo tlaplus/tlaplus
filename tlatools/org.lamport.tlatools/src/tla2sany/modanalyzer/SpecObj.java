@@ -21,6 +21,7 @@ import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
+import tlc2.tool.Action;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.NamedInputStream;
@@ -1081,6 +1082,11 @@ public class SpecObj
 	}
 
 	public List<ExprNode> getPostConditionSpecs() {
+		// overridden by sub-classes.
+		return new ArrayList<>();
+	}
+
+	public List<Action> getInvariants() {
 		// overridden by sub-classes.
 		return new ArrayList<>();
 	}

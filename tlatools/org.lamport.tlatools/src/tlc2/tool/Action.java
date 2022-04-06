@@ -17,7 +17,7 @@ import util.UniqueString;
 public final class Action implements ToolGlobals, Serializable {
 	private static final UniqueString UNNAMED_ACTION = UniqueString.uniqueStringOf("UnnamedAction");
 
-	public static final Action UNKNOWN = new Action(SemanticNode.nullSN, Context.Empty, UNNAMED_ACTION, false);
+	public static final Action UNKNOWN = new Action(SemanticNode.nullSN, Context.Empty, UNNAMED_ACTION, false, false);
 
   /* A TLA+ action.   */
 
@@ -28,6 +28,7 @@ public final class Action implements ToolGlobals, Serializable {
   private OpDefNode opDef = null;
   private int id;
   private final boolean isInitPred;
+  private final boolean isInternal;
   public CostModel cm = CostModel.DO_NOT_RECORD;
 
   /* Constructors */
@@ -36,22 +37,23 @@ public final class Action implements ToolGlobals, Serializable {
   }
   
   public Action(SemanticNode pred, Context con, boolean isInitPred) {
-	  this(pred, con, UNNAMED_ACTION, isInitPred);
+	  this(pred, con, UNNAMED_ACTION, isInitPred, false);
   }
 
-  private Action(SemanticNode pred, Context con, UniqueString actionName, boolean isInitPred) {
+  private Action(SemanticNode pred, Context con, UniqueString actionName, boolean isInitPred, final boolean isInternal) {
 	  this.pred = pred;
 	  this.con = con;
 	  this.actionName = actionName;
 	  this.isInitPred = isInitPred;
+	  this.isInternal = isInternal;
   }
 
   public Action(SemanticNode pred, Context con, OpDefNode opDef) {
-	  this(pred, con, opDef, false);
+	  this(pred, con, opDef, false, false);
   }
 
-  public Action(SemanticNode pred, Context con, OpDefNode opDef, boolean isInitPred) {
-	  this(pred, con, opDef != null ? opDef.getName() : UNNAMED_ACTION, isInitPred);
+  public Action(SemanticNode pred, Context con, OpDefNode opDef, boolean isInitPred, final boolean isInternal) {
+	  this(pred, con, opDef != null ? opDef.getName() : UNNAMED_ACTION, isInitPred, isInternal);
 	  // opDef null when action not declared, i.e. Spec == x = 0 /\ ...
 	  // See test64 and test64a and others.
 	  this.opDef = opDef;
@@ -140,5 +142,9 @@ public final class Action implements ToolGlobals, Serializable {
 	
 	public final boolean isInitPredicate() {
 		return isInitPred;
+	}
+
+	public boolean isInternal() {
+		return isInternal;
 	}
 }
