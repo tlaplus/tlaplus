@@ -25,15 +25,20 @@
  ******************************************************************************/
 package tlc2.tool.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.ExternalModuleTable;
+import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.debug.IDebugTarget;
@@ -52,9 +57,11 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
 import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.coverage.CostModel;
+import tlc2.tool.impl.ParameterizedSpecObj.Invariant;
 import tlc2.util.Context;
 import tlc2.util.SetOfStates;
 import tlc2.value.IValue;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
@@ -62,6 +69,22 @@ import util.FilenameToStream;
 @SuppressWarnings("serial")
 public class DebugTool extends Tool {
 
+	public static void violate(final Tool tool) {
+		final ExternalModuleTable mt = tool.getSpecProcessor().getModuleTbl();
+		final ModuleNode moduleNode = mt.getModuleNode("_TLAPlusDebugger");
+		final OpDefNode opDef = moduleNode.getOpDef("_debuggerInvariant");
+
+		opDef.setToolObject(tool.getId(), BoolValue.ValFalse);
+	}
+	
+	private static Map<String, Object> getParams(Map<String, Object> params) {
+		@SuppressWarnings("unchecked")
+		final List<Invariant> invs = (List<Invariant>) params.computeIfAbsent(
+				ParameterizedSpecObj.INVARIANT, k -> new ArrayList<Invariant>());
+		invs.add(new Invariant("_TLAPlusDebugger","_TLAPlusDebuggerInvariant"));
+		return params;
+	}
+	
 	private static final Set<Integer> KINDS = new HashSet<>(
 			Arrays.asList(ASTConstants.NumeralKind, ASTConstants.DecimalKind, ASTConstants.StringKind));
 	
@@ -96,7 +119,7 @@ public class DebugTool extends Tool {
 	}
 	
 	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, final Map<String, Object> params, IDebugTarget target) {
-		super(mainFile, configFile, resolver, mode, params);
+		super(mainFile, configFile, resolver, mode, getParams(params));
 		
 		// This and FastTool share state.  Do not evaluate things concurrently.
 		this.fastTool = new FastTool(this);
@@ -125,6 +148,14 @@ public class DebugTool extends Tool {
 
 	@Override
 	public boolean isValid(Action act, TLCState state) {
+		if (act.isInternal()) {
+			mode = EvalMode.Debugger;
+			try {
+				return this.isValid(act, state, TLCState.Empty);
+			} finally {
+				mode = EvalMode.State;
+			}
+		}
 		mode = EvalMode.State;
 		try {
 			return this.isValid(act, state, TLCState.Empty);

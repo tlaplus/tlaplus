@@ -90,6 +90,7 @@ import tlc2.tool.Action;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.StatefulRuntimeException;
 import tlc2.tool.TLCState;
+import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.impl.Value;
@@ -274,6 +275,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
 					.findAny().map(f -> f.get(args)).orElse(new EvaluateResponse()));
 		} else if (EvaluateArgumentsContext.REPL.equals(args.getContext())) {
+			if ("violate".equalsIgnoreCase(args.getExpression())) {
+				DebugTool.violate(tool);
+				return CompletableFuture.completedFuture(new EvaluateResponse());
+			}
 			// TODO: Users can enter (arbitrary) expressions in the front-end's "Debug
 			// Console". We could try to handle valid TLA+ expressions here, but SANY
 			// unfortunately lacks incremental parsing.  Study related discussion started
