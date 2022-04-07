@@ -237,6 +237,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		capabilities.setSupportsInstructionBreakpoints(false);
 		capabilities.setSupportsDisassembleRequest(false);
 		
+		// When Clipboard is supported, the evaluate method can be called with the
+		// EvaluateArgumentsContext.CLIPBOARD argument.  We could use it to re-format
+		// a variable to json, ...
+		capabilities.setSupportsClipboardContext(true);
+		
 		return CompletableFuture.completedFuture(capabilities);
 	}
 
