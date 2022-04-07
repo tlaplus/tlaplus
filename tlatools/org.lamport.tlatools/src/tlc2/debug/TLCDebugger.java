@@ -276,7 +276,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 					.findAny().map(f -> f.get(args)).orElse(new EvaluateResponse()));
 		} else if (EvaluateArgumentsContext.REPL.equals(args.getContext())) {
 			if ("violate".equalsIgnoreCase(args.getExpression())) {
-				DebugTool.violate(tool);
+				DebugTool.setForceViolation();
 				return CompletableFuture.completedFuture(new EvaluateResponse());
 			}
 			// TODO: Users can enter (arbitrary) expressions in the front-end's "Debug

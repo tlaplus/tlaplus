@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2022 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -25,15 +25,18 @@
  ******************************************************************************/
 package tlc2.module;
 
-import tlc2.overrides.ITLCOverrides;
+import tlc2.overrides.TLAPlusOperator;
+import tlc2.tool.impl.DebugTool;
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.Value;
 
-// tlc2.tool.impl.SpecProcessor's "api" only loads class
-// "tlc2.overrides.TLCOverrides".
-public class TLCBuiltInOverrides implements ITLCOverrides {
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public Class[] get() {		
-		return new Class[] { TLCGetSet.class, TLCEval.class, TLCExt.class, Json.class, _TLAPlusDebugger.class };
+public class _TLAPlusDebugger {
+	
+	@TLAPlusOperator(identifier = "_debuggerInvariant", module = "_TLAPlusDebugger", minLevel = 1, warn = false)
+	public static Value _tlcDebugger() {
+		if (DebugTool.forceViolation()) {
+			return BoolValue.ValFalse;
+		}
+		return BoolValue.ValTrue;
 	}
 }

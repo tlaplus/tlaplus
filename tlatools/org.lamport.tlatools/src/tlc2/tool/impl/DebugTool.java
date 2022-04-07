@@ -35,10 +35,7 @@ import java.util.function.Supplier;
 
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.ExprNode;
-import tla2sany.semantic.ExternalModuleTable;
-import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
-import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.debug.IDebugTarget;
@@ -61,22 +58,23 @@ import tlc2.tool.impl.ParameterizedSpecObj.Invariant;
 import tlc2.util.Context;
 import tlc2.util.SetOfStates;
 import tlc2.value.IValue;
-import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
 
 @SuppressWarnings("serial")
 public class DebugTool extends Tool {
-
-	public static void violate(final Tool tool) {
-		final ExternalModuleTable mt = tool.getSpecProcessor().getModuleTbl();
-		final ModuleNode moduleNode = mt.getModuleNode("_TLAPlusDebugger");
-		final OpDefNode opDef = moduleNode.getOpDef("_debuggerInvariant");
-
-		opDef.setToolObject(tool.getId(), BoolValue.ValFalse);
+	
+	private static volatile boolean forceViolation = false;
+	
+	public static boolean forceViolation() {
+		return forceViolation;
 	}
 	
+	public static void setForceViolation() {
+		forceViolation = true;
+	}
+
 	private static Map<String, Object> getParams(Map<String, Object> params) {
 		@SuppressWarnings("unchecked")
 		final List<Invariant> invs = (List<Invariant>) params.computeIfAbsent(
