@@ -872,7 +872,7 @@ public class LiveWorker implements Callable<Boolean> {
 				// Print the prefix in reverse order of previous loop:
 				for (int i = 0; i < states.size() - 1; i++) {
 					StatePrinter.printInvariantViolationStateTraceState(
-							tool.getLiveness().evalAlias(states.get(i), states.get(i + 1).state));
+							tool.getDebugger().evalAlias(states.get(i), states.get(i + 1).state));
 				}
 				return states;
 			}
@@ -951,7 +951,7 @@ public class LiveWorker implements Callable<Boolean> {
 		// efficiency reason. Regenerating the next state might be
 		// expensive.
 		if (postfix.isEmpty()) {
-			StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(cycleState, cycleState.state));
+			StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(cycleState, cycleState.state));
 		} else {
 			postfix.pack().removeLastIf(cycleState.fingerPrint());
 			
@@ -959,10 +959,10 @@ public class LiveWorker implements Callable<Boolean> {
 				final long curFP = postfix.elementAt(i);
 				TLCStateInfo sucinfo = tool.getState(curFP, sinfo);
 				states.add(sucinfo);
-				StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucinfo.state));
+				StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(sinfo, sucinfo.state));
 				sinfo = sucinfo;
 			}
-			StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, cycleState.state));
+			StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(sinfo, cycleState.state));
 		}
 
 		/* All error trace states have been printed (prefix + cycleStack +
@@ -985,7 +985,7 @@ public class LiveWorker implements Callable<Boolean> {
 			StatePrinter.printBackToState(sinfo, stateNumber);
 		}
 		
-		tool.checkPostConditionWithCounterExample(new CounterExample(states, sinfo.getAction(), stateNumber));
+		tool.getDebugger().checkPostConditionWithCounterExample(new CounterExample(states, sinfo.getAction(), stateNumber));
 	}
 
 	// BFS search

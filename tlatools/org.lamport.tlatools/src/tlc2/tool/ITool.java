@@ -35,6 +35,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
+import tlc2.TLCGlobals;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.ModelConfig;
 import tlc2.tool.impl.SpecProcessor;
@@ -273,6 +274,16 @@ public interface ITool extends TraceApp {
 
 	default <T> T eval(Supplier<T> supplier) {
 		return supplier.get();
+	}
+
+	default ITool getDebugger() {
+		if (TLCGlobals.mainChecker != null) {
+			return TLCGlobals.mainChecker.tool;
+		}
+		if (TLCGlobals.simulator != null) {
+			return TLCGlobals.simulator.getTool();
+		}
+		return this;
 	}
 
 	default ITool getLiveness() {
