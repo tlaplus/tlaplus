@@ -49,14 +49,16 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
           b |-> x' = x,
           anim |-> Animation(x, y), \* Animation
           te |-> ENABLED Next,      \* Trace Expression
-          TLCGetAction |-> TLCGet("action")]
+          TLCGetAction |-> TLCGet("action"),
+          lvl |-> [ i \in {1,2} |-> TLCGet("level")]]
          ELSE 
          [y |-> y, \* x and y reordered.
           x |-> x, 
           a |-> x' - x, 
           b |-> x' = x,
           anim |-> Animation(x, y), \* Animation
-          te |-> ENABLED Next]      \* Trace Expression
+          te |-> ENABLED Next,      \* Trace Expression
+          lvl |-> [ i \in {1,2} |-> TLCGet("level")]]
          
 
 PostCondition ==

@@ -86,6 +86,11 @@ public abstract class TLCState implements Cloneable, Serializable {
   public abstract Set<OpDeclNode> getUnassigned();
   public abstract TLCState createEmpty();
 
+  protected TLCState copy(TLCState copy) {
+	  copy.level = this.level;
+	  return copy;
+  }
+  
   protected TLCState deepCopy(TLCState copy) {
 	  copy.level = this.level;
 	  copy.workerId = this.workerId;

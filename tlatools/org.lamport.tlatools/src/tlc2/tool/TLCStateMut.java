@@ -130,7 +130,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
     for (int i = 0; i < len; i++) {
       vals[i] = this.values[i];
     }
-    return new TLCStateMut(vals);
+    return copy(new TLCStateMut(vals));
   }
 
   public final TLCState deepCopy() {
