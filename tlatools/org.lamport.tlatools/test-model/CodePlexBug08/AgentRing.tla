@@ -95,7 +95,7 @@ Prog == Init /\ [][Next]_vars /\ WF_vars(Move) /\ WF_vars(LookAndAct) /\ WF_vars
 
 Limits == SumLoad \leq N * N
 
-Test == [](~CanCreate /\ (\A i,j \in NodeRange : Nodes[i].Load = Nodes[j].Load) => [](Agent.Task = 0))
+Test == LBL:: [](~CanCreate /\ (\A i,j \in NodeRange : Nodes[i].Load = Nodes[j].Load) => [](Agent.Task = 0))
 
 Test2 == [][~CanCreate /\ (\A i,j \in NodeRange : Nodes[i].Load = Nodes[j].Load) => Agent'.Task = 0]_vars
 ================================================================================

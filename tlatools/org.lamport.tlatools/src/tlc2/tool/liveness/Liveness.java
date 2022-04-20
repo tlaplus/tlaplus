@@ -9,6 +9,7 @@ import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.FormalParamNode;
+import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.LevelConstants;
 import tla2sany.semantic.OpApplNode;
@@ -157,6 +158,15 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				con1 = con1.cons(sub.getOp(), tool.getVal(sub.getExpr(), con, false));
 			}
 			return astToLive(tool, expr1.getBody(), con1);
+		}
+		case LabelKind: {
+			// Labels in liveness properties cause bogus TLC error #647
+			// https://github.com/tlaplus/tlaplus/issues/647
+            final LabelNode lbl = (LabelNode) expr;
+            if (!(lbl.getBody() instanceof ExprNode)) {
+				Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, expr.toString());
+			}
+			return astToLive(tool, (ExprNode) lbl.getBody(), con);
 		}
 		default: {
 			int level = Specs.getLevel(expr, con);
