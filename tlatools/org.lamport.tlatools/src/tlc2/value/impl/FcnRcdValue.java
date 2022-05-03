@@ -759,6 +759,11 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
       for (int i = 0; i < vals.length; i++) {
         vals[i] = (Value) this.values[i].deepCopy();
       }
+      // WRT Arrays.copyOf, see comment in tlc2.value.impl.RecordValue.deepCopy() introduced
+      // by git commit 09cfee2d47f98cf9d76b906e1a8cda7cfd06eccc.
+      if (this.intv == null) {
+    	  return new FcnRcdValue(Arrays.copyOf(this.domain, this.domain.length), vals, false);
+      }
       return new FcnRcdValue(this, vals);
     }
     catch (RuntimeException | OutOfMemoryError e) {
