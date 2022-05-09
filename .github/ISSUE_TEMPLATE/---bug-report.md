@@ -14,8 +14,6 @@ If you have any questions, please ask them there.
 
 Forums:
  - TLA⁺ Google Groups forum: https://groups.google.com/g/tlaplus/
- - Stack Overflow questions (TLA+): https://stackoverflow.com/questions/tagged/tla%2b
- - Stack Overflow questions (PlusCal): https://stackoverflow.com/questions/tagged/pluscal 
  - GitHub Discussions forum: (TBA?)
 
 Thanks!
