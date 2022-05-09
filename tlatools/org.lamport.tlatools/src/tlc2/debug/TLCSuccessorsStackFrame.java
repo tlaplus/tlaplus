@@ -118,7 +118,8 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 			final Location location = one[0].getLocation();
 			final int hits = bp.getHits();
 			return bp.getLine() == location.beginLine() && location.beginColumn() <= bp.getColumnAsInt()
-					&& bp.getColumnAsInt() <= location.endColumn() && getSuccessors().size() >= hits;
+					&& bp.getColumnAsInt() <= location.endColumn() && !getSuccessors().isEmpty()
+					&& getSuccessors().size() >= hits;
 		}
 		return false;
 	}
