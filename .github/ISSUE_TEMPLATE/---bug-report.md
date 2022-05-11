@@ -25,7 +25,7 @@ Provide a more detailed introduction to the issue itself, and why you consider i
 
 If you need to share a specification, either:
  - Paste it in your description between the <details> </details> tags if it's too long;
- - Send a link to a Gist, GitHub reposity, Pastebin, etc.;
+ - Send a link to a Gist, GitHub repository, Pastebin, etc.;
 -->
 
 ## Expected Behavior
@@ -51,4 +51,4 @@ If you need to share a specification, either:
 <!--- Remove information if not applicable -->
  - TLC version:
  - Toolbox version:
- - Operating System: <!-- (Windows 10, Ubuntu 22.04, etc.) -->
+ - Operating System: <!-- Windows 10, Ubuntu 22.04, etc. -->
