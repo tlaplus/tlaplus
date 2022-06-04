@@ -1007,16 +1007,20 @@ public class TLC {
                 
 		
 		if (generateTESpec) {
+			// Get module name out of main file path
+			final File f = new File(mainFile);
+			final String mainModuleName = f.getName();
+
 			if (teSpecOut == null) {
-				this.teSpec = new TraceExplorationSpec(getTlaFileParentDir(mainFile), new Date(startTime), mainFile,
+				this.teSpec = new TraceExplorationSpec(getTlaFileParentDir(mainFile), new Date(startTime), mainModuleName,
 						this.recorder);
 			} else {
 				if (teSpecOut.toString().toLowerCase().endsWith(TLAConstants.Files.TLA_EXTENSION)) {
 					this.teSpec = new TraceExplorationSpec(teSpecOut.getParent(), teSpecOut.getFileName().toFile()
-							.getName().replaceFirst(TLAConstants.Files.TLA_EXTENSION + "$", ""), mainFile,
+							.getName().replaceFirst(TLAConstants.Files.TLA_EXTENSION + "$", ""), mainModuleName,
 							this.recorder);
 				} else {
-					this.teSpec = new TraceExplorationSpec(teSpecOut, new Date(startTime), mainFile, this.recorder);
+					this.teSpec = new TraceExplorationSpec(teSpecOut, new Date(startTime), mainModuleName, this.recorder);
 				}
 			}
 		}
