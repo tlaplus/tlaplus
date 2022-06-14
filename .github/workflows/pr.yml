@@ -53,4 +53,5 @@ jobs:
       run: |
           cp tlatools/org.lamport.tlatools/dist/tla2tools.jar examples/
           cd examples/
+          wget https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
           bash .github/workflows/run.sh
