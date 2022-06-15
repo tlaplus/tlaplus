@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2021, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 13:21:03 PST by lamport
 //      modified on Fri Aug 10 15:09:34 PDT 2001 by yuanyu
@@ -232,16 +233,9 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
       this.diffSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.diffSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = null;
-      synchronized(this) {
-        if (this.diffSet == SetEnumValue.DummyEnum) {
-          val = (SetEnumValue) this.toSetEnum();
-          val.deepNormalize();
-        }
-      }
-      synchronized(this) {
-        if (this.diffSet == SetEnumValue.DummyEnum) { this.diffSet = val; }
-      }
+      SetEnumValue val = (SetEnumValue) this.toSetEnum();
+      val.deepNormalize();
+      this.diffSet = val;
     }
   }
 

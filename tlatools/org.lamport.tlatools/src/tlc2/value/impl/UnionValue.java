@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2021, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 13:46:50 PST by lamport
 //      modified on Fri Aug 10 15:10:39 PDT 2001 by yuanyu
@@ -285,16 +286,9 @@ public class UnionValue extends EnumerableValue implements Enumerable {
       this.realSet = (SetEnumValue) this.toSetEnum();
     }
     else if (this.realSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = null;
-      synchronized(this) {
-        if (this.realSet == SetEnumValue.DummyEnum) {
-          val = (SetEnumValue) this.toSetEnum();
-          val.deepNormalize();
-        }
-      }
-      synchronized(this) {
-        if (this.realSet == SetEnumValue.DummyEnum) { this.realSet = val; }
-      }
+      SetEnumValue val = (SetEnumValue) this.toSetEnum();
+      val.deepNormalize();
+      this.realSet = val;
     }
   }
 
