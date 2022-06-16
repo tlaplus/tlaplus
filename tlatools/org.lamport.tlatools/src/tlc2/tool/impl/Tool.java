@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2022, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Thu  2 Aug 2007 at 10:25:48 PST by lamport
 //      modified on Fri Jan  4 22:46:57 PST 2002 by yuanyu
@@ -1457,12 +1458,7 @@ public abstract class Tool
           }
         }
 
-        IValue v0 = this.eval(expr, c, s0, cm);
-        Value v1 = this.eval(expr, c, s1, TLCState.Null, EvalControl.Clear, cm);
-        if (v0.equals(v1)) {
-          resState = this.getNextStates(action, acts, s0, s1, nss, cm);
-        }
-        return resState;
+        return verifyUnchanged(action, expr, acts, c, s0, s1, nss, cm);
   }
 
   @ExpectInlined
@@ -1478,11 +1474,23 @@ public abstract class Tool
 		  final LazyValue lv = (LazyValue)val;
 		  return this.processUnchanged(action, lv.expr, acts, lv.con, s0, s1, nss, cm);
 		}
-		else {
-		  Assert.fail("In computing next states, TLC found the identifier\n" +
-		              opName + " undefined in an UNCHANGED expression at\n" + expr, expr, c);
-		}
-		return this.getNextStates(action, acts, s0, s1, nss, cm);
+        return verifyUnchanged(action, expr, acts, c, s0, s1, nss, cm);
+  }
+
+  /**
+   * Check that <code>expr</code> is unchanged without attempting to synthesize values for variables in the
+   * successor state.
+   */
+  private TLCState verifyUnchanged(final Action action, final SemanticNode expr, final ActionItemList acts,
+                                   final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss,
+                                   final CostModel cm) {
+      TLCState resState = s1;
+      IValue v0 = this.eval(expr, c, s0, cm);
+      IValue v1 = this.eval(expr, c, s1, TLCState.Null, EvalControl.Clear, cm);
+      if (v0.equals(v1)) {
+          resState = this.getNextStates(action, acts, s0, s1, nss, cm);
+      }
+      return resState;
   }
 
   @Override
