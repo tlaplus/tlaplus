@@ -142,6 +142,9 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
+				<pathelement location="lib/transit/transit-java-1.0.362.jar" />
+                <pathelement location="lib/msgpack/msgpack-0.6.12.jar" />
+                <pathelement location="lib/msgpack/javassist-3.18.1-GA.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar" />
 			</classpath>
@@ -249,6 +252,24 @@
 			</patternset>
 		</unzip>
 
+		<unzip src="lib/transit/transit-java-1.0.362.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
+        <unzip src="lib/msgpack/msgpack-0.6.12.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
+        <unzip src="lib/msgpack/javassist-3.18.1-GA.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
 		<!-- Extract javax.mail to maven classes folder. This script is triggered by -->
 		<!-- maven. However, maven compiles the code again to target/classes from -->
 		<!-- where it creates the plugin -->
@@ -291,6 +312,25 @@
 				<include name="**/*.*"/>
 			</patternset>
 		</unzip>
+
+		<unzip src="lib/transit/transit-java-1.0.362.jar" dest="target/classes">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
+        <unzip src="lib/msgpack/msgpack-0.6.12.jar" dest="target/classes">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
+        <unzip src="lib/msgpack/javassist-3.18.1-GA.jar" dest="target/classes">
+			<patternset>
+				<include name="**/*.*"/>
+			</patternset>
+		</unzip>
+
 		
 		<unzip src="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar" dest="target/classes">
 			<patternset>
@@ -319,6 +359,9 @@
 			<fileset dir="lib/gson">
 				<include name="gson-LICENSE.txt" />
 			</fileset>
+			<fileset dir="lib/transit">
+				<include name="transit-LICENSE.txt" />
+			</fileset>
 			<fileset dir="src/org/apache/commons/math3/">
 				<include name="CommonsMath-NOTICE.txt" />
 				<include name="CommonsMath-LICENSE.txt" />
@@ -330,6 +373,21 @@
 				<include name="**/*.class"/>
 			</patternset>
 		</unzip>
+		<unzip src="lib/transit/transit-java-1.0.362.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+			</patternset>
+		</unzip>
+        <unzip src="lib/msgpack/msgpack-0.6.12.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+			</patternset>
+		</unzip>
+   		<unzip src="lib/msgpack/javassist-3.18.1-GA.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+			</patternset>
+		</unzip>		
 		<unzip src="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar" dest="${class.dir}">
 			<patternset>
 				<include name="**/*.class"/>
@@ -422,6 +480,9 @@
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
+				<pathelement location="lib/transit/transit-java-1.0.362.jar" />
+				<pathelement location="lib/msgpack/msgpack-0.6.12.jar" />
+				<pathelement location="lib/msgpack/javassist-3.18.1-GA.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar" />
 				<pathelement path="${class.dir}" />
@@ -469,6 +530,9 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
+				<pathelement location="lib/transit/transit-java-1.0.362.jar" />
+				<pathelement location="lib/msgpack/msgpack-0.6.12.jar" />
+				<pathelement location="lib/msgpack/javassist-3.18.1-GA.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar"/>
@@ -609,6 +673,9 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
+				<pathelement location="lib/transit/transit-java-1.0.362.jar" />
+				<pathelement location="lib/msgpack/msgpack-0.6.12.jar" />
+				<pathelement location="lib/msgpack/javassist-3.18.1-GA.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar"/>
@@ -662,6 +729,9 @@
 				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
 				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
+				<pathelement location="lib/transit/transit-java-1.0.362.jar" />
+				<pathelement location="lib/msgpack/msgpack-0.6.12.jar" />
+				<pathelement location="lib/msgpack/javassist-3.18.1-GA.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug-0.12.0.jar"/>

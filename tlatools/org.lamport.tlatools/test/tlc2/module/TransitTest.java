@@ -25,15 +25,24 @@
  ******************************************************************************/
 package tlc2.module;
 
-import tlc2.overrides.ITLCOverrides;
+import static org.junit.Assert.*;
 
-// tlc2.tool.impl.SpecProcessor's "api" only loads class
-// "tlc2.overrides.TLCOverrides".
-public class TLCBuiltInOverrides implements ITLCOverrides {
+import org.junit.Test;
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public Class[] get() {		
-		return new Class[] { TLCGetSet.class, TLCEval.class, TLCExt.class, Json.class, Transit.class, _TLAPlusDebugger.class };
+import tlc2.output.EC;
+import tlc2.tool.liveness.ModelCheckerTestCase;
+
+public class TransitTest extends ModelCheckerTestCase {
+
+	public TransitTest() {
+		super("TransitTests", new String[] {"-config", "TransitTests.tla"});
+	}
+
+	@Test
+	public void test() {
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "0", "0", "0"));
+		assertFalse(recorder.recorded(EC.GENERAL));
 	}
 }

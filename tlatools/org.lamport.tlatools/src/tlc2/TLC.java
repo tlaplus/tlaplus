@@ -597,6 +597,11 @@ public class TLC {
 								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
 						pcs.add(new PostCondition("_TLAPlusCounterExample", "_TLAPlusCounterExample",
 								"_TLAPlusCounterExampleFile", args[index++]));
+					} else if ("transit".equalsIgnoreCase(fmt)) {
+						@SuppressWarnings("unchecked")
+						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
+								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+						pcs.add(new PostCondition("_TransitTrace", "_TransitTrace", "_TransitTraceFile", args[index++]));
 					} else if ("Tomorrow's most favorite format".equalsIgnoreCase(fmt)) {
 						//Add your new dumpTrace formats here!
 					} else {
@@ -1501,7 +1506,7 @@ public class TLC {
     													+ "as the given format and dumps the output to the specified\n"
 														+ "file.  The file is relative to the same directory as the\n"
 														+ "main spec. At the time of writing, TLC supports the \"tla\"\n"
-														+ "and the \"json\" formats.  To dump to multiple formats, the\n"
+														+ "the \"json\" and the \"transit\" formats. To dump to multiple formats, the\n"
 														+ "-dumpTrace parameter may appear multiple times.\n"
 														+ "The git commits 1eb815620 and 386eaa19f show that adding new\n"
 														+ "formats is easy.\n", true));
