@@ -5,9 +5,11 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.output.EC;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.util.Vect;
+import util.Assert;
 
 class LNConj extends LiveExprNode {
 	private final Vect<LiveExprNode> conjs; // The conjuncts
@@ -188,7 +190,12 @@ class LNConj extends LiveExprNode {
 			LiveExprNode elem = temp[i];
 			if (elem instanceof LNDisj) {
 				nes.addElement(elem);
-				total *= ((LNDisj) elem).getCount();
+				try {
+					total = Math.multiplyExact(total, ((LNDisj) elem).getCount());
+				} catch (ArithmeticException e) {
+					Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA,
+							"because it exceeds the maximum supported size in disjunctive normal form.");
+				}
 			} else if (elem instanceof LNConj) {
 				// Flatten when elem is also a LNConj:
 				LNConj elem1 = (LNConj) elem;
