@@ -1199,6 +1199,14 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             if (opcode == OPCODE_box)
             {
                 SemanticNode boxArg = args[0];
+                if (boxArg instanceof OpApplNode) {
+                	// TLC cannot handle []S where S is a constant- or state-level formula.
+                	final OpApplNode oan = (OpApplNode) boxArg;
+                	if (oan.getLevel() <= LevelConstants.VariableLevel) {
+                        Assert.fail(EC.TLC_LIVE_CANNOT_HANDLE_FORMULA, boxArg.toString());
+                	}
+                }
+
                 if ((boxArg instanceof OpApplNode)
                         && BuiltInOPs.getOpCode(((OpApplNode) boxArg).getOperator().getName()) == OPCODE_sa)
                 {
