@@ -3587,10 +3587,24 @@ public abstract class Tool
       StateVec nextStates = this.getNextStates(curAction, s);
       for (int j = 0; j < nextStates.size(); j++) {
         TLCState state = nextStates.elementAt(j);
-        if (s1.equals(state)) {
-        	state.setPredecessor(s);
-        	assert !state.isInitial();
-          return new TLCStateInfo(state, curAction);
+        try {
+        	if (s1.equals(state)) {
+        		state.setPredecessor(s);
+        		assert !state.isInitial();
+        		return new TLCStateInfo(state, curAction);
+        	}
+        } catch (TLCRuntimeException e) {
+          // s might have two or more successors, whose values are incomparable to the
+          // values of s1 (https://github.com/tlaplus/tlaplus/issues/743). Assume s
+          // to equal <<"foo", 3>> and its two successor states t1 to equal <<"foo", 4>>
+          // and t2 to equal <<TRUE, 5>>. t1 and s1 equal to <<TRUE, 5>> are incomparable. 
+          // and t2 to equal <<TRUE, 5>>. t1 and s1 equal to <<TRUE, 5>> are incomparable. 
+          // Next ==
+          // \/ /\ x' = "foo"
+          //    /\ y' = y + 1
+          // \/ /\ x' = TRUE
+          //    /\ y' = y + 2
+        	continue;
         }
       }
     }
