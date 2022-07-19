@@ -24,14 +24,16 @@ cd tlatools
 To build, test, and create `tlatools.jar`:
 
 ```sh
-ant -f customBuild.xml
+ant -f org.lamport.tlatools/customBuild.xml
 ```
+
+The `tlatools.jar` will be created in the `org.lamport.tlatools/dist` directory.
 
 If you're using Linux or OSX, you can install `entr`,
 then run the following to watch for and automatically recompile changes:
 
 ```sh
-find src | entr -ac ant -f customBuild.xml compile
+find src | entr -ac ant -f org.lamport.tlatools/customBuild.xml compile
 ```
 
 
