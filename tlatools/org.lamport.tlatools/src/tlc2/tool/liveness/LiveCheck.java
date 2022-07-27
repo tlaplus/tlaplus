@@ -720,6 +720,7 @@ public class LiveCheck implements ILiveCheck {
 						final int plen = prefix.size();
 						final List<TLCStateInfo> states = new ArrayList<TLCStateInfo>(plen);
 
+						// Reconstruct the initial state.
 						long fp = prefix.elementAt(plen - 1);
 						TLCStateInfo sinfo = tool.getState(fp);
 						if (sinfo == null) {
@@ -727,7 +728,8 @@ public class LiveCheck implements ILiveCheck {
 						}
 						states.add(sinfo);
 
-						// Drop finite stuttering from fingerprint path.
+						// Reconstruct the path of successor states while dropping
+						// *finite* stuttering.
 						for (int i = plen - 2; i >= 0; i--) {
 							long curFP = prefix.elementAt(i);
 							if (curFP != fp) {
@@ -749,8 +751,13 @@ public class LiveCheck implements ILiveCheck {
 						
 						// Stop subsequent state-space exploration.
 						TLCGlobals.mainChecker.stop();
-						TLCGlobals.mainChecker.setErrState(states.get(states.size() - 2).state, last.state, false,
-								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
+						if (states.size() == 1) {
+							TLCGlobals.mainChecker.setErrState(last.state, null, false,
+									EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
+						} else {
+							TLCGlobals.mainChecker.setErrState(states.get(states.size() - 2).state, last.state, false,
+									EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
+						}
 						
 						tool.checkPostConditionWithCounterExample(new CounterExample(states));
 						
