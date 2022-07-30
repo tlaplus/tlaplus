@@ -1169,7 +1169,7 @@ public class ModelChecker extends AbstractChecker
 						if (!tool.isValid(tool.getInvariants()[j], curState)) {
 							// We get here because of invariant violation:
 							MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL,
-									new String[] { tool.getInvNames()[j].toString(), curState.toString() });
+									new String[] { tool.getInvNames()[j].toString(), tool.evalAlias(curState, curState).toString() });
 							if (!TLCGlobals.continuation) {
 								this.errState = curState;
 								returnValue = EC.TLC_INVARIANT_VIOLATED_INITIAL;
@@ -1181,7 +1181,7 @@ public class ModelChecker extends AbstractChecker
 						if (!tool.isValid(tool.getImpliedInits()[j], curState)) {
 							// We get here because of implied-inits violation:
 							MP.printError(EC.TLC_PROPERTY_VIOLATED_INITIAL,
-									new String[] { tool.getImpliedInitNames()[j], curState.toString() });
+									new String[] { tool.getImpliedInitNames()[j], tool.evalAlias(curState, curState).toString() });
 							this.errState = curState;
 							returnValue = EC.TLC_PROPERTY_VIOLATED_INITIAL;
 							throw new InvariantViolatedException();
