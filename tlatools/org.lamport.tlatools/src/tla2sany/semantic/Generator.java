@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2022, Oracle and/or its affiliates.
 //
 // last modified on Mon  9 November 2009 at 17:14:53 PST by lamport
 
@@ -4734,15 +4735,28 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// if the target of the substitution has arity > 0,
 			// then and operator must be substituted for it
 			returnObject = generateOpArg(targetSymbol, substValue, mn);
-
-			// and it better have the same arity as the target
-			if (((OpArgNode) returnObject).getArity() != targetSymbol.getArity()) {
-				errors.addError(substValue.getLocation(), "An operator must be substituted for symbol '"
-						+ targetSymbol.getName() + "', and it must have arity " + targetSymbol.getArity() + ".");
-			}
 		}
+
+		checkSubstitutionForCorrectArity(targetSymbol, returnObject);
+
 		return returnObject;
 	} // end generateSubst()
+
+	/**
+	 * Ensure that in a substitution <code>targetSymbol <- substValue</code>, the substituted value has
+	 * the same arity as the target symbol.  Adds to {@link #errors} if there is a mismatch.
+	 *
+	 * @param targetSymbol the symbol being substituted
+	 * @param substValue the substitution
+	 */
+	private void checkSubstitutionForCorrectArity(SymbolNode targetSymbol, ExprOrOpArgNode substValue) {
+		int expectedArity = targetSymbol.getArity();
+		int actualArity = substValue instanceof OpArgNode ? ((OpArgNode) substValue).getArity() : 0;
+		if (actualArity != expectedArity) {
+			errors.addError(substValue.getLocation(), "An operator must be substituted for symbol '"
+					+ targetSymbol.getName() + "', and it must have arity " + expectedArity + ".");
+		}
+	}
 
 	/**
 	 * Return an OpArgNode constructed from a GeneralId tree to be used in the RHS
@@ -4888,6 +4902,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// Overwrite an implicit substitution if there is one, or add a new one,
 			// checking for duplicate substitutions for the same symbol
 			substIn.addExplicitSubstitute(instanceeCtxt, sc[0].getUS(), sc[2], substRHS);
+		}
+
+		// Check that all remaining implicit substitutions have the correct arity.  The
+		// calls to `generateSubst` above have already checked the explicit substitutions.
+		for (Subst subst : substIn.getSubsts()) {
+			if (subst.isImplicit()) {
+				checkSubstitutionForCorrectArity(subst.getOp(), subst.getExpr());
+			}
 		}
 
 		// Check if substitution is complete, i.e. that all constants and vars
