@@ -649,6 +649,11 @@ public class DebugTool extends Tool {
 		}
 
 		@Override
+		public boolean hasStates() {
+			return functor.hasStates();
+		}
+
+		@Override
 		public SetOfStates getStates() {
 			return functor.getStates();
 		}
