@@ -40,6 +40,24 @@ public class OpRcdValue extends OpValue implements Applicable {
   }
 
   @Override
+  public IValue initialize() {
+    // The default implementation initializes by calling fingerPrint, which has no
+    // meaningful definition for this class.  So, we'll initialize all contained
+    // values by hand.
+
+    for (int i = 0; i < domain.size(); ++i) {
+      Value[] args = domain.elementAt(i);
+      for (int j = 0; j < args.length; ++j) {
+        args[j] = (Value)args[j].initialize();
+      }
+
+      Value output = values.elementAt(i);
+      values.setElementAt((Value)output.initialize(), i);
+    }
+    return this;
+  }
+
+  @Override
   public final byte getKind() { return OPRCDVALUE; }
 
   @Override
