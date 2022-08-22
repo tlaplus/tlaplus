@@ -25,16 +25,16 @@ import util.WrongInvocationException;
  * </pre>
  */
 public class OpRcdValue extends OpValue implements Applicable {
-  public Vect domain;
-  public Vect values;
+  public Vect<Value[]> domain;
+  public Vect<Value> values;
 
   /* Constructor */
   public OpRcdValue() {
-    this.domain = new Vect();
-    this.values = new Vect();
+    this.domain = new Vect<>();
+    this.values = new Vect<>();
   }
 
-  public OpRcdValue(Vect domain, Vect values) {
+  public OpRcdValue(Vect<Value[]> domain, Vect<Value> values) {
     this.domain = domain;
     this.values = values;
   }
@@ -101,7 +101,7 @@ public class OpRcdValue extends OpValue implements Applicable {
         args[i] = (Value)vs.elementAt(i+1);
       }
       this.domain.addElement(args);
-      this.values.addElement(vs.elementAt(len-1));
+      this.values.addElement((Value)vs.elementAt(len-1));
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -247,7 +247,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     try {
       boolean defined = true;
       for (int i = 0; i < this.values.size(); i++) {
-        defined = defined && ((Value)this.values.elementAt(i)).isDefined();
+        defined = defined && this.values.elementAt(i).isDefined();
       }
       return defined;
     }
@@ -278,22 +278,22 @@ public class OpRcdValue extends OpValue implements Applicable {
       sb.append("{ ");
       if (this.values.size() != 0) {
         sb.append("<");
-        Value[] args = (Value[])this.domain.elementAt(0);
+        Value[] args = this.domain.elementAt(0);
         for (int j = 0; j < args.length; j++) {
           sb = args[j].toString(sb, offset, swallow);
           sb.append(", ");
         }
-        sb = ((Value)this.values.elementAt(0)).toString(sb, offset, swallow);
+        sb = this.values.elementAt(0).toString(sb, offset, swallow);
         sb.append(">");
       }
       for (int i = 1; i < this.values.size(); i++) {
         sb.append(", <");
-        Value[] args = (Value[])this.domain.elementAt(i);
+        Value[] args = this.domain.elementAt(i);
         for (int j = 0; j < args.length; j++) {
           sb = args[j].toString(sb, offset, swallow);
           sb.append(", ");
         }
-        sb = ((Value)this.values.elementAt(i)).toString(sb, offset, swallow);
+        sb = this.values.elementAt(i).toString(sb, offset, swallow);
         sb.append(">");
       }
       return sb.append("}");
