@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2022, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 13:21:01 PST by lamport
 //      modified on Sat Nov 13 12:43:44 PST 1999 by yuanyu
@@ -13,6 +14,16 @@ import tlc2.value.Values;
 import util.Assert;
 import util.WrongInvocationException;
 
+/**
+ * An operator defined as a finite map from inputs to outputs.
+ *
+ * <p>Today (2022/8/22), this class is only used to represent CONSTANT definitions in configuration files of the form
+ * <pre>
+ *     CONSTANT
+ *         op(1, 1) = "a"
+ *         op(1, 2) = "b"
+ * </pre>
+ */
 public class OpRcdValue extends OpValue implements Applicable {
   public Vect domain;
   public Vect values;
