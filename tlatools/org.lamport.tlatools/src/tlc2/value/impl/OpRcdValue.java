@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2022, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 13:21:01 PST by lamport
 //      modified on Sat Nov 13 12:43:44 PST 1999 by yuanyu
@@ -13,19 +14,47 @@ import tlc2.value.Values;
 import util.Assert;
 import util.WrongInvocationException;
 
+/**
+ * An operator defined as a finite map from inputs to outputs.
+ *
+ * <p>Today (2022/8/22), this class is only used to represent CONSTANT definitions in configuration files of the form
+ * <pre>
+ *     CONSTANT
+ *         op(1, 1) = "a"
+ *         op(1, 2) = "b"
+ * </pre>
+ */
 public class OpRcdValue extends OpValue implements Applicable {
-  public Vect domain;
-  public Vect values;
+  public final Vect<Value[]> domain;
+  public final Vect<Value> values;
 
   /* Constructor */
   public OpRcdValue() {
-    this.domain = new Vect();
-    this.values = new Vect();
+    this.domain = new Vect<>();
+    this.values = new Vect<>();
   }
 
-  public OpRcdValue(Vect domain, Vect values) {
+  public OpRcdValue(Vect<Value[]> domain, Vect<Value> values) {
     this.domain = domain;
     this.values = values;
+  }
+
+  @Override
+  public IValue initialize() {
+    // The default implementation initializes by calling fingerPrint, which has no
+    // meaningful definition for this class.  So, we'll initialize all contained
+    // values by hand.
+
+    for (int i = 0; i < domain.size(); ++i) {
+      Value[] args = domain.elementAt(i);
+      for (int j = 0; j < args.length; ++j) {
+        args[j] = (Value)args[j].initialize();
+      }
+
+      Value output = values.elementAt(i);
+      values.setElementAt((Value)output.initialize(), i);
+    }
+    return this;
   }
 
   @Override
@@ -90,7 +119,7 @@ public class OpRcdValue extends OpValue implements Applicable {
         args[i] = (Value)vs.elementAt(i+1);
       }
       this.domain.addElement(args);
-      this.values.addElement(vs.elementAt(len-1));
+      this.values.addElement((Value)vs.elementAt(len-1));
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -236,7 +265,7 @@ public class OpRcdValue extends OpValue implements Applicable {
     try {
       boolean defined = true;
       for (int i = 0; i < this.values.size(); i++) {
-        defined = defined && ((Value)this.values.elementAt(i)).isDefined();
+        defined = defined && this.values.elementAt(i).isDefined();
       }
       return defined;
     }
@@ -267,22 +296,22 @@ public class OpRcdValue extends OpValue implements Applicable {
       sb.append("{ ");
       if (this.values.size() != 0) {
         sb.append("<");
-        Value[] args = (Value[])this.domain.elementAt(0);
+        Value[] args = this.domain.elementAt(0);
         for (int j = 0; j < args.length; j++) {
           sb = args[j].toString(sb, offset, swallow);
           sb.append(", ");
         }
-        sb = ((Value)this.values.elementAt(0)).toString(sb, offset, swallow);
+        sb = this.values.elementAt(0).toString(sb, offset, swallow);
         sb.append(">");
       }
       for (int i = 1; i < this.values.size(); i++) {
         sb.append(", <");
-        Value[] args = (Value[])this.domain.elementAt(i);
+        Value[] args = this.domain.elementAt(i);
         for (int j = 0; j < args.length; j++) {
           sb = args[j].toString(sb, offset, swallow);
           sb.append(", ");
         }
-        sb = ((Value)this.values.elementAt(i)).toString(sb, offset, swallow);
+        sb = this.values.elementAt(i).toString(sb, offset, swallow);
         sb.append(">");
       }
       return sb.append("}");
