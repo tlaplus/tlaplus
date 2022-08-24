@@ -141,4 +141,16 @@ PickSuccessor(exp) ==
   THEN TRUE
   ELSE CHOOSE bool \in BOOLEAN : TRUE 
 
-=============================================================================
+-----------------------------------------------------------------------------
+
+TLCCache(expression, closure) ==
+  (******************************************************************************)
+  (* Equals the value that an earlier evaluation of the expression evaluated to *)
+  (* iff the closure of the earlier evaluation and this evaluation are equal.   *)
+  (*                                                                            *)
+  (* Currently only implemented for state-level formulas.  See TLC!TLCEval for  *)
+  (* constant-level formulas.                                                   *)
+  (******************************************************************************)
+  expression
+
+============================================================================

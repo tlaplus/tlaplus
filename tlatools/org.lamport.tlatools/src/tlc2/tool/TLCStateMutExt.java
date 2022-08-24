@@ -8,6 +8,8 @@ package tlc2.tool;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -23,6 +25,7 @@ import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
+import tlc2.value.impl.Value;
 import util.UniqueString;
 import util.WrongInvocationException;
 
@@ -446,4 +449,21 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
 	public void setCallable(Callable<?> f) {
 		this.callable = f;
 	}
+
+	  private Map<Integer, Value> cache = new HashMap<>(0);
+	  
+		public Value getCached(final int key) {
+			if (cache == null) {
+				return null;
+			}
+			return cache.get(key);
+		}
+
+		public Value setCached(final int key, final Value value) {
+			if (cache == null) {
+				cache = new HashMap<>(0);
+			}
+			cache.put(key, value);
+			return value;
+		}
 }

@@ -18,6 +18,7 @@ import tlc2.output.EC;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
+import tlc2.value.impl.Value;
 import util.Assert;
 import util.UniqueString;
 
@@ -185,5 +186,13 @@ public abstract class TLCState implements Cloneable, Serializable {
 
 	public boolean hasAction() {
 		return getAction() != null;
+	}
+
+	public Value getCached(int key) {
+		return null;
+	}
+
+	public Value setCached(int key, Value value) {
+		return null;
 	}
 }
