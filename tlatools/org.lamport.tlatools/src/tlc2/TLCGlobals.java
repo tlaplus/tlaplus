@@ -178,7 +178,7 @@ public class TLCGlobals
     public static boolean useView = false;
 
     // The flag to control if gzip is applied to Value input/output stream.
-    public static boolean useGZIP = false;
+    public static boolean useGZIP = true;
 
     // debugging field
     public static boolean debug = false;
