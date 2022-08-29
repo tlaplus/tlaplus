@@ -23,6 +23,7 @@ CmdTemplate ==
     "-Dtlc2.TLC.stopAfter=600 " \o
     "-DTLA-Library=.. " \o
     "-DspecName=%3$s " \o
+    "-Dtlc2.tool.ModelChecker.BAQueue=true " \o
     "-cp %1$s " \o
     "tlc2.TLC " \o
     "-checkpoint 0 -workers %2$s %3$s/MC.tla > %4$s 2>&1">>
